@@ -700,14 +700,13 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
       add_types |= TabStripModel::ADD_PINNED;
     int index = chrome::GetIndexForInsertionDuringRestore(browser, i);
 
-    browser::NavigateParams params(browser, tabs[i].url,
-                                   content::PAGE_TRANSITION_START_PAGE);
-    params.disposition = first_tab ? NEW_FOREGROUND_TAB :
-                                     NEW_BACKGROUND_TAB;
+    chrome::NavigateParams params(browser, tabs[i].url,
+                                  content::PAGE_TRANSITION_START_PAGE);
+    params.disposition = first_tab ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
     params.tabstrip_index = index;
     params.tabstrip_add_types = add_types;
     params.extension_app_id = tabs[i].app_id;
-    browser::Navigate(&params);
+    chrome::Navigate(&params);
 
     first_tab = false;
   }

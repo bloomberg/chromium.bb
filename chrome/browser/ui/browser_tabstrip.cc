@@ -53,9 +53,9 @@ bool IsTabStripEditable(Browser* browser) {
 TabContents* AddSelectedTabWithURL(Browser* browser,
                                    const GURL& url,
                                    content::PageTransition transition) {
-  browser::NavigateParams params(browser, url, transition);
+  NavigateParams params(browser, url, transition);
   params.disposition = NEW_FOREGROUND_TAB;
-  browser::Navigate(&params);
+  Navigate(&params);
   return params.target_contents;
 }
 
@@ -111,14 +111,14 @@ void AddWebContents(Browser* browser,
     new_contents->GetRenderViewHost()->DisassociateFromPopupCount();
   }
 
-  browser::NavigateParams params(browser, new_tab_contents);
+  NavigateParams params(browser, new_tab_contents);
   params.source_contents = source_contents ?
       GetTabContentsAt(browser, GetIndexOfTab(browser, source_contents)) : NULL;
   params.disposition = disposition;
   params.window_bounds = initial_pos;
-  params.window_action = browser::NavigateParams::SHOW_WINDOW;
+  params.window_action = NavigateParams::SHOW_WINDOW;
   params.user_gesture = user_gesture;
-  browser::Navigate(&params);
+  Navigate(&params);
 }
 
 void CloseWebContents(Browser* browser, content::WebContents* contents) {

@@ -32,46 +32,44 @@ bool CompareURLsWithReplacements(
 }  // namespace
 
 void ShowSingletonTab(Browser* browser, const GURL& url) {
-  browser::NavigateParams params(GetSingletonTabNavigateParams(browser, url));
-  browser::Navigate(&params);
+  NavigateParams params(GetSingletonTabNavigateParams(browser, url));
+  Navigate(&params);
 }
 
 void ShowSingletonTabRespectRef(Browser* browser, const GURL& url) {
-  browser::NavigateParams params(GetSingletonTabNavigateParams(browser, url));
-  params.ref_behavior = browser::NavigateParams::RESPECT_REF;
-  browser::Navigate(&params);
+  NavigateParams params(GetSingletonTabNavigateParams(browser, url));
+  params.ref_behavior = NavigateParams::RESPECT_REF;
+  Navigate(&params);
 }
 
 void ShowSingletonTabOverwritingNTP(Browser* browser,
-                                    const browser::NavigateParams& params) {
-  browser::NavigateParams local_params(params);
-  content::WebContents* contents = chrome::GetActiveWebContents(browser);
+                                    const NavigateParams& params) {
+  NavigateParams local_params(params);
+  content::WebContents* contents = GetActiveWebContents(browser);
   if (contents) {
     const GURL& contents_url = contents->GetURL();
-    if ((contents_url == GURL(chrome::kChromeUINewTabURL) ||
-         contents_url == GURL(chrome::kAboutBlankURL)) &&
+    if ((contents_url == GURL(kChromeUINewTabURL) ||
+         contents_url == GURL(kAboutBlankURL)) &&
         GetIndexOfSingletonTab(&local_params) < 0) {
       local_params.disposition = CURRENT_TAB;
     }
   }
 
-  browser::Navigate(&local_params);
+  Navigate(&local_params);
 }
 
-browser::NavigateParams GetSingletonTabNavigateParams(Browser* browser,
-                                                      const GURL& url) {
-  browser::NavigateParams params(browser,
-                                 url,
-                                 content::PAGE_TRANSITION_AUTO_BOOKMARK);
+NavigateParams GetSingletonTabNavigateParams(Browser* browser,
+                                             const GURL& url) {
+  NavigateParams params(browser, url, content::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.disposition = SINGLETON_TAB;
-  params.window_action = browser::NavigateParams::SHOW_WINDOW;
+  params.window_action = NavigateParams::SHOW_WINDOW;
   params.user_gesture = true;
   return params;
 }
 
 // Returns the index of an existing singleton tab in |params->browser| matching
 // the URL specified in |params|.
-int GetIndexOfSingletonTab(browser::NavigateParams* params) {
+int GetIndexOfSingletonTab(NavigateParams* params) {
   if (params->disposition != SINGLETON_TAB)
     return -1;
 
@@ -90,13 +88,13 @@ int GetIndexOfSingletonTab(browser::NavigateParams* params) {
   int tab_count = params->browser->tab_count();
   for (int i = 0; i < tab_count; ++i) {
     int tab_index = (start_index + i) % tab_count;
-    TabContents* tab = chrome::GetTabContentsAt(params->browser, tab_index);
+    TabContents* tab = GetTabContentsAt(params->browser, tab_index);
 
     url_canon::Replacements<char> replacements;
-    if (params->ref_behavior == browser::NavigateParams::IGNORE_REF)
+    if (params->ref_behavior == NavigateParams::IGNORE_REF)
       replacements.ClearRef();
-    if (params->path_behavior == browser::NavigateParams::IGNORE_AND_NAVIGATE ||
-        params->path_behavior == browser::NavigateParams::IGNORE_AND_STAY_PUT) {
+    if (params->path_behavior == NavigateParams::IGNORE_AND_NAVIGATE ||
+        params->path_behavior == NavigateParams::IGNORE_AND_STAY_PUT) {
       replacements.ClearPath();
       replacements.ClearQuery();
     }
@@ -112,6 +110,5 @@ int GetIndexOfSingletonTab(browser::NavigateParams* params) {
 
   return -1;
 }
-
 
 }  // namespace chrome

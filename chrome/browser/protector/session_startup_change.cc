@@ -12,10 +12,10 @@
 #include "chrome/browser/protector/histograms.h"
 #include "chrome/browser/protector/protector_service.h"
 #include "chrome/browser/protector/protector_service_factory.h"
-#include "chrome/browser/ui/tabs/pinned_tab_codec.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/tabs/pinned_tab_codec.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
@@ -209,13 +209,13 @@ GURL SessionStartupChange::GetFirstNewURL() const {
 void SessionStartupChange::OpenPinnedTabs(Browser* browser,
                                           const StartupTabs& tabs) {
   for (size_t i = 0; i < tabs.size(); ++i) {
-    browser::NavigateParams params(browser, tabs[i].url,
-                                   content::PAGE_TRANSITION_START_PAGE);
+    chrome::NavigateParams params(browser, tabs[i].url,
+                                  content::PAGE_TRANSITION_START_PAGE);
     params.disposition = NEW_BACKGROUND_TAB;
     params.tabstrip_index = -1;
     params.tabstrip_add_types = TabStripModel::ADD_PINNED;
     params.extension_app_id = tabs[i].app_id;
-    browser::Navigate(&params);
+    chrome::Navigate(&params);
   }
 }
 

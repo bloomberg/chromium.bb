@@ -33,12 +33,12 @@ void OpenBookmarkManagerWithHash(Browser* browser,
                                  int64 node_id) {
   content::RecordAction(UserMetricsAction("ShowBookmarkManager"));
   content::RecordAction(UserMetricsAction("ShowBookmarks"));
-  browser::NavigateParams params(GetSingletonTabNavigateParams(
+  NavigateParams params(GetSingletonTabNavigateParams(
       browser,
       GURL(kChromeUIBookmarksURL).Resolve(
       StringPrintf("/#%s%s", action.c_str(),
       base::Int64ToString(node_id).c_str()))));
-  params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+  params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(browser, params);
 }
 
@@ -58,9 +58,9 @@ void ShowBookmarkManagerForNode(Browser* browser, int64 node_id) {
 
 void ShowHistory(Browser* browser) {
   content::RecordAction(UserMetricsAction("ShowHistory"));
-  browser::NavigateParams params(
+  NavigateParams params(
       GetSingletonTabNavigateParams(browser, GURL(kChromeUIHistoryURL)));
-  params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+  params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(browser, params);
 }
 
@@ -78,9 +78,9 @@ void ShowDownloads(Browser* browser) {
 
 void ShowExtensions(Browser* browser) {
   content::RecordAction(UserMetricsAction("ShowExtensions"));
-  browser::NavigateParams params(
+  NavigateParams params(
       GetSingletonTabNavigateParams(browser, GURL(kChromeUIExtensionsURL)));
-  params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+  params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(browser, params);
 }
 
@@ -123,9 +123,8 @@ void ShowSettingsSubPage(Browser* browser, const std::string& sub_page) {
     url = std::string(kChromeUISettingsURL) + network_page;
   }
 #endif
-  browser::NavigateParams params(
-      GetSingletonTabNavigateParams(browser, GURL(url)));
-  params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+  NavigateParams params(GetSingletonTabNavigateParams(browser, GURL(url)));
+  params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(browser, params);
 }
 
@@ -160,9 +159,9 @@ void ShowInstantConfirmDialog(Browser* browser) {
 void ShowAboutChrome(Browser* browser) {
   content::RecordAction(UserMetricsAction("AboutChrome"));
 #if !defined(OS_WIN)
-  browser::NavigateParams params(
+  NavigateParams params(
       GetSingletonTabNavigateParams(browser, GURL(kChromeUIUberURL)));
-  params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+  params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(browser, params);
 #else
   // crbug.com/115123.
@@ -187,9 +186,8 @@ void ShowSyncSetup(Browser* browser, SyncPromoUI::Source source) {
              login_service->current_login_ui() == NULL) {
     // There is no currently active login UI, so display a new promo page.
     GURL url(SyncPromoUI::GetSyncPromoURL(GURL(), source));
-    browser::NavigateParams params(
-        GetSingletonTabNavigateParams(browser, GURL(url)));
-    params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+    NavigateParams params(GetSingletonTabNavigateParams(browser, GURL(url)));
+    params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
     ShowSingletonTabOverwritingNTP(browser, params);
   } else {
     LoginUIServiceFactory::GetForProfile(

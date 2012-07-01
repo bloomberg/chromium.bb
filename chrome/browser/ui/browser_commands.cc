@@ -24,9 +24,9 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service_factory.h"
-#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -47,8 +47,6 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/common/content_restriction.h"
-#include "content/public/common/renderer_preferences.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/page_navigator.h"
@@ -56,6 +54,8 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/common/content_restriction.h"
+#include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
 #include "webkit/glue/webkit_glue.h"
@@ -341,8 +341,8 @@ void OpenCurrentURL(Browser* browser) {
 
   GURL url(location_bar->GetInputString());
 
-  browser::NavigateParams params(browser, url,
-                                 location_bar->GetPageTransition());
+  chrome::NavigateParams params(browser, url,
+                                location_bar->GetPageTransition());
   params.disposition = open_disposition;
   // Use ADD_INHERIT_OPENER so that all pages opened by the omnibox at least
   // inherit the opener. In some cases the tabstrip will determine the group
@@ -350,7 +350,7 @@ void OpenCurrentURL(Browser* browser) {
   // opener.
   params.tabstrip_add_types =
       TabStripModel::ADD_FORCE_INDEX | TabStripModel::ADD_INHERIT_OPENER;
-  browser::Navigate(&params);
+  chrome::Navigate(&params);
 
   DCHECK(browser->profile()->GetExtensionService());
   if (browser->profile()->GetExtensionService()->IsInstalledApp(url)) {

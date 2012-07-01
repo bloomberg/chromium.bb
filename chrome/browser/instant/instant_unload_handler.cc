@@ -94,7 +94,7 @@ void InstantUnloadHandler::RunUnloadListenersOrDestroy(TabContents* tab,
 void InstantUnloadHandler::Activate(WebContentsDelegateImpl* delegate) {
   // Take ownership of the TabContents from the delegate.
   TabContents* tab = delegate->ReleaseTab();
-  browser::NavigateParams params(browser_, tab);
+  chrome::NavigateParams params(browser_, tab);
   params.disposition = NEW_FOREGROUND_TAB;
   params.tabstrip_index = delegate->index();
 
@@ -106,7 +106,7 @@ void InstantUnloadHandler::Activate(WebContentsDelegateImpl* delegate) {
   delegate = NULL;
 
   // Add the tab back in.
-  browser::Navigate(&params);
+  chrome::Navigate(&params);
 }
 
 void InstantUnloadHandler::Destroy(WebContentsDelegateImpl* delegate) {

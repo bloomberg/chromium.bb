@@ -9,14 +9,12 @@
 class Browser;
 class GURL;
 
-namespace browser {
-struct NavigateParams;
-}
-
 // Methods for opening "singleton tabs". Tabs are guaranteed unique by varying
 // metrics within a particular Browser window.
 
 namespace chrome {
+
+struct NavigateParams;
 
 // Core singleton tab API:
 
@@ -31,15 +29,14 @@ void ShowSingletonTabRespectRef(Browser* browser, const GURL& url);
 // As ShowSingletonTab, but if the current tab is the new tab page or
 // about:blank, then overwrite it with the passed contents.
 void ShowSingletonTabOverwritingNTP(Browser* browser,
-                                    const browser::NavigateParams& params);
+                                    const NavigateParams& params);
 
 // Creates a NavigateParams struct for a singleton tab navigation.
-browser::NavigateParams GetSingletonTabNavigateParams(Browser* browser,
-                                                      const GURL& url);
+NavigateParams GetSingletonTabNavigateParams(Browser* browser, const GURL& url);
 
 // If the given navigational URL is a Singleton, return the tab index for it.
 // Otherwise, returns -1.
-int GetIndexOfSingletonTab(browser::NavigateParams* params);
+int GetIndexOfSingletonTab(NavigateParams* params);
 
 }  // namespace chrome
 

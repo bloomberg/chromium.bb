@@ -1914,13 +1914,13 @@ private:
   switch (disposition) {
     case NEW_FOREGROUND_TAB: {
       content::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"));
-      browser::NavigateParams params(
-          browser_, *url, content::PAGE_TRANSITION_TYPED);
+      chrome::NavigateParams params(browser_, *url,
+                                    content::PAGE_TRANSITION_TYPED);
       params.disposition = disposition;
       params.tabstrip_index = index;
       params.tabstrip_add_types =
           TabStripModel::ADD_ACTIVE | TabStripModel::ADD_FORCE_INDEX;
-      browser::Navigate(&params);
+      chrome::Navigate(&params);
       break;
     }
     case CURRENT_TAB: {

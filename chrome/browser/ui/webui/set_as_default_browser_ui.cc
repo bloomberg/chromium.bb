@@ -10,6 +10,7 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
-#include "chrome/browser/shell_integration.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/install_util.h"
@@ -324,9 +324,9 @@ void SetAsDefaultBrowserUI::Show(Profile* profile,
     dialog->ShowDialog();
   } else {
     GURL url(chrome::kChromeUIMetroFlowURL);
-    browser::NavigateParams params(
+    chrome::NavigateParams params(
         chrome::GetSingletonTabNavigateParams(browser, url));
-    params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+    params.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
     chrome::ShowSingletonTabOverwritingNTP(browser, params);
   }
 }

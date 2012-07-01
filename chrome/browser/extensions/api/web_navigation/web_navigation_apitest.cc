@@ -267,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationTargetBlank) {
   GURL url = test_server()->GetURL(
       "files/extensions/api_test/webnavigation/targetBlank/a.html");
 
-  browser::NavigateParams params(browser(), url, content::PAGE_TRANSITION_LINK);
+  chrome::NavigateParams params(browser(), url, content::PAGE_TRANSITION_LINK);
   ui_test_utils::NavigateToURL(&params);
 
   // There's a link with target=_blank on a.html. Click on it to open it in a

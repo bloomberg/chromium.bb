@@ -36,12 +36,10 @@ void OpenItemOnFileThread(const FilePath& full_path) {
 
 void OpenURL(const std::string& url) {
   // TODO(beng): improve this to locate context from call stack.
-  browser::NavigateParams params(NULL,
-                                 GURL(url),
-                                 content::PAGE_TRANSITION_LINK);
+  chrome::NavigateParams params(NULL, GURL(url), content::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   params.profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-  browser::Navigate(&params);
+  chrome::Navigate(&params);
 }
 
 }  // namespace

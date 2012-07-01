@@ -8,8 +8,8 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/test/test_timeouts.h"
 #include "base/timer.h"
 #include "build/build_config.h"
@@ -1080,7 +1080,7 @@ TEST_PPAPI_NACL_VIA_HTTP(View_CreatedVisible);
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View_CreateInvisible) {
   // Make a second tab in the foreground.
   GURL url = GetTestFileUrl("View_CreatedInvisible");
-  browser::NavigateParams params(browser(), url, content::PAGE_TRANSITION_LINK);
+  chrome::NavigateParams params(browser(), url, content::PAGE_TRANSITION_LINK);
   params.disposition = NEW_BACKGROUND_TAB;
   ui_test_utils::NavigateToURL(&params);
 }
@@ -1101,8 +1101,8 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View_PageHideShow) {
 
   // Make a new tab to cause the original one to hide, this should trigger the
   // next phase of the test.
-  browser::NavigateParams params(
-      browser(), GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_LINK);
+  chrome::NavigateParams params(browser(), GURL(chrome::kAboutBlankURL),
+                                content::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   ui_test_utils::NavigateToURL(&params);
 

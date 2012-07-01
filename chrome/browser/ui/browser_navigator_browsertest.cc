@@ -54,15 +54,15 @@ GURL GetClearBrowsingDataURL() {
 
 } // namespace
 
-browser::NavigateParams BrowserNavigatorTest::MakeNavigateParams() const {
+chrome::NavigateParams BrowserNavigatorTest::MakeNavigateParams() const {
   return MakeNavigateParams(browser());
 }
 
-browser::NavigateParams BrowserNavigatorTest::MakeNavigateParams(
+chrome::NavigateParams BrowserNavigatorTest::MakeNavigateParams(
     Browser* browser) const {
-  browser::NavigateParams params(browser, GetGoogleURL(),
-                                 content::PAGE_TRANSITION_LINK);
-  params.window_action = browser::NavigateParams::SHOW_WINDOW;
+  chrome::NavigateParams params(browser, GetGoogleURL(),
+                                content::PAGE_TRANSITION_LINK);
+  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   return params;
 }
 
@@ -94,9 +94,9 @@ TabContents* BrowserNavigatorTest::CreateTabContents() {
 
 void BrowserNavigatorTest::RunSuppressTest(WindowOpenDisposition disposition) {
   GURL old_url = chrome::GetActiveWebContents(browser())->GetURL();
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = disposition;
-  browser::Navigate(&p);
+  chrome::Navigate(&p);
 
   // Nothing should have happened as a result of Navigate();
   EXPECT_EQ(1, browser()->tab_count());
@@ -112,11 +112,11 @@ void BrowserNavigatorTest::RunUseNonIncognitoWindowTest(const GURL& url) {
   EXPECT_EQ(1, incognito_browser->tab_count());
 
   // Navigate to the page.
-  browser::NavigateParams p(MakeNavigateParams(incognito_browser));
+  chrome::NavigateParams p(MakeNavigateParams(incognito_browser));
   p.disposition = SINGLETON_TAB;
   p.url = url;
-  p.window_action = browser::NavigateParams::SHOW_WINDOW;
-  browser::Navigate(&p);
+  p.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  chrome::Navigate(&p);
 
   // This page should be opened in browser() window.
   EXPECT_NE(incognito_browser, p.browser);
@@ -138,11 +138,11 @@ void BrowserNavigatorTest::RunDoNothingIfIncognitoIsForcedTest(
                      IncognitoModePrefs::FORCED);
 
   // Navigate to the page.
-  browser::NavigateParams p(MakeNavigateParams(browser));
+  chrome::NavigateParams p(MakeNavigateParams(browser));
   p.disposition = OFF_THE_RECORD;
   p.url = url;
-  p.window_action = browser::NavigateParams::SHOW_WINDOW;
-  browser::Navigate(&p);
+  p.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  chrome::Navigate(&p);
 
   // The page should not be opened.
   EXPECT_EQ(browser, p.browser);
@@ -205,10 +205,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTabExisting) {
       created_tab_contents_count_ = 0;
 
   // Navigate to singleton_url1.
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
   p.url = singleton_url1;
-  browser::Navigate(&p);
+  chrome::Navigate(&p);
 
   // The middle tab should now be selected.
   EXPECT_EQ(browser(), p.browser);
@@ -234,10 +234,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(1, browser()->active_index());
 
   // Navigate to singleton_url2.
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
   p.url = singleton_ref_url2;
-  browser::Navigate(&p);
+  chrome::Navigate(&p);
 
   // We should now have 2 tabs, the 2nd one selected.
   EXPECT_EQ(browser(), p.browser);
@@ -248,8 +248,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   p = MakeNavigateParams();
   p.disposition = SINGLETON_TAB;
   p.url = singleton_ref_url2;
-  p.ref_behavior = browser::NavigateParams::RESPECT_REF;
-  browser::Navigate(&p);
+  p.ref_behavior = chrome::NavigateParams::RESPECT_REF;
+  chrome::Navigate(&p);
 
   // We should now have 3 tabs, the 3th one selected.
   EXPECT_EQ(browser(), p.browser);
@@ -260,8 +260,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   p = MakeNavigateParams();
   p.disposition = SINGLETON_TAB;
   p.url = singleton_ref_url3;
-  p.ref_behavior = browser::NavigateParams::RESPECT_REF;
-  browser::Navigate(&p);
+  p.ref_behavior = chrome::NavigateParams::RESPECT_REF;
+  chrome::Navigate(&p);
 
   // We should now have 4 tabs, the 4th one selected.
   EXPECT_EQ(browser(), p.browser);
@@ -278,10 +278,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(0, browser()->active_index());
 
   // Navigate to singleton_url1.
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
   p.url = singleton_url1;
-  browser::Navigate(&p);
+  chrome::Navigate(&p);
 
   // We should now have 2 tabs, the 2nd one selected.
   EXPECT_EQ(browser(), p.browser);
@@ -294,9 +294,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // foreground tab.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewForegroundTab) {
   WebContents* old_contents = chrome::GetActiveWebContents(browser());
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_FOREGROUND_TAB;
-  browser::Navigate(&p);
+  chrome::Navigate(&p);
   EXPECT_NE(old_contents, chrome::GetActiveWebContents(browser()));
   EXPECT_EQ(chrome::GetActiveTabContents(browser()), p.target_contents);
   EXPECT_EQ(2, browser()->tab_count());
@@ -306,9 +306,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewForegroundTab) {
 // tab count of the Browser increases but the selected tab remains the same.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewBackgroundTab) {
   WebContents* old_contents = chrome::GetActiveWebContents(browser());
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_BACKGROUND_TAB;
-  browser::Navigate(&p);
+  chrome::Navigate(&p);
   WebContents* new_contents = chrome::GetActiveWebContents(browser());
   // The selected tab should have remained unchanged, since the new tab was
   // opened in the background.
@@ -325,9 +325,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // existing compatible window somewhere else that they can be opened within.
   Browser* popup = CreateEmptyBrowserForType(Browser::TYPE_POPUP,
                                              browser()->profile());
-  browser::NavigateParams p(MakeNavigateParams(popup));
+  chrome::NavigateParams p(MakeNavigateParams(popup));
   p.disposition = NEW_FOREGROUND_TAB;
-  browser::Navigate(&p);
+  chrome::Navigate(&p);
 
   // Navigate() should have opened the tab in a different browser since the
   // one we supplied didn't support additional tabs.
@@ -358,9 +358,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   Browser* popup = CreateEmptyBrowserForType(
       Browser::TYPE_POPUP,
       browser()->profile()->GetOffTheRecordProfile());
-  browser::NavigateParams p(MakeNavigateParams(popup));
+  chrome::NavigateParams p(MakeNavigateParams(popup));
   p.disposition = NEW_FOREGROUND_TAB;
-  browser::Navigate(&p);
+  chrome::Navigate(&p);
 
   // Navigate() should have opened the tab in a different browser since the
   // one we supplied didn't support additional tabs.
@@ -384,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // This test verifies that navigating with WindowOpenDisposition = NEW_POPUP
 // from a normal Browser results in a new Browser with TYPE_POPUP.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopup) {
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_POPUP;
   p.window_bounds = gfx::Rect(0, 0, 200, 200);
   // Wait for new popup to to load and gain focus.
@@ -409,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopup) {
 // This test verifies that navigating with WindowOpenDisposition = NEW_POPUP
 // from a normal Browser results in a new Browser with is_app() true.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopup_ExtensionId) {
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_POPUP;
   p.extension_app_id = "extensionappid";
   p.window_bounds = gfx::Rect(0, 0, 200, 200);
@@ -432,15 +432,15 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopup_ExtensionId) {
 // from a normal popup results in a new Browser with TYPE_POPUP.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupFromPopup) {
   // Open a popup.
-  browser::NavigateParams p1(MakeNavigateParams());
+  chrome::NavigateParams p1(MakeNavigateParams());
   p1.disposition = NEW_POPUP;
   p1.window_bounds = gfx::Rect(0, 0, 200, 200);
-  browser::Navigate(&p1);
+  chrome::Navigate(&p1);
   // Open another popup.
-  browser::NavigateParams p2(MakeNavigateParams(p1.browser));
+  chrome::NavigateParams p2(MakeNavigateParams(p1.browser));
   p2.disposition = NEW_POPUP;
   p2.window_bounds = gfx::Rect(0, 0, 200, 200);
-  browser::Navigate(&p2);
+  chrome::Navigate(&p2);
 
   // Navigate() should have opened a new normal popup window.
   EXPECT_NE(p1.browser, p2.browser);
@@ -461,10 +461,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_NewPopupFromAppWindow) {
   Browser* app_browser = CreateEmptyBrowserForApp(Browser::TYPE_TABBED,
                                                   browser()->profile());
-  browser::NavigateParams p(MakeNavigateParams(app_browser));
+  chrome::NavigateParams p(MakeNavigateParams(app_browser));
   p.disposition = NEW_POPUP;
   p.window_bounds = gfx::Rect(0, 0, 200, 200);
-  browser::Navigate(&p);
+  chrome::Navigate(&p);
 
   // Navigate() should have opened a new popup app window.
   EXPECT_NE(app_browser, p.browser);
@@ -487,15 +487,15 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   Browser* app_browser = CreateEmptyBrowserForApp(Browser::TYPE_TABBED,
                                                   browser()->profile());
   // Open an app popup.
-  browser::NavigateParams p1(MakeNavigateParams(app_browser));
+  chrome::NavigateParams p1(MakeNavigateParams(app_browser));
   p1.disposition = NEW_POPUP;
   p1.window_bounds = gfx::Rect(0, 0, 200, 200);
-  browser::Navigate(&p1);
+  chrome::Navigate(&p1);
   // Now open another app popup.
-  browser::NavigateParams p2(MakeNavigateParams(p1.browser));
+  chrome::NavigateParams p2(MakeNavigateParams(p1.browser));
   p2.disposition = NEW_POPUP;
   p2.window_bounds = gfx::Rect(0, 0, 200, 200);
-  browser::Navigate(&p2);
+  chrome::Navigate(&p2);
 
   // Navigate() should have opened a new popup app window.
   EXPECT_NE(browser(), p1.browser);
@@ -522,10 +522,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // This test verifies that navigating with window_action = SHOW_WINDOW_INACTIVE
 // does not focus a new new popup window.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupUnfocused) {
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_POPUP;
   p.window_bounds = gfx::Rect(0, 0, 200, 200);
-  p.window_action = browser::NavigateParams::SHOW_WINDOW_INACTIVE;
+  p.window_action = chrome::NavigateParams::SHOW_WINDOW_INACTIVE;
   // Wait for new popup to load (and gain focus if the test fails).
   ui_test_utils::NavigateToURL(&p);
 
@@ -541,9 +541,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupUnfocused) {
 // This test verifies that navigating with WindowOpenDisposition = NEW_WINDOW
 // always opens a new window.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewWindow) {
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_WINDOW;
-  browser::Navigate(&p);
+  chrome::Navigate(&p);
 
   // Navigate() should have opened a new toplevel window.
   EXPECT_NE(browser(), p.browser);
@@ -559,9 +559,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewWindow) {
 // This test verifies that navigating with WindowOpenDisposition = INCOGNITO
 // opens a new incognito window if no existing incognito window is present.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_Incognito) {
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = OFF_THE_RECORD;
-  browser::Navigate(&p);
+  chrome::Navigate(&p);
 
   // Navigate() should have opened a new toplevel incognito window.
   EXPECT_NE(browser(), p.browser);
@@ -585,9 +585,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_IncognitoRefocus) {
   Browser* incognito_browser =
       CreateEmptyBrowserForType(Browser::TYPE_TABBED,
                                 browser()->profile()->GetOffTheRecordProfile());
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = OFF_THE_RECORD;
-  browser::Navigate(&p);
+  chrome::Navigate(&p);
 
   // Navigate() should have opened a new tab in the existing incognito window.
   EXPECT_NE(browser(), p.browser);
@@ -620,10 +620,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_IgnoreAction) {
 
 // This tests adding a foreground tab with a predefined TabContents.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, TargetContents_ForegroundTab) {
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_FOREGROUND_TAB;
   p.target_contents = CreateTabContents();
-  browser::Navigate(&p);
+  chrome::Navigate(&p);
 
   // Navigate() should have opened the contents in a new foreground in the
   // current Browser.
@@ -638,11 +638,11 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, TargetContents_ForegroundTab) {
 #if defined(OS_WIN)
 // This tests adding a popup with a predefined TabContents.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, DISABLED_TargetContents_Popup) {
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_POPUP;
   p.target_contents = CreateTabContents();
   p.window_bounds = gfx::Rect(10, 10, 500, 500);
-  browser::Navigate(&p);
+  chrome::Navigate(&p);
 
   // Navigate() should have opened a new popup window.
   EXPECT_NE(browser(), p.browser);
@@ -680,11 +680,11 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Tabstrip_InsertAtIndex) {
   // implementation of the browser observes the insertion index. That is
   // covered by the unit tests for TabStripModel. This merely verifies that
   // insertion index preference is reflected in common cases.
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_FOREGROUND_TAB;
   p.tabstrip_index = 0;
   p.tabstrip_add_types = TabStripModel::ADD_FORCE_INDEX;
-  browser::Navigate(&p);
+  chrome::Navigate(&p);
 
   // Navigate() should have inserted a new tab at slot 0 in the tabstrip.
   EXPECT_EQ(browser(), p.browser);
@@ -702,10 +702,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Tabstrip_InsertAtIndex) {
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NullBrowser_NewForegroundTab) {
   WebContents* old_contents = chrome::GetActiveWebContents(browser());
   // Navigate with a NULL browser.
-  browser::NavigateParams p(MakeNavigateParams(NULL));
+  chrome::NavigateParams p(MakeNavigateParams(NULL));
   p.disposition = NEW_FOREGROUND_TAB;
   p.profile = browser()->profile();
-  browser::Navigate(&p);
+  chrome::Navigate(&p);
 
   // Navigate() should have found browser() and create a new tab.
   EXPECT_EQ(browser(), p.browser);
@@ -722,10 +722,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NullBrowser_MatchProfile) {
       Browser::Create(browser()->profile()->GetOffTheRecordProfile());
 
   // Navigate with a NULL browser and the incognito profile.
-  browser::NavigateParams p(MakeNavigateParams(NULL));
+  chrome::NavigateParams p(MakeNavigateParams(NULL));
   p.disposition = NEW_FOREGROUND_TAB;
   p.profile = incognito->profile();
-  browser::Navigate(&p);
+  chrome::Navigate(&p);
 
   // Navigate() should have found incognito, not browser().
   EXPECT_EQ(incognito, p.browser);
@@ -736,10 +736,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NullBrowser_MatchProfile) {
 // This test verifies that constructing params with a NULL browser and
 // disposition = NEW_WINDOW always opens exactly one new window.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NullBrowser_NewWindow) {
-  browser::NavigateParams p(MakeNavigateParams(NULL));
+  chrome::NavigateParams p(MakeNavigateParams(NULL));
   p.disposition = NEW_WINDOW;
   p.profile = browser()->profile();
-  browser::Navigate(&p);
+  chrome::Navigate(&p);
 
   // Navigate() should have created a new browser.
   EXPECT_NE(browser(), p.browser);
@@ -766,12 +766,12 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(1, browser()->active_index());
 
   // Navigate to a new singleton tab with a sub-page.
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
   p.url = GetContentSettingsURL();
-  p.window_action = browser::NavigateParams::SHOW_WINDOW;
-  p.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
-  browser::Navigate(&p);
+  p.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  p.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
+  chrome::Navigate(&p);
 
   // The last tab should now be selected and navigated to the sub-page of the
   // URL.
@@ -799,12 +799,12 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(2, browser()->active_index());
 
   // Navigate to singleton_url1.
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
   p.url = GetContentSettingsURL();
-  p.window_action = browser::NavigateParams::SHOW_WINDOW;
-  p.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
-  browser::Navigate(&p);
+  p.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  p.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
+  chrome::Navigate(&p);
 
   // The middle tab should now be selected and navigated to the sub-page of the
   // URL.
@@ -832,12 +832,12 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(2, browser()->active_index());
 
   // Navigate to singleton_url1.
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
   p.url = GetClearBrowsingDataURL();
-  p.window_action = browser::NavigateParams::SHOW_WINDOW;
-  p.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
-  browser::Navigate(&p);
+  p.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  p.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
+  chrome::Navigate(&p);
 
   // The middle tab should now be selected and navigated to the sub-page of the
   // URL.
@@ -865,12 +865,12 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(2, browser()->active_index());
 
   // Navigate to singleton_url1.
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
   p.url = GetClearBrowsingDataURL();
-  p.window_action = browser::NavigateParams::SHOW_WINDOW;
-  p.path_behavior = browser::NavigateParams::IGNORE_AND_STAY_PUT;
-  browser::Navigate(&p);
+  p.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  p.path_behavior = chrome::NavigateParams::IGNORE_AND_STAY_PUT;
+  chrome::Navigate(&p);
 
   // The middle tab should now be selected.
   EXPECT_EQ(browser(), p.browser);
@@ -896,12 +896,12 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
   // Navigate to a different settings path.
   GURL singleton_url_target(GetClearBrowsingDataURL());
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
   p.url = singleton_url_target;
-  p.window_action = browser::NavigateParams::SHOW_WINDOW;
-  p.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
-  browser::Navigate(&p);
+  p.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  p.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
+  chrome::Navigate(&p);
 
   // The second tab should still be selected, but navigated to the new path.
   EXPECT_EQ(browser(), p.browser);
@@ -928,12 +928,12 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   GURL singleton_url_target(
       "chrome://settings/internet?"
       "servicePath=/profile/ethernet_00aa00aa00aa&networkType=1");
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
   p.url = singleton_url_target;
-  p.window_action = browser::NavigateParams::SHOW_WINDOW;
-  p.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
-  browser::Navigate(&p);
+  p.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  p.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
+  chrome::Navigate(&p);
 
   // Last tab should still be selected.
   EXPECT_EQ(browser(), p.browser);
@@ -954,14 +954,14 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // Disabled until fixed for uber settings: http://crbug.com/111243
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     DISABLED_Disposition_Settings_UseNonIncognitoWindowForBookmark) {
-  browser::NavigateParams params(browser(), GetSettingsURL(),
-                                 content::PAGE_TRANSITION_AUTO_BOOKMARK);
+  chrome::NavigateParams params(browser(), GetSettingsURL(),
+                                content::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.disposition = OFF_THE_RECORD;
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    browser::Navigate(&params);
+    chrome::Navigate(&params);
     observer.Wait();
   }
 
@@ -1029,11 +1029,11 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   web_contents->SetIsCrashed(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
   EXPECT_TRUE(web_contents->IsCrashed());
 
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
   p.url = singleton_url;
-  p.window_action = browser::NavigateParams::SHOW_WINDOW;
-  p.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+  p.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  p.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
   ui_test_utils::NavigateToURL(&p);
 
   // The tab should not be sad anymore.
@@ -1056,7 +1056,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        NavigateFromBlankToOptionsInSameTab) {
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.url = GURL(chrome::kAboutBlankURL);
   ui_test_utils::NavigateToURL(&p);
 
@@ -1074,7 +1074,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        NavigateFromNTPToOptionsInSameTab) {
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.url = GURL(chrome::kChromeUINewTabURL);
   ui_test_utils::NavigateToURL(&p);
   EXPECT_EQ(1, browser()->tab_count());
@@ -1095,7 +1095,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        NavigateFromPageToOptionsInNewTab) {
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   ui_test_utils::NavigateToURL(&p);
   EXPECT_EQ(GetGoogleURL(), chrome::GetActiveWebContents(browser())->GetURL());
   EXPECT_EQ(1u, BrowserList::size());
@@ -1212,10 +1212,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   GURL url2("http://maps.google.com/");
 
   // Navigate to url.
-  browser::NavigateParams p(MakeNavigateParams());
+  chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = CURRENT_TAB;
   p.url = url;
-  browser::Navigate(&p);
+  chrome::Navigate(&p);
 
   // Focus the omnibox.
   chrome::FocusLocationBar(browser());
@@ -1304,10 +1304,10 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserNavigatorTest, NavigateFromCrashedPanel) {
           browser()->profile()));
 
   // Navigate to the page.
-  browser::NavigateParams p(MakeNavigateParams(panel_browser));
+  chrome::NavigateParams p(MakeNavigateParams(panel_browser));
   p.url = url;
   p.disposition = CURRENT_TAB;
-  browser::Navigate(&p);
+  chrome::Navigate(&p);
 
   // Navigate() should have navigated in the existing panel window.
   EXPECT_EQ(panel_browser, p.browser);
@@ -1324,11 +1324,11 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserNavigatorTest, NavigateFromCrashedPanel) {
   EXPECT_TRUE(web_contents->IsCrashed());
 
   // Navigate to the page.
-  browser::NavigateParams p2(MakeNavigateParams(panel_browser));
+  chrome::NavigateParams p2(MakeNavigateParams(panel_browser));
   p2.source_contents = chrome::GetActiveTabContents(panel_browser);
   p2.url = url2;
   p2.disposition = CURRENT_TAB;
-  browser::Navigate(&p2);
+  chrome::Navigate(&p2);
 
   // Navigate() should have opened a new tab in the existing tabbed window.
   EXPECT_EQ(browser(), p2.browser);

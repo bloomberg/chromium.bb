@@ -372,7 +372,7 @@ bool CreateWindowFunction::ShouldOpenIncognitoWindow(
   if (incognito && !Profile::IsGuestSession()) {
     std::string first_url_erased;
     for (size_t i = 0; i < urls->size();) {
-      if (browser::IsURLAllowedInIncognito((*urls)[i])) {
+      if (chrome::IsURLAllowedInIncognito((*urls)[i])) {
         i++;
       } else {
         if (first_url_erased.empty())
@@ -1077,11 +1077,11 @@ bool CreateTabFunction::RunImpl() {
   add_types |= TabStripModel::ADD_FORCE_INDEX;
   if (pinned)
     add_types |= TabStripModel::ADD_PINNED;
-  browser::NavigateParams params(browser, url, content::PAGE_TRANSITION_LINK);
+  chrome::NavigateParams params(browser, url, content::PAGE_TRANSITION_LINK);
   params.disposition = active ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
   params.tabstrip_index = index;
   params.tabstrip_add_types = add_types;
-  browser::Navigate(&params);
+  chrome::Navigate(&params);
 
   // The tab may have been created in a different window, so make sure we look
   // at the right tab strip.

@@ -30,8 +30,8 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tabs/dragged_tab_controller_gtk.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_menu_controller.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
@@ -1788,8 +1788,8 @@ bool TabStripGtk::CompleteDrop(const guchar* data, bool is_plain_text) {
   if (!url.is_valid())
     return false;
 
-  browser::NavigateParams params(window()->browser(), url,
-                                 content::PAGE_TRANSITION_LINK);
+  chrome::NavigateParams params(window()->browser(), url,
+                                content::PAGE_TRANSITION_LINK);
   params.tabstrip_index = drop_index;
 
   if (drop_before) {
@@ -1799,7 +1799,7 @@ bool TabStripGtk::CompleteDrop(const guchar* data, bool is_plain_text) {
     params.source_contents = model_->GetTabContentsAt(drop_index);
   }
 
-  browser::Navigate(&params);
+  chrome::Navigate(&params);
 
   return true;
 }

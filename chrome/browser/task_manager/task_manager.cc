@@ -1131,11 +1131,10 @@ TaskManager* TaskManager::GetInstance() {
 void TaskManager::OpenAboutMemory() {
   Browser* browser = browser::FindOrCreateTabbedBrowser(
       ProfileManager::GetDefaultProfileOrOffTheRecord());
-  browser::NavigateParams params(browser,
-                                 GURL(chrome::kChromeUIMemoryURL),
-                                 content::PAGE_TRANSITION_LINK);
+ chrome::NavigateParams params(browser, GURL(chrome::kChromeUIMemoryURL),
+                               content::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
-  browser::Navigate(&params);
+  chrome::Navigate(&params);
 }
 
 bool TaskManagerModel::GetAndCacheMemoryMetrics(base::ProcessHandle handle,

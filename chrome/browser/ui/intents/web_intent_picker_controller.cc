@@ -295,13 +295,12 @@ void WebIntentPickerController::OnServiceChosen(const GURL& url,
       // This call performs all the tab strip manipulation, notifications, etc.
       // Since we're passing in a target_contents, it assumes that we will
       // navigate the page ourselves, though.
-      browser::NavigateParams params(browser,
-                                     url,
-                                     content::PAGE_TRANSITION_AUTO_BOOKMARK);
+      chrome::NavigateParams params(browser, url,
+                                    content::PAGE_TRANSITION_AUTO_BOOKMARK);
       params.target_contents = contents;
       params.disposition = NEW_FOREGROUND_TAB;
       params.profile = tab_contents_->profile();
-      browser::Navigate(&params);
+      chrome::Navigate(&params);
 
       service_tab_->GetController().LoadURL(
           url, content::Referrer(),
@@ -343,10 +342,10 @@ void WebIntentPickerController::OnExtensionLinkClicked(const std::string& id) {
   Browser* browser =
       browser::FindBrowserWithWebContents(tab_contents_->web_contents());
   GURL extension_url(extension_urls::GetWebstoreItemDetailURLPrefix() + id);
-  browser::NavigateParams params(browser, extension_url,
-      content::PAGE_TRANSITION_AUTO_BOOKMARK);
+  chrome::NavigateParams params(browser, extension_url,
+                                content::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.disposition = NEW_FOREGROUND_TAB;
-  browser::Navigate(&params);
+  chrome::Navigate(&params);
 }
 
 void WebIntentPickerController::OnSuggestionsLinkClicked() {
@@ -356,10 +355,10 @@ void WebIntentPickerController::OnSuggestionsLinkClicked() {
   GURL query_url = extension_urls::GetWebstoreIntentQueryURL(
       UTF16ToUTF8(picker_model_->action()),
       UTF16ToUTF8(picker_model_->mimetype()));
-  browser::NavigateParams params(browser, query_url,
-                                 content::PAGE_TRANSITION_AUTO_BOOKMARK);
+  chrome::NavigateParams params(browser, query_url,
+                                content::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.disposition = NEW_FOREGROUND_TAB;
-  browser::Navigate(&params);
+  chrome::Navigate(&params);
 }
 
 void WebIntentPickerController::OnPickerClosed() {

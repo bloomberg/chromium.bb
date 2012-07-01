@@ -51,7 +51,7 @@ Browser* WebDialogWebContentsDelegate::StaticOpenURLFromTab(
   // Specify a NULL browser for navigation. This will cause Navigate()
   // to find a browser matching params.profile or create a new one.
   Browser* browser = NULL;
-  browser::NavigateParams nav_params(browser, params.url, params.transition);
+  chrome::NavigateParams nav_params(browser, params.url, params.transition);
   nav_params.profile = profile;
   nav_params.referrer = params.referrer;
   if (source && source->IsCrashed() &&
@@ -61,9 +61,9 @@ Browser* WebDialogWebContentsDelegate::StaticOpenURLFromTab(
   } else {
     nav_params.disposition = params.disposition;
   }
-  nav_params.window_action = browser::NavigateParams::SHOW_WINDOW;
+  nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   nav_params.user_gesture = true;
-  browser::Navigate(&nav_params);
+  chrome::Navigate(&nav_params);
   *out_new_contents = nav_params.target_contents ?
       nav_params.target_contents->web_contents() : NULL;
   return nav_params.browser;
@@ -93,15 +93,15 @@ Browser* WebDialogWebContentsDelegate::StaticAddNewContents(
   Browser* browser = NULL;
 
   TabContents* tab_contents = new TabContents(new_contents);
-  browser::NavigateParams params(browser, tab_contents);
+  chrome::NavigateParams params(browser, tab_contents);
   params.profile = profile;
   // TODO(pinkerton): no way to get a TabContents for this.
   // params.source_contents = source;
   params.disposition = disposition;
   params.window_bounds = initial_pos;
-  params.window_action = browser::NavigateParams::SHOW_WINDOW;
+  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   params.user_gesture = true;
-  browser::Navigate(&params);
+  chrome::Navigate(&params);
 
   return params.browser;
 }

@@ -19,26 +19,27 @@ class Browser;
 class Profile;
 class TabContents;
 
-namespace browser {
+namespace chrome {
 
 // Parameters that tell Navigate() what to do.
 //
 // Some basic examples:
 //
 // Simple Navigate to URL in current tab:
-// browser::NavigateParams params(browser, GURL("http://www.google.com/"),
-//                                PageTransition::LINK);
-// browser::Navigate(&params);
+// chrome::NavigateParams params(browser, GURL("http://www.google.com/"),
+//                               content::PAGE_TRANSITION_LINK);
+// chrome::Navigate(&params);
 //
 // Open bookmark in new background tab:
-// browser::NavigateParams params(browser, url, PageTransition::AUTO_BOOKMARK);
+// chrome::NavigateParams params(browser, url,
+//                               content::PAGE_TRANSITION_AUTO_BOOKMARK);
 // params.disposition = NEW_BACKGROUND_TAB;
-// browser::Navigate(&params);
+// chrome::Navigate(&params);
 //
 // Opens a popup TabContents:
-// browser::NavigateParams params(browser, popup_contents);
+// chrome::NavigateParams params(browser, popup_contents);
 // params.source_contents = source_contents;
-// browser::Navigate(&params);
+// chrome::Navigate(&params);
 //
 // See browser_navigator_browsertest.cc for more examples.
 //
@@ -92,8 +93,9 @@ struct NavigateParams {
   // |tabstrip_add_types|.
   WindowOpenDisposition disposition;
 
-  // The transition type of the navigation. Default is PageTransition::LINK
-  // when target_contents is specified in the constructor.
+  // The transition type of the navigation. Default is
+  // content::PAGE_TRANSITION_LINK when target_contents is specified in the
+  // constructor.
   content::PageTransition transition;
 
   // Whether this navigation was initiated by the renderer process.
@@ -197,6 +199,6 @@ void Navigate(NavigateParams* params);
 // Returns true if the url is allowed to open in incognito window.
 bool IsURLAllowedInIncognito(const GURL& url);
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_BROWSER_NAVIGATOR_H_

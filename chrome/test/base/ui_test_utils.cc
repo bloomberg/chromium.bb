@@ -405,10 +405,10 @@ void OpenURLOffTheRecord(Profile* profile, const GURL& url) {
                      1);
 }
 
-void NavigateToURL(browser::NavigateParams* params) {
+void NavigateToURL(chrome::NavigateParams* params) {
   content::TestNavigationObserver observer(
       content::NotificationService::AllSources(), NULL, 1);
-  browser::Navigate(params);
+  chrome::Navigate(params);
   base::RunLoop run_loop;
   observer.WaitForObservation(
       base::Bind(&ui_test_utils::RunThisRunLoop, base::Unretained(&run_loop)),

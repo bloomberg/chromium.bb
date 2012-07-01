@@ -81,10 +81,10 @@ void BrowserWithTestWindowTest::set_profile(TestingProfile* profile) {
 }
 
 void BrowserWithTestWindowTest::AddTab(Browser* browser, const GURL& url) {
-  browser::NavigateParams params(browser, url, content::PAGE_TRANSITION_TYPED);
+  chrome::NavigateParams params(browser, url, content::PAGE_TRANSITION_TYPED);
   params.tabstrip_index = 0;
   params.disposition = NEW_FOREGROUND_TAB;
-  browser::Navigate(&params);
+  chrome::Navigate(&params);
   CommitPendingLoad(&params.target_contents->web_contents()->GetController());
 }
 

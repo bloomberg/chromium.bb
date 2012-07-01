@@ -966,12 +966,12 @@ class SessionRestoreImpl : public content::NotificationObserver {
       if (i == 0)
         add_types |= TabStripModel::ADD_ACTIVE;
       int index = chrome::GetIndexForInsertionDuringRestore(browser, i);
-      browser::NavigateParams params(browser, urls[i],
-                                     content::PAGE_TRANSITION_START_PAGE);
+      chrome::NavigateParams params(browser, urls[i],
+                                    content::PAGE_TRANSITION_START_PAGE);
       params.disposition = i == 0 ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
       params.tabstrip_index = index;
       params.tabstrip_add_types = add_types;
-      browser::Navigate(&params);
+      chrome::Navigate(&params);
     }
   }
 

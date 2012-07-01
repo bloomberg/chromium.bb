@@ -191,12 +191,11 @@
 
   // Set how long it takes a tab to be created.
   base::TimeTicks newTabStartTime = base::TimeTicks::Now();
-  browser::NavigateParams params(browser_,
-                                 GURL(chrome::kChromeUINewTabURL),
-                                 content::PAGE_TRANSITION_TYPED);
+  chrome::NavigateParams params(browser_, GURL(chrome::kChromeUINewTabURL),
+                                content::PAGE_TRANSITION_TYPED);
   params.disposition = NEW_FOREGROUND_TAB;
   params.tabstrip_index = index;
-  browser::Navigate(&params);
+  chrome::Navigate(&params);
   params.target_contents->web_contents()->SetNewTabStartTime(
       newTabStartTime);
 

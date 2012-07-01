@@ -310,11 +310,11 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   OpenDialog(SelectFileDialog::SELECT_OPEN_FILE, FilePath(), owning_window, "");
 
   // Open a singleton tab in background.
-  browser::NavigateParams p(browser(), GURL("www.google.com"),
-                            content::PAGE_TRANSITION_LINK);
-  p.window_action = browser::NavigateParams::SHOW_WINDOW;
+  chrome::NavigateParams p(browser(), GURL("www.google.com"),
+                           content::PAGE_TRANSITION_LINK);
+  p.window_action = chrome::NavigateParams::SHOW_WINDOW;
   p.disposition = SINGLETON_TAB;
-  browser::Navigate(&p);
+  chrome::Navigate(&p);
 
   // Press cancel button.
   CloseDialog(DIALOG_BTN_CANCEL, owning_window);

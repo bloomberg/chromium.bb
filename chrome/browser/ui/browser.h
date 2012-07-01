@@ -432,7 +432,7 @@ class Browser : public TabStripModelDelegate,
                               int active_match_ordinal,
                               bool final_update);
 
-  // Called by browser::Navigate() when a navigation has occurred in a tab in
+  // Called by chrome::Navigate() when a navigation has occurred in a tab in
   // this Browser. Updates the UI for the start of this navigation.
   void UpdateUIForNavigationInTab(TabContents* contents,
                                   content::PageTransition transition,

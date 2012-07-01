@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/browser_navigator_browsertest.h"
 
 #include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 
@@ -43,12 +43,12 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
   EXPECT_EQ(1, incognito_browser->tab_count());
 
   // Navigate to the settings page.
-  browser::NavigateParams p(MakeNavigateParams(incognito_browser));
+  chrome::NavigateParams p(MakeNavigateParams(incognito_browser));
   p.disposition = SINGLETON_TAB;
   p.url = GURL("chrome://chrome/settings");
-  p.window_action = browser::NavigateParams::SHOW_WINDOW;
-  p.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
-  browser::Navigate(&p);
+  p.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  p.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
+  chrome::Navigate(&p);
 
   // Settings page should be opened in incognito window.
   EXPECT_NE(browser(), p.browser);

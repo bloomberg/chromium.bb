@@ -72,12 +72,12 @@ class ErrorInfobarDelegate : public ConfirmInfoBarDelegate {
   }
 
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE {
-    browser::NavigateParams params(
+    chrome::NavigateParams params(
         browser_,
         GURL("http://support.google.com/chrome_webstore/?p=crx_warning"),
         content::PAGE_TRANSITION_LINK);
     params.disposition = NEW_FOREGROUND_TAB;
-    browser::Navigate(&params);
+    chrome::Navigate(&params);
     return false;
   }
 
@@ -234,9 +234,9 @@ ExtensionInstallUI* ExtensionInstallUI::Create(Browser* browser) {
 void ExtensionInstallUI::OpenAppInstalledUI(Browser* browser,
                                             const std::string& app_id) {
   if (NewTabUI::ShouldShowApps()) {
-    browser::NavigateParams params = chrome::GetSingletonTabNavigateParams(
-        browser, GURL(chrome::kChromeUINewTabURL));
-    browser::Navigate(&params);
+    chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
+        browser, GURL(chrome::kChromeUINewTabURL)));
+    chrome::Navigate(&params);
 
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,

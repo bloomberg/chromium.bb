@@ -12,7 +12,7 @@
 class Profile;
 class TabContents;
 
-namespace browser {
+namespace chrome {
 struct NavigateParams;
 }
 
@@ -22,8 +22,8 @@ struct NavigateParams;
 class BrowserNavigatorTest : public InProcessBrowserTest,
                              public content::NotificationObserver {
  protected:
-  browser::NavigateParams MakeNavigateParams() const;
-  browser::NavigateParams MakeNavigateParams(Browser* browser) const;
+  chrome::NavigateParams MakeNavigateParams() const;
+  chrome::NavigateParams MakeNavigateParams(Browser* browser) const;
 
   Browser* CreateEmptyBrowserForType(Browser::Type type, Profile* profile);
   Browser* CreateEmptyBrowserForApp(Browser::Type type, Profile* profile);

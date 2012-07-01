@@ -20,9 +20,9 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/test/automation/dom_element_proxy.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -54,7 +54,7 @@ class SkBitmap;
 class TabContents;
 class TemplateURLService;
 
-namespace browser {
+namespace chrome {
 struct NavigateParams;
 }
 
@@ -131,11 +131,11 @@ void OpenURLOffTheRecord(Profile* profile, const GURL& url);
 
 // Performs the provided navigation process, blocking until the navigation
 // finishes. May change the params in some cases (i.e. if the navigation
-// opens a new browser window). Uses browser::Navigate.
-void NavigateToURL(browser::NavigateParams* params);
+// opens a new browser window). Uses chrome::Navigate.
+void NavigateToURL(chrome::NavigateParams* params);
 
 // Navigates the selected tab of |browser| to |url|, blocking until the
-// navigation finishes. Uses Browser::OpenURL --> browser::Navigate.
+// navigation finishes. Uses Browser::OpenURL --> chrome::Navigate.
 void NavigateToURL(Browser* browser, const GURL& url);
 
 // Navigates the specified tab of |browser| to |url|, blocking until the

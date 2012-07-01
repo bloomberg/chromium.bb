@@ -25,8 +25,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -1846,13 +1846,13 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, DISABLED_TwoWindows) {
   MultiNavigationObserver navigation_observer;
 
   // Navigate the tab in the inactive browser to an SSL timeout.  Have to use
-  // browser::NavigateParams and NEW_BACKGROUND_TAB to avoid activating the
+  // chrome::NavigateParams and NEW_BACKGROUND_TAB to avoid activating the
   // window.
-  browser::NavigateParams params(inactive_browser,
-                                 GURL(kMockHttpsQuickTimeoutUrl),
-                                 content::PAGE_TRANSITION_TYPED);
+  chrome::NavigateParams params(inactive_browser,
+                                GURL(kMockHttpsQuickTimeoutUrl),
+                                content::PAGE_TRANSITION_TYPED);
   params.disposition = NEW_BACKGROUND_TAB;
-  params.window_action = browser::NavigateParams::NO_ACTION;
+  params.window_action = chrome::NavigateParams::NO_ACTION;
   ui_test_utils::NavigateToURL(&params);
   navigation_observer.WaitForNavigations(2);
 

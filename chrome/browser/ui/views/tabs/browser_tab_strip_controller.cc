@@ -318,8 +318,7 @@ void BrowserTabStripController::OnDropIndexUpdate(int index,
 void BrowserTabStripController::PerformDrop(bool drop_before,
                                             int index,
                                             const GURL& url) {
-  browser::NavigateParams params(
-      browser_, url, content::PAGE_TRANSITION_LINK);
+  chrome::NavigateParams params(browser_, url, content::PAGE_TRANSITION_LINK);
   params.tabstrip_index = index;
 
   if (drop_before) {
@@ -330,8 +329,8 @@ void BrowserTabStripController::PerformDrop(bool drop_before,
     params.disposition = CURRENT_TAB;
     params.source_contents = model_->GetTabContentsAt(index);
   }
-  params.window_action = browser::NavigateParams::SHOW_WINDOW;
-  browser::Navigate(&params);
+  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  chrome::Navigate(&params);
 }
 
 bool BrowserTabStripController::IsCompatibleWith(TabStrip* other) const {

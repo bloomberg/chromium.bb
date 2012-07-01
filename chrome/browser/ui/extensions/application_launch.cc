@@ -13,12 +13,12 @@
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/platform_app_launcher.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
@@ -298,8 +298,8 @@ WebContents* OpenApplicationTab(Profile* profile,
   GURL extension_url = UrlForExtension(extension, override_url);
   // TODO(erikkay): START_PAGE doesn't seem like the right transition in all
   // cases.
-  browser::NavigateParams params(browser, extension_url,
-                                 content::PAGE_TRANSITION_START_PAGE);
+  chrome::NavigateParams params(browser, extension_url,
+                                content::PAGE_TRANSITION_START_PAGE);
   params.tabstrip_add_types = add_type;
   params.disposition = disposition;
 
@@ -325,7 +325,7 @@ WebContents* OpenApplicationTab(Profile* profile,
 
     contents = existing_tab;
   } else {
-    browser::Navigate(&params);
+    chrome::Navigate(&params);
     contents = params.target_contents->web_contents();
   }
 

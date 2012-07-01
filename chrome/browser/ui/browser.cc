@@ -1028,11 +1028,11 @@ TabContents* Browser::AddBlankTabAt(int index, bool foreground) {
   // WebContents, but we want to include the time it takes to create the
   // WebContents object too.
   base::TimeTicks new_tab_start_time = base::TimeTicks::Now();
-  browser::NavigateParams params(this, GURL(chrome::kChromeUINewTabURL),
-                                 content::PAGE_TRANSITION_TYPED);
+  chrome::NavigateParams params(this, GURL(chrome::kChromeUINewTabURL),
+                                content::PAGE_TRANSITION_TYPED);
   params.disposition = foreground ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
   params.tabstrip_index = index;
-  browser::Navigate(&params);
+  chrome::Navigate(&params);
   params.target_contents->web_contents()->SetNewTabStartTime(
       new_tab_start_time);
   return params.target_contents;
@@ -1469,19 +1469,19 @@ BrowserWindow* Browser::CreateBrowserWindow() {
 
 WebContents* Browser::OpenURLFromTab(WebContents* source,
                                      const OpenURLParams& params) {
-  browser::NavigateParams nav_params(this, params.url, params.transition);
+  chrome::NavigateParams nav_params(this, params.url, params.transition);
   nav_params.source_contents = chrome::GetTabContentsAt(this,
       tab_strip_model_->GetIndexOfWebContents(source));
   nav_params.referrer = params.referrer;
   nav_params.disposition = params.disposition;
   nav_params.tabstrip_add_types = TabStripModel::ADD_NONE;
-  nav_params.window_action = browser::NavigateParams::SHOW_WINDOW;
+  nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   nav_params.user_gesture = true;
   nav_params.override_encoding = params.override_encoding;
   nav_params.is_renderer_initiated = params.is_renderer_initiated;
   nav_params.transferred_global_request_id =
       params.transferred_global_request_id;
-  browser::Navigate(&nav_params);
+  chrome::Navigate(&nav_params);
 
   return nav_params.target_contents ?
       nav_params.target_contents->web_contents() : NULL;

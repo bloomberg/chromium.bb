@@ -643,9 +643,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestBadHTTPSDownload) {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    browser::NavigateParams navigate_params(browser(), url_dangerous,
-                                            content::PAGE_TRANSITION_TYPED);
-    browser::Navigate(&navigate_params);
+    chrome::NavigateParams navigate_params(browser(), url_dangerous,
+                                           content::PAGE_TRANSITION_TYPED);
+    chrome::Navigate(&navigate_params);
     observer.Wait();
   }
 
@@ -802,15 +802,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContentTwoTabs) {
       &replacement_path));
 
   GURL url = https_server_.GetURL(replacement_path);
-  browser::NavigateParams params(
-      browser(), url, content::PAGE_TRANSITION_TYPED);
+  chrome::NavigateParams params(browser(), url, content::PAGE_TRANSITION_TYPED);
   params.disposition = NEW_FOREGROUND_TAB;
   params.tabstrip_index = 0;
   params.source_contents = tab1;
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  browser::Navigate(&params);
+  chrome::Navigate(&params);
   TabContents* tab2 = params.target_contents;
   observer.Wait();
 
@@ -846,14 +845,13 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecureContentTwoTabs) {
   // disposition won't usually stay in the same process, but this works
   // because we are using process-per-site in SetUpCommandLine.
   GURL url = https_server_.GetURL(replacement_path);
-  browser::NavigateParams params(
-      browser(), url, content::PAGE_TRANSITION_TYPED);
+  chrome::NavigateParams params(browser(), url, content::PAGE_TRANSITION_TYPED);
   params.disposition = NEW_FOREGROUND_TAB;
   params.source_contents = tab1;
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  browser::Navigate(&params);
+  chrome::Navigate(&params);
   TabContents* tab2 = params.target_contents;
   observer.Wait();
 

@@ -593,7 +593,7 @@ void ExtensionHost::AddNewContents(WebContents* source,
   Browser* browser = browser::FindTabbedBrowser(
       profile, false);  // Match incognito exactly.
   TabContents* tab_contents = new TabContents(new_contents);
-  browser::NavigateParams params(browser, tab_contents);
+  chrome::NavigateParams params(browser, tab_contents);
 
   // The extension_app_id parameter ends up as app_name in the Browser
   // which causes the Browser to return true for is_app().  This affects
@@ -607,9 +607,9 @@ void ExtensionHost::AddNewContents(WebContents* source,
     params.profile = profile;
   params.disposition = disposition;
   params.window_bounds = initial_pos;
-  params.window_action = browser::NavigateParams::SHOW_WINDOW;
+  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   params.user_gesture = user_gesture;
-  browser::Navigate(&params);
+  chrome::Navigate(&params);
 }
 
 void ExtensionHost::RenderViewReady() {
