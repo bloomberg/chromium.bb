@@ -52,7 +52,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
                                 size_t index) OVERRIDE;
   virtual void OnExtensionIconChanged(WebIntentPickerModel* model,
                                       const string16& extension_id) OVERRIDE;
-  virtual void OnInlineDisposition(WebIntentPickerModel* model,
+  virtual void OnInlineDisposition(const string16& title,
                                    const GURL& url) OVERRIDE;
   virtual void OnInlineDispositionAutoResize(const gfx::Size& size) OVERRIDE;
 

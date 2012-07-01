@@ -30,6 +30,13 @@ WebIntentPickerModel::~WebIntentPickerModel() {
 void WebIntentPickerModel::AddInstalledService(const string16& title,
                                                const GURL& url,
                                                Disposition disposition) {
+  // TODO(groby): Revisit to remove O(n^2) complexity.
+  for (size_t i = 0; i < installed_services_.size(); ++i) {
+    InstalledService* service = installed_services_[i];
+    if (service->title == title && service->url == url &&
+        service->disposition == disposition)
+      return;
+  }
   installed_services_.push_back(new InstalledService(title, url, disposition));
   if (observer_)
     observer_->OnModelChanged(this);
@@ -126,8 +133,11 @@ void WebIntentPickerModel::SetSuggestedExtensionIconWithId(
 
 void WebIntentPickerModel::SetInlineDisposition(const GURL& url) {
   inline_disposition_url_ = url;
-  if (observer_)
-    observer_->OnInlineDisposition(this, url);
+  if (observer_) {
+    const InstalledService* service = GetInstalledServiceWithURL(url);
+    DCHECK(service);
+    observer_->OnInlineDisposition(service->title, url);
+  }
 }
 
 bool WebIntentPickerModel::IsInlineDisposition() const {

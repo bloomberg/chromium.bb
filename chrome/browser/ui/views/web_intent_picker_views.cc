@@ -698,7 +698,7 @@ class WebIntentPickerViews : public views::ButtonListener,
                                 size_t index) OVERRIDE;
   virtual void OnExtensionIconChanged(WebIntentPickerModel* model,
                                       const string16& extension_id) OVERRIDE;
-  virtual void OnInlineDisposition(WebIntentPickerModel* model,
+  virtual void OnInlineDisposition(const string16& title,
                                    const GURL& url) OVERRIDE;
 
   // ServiceButtonsView::Delegate implementation.
@@ -991,7 +991,7 @@ void WebIntentPickerViews::OnExtensionIconChanged(
 }
 
 void WebIntentPickerViews::OnInlineDisposition(
-    WebIntentPickerModel* model, const GURL& url) {
+    const string16&, const GURL& url) {
   if (!webview_)
     webview_ = new views::WebView(tab_contents_->profile());
 
@@ -1006,10 +1006,6 @@ void WebIntentPickerViews::OnInlineDisposition(
       new WebIntentInlineDispositionDelegate(this, inline_web_contents_.get(),
                                              tab_contents_->profile()));
   content::WebContents* web_contents = webview_->GetWebContents();
-
-  const WebIntentPickerModel::InstalledService* service =
-      model->GetInstalledServiceWithURL(url);
-  DCHECK(service);
 
   // Must call this immediately after WebContents creation to avoid race
   // with load.

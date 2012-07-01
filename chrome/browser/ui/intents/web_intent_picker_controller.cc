@@ -688,6 +688,9 @@ void WebIntentPickerController::OnExtensionInstallServiceAvailable(
   // TODO(binji): We're going to need to disambiguate if there are multiple
   // services. For now, just choose the first.
   const webkit_glue::WebIntentServiceData& service_data = services[0];
+  picker_model_->AddInstalledService(
+      service_data.title, service_data.service_url,
+      ConvertDisposition(service_data.disposition));
   OnServiceChosen(
       service_data.service_url,
       ConvertDisposition(service_data.disposition));

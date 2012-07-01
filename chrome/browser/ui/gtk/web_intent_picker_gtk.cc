@@ -220,12 +220,8 @@ void WebIntentPickerGtk::OnExtensionIconChanged(WebIntentPickerModel* model,
   UpdateSuggestedExtensions();
 }
 
-void WebIntentPickerGtk::OnInlineDisposition(WebIntentPickerModel* model,
+void WebIntentPickerGtk::OnInlineDisposition(const string16& title,
                                              const GURL& url) {
-  const WebIntentPickerModel::InstalledService* service =
-      model->GetInstalledServiceWithURL(model->inline_disposition_url());
-  DCHECK(service);
-
   content::WebContents* web_contents = content::WebContents::Create(
       tab_contents_->profile(),
       tab_util::GetSiteInstanceForNewTab(tab_contents_->profile(), url),
@@ -257,7 +253,7 @@ void WebIntentPickerGtk::OnInlineDisposition(WebIntentPickerModel* model,
 
   // Intent action label.
   GtkWidget* action_label = theme_service->BuildLabel(
-      UTF16ToUTF8(service->title), ui::kGdkBlack);
+      UTF16ToUTF8(title), ui::kGdkBlack);
   gtk_util::ForceFontSizePixels(action_label, kMainContentPixelSize);
 
   GtkWidget* label_alignment = gtk_alignment_new(0, 0.5f, 0, 0);

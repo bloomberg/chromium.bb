@@ -136,7 +136,7 @@ class WebIntentPickerMock : public WebIntentPicker,
     num_extension_icons_changed_++;
   }
   virtual void OnInlineDisposition(
-      WebIntentPickerModel* model, const GURL& url) OVERRIDE {
+      const string16& title, const GURL& url) OVERRIDE {
     num_inline_disposition_++;
   }
 
@@ -461,6 +461,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   IntentsDispatcherMock dispatcher(intent);
   controller_->SetIntentsDispatcher(&dispatcher);
 
+  ASSERT_EQ(1, browser()->tab_count());
   OnExtensionInstallRequested(extension_id);
   picker_.Wait();
   EXPECT_EQ(1, picker_.num_extensions_installed_);
@@ -470,7 +471,37 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
 
   // Installing an extension should also choose it. Since this extension uses
   // window disposition, it will create a new tab.
-  ASSERT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(0, picker_.num_inline_disposition_);
+}
+
+// Tests that inline install of an extension using inline disposition works
+// and brings up content as inline content.
+IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
+                       ExtensionInstallSuccessInline) {
+  const char extension_id[] = "nnhendkbgefomfgdlnmfhhmihihlljpi";
+  AddCWSExtensionServiceWithResult(extension_id, kAction1, kType2);
+
+  controller_->ShowDialog(kAction1, kType2);
+  picker_.Wait();
+
+  webkit_glue::WebIntentData intent;
+  intent.action = kAction1;
+  intent.type = kType2;
+  IntentsDispatcherMock dispatcher(intent);
+  controller_->SetIntentsDispatcher(&dispatcher);
+
+  OnExtensionInstallRequested(extension_id);
+  picker_.Wait();
+  EXPECT_EQ(1, picker_.num_extensions_installed_);
+  const extensions::Extension* extension = browser()->profile()->
+      GetExtensionService()->GetExtensionById(extension_id, false);
+  EXPECT_TRUE(extension);
+
+  // Installing an extension should also choose it. Since this extension uses
+  // inline disposition, it will create no tabs and invoke OnInlineDisposition.
+  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, picker_.num_inline_disposition_);
 }
 
 // Test that an explicit intent does not trigger loading intents from the

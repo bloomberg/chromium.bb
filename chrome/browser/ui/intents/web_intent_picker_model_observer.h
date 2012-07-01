@@ -27,7 +27,7 @@ class WebIntentPickerModelObserver {
                                       const string16& extension_id) = 0;
 
   // Called when the inline disposition should be displayed for |model|.
-  virtual void OnInlineDisposition(WebIntentPickerModel* model,
+  virtual void OnInlineDisposition(const string16& title,
                                    const GURL& url) = 0;
 };
 

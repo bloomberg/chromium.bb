@@ -36,7 +36,7 @@ class WebIntentPickerModelObserverMock : public WebIntentPickerModelObserver {
   MOCK_METHOD2(OnExtensionIconChanged,
                void(WebIntentPickerModel* model, const string16& extension_id));
   MOCK_METHOD2(OnInlineDisposition,
-               void(WebIntentPickerModel* model, const GURL& url));
+               void(const string16& title, const GURL& url));
 };
 
 class WebIntentPickerModelTest : public testing::Test {
@@ -64,6 +64,28 @@ TEST_F(WebIntentPickerModelTest, AddInstalledService) {
   EXPECT_EQ(kUrl1, model_.GetInstalledServiceAt(0).url);
   EXPECT_EQ(kUrl2, model_.GetInstalledServiceAt(1).url);
 }
+
+// Test that AddInstalledServices() is idempotent.
+TEST_F(WebIntentPickerModelTest, AddInstalledServiceIsIdempotent) {
+  EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(2);
+
+  EXPECT_EQ(0U, model_.GetInstalledServiceCount());
+
+  model_.AddInstalledService(kTitle1, kUrl1, kWindowDisposition);
+  model_.AddInstalledService(kTitle2, kUrl2, kWindowDisposition);
+
+  EXPECT_EQ(2U, model_.GetInstalledServiceCount());
+  EXPECT_EQ(kUrl1, model_.GetInstalledServiceAt(0).url);
+  EXPECT_EQ(kUrl2, model_.GetInstalledServiceAt(1).url);
+
+  model_.AddInstalledService(kTitle2, kUrl2, kWindowDisposition);
+  model_.AddInstalledService(kTitle1, kUrl1, kWindowDisposition);
+
+  EXPECT_EQ(2U, model_.GetInstalledServiceCount());
+  EXPECT_EQ(kUrl1, model_.GetInstalledServiceAt(0).url);
+  EXPECT_EQ(kUrl2, model_.GetInstalledServiceAt(1).url);
+}
+
 
 TEST_F(WebIntentPickerModelTest, RemoveInstalledServiceAt) {
   EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(4);
@@ -166,7 +188,7 @@ TEST_F(WebIntentPickerModelTest, SetSuggestedExtensionIconWithId) {
 
 TEST_F(WebIntentPickerModelTest, SetInlineDisposition) {
   EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(3);
-  EXPECT_CALL(observer_, OnInlineDisposition(&model_, testing::_)).Times(1);
+  EXPECT_CALL(observer_, OnInlineDisposition(kTitle2, testing::_)).Times(1);
 
   EXPECT_FALSE(model_.IsInlineDisposition());
   EXPECT_EQ(GURL::EmptyGURL(), model_.inline_disposition_url());
