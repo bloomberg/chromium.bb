@@ -72,14 +72,15 @@ class Gdb(object):
     self._gdb.wait()
     self._log.close()
 
-  def SendRequest(self, request):
+  def _SendRequest(self, request):
+    self._log.write('(gdb) ')
     self._log.write(request)
     self._log.write('\n')
     self._gdb.stdin.write(request)
     self._gdb.stdin.write('\n')
-    return self.GetResponse()
+    return self._GetResponse()
 
-  def GetResponse(self):
+  def _GetResponse(self):
     results = []
     while True:
       line = self._gdb.stdout.readline().rstrip()
@@ -91,39 +92,50 @@ class Gdb(object):
         return results
       results.append(line)
 
-  def GetResultClass(self, result):
+  def _GetResultClass(self, result):
     for line in result:
       if line.startswith('^'):
         return line[1:].split(',', 1)[0]
 
-  def GetAsyncStatus(self, result):
-    for line in result:
+  def _GetLastAsyncStatus(self, result):
+    for line in reversed(result):
       if line.startswith('*'):
         return line[1:].split(',', 1)[0]
 
-  def GetExpressionResult(self, expression):
-    result = self.SendRequest('-data-evaluate-expression ' + expression)
+  def Command(self, command):
+    res = self._SendRequest(command)
+    assert self._GetResultClass(res) == 'done'
+    return res
+
+  def ResumeCommand(self, command):
+    res = self._SendRequest(command)
+    assert self._GetResultClass(res) == 'running'
+    res = self._GetResponse()
+    assert self._GetLastAsyncStatus(res) == 'stopped'
+    return res
+
+  def Quit(self):
+    res = self._SendRequest('-gdb-exit')
+    assert self._GetResultClass(res) == 'exit'
+
+  def Eval(self, expression):
+    result = self.Command('-data-evaluate-expression ' + expression)
     assert len(result) == 1, result
     value = RemovePrefix('^done,value="', result[0])
     assert value.endswith('"')
     return value[:-1]
 
   def Connect(self, program):
-    self.GetResponse()
+    self._GetResponse()
     if os.environ.has_key('NACL_LD_SO'):
-      result = self.SendRequest('file ' + os.environ['NACL_LD_SO'])
-      assert self.GetResultClass(result) == 'done'
+      self.Command('file ' + os.environ['NACL_LD_SO'])
       manifest_file = GenerateManifest(program, os.environ['NACL_LD_SO'],
                                        self._name)
-      result = self.SendRequest('nacl-manifest ' + manifest_file)
-      assert self.GetResultClass(result) == 'done'
-      result = self.SendRequest('set breakpoint pending on')
-      assert self.GetResultClass(result) == 'done'
+      self.Command('nacl-manifest ' + manifest_file)
+      self.Command('set breakpoint pending on')
     else:
-      file_result = self.SendRequest('file ' + program)
-      assert self.GetResultClass(file_result) == 'done'
-    target_result = self.SendRequest('target remote :4014')
-    assert self.GetResultClass(target_result) == 'done'
+      self.Command('file ' + program)
+    self.Command('target remote :4014')
 
 
 def RunTest(test_func, test_name, program):

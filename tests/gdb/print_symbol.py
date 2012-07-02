@@ -6,18 +6,15 @@
 import gdb_test
 import os
 
-
 def test(gdb):
-  assert gdb.GetResultClass(gdb.SendRequest('break set_global_var')) == 'done'
-  assert gdb.GetResultClass(gdb.SendRequest('continue')) == 'running'
-  assert gdb.GetAsyncStatus(gdb.GetResponse()) == 'stopped'
-  assert gdb.GetExpressionResult('global_var') == '2'
-  assert gdb.GetExpressionResult('arg') == '1'
-  assert gdb.GetResultClass(gdb.SendRequest('finish')) == 'running'
-  assert gdb.GetAsyncStatus(gdb.GetResponse()) == 'stopped'
-  assert gdb.GetExpressionResult('global_var') == '1'
-  assert gdb.GetExpressionResult('local_var') == '3'
-  gdb.SendRequest('quit')
+  gdb.Command('break set_global_var')
+  gdb.ResumeCommand('continue')
+  assert gdb.Eval('global_var') == '2'
+  assert gdb.Eval('arg') == '1'
+  gdb.ResumeCommand('finish')
+  assert gdb.Eval('global_var') == '1'
+  assert gdb.Eval('local_var') == '3'
+  gdb.Quit()
 
 
 if __name__ == '__main__':

@@ -8,14 +8,12 @@ import os
 
 
 def test(gdb):
-  assert gdb.GetResultClass(gdb.SendRequest('break main')) == 'done'
-  assert gdb.GetResultClass(gdb.SendRequest('continue')) == 'running'
-  assert gdb.GetAsyncStatus(gdb.GetResponse()) != 'exit'
-  assert gdb.GetResultClass(gdb.SendRequest('stepi')) == 'running'
-  assert gdb.GetAsyncStatus(gdb.GetResponse()) != 'exit'
-  gdb.SendRequest('quit')
-
+  gdb.Command('break main')
+  gdb.ResumeCommand('continue')
+  gdb.ResumeCommand('stepi')
+  gdb.Quit()
   return 0
 
 if __name__ == '__main__':
   gdb_test.RunTest(test, 'stepi_after_break', os.environ['GDB_TEST_GUEST'])
+
