@@ -1353,13 +1353,6 @@ name=http://crbug.com/125807
 *!TransportSecurityPersisterTest::TransportSecurityPersisterTest
 
 LEAK
-name=http://crbug.com/135501
-*!operator new
-*!remoting::protocol::CandidateSessionConfig::CreateEmpty
-...
-*!remoting::ChromotingHostTest_IncomingSession*_Test::TestBody
-
-LEAK
 name=http://crbug.com/135504
 *!generic_cpp_alloc
 *!operator new
