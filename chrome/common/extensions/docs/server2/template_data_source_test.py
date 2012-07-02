@@ -50,7 +50,7 @@ class TemplateDataSourceTest(unittest.TestCase):
     cache_builder = FetcherCache.Builder(fetcher, 0)
     t_data_source = TemplateDataSource('fake_branch', cache_builder, ['./'])
 
-    self.assertEqual(self._ReadLocalFile('test.html'),
+    self.assertEqual(self._ReadLocalFile('test_expected.html'),
         t_data_source['test_tmpl'].render(
             json.loads(self._ReadLocalFile('input.json')), t_data_source).text)
 

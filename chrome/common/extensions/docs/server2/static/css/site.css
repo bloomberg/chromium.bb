@@ -255,7 +255,7 @@ span.displayModeWarning {
   margin: 0 0 0 0;
 }
 
-#type_name {
+.type_name {
   font-style: italic;
 }
 
