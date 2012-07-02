@@ -49,6 +49,10 @@
         'input_method_ibus.cc',
         'input_method_ibus.h',
       ],
+    }, {
+      'dependencies': [
+        '<(DEPTH)/chromeos/chromeos.gyp:chromeos',
+      ],
     }],
   ],
 }
