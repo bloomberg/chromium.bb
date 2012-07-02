@@ -324,9 +324,9 @@ class NaClSDKTest(pyauto.PyUITest):
           'mousedown', true, true, document,
           1, 32, 121, 10, 100,
           false, false, false, false,
-          2, document.getElementById('event_module')
+          2, common.naclModule
         );
-        document.getElementById('event_module').dispatchEvent(rightClick);
+        common.naclModule.dispatchEvent(rightClick);
         window.domAutomationController.send('done');
     """
     return js_code
@@ -494,7 +494,7 @@ class NaClSDKTest(pyauto.PyUITest):
 
     # Check if connected
     success = self._VerifyElementPresent('log', 'connected', tab_index,
-        msg='Example %s failed. URL: %s' % (name, url), attribute='value')
+        msg='Example %s failed. URL: %s' % (name, url))
 
     # Simulate clicking on Send button to send text message in log.
     js_code = """
@@ -504,7 +504,7 @@ class NaClSDKTest(pyauto.PyUITest):
     self.ExecuteJavascript(js_code, tab_index)
     success = self.WaitUntil(
         lambda: bool(re.search('send:', self.GetDOMValue(
-            'document.getElementById("log").value', tab_index))))
+            'document.getElementById("log").textContent', tab_index))))
     self.assertTrue(success, msg='Example %s failed. URL: %s' % (name, url))
 
   def _VerifyDynamicLibraryOpen(self, tab_index, name, url):
@@ -516,19 +516,19 @@ class NaClSDKTest(pyauto.PyUITest):
       url: A string url of the example.
     """
     # Check if example is loaded.
-    success = self._VerifyElementPresent('answerlog', 'Eightball loaded!',
+    success = self._VerifyElementPresent('log', 'Eightball loaded!',
         tab_index, msg='Example %s failed. URL: %s' % (name, url))
 
     # Simulate clicking on ASK button and check answer log for desired answer.
     js_code = """
-      document.getElementById('button').click();
+      document.getElementsByTagName('input')[1].click();
       window.domAutomationController.send('done');
     """
     self.ExecuteJavascript(js_code, tab_index)
     def _CheckAnswerLog():
       return bool(re.search(r'NO|YES|42|MAYBE NOT|DEFINITELY|'
         'ASK ME TOMORROW|MAYBE|PARTLY CLOUDY',
-        self.GetDOMValue('document.getElementById("answerlog").innerHTML',
+        self.GetDOMValue('document.getElementById("log").innerHTML',
         tab_index)))
 
     success = self.WaitUntil(_CheckAnswerLog)
@@ -545,7 +545,7 @@ class NaClSDKTest(pyauto.PyUITest):
     # Check if example loads and displays loading progress.
     success = self.WaitUntil(
         lambda: self.GetDOMValue(
-        'document.getElementById("status_field").innerHTML', tab_index),
+        'document.getElementById("statusField").innerHTML', tab_index),
         timeout=150, expect_retval='SUCCESS')
     self.assertTrue(success, msg='Example %s failed. URL: %s' % (name, url))
 
@@ -553,7 +553,7 @@ class NaClSDKTest(pyauto.PyUITest):
       return re.search(
           r'(loadstart).+(progress:).+(load).+(loadend).+(lastError:)',
           self.GetDOMValue(
-          'document.getElementById("event_log_field").innerHTML', tab_index))
+          'document.getElementById("log").innerHTML', tab_index))
     success = self.WaitUntil(_CheckLoadProgressStatus)
     self.assertTrue(success, msg='Example %s failed. URL: %s' % (name, url))
 
@@ -566,7 +566,8 @@ class NaClSDKTest(pyauto.PyUITest):
       url: A string url of the example.
     """
     success = self.WaitUntil(
-        lambda: self.GetDOMValue('document.form.pi.value', tab_index)[0:3],
+        lambda: self.GetDOMValue('document.getElementById("pi").value',
+            tab_index)[0:3],
         expect_retval='3.1')
     self.assertTrue(success, msg='Example %s failed. URL: %s' % (name, url))
 
@@ -602,7 +603,7 @@ class NaClSDKTest(pyauto.PyUITest):
                     tab_index), timeout=150, expect_retval='SUCCESS')
     self.assertTrue(success, msg='Example %s failed. URL: %s' % (name, url))
     self.ExecuteJavascript(
-        'document.geturl_form.elements[0].click();'
+        'document.getElementById("button").click();'
         'window.domAutomationController.send("done")',
         tab_index)
     success = self._VerifyElementPresent('general_output', 'test passed',
