@@ -148,7 +148,7 @@
       # crbug.com/124913
       '-infobars.OneClickInfobarTest.testNoSameIDSigninForTwoProfiles',
       # crbug.com/124280
-      '-downloads.DownloadsTest.testCancelDownload',
+      '-downloads.DownloadsTest.testPauseAndResume',
     ],
 
     'win': [
