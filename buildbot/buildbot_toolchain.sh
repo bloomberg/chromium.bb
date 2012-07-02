@@ -43,6 +43,10 @@ fi
 echo @@@BUILD_STEP compile_toolchain@@@
 mkdir -p ../toolchain/${PLATFORM}_x86
 make -j8 clean buildbot-build-with-newlib
+../mingw/msys/bin/sh.exe -c "export PATH=/mingw/bin:/bin:\$PATH &&
+  export TOOLCHAINLOC=toolchain &&
+  export TOOLCHAINNAME=win_x86 &&
+  make -j8 gdb 2>&1"
 
 echo @@@BUILD_STEP canonicalize timestamps@@@
 ./canonicalize_timestamps.sh sdk

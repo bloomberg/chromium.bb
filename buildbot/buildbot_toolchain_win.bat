@@ -5,6 +5,8 @@
 setlocal
 rmdir /s /q %~dp0..\tools\sdk
 call "%~dp0cygwin_env.bat"
+call "%~dp0mingw_env.bat"
+dos2unix buildbot/buildbot_toolchain.sh
 bash -c "buildbot/buildbot_toolchain.sh win"
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 endlocal
