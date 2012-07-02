@@ -378,6 +378,7 @@ TEST_F(InputMethodIBusTest, InitiallyDisconnected) {
 // Confirm that ui::InputMethodIBus does not crash on "disconnected" signal
 // delivery.
 TEST_F(InputMethodIBusTest, Disconnect) {
+  SetCreateContextSuccessHandler();
   chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address");
   ime_->Init(true);
   EXPECT_EQ(1, mock_ibus_client_->create_input_context_call_count());
