@@ -16,7 +16,7 @@ vars = {
 
 deps = {
     'src/breakpad/src':
-        Var('git_url') + '/external/google-breakpad/src.git@ae15c8e2d8ac41b62b24cf62f04076473df3950c',
+        Var('git_url') + '/external/google-breakpad/src.git@6e0d2171c750138930fb200e6d75c9d13290667c',
     'src/chrome/browser/resources/software_rendering_list':
         Var('git_url') + '/chromium/deps/gpu/software_rendering_list.git@9a471ece0ce2353c4a2728eb96e080e5894939aa',
     'src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin':
