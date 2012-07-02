@@ -48,13 +48,23 @@ class DecoderTester {
   DecoderTester();
   virtual ~DecoderTester() {}
 
-  // Once an instruction is decoded, this method is called to apply
-  // sanity checks on the matched decoder. The default checks that the
-  // expected class name matches the name of the decoder, and that the
-  // safety level is MAY_BE_SAFE. Returns whether further checking of
-  // the instruction should be performed. In particular, false is returned
-  // if there is some unencoded assumption that isn't put into the
-  // test patterns, and hence, should not be checked.
+  // Runs any parse preconditions that should be applied to the test
+  // pattern to determine if the pattern should be tested. This
+  // virtual allows a hook to special case out what can't be described
+  // using a single pattern string. Returns true if all preconditions
+  // are met. Otherwise returns false. The default implementation
+  // always returns true.
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+  // Once an instruction is decoded, and the test pattern passes parse
+  // preconditions, this method is called to apply sanity checks on
+  // the matched decoder. The default checks that the expected class
+  // name matches the name of the decoder. Returns whether further
+  // checking of the instruction should be performed. In particular,
+  // false is returned if a major problem was found, which will likely
+  // cause other sanity checks to (possibly incorrectly) fail.
   virtual bool ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -68,6 +78,11 @@ class DecoderTester {
   // Allows the injection of an instruction. Used one to inject the instruction
   // that the subsequent call ProcessMatch will use.
   virtual void InjectInstruction(nacl_arm_dec::Instruction inst) = 0;
+
+  // Runs the decoder on the current instruction and returns the
+  // corresponding named decoder, as selected by the corresponding
+  // decoder state.
+  virtual const NamedClassDecoder& GetInstDecoder() const = 0;
 
  protected:
   // Returns a printable version of the contents of the tested instruction.
@@ -166,6 +181,7 @@ class Arm32DecoderTester : public DecoderTester {
   virtual const NamedClassDecoder& ExpectedDecoder() const;
   virtual void ProcessMatch();
   virtual void InjectInstruction(nacl_arm_dec::Instruction inst);
+  virtual const NamedClassDecoder& GetInstDecoder() const;
 
  protected:
   virtual const char* InstContents() const;
@@ -209,6 +225,7 @@ class ThumbWord1DecoderTester : public DecoderTester {
   virtual const NamedClassDecoder& ExpectedDecoder() const;
   virtual void ProcessMatch();
   virtual void InjectInstruction(nacl_arm_dec::Instruction inst);
+  virtual const NamedClassDecoder& GetInstDecoder() const;
 
  protected:
   virtual const char* InstContents() const;
@@ -247,6 +264,7 @@ class ThumbWord2DecoderTester : public DecoderTester {
   virtual const NamedClassDecoder& ExpectedDecoder() const;
   virtual void ProcessMatch();
   virtual void InjectInstruction(nacl_arm_dec::Instruction inst);
+  virtual const NamedClassDecoder& GetInstDecoder() const;
 
  protected:
   virtual const char* InstContents() const;
@@ -282,6 +300,7 @@ class ThumbDecoderTester : public DecoderTester {
   virtual const NamedClassDecoder& ExpectedDecoder() const;
   virtual void ProcessMatch();
   virtual void InjectInstruction(nacl_arm_dec::Instruction inst);
+  virtual const NamedClassDecoder& GetInstDecoder() const;
 
  protected:
   virtual const char* InstContents() const;

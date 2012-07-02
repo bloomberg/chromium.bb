@@ -24,11 +24,11 @@ namespace nacl_arm_test {
 // constructor that automatically initializes the expected decoder
 // to the corresponding instance in the generated DecoderState.
 
-class Binary2RegisterBitRangeTester_Bfi_Rule_18_A1_P48_
-    : public Binary2RegisterBitRangeTester {
+class Binary2RegisterBitRangeTester_Bfi_Rule_18_A1_P48_NotRnIsPc
+    : public Binary2RegisterBitRangeTesterNotRnIsPc {
  public:
-  Binary2RegisterBitRangeTester_Bfi_Rule_18_A1_P48_()
-    : Binary2RegisterBitRangeTester(
+  Binary2RegisterBitRangeTester_Bfi_Rule_18_A1_P48_NotRnIsPc()
+    : Binary2RegisterBitRangeTesterNotRnIsPc(
       state_.Binary2RegisterBitRange_Bfi_Rule_18_A1_P48_instance_)
   {}
 };
@@ -1698,8 +1698,8 @@ class Arm32DecoderStateTests : public ::testing::Test {
 // The following test each pattern specified in parse decoder tables.
 
 TEST_F(Arm32DecoderStateTests,
-       Binary2RegisterBitRangeTester_Bfi_Rule_18_A1_P48__cccc0111110mmmmmddddlllll001nnnn_Test) {
-  Binary2RegisterBitRangeTester_Bfi_Rule_18_A1_P48_ baseline_tester;
+       Binary2RegisterBitRangeTester_Bfi_Rule_18_A1_P48_NotRnIsPc_cccc0111110mmmmmddddlllll001nnnn_Test) {
+  Binary2RegisterBitRangeTester_Bfi_Rule_18_A1_P48_NotRnIsPc baseline_tester;
   NamedDefs12To15_Bfi_Rule_18_A1_P48 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc0111110mmmmmddddlllll001nnnn");

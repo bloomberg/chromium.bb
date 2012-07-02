@@ -27,6 +27,14 @@ namespace nacl_arm_test {
 DecoderTester::DecoderTester()
 {}
 
+bool DecoderTester::PassesParsePreconditions(
+    nacl_arm_dec::Instruction inst,
+    const NamedClassDecoder& decoder) {
+  UNREFERENCED_PARAMETER(inst);
+  UNREFERENCED_PARAMETER(decoder);
+  return true;
+}
+
 bool DecoderTester::ApplySanityChecks(Instruction inst,
                                       const NamedClassDecoder& decoder) {
   UNREFERENCED_PARAMETER(inst);
@@ -192,11 +200,17 @@ void Arm32DecoderTester::InjectInstruction(nacl_arm_dec::Instruction inst) {
   inst_.Copy(inst);
 }
 
+const NamedClassDecoder& Arm32DecoderTester::GetInstDecoder() const {
+  return state_.decode_named(inst_);
+}
+
 void Arm32DecoderTester::ProcessMatch() {
   // Completed pattern, decode and test resulting state.
-  const NamedClassDecoder& decoder = state_.decode_named(inst_);
-  if (MAY_BE_SAFE == decoder.safety(inst_)) ApplySanityChecks(inst_, decoder);
-  return;
+  const NamedClassDecoder& decoder = GetInstDecoder();
+  if (!PassesParsePreconditions(inst_, decoder))
+    return;
+  if (MAY_BE_SAFE == decoder.safety(inst_))
+    ApplySanityChecks(inst_, decoder);
 }
 
 void Arm32DecoderTester::SetBit(int index, bool value) {
@@ -255,6 +269,10 @@ void ThumbWord1DecoderTester::ProcessMatch() {
 void ThumbWord1DecoderTester::InjectInstruction(
     nacl_arm_dec::Instruction inst) {
   thumb_tester_->InjectInstruction(inst);
+}
+
+const NamedClassDecoder& ThumbWord1DecoderTester::GetInstDecoder() const {
+  return thumb_tester_->GetInstDecoder();
 }
 
 void ThumbWord1DecoderTester::SetBit(int index, bool value) {
@@ -316,6 +334,10 @@ void ThumbWord2DecoderTester::ProcessMatch() {
 void ThumbWord2DecoderTester::InjectInstruction(
     nacl_arm_dec::Instruction inst) {
   thumb_tester_->InjectInstruction(inst);
+}
+
+const NamedClassDecoder& ThumbWord2DecoderTester::GetInstDecoder() const {
+  return thumb_tester_->GetInstDecoder();
 }
 
 void ThumbWord2DecoderTester::SetBit(int index, bool value) {
@@ -394,13 +416,19 @@ char ThumbDecoderTester::Pattern(int index) const {
 
 void ThumbDecoderTester::ProcessMatch() {
   // Completed pattern, decode and test resulting state.
-  const NamedClassDecoder& decoder = state_.decode_named(inst_);
-  if (MAY_BE_SAFE == decoder.safety(inst_)) ApplySanityChecks(inst_, decoder);
-  return;
+  const NamedClassDecoder& decoder = GetInstDecoder();
+  if (!PassesParsePreconditions(inst_, decoder))
+    return;
+  if (MAY_BE_SAFE == decoder.safety(inst_))
+    ApplySanityChecks(inst_, decoder);
 }
 
 void ThumbDecoderTester::InjectInstruction(nacl_arm_dec::Instruction inst) {
   inst_.Copy(inst);
+}
+
+const NamedClassDecoder& ThumbDecoderTester::GetInstDecoder() const {
+  return state_.decode_named(inst_);
 }
 
 void ThumbDecoderTester::SetBit(int index, bool value) {

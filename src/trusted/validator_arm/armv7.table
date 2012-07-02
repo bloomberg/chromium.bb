@@ -887,7 +887,8 @@ class Store3RegisterOp : LoadStore3RegisterOp
                                         cccc0111110mmmmmddddlllll0011111 (v6T2)
 | "          x00      -         ~1111 = Binary2RegisterBitRange => Defs12To15
                                         Bfi_Rule_18_A1_P48
-                                        cccc0111110mmmmmddddlllll001nnnn (v6T2)
+                                        cccc0111110mmmmmddddlllll001nnnn
+                                        NotRnIsPc (v6T2)
 | 1111x      x10      -         -     = Binary2RegisterBitRangeNotRnIsPc
                                         => Defs12To15RdRnNotPc
                                         Ubfx_Rule_236_A1_P466

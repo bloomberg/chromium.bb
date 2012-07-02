@@ -25,12 +25,38 @@ ActualVsBaselineTester::ActualVsBaselineTester(
       baseline_decoder_(baseline_.named_decoder()) {}
 
 void ActualVsBaselineTester::ProcessMatch() {
-  // First make sure the baseline is happy.
   baseline_tester_.InjectInstruction(inst_);
-  baseline_tester_.ProcessMatch();
+  const NamedClassDecoder& decoder = baseline_tester_.GetInstDecoder();
+  if (!baseline_tester_.PassesParsePreconditions(inst_, decoder)) {
+    // Parse precondition implies that this pattern is NOT supposed to
+    // be handled by the baseline tester (because another decoder
+    // handles it). Hence, don't do any further processing.
+    return;
+  }
+  if (nacl_arm_dec::MAY_BE_SAFE == decoder.safety(inst_)) {
+    // Run sanity baseline checks, to see that the baseline is
+    // correct.
+    if (!baseline_tester_.ApplySanityChecks(inst_, decoder)) {
+      // The sanity checks found a serious issue and already reported
+      // it.  don't bother to report additional problems.
+      return;
+    }
+    // Check virtuals. Start with check if safe. If unsafe, no further
+    // checking need be applied, since the validator will stop
+    // processing such instructions after the safe test.
+    if (!MayBeSafe()) return;
+  } else {
+    // Not safe in baseline, only compare safety, testing if not safe
+    // in actual as well.
+    MayBeSafe();
+    return;
+  }
 
-  // Check virtuals.
-  if (!MayBeSafe()) return;
+  // If reached, the instruction passed the initial safety check, and
+  // will use the other virtual methods of the class decoders to
+  // determine if the instruction is safe. Also verifies that we get
+  // consistent behaviour between the actual and basline class
+  // decoders.
   CheckDefs();
   CheckImmediateAddressingDefs();
   CheckBaseAddressRegister();
