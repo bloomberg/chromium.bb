@@ -1001,7 +1001,7 @@ update_shm_texture(struct weston_surface *surface)
 		glPixelStorei(GL_UNPACK_SKIP_ROWS, rectangles[i].y1);
 		glTexSubImage2D(GL_TEXTURE_2D, 0,
 				rectangles[i].x1, rectangles[i].y1,
-				rectangles[i].x2 - rectangles[i].y1,
+				rectangles[i].x2 - rectangles[i].x1,
 				rectangles[i].y2 - rectangles[i].y1,
 				GL_BGRA_EXT, GL_UNSIGNED_BYTE, data);
 	}
