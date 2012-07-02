@@ -246,7 +246,13 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // Generic pattern for pyautolib
   // Uses the JSON interface for input/output.
-  void SendJSONRequest(int handle,
+  void SendJSONRequestWithBrowserHandle(int handle,
+                                        const std::string& json_request,
+                                        IPC::Message* reply_message);
+  void SendJSONRequestWithBrowserIndex(int index,
+                                       const std::string& json_request,
+                                       IPC::Message* reply_message);
+  void SendJSONRequest(Browser* browser,
                        const std::string& json_request,
                        IPC::Message* reply_message);
 
@@ -261,6 +267,13 @@ class TestingAutomationProvider : public AutomationProvider,
       Browser* browser,
       base::DictionaryValue*,
       IPC::Message*);
+
+  // JSON interface helper functions.
+  static scoped_ptr<DictionaryValue> ParseJSONRequestCommand(
+      const std::string& json_request,
+      std::string* command,
+      std::string* error);
+  void BuildJSONHandlerMaps();
 
   // Set window dimensions.
   // Uses the JSON interface for input/output.
@@ -1554,6 +1567,9 @@ class TestingAutomationProvider : public AutomationProvider,
   // non-ChromeOS code.
   PowerManagerClientObserverForTesting* power_manager_observer_;
 #endif  // defined(OS_CHROMEOS)
+
+  std::map<std::string, JsonHandler> handler_map_;
+  std::map<std::string, BrowserJsonHandler> browser_handler_map_;
 
   // Used to wait on various browser sync events.
   scoped_ptr<ProfileSyncServiceHarness> sync_waiter_;
