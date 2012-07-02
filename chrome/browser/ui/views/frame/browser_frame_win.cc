@@ -273,6 +273,23 @@ void BrowserFrameWin::OnActivate(UINT action, BOOL minimized, HWND window) {
   views::NativeWidgetWin::OnActivate(action, minimized, window);
 }
 
+void BrowserFrameWin::FrameTypeChanged() {
+  // In Windows 8 metro mode the frame type is set to FRAME_TYPE_FORCE_CUSTOM
+  // by default. We reset it back to FRAME_TYPE_DEFAULT to ensure that we
+  // don't end up defaulting to BrowserNonClientFrameView in all cases.
+  if (base::win::IsMetroProcess())
+    browser_frame_->set_frame_type(views::Widget::FRAME_TYPE_DEFAULT);
+
+  views::NativeWidgetWin::FrameTypeChanged();
+
+  // In Windows 8 metro mode we call Show on the BrowserFrame instance to
+  // ensure that the window can be styled appropriately, i.e. no sysmenu,
+  // etc.
+  if (base::win::IsMetroProcess())
+    Show();
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrameWin, NativeBrowserFrame implementation:
 

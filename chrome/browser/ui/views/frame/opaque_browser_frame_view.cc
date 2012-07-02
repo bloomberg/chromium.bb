@@ -45,6 +45,10 @@
 #include "ui/views/window/frame_background.h"
 #include "ui/views/window/window_shape.h"
 
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#endif  // OS_WIN
+
 using content::WebContents;
 
 namespace {
@@ -114,6 +118,13 @@ bool ConvertedContainsCheck(gfx::Rect bounds, const views::View* src,
   return bounds.Contains(pt);
 }
 
+bool ShouldAddDefaultCaptionButtons() {
+#if defined(OS_WIN) && !defined(USE_AURA)
+  return !base::win::IsMetroProcess();
+#endif  // OS_WIN
+  return true;
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -123,27 +134,33 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
                                                BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
       window_icon_(NULL),
+      minimize_button_(NULL),
+      maximize_button_(NULL),
+      restore_button_(NULL),
+      close_button_(NULL),
       frame_background_(new views::FrameBackground()) {
-  minimize_button_ = InitWindowCaptionButton(IDR_MINIMIZE,
-                                             IDR_MINIMIZE_H,
-                                             IDR_MINIMIZE_P,
-                                             IDR_MINIMIZE_BUTTON_MASK,
-                                             IDS_ACCNAME_MINIMIZE);
-  maximize_button_ = InitWindowCaptionButton(IDR_MAXIMIZE,
-                                             IDR_MAXIMIZE_H,
-                                             IDR_MAXIMIZE_P,
-                                             IDR_MAXIMIZE_BUTTON_MASK,
-                                             IDS_ACCNAME_MAXIMIZE);
-  restore_button_ = InitWindowCaptionButton(IDR_RESTORE,
-                                            IDR_RESTORE_H,
-                                            IDR_RESTORE_P,
-                                            IDR_RESTORE_BUTTON_MASK,
-                                            IDS_ACCNAME_RESTORE);
-  close_button_ = InitWindowCaptionButton(IDR_CLOSE,
-                                          IDR_CLOSE_H,
-                                          IDR_CLOSE_P,
-                                          IDR_CLOSE_BUTTON_MASK,
-                                          IDS_ACCNAME_CLOSE);
+  if (ShouldAddDefaultCaptionButtons()) {
+    minimize_button_ = InitWindowCaptionButton(IDR_MINIMIZE,
+                                               IDR_MINIMIZE_H,
+                                               IDR_MINIMIZE_P,
+                                               IDR_MINIMIZE_BUTTON_MASK,
+                                               IDS_ACCNAME_MINIMIZE);
+    maximize_button_ = InitWindowCaptionButton(IDR_MAXIMIZE,
+                                               IDR_MAXIMIZE_H,
+                                               IDR_MAXIMIZE_P,
+                                               IDR_MAXIMIZE_BUTTON_MASK,
+                                               IDS_ACCNAME_MAXIMIZE);
+    restore_button_ = InitWindowCaptionButton(IDR_RESTORE,
+                                              IDR_RESTORE_H,
+                                              IDR_RESTORE_P,
+                                              IDR_RESTORE_BUTTON_MASK,
+                                              IDS_ACCNAME_RESTORE);
+    close_button_ = InitWindowCaptionButton(IDR_CLOSE,
+                                            IDR_CLOSE_H,
+                                            IDR_CLOSE_P,
+                                            IDR_CLOSE_BUTTON_MASK,
+                                            IDS_ACCNAME_CLOSE);
+  }
 
   // Initializing the TabIconView is expensive, so only do it if we need to.
   if (browser_view->ShouldShowWindowIcon()) {
@@ -209,9 +226,10 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
       NonClientBorderThickness() + kTabStripIndent;
 
   int maximized_spacing = kNewTabCaptionMaximizedSpacing;
-  int tabstrip_width = minimize_button_->x() - tabstrip_x -
-      (frame()->IsMaximized() ?
-          maximized_spacing : kNewTabCaptionRestoredSpacing);
+  int tabstrip_width =
+      (minimize_button_ ? minimize_button_->x() : width()) - tabstrip_x -
+          (frame()->IsMaximized() ?
+              maximized_spacing : kNewTabCaptionRestoredSpacing);
   return gfx::Rect(tabstrip_x, GetHorizontalTabStripVerticalOffset(false),
       std::max(0, tabstrip_width), tabstrip->GetPreferredSize().height());
 }
@@ -241,10 +259,12 @@ gfx::Size OpaqueBrowserFrameView::GetMinimumSize() {
       (delegate && delegate->ShouldShowWindowIcon() ?
        (IconSize() + kTitleLogoSpacing) : 0);
 #if !defined(OS_CHROMEOS)
-  min_titlebar_width +=
-      minimize_button_->GetMinimumSize().width() +
-      restore_button_->GetMinimumSize().width() +
-      close_button_->GetMinimumSize().width();
+  if (ShouldAddDefaultCaptionButtons()) {
+    min_titlebar_width +=
+        minimize_button_->GetMinimumSize().width() +
+        restore_button_->GetMinimumSize().width() +
+        close_button_->GetMinimumSize().width();
+  }
 #endif
   min_size.set_width(std::max(min_size.width(), min_titlebar_width));
   return min_size;
@@ -293,16 +313,16 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
     return frame_component;
 
   // Then see if the point is within any of the window controls.
-  if (close_button_->visible() &&
+  if (close_button_ && close_button_->visible() &&
       close_button_->GetMirroredBounds().Contains(point))
     return HTCLOSE;
-  if (restore_button_->visible() &&
+  if (restore_button_ && restore_button_->visible() &&
       restore_button_->GetMirroredBounds().Contains(point))
     return HTMAXBUTTON;
-  if (maximize_button_->visible() &&
+  if (maximize_button_ && maximize_button_->visible() &&
       maximize_button_->GetMirroredBounds().Contains(point))
     return HTMAXBUTTON;
-  if (minimize_button_->visible() &&
+  if (minimize_button_ && minimize_button_->visible() &&
       minimize_button_->GetMirroredBounds().Contains(point))
     return HTMINBUTTON;
 
@@ -329,6 +349,8 @@ void OpaqueBrowserFrameView::GetWindowMask(const gfx::Size& size,
 }
 
 void OpaqueBrowserFrameView::ResetWindowControls() {
+  if (!ShouldAddDefaultCaptionButtons())
+    return;
   restore_button_->SetState(views::CustomButton::BS_NORMAL);
   minimize_button_->SetState(views::CustomButton::BS_NORMAL);
   maximize_button_->SetState(views::CustomButton::BS_NORMAL);
@@ -894,6 +916,8 @@ int OpaqueBrowserFrameView::GetTopAreaHeight() const {
 }
 
 void OpaqueBrowserFrameView::LayoutWindowControls() {
+  if (!ShouldAddDefaultCaptionButtons())
+    return;
   bool is_maximized = frame()->IsMaximized();
   close_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
                                    views::ImageButton::ALIGN_BOTTOM);
