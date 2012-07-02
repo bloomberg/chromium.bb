@@ -46,6 +46,7 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
@@ -1034,12 +1035,13 @@ scoped_ptr<DictionaryValue> BrowserOptionsHandler::GetSyncStateDictionary() {
 void BrowserOptionsHandler::HandleSelectDownloadLocation(
     const ListValue* args) {
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  select_folder_dialog_ = SelectFileDialog::Create(this);
+  select_folder_dialog_ = SelectFileDialog::Create(
+      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   select_folder_dialog_->SelectFile(
       SelectFileDialog::SELECT_FOLDER,
       l10n_util::GetStringUTF16(IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE),
       pref_service->GetFilePath(prefs::kDownloadDefaultDirectory),
-      NULL, 0, FILE_PATH_LITERAL(""), web_ui()->GetWebContents(),
+      NULL, 0, FILE_PATH_LITERAL(""),
       web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
 

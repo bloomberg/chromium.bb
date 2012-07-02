@@ -35,6 +35,7 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/printing/printer_manager_dialog.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
@@ -834,9 +835,8 @@ void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
     GetStickySettings()->StoreSavePath(file_path);
   }
 
-  if (!select_file_dialog_.get())
-    select_file_dialog_ = SelectFileDialog::Create(this);
-
+  select_file_dialog_ = SelectFileDialog::Create(
+      this, new ChromeSelectFilePolicy(preview_web_contents())),
   select_file_dialog_->SelectFile(
       SelectFileDialog::SELECT_SAVEAS_FILE,
       string16(),
@@ -844,7 +844,6 @@ void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
       &file_type_info,
       0,
       FILE_PATH_LITERAL(""),
-      preview_web_contents(),
       platform_util::GetTopLevel(preview_web_contents()->GetNativeView()),
       NULL);
 }

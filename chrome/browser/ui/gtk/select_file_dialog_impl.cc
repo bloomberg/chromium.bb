@@ -30,7 +30,8 @@ FilePath* SelectFileDialogImpl::last_saved_path_ = NULL;
 FilePath* SelectFileDialogImpl::last_opened_path_ = NULL;
 
 // static
-SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
+SelectFileDialog* SelectFileDialog::Create(Listener* listener,
+                                           ui::SelectFilePolicy* policy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (use_kde_ == UNKNOWN) {
     // Start out assumimg we are not going to use KDE.
@@ -53,16 +54,18 @@ SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
   }
 
   if (use_kde_ == NO_KDE)
-    return SelectFileDialogImpl::NewSelectFileDialogImplGTK(listener);
+    return SelectFileDialogImpl::NewSelectFileDialogImplGTK(listener, policy);
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
   base::nix::DesktopEnvironment desktop =
       base::nix::GetDesktopEnvironment(env.get());
-  return SelectFileDialogImpl::NewSelectFileDialogImplKDE(listener, desktop);
+  return SelectFileDialogImpl::NewSelectFileDialogImplKDE(
+      listener, policy, desktop);
 }
 
-SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener)
-    : SelectFileDialog(listener),
+SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener,
+                                           ui::SelectFilePolicy* policy)
+    : SelectFileDialog(listener, policy),
       file_type_index_(0),
       type_(SELECT_NONE) {
   if (!last_saved_path_) {

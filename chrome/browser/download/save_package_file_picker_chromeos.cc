@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/web_contents.h"
@@ -41,14 +42,14 @@ SavePackageFilePickerChromeOS::SavePackageFilePickerChromeOS(
     : content::WebContentsObserver(web_contents),
       callback_(callback) {
   if (g_should_prompt_for_filename) {
-    select_file_dialog_ = SelectFileDialog::Create(this);
+    select_file_dialog_ = SelectFileDialog::Create(
+        this, new ChromeSelectFilePolicy(web_contents));
     select_file_dialog_->SelectFile(SelectFileDialog::SELECT_SAVEAS_FILE,
                                     string16(),
                                     suggested_path.ReplaceExtension("mhtml"),
                                     NULL,
                                     0,
                                     "mhtml",
-                                    web_contents,
                                     platform_util::GetTopLevel(
                                         web_contents->GetNativeView()),
                                     NULL);

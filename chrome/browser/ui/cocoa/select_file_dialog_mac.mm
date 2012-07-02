@@ -61,7 +61,8 @@ class SelectFileDialogImpl;
 // file or folder.
 class SelectFileDialogImpl : public SelectFileDialog {
  public:
-  explicit SelectFileDialogImpl(Listener* listener);
+  explicit SelectFileDialogImpl(Listener* listener,
+                                ui::SelectFilePolicy* policy);
 
   // BaseShellDialog implementation.
   virtual bool IsRunning(gfx::NativeWindow parent_window) const;
@@ -121,12 +122,14 @@ class SelectFileDialogImpl : public SelectFileDialog {
 };
 
 // static
-SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
-  return new SelectFileDialogImpl(listener);
+SelectFileDialog* SelectFileDialog::Create(Listener* listener,
+                                           ui::SelectFilePolicy* policy) {
+  return new SelectFileDialogImpl(listener, policy);
 }
 
-SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener)
-    : SelectFileDialog(listener),
+SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener,
+                                           ui::SelectFilePolicy* policy)
+    : SelectFileDialog(listener, policy),
       bridge_([[SelectFileDialogBridge alloc]
                initWithSelectFileDialogImpl:this]) {
 }

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/chrome_select_file_policy.h"
+
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -27,6 +29,8 @@
 
 using content::BrowserThread;
 
+namespace {
+
 class FileSelectionUser : public SelectFileDialog::Listener {
  public:
   FileSelectionUser()
@@ -40,7 +44,8 @@ class FileSelectionUser : public SelectFileDialog::Listener {
 
   void StartFileSelection() {
     CHECK(!select_file_dialog_.get());
-    select_file_dialog_ = SelectFileDialog::Create(this);
+    select_file_dialog_ = SelectFileDialog::Create(
+        this, new ChromeSelectFilePolicy(NULL));
 
     const FilePath file_path;
     const string16 title=string16();
@@ -52,7 +57,6 @@ class FileSelectionUser : public SelectFileDialog::Listener {
                                     NULL,
                                     0,
                                     FILE_PATH_LITERAL(""),
-                                    NULL,
                                     NULL,
                                     NULL);
     file_selection_initialisation_in_progress = false;
@@ -78,11 +82,13 @@ class FileSelectionUser : public SelectFileDialog::Listener {
   bool file_selection_initialisation_in_progress;
 };
 
-typedef testing::Test FileSelectionDialogTest;
+}  // namespace
+
+typedef testing::Test ChromeSelectFilePolicyTest;
 
 // Tests if SelectFileDialog::SelectFile returns asynchronously with
 // file-selection dialogs disabled by policy.
-TEST_F(FileSelectionDialogTest, MAYBE_ExpectAsynchronousListenerCall) {
+TEST_F(ChromeSelectFilePolicyTest, MAYBE_ExpectAsynchronousListenerCall) {
   MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
 

@@ -1613,6 +1613,7 @@
         'browser/themes/theme_service_unittest.cc',
         'browser/ui/auto_login_prompter_unittest.cc',
         'browser/ui/browser_unittest.cc',
+        'browser/ui/chrome_select_file_policy_unittest.cc',
         'browser/ui/search/search_delegate_unittest.cc',
         # It is safe to list */cocoa/* files in the "common" file list
         # without an explicit exclusion since gyp is smart enough to
@@ -1790,7 +1791,6 @@
         'browser/ui/panels/panel_cocoa_unittest.mm',
         'browser/ui/panels/panel_mouse_watcher_unittest.cc',
         'browser/ui/search_engines/keyword_editor_controller_unittest.cc',
-        'browser/ui/select_file_dialog_unittest.cc',
         'browser/ui/sync/one_click_signin_helper_unittest.cc',
         'browser/ui/tab_contents/tab_contents_iterator_unittest.cc',
         'browser/ui/tabs/dock_info_unittest.cc',

@@ -11,10 +11,11 @@
 using content::BrowserThread;
 
 // static
-SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
+SelectFileDialog* SelectFileDialog::Create(Listener* listener,
+                                           ui::SelectFilePolicy* policy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 #if defined(USE_ASH) && defined(FILE_MANAGER_EXTENSION)
-  return SelectFileDialogExtension::Create(listener);
+  return SelectFileDialogExtension::Create(listener, policy);
 #else
   return NULL;
 #endif
