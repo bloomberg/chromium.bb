@@ -18,8 +18,7 @@ bool DownloadManagerDelegate::ShouldStartDownload(int32 download_id) {
 }
 
 FilePath DownloadManagerDelegate::GetIntermediatePath(
-    const DownloadItem& item,
-    bool* ok_to_overwrite) {
+    const DownloadItem& item) {
   return item.GetTargetFilePath();
 }
 

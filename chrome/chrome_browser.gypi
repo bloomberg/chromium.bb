@@ -1004,6 +1004,8 @@
         'browser/download/download_request_infobar_delegate.h',
         'browser/download/download_request_limiter.cc',
         'browser/download/download_request_limiter.h',
+        'browser/download/download_path_reservation_tracker.cc',
+        'browser/download/download_path_reservation_tracker.h',
         'browser/download/download_service.cc',
         'browser/download/download_service.h',
         'browser/download/download_service_factory.cc',

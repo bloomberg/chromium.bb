@@ -57,9 +57,8 @@ class MockDownloadItem : public content::DownloadItem {
                                             content::DownloadDangerType));
   MOCK_METHOD1(OnTargetPathSelected, void(const FilePath&));
   MOCK_METHOD1(OnContentCheckCompleted, void(content::DownloadDangerType));
-  MOCK_METHOD3(OnIntermediatePathDetermined, void(DownloadFileManager*,
-                                                  const FilePath&,
-                                                  bool));
+  MOCK_METHOD2(OnIntermediatePathDetermined, void(DownloadFileManager*,
+                                                  const FilePath&));
   MOCK_CONST_METHOD0(GetState, DownloadState());
   MOCK_CONST_METHOD0(GetUrlChain, const std::vector<GURL>&());
   MOCK_METHOD1(SetTotalBytes, void(int64));

@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/file_util.h"
-#include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/download/download_file_picker.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/save_package_file_picker.h"
@@ -34,7 +34,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/pref_names.h"
@@ -179,36 +178,29 @@ void ChromeDownloadManagerDelegate::ChooseDownloadPath(DownloadItem* item) {
 }
 
 FilePath ChromeDownloadManagerDelegate::GetIntermediatePath(
-    const DownloadItem& download,
-    bool* ok_to_overwrite) {
-  if (download.GetDangerType() ==
-      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
-    // The intermediate path could be a placeholder file that we created to
-    // ensure that we won't reuse the same name for multiple automatic
-    // downloads. We need to overwrite it.
-    *ok_to_overwrite = true;
+    const DownloadItem& download) {
+  // If the download is not dangerous, just append .crdownload to the target
+  // path.
+  if (download.GetDangerType() == content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)
     return download_util::GetCrDownloadPath(download.GetTargetFilePath());
-  } else {
-    FilePath::StringType file_name;
-    FilePath dir = download.GetTargetFilePath().DirName();
-#if defined(OS_WIN)
-    string16 unconfirmed_prefix =
-        l10n_util::GetStringUTF16(IDS_DOWNLOAD_UNCONFIRMED_PREFIX);
-#else
-    std::string unconfirmed_prefix =
-        l10n_util::GetStringUTF8(IDS_DOWNLOAD_UNCONFIRMED_PREFIX);
-#endif
-    base::SStringPrintf(
-        &file_name,
-        unconfirmed_prefix.append(
-            FILE_PATH_LITERAL(" %d.crdownload")).c_str(),
-        base::RandInt(0, 1000000));
 
-    // We may end up with a conflict if there are multiple active dangerous
-    // downloads and we are unlucky. So we don't allow overwriting.
-    *ok_to_overwrite = false;
-    return dir.Append(file_name);
-  }
+  // If the download is potentially dangerous we create a filename of the form
+  // 'Unconfirmed <random>.crdownload'.
+  FilePath::StringType file_name;
+  FilePath dir = download.GetTargetFilePath().DirName();
+#if defined(OS_WIN)
+  string16 unconfirmed_prefix =
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_UNCONFIRMED_PREFIX);
+#else
+  std::string unconfirmed_prefix =
+      l10n_util::GetStringUTF8(IDS_DOWNLOAD_UNCONFIRMED_PREFIX);
+#endif
+  base::SStringPrintf(
+      &file_name,
+      unconfirmed_prefix.append(
+          FILE_PATH_LITERAL(" %d.crdownload")).c_str(),
+      base::RandInt(0, 1000000));
+  return dir.Append(file_name);
 }
 
 WebContents* ChromeDownloadManagerDelegate::
@@ -535,6 +527,17 @@ bool ChromeDownloadManagerDelegate::IsDangerousFile(
   return danger_level == download_util::Dangerous;
 }
 
+void ChromeDownloadManagerDelegate::GetReservedPath(
+    DownloadItem& download,
+    const FilePath& target_path,
+    const FilePath& default_download_path,
+    bool should_uniquify_path,
+    const DownloadPathReservationTracker::ReservedPathCallback callback) {
+  DownloadPathReservationTracker::GetReservedPath(
+      download, target_path, default_download_path, should_uniquify_path,
+      callback);
+}
+
 void ChromeDownloadManagerDelegate::CheckDownloadUrlDone(
     int32 download_id,
     DownloadProtectionService::DownloadCheckResult result) {
@@ -698,12 +701,11 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
           &ChromeDownloadManagerDelegate::SubstituteGDataDownloadPathCallback,
           this, download->GetId(), should_prompt, is_forced_path, danger_type));
 #else
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ChromeDownloadManagerDelegate::CheckIfSuggestedPathExists,
-                 this, download->GetId(), suggested_path, should_prompt,
-                 is_forced_path, danger_type,
-                 download_prefs_->download_path()));
+  GetReservedPath(
+      *download, suggested_path, download_prefs_->download_path(),
+      !is_forced_path,
+      base::Bind(&ChromeDownloadManagerDelegate::OnPathReservationAvailable,
+                 this, download->GetId(), should_prompt, danger_type));
 #endif
 }
 
@@ -720,130 +722,32 @@ void ChromeDownloadManagerDelegate::SubstituteGDataDownloadPathCallback(
   if (!download)
     return;
 
-  // We need to move over to the FILE thread because we don't want to stat the
-  // suggested path on the UI thread.  We can only access preferences on the UI
-  // thread, so check the download path now and pass the value to the FILE
-  // thread.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ChromeDownloadManagerDelegate::CheckIfSuggestedPathExists,
-                 this, download->GetId(), suggested_path, should_prompt,
-                 is_forced_path, danger_type,
-                 download_prefs_->download_path()));
+  GetReservedPath(
+      *download, suggested_path, download_prefs_->download_path(),
+      !is_forced_path,
+      base::Bind(&ChromeDownloadManagerDelegate::OnPathReservationAvailable,
+                 this, download->GetId(), should_prompt, danger_type));
 }
 #endif
 
-void ChromeDownloadManagerDelegate::CheckIfSuggestedPathExists(
+void ChromeDownloadManagerDelegate::OnPathReservationAvailable(
     int32 download_id,
-    const FilePath& unverified_path,
     bool should_prompt,
-    bool is_forced_path,
     content::DownloadDangerType danger_type,
-    const FilePath& default_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  // Suggested target path. Start with |unverified_path|.
-  FilePath target_path(unverified_path);
-
-  // Make sure the default download directory exists.
-  // TODO(phajdan.jr): only create the directory when we're sure the user
-  // is going to save there and not to another directory of his choice.
-  file_util::CreateDirectory(default_path);
-
-  // Check writability of the suggested path. If we can't write to it, default
-  // to the user's "My Documents" directory. We'll prompt them in this case.
-  FilePath dir = target_path.DirName();
-  FilePath filename = target_path.BaseName();
-  if (!file_util::PathIsWritable(dir)) {
-    VLOG(1) << "Unable to write to directory \"" << dir.value() << "\"";
-    should_prompt = true;
-    PathService::Get(chrome::DIR_USER_DOCUMENTS, &dir);
-    target_path = dir.Append(filename);
-  }
-
-  // Decide how we want to handle this download:
-
-  // - Uniquify: If a file exists in the target path, uniquify the path by
-  //             appending a uniquifier ("foo.txt" -> "foo (1).txt").
-  // - Overwrite: Overwrite the target path if it exists.
-  // - Marker: Create a placeholder file to avoid using the same filename for
-  //           another download. (http://crbug.com/3662)
-  //
-  // Download type      | Uniquify | Overwrite | Marker |
-  // -------------------+----------+-----------+--------+
-  // Forced (Safe)      | No       | Yes       | No
-  // Forced (Dangerous) | No       | Yes       | No
-  // Prompt (Safe)      | Yes      | Yes       | No
-  // Prompt (Dangerous) | Yes      | Yes       | No
-  // Auto   (Safe)      | Yes      | Yes       | Yes
-  // Auto   (Dangerous) | No       | No        | No
-  bool should_uniquify =
-      (!is_forced_path &&
-       (danger_type == content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS ||
-        should_prompt));
-  bool should_overwrite =
-      (should_uniquify || is_forced_path);
-  bool should_create_marker = (should_uniquify && !should_prompt);
-
-  if (should_uniquify) {
-    // When we uniquify, ideally we should exclude files that are:
-    // 1. Already existing in the file system.
-    // 2. All in-progress downloads for which we are overwriting the target.
-    //
-    // Of the 6 categories above for which we overwrite the target, we only
-    // exclude "Auto (Safe)" reliably. "Prompt (Safe)" downloads will be
-    // excluded if the conflicting download has proceeded past
-    // the in-progress rename.  Ditto for "Forced" downloads. None of the
-    // "Dangerous" types are excluded.
-    // TODO(asanka): Fix this.
-    int uniquifier =
-        download_util::GetUniquePathNumberWithCrDownload(target_path);
-
-    if (uniquifier > 0) {
-      target_path = target_path.InsertBeforeExtensionASCII(
-          StringPrintf(" (%d)", uniquifier));
-    } else if (uniquifier == -1) {
-      VLOG(1) << "Unable to find a unique path for suggested path \""
-              << target_path.value() << "\"";
-      should_prompt = true;
-    }
-  }
-
-  // Create a marker file at the .crdownload path. For the cases that we use
-  // markers this is all we need for GetUniquePathNumberWithCrDownload() to
-  // reliably avoid conflicts. Note that this requires GetIntermediatePath() to
-  // overwrite this marker when the download proceeds.
-  if (should_create_marker)
-    file_util::WriteFile(download_util::GetCrDownloadPath(target_path), "", 0);
-
-  DownloadItem::TargetDisposition disposition;
-  if (should_prompt)
-    disposition = DownloadItem::TARGET_DISPOSITION_PROMPT;
-  else if (should_overwrite)
-    disposition = DownloadItem::TARGET_DISPOSITION_OVERWRITE;
-  else
-    disposition = DownloadItem::TARGET_DISPOSITION_UNIQUIFY;
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ChromeDownloadManagerDelegate::OnPathExistenceAvailable,
-                 this, download_id, target_path, disposition, danger_type));
-}
-
-void ChromeDownloadManagerDelegate::OnPathExistenceAvailable(
-    int32 download_id,
     const FilePath& target_path,
-    DownloadItem::TargetDisposition disposition,
-    content::DownloadDangerType danger_type) {
+    bool target_path_verified) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadItem* download =
       download_manager_->GetActiveDownloadItem(download_id);
-  // TODO(asanka): If the download was cancelled here, we need to manually
-  //               cleanup the placeholder file we created in
-  //               CheckIfSuggestedPathExists(). Or avoid creating a marker file
-  //               in the first place.
   if (!download)
     return;
+  DownloadItem::TargetDisposition disposition;
+  // If the target path could not be verified then the path was non-existant,
+  // non writeable or could not be uniquified. Prompt the user.
+  if (should_prompt || !target_path_verified)
+    disposition = DownloadItem::TARGET_DISPOSITION_PROMPT;
+  else
+    disposition = DownloadItem::TARGET_DISPOSITION_OVERWRITE;
   download->OnTargetPathDetermined(target_path, disposition, danger_type);
   download_manager_->RestartDownload(download_id);
 }

@@ -61,7 +61,7 @@ class MockDownloadManagerDelegate : public content::DownloadManagerDelegate {
   MOCK_METHOD0(GetNextId, content::DownloadId());
   MOCK_METHOD1(ShouldStartDownload, bool(int32));
   MOCK_METHOD1(ChooseDownloadPath, void(DownloadItem*));
-  MOCK_METHOD2(GetIntermediatePath, FilePath(const DownloadItem&, bool*));
+  MOCK_METHOD1(GetIntermediatePath, FilePath(const DownloadItem&));
   MOCK_METHOD0(GetAlternativeWebContentsToNotifyForDownload, WebContents*());
   MOCK_METHOD1(ShouldOpenFileBasedOnExtension, bool(const FilePath&));
   MOCK_METHOD2(ShouldCompleteDownload, bool(
@@ -494,15 +494,15 @@ TEST_F(DownloadManagerTest, OnTargetPathAvailable) {
       FILE_PATH_LITERAL("location.crdownload")));
 
   EXPECT_CALL(item, GetTargetDisposition())
-      .WillOnce(Return(DownloadItem::TARGET_DISPOSITION_UNIQUIFY));
+      .WillOnce(Return(DownloadItem::TARGET_DISPOSITION_OVERWRITE));
   EXPECT_CALL(GetMockDownloadManagerDelegate(),
-              GetIntermediatePath(Ref(item), _))
-      .WillOnce(DoAll(SetArgPointee<1>(true), Return(intermediate_path)));
+              GetIntermediatePath(Ref(item)))
+      .WillOnce(Return(intermediate_path));
   // Finesse DCHECK with WillRepeatedly.
   EXPECT_CALL(item, GetTargetFilePath())
       .WillRepeatedly(ReturnRef(target_path));
   EXPECT_CALL(item, OnIntermediatePathDetermined(
-      &GetMockDownloadFileManager(), intermediate_path, true));
+      &GetMockDownloadFileManager(), intermediate_path));
   download_manager_->RestartDownload(item.GetId());
 }
 

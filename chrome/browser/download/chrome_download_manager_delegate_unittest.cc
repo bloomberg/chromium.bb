@@ -5,7 +5,9 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
+#include "base/observer_list.h"
 #include "base/scoped_temp_dir.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/value_conversions.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -82,14 +84,6 @@ enum TestCaseExpectIntermediate {
   EXPECT_UNCONFIRMED  // Expect path/to/Unconfirmed xxx.crdownload
 };
 
-// A marker is a file created on the file system to "reserve" a filename. We do
-// this for a limited number of cases to prevent in-progress downloads from
-// getting overwritten by new downloads.
-enum TestCaseExpectMarker {
-  EXPECT_NO_MARKER,
-  EXPECT_INTERMEDIATE_MARKER
-};
-
 // Typical download test case. Used with
 // ChromeDownloadManagerDelegateTest::RunTestCase().
 struct DownloadTestCase {
@@ -119,12 +113,6 @@ struct DownloadTestCase {
 
   // Type of intermediate path to expect.
   TestCaseExpectIntermediate  expected_intermediate;
-
-  // Whether we should overwrite the intermediate path.
-  TestCaseExpectOverwrite     expected_overwrite_intermediate;
-
-  // Whether a marker file should be expected.
-  TestCaseExpectMarker        expected_marker;
 };
 
 #if defined(ENABLE_SAFE_BROWSING)
@@ -179,6 +167,17 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
     return suggested_path.MatchesExtension(FILE_PATH_LITERAL(".jar")) ||
         suggested_path.MatchesExtension(FILE_PATH_LITERAL(".exe"));
   }
+  virtual void GetReservedPath(
+      content::DownloadItem& download,
+      const FilePath& target_path,
+      const FilePath& default_download_path,
+      bool should_uniquify_path,
+      const DownloadPathReservationTracker::ReservedPathCallback callback) {
+    // Pretend the path reservation succeeded without any change to
+    // |target_path|.
+    MessageLoop::current()->PostTask(FROM_HERE,
+                                     base::Bind(callback, target_path, true));
+  }
 
 #if defined(ENABLE_SAFE_BROWSING)
   // A TestDownloadProtectionService* is convenient for setting up mocks.
@@ -217,9 +216,15 @@ class ChromeDownloadManagerDelegateTest : public ::testing::Test {
   // downloads directory.
   FilePath GetPathInDownloadDir(const FilePath::StringType& path);
 
-  // Run |test_case| using |download_id| as the ID for the download.
-  // |download_id| is typically the test case number as well, for convenience.
-  void RunTestCase(const DownloadTestCase& test_case, int32 download_id);
+  // Run |test_case| using |item|.
+  void RunTestCaseWithDownloadItem(const DownloadTestCase& test_case,
+                                   content::MockDownloadItem* item);
+
+  // Run through |test_case_count| tests in |test_cases|. A new MockDownloadItem
+  // will be created for each test case and destroyed when the test case is
+  // complete.
+  void RunTestCases(const DownloadTestCase test_cases[],
+                    size_t test_case_count);
 
   // Set the kDownloadDefaultDirectory user preference to |path|.
   void SetDefaultDownloadPath(const FilePath& path);
@@ -240,10 +245,8 @@ class ChromeDownloadManagerDelegateTest : public ::testing::Test {
   TestChromeDownloadManagerDelegate* delegate();
   content::MockDownloadManager* download_manager();
   DownloadPrefs* download_prefs();
-  void set_clean_marker_files(bool clean);
 
  private:
-  bool clean_marker_files_;
   MessageLoopForUI message_loop_;
   TestingPrefService* pref_service_;
   ScopedTempDir test_download_dir_;
@@ -255,8 +258,7 @@ class ChromeDownloadManagerDelegateTest : public ::testing::Test {
 };
 
 ChromeDownloadManagerDelegateTest::ChromeDownloadManagerDelegateTest()
-    : clean_marker_files_(true),
-      ui_thread_(content::BrowserThread::UI, &message_loop_),
+    : ui_thread_(content::BrowserThread::UI, &message_loop_),
       file_thread_(content::BrowserThread::FILE, &message_loop_),
       download_manager_(new content::MockDownloadManager),
       delegate_(new TestChromeDownloadManagerDelegate(&profile_)) {
@@ -270,6 +272,7 @@ void ChromeDownloadManagerDelegateTest::SetUp() {
 }
 
 void ChromeDownloadManagerDelegateTest::TearDown() {
+  message_loop_.RunAllPending();
   delegate_->Shutdown();
 }
 
@@ -317,14 +320,9 @@ FilePath ChromeDownloadManagerDelegateTest::GetPathInDownloadDir(
   return full_path.NormalizePathSeparators();
 }
 
-void ChromeDownloadManagerDelegateTest::RunTestCase(
+void ChromeDownloadManagerDelegateTest::RunTestCaseWithDownloadItem(
     const DownloadTestCase& test_case,
-    int32 download_id) {
-  scoped_ptr<content::MockDownloadItem> item(
-      CreateActiveDownloadItem(download_id));
-  SCOPED_TRACE(
-      testing::Message() << "Running test for download id " << download_id);
-
+    content::MockDownloadItem* item) {
   // SetUp DownloadItem
   GURL download_url(test_case.url);
   std::vector<GURL> url_chain;
@@ -401,34 +399,33 @@ void ChromeDownloadManagerDelegateTest::RunTestCase(
   }
 
   // RestartDownload() should be called at this point.
-  EXPECT_CALL(*download_manager_, RestartDownload(download_id));
+  EXPECT_CALL(*download_manager_, RestartDownload(item->GetId()));
   EXPECT_CALL(*download_manager_, LastDownloadPath())
       .WillRepeatedly(Return(FilePath()));
 
   // Kick off the test.
-  EXPECT_FALSE(delegate_->ShouldStartDownload(download_id));
+  EXPECT_FALSE(delegate_->ShouldStartDownload(item->GetId()));
   message_loop_.RunAllPending();
 
   // Now query the intermediate path.
   EXPECT_CALL(*item, GetDangerType())
       .WillOnce(Return(test_case.danger_type));
   bool ok_to_overwrite = false;
-  FilePath intermediate_path =
-      delegate_->GetIntermediatePath(*item, &ok_to_overwrite);
-  EXPECT_EQ((test_case.expected_overwrite_intermediate == EXPECT_OVERWRITE),
-            ok_to_overwrite);
+  FilePath intermediate_path = delegate_->GetIntermediatePath(*item);
+  EXPECT_FALSE(ok_to_overwrite);
   VerifyIntermediatePath(test_case.expected_intermediate,
                          GetPathInDownloadDir(test_case.expected_target_path),
                          intermediate_path);
+}
 
-  EXPECT_EQ((test_case.expected_marker == EXPECT_INTERMEDIATE_MARKER),
-            file_util::PathExists(intermediate_path));
-  // Remove the intermediate marker since our mocks won't do anything with it.
-  if (clean_marker_files_ &&
-      file_util::PathExists(intermediate_path) &&
-      !file_util::DirectoryExists(intermediate_path))
-    file_util::Delete(intermediate_path, false);
-  VerifyAndClearExpectations();
+void ChromeDownloadManagerDelegateTest::RunTestCases(
+    const DownloadTestCase test_cases[],
+    size_t test_case_count) {
+  for (size_t i = 0; i < test_case_count; ++i) {
+    scoped_ptr<content::MockDownloadItem> item(CreateActiveDownloadItem(i));
+    SCOPED_TRACE(testing::Message() << "Running test case " << i);
+    RunTestCaseWithDownloadItem(test_cases[i], item.get());
+  }
 }
 
 void ChromeDownloadManagerDelegateTest::SetDefaultDownloadPath(
@@ -487,10 +484,6 @@ DownloadPrefs* ChromeDownloadManagerDelegateTest::download_prefs() {
   return delegate_->download_prefs();
 }
 
-void ChromeDownloadManagerDelegateTest::set_clean_marker_files(bool clean) {
-  clean_marker_files_ = clean;
-}
-
 }  // namespace
 
 TEST_F(ChromeDownloadManagerDelegateTest, ShouldStartDownload_Invalid) {
@@ -512,9 +505,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_Basic) {
       FILE_PATH_LITERAL("foo.txt"),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
-      EXPECT_CRDOWNLOAD,
-      EXPECT_OVERWRITE,
-      EXPECT_INTERMEDIATE_MARKER
+      EXPECT_CRDOWNLOAD
     },
 
     {
@@ -527,9 +518,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_Basic) {
       FILE_PATH_LITERAL("foo.txt"),
       DownloadItem::TARGET_DISPOSITION_PROMPT,
 
-      EXPECT_CRDOWNLOAD,
-      EXPECT_OVERWRITE,
-      EXPECT_NO_MARKER
+      EXPECT_CRDOWNLOAD
     },
 
     {
@@ -540,11 +529,9 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_Basic) {
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL("foo.exe"),
-      DownloadItem::TARGET_DISPOSITION_UNIQUIFY,
+      DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
-      EXPECT_UNCONFIRMED,
-      EXPECT_NO_OVERWRITE,
-      EXPECT_NO_MARKER
+      EXPECT_UNCONFIRMED
     },
 
     {
@@ -557,9 +544,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_Basic) {
       FILE_PATH_LITERAL("forced-foo.txt"),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
-      EXPECT_CRDOWNLOAD,
-      EXPECT_OVERWRITE,
-      EXPECT_NO_MARKER
+      EXPECT_CRDOWNLOAD
     },
 
 #if defined(ENABLE_SAFE_BROWSING)
@@ -576,9 +561,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_Basic) {
       FILE_PATH_LITERAL("forced-foo.exe"),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
-      EXPECT_UNCONFIRMED,
-      EXPECT_NO_OVERWRITE,
-      EXPECT_NO_MARKER
+      EXPECT_UNCONFIRMED
     },
 
     {
@@ -591,15 +574,12 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_Basic) {
       FILE_PATH_LITERAL("foo.exe"),
       DownloadItem::TARGET_DISPOSITION_PROMPT,
 
-      EXPECT_UNCONFIRMED,
-      EXPECT_NO_OVERWRITE,
-      EXPECT_NO_MARKER
+      EXPECT_UNCONFIRMED
     }
 #endif
   };
 
-  for (unsigned i = 0; i < arraysize(kBasicTestCases); ++i)
-    RunTestCase(kBasicTestCases[i], i);
+  RunTestCases(kBasicTestCases, arraysize(kBasicTestCases));
 }
 
 #if defined(ENABLE_SAFE_BROWSING)
@@ -615,11 +595,9 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_DangerousURL) {
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL("foo.txt"),
-      DownloadItem::TARGET_DISPOSITION_UNIQUIFY,
+      DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
-      EXPECT_UNCONFIRMED,
-      EXPECT_NO_OVERWRITE,
-      EXPECT_NO_MARKER
+      EXPECT_UNCONFIRMED
     },
 
     {
@@ -632,9 +610,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_DangerousURL) {
       FILE_PATH_LITERAL("foo.txt"),
       DownloadItem::TARGET_DISPOSITION_PROMPT,
 
-      EXPECT_UNCONFIRMED,
-      EXPECT_NO_OVERWRITE,
-      EXPECT_NO_MARKER
+      EXPECT_UNCONFIRMED
     },
 
     {
@@ -647,9 +623,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_DangerousURL) {
       FILE_PATH_LITERAL("forced-foo.txt"),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
-      EXPECT_UNCONFIRMED,
-      EXPECT_NO_OVERWRITE,
-      EXPECT_NO_MARKER
+      EXPECT_UNCONFIRMED
     },
 
     {
@@ -661,11 +635,9 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_DangerousURL) {
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL("foo.jar"),
-      DownloadItem::TARGET_DISPOSITION_UNIQUIFY,
+      DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
-      EXPECT_UNCONFIRMED,
-      EXPECT_NO_OVERWRITE,
-      EXPECT_NO_MARKER
+      EXPECT_UNCONFIRMED
     },
 
     {
@@ -678,9 +650,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_DangerousURL) {
       FILE_PATH_LITERAL("foo.jar"),
       DownloadItem::TARGET_DISPOSITION_PROMPT,
 
-      EXPECT_UNCONFIRMED,
-      EXPECT_NO_OVERWRITE,
-      EXPECT_NO_MARKER
+      EXPECT_UNCONFIRMED
     },
 
     {
@@ -693,14 +663,11 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_DangerousURL) {
       FILE_PATH_LITERAL("forced-foo.jar"),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
-      EXPECT_UNCONFIRMED,
-      EXPECT_NO_OVERWRITE,
-      EXPECT_NO_MARKER
+      EXPECT_UNCONFIRMED
     },
   };
 
-  for (unsigned i = 0; i < arraysize(kDangerousURLTestCases); ++i)
-    RunTestCase(kDangerousURLTestCases[i], i);
+  RunTestCases(kDangerousURLTestCases, arraysize(kDangerousURLTestCases));
 }
 #endif  // ENABLE_SAFE_BROWSING
 
@@ -720,9 +687,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_PromptAlways) {
       FILE_PATH_LITERAL("foo.txt"),
       DownloadItem::TARGET_DISPOSITION_PROMPT,
 
-      EXPECT_CRDOWNLOAD,
-      EXPECT_OVERWRITE,
-      EXPECT_NO_MARKER
+      EXPECT_CRDOWNLOAD
     },
 
     {
@@ -737,9 +702,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_PromptAlways) {
       FILE_PATH_LITERAL("foo.crx"),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
-      EXPECT_CRDOWNLOAD,
-      EXPECT_OVERWRITE,
-      EXPECT_INTERMEDIATE_MARKER
+      EXPECT_CRDOWNLOAD
     },
 
     {
@@ -753,9 +716,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_PromptAlways) {
       FILE_PATH_LITERAL("foo.user.js"),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
-      EXPECT_CRDOWNLOAD,
-      EXPECT_OVERWRITE,
-      EXPECT_INTERMEDIATE_MARKER
+      EXPECT_CRDOWNLOAD
     },
 
     {
@@ -769,9 +730,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_PromptAlways) {
       FILE_PATH_LITERAL("foo.dummy"),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
-      EXPECT_CRDOWNLOAD,
-      EXPECT_OVERWRITE,
-      EXPECT_INTERMEDIATE_MARKER
+      EXPECT_CRDOWNLOAD
     },
 
 #if defined(ENABLE_SAFE_BROWSING)
@@ -789,17 +748,14 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_PromptAlways) {
       FILE_PATH_LITERAL("foo.exe"),
       DownloadItem::TARGET_DISPOSITION_PROMPT,
 
-      EXPECT_UNCONFIRMED,
-      EXPECT_NO_OVERWRITE,
-      EXPECT_NO_MARKER
+      EXPECT_UNCONFIRMED
     },
 #endif
   };
 
   SetPromptForDownload(true);
   EnableAutoOpenBasedOnExtension(FilePath(FILE_PATH_LITERAL("dummy.dummy")));
-  for (unsigned i = 0; i < arraysize(kPromptingTestCases); ++i)
-    RunTestCase(kPromptingTestCases[i], i);
+  RunTestCases(kPromptingTestCases, arraysize(kPromptingTestCases));
 }
 
 // If the download path is managed, then we don't show any prompts.
@@ -816,9 +772,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_ManagedPath) {
       FILE_PATH_LITERAL("foo.txt"),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
-      EXPECT_CRDOWNLOAD,
-      EXPECT_OVERWRITE,
-      EXPECT_INTERMEDIATE_MARKER
+      EXPECT_CRDOWNLOAD
     },
 
     {
@@ -831,201 +785,13 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_ManagedPath) {
       FILE_PATH_LITERAL("foo.txt"),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
-      EXPECT_CRDOWNLOAD,
-      EXPECT_OVERWRITE,
-      EXPECT_INTERMEDIATE_MARKER
+      EXPECT_CRDOWNLOAD
     },
   };
 
   SetManagedDownloadPath(default_download_path());
   ASSERT_TRUE(download_prefs()->IsDownloadPathManaged());
-  for (unsigned i = 0; i < arraysize(kManagedPathTestCases); ++i)
-    RunTestCase(kManagedPathTestCases[i], i);
-}
-
-// If the intermediate file already exists (for safe downloads), or if the
-// target file already exists, then the suggested target path should be
-// uniquified.
-TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_ConflictingFiles) {
-  // Create some target files and an intermediate file for use with the test
-  // cases that follow:
-  ASSERT_TRUE(file_util::IsDirectoryEmpty(default_download_path()));
-  ASSERT_EQ(0, file_util::WriteFile(
-      GetPathInDownloadDir(FILE_PATH_LITERAL("exists.txt")), "", 0));
-  ASSERT_EQ(0, file_util::WriteFile(
-      GetPathInDownloadDir(FILE_PATH_LITERAL("exists.jar")), "", 0));
-  ASSERT_EQ(0, file_util::WriteFile(
-      GetPathInDownloadDir(FILE_PATH_LITERAL("exists.exe")), "", 0));
-  ASSERT_EQ(0, file_util::WriteFile(
-      GetPathInDownloadDir(FILE_PATH_LITERAL("exists.png.crdownload")), "", 0));
-
-  const DownloadTestCase kConflictingFilesTestCases[] = {
-    {
-      // 0: Automatic Safe
-      AUTOMATIC,
-      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      "http://example.com/exists.txt", "",
-      FILE_PATH_LITERAL(""),
-
-      FILE_PATH_LITERAL("exists (1).txt"),
-      DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-
-      EXPECT_CRDOWNLOAD,
-      EXPECT_OVERWRITE,
-      EXPECT_INTERMEDIATE_MARKER
-    },
-
-    {
-      // 1: Save_As Safe
-      SAVE_AS,
-      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      "http://example.com/exists.txt", "",
-      FILE_PATH_LITERAL(""),
-
-      FILE_PATH_LITERAL("exists (1).txt"),
-      DownloadItem::TARGET_DISPOSITION_PROMPT,
-
-      EXPECT_CRDOWNLOAD,
-      EXPECT_OVERWRITE,
-      EXPECT_NO_MARKER
-    },
-
-    {
-      // 2: Automatic Dangerous
-      AUTOMATIC,
-      content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
-      "http://example.com/exists.jar", "",
-      FILE_PATH_LITERAL(""),
-
-      FILE_PATH_LITERAL("exists.jar"),
-      DownloadItem::TARGET_DISPOSITION_UNIQUIFY,
-
-      EXPECT_UNCONFIRMED,
-      EXPECT_NO_OVERWRITE,
-      EXPECT_NO_MARKER
-    },
-
-    {
-      // 3: Automatic Safe - Intermediate path exists
-      AUTOMATIC,
-      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      "http://example.com/exists.png", "",
-      FILE_PATH_LITERAL(""),
-
-      FILE_PATH_LITERAL("exists (1).png"),
-      DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-
-      EXPECT_CRDOWNLOAD,
-      EXPECT_OVERWRITE,
-      EXPECT_INTERMEDIATE_MARKER
-    },
-
-    {
-      // 4: Save_As Safe - Intermediate path exists
-      SAVE_AS,
-      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      "http://example.com/exists.png", "",
-      FILE_PATH_LITERAL(""),
-
-      FILE_PATH_LITERAL("exists (1).png"),
-      DownloadItem::TARGET_DISPOSITION_PROMPT,
-
-      EXPECT_CRDOWNLOAD,
-      EXPECT_OVERWRITE,
-      EXPECT_NO_MARKER
-    },
-
-#if defined(ENABLE_SAFE_BROWSING)
-    // Maybe_Dangerous test cases are only applicable to safe browsing.
-    {
-      // 5: Automatic Maybe_Dangerous
-      AUTOMATIC,
-      content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
-      "http://example.com/exists.exe", "",
-      FILE_PATH_LITERAL(""),
-
-      FILE_PATH_LITERAL("exists.exe"),
-      DownloadItem::TARGET_DISPOSITION_UNIQUIFY,
-
-      EXPECT_UNCONFIRMED,
-      EXPECT_NO_OVERWRITE,
-      EXPECT_NO_MARKER
-    },
-
-    {
-      // 6: Save_As Maybe_Dangerous
-      SAVE_AS,
-      content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
-      "http://example.com/exists.exe", "",
-      FILE_PATH_LITERAL(""),
-
-      FILE_PATH_LITERAL("exists (1).exe"),
-      DownloadItem::TARGET_DISPOSITION_PROMPT,
-
-      EXPECT_UNCONFIRMED,
-      EXPECT_NO_OVERWRITE,
-      EXPECT_NO_MARKER
-    },
-#endif
-  };
-
-  for (unsigned i = 0; i < arraysize(kConflictingFilesTestCases); ++i)
-    RunTestCase(kConflictingFilesTestCases[i], i);
-}
-
-// Check that multiple downloads that are in-progress at the same time don't
-// trample each other. This is only done in a few limited cases currently.
-TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_ConflictingDownloads) {
-  const DownloadTestCase kConflictingDownloadsTestCases[] = {
-    {
-      // 0: Initial download.
-      AUTOMATIC,
-      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      "http://example.com/exists.txt", "",
-      FILE_PATH_LITERAL(""),
-
-      FILE_PATH_LITERAL("exists.txt"),
-      DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-
-      EXPECT_CRDOWNLOAD,
-      EXPECT_OVERWRITE,
-      EXPECT_INTERMEDIATE_MARKER
-    },
-
-    {
-      // 1: Should uniquify around the previous download.
-      AUTOMATIC,
-      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      "http://example.com/exists.txt", "",
-      FILE_PATH_LITERAL(""),
-
-      FILE_PATH_LITERAL("exists (1).txt"),
-      DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-
-      EXPECT_CRDOWNLOAD,
-      EXPECT_OVERWRITE,
-      EXPECT_INTERMEDIATE_MARKER
-    },
-
-    {
-      // 2: Uniquifies around both previous downloads.
-      AUTOMATIC,
-      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      "http://example.com/exists.txt", "",
-      FILE_PATH_LITERAL(""),
-
-      FILE_PATH_LITERAL("exists (2).txt"),
-      DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-
-      EXPECT_CRDOWNLOAD,
-      EXPECT_OVERWRITE,
-      EXPECT_INTERMEDIATE_MARKER
-    },
-  };
-
-  set_clean_marker_files(false);
-  for (unsigned i = 0; i < arraysize(kConflictingDownloadsTestCases); ++i)
-    RunTestCase(kConflictingDownloadsTestCases[i], i);
+  RunTestCases(kManagedPathTestCases, arraysize(kManagedPathTestCases));
 }
 
 // TODO(asanka): Add more tests.

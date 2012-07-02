@@ -389,8 +389,7 @@ TEST_F(DownloadItemTest, NotificationAfterOnIntermediatePathDetermined) {
               RenameDownloadFile(_,intermediate_path,false,_))
       .WillOnce(ScheduleRenameCallback(new_intermediate_path));
 
-  item->OnIntermediatePathDetermined(file_manager.get(), intermediate_path,
-                                     false /* ok_to_overwrite */);
+  item->OnIntermediatePathDetermined(file_manager.get(), intermediate_path);
   EXPECT_FALSE(observer.CheckUpdated());
   RunAllPendingInMessageLoops();
   EXPECT_TRUE(observer.CheckUpdated());
@@ -514,8 +513,7 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
   item->OnTargetPathDetermined(final_path,
                                DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                                content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
-  item->OnIntermediatePathDetermined(file_manager.get(), intermediate_path,
-                                     false /* ok_to_overwrite */);
+  item->OnIntermediatePathDetermined(file_manager.get(), intermediate_path);
   RunAllPendingInMessageLoops();
   // All the callbacks should have happened by now.
   ::testing::Mock::VerifyAndClearExpectations(file_manager.get());

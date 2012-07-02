@@ -159,8 +159,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual void OnContentCheckCompleted(
       content::DownloadDangerType danger_type) OVERRIDE;
   virtual void OnIntermediatePathDetermined(DownloadFileManager* file_manager,
-                                            const FilePath& path,
-                                            bool ok_to_overwrite) OVERRIDE;
+                                            const FilePath& path) OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
   virtual const std::vector<GURL>& GetUrlChain() const OVERRIDE;
   virtual const GURL& GetOriginalUrl() const OVERRIDE;

@@ -717,9 +717,6 @@ void DownloadItemImpl::OnDownloadCompleting(DownloadFileManager* file_manager) {
   DCHECK(file_manager);
 
   if (NeedsRename()) {
-    // Rename the Download file and call back to OnDownloadRenamedToFinalName.
-    bool should_overwrite =
-        (GetTargetDisposition() != DownloadItem::TARGET_DISPOSITION_UNIQUIFY);
     DownloadFileManager::RenameCompletionCallback callback =
         base::Bind(&DownloadItemImpl::OnDownloadRenamedToFinalName,
                    weak_ptr_factory_.GetWeakPtr(),
@@ -728,7 +725,7 @@ void DownloadItemImpl::OnDownloadCompleting(DownloadFileManager* file_manager) {
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&DownloadFileManager::RenameDownloadFile,
                    file_manager, GetGlobalId(), GetTargetFilePath(),
-                   should_overwrite, callback));
+                   true, callback));
   } else {
     // Complete the download and release the DownloadFile.
     BrowserThread::PostTask(
@@ -897,8 +894,7 @@ void DownloadItemImpl::OnContentCheckCompleted(
 
 void DownloadItemImpl::OnIntermediatePathDetermined(
     DownloadFileManager* file_manager,
-    const FilePath& intermediate_path,
-    bool ok_to_overwrite) {
+    const FilePath& intermediate_path) {
   DownloadFileManager::RenameCompletionCallback callback =
       base::Bind(&DownloadItemImpl::OnDownloadRenamedToIntermediateName,
                  weak_ptr_factory_.GetWeakPtr());
@@ -906,7 +902,7 @@ void DownloadItemImpl::OnIntermediatePathDetermined(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&DownloadFileManager::RenameDownloadFile,
                  file_manager, GetGlobalId(), intermediate_path,
-                 ok_to_overwrite, callback));
+                 false, callback));
 }
 
 const FilePath& DownloadItemImpl::GetFullPath() const {

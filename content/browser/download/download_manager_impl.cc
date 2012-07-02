@@ -565,21 +565,18 @@ void DownloadManagerImpl::OnTargetPathAvailable(DownloadItem* download) {
   //               avoids a spurious rename when we can just rename to the final
   //               filename. Unnecessary renames may cause bugs like
   //               http://crbug.com/74187.
-  bool ok_to_overwrite = true;
   FilePath intermediate_path;
-  if (delegate_) {
-    intermediate_path =
-        delegate_->GetIntermediatePath(*download, &ok_to_overwrite);
-  } else {
+  if (delegate_)
+    intermediate_path = delegate_->GetIntermediatePath(*download);
+  else
     intermediate_path = download->GetTargetFilePath();
-  }
+
   // We want the intermediate and target paths to refer to the same directory so
   // that they are both on the same device and subject to same
   // space/permission/availability constraints.
   DCHECK(intermediate_path.DirName() ==
          download->GetTargetFilePath().DirName());
-  download->OnIntermediatePathDetermined(file_manager_, intermediate_path,
-                                         ok_to_overwrite);
+  download->OnIntermediatePathDetermined(file_manager_, intermediate_path);
 }
 
 void DownloadManagerImpl::UpdateDownload(int32 download_id,

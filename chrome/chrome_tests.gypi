@@ -1186,6 +1186,7 @@
         'browser/download/download_item_model_unittest.cc',
         'browser/download/download_request_infobar_delegate_unittest.cc',
         'browser/download/download_request_limiter_unittest.cc',
+        'browser/download/download_path_reservation_tracker_unittest.cc',
         'browser/download/download_shelf_unittest.cc',
         'browser/download/download_status_updater_unittest.cc',
         'browser/enumerate_modules_model_unittest_win.cc',

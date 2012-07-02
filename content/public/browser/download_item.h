@@ -89,8 +89,6 @@ class CONTENT_EXPORT DownloadItem {
   // How the final target path should be used.
   enum TargetDisposition {
     TARGET_DISPOSITION_OVERWRITE, // Overwrite if the target already exists.
-    TARGET_DISPOSITION_UNIQUIFY,  // Append a uniquifier if the target already
-                                  // exists. E.g.: "foo.txt" -> "foo (1).txt"
     TARGET_DISPOSITION_PROMPT     // Prompt the user for the actual
                                   // target. Implies
                                   // TARGET_DISPOSITION_OVERWRITE.
@@ -273,8 +271,7 @@ class CONTENT_EXPORT DownloadItem {
   virtual void OnContentCheckCompleted(DownloadDangerType danger_type) = 0;
 
   virtual void OnIntermediatePathDetermined(DownloadFileManager* file_manager,
-                                            const FilePath& path,
-                                            bool ok_to_overwrite) = 0;
+                                            const FilePath& path) = 0;
 
   virtual void SetIsPersisted() = 0;
   virtual bool IsPersisted() const = 0;
