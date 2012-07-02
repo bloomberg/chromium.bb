@@ -219,11 +219,11 @@ class SiteProcessMap : public base::SupportsUserData::Data {
   typedef base::hash_map<std::string, RenderProcessHost*> SiteToProcessMap;
   SiteProcessMap() {}
 
-  void RegisterProcess(std::string site, RenderProcessHost* process) {
+  void RegisterProcess(const std::string& site, RenderProcessHost* process) {
     map_[site] = process;
   }
 
-  RenderProcessHost* FindProcess(std::string site) {
+  RenderProcessHost* FindProcess(const std::string& site) {
     SiteToProcessMap::iterator i = map_.find(site);
     if (i != map_.end())
       return i->second;
