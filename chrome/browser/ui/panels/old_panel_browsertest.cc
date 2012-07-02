@@ -472,7 +472,14 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, ResizePanel) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, AnimateBounds) {
+// http://crbug.com/135377
+#if defined(OS_LINUX)
+#define MAYBE_AnimateBounds DISABLED_AnimateBounds
+#else
+#define MAYBE_AnimateBounds AnimateBounds
+#endif
+
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MAYBE_AnimateBounds) {
   Panel* panel = CreatePanelWithBounds("PanelTest", gfx::Rect(0, 0, 100, 100));
   scoped_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
@@ -1213,8 +1220,17 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, DrawAttentionResetOnClick) {
   panel->Close();
 }
 
+
+// http://crbug.com/135377
+#if defined(OS_LINUX)
+#define MAYBE_MinimizeImmediatelyAfterRestore \
+        DISABLED_MinimizeImmediatelyAfterRestore
+#else
+#define MAYBE_MinimizeImmediatelyAfterRestore MinimizeImmediatelyAfterRestore
+#endif
+
 IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest,
-                       MinimizeImmediatelyAfterRestore) {
+                       MAYBE_MinimizeImmediatelyAfterRestore) {
   CreatePanelParams params("Panel Test", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel = CreatePanelWithParams(params);
   scoped_ptr<NativePanelTesting> native_panel_testing(
