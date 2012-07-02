@@ -558,9 +558,9 @@ TEST_F(LauncherViewTest, ShouldHideTooltipTest) {
         << "LauncherView tries to hide on button " << i;
   }
 
-  // The tooltip should hide on the app-list button.
+  // The tooltip should not hide on the app-list button.
   views::View* app_list_button = launcher_view_->GetAppListButtonView();
-  EXPECT_TRUE(launcher_view_->ShouldHideTooltip(
+  EXPECT_FALSE(launcher_view_->ShouldHideTooltip(
       app_list_button->GetMirroredBounds().CenterPoint()));
 
   // The tooltip shouldn't hide if the mouse is in the gap between two buttons.
@@ -575,6 +575,8 @@ TEST_F(LauncherViewTest, ShouldHideTooltipTest) {
   for (int i = 0; i < test_api_->GetButtonCount() - 1; i++) {
     all_area = all_area.Union(test_api_->GetButton(i)->GetMirroredBounds());
   }
+  all_area = all_area.Union(
+      launcher_view_->GetAppListButtonView()->GetMirroredBounds());
   EXPECT_FALSE(launcher_view_->ShouldHideTooltip(all_area.origin()));
   EXPECT_FALSE(launcher_view_->ShouldHideTooltip(
       gfx::Point(all_area.right() - 1, all_area.bottom() - 1)));

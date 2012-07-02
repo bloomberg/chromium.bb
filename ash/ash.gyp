@@ -70,6 +70,8 @@
         'high_contrast/high_contrast_controller.cc',
         'high_contrast/high_contrast_controller.h',
         'key_rewriter_delegate.h',
+        'launcher/app_list_button.cc',
+        'launcher/app_list_button.h',
         'launcher/background_animator.cc',
         'launcher/background_animator.h',
         'launcher/launcher.cc',

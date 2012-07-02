@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/launcher/app_list_button.h"
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_icon_observer.h"
@@ -506,7 +507,7 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
     case TYPE_APP_LIST: {
       // TODO(dave): turn this into a LauncherButton too.
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      views::ImageButton* button = new views::ImageButton(this);
+      AppListButton* button = new AppListButton(this, this);
       button->SetImage(
           views::CustomButton::BS_NORMAL,
           rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST).ToImageSkia());
@@ -734,12 +735,11 @@ void LauncherView::UpdateFirstButtonPadding() {
 }
 
 bool LauncherView::ShouldHideTooltip(const gfx::Point& cursor_location) {
-  views::View* app_list_view = GetAppListButtonView();
   gfx::Rect active_bounds;
 
   for (int i = 0; i < child_count(); ++i) {
     views::View* child = child_at(i);
-    if (child == overflow_button_ || child == app_list_view)
+    if (child == overflow_button_)
       continue;
 
     gfx::Rect child_bounds = child->GetMirroredBounds();
