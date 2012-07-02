@@ -986,3 +986,10 @@
   fun:media::PipelineIntegrationTestBase::OnVideoRendererPaint
   fun:base::internal::RunnableAdapter::Run
 }
+{
+  bug_135435
+  ThreadSanitizer:Race
+  fun:base::subtle::NoBarrier_Store
+  fun:base::LazyInstance::OnExit
+  fun:base::internal::RunnableAdapter::Run
+}
