@@ -250,7 +250,7 @@
       </description>
 
       <arg name="serial" type="uint"/>
-      <arg name="type" type="string"/>
+      <arg name="type" type="string" allow-null="true"/>
     </request>
 
     <request name="receive">
@@ -292,7 +292,7 @@
 	a target does not accept any of the offered types, type is NULL.
       </description>
 
-      <arg name="mime_type" type="string"/>
+      <arg name="mime_type" type="string" allow-null="true"/>
     </event>
 
     <event name="send">
@@ -335,9 +335,9 @@
 	hotspot, but subsequent surface.attach request can move the
 	relative position.
       </description>
-      <arg name="source" type="object" interface="wl_data_source"/>
+      <arg name="source" type="object" interface="wl_data_source" allow-null="true"/>
       <arg name="origin" type="object" interface="wl_surface"/>
-      <arg name="icon" type="object" interface="wl_surface"/>
+      <arg name="icon" type="object" interface="wl_surface" allow-null="true"/>
       <arg name="serial" type="uint"/>
     </request>
 
@@ -390,7 +390,7 @@
 	data_offer is valid until a new data_offer or NULL is received
 	or until the client loses keyboard focus.
       </description>
-      <arg name="id" type="object" interface="wl_data_offer"/>
+      <arg name="id" type="object" interface="wl_data_offer" allow-null="true"/>
     </event>
   </interface>
 
@@ -502,7 +502,7 @@
       </description>
       <arg name="method" type="uint"/>
       <arg name="framerate" type="uint"/>
-      <arg name="output" type="object" interface="wl_output"/>
+      <arg name="output" type="object" interface="wl_output" allow-null="true"/>
     </request>
 
     <enum name="fullscreen_method">
@@ -565,7 +565,7 @@
         to, except the panel area. This is the main difference between
         a maximized shell surface and a fullscreen shell surface.
       </description>
-      <arg name="output" type="object" interface="wl_output"/>
+      <arg name="output" type="object" interface="wl_output" allow-null="true"/>
     </request>
 
     <request name="set_title">
@@ -697,7 +697,7 @@
 	region is the entire surface.
       </description>
 
-      <arg name="region" type="object" interface="wl_region"/>
+      <arg name="region" type="object" interface="wl_region" allow-null="true"/>
     </request>
 
     <event name="enter">
@@ -797,7 +797,7 @@
       </description>
 
       <arg name="serial" type="uint"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="surface" type="object" interface="wl_surface" allow-null="true"/>
       <arg name="hotspot_x" type="int"/>
       <arg name="hotspot_y" type="int"/>
     </request>
