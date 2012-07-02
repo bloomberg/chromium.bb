@@ -62,7 +62,15 @@ html[dir=rtl] #login-header-bar #add-user-button {
   background-size: 24px;
 }
 
+html[oobe=new] #login-header-bar #shutdown-button {
+  background-image: url('chrome://theme/IDR_ICON_POWER24_WHITE');
+}
+
 #login-header-bar #add-user-button {
   background-image: url('chrome://theme/IDR_ICON_ADD_USER24');
   background-size: 24px;
+}
+
+html[oobe=new] #login-header-bar #add-user-button {
+  background-image: url('chrome://theme/IDR_ICON_ADD_USER24_WHITE');
 }

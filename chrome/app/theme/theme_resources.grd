@@ -280,6 +280,8 @@
         <include name="IDR_HELP_MENU" file="default_100_percent/help_16.png" type="BINDATA" />
         <include name="IDR_ICON_ADD_USER24" file="default_100_percent/icon_add_user24.png" type="BINDATA" />
         <include name="IDR_ICON_POWER24" file="default_100_percent/icon_power24.png" type="BINDATA" />
+        <include name="IDR_ICON_ADD_USER24_WHITE" file="default_100_percent/icon_add_user24_white.png" type="BINDATA" />
+        <include name="IDR_ICON_POWER24_WHITE" file="default_100_percent/icon_power24_white.png" type="BINDATA" />
         <include name="IDR_LOGIN_DEFAULT_USER" file="default_100_percent/avatar_beaker.png" type="BINDATA" />
         <include name="IDR_LOGIN_DEFAULT_USER_1" file="default_100_percent/avatar_bee.png" type="BINDATA" />
         <include name="IDR_LOGIN_DEFAULT_USER_2" file="default_100_percent/avatar_briefcase.png" type="BINDATA" />
