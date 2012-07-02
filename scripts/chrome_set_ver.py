@@ -18,7 +18,8 @@ from chromite.lib import osutils
 _CHROMIUM_ROOT = 'chromium'
 _CHROMIUM_SRC_ROOT = os.path.join(_CHROMIUM_ROOT, 'src')
 _CHROMIUM_SRC_INTERNAL = os.path.join(_CHROMIUM_ROOT, 'src-internal')
-_CHROMIUM_CROS_DEPS = os.path.join(_CHROMIUM_SRC_ROOT, 'tools/cros.DEPS/DEPS')
+_CHROMIUM_SRC_DEPS = os.path.join(_CHROMIUM_SRC_ROOT, 'DEPS')
+_CHROMIUM_CROS_DEP_KEYS = [ 'src/third_party/cros_system_api' ]
 
 
 def _LoadDEPS(deps_content):
@@ -59,11 +60,14 @@ def _LoadDEPS(deps_content):
 
 def _CreateCrosSymlink(repo_root):
   """Create symlinks to CrOS projects specified in the cros_DEPS/DEPS file."""
-  cros_deps_file = os.path.join(repo_root, _CHROMIUM_CROS_DEPS)
-  _, merged_deps = GetParsedDeps(cros_deps_file)
+  deps_file = os.path.join(repo_root, _CHROMIUM_SRC_DEPS)
+  _, merged_deps = GetParsedDeps(deps_file)
   chromium_root = os.path.join(repo_root, _CHROMIUM_ROOT)
 
-  mappings = GetPathToProjectMappings(merged_deps)
+  # TODO(rcui): Infer Chromium OS dependencies from the Chromium DEPS file.
+  cros_merged_deps = dict((k, v) for (k, v) in merged_deps.iteritems()
+                          if k in _CHROMIUM_CROS_DEP_KEYS)
+  mappings = GetPathToProjectMappings(cros_merged_deps)
   for rel_path, project in mappings.iteritems():
     link_dir = os.path.join(chromium_root, rel_path)
     target_dir = os.path.join(repo_root,
@@ -342,8 +346,6 @@ def main(argv):
   internal_deps = os.path.join(repo_root, _CHROMIUM_SRC_INTERNAL, '.DEPS.git')
   if os.path.exists(internal_deps):
     deps_files_to_parse.append(internal_deps)
-
-  deps_files_to_parse.append(os.path.join(repo_root, _CHROMIUM_CROS_DEPS))
 
   # Prepare source tree for resetting.
   chromium_root = os.path.join(repo_root, _CHROMIUM_ROOT)
