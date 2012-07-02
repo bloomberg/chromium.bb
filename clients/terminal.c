@@ -1745,6 +1745,12 @@ handle_sgr(struct terminal *terminal, int code)
 static int
 handle_special_char(struct terminal *terminal, char c)
 {
+	union utf8_char *row;
+	struct attr *attr_row;
+
+	row = terminal_get_row(terminal, terminal->row);
+	attr_row = terminal_get_attr_row(terminal, terminal->row);
+
 	switch(c) {
 	case '\r':
 		terminal->column = 0;
@@ -1767,6 +1773,13 @@ handle_special_char(struct terminal *terminal, char c)
 		while (terminal->column < terminal->width) {
 			if (terminal->mode & MODE_IRM)
 				terminal_shift_line(terminal, +1);
+
+			if (row[terminal->column].byte[0] == '\0') {
+				row[terminal->column].byte[0] = ' ';
+				row[terminal->column].byte[1] = '\0';
+				attr_row[terminal->column] = terminal->curr_attr;
+			}
+
 			terminal->column++;
 			if (terminal->tab_ruler[terminal->column]) break;
 		}
@@ -2270,7 +2283,7 @@ recompute_selection(struct terminal *terminal)
 	struct rectangle allocation;
 	int col, x, width, height;
 	int start_row, end_row;
-	int word_start;
+	int word_start, eol;
 	int side_margin, top_margin;
 	int start_x, end_x;
 	int cw, ch;
@@ -2301,6 +2314,7 @@ recompute_selection(struct terminal *terminal)
 		end_x = terminal->selection_start_x;
 	}
 
+	eol = 0;
 	if (terminal->selection_start_row < 0) {
 		terminal->selection_start_row = 0;
 		terminal->selection_start_col = 0;
@@ -2312,6 +2326,8 @@ recompute_selection(struct terminal *terminal)
 		for (col = 0; col < terminal->width; col++, x += cw) {
 			if (col == 0 || wordsep(data[col - 1].ch))
 				word_start = col;
+			if (data[col].ch != 0)
+				eol = col + 1;
 			if (start_x < x)
 				break;
 		}
@@ -2342,8 +2358,17 @@ recompute_selection(struct terminal *terminal)
 			    end_x < x && wordsep(data[col].ch))
 				break;
 		}
-
 		terminal->selection_end_col = col;
+	}
+
+	if (terminal->selection_end_col != terminal->selection_start_col ||
+	    terminal->selection_start_row != terminal->selection_end_row) {
+		col = terminal->selection_end_col;
+		if (col > 0 && data[col - 1].ch == 0)
+			terminal->selection_end_col = terminal->width;
+		data = terminal_get_row(terminal, terminal->selection_start_row);
+		if (data[terminal->selection_start_col].ch == 0)
+			terminal->selection_start_col = eol;
 	}
 
 	return 1;
