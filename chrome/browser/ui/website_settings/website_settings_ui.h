@@ -72,6 +72,8 @@ class WebsiteSettingsUI {
     std::string site_identity;
     // Status of the site's identity.
     WebsiteSettings::SiteIdentityStatus identity_status;
+    // Helper to get the resource ID of the status text to display to the user.
+    string16 GetIdentityStatusText() const;
     // Textual description of the site's identity status that is displayed to
     // the user.
     std::string identity_status_description;
@@ -100,7 +102,7 @@ class WebsiteSettingsUI {
 
   // Returns the icon for the given permission |type| and |setting|.
   static const gfx::Image& GetPermissionIcon(ContentSettingsType type,
-                                       ContentSetting setting);
+                                             ContentSetting setting);
 
   // Returns the identity icon for the given identity |status|.
   static const gfx::Image& GetIdentityIcon(

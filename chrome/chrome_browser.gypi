@@ -2867,6 +2867,8 @@
         'browser/ui/cocoa/web_intent_sheet_controller.mm',
         'browser/ui/cocoa/web_intent_picker_cocoa.h',
         'browser/ui/cocoa/web_intent_picker_cocoa.mm',
+        'browser/ui/cocoa/website_settings_bubble_controller.h',
+        'browser/ui/cocoa/website_settings_bubble_controller.mm',
         'browser/ui/cocoa/window_restore_utils.h',
         'browser/ui/cocoa/window_restore_utils.mm',
         'browser/ui/cocoa/window_size_autosaver.h',

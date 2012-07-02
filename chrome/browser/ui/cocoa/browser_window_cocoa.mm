@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/cocoa/task_manager_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/web_dialog_window_controller.h"
+#import "chrome/browser/ui/cocoa/website_settings_bubble_controller.h"
 #include "chrome/browser/ui/page_info_bubble.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -496,6 +497,8 @@ void BrowserWindowCocoa::ShowWebsiteSettings(
     const GURL& url,
     const content::SSLStatus& ssl,
     bool show_history) {
+  WebsiteSettingsUIBridge::Show(
+      window(), profile, tab_contents, url, ssl);
 }
 
 void BrowserWindowCocoa::ShowAppMenu() {

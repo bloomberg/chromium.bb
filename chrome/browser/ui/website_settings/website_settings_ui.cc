@@ -8,6 +8,7 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
@@ -29,6 +30,15 @@ WebsiteSettingsUI::IdentityInfo::IdentityInfo()
     : identity_status(WebsiteSettings::SITE_IDENTITY_STATUS_UNKNOWN),
       cert_id(0),
       connection_status(WebsiteSettings::SITE_CONNECTION_STATUS_UNKNOWN) {
+}
+
+string16 WebsiteSettingsUI::IdentityInfo::GetIdentityStatusText() const {
+  if (identity_status == WebsiteSettings::SITE_IDENTITY_STATUS_CERT ||
+      identity_status == WebsiteSettings::SITE_IDENTITY_STATUS_DNSSEC_CERT ||
+      identity_status ==  WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT) {
+    return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_IDENTITY_VERIFIED);
+  }
+  return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_IDENTITY_NOT_VERIFIED);
 }
 
 WebsiteSettingsUI::~WebsiteSettingsUI() {
