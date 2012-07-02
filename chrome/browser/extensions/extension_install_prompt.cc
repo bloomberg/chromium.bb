@@ -163,6 +163,11 @@ string16 ExtensionInstallPrompt::Prompt::GetPermissionsHeading() const {
   return l10n_util::GetStringUTF16(kPermissionsHeaderIds[type_]);
 }
 
+string16 ExtensionInstallPrompt::Prompt::GetOAuthHeading() const {
+  // TODO(estade): this should change based on type_.
+  return l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_SCOPES_HEADING);
+}
+
 void ExtensionInstallPrompt::Prompt::AppendRatingStars(
     StarAppender appender, void* data) const {
   CHECK(appender);

@@ -31,6 +31,7 @@ namespace {
 
 const int kLeftColumnMinWidth = 250;
 const int kImageSize = 69;
+const int kDetailIndent = 20;
 
 // Additional padding (beyond on ui::kControlSpacing) all sides of each
 // permission in the permissions list.
@@ -46,6 +47,32 @@ void AddResourceIcon(const gfx::ImageSkia* icon, void* data) {
   GtkWidget* icon_widget = gtk_image_new_from_pixbuf(icon_pixbuf);
   g_object_unref(icon_pixbuf);
   gtk_box_pack_start(GTK_BOX(container), icon_widget, FALSE, FALSE, 0);
+}
+
+void OnZippyButtonRealize(GtkWidget* event_box, gpointer unused) {
+  gdk_window_set_cursor(event_box->window, gfx::GetCursor(GDK_HAND2));
+}
+
+gboolean OnZippyButtonRelease(GtkWidget* event_box,
+                              GdkEvent* event,
+                              GtkWidget* detail_box) {
+  if (event->button.button != 1)
+    return FALSE;
+
+  GtkWidget* arrow =
+      GTK_WIDGET(gtk_object_get_data(GTK_OBJECT(event_box), "arrow"));
+
+  if (gtk_widget_get_visible(detail_box)) {
+    gtk_widget_hide(detail_box);
+    gtk_arrow_set(GTK_ARROW(arrow), GTK_ARROW_RIGHT, GTK_SHADOW_OUT);
+  } else {
+    gtk_widget_set_no_show_all(detail_box, FALSE);
+    gtk_widget_show_all(detail_box);
+    gtk_widget_set_no_show_all(detail_box, TRUE);
+    gtk_arrow_set(GTK_ARROW(arrow), GTK_ARROW_DOWN, GTK_SHADOW_OUT);
+  }
+
+  return TRUE;
 }
 
 }  // namespace
@@ -66,6 +93,9 @@ class ExtensionInstallDialog {
 
   CHROMEGTK_CALLBACK_1(ExtensionInstallDialog, void, OnResponse, int);
   CHROMEGTK_CALLBACK_0(ExtensionInstallDialog, void, OnStoreLinkClick);
+
+  GtkWidget* CreateWidgetForIssueAdvice(
+      const IssueAdviceInfoEntry& issue_advice, int pixel_width);
 
   Browser* browser_;
   ExtensionInstallPrompt::Delegate* delegate_;
@@ -127,6 +157,7 @@ ExtensionInstallDialog::ExtensionInstallDialog(
   GtkWidget* left_column_area = gtk_vbox_new(FALSE, ui::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(top_content_hbox), left_column_area,
                      TRUE, TRUE, 0);
+  gtk_widget_set_size_request(left_column_area, kLeftColumnMinWidth, -1);
 
   GtkWidget* heading_vbox = gtk_vbox_new(FALSE, 0);
   // If we are not going to show anything else, vertically center the title.
@@ -237,27 +268,25 @@ ExtensionInstallDialog::ExtensionInstallDialog(
   }
 
   if (show_oauth_issues) {
-    GtkWidget* oauth_issues_container;
-    if (is_inline_install) {
-      oauth_issues_container = content_vbox;
-      gtk_box_pack_start(GTK_BOX(content_vbox), gtk_hseparator_new(),
-                         FALSE, FALSE, ui::kControlSpacing);
-    } else {
-      oauth_issues_container = left_column_area;
-    }
+    // If permissions are shown, then the scopes will go below them and take
+    // up the entire width of the dialog. Otherwise the scopes will go where
+    // the permissions usually go.
+    GtkWidget* oauth_issues_container =
+        show_permissions ? content_vbox : left_column_area;
+    int pixel_width = kLeftColumnMinWidth +
+        (show_permissions ? kImageSize : 0);
 
     GtkWidget* oauth_issues_header = gtk_util::CreateBoldLabel(
-        "The app wants these scopes:");
-    gtk_util::SetLabelWidth(oauth_issues_header, kLeftColumnMinWidth);
+        UTF16ToUTF8(prompt.GetOAuthHeading()).c_str());
+    gtk_util::SetLabelWidth(oauth_issues_header, pixel_width);
     gtk_box_pack_start(GTK_BOX(oauth_issues_container), oauth_issues_header,
                        FALSE, FALSE, 0);
 
     // TODO(estade): display the issue details under zippies.
     for (size_t i = 0; i < prompt.GetOAuthIssueCount(); ++i) {
-      GtkWidget* label = gtk_label_new(
-          prompt.GetOAuthIssue(i).description.c_str());
-      gtk_util::SetLabelWidth(label, kLeftColumnMinWidth);
-      gtk_box_pack_start(GTK_BOX(oauth_issues_container), label,
+      GtkWidget* issue_advice_widget =
+          CreateWidgetForIssueAdvice(prompt.GetOAuthIssue(i), pixel_width);
+      gtk_box_pack_start(GTK_BOX(oauth_issues_container), issue_advice_widget,
                          FALSE, FALSE, kPermissionsPadding);
     }
   }
@@ -274,11 +303,10 @@ ExtensionInstallDialog::~ExtensionInstallDialog() {
 }
 
 void ExtensionInstallDialog::OnResponse(GtkWidget* dialog, int response_id) {
-  if (response_id == GTK_RESPONSE_ACCEPT) {
+  if (response_id == GTK_RESPONSE_ACCEPT)
     delegate_->InstallUIProceed();
-  } else {
+  else
     delegate_->InstallUIAbort(true);
-  }
 
   gtk_widget_destroy(dialog_);
   delete this;
@@ -292,6 +320,63 @@ void ExtensionInstallDialog::OnStoreLinkClick(GtkWidget* sender) {
       content::PAGE_TRANSITION_LINK, false));
 
   OnResponse(dialog_, GTK_RESPONSE_CLOSE);
+}
+
+GtkWidget* ExtensionInstallDialog::CreateWidgetForIssueAdvice(
+    const IssueAdviceInfoEntry& issue_advice, int pixel_width) {
+  GtkWidget* box = gtk_vbox_new(FALSE, ui::kControlSpacing);
+  GtkWidget* header = gtk_hbox_new(FALSE, 0);
+  GtkWidget* event_box = gtk_event_box_new();
+  gtk_container_add(GTK_CONTAINER(event_box), header);
+  gtk_box_pack_start(GTK_BOX(box), event_box, FALSE, FALSE,
+                     kPermissionsPadding);
+
+  GtkWidget* arrow = NULL;
+  GtkWidget* label = NULL;
+  int label_pixel_width = pixel_width;
+
+  if (issue_advice.details.empty()) {
+    label = gtk_label_new(l10n_util::GetStringFUTF8(
+        IDS_EXTENSION_PERMISSION_LINE,
+        UTF8ToUTF16(issue_advice.description)).c_str());
+  } else {
+    arrow = gtk_arrow_new(GTK_ARROW_RIGHT, GTK_SHADOW_OUT);
+    GtkRequisition req;
+    gtk_widget_size_request(arrow, &req);
+    label_pixel_width -= req.width;
+
+    label = gtk_label_new(issue_advice.description.c_str());
+
+    GtkWidget* detail_box = gtk_vbox_new(FALSE, ui::kControlSpacing);
+    gtk_box_pack_start(GTK_BOX(box), detail_box, FALSE, FALSE, 0);
+    gtk_widget_set_no_show_all(detail_box, TRUE);
+    gtk_object_set_data(GTK_OBJECT(event_box), "arrow", arrow);
+
+    for (size_t i = 0; i < issue_advice.details.size(); ++i) {
+      std::string text = l10n_util::GetStringFUTF8(
+          IDS_EXTENSION_PERMISSION_LINE, UTF8ToUTF16(issue_advice.details[i]));
+      GtkWidget* label = gtk_label_new(text.c_str());
+      gtk_util::SetLabelWidth(label, pixel_width - kDetailIndent);
+
+      GtkWidget* align = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+      gtk_alignment_set_padding(GTK_ALIGNMENT(align), 0, 0, kDetailIndent, 0);
+      gtk_container_add(GTK_CONTAINER(align), label);
+      gtk_box_pack_start(GTK_BOX(detail_box), align, FALSE, FALSE,
+                         kPermissionsPadding);
+    }
+
+    g_signal_connect(event_box, "realize",
+                     G_CALLBACK(OnZippyButtonRealize), NULL);
+    g_signal_connect(event_box, "button-release-event",
+                     G_CALLBACK(OnZippyButtonRelease), detail_box);
+  }
+
+  gtk_util::SetLabelWidth(label, label_pixel_width);
+  if (arrow)
+    gtk_box_pack_start(GTK_BOX(header), arrow, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(header), label, TRUE, TRUE, 0);
+
+  return box;
 }
 
 }  // namespace browser

@@ -76,6 +76,7 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
     bool HasAbortButtonLabel() const;
     string16 GetAbortButtonLabel() const;
     string16 GetPermissionsHeading() const;
+    string16 GetOAuthHeading() const;
 
     // Getters for webstore metadata. Only populated when the type is
     // INLINE_INSTALL_PROMPT.

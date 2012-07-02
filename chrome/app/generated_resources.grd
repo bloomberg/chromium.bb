@@ -4311,7 +4311,9 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSION_PROMPT_STORE_LINK" desc="Anchor text for link to Chrome Web Store in app or extension installation dialog">
         View details
       </message>
-
+      <message name="IDS_EXTENSION_PROMPT_SCOPES_HEADING" desc="Heading above the OAuth2 scopes permissions.">
+        The app wants these scopes:
+      </message>
 
       <if expr="pp_ifdef('android')">
         <message name="IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS" desc="Mobile: Permission string for full access to the mobile device and all websites.">
