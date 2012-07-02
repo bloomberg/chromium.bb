@@ -51,7 +51,9 @@ const char* const kChromePaths[] = {
   chrome::kChromeUISettingsHost,
   chrome::kChromeUIStatsHost,
   chrome::kChromeUISyncInternalsHost,
+#if defined(OS_CHROMEOS)
   chrome::kChromeUITaskManagerHost,
+#endif
   chrome::kChromeUITermsHost,
   chrome::kChromeUITracingHost,
   chrome::kChromeUIVersionHost,
