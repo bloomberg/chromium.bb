@@ -191,7 +191,7 @@ base::PlatformFileError ModifyCacheState(
   // We try to save one file operation by not checking if link exists before
   // deleting it, so unlink may return error if link doesn't exist, but it
   // doesn't really matter to us.
-  bool deleted = util::DeleteSymlink(symlink_path);
+  bool deleted = file_util::Delete(symlink_path, false);
   if (deleted) {
     DVLOG(1) << "Deleted symlink " << symlink_path.value();
   } else {
@@ -241,7 +241,7 @@ void DeleteFilesSelectively(const FilePath& path_to_delete_pattern,
     if (!path_to_keep.empty() && current == path_to_keep)
       continue;
 
-    success = HANDLE_EINTR(unlink(current.value().c_str())) == 0;
+    success = file_util::Delete(current, false);
     if (!success)
       DVLOG(1) << "Error deleting " << current.value();
     else

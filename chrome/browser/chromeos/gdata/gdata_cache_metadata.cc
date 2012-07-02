@@ -309,7 +309,7 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
       if (!IsValidSymbolicLink(current, sub_dir_type, cache_paths, &reason)) {
         LOG(WARNING) << "Removing an invalid symlink: " << current.value()
                      << ": " << reason;
-        util::DeleteSymlink(current);
+        file_util::Delete(current, false);
         continue;
       }
 
@@ -330,7 +330,7 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
       if (!IsValidSymbolicLink(current, sub_dir_type, cache_paths, &reason)) {
         LOG(WARNING) << "Removing an invalid symlink: " << current.value()
                      << ": " << reason;
-        util::DeleteSymlink(current);
+        file_util::Delete(current, false);
         continue;
       }
 
@@ -341,7 +341,7 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
       if (iter == cache_map->end() || !iter->second.IsDirty()) {
         LOG(WARNING) << "Removing an symlink to a non-dirty file: "
                      << current.value();
-        util::DeleteSymlink(current);
+        file_util::Delete(current, false);
         continue;
       }
 
@@ -352,7 +352,7 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
       if (file_util::IsLink(current)) {
         LOG(WARNING) << "Removing a symlink in persistent/tmp directory"
                      << current.value();
-        util::DeleteSymlink(current);
+        file_util::Delete(current, false);
         continue;
       }
       if (extra_extension == util::kMountedArchiveFileExtension) {
