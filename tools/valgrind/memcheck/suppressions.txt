@@ -5511,6 +5511,13 @@
    fun:_ZN2ui15InputMethodIBus13CreateContextEv
    fun:_ZN2ui15InputMethodIBus4InitEb
 }
+{
+   bug_135504
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:*EventListenerMapUnittest*
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
