@@ -498,27 +498,34 @@ bool SetCompositionFunction::RunImpl() {
   }
 
   if (args->HasKey(keys::kSegmentsKey)) {
-    ListValue* segment_list;
+    ListValue* segment_list = NULL;
     EXTENSION_FUNCTION_VALIDATE(args->GetList(keys::kSegmentsKey,
                                               &segment_list));
-    int start;
-    int end;
-    std::string style;
 
-    EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kStartKey,
-                                                 &start));
-    EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kEndKey, &end));
-    EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kStyleKey, &style));
+    for (size_t i = 0; i < segment_list->GetSize(); ++i) {
+      DictionaryValue* segment = NULL;
+      if (!segment_list->GetDictionary(i, &segment))
+        continue;
 
-    segments.push_back(chromeos::InputMethodEngine::SegmentInfo());
-    segments.back().start = start;
-    segments.back().end = end;
-    if (style == keys::kStyleUnderline) {
-      segments.back().style =
-          chromeos::InputMethodEngine::SEGMENT_STYLE_UNDERLINE;
-    } else if (style == keys::kStyleDoubleUnderline) {
-      segments.back().style =
-          chromeos::InputMethodEngine::SEGMENT_STYLE_DOUBLE_UNDERLINE;
+      int start;
+      int end;
+      std::string style;
+
+      EXTENSION_FUNCTION_VALIDATE(segment->GetInteger(keys::kStartKey,
+                                                      &start));
+      EXTENSION_FUNCTION_VALIDATE(segment->GetInteger(keys::kEndKey, &end));
+      EXTENSION_FUNCTION_VALIDATE(segment->GetString(keys::kStyleKey, &style));
+
+      segments.push_back(chromeos::InputMethodEngine::SegmentInfo());
+      segments.back().start = start;
+      segments.back().end = end;
+      if (style == keys::kStyleUnderline) {
+        segments.back().style =
+            chromeos::InputMethodEngine::SEGMENT_STYLE_UNDERLINE;
+      } else if (style == keys::kStyleDoubleUnderline) {
+        segments.back().style =
+            chromeos::InputMethodEngine::SEGMENT_STYLE_DOUBLE_UNDERLINE;
+      }
     }
   }
 
