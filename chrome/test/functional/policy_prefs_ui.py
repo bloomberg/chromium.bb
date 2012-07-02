@@ -83,8 +83,6 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
     If |include_unexpected|, pages where the banner should not appear will also
     be verified. This can take some time.
     """
-    print 'pid', self.GetBrowserInfo()['browser_pid']
-    raw_input()
     os = self.GetPlatform()
     all_policies = self.GetPolicyDefinitionList()
 
