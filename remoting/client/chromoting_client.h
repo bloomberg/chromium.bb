@@ -10,6 +10,7 @@
 #include <list>
 
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "remoting/client/client_config.h"
@@ -33,6 +34,7 @@ namespace protocol {
 class TransportFactory;
 }  // namespace protocol
 
+class AudioPlayer;
 class RectangleUpdateDecoder;
 
 // TODO(sergeyu): Move VideoStub implementation to RectangleUpdateDecoder.
@@ -46,7 +48,9 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
                    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                    protocol::ConnectionToHost* connection,
                    ChromotingView* view,
-                   RectangleUpdateDecoder* rectangle_decoder);
+                   RectangleUpdateDecoder* rectangle_decoder,
+                   AudioPlayer* audio_player);
+
   virtual ~ChromotingClient();
 
   // Start/stop the client. Must be called on the main thread.
@@ -108,6 +112,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   protocol::ConnectionToHost* connection_;
   ChromotingView* view_;
   RectangleUpdateDecoder* rectangle_decoder_;
+  AudioPlayer* audio_player_;
 
   // If non-NULL, this is called when the client is done.
   base::Closure client_done_;

@@ -31,6 +31,7 @@
 #include "remoting/client/client_config.h"
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/frame_consumer_proxy.h"
+#include "remoting/client/plugin/pepper_audio_player.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_port_allocator.h"
 #include "remoting/client/plugin/pepper_view.h"
@@ -207,6 +208,7 @@ bool ChromotingInstance::Init(uint32_t argc,
       context_.decode_task_runner(), consumer_proxy);
   view_.reset(new PepperView(this, &context_, rectangle_decoder_.get()));
   consumer_proxy->Attach(view_->AsWeakPtr());
+  audio_player_.reset(new PepperAudioPlayer(this));
 
   return true;
 }
@@ -379,7 +381,8 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   host_connection_.reset(new protocol::ConnectionToHost(true));
   client_.reset(new ChromotingClient(config, context_.main_task_runner(),
                                      host_connection_.get(), view_.get(),
-                                     rectangle_decoder_.get()));
+                                     rectangle_decoder_.get(),
+                                     audio_player_.get()));
 
   // Construct the input pipeline
   mouse_input_filter_.reset(

@@ -833,6 +833,8 @@
         'client/plugin/chromoting_instance.h',
         'client/plugin/mac_key_event_processor.cc',
         'client/plugin/mac_key_event_processor.h',
+        'client/plugin/pepper_audio_player.cc',
+        'client/plugin/pepper_audio_player.h',
         'client/plugin/pepper_entrypoints.cc',
         'client/plugin/pepper_entrypoints.h',
         'client/plugin/pepper_input_handler.cc',
@@ -1288,6 +1290,7 @@
         'remoting_protocol',
       ],
       'sources': [
+        'client/audio_player.h',
         'client/chromoting_client.cc',
         'client/chromoting_client.h',
         'client/chromoting_stats.cc',

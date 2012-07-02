@@ -5,10 +5,12 @@
 #include "remoting/client/chromoting_client.h"
 
 #include "base/bind.h"
+#include "remoting/client/audio_player.h"
 #include "remoting/client/chromoting_view.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/proto/audio.pb.h"
+#include "remoting/proto/video.pb.h"
 #include "remoting/protocol/authentication_method.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/negotiating_authenticator.h"
@@ -32,12 +34,14 @@ ChromotingClient::ChromotingClient(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     protocol::ConnectionToHost* connection,
     ChromotingView* view,
-    RectangleUpdateDecoder* rectangle_decoder)
+    RectangleUpdateDecoder* rectangle_decoder,
+    AudioPlayer* audio_player)
     : config_(config),
       task_runner_(task_runner),
       connection_(connection),
       view_(view),
       rectangle_decoder_(rectangle_decoder),
+      audio_player_(audio_player),
       packet_being_processed_(false),
       last_sequence_number_(0),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -143,7 +147,9 @@ int ChromotingClient::GetPendingVideoPackets() {
 
 void ChromotingClient::ProcessAudioPacket(scoped_ptr<AudioPacket> packet,
                                           const base::Closure& done) {
-  // TODO(kxing): Playback audio.
+  audio_player_->ProcessAudioPacket(packet.Pass());
+  if (!audio_player_->IsRunning() && connection_->config().is_audio_enabled())
+    audio_player_->Start();
   done.Run();
 }
 
