@@ -84,6 +84,7 @@ TEST_F(BindUniformLocationTest, Basic) {
     0.0f, 0.50f, 0.0f, 0.0f,
     0.0f, 0.0f, 0.75f, 0.0f,
   };
+
   glUniform4f(color_a_location, 0.25f, 0.0f, 0.0f, 0.0f);
   glUniform4fv(color_b_location, 2, color_b);
   glUniform4f(color_c_location, 0.0f, 0.0f, 0.0f, 1.0f);
@@ -95,6 +96,123 @@ TEST_F(BindUniformLocationTest, Basic) {
       GLTestHelper::CheckPixels(0, 0, kResolution, kResolution, 1, expected));
 
   GLTestHelper::CheckGLError("no errors", __LINE__);
+}
+
+TEST_F(BindUniformLocationTest, Compositor) {
+  ASSERT_TRUE(
+      GLTestHelper::HasExtension("GL_CHROMIUM_bind_uniform_location"));
+
+  static const char* v_shader_str = SHADER(
+      attribute vec4 a_position;
+      attribute vec2 a_texCoord;
+      uniform mat4 matrix;
+      uniform vec2 color_a[4];
+      uniform vec4 color_b;
+      varying vec4 v_color;
+      void main()
+      {
+          v_color.xy = color_a[0] + color_a[1];
+          v_color.zw = color_a[2] + color_a[3];
+          v_color += color_b;
+          gl_Position = matrix * a_position;
+      }
+  );
+
+  static const char* f_shader_str =  SHADER(
+      precision mediump float;
+      varying vec4 v_color;
+      uniform float alpha;
+      uniform vec4 multiplier;
+      uniform vec3 color_c[8];
+      void main()
+      {
+          vec4 color_c_sum = vec4(0.0);
+          color_c_sum.xyz += color_c[0];
+          color_c_sum.xyz += color_c[1];
+          color_c_sum.xyz += color_c[2];
+          color_c_sum.xyz += color_c[3];
+          color_c_sum.xyz += color_c[4];
+          color_c_sum.xyz += color_c[5];
+          color_c_sum.xyz += color_c[6];
+          color_c_sum.xyz += color_c[7];
+          color_c_sum.w = alpha;
+          color_c_sum *= multiplier;
+          gl_FragColor = v_color + color_c_sum;
+      }
+  );
+
+  int counter = 0;
+  int matrix_location = counter++;
+  int color_a_location = counter++;
+  int color_b_location = counter++;
+  int alpha_location = counter++;
+  int multiplier_location = counter++;
+  int color_c_location = counter++;
+
+  GLuint vertex_shader = GLTestHelper::LoadShader(
+      GL_VERTEX_SHADER, v_shader_str);
+  GLuint fragment_shader = GLTestHelper::LoadShader(
+      GL_FRAGMENT_SHADER, f_shader_str);
+
+  GLuint program = glCreateProgram();
+
+  glBindUniformLocationCHROMIUM(program, matrix_location, "matrix");
+  glBindUniformLocationCHROMIUM(program, color_a_location, "color_a");
+  glBindUniformLocationCHROMIUM(program, color_b_location, "color_b");
+  glBindUniformLocationCHROMIUM(program, alpha_location, "alpha");
+  glBindUniformLocationCHROMIUM(program, multiplier_location, "multiplier");
+  glBindUniformLocationCHROMIUM(program, color_c_location, "color_c");
+
+  glAttachShader(program, vertex_shader);
+  glAttachShader(program, fragment_shader);
+  // Link the program
+  glLinkProgram(program);
+  // Check the link status
+  GLint linked = 0;
+  glGetProgramiv(program, GL_LINK_STATUS, &linked);
+  EXPECT_EQ(1, linked);
+
+  GLint position_loc = glGetAttribLocation(program, "a_position");
+
+  GLTestHelper::SetupUnitQuad(position_loc);
+
+  glUseProgram(program);
+
+  static const float color_a[] = {
+    0.1f, 0.1f, 0.1f, 0.1f,
+    0.1f, 0.1f, 0.1f, 0.1f,
+  };
+
+  static const float color_c[] = {
+    0.1f, 0.1f, 0.1f,
+    0.1f, 0.1f, 0.1f,
+    0.1f, 0.1f, 0.1f,
+    0.1f, 0.1f, 0.1f,
+    0.1f, 0.1f, 0.1f,
+    0.1f, 0.1f, 0.1f,
+    0.1f, 0.1f, 0.1f,
+    0.1f, 0.1f, 0.1f,
+  };
+
+  static const float identity[] = {
+    1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
+  };
+
+  glUniformMatrix4fv(matrix_location, 1, false, identity);
+  glUniform2fv(color_a_location, 4, color_a);
+  glUniform4f(color_b_location, 0.2f, 0.2f, 0.2f, 0.2f);
+  glUniform1f(alpha_location, 0.8f);
+  glUniform4f(multiplier_location, 0.5f, 0.5f, 0.5f, 0.5f);
+  glUniform3fv(color_c_location, 8, color_c);
+
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+
+  static const uint8 expected[] = { 204, 204, 204, 204 };
+  EXPECT_TRUE(
+      GLTestHelper::CheckPixels(0, 0, kResolution, kResolution, 1, expected));
+
+  GLTestHelper::CheckGLError("no errors", __LINE__);
+
 }
 
 }  // namespace gpu

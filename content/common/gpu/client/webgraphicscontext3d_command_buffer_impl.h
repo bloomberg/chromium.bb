@@ -570,6 +570,9 @@ class WebGraphicsContext3DCommandBufferImpl
                                    WebGLId dest_id, WGC3Dint level,
                                    WGC3Denum internal_format);
 
+  virtual void bindUniformLocationCHROMIUM(WebGLId program, WGC3Dint location,
+                                           const WGC3Dchar* uniform);
+
  protected:
   virtual GrGLInterface* onCreateGrGLInterface();
 

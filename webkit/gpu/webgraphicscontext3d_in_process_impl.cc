@@ -747,6 +747,11 @@ void WebGraphicsContext3DInProcessImpl::copyTextureToParentTextureCHROMIUM(
   NOTIMPLEMENTED();
 }
 
+void WebGraphicsContext3DInProcessImpl::bindUniformLocationCHROMIUM(
+    WebGLId program, WGC3Dint location, const WGC3Dchar* uniform) {
+  NOTIMPLEMENTED();
+}
+
 WebString WebGraphicsContext3DInProcessImpl::
     getRequestableExtensionsCHROMIUM() {
   return WebString();
