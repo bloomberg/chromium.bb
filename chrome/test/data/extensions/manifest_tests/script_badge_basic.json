@@ -9,7 +9,6 @@
     "48": "icon48.png"
   },
   "script_badge": {
-    "default_title": "Hello World",
     "default_popup": "popup.html"
   }
 }

@@ -491,6 +491,9 @@ const char kScriptBadgeRequiresFlag[] =
     "You can enable it with the --enable-script-badges command-line flag.";
 const char kScriptBadgeIconIgnored[] =
     "default_icon specified in script_badge manifest section will not be used.";
+const char kScriptBadgeTitleIgnored[] =
+    "default_title specified in script_badge manifest section will not be "
+    "used.";
 const char kWebRequestConflictsWithLazyBackground[] =
     "The 'webRequest' API cannot be used with event pages.";
 #if defined(OS_CHROMEOS)

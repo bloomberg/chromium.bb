@@ -596,7 +596,7 @@
           'test/data/extensions/manifest_tests/command_too_many.json',
           'test/data/extensions/manifest_tests/init_invalid_platform_app_4.json',
           'test/data/extensions/manifest_tests/init_invalid_platform_app_5.json',
-          'test/data/extensions/manifest_tests/script_badge_icons_ignored.json',
+          'test/data/extensions/manifest_tests/script_badge_title_icons_ignored.json',
           'test/data/page_cycler/abort_expected',
           'test/data/page_cycler/about_url',
           'test/data/page_cycler/errors_expected',

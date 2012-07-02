@@ -325,6 +325,7 @@ namespace extension_manifest_errors {
   extern const char kReservedMessageFound[];
   extern const char kScriptBadgeRequiresFlag[];
   extern const char kScriptBadgeIconIgnored[];
+  extern const char kScriptBadgeTitleIgnored[];
   extern const char kWebRequestConflictsWithLazyBackground[];
 #if defined(OS_CHROMEOS)
   extern const char kIllegalPlugins[];

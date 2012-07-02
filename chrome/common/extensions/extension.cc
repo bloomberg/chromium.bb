@@ -845,19 +845,13 @@ scoped_ptr<ExtensionAction> Extension::LoadExtensionActionHelper(
   std::string default_icon;
   // Read the page action |default_icon| (optional).
   if (extension_action->HasKey(keys::kPageActionDefaultIcon)) {
-    if (action_type == ExtensionAction::TYPE_SCRIPT_BADGE) {
-      install_warnings_.push_back(
-          InstallWarning(InstallWarning::FORMAT_TEXT,
-                         errors::kScriptBadgeIconIgnored));
-    } else {
-      if (!extension_action->GetString(keys::kPageActionDefaultIcon,
-                                       &default_icon) ||
-          default_icon.empty()) {
-        *error = ASCIIToUTF16(errors::kInvalidPageActionIconPath);
-        return scoped_ptr<ExtensionAction>();
-      }
-      result->set_default_icon_path(default_icon);
+    if (!extension_action->GetString(keys::kPageActionDefaultIcon,
+                                     &default_icon) ||
+        default_icon.empty()) {
+      *error = ASCIIToUTF16(errors::kInvalidPageActionIconPath);
+      return scoped_ptr<ExtensionAction>();
     }
+    result->set_default_icon_path(default_icon);
   }
 
   // Read the page action title from |default_title| if present, |name| if not
@@ -2351,17 +2345,26 @@ bool Extension::LoadScriptBadge(string16* error) {
   } else {
     script_badge_.reset(
         new ExtensionAction(id(), ExtensionAction::TYPE_SCRIPT_BADGE));
-
-    // Make sure there is always a title.
-    script_badge_->SetTitle(ExtensionAction::kDefaultTabId, name());
   }
 
-  // Script badges always use their extension's icon so users can rely on the
-  // visual appearance to know which extension is running.  This isn't
+  // Script badges always use their extension's title and icon so users can rely
+  // on the visual appearance to know which extension is running.  This isn't
   // bulletproof since an malicious extension could use a different 16x16 icon
   // that matches the icon of a trusted extension, and users wouldn't be warned
   // during installation.
 
+  if (!script_badge_->GetTitle(ExtensionAction::kDefaultTabId).empty()) {
+    install_warnings_.push_back(
+        InstallWarning(InstallWarning::FORMAT_TEXT,
+                       errors::kScriptBadgeTitleIgnored));
+  }
+  script_badge_->SetTitle(ExtensionAction::kDefaultTabId, name());
+
+  if (!script_badge_->default_icon_path().empty()) {
+    install_warnings_.push_back(
+        InstallWarning(InstallWarning::FORMAT_TEXT,
+                       errors::kScriptBadgeIconIgnored));
+  }
   std::string icon16_path = icons().Get(ExtensionIconSet::EXTENSION_ICON_BITTY,
                                         ExtensionIconSet::MATCH_EXACTLY);
   if (!icon16_path.empty()) {

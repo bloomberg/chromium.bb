@@ -33,7 +33,7 @@ TEST_F(ExtensionManifestTest, ScriptBadgeBasic) {
   EXPECT_THAT(StripMissingFlagWarning(extension->install_warnings()),
               testing::ElementsAre(/*empty*/));
 
-  EXPECT_EQ("Hello World", extension->script_badge()->GetTitle(
+  EXPECT_EQ("my extension", extension->script_badge()->GetTitle(
       ExtensionAction::kDefaultTabId));
   EXPECT_TRUE(extension->script_badge()->HasPopup(
       ExtensionAction::kDefaultTabId));
@@ -42,9 +42,9 @@ TEST_F(ExtensionManifestTest, ScriptBadgeBasic) {
   EXPECT_EQ("icon16.png", extension->script_badge()->default_icon_path());
 }
 
-TEST_F(ExtensionManifestTest, ScriptBadgeExplicitIconsIgnored) {
+TEST_F(ExtensionManifestTest, ScriptBadgeExplicitTitleAndIconsIgnored) {
   scoped_refptr<Extension> extension(
-      LoadAndExpectSuccess("script_badge_icons_ignored.json"));
+      LoadAndExpectSuccess("script_badge_title_icons_ignored.json"));
   ASSERT_TRUE(extension.get());
   ASSERT_TRUE(extension->script_badge());
 
@@ -52,7 +52,12 @@ TEST_F(ExtensionManifestTest, ScriptBadgeExplicitIconsIgnored) {
               testing::ElementsAre(
                   Extension::InstallWarning(
                       Extension::InstallWarning::FORMAT_TEXT,
+                      errors::kScriptBadgeTitleIgnored),
+                  Extension::InstallWarning(
+                      Extension::InstallWarning::FORMAT_TEXT,
                       errors::kScriptBadgeIconIgnored)));
+  EXPECT_EQ("my extension", extension->script_badge()->GetTitle(
+      ExtensionAction::kDefaultTabId));
   EXPECT_TRUE(extension->script_badge()->GetIcon(
       ExtensionAction::kDefaultTabId).isNull());
   EXPECT_EQ("icon16.png", extension->script_badge()->default_icon_path());
