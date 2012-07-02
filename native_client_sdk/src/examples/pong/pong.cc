@@ -40,6 +40,14 @@ namespace AsyncCallbacks {
 void FlushCallback(void*, int32_t) {
 }
 
+// Callback that is called as a result of pp::FileIO::SetLength
+void SetLengthCallback(void* data, int32_t result) {
+  if (result != PP_OK)
+    return;
+  Pong* pong = static_cast<Pong*>(data);
+  pong->file_io_->Flush(pp::CompletionCallback(FlushCallback, NULL));
+}
+
 // Callback that is called as a result of pp::FileIO::Write
 void WriteCallback(void* data, int32_t bytes_written) {
   if (bytes_written < 0)
@@ -47,7 +55,9 @@ void WriteCallback(void* data, int32_t bytes_written) {
   Pong* pong = static_cast<Pong*>(data);
   pong->offset_ += bytes_written;
   if (pong->offset_ == pong->bytes_buffer_.length()) {
-    pong->file_io_->Flush(pp::CompletionCallback(FlushCallback, NULL));
+    // Truncate the file.
+    pong->file_io_->SetLength(pong->offset_,
+                              pp::CompletionCallback(SetLengthCallback, pong));
   } else {
     // Not all the bytes to be written have been written, so call
     // pp::FileIO::Write again.

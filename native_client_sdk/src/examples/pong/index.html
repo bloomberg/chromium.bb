@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
-  <!--
-  Copyright (c) 2012 The Chromium Authors. All rights reserved.
-  Use of this source code is governed by a BSD-style license that can be
-  found in the LICENSE file.
-  -->
+<!--
+Copyright (c) 2012 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
 <head>
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="-1" />
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="-1">
   <title><TITLE></title>
   <script type="text/javascript" src="common.js"></script>
   <script type="text/javascript" >
@@ -15,8 +15,9 @@
     function pageDidUnload() {
       clearInterval(paintInterval);
     }
+
     function resetScore() {
-      naclModule.postMessage("resetScore");
+      common.naclModule.postMessage("resetScore");
     }
 
     // Handle a message coming from the NaCl module.  The message payload is
@@ -35,33 +36,20 @@
   </script>
 </head>
 <body onunload="pageDidUnload()">
-<h1><TITLE></h1>
-<h2>Status: <code id="statusField">NO-STATUS</code></h2>
-  <!-- The <EMBED> element is wrapped inside a <DIV>, which has both a 'load'
-  and a 'message' event listener attached.  This wrapping method is used
-  instead of attaching the event listeners directly to the <EMBED> element to
-  ensure that the listeners are active before the NaCl module 'load' event
-  fires.  This also allows you to use PPB_Messaging.PostMessage() (in C) or
-  pp::Instance.PostMessage() (in C++) from within the initialization code in
-  your NaCl module. 
-  
-  The src points to a manifest file, which provides the Native Client plug-in
-  a mapping between architecture and NaCl Executable (NEXE). 
-  
-  We use a non-zero sized embed to give Chrome space to place the bad plug-in
-  graphic, if there is a problem.
-  -->
+  <h1><TITLE></h1>
+  <h2>Status: <code id="statusField">NO-STATUS</code></h2>
+  <!-- The NaCl plugin will be embedded inside the element with id "listener".
+      See common.js.-->
   <div id="listener">
     <script type="text/javascript">
       window.webkitStorageInfo.requestQuota(window.PERSISTENT, 1024,
           function(bytes) {
-            updateStatus('Allocated '+bytes+' bytes of persistent storage.');
-            createNaClModule('<NAME>', '<tc>', 800, 600);
+            common.updateStatus(
+                'Allocated '+bytes+' bytes of persistent storage.');
+            common.createNaClModule('<NAME>', '<tc>', 800, 600);
+            common.attachDefaultListeners();
           },
           function(e) { alert('Failed to allocate space'); });
-      var listener = document.getElementById('listener')
-      listener.addEventListener('load', moduleDidLoad, true);
-      listener.addEventListener('message', handleMessage, true);
     </script>
   </div>
   <p id="score"></p>

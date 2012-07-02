@@ -1,59 +1,52 @@
 <!DOCTYPE html>
 <html>
-  <!--
-  Copyright (c) 2012 The Chromium Authors. All rights reserved.
-  Use of this source code is governed by a BSD-style license that can be
-  found in the LICENSE file.
-  -->
+<!--
+Copyright (c) 2012 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
 <head>
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="-1" />
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="-1">
   <title><TITLE></title>
+  <script type="text/javascript" src="common.js"></script>
   <script type="text/javascript">
     var kMaxArraySize = 20;
     var messageArray = new Array();
     
-    function $(id) {
-     return document.getElementById(id);
+    function moduleDidLoad() {
+      common.naclModule.style.backgroundColor = 'gray';
     }
 
-    function receiveMessage(message) {
-          // Show last |kMaxArraySize| events in html.
-          messageArray.push(message.data);
-          if (messageArray.length > kMaxArraySize) {
-            messageArray.shift();
-          }
-          var newData = messageArray.join('<BR>');
-	  document.getElementById('eventString').innerHTML = newData;
-          // Print event to console.
-	  console.log(message.data);
+    function handleMessage(message) {
+      // Show last |kMaxArraySize| events in html.
+      messageArray.push(message.data);
+      if (messageArray.length > kMaxArraySize) {
+        messageArray.shift();
+      }
+      var newData = messageArray.join('<BR>');
+      document.getElementById('eventString').innerHTML = newData;
+      // Print event to console.
+      console.log(message.data);
     }
   </script>
 </head>
-<body>
-<h1><TITLE></h1>
-  <div id="listener">
-    <script type="text/javascript">
-      $('listener').addEventListener('message', receiveMessage, true);
-    </script>
+<body onload="common.onload('<NAME>', '<tc>')">
+  <h1><TITLE></h1>
+  <h2>Status: <code id="statusField">NO-STATUS</code></h2>
 
-    <embed name="nacl_module"
-           id="event_module"
-           width=400 height=400
-           src="<tc>/<NAME>.nmf"
-           type="application/x-nacl"
-           style="background-color:gray" />
- </div>
-<p>
-This example demonstrates handling of input events in PPAPI.</p>
-<p>
-Each time an input event happens in the context of the gray box,
-the embedded NaCl module posts a message describing the event
-back to JavaScript, which prints a message to the JavaScript
-console in Chrome and to a string on the page.</p>
-<h2>Events</h2>
-<pre>
-<p><b id='eventString'>None</b></p>
-</pre>
+  <p>This example demonstrates handling of input events in PPAPI.</p>
+  <p>Each time an input event happens in the context of the gray box, the
+  embedded NaCl module posts a message describing the event back to JavaScript,
+  which prints a message to the JavaScript console in Chrome and to a string on
+  the page.</p>
+
+  <!-- The NaCl plugin will be embedded inside the element with id "listener".
+      See common.js.-->
+  <div id="listener"></div>
+  <h2>Events</h2>
+  <pre>
+    <p><b id='eventString'>None</b></p>
+  </pre>
 </body>
 </html>

@@ -48,7 +48,7 @@ class dlOpenInstance : public pp::Instance {
 
   // Helper function to post a message back to the JS and stdout functions.
   void logmsg(const char* pStr){
-    PostMessage(pp::Var(pStr));
+    PostMessage(pp::Var(std::string("log:") + pStr));
     fprintf(stdout, pStr);
   }
 

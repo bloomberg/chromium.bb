@@ -1,28 +1,34 @@
 <!DOCTYPE html>
 <html>
-  <!--
-  Copyright (c) 2012 The Chromium Authors. All rights reserved.
-  Use of this source code is governed by a BSD-style license that can be
-  found in the LICENSE file.
-  -->
+<!--
+Copyright (c) 2012 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
 <head>
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="-1" />
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="-1">
   <title><TITLE></title>
   <script type="text/javascript" src="common.js"></script>
   <script type="text/javascript" >
+    function moduleDidLoad() {
+      // The module is not hidden by default so we can easily see if the plugin
+      // failed to load.
+      common.hideModule();
+    }
+
     function toggleSound(flag) {
-      naclModule.postMessage('setFrequency:' +
+      common.naclModule.postMessage('setFrequency:' +
           document.getElementById('frequency_field').value);
       if (flag) {
-        naclModule.postMessage('playSound');
+        common.naclModule.postMessage('playSound');
       } else {
-        naclModule.postMessage('stopSound');
+        common.naclModule.postMessage('stopSound');
       }
     }
 
     function changeFrequency(freq) {
-      naclModule.postMessage('setFrequency:' + freq);
+      common.naclModule.postMessage('setFrequency:' + freq);
     }
 
     function handleMessage(e) {
@@ -30,37 +36,20 @@
     }
   </script>
 </head>
-<body onload="pageDidLoad('<NAME>', '<tc>')">
+<body onload="common.onload('<NAME>', '<tc>')">
+  <h1><TITLE></h1>
+  <h2>Status: <code id="statusField">NO-STATUS</code></h2>
 
-<h1><TITLE></h1>
-<h2>Status: <code id="statusField">NO-STATUS</code></h2>
   <p>Click the button to start and stop the sine wave playing.</p>
   <button onclick="toggleSound(true)">Play</button>
   <button onclick="toggleSound(false)">Stop</button>
+
   <p>Enter the frequency of the sine wave:</p>
   <input type="text" size="15" id="frequency_field"
-         value="440" onchange="changeFrequency(this.value)" />
+         value="440" onchange="changeFrequency(this.value)">
 
-  <!-- The <EMBED> element is wrapped inside a <DIV>, which has both a 'load'
-  and a 'message' event listener attached.  This wrapping method is used
-  instead of attaching the event listeners directly to the <EMBED> element to
-  ensure that the listeners are active before the NaCl module 'load' event
-  fires.  This also allows you to use PPB_Messaging.PostMessage() (in C) or
-  pp::Instance.PostMessage() (in C++) from within the initialization code in
-  your NaCl module. 
-  
-  The src points to a manifest file, which provides the Native Client plug-in
-  a mapping between architecture and NaCl Executable (NEXE). 
-  
-  We use a non-zero sized embed to give Chrome space to place the bad plug-in
-  graphic, if there is a problem.
-  -->
-  <div id="listener">
-    <script type="text/javascript">
-      var listener = document.getElementById('listener')
-      listener.addEventListener('load', moduleDidLoad, true);
-      listener.addEventListener('message', handleMessage, true);
-    </script>
-  </div>
+  <!-- The NaCl plugin will be embedded inside the element with id "listener".
+      See common.js.-->
+  <div id="listener"></div>
 </body>
 </html>

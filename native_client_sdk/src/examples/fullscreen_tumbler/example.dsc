@@ -2,7 +2,7 @@
   'TOOLS': ['newlib', 'glibc', 'pnacl'],
   'TARGETS': [
     {
-      'NAME' : 'tumbler',
+      'NAME' : 'fullscreen_tumbler',
       'TYPE' : 'main',
       'SOURCES' : [
         'callback.h',

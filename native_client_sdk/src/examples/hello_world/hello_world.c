@@ -31,10 +31,10 @@ enum {
 };
 
 static const char *s_TCNames[TCMAX] = {
-  "Hello World (newlib)!",
-  "Hello World (glibc)!",
-  "Hello World (pnacl)!",
-  "Hello World (host plugin)!",
+  "alert:Hello World (newlib)!",
+  "alert:Hello World (glibc)!",
+  "alert:Hello World (pnacl)!",
+  "alert:Hello World (host plugin)!",
 };
 
 static PPB_Messaging* ppb_messaging_interface = NULL;

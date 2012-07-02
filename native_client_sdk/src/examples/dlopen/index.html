@@ -1,76 +1,44 @@
 <!DOCTYPE html>
 <html>
-  <!--
-  Copyright (c) 2012 The Chromium Authors. All rights reserved.
-  Use of this source code is governed by a BSD-style license that can be
-  found in the LICENSE file.
-  -->
+<!--
+Copyright (c) 2012 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
 <head>
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="-1" />
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="-1">
   <title><TITLE></title>
   <script type="text/javascript" src="common.js"></script>
-  <script type="text/javascript" >
-    function handleMessage(message_event) {
-      updateStatus(message_event.data);
+  <script type="text/javascript">
+    function moduleDidLoad() {
+      // The module is not hidden by default so we can easily see if the plugin
+      // failed to load.
+      common.hideModule();
     }
 
-    function updateStatus(opt_message) {
-      if (opt_message) {
-        statusText = opt_message;
-      }
-      var statusField = document.getElementById('statusField');
-      var answerLog = document.getElementById('answerlog');
-      if (statusField) {
-        statusField.innerHTML = statusText;
-      }
-      if (answerLog) {
-        answerLog.innerHTML += (opt_message  +"<br>");
-      }
-    }
-
-    function askBall()
-    {
-      naclModule = document.getElementById('nacl_module');
-      var consolec = document.getElementById('consolec');
-      updateStatus('ASK: ' + consolec.value);
-      naclModule.postMessage('query');
+    function askBall() {
+      var questionEl = document.getElementById('question');
+      var query = questionEl.value;
+      questionEl.value = '';
+      document.getElementById('log').innerHTML += 'You asked:' + query + '<br>';
+      common.naclModule.postMessage('query');
       return false;
     }
   </script>
 </head>
-<body onload="pageDidLoad('<NAME>', '<tc>')">
-
-<h1><TITLE></h1>
-<h2>Status: <code id="statusField">NO-STATUS</code></h2>
-  <!-- The <EMBED> element is wrapped inside a <DIV>, which has both a 'load'
-  and a 'message' event listener attached.  This wrapping method is used
-  instead of attaching the event listeners directly to the <EMBED> element to
-  ensure that the listeners are active before the NaCl module 'load' event
-  fires.  This also allows you to use PPB_Messaging.PostMessage() (in C) or
-  pp::Instance.PostMessage() (in C++) from within the initialization code in
-  your NaCl module. 
-  
-  The src points to a manifest file, which provides the Native Client plug-in
-  a mapping between architecture and NaCl Executable (NEXE). 
-  
-  We use a non-zero sized embed to give Chrome space to place the bad plug-in
-  graphic, if there is a problem.
-  -->
-  <div id="listener">
-    <script type="text/javascript">
-      var listener = document.getElementById('listener')
-      listener.addEventListener('load', moduleDidLoad, true);
-      listener.addEventListener('message', handleMessage, true);
-    </script>
-  </div>
-  <h1>The Magic 8 Ball </h1>
-  </div>
-  <br />
-  <div>Eightball loaded, type a question below, press the button, and get a response.</div>
-  <input type="text" id="consolec" value=""/>
-  <input type="button" id="button" value="ASK!" onclick="return askBall()"/>
-  </div>
-  <div id="answerlog"></div>
+<body onload="common.onload('<NAME>', '<tc>')">
+  <h1><TITLE></h1>
+  <h2>Status: <code id="statusField">NO-STATUS</code></h2>
+  <div>Magic eightball: type a question below, press the button, and get a
+      response.</div>
+  <form action="#" onsubmit="return askBall();">
+    <input type="text" id="question" value="">
+    <input type="submit" value="ASK!">
+  </form>
+  <!-- The NaCl plugin will be embedded inside the element with id "listener".
+      See common.js.-->
+  <div id="listener"></div>
+  <div id="log"></div>
 </body>
 </html>

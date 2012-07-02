@@ -1,104 +1,61 @@
 <!DOCTYPE html>
 <html>
-  <!--
-  Copyright (c) 2012 The Chromium Authors. All rights reserved.
-  Use of this source code is governed by a BSD-style license that can be
-  found in the LICENSE file.
-  -->
+<!--
+Copyright (c) 2012 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
 <head>
-  <title>WebSocket</title>
-
+  <title><TITLE></title>
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="-1">
+  <title><TITLE></title>
+  <script type="text/javascript" src="common.js"></script>
   <script type="text/javascript">
-    websocket = null;  // Global application object.
-    statusText = 'NO-STATUS';
-
-    // Indicate success when the NaCl module has loaded.
     function moduleDidLoad() {
-      websocket = document.getElementById('websocket');
-      updateStatus('SUCCESS');
-    }
-
-    // Handle a message coming from the NaCl module.
-    function handleMessage(message_event) {
-      console.log(message_event);
-      document.getElementById('log').value += message_event.data + '\n';
-    }
-
-    function pageDidLoad() {
-      if (websocket == null) {
-        updateStatus('LOADING...');
-      } else {
-        updateStatus();
-      }
+      // The module is not hidden by default so we can easily see if the plugin
+      // failed to load.
+      common.hideModule();
     }
 
     function doConnect() {
       // Send a request message. See also websocket.cc for the request format.
-      websocket.postMessage('o;' + document.getElementById('url').value);
+      var url = document.getElementById('url').value;
+      common.naclModule.postMessage('o;' + url);
     }
 
     function doSend() {
       // Send a request message. See also websocket.cc for the request format.
-      websocket.postMessage(
-          's;' + document.getElementById('message').value);
+      var message = document.getElementById('message').value;
+      common.naclModule.postMessage('s;' + message);
     }
 
     function doClose() {
       // Send a request message. See also websocket.cc for the request format.
-      websocket.postMessage('c;');
-    }
-
-    function updateStatus(opt_message) {
-      if (opt_message)
-        statusText = opt_message;
-      var statusField = document.getElementById('statusField');
-      if (statusField) {
-        statusField.innerHTML = statusText;
-      }
+      common.naclModule.postMessage('c;');
     }
   </script>
 </head>
-<body onload="pageDidLoad()">
-
-<h1><TITLE></h1>
-<p>
+<body onload="common.onload('<NAME>', '<tc>')">
+  <h1><TITLE></h1>
+  <h2>Status: <code id="statusField">NO-STATUS</code></h2>
+  <div>Set a server URL, then push "Connect" button to establish a connection.
+    <br>"Send" button sends text message on the left text area.
+    <br>"Close" button closes the connection.
+  <div>
   <form action="#" onsubmit="doConnect(); return false;">
-    <input type="text" id="url"
-      value="ws://html5rocks.websocket.org/echo?encoding=text" />
-    <input type="submit" value="Connect" />
+    <input type="text" id="url" style="width: 400px"
+      value="ws://html5rocks.websocket.org/echo?encoding=text">
+    <input type="submit" value="Connect">
   </form>
 
   <form action="#" onsubmit="doSend(); return false;">
-    <input type="text" id="message" value="hello" />
-    <input type="submit" value="Send" />
+    <input type="text" id="message" value="hello" style="width: 400px">
+    <input type="submit" value="Send">
   </form>
 
-  <form action="#" onsubmit="doClose(); return false;">
-    <input type="submit" value="Close" />
-  </form>
-
-  <textarea id="log" rows="10" cols="80"></textarea>
-
-  <div id="listener">
-    <script type="text/javascript">
-      var listener = document.getElementById('listener')
-      listener.addEventListener('load', moduleDidLoad, true);
-      listener.addEventListener('message', handleMessage, true);
-    </script>
-
-    <embed name="nacl_module"
-           id="websocket"
-           width=0 height=0
-           src="<tc>/websocket.nmf"
-           type="application/x-nacl" />
-  </div>
-</p>
-
-<p>Set a server URL, then push "Connect" button to establish a connection.</p>
-<p>"Send" button sends text message on the left text area.</p>
-<p>"Close" button closes the connection/</p>
-
-<h2>Status</h2>
-<div id="statusField">NO-STATUS</div>
+  <input type="button" value="Close" onclick="doClose()">
+  <div id="listener"></div>
+  <div id="log"></div>
 </body>
 </html>
