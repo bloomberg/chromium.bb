@@ -4,8 +4,6 @@
 
 #include "content/shell/layout_test_controller_host.h"
 
-#include <iostream>
-
 #include "base/message_loop.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/shell/shell_messages.h"
@@ -72,8 +70,8 @@ void LayoutTestControllerHost::CaptureDump() {
 }
 
 void LayoutTestControllerHost::TimeoutHandler() {
-  std::cout << "FAIL: Timed out waiting for notifyDone to be called\n";
-  std::cerr << "FAIL: Timed out waiting for notifyDone to be called\n";
+  printf("FAIL: Timed out waiting for notifyDone to be called\n");
+  fprintf(stderr, "FAIL: Timed out waiting for notifyDone to be called\n");
   CaptureDump();
 }
 
@@ -107,9 +105,8 @@ void LayoutTestControllerHost::OnDidFinishLoad() {
 }
 
 void LayoutTestControllerHost::OnTextDump(const std::string& dump) {
-  std::cout << dump;
-  std::cout << "#EOF\n";
-  std::cerr << "#EOF\n";
+  printf("%s#EOF\n", dump.c_str());
+  fprintf(stderr, "#EOF\n");
 
   if (dump_as_text_)
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
@@ -125,9 +122,9 @@ void LayoutTestControllerHost::OnImageDump(
 
   SkAutoLockPixels image_lock(image);
 
-  std::cout << "\nActualHash: " << actual_pixel_hash << "\n";
+  printf("\nActualHash: %s\n", actual_pixel_hash.c_str());
   if (!expected_pixel_hash_.empty())
-    std::cout << "\nExpectedHash: " << expected_pixel_hash_ << "\n";
+    printf("\nExpectedHash: %s\n", expected_pixel_hash_.c_str());
 
   // Only encode and dump the png if the hashes don't match. Encoding the
   // image is really expensive.
@@ -150,9 +147,9 @@ void LayoutTestControllerHost::OnImageDump(
         actual_pixel_hash,
         &png);
 
-    std::cout << "Content-Type: image/png\n";
-    std::cout << "Content-Length: " << png.size() << "\n";
-    std::cout.write(reinterpret_cast<const char*>(&png[0]), png.size());
+    printf("Content-Type: image/png\n");
+    printf("Content-Length: %u\n", static_cast<unsigned>(png.size()));
+    fwrite(&png[0], 1, png.size(), stdout);
   }
 
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());

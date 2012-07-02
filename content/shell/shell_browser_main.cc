@@ -4,8 +4,6 @@
 
 #include "content/shell/shell_browser_main.h"
 
-#include <iostream>
-
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -81,7 +79,7 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
         continue;
 
       // Test header.
-      std::cout << "Content-Type: text/plain\n";
+      printf("Content-Type: text/plain\n");
 
       std::string pixel_hash;
       content::Shell::CreateNewWindow(
@@ -97,9 +95,9 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
       content::Shell::CloseAllWindows();
 
       // Test footer.
-      std::cout << "#EOF\n";
-      std::cout.flush();
-
+      printf("#EOF\n");
+      fflush(stdout);
+      fflush(stderr);
     }
     exit_code = 0;
   } else {

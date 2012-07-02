@@ -4,8 +4,10 @@
 
 #include "content/shell/shell.h"
 
-#include <windows.h>
 #include <commctrl.h>
+#include <fcntl.h>
+#include <io.h>
+#include <windows.h>
 
 #include "base/command_line.h"
 #include "base/string_piece.h"
@@ -49,6 +51,8 @@ namespace content {
 HINSTANCE Shell::instance_handle_;
 
 void Shell::PlatformInitialize() {
+  _setmode(_fileno(stdout), _O_BINARY);
+  _setmode(_fileno(stderr), _O_BINARY);
   INITCOMMONCONTROLSEX InitCtrlEx;
   InitCtrlEx.dwSize = sizeof(INITCOMMONCONTROLSEX);
   InitCtrlEx.dwICC  = ICC_STANDARD_CLASSES;

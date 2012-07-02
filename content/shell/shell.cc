@@ -4,8 +4,6 @@
 
 #include "content/shell/shell.h"
 
-#include <iostream>
-
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
@@ -177,10 +175,10 @@ bool Shell::AddMessageToConsole(WebContents* source,
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return false;
 
-  std::cout << "CONSOLE MESSAGE: ";
+  printf("CONSOLE MESSAGE: ");
   if (line_no)
-    std::cout << "line " << line_no << ": ";
-  std::cout << UTF16ToUTF8(message) << "\n";
+    printf("line %d: ", line_no);
+  printf("%s\n", UTF16ToUTF8(message).c_str());
   return true;
 }
 

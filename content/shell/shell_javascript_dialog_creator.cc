@@ -4,8 +4,6 @@
 
 #include "content/shell/shell_javascript_dialog_creator.h"
 
-#include <iostream>
-
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
@@ -34,13 +32,13 @@ void ShellJavaScriptDialogCreator::RunJavaScriptDialog(
     bool* did_suppress_message) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
     if (javascript_message_type == JAVASCRIPT_MESSAGE_TYPE_ALERT) {
-      std::cout << "ALERT: " << UTF16ToUTF8(message_text) << "\n";
+      printf("ALERT: %s\n", UTF16ToUTF8(message_text).c_str());
     } else if (javascript_message_type == JAVASCRIPT_MESSAGE_TYPE_CONFIRM) {
-      std::cout << "CONFIRM: " << UTF16ToUTF8(message_text) << "\n";
+      printf("CONFIRM: %s\n", UTF16ToUTF8(message_text).c_str());
     } else {  // JAVASCRIPT_MESSAGE_TYPE_PROMPT
-      std::cout << "PROMPT: " << UTF16ToUTF8(message_text);
-      std::cout << ", default text: " << UTF16ToUTF8(default_prompt_text);
-      std::cout << "\n";
+      printf("PROMPT: %s, default text: %s\n",
+             UTF16ToUTF8(message_text).c_str(),
+             UTF16ToUTF8(default_prompt_text).c_str());
     }
     callback.Run(true, string16());
     return;
@@ -77,7 +75,7 @@ void ShellJavaScriptDialogCreator::RunBeforeUnloadDialog(
     bool is_reload,
     const DialogClosedCallback& callback) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
-    std::cout << "CONFIRM NAVIGATION: " << UTF16ToUTF8(message_text) << "\n";
+    printf("CONFIRM NAVIGATION: %s\n", UTF16ToUTF8(message_text).c_str());
     LayoutTestControllerHost* controller =
         LayoutTestControllerHost::FromRenderViewHost(
             web_contents->GetRenderViewHost());
