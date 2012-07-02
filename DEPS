@@ -122,7 +122,7 @@ deps = {
     (Var("googlecode_url") % "leveldb") + "/trunk@67",
 
   "src/third_party/snappy/src":
-    (Var("googlecode_url") % "snappy") + "/trunk@37",
+    (Var("googlecode_url") % "snappy") + "/trunk@63",
 
   "src/tools/grit":
     (Var("googlecode_url") % "grit-i18n") + "/trunk@52",

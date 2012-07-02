@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -22,6 +22,7 @@
       'include_dirs': [
         '<(os_include)',
         'src',
+        '../..',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -42,9 +43,6 @@
     {
       'target_name': 'snappy_unittest',
       'type': 'executable',
-      'dependencies': [
-        'leveldb_testutil',
-      ],
       'sources': [
         'src/snappy-test.cc',
         'src/snappy-test.h',
@@ -52,6 +50,7 @@
       ],
       'dependencies': [
         'snappy',
+        '../../base/base.gyp:base',
         '../../testing/gtest.gyp:gtest',
         '../../third_party/zlib/zlib.gyp:zlib',
       ],
