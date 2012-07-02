@@ -239,7 +239,7 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, CloseSqueezedPanels) {
   EXPECT_LT(panel_6_orig_width, panel6->GetRestoredBounds().width());
 
   // Close one panel.
-  panel2->Close();
+  CloseWindowAndWait(panel2);
 
   // Wait for all processing to finish.
   MessageLoopForUI::current()->RunAllPending();
@@ -255,9 +255,9 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, CloseSqueezedPanels) {
   EXPECT_EQ(panel7->GetBounds().width(), panel_7_orig_width);
 
   // Close several panels.
-  panel3->Close();
-  panel5->Close();
-  panel7->Close();
+  CloseWindowAndWait(panel3);
+  CloseWindowAndWait(panel5);
+  CloseWindowAndWait(panel7);
 
   // Wait for all processing to finish.
   MessageLoopForUI::current()->RunAllPending();

@@ -155,7 +155,7 @@ WebContents* OpenApplicationPanel(
   Panel* panel = PanelManager::GetInstance()->CreatePanel(
       app_name, profile, url, panel_bounds.size());
   panel->Show();
-  return panel->WebContents();
+  return panel->GetWebContents();
 #endif
 }
 

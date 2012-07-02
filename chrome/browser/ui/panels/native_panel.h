@@ -74,6 +74,9 @@ class NativePanel {
   virtual void FullScreenModeChanged(bool is_full_screen) = 0;
   virtual void PanelExpansionStateChanging(Panel::ExpansionState old_state,
                                            Panel::ExpansionState new_state) = 0;
+  // TODO(jennb): Make these new methods pure virtual after panel refactor.
+  virtual void AttachWebContents(content::WebContents* contents) {}
+  virtual void DetachWebContents(content::WebContents* contents) {}
 
   virtual Browser* GetPanelBrowser() const = 0;  // legacy
   virtual void DestroyPanelBrowser() {}  // legacy

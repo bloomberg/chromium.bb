@@ -61,8 +61,8 @@ class NativePanelCocoa;
 - (ThemedWindowStyle)themedWindowStyle;
 - (NSPoint)themePatternPhase;
 
-- (void)tabInserted:(content::WebContents*)contents;
-- (void)tabDetached:(content::WebContents*)contents;
+- (void)webContentsInserted:(content::WebContents*)contents;
+- (void)webContentsDetached:(content::WebContents*)contents;
 
 // Sometimes (when we animate the size of the window) we want to stop resizing
 // the WebContents's Cocoa view to avoid unnecessary rendering and issues

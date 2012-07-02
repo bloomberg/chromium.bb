@@ -329,12 +329,12 @@ int PanelBrowserWindowCocoa::TitleOnlyHeight() const {
 void PanelBrowserWindowCocoa::TabInsertedAt(TabContents* contents,
                                             int index,
                                             bool foreground) {
-  [controller_ tabInserted:contents->web_contents()];
+  [controller_ webContentsInserted:contents->web_contents()];
 }
 
 void PanelBrowserWindowCocoa::TabDetachedAt(TabContents* contents,
                                             int index) {
-  [controller_ tabDetached:contents->web_contents()];
+  [controller_ webContentsDetached:contents->web_contents()];
 }
 
 void PanelBrowserWindowCocoa::Observe(

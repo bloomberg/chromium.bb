@@ -41,7 +41,7 @@ void OldPanel::Initialize(const gfx::Rect& bounds, Browser* browser) {
       new PanelBrowserWindow(browser, this, native_panel()));
 }
 
-content::WebContents* OldPanel::WebContents() const {
+content::WebContents* OldPanel::GetWebContents() const {
   return chrome::GetActiveWebContents(browser_);
 }
 

@@ -470,8 +470,7 @@ FindBar* PanelBrowserWindow::CreateFindBar() {
 void PanelBrowserWindow::ResizeDueToAutoResize(WebContents* web_contents,
                                                const gfx::Size& pref_size) {
   DCHECK(panel_->auto_resizable());
-  return panel_->OnWindowAutoResized(
-      native_panel_->WindowSizeFromContentSize(pref_size));
+  return panel_->OnContentsAutoResized(pref_size);
 }
 
 void PanelBrowserWindow::ShowAvatarBubble(WebContents* web_contents,

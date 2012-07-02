@@ -263,13 +263,18 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CheckDockedPanelProperties) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
 
+  // Don't let actual mouse movements affect this test as that may affect
+  // minimized vs title-only state.
+  PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
+  panel_manager->SetMouseWatcherForTesting(mouse_watcher);
+
   // Create 3 docked panels that are in expanded, title-only or minimized states
   // respectively.
   Panel* panel1 = CreatePanelWithBounds("1", gfx::Rect(0, 0, 100, 100));
   Panel* panel2 = CreatePanelWithBounds("2", gfx::Rect(0, 0, 100, 100));
+  Panel* panel3 = CreatePanelWithBounds("3", gfx::Rect(0, 0, 100, 100));
   panel2->SetExpansionState(Panel::TITLE_ONLY);
   WaitForExpansionStateChanged(panel2, Panel::TITLE_ONLY);
-  Panel* panel3 = CreatePanelWithBounds("3", gfx::Rect(0, 0, 100, 100));
   panel3->SetExpansionState(Panel::MINIMIZED);
   WaitForExpansionStateChanged(panel3, Panel::MINIMIZED);
   scoped_ptr<NativePanelTesting> panel1_testing(
@@ -374,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_AutoResize) {
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel));
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
-      panel->WebContents()->GetRenderViewHost(),
+      panel->GetWebContents()->GetRenderViewHost(),
       std::wstring(),
       L"changeSize(50);"));
   enlarge.Wait();
@@ -387,7 +392,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_AutoResize) {
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel));
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
-      panel->WebContents()->GetRenderViewHost(),
+      panel->GetWebContents()->GetRenderViewHost(),
       std::wstring(),
       L"changeSize(-30);"));
   shrink.Wait();
@@ -1281,9 +1286,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   panel2->Close();
 }
 
-// TODO(jennb): Disabled until refactored panels supports web contents.
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
-                       DISABLED_NonExtensionDomainPanelsCloseOnUninstall) {
+                       NonExtensionDomainPanelsCloseOnUninstall) {
   // Create a test extension.
   DictionaryValue empty_value;
   scoped_refptr<Extension> extension =
@@ -1360,7 +1364,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_OnBeforeUnloadOnClose) {
       FilePath(FILE_PATH_LITERAL("onbeforeunload.html")));
   Panel* panel = CreatePanelWithParams(params);
   EXPECT_EQ(1, panel_manager->num_panels());
-  WebContents* web_contents = panel->WebContents();
+  WebContents* web_contents = panel->GetWebContents();
 
   // Close panel and respond to the onbeforeunload dialog with cancel. This is
   // equivalent to clicking "Stay on this page"
@@ -1480,9 +1484,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, SizeClamping) {
   panel->Close();
 }
 
-// TODO(jennb): Disabled until refactored panels supports web contents.
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
-                       DISABLED_TightAutosizeAroundSingleLine) {
+                       TightAutosizeAroundSingleLine) {
   PanelManager::GetInstance()->enable_auto_sizing(true);
   // Using 0 sizes triggers auto-sizing.
   CreatePanelParams params("Panel", gfx::Rect(), SHOW_AS_ACTIVE);
@@ -1497,7 +1500,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel));
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
-      panel->WebContents()->GetRenderViewHost(),
+      panel->GetWebContents()->GetRenderViewHost(),
       std::wstring(),
       L"document.body.innerHTML ="
       L"'<nobr>line of text and a <button>Button</button>';"));

@@ -3258,6 +3258,8 @@
         'browser/ui/panels/panel_drag_gtk.cc',
         'browser/ui/panels/panel_drag_gtk.h',
         'browser/ui/panels/panel_gtk.cc',
+        'browser/ui/panels/panel_host.cc',
+        'browser/ui/panels/panel_host.h',
         'browser/ui/panels/panel_resize_controller.cc',
         'browser/ui/panels/panel_resize_controller.h',
         'browser/ui/panels/panel_manager.cc',

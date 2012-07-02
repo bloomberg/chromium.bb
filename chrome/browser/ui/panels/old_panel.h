@@ -25,7 +25,7 @@ class OldPanel : public Panel {
   virtual CommandUpdater* command_updater() OVERRIDE;
   virtual Profile* profile() const OVERRIDE;
   virtual void Initialize(const gfx::Rect& bounds, Browser* browser) OVERRIDE;
-  virtual content::WebContents* WebContents() const OVERRIDE;
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
   virtual bool ShouldCloseWindow() OVERRIDE;
   virtual void OnWindowClosing() OVERRIDE;
   virtual void ExecuteCommandWithDisposition(

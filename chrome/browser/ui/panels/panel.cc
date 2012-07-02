@@ -13,6 +13,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/panels/native_panel.h"
+#include "chrome/browser/ui/panels/panel_host.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -135,7 +136,10 @@ void Panel::Initialize(Profile* profile, const GURL& url,
 
   InitCommandState();
 
-  // TODO(jennb): setup for hosting web content
+  // Set up hosting for web contents.
+  panel_host_.reset(new PanelHost(this, profile));
+  panel_host_->Init(url);
+  native_panel_->AttachWebContents(GetWebContents());
 
   // Close when the extension is unloaded or the browser is exiting.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -201,9 +205,8 @@ const std::string Panel::extension_id() const {
   return web_app::GetExtensionIdFromApplicationName(app_name_);
 }
 
-content::WebContents* Panel::WebContents() const {
-  // TODO(jennb): implement.
-  return NULL;
+content::WebContents* Panel::GetWebContents() const {
+  return panel_host_.get() ? panel_host_->web_contents() : NULL;
 }
 
 bool Panel::CanMinimize() const {
@@ -255,7 +258,7 @@ void Panel::SetAutoResizable(bool resizable) {
     return;
 
   auto_resizable_ = resizable;
-  content::WebContents* web_contents = WebContents();
+  content::WebContents* web_contents = GetWebContents();
   if (auto_resizable_) {
     if (web_contents)
       EnableWebContentsAutoResize(web_contents);
@@ -281,7 +284,7 @@ void Panel::SetSizeRange(const gfx::Size& min_size, const gfx::Size& max_size) {
   min_size_ = min_size;
   max_size_ = max_size;
 
-  ConfigureAutoResize(WebContents());
+  ConfigureAutoResize(GetWebContents());
 }
 
 void Panel::IncreaseMaxSize(const gfx::Size& desired_panel_size) {
@@ -478,10 +481,14 @@ bool Panel::IsFullscreen() const {
   return false;
 }
 
-void Panel::OnWindowAutoResized(const gfx::Size& preferred_window_size) {
+void Panel::OnContentsAutoResized(const gfx::Size& new_content_size) {
   DCHECK(auto_resizable_);
-  if (panel_strip_)
-    panel_strip_->ResizePanelWindow(this, preferred_window_size);
+  if (!panel_strip_)
+    return;
+
+  panel_strip_->ResizePanelWindow(
+      this,
+      native_panel_->WindowSizeFromContentSize(new_content_size));
 }
 
 void Panel::OnWindowResizedByMouse(const gfx::Rect& new_bounds) {
@@ -507,7 +514,18 @@ void Panel::EnableWebContentsAutoResize(content::WebContents* web_contents) {
 
 void Panel::ExecuteCommandWithDisposition(int id,
                                           WindowOpenDisposition disposition) {
-  // TODO(jennb): implement.
+  if (!GetWebContents())
+    return;
+
+  DCHECK(command_updater_.IsCommandEnabled(id)) << "Invalid/disabled command "
+                                                << id;
+  switch (id) {
+    case IDC_RELOAD:    // etc
+    // TODO(jennb): implement.
+    default:
+      LOG(WARNING) << "Received unimplemented command: " << id;
+      break;
+  }
 }
 
 bool Panel::ExecuteCommandIfEnabled(int id) {
@@ -573,7 +591,7 @@ void Panel::ConfigureAutoResize(content::WebContents* web_contents) {
 }
 
 void Panel::OnWindowSizeAvailable() {
-  ConfigureAutoResize(WebContents());
+  ConfigureAutoResize(GetWebContents());
 }
 
 void Panel::OnTitlebarClicked(panel::ClickModifier modifier) {
@@ -618,16 +636,18 @@ void Panel::OnPanelEndUserResizing() {
 }
 
 bool Panel::ShouldCloseWindow() {
-  // TODO(jennb): implement
   return true;
 }
 
 void Panel::OnWindowClosing() {
-  // TODO(jennb): implement
+  if (GetWebContents()) {
+    native_panel_->DetachWebContents(GetWebContents());
+    panel_host_->DestroyWebContents();
+  }
 }
 
 string16 Panel::GetWindowTitle() const {
-  content::WebContents* contents = WebContents();
+  content::WebContents* contents = GetWebContents();
   string16 title;
 
   // |contents| can be NULL during the window's creation.
@@ -653,6 +673,15 @@ void Panel::FormatTitleForDisplay(string16* title) {
 }
 
 SkBitmap Panel::GetCurrentPageIcon() const {
-  // TODO(jennb): implement.
-  return SkBitmap();
+  return panel_host_->GetPageIcon();
+}
+
+void Panel::UpdateTitleBar() {
+  native_panel_->UpdatePanelTitleBar();
+}
+
+void Panel::LoadingStateChanged(bool is_loading) {
+  native_panel_->UpdatePanelLoadingAnimations(is_loading);
+  UpdateTitleBar();
+  command_updater_.UpdateCommandEnabled(IDC_STOP, is_loading);
 }

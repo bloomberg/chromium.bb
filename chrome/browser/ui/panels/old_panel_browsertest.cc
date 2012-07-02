@@ -392,7 +392,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, DISABLED_AutoResize) {
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel));
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
-      panel->WebContents()->GetRenderViewHost(),
+      panel->GetWebContents()->GetRenderViewHost(),
       std::wstring(),
       L"changeSize(50);"));
   enlarge.Wait();
@@ -405,7 +405,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, DISABLED_AutoResize) {
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel));
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
-      panel->WebContents()->GetRenderViewHost(),
+      panel->GetWebContents()->GetRenderViewHost(),
       std::wstring(),
       L"changeSize(-30);"));
   shrink.Wait();
@@ -1419,7 +1419,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, OnBeforeUnloadOnClose) {
       FilePath(FILE_PATH_LITERAL("onbeforeunload.html")));
   Panel* panel = CreatePanelWithParams(params);
   EXPECT_EQ(1, panel_manager->num_panels());
-  WebContents* web_contents = panel->WebContents();
+  WebContents* web_contents = panel->GetWebContents();
 
   // Close panel and respond to the onbeforeunload dialog with cancel. This is
   // equivalent to clicking "Stay on this page"
@@ -1555,7 +1555,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, TightAutosizeAroundSingleLine) {
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel));
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
-      panel->WebContents()->GetRenderViewHost(),
+      panel->GetWebContents()->GetRenderViewHost(),
       std::wstring(),
       L"document.body.innerHTML ="
       L"'<nobr>line of text and a <button>Button</button>';"));

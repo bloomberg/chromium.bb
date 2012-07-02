@@ -619,12 +619,12 @@ enum {
   [findBarCocoaController positionFindBarViewAtMaxY:maxY maxWidth:maxWidth];
 }
 
-- (void)tabInserted:(WebContents*)contents {
+- (void)webContentsInserted:(WebContents*)contents {
   [contentsController_ changeWebContents:contents];
   DCHECK(![[contentsController_ view] isHidden]);
 }
 
-- (void)tabDetached:(WebContents*)contents {
+- (void)webContentsDetached:(WebContents*)contents {
   DCHECK(contents == [contentsController_ webContents]);
   [contentsController_ changeWebContents:nil];
   [[contentsController_ view] setHidden:YES];
@@ -732,7 +732,7 @@ enum {
   if (!panel->ShouldCloseWindow())
     return NO;
 
-  if (panel->WebContents()) {
+  if (panel->GetWebContents()) {
     // Terminate any playing animations.
     [self terminateBoundsAnimation];
     animateOnBoundsChange_ = NO;
@@ -749,7 +749,7 @@ enum {
 // When windowShouldClose returns YES (or if controller receives direct 'close'
 // signal), window will be unconditionally closed. Clean up.
 - (void)windowWillClose:(NSNotification*)notification {
-  DCHECK(!windowShim_->panel()->WebContents());
+  DCHECK(!windowShim_->panel()->GetWebContents());
   // Avoid callbacks from a nonblocking animation in progress, if any.
   [self terminateBoundsAnimation];
   windowShim_->DidCloseNativeWindow();

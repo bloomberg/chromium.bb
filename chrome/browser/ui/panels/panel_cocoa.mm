@@ -239,6 +239,14 @@ void PanelCocoa::PanelExpansionStateChanging(
   [controller_ updateWindowLevel:(new_state != Panel::EXPANDED)];
 }
 
+void PanelCocoa::AttachWebContents(content::WebContents* contents) {
+  [controller_ webContentsInserted:contents];
+}
+
+void PanelCocoa::DetachWebContents(content::WebContents* contents) {
+  [controller_ webContentsDetached:contents];
+}
+
 gfx::Size PanelCocoa::WindowSizeFromContentSize(
     const gfx::Size& content_size) const {
   NSRect content = NSMakeRect(0, 0,

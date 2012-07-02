@@ -59,6 +59,8 @@ class PanelCocoa : public NativePanelCocoa {
   virtual void PanelExpansionStateChanging(
       Panel::ExpansionState old_state,
       Panel::ExpansionState new_state) OVERRIDE;
+  virtual void AttachWebContents(content::WebContents* contents) OVERRIDE;
+  virtual void DetachWebContents(content::WebContents* contents) OVERRIDE;
 
   // These sizes are in screen coordinates.
   virtual gfx::Size WindowSizeFromContentSize(
