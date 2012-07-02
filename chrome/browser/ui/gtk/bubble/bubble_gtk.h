@@ -109,6 +109,8 @@ class BubbleGtk : public content::NotificationObserver {
   // starts being inspected.
   void StopGrabbingInput();
 
+  GtkWidget* anchor_widget() { return anchor_widget_; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BubbleGtkTest, ArrowLocation);
   FRIEND_TEST_ALL_PREFIXES(BubbleGtkTest, NoArrow);

@@ -42,7 +42,9 @@ void ZoomBubbleGtk::Show(GtkWidget* anchor,
   // If the bubble is already showing and its |auto_close_| value is equal to
   // |auto_close|, the bubble can be reused and only the label text needs to
   // be updated.
-  if (g_bubble && g_bubble->auto_close_ == auto_close) {
+  if (g_bubble &&
+      g_bubble->auto_close_ == auto_close &&
+      g_bubble->bubble_->anchor_widget() == anchor) {
     string16 text = l10n_util::GetStringFUTF16Int(
         IDS_ZOOM_PERCENT, zoom_percent);
     gtk_label_set_text(GTK_LABEL(g_bubble->label_), UTF16ToUTF8(text).c_str());
