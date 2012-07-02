@@ -1201,6 +1201,7 @@ const char kStabilityPluginName[] = "name";
 const char kStabilityPluginLaunches[] = "launches";
 const char kStabilityPluginInstances[] = "instances";
 const char kStabilityPluginCrashes[] = "crashes";
+const char kStabilityPluginLoadingErrors[] = "loading_errors";
 
 // The keys below are strictly increasing counters over the lifetime of
 // a chrome installation. They are (optionally) sent up to the uninstall

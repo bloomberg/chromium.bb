@@ -281,6 +281,9 @@ message SystemProfileProto {
       // The number of times this plugin process crashed.
       // This value will be <= |launch_count|.
       optional int32 crash_count = 4;
+
+      // The number of times this plugin could not be loaded.
+      optional int32 loading_error_count = 5;
     }
     repeated PluginStability plugin_stability = 22;
   }

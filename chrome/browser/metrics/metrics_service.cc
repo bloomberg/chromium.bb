@@ -357,6 +357,7 @@ struct MetricsService::ChildProcessStats {
       : process_launches(0),
         process_crashes(0),
         instances(0),
+        loading_errors(0),
         process_type(type) {}
 
   // This constructor is only used by the map to return some default value for
@@ -365,6 +366,7 @@ struct MetricsService::ChildProcessStats {
       : process_launches(0),
         process_crashes(0),
         instances(0),
+        loading_errors(0),
         process_type(content::PROCESS_TYPE_UNKNOWN) {}
 
   // The number of times that the given child process has been launched
@@ -377,6 +379,10 @@ struct MetricsService::ChildProcessStats {
   // An instance is a DOM object rendered by this child process during a page
   // load.
   int instances;
+
+  // The number of times there was an error loading an instance of this child
+  // process.
+  int loading_errors;
 
   content::ProcessType process_type;
 };
@@ -1658,6 +1664,24 @@ void MetricsService::LogChromeOSCrash(const std::string &crash_type) {
 }
 #endif  // OS_CHROMEOS
 
+void MetricsService::LogPluginLoadingError(const FilePath& plugin_path) {
+  webkit::WebPluginInfo plugin;
+  bool success =
+      content::PluginService::GetInstance()->GetPluginInfoByPath(plugin_path,
+                                                                 &plugin);
+  DCHECK(success);
+  ChildProcessStats& stats = child_process_stats_buffer_[plugin.name];
+  // Initialize the type if this entry is new.
+  if (stats.process_type == content::PROCESS_TYPE_UNKNOWN) {
+    // The plug-in process might not actually of type PLUGIN (which means
+    // NPAPI), but we only care that it is *a* plug-in process.
+    stats.process_type = content::PROCESS_TYPE_PLUGIN;
+  } else {
+    DCHECK(IsPluginProcess(stats.process_type));
+  }
+  stats.loading_errors++;
+}
+
 void MetricsService::LogChildProcessChange(
     int type,
     const content::NotificationSource& source,
@@ -1787,6 +1811,14 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
       instances += stats.instances;
       plugin_dict->SetInteger(prefs::kStabilityPluginInstances, instances);
     }
+    if (stats.loading_errors) {
+      int loading_errors = 0;
+      plugin_dict->GetInteger(prefs::kStabilityPluginLoadingErrors,
+                              &loading_errors);
+      loading_errors += stats.loading_errors;
+      plugin_dict->SetInteger(prefs::kStabilityPluginLoadingErrors,
+                              loading_errors);
+    }
 
     child_process_stats_buffer_.erase(name16);
   }
@@ -1814,6 +1846,8 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
                             stats.process_crashes);
     plugin_dict->SetInteger(prefs::kStabilityPluginInstances,
                             stats.instances);
+    plugin_dict->SetInteger(prefs::kStabilityPluginLoadingErrors,
+                            stats.loading_errors);
     plugins->Append(plugin_dict);
   }
   child_process_stats_buffer_.clear();
@@ -1847,8 +1881,9 @@ void MetricsService::RecordCurrentState(PrefService* pref) {
 
 // static
 bool MetricsService::IsPluginProcess(content::ProcessType type) {
-  return (type == content::PROCESS_TYPE_PLUGIN||
-          type == content::PROCESS_TYPE_PPAPI_PLUGIN);
+  return (type == content::PROCESS_TYPE_PLUGIN ||
+          type == content::PROCESS_TYPE_PPAPI_PLUGIN ||
+          type == content::PROCESS_TYPE_PPAPI_BROKER);
 }
 
 #if defined(OS_CHROMEOS)

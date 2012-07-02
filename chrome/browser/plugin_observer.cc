@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/plugin_finder.h"
 #include "chrome/browser/plugin_infobar_delegates.h"
 #include "chrome/browser/profiles/profile.h"
@@ -323,6 +324,7 @@ void PluginObserver::OnOpenAboutPlugins() {
 }
 
 void PluginObserver::OnCouldNotLoadPlugin(const FilePath& plugin_path) {
+  g_browser_process->metrics_service()->LogPluginLoadingError(plugin_path);
   string16 plugin_name =
       PluginService::GetInstance()->GetPluginDisplayNameByPath(plugin_path);
   InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();

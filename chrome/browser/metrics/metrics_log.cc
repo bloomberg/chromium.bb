@@ -471,7 +471,12 @@ void MetricsLog::WritePluginStabilityElements(
       NOTREACHED();
       continue;
     }
+    int loading_errors = 0;
+    plugin_dict->GetInteger(prefs::kStabilityPluginLoadingErrors,
+                            &loading_errors);
+    WriteIntAttribute("loadingerrorcount", loading_errors);
 
+    // Write the protobuf version.
     SystemProfileProto::Stability::PluginStability* plugin_stability =
         stability->add_plugin_stability();
     SetPluginInfo(*plugin_info, plugin_prefs,
@@ -479,6 +484,7 @@ void MetricsLog::WritePluginStabilityElements(
     plugin_stability->set_launch_count(launches);
     plugin_stability->set_instance_count(instances);
     plugin_stability->set_crash_count(crashes);
+    plugin_stability->set_loading_error_count(loading_errors);
   }
 
   pref->ClearPref(prefs::kStabilityPluginStats);
