@@ -26,8 +26,8 @@ class EventListenerMapUnittest : public testing::Test {
   EventListenerMapUnittest()
     : delegate_(new EmptyDelegate),
       listeners_(new EventListenerMap(delegate_.get())),
-      process_(new content::MockRenderProcessHost(
-          new content::TestBrowserContext)) {
+      browser_context_(new content::TestBrowserContext),
+      process_(new content::MockRenderProcessHost(browser_context_.get())) {
   }
 
   scoped_ptr<DictionaryValue> CreateHostSuffixFilter(
@@ -59,6 +59,7 @@ class EventListenerMapUnittest : public testing::Test {
  protected:
   scoped_ptr<EventListenerMap::Delegate> delegate_;
   scoped_ptr<EventListenerMap> listeners_;
+  scoped_ptr<content::TestBrowserContext> browser_context_;
   scoped_ptr<content::MockRenderProcessHost> process_;
 };
 
