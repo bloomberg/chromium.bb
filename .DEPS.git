@@ -147,6 +147,11 @@ deps_os = {
         'src/third_party/freetype':
             Var('git_url') + '/git/chromium/src/third_party/freetype.git@1f74e4e7ad3ca4163b4578fc30da26a165dd55e7',
     },
+    'ios':
+    {
+        'src/third_party/GTM':
+            Var('git_url') + '/external/google-toolbox-for-mac.git@7545ca338f0bcf18dec026599098d72ce53106fe',
+    },
     'mac':
     {
         'src/chrome/installer/mac/third_party/xz/xz':
@@ -154,7 +159,7 @@ deps_os = {
         'src/chrome/tools/test/reference_build/chrome_mac':
             Var('git_url') + '/chromium/reference_builds/chrome_mac.git@b43b0539e14bf908e771dbbf0b080f7dc9b75219',
         'src/third_party/GTM':
-            Var('git_url') + '/external/google-toolbox-for-mac.git@9fcac4c557e0cb5d6ecbac6b59aaddeb15469acd',
+            Var('git_url') + '/external/google-toolbox-for-mac.git@7545ca338f0bcf18dec026599098d72ce53106fe',
         'src/third_party/lighttpd':
             Var('git_url') + '/chromium/deps/lighttpd.git@9dfa55d15937a688a92cbf2b7a8621b0927d06eb',
         'src/third_party/nss':
