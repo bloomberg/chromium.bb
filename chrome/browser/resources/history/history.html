@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="chrome://resources/css/chrome_shared.css">
 <link rel="stylesheet" href="chrome://resources/css/menu.css">
 <link rel="stylesheet" href="chrome://resources/css/menu_button.css">
+<link rel="stylesheet" href="chrome://resources/css/spinner.css">
 <link rel="stylesheet" href="../uber/uber_shared.css">
 <link rel="stylesheet" href="history.css">
 
@@ -44,6 +45,12 @@
             i18n-content="removeselected"></button>
   </div>
   <div id="results-display"></div>
+  <div id="loading-spinner" hidden>
+    <span id="loading">
+      <div id="spinner" class="inline-spinner"></div>
+      <span i18n-content="loading"></span>
+    </span>
+  </div>
   <div id="results-pagination"></div>
 </div>
 

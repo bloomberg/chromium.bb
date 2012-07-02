@@ -462,10 +462,13 @@ HistoryModel.prototype.updateSearch_ = function(finished) {
     this.complete_ = true;
     this.view_.onModelReady();
     this.changed = false;
+    $('loading-spinner').hidden = true;
   } else {
-    // If we can't fill the requested page, ask for more data unless a request
-    // is still in-flight.
-    if (!this.canFillPage_(this.requestedPage_) && !this.inFlight_) {
+    if (this.canFillPage_(this.requestedPage_)) {
+      $('loading-spinner').hidden = true;
+    } else if (!this.inFlight_) {
+      // If we can't fill the requested page, ask for more data unless a request
+      // is still in-flight.
       this.getSearchResults_(this.searchDepth_ + 1);
     }
 
@@ -490,6 +493,7 @@ HistoryModel.prototype.updateSearch_ = function(finished) {
  * @private
  */
 HistoryModel.prototype.getSearchResults_ = function(depth) {
+  $('loading-spinner').hidden = false;
   this.searchDepth_ = depth || 0;
 
   if (this.searchText_) {

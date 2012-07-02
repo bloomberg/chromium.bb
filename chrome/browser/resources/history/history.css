@@ -2,9 +2,19 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#editing-controls {
+#editing-controls,
+#loading-spinner {
   margin-top: 16px;
   white-space: nowrap;
+}
+
+#loading-spinner[hidden] {
+  display: inline-block;
+}
+
+#spinner {
+  position: relative;
+  top: 3px;
 }
 
 #editing-controls button:first-of-type {
