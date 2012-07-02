@@ -1101,7 +1101,14 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest,
   panel2->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, DrawAttentionWhenActive) {
+// http://crbug.com/135377
+#if defined(OS_LINUX)
+#define MAYBE_DrawAttentionWhenActive DISABLED_DrawAttentionWhenActive
+#else
+#define MAYBE_DrawAttentionWhenActive DrawAttentionWhenActive
+#endif
+
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MAYBE_DrawAttentionWhenActive) {
   CreatePanelParams params("Initially Active", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel = CreatePanelWithParams(params);
   scoped_ptr<NativePanelTesting> native_panel_testing(
