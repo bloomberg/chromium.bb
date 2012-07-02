@@ -233,9 +233,6 @@ TEST(connection_marshal)
 	marshal(&data, "o", 12, &object);
 	assert(data.buffer[2] == object.id);
 
-	marshal(&data, "o", 12, NULL);
-	assert(data.buffer[2] == 0);
-
 	marshal(&data, "n", 12, &object);
 	assert(data.buffer[2] == object.id);
 
@@ -247,6 +244,68 @@ TEST(connection_marshal)
 	marshal(&data, "a", 20, &array);
 	assert(data.buffer[2] == array.size);
 	assert(memcmp(&data.buffer[3], text, array.size) == 0);
+
+	release_marshal_data(&data);
+}
+
+static void
+expected_fail_marshal(int expected_error, const char *format, ...)
+{
+	struct wl_closure *closure;
+	static const uint32_t opcode = 4444;
+	static const struct wl_interface test_interface = { 
+		.name = "test_object"
+	};
+	static struct wl_object sender = { 0 };
+	struct wl_message message = { "test", format, NULL };
+
+	sender.interface = &test_interface;
+	sender.id = 1234;
+	va_list ap;
+
+	va_start(ap, format);
+	closure = wl_closure_vmarshal(&sender, opcode, ap, &message);
+	va_end(ap);
+
+	assert(closure == NULL);
+	assert(errno == expected_error);
+}
+
+TEST(connection_marshal_nullables)
+{
+	struct marshal_data data;
+	struct wl_object object;
+	struct wl_array array;
+	const char text[] = "curry";
+
+	setup_marshal_data(&data);
+
+	expected_fail_marshal(EINVAL, "o", NULL);
+	expected_fail_marshal(EINVAL, "s", NULL);
+	expected_fail_marshal(EINVAL, "a", NULL);
+
+	marshal(&data, "?o", 12, NULL);
+	assert(data.buffer[2] == 0);
+
+	marshal(&data, "?a", 12, NULL);
+	assert(data.buffer[2] == 0);
+
+	marshal(&data, "?s", 12, NULL);
+	assert(data.buffer[2] == 0);
+
+	object.id = 55293;
+	marshal(&data, "?o", 12, &object);
+	assert(data.buffer[2] == object.id);
+
+	array.data = (void *) text;
+	array.size = sizeof text;
+	marshal(&data, "?a", 20, &array);
+	assert(data.buffer[2] == array.size);
+	assert(memcmp(&data.buffer[3], text, array.size) == 0);
+
+	marshal(&data, "?s", 20, text);
+	assert(data.buffer[2] == sizeof text);
+	assert(strcmp((char *) &data.buffer[3], text) == 0);
 
 	release_marshal_data(&data);
 }
@@ -269,7 +328,10 @@ static void
 validate_demarshal_s(struct marshal_data *data,
 		     struct wl_object *object, const char *s)
 {
-	assert(strcmp(data->value.s, s) == 0);
+	if (data->value.s != NULL)
+		assert(strcmp(data->value.s, s) == 0);
+	else
+		assert(s == NULL);
 }
 
 static void
@@ -343,11 +405,24 @@ TEST(connection_demarshal)
 	memcpy(&msg[3], data.value.s, msg[2]);
 	demarshal(&data, "s", msg, (void *) validate_demarshal_s);
 
+	data.value.s = "superdude";
+	msg[0] = 400200;
+	msg[1] = 24;
+	msg[2] = 10;
+	memcpy(&msg[3], data.value.s, msg[2]);
+	demarshal(&data, "?s", msg, (void *) validate_demarshal_s);
+
 	data.value.i = wl_fixed_from_double(-90000.2390);
 	msg[0] = 400200;
 	msg[1] = 12;
 	msg[2] = data.value.i;
 	demarshal(&data, "f", msg, (void *) validate_demarshal_f);
+
+	data.value.s = NULL;
+	msg[0] = 400200;
+	msg[1] = 12;
+	msg[2] = 0;
+	demarshal(&data, "?s", msg, (void *) validate_demarshal_s);	
 
 	release_marshal_data(&data);
 }
@@ -407,6 +482,10 @@ TEST(connection_marshal_demarshal)
 	data.value.s = "cookie robots";
 	marshal_demarshal(&data, (void *) validate_demarshal_s,
 			  28, "s", data.value.s);
+
+	data.value.s = "cookie robots";
+	marshal_demarshal(&data, (void *) validate_demarshal_s,
+			  28, "?s", data.value.s);
 
 	data.value.h = mkstemp(f);
 	assert(data.value.h >= 0);

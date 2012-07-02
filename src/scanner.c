@@ -93,6 +93,7 @@ enum arg_type {
 struct arg {
 	char *name;
 	enum arg_type type;
+	int nullable;
 	char *interface_name;
 	struct wl_list link;
 	char *summary;
@@ -220,6 +221,20 @@ fail(struct parse_context *ctx, const char *msg)
 	exit(EXIT_FAILURE);
 }
 
+static int
+is_nullable_type(struct arg *arg)
+{
+	switch (arg->type) {
+	/* Strings, objects, and arrays are possibly nullable */
+	case STRING:
+	case OBJECT:
+	case ARRAY:
+		return 1;
+	default:
+		return 0;
+	}
+}
+
 static void
 start_element(void *data, const char *element_name, const char **atts)
 {
@@ -231,6 +246,7 @@ start_element(void *data, const char *element_name, const char **atts)
 	struct entry *entry;
 	struct description *description;
 	const char *name, *type, *interface_name, *value, *summary, *since;
+	const char *allow_null;
 	char *end;
 	int i, version;
 
@@ -242,6 +258,7 @@ start_element(void *data, const char *element_name, const char **atts)
 	summary = NULL;
 	description = NULL;
 	since = NULL;
+	allow_null = NULL;
 	for (i = 0; atts[i]; i += 2) {
 		if (strcmp(atts[i], "name") == 0)
 			name = atts[i + 1];
@@ -257,6 +274,8 @@ start_element(void *data, const char *element_name, const char **atts)
 			summary = atts[i + 1];
 		if (strcmp(atts[i], "since") == 0)
 			since = atts[i + 1];
+		if (strcmp(atts[i], "allow-null") == 0)
+			allow_null = atts[i + 1];
 	}
 
 	ctx->character_data_length = 0;
@@ -363,6 +382,16 @@ start_element(void *data, const char *element_name, const char **atts)
 				fail(ctx, "interface not allowed");
 			break;
 		}
+
+		if (allow_null == NULL || strcmp(allow_null, "false") == 0)
+			arg->nullable = 0;
+		else if (strcmp(allow_null, "true") == 0)
+			arg->nullable = 1;
+		else
+			fail(ctx, "invalid value for allow-null attribute");
+
+		if (allow_null != NULL && !is_nullable_type(arg))
+			fail(ctx, "allow-null is only valid for objects, strings, and arrays");
 
 		arg->summary = NULL;
 		if (summary)
@@ -969,6 +998,9 @@ emit_messages(struct wl_list *message_list,
 	wl_list_for_each(m, message_list, link) {
 		printf("\t{ \"%s\", \"", m->name);
 		wl_list_for_each(a, &m->arg_list, link) {
+			if (is_nullable_type(a) && a->nullable)
+				printf("?");
+
 			switch (a->type) {
 			default:
 			case INT:

@@ -404,6 +404,36 @@ wl_connection_put_fd(struct wl_connection *connection, int32_t fd)
 	return 0;
 }
 
+struct argument_details {
+	char type;
+	int nullable;
+};
+
+static const char *
+get_next_argument(const char *signature, struct argument_details *details)
+{
+	if (*signature == '?') {
+		details->nullable = 1;
+		signature++;
+	} else
+		details->nullable = 0;
+
+	details->type = *signature;
+	return signature + 1;
+}
+
+static int
+arg_count_for_signature(const char *signature)
+{
+	int count = 0;
+	while (*signature) {
+		if (*signature != '?')
+			count++;
+		signature++;
+	}
+	return count;
+}
+
 struct wl_closure *
 wl_closure_vmarshal(struct wl_object *sender,
 		    uint32_t opcode, va_list ap,
@@ -415,6 +445,8 @@ wl_closure_vmarshal(struct wl_object *sender,
 	int dup_fd;
 	struct wl_array **arrayp, *array;
 	const char **sp, *s;
+	const char *signature = message->signature;
+	struct argument_details arg;
 	char *extra;
 	int i, count, fd, extra_size, *fd_ptr;
 
@@ -424,7 +456,7 @@ wl_closure_vmarshal(struct wl_object *sender,
 		return NULL;
 
 	extra_size = wl_message_size_extra(message);
-	count = strlen(message->signature) + 2;
+	count = arg_count_for_signature(signature) + 2;
 	extra = (char *) closure->buffer;
 	start = &closure->buffer[DIV_ROUNDUP(extra_size, sizeof *p)];
 	end = &closure->buffer[256];
@@ -434,7 +466,9 @@ wl_closure_vmarshal(struct wl_object *sender,
 	closure->types[1] = &ffi_type_pointer;
 
 	for (i = 2; i < count; i++) {
-		switch (message->signature[i - 2]) {
+		signature = get_next_argument(signature, &arg);
+
+		switch (arg.type) {
 		case 'f':
 			closure->types[i] = &ffi_type_sint32;
 			closure->args[i] = p;
@@ -463,6 +497,10 @@ wl_closure_vmarshal(struct wl_object *sender,
 			extra += sizeof *sp;
 
 			s = va_arg(ap, const char *);
+
+			if (!arg.nullable && s == NULL)
+				goto err_null;
+
 			length = s ? strlen(s) + 1: 0;
 			if (p + DIV_ROUNDUP(length, sizeof *p) + 1 > end)
 				goto err;
@@ -483,6 +521,10 @@ wl_closure_vmarshal(struct wl_object *sender,
 			extra += sizeof *objectp;
 
 			object = va_arg(ap, struct wl_object *);
+
+			if (!arg.nullable && object == NULL)
+				goto err_null;
+
 			*objectp = object;
 			if (end - p < 1)
 				goto err;
@@ -508,6 +550,10 @@ wl_closure_vmarshal(struct wl_object *sender,
 			extra += sizeof **arrayp;
 
 			array = va_arg(ap, struct wl_array *);
+
+			if (!arg.nullable && array == NULL)
+				goto err_null;
+
 			if (array == NULL || array->size == 0) {
 				if (end - p < 1)
 					goto err;
@@ -542,7 +588,7 @@ wl_closure_vmarshal(struct wl_object *sender,
 			break;
 		default:
 			fprintf(stderr, "unhandled format code: '%c'\n",
-				message->signature[i - 2]);
+				arg.type);
 			assert(0);
 			break;
 		}
@@ -567,6 +613,15 @@ err:
 	errno = ENOMEM;
 
 	return NULL;
+
+err_null:
+	free(closure);
+	wl_log("error marshalling arguments for %s:%i.%s (signature %s): "
+	       "null value passed for arg %i\n",
+	       sender->interface->name, sender->id, message->name,
+	       message->signature, i);
+	errno = EINVAL;
+	return NULL;
 }
 
 struct wl_closure *
@@ -579,11 +634,13 @@ wl_connection_demarshal(struct wl_connection *connection,
 	int *fd;
 	char *extra, **s;
 	unsigned int i, count, extra_space;
+	const char *signature = message->signature;
+	struct argument_details arg;
 	struct wl_object **object;
 	struct wl_array **array;
 	struct wl_closure *closure;
 
-	count = strlen(message->signature) + 2;
+	count = arg_count_for_signature(signature) + 2;
 	if (count > ARRAY_LENGTH(closure->types)) {
 		printf("too many args (%d)\n", count);
 		errno = EINVAL;
@@ -606,6 +663,8 @@ wl_connection_demarshal(struct wl_connection *connection,
 	end = (uint32_t *) ((char *) p + size);
 	extra = (char *) end;
 	for (i = 2; i < count; i++) {
+		signature = get_next_argument(signature, &arg);
+
 		if (p + 1 > end) {
 			printf("message too short, "
 			       "object (%d), message %s(%s)\n",
@@ -614,7 +673,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 			goto err;
 		}
 
-		switch (message->signature[i - 2]) {
+		switch (arg.type) {
 		case 'u':
 			closure->types[i] = &ffi_type_uint32;
 			closure->args[i] = p++;
@@ -784,11 +843,14 @@ copy_fds_to_connection(struct wl_closure *closure,
 {
 	const struct wl_message *message = closure->message;
 	uint32_t i, count;
+	struct argument_details arg;
+	const char *signature = message->signature;
 	int *fd;
 
-	count = strlen(message->signature) + 2;
+	count = arg_count_for_signature(signature) + 2;
 	for (i = 2; i < count; i++) {
-		if (message->signature[i - 2] != 'h')
+		signature = get_next_argument(signature, &arg);
+		if (arg.type != 'h')
 			continue;
 
 		fd = closure->args[i];
@@ -834,6 +896,8 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target, int send)
 	union wl_value *value;
 	int32_t si;
 	int i;
+	struct argument_details arg;
+	const char *signature = closure->message->signature;
 	struct timespec tp;
 	unsigned int time;
 
@@ -847,11 +911,12 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target, int send)
 		closure->message->name);
 
 	for (i = 2; i < closure->count; i++) {
+		signature = get_next_argument(signature, &arg);
 		if (i > 2)
 			fprintf(stderr, ", ");
 
 		value = closure->args[i];
-		switch (closure->message->signature[i - 2]) {
+		switch (arg.type) {
 		case 'u':
 			fprintf(stderr, "%u", value->uint32);
 			break;
