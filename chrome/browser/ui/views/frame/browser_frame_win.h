@@ -61,6 +61,7 @@ class BrowserFrameWin : public views::NativeWidgetWin,
   virtual void ShowWithWindowState(ui::WindowShowState show_state) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void OnActivate(UINT action, BOOL minimized, HWND window) OVERRIDE;
+  virtual void FrameTypeChanged() OVERRIDE;
 
   // Overridden from NativeBrowserFrame:
   virtual views::NativeWidget* AsNativeWidget() OVERRIDE;

@@ -133,11 +133,11 @@ bool ShouldAddDefaultCaptionButtons() {
 OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
                                                BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
-      window_icon_(NULL),
       minimize_button_(NULL),
       maximize_button_(NULL),
       restore_button_(NULL),
       close_button_(NULL),
+      window_icon_(NULL),
       frame_background_(new views::FrameBackground()) {
   if (ShouldAddDefaultCaptionButtons()) {
     minimize_button_ = InitWindowCaptionButton(IDR_MINIMIZE,
