@@ -9,14 +9,15 @@
 #include <map>
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 
 namespace extensions {
 class WebSocketProxyPrivateGetPassportForTCPFunction;
 class WebSocketProxyPrivateGetURLForTCPFunction;
-}  // namespace extensions
+}
 
-namespace browser {
+namespace chrome {
 
 // Call InternalAuthVerification methods on any thread.
 class InternalAuthVerification {
@@ -28,6 +29,11 @@ class InternalAuthVerification {
       const std::map<std::string, std::string>& var_value_map);
 
  private:
+  friend class InternalAuthGeneration;
+  friend class InternalAuthVerificationService;
+  friend class InternalAuthGenerationService;
+  FRIEND_TEST_ALL_PREFIXES(InternalAuthTest, ExpirationAndBruteForce);
+
   // We allow for easy separation of InternalAuthVerification and
   // InternalAuthGeneration so the only thing they share (besides time) is
   // a key (regenerated infrequently).
@@ -43,24 +49,12 @@ class InternalAuthVerification {
 
   static int verification_window_seconds_;
 
-  friend class InternalAuthGeneration;
-  friend class InternalAuthVerificationService;
-  friend class InternalAuthGenerationService;
-
-  FRIEND_TEST_ALL_PREFIXES(InternalAuthTest, ExpirationAndBruteForce);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(InternalAuthVerification);
 };
 
 // Not thread-safe. Make all calls on the same thread (UI thread).
 class InternalAuthGeneration {
  private:
-  // Generates passport; do this only after successful check of credentials.
-  static std::string GeneratePassport(
-      const std::string& domain,
-      const std::map<std::string, std::string>& var_value_map);
-
-  // Used only by tests.
-  static void GenerateNewKey();
-
   friend class extensions::WebSocketProxyPrivateGetPassportForTCPFunction;
   friend class extensions::WebSocketProxyPrivateGetURLForTCPFunction;
 
@@ -71,8 +65,16 @@ class InternalAuthGeneration {
   FRIEND_TEST_ALL_PREFIXES(InternalAuthTest, BruteForce);
   FRIEND_TEST_ALL_PREFIXES(InternalAuthTest, ExpirationAndBruteForce);
   FRIEND_TEST_ALL_PREFIXES(InternalAuthTest, ChangeKey);
+
+  // Generates passport; do this only after successful check of credentials.
+  static std::string GeneratePassport(
+      const std::string& domain,
+      const std::map<std::string, std::string>& var_value_map);
+
+  // Used only by tests.
+  static void GenerateNewKey();
 };
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_INTERNAL_AUTH_H_

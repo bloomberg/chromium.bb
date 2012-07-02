@@ -99,7 +99,7 @@ void ReloadButton::ButtonPressed(views::Button* /* button */,
     }
 
     WindowOpenDisposition disposition =
-        browser::DispositionFromEventFlags(flags);
+        chrome::DispositionFromEventFlags(flags);
     if ((disposition == CURRENT_TAB) && location_bar_) {
       // Forcibly reset the location bar, since otherwise it won't discard any
       // ongoing user edits, since it doesn't realize this is a user-initiated

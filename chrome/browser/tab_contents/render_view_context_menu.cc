@@ -116,7 +116,7 @@ namespace {
 WindowOpenDisposition ForceNewTabDispositionFromEventFlags(
     int event_flags) {
   WindowOpenDisposition disposition =
-      browser::DispositionFromEventFlags(event_flags);
+      chrome::DispositionFromEventFlags(event_flags);
   return disposition == CURRENT_TAB ? NEW_FOREGROUND_TAB : disposition;
 }
 

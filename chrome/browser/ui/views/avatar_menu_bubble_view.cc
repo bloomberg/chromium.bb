@@ -446,7 +446,7 @@ void AvatarMenuBubbleView::ButtonPressed(views::Button* sender,
       // Clicking on the active profile shouldn't do anything.
       if (!item_view->item().active) {
         avatar_menu_model_->SwitchToProfile(
-            i, browser::DispositionFromEventFlags(event.flags()) == NEW_WINDOW);
+            i, chrome::DispositionFromEventFlags(event.flags()) == NEW_WINDOW);
       }
       break;
     }

@@ -140,12 +140,11 @@ void ConvertVarValueMapToBlob(const VarValueMap& map, std::string* out) {
     *out += it->first + kVarValueSeparator + it->second + kItemSeparator;
 }
 
-void CreatePassport(
-    const std::string& domain,
-    const VarValueMap& map,
-    int64 tick,
-    const crypto::HMAC* engine,
-    std::string* out) {
+void CreatePassport(const std::string& domain,
+                    const VarValueMap& map,
+                    int64 tick,
+                    const crypto::HMAC* engine,
+                    std::string* out) {
   DCHECK(engine);
   DCHECK(out);
   DCHECK(IsDomainSane(domain));
@@ -191,7 +190,7 @@ void CreatePassport(
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
 class InternalAuthVerificationService {
  public:
@@ -320,18 +319,18 @@ class InternalAuthVerificationService {
   DISALLOW_COPY_AND_ASSIGN(InternalAuthVerificationService);
 };
 
-}  // namespace browser
+}  // namespace chrome
 
 namespace {
 
-static base::LazyInstance<browser::InternalAuthVerificationService>
+static base::LazyInstance<chrome::InternalAuthVerificationService>
     g_verification_service = LAZY_INSTANCE_INITIALIZER;
 static base::LazyInstance<base::Lock>::Leaky
     g_verification_service_lock = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
 class InternalAuthGenerationService : public base::ThreadChecker {
  public:
@@ -427,16 +426,16 @@ class InternalAuthGenerationService : public base::ThreadChecker {
   DISALLOW_COPY_AND_ASSIGN(InternalAuthGenerationService);
 };
 
-}  // namespace browser
+}  // namespace chrome
 
 namespace {
 
-static base::LazyInstance<browser::InternalAuthGenerationService>
+static base::LazyInstance<chrome::InternalAuthGenerationService>
     g_generation_service = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
 // static
 bool InternalAuthVerification::VerifyPassport(
@@ -476,4 +475,4 @@ void InternalAuthGeneration::GenerateNewKey() {
   g_generation_service.Get().GenerateNewKey();
 }
 
-}  // namespace browser
+}  // namespace chrome

@@ -261,7 +261,7 @@ void PrintViewManager::OnPrintingFailed(int cookie) {
     return;
   }
 
-  browser::ShowPrintErrorDialog(
+  chrome::ShowPrintErrorDialog(
       tab_->web_contents()->GetView()->GetTopLevelNativeWindow());
 
   ReleasePrinterQuery();

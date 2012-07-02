@@ -160,7 +160,7 @@ void ChromeViewsDelegate::ReleaseRef() {
 }
 
 int ChromeViewsDelegate::GetDispositionForEvent(int event_flags) {
-  return browser::DispositionFromEventFlags(event_flags);
+  return chrome::DispositionFromEventFlags(event_flags);
 }
 
 #if defined(USE_AURA)

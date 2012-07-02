@@ -129,7 +129,7 @@ void ConfirmInfoBar::LinkClicked(views::Link* source, int event_flags) {
   DCHECK(link_ != NULL);
   DCHECK_EQ(link_, source);
   if (GetDelegate()->LinkClicked(
-      browser::DispositionFromEventFlags(event_flags)))
+      chrome::DispositionFromEventFlags(event_flags)))
     RemoveSelf();
 }
 

@@ -1270,7 +1270,7 @@ Conn::Status Conn::ConsumeHeader(struct evbuffer* evb) {
         FetchExtensionIdFromOrigin(GetOrigin());
     std::string passport(requested_parameters_["passport"]);
     requested_parameters_.erase("passport");
-    if (!browser::InternalAuthVerification::VerifyPassport(
+    if (!chrome::InternalAuthVerification::VerifyPassport(
         passport, "web_socket_proxy", requested_parameters_)) {
       return STATUS_ABORT;
     }
@@ -1362,7 +1362,7 @@ Conn::Status Conn::ConsumeDestframe(struct evbuffer* evb) {
   map["extension_id"] = FetchExtensionIdFromOrigin(GetOrigin());
   if (!destaddr_.empty())
     map["addr"] = destaddr_;
-  if (!browser::InternalAuthVerification::VerifyPassport(
+  if (!chrome::InternalAuthVerification::VerifyPassport(
       passport, "web_socket_proxy", map)) {
     return STATUS_ABORT;
   }

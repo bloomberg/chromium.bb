@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@ void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify) {
     notify.Run(IDLE_STATE_LOCKED);
     return;
   }
-  browser::IdleQueryLinux idle_query;
+  chrome::IdleQueryLinux idle_query;
   unsigned int idle_time = idle_query.IdleTime();
   if (idle_time >= idle_threshold)
     notify.Run(IDLE_STATE_IDLE);

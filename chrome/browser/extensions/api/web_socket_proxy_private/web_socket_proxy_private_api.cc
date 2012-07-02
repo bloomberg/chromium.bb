@@ -151,7 +151,7 @@ WebSocketProxyPrivateGetURLForTCPFunction::
 
 void WebSocketProxyPrivateGetURLForTCPFunction::CustomFinalize() {
 #if defined(OS_CHROMEOS)
-  std::string passport = browser::InternalAuthGeneration::GeneratePassport(
+  std::string passport = chrome::InternalAuthGeneration::GeneratePassport(
       "web_socket_proxy", map_);
   std::string query = std::string("hostname=") +
       net::EscapeQueryParamValue(hostname_, false) + "&port=" + map_["port"] +
@@ -197,9 +197,8 @@ WebSocketProxyPrivateGetPassportForTCPFunction::
 
 void WebSocketProxyPrivateGetPassportForTCPFunction::CustomFinalize() {
 #if defined(OS_CHROMEOS)
-  std::string passport =
-      browser::InternalAuthGeneration::GeneratePassport(
-          "web_socket_proxy", map_) + std::string(":");
+  std::string passport = chrome::InternalAuthGeneration::GeneratePassport(
+      "web_socket_proxy", map_) + std::string(":");
   if (ContainsKey(map_, "addr"))
     passport += map_["addr"];
   result_.reset(Value::CreateStringValue(passport));

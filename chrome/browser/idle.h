@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,4 +30,5 @@ void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify);
 
 // Checks synchronously if Idle state is IDLE_STATE_LOCKED.
 bool CheckIdleStateIsLocked();
+
 #endif  // CHROME_BROWSER_IDLE_H_

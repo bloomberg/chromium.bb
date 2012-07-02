@@ -195,7 +195,7 @@ void BackForwardMenuModel::ActivatedAt(int index, int event_flags) {
 
   int controller_index = MenuIndexToNavEntryIndex(index);
   WindowOpenDisposition disposition =
-      browser::DispositionFromEventFlags(event_flags);
+      chrome::DispositionFromEventFlags(event_flags);
   if (!chrome::NavigateToIndexWithDisposition(browser_,
                                               controller_index,
                                               disposition)) {

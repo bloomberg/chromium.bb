@@ -504,7 +504,7 @@ void PrintPreviewHandler::HandleCancelPendingPrintRequest(
   gfx::NativeWindow parent = initiator_tab ?
       initiator_tab->web_contents()->GetView()->GetTopLevelNativeWindow() :
       NULL;
-  browser::ShowPrintErrorDialog(parent);
+  chrome::ShowPrintErrorDialog(parent);
 }
 
 void PrintPreviewHandler::HandleSaveLastPrinter(const ListValue* args) {

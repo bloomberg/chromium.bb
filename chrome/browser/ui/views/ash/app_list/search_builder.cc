@@ -238,7 +238,7 @@ void SearchBuilder::OpenResult(const app_list::SearchResult& result,
       extension_utils::OpenExtension(profile_, extension, event_flags);
   } else {
     WindowOpenDisposition disposition =
-        browser::DispositionFromEventFlags(event_flags);
+        chrome::DispositionFromEventFlags(event_flags);
     Browser* browser = browser::FindOrCreateTabbedBrowser(profile_);
 
     if (disposition == CURRENT_TAB) {

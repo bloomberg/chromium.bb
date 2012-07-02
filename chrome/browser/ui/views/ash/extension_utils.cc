@@ -23,7 +23,7 @@ void OpenExtension(Profile* profile,
   DCHECK(extension);
 
   WindowOpenDisposition disposition =
-      browser::DispositionFromEventFlags(event_flags);
+      chrome::DispositionFromEventFlags(event_flags);
 
   GURL url;
   if (extension->id() == extension_misc::kWebStoreAppId)

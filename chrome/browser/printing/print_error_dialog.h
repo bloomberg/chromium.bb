@@ -8,11 +8,11 @@
 
 #include "ui/gfx/native_widget_types.h"
 
-namespace browser {
+namespace chrome {
 
 // Shows a window-modal error that printing failed for some unknown reason.
 void ShowPrintErrorDialog(gfx::NativeWindow parent);
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_PRINTING_PRINT_ERROR_DIALOG_H_

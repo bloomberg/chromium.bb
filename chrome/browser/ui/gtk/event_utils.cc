@@ -26,7 +26,7 @@ int EventFlagsFromGdkState(guint state) {
 // TODO(shinyak) This function will be removed after refactoring.
 WindowOpenDisposition DispositionFromGdkState(guint state) {
   int event_flags = EventFlagsFromGdkState(state);
-  return browser::DispositionFromEventFlags(event_flags);
+  return chrome::DispositionFromEventFlags(event_flags);
 }
 
 WindowOpenDisposition DispositionForCurrentButtonPressEvent() {

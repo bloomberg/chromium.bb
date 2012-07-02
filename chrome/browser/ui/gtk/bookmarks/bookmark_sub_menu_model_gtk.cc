@@ -62,7 +62,7 @@ void BookmarkNodeMenuModel::ActivatedAt(int index) {
 }
 
 void BookmarkNodeMenuModel::ActivatedAt(int index, int event_flags) {
-  NavigateToMenuItem(index, browser::DispositionFromEventFlags(event_flags));
+  NavigateToMenuItem(index, chrome::DispositionFromEventFlags(event_flags));
 }
 
 void BookmarkNodeMenuModel::PopulateMenu() {
