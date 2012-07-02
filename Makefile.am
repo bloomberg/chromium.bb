@@ -33,6 +33,16 @@
 # This allows #includes to be relative to src/
 AM_CPPFLAGS = -I$(top_srcdir)/src
 
+if GCC
+# These are good warnings to be treated as errors
+AM_CXXFLAGS = \
+	-Werror=non-virtual-dtor \
+	-Werror=vla \
+	-Werror=unused-variable \
+	-Werror=missing-braces \
+	-Werror=overloaded-virtual
+endif
+
 # Specify include paths for ac macros
 ACLOCAL_AMFLAGS = -I m4
 
@@ -294,6 +304,7 @@ src_client_linux_linux_client_unittest_SOURCES = \
 	src/client/linux/minidump_writer/linux_core_dumper_unittest.cc \
 	src/client/linux/minidump_writer/linux_ptrace_dumper_unittest.cc \
 	src/client/linux/minidump_writer/minidump_writer_unittest.cc \
+	src/client/linux/minidump_writer/minidump_writer_unittest_utils.cc \
 	src/common/linux/linux_libc_support_unittest.cc \
 	src/common/linux/tests/crash_generator.cc \
 	src/common/memory_unittest.cc \

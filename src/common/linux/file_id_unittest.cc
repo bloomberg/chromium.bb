@@ -73,9 +73,11 @@ TEST(FileIDStripTest, StripSelf) {
   string templ = temp_dir.path() + "/file-id-unittest";
   char cmdline[4096];
   sprintf(cmdline, "cp \"%s\" \"%s\"", exe_name, templ.c_str());
-  ASSERT_EQ(system(cmdline), 0);
+  ASSERT_EQ(0, system(cmdline)) << "Failed to execute: " << cmdline;
+  sprintf(cmdline, "chmod u+w \"%s\"", templ.c_str());
+  ASSERT_EQ(0, system(cmdline)) << "Failed to execute: " << cmdline;
   sprintf(cmdline, "strip \"%s\"", templ.c_str());
-  ASSERT_EQ(system(cmdline), 0);
+  ASSERT_EQ(0, system(cmdline)) << "Failed to execute: " << cmdline;
 
   uint8_t identifier1[sizeof(MDGUID)];
   uint8_t identifier2[sizeof(MDGUID)];

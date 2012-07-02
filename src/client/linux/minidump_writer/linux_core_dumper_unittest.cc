@@ -83,11 +83,10 @@ TEST(LinuxCoreDumperTest, VerifyDumpWithMultipleThreads) {
     return;
   }
 
-  pid_t pid = getpid();
   const string core_file = crash_generator.GetCoreFilePath();
   const string procfs_path = crash_generator.GetDirectoryOfProcFilesCopy();
   LinuxCoreDumper dumper(child_pid, core_file.c_str(), procfs_path.c_str());
-  dumper.Init();
+  EXPECT_TRUE(dumper.Init());
 
   EXPECT_TRUE(dumper.IsPostMortem());
 

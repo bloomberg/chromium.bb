@@ -27,8 +27,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "breakpad_googletest_includes.h"
 #include "common/linux/linux_libc_support.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 typedef testing::Test LinuxLibcSupportTest;

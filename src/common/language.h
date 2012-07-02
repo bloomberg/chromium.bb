@@ -50,6 +50,10 @@ namespace google_breakpad {
 // language.
 class Language {
  public:
+  // A base class destructor should be either public and virtual,
+  // or protected and nonvirtual.
+  virtual ~Language() {}
+
   // Return true if this language has functions to which we can assign
   // line numbers. (Debugging info for assembly language, for example,
   // can have source location information, but does not have functions

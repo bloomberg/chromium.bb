@@ -33,11 +33,13 @@
 // This file was renamed from linux_dumper_unittest.cc and modified due
 // to LinuxDumper being splitted into two classes.
 
+#include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
 #include <unistd.h>
 #include <signal.h>
 #include <stdint.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <sys/poll.h>
 #include <sys/stat.h>
@@ -47,6 +49,7 @@
 
 #include "breakpad_googletest_includes.h"
 #include "client/linux/minidump_writer/linux_ptrace_dumper.h"
+#include "client/linux/minidump_writer/minidump_writer_unittest_utils.h"
 #include "common/linux/eintr_wrapper.h"
 #include "common/linux/file_id.h"
 #include "common/linux/safe_readlink.h"
@@ -58,23 +61,6 @@ using namespace google_breakpad;
 namespace {
 
 typedef testing::Test LinuxPtraceDumperTest;
-
-string GetHelperBinary() {
-  // Locate helper binary next to the current binary.
-  char self_path[PATH_MAX];
-  if (!SafeReadLink("/proc/self/exe", self_path)) {
-    return "";
-  }
-  string helper_path(self_path);
-  size_t pos = helper_path.rfind('/');
-  if (pos == string::npos) {
-    return "";
-  }
-  helper_path.erase(pos + 1);
-  helper_path += "linux_dumper_unittest_helper";
-
-  return helper_path;
-}
 
 }  // namespace
 
@@ -134,7 +120,8 @@ TEST(LinuxPtraceDumperTest, MergedMappings) {
   const size_t kPageSize = sysconf(_SC_PAGESIZE);
   const size_t kMappingSize = 3 * kPageSize;
   int fd = open(helper_path.c_str(), O_RDONLY);
-  ASSERT_NE(-1, fd);
+  ASSERT_NE(-1, fd) << "Failed to open file: " << helper_path
+                    << ", Error: " << strerror(errno);
   char* mapping =
     reinterpret_cast<char*>(mmap(NULL,
                                  kMappingSize,

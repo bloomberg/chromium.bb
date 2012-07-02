@@ -612,6 +612,8 @@ PTHREAD_CC
 ax_pthread_config
 EGREP
 GREP
+GCC_FALSE
+GCC_TRUE
 RANLIB
 am__fastdepCXX_FALSE
 am__fastdepCXX_TRUE
@@ -4498,6 +4500,14 @@ else
   RANLIB="$ac_cv_prog_RANLIB"
 fi
 
+ if test "$GCC" = yes; then
+  GCC_TRUE=
+  GCC_FALSE='#'
+else
+  GCC_TRUE='#'
+  GCC_FALSE=
+fi
+   # let the Makefile know if we're gcc
 
 
 
@@ -5461,6 +5471,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCXX_TRUE}" && test -z "${am__fastdepCXX_FALSE}"; then
   as_fn_error "conditional \"am__fastdepCXX\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${GCC_TRUE}" && test -z "${GCC_FALSE}"; then
+  as_fn_error "conditional \"GCC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LINUX_HOST_TRUE}" && test -z "${LINUX_HOST_FALSE}"; then

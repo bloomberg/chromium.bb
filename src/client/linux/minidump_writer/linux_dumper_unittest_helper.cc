@@ -38,6 +38,7 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
+#include "processor/scoped_ptr.h"
 #include "third_party/lss/linux_syscall_support.h"
 
 #if defined(__ARM_EABI__)
@@ -77,7 +78,7 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "ERROR: number of threads is 0");
     return 1;
   }
-  pthread_t threads[num_threads];
+  google_breakpad::scoped_array<pthread_t> threads(new pthread_t[num_threads]);
   pthread_attr_t thread_attributes;
   pthread_attr_init(&thread_attributes);
   pthread_attr_setdetachstate(&thread_attributes, PTHREAD_CREATE_DETACHED);

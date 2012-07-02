@@ -51,7 +51,6 @@ using google_breakpad::SynthMinidump::Section;
 using google_breakpad::SynthMinidump::Stream;
 using google_breakpad::SynthMinidump::String;
 using google_breakpad::SynthMinidump::SystemInfo;
-using google_breakpad::SynthMinidump::Thread;
 using google_breakpad::test_assembler::kBigEndian;
 using google_breakpad::test_assembler::kLittleEndian;
 using google_breakpad::test_assembler::Label;
@@ -168,11 +167,12 @@ TEST(Thread, Simple) {
   Memory stack(dump, 0xaad55a93cc3c0efcULL);
   stack.Append("stack contents");
   stack.Finish(0xe08cdbd1);
-  Thread thread(dump, 0x3d7ec360, stack, context,
-                0x3593f44d, // suspend count
-                0xab352b82, // priority class
-                0x2753d838, // priority
-                0xeb2de4be3f29e3e9ULL); // thread environment block
+  google_breakpad::SynthMinidump::Thread thread(
+      dump, 0x3d7ec360, stack, context,
+      0x3593f44d, // suspend count
+      0xab352b82, // priority class
+      0x2753d838, // priority
+      0xeb2de4be3f29e3e9ULL); // thread environment block
   string contents;
   ASSERT_TRUE(thread.GetContents(&contents));
   static const u_int8_t expected_bytes[] = {

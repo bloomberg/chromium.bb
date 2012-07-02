@@ -183,7 +183,9 @@ TEST(ElfCoreDumpTest, ValidCoreFile) {
   size_t num_nt_prpsinfo = 0;
   size_t num_nt_prstatus = 0;
   size_t num_nt_fpregset = 0;
+#if defined(__i386__)
   size_t num_nt_prxfpreg = 0;
+#endif
   set<pid_t> actual_thread_ids;
   ElfCoreDump::Note note = core.GetFirstNote();
   while (note.IsValid()) {
@@ -211,7 +213,7 @@ TEST(ElfCoreDumpTest, ValidCoreFile) {
         ++num_nt_prstatus;
         break;
       }
-#if defined(__i386) || defined(__x86_64)
+#if defined(__i386__) || defined(__x86_64__)
       case NT_FPREGSET: {
         EXPECT_TRUE(description.data() != NULL);
         EXPECT_EQ(sizeof(user_fpregs_struct), description.length());
@@ -219,7 +221,7 @@ TEST(ElfCoreDumpTest, ValidCoreFile) {
         break;
       }
 #endif
-#if defined(__i386)
+#if defined(__i386__)
       case NT_PRXFPREG: {
         EXPECT_TRUE(description.data() != NULL);
         EXPECT_EQ(sizeof(user_fpxregs_struct), description.length());
@@ -236,10 +238,10 @@ TEST(ElfCoreDumpTest, ValidCoreFile) {
   EXPECT_TRUE(expected_thread_ids == actual_thread_ids);
   EXPECT_EQ(1, num_nt_prpsinfo);
   EXPECT_EQ(kNumOfThreads, num_nt_prstatus);
-#if defined(__i386) || defined(__x86_64)
+#if defined(__i386__) || defined(__x86_64__)
   EXPECT_EQ(kNumOfThreads, num_nt_fpregset);
 #endif
-#if defined(__i386)
+#if defined(__i386__)
   EXPECT_EQ(kNumOfThreads, num_nt_prxfpreg);
 #endif
 }

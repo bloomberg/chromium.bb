@@ -49,9 +49,9 @@
 #include "client/linux/minidump_writer/minidump_extension_linux.h"
 #include "common/linux/memory_mapped_file.h"
 #include "google_breakpad/common/minidump_format.h"
+#include "processor/scoped_ptr.h"
 #include "third_party/lss/linux_syscall_support.h"
 #include "tools/linux/md2core/minidump_memory_range.h"
-
 
 #if __WORDSIZE == 64
   #define ELF_CLASS ELFCLASS64
@@ -1100,9 +1100,9 @@ main(int argc, char** argv) {
   }
 
   if (note_align) {
-    char scratch[note_align];
-    memset(scratch, 0, sizeof(scratch));
-    if (!writea(1, scratch, sizeof(scratch)))
+    google_breakpad::scoped_array<char> scratch(new char[note_align]);
+    memset(scratch.get(), 0, note_align);
+    if (!writea(1, scratch.get(), note_align))
       return 1;
   }
 

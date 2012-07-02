@@ -1,4 +1,4 @@
-// Copyright (c) 2009, Google Inc.
+// Copyright (c) 2011 Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,63 +27,40 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "breakpad_googletest_includes.h"
-#include "common/memory.h"
+// minidump_writer_unittest_utils.cc:
+// Shared routines used by unittests under client/linux/minidump_writer.
 
-using namespace google_breakpad;
+#include <limits.h>
+#include <stdlib.h>
 
-namespace {
-typedef testing::Test PageAllocatorTest;
-}
+#include "client/linux/minidump_writer/minidump_writer_unittest_utils.h"
+#include "common/linux/safe_readlink.h"
+#include "common/using_std_string.h"
 
-TEST(PageAllocatorTest, Setup) {
-  PageAllocator allocator;
-}
+namespace google_breakpad {
 
-TEST(PageAllocatorTest, SmallObjects) {
-  PageAllocator allocator;
-
-  for (unsigned i = 1; i < 1024; ++i) {
-    uint8_t *p = reinterpret_cast<uint8_t*>(allocator.Alloc(i));
-    ASSERT_FALSE(p == NULL);
-    memset(p, 0, i);
+string GetHelperBinary() {
+  string helper_path;
+  char *bindir = getenv("bindir");
+  if (bindir) {
+    helper_path = string(bindir) + "/";
+  } else {
+    // Locate helper binary next to the current binary.
+    char self_path[PATH_MAX];
+    if (!SafeReadLink("/proc/self/exe", self_path)) {
+      return "";
+    }
+    helper_path = string(self_path);
+    size_t pos = helper_path.rfind('/');
+    if (pos == string::npos) {
+      return "";
+    }
+    helper_path.erase(pos + 1);
   }
+
+  helper_path += "linux_dumper_unittest_helper";
+
+  return helper_path;
 }
 
-TEST(PageAllocatorTest, LargeObject) {
-  PageAllocator allocator;
-
-  uint8_t *p = reinterpret_cast<uint8_t*>(allocator.Alloc(10000));
-  ASSERT_FALSE(p == NULL);
-  for (unsigned i = 1; i < 10; ++i) {
-    uint8_t *p = reinterpret_cast<uint8_t*>(allocator.Alloc(i));
-    ASSERT_FALSE(p == NULL);
-    memset(p, 0, i);
-  }
-}
-
-namespace {
-typedef testing::Test WastefulVectorTest;
-}
-
-TEST(WastefulVectorTest, Setup) {
-  PageAllocator allocator_;
-  wasteful_vector<int> v(&allocator_);
-  ASSERT_TRUE(v.empty());
-  ASSERT_EQ(v.size(), 0u);
-}
-
-TEST(WastefulVectorTest, Simple) {
-  PageAllocator allocator_;
-  wasteful_vector<unsigned> v(&allocator_);
-
-  for (unsigned i = 0; i < 256; ++i) {
-    v.push_back(i);
-    ASSERT_EQ(i, v.back());
-    ASSERT_EQ(&v.back(), &v[i]);
-  }
-  ASSERT_FALSE(v.empty());
-  ASSERT_EQ(v.size(), 256u);
-  for (unsigned i = 0; i < 256; ++i)
-    ASSERT_EQ(v[i], i);
-}
+}  // namespace google_breakpad

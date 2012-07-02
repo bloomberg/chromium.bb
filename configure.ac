@@ -45,6 +45,7 @@ AM_PROG_CC_C_O
 AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_RANLIB
+AM_CONDITIONAL(GCC, test "$GCC" = yes)   # let the Makefile know if we're gcc
 
 AC_HEADER_STDC
 m4_include(m4/ax_pthread.m4)

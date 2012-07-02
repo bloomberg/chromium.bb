@@ -271,7 +271,10 @@ class Section {
  public:
   Section(Endianness endianness = kUnsetEndian)
       : endianness_(endianness) { };
-  ~Section() { };
+
+  // A base class destructor should be either public and virtual,
+  // or protected and nonvirtual.
+  virtual ~Section() { };
 
   // Set the default endianness of this section to ENDIANNESS. This
   // sets the behavior of the D<N> appending functions. If the
