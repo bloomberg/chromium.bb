@@ -43,6 +43,8 @@ class ArchivedDatabase : public URLDatabase,
   static int GetCurrentVersion();
 
  private:
+  bool InitTables();
+
   // Implemented for the specialized databases.
   virtual sql::Connection& GetDB() OVERRIDE;
 

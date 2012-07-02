@@ -42,32 +42,34 @@ bool ArchivedDatabase::Init(const FilePath& file_name) {
   if (!db_.Open(file_name))
     return false;
 
-  sql::Transaction transaction(&db_);
-  if (!transaction.Begin()) {
+  if (!InitTables()) {
     db_.Close();
     return false;
   }
+
+  return true;
+}
+
+bool ArchivedDatabase::InitTables() {
+  sql::Transaction transaction(&db_);
+  if (!transaction.Begin())
+    return false;
 
   // Version check.
   if (!meta_table_.Init(&db_, kCurrentVersionNumber,
-                        kCompatibleVersionNumber)) {
-    db_.Close();
+                        kCompatibleVersionNumber))
     return false;
-  }
 
   // Create the tables.
   if (!CreateURLTable(false) || !InitVisitTable() ||
-      !InitKeywordSearchTermsTable()) {
-    db_.Close();
+      !InitKeywordSearchTermsTable())
     return false;
-  }
+
   CreateMainURLIndex();
   CreateKeywordSearchTermsIndices();
 
-  if (EnsureCurrentVersion() != sql::INIT_OK) {
-    db_.Close();
+  if (EnsureCurrentVersion() != sql::INIT_OK)
     return false;
-  }
 
   return transaction.Commit();
 }
