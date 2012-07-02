@@ -18,6 +18,7 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace syncer {
 namespace syncable {
 
 // A container that contains a set of datatypes with possible string
@@ -54,6 +55,22 @@ void CoalescePayloads(ModelTypePayloadMap* original,
 
 void PurgeStalePayload(ModelTypePayloadMap* original,
                        const syncer::ModelSafeRoutingInfo& routing_info);
+
+}  // namespace syncable
+}  // namespace syncer
+
+// TODO(akalin): Move the names below to the 'syncer' namespace once
+// we move this file to public/base.
+namespace syncable {
+
+using ::syncer::syncable::ModelTypePayloadMap;
+using ::syncer::syncable::ModelTypePayloadMapFromEnumSet;
+using ::syncer::syncable::ModelTypePayloadMapToEnumSet;
+using ::syncer::syncable::ModelTypePayloadMapFromRoutingInfo;
+using ::syncer::syncable::ModelTypePayloadMapToString;
+using ::syncer::syncable::ModelTypePayloadMapToValue;
+using ::syncer::syncable::CoalescePayloads;
+using ::syncer::syncable::PurgeStalePayload;
 
 }  // namespace syncable
 

@@ -15,28 +15,28 @@
 #include "sync/sessions/sync_session.h"
 #include "sync/syncable/blob.h"
 
-namespace syncable {
-class Directory;
-class Entry;
-}  // namespace syncable
-
 namespace sync_pb {
 class ClientToServerResponse;
 class EntitySpecifics;
-}  // namespace sync_pb
+}
 
 namespace syncer {
-
-namespace sessions {
-class SyncProtocolError;
-class SyncSessionContext;
-}
 
 class ClientToServerMessage;
 class ThrottledDataTypeTracker;
 class ServerConnectionManager;
 class SyncEntity;
 class CommitResponse_EntryResponse;
+
+namespace sessions {
+class SyncProtocolError;
+class SyncSessionContext;
+}
+
+namespace syncable {
+class Directory;
+class Entry;
+}
 
 class SyncerProtoUtil {
  public:

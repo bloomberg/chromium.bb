@@ -12,6 +12,7 @@
 #include "sync/syncable/syncable_id.h"
 #include "sync/syncable/write_transaction.h"
 
+namespace syncer {
 namespace syncable {
 
 // Returns the number of unsynced entries.
@@ -112,3 +113,4 @@ bool SyncAssert(bool condition,
 }
 
 }  // namespace syncable
+}  // namespace syncer

@@ -11,12 +11,12 @@
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/protocol/sync.pb.h"
 
+namespace syncer {
+
 namespace syncable {
 class Directory;
 class Id;
 }
-
-namespace syncer {
 
 class TestEntryFactory {
  public:

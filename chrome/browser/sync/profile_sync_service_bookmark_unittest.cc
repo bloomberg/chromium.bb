@@ -119,7 +119,8 @@ class TestBookmarkModelAssociator : public BookmarkModelAssociator {
     // Create new fake tagged nodes at the end of the ordering.
     node.InitByCreation(type, root, predecessor);
     node.SetIsFolder(true);
-    node.GetMutableEntryForTest()->Put(syncable::UNIQUE_SERVER_TAG, tag);
+    node.GetMutableEntryForTest()->Put(
+        syncer::syncable::UNIQUE_SERVER_TAG, tag);
     node.SetTitle(UTF8ToWide(tag_str));
     node.SetExternalId(0);
     *sync_id = node.GetId();

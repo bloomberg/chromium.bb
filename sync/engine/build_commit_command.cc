@@ -23,6 +23,10 @@
 using std::set;
 using std::string;
 using std::vector;
+
+namespace syncer {
+
+using sessions::SyncSession;
 using syncable::Entry;
 using syncable::IS_DEL;
 using syncable::SERVER_POSITION_IN_PARENT;
@@ -32,10 +36,6 @@ using syncable::Id;
 using syncable::MutableEntry;
 using syncable::SPECIFICS;
 using syncable::UNSPECIFIED;
-
-namespace syncer {
-
-using sessions::SyncSession;
 
 // static
 int64 BuildCommitCommand::GetFirstPosition() {

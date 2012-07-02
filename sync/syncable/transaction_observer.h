@@ -9,6 +9,7 @@
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/syncable/write_transaction_info.h"
 
+namespace syncer {
 namespace syncable {
 
 class TransactionObserver {
@@ -21,5 +22,6 @@ class TransactionObserver {
 };
 
 }  // namespace syncable
+}  // namespace syncer
 
 #endif  // SYNC_SYNCABLE_TRANSACTION_OBSERVER_H_

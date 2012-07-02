@@ -14,6 +14,7 @@
 
 using std::string;
 
+namespace syncer {
 namespace syncable {
 
 Entry::Entry(BaseTransaction* trans, GetById, const Id& id)
@@ -141,3 +142,4 @@ std::ostream& operator<<(std::ostream& os, const Entry& entry) {
 }
 
 }  // namespace syncable
+}  // namespace syncer

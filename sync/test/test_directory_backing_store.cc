@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 
+namespace syncer {
 namespace syncable {
 
 TestDirectoryBackingStore::TestDirectoryBackingStore(
@@ -39,3 +40,4 @@ DirOpenResult TestDirectoryBackingStore::Load(
 }
 
 }  // namespace syncable
+}  // namespace syncer

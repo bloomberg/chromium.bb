@@ -23,6 +23,11 @@
 using std::list;
 using std::map;
 using std::set;
+
+namespace syncer {
+
+using sessions::ConflictProgress;
+using sessions::StatusController;
 using syncable::BaseTransaction;
 using syncable::Directory;
 using syncable::Entry;
@@ -31,11 +36,6 @@ using syncable::Id;
 using syncable::IsRealDataType;
 using syncable::MutableEntry;
 using syncable::WriteTransaction;
-
-namespace syncer {
-
-using sessions::ConflictProgress;
-using sessions::StatusController;
 
 namespace {
 

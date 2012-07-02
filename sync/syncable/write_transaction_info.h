@@ -9,6 +9,7 @@
 #include "sync/syncable/base_transaction.h"
 #include "sync/syncable/entry_kernel.h"
 
+namespace syncer {
 namespace syncable {
 
 // A struct describing the changes made during a transaction.
@@ -36,5 +37,6 @@ typedef
     ImmutableWriteTransactionInfo;
 
 }  // namespace syncable
+}  // namespace syncer
 
 #endif  // SYNC_SYNCABLE_WRITE_TRANSACTION_INFO_H_

@@ -21,13 +21,13 @@
 #include "sync/syncable/nigori_util.h"
 #include "sync/util/cryptographer.h"
 
-using syncer::Cryptographer;
 using std::string;
 using std::vector;
-using syncable::kEncryptedString;
-using syncable::SPECIFICS;
 
 namespace syncer {
+
+using syncable::kEncryptedString;
+using syncable::SPECIFICS;
 
 static const char kDefaultNameForNewNodes[] = " ";
 

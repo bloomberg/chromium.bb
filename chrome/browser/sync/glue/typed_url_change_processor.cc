@@ -135,7 +135,7 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
     syncer::Cryptographer* crypto = trans->GetCryptographer();
     syncable::ModelTypeSet encrypted_types(crypto->GetEncryptedTypes());
     const sync_pb::EntitySpecifics& specifics =
-        update_node.GetEntry()->Get(syncable::SPECIFICS);
+        update_node.GetEntry()->Get(syncer::syncable::SPECIFICS);
     CHECK(specifics.has_encrypted());
     const bool can_decrypt = crypto->CanDecrypt(specifics.encrypted());
     const bool agreement = encrypted_types.Has(syncable::TYPED_URLS);

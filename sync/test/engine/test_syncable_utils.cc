@@ -12,6 +12,7 @@
 
 using std::string;
 
+namespace syncer {
 namespace syncable {
 
 int CountEntriesWithName(BaseTransaction* rtrans,
@@ -62,3 +63,4 @@ Id GetOnlyEntryWithName(BaseTransaction* rtrans,
 }
 
 }  // namespace syncable
+}  // namespace syncer

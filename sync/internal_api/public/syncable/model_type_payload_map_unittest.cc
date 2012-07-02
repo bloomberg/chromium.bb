@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace syncer {
 namespace syncable {
 namespace {
 
@@ -44,3 +45,4 @@ TEST_F(ModelTypePayloadMapTest, TypePayloadMapToValue) {
 
 }  // namespace
 }  // namespace syncable
+}  // namespace syncer

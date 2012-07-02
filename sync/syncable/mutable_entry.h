@@ -11,7 +11,6 @@
 
 namespace syncer {
 class WriteNode;
-}
 
 namespace syncable {
 
@@ -115,5 +114,6 @@ class MutableEntry : public Entry {
 bool MarkForSyncing(syncable::MutableEntry* e);
 
 }  // namespace syncable
+}  // namespace syncer
 
 #endif  // SYNC_SYNCABLE_MUTABLE_ENTRY_H_

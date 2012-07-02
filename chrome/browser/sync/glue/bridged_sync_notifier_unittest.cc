@@ -25,7 +25,7 @@ namespace {
 using ::testing::NiceMock;
 using ::testing::StrictMock;
 using content::BrowserThread;
-using syncable::HasModelTypes;
+using syncer::syncable::HasModelTypes;
 
 class MockChromeSyncNotificationBridge : public ChromeSyncNotificationBridge {
  public:

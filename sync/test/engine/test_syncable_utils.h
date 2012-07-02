@@ -11,6 +11,7 @@
 
 #include <string>
 
+namespace syncer {
 namespace syncable {
 
 class BaseTransaction;
@@ -35,5 +36,6 @@ Id GetOnlyEntryWithName(BaseTransaction* rtrans,
                         const std::string& name);
 
 }  // namespace syncable
+}  // namespace syncer
 
 #endif  // SYNC_TEST_ENGINE_TEST_SYNCABLE_UTILS_H_

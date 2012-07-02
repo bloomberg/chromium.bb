@@ -9,6 +9,7 @@
 #include "base/file_path.h"
 #include "sync/syncable/directory_backing_store.h"
 
+namespace syncer {
 namespace syncable {
 
 // This is the concrete class that provides a useful implementation of
@@ -26,5 +27,6 @@ class OnDiskDirectoryBackingStore : public DirectoryBackingStore {
 };
 
 }  // namespace syncable
+}  // namespace syncer
 
 #endif  // SYNC_SYNCABLE_ON_DISK_DIRECTORY_BACKING_STORE_H_

@@ -16,6 +16,7 @@
 #include "sync/syncable/write_transaction.h"
 #include "sync/util/cryptographer.h"
 
+namespace syncer {
 namespace syncable {
 
 bool ProcessUnsyncedChangesForEncryption(
@@ -247,3 +248,4 @@ bool UpdateEntryWithEncryption(
 }
 
 }  // namespace syncable
+}  // namespace syncer

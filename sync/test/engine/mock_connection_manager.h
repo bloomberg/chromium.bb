@@ -21,6 +21,8 @@
 #include "sync/internal_api/public/syncable/model_type_payload_map.h"
 #include "sync/protocol/sync.pb.h"
 
+namespace syncer {
+
 class MockConnectionManager : public syncer::ServerConnectionManager {
  public:
   class MidCommitObserver {
@@ -347,5 +349,7 @@ class MockConnectionManager : public syncer::ServerConnectionManager {
 
   DISALLOW_COPY_AND_ASSIGN(MockConnectionManager);
 };
+
+}  // namespace syncer
 
 #endif  // SYNC_TEST_ENGINE_MOCK_CONNECTION_MANAGER_H_

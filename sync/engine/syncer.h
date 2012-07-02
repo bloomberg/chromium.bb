@@ -19,12 +19,12 @@
 #include "sync/sessions/sync_session.h"
 #include "sync/util/extensions_activity_monitor.h"
 
+namespace syncer {
+
 namespace syncable {
 class Entry;
 class MutableEntry;
 }  // namespace syncable
-
-namespace syncer {
 
 enum SyncerStep {
   SYNCER_BEGIN,

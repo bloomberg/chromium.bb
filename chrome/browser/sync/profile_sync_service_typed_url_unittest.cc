@@ -54,7 +54,7 @@ using browser_sync::TypedUrlModelAssociator;
 using history::HistoryBackend;
 using history::URLID;
 using history::URLRow;
-using syncable::WriteTransaction;
+using syncer::syncable::WriteTransaction;
 using testing::_;
 using testing::DoAll;
 using testing::Return;

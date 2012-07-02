@@ -8,6 +8,10 @@
 
 using std::vector;
 
+namespace syncer {
+namespace sessions {
+namespace {
+
 class OrderedCommitSetTest : public testing::Test {
  public:
   OrderedCommitSetTest() {
@@ -20,9 +24,6 @@ class OrderedCommitSetTest : public testing::Test {
   syncer::TestIdFactory ids_;
   syncer::ModelSafeRoutingInfo routes_;
 };
-
-namespace syncer {
-namespace sessions {
 
 TEST_F(OrderedCommitSetTest, Projections) {
   vector<syncable::Id> expected;
@@ -127,6 +128,6 @@ TEST_F(OrderedCommitSetTest, AddAndRemoveEntries) {
   ASSERT_TRUE(commit_set.Empty());
 }
 
+}  // namespace
 }  // namespace sessions
 }  // namespace syncer
-

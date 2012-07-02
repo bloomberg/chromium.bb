@@ -28,6 +28,8 @@ class EntitySpecifics;
 class SyncEntity;
 }
 
+namespace syncer {
+
 namespace syncable {
 
 enum ModelType {
@@ -169,6 +171,56 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
 
 // Returns true if |model_type| is a real datatype
 bool IsRealDataType(ModelType model_type);
+
+}  // namespace syncable
+
+}  // namespace syncer
+
+// TODO(akalin): Move the names below to the 'syncer' namespace once
+// we move this file to public/base.
+namespace syncable {
+
+using syncer::syncable::ModelType;
+using syncer::syncable::ModelTypeSet;
+using syncer::syncable::FullModelTypeSet;
+using syncer::syncable::UNSPECIFIED;
+using syncer::syncable::TOP_LEVEL_FOLDER;
+using syncer::syncable::BOOKMARKS;
+using syncer::syncable::FIRST_REAL_MODEL_TYPE;
+using syncer::syncable::PREFERENCES;
+using syncer::syncable::PASSWORDS;
+using syncer::syncable::AUTOFILL_PROFILE;
+using syncer::syncable::AUTOFILL;
+using syncer::syncable::THEMES;
+using syncer::syncable::TYPED_URLS;
+using syncer::syncable::EXTENSIONS;
+using syncer::syncable::NIGORI;
+using syncer::syncable::SEARCH_ENGINES;
+using syncer::syncable::SESSIONS;
+using syncer::syncable::APPS;
+using syncer::syncable::APP_SETTINGS;
+using syncer::syncable::EXTENSION_SETTINGS;
+using syncer::syncable::APP_NOTIFICATIONS;
+using syncer::syncable::LAST_REAL_MODEL_TYPE;
+using syncer::syncable::MODEL_TYPE_COUNT;
+using syncer::syncable::ModelTypeFromInt;
+using syncer::syncable::AddDefaultFieldValue;
+using syncer::syncable::GetModelType;
+using syncer::syncable::GetModelTypeFromSpecifics;
+using syncer::syncable::ShouldMaintainPosition;
+using syncer::syncable::GetModelTypeFromSpecificsFieldNumber;
+using syncer::syncable::GetSpecificsFieldNumberFromModelType;
+using syncer::syncable::ModelTypeToString;
+using syncer::syncable::ModelTypeToValue;
+using syncer::syncable::ModelTypeFromValue;
+using syncer::syncable::ModelTypeFromString;
+using syncer::syncable::ModelTypeSetToString;
+using syncer::syncable::ModelTypeSetToValue;
+using syncer::syncable::ModelTypeSetFromValue;
+using syncer::syncable::ModelTypeToRootTag;
+using syncer::syncable::RealModelTypeToNotificationType;
+using syncer::syncable::NotificationTypeToRealModelType;
+using syncer::syncable::IsRealDataType;
 
 }  // namespace syncable
 

@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 
+namespace syncer {
 namespace syncable {
 
 // We can't tokenize expected_min/expected_max since it can be a
@@ -162,3 +163,4 @@ const char* GetBitTempString(BitTemp bit_temp) {
 #undef ASSERT_ENUM_BOUNDS
 
 }  // namespace syncable
+}  // namespace syncer

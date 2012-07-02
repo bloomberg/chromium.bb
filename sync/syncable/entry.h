@@ -10,7 +10,6 @@
 
 namespace syncer {
 class ReadNode;
-}
 
 namespace syncable {
 
@@ -150,5 +149,6 @@ class Entry {
 std::ostream& operator<<(std::ostream& os, const Entry& entry);
 
 }  // namespace syncable
+}  // namespace syncer
 
 #endif  // SYNC_SYNCABLE_ENTRY_H_

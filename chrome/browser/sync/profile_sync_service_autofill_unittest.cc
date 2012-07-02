@@ -68,16 +68,16 @@ using browser_sync::DataTypeController;
 using browser_sync::GenericChangeProcessor;
 using browser_sync::SharedChangeProcessor;
 using content::BrowserThread;
-using syncable::AUTOFILL;
-using syncable::BASE_VERSION;
-using syncable::CREATE;
-using syncable::GET_BY_SERVER_TAG;
-using syncable::MutableEntry;
-using syncable::SERVER_SPECIFICS;
-using syncable::SPECIFICS;
-using syncable::UNITTEST;
-using syncable::WriterTag;
-using syncable::WriteTransaction;
+using syncer::syncable::AUTOFILL;
+using syncer::syncable::BASE_VERSION;
+using syncer::syncable::CREATE;
+using syncer::syncable::GET_BY_SERVER_TAG;
+using syncer::syncable::MutableEntry;
+using syncer::syncable::SERVER_SPECIFICS;
+using syncer::syncable::SPECIFICS;
+using syncer::syncable::UNITTEST;
+using syncer::syncable::WriterTag;
+using syncer::syncable::WriteTransaction;
 using syncer::BaseNode;
 using testing::_;
 using testing::DoAll;
@@ -632,7 +632,7 @@ class WriteTransactionTest: public WriteTransaction {
  public:
   WriteTransactionTest(const tracked_objects::Location& from_here,
                        WriterTag writer,
-                       syncable::Directory* directory,
+                       syncer::syncable::Directory* directory,
                        scoped_ptr<WaitableEvent>* wait_for_syncapi)
       : WriteTransaction(from_here, writer, directory),
         wait_for_syncapi_(wait_for_syncapi) { }
@@ -668,7 +668,7 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
     syncer::UserShare* user_share = service_->GetUserShare();
-    syncable::Directory* directory = user_share->directory.get();
+    syncer::syncable::Directory* directory = user_share->directory.get();
 
     // Create autofill protobuf.
     std::string tag = AutocompleteSyncableService::KeyToTag(
@@ -697,14 +697,15 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
       // Simulates effects of UpdateLocalDataFromServerData
       MutableEntry parent(&trans, GET_BY_SERVER_TAG,
                           syncable::ModelTypeToRootTag(syncable::AUTOFILL));
-      MutableEntry item(&trans, CREATE, parent.Get(syncable::ID), tag);
+      MutableEntry item(&trans, CREATE, parent.Get(syncer::syncable::ID), tag);
       ASSERT_TRUE(item.good());
       item.Put(SPECIFICS, entity_specifics);
       item.Put(SERVER_SPECIFICS, entity_specifics);
       item.Put(BASE_VERSION, 1);
-      syncable::Id server_item_id = service_->id_factory()->NewServerId();
-      item.Put(syncable::ID, server_item_id);
-      syncable::Id new_predecessor;
+      syncer::syncable::Id server_item_id =
+          service_->id_factory()->NewServerId();
+      item.Put(syncer::syncable::ID, server_item_id);
+      syncer::syncable::Id new_predecessor;
       ASSERT_TRUE(item.PutPredecessor(new_predecessor));
     }
     DVLOG(1) << "FakeServerUpdater finishing.";
@@ -743,7 +744,7 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
   scoped_ptr<WaitableEvent>* wait_for_start_;
   scoped_ptr<WaitableEvent>* wait_for_syncapi_;
   WaitableEvent is_finished_;
-  syncable::Id parent_id_;
+  syncer::syncable::Id parent_id_;
 };
 
 namespace {

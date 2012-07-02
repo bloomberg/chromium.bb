@@ -21,9 +21,9 @@
 #include "sync/util/cryptographer.h"
 
 namespace syncer {
+
 class Encryptor;
 class UnrecoverableErrorHandler;
-}
 
 namespace syncable {
 
@@ -617,5 +617,6 @@ class Directory {
 };
 
 }  // namespace syncable
+}  // namespace syncer
 
 #endif // SYNC_SYNCABLE_DIRECTORY_H_

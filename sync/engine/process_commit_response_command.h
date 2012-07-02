@@ -14,17 +14,17 @@
 #include "sync/engine/model_changing_syncer_command.h"
 #include "sync/engine/syncproto.h"
 
+namespace syncer {
+
+namespace sessions {
+class OrderedCommitSet;
+}
+
 namespace syncable {
 class Id;
 class WriteTransaction;
 class MutableEntry;
 class Directory;
-}
-
-namespace syncer {
-
-namespace sessions {
-class OrderedCommitSet;
 }
 
 // A class that processes the server's response to our commmit attempt.  Note

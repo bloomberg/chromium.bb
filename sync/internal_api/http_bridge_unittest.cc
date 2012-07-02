@@ -12,7 +12,7 @@
 #include "sync/internal_api/public/http_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using browser_sync::HttpBridge;
+namespace syncer {
 
 namespace {
 // TODO(timsteele): Should use PathService here. See Chromium Issue 3113.
@@ -402,3 +402,5 @@ TEST_F(SyncHttpBridgeTest, AbortAndReleaseBeforeFetchComplete) {
   sync_thread.Stop();
   io_thread()->Stop();
 }
+
+}  // namespace syncer

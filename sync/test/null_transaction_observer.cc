@@ -6,6 +6,7 @@
 
 #include "base/memory/weak_ptr.h"
 
+namespace syncer {
 namespace syncable {
 
 syncer::WeakHandle<TransactionObserver> NullTransactionObserver() {
@@ -13,3 +14,4 @@ syncer::WeakHandle<TransactionObserver> NullTransactionObserver() {
 }
 
 }  // namespace syncable
+}  // namespace syncer

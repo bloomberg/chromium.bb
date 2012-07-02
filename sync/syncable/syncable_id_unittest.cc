@@ -14,6 +14,7 @@
 
 using std::vector;
 
+namespace syncer {
 namespace syncable {
 
 using syncer::TestIdFactory;
@@ -94,3 +95,4 @@ TEST(SyncableIdTest, ToValue) {
 }
 
 }  // namespace syncable
+}  // namespace syncer

@@ -11,12 +11,13 @@
 #include "sync/test/engine/test_id_factory.h"
 
 using std::string;
+
+namespace syncer {
+
 using syncable::Id;
 using syncable::MutableEntry;
 using syncable::UNITTEST;
 using syncable::WriteTransaction;
-
-namespace syncer {
 
 TestEntryFactory::TestEntryFactory(syncable::Directory *dir)
     : directory_(dir), next_revision_(1) {

@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "sync/syncable/syncable_id.h"
 
+namespace syncer {
 namespace syncable {
 
 class Directory;
@@ -76,6 +77,7 @@ class BaseTransaction {
   DISALLOW_COPY_AND_ASSIGN(BaseTransaction);
 };
 
-}
+}  // namespace syncable
+}  // namespace syncer
 
 #endif  // SYNC_SYNCABLE_BASE_TRANSACTION_H_

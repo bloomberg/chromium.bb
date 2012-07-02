@@ -13,11 +13,11 @@
 #include "sync/engine/syncproto.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 
+namespace syncer {
+
 namespace syncable {
 class WriteTransaction;
 }
-
-namespace syncer {
 
 // Verifies the response from a GetUpdates request. All invalid updates will be
 // noted in the SyncSession after this command is executed.

@@ -9,6 +9,7 @@
 #include "sync/syncable/transaction_observer.h"
 #include "sync/syncable/write_transaction_info.h"
 
+namespace syncer {
 namespace syncable {
 
 WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
@@ -139,3 +140,4 @@ std::string WriterTagToString(WriterTag writer_tag) {
 #undef ENUM_CASE
 
 }  // namespace syncable
+}  // namespace syncer

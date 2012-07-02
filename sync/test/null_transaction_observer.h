@@ -8,6 +8,7 @@
 
 #include "sync/internal_api/public/util/weak_handle.h"
 
+namespace syncer {
 namespace syncable {
 
 class TransactionObserver;
@@ -17,5 +18,6 @@ class TransactionObserver;
 syncer::WeakHandle<TransactionObserver> NullTransactionObserver();
 
 }  // namespace syncable
+}  // namespace syncer
 
 #endif  // SYNC_TEST_NULL_TRANSACTION_OBSERVER_H_

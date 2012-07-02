@@ -13,14 +13,14 @@
 #include "sync/engine/syncproto.h"
 #include "sync/syncable/entry_kernel.h"
 
-namespace syncable {
-class Entry;
-}
-
 namespace syncer {
 
 namespace sessions {
 class OrderedCommitSet;
+}
+
+namespace syncable {
+class Entry;
 }
 
 // A class that contains the code used to serialize a set of sync items into a

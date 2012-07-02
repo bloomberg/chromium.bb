@@ -10,6 +10,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace syncer {
 namespace syncable {
 namespace {
 
@@ -83,3 +84,4 @@ TEST_F(SyncableEnumConversionsTest, GetBitTempString) {
 
 }  // namespace
 }  // namespace syncable
+}  // namespace syncer

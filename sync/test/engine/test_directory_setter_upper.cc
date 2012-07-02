@@ -14,10 +14,9 @@
 #include "sync/test/null_transaction_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using syncable::NullTransactionObserver;
-using syncable::ReadTransaction;
-
 namespace syncer {
+
+using syncable::NullTransactionObserver;
 
 TestDirectorySetterUpper::TestDirectorySetterUpper() : name_("Test") {}
 

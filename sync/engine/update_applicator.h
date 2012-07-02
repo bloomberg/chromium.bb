@@ -19,16 +19,16 @@
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/syncable/syncable_id.h"
 
-namespace syncable {
-class WriteTransaction;
-class Entry;
-}
-
 namespace syncer {
 
 namespace sessions {
 class ConflictProgress;
 class UpdateProgress;
+}
+
+namespace syncable {
+class WriteTransaction;
+class Entry;
 }
 
 class ConflictResolver;

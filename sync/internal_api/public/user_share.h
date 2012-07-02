@@ -10,11 +10,11 @@
 
 #include "base/memory/scoped_ptr.h"
 
+namespace syncer {
+
 namespace syncable {
 class Directory;
 }
-
-namespace syncer {
 
 // A UserShare encapsulates the syncable pieces that represent an authenticated
 // user and their data (share).

@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #include "sync/internal_api/debug_info_event_listener.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace syncer {
 
 typedef testing::Test DebugInfoEventListenerTest;
 
-namespace syncer {
 TEST_F(DebugInfoEventListenerTest, VerifyEventsAdded) {
   syncer::DebugInfoEventListener debug_info_event_listener;
   debug_info_event_listener.CreateAndAddEvent(

@@ -62,34 +62,6 @@
 #include "sync/util/time.h"
 
 using base::TimeDelta;
-using syncer::AllStatus;
-using syncer::Cryptographer;
-using syncer::Encryptor;
-using syncer::JsArgList;
-using syncer::JsBackend;
-using syncer::JsEventDetails;
-using syncer::JsEventHandler;
-using syncer::JsEventHandler;
-using syncer::JsReplyHandler;
-using syncer::JsMutationEventObserver;
-using syncer::JsSyncManagerObserver;
-using syncer::kNigoriTag;
-using syncer::KeyParams;
-using syncer::ModelSafeRoutingInfo;
-using syncer::ReportUnrecoverableErrorFunction;
-using syncer::ServerConnectionEvent;
-using syncer::ServerConnectionEventListener;
-using syncer::SyncEngineEvent;
-using syncer::SyncEngineEventListener;
-using syncer::SyncScheduler;
-using syncer::Syncer;
-using syncer::UnrecoverableErrorHandler;
-using syncer::WeakHandle;
-using syncer::sessions::SyncSessionContext;
-using syncable::ImmutableWriteTransactionInfo;
-using syncable::ModelType;
-using syncable::ModelTypeSet;
-using syncable::SPECIFICS;
 using sync_pb::GetUpdatesCallerInfo;
 
 namespace {
@@ -123,6 +95,12 @@ static const int kNigoriOverwriteLimit = 10;
 } // namespace
 
 namespace syncer {
+
+using sessions::SyncSessionContext;
+using syncable::ImmutableWriteTransactionInfo;
+using syncable::ModelType;
+using syncable::ModelTypeSet;
+using syncable::SPECIFICS;
 
 const int SyncManager::kDefaultNudgeDelayMilliseconds = 200;
 const int SyncManager::kPreferencesNudgeDelayMilliseconds = 2000;

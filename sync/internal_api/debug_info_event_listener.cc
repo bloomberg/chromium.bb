@@ -4,8 +4,9 @@
 
 #include "sync/internal_api/debug_info_event_listener.h"
 
-using syncer::sessions::SyncSessionSnapshot;
 namespace syncer {
+
+using syncer::sessions::SyncSessionSnapshot;
 
 DebugInfoEventListener::DebugInfoEventListener()
     : events_dropped_(false),
@@ -158,4 +159,5 @@ void DebugInfoEventListener::AddEventToQueue(
   }
   events_.push(event_info);
 }
+
 }  // namespace syncer

@@ -211,7 +211,7 @@ class SyncerCommandTest : public SyncerCommandTestBase {
  public:
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
-  virtual Directory* directory() OVERRIDE;
+  virtual syncable::Directory* directory() OVERRIDE;
 
  private:
   TestDirectorySetterUpper dir_maker_;
@@ -221,16 +221,16 @@ class MockDirectorySyncerCommandTest : public SyncerCommandTestBase {
  public:
   MockDirectorySyncerCommandTest();
   virtual ~MockDirectorySyncerCommandTest();
-  virtual Directory* directory() OVERRIDE;
+  virtual syncable::Directory* directory() OVERRIDE;
 
-  MockDirectory* mock_directory() {
-    return static_cast<MockDirectory*>(directory());
+  syncable::MockDirectory* mock_directory() {
+    return static_cast<syncable::MockDirectory*>(directory());
   }
 
   virtual void SetUp() OVERRIDE;
 
   TestUnrecoverableErrorHandler handler_;
-  MockDirectory mock_directory_;
+  syncable::MockDirectory mock_directory_;
 };
 
 }  // namespace syncer

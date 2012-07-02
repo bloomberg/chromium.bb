@@ -25,11 +25,12 @@
 #include "sync/test/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using syncable::Blob;
 using ::testing::_;
 
 namespace syncer {
+
 using sessions::SyncSessionContext;
+using syncable::Blob;
 
 class MockDelegate : public sessions::SyncSession::Delegate {
  public:

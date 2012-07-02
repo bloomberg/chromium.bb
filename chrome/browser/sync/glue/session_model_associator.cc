@@ -841,7 +841,8 @@ void SessionModelAssociator::InitializeCurrentMachineTag(
     DVLOG(1) << "Restoring persisted session sync guid: "
              << persisted_guid;
   } else {
-    syncable::Directory* dir = trans->GetWrappedWriteTrans()->directory();
+    syncer::syncable::Directory* dir =
+        trans->GetWrappedWriteTrans()->directory();
     current_machine_tag_ = "session_sync";
     current_machine_tag_.append(dir->cache_guid());
     DVLOG(1) << "Creating session sync guid: " << current_machine_tag_;

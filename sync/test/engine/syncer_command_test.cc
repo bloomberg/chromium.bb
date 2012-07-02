@@ -26,7 +26,7 @@ void SyncerCommandTestBase::SetUp() {
 void SyncerCommandTestBase::TearDown() {
 }
 
-Directory* SyncerCommandTest::directory() {
+syncable::Directory* SyncerCommandTest::directory() {
   return dir_maker_.directory();
 }
 
@@ -59,7 +59,7 @@ void MockDirectorySyncerCommandTest::SetUp() {
   ResetContext();
 }
 
-Directory* MockDirectorySyncerCommandTest::directory() {
+syncable::Directory* MockDirectorySyncerCommandTest::directory() {
   return &mock_directory_;
 }
 

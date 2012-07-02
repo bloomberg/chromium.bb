@@ -21,9 +21,10 @@
 #include "sync/test/fake_extensions_activity_monitor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace syncer {
+
 using syncable::WriteTransaction;
 
-namespace syncer {
 namespace sessions {
 namespace {
 

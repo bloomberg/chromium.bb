@@ -8,6 +8,7 @@
 #include "sync/protocol/proto_value_conversions.h"
 #include "sync/syncable/syncable_enum_conversions.h"
 
+namespace syncer {
 namespace syncable {
 
 EntryKernel::EntryKernel() : dirty_(false) {
@@ -148,4 +149,5 @@ DictionaryValue* EntryKernelMutationToValue(
   return dict;
 }
 
-}
+}  // namespace syncer
+}  // namespace syncable

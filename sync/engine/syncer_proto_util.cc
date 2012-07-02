@@ -21,9 +21,12 @@
 #include "sync/syncable/syncable-inl.h"
 #include "sync/util/time.h"
 
-using syncer::SyncProtocolErrorType;
 using std::string;
 using std::stringstream;
+
+namespace syncer {
+
+using sessions::SyncSession;
 using syncable::BASE_VERSION;
 using syncable::CTIME;
 using syncable::ID;
@@ -32,9 +35,6 @@ using syncable::IS_DIR;
 using syncable::IS_UNSYNCED;
 using syncable::MTIME;
 using syncable::PARENT_ID;
-
-namespace syncer {
-using sessions::SyncSession;
 
 namespace {
 

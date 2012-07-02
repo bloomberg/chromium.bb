@@ -29,7 +29,7 @@ class HttpResponseHeaders;
 class URLFetcher;
 }
 
-namespace browser_sync {
+namespace syncer {
 
 // A bridge between the syncer and Chromium HTTP layers.
 // Provides a way for the sync backend to use Chromium directly for HTTP
@@ -227,6 +227,6 @@ class HttpBridgeFactory : public syncer::HttpPostProviderFactory {
   DISALLOW_COPY_AND_ASSIGN(HttpBridgeFactory);
 };
 
-}  //  namespace browser_sync
+}  //  namespace syncer
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_HTTP_BRIDGE_H_

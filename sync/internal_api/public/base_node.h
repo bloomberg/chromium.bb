@@ -22,11 +22,6 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace syncable {
-class BaseTransaction;
-class Entry;
-}
-
 namespace sync_pb {
 class AppSpecifics;
 class AutofillSpecifics;
@@ -45,6 +40,11 @@ class TypedUrlSpecifics;
 namespace syncer {
 
 class BaseTransaction;
+
+namespace syncable {
+class BaseTransaction;
+class Entry;
+}
 
 // A valid BaseNode will never have an ID of zero.
 static const int64 kInvalidId = 0;

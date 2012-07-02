@@ -23,6 +23,7 @@
 #include "sync/protocol/theme_specifics.pb.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
 
+namespace syncer {
 namespace syncable {
 
 void AddDefaultFieldValue(syncable::ModelType datatype,
@@ -540,3 +541,4 @@ bool IsRealDataType(ModelType model_type) {
 }
 
 }  // namespace syncable
+}  // namespace syncer

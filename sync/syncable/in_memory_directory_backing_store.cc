@@ -4,6 +4,7 @@
 
 #include "sync/syncable/in_memory_directory_backing_store.h"
 
+namespace syncer {
 namespace syncable {
 
 InMemoryDirectoryBackingStore::InMemoryDirectoryBackingStore(
@@ -32,3 +33,4 @@ DirOpenResult InMemoryDirectoryBackingStore::Load(
 }
 
 }  // namespace syncable
+}  // namespace syncer

@@ -15,6 +15,7 @@
 
 using std::string;
 
+namespace syncer {
 namespace syncable {
 
 MutableEntry::MutableEntry(WriteTransaction* trans, Create,
@@ -407,4 +408,5 @@ bool MutableEntry::Put(BitTemp field, bool value) {
   return true;
 }
 
-}
+}  // namespace syncable
+}  // namespace syncer

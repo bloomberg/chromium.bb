@@ -11,6 +11,7 @@
 using std::ostream;
 using std::string;
 
+namespace syncer {
 namespace syncable {
 
 ostream& operator<<(ostream& out, const Id& id) {
@@ -68,3 +69,4 @@ Id GetNullId() {
 }
 
 }  // namespace syncable
+}  // namespace syncer

@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
-using syncer::ModelSafeRoutingInfo;
+namespace syncer {
 namespace syncable {
 
 ModelTypePayloadMap ModelTypePayloadMapFromEnumSet(
@@ -103,3 +103,5 @@ void PurgeStalePayload(ModelTypePayloadMap* original,
 }
 
 }  // namespace syncable
+}  // namespace syncer
+

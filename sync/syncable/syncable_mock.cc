@@ -9,6 +9,9 @@
 
 #include "sync/test/null_transaction_observer.h"
 
+namespace syncer {
+namespace syncable {
+
 MockDirectory::MockDirectory(syncer::UnrecoverableErrorHandler* handler)
     : Directory(&encryptor_, handler, NULL,
                 new syncable::InMemoryDirectoryBackingStore("store")) {
@@ -21,3 +24,6 @@ MockSyncableWriteTransaction::MockSyncableWriteTransaction(
     const tracked_objects::Location& from_here, Directory *directory)
     : WriteTransaction(from_here, syncable::UNITTEST, directory) {
 }
+
+}  // namespace syncable
+}  // namespace syncer

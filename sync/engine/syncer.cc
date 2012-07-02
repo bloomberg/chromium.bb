@@ -31,6 +31,13 @@
 using base::Time;
 using base::TimeDelta;
 using sync_pb::ClientCommand;
+
+namespace syncer {
+
+using sessions::ScopedSessionContextConflictResolver;
+using sessions::StatusController;
+using sessions::SyncSession;
+using sessions::ConflictProgress;
 using syncable::IS_UNAPPLIED_UPDATE;
 using syncable::SERVER_CTIME;
 using syncable::SERVER_IS_DEL;
@@ -41,13 +48,6 @@ using syncable::SERVER_PARENT_ID;
 using syncable::SERVER_POSITION_IN_PARENT;
 using syncable::SERVER_SPECIFICS;
 using syncable::SERVER_VERSION;
-
-namespace syncer {
-
-using sessions::ScopedSessionContextConflictResolver;
-using sessions::StatusController;
-using sessions::SyncSession;
-using sessions::ConflictProgress;
 
 #define ENUM_CASE(x) case x: return #x
 const char* SyncerStepToString(const SyncerStep step)

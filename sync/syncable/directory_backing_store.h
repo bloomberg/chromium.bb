@@ -21,6 +21,7 @@ namespace sync_pb {
 class EntitySpecifics;
 }
 
+namespace syncer {
 namespace syncable {
 
 struct ColumnSpec;
@@ -163,5 +164,6 @@ class DirectoryBackingStore : public base::NonThreadSafe {
 };
 
 }  // namespace syncable
+}  // namespace syncer
 
 #endif  // SYNC_SYNCABLE_DIRECTORY_BACKING_STORE_H_

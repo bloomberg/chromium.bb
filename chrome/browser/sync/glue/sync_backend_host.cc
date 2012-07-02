@@ -357,7 +357,7 @@ std::string MakeUserAgentForSyncApi() {
 
 syncer::HttpPostProviderFactory* MakeHttpBridgeFactory(
     const scoped_refptr<net::URLRequestContextGetter>& getter) {
-  return new HttpBridgeFactory(getter, MakeUserAgentForSyncApi());
+  return new syncer::HttpBridgeFactory(getter, MakeUserAgentForSyncApi());
 }
 
 }  // namespace

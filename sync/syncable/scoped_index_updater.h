@@ -7,6 +7,7 @@
 
 #include "sync/syncable/directory.h"
 
+namespace syncer {
 namespace syncable {
 class ScopedKernelLock;
 
@@ -51,5 +52,6 @@ class ScopedIndexUpdater {
 };
 
 }  // namespace syncable
+}  // namespace syncer
 
 #endif // SYNC_SYNCABLE_SCOPED_INDEX_UPDATER_H_

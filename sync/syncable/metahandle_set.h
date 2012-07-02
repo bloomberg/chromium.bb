@@ -7,10 +7,12 @@
 
 #include "base/basictypes.h"
 
+namespace syncer {
 namespace syncable {
 
 typedef std::set<int64> MetahandleSet;
 
-}
+}  // namespace syncable
+}  // namespace syncer
 
 #endif // SYNC_SYNCABLE_METAHANDLE_SET_

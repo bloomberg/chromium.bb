@@ -29,6 +29,7 @@
 
 using std::string;
 
+namespace syncer {
 namespace syncable {
 
 // This just has to be big enough to hold an UPDATE or INSERT statement that
@@ -1083,3 +1084,4 @@ bool DirectoryBackingStore::CreateShareInfoTableVersion71(
 }
 
 }  // namespace syncable
+}  // namespace syncer

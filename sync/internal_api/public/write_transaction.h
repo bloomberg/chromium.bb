@@ -9,16 +9,16 @@
 #include "base/compiler_specific.h"
 #include "sync/internal_api/public/base_transaction.h"
 
-namespace syncable {
-class BaseTransaction;
-class WriteTransaction;
-}  // namespace syncable
-
 namespace tracked_objects {
 class Location;
 }  // namespace tracked_objects
 
 namespace syncer {
+
+namespace syncable {
+class BaseTransaction;
+class WriteTransaction;
+}  // namespace syncable
 
 // Sync API's WriteTransaction is a read/write BaseTransaction.  It wraps
 // a syncable::WriteTransaction.

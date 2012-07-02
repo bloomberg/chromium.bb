@@ -10,15 +10,15 @@
 #include "sync/engine/model_changing_syncer_command.h"
 #include "sync/engine/syncer_types.h"
 
-namespace syncable {
-class WriteTransaction;
-}
-
 namespace sync_pb {
 class SyncEntity;
 }
 
 namespace syncer {
+
+namespace syncable {
+class WriteTransaction;
+}
 
 class Cryptographer;
 

@@ -21,11 +21,9 @@
 #include "sync/syncable/syncable_util.h"
 #include "sync/syncable/write_transaction.h"
 
-using syncer::Encryptor;
-using syncer::ReportUnrecoverableErrorFunction;
-using syncer::UnrecoverableErrorHandler;
 using std::string;
 
+namespace syncer {
 namespace syncable {
 
 namespace {
@@ -1293,4 +1291,5 @@ ScopedKernelLock::ScopedKernelLock(const Directory* dir)
   :  scoped_lock_(dir->kernel_->mutex), dir_(const_cast<Directory*>(dir)) {
 }
 
-}
+}  // namespace syncable
+}  // namespace syncer

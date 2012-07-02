@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 
+namespace syncer {
 namespace syncable {
 
 OnDiskDirectoryBackingStore::OnDiskDirectoryBackingStore(
@@ -39,3 +40,4 @@ DirOpenResult OnDiskDirectoryBackingStore::Load(
 }
 
 }  // namespace syncable
+}  // namespace syncer

@@ -224,7 +224,7 @@ void BookmarkChangeProcessor::BookmarkNodeChanged(BookmarkModel* model,
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Could not InitByIdLookup on BookmarkNodeChanged, good() failed");
       LOG(ERROR) << "Bad entry.";
-    } else if (sync_node.GetEntry()->Get(syncable::IS_DEL)) {
+    } else if (sync_node.GetEntry()->Get(syncer::syncable::IS_DEL)) {
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Could not InitByIdLookup on BookmarkNodeChanged, is_del true");
       LOG(ERROR) << "Deleted entry.";
@@ -232,7 +232,7 @@ void BookmarkChangeProcessor::BookmarkNodeChanged(BookmarkModel* model,
       syncer::Cryptographer* crypto = trans.GetCryptographer();
       syncable::ModelTypeSet encrypted_types(crypto->GetEncryptedTypes());
       const sync_pb::EntitySpecifics& specifics =
-          sync_node.GetEntry()->Get(syncable::SPECIFICS);
+          sync_node.GetEntry()->Get(syncer::syncable::SPECIFICS);
       CHECK(specifics.has_encrypted());
       const bool can_decrypt = crypto->CanDecrypt(specifics.encrypted());
       const bool agreement = encrypted_types.Has(syncable::BOOKMARKS);

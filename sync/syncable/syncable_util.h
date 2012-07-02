@@ -13,6 +13,7 @@ namespace tracked_objects {
 class Location;
 }
 
+namespace syncer {
 namespace syncable {
 
 class BaseTransaction;
@@ -35,5 +36,6 @@ int GetUnsyncedEntries(BaseTransaction* trans,
                        std::vector<int64> *handles);
 
 }  // namespace syncable
+}  // namespace syncer
 
 #endif  // SYNC_SYNCABLE_SYNCABLE_UTIL_H_

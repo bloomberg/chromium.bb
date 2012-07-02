@@ -42,6 +42,7 @@ using syncer::FakeEncryptor;
 using syncer::TestIdFactory;
 using syncer::TestUnrecoverableErrorHandler;
 
+namespace syncer {
 namespace syncable {
 
 class SyncableKernelTest : public testing::Test {};
@@ -1937,3 +1938,4 @@ TEST_F(SyncableClientTagTest, TestClientTagIndexDuplicateServer) {
 
 }  // namespace
 }  // namespace syncable
+}  // namespace syncer

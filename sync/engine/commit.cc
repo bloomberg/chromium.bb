@@ -13,13 +13,12 @@
 #include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/write_transaction.h"
 
-using syncable::SYNCER;
-using syncable::WriteTransaction;
-
 namespace syncer {
 
 using sessions::SyncSession;
 using sessions::StatusController;
+using syncable::SYNCER;
+using syncable::WriteTransaction;
 
 namespace {
 

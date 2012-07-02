@@ -19,7 +19,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 
-namespace browser_sync {
+namespace syncer {
 
 HttpBridge::RequestContextGetter::RequestContextGetter(
     net::URLRequestContextGetter* baseline_context_getter,
@@ -314,4 +314,4 @@ void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
   http_post_completed_.Signal();
 }
 
-}  // namespace browser_sync
+}  // namespace syncer

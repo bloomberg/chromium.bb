@@ -8,6 +8,7 @@
 #include "sync/util/cryptographer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace syncer {
 namespace syncable {
 
 typedef testing::Test NigoriUtilTest;
@@ -46,3 +47,4 @@ TEST(NigoriUtilTest, SpecificsNeedsEncryption) {
 // are tested in apply_updates_command_unittest.cc
 
 }  // namespace syncable
+}  // namespace syncer

@@ -10,12 +10,12 @@
 
 #include "sync/util/cryptographer.h"
 
+namespace syncer {
+
 namespace syncable {
 class BaseTransaction;
 class Directory;
 }
-
-namespace syncer {
 
 // Sync API's BaseTransaction, ReadTransaction, and WriteTransaction allow for
 // batching of several read and/or write operations.  The read and write

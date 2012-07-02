@@ -12,13 +12,12 @@
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/protocol/nigori_specifics.pb.h"
 
-namespace syncer {
-class Cryptographer;
-}
-
 namespace sync_pb {
 class EntitySpecifics;
 }
+
+namespace syncer {
+class Cryptographer;
 
 namespace syncable {
 
@@ -71,5 +70,6 @@ bool UpdateEntryWithEncryption(
     MutableEntry* entry);
 
 }  // namespace syncable
+}  // namespace syncer
 
 #endif  // SYNC_SYNCABLE_NIGORI_UTIL_H_

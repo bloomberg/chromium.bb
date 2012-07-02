@@ -13,6 +13,7 @@
 // Utility functions to get the string equivalent for some syncable
 // enums.
 
+namespace syncer {
 namespace syncable {
 
 // The returned strings (which don't have to be freed) are in ASCII.
@@ -41,5 +42,6 @@ const char* GetProtoFieldString(ProtoField proto_field);
 const char* GetBitTempString(BitTemp bit_temp);
 
 }  // namespace syncable
+}  // namespace syncer
 
 #endif  // SYNC_SYNCABLE_SYNCABLE_ENUM_CONVERSIONS_H_

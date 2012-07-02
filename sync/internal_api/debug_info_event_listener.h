@@ -87,4 +87,5 @@ class DebugInfoEventListener : public syncer::SyncManager::Observer,
 };
 
 }  // namespace syncer
+
 #endif  // SYNC_INTERNAL_API_DEBUG_INFO_EVENT_LISTENER_H_

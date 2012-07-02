@@ -31,6 +31,8 @@
 #include "sync/util/cryptographer.h"
 #include "sync/util/time.h"
 
+namespace syncer {
+
 using syncable::BASE_VERSION;
 using syncable::CHANGES_VERSION;
 using syncable::CREATE_NEW_UPDATE_ITEM;
@@ -52,7 +54,6 @@ using syncable::NON_UNIQUE_NAME;
 using syncable::BASE_SERVER_SPECIFICS;
 using syncable::PARENT_ID;
 using syncable::PREV_ID;
-using syncable::ReadTransaction;
 using syncable::SERVER_CTIME;
 using syncable::SERVER_IS_DEL;
 using syncable::SERVER_IS_DIR;
@@ -67,8 +68,6 @@ using syncable::UNIQUE_SERVER_TAG;
 using syncable::SPECIFICS;
 using syncable::SYNCER;
 using syncable::WriteTransaction;
-
-namespace syncer {
 
 syncable::Id FindLocalIdToUpdate(
     syncable::BaseTransaction* trans,

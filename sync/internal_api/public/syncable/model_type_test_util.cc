@@ -4,6 +4,7 @@
 
 #include "sync/internal_api/public/syncable/model_type_test_util.h"
 
+namespace syncer {
 namespace syncable {
 
 void PrintTo(ModelTypeSet model_types, ::std::ostream* os) {
@@ -50,3 +51,4 @@ class HasModelTypesMatcher
 }
 
 }  // namespace syncable
+}  // namespace syncer

@@ -25,10 +25,11 @@
 #include "sync/syncable/syncable_id.h"
 #include "sync/util/time.h"
 
-using syncable::SPECIFICS;
 using sync_pb::AutofillProfileSpecifics;
 
 namespace syncer {
+
+using syncable::SPECIFICS;
 
 // Helper function to look up the int64 metahandle of an object given the ID
 // string.

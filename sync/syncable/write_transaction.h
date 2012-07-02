@@ -9,6 +9,7 @@
 #include "sync/syncable/base_transaction.h"
 #include "sync/syncable/entry_kernel.h"
 
+namespace syncer {
 namespace syncable {
 
 // Locks db in constructor, unlocks in destructor.
@@ -44,5 +45,6 @@ class WriteTransaction : public BaseTransaction {
 };
 
 }  // namespace syncable
+}  // namespace syncer
 
 #endif //  SYNC_SYNCABLE_WRITE_TRANSACTION_H_

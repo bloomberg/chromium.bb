@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace syncer {
 namespace syncable {
 namespace {
 
@@ -74,3 +75,4 @@ TEST_F(ModelTypeTest, IsRealDataType) {
 
 }  // namespace
 }  // namespace syncable
+}  // namespace syncer

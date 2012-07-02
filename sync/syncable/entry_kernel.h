@@ -15,6 +15,7 @@
 #include "sync/syncable/syncable_id.h"
 #include "sync/util/time.h"
 
+namespace syncer {
 namespace syncable {
 
 // Things you need to update if you change any of the fields below:
@@ -319,5 +320,6 @@ base::ListValue* EntryKernelMutationMapToValue(
     const EntryKernelMutationMap& mutations);
 
 }  // namespace syncable
+}  // namespace syncer
 
 #endif // SYNC_SYNCABLE_ENTRY_KERNEL_H_

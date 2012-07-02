@@ -18,15 +18,15 @@
 #include "base/threading/thread_checker.h"
 #include "sync/syncable/syncable_id.h"
 
-namespace syncable {
-class Directory;
-}
-
 namespace sync_pb {
 class ClientToServerMessage;
 }
 
 namespace syncer {
+
+namespace syncable {
+class Directory;
+}
 
 static const int32 kUnsetResponseCode = -1;
 static const int32 kUnsetContentLength = -1;

@@ -17,22 +17,15 @@
 #include "sync/test/engine/test_id_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using syncer::HttpResponse;
-using syncer::ServerConnectionManager;
-using syncer::ServerConnectionEventListener;
-using syncer::ServerConnectionEvent;
-using syncer::SyncerProtoUtil;
-using syncer::TestIdFactory;
 using std::map;
 using std::string;
-using sync_pb::ClientToServerMessage;
-using sync_pb::ClientToServerResponse;
 using sync_pb::CommitMessage;
 using sync_pb::CommitResponse;
-using sync_pb::CommitResponse_EntryResponse;
 using sync_pb::GetUpdatesMessage;
 using sync_pb::SyncEnums;
-using sync_pb::SyncEntity;
+
+namespace syncer {
+
 using syncable::FIRST_REAL_MODEL_TYPE;
 using syncable::MODEL_TYPE_COUNT;
 using syncable::ModelType;
@@ -205,11 +198,12 @@ void MockConnectionManager::AddDefaultBookmarkData(sync_pb::SyncEntity* entity,
   }
 }
 
-SyncEntity* MockConnectionManager::AddUpdateDirectory(int id,
-                                                      int parent_id,
-                                                      string name,
-                                                      int64 version,
-                                                      int64 sync_ts) {
+sync_pb::SyncEntity* MockConnectionManager::AddUpdateDirectory(
+    int id,
+    int parent_id,
+    string name,
+    int64 version,
+    int64 sync_ts) {
   return AddUpdateDirectory(TestIdFactory::FromNumber(id),
                             TestIdFactory::FromNumber(parent_id),
                             name,
@@ -223,9 +217,10 @@ sync_pb::ClientCommand* MockConnectionManager::GetNextClientCommand() {
   return client_command_.get();
 }
 
-SyncEntity* MockConnectionManager::AddUpdateBookmark(int id, int parent_id,
-                                                     string name, int64 version,
-                                                     int64 sync_ts) {
+sync_pb::SyncEntity* MockConnectionManager::AddUpdateBookmark(
+    int id, int parent_id,
+    string name, int64 version,
+    int64 sync_ts) {
   return AddUpdateBookmark(TestIdFactory::FromNumber(id),
                            TestIdFactory::FromNumber(parent_id),
                            name,
@@ -233,10 +228,10 @@ SyncEntity* MockConnectionManager::AddUpdateBookmark(int id, int parent_id,
                            sync_ts);
 }
 
-SyncEntity* MockConnectionManager::AddUpdateSpecifics(
+sync_pb::SyncEntity* MockConnectionManager::AddUpdateSpecifics(
     int id, int parent_id, string name, int64 version, int64 sync_ts,
     bool is_dir, int64 position, const sync_pb::EntitySpecifics& specifics) {
-  SyncEntity* ent = AddUpdateMeta(
+  sync_pb::SyncEntity* ent = AddUpdateMeta(
       TestIdFactory::FromNumber(id).GetServerId(),
       TestIdFactory::FromNumber(parent_id).GetServerId(),
       name, version, sync_ts);
@@ -249,7 +244,7 @@ SyncEntity* MockConnectionManager::AddUpdateSpecifics(
 sync_pb::SyncEntity* MockConnectionManager::SetNigori(
     int id, int64 version,int64 sync_ts,
     const sync_pb::EntitySpecifics& specifics) {
-  SyncEntity* ent = GetUpdateResponse()->add_entries();
+  sync_pb::SyncEntity* ent = GetUpdateResponse()->add_entries();
   ent->set_id_string(TestIdFactory::FromNumber(id).GetServerId());
   ent->set_parent_id_string(TestIdFactory::FromNumber(0).GetServerId());
   ent->set_server_defined_unique_tag(syncable::ModelTypeToRootTag(
@@ -266,18 +261,21 @@ sync_pb::SyncEntity* MockConnectionManager::SetNigori(
   return ent;
 }
 
-SyncEntity* MockConnectionManager::AddUpdateFull(string id, string parent_id,
-                                                 string name, int64 version,
-                                                 int64 sync_ts, bool is_dir) {
-  SyncEntity* ent = AddUpdateMeta(id, parent_id, name, version, sync_ts);
+sync_pb::SyncEntity* MockConnectionManager::AddUpdateFull(
+    string id, string parent_id,
+    string name, int64 version,
+    int64 sync_ts, bool is_dir) {
+  sync_pb::SyncEntity* ent =
+      AddUpdateMeta(id, parent_id, name, version, sync_ts);
   AddDefaultBookmarkData(ent, is_dir);
   return ent;
 }
 
-SyncEntity* MockConnectionManager::AddUpdateMeta(string id, string parent_id,
-                                                 string name, int64 version,
-                                                 int64 sync_ts) {
-  SyncEntity* ent = GetUpdateResponse()->add_entries();
+sync_pb::SyncEntity* MockConnectionManager::AddUpdateMeta(
+    string id, string parent_id,
+    string name, int64 version,
+    int64 sync_ts) {
+  sync_pb::SyncEntity* ent = GetUpdateResponse()->add_entries();
   ent->set_id_string(id);
   ent->set_parent_id_string(parent_id);
   ent->set_non_unique_name(name);
@@ -290,22 +288,24 @@ SyncEntity* MockConnectionManager::AddUpdateMeta(string id, string parent_id,
   return ent;
 }
 
-SyncEntity* MockConnectionManager::AddUpdateDirectory(string id,
-                                                      string parent_id,
-                                                      string name,
-                                                      int64 version,
-                                                      int64 sync_ts) {
+sync_pb::SyncEntity* MockConnectionManager::AddUpdateDirectory(
+    string id,
+    string parent_id,
+    string name,
+    int64 version,
+    int64 sync_ts) {
   return AddUpdateFull(id, parent_id, name, version, sync_ts, true);
 }
 
-SyncEntity* MockConnectionManager::AddUpdateBookmark(string id,
-                                                     string parent_id,
-                                                     string name, int64 version,
-                                                     int64 sync_ts) {
+sync_pb::SyncEntity* MockConnectionManager::AddUpdateBookmark(
+    string id,
+    string parent_id,
+    string name, int64 version,
+    int64 sync_ts) {
   return AddUpdateFull(id, parent_id, name, version, sync_ts, false);
 }
 
-SyncEntity* MockConnectionManager::AddUpdateFromLastCommit() {
+sync_pb::SyncEntity* MockConnectionManager::AddUpdateFromLastCommit() {
   EXPECT_EQ(1, last_sent_commit().entries_size());
   EXPECT_EQ(1, last_commit_response().entryresponse_size());
   EXPECT_EQ(CommitResponse::SUCCESS,
@@ -315,7 +315,7 @@ SyncEntity* MockConnectionManager::AddUpdateFromLastCommit() {
     AddUpdateTombstone(syncable::Id::CreateFromServerId(
         last_sent_commit().entries(0).id_string()));
   } else {
-    SyncEntity* ent = GetUpdateResponse()->add_entries();
+    sync_pb::SyncEntity* ent = GetUpdateResponse()->add_entries();
     ent->CopyFrom(last_sent_commit().entries(0));
     ent->clear_insert_after_item_id();
     ent->clear_old_parent_id();
@@ -334,7 +334,7 @@ SyncEntity* MockConnectionManager::AddUpdateFromLastCommit() {
 
 void MockConnectionManager::AddUpdateTombstone(const syncable::Id& id) {
   // Tombstones have only the ID set and dummy values for the required fields.
-  SyncEntity* ent = GetUpdateResponse()->add_entries();
+  sync_pb::SyncEntity* ent = GetUpdateResponse()->add_entries();
   ent->set_id_string(id.GetServerId());
   ent->set_version(0);
   ent->set_name("");
@@ -386,8 +386,9 @@ void MockConnectionManager::SetChangesRemaining(int64 timestamp) {
   GetUpdateResponse()->set_changes_remaining(timestamp);
 }
 
-void MockConnectionManager::ProcessGetUpdates(ClientToServerMessage* csm,
-    ClientToServerResponse* response) {
+void MockConnectionManager::ProcessGetUpdates(
+    sync_pb::ClientToServerMessage* csm,
+    sync_pb::ClientToServerResponse* response) {
   CHECK(csm->has_get_updates());
   ASSERT_EQ(csm->message_contents(), ClientToServerMessage::GET_UPDATES);
   const GetUpdatesMessage& gu = csm->get_updates();
@@ -463,8 +464,9 @@ bool MockConnectionManager::ShouldConflictThisCommit() {
   return conflict;
 }
 
-void MockConnectionManager::ProcessCommit(ClientToServerMessage* csm,
-    ClientToServerResponse* response_buffer) {
+void MockConnectionManager::ProcessCommit(
+    sync_pb::ClientToServerMessage* csm,
+    sync_pb::ClientToServerResponse* response_buffer) {
   CHECK(csm->has_commit());
   ASSERT_EQ(csm->message_contents(), ClientToServerMessage::COMMIT);
   map <string, string> changed_ids;
@@ -472,7 +474,7 @@ void MockConnectionManager::ProcessCommit(ClientToServerMessage* csm,
   CommitResponse* commit_response = response_buffer->mutable_commit();
   commit_messages_.push_back(new CommitMessage);
   commit_messages_.back()->CopyFrom(commit_message);
-  map<string, CommitResponse_EntryResponse*> response_map;
+  map<string, sync_pb::CommitResponse_EntryResponse*> response_map;
   for (int i = 0; i < commit_message.entries_size() ; i++) {
     const sync_pb::SyncEntity& entry = commit_message.entries(i);
     CHECK(entry.has_id_string());
@@ -488,7 +490,7 @@ void MockConnectionManager::ProcessCommit(ClientToServerMessage* csm,
     }
     if (response_map.end() == response_map.find(id))
       response_map[id] = commit_response->add_entryresponse();
-    CommitResponse_EntryResponse* er = response_map[id];
+    sync_pb::CommitResponse_EntryResponse* er = response_map[id];
     if (ShouldConflictThisCommit()) {
       er->set_response_type(CommitResponse::CONFLICT);
       continue;
@@ -516,21 +518,21 @@ void MockConnectionManager::ProcessCommit(ClientToServerMessage* csm,
   commit_responses_.push_back(new CommitResponse(*commit_response));
 }
 
-SyncEntity* MockConnectionManager::AddUpdateDirectory(
+sync_pb::SyncEntity* MockConnectionManager::AddUpdateDirectory(
     syncable::Id id, syncable::Id parent_id, string name, int64 version,
     int64 sync_ts) {
   return AddUpdateDirectory(id.GetServerId(), parent_id.GetServerId(),
                             name, version, sync_ts);
 }
 
-SyncEntity* MockConnectionManager::AddUpdateBookmark(
+sync_pb::SyncEntity* MockConnectionManager::AddUpdateBookmark(
     syncable::Id id, syncable::Id parent_id, string name, int64 version,
     int64 sync_ts) {
   return AddUpdateBookmark(id.GetServerId(), parent_id.GetServerId(),
                            name, version, sync_ts);
 }
 
-SyncEntity* MockConnectionManager::GetMutableLastUpdate() {
+sync_pb::SyncEntity* MockConnectionManager::GetMutableLastUpdate() {
   sync_pb::GetUpdatesResponse* updates = GetUpdateResponse();
   EXPECT_GT(updates->entries_size(), 0);
   return updates->mutable_entries()->Mutable(updates->entries_size() - 1);
@@ -594,3 +596,5 @@ void MockConnectionManager::UpdateConnectionStatus() {
     server_status_ = HttpResponse::SERVER_CONNECTION_OK;
   }
 }
+
+}  // namespace syncer

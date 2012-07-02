@@ -6,6 +6,7 @@
 
 #include "base/string_number_conversions.h"
 
+namespace syncer {
 namespace syncable {
 
 WriteTransactionInfo::WriteTransactionInfo(
@@ -44,3 +45,4 @@ base::DictionaryValue* WriteTransactionInfo::ToValue(
 }
 
 }  // namespace syncable
+}  // namespace syncer

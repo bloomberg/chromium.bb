@@ -4,6 +4,7 @@
 
 #include "sync/test/null_directory_change_delegate.h"
 
+namespace syncer {
 namespace syncable {
 
 NullDirectoryChangeDelegate::~NullDirectoryChangeDelegate() {}
@@ -27,3 +28,4 @@ void NullDirectoryChangeDelegate::HandleTransactionCompleteChangeEvent(
     ModelTypeSet models_with_changes) {}
 
 }  // namespace syncable
+}  // namespace syncer

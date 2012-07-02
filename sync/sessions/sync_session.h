@@ -33,12 +33,12 @@
 #include "sync/sessions/sync_session_context.h"
 #include "sync/util/extensions_activity_monitor.h"
 
+namespace syncer {
+class ModelSafeWorker;
+
 namespace syncable {
 class WriteTransaction;
 }
-
-namespace syncer {
-class ModelSafeWorker;
 
 namespace sessions {
 

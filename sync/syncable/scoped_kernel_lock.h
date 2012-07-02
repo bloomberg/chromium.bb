@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/synchronization/lock.h"
 
+namespace syncer {
 namespace syncable {
 
 class Directory;
@@ -24,5 +25,6 @@ class ScopedKernelLock {
 };
 
 }  // namespace syncable
+}  // namespace syncer
 
 #endif  // SYNC_SYNCABLE_SCOPED_KERNEL_LOCK_H_

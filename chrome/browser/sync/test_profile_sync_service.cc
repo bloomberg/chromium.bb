@@ -22,7 +22,7 @@ using syncer::sessions::ModelNeutralState;
 using syncer::sessions::SyncSessionSnapshot;
 using syncer::sessions::SyncSourceInfo;
 using syncer::UserShare;
-using syncable::Directory;
+using syncer::syncable::Directory;
 
 namespace browser_sync {
 

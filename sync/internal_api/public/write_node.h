@@ -14,16 +14,6 @@
 #include "sync/internal_api/public/base_node.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 
-namespace syncer {
-class Cryptographer;
-class TestBookmarkModelAssociator;
-}
-
-namespace syncable {
-class Entry;
-class MutableEntry;
-}
-
 namespace sync_pb {
 class AppSpecifics;
 class AutofillSpecifics;
@@ -40,7 +30,14 @@ class TypedUrlSpecifics;
 
 namespace syncer {
 
+class Cryptographer;
+class TestBookmarkModelAssociator;
 class WriteTransaction;
+
+namespace syncable {
+class Entry;
+class MutableEntry;
+}
 
 // WriteNode extends BaseNode to add mutation, and wraps
 // syncable::MutableEntry. A WriteTransaction is needed to create a WriteNode.

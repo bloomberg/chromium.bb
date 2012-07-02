@@ -30,16 +30,16 @@
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/sessions/debug_info_getter.h"
 
-namespace syncable {
-class Directory;
-}
-
 namespace syncer {
 
 class ConflictResolver;
 class ExtensionsActivityMonitor;
 class ServerConnectionManager;
 class ThrottledDataTypeTracker;
+
+namespace syncable {
+class Directory;
+}
 
 // Default number of items a client can commit in a single message.
 static const int kDefaultMaxCommitBatchSize = 25;

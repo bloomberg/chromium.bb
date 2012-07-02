@@ -4,6 +4,7 @@
 
 #include "sync/syncable/read_transaction.h"
 
+namespace syncer {
 namespace syncable {
 
 ReadTransaction::ReadTransaction(const tracked_objects::Location& location,
@@ -17,4 +18,5 @@ ReadTransaction::~ReadTransaction() {
   Unlock();
 }
 
-} // namespace syncable
+}  // namespace syncable
+}  // namespace syncer

@@ -7,6 +7,7 @@
 #include "base/debug/trace_event.h"
 #include "sync/syncable/directory.h"
 
+namespace syncer {
 namespace syncable {
 
 void BaseTransaction::Lock() {
@@ -66,3 +67,4 @@ BaseTransaction::~BaseTransaction() {
 }
 
 }  // namespace syncable
+}  // namespace syncer

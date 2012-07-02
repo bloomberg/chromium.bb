@@ -15,8 +15,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using syncable::Directory;
-using syncable::EntryKernel;
+namespace syncer {
+namespace syncable {
 
 class MockDirectory : public Directory {
  public:
@@ -43,6 +43,7 @@ class MockSyncableWriteTransaction : public syncable::WriteTransaction {
       const tracked_objects::Location& from_here, Directory *directory);
 };
 
+}  // namespace syncable
+}  // namespace syncer
 
 #endif  // SYNC_SYNCABLE_SYNCABLE_MOCK_H_
-

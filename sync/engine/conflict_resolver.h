@@ -17,14 +17,14 @@
 #include "base/gtest_prod_util.h"
 #include "sync/engine/syncer_types.h"
 
+namespace syncer {
+
 namespace syncable {
 class BaseTransaction;
 class Id;
 class MutableEntry;
 class WriteTransaction;
 }  // namespace syncable
-
-namespace syncer {
 
 class Cryptographer;
 

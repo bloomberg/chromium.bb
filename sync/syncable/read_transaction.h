@@ -10,8 +10,6 @@
 
 namespace syncer {
 class ReadTransaction;
-}
-
 namespace syncable {
 
 // Locks db in constructor, unlocks in destructor.
@@ -30,5 +28,6 @@ class ReadTransaction : public BaseTransaction {
 };
 
 }  // namespace syncable
+}  // namespace syncer
 
 #endif  // SYNC_SYNCABLE_READ_TRANSACTION_H_

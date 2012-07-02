@@ -23,6 +23,7 @@
 #include "sync/util/time.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
 
+namespace syncer {
 namespace syncable {
 
 extern const int32 kCurrentDBVersion;
@@ -2159,3 +2160,4 @@ TEST_F(DirectoryBackingStoreTest, GenerateCacheGUID) {
 }
 
 }  // namespace syncable
+}  // namespace syncer

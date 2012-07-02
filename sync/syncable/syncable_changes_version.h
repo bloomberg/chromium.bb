@@ -6,6 +6,7 @@
 #define SYNC_SYNCABLE_SYNCABLE_CHANGES_VERSION_H_
 #pragma once
 
+namespace syncer {
 namespace syncable {
 
 // For the most part, the sync engine treats version numbers as opaque values.
@@ -26,5 +27,6 @@ enum {
 #define CHANGES_VERSION_STRING "-1"
 
 }  // namespace syncable
+}  // namespace syncer
 
 #endif  // SYNC_SYNCABLE_SYNCABLE_CHANGES_VERSION_H_

@@ -67,31 +67,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ExpectDictStringValue;
-using syncer::Cryptographer;
-using syncer::FakeEncryptor;
-using syncer::FakeExtensionsActivityMonitor;
-using syncer::HasArgsAsList;
-using syncer::HasDetailsAsDictionary;
-using syncer::KeyParams;
-using syncer::kNigoriTag;
-using syncer::JsArgList;
-using syncer::JsBackend;
-using syncer::JsEventHandler;
-using syncer::JsReplyHandler;
-using syncer::MockJsEventHandler;
-using syncer::MockJsReplyHandler;
-using syncer::ModelSafeRoutingInfo;
-using syncer::ModelSafeWorker;
-using syncer::sessions::SyncSessionSnapshot;
-using syncer::TestUnrecoverableErrorHandler;
-using syncer::WeakHandle;
-using syncable::IS_DEL;
-using syncable::IS_UNSYNCED;
-using syncable::kEncryptedString;
-using syncable::ModelTypeSet;
-using syncable::ModelType;
-using syncable::NON_UNIQUE_NAME;
-using syncable::SPECIFICS;
 using testing::_;
 using testing::AnyNumber;
 using testing::AtLeast;
@@ -101,6 +76,15 @@ using testing::SaveArg;
 using testing::StrictMock;
 
 namespace syncer {
+
+using sessions::SyncSessionSnapshot;
+using syncable::IS_DEL;
+using syncable::IS_UNSYNCED;
+using syncable::kEncryptedString;
+using syncable::ModelTypeSet;
+using syncable::ModelType;
+using syncable::NON_UNIQUE_NAME;
+using syncable::SPECIFICS;
 
 namespace {
 

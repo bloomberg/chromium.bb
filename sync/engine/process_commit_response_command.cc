@@ -22,14 +22,19 @@
 #include "sync/syncable/write_transaction.h"
 #include "sync/util/time.h"
 
-using syncable::WriteTransaction;
-using syncable::MutableEntry;
-using syncable::Entry;
-
 using std::set;
 using std::string;
 using std::vector;
 
+namespace syncer {
+
+using sessions::OrderedCommitSet;
+using sessions::StatusController;
+using sessions::SyncSession;
+using sessions::ConflictProgress;
+using syncable::WriteTransaction;
+using syncable::MutableEntry;
+using syncable::Entry;
 using syncable::BASE_VERSION;
 using syncable::GET_BY_ID;
 using syncable::ID;
@@ -44,13 +49,6 @@ using syncable::SERVER_POSITION_IN_PARENT;
 using syncable::SERVER_VERSION;
 using syncable::SYNCER;
 using syncable::SYNCING;
-
-namespace syncer {
-
-using sessions::OrderedCommitSet;
-using sessions::StatusController;
-using sessions::SyncSession;
-using sessions::ConflictProgress;
 
 ProcessCommitResponseCommand::ProcessCommitResponseCommand(
       const sessions::OrderedCommitSet& commit_set,

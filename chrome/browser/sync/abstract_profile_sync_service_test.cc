@@ -19,20 +19,20 @@
 using syncer::TestIdFactory;
 using content::BrowserThread;
 using syncer::UserShare;
-using syncable::BASE_VERSION;
-using syncable::CREATE;
-using syncable::IS_DEL;
-using syncable::IS_DIR;
-using syncable::IS_UNAPPLIED_UPDATE;
-using syncable::IS_UNSYNCED;
-using syncable::ModelType;
-using syncable::MutableEntry;
-using syncable::SERVER_IS_DIR;
-using syncable::SERVER_VERSION;
-using syncable::SPECIFICS;
-using syncable::UNIQUE_SERVER_TAG;
-using syncable::UNITTEST;
-using syncable::WriteTransaction;
+using syncer::syncable::BASE_VERSION;
+using syncer::syncable::CREATE;
+using syncer::syncable::IS_DEL;
+using syncer::syncable::IS_DIR;
+using syncer::syncable::IS_UNAPPLIED_UPDATE;
+using syncer::syncable::IS_UNSYNCED;
+using syncer::syncable::ModelType;
+using syncer::syncable::MutableEntry;
+using syncer::syncable::SERVER_IS_DIR;
+using syncer::syncable::SERVER_VERSION;
+using syncer::syncable::SPECIFICS;
+using syncer::syncable::UNIQUE_SERVER_TAG;
+using syncer::syncable::UNITTEST;
+using syncer::syncable::WriteTransaction;
 
 /* static */
 const std::string ProfileSyncServiceTestHelper::GetTagForType(
@@ -44,7 +44,7 @@ const std::string ProfileSyncServiceTestHelper::GetTagForType(
 bool ProfileSyncServiceTestHelper::CreateRoot(ModelType model_type,
                                               UserShare* user_share,
                                               TestIdFactory* ids) {
-  syncable::Directory* directory = user_share->directory.get();
+  syncer::syncable::Directory* directory = user_share->directory.get();
 
   std::string tag_name = GetTagForType(model_type);
 
@@ -61,7 +61,7 @@ bool ProfileSyncServiceTestHelper::CreateRoot(ModelType model_type,
   node.Put(SERVER_VERSION, 20);
   node.Put(BASE_VERSION, 20);
   node.Put(IS_DEL, false);
-  node.Put(syncable::ID, ids->MakeServer(tag_name));
+  node.Put(syncer::syncable::ID, ids->MakeServer(tag_name));
   sync_pb::EntitySpecifics specifics;
   syncable::AddDefaultFieldValue(model_type, &specifics);
   node.Put(SPECIFICS, specifics);
