@@ -19,9 +19,10 @@ import os
 import shutil
 import errno
 
-path = os.path.realpath(__file__)
-path = os.path.normpath(os.path.join(os.path.dirname(path), '..', '..'))
-sys.path.insert(0, path)
+_path = os.path.realpath(__file__)
+_path = os.path.normpath(os.path.join(os.path.dirname(_path), '..', '..'))
+sys.path.insert(0, _path)
+del _path
 
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
@@ -93,32 +94,54 @@ def _UpdateGitAlternates(proj_root, projects):
 
 
 def _GetProjects(repo_root):
-  # Note that while the project.list repo creates might seem usable, it is only
-  # updated during local syncs.  This isn't fine grained enough for us- we may
-  # have changed the manifest w/out yet doing a sync.
-  # Truncate our mtime awareness to just integers; else we're screwed since
-  # os.utime isn't guranteed to set the precision exactly as we need.
-  manifest_time = os.path.getmtime(os.path.join(repo_root, 'manifest.xml'))
-  manifest_time = long(manifest_time)
+  # Note that we cannot rely upon projects.list, nor repo list, nor repo forall
+  # here to be authoritive.
+  # if we rely on the manifest contents, the local tree may not yet be
+  # updated- thus if we drop the alternate for that project, that project is no
+  # longer usable (which can tick off repo sync).
+  # Thus, we just iterate over the raw underlying projects store, and generate
+  # alternates for that; we regenerate based on either the manifest changing,
+  # local_manifest having changed, or projects.list having changed (which
+  # occurs during partial local repo syncs; aka repo sync chromite for
+  # example).
+  # Finally, note we have to truncate our mtime awareness to just integers;
+  # this is required since utime isn't guaranteed to set floats, despite our
+  # being able to get a float back from stat'ing.
+
+  manifest_xml = os.path.join(repo_root, 'manifest.xml')
+  times = [os.lstat(manifest_xml).st_mtime,
+           os.stat(manifest_xml).st_mtime]
+  for path in ('local_manifest.xml', 'project.list'):
+    path = os.path.join(repo_root, path)
+    if os.path.exists(path):
+      times.append(os.stat(path).st_mtime)
+
+  manifest_time = long(max(times))
+
   cache_path = os.path.join(repo_root, _CACHE_NAME)
 
   try:
-    if long(os.path.getmtime(cache_path)) == manifest_time:
+    if long(os.stat(cache_path).st_mtime) == manifest_time:
       return osutils.ReadFile(cache_path).split()
   except EnvironmentError, e:
     if e.errno != errno.ENOENT:
       raise
 
-  result = cros_build_lib.RunCommand(['repo', 'list'], cwd=repo_root,
-                                     print_cmd=False, redirect_stdout=True)
-  # Sample output for repo list:
-  # src/third_party/wayland : chromiumos/third_party/wayland
-  # src/third_party/wayland-demos : chromiumos/third_party/wayland-demos
-  # src/third_party/wpa_supplicant : chromiumos/third_party/hostap
-  data = [x for x in result.output.split('\n') if ':' in x]
-  data = [x.split(':', 1)[0].strip() for x in data]
+  # The -a ! section of this find invocation is to block descent
+  # into the actual git repository; for IO constrained systems,
+  # this avoids a fairly large amount of inode/dentry load up.
+  # TLDR; It's faster, don't remove it ;)
+  data = cros_build_lib.RunCommandCaptureOutput(
+      ['find', './', '-type', 'd', '-name', '*.git', '-a',
+       '!', '-wholename', '*/*.git/*', '-prune'],
+      cwd=os.path.join(repo_root, 'projects'))
+
+  # Drop the leading ./ and the trailing .git
+  data = [x[2:-4] for x in data.output.splitlines() if x]
+
   with open(cache_path, 'w') as f:
     f.write('\n'.join(sorted(data)))
+
   # Finally, mark the cache with the time of the manifest.xml we examined.
   os.utime(cache_path, (manifest_time, manifest_time))
   return data
@@ -238,14 +261,13 @@ def RebuildRepoCheckout(repo_root, initial_reference,
 
 
 if __name__ == '__main__':
-  import sys
-  chroot_reference_root = None
+  chroot_root = None
   if len(sys.argv) not in (3, 4):
     sys.stderr.write('Usage: %s <repository_root> <referenced_repository> '
                      '[path_from_within_the_chroot]\n' % (sys.argv[0],))
     sys.exit(1)
   if len(sys.argv) == 4:
-    chroot_reference_root = sys.argv[3]
+    chroot_root = sys.argv[3]
   ret = RebuildRepoCheckout(sys.argv[1], sys.argv[2],
-                            chroot_reference_root=chroot_reference_root)
+                            chroot_reference_root=chroot_root)
   print '\n'.join(ret)
