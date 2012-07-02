@@ -229,10 +229,6 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   // GetTargetFilePath().
   bool NeedsRename() const;
 
-  // Internal helper for maintaining consistent received and total sizes, and
-  // hash state.
-  void UpdateProgress(int64 bytes_so_far, const std::string& hash_state);
-
   // If all pre-requisites have been met, complete download processing, i.e.  do
   // internal cleanup, file rename, and potentially auto-open.  (Dangerous
   // downloads still may block on user acceptance after this point.)
@@ -264,6 +260,9 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   // Callback invoked when the download has been renamed to its intermediate
   // name.
   void OnDownloadRenamedToIntermediateName(const FilePath& full_path);
+
+  // Callback from file thread when we release the DownloadFile.
+  void OnDownloadFileReleased();
 
   // The handle to the request information.  Used for operations outside the
   // download system.
