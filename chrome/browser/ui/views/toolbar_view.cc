@@ -700,6 +700,9 @@ void ToolbarView::Layout() {
     // circle and not the grey cross. The disabled reload state only exists for
     // ntp pages.
     chrome::UpdateCommandEnabled(browser_, IDC_RELOAD, false);
+    // Disable zooming for NTP mode.
+    chrome::UpdateCommandEnabled(browser_, IDC_ZOOM_MINUS, false);
+    chrome::UpdateCommandEnabled(browser_, IDC_ZOOM_PLUS, false);
   } else {
     // Start the location bar animation.
     if (si_mode.animate && si_mode.is_search() &&
@@ -712,7 +715,10 @@ void ToolbarView::Layout() {
     } else {
       SetLocationBarContainerBounds(location_bar_bounds);
     }
+    // Enable reload and zooming for non-NTP modes.
     chrome::UpdateCommandEnabled(browser_, IDC_RELOAD, true);
+    chrome::UpdateCommandEnabled(browser_, IDC_ZOOM_MINUS, true);
+    chrome::UpdateCommandEnabled(browser_, IDC_ZOOM_PLUS, true);
   }
 
   browser_actions_->SetBounds(location_bar_bounds.right(), 0,

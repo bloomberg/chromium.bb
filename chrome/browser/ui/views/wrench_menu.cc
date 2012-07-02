@@ -16,6 +16,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/search/search.h"
+#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -637,14 +639,25 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
 
  private:
   void UpdateZoomControls() {
-    bool enable_increment = false;
-    bool enable_decrement = false;
-    WebContents* selected_tab = chrome::GetActiveWebContents(menu_->browser_);
     int zoom = 100;
-    if (selected_tab)
-      zoom = selected_tab->GetZoomPercent(&enable_increment, &enable_decrement);
-    increment_button_->SetEnabled(enable_increment);
-    decrement_button_->SetEnabled(enable_decrement);
+    // Don't override initial states of increment and decrement buttons when
+    // instant extended API is enabled and mode is NTP; they are properly
+    // updated in ToolbarView::ModeChanged() via CommandUpdater, and queried
+    // via WrenchMenuModel::IsCommandIdEnabled() when the buttons were created
+    // in CreateButtonWithAccName().
+    if (!(chrome::search::IsInstantExtendedAPIEnabled(
+              menu_->browser_->profile()) &&
+          menu_->browser_->search_model()->mode().is_ntp())) {
+      bool enable_increment = false;
+      bool enable_decrement = false;
+      WebContents* selected_tab = chrome::GetActiveWebContents(menu_->browser_);
+      if (selected_tab) {
+        zoom = selected_tab->GetZoomPercent(&enable_increment,
+                                            &enable_decrement);
+      }
+      increment_button_->SetEnabled(enable_increment);
+      decrement_button_->SetEnabled(enable_decrement);
+    }
     zoom_label_->SetText(
         l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, zoom));
 
@@ -859,11 +872,9 @@ bool WrenchMenu::IsCommandEnabled(int id) const {
 
   const Entry& entry = id_to_entry_.find(id)->second;
   int command_id = entry.first->GetCommandIdAt(entry.second);
-  // The items representing the cut (cut/copy/paste) and zoom menu
-  // (increment/decrement/reset) are always enabled. The child views of these
-  // items enabled state updates appropriately.
-  return command_id == IDC_CUT || command_id == IDC_ZOOM_MINUS ||
-      entry.first->IsEnabledAt(entry.second);
+  // The items representing the cut menu (cut/copy/paste) are always enabled.
+  // The child views of these items enabled state updates appropriately.
+  return command_id == IDC_CUT || entry.first->IsEnabledAt(entry.second);
 }
 
 void WrenchMenu::ExecuteCommand(int id, int mouse_event_flags) {

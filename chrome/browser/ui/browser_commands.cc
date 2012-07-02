@@ -149,6 +149,12 @@ bool PrintPreviewShowing(const Browser* browser) {
                         controller->is_creating_print_preview_tab());
 }
 
+bool IsNTPModeForInstantExtendedAPI(const Browser* browser) {
+  return browser->search_model() &&
+      chrome::search::IsInstantExtendedAPIEnabled(browser->profile()) &&
+      browser->search_model()->mode().is_ntp();
+}
+
 }  // namespace
 
 bool IsCommandEnabled(Browser* browser, int command) {
@@ -313,9 +319,7 @@ void ReloadIgnoringCache(Browser* browser, WindowOpenDisposition disposition) {
 }
 
 bool CanReload(const Browser* browser) {
-  return !browser->is_devtools() &&
-    !(chrome::search::IsInstantExtendedAPIEnabled(browser->profile()) &&
-      browser->search_model()->mode().is_ntp());
+  return !browser->is_devtools() && !IsNTPModeForInstantExtendedAPI(browser);
 }
 
 void Home(Browser* browser, WindowOpenDisposition disposition) {
@@ -604,8 +608,10 @@ bool CanPrint(const Browser* browser) {
   }
 
   // Do not print when a constrained window is showing. It's confusing.
+  // Do not print if instant extended API is enabled and mode is NTP.
   return !(HasConstrainedWindow(browser) ||
-      GetContentRestrictions(browser) & content::CONTENT_RESTRICTION_PRINT);
+      GetContentRestrictions(browser) & content::CONTENT_RESTRICTION_PRINT ||
+      IsNTPModeForInstantExtendedAPI(browser));
 }
 
 void AdvancedPrint(Browser* browser) {
