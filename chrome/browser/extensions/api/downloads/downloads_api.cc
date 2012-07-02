@@ -1090,7 +1090,8 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
       event_name,
       json_args,
       profile_,
-      GURL());
+      GURL(),
+      extensions::EventFilteringInfo());
 
   DownloadsNotificationSource notification_source;
   notification_source.event_name = event_name;

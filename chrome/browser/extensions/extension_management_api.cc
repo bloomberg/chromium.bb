@@ -589,5 +589,5 @@ void ExtensionManagementEventRouter::Observe(
   base::JSONWriter::Write(&args, &args_json);
 
   profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-      event_name, args_json, NULL, GURL());
+      event_name, args_json, NULL, GURL(), extensions::EventFilteringInfo());
 }

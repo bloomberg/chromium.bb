@@ -173,7 +173,7 @@ void BookmarkManagerExtensionEventRouter::DispatchEvent(const char* event_name,
   std::string json_args;
   base::JSONWriter::Write(args, &json_args);
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      event_name, json_args, NULL, GURL());
+      event_name, json_args, NULL, GURL(), extensions::EventFilteringInfo());
 }
 
 void BookmarkManagerExtensionEventRouter::DispatchDragEvent(
