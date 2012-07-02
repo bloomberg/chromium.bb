@@ -17,8 +17,10 @@ import optparse
 import os
 import shutil
 import sys
+import time
 
 sys.path.append('/usr/local')  # to import autotest libs.
+from autotest.cros import constants
 from autotest.cros import cryptohome
 
 # TODO(bartfab): Remove when crosbug.com/20709 is fixed.
@@ -49,11 +51,6 @@ class SuidAction(object):
   ## Actions ##
   def CleanFlimflamDirs(self):
     """Clean the contents of all connection manager (shill/flimflam) profiles.
-
-    TODO(stanleyw): crosbug.com/29421 This method restarts flimflam. It should
-    wait until flimflam/shill is fully initialized and accessible via DBus.
-    Otherwise, there is a race conditions and subsequent accesses to
-    flimflam/shill may fail.
     """
     flimflam_dirs = ['/home/chronos/user/flimflam',
                      '/home/chronos/user/shill',
@@ -75,6 +72,16 @@ class SuidAction(object):
             os.remove(path)
     finally:
       os.system('start flimflam')
+      # TODO(stanleyw): crosbug.com/29421 This method should wait until
+      # flimflam/shill is fully initialized and accessible via DBus again.
+      # Otherwise, there is a race conditions and subsequent accesses to
+      # flimflam/shill may fail. Until this is fixed, waiting for the
+      # resolv.conf file to be created is better than nothing.
+      begin = time.time()
+      while not os.path.exists(constants.RESOLV_CONF_FILE):
+        if time.time() - begin > 10:
+          raise RuntimeError('Timeout while waiting for flimflam/shill start.')
+        time.sleep(.25)
 
   def RemoveAllCryptohomeVaults(self):
     """Remove any existing cryptohome vaults."""

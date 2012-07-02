@@ -769,8 +769,10 @@
       # This tests the value "0" for the RestoreOnStartup policy, which is not
       # supported on ChromeOS.
       '-policy.PolicyTest.testStartupOptionsHomepage',
-      # crbug.com/131258
+      # crbug.com/131258 crosbug.com/32068
       '-policy.PolicyTest.testDefaultSearchProviderOptions',
+      # crosbug.com/32069
+      '-policy.PolicyTest.testTranslateEnabled',
     ],
   },
 

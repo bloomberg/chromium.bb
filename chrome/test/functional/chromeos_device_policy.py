@@ -6,7 +6,6 @@ import logging
 
 import pyauto_functional  # Must come before pyauto (and thus, policy_base).
 import policy_base
-import pyauto_errors
 
 
 class ChromeosDevicePolicy(policy_base.PolicyTestBase):
@@ -25,18 +24,13 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
   def Login(self, user_index, expect_success):
     self.assertFalse(self.GetLoginInfo()['is_logged_in'],
                      msg='Expected to be logged out.')
+    policy_base.PolicyTestBase.Login(self,
+                                     self._usernames[user_index],
+                                     self._passwords[user_index])
     if expect_success:
-      policy_base.PolicyTestBase.Login(self,
-                                       self._usernames[user_index],
-                                       self._passwords[user_index])
       self.assertTrue(self.GetLoginInfo()['is_logged_in'],
                       msg='Expected to be logged in.')
     else:
-      self.assertRaises(
-          pyauto_errors.JSONInterfaceError,
-          lambda: policy_base.PolicyTestBase.Login(self,
-                                                   self._usernames[user_index],
-                                                   self._passwords[user_index]))
       self.assertFalse(self.GetLoginInfo()['is_logged_in'],
                        msg='Expected to not be logged in.')
 

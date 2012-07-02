@@ -57,8 +57,10 @@ if pyauto.PyUITest.IsChromeOS():
   import chrome_device_policy_pb2 as dp
   import device_management_backend_pb2 as dm
   import tlslite.api
+  from autotest.cros import auth_server
   from autotest.cros import constants
   from autotest.cros import cros_ui
+  from autotest.cros import dns_server
 elif pyauto.PyUITest.IsWin():
   import _winreg as winreg
 elif pyauto.PyUITest.IsMac():
@@ -75,6 +77,25 @@ class PolicyTestBase(pyauto.PyUITest):
   Subclasses can use the methods SetUserPolicy (ChromeOS, Linux, Windows) and
   SetDevicePolicy (ChromeOS only) to set the policies seen by Chrome.
   """
+
+  def _StartAuthServerOnChromeOS(self):
+    """Starts a mock GAIA server and makes Chrome authenticate against it.
+
+    A mock GAIA server and a mock DNS server are started. The DNS server
+    redirects all network traffic to localhost, making Chrome authenticate
+    against the mock GAIA and isolating the test from any other network flakes.
+    """
+    assert self.IsChromeOS()
+    self._auth_server = auth_server.GoogleAuthServer()
+    self._auth_server.run()
+    self._dns_server = dns_server.LocalDns()
+    self._dns_server.run()
+
+  def _StopAuthServerOnChromeOS(self):
+    """Tears down the mock GAIA server and fake DNS server."""
+    assert self.IsChromeOS()
+    self._auth_server.stop()
+    self._dns_server.stop()
 
   def _WriteFile(self, path, content):
     """Writes content to path, creating any intermediary directories."""
@@ -147,6 +168,9 @@ class PolicyTestBase(pyauto.PyUITest):
     inject a device policy blob.
     """
     if self.IsChromeOS():
+      # Spin up a mock GAIA server.
+      self._StartAuthServerOnChromeOS()
+
       # Set up a temporary data dir and a TestServer serving files from there.
       # The TestServer makes its document root relative to the src dir.
       source_dir = os.path.normpath(pyauto_paths.GetSourceDir())
@@ -193,6 +217,7 @@ class PolicyTestBase(pyauto.PyUITest):
       self.StopHTTPServer(self._http_server)
       pyauto_utils.RemovePath(self._temp_data_dir)
       self.RemoveAllCryptohomeVaultsOnChromeOS()
+      self._StopAuthServerOnChromeOS()
 
   def LoginWithTestAccount(self, account='prod_enterprise_test_user'):
     """Convenience method for logging in with one of the test accounts."""
