@@ -73,7 +73,6 @@ typedef enum {
   NACLi_INVALID,      /* not valid on any known x86 */                /* Both */
   NACLi_SYSTEM,       /* ring-0 instruction, not allowed in NaCl */   /* Both */
   NACLi_NOP,          /* Predefined nop instruction sequence. */      /* 32 */
-  NACLi_UD2,          /* Predefined ud2 instruction sequence. */      /* 32 */
   NACLi_386,          /* an allowed instruction on all i386 implementations */
                                                                       /* Both */
                       /* subset of i386 that allows LOCK prefix. NOTE:

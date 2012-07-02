@@ -12,7 +12,6 @@ static const char *kNaClInstTypeString[kNaClInstTypeRange] = {
   "NACLi_INVALID",
   "NACLi_SYSTEM",
   "NACLi_NOP",
-  "NACLi_UD2",
   "NACLi_386",
   "NACLi_386L",
   "NACLi_386R",

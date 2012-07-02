@@ -11,7 +11,6 @@ static uint32_t BadPrefixMask[kNaClInstTypeRange] = {
   0xffffffff, /* NACLi_INVALID */
   0xffffffff, /* NACLi_SYSTEM */
   0xffffffff, /* NACLi_NOP */
-  0xffffffff, /* NACLi_UD2 */
   0xffffffe7, /* NACLi_386 */
   0xfffffeef, /* NACLi_386L */
   0xffffff6f, /* NACLi_386R */
@@ -54,4 +53,5 @@ static uint32_t BadPrefixMask[kNaClInstTypeRange] = {
   0xffffffff, /* NACLi_FCMOV */
   0xffffffff, /* NACLi_VMX */
   0xffffffff, /* NACLi_FXSAVE */
+  0xffffffff, /* (null) */
 };

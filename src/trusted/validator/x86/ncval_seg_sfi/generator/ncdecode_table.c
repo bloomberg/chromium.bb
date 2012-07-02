@@ -1046,8 +1046,6 @@ static NCNopTrieNode* nc_nop_root = NULL;
 
 static struct OpInfo nc_nop_info = { NACLi_NOP , 0 , IMM_NONE , 0 };
 
-static struct OpInfo nc_ud2_info = { NACLi_UD2 , 0 , IMM_NONE , 0 };
-
 /* Simple (fast hack) routine to extract a byte value from a character string.
  */
 static int NCExtractByte(const char* sequence, int index) {
@@ -1121,7 +1119,6 @@ static void NCDefNops() {
    * 0f 1f 80 00 00 00 00       nop
    * 0f 1f 84 00 00 00 00 00    nop
    */
-  NCDefNopLikeOp("0f0b", &nc_ud2_info);
   NCDefNop("660f1f440000");
   NCDefNop("660f1f840000000000");
   NCDefNop("662e0f1f840000000000");
@@ -1631,7 +1628,8 @@ static void BuildMetaTables() {
    EncodeModedOp0F(0x07, 0, IMM_NONE, NACLi_ILLEGAL, "sysret", X86_64);
    EncodeOp0F(0x08, 0, IMM_NONE, NACLi_SYSTEM, "invd");
    EncodeOp0F(0x09, 0, IMM_NONE, NACLi_SYSTEM, "wbinvd");
-   EncodeOp0F(0x0b, 0, IMM_NONE, NACLi_ILLEGAL, "ud2");
+   /* UD2 always generates a #UD exception sl (like HLT) is always safe. */
+   EncodeOp0F(0x0b, 0, IMM_NONE, NACLi_386, "ud2");
 
    TODO(karl, "Intel table states that 0x0d is a 'NOP Ev'");
    EncodeOp0F(0x0d, 1, IMM_NONE, NACLi_OPINMRM, "$groupP (prefetch)");
@@ -2605,9 +2603,7 @@ static void PrintNopTrieNode(FILE* f, NCNopTrieNode* node, int index) {
           (int) node->matching_byte,
           ((NULL == node->matching_opinfo)
            ? "NULL"
-           : ((node->matching_opinfo == &nc_ud2_info)
-              ? "(struct OpInfo*)(&kUd2Inst)"
-              : "(struct OpInfo*)(&kNopInst)")));
+           : "(struct OpInfo*)(&kNopInst)"));
   if (NULL == node->success) {
     fprintf(f, "NULL");
   } else {
@@ -2633,12 +2629,6 @@ static void PrintNopTables(FILE* f) {
             nc_nop_info.hasmrmbyte,
             nc_nop_info.immtype,
             nc_nop_info.opinmrm);
-    fprintf(f,
-            "static const struct OpInfo kUd2Inst = { %s, %d, %d, %d };\n\n",
-            NaClInstTypeString(nc_ud2_info.insttype),
-            nc_ud2_info.hasmrmbyte,
-            nc_ud2_info.immtype,
-            nc_ud2_info.opinmrm);
   }
   fprintf(f, "static const NCNopTrieNode kNcNopTrieNode[] = {\n");
   PrintNopTrieNode(f, nc_nop_root, 0);
