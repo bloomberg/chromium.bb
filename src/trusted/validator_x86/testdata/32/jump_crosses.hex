@@ -1,0 +1,10 @@
+# Test that we report about an (branch) instruction pair crossing block boundaries.
+# Issue: 2888
+# nop(s)
+90 90 90 90 90 90 90 90 90 90  
+90 90 90 90 90 90 90 90 90 90
+90 90 90 90 90 90 90 90 90
+# and %eax, 0xe0
+83 e0 e0
+# jmp %eax
+ff e0

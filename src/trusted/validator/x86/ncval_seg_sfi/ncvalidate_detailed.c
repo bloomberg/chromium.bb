@@ -107,6 +107,7 @@ static Bool NCInstLayoutCheck(const NCDecoderInst* dinst) {
     NCBadInstructionError(
         dinst,
         "Instruction begins basic block, but in middle of nacl pattern\n");
+    NCStatsBadAlignment(vstate);
   }
 
   /* Check that instruction doesn't cross block boundaries. */
