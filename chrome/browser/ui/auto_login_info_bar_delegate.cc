@@ -42,6 +42,8 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::NavigationController;
+using content::NotificationSource;
+using content::NotificationDetails;
 
 namespace {
 
@@ -148,6 +150,10 @@ AutoLoginInfoBarDelegate::AutoLoginInfoBarDelegate(
       params_(params),
       button_pressed_(false) {
   RecordHistogramAction(HISTOGRAM_SHOWN);
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
+                 content::Source<Profile>(Profile::FromBrowserContext(
+                     owner->web_contents()->GetBrowserContext())));
 }
 
 AutoLoginInfoBarDelegate::~AutoLoginInfoBarDelegate() {
@@ -210,4 +216,11 @@ string16 AutoLoginInfoBarDelegate::GetMessageText(
 
 void AutoLoginInfoBarDelegate::RecordHistogramAction(int action) {
   UMA_HISTOGRAM_ENUMERATION("AutoLogin.Regular", action, HISTOGRAM_MAX);
+}
+
+void AutoLoginInfoBarDelegate::Observe(int type,
+                                       const NotificationSource& source,
+                                       const NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_GOOGLE_SIGNED_OUT, type);
+  owner()->RemoveInfoBar(this);
 }
