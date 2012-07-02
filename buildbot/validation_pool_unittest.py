@@ -6,7 +6,6 @@
 
 """Module that contains unittests for validation_pool module."""
 
-import logging
 import mox
 import os
 import pickle
@@ -29,6 +28,8 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 
 _CountingSource = itertools.count()
+
+# pylint: disable=E1120
 
 def GetTestJson(change_id=None):
   """Get usable fake Gerrit patch json data
@@ -473,10 +474,28 @@ class TestValidationPool(mox.MoxTestBase):
         is_command=True).AndReturn(None)
 
     my_patch = cros_patch.GerritPatch(GetTestJson(), False)
-    pool._SendNotification(my_patch, mox.IgnoreArg())
+    pool._SendNotification(my_patch, mox.IgnoreArg(), detail=mox.IgnoreArg())
 
     self.mox.ReplayAll()
     pool.HandleCouldNotVerify(my_patch)
+    self.mox.VerifyAll()
+
+  def testGerritHandleVerifyErrorWithException(self):
+    """Tests review string looks correct."""
+    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
+    gerrit_helper.GerritHelper._SqlQuery(
+        mox.IgnoreArg(), dryrun=mox.IgnoreArg(),
+        is_command=True).AndReturn(None)
+
+    my_patch = cros_patch.GerritPatch(GetTestJson(), False)
+    failed_stage = 'BuildTarget'
+    error = 'Error compiling chromeos-base/update_engine'
+    pool._SendNotification(my_patch, mox.IgnoreArg(),
+                           detail=mox.And(mox.StrContains(error),
+                                          mox.StrContains(failed_stage)))
+
+    self.mox.ReplayAll()
+    pool.HandleCouldNotVerify(my_patch, failed_stage, Exception(error))
     self.mox.VerifyAll()
 
   def testUnhandledExceptions(self):

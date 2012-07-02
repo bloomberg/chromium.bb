@@ -708,12 +708,12 @@ class ValidationPool(object):
       if self.is_master:
         self.HandleCouldNotApply(change)
 
-  def HandleValidationFailure(self):
+  def HandleValidationFailure(self, failed_stage=None, exception=None):
     """Handles failed changes by removing them from next Validation Pools."""
     logging.info('Validation failed for all changes.')
     for change in self.changes:
       logging.info('Validation failed for change %s.', change)
-      self.HandleCouldNotVerify(change)
+      self.HandleCouldNotVerify(change, failed_stage, exception)
 
   def HandleValidationTimeout(self):
     """Handles changes that timed out."""
@@ -729,8 +729,8 @@ class ValidationPool(object):
       self._helper_pool.ForChange(change).RemoveCommitReady(
           change, dryrun=self.dryrun)
 
-  def _SendNotification(self, change, msg):
-    msg %= {'build_log':self.build_log}
+  def _SendNotification(self, change, msg, **kwargs):
+    msg %= dict(build_log=self.build_log, **kwargs)
     PaladinMessage(msg, change, self._helper_pool.ForChange(change)).Send(
         self.dryrun)
 
@@ -751,7 +751,7 @@ class ValidationPool(object):
     self._helper_pool.ForChange(change).RemoveCommitReady(
         change, dryrun=self.dryrun)
 
-  def HandleCouldNotVerify(self, change):
+  def HandleCouldNotVerify(self, change, failed_stage=None, exception=None):
     """Handler for when Paladin fails to validate a change.
 
     This handler notifies set Verified-1 to the review forcing the developer
@@ -760,11 +760,22 @@ class ValidationPool(object):
 
     Args:
       change: GerritPatch instance to operate upon.
+      failed_stage: If not None, the name of the first stage that failed.
+      exception: The exception object thrown by the first failure.
     """
+    if failed_stage and exception:
+      detail = (
+        'Oops! The %s stage failed: '
+        '%s' % (failed_stage, exception)
+      )
+    else:
+      detail = 'Oops! The Commit Queue failed to verify your change.'
+
     self._SendNotification(change,
-        'The Commit Queue failed to verify your change in %(build_log)s . '
-        'If you believe this happened in error, just re-mark your commit as '
-        'ready. Your change will then get automatically retried.')
+        '%(detail)s\n\nPlease check whether the failure is your fault: '
+        '%(build_log)s . If your change is not at fault, you may mark it as '
+        'ready again.', detail=detail
+    )
     self._helper_pool.ForChange(change).RemoveCommitReady(
         change, dryrun=self.dryrun)
 
@@ -824,12 +835,17 @@ class PaladinMessage():
 
   def _ConstructPaladinMessage(self):
     """Adds any standard Paladin messaging to an existing message."""
-    return self.message + (' Please see %s for more information.' %
+    return self.message + ('\n\nCommit queue documentation: %s' %
                            self._PALADIN_DOCUMENTATION_URL)
 
   def Send(self, dryrun):
     """Sends the message to the developer."""
+    # Gerrit requires that commit messages are enclosed in quotes, and that
+    # any backslashes or quotes within these quotes are escaped.
+    # See com.google.gerrit.sshd.CommandFactoryProvider#split.
+    message = '"%s"' % (self._ConstructPaladinMessage().
+                        replace('\\','\\\\').replace('"', '\\"'))
     cmd = self.helper.GetGerritReviewCommand(
-        ['-m', '"%s"' % self._ConstructPaladinMessage(),
+        ['-m', message,
          '%s,%s' % (self.patch.gerrit_number, self.patch.patch_number)])
     _RunCommand(cmd, dryrun)

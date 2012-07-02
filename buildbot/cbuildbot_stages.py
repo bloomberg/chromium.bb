@@ -5,7 +5,6 @@
 """Module containing the various stages that a builder runs."""
 
 import cPickle
-import datetime
 import functools
 import glob
 import multiprocessing
@@ -20,6 +19,7 @@ from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import configure_repo
+from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
@@ -693,7 +693,8 @@ class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
 
   def _PerformStage(self):
     if not self.success and self._build_config['important']:
-      CommitQueueSyncStage.pool.HandleValidationFailure()
+      stage, exception, _traceback = results_lib.Results.GetFirstTraceback()
+      CommitQueueSyncStage.pool.HandleValidationFailure(stage, exception)
 
     super(CommitQueueCompletionStage, self)._PerformStage()
 

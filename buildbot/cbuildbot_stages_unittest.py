@@ -1385,14 +1385,14 @@ class BuildStagesResultsTest(unittest.TestCase):
 
     # Store off a known set of results and generate a report
     results_lib.Results.Clear()
-    results_lib.Results.Record('Pass', results_lib.Results.SUCCESS, time=1)
-    results_lib.Results.Record('Pass2', results_lib.Results.SUCCESS, time=2)
-    results_lib.Results.Record('Fail', self.failException,
+    results_lib.Results.Record('Sync', results_lib.Results.SUCCESS, time=1)
+    results_lib.Results.Record('Build', results_lib.Results.SUCCESS, time=2)
+    results_lib.Results.Record('Test', self.failException,
                                'failException Msg\nLine 2', time=3)
     result = cros_build_lib.CommandResult(cmd=['/bin/false', '/nosuchdir'],
                                           returncode=2)
     results_lib.Results.Record(
-        'FailRunCommand',
+        'Archive',
         cros_build_lib.RunCommandError(
             'Command "/bin/false /nosuchdir" failed.\n',
             result),
@@ -1406,16 +1406,16 @@ class BuildStagesResultsTest(unittest.TestCase):
         "************************************************************\n"
         "** Stage Results\n"
         "************************************************************\n"
-        "** PASS Pass (0:00:01)\n"
+        "** PASS Sync (0:00:01)\n"
         "************************************************************\n"
-        "** PASS Pass2 (0:00:02)\n"
+        "** PASS Build (0:00:02)\n"
         "************************************************************\n"
-        "** FAIL Fail (0:00:03) with Exception\n"
+        "** FAIL Test (0:00:03) with Exception\n"
         "************************************************************\n"
-        "** FAIL FailRunCommand (0:00:04) in /bin/false\n"
+        "** FAIL Archive (0:00:04) in /bin/false\n"
         "************************************************************\n"
         "\n"
-        "Build failed with:\n"
+        "Failed in stage Test:\n"
         "\n"
         "failException Msg\n"
         "Line 2\n")

@@ -156,6 +156,24 @@ class _Results(object):
 
       self._previous[record[0]] = record
 
+  def GetFirstTraceback(self):
+    """Get the first exception that failed the build.
+
+    If no exceptions occurred, returns (None, None, None).
+
+    Returns:
+       (failed_stage, exception, traceback)
+       failed_stage: The name of the first stage that failed.
+       exception: The exception object thrown by the failure.
+       traceback: The full traceback for the failure.
+    """
+    for name, result, description, _ in self._results_log:
+      # If result is not SUCCESS or FORGIVEN, then the stage failed, and
+      # result is the exception object and description is a string containing
+      # the full traceback.
+      if result not in (self.SUCCESS, self.FORGIVEN):
+        return name, result, description
+    return None, None, None
 
   def Report(self, out, archive_urls=None, current_version=None):
     """Generate a user friendly text display of the results data."""
@@ -174,34 +192,27 @@ class _Results(object):
     out.write(line)
     out.write(edge + ' Stage Results\n')
 
-    first_exception = None
-
-    for name, result, description, run_time in results:
+    for name, result, _, run_time in results:
       timestr = datetime.timedelta(seconds=math.ceil(run_time))
 
       out.write(line)
       if result == self.SUCCESS:
-        # These was no error
         out.write('%s PASS %s (%s)\n' % (edge, name, timestr))
 
       elif result == self.FORGIVEN:
-        # The stage was executed previously, and skipped this time
         out.write('%s FAILED BUT FORGIVEN %s (%s)\n' %
                    (edge, name, timestr))
       else:
         if isinstance(result, cros_build_lib.RunCommandError):
           # If there was a RunCommand error, give just the command that
-          # failed, not it's full argument list, since those are usually
+          # failed, not its full argument list, since those are usually
           # too long.
           out.write('%s FAIL %s (%s) in %s\n' %
                      (edge, name, timestr, result.result.cmd[0]))
         else:
-          # There was a normal error, give the type of exception
+          # There was a normal error. Give the type of exception.
           out.write('%s FAIL %s (%s) with %s\n' %
                      (edge, name, timestr, type(result).__name__))
-
-        if not first_exception:
-          first_exception = description
 
     out.write(line)
 
@@ -212,11 +223,12 @@ class _Results(object):
         out.write('@@@STEP_LINK@Artifacts[%s]@%s@@@\n' % (board, url))
       out.write(line)
 
-    if first_exception:
+    failed_stage, _, first_traceback = self.GetFirstTraceback()
+    if first_traceback:
       out.write('\n')
-      out.write('Build failed with:\n')
+      out.write('Failed in stage %s:\n' % failed_stage)
       out.write('\n')
-      out.write(first_exception)
+      out.write(first_traceback)
       out.write('\n')
 
 Results = _Results()
