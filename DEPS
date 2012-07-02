@@ -16,6 +16,7 @@ vars = {
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
   "nacl_tools_revision": "9016",  # native_client/DEPS: tools_rev
+  "gtm_revision": "534",
 
   # These hashes need to be updated when nacl_toolchain_revision is changed.
   # After changing nacl_toolchain_revision, run 'gclient runhooks' to get the
@@ -399,12 +400,18 @@ deps_os = {
     "src/third_party/nacl_sdk_binaries":
       "/trunk/deps/third_party/nacl_sdk_binaries@111576",
   },
+  "ios": {
+    "src/third_party/GTM":
+      (Var("googlecode_url") % "google-toolbox-for-mac") + "/trunk@" +
+      Var("gtm_revision"),
+  },
   "mac": {
     "src/chrome/tools/test/reference_build/chrome_mac":
       "/trunk/deps/reference_builds/chrome_mac@137727",
 
     "src/third_party/GTM":
-      (Var("googlecode_url") % "google-toolbox-for-mac") + "/trunk@516",
+      (Var("googlecode_url") % "google-toolbox-for-mac") + "/trunk@" +
+      Var("gtm_revision"),
     "src/third_party/pdfsqueeze":
       (Var("googlecode_url") % "pdfsqueeze") + "/trunk@4",
     "src/third_party/lighttpd":
