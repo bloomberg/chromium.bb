@@ -42,7 +42,7 @@ TEST(WebIntentServiceDataTest, Defaults) {
 TEST(WebIntentServiceDataTest, ActionServicesEqual) {
 
   // with default disposition...
-  WebIntentServiceData intent = WebIntentServiceData::WebIntentServiceData(
+  WebIntentServiceData intent(
       ASCIIToUTF16("http://webintents.org/share"),
       ASCIIToUTF16("image/png"),
       string16(),
@@ -62,7 +62,7 @@ TEST(WebIntentServiceDataTest, ActionServicesEqual) {
 TEST(WebIntentServiceDataTest, SchemeServicesEqual) {
 
   // with default disposition...
-  WebIntentServiceData intent = WebIntentServiceData::WebIntentServiceData(
+  WebIntentServiceData intent(
       string16(),
       string16(),
       ASCIIToUTF16("mailto"),
