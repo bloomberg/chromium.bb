@@ -8,9 +8,10 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/threading/thread_local.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/synchronization/waitable_event_watcher.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_local.h"
 #include "ipc/ipc_sync_message.h"
 
 using base::TimeDelta;
@@ -69,7 +70,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
 
     dispatch_event_.Signal();
     if (!was_task_pending) {
-      listener_message_loop_->PostTask(
+      listener_task_runner_->PostTask(
           FROM_HERE, base::Bind(&ReceivedSyncMsgQueue::DispatchMessagesTask,
                                 this, scoped_refptr<SyncContext>(context)));
     }
@@ -145,8 +146,8 @@ class SyncChannel::ReceivedSyncMsgQueue :
   }
 
   WaitableEvent* dispatch_event() { return &dispatch_event_; }
-  base::MessageLoopProxy* listener_message_loop() {
-    return listener_message_loop_;
+  base::SingleThreadTaskRunner* listener_task_runner() {
+    return listener_task_runner_;
   }
 
   // Holds a pointer to the per-thread ReceivedSyncMsgQueue object.
@@ -182,7 +183,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
   ReceivedSyncMsgQueue() :
       message_queue_version_(0),
       dispatch_event_(true, false),
-      listener_message_loop_(base::MessageLoopProxy::current()),
+      listener_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       task_pending_(false),
       listener_count_(0),
       top_send_done_watcher_(NULL) {
@@ -207,7 +208,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
   // sender needs its reply before it can reply to our original synchronous
   // message.
   WaitableEvent dispatch_event_;
-  scoped_refptr<base::MessageLoopProxy> listener_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> listener_task_runner_;
   base::Lock message_lock_;
   bool task_pending_;
   int listener_count_;
@@ -224,9 +225,9 @@ base::LazyInstance<base::ThreadLocalPointer<SyncChannel::ReceivedSyncMsgQueue> >
 
 SyncChannel::SyncContext::SyncContext(
     Listener* listener,
-    base::MessageLoopProxy* ipc_thread,
+    base::SingleThreadTaskRunner* ipc_task_runner,
     WaitableEvent* shutdown_event)
-    : ChannelProxy::Context(listener, ipc_thread),
+    : ChannelProxy::Context(listener, ipc_task_runner),
       received_sync_msgs_(ReceivedSyncMsgQueue::AddContext()),
       shutdown_event_(shutdown_event),
       restrict_dispatch_group_(kRestrictDispatchGroup_None) {
@@ -273,7 +274,7 @@ bool SyncChannel::SyncContext::Pop() {
   // blocking Send() call, whose reply we received after we made this last
   // Send() call.  So check if we have any queued replies available that
   // can now unblock the listener thread.
-  ipc_message_loop()->PostTask(
+  ipc_task_runner()->PostTask(
       FROM_HERE, base::Bind(&ReceivedSyncMsgQueue::DispatchReplies,
                             received_sync_msgs_.get()));
 
@@ -388,10 +389,10 @@ SyncChannel::SyncChannel(
     const IPC::ChannelHandle& channel_handle,
     Channel::Mode mode,
     Listener* listener,
-    base::MessageLoopProxy* ipc_message_loop,
+    base::SingleThreadTaskRunner* ipc_task_runner,
     bool create_pipe_now,
     WaitableEvent* shutdown_event)
-    : ChannelProxy(new SyncContext(listener, ipc_message_loop, shutdown_event)),
+    : ChannelProxy(new SyncContext(listener, ipc_task_runner, shutdown_event)),
       sync_messages_with_no_timeout_allowed_(true) {
   ChannelProxy::Init(channel_handle, mode, create_pipe_now);
   StartWatching();
@@ -399,9 +400,9 @@ SyncChannel::SyncChannel(
 
 SyncChannel::SyncChannel(
     Listener* listener,
-    base::MessageLoopProxy* ipc_message_loop,
+    base::SingleThreadTaskRunner* ipc_task_runner,
     WaitableEvent* shutdown_event)
-    : ChannelProxy(new SyncContext(listener, ipc_message_loop, shutdown_event)),
+    : ChannelProxy(new SyncContext(listener, ipc_task_runner, shutdown_event)),
       sync_messages_with_no_timeout_allowed_(true) {
   StartWatching();
 }
@@ -443,7 +444,7 @@ bool SyncChannel::SendWithTimeout(Message* message, int timeout_ms) {
     // We use the sync message id so that when a message times out, we don't
     // confuse it with another send that is either above/below this Send in
     // the call stack.
-    context->ipc_message_loop()->PostDelayedTask(
+    context->ipc_task_runner()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&SyncContext::OnSendTimeout, context.get(), message_id),
         base::TimeDelta::FromMilliseconds(timeout_ms));

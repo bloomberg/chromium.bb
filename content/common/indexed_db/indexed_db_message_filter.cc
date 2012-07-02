@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/message_loop_proxy.h"
 #include "content/common/indexed_db/indexed_db_dispatcher.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "webkit/glue/worker_task_runner.h"

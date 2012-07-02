@@ -5,6 +5,7 @@
 #include "content/public/test/mock_render_thread.h"
 
 #include "base/process_util.h"
+#include "base/message_loop_proxy.h"
 #include "content/common/view_messages.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sync_message.h"

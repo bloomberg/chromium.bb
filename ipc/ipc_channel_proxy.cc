@@ -8,6 +8,8 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_logging.h"
@@ -43,15 +45,20 @@ ChannelProxy::MessageFilter::~MessageFilter() {}
 //------------------------------------------------------------------------------
 
 ChannelProxy::Context::Context(Listener* listener,
-                               base::MessageLoopProxy* ipc_message_loop)
-    : listener_message_loop_(base::MessageLoopProxy::current()),
+                               base::SingleThreadTaskRunner* ipc_task_runner)
+    : listener_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       listener_(listener),
-      ipc_message_loop_(ipc_message_loop),
+      ipc_task_runner_(ipc_task_runner),
       channel_connected_called_(false),
       peer_pid_(base::kNullProcessId) {
+  DCHECK(ipc_task_runner_);
 }
 
 ChannelProxy::Context::~Context() {
+}
+
+void ChannelProxy::Context::ClearIPCTaskRunner() {
+  ipc_task_runner_ = NULL;
 }
 
 void ChannelProxy::Context::CreateChannel(const IPC::ChannelHandle& handle,
@@ -94,7 +101,7 @@ bool ChannelProxy::Context::OnMessageReceivedNoFilter(const Message& message) {
   // this thread is active.  That should be a reasonable assumption, but it
   // feels risky.  We may want to invent some more indirect way of referring to
   // a MessageLoop if this becomes a problem.
-  listener_message_loop_->PostTask(
+  listener_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Context::OnDispatchMessage, this, message));
   return true;
 }
@@ -112,8 +119,8 @@ void ChannelProxy::Context::OnChannelConnected(int32 peer_pid) {
   for (size_t i = 0; i < filters_.size(); ++i)
     filters_[i]->OnChannelConnected(peer_pid);
 
-  // See above comment about using listener_message_loop_ here.
-  listener_message_loop_->PostTask(
+  // See above comment about using listener_task_runner_ here.
+  listener_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Context::OnDispatchConnected, this));
 }
 
@@ -122,8 +129,8 @@ void ChannelProxy::Context::OnChannelError() {
   for (size_t i = 0; i < filters_.size(); ++i)
     filters_[i]->OnChannelError();
 
-  // See above comment about using listener_message_loop_ here.
-  listener_message_loop_->PostTask(
+  // See above comment about using listener_task_runner_ here.
+  listener_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Context::OnDispatchError, this));
 }
 
@@ -214,7 +221,7 @@ void ChannelProxy::Context::OnRemoveFilter(MessageFilter* filter) {
 void ChannelProxy::Context::AddFilter(MessageFilter* filter) {
   base::AutoLock auto_lock(pending_filters_lock_);
   pending_filters_.push_back(make_scoped_refptr(filter));
-  ipc_message_loop_->PostTask(
+  ipc_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Context::OnAddFilter, this));
 }
 
@@ -276,8 +283,8 @@ void ChannelProxy::Context::OnDispatchError() {
 ChannelProxy::ChannelProxy(const IPC::ChannelHandle& channel_handle,
                            Channel::Mode mode,
                            Listener* listener,
-                           base::MessageLoopProxy* ipc_thread)
-    : context_(new Context(listener, ipc_thread)),
+                           base::SingleThreadTaskRunner* ipc_task_runner)
+    : context_(new Context(listener, ipc_task_runner)),
       outgoing_message_filter_(NULL),
       did_init_(false) {
   Init(channel_handle, mode, true);
@@ -314,13 +321,13 @@ void ChannelProxy::Init(const IPC::ChannelHandle& channel_handle,
     // to connect and get an error since the pipe doesn't exist yet.
     context_->CreateChannel(channel_handle, mode);
   } else {
-    context_->ipc_message_loop()->PostTask(
+    context_->ipc_task_runner()->PostTask(
         FROM_HERE, base::Bind(&Context::CreateChannel, context_.get(),
                               channel_handle, mode));
   }
 
   // complete initialization on the background thread
-  context_->ipc_message_loop()->PostTask(
+  context_->ipc_task_runner()->PostTask(
       FROM_HERE, base::Bind(&Context::OnChannelOpened, context_.get()));
 
   did_init_ = true;
@@ -332,8 +339,8 @@ void ChannelProxy::Close() {
   // possible that the channel could be closed while it is receiving messages!
   context_->Clear();
 
-  if (context_->ipc_message_loop()) {
-    context_->ipc_message_loop()->PostTask(
+  if (context_->ipc_task_runner()) {
+    context_->ipc_task_runner()->PostTask(
         FROM_HERE, base::Bind(&Context::OnChannelClosed, context_.get()));
   }
 }
@@ -347,7 +354,7 @@ bool ChannelProxy::Send(Message* message) {
   Logging::GetInstance()->OnSendMessage(message, context_->channel_id());
 #endif
 
-  context_->ipc_message_loop()->PostTask(
+  context_->ipc_task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&ChannelProxy::Context::OnSendMessage,
                  context_, base::Passed(scoped_ptr<Message>(message))));
@@ -359,13 +366,13 @@ void ChannelProxy::AddFilter(MessageFilter* filter) {
 }
 
 void ChannelProxy::RemoveFilter(MessageFilter* filter) {
-  context_->ipc_message_loop()->PostTask(
+  context_->ipc_task_runner()->PostTask(
       FROM_HERE, base::Bind(&Context::OnRemoveFilter, context_.get(),
                             make_scoped_refptr(filter)));
 }
 
-void ChannelProxy::ClearIPCMessageLoop() {
-  context()->ClearIPCMessageLoop();
+void ChannelProxy::ClearIPCTaskRunner() {
+  context()->ClearIPCTaskRunner();
 }
 
 #if defined(OS_POSIX) && !defined(OS_NACL)

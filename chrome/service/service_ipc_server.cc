@@ -39,16 +39,6 @@ ServiceIPCServer::~ServiceIPCServer() {
 #endif
 
   channel_->RemoveFilter(sync_message_filter_.get());
-
-  // The ChannelProxy object caches a pointer to the IPC thread, so need to
-  // reset it as it's not guaranteed to outlive this object.
-  // NOTE: this also has the side-effect of not closing the main IPC channel to
-  // the browser process.  This is needed because this is the signal that the
-  // browser uses to know that this process has died, so we need it to be alive
-  // until this process is shut down, and the OS closes the handle
-  // automatically.  We used to watch the object handle on Windows to do this,
-  // but it wasn't possible to do so on POSIX.
-  channel_->ClearIPCMessageLoop();
 }
 
 void ServiceIPCServer::OnChannelConnected(int32 peer_pid) {

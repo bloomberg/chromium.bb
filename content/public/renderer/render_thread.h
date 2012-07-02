@@ -17,6 +17,10 @@
 
 class MessageLoop;
 
+namespace base {
+class MessageLoopProxy;
+}
+
 namespace IPC {
 class SyncChannel;
 class SyncMessageFilter;

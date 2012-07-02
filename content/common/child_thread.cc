@@ -83,7 +83,7 @@ ChildThread::~ChildThread() {
   // until this process is shut down, and the OS closes the handle
   // automatically.  We used to watch the object handle on Windows to do this,
   // but it wasn't possible to do so on POSIX.
-  channel_->ClearIPCMessageLoop();
+  channel_->ClearIPCTaskRunner();
 }
 
 void ChildThread::OnChannelError() {

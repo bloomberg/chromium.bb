@@ -10,6 +10,10 @@
 
 class IndexedDBDispatcher;
 
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
+
 class IndexedDBMessageFilter : public IPC::ChannelProxy::MessageFilter {
  public:
   IndexedDBMessageFilter();

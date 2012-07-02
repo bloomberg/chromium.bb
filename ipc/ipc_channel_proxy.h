@@ -10,12 +10,15 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace IPC {
 
@@ -121,12 +124,12 @@ class IPC_EXPORT ChannelProxy : public Sender {
   // method is called on the thread where the IPC::Channel is running.  The
   // filter may be null if the consumer is not interested in handling messages
   // on the background thread.  Any message not handled by the filter will be
-  // dispatched to the listener.  The given message loop indicates where the
-  // IPC::Channel should be created.
+  // dispatched to the listener.  The given task runner correspond to a thread
+  // on which IPC::Channel is created and used (e.g. IO thread).
   ChannelProxy(const IPC::ChannelHandle& channel_handle,
                Channel::Mode mode,
                Listener* listener,
-               base::MessageLoopProxy* ipc_thread_loop);
+               base::SingleThreadTaskRunner* ipc_task_runner);
 
   virtual ~ChannelProxy();
 
@@ -167,8 +170,8 @@ class IPC_EXPORT ChannelProxy : public Sender {
     outgoing_message_filter_ = filter;
   }
 
-  // Called to clear the pointer to the IPC message loop when it's going away.
-  void ClearIPCMessageLoop();
+  // Called to clear the pointer to the IPC task runner when it's going away.
+  void ClearIPCTaskRunner();
 
   // Get the process ID for the connected peer.
   // Returns base::kNullProcessId if the peer is not connected yet.
@@ -191,10 +194,10 @@ class IPC_EXPORT ChannelProxy : public Sender {
   class Context : public base::RefCountedThreadSafe<Context>,
                   public Listener {
    public:
-    Context(Listener* listener, base::MessageLoopProxy* ipc_thread);
-    void ClearIPCMessageLoop() { ipc_message_loop_ = NULL; }
-    base::MessageLoopProxy* ipc_message_loop() const {
-      return ipc_message_loop_.get();
+    Context(Listener* listener, base::SingleThreadTaskRunner* ipc_thread);
+    void ClearIPCTaskRunner();
+    base::SingleThreadTaskRunner* ipc_task_runner() const {
+      return ipc_task_runner_;
     }
     const std::string& channel_id() const { return channel_id_; }
 
@@ -244,12 +247,12 @@ class IPC_EXPORT ChannelProxy : public Sender {
     void OnDispatchConnected();
     void OnDispatchError();
 
-    scoped_refptr<base::MessageLoopProxy> listener_message_loop_;
+    scoped_refptr<base::SingleThreadTaskRunner> listener_task_runner_;
     Listener* listener_;
 
     // List of filters.  This is only accessed on the IPC thread.
     std::vector<scoped_refptr<MessageFilter> > filters_;
-    scoped_refptr<base::MessageLoopProxy> ipc_message_loop_;
+    scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
     scoped_ptr<Channel> channel_;
     std::string channel_id_;
     bool channel_connected_called_;
