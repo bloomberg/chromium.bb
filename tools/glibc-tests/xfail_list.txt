@@ -6,8 +6,6 @@ assert/test-assert
 assert/test-assert-perr
 catgets/gencat
 catgets/tst-catgets
-crypt/sha512c-test
-crypt/sha512test
 csu/tst-atomic-long
 debug/tst-chk4
 debug/tst-chk5
@@ -282,8 +280,6 @@ string/test-strncpy
 string/test-strpbrk
 string/test-strrchr
 string/test-strspn
-string/tst-bswap
-string/tst-endian
 string/tst-strxfrm
 string/tst-strxfrm2
 time/bug-getdate1
