@@ -3941,13 +3941,21 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
 
     This is equivalent to 'Add new user' action with multi-profiles.
 
+    To account for crbug.com/108761 on Win XP, this call polls until the
+    profile count increments by 1.
+
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
+    num_profiles = len(self.GetMultiProfileInfo()['profiles'])
     cmd_dict = {  # Prepare command for the json interface
       'command': 'OpenNewBrowserWindowWithNewProfile'
     }
-    return self._GetResultFromJSONRequest(cmd_dict, windex=None)
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+    # TODO(nirnimesh): Remove when crbug.com/108761 is fixed
+    self.WaitUntil(
+        lambda: len(self.GetMultiProfileInfo()['profiles']),
+        expect_retval=(num_profiles + 1))
 
   def OpenProfileWindow(self, path, num_loads=1):
    """Open browser window for an existing profile.

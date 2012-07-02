@@ -25,12 +25,6 @@ class MultiprofileTest(pyauto.PyUITest):
       raw_input('Hit <enter> to dump info.. ')
       self.pprint(self.GetMultiProfileInfo())
 
-  def _CheckNumProfiles(self, expected_number):
-    """Returns True if |expected_number| is equal to the number of profiles."""
-    # TODO: Remove when crbug.com/108761 is fixed.
-    multi_profile = self.GetMultiProfileInfo()
-    return expected_number == len(multi_profile['profiles'])
-
   def _GetSearchEngineWithKeyword(self, keyword, windex=0):
     """Get search engine info and return an element that matches keyword.
 
@@ -197,9 +191,6 @@ class MultiprofileTest(pyauto.PyUITest):
     """Verify we can create 20 new profiles."""
     for index in range(1, 21):
       self.OpenNewBrowserWindowWithNewProfile()
-      # Wait until the profile has been created.
-      # TODO: Remove when crbug.com/108761 is fixed.
-      self.WaitUntil(self._CheckNumProfiles, args=[index + 1])
       multi_profile = self.GetMultiProfileInfo()
       self.assertEqual(index + 1, len(multi_profile['profiles']),
           msg='Expected %d profiles after adding %d new users. Got %d' % (
@@ -211,11 +202,9 @@ class MultiprofileTest(pyauto.PyUITest):
                     msg='Multi-profile is not enabled')
     # Launch browser with new Profile 1, set startup page to 'www.google.com'.
     self.OpenNewBrowserWindowWithNewProfile()
-    self.WaitUntil(self._CheckNumProfiles, args=[2])
     self._SetStartUpPage('http://www.google.com', windex=1)
     # Launch browser with new Profile 2, set startup page to 'www.yahoo.com'.
     self.OpenNewBrowserWindowWithNewProfile()
-    self.WaitUntil(self._CheckNumProfiles, args=[3])
     # Verify start up page for Profile 2 is still newtab page.
     info = self.GetBrowserInfo()
     self.assertEqual('chrome://newtab/', info['windows'][2]['tabs'][0]['url'])
@@ -234,11 +223,9 @@ class MultiprofileTest(pyauto.PyUITest):
                     msg='Multi-profile is not enabled')
     # Launch browser with new Profile 1, set homepage to 'www.google.com'.
     self.OpenNewBrowserWindowWithNewProfile()
-    self.WaitUntil(self._CheckNumProfiles, args=[2])
     self._SetHomePage('http://www.google.com', windex=1)
     # Launch browser with new Profile 2, set homepage to 'www.yahoo.com'.
     self.OpenNewBrowserWindowWithNewProfile()
-    self.WaitUntil(self._CheckNumProfiles, args=[3])
     self._SetHomePage('http://www.yahoo.com', windex=2)
     # Exit Profile 1 / Profile 2
     self.CloseBrowserWindow(1)
@@ -255,11 +242,9 @@ class MultiprofileTest(pyauto.PyUITest):
     # Launch browser with new Profile 1, set pref to restore session on
     # startup.
     self.OpenNewBrowserWindowWithNewProfile()
-    self.WaitUntil(self._CheckNumProfiles, args=[2])
     self._SetSessionRestoreURLs(self._RESTORE_LASTOPEN_URL_VALUE, windex=1)
     # Launch browser with new Profile 2, do not set session restore pref.
     self.OpenNewBrowserWindowWithNewProfile()
-    self.WaitUntil(self._CheckNumProfiles, args=[3])
     self._SetSessionRestoreURLs(self._RESTORE_DEFAULT_URL_VALUE, windex=2)
     # Exit Profile 1 / Profile 2
     self.CloseBrowserWindow(1)
@@ -279,12 +264,10 @@ class MultiprofileTest(pyauto.PyUITest):
                     msg='Multi-profile is not enabled')
     # Launch browser with new Profile 1, enable instant search
     self.OpenNewBrowserWindowWithNewProfile()
-    self.WaitUntil(self._CheckNumProfiles, args=[2])
     self.SetPrefs(pyauto.kInstantEnabled, True, windex=1)
     self.assertTrue(self.GetPrefsInfo(windex=1).Prefs(pyauto.kInstantEnabled))
     # Launch browser with new Profile 2.
     self.OpenNewBrowserWindowWithNewProfile()
-    self.WaitUntil(self._CheckNumProfiles, args=[3])
     # Exit Profile 1 / Profile 2
     self.CloseBrowserWindow(1)
     self.CloseBrowserWindow(2)
@@ -303,13 +286,11 @@ class MultiprofileTest(pyauto.PyUITest):
                     msg='Multi-profile is not enabled')
     # Launch browser with new Profile 1, add search engine to 'Hulu'.
     self.OpenNewBrowserWindowWithNewProfile()
-    self.WaitUntil(self._CheckNumProfiles, args=[2])
     self._AddSearchEngine('Hulu', 'hulu.com',
         'http://www.hulu.com/search?query=%s&ref=os&src={referrer:source?}', 1)
     self.MakeSearchEngineDefault('hulu.com', windex=1)
     # Launch browser with new Profile 2, add search engine to 'Youtube'.
     self.OpenNewBrowserWindowWithNewProfile()
-    self.WaitUntil(self._CheckNumProfiles, args=[3])
     self._AddSearchEngine('YouTube Video Search', 'youtube.com',
         'http://www.youtube.com/results?search_query=%s&page={startPage?}'+
         '&utm_source=opensearch', 2)
@@ -329,11 +310,9 @@ class MultiprofileTest(pyauto.PyUITest):
                     msg='Multi-profile is not enabled')
     # Launch browser with new Profile 1, add 'foo.com' as new search engine.
     self.OpenNewBrowserWindowWithNewProfile()
-    self.WaitUntil(self._CheckNumProfiles, args=[2])
     self._AddSearchEngine('foo', 'foo.com', 'http://foo/?q=%s', windex=1)
     # Launch browser with new Profile 2, add 'foo.com' as new search engine.
     self.OpenNewBrowserWindowWithNewProfile()
-    self.WaitUntil(self._CheckNumProfiles, args=[3])
     self._AddSearchEngine('foo', 'foo.com', 'http://foo/?q=%s', windex=2)
     # Delete search engine 'foo.com' from Profile 1 and exit.
     self.DeleteSearchEngine('foo.com', windex=1)

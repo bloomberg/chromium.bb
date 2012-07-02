@@ -299,20 +299,10 @@ class OneClickInfobarTest(pyauto.PyUITest):
     test_utils.WaitForInfobarTypeAndGetIndex(self, self.OC_INFOBAR_TYPE)
     test_utils.AssertInfobarTypeDoesNotAppear(self, self.PW_INFOBAR_TYPE)
 
-  def _IsNumProfiles(self, expected_number):
-    """Returns True if |expected_number| is equal to the number of profiles."""
-    # TODO(dyu): Remove when crbug.com/108761 is fixed.
-    multi_profile = self.GetMultiProfileInfo()
-    return expected_number == len(multi_profile['profiles'])
-
   def _OpenSecondProfile(self):
     """Create a second profile."""
     self.OpenNewBrowserWindowWithNewProfile()
-    # Wait until the profile has been created.
-    # TODO(dyu): Remove when crbug.com/108761 is fixed.
-    # Verify 2 profiles exist.
-    self.assertTrue(
-        self.WaitUntil(self._IsNumProfiles, args=[2]),
+    self.assertEqual(2, len(self.GetMultiProfileInfo()['profiles']),
         msg='The second profile was not created.')
 
   def testDisplayOneClickInfobarPerProfile(self):
