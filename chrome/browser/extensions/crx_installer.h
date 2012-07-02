@@ -15,7 +15,7 @@
 #include "base/version.h"
 #include "chrome/browser/extensions/crx_installer_error.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
-#include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
+#include "chrome/browser/extensions/sandboxed_unpacker.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/string_ordinal.h"
@@ -52,7 +52,7 @@ class ExtensionUpdaterTest;
 // installer->set_bar();
 // installer->InstallCrx(...);
 class CrxInstaller
-    : public SandboxedExtensionUnpackerClient,
+    : public extensions::SandboxedUnpackerClient,
       public ExtensionInstallPrompt::Delegate {
  public:
   // Used in histograms; do not change order.
@@ -189,7 +189,7 @@ class CrxInstaller
   // should complete.
   CrxInstallerError AllowInstall(const extensions::Extension* extension);
 
-  // SandboxedExtensionUnpackerClient
+  // SandboxedUnpackerClient
   virtual void OnUnpackFailure(const string16& error_message) OVERRIDE;
   virtual void OnUnpackSuccess(const FilePath& temp_dir,
                                const FilePath& extension_dir,

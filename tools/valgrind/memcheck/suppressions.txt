@@ -1568,7 +1568,7 @@
    Memcheck:Param
    write(buf)
    ...
-   fun:_ZN26SandboxedExtensionUnpacker17RewriteImageFilesEv
+   fun:_ZN26SandboxedUnpacker17RewriteImageFilesEv
 }
 {
    bug_30704c

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
+#include "chrome/browser/extensions/sandboxed_unpacker.h"
 
 #include <set>
 
@@ -162,12 +162,14 @@ bool FindWritableTempLocation(FilePath* temp_dir) {
 
 }  // namespace
 
-SandboxedExtensionUnpacker::SandboxedExtensionUnpacker(
+namespace extensions {
+
+SandboxedUnpacker::SandboxedUnpacker(
     const FilePath& crx_path,
     bool run_out_of_process,
     Extension::Location location,
     int creation_flags,
-    SandboxedExtensionUnpackerClient* client)
+    SandboxedUnpackerClient* client)
     : crx_path_(crx_path),
       thread_identifier_(BrowserThread::ID_COUNT),
       run_out_of_process_(run_out_of_process),
@@ -177,7 +179,7 @@ SandboxedExtensionUnpacker::SandboxedExtensionUnpacker(
       creation_flags_(creation_flags) {
 }
 
-bool SandboxedExtensionUnpacker::CreateTempDirectory() {
+bool SandboxedUnpacker::CreateTempDirectory() {
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&thread_identifier_));
 
   FilePath temp_dir;
@@ -202,7 +204,7 @@ bool SandboxedExtensionUnpacker::CreateTempDirectory() {
   return true;
 }
 
-void SandboxedExtensionUnpacker::Start() {
+void SandboxedUnpacker::Start() {
   // We assume that we are started on the thread that the client wants us to do
   // file IO on.
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&thread_identifier_));
@@ -247,10 +249,10 @@ void SandboxedExtensionUnpacker::Start() {
       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
   if (use_utility_process) {
     // The utility process will have access to the directory passed to
-    // SandboxedExtensionUnpacker.  That directory should not contain a
-    // symlink or NTFS reparse point.  When the path is used, following
-    // the link/reparse point will cause file system access outside the
-    // sandbox path, and the sandbox will deny the operation.
+    // SandboxedUnpacker.  That directory should not contain a symlink or NTFS
+    // reparse point.  When the path is used, following the link/reparse point
+    // will cause file system access outside the sandbox path, and the sandbox
+    // will deny the operation.
     FilePath link_free_crx_path;
     if (!file_util::NormalizeFilePath(temp_crx_path, &link_free_crx_path)) {
       LOG(ERROR) << "Could not get the normalized path of "
@@ -266,7 +268,7 @@ void SandboxedExtensionUnpacker::Start() {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(
-            &SandboxedExtensionUnpacker::StartProcessOnIOThread,
+            &SandboxedUnpacker::StartProcessOnIOThread,
             this,
             link_free_crx_path));
   } else {
@@ -282,16 +284,15 @@ void SandboxedExtensionUnpacker::Start() {
   }
 }
 
-SandboxedExtensionUnpacker::~SandboxedExtensionUnpacker() {
+SandboxedUnpacker::~SandboxedUnpacker() {
   base::FileUtilProxy::Delete(
       BrowserThread::GetMessageLoopProxyForThread(thread_identifier_),
       temp_dir_.Take(), true, base::FileUtilProxy::StatusCallback());
 }
 
-bool SandboxedExtensionUnpacker::OnMessageReceived(
-    const IPC::Message& message) {
+bool SandboxedUnpacker::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(SandboxedExtensionUnpacker, message)
+  IPC_BEGIN_MESSAGE_MAP(SandboxedUnpacker, message)
     IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_UnpackExtension_Succeeded,
                         OnUnpackExtensionSucceeded)
     IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_UnpackExtension_Failed,
@@ -301,7 +302,7 @@ bool SandboxedExtensionUnpacker::OnMessageReceived(
   return handled;
 }
 
-void SandboxedExtensionUnpacker::OnProcessCrashed(int exit_code) {
+void SandboxedUnpacker::OnProcessCrashed(int exit_code) {
   // Don't report crashes if they happen after we got a response.
   if (got_response_)
     return;
@@ -314,8 +315,7 @@ void SandboxedExtensionUnpacker::OnProcessCrashed(int exit_code) {
          ASCIIToUTF16("UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL")));
 }
 
-void SandboxedExtensionUnpacker::StartProcessOnIOThread(
-    const FilePath& temp_crx_path) {
+void SandboxedUnpacker::StartProcessOnIOThread(const FilePath& temp_crx_path) {
   UtilityProcessHost* host = UtilityProcessHost::Create(
       this, thread_identifier_);
   // Grant the subprocess access to the entire subdir the extension file is
@@ -326,7 +326,7 @@ void SandboxedExtensionUnpacker::StartProcessOnIOThread(
           temp_crx_path, extension_id_, location_, creation_flags_));
 }
 
-void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
+void SandboxedUnpacker::OnUnpackExtensionSucceeded(
     const DictionaryValue& manifest) {
   // Skip check for unittests.
   if (thread_identifier_ != BrowserThread::ID_COUNT)
@@ -382,8 +382,7 @@ void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
   ReportSuccess(manifest);
 }
 
-void SandboxedExtensionUnpacker::OnUnpackExtensionFailed(
-    const string16& error) {
+void SandboxedUnpacker::OnUnpackExtensionFailed(const string16& error) {
   CHECK(BrowserThread::CurrentlyOn(thread_identifier_));
   got_response_ = true;
   ReportFailure(
@@ -393,7 +392,7 @@ void SandboxedExtensionUnpacker::OnUnpackExtensionFailed(
            error));
 }
 
-bool SandboxedExtensionUnpacker::ValidateSignature() {
+bool SandboxedUnpacker::ValidateSignature() {
   ScopedStdioHandle file(file_util::OpenFile(crx_path_, "rb"));
 
   if (!file.get()) {
@@ -556,8 +555,8 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
   return true;
 }
 
-void SandboxedExtensionUnpacker::ReportFailure(FailureReason reason,
-                                               const string16& error) {
+void SandboxedUnpacker::ReportFailure(FailureReason reason,
+                                      const string16& error) {
   UMA_HISTOGRAM_ENUMERATION("Extensions.SandboxUnpackFailureReason",
                             reason, NUM_FAILURE_REASONS);
   UMA_HISTOGRAM_TIMES("Extensions.SandboxUnpackFailureTime",
@@ -566,7 +565,7 @@ void SandboxedExtensionUnpacker::ReportFailure(FailureReason reason,
   client_->OnUnpackFailure(error);
 }
 
-void SandboxedExtensionUnpacker::ReportSuccess(
+void SandboxedUnpacker::ReportSuccess(
     const DictionaryValue& original_manifest) {
   UMA_HISTOGRAM_COUNTS("Extensions.SandboxUnpackSuccess", 1);
 
@@ -581,7 +580,7 @@ void SandboxedExtensionUnpacker::ReportSuccess(
   extension_ = NULL;
 }
 
-DictionaryValue* SandboxedExtensionUnpacker::RewriteManifestFile(
+DictionaryValue* SandboxedUnpacker::RewriteManifestFile(
     const DictionaryValue& manifest) {
   // Add the public key extracted earlier to the parsed manifest and overwrite
   // the original manifest. We do this to ensure the manifest doesn't contain an
@@ -618,7 +617,7 @@ DictionaryValue* SandboxedExtensionUnpacker::RewriteManifestFile(
   return final_manifest.release();
 }
 
-bool SandboxedExtensionUnpacker::RewriteImageFiles() {
+bool SandboxedUnpacker::RewriteImageFiles() {
   ExtensionUnpacker::DecodedImages images;
   if (!ExtensionUnpacker::ReadImagesFromFile(temp_dir_.path(), &images)) {
     // Couldn't read image data from disk.
@@ -713,7 +712,7 @@ bool SandboxedExtensionUnpacker::RewriteImageFiles() {
   return true;
 }
 
-bool SandboxedExtensionUnpacker::RewriteCatalogFiles() {
+bool SandboxedUnpacker::RewriteCatalogFiles() {
   DictionaryValue catalogs;
   if (!ExtensionUnpacker::ReadMessageCatalogsFromFile(temp_dir_.path(),
                                                       &catalogs)) {
@@ -785,3 +784,5 @@ bool SandboxedExtensionUnpacker::RewriteCatalogFiles() {
 
   return true;
 }
+
+}  // namespace extensions

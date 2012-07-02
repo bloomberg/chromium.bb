@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
+#include "chrome/browser/extensions/sandboxed_unpacker.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -22,6 +22,7 @@
 #include "content/public/browser/notification_service.h"
 
 using extensions::Extension;
+using extensions::SandboxedUnpacker;
 
 namespace chromeos {
 
@@ -30,7 +31,8 @@ typedef base::Callback<void(
     Profile*,
     const FilePath&)> UnpackCallback;
 
-class ScreensaverUnpackerClient : public SandboxedExtensionUnpackerClient {
+class ScreensaverUnpackerClient
+    : public extensions::SandboxedUnpackerClient {
  public:
   explicit ScreensaverUnpackerClient(const UnpackCallback& unpacker_callback)
       : unpack_callback_(unpacker_callback) {}
@@ -141,8 +143,8 @@ void KioskModeScreensaver::ScreensaverPathCallback(
   if (screensaver_crx.empty())
     return;
 
-  scoped_refptr<SandboxedExtensionUnpacker> screensaver_unpacker(
-      new SandboxedExtensionUnpacker(
+  scoped_refptr<SandboxedUnpacker> screensaver_unpacker(
+      new SandboxedUnpacker(
           screensaver_crx,
           true,
           Extension::COMPONENT,
@@ -156,7 +158,7 @@ void KioskModeScreensaver::ScreensaverPathCallback(
       content::BrowserThread::FILE,
       FROM_HERE,
       base::Bind(
-          &SandboxedExtensionUnpacker::Start, screensaver_unpacker.get()));
+          &SandboxedUnpacker::Start, screensaver_unpacker.get()));
 }
 
 void KioskModeScreensaver::SetupScreensaver(

@@ -10,7 +10,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
+#include "chrome/browser/extensions/sandboxed_unpacker.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -24,7 +24,6 @@ namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
 
 using content::BrowserThread;
-using extensions::Extension;
 using testing::_;
 using testing::Invoke;
 
@@ -33,14 +32,15 @@ namespace {
 void OnUnpackSuccess(const FilePath& temp_dir,
                      const FilePath& extension_root,
                      const DictionaryValue* original_manifest,
-                     const Extension* extension) {
+                     const extensions::Extension* extension) {
   // Don't delete temp_dir here, we need to do some post op checking.
 }
 
 }  // namespace
 
-class MockSandboxedExtensionUnpackerClient
-    : public SandboxedExtensionUnpackerClient {
+namespace extensions {
+
+class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
  public:
   MOCK_METHOD4(OnUnpackSuccess,
                void(const FilePath& temp_dir,
@@ -57,22 +57,22 @@ class MockSandboxedExtensionUnpackerClient
   }
 
  protected:
-  virtual ~MockSandboxedExtensionUnpackerClient() {}
+  virtual ~MockSandboxedUnpackerClient() {}
 };
 
-class SandboxedExtensionUnpackerTest : public testing::Test {
+class SandboxedUnpackerTest : public testing::Test {
  public:
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_thread_.reset(new content::TestBrowserThread(BrowserThread::FILE,
                                                       &loop_));
     // It will delete itself.
-    client_ = new MockSandboxedExtensionUnpackerClient;
+    client_ = new MockSandboxedUnpackerClient;
     client_->DelegateToFake();
   }
 
   virtual void TearDown() {
-    // Need to destruct SandboxedExtensionUnpacker before the message loop since
+    // Need to destruct SandboxedUnpacker before the message loop since
     // it posts a task to it.
     sandboxed_unpacker_ = NULL;
     loop_.RunAllPending();
@@ -99,14 +99,14 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
 
     // Build a temp area where the extension will be unpacked.
     temp_path_ =
-        temp_dir_.path().AppendASCII("sandboxed_extension_unpacker_test_Temp");
+        temp_dir_.path().AppendASCII("sandboxed_unpacker_test_Temp");
     ASSERT_TRUE(file_util::CreateDirectory(temp_path_));
 
     sandboxed_unpacker_ =
-        new SandboxedExtensionUnpacker(crx_path, false, Extension::INTERNAL,
-                                       Extension::NO_FLAGS, client_);
+        new SandboxedUnpacker(crx_path, false, Extension::INTERNAL,
+                              Extension::NO_FLAGS, client_);
 
-    // Hack since SandboxedExtensionUnpacker gets its background thread id from
+    // Hack since SandboxedUnpacker gets its background thread id from
     // the Start call, but we don't call it here.
     sandboxed_unpacker_->thread_identifier_ = BrowserThread::FILE;
     EXPECT_TRUE(PrepareUnpackerEnv());
@@ -160,14 +160,14 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
  protected:
   ScopedTempDir temp_dir_;
   FilePath temp_path_;
-  MockSandboxedExtensionUnpackerClient* client_;
+  MockSandboxedUnpackerClient* client_;
   scoped_ptr<ExtensionUnpacker> unpacker_;
-  scoped_refptr<SandboxedExtensionUnpacker> sandboxed_unpacker_;
+  scoped_refptr<SandboxedUnpacker> sandboxed_unpacker_;
   MessageLoop loop_;
   scoped_ptr<content::TestBrowserThread> file_thread_;
 };
 
-TEST_F(SandboxedExtensionUnpackerTest, NoCatalogsSuccess) {
+TEST_F(SandboxedUnpackerTest, NoCatalogsSuccess) {
   EXPECT_CALL(*client_, OnUnpackSuccess(_, _, _, _));
   EXPECT_CALL(*client_, OnUnpackFailure(_)).Times(0);
 
@@ -189,7 +189,7 @@ TEST_F(SandboxedExtensionUnpackerTest, NoCatalogsSuccess) {
   ASSERT_TRUE(TempFilesRemoved());
 }
 
-TEST_F(SandboxedExtensionUnpackerTest, WithCatalogsSuccess) {
+TEST_F(SandboxedUnpackerTest, WithCatalogsSuccess) {
   EXPECT_CALL(*client_, OnUnpackSuccess(_, _, _, _));
   EXPECT_CALL(*client_, OnUnpackFailure(_)).Times(0);
 
@@ -221,3 +221,5 @@ TEST_F(SandboxedExtensionUnpackerTest, WithCatalogsSuccess) {
 
   ASSERT_TRUE(TempFilesRemoved());
 }
+
+}  // namespace extensions

@@ -857,7 +857,7 @@
    fun:_ZN16ChildProcessHost13CreateChannelEv
    fun:_ZN18UtilityProcessHost12StartProcessERK8FilePath
    fun:_ZN18UtilityProcessHost22StartExtensionUnpackerERK8FilePath
-   fun:_ZN26SandboxedExtensionUnpacker22StartProcessOnIOThreadERK8FilePath
+   fun:_ZN26SandboxedUnpacker22StartProcessOnIOThreadERK8FilePath
 }
 {
    bug_53742_a

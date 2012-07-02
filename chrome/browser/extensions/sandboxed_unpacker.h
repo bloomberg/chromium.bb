@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_SANDBOXED_EXTENSION_UNPACKER_H_
-#define CHROME_BROWSER_EXTENSIONS_SANDBOXED_EXTENSION_UNPACKER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_SANDBOXED_UNPACKER_H_
+#define CHROME_BROWSER_EXTENSIONS_SANDBOXED_UNPACKER_H_
 #pragma once
 
 #include <string>
@@ -19,8 +19,10 @@ namespace base {
 class DictionaryValue;
 }
 
-class SandboxedExtensionUnpackerClient
-    : public base::RefCountedThreadSafe<SandboxedExtensionUnpackerClient> {
+namespace extensions {
+
+class SandboxedUnpackerClient
+    : public base::RefCountedThreadSafe<SandboxedUnpackerClient> {
  public:
   // temp_dir - A temporary directory containing the results of the extension
   // unpacking. The client is responsible for deleting this directory.
@@ -39,12 +41,12 @@ class SandboxedExtensionUnpackerClient
   virtual void OnUnpackFailure(const string16& error) = 0;
 
  protected:
-  friend class base::RefCountedThreadSafe<SandboxedExtensionUnpackerClient>;
+  friend class base::RefCountedThreadSafe<SandboxedUnpackerClient>;
 
-  virtual ~SandboxedExtensionUnpackerClient() {}
+  virtual ~SandboxedUnpackerClient() {}
 };
 
-// SandboxedExtensionUnpacker unpacks extensions from the CRX format into a
+// SandboxedUnpacker unpacks extensions from the CRX format into a
 // directory. This is done in a sandboxed subprocess to protect the browser
 // process from parsing complex formats like JPEG or JSON from untrusted
 // sources.
@@ -65,17 +67,17 @@ class SandboxedExtensionUnpackerClient
 //
 //
 // NOTE: This class should only be used on the file thread.
-class SandboxedExtensionUnpacker : public content::UtilityProcessHostClient {
+class SandboxedUnpacker : public content::UtilityProcessHostClient {
  public:
 
   // Unpacks the extension in |crx_path| into a temporary directory and calls
   // |client| with the result. If |run_out_of_process| is provided, unpacking
   // is done in a sandboxed subprocess. Otherwise, it is done in-process.
-  SandboxedExtensionUnpacker(const FilePath& crx_path,
+  SandboxedUnpacker(const FilePath& crx_path,
                              bool run_out_of_process,
                              extensions::Extension::Location location,
                              int creation_flags,
-                             SandboxedExtensionUnpackerClient* client);
+                             SandboxedUnpackerClient* client);
 
   // Start unpacking the extension. The client is called with the results.
   void Start();
@@ -87,25 +89,25 @@ class SandboxedExtensionUnpacker : public content::UtilityProcessHostClient {
   // take a failure reason as an argument, and put it in histogram
   // Extensions.SandboxUnpackFailureReason.
   enum FailureReason {
-    // SandboxedExtensionUnpacker::CreateTempDirectory()
+    // SandboxedUnpacker::CreateTempDirectory()
     COULD_NOT_GET_TEMP_DIRECTORY,
     COULD_NOT_CREATE_TEMP_DIRECTORY,
 
-    // SandboxedExtensionUnpacker::Start()
+    // SandboxedUnpacker::Start()
     FAILED_TO_COPY_EXTENSION_FILE_TO_TEMP_DIRECTORY,
     COULD_NOT_GET_SANDBOX_FRIENDLY_PATH,
 
-    // SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded()
+    // SandboxedUnpacker::OnUnpackExtensionSucceeded()
     COULD_NOT_LOCALIZE_EXTENSION,
     INVALID_MANIFEST,
 
-    // SandboxedExtensionUnpacker::OnUnpackExtensionFailed()
+    // SandboxedUnpacker::OnUnpackExtensionFailed()
     UNPACKER_CLIENT_FAILED,
 
-    // SandboxedExtensionUnpacker::OnProcessCrashed()
+    // SandboxedUnpacker::OnProcessCrashed()
     UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL,
 
-    // SandboxedExtensionUnpacker::ValidateSignature()
+    // SandboxedUnpacker::ValidateSignature()
     CRX_FILE_NOT_READABLE,
     CRX_HEADER_INVALID,
     CRX_MAGIC_NUMBER_INVALID,
@@ -118,11 +120,11 @@ class SandboxedExtensionUnpacker : public content::UtilityProcessHostClient {
     CRX_SIGNATURE_VERIFICATION_INITIALIZATION_FAILED,
     CRX_SIGNATURE_VERIFICATION_FAILED,
 
-    // SandboxedExtensionUnpacker::RewriteManifestFile()
+    // SandboxedUnpacker::RewriteManifestFile()
     ERROR_SERIALIZING_MANIFEST_JSON,
     ERROR_SAVING_MANIFEST_JSON,
 
-    // SandboxedExtensionUnpacker::RewriteImageFiles()
+    // SandboxedUnpacker::RewriteImageFiles()
     COULD_NOT_READ_IMAGE_DATA_FROM_DISK,
     DECODED_IMAGES_DO_NOT_MATCH_THE_MANIFEST,
     INVALID_PATH_FOR_BROWSER_IMAGE,
@@ -131,7 +133,7 @@ class SandboxedExtensionUnpacker : public content::UtilityProcessHostClient {
     ERROR_RE_ENCODING_THEME_IMAGE,
     ERROR_SAVING_THEME_IMAGE,
 
-    // SandboxedExtensionUnpacker::RewriteCatalogFiles()
+    // SandboxedUnpacker::RewriteCatalogFiles()
     COULD_NOT_READ_CATALOG_DATA_FROM_DISK,
     INVALID_CATALOG_DATA,
     INVALID_PATH_FOR_CATALOG,
@@ -142,9 +144,9 @@ class SandboxedExtensionUnpacker : public content::UtilityProcessHostClient {
   };
 
   friend class ProcessHostClient;
-  friend class SandboxedExtensionUnpackerTest;
+  friend class SandboxedUnpackerTest;
 
-  virtual ~SandboxedExtensionUnpacker();
+  virtual ~SandboxedUnpacker();
 
   // Set |temp_dir_| as a temporary directory to unpack the extension in.
   // Return true on success.
@@ -195,7 +197,7 @@ class SandboxedExtensionUnpacker : public content::UtilityProcessHostClient {
   bool run_out_of_process_;
 
   // Our client.
-  scoped_refptr<SandboxedExtensionUnpackerClient> client_;
+  scoped_refptr<SandboxedUnpackerClient> client_;
 
   // A temporary directory to use for unpacking.
   ScopedTempDir temp_dir_;
@@ -227,4 +229,6 @@ class SandboxedExtensionUnpacker : public content::UtilityProcessHostClient {
   int creation_flags_;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_SANDBOXED_EXTENSION_UNPACKER_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_SANDBOXED_UNPACKER_H_

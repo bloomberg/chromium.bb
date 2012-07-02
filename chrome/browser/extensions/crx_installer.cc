@@ -141,8 +141,8 @@ CrxInstaller::~CrxInstaller() {
 void CrxInstaller::InstallCrx(const FilePath& source_file) {
   source_file_ = source_file;
 
-  scoped_refptr<SandboxedExtensionUnpacker> unpacker(
-      new SandboxedExtensionUnpacker(
+  scoped_refptr<extensions::SandboxedUnpacker> unpacker(
+      new extensions::SandboxedUnpacker(
           source_file,
           content::ResourceDispatcherHost::Get() != NULL,
           install_source_,
@@ -152,7 +152,7 @@ void CrxInstaller::InstallCrx(const FilePath& source_file) {
   if (!BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
           base::Bind(
-              &SandboxedExtensionUnpacker::Start, unpacker.get())))
+              &extensions::SandboxedUnpacker::Start, unpacker.get())))
     NOTREACHED();
 }
 
@@ -237,7 +237,7 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
   // The checks below are skipped for themes and external installs.
   // TODO(pamg): After ManagementPolicy refactoring is complete, remove this
   // and other uses of install_source_ that are no longer needed now that the
-  // SandboxedExtensionUnpacker sets extension->location.
+  // SandboxedUnpacker sets extension->location.
   if (extension->is_theme() || Extension::IsExternalLocation(install_source_))
     return CrxInstallerError();
 
