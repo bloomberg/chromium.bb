@@ -86,8 +86,8 @@ else:
 
 # The libraries used by both the PPAPI plugin.  They and the PPAPI specific
 # libraries must come before OS libraries, because they may generate references
-# that are resolved by the OS libraries.  E.g., libplatform.a contains
-# references to symbols from libcrypto.so.
+# that are resolved by the OS libraries.  E.g., libimc.a contains
+# references to symbols from librt.so.
 common_libs = [
     'nonnacl_util',
     'nonnacl_srpc',
@@ -111,7 +111,7 @@ common_libs = [
 
 os_libs = [ ]
 if plugin_env.Bit('linux'):
-  os_libs += ['dl', 'crypto', 'rt']
+  os_libs += ['dl', 'rt']
 
 if plugin_env.Bit('windows'):
   os_libs += ['gdi32', 'user32', ]
