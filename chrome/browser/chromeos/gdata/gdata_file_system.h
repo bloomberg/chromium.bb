@@ -1060,11 +1060,13 @@ class GDataFileSystem : public GDataFileSystemInterface,
       base::PlatformFileError error,
       scoped_ptr<UploadFileInfo> upload_file_info);
 
-  // Kicks off file upload once it receives |upload_file_info|.
+  // Kicks off file upload once it receives |file_size|.
   void StartFileUploadOnUIThread(
+      const FilePath& local_file,
+      const FilePath& remote_dest_file,
       const FileOperationCallback& callback,
       base::PlatformFileError* error,
-      UploadFileInfo* upload_file_info);
+      int64* file_size);
 
   // Cache intermediate callbacks, that run on calling thread, for above cache
   // tasks that were run on blocking pool.

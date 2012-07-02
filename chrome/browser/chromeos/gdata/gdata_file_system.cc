@@ -315,38 +315,18 @@ void SaveFeedOnBlockingPoolForDebugging(
   }
 }
 
-// Reads properties of |local_file| and fills in values of UploadFileInfo.
-// TODO(satorux,achuith): We should just get the file size in this function.
-// The rest of the work can be done on UI/IO thread.
-void CreateUploadFileInfoOnBlockingPool(
+// Gets the file size of |local_file|.
+void GetLocalFileSizeOnBlockingPool(
     const FilePath& local_file,
-    const FilePath& remote_dest_file,
     base::PlatformFileError* error,
-    UploadFileInfo* upload_file_info) {
+    int64* file_size) {
   DCHECK(error);
-  DCHECK(upload_file_info);
+  DCHECK(file_size);
 
-  int64 file_size = 0;
-  if (!file_util::GetFileSize(local_file, &file_size)) {
-    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
-    return;
-  }
-
-  upload_file_info->file_path = local_file;
-  upload_file_info->file_size = file_size;
-  // Extract the final path from DownloadItem.
-  upload_file_info->gdata_path = remote_dest_file;
-  // Use the file name as the title.
-  upload_file_info->title = remote_dest_file.BaseName().value();
-  upload_file_info->content_length = file_size;
-  upload_file_info->all_bytes_present = true;
-  std::string mime_type;
-  if (!net::GetMimeTypeFromExtension(local_file.Extension(),
-                                     &upload_file_info->content_type)) {
-    upload_file_info->content_type= kMimeTypeOctetStream;
-  }
-
-  *error = base::PLATFORM_FILE_OK;
+  *file_size = 0;
+  *error = file_util::GetFileSize(local_file, file_size) ?
+      base::PLATFORM_FILE_OK :
+      base::PLATFORM_FILE_ERROR_NOT_FOUND;
 }
 
 // Checks if a local file at |local_file_path| is a JSON file referencing a
@@ -1103,31 +1083,34 @@ void GDataFileSystem::TransferRegularFile(
 
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
-  UploadFileInfo* upload_file_info = new UploadFileInfo;
+  int64* file_size = new int64;
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
       sequence_token_,
-      base::Bind(&CreateUploadFileInfoOnBlockingPool,
+      base::Bind(&GetLocalFileSizeOnBlockingPool,
                  local_file_path,
-                 remote_dest_file_path,
                  error,
-                 upload_file_info),
+                 file_size),
       base::Bind(&GDataFileSystem::StartFileUploadOnUIThread,
                  ui_weak_ptr_,
+                 local_file_path,
+                 remote_dest_file_path,
                  callback,
-                 error,
-                 upload_file_info));
+                 base::Owned(error),
+                 base::Owned(file_size)));
 }
 
 void GDataFileSystem::StartFileUploadOnUIThread(
+    const FilePath& local_file,
+    const FilePath& remote_dest_file,
     const FileOperationCallback& callback,
     base::PlatformFileError* error,
-    UploadFileInfo* upload_file_info) {
+    int64* file_size) {
   // This method needs to run on the UI thread as required by
-  // GDataUploader::UploadFile().
+  // GDataUploader::UploadNewFile().
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(error);
-  DCHECK(upload_file_info);
+  DCHECK(file_size);
 
   if (*error != base::PLATFORM_FILE_OK) {
     if (!callback.is_null())
@@ -1136,12 +1119,27 @@ void GDataFileSystem::StartFileUploadOnUIThread(
     return;
   }
 
+  // Fill in values of UploadFileInfo.
+  scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
+  upload_file_info->file_path = local_file;
+  upload_file_info->file_size = *file_size;
+  upload_file_info->gdata_path = remote_dest_file;
+  // Use the file name as the title.
+  upload_file_info->title = remote_dest_file.BaseName().value();
+  upload_file_info->content_length = *file_size;
+  upload_file_info->all_bytes_present = true;
+  std::string mime_type;
+  if (!net::GetMimeTypeFromExtension(local_file.Extension(),
+                                     &upload_file_info->content_type)) {
+    upload_file_info->content_type = kMimeTypeOctetStream;
+  }
+
   upload_file_info->completion_callback =
       base::Bind(&GDataFileSystem::OnTransferCompleted,
                  ui_weak_ptr_,
                  callback);
 
-  uploader_->UploadNewFile(scoped_ptr<UploadFileInfo>(upload_file_info));
+  uploader_->UploadNewFile(upload_file_info.Pass());
 }
 
 void GDataFileSystem::OnTransferCompleted(
