@@ -5642,7 +5642,9 @@ class _GTestTextTestResult(unittest._TextTestResult):
     if sys.version_info[:2] <= (2, 4):
       return '%s.%s' % (unittest._strclass(test.__class__),
                         test._TestCase__testMethodName)
-    return '%s.%s' % (unittest._strclass(test.__class__), test._testMethodName)
+    return '%s.%s.%s' % (test.__class__.__module__,
+                         test.__class__.__name__,
+                         test._testMethodName)
 
   def getDescription(self, test):
     return '%s: "%s"' % (self._GetTestURI(test), test.shortDescription())
