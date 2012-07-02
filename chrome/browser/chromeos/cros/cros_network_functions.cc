@@ -313,6 +313,13 @@ bool ParseIPConfig(const std::string& device_path,
 
 }  // namespace
 
+SMS::SMS()
+    : validity(0),
+      msgclass(0) {
+}
+
+SMS::~SMS() {}
+
 bool CrosActivateCellularModem(const std::string& service_path,
                                const std::string& carrier) {
   return DBusThreadManager::Get()->GetFlimflamServiceClient()->
@@ -389,9 +396,8 @@ CrosNetworkWatcher* CrosMonitorCellularDataPlan(
 }
 
 CrosNetworkWatcher* CrosMonitorSMS(const std::string& modem_device_path,
-                                   MonitorSMSCallback callback,
-                                   void* object) {
-  return new SMSWatcher(modem_device_path, callback, object);
+                                   MonitorSMSCallback callback) {
+  return new SMSWatcher(modem_device_path, callback);
 }
 
 void CrosRequestNetworkServiceConnect(

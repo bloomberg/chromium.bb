@@ -46,8 +46,7 @@ class SMSWatcher : public CrosNetworkWatcher {
   class WatcherBase;
 
   SMSWatcher(const std::string& modem_device_path,
-             MonitorSMSCallback callback,
-             void* object);
+             MonitorSMSCallback callback);
   virtual ~SMSWatcher();
 
  private:
@@ -58,7 +57,6 @@ class SMSWatcher : public CrosNetworkWatcher {
   base::WeakPtrFactory<SMSWatcher> weak_ptr_factory_;
   std::string device_path_;
   MonitorSMSCallback callback_;
-  void* object_;
   scoped_ptr<WatcherBase> watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(SMSWatcher);

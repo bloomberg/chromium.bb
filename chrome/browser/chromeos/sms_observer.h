@@ -29,11 +29,7 @@ class SmsObserver : public NetworkLibrary::NetworkManagerObserver {
   // NetworkLibrary:NetworkManagerObserver implementation:
   virtual void OnNetworkManagerChanged(NetworkLibrary* obj) OVERRIDE;
 
-  static void StaticCallback(void* object,
-                             const char* modem_device_path,
-                             const SMS* message);
-
-  void OnNewMessage(const char* modem_device_path, const SMS* message);
+  void OnNewMessage(const std::string& modem_device_path, const SMS& message);
 
   void UpdateObservers(NetworkLibrary* library);
   void DisconnectAll();

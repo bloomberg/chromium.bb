@@ -71,12 +71,10 @@ class SMSWatcher::WatcherBase {
  public:
   WatcherBase(const std::string& device_path,
               MonitorSMSCallback callback,
-              void* object,
               const std::string& dbus_connection,
               const dbus::ObjectPath& object_path) :
       device_path_(device_path),
       callback_(callback),
-      object_(object),
       dbus_connection_(dbus_connection),
       object_path_(object_path) {}
 
@@ -85,7 +83,6 @@ class SMSWatcher::WatcherBase {
  protected:
   const std::string device_path_;
   MonitorSMSCallback callback_;
-  void* object_;
   const std::string dbus_connection_;
   const dbus::ObjectPath object_path_;
 
@@ -98,11 +95,9 @@ class GsmWatcher : public SMSWatcher::WatcherBase {
  public:
   GsmWatcher(const std::string& device_path,
              MonitorSMSCallback callback,
-             void* object,
              const std::string& dbus_connection,
              const dbus::ObjectPath& object_path)
-      : WatcherBase(device_path, callback, object, dbus_connection,
-                    object_path),
+      : WatcherBase(device_path, callback, dbus_connection, object_path),
         weak_ptr_factory_(this) {
     DBusThreadManager::Get()->GetGsmSMSClient()->SetSmsReceivedHandler(
         dbus_connection_,
@@ -137,19 +132,13 @@ class GsmWatcher : public SMSWatcher::WatcherBase {
   void RunCallbackWithSMS(const base::DictionaryValue& sms_dictionary) {
     SMS sms;
 
-    std::string number;
     if (!sms_dictionary.GetStringWithoutPathExpansion(SMSWatcher::kNumberKey,
-                                                      &number)) {
+                                                      &sms.number))
       LOG(WARNING) << "SMS did not contain a number";
-    }
-    sms.number = number.c_str();
 
-    std::string text;
     if (!sms_dictionary.GetStringWithoutPathExpansion(SMSWatcher::kTextKey,
-                                                      &text)) {
+                                                      &sms.text))
       LOG(WARNING) << "SMS did not contain message text";
-    }
-    sms.text = text.c_str();
 
     std::string sms_timestamp;
     if (sms_dictionary.GetStringWithoutPathExpansion(SMSWatcher::kTimestampKey,
@@ -160,13 +149,8 @@ class GsmWatcher : public SMSWatcher::WatcherBase {
       sms.timestamp = base::Time();
     }
 
-    std::string smsc;
-    if (!sms_dictionary.GetStringWithoutPathExpansion(SMSWatcher::kSmscKey,
-                                                      &smsc)) {
-      sms.smsc = NULL;
-    } else {
-      sms.smsc = smsc.c_str();
-    }
+    sms_dictionary.GetStringWithoutPathExpansion(SMSWatcher::kSmscKey,
+                                                 &sms.smsc);
 
     double validity = 0;
     if (!sms_dictionary.GetDoubleWithoutPathExpansion(SMSWatcher::kValidityKey,
@@ -182,7 +166,7 @@ class GsmWatcher : public SMSWatcher::WatcherBase {
     }
     sms.msgclass = msgclass;
 
-    callback_(object_, device_path_.c_str(), &sms);
+    callback_.Run(device_path_, sms);
   }
 
   // Callback for Get() method from ModemManager.Modem.Gsm.SMS
@@ -235,11 +219,9 @@ class ModemManager1Watcher : public SMSWatcher::WatcherBase {
  public:
   ModemManager1Watcher(const std::string& device_path,
                        MonitorSMSCallback callback,
-                       void *object,
                        const std::string& dbus_connection,
                        const dbus::ObjectPath& object_path)
-      : WatcherBase(device_path, callback, object, dbus_connection,
-                    object_path),
+      : WatcherBase(device_path, callback, dbus_connection, object_path),
         weak_ptr_factory_(this),
         deleting_messages_(false),
         retrieving_messages_(false) {
@@ -324,19 +306,13 @@ class ModemManager1Watcher : public SMSWatcher::WatcherBase {
   void RunCallbackWithSMS(const base::DictionaryValue& sms_dictionary) {
     SMS sms;
 
-    std::string number;
     if (!sms_dictionary.GetStringWithoutPathExpansion(
-            SMSWatcher::kModemManager1NumberKey, &number)) {
+            SMSWatcher::kModemManager1NumberKey, &sms.number))
       LOG(WARNING) << "SMS did not contain a number";
-    }
-    sms.number = number.c_str();
 
-    std::string text;
     if (!sms_dictionary.GetStringWithoutPathExpansion(
-            SMSWatcher::kModemManager1TextKey, &text)) {
+            SMSWatcher::kModemManager1TextKey, &sms.text))
       LOG(WARNING) << "SMS did not contain message text";
-    }
-    sms.text = text.c_str();
 
     std::string sms_timestamp;
     if (sms_dictionary.GetStringWithoutPathExpansion(
@@ -347,13 +323,8 @@ class ModemManager1Watcher : public SMSWatcher::WatcherBase {
       sms.timestamp = base::Time();
     }
 
-    std::string smsc;
-    if (!sms_dictionary.GetStringWithoutPathExpansion(
-            SMSWatcher::kModemManager1SmscKey, &smsc)) {
-      sms.smsc = NULL;
-    } else {
-      sms.smsc = smsc.c_str();
-    }
+    sms_dictionary.GetStringWithoutPathExpansion(
+        SMSWatcher::kModemManager1SmscKey, &sms.smsc);
 
     double validity = 0;
     if (!sms_dictionary.GetDoubleWithoutPathExpansion(
@@ -369,7 +340,7 @@ class ModemManager1Watcher : public SMSWatcher::WatcherBase {
     }
     sms.msgclass = msgclass;
 
-    callback_(object_, device_path_.c_str(), &sms);
+    callback_.Run(device_path_, sms);
   }
 
   void GetCallback(const base::DictionaryValue& dictionary) {
@@ -389,12 +360,10 @@ class ModemManager1Watcher : public SMSWatcher::WatcherBase {
 }  // namespace
 
 SMSWatcher::SMSWatcher(const std::string& modem_device_path,
-                       MonitorSMSCallback callback,
-                       void* object)
+                       MonitorSMSCallback callback)
     : weak_ptr_factory_(this),
       device_path_(modem_device_path),
-      callback_(callback),
-      object_(object) {
+      callback_(callback) {
   DBusThreadManager::Get()->GetFlimflamDeviceClient()->GetProperties(
       dbus::ObjectPath(modem_device_path),
       base::Bind(&SMSWatcher::DevicePropertiesCallback,
@@ -428,13 +397,11 @@ void SMSWatcher::DevicePropertiesCallback(
           0, sizeof(modemmanager::kModemManager1ServicePath) - 1,
           modemmanager::kModemManager1ServicePath) == 0) {
     watcher_.reset(
-        new ModemManager1Watcher(device_path_,
-                                 callback_, object_, dbus_connection,
+        new ModemManager1Watcher(device_path_, callback_, dbus_connection,
                                  dbus::ObjectPath(object_path_string)));
   } else {
     watcher_.reset(
-        new GsmWatcher(device_path_,
-                       callback_, object_, dbus_connection,
+        new GsmWatcher(device_path_, callback_, dbus_connection,
                        dbus::ObjectPath(object_path_string)));
   }
 }

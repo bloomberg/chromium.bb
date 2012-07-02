@@ -36,18 +36,19 @@ enum NetworkMethodErrorType {
 
 // Struct to represent a SMS.
 struct SMS {
+  SMS();
+  ~SMS();
   base::Time timestamp;
-  const char *number;
-  const char *text;
-  const char *smsc;  // optional; NULL if not present in message
-  int32 validity;  // optional; -1 if not present in message
-  int32 msgclass;  // optional; -1 if not present in message
+  std::string number;
+  std::string text;
+  std::string smsc;  // optional; empty if not present in message.
+  int32 validity;  // optional; -1 if not present in message.
+  int32 msgclass;  // optional; -1 if not present in message.
 };
 
 // Callback to be called when receiving a SMS.
-typedef void (*MonitorSMSCallback)(void* object,
-                                   const char* modem_device_path,
-                                   const SMS* message);
+typedef base::Callback<void(const std::string& modem_device_path,
+                            const SMS& message)> MonitorSMSCallback;
 
 // Callback for asynchronous getters.
 typedef base::Callback<void(
@@ -158,8 +159,7 @@ CrosNetworkWatcher* CrosMonitorCellularDataPlan(
 
 // Similar to MonitorNetworkManagerProperties for a specified network device.
 CrosNetworkWatcher* CrosMonitorSMS(const std::string& modem_device_path,
-                                   MonitorSMSCallback callback,
-                                   void* object);
+                                   MonitorSMSCallback callback);
 
 // Connects to the service with the |service_path|.
 // Service parameters such as authentication must already be configured.

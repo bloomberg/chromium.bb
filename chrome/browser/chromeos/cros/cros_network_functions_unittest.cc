@@ -205,15 +205,8 @@ class CrosNetworkFunctionsTest : public testing::Test {
                     const std::string& error_message));
 
   // Mock MonitorSMSCallback.
-  MOCK_METHOD3(MockMonitorSMSCallback, void(void* object,
-                                            const char* modem_device_path,
-                                            const SMS* message));
-  static void MockMonitorSMSCallbackThunk(void* object,
-                                          const char* modem_device_path,
-                                          const SMS* message) {
-    static_cast<CrosNetworkFunctionsTest*>(object)->MockMonitorSMSCallback(
-        object, modem_device_path, message);
-  }
+  MOCK_METHOD2(MockMonitorSMSCallback,
+               void(const std::string& modem_device_path, const SMS& message));
 
  protected:
   MockCashewClient* mock_cashew_client_;
@@ -492,7 +485,6 @@ TEST_F(CrosNetworkFunctionsTest, CrosMonitorSMS) {
   sms.validity = kValidity;
   sms.msgclass = kMsgclass;
 
-  void* object = this;
   const std::string modem_device_path = "/modem/device/path";
 
   // Set expectations.
@@ -510,7 +502,7 @@ TEST_F(CrosNetworkFunctionsTest, CrosMonitorSMS) {
       .WillOnce(SaveArg<2>(&list_callback));
 
   EXPECT_CALL(*this, MockMonitorSMSCallback(
-      object, StrEq(modem_device_path), Pointee(IsSMSEqualTo(sms)))).Times(2);
+      modem_device_path, IsSMSEqualTo(sms))).Times(2);
 
   GsmSMSClient::DeleteCallback delete_callback;
   EXPECT_CALL(*mock_gsm_sms_client_,
@@ -525,8 +517,8 @@ TEST_F(CrosNetworkFunctionsTest, CrosMonitorSMS) {
   // Start monitoring.
   CrosNetworkWatcher* watcher = CrosMonitorSMS(
       modem_device_path,
-      &CrosNetworkFunctionsTest::MockMonitorSMSCallbackThunk,
-      object);
+      base::Bind(&CrosNetworkFunctionsTest::MockMonitorSMSCallback,
+                 base::Unretained(this)));
   // Return GetProperties() result.
   get_properties_callback.Run(DBUS_METHOD_CALL_SUCCESS, device_properties);
   // Return List() result.

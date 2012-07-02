@@ -69,7 +69,9 @@ void SmsObserver::UpdateObservers(NetworkLibrary* library) {
     if (it_observer == observers_.end()) {
       VLOG(1) << "Add SMS monitor for " << device_path;
       CrosNetworkWatcher* watcher =
-          CrosMonitorSMS(device_path, &StaticCallback, this);
+          CrosMonitorSMS(device_path,
+                         base::Bind(&SmsObserver::OnNewMessage,
+                                    base::Unretained(this)));
       observers_.insert(ObserversMap::value_type(device_path, watcher));
     } else {
       VLOG(1) << "Already has SMS monitor for " << device_path;
@@ -94,25 +96,17 @@ void SmsObserver::OnNetworkManagerChanged(NetworkLibrary* library) {
   UpdateObservers(library);
 }
 
-// static
-void SmsObserver::StaticCallback(void* object,
-                                 const char* modem_device_path,
-                                 const SMS* message) {
-  SmsObserver* monitor = static_cast<SmsObserver*>(object);
-  monitor->OnNewMessage(modem_device_path, message);
-}
-
-void SmsObserver::OnNewMessage(const char* modem_device_path,
-                               const SMS* message) {
-  VLOG(1) << "New message notification from " << message->number
-          << " text: " << message->text;
+void SmsObserver::OnNewMessage(const std::string& modem_device_path,
+                               const SMS& message) {
+  VLOG(1) << "New message notification from " << message.number
+          << " text: " << message.text;
 
   // Don't show empty messages. Such messages most probably "Message Waiting
   // Indication" and it should be determined by data-coding-scheme,
   // see crosbug.com/27883. But this field is not exposed from libcros.
   // TODO(dpokuhin): when libcros refactoring done, implement check for
   // "Message Waiting Indication" to filter out such messages.
-  if (!*message->text)
+  if (message.text.empty())
     return;
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -122,17 +116,17 @@ void SmsObserver::OnNewMessage(const char* modem_device_path,
         "incoming _sms.chromeos",
         IDR_NOTIFICATION_SMS,
         l10n_util::GetStringFUTF16(
-            IDS_SMS_NOTIFICATION_TITLE, UTF8ToUTF16(message->number)));
+            IDS_SMS_NOTIFICATION_TITLE, UTF8ToUTF16(message.number)));
 
-    note.Show(UTF8ToUTF16(message->text), true, false);
+    note.Show(UTF8ToUTF16(message.text), true, false);
     return;
   }
 
   // Add an Ash SMS notification. TODO(stevenjb): Replace this code with
   // NetworkSmsHandler when fixed: crbug.com/133416.
   base::DictionaryValue dict;
-  dict.SetString(ash::kSmsNumberKey, message->number);
-  dict.SetString(ash::kSmsTextKey, message->text);
+  dict.SetString(ash::kSmsNumberKey, message.number);
+  dict.SetString(ash::kSmsTextKey, message.text);
   ash::Shell::GetInstance()->system_tray()->sms_observer()->AddMessage(dict);
 }
 
