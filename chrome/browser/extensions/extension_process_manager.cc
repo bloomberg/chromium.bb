@@ -487,7 +487,6 @@ void ExtensionProcessManager::OnShouldUnloadAck(
   ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
   if (host &&
       sequence_id == background_page_data_[extension_id].close_sequence_id) {
-    background_page_data_[extension_id].is_closing = true;
     host->render_view_host()->Send(new ExtensionMsg_Unload(extension_id));
   }
 }
@@ -502,6 +501,7 @@ void ExtensionProcessManager::OnUnloadAck(const std::string& extension_id) {
 
 void ExtensionProcessManager::CloseLazyBackgroundPageNow(
     const std::string& extension_id) {
+  background_page_data_[extension_id].is_closing = true;
   ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
   if (host)
     CloseBackgroundHost(host);
