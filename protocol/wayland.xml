@@ -342,7 +342,7 @@
     </request>
 
     <request name="set_selection">
-      <arg name="source" type="object" interface="wl_data_source"/>
+      <arg name="source" type="object" interface="wl_data_source" allow-null="true"/>
       <arg name="serial" type="uint"/>
     </request>
 
@@ -635,7 +635,7 @@
 	corner, relative to the old buffers upper left corner.
       </description>
 
-      <arg name="buffer" type="object" interface="wl_buffer"/>
+      <arg name="buffer" type="object" interface="wl_buffer" allow-null="true"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
     </request>
