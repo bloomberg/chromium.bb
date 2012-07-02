@@ -395,7 +395,7 @@ class DownloadManagerTest : public testing::Test {
     // WillRepeatedly as it may have to return true after this.
     if (DCHECK_IS_ON())
       EXPECT_CALL(item, IsPersisted())
-          .WillOnce(Return(false));
+          .WillRepeatedly(Return(false));
 
     EXPECT_CALL(item, SetDbHandle(db_handle));
     EXPECT_CALL(item, SetIsPersisted());

@@ -122,7 +122,7 @@ class CONTENT_EXPORT DownloadManagerImpl
 
  private:
   typedef std::set<content::DownloadItem*> DownloadSet;
-  typedef base::hash_map<int64, content::DownloadItem*> DownloadMap;
+  typedef base::hash_map<int32, content::DownloadItem*> DownloadMap;
 
   // For testing.
   friend class DownloadManagerTest;
@@ -147,12 +147,12 @@ class CONTENT_EXPORT DownloadManagerImpl
   content::DownloadId GetNextId();
 
   // Called on the FILE thread to check the existence of a downloaded file.
-  void CheckForFileRemovalOnFileThread(int64 db_handle, const FilePath& path);
+  void CheckForFileRemovalOnFileThread(int32 download_id, const FilePath& path);
 
   // Called on the UI thread if the FILE thread detects the removal of
   // the downloaded file. The UI thread updates the state of the file
   // and then notifies this update to the file's observer.
-  void OnFileRemovalDetected(int64 db_handle);
+  void OnFileRemovalDetected(int32 download_id);
 
   // Called back after a target path for the file to be downloaded to has been
   // determined, either automatically based on the suggested file name, or by
@@ -206,10 +206,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   // kept, as the DownloadManager's only job is to hold onto those
   // until destruction.
   //
-  // |history_downloads_| is map of all downloads in this browser context. The
-  // key is the handle returned by the history system, which is unique across
-  // sessions.
-  //
   // |active_downloads_| is a map of all downloads that are currently being
   // processed. The key is the ID assigned by the DownloadFileManager,
   // which is unique for the current session.
@@ -228,9 +224,10 @@ class CONTENT_EXPORT DownloadManagerImpl
   // handles in the history system.
 
   DownloadMap downloads_;
-  DownloadMap history_downloads_;
   DownloadMap active_downloads_;
   DownloadMap save_page_downloads_;
+
+  int history_size_;
 
   // True if the download manager has been initialized and requires a shutdown.
   bool shutdown_needed_;
