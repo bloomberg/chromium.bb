@@ -26,7 +26,13 @@ class OldDockedPanelBrowserTest : public OldBasePanelBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(OldDockedPanelBrowserTest, SqueezePanelsInDock) {
+// TODO(jennb): timing out on Windows after r10702045 (crbug 135510)
+#if defined(OS_WIN)
+#define MAYBE_SqueezePanelsInDock DISABLED_SqueezePanelsInDock
+#else
+#define MAYBE_SqueezePanelsInDock SqueezePanelsInDock
+#endif
+IN_PROC_BROWSER_TEST_F(OldDockedPanelBrowserTest, MAYBE_SqueezePanelsInDock) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
 
