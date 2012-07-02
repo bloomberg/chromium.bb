@@ -180,7 +180,8 @@ string16 GoogleURLTrackerInfoBarDelegate::GetButtonLabel(
 // Note that we have to initialize at least the NotificationSources explicitly
 // lest this not compile, because NotificationSource has no null constructor.
 GoogleURLTracker::MapEntry::MapEntry()
-    : navigation_controller_source(
+    : infobar(NULL),
+      navigation_controller_source(
           content::Source<content::NavigationController>(NULL)),
       tab_contents_source(content::Source<TabContents>(NULL)) {
   NOTREACHED();
