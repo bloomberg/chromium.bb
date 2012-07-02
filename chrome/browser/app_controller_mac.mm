@@ -615,9 +615,6 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   if (!parsed_command_line.HasSwitch(switches::kEnableExposeForTabs)) {
     [tabposeMenuItem_ setHidden:YES];
   }
-
-  // TODO(rsesek): Remove from trunk when Mstone-20 goes to stable.
-  confirm_quit::MigratePrefToLocalState();
 }
 
 // This is called after profiles have been loaded and preferences registered.

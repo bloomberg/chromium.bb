@@ -27,11 +27,6 @@ void RecordHistogram(ConfirmQuitMetric sample);
 
 // Registers the preference in app-wide local state.
 void RegisterLocalState(PrefService* local_state);
-// Registers the prererence in the old profile-specific preferences.
-void RegisterObsoleteUserPrefs(PrefService* user_prefs);
-
-// Migrates the obsolete profile-specific preference to local state.
-void MigratePrefToLocalState();
 
 }  // namespace confirm_quit
 

@@ -48,39 +48,6 @@ void RegisterLocalState(PrefService* local_state) {
   local_state->RegisterBooleanPref(prefs::kConfirmToQuitEnabled, false);
 }
 
-void RegisterObsoleteUserPrefs(PrefService* user_prefs) {
-  user_prefs->RegisterBooleanPref(prefs::kConfirmToQuitEnabled,
-                                  false,
-                                  PrefService::SYNCABLE_PREF);
-}
-
-void MigratePrefToLocalState() {
-  // If the preference has already been migrated, do nothing.
-  PrefService* local_state = g_browser_process->local_state();
-  if (local_state->HasPrefPath(prefs::kConfirmToQuitEnabled))
-    return;
-
-  DVLOG(1) << "Migrating kConfirmToQuitEnabled to local state";
-
-  bool enable = false;
-
-  // Loop over each profile and see if any have confirm to quit enabled.
-  std::vector<Profile*> profiles =
-      g_browser_process->profile_manager()->GetLoadedProfiles();
-  for (std::vector<Profile*>::iterator it = profiles.begin();
-       it != profiles.end();
-       ++it) {
-    PrefService* prefs = (*it)->GetPrefs();
-    enable |= prefs->HasPrefPath(prefs::kConfirmToQuitEnabled) &&
-              prefs->GetBoolean(prefs::kConfirmToQuitEnabled);
-    prefs->ClearPref(prefs::kConfirmToQuitEnabled);
-  }
-
-  // Set the new preference, even if it's not enabled so that this logic does
-  // not run more than once.
-  local_state->SetBoolean(prefs::kConfirmToQuitEnabled, enable);
-}
-
 }  // namespace confirm_quit
 
 // Custom Content View /////////////////////////////////////////////////////////

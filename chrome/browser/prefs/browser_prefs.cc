@@ -249,7 +249,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #endif
 
 #if defined(OS_MACOSX)
-  confirm_quit::RegisterObsoleteUserPrefs(user_prefs);
   PresentationModePrefs::RegisterUserPrefs(user_prefs);
 #endif
 
