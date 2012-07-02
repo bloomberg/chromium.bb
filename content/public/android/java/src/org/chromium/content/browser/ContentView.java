@@ -11,10 +11,12 @@ import android.view.View;
 import android.webkit.DownloadListener;
 import android.widget.FrameLayout;
 
+import org.chromium.base.JNINamespace;
 import org.chromium.base.WeakContext;
 import org.chromium.content.app.AppResource;
 import org.chromium.content.common.TraceEvent;
 
+@JNINamespace("content")
 public class ContentView extends FrameLayout {
 
     // The following constants match the ones in chrome/common/page_transition_types.h.
