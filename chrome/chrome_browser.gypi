@@ -130,6 +130,8 @@
         'browser/autocomplete/autocomplete_provider.cc',
         'browser/autocomplete/autocomplete_provider.h',
         'browser/autocomplete/autocomplete_provider_listener.h',
+        'browser/autocomplete/autocomplete_result.cc',
+        'browser/autocomplete/autocomplete_result.h',
         'browser/autocomplete/autocomplete_types.h',
         'browser/autocomplete/builtin_provider.cc',
         'browser/autocomplete/builtin_provider.h',

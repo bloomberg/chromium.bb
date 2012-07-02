@@ -13,6 +13,7 @@
 #include "base/timer.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
+#include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/autocomplete_types.h"
 
 class AutocompleteControllerDelegate;
@@ -20,6 +21,24 @@ class KeywordProvider;
 class Profile;
 class SearchProvider;
 
+// The AutocompleteController is the center of the autocomplete system.  A
+// class creates an instance of the controller, which in turn creates a set of
+// AutocompleteProviders to serve it.  The owning class can ask the controller
+// to Start() a query; the controller in turn passes this call down to the
+// providers, each of which keeps track of its own matches and whether it has
+// finished processing the query.  When a provider gets more matches or finishes
+// processing, it notifies the controller, which merges the combined matches
+// together and makes the result available to interested observers.
+//
+// The owner may also cancel the current query by calling Stop(), which the
+// controller will in turn communicate to all the providers.  No callbacks will
+// happen after a request has been stopped.
+//
+// IMPORTANT: There is NO THREAD SAFETY built into this portion of the
+// autocomplete system.  All calls to and from the AutocompleteController should
+// happen on the same thread.  AutocompleteProviders are responsible for doing
+// their own thread management when they need to return matches asynchronously.
+//
 // The coordinator for autocomplete queries, responsible for combining the
 // matches from a series of providers into one AutocompleteResult.
 class AutocompleteController : public AutocompleteProviderListener {

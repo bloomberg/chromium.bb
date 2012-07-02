@@ -11,14 +11,19 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/values.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
+
+class AutocompleteResult;
+
+namespace base {
+class DictionaryValue;
+class ListValue;
+}
 
 #if defined(OS_CHROMEOS)
 namespace chromeos {
@@ -104,11 +109,11 @@ class OptionsUI : public content::WebUIController,
   explicit OptionsUI(content::WebUI* web_ui);
   virtual ~OptionsUI();
 
-  // Takes the suggestions from |autocompleteResult| and adds them to
-  // |suggestions| so that they can be passed to a JavaScript function.
+  // Takes the suggestions from |result| and adds them to |suggestions| so that
+  // they can be passed to a JavaScript function.
   static void ProcessAutocompleteSuggestions(
-      const AutocompleteResult& autocompleteResult,
-      base::ListValue * const suggestions);
+      const AutocompleteResult& result,
+      base::ListValue* const suggestions);
 
   static base::RefCountedMemory* GetFaviconResourceBytes();
 

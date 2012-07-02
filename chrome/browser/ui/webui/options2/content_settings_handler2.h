@@ -30,7 +30,8 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   virtual ~ContentSettingsHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
   virtual void InitializeHandler() OVERRIDE;
   virtual void InitializePage() OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
@@ -104,14 +105,17 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   // Updates the radio buttons for enabling / disabling handlers.
   void UpdateHandlersEnabledRadios();
   // Removes one geolocation exception.
-  void RemoveGeolocationException(const ListValue* args, size_t arg_index);
+  void RemoveGeolocationException(const base::ListValue* args,
+                                  size_t arg_index);
   // Removes one notification exception.
-  void RemoveNotificationException(const ListValue* args, size_t arg_index);
+  void RemoveNotificationException(const base::ListValue* args,
+                                   size_t arg_index);
   // Removes one Pepper Flash camera and microphone exception.
-  void RemoveFlashCameraMicException(const ListValue* args, size_t arg_index);
+  void RemoveFlashCameraMicException(const base::ListValue* args,
+                                     size_t arg_index);
   // Removes one exception of |type| from the host content settings map.
   void RemoveExceptionFromHostContentSettingsMap(
-      const ListValue* args,
+      const base::ListValue* args,
       size_t arg_index,
       const ExContentSettingsType& type);
 
@@ -120,20 +124,20 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   // Sets the default value for a specific content type. |args| includes the
   // content type and a string describing the new default the user has
   // chosen.
-  void SetContentFilter(const ListValue* args);
+  void SetContentFilter(const base::ListValue* args);
 
   // Removes the given row from the table. The first entry in |args| is the
   // content type, and the rest of the arguments depend on the content type
   // to be removed.
-  void RemoveException(const ListValue* args);
+  void RemoveException(const base::ListValue* args);
 
   // Changes the value of an exception. Called after the user is done editing an
   // exception.
-  void SetException(const ListValue* args);
+  void SetException(const base::ListValue* args);
 
   // Called to decide whether a given pattern is valid, or if it should be
   // rejected. Called while the user is editing an exception pattern.
-  void CheckExceptionPatternValidity(const ListValue* args);
+  void CheckExceptionPatternValidity(const base::ListValue* args);
 
   // Utility functions ---------------------------------------------------------
 

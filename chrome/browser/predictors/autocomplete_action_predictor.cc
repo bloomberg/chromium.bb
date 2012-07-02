@@ -15,9 +15,9 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_log.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -140,11 +140,11 @@ void AutocompleteActionPredictor::RegisterTransitionalMatches(
                                             transitional_match);
   }
 
-  for (AutocompleteResult::const_iterator it = result.begin();
-       it != result.end(); ++it) {
+  for (AutocompleteResult::const_iterator i(result.begin()); i != result.end();
+       ++i) {
     if (std::find(match_it->urls.begin(), match_it->urls.end(),
-                  it->destination_url) == match_it->urls.end()) {
-      match_it->urls.push_back(it->destination_url);
+                  i->destination_url) == match_it->urls.end()) {
+      match_it->urls.push_back(i->destination_url);
     }
   }
 }

@@ -20,6 +20,153 @@ class AutocompleteProviderListener;
 class GURL;
 class Profile;
 
+// The AutocompleteProviders each return different kinds of matches,
+// such as history or search matches.  These matches are given
+// "relevance" scores.  Higher scores are better matches than lower
+// scores.  The relevance scores and classes providing the respective
+// matches are as listed below.
+//
+// IMPORTANT CAVEAT: The tables below are NOT COMPLETE.  Developers
+// often forget to keep these tables in sync with the code when they
+// change scoring algorithms or add new providers.  For example,
+// neither the HistoryQuickProvider (which is a provider that appears
+// often) nor the ShortcutsProvider are listed here.  For the best
+// idea of how scoring works and what providers are affecting which
+// queries, play with chrome://omnibox/ for a while.  While the tables
+// below may have some utility, nothing compares with first-hand
+// investigation and experience.
+//
+// UNKNOWN input type:
+// --------------------------------------------------------------------|-----
+// Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
+// Extension App (exact match)                                         | 1425
+// HistoryURL (good exact or inline autocomplete matches, some inexact)| 1410++
+// HistoryURL (intranet url never visited match, some inexact matches) | 1400++
+// Search Primary Provider (past query in history within 2 days)       | 1399**
+// Search Primary Provider (what you typed)                            | 1300
+// HistoryURL (what you typed, some inexact matches)                   | 1200++
+// Extension App (inexact match)                                       | 1175*~
+// Keyword (substituting, exact match)                                 | 1100
+// Search Primary Provider (past query in history older than 2 days)   | 1050--
+// HistoryContents (any match in title of starred page)                | 1000++
+// HistoryURL (some inexact matches)                                   |  900++
+// Search Primary Provider (navigational suggestion)                   |  800++
+// HistoryContents (any match in title of nonstarred page)             |  700++
+// Search Primary Provider (suggestion)                                |  600++
+// Built-in                                                            |  575++
+// HistoryContents (any match in body of starred page)                 |  550++
+// HistoryContents (any match in body of nonstarred page)              |  500++
+// Keyword (inexact match)                                             |  450
+// Search Secondary Provider (what you typed)                          |  250
+// Search Secondary Provider (past query in history)                   |  200--
+// Search Secondary Provider (navigational suggestion)                 |  150++
+// Search Secondary Provider (suggestion)                              |  100++
+//
+// REQUESTED_URL input type:
+// --------------------------------------------------------------------|-----
+// Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
+// Extension App (exact match)                                         | 1425
+// HistoryURL (good exact or inline autocomplete matches, some inexact)| 1410++
+// HistoryURL (intranet url never visited match, some inexact matches) | 1400++
+// Search Primary Provider (past query in history within 2 days)       | 1399**
+// HistoryURL (what you typed, some inexact matches)                   | 1200++
+// Extension App (inexact match)                                       | 1175*~
+// Search Primary Provider (what you typed)                            | 1150
+// Keyword (substituting, exact match)                                 | 1100
+// Search Primary Provider (past query in history older than 2 days)   | 1050--
+// HistoryContents (any match in title of starred page)                | 1000++
+// HistoryURL (some inexact matches)                                   |  900++
+// Search Primary Provider (navigational suggestion)                   |  800++
+// HistoryContents (any match in title of nonstarred page)             |  700++
+// Search Primary Provider (suggestion)                                |  600++
+// Built-in                                                            |  575++
+// HistoryContents (any match in body of starred page)                 |  550++
+// HistoryContents (any match in body of nonstarred page)              |  500++
+// Keyword (inexact match)                                             |  450
+// Search Secondary Provider (what you typed)                          |  250
+// Search Secondary Provider (past query in history)                   |  200--
+// Search Secondary Provider (navigational suggestion)                 |  150++
+// Search Secondary Provider (suggestion)                              |  100++
+//
+// URL input type:
+// --------------------------------------------------------------------|-----
+// Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
+// Extension App (exact match)                                         | 1425
+// HistoryURL (good exact or inline autocomplete matches, some inexact)| 1410++
+// HistoryURL (intranet url never visited match, some inexact matches) | 1400++
+// HistoryURL (what you typed, some inexact matches)                   | 1200++
+// Extension App (inexact match)                                       | 1175*~
+// Keyword (substituting, exact match)                                 | 1100
+// HistoryURL (some inexact matches)                                   |  900++
+// Search Primary Provider (what you typed)                            |  850
+// Search Primary Provider (navigational suggestion)                   |  800++
+// Search Primary Provider (past query in history)                     |  750--
+// Keyword (inexact match)                                             |  700
+// Built-in                                                            |  575++
+// Search Primary Provider (suggestion)                                |  300++
+// Search Secondary Provider (what you typed)                          |  250
+// Search Secondary Provider (past query in history)                   |  200--
+// Search Secondary Provider (navigational suggestion)                 |  150++
+// Search Secondary Provider (suggestion)                              |  100++
+//
+// QUERY input type:
+// --------------------------------------------------------------------|-----
+// Search Primary or Secondary (past query in history within 2 days)   | 1599**
+// Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
+// Keyword (substituting, exact match)                                 | 1450
+// Extension App (exact match)                                         | 1425
+// Search Primary Provider (past query in history within 2 days)       | 1399**
+// Search Primary Provider (what you typed)                            | 1300
+// Extension App (inexact match)                                       | 1175*~
+// Search Primary Provider (past query in history older than 2 days)   | 1050--
+// HistoryContents (any match in title of starred page)                | 1000++
+// HistoryURL (inexact match)                                          |  900++
+// Search Primary Provider (navigational suggestion)                   |  800++
+// HistoryContents (any match in title of nonstarred page)             |  700++
+// Search Primary Provider (suggestion)                                |  600++
+// HistoryContents (any match in body of starred page)                 |  550++
+// HistoryContents (any match in body of nonstarred page)              |  500++
+// Keyword (inexact match)                                             |  450
+// Search Secondary Provider (what you typed)                          |  250
+// Search Secondary Provider (past query in history)                   |  200--
+// Search Secondary Provider (navigational suggestion)                 |  150++
+// Search Secondary Provider (suggestion)                              |  100++
+//
+// FORCED_QUERY input type:
+// --------------------------------------------------------------------|-----
+// Extension App (exact match on title only, not url)                  | 1425
+// Search Primary Provider (past query in history within 2 days)       | 1399**
+// Search Primary Provider (what you typed)                            | 1300
+// Extension App (inexact match on title only, not url)                | 1175*~
+// Search Primary Provider (past query in history older than 2 days)   | 1050--
+// HistoryContents (any match in title of starred page)                | 1000++
+// Search Primary Provider (navigational suggestion)                   |  800++
+// HistoryContents (any match in title of nonstarred page)             |  700++
+// Search Primary Provider (suggestion)                                |  600++
+// HistoryContents (any match in body of starred page)                 |  550++
+// HistoryContents (any match in body of nonstarred page)              |  500++
+//
+// (A search keyword is a keyword with a replacement string; a bookmark keyword
+// is a keyword with no replacement string, that is, a shortcut for a URL.)
+//
+// There are two possible providers for search suggestions. If the user has
+// typed a keyword, then the primary provider is the keyword provider and the
+// secondary provider is the default provider. If the user has not typed a
+// keyword, then the primary provider corresponds to the default provider.
+//
+// Search providers may supply relevance values along with their results to be
+// used in place of client-side calculated values.
+//
+// The value column gives the ranking returned from the various providers.
+// ++: a series of matches with relevance from n up to (n + max_matches).
+// --: relevance score falls off over time (discounted 50 points @ 15 minutes,
+//     450 points @ two weeks)
+// **: relevance score falls off over two days (discounted 99 points after two
+//     days).
+// *~: Partial matches get a score on a sliding scale from about 575-1125 based
+//     on how many times the URL for the Extension App has been typed and how
+//     many of the letters match.
+//
 // A single result provider for the autocomplete system.  Given user input, the
 // provider decides what (if any) matches to return, their relevance, and their
 // classifications.

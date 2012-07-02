@@ -12,6 +12,7 @@
 #include "ui/aura/display_observer.h"
 
 namespace base {
+class DictionaryValue;
 class ListValue;
 }
 
@@ -26,7 +27,8 @@ class DisplayOptionsHandler : public ::options2::OptionsPageUIHandler,
   virtual ~DisplayOptionsHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
   virtual void InitializeHandler() OVERRIDE;
 
   // WebUIMessageHandler implementation.

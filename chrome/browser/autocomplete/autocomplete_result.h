@@ -1,0 +1,162 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_RESULT_H_
+#define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_RESULT_H_
+#pragma once
+
+#include <stddef.h>
+
+#include <map>
+
+#include "base/basictypes.h"
+#include "chrome/browser/autocomplete/autocomplete_types.h"
+#include "googleurl/src/gurl.h"
+
+class AutocompleteInput;
+struct AutocompleteMatch;
+class AutocompleteProvider;
+
+// All matches from all providers for a particular query.  This also tracks
+// what the default match should be if the user doesn't manually select another
+// match.
+class AutocompleteResult {
+ public:
+  typedef ACMatches::const_iterator const_iterator;
+  typedef ACMatches::iterator iterator;
+
+  // The "Selection" struct is the information we need to select the same match
+  // in one result set that was selected in another.
+  struct Selection {
+    Selection()
+        : provider_affinity(NULL),
+          is_history_what_you_typed_match(false) {
+    }
+
+    // Clear the selection entirely.
+    void Clear();
+
+    // True when the selection is empty.
+    bool empty() const {
+      return destination_url.is_empty() && !provider_affinity &&
+          !is_history_what_you_typed_match;
+    }
+
+    // The desired destination URL.
+    GURL destination_url;
+
+    // The desired provider.  If we can't find a match with the specified
+    // |destination_url|, we'll use the best match from this provider.
+    const AutocompleteProvider* provider_affinity;
+
+    // True when this is the HistoryURLProvider's "what you typed" match.  This
+    // can't be tracked using |destination_url| because its URL changes on every
+    // keystroke, so if this is set, we'll preserve the selection by simply
+    // choosing the new "what you typed" entry and ignoring |destination_url|.
+    bool is_history_what_you_typed_match;
+  };
+
+  // Max number of matches we'll show from the various providers.
+  static const size_t kMaxMatches;
+
+  // The lowest score a match can have and still potentially become the default
+  // match for the result set.
+  static const int kLowestDefaultScore;
+
+  AutocompleteResult();
+  ~AutocompleteResult();
+
+  // operator=() by another name.
+  void CopyFrom(const AutocompleteResult& rhs);
+
+  // Copies matches from |old_matches| to provide a consistant result set. See
+  // comments in code for specifics.
+  void CopyOldMatches(const AutocompleteInput& input,
+                      const AutocompleteResult& old_matches);
+
+  // Adds a single match. The match is inserted at the appropriate position
+  // based on relevancy and display order. This is ONLY for use after
+  // SortAndCull() has been invoked, and preserves default_match_.
+  void AddMatch(const AutocompleteMatch& match);
+
+  // Adds a new set of matches to the result set.  Does not re-sort.
+  void AppendMatches(const ACMatches& matches);
+
+  // Removes duplicates, puts the list in sorted order and culls to leave only
+  // the best kMaxMatches matches.  Sets the default match to the best match
+  // and updates the alternate nav URL.
+  void SortAndCull(const AutocompleteInput& input);
+
+  // Returns true if at least one match was copied from the last result.
+  bool HasCopiedMatches() const;
+
+  // Vector-style accessors/operators.
+  size_t size() const;
+  bool empty() const;
+  const_iterator begin() const;
+  iterator begin();
+  const_iterator end() const;
+  iterator end();
+
+  // Returns the match at the given index.
+  const AutocompleteMatch& match_at(size_t index) const;
+  AutocompleteMatch* match_at(size_t index);
+
+  // Get the default match for the query (not necessarily the first).  Returns
+  // end() if there is no default match.
+  const_iterator default_match() const { return default_match_; }
+
+  const GURL& alternate_nav_url() const { return alternate_nav_url_; }
+
+  // Clears the matches for this result set.
+  void Reset();
+
+  void Swap(AutocompleteResult* other);
+
+#ifndef NDEBUG
+  // Does a data integrity check on this result.
+  void Validate() const;
+#endif
+
+ private:
+  typedef std::map<AutocompleteProvider*, ACMatches> ProviderToMatches;
+
+#if defined(OS_ANDROID)
+  // iterator::difference_type is not defined in the STL that we compile with on
+  // Android.
+  typedef int matches_difference_type;
+#else
+  typedef ACMatches::iterator::difference_type matches_difference_type;
+#endif
+
+  // Populates |provider_to_matches| from |matches_|.
+  void BuildProviderToMatches(ProviderToMatches* provider_to_matches) const;
+
+  // Returns true if |matches| contains a match with the same destination as
+  // |match|.
+  static bool HasMatchByDestination(const AutocompleteMatch& match,
+                                    const ACMatches& matches);
+
+  // Copies matches into this result. |old_matches| gives the matches from the
+  // last result, and |new_matches| the results from this result.
+  void MergeMatchesByProvider(const ACMatches& old_matches,
+                              const ACMatches& new_matches);
+
+  ACMatches matches_;
+
+  const_iterator default_match_;
+
+  // The "alternate navigation URL", if any, for this result set.  This is a URL
+  // to try offering as a navigational option in case the user navigated to the
+  // URL of the default match but intended something else.  For example, if the
+  // user's local intranet contains site "foo", and the user types "foo", we
+  // default to searching for "foo" when the user may have meant to navigate
+  // there.  In cases like this, the default match will point to the "search for
+  // 'foo'" result, and this will contain "http://foo/".
+  GURL alternate_nav_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutocompleteResult);
+};
+
+#endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_RESULT_H_

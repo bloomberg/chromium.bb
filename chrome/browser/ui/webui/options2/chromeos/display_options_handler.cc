@@ -8,8 +8,9 @@
 
 #include "ash/display/display_controller.h"
 #include "ash/shell.h"
-#include "base/logging.h"
+#include "base/bind.h"
 #include "base/json/json_value_converter.h"
+#include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/display/output_configurator.h"
 #include "content/public/browser/web_ui.h"

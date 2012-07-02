@@ -17,8 +17,8 @@
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -147,12 +147,12 @@ void OptionsUIHTMLSource::StartDataRequest(const std::string& path,
     response_bytes = base::RefCountedString::TakeString(&strings_js);
   } else if (path == kOptionsBundleJsFile) {
     // Return (and cache) the options javascript code.
-    response_bytes = ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-        IDR_OPTIONS2_BUNDLE_JS, ui::SCALE_FACTOR_NONE);
+    response_bytes = ui::ResourceBundle::GetSharedInstance().
+        LoadDataResourceBytes(IDR_OPTIONS2_BUNDLE_JS, ui::SCALE_FACTOR_NONE);
   } else {
     // Return (and cache) the main options html page as the default.
-    response_bytes = ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-        IDR_OPTIONS2_HTML, ui::SCALE_FACTOR_NONE);
+    response_bytes = ui::ResourceBundle::GetSharedInstance().
+        LoadDataResourceBytes(IDR_OPTIONS2_HTML, ui::SCALE_FACTOR_NONE);
   }
 
   SendResponse(request_id, response_bytes);
@@ -328,10 +328,10 @@ OptionsUI::~OptionsUI() {
 
 // static
 void OptionsUI::ProcessAutocompleteSuggestions(
-      const AutocompleteResult& autocompleteResult,
-      ListValue * const suggestions) {
-  for (size_t i = 0; i < autocompleteResult.size(); ++i) {
-    const AutocompleteMatch& match = autocompleteResult.match_at(i);
+    const AutocompleteResult& result,
+    base::ListValue* const suggestions) {
+  for (size_t i = 0; i < result.size(); ++i) {
+    const AutocompleteMatch& match = result.match_at(i);
     AutocompleteMatch::Type type = match.type;
     if (type != AutocompleteMatch::HISTORY_URL &&
         type != AutocompleteMatch::HISTORY_TITLE &&
@@ -339,7 +339,7 @@ void OptionsUI::ProcessAutocompleteSuggestions(
         type != AutocompleteMatch::HISTORY_KEYWORD &&
         type != AutocompleteMatch::NAVSUGGEST)
       continue;
-    DictionaryValue* entry = new DictionaryValue();
+    base::DictionaryValue* entry = new base::DictionaryValue();
     entry->SetString("title", match.description);
     entry->SetString("displayURL", match.contents);
     entry->SetString("url", match.destination_url.spec());
@@ -349,9 +349,8 @@ void OptionsUI::ProcessAutocompleteSuggestions(
 
 // static
 base::RefCountedMemory* OptionsUI::GetFaviconResourceBytes() {
-  return ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytes(IDR_SETTINGS_FAVICON,
-                            ui::SCALE_FACTOR_100P);
+  return ui::ResourceBundle::GetSharedInstance().
+      LoadDataResourceBytes(IDR_SETTINGS_FAVICON, ui::SCALE_FACTOR_100P);
 }
 
 void OptionsUI::InitializeHandlers() {

@@ -8,16 +8,16 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
+#include "chrome/browser/autocomplete/autocomplete_types.h"
 #include "content/public/browser/web_ui_message_handler.h"
-
-namespace base {
-class ListValue;
-}  // namespace base
 
 class AutocompleteController;
 class Profile;
+
+namespace base {
+class ListValue;
+}
 
 // UI Handler for chrome://omnibox/
 // It listens for calls from javascript to StartOmniboxQuery() and
