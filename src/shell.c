@@ -1358,12 +1358,12 @@ shell_surface_set_maximized(struct wl_client *client,
 		shsurf->output = get_default_output(es->compositor);
 
 	shell = shell_surface_get_shell(shsurf);
-	panel_height = get_output_panel_height(shell, es->output);
+	panel_height = get_output_panel_height(shell, shsurf->output);
 	edges = WL_SHELL_SURFACE_RESIZE_TOP|WL_SHELL_SURFACE_RESIZE_LEFT;
 
 	shsurf->client->send_configure(shsurf->surface, edges,
-				       es->output->current->width,
-				       es->output->current->height - panel_height);
+				       shsurf->output->current->width,
+				       shsurf->output->current->height - panel_height);
 
 	shsurf->next_type = SHELL_SURFACE_MAXIMIZED;
 }
@@ -2548,8 +2548,8 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 	case SHELL_SURFACE_MAXIMIZED:
 		/* use surface configure to set the geometry */
 		panel_height = get_output_panel_height(shell,surface->output);
-		weston_surface_set_position(surface, surface->output->x,
-					    surface->output->y + panel_height);
+		weston_surface_set_position(surface, shsurf->output->x,
+					    shsurf->output->y + panel_height);
 		break;
 	case SHELL_SURFACE_POPUP:
 		shell_map_popup(shsurf);
