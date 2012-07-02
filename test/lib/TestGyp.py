@@ -457,7 +457,8 @@ def FindVisualStudioInstallation():
     return build_tool, uses_msbuild
   # Neither GYP_MSVS_VERSION nor the path help us out.  Iterate through
   # the choices looking for a match.
-  for version, path in possible_paths.iteritems():
+  for version in sorted(possible_paths, reverse=True):
+    path = possible_paths[version]
     for r in possible_roots:
       bt = os.path.join(r, path)
       if os.path.exists(bt):
