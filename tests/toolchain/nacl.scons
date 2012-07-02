@@ -280,3 +280,13 @@ node = debug_env.CommandTestFileDumpCheck('dwarf_local_var_objdump.out',
 debug_env.AddNodeToTestSuite(node,
                              ['small_tests', 'toolchain_tests'],
                              'run_dwarf_local_var_objdump_test')
+
+if env.Bit('nacl_glibc'):
+  nexe = env.ComponentProgram('byteswap64', 'byteswap64.c',
+                              EXTRA_LIBS=['${NONIRT_LIBS}'])
+  node = env.CommandSelLdrTestNacl('byteswap64.out', nexe)
+  env.AddNodeToTestSuite(node,
+                         ['toolchain_tests', 'small_tests'],
+                         'run_byteswap64_test',
+# http://code.google.com/p/chromium/issues/detail?id=133889
+                         is_broken=env.Bit('target_x86_64'))
