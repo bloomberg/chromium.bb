@@ -25,6 +25,7 @@
       'public/android/java/src/org/chromium/content/browser/TouchPoint.java',
       'public/android/java/src/org/chromium/content/common/CommandLine.java',
       'public/android/java/src/org/chromium/content/common/SurfaceCallback.java',
+      'public/android/java/src/org/chromium/content/common/SurfaceTextureListener.java',
       'public/android/java/src/org/chromium/content/common/TraceEvent.java',
     ],
     'jni_headers': [
@@ -44,6 +45,7 @@
       '<(SHARED_INTERMEDIATE_DIR)/content/jni/touch_point_jni.h',
       '<(SHARED_INTERMEDIATE_DIR)/content/jni/command_line_jni.h',
       '<(SHARED_INTERMEDIATE_DIR)/content/jni/surface_callback_jni.h',
+      '<(SHARED_INTERMEDIATE_DIR)/content/jni/surface_texture_listener_jni.h',
       '<(SHARED_INTERMEDIATE_DIR)/content/jni/trace_event_jni.h',
     ],
   },

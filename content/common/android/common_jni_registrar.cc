@@ -8,12 +8,15 @@
 #include "base/android/jni_registrar.h"
 #include "content/common/android/command_line.h"
 #include "content/common/android/surface_callback.h"
+#include "content/common/android/surface_texture_listener.h"
 #include "content/common/android/trace_event_binding.h"
 
 namespace {
 base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "CommandLine", RegisterCommandLine },
   { "SurfaceCallback", content::RegisterSurfaceCallback },
+  { "SurfaceTextureListener",
+        content::SurfaceTextureListener::RegisterSurfaceTextureListener },
   { "TraceEvent", RegisterTraceEvent },
 };
 
