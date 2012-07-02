@@ -939,7 +939,7 @@ void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
   views::Label* title = new views::Label(elided_title);
   grid_layout->AddView(title);
   // Add link for "choose another service" if other suggestions are available
-  // or if we have more than one (the current) service installed.
+  // or if more than one (the current) service is installed.
   if (model_->GetInstalledServiceCount() > 1 ||
        model_->GetSuggestedExtensionCount()) {
     choose_another_service_link_ = new views::Link(

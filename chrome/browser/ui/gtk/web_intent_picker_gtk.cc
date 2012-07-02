@@ -263,7 +263,7 @@ void WebIntentPickerGtk::OnInlineDisposition(const string16& title,
   gtk_box_pack_start(GTK_BOX(service_hbox), indent_label, FALSE, TRUE, 0);
 
   // Add link for "choose another service" if other suggestions are available
-  // or if we have more than one (the current) service installed.
+  // or if more than one (the current) service is installed.
   if (model_->GetInstalledServiceCount() > 1 ||
        model_->GetSuggestedExtensionCount()) {
     GtkWidget* use_alternate_link = theme_service->BuildChromeLinkButton(

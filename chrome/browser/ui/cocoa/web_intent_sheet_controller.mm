@@ -694,7 +694,7 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   textFrame = [inlineDispositionTitleField_ frame];
 
   // Add link for "choose another service" if other suggestions are available
-  // or if we have more than one (the current) service installed.
+  // or if more than one (the current) service is installed.
   if (model_->GetInstalledServiceCount() > 1 ||
     model_->GetSuggestedExtensionCount()) {
     NSRect frame = NSMakeRect(
