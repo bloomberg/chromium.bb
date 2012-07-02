@@ -52,16 +52,15 @@ const int kContentBorder = 7;
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
-void ShowExtensionInstalledBubble(
-    const Extension* extension,
-    Browser* browser,
-    const SkBitmap& icon) {
+void ShowExtensionInstalledBubble(const Extension* extension,
+                                  Browser* browser,
+                                  const SkBitmap& icon) {
   ExtensionInstalledBubbleGtk::Show(extension, browser, icon);
 }
 
-} // namespace browser
+}  // namespace chrome
 
 void ExtensionInstalledBubbleGtk::Show(const Extension* extension,
                                        Browser* browser,

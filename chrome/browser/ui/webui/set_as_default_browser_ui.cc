@@ -248,9 +248,8 @@ SetAsDefaultBrowserDialogImpl::SetAsDefaultBrowserDialogImpl(Profile* profile,
 }
 
 void SetAsDefaultBrowserDialogImpl::ShowDialog() {
-  browser::ShowWebDialog(browser_->window()->GetNativeWindow(),
-                         browser_->profile(),
-                         this);
+  chrome::ShowWebDialog(browser_->window()->GetNativeWindow(),
+                        browser_->profile(), this);
 }
 
 ui::ModalType SetAsDefaultBrowserDialogImpl::GetDialogModalType() const {

@@ -690,9 +690,9 @@ void CreateDialogImpl(content::BrowserContext* browser_context,
 #if defined(OS_WIN)
   gfx::NativeWindow window =
 #endif
-      browser::ShowWebDialog(modal_parent,
-                             Profile::FromBrowserContext(browser_context),
-                             dialog_delegate);
+      chrome::ShowWebDialog(modal_parent,
+                            Profile::FromBrowserContext(browser_context),
+                            dialog_delegate);
 #if defined(OS_WIN)
   if (!path_to_file.empty() && window) {
     HWND dialog_handle;

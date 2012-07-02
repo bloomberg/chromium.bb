@@ -44,7 +44,7 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
-namespace browser {
+namespace chrome {
 
 // Declared in browser_dialogs.h so others don't have to depend on our header.
 void ShowCollectedCookiesDialog(TabContents* tab_contents) {
@@ -52,9 +52,10 @@ void ShowCollectedCookiesDialog(TabContents* tab_contents) {
   new CollectedCookiesViews(tab_contents);
 }
 
-}  // namespace browser
+}  // namespace chrome
 
 namespace {
+
 // Spacing between the infobar frame and its contents.
 const int kInfobarVerticalPadding = 3;
 const int kInfobarHorizontalPadding = 8;

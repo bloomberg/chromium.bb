@@ -366,12 +366,12 @@ void AboutIPCDialog::ButtonPressed(
   }
 }
 
-namespace browser {
+namespace chrome {
 
 void ShowAboutIPCDialog() {
   AboutIPCDialog::RunDialog();
 }
 
-} // namespace browser
+}  // namespace chrome
 
 #endif  // IPC_MESSAGE_LOG_ENABLED

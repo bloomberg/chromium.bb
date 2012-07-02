@@ -93,7 +93,7 @@ private:
 
 @end
 
-namespace browser {
+namespace chrome {
 
 gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
                                 content::BrowserContext* context,
@@ -102,7 +102,7 @@ gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
                                           context:context];
 }
 
-}  // namespace browser
+}  // namespace chrome
 
 WebDialogWindowDelegateBridge::WebDialogWindowDelegateBridge(
     WebDialogWindowController* controller,

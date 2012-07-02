@@ -580,7 +580,7 @@ static HungRendererDialogView* CreateHungRendererDialogView() {
   return cv;
 }
 
-namespace browser {
+namespace chrome {
 
 void ShowHungRendererDialog(WebContents* contents) {
   if (!logging::DialogsAreSuppressed()) {
@@ -595,4 +595,4 @@ void HideHungRendererDialog(WebContents* contents) {
     g_instance->EndForWebContents(contents);
 }
 
-}  // namespace browser
+}  // namespace chrome

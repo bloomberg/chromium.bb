@@ -38,8 +38,8 @@ IN_PROC_BROWSER_TEST_F(CollectedCookiesTest, DoubleDisplay) {
 
   // Click on the info link twice.
   TabContents* tab_contents = chrome::GetActiveTabContents(browser());
-  browser::ShowCollectedCookiesDialog(tab_contents);
-  browser::ShowCollectedCookiesDialog(tab_contents);
+  chrome::ShowCollectedCookiesDialog(tab_contents);
+  chrome::ShowCollectedCookiesDialog(tab_contents);
 }
 
 // If this crashes on Windows, use http://crbug.com/79331
@@ -55,7 +55,7 @@ IN_PROC_BROWSER_TEST_F(CollectedCookiesTest, NavigateAway) {
 
   // Click on the info link.
   TabContents* tab_contents = chrome::GetActiveTabContents(browser());
-  browser::ShowCollectedCookiesDialog(tab_contents);
+  chrome::ShowCollectedCookiesDialog(tab_contents);
 
   // Navigate to another page.
   ui_test_utils::NavigateToURL(

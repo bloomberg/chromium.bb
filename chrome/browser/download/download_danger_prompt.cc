@@ -151,6 +151,6 @@ DownloadDangerPrompt* DownloadDangerPrompt::Create(
   DownloadDangerPromptImpl* prompt =
       new DownloadDangerPromptImpl(item, tab_contents, accepted, canceled);
   // |prompt| will be deleted when the dialog is done.
-  browser::ShowTabModalConfirmDialog(prompt, tab_contents);
+  chrome::ShowTabModalConfirmDialog(prompt, tab_contents);
   return prompt;
 }

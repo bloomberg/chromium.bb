@@ -13,7 +13,6 @@ class Browser;
 class SkBitmap;
 class TabContents;
 class TabModalConfirmDialogDelegate;
-class TemplateURL;
 
 namespace content {
 class BrowserContext;
@@ -28,13 +27,13 @@ namespace ui {
 class WebDialogDelegate;
 }
 
-namespace browser {
+namespace chrome {
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
 
 // The dialog is a singleton. If the dialog is already opened, it won't do
 // anything, so you can just blindly call this function all you want.
-// This is Called from chrome/browser/browser_about_handler.cc
+// This is called from chrome/browser/browser_about_handler.cc
 void ShowAboutIPCDialog();
 
 #endif  // IPC_MESSAGE_LOG_ENABLED
@@ -70,6 +69,6 @@ void HideHungRendererDialog(content::WebContents* contents);
 void ShowTabModalConfirmDialog(TabModalConfirmDialogDelegate* delegate,
                                TabContents* tab_contents);
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_BROWSER_DIALOGS_H_

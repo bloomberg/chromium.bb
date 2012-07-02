@@ -75,16 +75,15 @@ const int kAnimationWaitMaxRetry = 10;
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
-void ShowExtensionInstalledBubble(
-    const Extension* extension,
-    Browser* browser,
-    const SkBitmap& icon) {
+void ShowExtensionInstalledBubble(const Extension* extension,
+                                  Browser* browser,
+                                  const SkBitmap& icon) {
   ExtensionInstalledBubble::Show(extension, browser, icon);
 }
 
-}  // namespace browser
+}  // namespace chrome
 
 // InstalledBubbleContent is the content view which is placed in the
 // ExtensionInstalledBubble. It displays the install icon and explanatory

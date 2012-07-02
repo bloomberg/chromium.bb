@@ -1,14 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/cocoa/about_ipc_dialog.h"
 #include "chrome/browser/ui/cocoa/about_ipc_controller.h"
+#include "chrome/browser/ui/cocoa/about_ipc_dialog.h"
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
 
-namespace browser {
+namespace chrome {
 
 void ShowAboutIPCDialog() {
   // The controller gets deallocated when then window is closed,
@@ -17,7 +17,7 @@ void ShowAboutIPCDialog() {
   [[controller window] makeKeyAndOrderFront:controller];
 }
 
-}  // namespace browser
+}  // namespace chrome
 
 void AboutIPCBridge::Log(const IPC::LogData& data) {
   CocoaLogData* cocoa_data = [[CocoaLogData alloc] initWithLogData:data];

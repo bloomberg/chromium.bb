@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image.h"
 
@@ -41,7 +41,7 @@
 }
 @end
 
-namespace browser {
+namespace chrome {
 
 // Declared in browser_dialogs.h so others don't have to depend on our header.
 void ShowTabModalConfirmDialog(TabModalConfirmDialogDelegate* delegate,
@@ -50,7 +50,7 @@ void ShowTabModalConfirmDialog(TabModalConfirmDialogDelegate* delegate,
   new TabModalConfirmDialogMac(delegate, tab_contents);
 }
 
-}
+}  // namespace chrome
 
 TabModalConfirmDialogMac::TabModalConfirmDialogMac(
     TabModalConfirmDialogDelegate* delegate,

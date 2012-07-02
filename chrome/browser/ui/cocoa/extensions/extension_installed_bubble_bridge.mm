@@ -48,12 +48,11 @@ static void ShowGenericExtensionInstalledInfoBar(
   infobar_helper->AddInfoBar(delegate);
 }
 
-namespace browser {
+namespace chrome {
 
-void ShowExtensionInstalledBubble(
-    const extensions::Extension* extension,
-    Browser* browser,
-    const SkBitmap& icon) {
+void ShowExtensionInstalledBubble(const extensions::Extension* extension,
+                                  Browser* browser,
+                                  const SkBitmap& icon) {
   if ((extension->browser_action()) || !extension->omnibox_keyword().empty() ||
       (extension->page_action() &&
       !extension->page_action()->default_icon_path().empty())) {
@@ -73,7 +72,7 @@ void ShowExtensionInstalledBubble(
   }
 }
 
-} // namespace browser
+}  // namespace chrome
 
 void extensions::BundleInstaller::ShowInstalledBubble(
     const BundleInstaller* bundle, Browser* browser) {

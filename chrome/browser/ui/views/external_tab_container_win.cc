@@ -58,9 +58,9 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/view_prop.h"
@@ -757,11 +757,9 @@ void ExternalTabContainerWin::BeforeUnloadFired(WebContents* tab,
   }
 }
 
-void ExternalTabContainerWin::ShowRepostFormWarningDialog(
-    WebContents* source) {
-  browser::ShowTabModalConfirmDialog(
-      new RepostFormWarningController(source),
-      TabContents::FromWebContents(source));
+void ExternalTabContainerWin::ShowRepostFormWarningDialog(WebContents* source) {
+  chrome::ShowTabModalConfirmDialog(new RepostFormWarningController(source),
+                                    TabContents::FromWebContents(source));
 }
 
 void ExternalTabContainerWin::RunFileChooser(

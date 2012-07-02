@@ -23,7 +23,7 @@ using content::WebUIMessageHandler;
 using ui::WebDialogDelegate;
 using ui::WebDialogUI;
 
-namespace browser {
+namespace chrome {
 
 gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
                                 content::BrowserContext* context,
@@ -32,7 +32,7 @@ gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
   return web_dialog->InitDialog();
 }
 
-} // namespace browser
+}  // namespace chrome
 
 namespace {
 

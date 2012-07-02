@@ -140,7 +140,7 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
     return;
   }
 
-  browser::ShowExtensionInstalledBubble(extension, browser, *icon);
+  chrome::ShowExtensionInstalledBubble(extension, browser, *icon);
 }
 
 void ExtensionInstallUIDefault::OnInstallFailure(

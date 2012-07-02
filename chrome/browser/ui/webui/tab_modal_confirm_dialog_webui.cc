@@ -32,7 +32,7 @@
 using content::WebContents;
 using content::WebUIMessageHandler;
 
-namespace browser {
+namespace chrome {
 
 // Declared in browser_dialogs.h so others don't have to depend on our header.
 void ShowTabModalConfirmDialog(TabModalConfirmDialogDelegate* delegate,
@@ -40,7 +40,7 @@ void ShowTabModalConfirmDialog(TabModalConfirmDialogDelegate* delegate,
   new TabModalConfirmDialogWebUI(delegate, tab_contents);
 }
 
-}  // namespace browser
+}  // namespace chrome
 
 const int kDialogWidth = 400;
 const int kDialogHeight = 120;

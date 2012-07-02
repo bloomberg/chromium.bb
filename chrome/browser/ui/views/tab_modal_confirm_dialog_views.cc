@@ -15,7 +15,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/message_box_view.h"
 
-namespace browser {
+namespace chrome {
 
 // Declared in browser_dialogs.h so others don't have to depend on our header.
 void ShowTabModalConfirmDialog(TabModalConfirmDialogDelegate* delegate,
@@ -23,7 +23,7 @@ void ShowTabModalConfirmDialog(TabModalConfirmDialogDelegate* delegate,
   new TabModalConfirmDialogViews(delegate, tab_contents);
 }
 
-}  // namespace browser
+}  // namespace chrome
 
 //////////////////////////////////////////////////////////////////////////////
 // TabModalConfirmDialogViews, constructor & destructor:

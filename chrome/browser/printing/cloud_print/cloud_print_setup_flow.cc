@@ -86,7 +86,7 @@ CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(
   // using a browser.
   if (!parent_window && browser && browser->window())
     parent_window = browser->window()->GetNativeWindow();
-  browser::ShowWebDialog(parent_window, profile, flow);
+  chrome::ShowWebDialog(parent_window, profile, flow);
   return flow;
 }
 

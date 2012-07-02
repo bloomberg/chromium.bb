@@ -16,7 +16,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
-namespace browser {
+namespace chrome {
 
 // Declared in browser_dialogs.h so others don't have to depend on our header.
 void ShowTabModalConfirmDialog(TabModalConfirmDialogDelegate* delegate,
@@ -24,7 +24,7 @@ void ShowTabModalConfirmDialog(TabModalConfirmDialogDelegate* delegate,
   new TabModalConfirmDialogGtk(delegate, tab_contents);
 }
 
-}
+}  // namespace chrome
 
 TabModalConfirmDialogGtk::TabModalConfirmDialogGtk(
     TabModalConfirmDialogDelegate* delegate,

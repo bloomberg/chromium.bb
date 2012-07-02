@@ -25,7 +25,7 @@ BrowserContentSettingBubbleModelDelegate::
 
 void BrowserContentSettingBubbleModelDelegate::ShowCollectedCookiesDialog(
     TabContents* contents) {
-  browser::ShowCollectedCookiesDialog(contents);
+  chrome::ShowCollectedCookiesDialog(contents);
 }
 
 void BrowserContentSettingBubbleModelDelegate::ShowContentSettingsPage(

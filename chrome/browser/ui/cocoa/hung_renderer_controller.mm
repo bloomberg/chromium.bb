@@ -15,8 +15,8 @@
 #import "chrome/browser/ui/cocoa/multi_key_equivalent_button.h"
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/common/logging_chrome.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -154,8 +154,8 @@ class WebContentsObserverBridge : public content::WebContentsObserver {
 - (void)windowWillClose:(NSNotification*)notification {
   // We have to reset g_instance before autoreleasing the window,
   // because we want to avoid reusing the same dialog if someone calls
-  // browser::ShowHungRendererDialog() between the autorelease
-  // call and the actual dealloc.
+  // chrome::ShowHungRendererDialog() between the autorelease call and the
+  // actual dealloc.
   g_instance = nil;
 
   [self autorelease];
@@ -217,7 +217,7 @@ class WebContentsObserverBridge : public content::WebContentsObserver {
 }
 @end
 
-namespace browser {
+namespace chrome {
 
 void ShowHungRendererDialog(WebContents* contents) {
   if (!logging::DialogsAreSuppressed()) {
@@ -233,4 +233,4 @@ void HideHungRendererDialog(WebContents* contents) {
     [g_instance endForWebContents:contents];
 }
 
-}  // namespace browser
+}  // namespace chrome

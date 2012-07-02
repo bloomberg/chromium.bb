@@ -36,9 +36,9 @@
 #include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
+#include "third_party/apple_sample_code/ImageAndTextCell.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
-#include "third_party/apple_sample_code/ImageAndTextCell.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -60,7 +60,7 @@ enum TabViewItemIndices {
 
 } // namespace
 
-namespace browser {
+namespace chrome {
 
 // Declared in browser_dialogs.h so others don't have to depend on our header.
 void ShowCollectedCookiesDialog(TabContents* tab_contents) {
@@ -70,7 +70,7 @@ void ShowCollectedCookiesDialog(TabContents* tab_contents) {
       tab_contents);
 }
 
-}  // namespace browser
+}  // namespace chrome
 
 #pragma mark Bridge between the constrained window delegate and the sheet
 

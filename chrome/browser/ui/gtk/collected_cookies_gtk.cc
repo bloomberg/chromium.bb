@@ -19,8 +19,8 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_cookie_view.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -92,7 +92,7 @@ const std::string GetInfobarLabel(ContentSetting setting,
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
 // Declared in browser_dialogs.h so others don't have to depend on our header.
 void ShowCollectedCookiesDialog(TabContents* tab_contents) {
@@ -102,7 +102,7 @@ void ShowCollectedCookiesDialog(TabContents* tab_contents) {
       tab_contents);
 }
 
-}  // namespace browser
+}  // namespace chrome
 
 CollectedCookiesGtk::CollectedCookiesGtk(GtkWindow* parent,
                                          TabContents* tab_contents)

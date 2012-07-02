@@ -35,7 +35,7 @@ using content::WebUIMessageHandler;
 using ui::WebDialogDelegate;
 using ui::WebDialogUI;
 
-namespace browser {
+namespace chrome {
 
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
 gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
@@ -47,7 +47,7 @@ gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
   return widget->GetNativeWindow();
 }
 
-}  // namespace browser
+}  // namespace chrome
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebDialogView, public:

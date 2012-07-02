@@ -93,7 +93,7 @@ MobileSetupDialogDelegate::~MobileSetupDialogDelegate() {
 
 void MobileSetupDialogDelegate::ShowDialog(const std::string& service_path) {
   service_path_ = service_path;
-  dialog_window_ = browser::ShowWebDialog(
+  dialog_window_ = chrome::ShowWebDialog(
       NULL,
       ProfileManager::GetDefaultProfileOrOffTheRecord(),
       this);

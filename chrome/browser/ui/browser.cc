@@ -1729,9 +1729,8 @@ void Browser::ViewSourceForFrame(WebContents* source,
 }
 
 void Browser::ShowRepostFormWarningDialog(WebContents* source) {
-  browser::ShowTabModalConfirmDialog(
-      new RepostFormWarningController(source),
-      TabContents::FromWebContents(source));
+  chrome::ShowTabModalConfirmDialog(new RepostFormWarningController(source),
+                                    TabContents::FromWebContents(source));
 }
 
 bool Browser::ShouldAddNavigationToHistory(
@@ -1799,11 +1798,11 @@ void Browser::RendererUnresponsive(WebContents* source) {
     }
   }
 
-  browser::ShowHungRendererDialog(source);
+  chrome::ShowHungRendererDialog(source);
 }
 
 void Browser::RendererResponsive(WebContents* source) {
-  browser::HideHungRendererDialog(source);
+  chrome::HideHungRendererDialog(source);
 }
 
 void Browser::WorkerCrashed(WebContents* source) {

@@ -194,21 +194,19 @@ void TaskManagerDialogImpl::OnCloseDialog() {
 }
 
 void TaskManagerDialogImpl::OpenWebDialog() {
-  window_ = browser::ShowWebDialog(NULL,
-                                   ProfileManager::GetDefaultProfile(),
-                                   this);
+  window_ = chrome::ShowWebDialog(NULL,
+                                  ProfileManager::GetDefaultProfile(),
+                                  this);
 }
 
 // static
 void TaskManagerDialog::Show() {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&TaskManagerDialogImpl::Show, false));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&TaskManagerDialogImpl::Show, false));
 }
 
 // static
 void TaskManagerDialog::ShowBackgroundPages() {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&TaskManagerDialogImpl::Show, true));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&TaskManagerDialogImpl::Show, true));
 }

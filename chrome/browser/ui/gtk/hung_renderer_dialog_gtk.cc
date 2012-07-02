@@ -11,8 +11,8 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/common/logging_chrome.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -252,7 +252,7 @@ void HungRendererDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
 void ShowHungRendererDialog(WebContents* contents) {
   if (!logging::DialogsAreSuppressed()) {
@@ -267,4 +267,4 @@ void HideHungRendererDialog(WebContents* contents) {
     g_instance->EndForWebContents(contents);
 }
 
-}  // namespace browser
+}  // namespace chrome
