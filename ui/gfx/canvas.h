@@ -272,7 +272,7 @@ class UI_EXPORT Canvas {
   // Draws an image with the origin at the specified location. The upper left
   // corner of the bitmap is rendered at the specified location.
   // Parameters are specified relative to current canvas scale not in pixels.
-  // Thus, |x| is 2 pixels if canvas scale = 2 & |x| = 1.
+  // Thus, x is 2 pixels if canvas scale = 2 & |x| = 1.
   void DrawImageInt(const gfx::ImageSkia&, int x, int y);
 
   // Draws an image with the origin at the specified location, using the
@@ -305,6 +305,16 @@ class UI_EXPORT Canvas {
                     int dest_x, int dest_y, int dest_w, int dest_h,
                     bool filter,
                     const SkPaint& paint);
+
+  // Draws an |image| with the top left corner at |x| and |y|, clipped to
+  // |path|.
+  // Parameters are specified relative to current canvas scale not in pixels.
+  // Thus, x is 2 pixels if canvas scale = 2 & |x| = 1.
+  void DrawImageInPath(const gfx::ImageSkia& image,
+                       int x,
+                       int y,
+                       const SkPath& path,
+                       const SkPaint& paint);
 
   // Draws text with the specified color, font and location. The text is
   // aligned to the left, vertically centered, clipped to the region. If the
@@ -392,18 +402,17 @@ class UI_EXPORT Canvas {
   // If |scale_canvas| is true, scales the canvas by |scale_factor|.
   void ApplyScaleFactor(ui::ScaleFactor scale_factor, bool scale_canvas);
 
-  // Returns the bitmap whose density best matches the current canvas scale.
-  // Returns a null bitmap if |image| contains no bitmaps.
-  // |bitmap_scale_factor| is set to the scale factor of the returned bitmap.
-  // Builds mip map for returned bitmap if necessary.
+  // Returns the image rep which best matches the canvas |scale_factor_|.
+  // Returns a null image rep if |image| contains no image reps.
+  // Builds mip map for returned image rep if necessary.
   //
   // An optional additional user defined scale can be provided.
-  const SkBitmap& GetBitmapToPaint(const gfx::ImageSkia& image,
-                                   float* bitmap_scale_factor) const;
-  const SkBitmap& GetBitmapToPaint(const gfx::ImageSkia& image,
-                                   float user_defined_scale_factor_x,
-                                   float user_defined_scale_factor_y,
-                                   float* bitmap_scale_factor)  const;
+  const gfx::ImageSkiaRep& GetImageRepToPaint(
+      const gfx::ImageSkia& image) const;
+  const gfx::ImageSkiaRep& GetImageRepToPaint(
+      const gfx::ImageSkia& image,
+      float user_defined_scale_factor_x,
+      float user_defined_scale_factor_y)  const;
 
 #if defined(OS_WIN)
   // Draws text with the specified color, font and location. The text is

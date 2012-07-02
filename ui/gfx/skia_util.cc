@@ -8,11 +8,11 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
-#include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/effects/SkLayerDrawLooper.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/shadow_value.h"
 
@@ -34,6 +34,31 @@ gfx::Rect SkRectToRect(const SkRect& rect) {
                    static_cast<int>(rect.top()),
                    static_cast<int>(rect.width()),
                    static_cast<int>(rect.height()));
+}
+
+SkShader* CreateImageRepShader(const gfx::ImageSkiaRep& image_rep,
+                               SkShader::TileMode tile_mode,
+                               const SkMatrix& local_matrix) {
+  SkShader* shader = SkShader::CreateBitmapShader(image_rep.sk_bitmap(),
+      tile_mode, tile_mode);
+  SkScalar scale_x = local_matrix.getScaleX();
+  SkScalar scale_y = local_matrix.getScaleY();
+  SkScalar bitmap_scale = SkFloatToScalar(image_rep.GetScale());
+
+  // Unscale matrix by |bitmap_scale| such that the bitmap is drawn at the
+  // correct density.
+  // Convert skew and translation to pixel coordinates.
+  // Thus, for |bitmap_scale| = 2:
+  //   x scale = 2, x translation = 1 DIP,
+  // should be converted to
+  //   x scale = 1, x translation = 2 pixels.
+  SkMatrix shader_scale = local_matrix;
+  shader_scale.preScale(bitmap_scale, bitmap_scale);
+  shader_scale.setScaleX(SkScalarDiv(scale_x, bitmap_scale));
+  shader_scale.setScaleY(SkScalarDiv(scale_y, bitmap_scale));
+
+  shader->setLocalMatrix(shader_scale);
+  return shader;
 }
 
 SkShader* CreateGradientShader(int start_point,

@@ -12,14 +12,15 @@
 #include "base/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRect.h"
+#include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/ui_export.h"
 
 class SkBitmap;
 class SkDrawLooper;
-class SkShader;
 
 namespace gfx {
 
+class ImageSkiaRep;
 class Rect;
 class ShadowValue;
 
@@ -27,6 +28,22 @@ class ShadowValue;
 UI_EXPORT SkRect RectToSkRect(const gfx::Rect& rect);
 UI_EXPORT SkIRect RectToSkIRect(const gfx::Rect& rect);
 UI_EXPORT gfx::Rect SkRectToRect(const SkRect& rect);
+
+// Creates a bitmap shader for the image rep with the image rep's scale factor.
+// Sets the created shader's local matrix such that it displays the image rep at
+// the correct scale factor.
+// The shader's local matrix should not be changed after the shader is created.
+// TODO(pkotwicz): Allow shader's local matrix to be changed after the shader
+// is created.
+// Example usage to avoid leaks:
+//   SkSafeUnref(paint.setShader(gfx::CreateImageRepShader(image_rep,
+//       tile_mode, matrix)));
+//
+// (The old shader in the paint, if any, needs to be freed, and SkSafeUnref will
+// handle the NULL case.)
+UI_EXPORT SkShader* CreateImageRepShader(const gfx::ImageSkiaRep& image_rep,
+                                         SkShader::TileMode tile_mode,
+                                         const SkMatrix& local_matrix);
 
 // Creates a vertical gradient shader. The caller owns the shader.
 // Example usage to avoid leaks:

@@ -14,7 +14,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include "third_party/skia/include/core/SkShader.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/animation/slide_animation.h"
@@ -82,11 +81,11 @@ const int kActivationCrossfadeDurationMs = 200;
 // Alpha/opacity value for fully-opaque headers.
 const int kFullyOpaque = 255;
 
-// Tiles an image into an area, rounding the top corners.  Samples the |bitmap|
+// Tiles an image into an area, rounding the top corners. Samples the |bitmap|
 // starting |bitmap_offset_x| pixels from the left of the image.
 void TileRoundRect(gfx::Canvas* canvas,
                    int x, int y, int w, int h,
-                   SkPaint* paint,
+                   const SkPaint& paint,
                    const gfx::ImageSkia& image,
                    int corner_radius,
                    int image_offset_x) {
@@ -94,7 +93,7 @@ void TileRoundRect(gfx::Canvas* canvas,
   // the whole image, we adjust the target rectangle for the shader to the right
   // and translate the canvas left to compensate.
   SkRect rect;
-  rect.iset(x + image_offset_x, y, x + image_offset_x + w, y + h);
+  rect.iset(x, y, x + w, y + h);
   const SkScalar kRadius = SkIntToScalar(corner_radius);
   SkScalar radii[8] = {
       kRadius, kRadius,  // top-left
@@ -103,19 +102,7 @@ void TileRoundRect(gfx::Canvas* canvas,
       0, 0};  // bottom-left
   SkPath path;
   path.addRoundRect(rect, radii, SkPath::kCW_Direction);
-
-  SkShader* shader = SkShader::CreateBitmapShader(image,
-                                                  SkShader::kRepeat_TileMode,
-                                                  SkShader::kRepeat_TileMode);
-  paint->setShader(shader);
-  // CreateBitmapShader returns a Shader with a reference count of one, we
-  // need to unref after paint takes ownership of the shader.
-  shader->unref();
-  // Adjust canvas to compensate for image sampling offset, draw, then adjust
-  // back. This is cheaper than pushing/popping the entire canvas state.
-  canvas->sk_canvas()->translate(SkIntToScalar(-image_offset_x), 0);
-  canvas->DrawPath(path, *paint);
-  canvas->sk_canvas()->translate(SkIntToScalar(image_offset_x), 0);
+  canvas->DrawImageInPath(image, -image_offset_x, 0, path, paint);
 }
 
 // Returns true if |window| is a visible, normal window.
@@ -339,7 +326,7 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
       paint.setXfermodeMode(SkXfermode::kPlus_Mode);
       TileRoundRect(canvas,
                     0, 0, view->width(), theme_frame->height(),
-                    &paint,
+                    paint,
                     *crossfade_theme_frame,
                     kCornerRadius,
                     kThemeFrameImageOffsetX);
@@ -356,7 +343,7 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
   // Draw the header background, clipping the corners to be rounded.
   TileRoundRect(canvas,
                 0, 0, view->width(), theme_frame->height(),
-                &paint,
+                paint,
                 *theme_frame,
                 kCornerRadius,
                 kThemeFrameImageOffsetX);

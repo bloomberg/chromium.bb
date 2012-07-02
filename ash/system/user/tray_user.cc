@@ -15,7 +15,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
@@ -60,6 +59,8 @@ class RoundedImageView : public views::View {
     image_size_ = size;
 
     // Try to get the best image quality for the avatar.
+    // TODO(pkotwicz|oshima): Use a generator to resize the image based on
+    // painted scale factor.
     resized_ = skia::ImageOperations::Resize(image_,
         skia::ImageOperations::RESIZE_BEST, size.width(), size.height());
     if (GetWidget() && visible()) {
@@ -82,20 +83,10 @@ class RoundedImageView : public views::View {
     const SkScalar kRadius = SkIntToScalar(corner_radius_);
     SkPath path;
     path.addRoundRect(gfx::RectToSkRect(image_bounds), kRadius, kRadius);
-
     SkPaint paint;
-    SkShader* shader = SkShader::CreateBitmapShader(resized_,
-                                                    SkShader::kRepeat_TileMode,
-                                                    SkShader::kRepeat_TileMode);
-    SkMatrix shader_matrix;
-    shader_matrix.setTranslate(SkIntToScalar(image_bounds.x()),
-                               SkIntToScalar(image_bounds.y()));
-    shader->setLocalMatrix(shader_matrix);
-
-    paint.setShader(shader);
     paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
-    shader->unref();
-    canvas->DrawPath(path, paint);
+    canvas->DrawImageInPath(resized_, image_bounds.x(), image_bounds.y(),
+                            path, paint);
   }
 
  private:
