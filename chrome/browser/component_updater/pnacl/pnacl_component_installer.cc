@@ -68,10 +68,6 @@ const char* PnaclArch() {
 #endif
 }
 
-// The Pnacl components are in a directory with this name.
-const FilePath::CharType kPnaclBaseDirectory[] =
-    FILE_PATH_LITERAL("Pnacl");
-
 // If we don't have Pnacl installed, this is the version we claim.
 // TODO(jvoung): Is there a way to trick the configurator to ping the server
 // earlier if there are components that are not yet installed (version 0.0.0.0),
@@ -79,20 +75,19 @@ const FilePath::CharType kPnaclBaseDirectory[] =
 // Make kNullVersion part of ComponentUpdater in that case, to avoid skew?
 const char kNullVersion[] = "0.0.0.0";
 
-// The base directory on Windows looks like:
+// Pnacl components have the version encoded in the path itself:
+// <profile>\AppData\Local\Google\Chrome\User Data\Pnacl\0.1.2.3\.
+// and the base directory will be:
 // <profile>\AppData\Local\Google\Chrome\User Data\Pnacl\.
 FilePath GetPnaclBaseDirectory() {
   FilePath result;
-  PathService::Get(chrome::DIR_USER_DATA, &result);
-  return result.Append(kPnaclBaseDirectory);
+  CHECK(PathService::Get(chrome::DIR_PNACL_BASE, &result));
+  return result;
 }
 
-// Pnacl components have the version encoded in the path itself
-// so we need to enumerate the directories to find the full path.
-// On success it returns something like:
-// <profile>\AppData\Local\Google\Chrome\User Data\Pnacl\0.1.2.3\.
 bool GetLatestPnaclDirectory(FilePath* latest_dir, Version* latest_version,
                              std::vector<FilePath>* older_dirs) {
+  // Enumerate all versions starting from the base directory.
   FilePath base_dir = GetPnaclBaseDirectory();
   bool found = false;
   file_util::FileEnumerator
@@ -275,7 +270,7 @@ void StartPnaclUpdateRegistration(ComponentUpdateService* cus) {
   FilePath path = GetPnaclBaseDirectory();
   if (!file_util::PathExists(path)) {
     if (!file_util::CreateDirectory(path)) {
-      NOTREACHED() << "Could not create Pnacl directory.";
+      NOTREACHED() << "Could not create base Pnacl directory.";
       return;
     }
   }

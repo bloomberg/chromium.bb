@@ -264,6 +264,7 @@ extern const char kPackExtension[];
 extern const char kPackExtensionKey[];
 extern const char kParentProfile[];
 extern const char kPlaybackMode[];
+extern const char kPnaclDir[];
 extern const char kPpapiFlashFieldTrial[];
 extern const char kPpapiFlashFieldTrialDisableByDefault[];
 extern const char kPpapiFlashFieldTrialEnableByDefault[];

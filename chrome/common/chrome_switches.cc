@@ -987,6 +987,9 @@ const char kParentProfile[]                 = "parent-profile";
 // See kRecordMode.
 const char kPlaybackMode[]                  = "playback-mode";
 
+// Overrides the path to the location that PNaCl is installed.
+const char kPnaclDir[]                      = "pnacl-dir";
+
 // Controls the PPAPI Flash field trial. Valid values are defined below. If an
 // unknown value is supplied on the command line, the switch is ignored.
 // TODO(yzshen): Remove this flag when the field trial is over.
