@@ -88,7 +88,7 @@ string16 StringSubRange(const string16& text, size_t start, size_t end) {
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
 // Declared in browser_dialogs.h so that others don't
 // need to depend on our .h.
@@ -98,7 +98,7 @@ void ShowAboutChromeView(gfx::NativeWindow parent, Browser* browser) {
   window->Show();
 }
 
-}  // namespace browser
+}  // namespace chrome
 
 ////////////////////////////////////////////////////////////////////////////////
 // AboutChromeView, public:

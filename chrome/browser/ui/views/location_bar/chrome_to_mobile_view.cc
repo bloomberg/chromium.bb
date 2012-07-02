@@ -56,10 +56,10 @@ void ChromeToMobileView::GetAccessibleState(ui::AccessibleViewState* state) {
 bool ChromeToMobileView::GetTooltipText(const gfx::Point& p,
                                         string16* tooltip) const {
   // Don't show tooltip to distract user if ChromeToMobileBubbleView is showing.
-  if (browser::IsChromeToMobileBubbleViewShowing())
+  if (chrome::IsChromeToMobileBubbleViewShowing())
     return false;
 
-  return ImageView::GetTooltipText(p, tooltip);
+  return views::ImageView::GetTooltipText(p, tooltip);
 }
 
 bool ChromeToMobileView::OnMousePressed(const views::MouseEvent& event) {

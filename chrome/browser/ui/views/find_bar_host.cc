@@ -23,14 +23,14 @@
 
 using content::NativeWebKeyboardEvent;
 
-namespace browser {
+namespace chrome {
 
 // Declared in browser_dialogs.h so others don't have to depend on our header.
 FindBar* CreateFindBar(BrowserView* browser_view) {
   return new FindBarHost(browser_view);
 }
 
-}  // namespace browser
+}  // namespace chrome
 
 ////////////////////////////////////////////////////////////////////////////////
 // FindBarHost, public:

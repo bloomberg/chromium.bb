@@ -24,11 +24,9 @@
 #include "ui/views/widget/widget.h"
 
 using views::GridLayout;
-using views::ImageView;
 using views::Textfield;
 
-
-namespace browser {
+namespace chrome {
 
 void EditSearchEngine(gfx::NativeWindow parent,
                       TemplateURL* template_url,
@@ -37,7 +35,7 @@ void EditSearchEngine(gfx::NativeWindow parent,
   EditSearchEngineDialog::Show(parent, template_url, delegate, profile);
 }
 
-}  // namespace browser
+}  // namespace chrome
 
 EditSearchEngineDialog::EditSearchEngineDialog(
     TemplateURL* template_url,
@@ -131,9 +129,9 @@ void EditSearchEngineDialog::Init() {
     keyword_tf_ = CreateTextfield(string16(), true);
     url_tf_ = CreateTextfield(string16(), false);
   }
-  title_iv_ = new ImageView();
-  keyword_iv_ = new ImageView();
-  url_iv_ = new ImageView();
+  title_iv_ = new views::ImageView();
+  keyword_iv_ = new views::ImageView();
+  url_iv_ = new views::ImageView();
 
   UpdateImageViews();
 
@@ -245,7 +243,7 @@ void EditSearchEngineDialog::UpdateImageViews() {
                   IDS_SEARCH_ENGINES_INVALID_TITLE_TT);
 }
 
-void EditSearchEngineDialog::UpdateImageView(ImageView* image_view,
+void EditSearchEngineDialog::UpdateImageView(views::ImageView* image_view,
                                              bool is_valid,
                                              int invalid_message_id) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

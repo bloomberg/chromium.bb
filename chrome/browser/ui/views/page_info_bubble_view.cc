@@ -454,7 +454,7 @@ gfx::Size Section::LayoutItems(bool compute_bounds_only, int width) {
   return gfx::Size(width, y);
 }
 
-namespace browser {
+namespace chrome {
 
 void ShowPageInfoBubble(views::View* anchor_view,
                         WebContents* web_contents,
@@ -462,15 +462,14 @@ void ShowPageInfoBubble(views::View* anchor_view,
                         const SSLStatus& ssl,
                         bool show_history,
                         content::PageNavigator* navigator) {
-  PageInfoBubbleView* page_info_bubble =
-      new PageInfoBubbleView(anchor_view,
-                             web_contents,
-                             url,
-                             ssl,
-                             show_history,
-                             navigator);
+  PageInfoBubbleView* page_info_bubble = new PageInfoBubbleView(anchor_view,
+                                                                web_contents,
+                                                                url,
+                                                                ssl,
+                                                                show_history,
+                                                                navigator);
   views::BubbleDelegateView::CreateBubble(page_info_bubble);
   page_info_bubble->Show();
 }
 
-}
+}  // namespace chrome

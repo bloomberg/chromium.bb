@@ -795,7 +795,7 @@ bool TaskManagerView::GetSavedAlwaysOnTopState(bool* always_on_top) const {
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
 // Declared in browser_dialogs.h so others don't need to depend on our header.
 void ShowTaskManager() {
@@ -806,4 +806,4 @@ void ShowBackgroundPages() {
   TaskManagerView::Show(true);
 }
 
-}  // namespace browser
+}  // namespace chrome

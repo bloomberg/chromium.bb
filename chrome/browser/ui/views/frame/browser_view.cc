@@ -61,8 +61,8 @@
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_container.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
-#include "chrome/browser/ui/views/omnibox/omnibox_views.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_views.h"
 #include "chrome/browser/ui/views/password_generation_bubble_view.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
@@ -1101,8 +1101,8 @@ void BrowserView::DisableInactiveFrame() {
 
 void BrowserView::ConfirmAddSearchProvider(TemplateURL* template_url,
                                            Profile* profile) {
-  browser::EditSearchEngine(GetWidget()->GetNativeWindow(), template_url, NULL,
-                            profile);
+  chrome::EditSearchEngine(GetWidget()->GetNativeWindow(), template_url, NULL,
+                           profile);
 }
 
 void BrowserView::ToggleBookmarkBar() {
@@ -1110,7 +1110,7 @@ void BrowserView::ToggleBookmarkBar() {
 }
 
 void BrowserView::ShowAboutChromeDialog() {
-  browser::ShowAboutChromeView(GetWidget()->GetNativeWindow(), browser_.get());
+  chrome::ShowAboutChromeView(GetWidget()->GetNativeWindow(), browser_.get());
 }
 
 void BrowserView::ShowUpdateChromeDialog() {
@@ -1121,7 +1121,7 @@ void BrowserView::ShowTaskManager() {
 #if defined(USE_AURA)
   TaskManagerDialog::Show();
 #else
-  browser::ShowTaskManager();
+  chrome::ShowTaskManager();
 #endif  // defined(USE_AURA)
 }
 
@@ -1129,7 +1129,7 @@ void BrowserView::ShowBackgroundPages() {
 #if defined(USE_AURA)
   TaskManagerDialog::ShowBackgroundPages();
 #else
-  browser::ShowBackgroundPages();
+  chrome::ShowBackgroundPages();
 #endif  // defined(USE_AURA)
 }
 
@@ -1185,15 +1185,14 @@ void BrowserView::ConfirmBrowserCloseWithPendingDownloads() {
   DownloadInProgressDialogView::Show(browser_.get(), GetNativeWindow());
 }
 
-void BrowserView::ShowCreateWebAppShortcutsDialog(
-    TabContents* tab_contents) {
-  browser::ShowCreateWebAppShortcutsDialog(GetNativeWindow(), tab_contents);
+void BrowserView::ShowCreateWebAppShortcutsDialog(TabContents* tab_contents) {
+  chrome::ShowCreateWebAppShortcutsDialog(GetNativeWindow(), tab_contents);
 }
 
 void BrowserView::ShowCreateChromeAppShortcutsDialog(
     Profile* profile,
     const extensions::Extension* app) {
-  browser::ShowCreateChromeAppShortcutsDialog(GetNativeWindow(), profile, app);
+  chrome::ShowCreateChromeAppShortcutsDialog(GetNativeWindow(), profile, app);
 }
 
 void BrowserView::UserChangedTheme() {
@@ -1213,9 +1212,8 @@ void BrowserView::ShowPageInfo(content::WebContents* web_contents,
                                const GURL& url,
                                const SSLStatus& ssl,
                                bool show_history) {
-  browser::ShowPageInfoBubble(GetLocationBarView()->location_icon_view(),
-                              web_contents, url, ssl, show_history,
-                              browser_.get());
+  chrome::ShowPageInfoBubble(GetLocationBarView()->location_icon_view(),
+      web_contents, url, ssl, show_history, browser_.get());
 }
 
 void BrowserView::ShowWebsiteSettings(Profile* profile,
@@ -1386,7 +1384,7 @@ WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
 }
 
 FindBar* BrowserView::CreateFindBar() {
-  return browser::CreateFindBar(this);
+  return chrome::CreateFindBar(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1693,7 +1691,7 @@ void BrowserView::OnWidgetMove() {
   if (status_bubble_.get())
     status_bubble_->Reposition();
 
-  browser::HideBookmarkBubbleView();
+  chrome::HideBookmarkBubbleView();
 
   // Close the omnibox popup, if any.
   LocationBarView* location_bar_view = GetLocationBarView();

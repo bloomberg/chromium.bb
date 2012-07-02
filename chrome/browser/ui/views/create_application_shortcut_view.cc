@@ -200,7 +200,7 @@ void AppInfoView::OnPaint(gfx::Canvas* canvas) {
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
 void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
                                      TabContents* tab_contents) {
@@ -217,7 +217,7 @@ void ShowCreateChromeAppShortcutsDialog(gfx::NativeWindow parent_window,
       parent_window)->Show();
 }
 
-}  // namespace browser
+}  // namespace chrome
 
 class CreateUrlApplicationShortcutView::IconDownloadCallbackFunctor {
  public:

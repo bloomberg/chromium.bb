@@ -80,7 +80,7 @@ void SetImageViewToId(views::View* image_view, int id) {
 
 // Declared in browser_dialogs.h so callers don't have to depend on our header.
 
-namespace browser {
+namespace chrome {
 
 void ShowChromeToMobileBubbleView(views::View* anchor_view, Browser* browser) {
   ChromeToMobileBubbleView::ShowBubble(anchor_view, browser);
@@ -94,7 +94,7 @@ bool IsChromeToMobileBubbleViewShowing() {
   return ChromeToMobileBubbleView::IsShowing();
 }
 
-}  // namespace browser
+}  // namespace chrome
 
 // ChromeToMobileBubbleView ----------------------------------------------------
 

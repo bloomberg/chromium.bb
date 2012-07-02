@@ -11,9 +11,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/alternate_nav_url_fetcher.h"
-#include "chrome/browser/command_updater.h"
 #include "chrome/browser/chrome_to_mobile_service.h"
 #include "chrome/browser/chrome_to_mobile_service_factory.h"
+#include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -492,12 +492,12 @@ void LocationBarView::SetStarToggled(bool on) {
 }
 
 void LocationBarView::ShowStarBubble(const GURL& url, bool newly_bookmarked) {
-  browser::ShowBookmarkBubbleView(star_view_, profile_, url, newly_bookmarked);
+  chrome::ShowBookmarkBubbleView(star_view_, profile_, url, newly_bookmarked);
 }
 
 void LocationBarView::ShowChromeToMobileBubble() {
   Browser* browser = GetBrowserFromDelegate(delegate_);
-  browser::ShowChromeToMobileBubbleView(chrome_to_mobile_view_, browser);
+  chrome::ShowChromeToMobileBubbleView(chrome_to_mobile_view_, browser);
 }
 
 gfx::Point LocationBarView::GetLocationEntryOrigin() const {

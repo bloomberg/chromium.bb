@@ -36,18 +36,22 @@ using content::UserMetricsAction;
 using views::ColumnSet;
 using views::GridLayout;
 
+namespace {
+
 // Padding between "Title:" and the actual title.
-static const int kTitlePadding = 4;
+const int kTitlePadding = 4;
 
 // Minimum width for the fields - they will push out the size of the bubble if
 // necessary. This should be big enough so that the field pushes the right side
 // of the bubble far enough so that the edit button's left edge is to the right
 // of the field's left edge.
-static const int kMinimumFieldSize = 180;
+const int kMinimumFieldSize = 180;
+
+}  // namespace
 
 // Declared in browser_dialogs.h so callers don't have to depend on our header.
 
-namespace browser {
+namespace chrome {
 
 void ShowBookmarkBubbleView(views::View* anchor_view,
                             Profile* profile,
@@ -64,7 +68,7 @@ bool IsBookmarkBubbleViewShowing() {
   return BookmarkBubbleView::IsShowing();
 }
 
-}  // namespace browser
+}  // namespace chrome
 
 // BookmarkBubbleView ---------------------------------------------------------
 

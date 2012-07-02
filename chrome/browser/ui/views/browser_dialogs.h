@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_BROWSER_DIALOGS_H_
 #pragma once
 
-#include <string>
-
 #include "ui/gfx/native_widget_types.h"
 
 // This file contains functions for running a variety of browser dialogs and
@@ -36,15 +34,11 @@ namespace extensions {
 class Extension;
 }
 
-namespace gfx {
-class Size;
-}
-
 namespace views {
 class View;
 }
 
-namespace browser {
+namespace chrome {
 
 // Shows or hides the bookmark bubble anchored to the supplied view.
 void ShowBookmarkBubbleView(views::View* anchor_view,
@@ -98,6 +92,6 @@ void ShowCreateChromeAppShortcutsDialog(gfx::NativeWindow parent_window,
                                         Profile* profile,
                                         const extensions::Extension* app);
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_VIEWS_BROWSER_DIALOGS_H_

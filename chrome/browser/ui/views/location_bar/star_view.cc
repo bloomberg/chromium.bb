@@ -45,10 +45,10 @@ void StarView::GetAccessibleState(ui::AccessibleViewState* state) {
 
 bool StarView::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
   // Don't show tooltip to distract user if BookmarkBubbleView is showing.
-  if (browser::IsBookmarkBubbleViewShowing())
+  if (chrome::IsBookmarkBubbleViewShowing())
     return false;
 
-  return ImageView::GetTooltipText(p, tooltip);
+  return views::ImageView::GetTooltipText(p, tooltip);
 }
 
 bool StarView::OnMousePressed(const views::MouseEvent& event) {
