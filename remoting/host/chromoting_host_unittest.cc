@@ -188,6 +188,11 @@ class ChromotingHostTest : public testing::Test {
         .Times(AnyNumber());
     EXPECT_CALL(*connection2_, session())
         .Times(AnyNumber());
+
+    empty_candidate_config_ =
+        protocol::CandidateSessionConfig::CreateEmpty();
+    default_candidate_config_ =
+        protocol::CandidateSessionConfig::CreateDefault();
   }
 
   // Helper method to pretend a client is connected to ChromotingHost.
@@ -313,6 +318,8 @@ class ChromotingHostTest : public testing::Test {
   SessionConfig session2_unowned_config_;
   std::string session2_unowned_jid_;
   protocol::Session::StateChangeCallback session_state_change_callback_;
+  scoped_ptr<protocol::CandidateSessionConfig> empty_candidate_config_;
+  scoped_ptr<protocol::CandidateSessionConfig> default_candidate_config_;
 
   // Owned by |host_|.
   MockDisconnectWindow* disconnect_window_;
@@ -574,7 +581,7 @@ TEST_F(ChromotingHostTest, IncomingSessionIncompatible) {
   EXPECT_CALL(*disconnect_window_, Hide());
   EXPECT_CALL(*continue_window_, Hide());
   EXPECT_CALL(*session_unowned_, candidate_config()).WillOnce(Return(
-      protocol::CandidateSessionConfig::CreateEmpty().release()));
+      empty_candidate_config_.get()));
   EXPECT_CALL(host_status_observer_, OnShutdown());
 
   host_->set_protocol_config(
@@ -594,7 +601,7 @@ TEST_F(ChromotingHostTest, IncomingSessionAccepted) {
   EXPECT_CALL(*disconnect_window_, Hide());
   EXPECT_CALL(*continue_window_, Hide());
   EXPECT_CALL(*session_unowned_, candidate_config()).WillOnce(Return(
-      protocol::CandidateSessionConfig::CreateDefault().release()));
+      default_candidate_config_.get()));
   EXPECT_CALL(*session_unowned_, set_config(_));
   EXPECT_CALL(*session_unowned_, Close()).WillOnce(InvokeWithoutArgs(
       this, &ChromotingHostTest::NotifyConnectionClosed));
@@ -618,7 +625,7 @@ TEST_F(ChromotingHostTest, IncomingSessionOverload) {
   EXPECT_CALL(*disconnect_window_, Hide());
   EXPECT_CALL(*continue_window_, Hide());
   EXPECT_CALL(*session_unowned_, candidate_config()).WillOnce(Return(
-      protocol::CandidateSessionConfig::CreateDefault().release()));
+      default_candidate_config_.get()));
   EXPECT_CALL(*session_unowned_, set_config(_));
   EXPECT_CALL(*session_unowned_, Close()).WillOnce(InvokeWithoutArgs(
       this, &ChromotingHostTest::NotifyConnectionClosed));
