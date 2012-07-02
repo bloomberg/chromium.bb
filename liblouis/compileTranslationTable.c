@@ -165,7 +165,7 @@ static char initialLogFileName[256];
 void EXPORT_CALL
 lou_logFile (const char *fileName)
 {
-  if (fileName == NULL)
+  if (fileName == NULL || fileName[0] == 0)
     return;
   if (initialLogFileName[0] == 0)
     strcpy (initialLogFileName, fileName);
