@@ -849,7 +849,12 @@ terminal_send_selection(struct terminal *terminal, int fd)
 			if (!attr.attr.s)
 				continue;
 			len = strnlen((char *) p_row[col].byte, 4);
-			fwrite(p_row[col].byte, 1, len, fp);
+			if (len > 0)
+				fwrite(p_row[col].byte, 1, len, fp);
+			if (len == 0 || col == terminal->width - 1) {
+				fwrite("\n", 1, 1, fp);
+				break;
+			}
 		}
 	}
 	fclose(fp);
