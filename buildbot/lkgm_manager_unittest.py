@@ -412,8 +412,8 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.ReplayAll()
     statuses = self.manager.GetBuildersStatus(['build1', 'build2'],
                                               fake_version_file)
-    self.assertEqual(statuses['build1'], 'fail')
-    self.assertEqual(statuses['build2'], 'pass')
+    self.assertTrue(statuses['build1'].Failed())
+    self.assertTrue(statuses['build2'].Passed())
     self.mox.VerifyAll()
 
   @cros_build_lib.TimeoutDecorator(10)
@@ -438,8 +438,8 @@ class LKGMManagerTest(mox.MoxTestBase):
 
     statuses = self.manager.GetBuildersStatus(['build1', 'build2'],
                                               fake_version_file)
-    self.assertEqual(statuses['build1'], 'fail')
-    self.assertEqual(statuses['build2'], 'pass')
+    self.assertTrue(statuses['build1'].Failed())
+    self.assertTrue(statuses['build2'].Passed())
     self.mox.VerifyAll()
 
   @cros_build_lib.TimeoutDecorator(20)
@@ -466,8 +466,8 @@ class LKGMManagerTest(mox.MoxTestBase):
       self.manager.LONG_MAX_TIMEOUT_SECONDS = 5
       statuses = self.manager.GetBuildersStatus(['build1', 'build2'],
                                               fake_version_file)
-      self.assertEqual(statuses['build1'], 'fail')
-      self.assertEqual(statuses['build2'], None)
+      self.assertTrue(statuses['build1'].Failed())
+      self.assertEqual(statuses['build2'].status, None)
     finally:
       thread.join()
     self.mox.VerifyAll()

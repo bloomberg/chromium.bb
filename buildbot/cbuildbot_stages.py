@@ -587,11 +587,14 @@ class ManifestVersionedSyncCompletionStage(ForgivingBuilderStage):
     super(ManifestVersionedSyncCompletionStage, self).__init__(
         options, build_config)
     self.success = success
+    # Message that can be set that well be sent along with the status in
+    # UpdateStatus.
+    self.message = None
 
   def _PerformStage(self):
     if ManifestVersionedSyncStage.manifest_manager:
       ManifestVersionedSyncStage.manifest_manager.UpdateStatus(
-         success=self.success)
+         success=self.success, message=self.message)
 
 
 class ImportantBuilderFailedException(Exception):
@@ -638,16 +641,16 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       if LKGMCandidateSyncStage.sub_manager:
         LKGMCandidateSyncStage.sub_manager.PromoteCandidate()
 
-  def HandleValidationFailure(self, failing_builders):
+  def HandleValidationFailure(self, failing_build_statuses):
     print '\n%s' % constants.STEP_WARNINGS
     print 'The following builders failed with this manifest:'
-    print ', '.join(sorted(failing_builders))
+    print ', '.join(sorted(failing_build_statuses.keys()))
     print 'Please check the logs of the failing builders for details.'
 
-  def HandleValidationTimeout(self, inflight_builders):
+  def HandleValidationTimeout(self, inflight_build_statuses):
     print '\n%s' % constants.STEP_WARNINGS
     print 'The following builders took too long to finish:'
-    print ', '.join(sorted(inflight_builders))
+    print ', '.join(sorted(inflight_build_statuses.keys()))
     print 'Please check the logs of these builders for details.'
 
   def _PerformStage(self):
@@ -655,20 +658,21 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
     if ManifestVersionedSyncStage.manifest_manager:
       statuses = self._GetSlavesStatus()
-      failing_builders, inflight_builders = set(), set()
+      failing_build_dict, inflight_build_dict = {}, {}
       for builder, status in statuses.iteritems():
-        if status == lkgm_manager.LKGMManager.STATUS_FAILED:
-          failing_builders.add(builder)
-        elif status != lkgm_manager.LKGMManager.STATUS_PASSED:
-          inflight_builders.add(builder)
+        if status.Failed():
+          failing_build_dict[builder] = status
+        elif status.Inflight():
+          inflight_build_dict[builder] = status
 
-      if failing_builders:
-        self.HandleValidationFailure(failing_builders)
+      if failing_build_dict or inflight_build_dict:
+        if failing_build_dict:
+          self.HandleValidationFailure(failing_build_dict)
 
-      if inflight_builders:
-        self.HandleValidationTimeout(inflight_builders)
+        if inflight_build_dict:
+          self.HandleValidationTimeout(inflight_build_dict)
 
-      if failing_builders or inflight_builders:
+      if failing_build_dict or inflight_build_dict:
         raise results_lib.StepFailure()
       else:
         self.HandleSuccess()
@@ -686,6 +690,24 @@ class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
       if cbuildbot_config.IsPFQType(self._build_config['build_type']):
         super(CommitQueueCompletionStage, self).HandleSuccess()
 
+  def HandleValidationFailure(self, failing_build_statuses):
+    """Sends the failure message of all failing builds in one go."""
+    super(CommitQueueCompletionStage, self).HandleValidationFailure(
+        failing_build_statuses)
+
+    if self._build_config['master']:
+      failure_list = ['The following build(s) failed:']
+      # Sorts by build name i.e. the dictionary key
+      for builder, status in sorted(failing_build_statuses.items()):
+        if status.message:
+          failure_list.append('%(builder)s: %(message)s' % dict(
+              builder=builder, message=status.message))
+        else:
+          failure_list.append('%(builder)s failed.' % dict(builder=builder))
+
+      failure_message = '\n\n'.join(failure_list)
+      CommitQueueSyncStage.pool.HandleValidationFailure(failure_message)
+
   def HandleValidationTimeout(self, inflight_builders):
     super(CommitQueueCompletionStage, self).HandleValidationTimeout(
         inflight_builders)
@@ -694,7 +716,10 @@ class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
   def _PerformStage(self):
     if not self.success and self._build_config['important']:
       stage, exception, _traceback = results_lib.Results.GetFirstTraceback()
-      CommitQueueSyncStage.pool.HandleValidationFailure(stage, exception)
+      # This message is sent along with the failed status to the master to
+      # indicate a failure.
+      self.message = CommitQueueSyncStage.pool.GetValidationFailedMessage(
+          stage, exception)
 
     super(CommitQueueCompletionStage, self)._PerformStage()
 

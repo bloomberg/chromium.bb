@@ -313,7 +313,7 @@ class PatchSeries(object):
       this transaction.
     """
     plan, stack = [], []
-    self._ResolveChange(change, buildroot,  plan, stack, frozen=frozen)
+    self._ResolveChange(change, buildroot, plan, stack, frozen=frozen)
     return plan
 
   def _ResolveChange(self, change, buildroot, plan, stack, frozen=False):
@@ -1059,14 +1059,6 @@ class ValidationPool(object):
     self._helper_pool.ForChange(failure.patch).RemoveCommitReady(
         failure.patch, dryrun=self.dryrun)
 
-  def HandleValidationFailure(self, failed_stage=None, exception=None):
-    """Handles failed changes by removing them from next Validation Pools."""
-    logging.info('Validation failed for all changes.')
-    for change in self.changes:
-      logging.info('Validation failed for change %s.', change)
-      self._HandleCouldNotVerify(change, failed_stage=failed_stage,
-                                 exception=exception)
-
   def HandleValidationTimeout(self):
     """Handles changes that timed out."""
     logging.info('Validation timed out for all changes.')
@@ -1112,28 +1104,64 @@ class ValidationPool(object):
     self._helper_pool.ForChange(change).RemoveCommitReady(
         change, dryrun=self.dryrun)
 
-  def _HandleCouldNotVerify(self, change, failed_stage=None, exception=None):
-    """Handler for when Paladin fails to validate a change.
+  def HandleValidationFailure(self, msg):
+    """Handles validation failure by sending |msg| to all changes.
 
-    This handler notifies set Verified-1 to the review forcing the developer
+    This handler strips the Commit Ready from all changes forcing developers
     to re-upload a change that works.  There are many reasons why this might be
-    called e.g. build or testing exception.
+    called e.g. build or testing exception. This is the meta-call called by
+    a master paladin builder with a msg containing all sub-messsages from failed
+    slave builders."""
+    msg += ('\n\nPlease check whether the failure is your fault. '
+            'If your change is not at fault, you may mark it as ready again.')
+    for change in self.changes:
+      # Send notification but don't apply kwargs as the message is already
+      # complete.
+      self._SendNotification(change, '%(failure_message)s', failure_message=msg)
+      self._helper_pool.ForChange(change).RemoveCommitReady(
+          change, dryrun=self.dryrun)
+
+  def GetValidationFailedMessage(self, failed_stage=None, exception=None):
+    """Returns message indicating these changes failed to be validated.
 
     Args:
       change: GerritPatch instance to operate upon.
       failed_stage: If not None, the name of the first stage that failed.
       exception: The exception object thrown by the first failure.
     """
+    logging.info('Validation failed for all changes.')
     if failed_stage and exception:
-      detail = 'Oops!  The %s stage failed: %s' % (failed_stage, exception)
+      detail = 'The %s stage failed %s' % (failed_stage, exception)
     else:
-      detail = 'Oops!  The commit queue failed to verify your change.'
+      detail = 'Failed to build %s' % self._builder_name
 
-    self._SendNotification(
-        change,
-        '%(detail)s\n\nPlease check whether the failure is your fault: '
-        '%(build_log)s . If your change is not at fault, you may mark it as '
-        'ready again.', detail=detail)
+    return '%(detail)s in %(build_log)s' % dict(build_log=self.build_log,
+                                                detail=detail)
+
+  def HandleCouldNotApply(self, change):
+    """Handler for when Paladin fails to apply a change.
+
+    This handler strips the Commit Ready bit forcing the developer
+    to re-upload a rebased change as this theirs failed to apply cleanly.
+
+    Args:
+      change: GerritPatch instance to operate upon.
+    """
+    msg = 'The Commit Queue failed to apply your change in %(build_log)s . '
+    # This is written this way to protect against bugs in CQ itself.  We log
+    # it both to the build output, and mark the change w/ it.
+    extra_msg = getattr(change, 'apply_error_message', None)
+    if extra_msg is None:
+      logging.error(
+          'Change %s was passed to HandleCouldNotApply without an appropriate '
+          'apply_error_message set.  Internal bug.', change)
+      extra_msg = (
+          'Internal CQ issue: extra error info was not given,  Please contact '
+          'the build team and ensure they are aware of this specific change '
+          'failing.')
+
+    msg += extra_msg
+    self._SendNotification(change, msg)
     self._helper_pool.ForChange(change).RemoveCommitReady(
         change, dryrun=self.dryrun)
 
@@ -1175,7 +1203,7 @@ class PaladinMessage():
     # any backslashes or quotes within these quotes are escaped.
     # See com.google.gerrit.sshd.CommandFactoryProvider#split.
     message = '"%s"' % (self._ConstructPaladinMessage().
-                        replace('\\','\\\\').replace('"', '\\"'))
+                        replace('\\', '\\\\').replace('"', '\\"'))
     cmd = self.helper.GetGerritReviewCommand(
         ['-m', message,
          '%s,%s' % (self.patch.gerrit_number, self.patch.patch_number)])

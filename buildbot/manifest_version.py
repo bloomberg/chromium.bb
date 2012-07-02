@@ -305,13 +305,40 @@ class VersionInfo(object):
     return ''
 
 
-class BuildSpecsManager(object):
-  """A Class to manage buildspecs and their states."""
-  # Various status builds can be in.
+class BuilderStatus():
+  """Object representing the status of a build."""
+    # Various status builds can be in.
   STATUS_FAILED = 'fail'
   STATUS_PASSED = 'pass'
   STATUS_INFLIGHT = 'inflight'
   STATUS_COMPLETED = [STATUS_PASSED, STATUS_FAILED]
+  MESSAGE_FILE_SUFFIX = '_message.txt'
+
+  def __init__(self, status, message):
+    self.status = status
+    self.message = message
+
+  # Helper methods to make checking the status object easy.
+
+  def Failed(self):
+    """Returns True if the Builder failed."""
+    return self.status == BuilderStatus.STATUS_FAILED
+
+  def Passed(self):
+    """Returns True if the Builder passed."""
+    return self.status == BuilderStatus.STATUS_PASSED
+
+  def Inflight(self):
+    """Returns True if the Builder is still inflight."""
+    return self.status == BuilderStatus.STATUS_INFLIGHT
+
+  def Completed(self):
+    """Returns True if the Builder has completed."""
+    return self.status in BuilderStatus.STATUS_COMPLETED
+
+
+class BuildSpecsManager(object):
+  """A Class to manage buildspecs and their states."""
 
   # Max timeout before assuming other builders have failed.
   LONG_MAX_TIMEOUT_SECONDS = 1200
@@ -404,11 +431,11 @@ class BuildSpecsManager(object):
     specs_for_build = self.specs_for_builder % {'builder': self.build_name}
     self.all_specs_dir = os.path.join(working_dir, 'buildspecs', dir_pfx)
     self.pass_dir = os.path.join(specs_for_build,
-                                 BuildSpecsManager.STATUS_PASSED, dir_pfx)
+                                 BuilderStatus.STATUS_PASSED, dir_pfx)
     self.fail_dir = os.path.join(specs_for_build,
-                                 BuildSpecsManager.STATUS_FAILED, dir_pfx)
+                                 BuilderStatus.STATUS_FAILED, dir_pfx)
     self.inflight_dir = os.path.join(specs_for_build,
-                                     BuildSpecsManager.STATUS_INFLIGHT, dir_pfx)
+                                     BuilderStatus.STATUS_INFLIGHT, dir_pfx)
 
     # Calculate latest build that passed or failed.
     dirs = (self.pass_dir, self.fail_dir)
@@ -482,26 +509,72 @@ class BuildSpecsManager(object):
     """Returns True if this is our first build or the last build succeeded."""
     return self.latest_processed == self.latest_passed
 
+  def _GetPathToStatusMessage(self, status_path):
+    """Returns the path the corresponding status message file."""
+    return os.path.join(
+        os.path.dirname(status_path), '%s%s' % (
+            self.current_version, BuilderStatus.MESSAGE_FILE_SUFFIX))
+
+  # TODO(sosa): Write unittests for these methods below
+  def _SetAdditionalStatusMessage(self, status_path, message):
+    """Stores an additional message for the corresponding status file.
+
+    Builds have a corresponding status i.e. PASS/FAIL/INFLIGHT for each build.
+    These statuses may contain additional status messages. This method takes
+    a string and stores it along with the status file.
+
+    Args:
+      status_path: Path to the status symlink.
+      message: Message to store along.
+    """
+    message_file = self._GetPathToStatusMessage(status_path)
+    osutils.WriteFile(message_file, message)
+
+  def _GetAdditionalStatusMessage(self, status_path):
+    """Returns a string containing any additional message for the status
+
+    Builds have a corresponding status i.e. PASS/FAIL/INFLIGHT for each build.
+    These statuses may contain additional status messages. This method takes
+    a path to a status file and returns any additional messaging.
+
+    Args:
+      status_path - Path to the status symlink.
+
+    Returns - String containing any additional status message or None if None
+      exists.
+    """
+    message_file = self._GetPathToStatusMessage(status_path)
+    if os.path.exists(message_file):
+      return open(message_file).read()
+
   def GetBuildStatus(self, builder, version_info):
-    """Given a builder, version, verison_info returns the build status."""
+    """Returns a BuilderStatus instance for the given the builder.
+
+    Returns:
+      A dictionary containing the builder name, success boolean,
+      and any optional message associated with the status passed by the builder.
+    """
     xml_name = self.current_version + '.xml'
     dir_pfx = version_info.DirPrefix()
     specs_for_build = self.specs_for_builder % {'builder': builder}
-    pass_file = os.path.join(specs_for_build, self.STATUS_PASSED, dir_pfx,
-                             xml_name)
-    fail_file = os.path.join(specs_for_build, self.STATUS_FAILED, dir_pfx,
-                             xml_name)
-    inflight_file = os.path.join(specs_for_build, self.STATUS_INFLIGHT, dir_pfx,
-                                 xml_name)
+    pass_file = os.path.join(specs_for_build, BuilderStatus.STATUS_PASSED,
+                             dir_pfx, xml_name)
+    fail_file = os.path.join(specs_for_build, BuilderStatus.STATUS_FAILED,
+                             dir_pfx, xml_name)
+    inflight_file = os.path.join(specs_for_build, BuilderStatus.STATUS_INFLIGHT,
+                                 dir_pfx, xml_name)
 
+    status = None
+    message = None
     if os.path.lexists(pass_file):
-      return BuildSpecsManager.STATUS_PASSED
+      status = BuilderStatus.STATUS_PASSED
     elif os.path.lexists(fail_file):
-      return BuildSpecsManager.STATUS_FAILED
+      message = self._GetAdditionalStatusMessage(fail_file)
+      status = BuilderStatus.STATUS_FAILED
     elif os.path.lexists(inflight_file):
-      return BuildSpecsManager.STATUS_INFLIGHT
-    else:
-      return None
+      status = BuilderStatus.STATUS_INFLIGHT
+
+    return BuilderStatus(status=status, message=message)
 
   def GetLocalManifest(self, version=None):
     """Return path to local copy of manifest given by version.
@@ -593,7 +666,7 @@ class BuildSpecsManager(object):
     logging.debug('Setting build in flight  %s: %s', src_file, dest_file)
     CreateSymlink(src_file, dest_file)
 
-  def _SetFailed(self):
+  def _SetFailed(self, failure_message=None):
     """Marks the buildspec as failed by creating a symlink in fail dir."""
     dest_file = '%s.xml' % os.path.join(self.fail_dir, self.current_version)
     src_file = '%s.xml' % os.path.join(self.all_specs_dir, self.current_version)
@@ -601,6 +674,12 @@ class BuildSpecsManager(object):
                                           self.current_version)
     logging.debug('Setting build to failed  %s: %s', src_file, dest_file)
     CreateSymlink(src_file, dest_file, remove_file)
+    if failure_message:
+      failure_file = '%s%s' % (os.path.join(self.fail_dir,
+                                            self.current_version),
+                               BuilderStatus.MESSAGE_FILE_SUFFIX)
+      with open(failure_file, 'w') as failure_file_handle:
+        failure_file_handle.write(failure_message)
 
   def _SetPassed(self):
     """Marks the buildspec as passed by creating a symlink in passed dir."""
@@ -616,19 +695,25 @@ class BuildSpecsManager(object):
     _PushGitChanges(self.manifest_dir, commit_message,
                     dry_run=self.dry_run)
 
-  def UpdateStatus(self, success, retries=NUM_RETRIES):
+  def UpdateStatus(self, success, message=None, retries=NUM_RETRIES):
     """Updates the status of the build for the current build spec.
     Args:
       success: True for success, False for failure
+      message: Message accompanied with change in status.
       retries: Number of retries for updating the status
     """
     last_error = None
+    if message: logging.info('Updating status with message %s', message)
     for index in range(0, retries + 1):
       try:
         self.RefreshManifestCheckout()
         cros_build_lib.CreatePushBranch(PUSH_BRANCH, self.manifest_dir,
                                         sync=False)
-        status = self.STATUS_PASSED if success else self.STATUS_FAILED
+        if success:
+          status = BuilderStatus.STATUS_PASSED
+        else:
+          status = BuilderStatus.STATUS_FAILED
+
         commit_message = ('Automatic checkin: status=%s build_version %s for '
                           '%s' % (status,
                                   self.current_version,
@@ -636,7 +721,7 @@ class BuildSpecsManager(object):
         if success:
           self._SetPassed()
         else:
-          self._SetFailed()
+          self._SetFailed(failure_message=message)
 
         self.PushSpecChanges(commit_message)
       except cros_build_lib.RunCommandError as e:

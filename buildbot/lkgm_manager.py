@@ -392,31 +392,33 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
   def GetBuildersStatus(self, builders_array, version_file):
     """Returns a build-names->status dictionary of build statuses."""
+    builders_completed = set()
     builder_statuses = {}
 
     def _CheckStatusOfBuildersArray():
       """Helper function that iterates through current statuses."""
-      num_complete = 0
       _SyncGitRepo(self.manifest_dir)
       version_info = _LKGMCandidateInfo(version_file=version_file,
                                         incr_type=self.incr_type)
-      for builder in builders_array:
-        if builder_statuses.get(builder) not in LKGMManager.STATUS_COMPLETED:
-          logging.debug("Checking for builder %s's status", builder)
-          builder_statuses[builder] = self.GetBuildStatus(builder, version_info)
-          if builder_statuses[builder] == LKGMManager.STATUS_PASSED:
-            num_complete += 1
-            logging.info('Builder %s completed with status passed', builder)
-          elif builder_statuses[builder] == LKGMManager.STATUS_FAILED:
-            num_complete += 1
-            logging.info('Builder %s completed with status failed', builder)
-          elif not builder_statuses[builder]:
-            logging.debug('No status found for builder %s.', builder)
-        else:
-          num_complete += 1
+      for b in builders_array:
+        cached_status = builder_statuses.get(b)
+        if not cached_status or not cached_status.Completed():
+          logging.debug("Checking for builder %s's status", b)
+          builder_status = self.GetBuildStatus(b, version_info)
+          builder_statuses[b] = builder_status
+          if builder_status.Passed():
+            builders_completed.add(b)
+            logging.info('Builder %s completed with status passed', b)
+          elif builder_status.Failed():
+            builders_completed.add(b)
+            logging.info('Builder %s completed with status failed', b)
+          elif not builder_status.status:
+            logging.debug('No status found for builder %s.', b)
 
-      if num_complete < len(builders_array):
-        logging.info('Waiting for other builds to complete')
+
+      if len(builders_completed) < len(builders_array):
+        logging.info('Still waiting for the following builds to complete: %r',
+                     (set(builders_array) - builders_completed))
         return None
       else:
         return 'Builds completed.'
