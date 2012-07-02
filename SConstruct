@@ -2583,7 +2583,7 @@ def MakeGTestEnv(env):
   # See http://code.google.com/p/nativeclient/issues/detail?id=1987
   gtest_env.FilterOut(LINKFLAGS=['-static'])
 
-  gtest_env.Append(LIBS=['gtest'])
+  gtest_env.Prepend(LIBS=['gtest'])
   return gtest_env
 
 pre_base_env.AddMethod(MakeGTestEnv)
