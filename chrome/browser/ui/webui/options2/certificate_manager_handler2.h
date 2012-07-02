@@ -24,6 +24,7 @@
 
 namespace options2 {
 
+class CertIdMap;
 class FileAccessProvider;
 
 class CertificateManagerHandler : public OptionsPageUIHandler,
@@ -176,6 +177,8 @@ class CertificateManagerHandler : public OptionsPageUIHandler,
   scoped_refptr<FileAccessProvider> file_access_provider_;
 
   base::WeakPtrFactory<CertificateManagerHandler> weak_ptr_factory_;
+
+  scoped_ptr<CertIdMap> cert_id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateManagerHandler);
 };

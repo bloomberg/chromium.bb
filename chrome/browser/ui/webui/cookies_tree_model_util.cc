@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/webui/cookies_tree_model_util.h"
 
+#include <vector>
+
 #include "base/i18n/time_formatting.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -16,56 +19,40 @@
 
 namespace {
 
-static const char kKeyId[] = "id";
-static const char kKeyTitle[] = "title";
-static const char kKeyIcon[] = "icon";
-static const char kKeyType[] = "type";
-static const char kKeyHasChildren[] = "hasChildren";
+const char kKeyId[] = "id";
+const char kKeyTitle[] = "title";
+const char kKeyIcon[] = "icon";
+const char kKeyType[] = "type";
+const char kKeyHasChildren[] = "hasChildren";
 
-static const char kKeyName[] = "name";
-static const char kKeyContent[] = "content";
-static const char kKeyDomain[] = "domain";
-static const char kKeyPath[] = "path";
-static const char kKeySendFor[] = "sendfor";
-static const char kKeyAccessibleToScript[] = "accessibleToScript";
-static const char kKeyDesc[] = "desc";
-static const char kKeySize[] = "size";
-static const char kKeyOrigin[] = "origin";
-static const char kKeyManifest[] = "manifest";
-static const char kKeyServerId[] = "serverId";
+const char kKeyName[] = "name";
+const char kKeyContent[] = "content";
+const char kKeyDomain[] = "domain";
+const char kKeyPath[] = "path";
+const char kKeySendFor[] = "sendfor";
+const char kKeyAccessibleToScript[] = "accessibleToScript";
+const char kKeyDesc[] = "desc";
+const char kKeySize[] = "size";
+const char kKeyOrigin[] = "origin";
+const char kKeyManifest[] = "manifest";
+const char kKeyServerId[] = "serverId";
 
-static const char kKeyAccessed[] = "accessed";
-static const char kKeyCreated[] = "created";
-static const char kKeyExpires[] = "expires";
-static const char kKeyModified[] = "modified";
+const char kKeyAccessed[] = "accessed";
+const char kKeyCreated[] = "created";
+const char kKeyExpires[] = "expires";
+const char kKeyModified[] = "modified";
 
-static const char kKeyPersistent[] = "persistent";
-static const char kKeyTemporary[] = "temporary";
+const char kKeyPersistent[] = "persistent";
+const char kKeyTemporary[] = "temporary";
 
-static const char kKeyTotalUsage[] = "totalUsage";
-static const char kKeyTemporaryUsage[] = "temporaryUsage";
-static const char kKeyPersistentUsage[] = "persistentUsage";
-static const char kKeyPersistentQuota[] = "persistentQuota";
+const char kKeyTotalUsage[] = "totalUsage";
+const char kKeyTemporaryUsage[] = "temporaryUsage";
+const char kKeyPersistentUsage[] = "persistentUsage";
+const char kKeyPersistentQuota[] = "persistentQuota";
 
-static const char kKeyCertType[] = "certType";
+const char kKeyCertType[] = "certType";
 
-static const int64 kNegligibleUsage = 1024;  // 1KiB
-
-// Encodes a pointer value into a hex string.
-std::string PointerToHexString(const void* pointer) {
-  return base::HexEncode(&pointer, sizeof(pointer));
-}
-
-// Decodes a pointer from a hex string.
-void* HexStringToPointer(const std::string& str) {
-  std::vector<uint8> buffer;
-  if (!base::HexStringToBytes(str, &buffer) ||
-      buffer.size() != sizeof(void*)) {
-    return NULL;
-  }
-
-  return *reinterpret_cast<void**>(&buffer[0]);
-}
+const int64 kNegligibleUsage = 1024;  // 1KiB
 
 std::string ClientCertTypeToString(net::SSLClientCertType type) {
   switch (type) {
@@ -80,16 +67,27 @@ std::string ClientCertTypeToString(net::SSLClientCertType type) {
 
 }  // namespace
 
-namespace cookies_tree_model_util {
-
-std::string GetTreeNodeId(CookieTreeNode* node) {
-  return PointerToHexString(node);
+CookiesTreeModelUtil::CookiesTreeModelUtil() {
 }
 
-bool GetCookieTreeNodeDictionary(const CookieTreeNode& node,
-                                 DictionaryValue* dict) {
+CookiesTreeModelUtil::~CookiesTreeModelUtil() {
+}
+
+std::string CookiesTreeModelUtil::GetTreeNodeId(const CookieTreeNode* node) {
+  CookieTreeNodeMap::const_iterator iter = node_map_.find(node);
+  if (iter != node_map_.end())
+    return base::IntToString(iter->second);
+
+  int32 new_id = id_map_.Add(node);
+  node_map_[node] = new_id;
+  return base::IntToString(new_id);
+}
+
+bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
+    const CookieTreeNode& node,
+    base::DictionaryValue* dict) {
   // Use node's address as an id for WebUI to look it up.
-  dict->SetString(kKeyId, PointerToHexString(&node));
+  dict->SetString(kKeyId, GetTreeNodeId(&node));
   dict->SetString(kKeyTitle, node.GetTitle());
   dict->SetBoolean(kKeyHasChildren, !node.empty());
 
@@ -261,32 +259,35 @@ bool GetCookieTreeNodeDictionary(const CookieTreeNode& node,
   return true;
 }
 
-void GetChildNodeList(CookieTreeNode* parent, int start, int count,
-                      ListValue* nodes) {
+void CookiesTreeModelUtil::GetChildNodeList(const CookieTreeNode* parent,
+                                            int start,
+                                            int count,
+                                            base::ListValue* nodes) {
   for (int i = 0; i < count; ++i) {
-    DictionaryValue* dict = new DictionaryValue;
-    CookieTreeNode* child = parent->GetChild(start + i);
-    if (GetCookieTreeNodeDictionary(*child, dict))
-      nodes->Append(dict);
-    else
-      delete dict;
+    scoped_ptr<base::DictionaryValue> dict(new DictionaryValue);
+    const CookieTreeNode* child = parent->GetChild(start + i);
+    if (GetCookieTreeNodeDictionary(*child, dict.get()))
+      nodes->Append(dict.release());
   }
 }
 
-CookieTreeNode* GetTreeNodeFromPath(CookieTreeNode* root,
-                                    const std::string& path) {
+const CookieTreeNode* CookiesTreeModelUtil::GetTreeNodeFromPath(
+    const CookieTreeNode* root,
+    const std::string& path) {
   std::vector<std::string> node_ids;
   base::SplitString(path, ',', &node_ids);
 
-  CookieTreeNode* child = NULL;
-  CookieTreeNode* parent = root;
+  const CookieTreeNode* child = NULL;
+  const CookieTreeNode* parent = root;
   int child_index = -1;
 
   // Validate the tree path and get the node pointer.
   for (size_t i = 0; i < node_ids.size(); ++i) {
-    child = reinterpret_cast<CookieTreeNode*>(
-        HexStringToPointer(node_ids[i]));
+    int32 node_id = 0;
+    if (!base::StringToInt(node_ids[i], &node_id))
+      break;
 
+    child = id_map_.Lookup(node_id);
     child_index = parent->GetIndexOf(child);
     if (child_index == -1)
       break;
@@ -296,5 +297,3 @@ CookieTreeNode* GetTreeNodeFromPath(CookieTreeNode* root,
 
   return child_index >= 0 ? child : NULL;
 }
-
-}  // namespace cookies_tree_model_util

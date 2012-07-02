@@ -4,9 +4,13 @@
 
 #include "chrome/browser/ui/webui/options2/certificate_manager_handler2.h"
 
+#include <algorithm>
+#include <map>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_util.h"  // for FileAccessProvider
+#include "base/id_map.h"
 #include "base/memory/scoped_vector.h"
 #include "base/safe_strerror_posix.h"
 #include "base/string_number_conversions.h"
@@ -53,49 +57,8 @@ enum {
   IMPORT_CA_FILE_SELECTED,
 };
 
-// TODO(mattm): These are duplicated from cookies_view_handler.cc
-// Encodes a pointer value into a hex string.
-std::string PointerToHexString(const void* pointer) {
-  return base::HexEncode(&pointer, sizeof(pointer));
-}
-
-// Decodes a pointer from a hex string.
-void* HexStringToPointer(const std::string& str) {
-  std::vector<uint8> buffer;
-  if (!base::HexStringToBytes(str, &buffer) ||
-      buffer.size() != sizeof(void*)) {
-    return NULL;
-  }
-
-  return *reinterpret_cast<void**>(&buffer[0]);
-}
-
 std::string OrgNameToId(const std::string& org) {
   return "org-" + org;
-}
-
-std::string CertToId(const net::X509Certificate& cert) {
-  return "cert-" + PointerToHexString(&cert);
-}
-
-net::X509Certificate* IdToCert(const std::string& id) {
-  if (!StartsWithASCII(id, "cert-", true))
-    return NULL;
-  return reinterpret_cast<net::X509Certificate*>(
-      HexStringToPointer(id.substr(5)));
-}
-
-net::X509Certificate* CallbackArgsToCert(const ListValue* args) {
-  std::string node_id;
-  if (!args->GetString(0, &node_id)){
-    return NULL;
-  }
-  net::X509Certificate* cert = IdToCert(node_id);
-  if (!cert) {
-    NOTREACHED();
-    return NULL;
-  }
-  return cert;
 }
 
 bool CallbackArgsToBool(const ListValue* args, int index, bool* result) {
@@ -147,6 +110,63 @@ std::string NetErrorToString(int net_error) {
 }  // namespace
 
 namespace options2 {
+
+///////////////////////////////////////////////////////////////////////////////
+//  CertIdMap
+
+class CertIdMap {
+ public:
+  CertIdMap() {}
+  ~CertIdMap() {}
+
+  std::string CertToId(net::X509Certificate* cert);
+  net::X509Certificate* IdToCert(const std::string& id);
+  net::X509Certificate* CallbackArgsToCert(const base::ListValue* args);
+
+ private:
+  typedef std::map<net::X509Certificate*, int32> CertMap;
+
+  // Creates an ID for cert and looks up the cert for an ID.
+  IDMap<net::X509Certificate>id_map_;
+
+  // Finds the ID for a cert.
+  CertMap cert_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(CertIdMap);
+};
+
+std::string CertIdMap::CertToId(net::X509Certificate* cert) {
+  CertMap::const_iterator iter = cert_map_.find(cert);
+  if (iter != cert_map_.end())
+    return base::IntToString(iter->second);
+
+  int32 new_id = id_map_.Add(cert);
+  cert_map_[cert] = new_id;
+  return base::IntToString(new_id);
+}
+
+net::X509Certificate* CertIdMap::IdToCert(const std::string& id) {
+  int32 cert_id = 0;
+  if (!base::StringToInt(id, &cert_id))
+    return NULL;
+
+  return id_map_.Lookup(cert_id);
+}
+
+net::X509Certificate* CertIdMap::CallbackArgsToCert(
+    const ListValue* args) {
+  std::string node_id;
+  if (!args->GetString(0, &node_id))
+    return NULL;
+
+  net::X509Certificate* cert = IdToCert(node_id);
+  if (!cert) {
+    NOTREACHED();
+    return NULL;
+  }
+
+  return cert;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //  FileAccessProvider
@@ -255,7 +275,8 @@ void FileAccessProvider::DoWrite(
 
 CertificateManagerHandler::CertificateManagerHandler()
     : file_access_provider_(new FileAccessProvider()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      cert_id_map_(new CertIdMap) {
   certificate_manager_model_.reset(new CertificateManagerModel(this));
 }
 
@@ -491,14 +512,14 @@ void CertificateManagerHandler::FileSelectionCanceled(void* params) {
 }
 
 void CertificateManagerHandler::View(const ListValue* args) {
-  net::X509Certificate* cert = CallbackArgsToCert(args);
+  net::X509Certificate* cert = cert_id_map_->CallbackArgsToCert(args);
   if (!cert)
     return;
   ShowCertificateViewer(web_ui()->GetWebContents(), GetParentWindow(), cert);
 }
 
 void CertificateManagerHandler::GetCATrust(const ListValue* args) {
-  net::X509Certificate* cert = CallbackArgsToCert(args);
+  net::X509Certificate* cert = cert_id_map_->CallbackArgsToCert(args);
   if (!cert) {
     web_ui()->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
     return;
@@ -518,7 +539,7 @@ void CertificateManagerHandler::GetCATrust(const ListValue* args) {
 }
 
 void CertificateManagerHandler::EditCATrust(const ListValue* args) {
-  net::X509Certificate* cert = CallbackArgsToCert(args);
+  net::X509Certificate* cert = cert_id_map_->CallbackArgsToCert(args);
   bool fail = !cert;
   bool trust_ssl = false;
   bool trust_email = false;
@@ -552,7 +573,7 @@ void CertificateManagerHandler::EditServer(const ListValue* args) {
 }
 
 void CertificateManagerHandler::ExportPersonal(const ListValue* args) {
-  net::X509Certificate* cert = CallbackArgsToCert(args);
+  net::X509Certificate* cert = cert_id_map_->CallbackArgsToCert(args);
   if (!cert)
     return;
 
@@ -586,7 +607,7 @@ void CertificateManagerHandler::ExportPersonalFileSelected(
 
 void CertificateManagerHandler::ExportPersonalPasswordSelected(
     const ListValue* args) {
-  if (!args->GetString(0, &password_)){
+  if (!args->GetString(0, &password_)) {
     web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
     ImportExportCleanup();
     return;
@@ -642,7 +663,7 @@ void CertificateManagerHandler::ExportPersonalFileWritten(int write_errno,
 
 void CertificateManagerHandler::StartImportPersonal(const ListValue* args) {
   SelectFileDialog::FileTypeInfo file_type_info;
-  if (!args->GetBoolean(0, &use_hardware_backed_)){
+  if (!args->GetBoolean(0, &use_hardware_backed_)) {
     // Unable to retrieve the hardware backed attribute from the args,
     // so bail.
     web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
@@ -672,7 +693,7 @@ void CertificateManagerHandler::ImportPersonalFileSelected(
 
 void CertificateManagerHandler::ImportPersonalPasswordSelected(
     const ListValue* args) {
-  if (!args->GetString(0, &password_)){
+  if (!args->GetString(0, &password_)) {
     web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
     ImportExportCleanup();
     return;
@@ -918,7 +939,7 @@ void CertificateManagerHandler::ImportCATrustSelected(const ListValue* args) {
 }
 
 void CertificateManagerHandler::Export(const ListValue* args) {
-  net::X509Certificate* cert = CallbackArgsToCert(args);
+  net::X509Certificate* cert = cert_id_map_->CallbackArgsToCert(args);
   if (!cert)
     return;
   ShowCertExportDialog(web_ui()->GetWebContents(), GetParentWindow(),
@@ -926,7 +947,7 @@ void CertificateManagerHandler::Export(const ListValue* args) {
 }
 
 void CertificateManagerHandler::Delete(const ListValue* args) {
-  net::X509Certificate* cert = CallbackArgsToCert(args);
+  net::X509Certificate* cert = cert_id_map_->CallbackArgsToCert(args);
   if (!cert)
     return;
   bool result = certificate_manager_model_->Delete(cert);
@@ -974,7 +995,7 @@ void CertificateManagerHandler::PopulateTree(const std::string& tab_name,
            org_cert_it != i->second.end(); ++org_cert_it) {
         DictionaryValue* cert_dict = new DictionaryValue;
         net::X509Certificate* cert = org_cert_it->get();
-        cert_dict->SetString(kKeyId, CertToId(*cert));
+        cert_dict->SetString(kKeyId, cert_id_map_->CertToId(cert));
         cert_dict->SetString(kNameId, certificate_manager_model_->GetColumnText(
             *cert, CertificateManagerModel::COL_SUBJECT_NAME));
         cert_dict->SetBoolean(

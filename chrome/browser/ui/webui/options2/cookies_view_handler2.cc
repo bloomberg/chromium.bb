@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/options2/cookies_view_handler2.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/utf_string_conversions.h"
@@ -24,7 +26,9 @@
 
 namespace options2 {
 
-CookiesViewHandler::CookiesViewHandler() : batch_update_(false) {
+CookiesViewHandler::CookiesViewHandler()
+    : batch_update_(false),
+      model_util_(new CookiesTreeModelUtil) {
 }
 
 CookiesViewHandler::~CookiesViewHandler() {
@@ -116,14 +120,14 @@ void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,
   CookieTreeNode* parent_node = cookies_tree_model_->AsNode(parent);
 
   ListValue* children = new ListValue;
-  cookies_tree_model_util::GetChildNodeList(parent_node, start, count,
+  model_util_->GetChildNodeList(parent_node, start, count,
                                             children);
 
   ListValue args;
   args.Append(parent == cookies_tree_model_->GetRoot() ?
       Value::CreateNullValue() :
       Value::CreateStringValue(
-          cookies_tree_model_util::GetTreeNodeId(parent_node)));
+          model_util_->GetTreeNodeId(parent_node)));
   args.Append(Value::CreateIntegerValue(start));
   args.Append(children);
   web_ui()->CallJavascriptFunction("CookiesView.onTreeItemAdded", args);
@@ -140,7 +144,7 @@ void CookiesViewHandler::TreeNodesRemoved(ui::TreeModel* model,
   ListValue args;
   args.Append(parent == cookies_tree_model_->GetRoot() ?
       Value::CreateNullValue() :
-      Value::CreateStringValue(cookies_tree_model_util::GetTreeNodeId(
+      Value::CreateStringValue(model_util_->GetTreeNodeId(
           cookies_tree_model_->AsNode(parent))));
   args.Append(Value::CreateIntegerValue(start));
   args.Append(Value::CreateIntegerValue(count));
@@ -201,10 +205,10 @@ void CookiesViewHandler::Remove(const ListValue* args) {
 
   EnsureCookiesTreeModelCreated();
 
-  CookieTreeNode* node = cookies_tree_model_util::GetTreeNodeFromPath(
+  const CookieTreeNode* node = model_util_->GetTreeNodeFromPath(
       cookies_tree_model_->GetRoot(), node_path);
   if (node)
-    cookies_tree_model_->DeleteCookieNode(node);
+    cookies_tree_model_->DeleteCookieNode(const_cast<CookieTreeNode*>(node));
 }
 
 void CookiesViewHandler::LoadChildren(const ListValue* args) {
@@ -215,21 +219,21 @@ void CookiesViewHandler::LoadChildren(const ListValue* args) {
 
   EnsureCookiesTreeModelCreated();
 
-  CookieTreeNode* node = cookies_tree_model_util::GetTreeNodeFromPath(
+  const CookieTreeNode* node = model_util_->GetTreeNodeFromPath(
       cookies_tree_model_->GetRoot(), node_path);
   if (node)
     SendChildren(node);
 }
 
-void CookiesViewHandler::SendChildren(CookieTreeNode* parent) {
+void CookiesViewHandler::SendChildren(const CookieTreeNode* parent) {
   ListValue* children = new ListValue;
-  cookies_tree_model_util::GetChildNodeList(parent, 0, parent->child_count(),
+  model_util_->GetChildNodeList(parent, 0, parent->child_count(),
       children);
 
   ListValue args;
   args.Append(parent == cookies_tree_model_->GetRoot() ?
       Value::CreateNullValue() :
-      Value::CreateStringValue(cookies_tree_model_util::GetTreeNodeId(parent)));
+      Value::CreateStringValue(model_util_->GetTreeNodeId(parent)));
   args.Append(children);
 
   web_ui()->CallJavascriptFunction("CookiesView.loadChildren", args);
