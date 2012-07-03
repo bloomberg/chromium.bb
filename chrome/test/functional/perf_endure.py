@@ -427,6 +427,13 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
         graph_name='%s%s-V8MemUsed' % (webapp_name, test_description),
         units_x='seconds')
 
+    # V8 memory allocated.
+    v8_mem_allocated = v8_info['v8_memory_allocated'] / 1024.0  # Convert to KB.
+    self._OutputPerfGraphValue(
+        'V8MemoryAllocated', [(elapsed_time, v8_mem_allocated)], 'KB',
+        graph_name='%s%s-V8MemAllocated' % (webapp_name, test_description),
+        units_x='seconds')
+
     # Deep Memory Profiler result.
     if self._deep_memory_profile:
       deep_memory_profile_results = {}
@@ -454,6 +461,7 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     logging.info('  Tab process private memory: %d KB' %
                  proc_info['tab_private_mem'])
     logging.info('  V8 memory used: %f KB' % v8_mem_used)
+    logging.info('  V8 memory allocated: %f KB' % v8_mem_allocated)
 
     # Output any new timeline events that have occurred.
     if self._events_to_output:
