@@ -9,6 +9,12 @@
  */
 function ThumbnailLoader(imageUrl, opt_metadata) {
   var genericIconUrl = FileType.getPreviewArt(FileType.getMediaType(imageUrl));
+  if (opt_metadata && opt_metadata.gdata) {
+    var apps = opt_metadata.gdata.driveApps;
+    if (apps.length > 0 && apps[0].docIcon) {
+      genericIconUrl = apps[0].docIcon;
+    }
+  }
 
   if (!opt_metadata) {
     this.thumbnailUrl_ = imageUrl;

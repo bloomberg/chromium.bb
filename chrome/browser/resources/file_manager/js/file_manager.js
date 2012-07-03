@@ -1758,10 +1758,13 @@ FileManager.prototype = {
 
     var metadataTypes = 'thumbnail|filesystem';
 
-    // TODO(dgozman): If we ask for 'media' for a GDrive file we fall into an
-    // infinite loop.
-    if (!FileType.isOnGDrive(imageUrl))
+    if (FileType.isOnGDrive(imageUrl)) {
+      metadataTypes += '|gdata';
+    } else {
+      // TODO(dgozman): If we ask for 'media' for a GDrive file we fall into an
+      // infinite loop.
       metadataTypes += '|media';
+    }
 
     this.metadataCache_.get(imageUrl, metadataTypes,
         function(metadata) {
@@ -1920,6 +1923,14 @@ FileManager.prototype = {
         listItem.classList.add('dim-offline');
       if (!gdata.availableWhenMetered)
         listItem.classList.add('dim-metered');
+    }
+
+    if (gdata.driveApps.length > 0) {
+      var url = gdata.driveApps[0].docIcon;
+      var iconDiv = listItem.querySelector('.detail-icon');
+      if (url && iconDiv) {
+        iconDiv.style.backgroundImage = 'url(' + url + ')';
+      }
     }
   };
 
