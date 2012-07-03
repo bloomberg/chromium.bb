@@ -570,6 +570,34 @@ const DictionaryValue* ExtensionAPI::GetSchema(const std::string& full_name) {
   return result;
 }
 
+namespace {
+
+bool IsFeatureAllowedForExtension(const std::string& feature,
+                                  const extensions::Extension& extension) {
+  if (extension.is_platform_app() &&
+      (feature == "app" || feature == "extension"))
+    return false;
+  return true;
+}
+
+// Removes APIs from |apis| that should not be allowed for |extension|.
+// TODO(kalman/asargent) - Make it possible to specify these rules
+// declaratively.
+void RemoveDisallowedAPIs(const Extension& extension,
+                          std::set<std::string>* apis) {
+  CHECK(apis);
+  std::set<std::string>::iterator i = apis->begin();
+  while (i != apis->end()) {
+    if (!IsFeatureAllowedForExtension(*i, extension)) {
+      apis->erase(i++);
+    } else {
+      ++i;
+    }
+  }
+}
+
+}  // namespace
+
 scoped_ptr<std::set<std::string> > ExtensionAPI::GetAPIsForContext(
     Feature::Context context, const Extension* extension, const GURL& url) {
   // We're forced to load all schemas now because we need to know the metadata
@@ -601,6 +629,7 @@ scoped_ptr<std::set<std::string> > ExtensionAPI::GetAPIsForContext(
         // Availability is determined by the permissions of the extension.
         GetAllowedAPIs(extension, &temp_result);
         ResolveDependencies(&temp_result);
+        RemoveDisallowedAPIs(*extension, &temp_result);
       }
       break;
 

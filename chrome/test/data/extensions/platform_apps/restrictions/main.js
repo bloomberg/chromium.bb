@@ -150,5 +150,19 @@ chrome.test.runTests([
     var iframe = document.createElement('iframe');
     iframe.src = 'sandboxed_iframe.html';
     document.body.appendChild(iframe);
+  },
+
+  function testLegacyApis() {
+    if (chrome.app) {
+      assertEq("undefined", typeof(chrome.app.getIsInstalled));
+      assertEq("undefined", typeof(chrome.app.install));
+      assertEq("undefined", typeof(chrome.app.isInstalled));
+      assertEq("undefined", typeof(chrome.app.getDetails));
+      assertEq("undefined", typeof(chrome.app.getDetailsForFrame));
+      assertEq("undefined", typeof(chrome.app.runningState));
+    }
+    assertEq("undefined", typeof(chrome.appNotifications));
+    assertEq("undefined", typeof(chrome.extension));
+    succeed();
   }
 ]);

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+var lastError = require('lastError');
 var natives = requireNative('sendRequest');
 var validate = require('schemaUtils').validate;
 
@@ -13,15 +14,13 @@ chromeHidden.handleResponse = function(requestId, name,
   try {
     var request = requests[requestId];
     if (success) {
-      delete chrome.extension.lastError;
+      lastError.clear();
     } else {
       if (!error) {
         error = "Unknown error.";
       }
       console.error("Error during " + name + ": " + error);
-      chrome.extension.lastError = {
-        "message": error
-      };
+      lastError.set(error);
     }
 
     if (request.customCallback) {
@@ -60,7 +59,7 @@ chromeHidden.handleResponse = function(requestId, name,
     }
   } finally {
     delete requests[requestId];
-    delete chrome.extension.lastError;
+    lastError.clear();
   }
 
   return undefined;

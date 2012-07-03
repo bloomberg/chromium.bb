@@ -9,6 +9,7 @@
 
   require('json_schema');
   require('event_bindings');
+  var lastError = requireNative('lastError');
   var miscNatives = requireNative('miscellaneous_bindings');
   var CloseChannel = miscNatives.CloseChannel;
   var PortAddRef = miscNatives.PortAddRef;
@@ -116,7 +117,7 @@
     if (sourceExtensionId != targetExtensionId)
       errorMsg += " for extension " + targetExtensionId;
     errorMsg += ").";
-    chrome.extension.lastError = {"message": errorMsg};
+    lastError.set(errorMsg);
     console.error("Could not send response: " + errorMsg);
   }
 
@@ -228,14 +229,14 @@
       if (connectionInvalid) {
         var errorMsg =
             "Could not establish connection. Receiving end does not exist.";
-        chrome.extension.lastError = {"message": errorMsg};
+        lastError.set(errorMsg);
         console.error("Port error: " + errorMsg);
       }
       try {
         port.onDisconnect.dispatch(port);
       } finally {
         port.destroy_();
-        delete chrome.extension.lastError;
+        lastError.clear();
       }
     }
   };
@@ -272,7 +273,7 @@
     port.onDisconnect.addListener(function() {
       // For onDisconnects, we only notify the callback if there was an error
       try {
-        if (chrome.extension.lastError)
+        if (chrome.runtime.lastError)
           responseCallback();
       } finally {
         port = null;

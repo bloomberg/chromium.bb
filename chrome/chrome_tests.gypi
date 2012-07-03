@@ -2831,6 +2831,7 @@
         'browser/extensions/platform_app_browsertest_util.h',
         'browser/extensions/plugin_apitest.cc',
         'browser/extensions/process_management_browsertest.cc',
+        'browser/extensions/runtime_apitest.cc',
         'browser/extensions/sandboxed_pages_apitest.cc',
         'browser/extensions/shadow_dom_apitest.cc',
         'browser/extensions/settings/settings_apitest.cc',

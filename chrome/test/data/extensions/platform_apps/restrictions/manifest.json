@@ -1,5 +1,5 @@
 {
-  "name": "Platform App Test: various document and window restrictions",
+  "name": "Platform App Test: various document, window, and API restrictions",
   "version": "1",
   "manifest_version": 2,
   "permissions": [

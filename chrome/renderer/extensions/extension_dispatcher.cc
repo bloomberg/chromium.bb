@@ -39,6 +39,7 @@
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
 #include "chrome/renderer/extensions/page_actions_custom_bindings.h"
 #include "chrome/renderer/extensions/page_capture_custom_bindings.h"
+#include "chrome/renderer/extensions/runtime_custom_bindings.h"
 #include "chrome/renderer/extensions/send_request_natives.h"
 #include "chrome/renderer/extensions/set_icon_natives.h"
 #include "chrome/renderer/extensions/tab_finder.h"
@@ -94,6 +95,7 @@ using extensions::MediaGalleryCustomBindings;
 using extensions::PageActionsCustomBindings;
 using extensions::PageCaptureCustomBindings;
 using extensions::PermissionSet;
+using extensions::RuntimeCustomBindings;
 using extensions::SendRequestNatives;
 using extensions::SetIconNatives;
 using extensions::TTSCustomBindings;
@@ -536,6 +538,8 @@ void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
           new PageActionsCustomBindings(this)));
   module_system->RegisterNativeHandler("page_capture",
       scoped_ptr<NativeHandler>(new PageCaptureCustomBindings()));
+  module_system->RegisterNativeHandler("runtime",
+      scoped_ptr<NativeHandler>(new RuntimeCustomBindings(context)));
   module_system->RegisterNativeHandler("tabs",
       scoped_ptr<NativeHandler>(new TabsCustomBindings()));
   module_system->RegisterNativeHandler("tts",
@@ -556,6 +560,7 @@ void ExtensionDispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("apitest", IDR_EXTENSION_APITEST_JS);
 
   // Libraries.
+  source_map_.RegisterSource("lastError", IDR_LAST_ERROR_JS);
   source_map_.RegisterSource("schemaUtils", IDR_SCHEMA_UTILS_JS);
   source_map_.RegisterSource("sendRequest", IDR_SEND_REQUEST_JS);
   source_map_.RegisterSource("setIcon", IDR_SET_ICON_JS);
@@ -707,7 +712,9 @@ void ExtensionDispatcher::DidCreateScriptContext(
     case Feature::BLESSED_EXTENSION_CONTEXT:
     case Feature::UNBLESSED_EXTENSION_CONTEXT:
     case Feature::CONTENT_SCRIPT_CONTEXT: {
-      module_system->Require("miscellaneous_bindings");
+      CHECK(extension);
+      if (!extension->is_platform_app())
+        module_system->Require("miscellaneous_bindings");
       module_system->Require("schema_generated_bindings");
       module_system->Require("apitest");
 
@@ -725,8 +732,7 @@ void ExtensionDispatcher::DidCreateScriptContext(
     }
   }
 
-  // Inject custom JS into the platform app context to block certain features
-  // of the document and window.
+  // Inject custom JS into the platform app context.
   if (IsWithinPlatformApp(frame))
     module_system->Require("platformApp");
 

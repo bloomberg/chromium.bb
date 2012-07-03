@@ -183,9 +183,9 @@
   };
 
   chrome.test.assertNoLastError = function() {
-    if (chrome.extension.lastError != undefined) {
+    if (chrome.runtime.lastError != undefined) {
       chrome.test.fail("lastError.message == " +
-                       chrome.extension.lastError.message);
+                       chrome.runtime.lastError.message);
     }
   };
 
@@ -212,9 +212,9 @@
         chrome.test.assertNoLastError();
       } else {
         chrome.test.assertEq(typeof(expectedError), 'string');
-        chrome.test.assertTrue(chrome.extension.lastError != undefined,
+        chrome.test.assertTrue(chrome.runtime.lastError != undefined,
             "No lastError, but expected " + expectedError);
-        chrome.test.assertEq(expectedError, chrome.extension.lastError.message);
+        chrome.test.assertEq(expectedError, chrome.runtime.lastError.message);
       }
 
       if (func) {

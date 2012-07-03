@@ -308,6 +308,8 @@
     "chrome.permissions.request": "permissions.html#method-request",
     "chrome.proxy.onProxyError": "proxy.html#event-onProxyError",
     "chrome.runtime.getBackgroundPage": "runtime.html#method-getBackgroundPage",
+    "chrome.runtime.getManifest": "runtime.html#method-getManifest",
+    "chrome.runtime.getURL": "runtime.html#method-getURL",
     "chrome.runtime.onInstalled": "runtime.html#event-onInstalled",
     "chrome.runtime.onSuspend": "runtime.html#event-onSuspend",
     "chrome.scriptBadge.getPopup": "scriptBadge.html#method-getPopup",

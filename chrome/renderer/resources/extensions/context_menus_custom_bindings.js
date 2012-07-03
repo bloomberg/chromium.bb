@@ -56,7 +56,7 @@ chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
   });
 
   apiFunctions.setCustomCallback('create', function(name, request, response) {
-    if (chrome.extension.lastError) {
+    if (chrome.runtime.lastError) {
       return;
     }
 
@@ -72,7 +72,7 @@ chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
   });
 
   apiFunctions.setCustomCallback('remove', function(name, request, response) {
-    if (chrome.extension.lastError) {
+    if (chrome.runtime.lastError) {
       return;
     }
     var id = request.args[0];
@@ -80,7 +80,7 @@ chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
   });
 
   apiFunctions.setCustomCallback('update', function(name, request, response) {
-    if (chrome.extension.lastError) {
+    if (chrome.runtime.lastError) {
       return;
     }
     var id = request.args[0];
@@ -91,7 +91,7 @@ chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
 
   apiFunctions.setCustomCallback('removeAll',
                                  function(name, request, response) {
-    if (chrome.extension.lastError) {
+    if (chrome.runtime.lastError) {
       return;
     }
     chromeHidden.contextMenus.generatedIdHandlers = {};

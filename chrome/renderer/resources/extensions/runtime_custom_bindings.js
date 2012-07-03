@@ -4,12 +4,12 @@
 
 // Custom bindings for the runtime API.
 
+var runtimeNatives = requireNative('runtime');
 var extensionNatives = requireNative('extension');
 var GetExtensionViews = extensionNatives.GetExtensionViews;
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
-var sendRequest = require('sendRequest').sendRequest;
 
-chromeHidden.registerCustomHook('runtime', function(bindingsAPI) {
+chromeHidden.registerCustomHook('runtime', function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setCustomCallback('getBackgroundPage',
@@ -20,4 +20,16 @@ chromeHidden.registerCustomHook('runtime', function(bindingsAPI) {
     }
     request.callback = null;
   });
+
+  apiFunctions.setHandleRequest('getManifest', function() {
+    return runtimeNatives.GetManifest();
+  });
+
+  apiFunctions.setHandleRequest('getURL', function(path) {
+    path = String(path);
+    if (!path.length || path[0] != '/')
+      path = '/' + path;
+    return 'chrome-extension://' + extensionId + path;
+  });
+
 });
