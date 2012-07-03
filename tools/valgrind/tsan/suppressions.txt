@@ -728,7 +728,6 @@
    fun:base::MessagePumpLibevent::Run
    fun:MessageLoop::RunInternal
    fun:MessageLoop::RunHandler
-   fun:MessageLoop::Run
 }
 {
   bug_104776_maybe_benign
