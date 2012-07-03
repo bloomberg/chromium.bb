@@ -682,6 +682,23 @@ int main(int  argc,
     NaClGdbHook(&state);
   }
 
+#if NACL_OSX
+  /*
+   * Enable the outer sandbox on Mac.  Do this as soon as possible.
+   *
+   * This must come after NaClWaitForLoadModuleStatus(), which waits
+   * for another thread to have called NaClAppLoadFile().
+   * NaClAppLoadFile() does not work inside the Mac outer sandbox in
+   * standalone sel_ldr when using a dynamic code area because it uses
+   * NaClCreateMemoryObject() which opens a file in /tmp.
+   *
+   * We cannot enable the sandbox if file access is enabled.
+   */
+  if (!NaClAclBypassChecks) {
+    NaClEnableOuterSandbox();
+  }
+#endif
+
   if (NULL != blob_library_file) {
     if (LOAD_OK == errcode) {
       if (NULL != nap->text_shm) {

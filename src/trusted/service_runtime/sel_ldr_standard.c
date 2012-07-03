@@ -41,7 +41,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_text.h"
-#include "native_client/src/trusted/service_runtime/outer_sandbox.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr_thread_interface.h"
@@ -348,40 +347,6 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
     ret = subret;
     goto done;
   }
-#if NACL_OSX && defined(NACL_STANDALONE)
-  /*
-   * Enable the outer sandbox on Mac.  Do this as soon as possible.
-   *
-   * This is needed only when built for "Standalone" mode (which
-   * currently means firefox plugin, as opposed to as an built-in
-   * plugin in Chrome), since in the Chrome built-in/integrated build
-   * the sandbox is enabled earlier, in chrome's zygote process
-   * initialization / specialization when the zygote forks a copy of
-   * itself to become sel_ldr (via sel_main_chrome.c's
-   * NaClMainForChromium).
-   *
-   * It would be good to do this as soon as we have opened the
-   * executable file and log file, but nacl_text.c currently does not
-   * work in the sandbox.  See
-   * http://code.google.com/p/nativeclient/issues/detail?id=583
-   *
-   * This is needed for the test version of the ppapi plugin and post
-   * saucer separation; the integrated plugin/sel_ldr implementation
-   * that spawns from a chrome zygote image would have already enabled
-   * the sandbox.
-   *
-   * We cannot enable the sandbox if file access is enabled.
-   *
-   * OSX's sandbox has a race condition where mprotect in the address
-   * space set up code would sometimes fail, even before nacl_text.c.
-   * Ideally we would enable the OSX sandbox before examining any
-   * untrusted data (the nexe), but we have to wait until we address
-   * space setup is done, which requires reading the ELF headers.
-   */
-  if (!NaClAclBypassChecks) {
-    NaClEnableOuterSandbox();
-  }
-#endif
 
   /*
    * NaClFillEndOfTextRegion will fill with halt instructions the
