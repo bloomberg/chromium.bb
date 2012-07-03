@@ -79,6 +79,7 @@ void APIPermission::RegisterAllPermissions(
     { kBookmark, "bookmarks", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS,
       PermissionMessage::kBookmarks },
+    { kBrowserTag, "browserTag", kFlagCannotBeOptional },
     { kBrowsingData, "browsingData" },
     { kContentSettings, "contentSettings", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_CONTENT_SETTINGS,

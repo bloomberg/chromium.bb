@@ -70,6 +70,7 @@ using WebKit::WebURL;
 using WebKit::WebURLRequest;
 using WebKit::WebView;
 using WebKit::WebVector;
+using extensions::APIPermission;
 using webkit_glue::ImageResourceFetcher;
 
 // Delay in milliseconds that we'll wait before capturing the page contents
@@ -482,31 +483,40 @@ bool ChromeRenderViewObserver::allowWriteToClipboard(WebFrame* frame,
   return allowed;
 }
 
-bool ChromeRenderViewObserver::IsExperimentalWebFeatureAllowed(
-    const WebDocument& document) {
-  // Experimental Web API is enabled when
-  // - The specific API is allowed from command line flag, or
-  // - If the document is running extensions or apps which
-  //   has the "experimental" permission, or
-  // - The document is running Web UI.
-  WebSecurityOrigin origin = document.securityOrigin();
-  if (EqualsASCII(origin.protocol(), chrome::kChromeUIScheme))
-    return true;
+bool ChromeRenderViewObserver::HasExtensionPermission(
+    const WebSecurityOrigin& origin, APIPermission::ID permission) const {
+  if (!EqualsASCII(origin.protocol(), chrome::kExtensionScheme))
+    return false;
+
+  const std::string extension_id = origin.host().utf8().data();
+  if (!extension_dispatcher_->IsExtensionActive(extension_id))
+    return false;
+
   const extensions::Extension* extension =
-      extension_dispatcher_->extensions()->GetExtensionOrAppByURL(
-          ExtensionURLInfo(origin, document.url()));
+      extension_dispatcher_->extensions()->GetByID(extension_id);
   if (!extension)
     return false;
-  return (extension_dispatcher_->IsExtensionActive(extension->id()) &&
-          extension->HasAPIPermission(
-            extensions::APIPermission::kExperimental));
+
+  return extension->HasAPIPermission(permission);
 }
 
 bool ChromeRenderViewObserver::allowWebComponents(const WebDocument& document,
                                                   bool defaultValue) {
   if (defaultValue)
     return true;
-  return IsExperimentalWebFeatureAllowed(document);
+
+  WebSecurityOrigin origin = document.securityOrigin();
+  if (EqualsASCII(origin.protocol(), chrome::kChromeUIScheme))
+    return true;
+
+  // The <browser> tag is implemented via Shadow DOM.
+  if (HasExtensionPermission(origin, APIPermission::kBrowserTag))
+    return true;
+
+  if (HasExtensionPermission(origin, APIPermission::kExperimental))
+    return true;
+
+  return false;
 }
 
 static void SendInsecureContentSignal(int signal) {

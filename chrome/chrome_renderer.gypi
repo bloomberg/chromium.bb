@@ -148,6 +148,7 @@
         'renderer/resources/extensions/apitest.js',
         'renderer/resources/extensions/app_custom_bindings.js',
         'renderer/resources/extensions/browser_action_custom_bindings.js',
+        'renderer/resources/extensions/browser_tag.js',
         'renderer/resources/extensions/context_menus_custom_bindings.js',
         'renderer/resources/extensions/declarative_webrequest_custom_bindings.js',
         'renderer/resources/extensions/devtools_custom_bindings.js',

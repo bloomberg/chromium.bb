@@ -278,3 +278,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OpenLink) {
   observer.Wait();
   ASSERT_EQ(2, browser()->tab_count());
 }
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, BrowserTag) {
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/browser_tag")) << message_;
+}

@@ -75,6 +75,7 @@ using WebKit::WebVector;
 using WebKit::WebView;
 using content::RenderThread;
 using content::RenderView;
+using extensions::APIPermission;
 using extensions::ApiDefinitionsNatives;
 using extensions::AppWindowCustomBindings;
 using extensions::ContextMenusCustomBindings;
@@ -597,7 +598,6 @@ void ExtensionDispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("pageAction", IDR_PAGE_ACTION_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("pageCapture",
                              IDR_PAGE_CAPTURE_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("platformApp", IDR_PLATFORM_APP_JS);
   source_map_.RegisterSource("runtime", IDR_RUNTIME_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("storage", IDR_STORAGE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("tabs", IDR_TABS_CUSTOM_BINDINGS_JS);
@@ -608,6 +608,10 @@ void ExtensionDispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("webRequestInternal",
                              IDR_WEB_REQUEST_INTERNAL_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("webstore", IDR_WEBSTORE_CUSTOM_BINDINGS_JS);
+
+  // Platform app sources that are not API-specific..
+  source_map_.RegisterSource("browserTag", IDR_BROWSER_TAG_JS);
+  source_map_.RegisterSource("platformApp", IDR_PLATFORM_APP_JS);
 }
 
 void ExtensionDispatcher::PopulateLazyBindingsMap() {
@@ -726,6 +730,11 @@ void ExtensionDispatcher::DidCreateScriptContext(
   if (IsWithinPlatformApp(frame))
     module_system->Require("platformApp");
 
+  if (context_type == Feature::BLESSED_EXTENSION_CONTEXT &&
+      extension && extension->HasAPIPermission(APIPermission::kBrowserTag)) {
+    module_system->Require("browserTag");
+  }
+
   context->set_module_system(module_system.Pass());
 
   int manifest_version = 1;
@@ -792,7 +801,7 @@ void ExtensionDispatcher::InitOriginPermissions(const Extension* extension) {
   // TODO(jstritar): We should try to remove this special case. Also, these
   // whitelist entries need to be updated when the kManagement permission
   // changes.
-  if (extension->HasAPIPermission(extensions::APIPermission::kManagement)) {
+  if (extension->HasAPIPermission(APIPermission::kManagement)) {
     WebSecurityPolicy::addOriginAccessWhitelistEntry(
         extension->url(),
         WebString::fromUTF8(chrome::kChromeUIScheme),

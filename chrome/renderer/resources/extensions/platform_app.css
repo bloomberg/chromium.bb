@@ -12,3 +12,7 @@ body {
   -webkit-user-select: none;
   cursor: default;
 }
+
+browser {
+  display: inline-block;
+}

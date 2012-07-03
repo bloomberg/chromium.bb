@@ -13,6 +13,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
+#include "chrome/common/extensions/permissions/api_permission.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPermissionClient.h"
@@ -183,8 +184,10 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   // Determines if a host is in the strict security host set.
   bool IsStrictSecurityHost(const std::string& host);
 
-  // Determines if the document has a permission to use experimental Web API
-  bool IsExperimentalWebFeatureAllowed(const WebKit::WebDocument& document);
+  // Checks if |origin| correponds to an installed extension that has been
+  // granted the |permission|.
+  bool HasExtensionPermission(const WebKit::WebSecurityOrigin& origin,
+                              extensions::APIPermission::ID permission) const;
 
   // Save the JavaScript to preload if a ViewMsg_WebUIJavaScript is received.
   scoped_ptr<WebUIJavaScript> webui_javascript_;
