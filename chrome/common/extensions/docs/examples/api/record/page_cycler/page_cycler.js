@@ -102,11 +102,20 @@ var pageCyclerUI = new (function () {
       errors.push("Enter a number for repeat count");
     else if (repeatCount < 1 || repeatCount > 100)
       errors.push("Repeat count must be between 1 and 100");
-    this.replayButton.disabled = true;
 
-    chrome.experimental.record.replayURLs(this.urlList, this.cacheDir,
-      repeatCount, {"extensionPath": extensionPath
-      }, this.onReplayDone.bind(this));
+    if (errors.length > 0) {
+      this.replayErrorList.innerText = errors.join("\n");
+      this.replayErrorDiv.className = "error-list-show";
+    } else {
+      this.replayErrorDiv.className = "error-list-hide";
+      this.replayButton.disabled = true;
+      chrome.experimental.record.replayURLs(
+          this.urlList,
+          this.cacheDir,
+          repeatCount,
+          {"extensionPath": extensionPath},
+          this.onReplayDone.bind(this));
+    }
   }
 
   this.onReplayDone = function(result) {
@@ -120,8 +129,8 @@ var pageCyclerUI = new (function () {
     }
     else {
       this.replayErrorDiv.className = "error-list-hide";
-      replayResult.innerText = "Test took " + result.runTime + "mS :\n"
-       + result.stats;
+      replayResult.innerText = "Test took " + result.runTime + "mS :\n" +
+        result.stats;
     }
   }
 

@@ -84,7 +84,8 @@ class TestProcessStrategy : public ProcessStrategy {
   //      visited.  If there are any "bad" URLS, don't visit these, but
   //      create a ".errors" file listing them.
   // 2. If record-stats, then create a mock stats file.
-  void RunProcess(const CommandLine& command_line) OVERRIDE {
+  void RunProcess(const CommandLine& command_line,
+                  std::vector<std::string>* errors) OVERRIDE {
     command_line_ = command_line;
     visited_urls_.clear();
 

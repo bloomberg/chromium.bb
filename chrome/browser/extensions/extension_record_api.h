@@ -24,17 +24,20 @@ const char kStatsKey[] = "stats";
 // firing up a sub browser instance.
 class ProcessStrategy {
  public:
-   // Needed to void build warnings
-   virtual ~ProcessStrategy();
+  // Needed to void build warnings
+  virtual ~ProcessStrategy();
 
-   // Used only in test version to pump the blocking pool queue,
-   // which doesn't otherwise happen during test.
-   virtual void PumpBlockingPool() {}
+  // Used only in test version to pump the blocking pool queue,
+  // which doesn't otherwise happen during test.
+  virtual void PumpBlockingPool() {}
 
-   // Start up process with given commandline.  Real version does just
-   // that; test version mocks it up, generating errors or good results,
-   // as configured.
-   virtual void RunProcess(const CommandLine& line) = 0;
+  // Start up process with given commandline.  Real version does just
+  // that; test version mocks it up, generating errors or good results,
+  // as configured.  If there are any problems running the process itself,
+  // as opposed to errors in the cycler URL list, etc, report these via
+  // |errors|
+  virtual void RunProcess(const CommandLine& line,
+      std::vector<std::string> *errors) = 0;
 };
 
 // Production (default) version of ProcessStrategy.  See ProcessStrategy
@@ -42,7 +45,8 @@ class ProcessStrategy {
 // instance.
 class ProductionProcessStrategy : public ProcessStrategy {
  public:
-  virtual void RunProcess(const CommandLine& line) OVERRIDE;
+  virtual void RunProcess(const CommandLine& line,
+      std::vector<std::string> *errors) OVERRIDE;
 };
 
 // Both page cycler calls (capture and replay) have a great deal in common,
