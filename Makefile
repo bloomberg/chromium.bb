@@ -4,10 +4,10 @@
 
 OBJDIR = obj
 
-OBJECTS=\
+# Objects for libgestures
+SO_OBJECTS=\
 	$(OBJDIR)/accel_filter_interpreter.o \
 	$(OBJDIR)/activity_log.o \
-	$(OBJDIR)/activity_replay.o \
 	$(OBJDIR)/apple_trackpad_filter_interpreter.o \
 	$(OBJDIR)/box_filter_interpreter.o \
 	$(OBJDIR)/click_wiggle_filter_interpreter.o \
@@ -29,6 +29,7 @@ OBJECTS=\
 	$(OBJDIR)/t5r2_correcting_filter_interpreter.o \
 	$(OBJDIR)/util.o
 
+# Objects for unittests
 TEST_OBJECTS=\
 	$(OBJDIR)/accel_filter_interpreter_unittest.o \
 	$(OBJDIR)/activity_log_unittest.o \
@@ -56,6 +57,10 @@ TEST_OBJECTS=\
 	$(OBJDIR)/t5r2_correcting_filter_interpreter_unittest.o \
 	$(OBJDIR)/util_unittest.o
 
+# Objects that are neither unittests nor SO objects
+MISC_OBJECTS=\
+	$(OBJDIR)/activity_replay.o \
+
 TEST_MAIN=\
 	$(OBJDIR)/test_main.o
 
@@ -65,10 +70,12 @@ SONAME=$(OBJDIR)/libgestures.so.0
 ALL_OBJECTS=\
 	$(TEST_OBJECTS) \
 	$(TEST_MAIN) \
-	$(OBJECTS)
+	$(SO_OBJECTS) \
+	$(MISC_OBJECTS)
 
 ALL_OBJECT_FILES=\
-	$(OBJECTS) \
+	$(SO_OBJECTS) \
+	$(MISC_OBJECTS) \
 	$(TEST_OBJECTS) \
 	$(TEST_MAIN)
 
@@ -132,8 +139,8 @@ TEST_LINK_FLAGS=\
 all: $(SONAME)
 	$(MAKE) -C $(KEYBOARD_TOUCHPAD_HELPER)
 
-$(SONAME): $(OBJECTS)
-	$(CXX) -shared -o $@ $(OBJECTS) -Wl,-h$(SONAME:$(OBJDIR)/%=%) \
+$(SONAME): $(SO_OBJECTS)
+	$(CXX) -shared -o $@ $(SO_OBJECTS) -Wl,-h$(SONAME:$(OBJDIR)/%=%) \
 		$(LINK_FLAGS)
 
 $(TEST_EXE): $(ALL_OBJECTS)
