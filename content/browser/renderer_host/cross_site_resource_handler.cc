@@ -97,19 +97,19 @@ bool CrossSiteResourceHandler::OnResponseStarted(
     return next_handler_->OnResponseStarted(request_id, response, defer);
   }
 
-  // Tell the renderer to run the onunload event handler, and wait for the
-  // reply.
-  StartCrossSiteTransition(request_id, response, defer);
+  // Tell the renderer to run the onunload event handler.
+  StartCrossSiteTransition(request_id, response);
+
+  // Defer loading until after the onunload event handler has run.
+  did_defer_ = *defer = true;
   return true;
 }
 
 bool CrossSiteResourceHandler::OnReadCompleted(int request_id,
                                                int bytes_read,
                                                bool* defer) {
-  if (!in_cross_site_transition_) {
-    return next_handler_->OnReadCompleted(request_id, bytes_read, defer);
-  }
-  return true;
+  CHECK(!in_cross_site_transition_);
+  return next_handler_->OnReadCompleted(request_id, bytes_read, defer);
 }
 
 bool CrossSiteResourceHandler::OnResponseCompleted(
@@ -129,9 +129,7 @@ bool CrossSiteResourceHandler::OnResponseCompleted(
     // so that the error message (e.g., 404) can be displayed to the user.
     // Also continue with the logic below to remember that we completed
     // during the cross-site transition.
-    bool defer = false;
-    StartCrossSiteTransition(request_id, NULL, &defer);
-    DCHECK(!defer);  // Since !has_started_response_.
+    StartCrossSiteTransition(request_id, NULL);
   }
 
   // We have to buffer the call until after the transition completes.
@@ -183,8 +181,7 @@ void CrossSiteResourceHandler::ResumeResponse() {
 // telling the old RenderViewHost to run its onunload handler.
 void CrossSiteResourceHandler::StartCrossSiteTransition(
     int request_id,
-    ResourceResponse* response,
-    bool* defer) {
+    ResourceResponse* response) {
   in_cross_site_transition_ = true;
   request_id_ = request_id;
   response_ = response;
@@ -194,15 +191,6 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
   ResourceRequestInfoImpl* info =
       ResourceRequestInfoImpl::ForRequest(request_);
   info->set_cross_site_handler(this);
-
-  if (has_started_response_) {
-    // Defer the request until the old renderer is finished and the new
-    // renderer is ready.
-    did_defer_ = *defer = true;
-  }
-  // If our OnResponseStarted wasn't called, then we're being called by
-  // OnResponseCompleted after a failure.  We don't need to pause, because
-  // there will be no reads.
 
   // Tell the contents responsible for this request that a cross-site response
   // is starting, so that it can tell its old renderer to run its onunload

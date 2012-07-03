@@ -52,8 +52,7 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
   // telling the old RenderViewHost to run its onunload handler.
   void StartCrossSiteTransition(
       int request_id,
-      ResourceResponse* response,
-      bool* defer);
+      ResourceResponse* response);
 
   void ResumeIfDeferred();
 
