@@ -381,6 +381,9 @@ class Result(Flattenable):
 
   This file is used by run_test_from_archive.py so its content is strictly only
   what is necessary to run the test outside of a checkout.
+
+  It is important to note that the 'files' dict keys are using native OS path
+  separator instead of '/' used in .isolate file.
   """
   MEMBERS = (
     'command',

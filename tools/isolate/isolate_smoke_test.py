@@ -328,6 +328,11 @@ class Isolate(unittest.TestCase):
     )
     self.assertEquals(sorted(RELATIVE_CWD), files)
     self.assertEquals(sorted(DEPENDENCIES), files)
+
+    if sys.platform == 'win32':
+      # Symlink stuff is unsupported there, remove them from the list.
+      files = [f for f in files if not f.startswith('symlink_')]
+
     # modes read and trace are tested together.
     for mode in ('check', 'hashtable', 'read_trace', 'remap', 'run'):
       expected_cases = set('test_%s' % f for f in files)
@@ -369,16 +374,6 @@ class Isolate_check(IsolateModeBase):
     self._expect_no_tree()
     self._expect_results([], None, None)
 
-  def test_symlink_full(self):
-    self._execute('check', 'symlink_full.isolate', [], False)
-    self._expect_no_tree()
-    self._expect_results(['symlink_full.py'], None, None)
-
-  def test_symlink_partial(self):
-    self._execute('check', 'symlink_partial.isolate', [], False)
-    self._expect_no_tree()
-    self._expect_results(['symlink_partial.py'], None, None)
-
   def test_touch_root(self):
     self._execute('check', 'touch_root.isolate', [], False)
     self._expect_no_tree()
@@ -389,6 +384,17 @@ class Isolate_check(IsolateModeBase):
     self._expect_no_tree()
     self._expect_results(
         ['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'})
+
+  if sys.platform != 'win32':
+    def test_symlink_full(self):
+      self._execute('check', 'symlink_full.isolate', [], False)
+      self._expect_no_tree()
+      self._expect_results(['symlink_full.py'], None, None)
+
+    def test_symlink_partial(self):
+      self._execute('check', 'symlink_partial.isolate', [], False)
+      self._expect_no_tree()
+      self._expect_results(['symlink_partial.py'], None, None)
 
 
 class Isolate_hashtable(IsolateModeBase):
@@ -428,28 +434,6 @@ class Isolate_hashtable(IsolateModeBase):
     self._expected_hash_tree()
     self._expect_results([], None, None)
 
-  def test_symlink_full(self):
-    self._execute('hashtable', 'symlink_full.isolate', [], False)
-    # Construct our own tree.
-    expected = [
-      str(v['sha-1'])
-      for v in self._gen_files(False).itervalues() if 'sha-1' in v
-    ]
-    expected.append(calc_sha1(self.result))
-    self.assertEquals(sorted(expected), self._result_tree())
-    self._expect_results(['symlink_full.py'], None, None)
-
-  def test_symlink_partial(self):
-    self._execute('hashtable', 'symlink_partial.isolate', [], False)
-    # Construct our own tree.
-    expected = [
-      str(v['sha-1'])
-      for v in self._gen_files(False).itervalues() if 'sha-1' in v
-    ]
-    expected.append(calc_sha1(self.result))
-    self.assertEquals(sorted(expected), self._result_tree())
-    self._expect_results(['symlink_partial.py'], None, None)
-
   def test_touch_root(self):
     self._execute('hashtable', 'touch_root.isolate', [], False)
     self._expected_hash_tree()
@@ -461,6 +445,29 @@ class Isolate_hashtable(IsolateModeBase):
     self._expected_hash_tree()
     self._expect_results(
         ['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'})
+
+  if sys.platform != 'win32':
+    def test_symlink_full(self):
+      self._execute('hashtable', 'symlink_full.isolate', [], False)
+      # Construct our own tree.
+      expected = [
+        str(v['sha-1'])
+        for v in self._gen_files(False).itervalues() if 'sha-1' in v
+      ]
+      expected.append(calc_sha1(self.result))
+      self.assertEquals(sorted(expected), self._result_tree())
+      self._expect_results(['symlink_full.py'], None, None)
+
+    def test_symlink_partial(self):
+      self._execute('hashtable', 'symlink_partial.isolate', [], False)
+      # Construct our own tree.
+      expected = [
+        str(v['sha-1'])
+        for v in self._gen_files(False).itervalues() if 'sha-1' in v
+      ]
+      expected.append(calc_sha1(self.result))
+      self.assertEquals(sorted(expected), self._result_tree())
+      self._expect_results(['symlink_partial.py'], None, None)
 
 
 class Isolate_remap(IsolateModeBase):
@@ -494,16 +501,6 @@ class Isolate_remap(IsolateModeBase):
     self._expected_tree()
     self._expect_results([], None, None)
 
-  def test_symlink_full(self):
-    self._execute('remap', 'symlink_full.isolate', [], False)
-    self._expected_tree()
-    self._expect_results(['symlink_full.py'], None, None)
-
-  def test_symlink_partial(self):
-    self._execute('remap', 'symlink_partial.isolate', [], False)
-    self._expected_tree()
-    self._expect_results(['symlink_partial.py'], None, None)
-
   def test_touch_root(self):
     self._execute('remap', 'touch_root.isolate', [], False)
     self._expected_tree()
@@ -514,6 +511,17 @@ class Isolate_remap(IsolateModeBase):
     self._expected_tree()
     self._expect_results(
         ['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'})
+
+  if sys.platform != 'win32':
+    def test_symlink_full(self):
+      self._execute('remap', 'symlink_full.isolate', [], False)
+      self._expected_tree()
+      self._expect_results(['symlink_full.py'], None, None)
+
+    def test_symlink_partial(self):
+      self._execute('remap', 'symlink_partial.isolate', [], False)
+      self._expected_tree()
+      self._expect_results(['symlink_partial.py'], None, None)
 
 
 class Isolate_run(IsolateModeBase):
@@ -558,16 +566,6 @@ class Isolate_run(IsolateModeBase):
     self._expect_empty_tree()
     self._expect_no_result()
 
-  def test_symlink_full(self):
-    self._execute('run', 'symlink_full.isolate', [], False)
-    self._expect_empty_tree()
-    self._expect_results(['symlink_full.py'], None, None)
-
-  def test_symlink_partial(self):
-    self._execute('run', 'symlink_partial.isolate', [], False)
-    self._expect_empty_tree()
-    self._expect_results(['symlink_partial.py'], None, None)
-
   def test_touch_root(self):
     self._execute('run', 'touch_root.isolate', [], False)
     self._expect_empty_tree()
@@ -579,6 +577,17 @@ class Isolate_run(IsolateModeBase):
     self._expect_empty_tree()
     self._expect_results(
         ['with_flag.py', 'run'], None, {u'FLAG': u'run'})
+
+  if sys.platform != 'win32':
+    def test_symlink_full(self):
+      self._execute('run', 'symlink_full.isolate', [], False)
+      self._expect_empty_tree()
+      self._expect_results(['symlink_full.py'], None, None)
+
+    def test_symlink_partial(self):
+      self._execute('run', 'symlink_partial.isolate', [], False)
+      self._expect_empty_tree()
+      self._expect_results(['symlink_partial.py'], None, None)
 
 
 class Isolate_read_trace(IsolateModeBase):
@@ -648,40 +657,6 @@ class Isolate_read_trace(IsolateModeBase):
     self.assertEquals('', out)
     self.assertEquals(expected, err)
 
-  def test_symlink_full(self):
-    out = self._execute(
-        'trace', 'symlink_full.isolate', [], True)
-    self.assertEquals('', out)
-    self._expect_no_tree()
-    self._expect_results(['symlink_full.py'], None, None)
-    expected = {
-      isolate.isolate_common.KEY_TRACKED: [
-        'symlink_full.py',
-      ],
-      isolate.isolate_common.KEY_UNTRACKED: [
-        # Note that .isolate format mandates / and not os.path.sep.
-        'files2/',
-      ],
-    }
-    out = self._execute('read', 'symlink_full.isolate', [], True)
-    self.assertEquals(self._wrap_in_condition(expected), out)
-
-  def test_symlink_partial(self):
-    out = self._execute(
-        'trace', 'symlink_partial.isolate', [], True)
-    self.assertEquals('', out)
-    self._expect_no_tree()
-    self._expect_results(['symlink_partial.py'], None, None)
-    expected = {
-      isolate.isolate_common.KEY_TRACKED: [
-        # Note that .isolate format mandates / and not os.path.sep.
-        'files2/test_file2.txt',
-        'symlink_partial.py',
-      ],
-    }
-    out = self._execute('read', 'symlink_partial.isolate', [], True)
-    self.assertEquals(self._wrap_in_condition(expected), out)
-
   def test_touch_root(self):
     out = self._execute('trace', 'touch_root.isolate', [], True)
     self.assertEquals('', out)
@@ -714,6 +689,41 @@ class Isolate_read_trace(IsolateModeBase):
     }
     out = self._execute('read', 'with_flag.isolate', [], True)
     self.assertEquals(self._wrap_in_condition(expected), out)
+
+  if sys.platform != 'win32':
+    def test_symlink_full(self):
+      out = self._execute(
+          'trace', 'symlink_full.isolate', [], True)
+      self.assertEquals('', out)
+      self._expect_no_tree()
+      self._expect_results(['symlink_full.py'], None, None)
+      expected = {
+        isolate.isolate_common.KEY_TRACKED: [
+          'symlink_full.py',
+        ],
+        isolate.isolate_common.KEY_UNTRACKED: [
+          # Note that .isolate format mandates / and not os.path.sep.
+          'files2/',
+        ],
+      }
+      out = self._execute('read', 'symlink_full.isolate', [], True)
+      self.assertEquals(self._wrap_in_condition(expected), out)
+
+    def test_symlink_partial(self):
+      out = self._execute(
+          'trace', 'symlink_partial.isolate', [], True)
+      self.assertEquals('', out)
+      self._expect_no_tree()
+      self._expect_results(['symlink_partial.py'], None, None)
+      expected = {
+        isolate.isolate_common.KEY_TRACKED: [
+          # Note that .isolate format mandates / and not os.path.sep.
+          'files2/test_file2.txt',
+          'symlink_partial.py',
+        ],
+      }
+      out = self._execute('read', 'symlink_partial.isolate', [], True)
+      self.assertEquals(self._wrap_in_condition(expected), out)
 
 
 class IsolateNoOutdir(IsolateBase):

@@ -108,7 +108,7 @@ class Isolate(unittest.TestCase):
             "size": 538,
             "timestamp": 1335146921,
           },
-          'data/isolate/touch_root.py': {
+          os.path.join('data', 'isolate', 'touch_root.py'): {
             "mode": 488,
             "sha-1": "invalid",
             "size": 538,
@@ -132,7 +132,7 @@ class Isolate(unittest.TestCase):
       expected_result = {
         'command': ['python', 'touch_root.py'],
         'files': {
-          u'data/isolate/touch_root.py': {
+          os.path.join(u'data', 'isolate', 'touch_root.py'): {
             'mode': 488,
             'size': self._size('data', 'isolate', 'touch_root.py'),
           },
@@ -142,8 +142,12 @@ class Isolate(unittest.TestCase):
           },
         },
         'read_only': None,
-        'relative_cwd': 'data/isolate',
+        'relative_cwd': os.path.join('data', 'isolate'),
       }
+      if sys.platform == 'win32':
+        # 'mode' are not saved in windows.
+        for values in expected_result['files'].itervalues():
+          del values['mode']
       for item in actual_result['files'].itervalues():
         self.assertTrue(item.pop('timestamp'))
       self.assertEquals(expected_result, actual_result)
