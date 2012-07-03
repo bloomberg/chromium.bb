@@ -57,6 +57,13 @@ def handle_single_schema(filename, dest_dir, root, root_namespace):
     # Load type dependencies into the model.
     # TODO(miket): do we need this in IDL?
     for referenced_schema in referenced_schemas:
+      split_schema = referenced_schema.split(':', 1)
+      if len(split_schema) > 1:
+        if split_schema[0] != 'api':
+          continue
+        else:
+          referenced_schema = split_schema[1]
+
       referenced_schema_path = os.path.join(
           os.path.dirname(schema), referenced_schema + '.json')
       referenced_api_defs = json_schema.Load(referenced_schema_path)
