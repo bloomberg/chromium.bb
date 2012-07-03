@@ -15,6 +15,7 @@ from third_party.handlebar import Handlebar
 class TemplateDataSourceTest(unittest.TestCase):
   def setUp(self):
     self._base_path = os.path.join('test_data', 'template_data_source')
+    self._fake_api_data_source = {}
 
   def _ReadLocalFile(self, filename):
     with open(os.path.join(self._base_path, filename), 'r') as f:
@@ -23,17 +24,18 @@ class TemplateDataSourceTest(unittest.TestCase):
   def _RenderTest(self, name, data_source):
     template_name = name + '_tmpl.html'
     template = Handlebar(self._ReadLocalFile(template_name))
-    context = json.loads(self._ReadLocalFile(name + '.json'))
     self.assertEquals(
         self._ReadLocalFile(name + '_expected.html'),
-        data_source.Render(template_name, context))
+        data_source.Render(template_name))
 
   def testSimple(self):
     self._base_path = os.path.join(self._base_path, 'simple')
     fetcher = LocalFetcher(self._base_path)
     cache_builder = FetcherCache.Builder(fetcher, 0)
-    t_data_source = TemplateDataSource('fake_branch', cache_builder, ['./'])
-
+    t_data_source = TemplateDataSource('fake_branch',
+                                       self._fake_api_data_source,
+                                       cache_builder,
+                                       ['./'])
     template_a1 = Handlebar(self._ReadLocalFile('test1.html'))
     self.assertEqual(template_a1.render({}, {'templates': {}}).text,
         t_data_source['test1'].render({}, {'templates': {}}).text)
@@ -48,8 +50,10 @@ class TemplateDataSourceTest(unittest.TestCase):
     self._base_path = os.path.join(self._base_path, 'partials')
     fetcher = LocalFetcher(self._base_path)
     cache_builder = FetcherCache.Builder(fetcher, 0)
-    t_data_source = TemplateDataSource('fake_branch', cache_builder, ['./'])
-
+    t_data_source = TemplateDataSource('fake_branch',
+                                       self._fake_api_data_source,
+                                       cache_builder,
+                                       ['./'])
     self.assertEqual(self._ReadLocalFile('test_expected.html'),
         t_data_source['test_tmpl'].render(
             json.loads(self._ReadLocalFile('input.json')), t_data_source).text)
@@ -57,12 +61,20 @@ class TemplateDataSourceTest(unittest.TestCase):
   def testRender(self):
     self._base_path = os.path.join(self._base_path, 'render')
     fetcher = LocalFetcher(self._base_path)
+    context = json.loads(self._ReadLocalFile('test1.json'))
     cache_builder = FetcherCache.Builder(fetcher, 0)
-    t_data_source = TemplateDataSource('fake_branch', cache_builder, ['./'])
-    self._RenderTest('test1', t_data_source)
-    self._RenderTest('test2', t_data_source)
-
-
+    self._RenderTest(
+        'test1',
+        TemplateDataSource('fake_branch',
+                           json.loads(self._ReadLocalFile('test1.json')),
+                           cache_builder,
+                           ['./']))
+    self._RenderTest(
+        'test2',
+        TemplateDataSource('fake_branch',
+                           json.loads(self._ReadLocalFile('test2.json')),
+                           cache_builder,
+                           ['./']))
 
 if __name__ == '__main__':
   unittest.main()

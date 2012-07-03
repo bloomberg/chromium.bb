@@ -10,10 +10,11 @@ class TemplateDataSource(object):
   """This class fetches and compiles templates using the fetcher passed in with
   |cache_builder|.
   """
-  def __init__(self, branch, cache_builder, base_paths):
+  def __init__(self, branch, api_data_source, cache_builder, base_paths):
+    self._branch_info = self._MakeBranchDict(branch)
+    self._api_data_source = api_data_source
     self._cache = cache_builder.build(self._LoadTemplate)
     self._base_paths = base_paths
-    self._branch_info = self._MakeBranchDict(branch)
 
   def _MakeBranchDict(self, branch):
     return {
@@ -30,7 +31,7 @@ class TemplateDataSource(object):
   def _LoadTemplate(self, template):
     return Handlebar(template)
 
-  def Render(self, template_name, context):
+  def Render(self, template_name):
     """This method will render a template named |template_name|, fetching all
     the partial templates needed from |self._cache|. Partials are retrieved
     from the TemplateDataSource with the |get| method.
@@ -40,9 +41,9 @@ class TemplateDataSource(object):
       return ''
       # TODO error handling
     return template.render({
-      'api': context,
+      'apis': self._api_data_source,
       'branchInfo': self._branch_info,
-      'partials': self
+      'partials': self,
     }).text
 
   def __getitem__(self, key):

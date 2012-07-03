@@ -11,8 +11,7 @@ class ServerInstance(object):
   """This class is used to hold a data source and fetcher for an instance of a
   server. Each new branch will get its own ServerInstance.
   """
-  def __init__(self, api_data_source, template_data_source, cache_builder):
-    self._api_data_source = api_data_source
+  def __init__(self, template_data_source, cache_builder):
     self._template_data_source = template_data_source
     self._cache = cache_builder.build(lambda x: x)
     mimetypes.init()
@@ -33,8 +32,7 @@ class ServerInstance(object):
     if path.startswith('static'):
       content = self._FetchStaticResource(path, request_handler)
     else:
-      content = self._template_data_source.Render(path,
-                                                  self._api_data_source[path])
+      content = self._template_data_source.Render(path)
     if content:
       request_handler.response.out.write(content)
     else:
