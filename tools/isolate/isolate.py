@@ -701,7 +701,7 @@ def CMDread(args):
   except trace_inputs.TracingFailure, e:
     raise ExecutionError(
         'Reading traces failed for: %s\n%s' %
-          (' '.join(complete_state.result.command, str(e))))
+          (' '.join(complete_state.result.command), str(e)))
 
   return 0
 

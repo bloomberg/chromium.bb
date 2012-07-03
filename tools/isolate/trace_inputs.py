@@ -2660,6 +2660,9 @@ def load_trace(logfile, root_dir, api, blacklist):
   """
   data = api.parse_log(logfile, (blacklist or (lambda _: False)))
   assert len(data) == 1, 'More than one trace was detected!'
+  if 'exception' in data[0]:
+    # It got an exception, raise it.
+    raise data[0]['exception']
   results = data[0]['results']
   if root_dir:
     results = results.strip_root(root_dir)
