@@ -248,7 +248,8 @@ class BrowserView : public BrowserWindow,
   virtual void SetDevToolsDockSide(DevToolsDockSide side) OVERRIDE;
   virtual void UpdateLoadingAnimations(bool should_animate) OVERRIDE;
   virtual void SetStarredState(bool is_starred) OVERRIDE;
-  virtual void SetZoomIconState(ZoomController::ZoomIconState state) OVERRIDE;
+  virtual void SetZoomIconState(
+      ZoomController::ZoomIconState zoom_icon_state) OVERRIDE;
   virtual void SetZoomIconTooltipPercent(int zoom_percent) OVERRIDE;
   virtual void ShowZoomBubble(int zoom_percent) OVERRIDE;
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;

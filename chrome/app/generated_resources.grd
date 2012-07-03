@@ -6404,6 +6404,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ACCNAME_STAR" desc="The accessible name for the bookmark button.">
         Bookmark
       </message>
+      <message name="IDS_ACCNAME_ZOOM" desc="The accessible name for the zoom button.">
+        Zoom
+      </message>
       <message name="IDS_ACCNAME_CHROME_TO_MOBILE" desc="The accessible name for the Chrome To Mobile button.">
         Chrome To Mobile
       </message>

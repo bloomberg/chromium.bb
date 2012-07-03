@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
+#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/font.h"
@@ -50,6 +51,7 @@ class StarView;
 class SuggestedTextView;
 class TabContents;
 class TemplateURLService;
+class ZoomView;
 
 namespace chrome {
 namespace search {
@@ -182,12 +184,21 @@ class LocationBarView : public LocationBar,
   // Returns the delegate.
   Delegate* delegate() const { return delegate_; }
 
+  // Sets the tooltip for the zoom icon.
+  void SetZoomIconTooltipPercent(int zoom_percent);
+
+  // Sets the zoom icon state.
+  void SetZoomIconState(ZoomController::ZoomIconState zoom_icon_state);
+
+  // Shows the zoom bubble.
+  void ShowZoomBubble(int zoom_percent);
+
   // Sets |preview_enabled| for the PageAction View associated with this
   // |page_action|. If |preview_enabled| is true, the view will display the
   // PageActions icon even though it has not been activated by the extension.
   // This is used by the ExtensionInstalledBubble to preview what the icon
   // will look like for the user upon installation of the extension.
-  void SetPreviewEnabledPageAction(ExtensionAction *page_action,
+  void SetPreviewEnabledPageAction(ExtensionAction* page_action,
                                    bool preview_enabled);
 
   // Retrieves the PageAction View which is associated with |page_action|.
@@ -496,6 +507,9 @@ class LocationBarView : public LocationBar,
 
   // The content setting views.
   ContentSettingViews content_setting_views_;
+
+  // The zoom icon.
+  ZoomView* zoom_view_;
 
   // The current page actions.
   std::vector<ExtensionAction*> page_actions_;

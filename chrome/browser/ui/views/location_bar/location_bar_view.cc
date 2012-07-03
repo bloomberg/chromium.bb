@@ -48,6 +48,8 @@
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/location_bar/suggested_text_view.h"
+#include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
+#include "chrome/browser/ui/views/location_bar/zoom_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_views.h"
 #include "chrome/browser/ui/webui/instant_ui.h"
@@ -178,6 +180,7 @@ LocationBarView::LocationBarView(Profile* profile,
       selected_keyword_view_(NULL),
       suggested_text_view_(NULL),
       keyword_hint_view_(NULL),
+      zoom_view_(NULL),
       star_view_(NULL),
       action_box_button_view_(NULL),
       chrome_to_mobile_view_(NULL),
@@ -267,6 +270,9 @@ void LocationBarView::Init(views::View* popup_parent_view) {
     AddChildView(content_blocked_view);
     content_blocked_view->SetVisible(false);
   }
+
+  zoom_view_ = new ZoomView(model_);
+  AddChildView(zoom_view_);
 
   if (extensions::switch_utils::IsActionBoxEnabled()) {
     action_box_button_view_ = new ActionBoxButtonView(
@@ -390,6 +396,10 @@ void LocationBarView::ModeChanged(const chrome::search::Mode& mode) {
 }
 
 void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
+  RefreshContentSettingViews();
+  zoom_view_->Update();
+  RefreshPageActionViews();
+
   bool star_enabled = star_view_ && !model_->input_in_progress() &&
                       edit_bookmarks_enabled_.GetValue();
 
@@ -401,8 +411,6 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
       ChromeToMobileServiceFactory::GetForProfile(profile_)->HasDevices();
   command_updater_->UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE, enabled);
 
-  RefreshContentSettingViews();
-  RefreshPageActionViews();
   // Don't Update in app launcher mode so that the location entry does not show
   // a URL or security background.
   if (mode_ != APP_LAUNCHER)
@@ -493,6 +501,22 @@ void LocationBarView::SetStarToggled(bool on) {
 
 void LocationBarView::ShowStarBubble(const GURL& url, bool newly_bookmarked) {
   chrome::ShowBookmarkBubbleView(star_view_, profile_, url, newly_bookmarked);
+}
+
+void LocationBarView::SetZoomIconTooltipPercent(int zoom_percent) {
+  zoom_view_->SetZoomIconTooltipPercent(zoom_percent);
+}
+
+void LocationBarView::SetZoomIconState(
+    ZoomController::ZoomIconState zoom_icon_state) {
+  zoom_view_->SetZoomIconState(zoom_icon_state);
+
+  Layout();
+  SchedulePaint();
+}
+
+void LocationBarView::ShowZoomBubble(int zoom_percent) {
+  ZoomBubbleView::ShowBubble(zoom_view_, zoom_percent, true);
 }
 
 void LocationBarView::ShowChromeToMobileBubble() {
@@ -633,9 +657,10 @@ void LocationBarView::Layout() {
 
   if (star_view_ && star_view_->visible())
     entry_width -= star_view_->GetPreferredSize().width() + GetItemPadding();
-  if (chrome_to_mobile_view_ && chrome_to_mobile_view_->visible())
+  if (chrome_to_mobile_view_ && chrome_to_mobile_view_->visible()) {
     entry_width -= chrome_to_mobile_view_->GetPreferredSize().width() +
         GetItemPadding();
+  }
   int action_box_button_width = location_height;
   if (action_box_button_view_)
     entry_width -= action_box_button_width + GetItemPadding();
@@ -644,6 +669,8 @@ void LocationBarView::Layout() {
     if ((*i)->visible())
       entry_width -= ((*i)->GetPreferredSize().width() + GetItemPadding());
   }
+  if (zoom_view_->visible())
+    entry_width -= zoom_view_->GetPreferredSize().width() + GetItemPadding();
   for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
        i != content_setting_views_.end(); ++i) {
     if ((*i)->visible())
@@ -738,6 +765,14 @@ void LocationBarView::Layout() {
       offset -= GetItemPadding() - (*i)->GetBuiltInHorizontalPadding();
     }
   }
+
+  if (zoom_view_->visible()) {
+    int zoom_width = zoom_view_->GetPreferredSize().width();
+    offset -= zoom_width;
+    zoom_view_->SetBounds(offset, location_y, zoom_width, location_height);
+    offset -= GetItemPadding();
+  }
+
   // We use a reverse_iterator here because we're laying out the views from
   // right to left but in the vector they're ordered left to right.
   for (ContentSettingViews::const_reverse_iterator
