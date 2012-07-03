@@ -25,6 +25,18 @@ class WebsiteSettingsUIBridge;
   // Display the identity status (e.g. verified, not verified).
   NSTextField* identityStatusField_;
 
+  NSImageView* identityStatusIcon_;
+  NSTextField* identityStatusDescriptionField_;
+  NSView* separatorAfterIdentity_;
+
+  NSImageView* connectionStatusIcon_;
+  NSTextField* connectionStatusDescriptionField_;
+  NSView* separatorAfterConnection_;
+
+  NSImageView* firstVisitIcon_;
+  NSTextField* firstVisitHeaderField_;
+  NSTextField* firstVisitDescriptionField_;
+
   // The UI translates user actions to specific events and forwards them to the
   // |presenter_|. The |presenter_| handles these events and updates the UI.
   scoped_ptr<WebsiteSettings> presenter_;

@@ -44,7 +44,11 @@ const CGFloat kTextXPosition = kTextXPositionNoImage + kImageSize +
 // Width of the text fields.
 const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
     kFramePadding * 2);
-}
+
+// The amount of padding given to tab view contents.
+const CGFloat kTabViewContentsPadding = kFramePadding;
+
+}  // namespace
 
 // A simple container to hold all the contents of the website settings bubble.
 // It uses a flipped coordinate system to make text layout easier.
@@ -94,14 +98,16 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
       kTextXPositionNoImage,
       kFramePadding + info_bubble::kBubbleArrowHeight);
 
-  // Keep the new subviews in an array that gets replaced at the end.
-  NSMutableArray* subviews = [NSMutableArray array];
+  // Create the container view that uses flipped coordinates.
+  NSRect contentFrame = NSMakeRect(0, 0, kWindowWidth, 300);
+  contentView_.reset(
+      [[WebsiteSettingsContentView alloc] initWithFrame:contentFrame]);
 
   // Create a text field (empty for now) to show the site identity.
   identityField_ = [self addText:string16()
                         withSize:[NSFont systemFontSize]
                             bold:YES
-                      toSubviews:subviews
+                          toView:contentView_
                          atPoint:controlOrigin];
   controlOrigin.y += NSHeight([identityField_ frame]) + kHeadlineSpacing;
 
@@ -109,8 +115,9 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   identityStatusField_ = [self addText:string16()
                               withSize:[NSFont smallSystemFontSize]
                                   bold:NO
-                            toSubviews:subviews
+                                toView:contentView_
                                atPoint:controlOrigin];
+
   // Create the tab view and its two tabs.
 
   NSRect tabFrame = NSMakeRect(0, 0, kWindowWidth, 300);
@@ -118,23 +125,10 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   [tabView_ setTabViewType:NSTopTabsBezelBorder];
   [tabView_ setControlSize:NSSmallControlSize];
   [tabView_ setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-  [subviews addObject:tabView_.get()];
+  [contentView_ addSubview:tabView_.get()];
 
-  scoped_nsobject<NSTabViewItem> item([[NSTabViewItem alloc] init]);
-  [item setLabel:
-      l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_TAB_LABEL_PERMISSIONS)];
-  [tabView_ addTabViewItem:item.get()];
-
-  item.reset([[NSTabViewItem alloc] init]);
-  [item setLabel:
-      l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_TAB_LABEL_IDENTITY)];
-  [tabView_ addTabViewItem:item.get()];
-
-  // Create the container view that uses flipped coordinates.
-  NSRect contentFrame = NSMakeRect(0, 0, kWindowWidth, 300);
-  contentView_.reset(
-      [[WebsiteSettingsContentView alloc] initWithFrame:contentFrame]);
-  [contentView_ setSubviews:subviews];
+  [self addPermissionsTabToTabView:tabView_];
+  [self addConnectionTabToTabView:tabView_];
 
   // Replace the window's content.
   [[[self window] contentView] setSubviews:
@@ -143,25 +137,138 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   [self performLayout];
 }
 
+// Create the contents of the Permissions tab and add it to the given tab view.
+// Returns a weak reference to the tab view item's view.
+- (NSView*)addPermissionsTabToTabView:(NSTabView*)tabView {
+  scoped_nsobject<NSTabViewItem> item([[NSTabViewItem alloc] init]);
+  [item setLabel:
+      l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_TAB_LABEL_PERMISSIONS)];
+  [tabView_ addTabViewItem:item.get()];
+  scoped_nsobject<NSView> contentView([[WebsiteSettingsContentView alloc]
+      initWithFrame:[tabView_ contentRect]]);
+  [item setView:contentView.get()];
+  return contentView.get();
+}
+
+// Create the contents of the Connection tab and add it to the given tab view.
+// Returns a weak reference to the tab view item's view.
+- (NSView*)addConnectionTabToTabView:(NSTabView*)tabView {
+  scoped_nsobject<NSTabViewItem> item([[NSTabViewItem alloc] init]);
+  [item setLabel:
+      l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_TAB_LABEL_IDENTITY)];
+
+  scoped_nsobject<NSView> contentView([[WebsiteSettingsContentView alloc]
+      initWithFrame:[tabView_ contentRect]]);
+
+  // Place all the text at the same position. It will be adjusted in
+  // performLayout.
+  NSPoint textPosition = NSMakePoint(
+      kTabViewContentsPadding + kImageSize + kImageSpacing,
+      kTabViewContentsPadding);
+
+  identityStatusIcon_ =
+      [self addImageToView:contentView atOffset:kTabViewContentsPadding];
+  identityStatusDescriptionField_ =
+      [self addText:string16()
+           withSize:[NSFont smallSystemFontSize]
+               bold:NO
+             toView:contentView.get()
+            atPoint:textPosition];
+  separatorAfterIdentity_ = [self addSeparatorToView:contentView];
+
+  connectionStatusIcon_ =
+      [self addImageToView:contentView atOffset:kTabViewContentsPadding];
+  connectionStatusDescriptionField_ =
+      [self addText:string16()
+           withSize:[NSFont smallSystemFontSize]
+               bold:NO
+             toView:contentView.get()
+            atPoint:textPosition];
+  separatorAfterConnection_ = [self addSeparatorToView:contentView];
+
+  firstVisitIcon_ =
+      [self addImageToView:contentView atOffset:kTabViewContentsPadding];
+  firstVisitHeaderField_ =
+      [self addText:l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_INFO_TITLE)
+           withSize:[NSFont smallSystemFontSize]
+               bold:YES
+             toView:contentView.get()
+            atPoint:textPosition];
+  firstVisitDescriptionField_ =
+      [self addText:string16()
+           withSize:[NSFont smallSystemFontSize]
+               bold:NO
+             toView:contentView.get()
+            atPoint:textPosition];
+
+  [item setView:contentView.get()];
+  [tabView_ addTabViewItem:item.get()];
+
+  return contentView.get();
+}
+
+// Set the Y position of |view| to the given position, and return the position
+// of its bottom edge.
+- (CGFloat)setYPositionOfView:(NSView*)view to:(CGFloat)position {
+  NSRect frame = [view frame];
+  frame.origin.y = position;
+  [view setFrame:frame];
+  return position + NSHeight(frame);
+}
+
 // Layout all of the controls in the window. This should be called whenever
 // the content has changed.
 - (void)performLayout {
-  // Adjust the heights of the text fields in case the text has changed.
+  // Place the identity status immediately below the identity.
   [self adjustTextFieldHeight:identityField_];
   [self adjustTextFieldHeight:identityStatusField_];
+  CGFloat yPos = NSMaxY([identityField_ frame]) + kHeadlineSpacing;
+  yPos = [self setYPositionOfView:identityStatusField_ to:yPos];
 
-  // Place the identity status immediately below the identity.
-  NSRect statusFieldFrame = [identityStatusField_ frame];
-  statusFieldFrame.origin.y = NSMaxY([identityField_ frame]) + kHeadlineSpacing;
-  [identityStatusField_ setFrame:statusFieldFrame];
+  // Lay out the connection tab.
 
-  // Place the tab view below the identity status.
-  NSRect tabFrame = [tabView_ frame];
-  tabFrame.origin.y = NSMaxY([identityStatusField_ frame]) + kFramePadding;
-  [tabView_ setFrame:tabFrame];
+  // Lay out the identity status section.
+  [self adjustTextFieldHeight:identityStatusDescriptionField_];
+  yPos = std::max(NSMaxY([identityStatusDescriptionField_ frame]),
+                  NSMaxY([identityStatusIcon_ frame]));
+  yPos = [self setYPositionOfView:separatorAfterIdentity_
+                               to:yPos + kVerticalSpacing];
+  yPos += kVerticalSpacing;
+
+  // Lay out the connection status section.
+  [self adjustTextFieldHeight:connectionStatusDescriptionField_];
+  [self setYPositionOfView:connectionStatusIcon_ to:yPos];
+  [self setYPositionOfView:connectionStatusDescriptionField_ to:yPos];
+  yPos = std::max(NSMaxY([connectionStatusDescriptionField_ frame]),
+                  NSMaxY([connectionStatusIcon_ frame]));
+  yPos = [self setYPositionOfView:separatorAfterConnection_
+                               to:yPos + kVerticalSpacing];
+  yPos += kVerticalSpacing;
+
+  // Lay out the last visit section.
+  [self setYPositionOfView:firstVisitIcon_ to:yPos];
+  [self adjustTextFieldHeight:firstVisitHeaderField_];
+  yPos = [self setYPositionOfView:firstVisitHeaderField_ to:yPos];
+  yPos += kHeadlineSpacing;
+  [self adjustTextFieldHeight:firstVisitDescriptionField_];
+  [self setYPositionOfView:firstVisitDescriptionField_ to:yPos];
+
+  // Adjust the tab view size and place it below the identity status.
+  CGFloat tabContentHeight = std::max(
+      NSMaxY([firstVisitDescriptionField_ frame]),
+      NSMaxY([firstVisitIcon_ frame ]));
+  tabContentHeight += kVerticalSpacing;
+
+  NSRect tabViewFrame = [tabView_ frame];
+  tabViewFrame.origin.y =
+      NSMaxY([identityStatusField_ frame]) + kVerticalSpacing;
+  tabViewFrame.size.height = tabContentHeight +
+      NSHeight(tabViewFrame) - NSHeight([tabView_ contentRect]);
+  [tabView_ setFrame:tabViewFrame];
 
   // Adjust the contentView to fit everything.
-  [contentView_ setFrame:NSMakeRect(0, 0, kWindowWidth, NSMaxY(tabFrame))];
+  [contentView_ setFrame:NSMakeRect(
+      0, 0, kWindowWidth, NSMaxY([tabView_ frame]))];
 
   // Now adjust and position the window.
 
@@ -227,9 +334,12 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 - (NSTextField*)addText:(const string16&)text
                withSize:(CGFloat)fontSize
                    bold:(BOOL)bold
-             toSubviews:(NSMutableArray*)subviews
+                 toView:(NSView*)view
                 atPoint:(NSPoint)point {
-  NSRect frame = NSMakeRect(point.x, point.y, kTextWidth, kImageSize);
+  // Size the text to take up the full available width, with some padding.
+  // The height is arbitrary as it will be adjusted later.
+  CGFloat width = NSWidth([view frame]) - point.x - kFramePadding;
+  NSRect frame = NSMakeRect(point.x, point.y, width, kImageSize);
   scoped_nsobject<NSTextField> textField(
      [[NSTextField alloc] initWithFrame:frame]);
   [self configureTextFieldAsLabel:textField.get()];
@@ -238,8 +348,32 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
                       : [NSFont systemFontOfSize:fontSize];
   [textField setFont:font];
   [self adjustTextFieldHeight:textField];
-  [subviews addObject:textField.get()];
+  [view addSubview:textField.get()];
   return textField.get();
+}
+
+// Add an image as a subview of the given view, placed at a pre-determined x
+// position and the given y position. Return the new NSImageView.
+- (NSImageView*)addImageToView:(NSView*)view
+                      atOffset:(CGFloat)offset {
+  NSRect frame = NSMakeRect(kFramePadding, offset, kImageSize, kImageSize);
+  scoped_nsobject<NSImageView> imageView(
+      [[NSImageView alloc] initWithFrame:frame]);
+  [imageView setImageFrameStyle:NSImageFrameNone];
+  [view addSubview:imageView.get()];
+  return imageView.get();
+}
+
+// Add a separator as a subview of the given view. Return the new view.
+- (NSView*)addSeparatorToView:(NSView*)view {
+  // Take up almost the full width of the container's frame.
+  CGFloat width = NSWidth([view frame]) - 2 * kFramePadding;
+
+  // Use an arbitrary position; it will be adjusted in performLayout.
+  NSBox* spacer =
+      [self separatorWithFrame:NSMakeRect(kFramePadding, 0, width, 0)];
+  [view addSubview:spacer];
+  return spacer;
 }
 
 // Set the content of the identity and identity status fields.
@@ -248,7 +382,29 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
       base::SysUTF8ToNSString(identityInfo.site_identity)];
   [identityStatusField_ setStringValue:
       base::SysUTF16ToNSString(identityInfo.GetIdentityStatusText())];
+
+  [identityStatusIcon_ setImage:WebsiteSettingsUI::GetIdentityIcon(
+      identityInfo.identity_status).ToNSImage()];
+  [identityStatusDescriptionField_ setStringValue:
+      base::SysUTF8ToNSString(identityInfo.identity_status_description)];
+
+  [connectionStatusIcon_ setImage:WebsiteSettingsUI::GetConnectionIcon(
+      identityInfo.connection_status).ToNSImage()];
+  [connectionStatusDescriptionField_ setStringValue:
+      base::SysUTF8ToNSString(identityInfo.connection_status_description)];
+
   [self performLayout];
+}
+
+- (void)setFirstVisit:(const string16&)firstVisit {
+  [firstVisitIcon_ setImage:
+      WebsiteSettingsUI::GetFirstVisitIcon(firstVisit).ToNSImage()];
+  [firstVisitDescriptionField_ setStringValue:
+      base::SysUTF16ToNSString(firstVisit)];
+  [self performLayout];
+}
+
+- (void)setPermissionInfo:(const PermissionInfoList&)permissionInfoList {
 }
 
 @end
@@ -298,12 +454,14 @@ void WebsiteSettingsUIBridge::SetCookieInfo(
 
 void WebsiteSettingsUIBridge::SetPermissionInfo(
     const PermissionInfoList& permission_info_list) {
+  [bubble_controller_ setPermissionInfo:permission_info_list];
 }
 
 void WebsiteSettingsUIBridge::SetIdentityInfo(
     const WebsiteSettingsUI::IdentityInfo& identity_info) {
-  [bubble_controller_ setIdentityInfo: identity_info];
+  [bubble_controller_ setIdentityInfo:identity_info];
 }
 
 void WebsiteSettingsUIBridge::SetFirstVisit(const string16& first_visit) {
+  [bubble_controller_ setFirstVisit:first_visit];
 }

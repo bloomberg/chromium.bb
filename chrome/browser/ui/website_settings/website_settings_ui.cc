@@ -201,3 +201,12 @@ const gfx::Image& WebsiteSettingsUI::GetConnectionIcon(
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   return rb.GetNativeImageNamed(resource_id);
 }
+
+// static
+const gfx::Image& WebsiteSettingsUI::GetFirstVisitIcon(
+    const string16& first_visit) {
+  // FIXME(markusheintz): Display a minor warning icon if the page is visited
+  // the first time.
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  return rb.GetNativeImageNamed(IDR_PAGEINFO_INFO);
+}
