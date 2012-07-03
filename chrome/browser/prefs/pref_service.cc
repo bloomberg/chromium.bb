@@ -534,6 +534,16 @@ void PrefService::RegisterInt64Pref(const char* path,
       sync_status);
 }
 
+void PrefService::RegisterUint64Pref(const char* path,
+                                     uint64 default_value,
+                                     PrefSyncStatus sync_status) {
+  DCHECK(IsProfilePrefService(this));
+  RegisterPreference(
+      path,
+      Value::CreateStringValue(base::Uint64ToString(default_value)),
+      sync_status);
+}
+
 bool PrefService::GetBoolean(const char* path) const {
   DCHECK(CalledOnValidThread());
 
@@ -862,6 +872,27 @@ int64 PrefService::GetInt64(const char* path) const {
 
   int64 val;
   base::StringToInt64(result, &val);
+  return val;
+}
+
+void PrefService::SetUint64(const char* path, uint64 value) {
+  SetUserPrefValue(path, Value::CreateStringValue(base::Uint64ToString(value)));
+}
+
+uint64 PrefService::GetUint64(const char* path) const {
+  DCHECK(CalledOnValidThread());
+
+  const Preference* pref = FindPreference(path);
+  if (!pref) {
+    NOTREACHED() << "Trying to read an unregistered pref: " << path;
+    return 0;
+  }
+  std::string result("0");
+  bool rv = pref->GetValue()->GetAsString(&result);
+  DCHECK(rv);
+
+  uint64 val;
+  base::StringToUint64(result, &val);
   return val;
 }
 

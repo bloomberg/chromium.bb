@@ -39,8 +39,7 @@ ThemeServiceFactory* ThemeServiceFactory::GetInstance() {
 
 ThemeServiceFactory::ThemeServiceFactory()
     : ProfileKeyedServiceFactory("ThemeService",
-                                 ProfileDependencyManager::GetInstance())
-{}
+                                 ProfileDependencyManager::GetInstance()) {}
 
 ThemeServiceFactory::~ThemeServiceFactory() {}
 

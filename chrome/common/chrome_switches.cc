@@ -548,6 +548,9 @@ const char kEnableIPCFuzzing[]              = "enable-ipc-fuzzing";
 // attempt to use the existing connection.
 const char kEnableIPPooling[]               = "enable-ip-pooling";
 
+// Enables media gallery UI elements and permission management.
+const char kEnableMediaGalleryUI[]          = "enable-media-gallery-ui";
+
 // Allows reporting memory info (JS heap size) to page.
 const char kEnableMemoryInfo[]              = "enable-memory-info";
 

@@ -256,6 +256,9 @@ class PrefService : public base::NonThreadSafe {
   void RegisterInt64Pref(const char* path,
                          int64 default_value,
                          PrefSyncStatus sync_status);
+  void RegisterUint64Pref(const char* path,
+                          uint64 default_value,
+                          PrefSyncStatus sync_status);
   // Unregisters a preference.
   void UnregisterPreference(const char* path);
 
@@ -302,6 +305,10 @@ class PrefService : public base::NonThreadSafe {
   // Value type will be TYPE_STRING.
   void SetInt64(const char* path, int64 value);
   int64 GetInt64(const char* path) const;
+
+  // As above, but for unsigned values.
+  void SetUint64(const char* path, uint64 value);
+  uint64 GetUint64(const char* path) const;
 
   // Returns true if a value has been set for the specified path.
   // NOTE: this is NOT the same as FindPreference. In particular

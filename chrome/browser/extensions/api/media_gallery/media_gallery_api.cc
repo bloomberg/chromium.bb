@@ -54,9 +54,8 @@ bool GetMediaFileSystemsFunction::RunImpl() {
 
     content::ChildProcessSecurityPolicy* policy =
         ChildProcessSecurityPolicy::GetInstance();
-    if (!policy->CanReadFile(child_id, path)) {
+    if (!policy->CanReadFile(child_id, path))
       policy->GrantReadFile(child_id, path);
-    }
     policy->GrantReadFileSystem(child_id, fsid);
   }
 

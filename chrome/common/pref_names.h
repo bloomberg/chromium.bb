@@ -709,6 +709,9 @@ extern const char kRestoreSessionStateDialogShown[];
 
 extern const char kWebIntentsEnabled[];
 
+extern const char kMediaGalleryUniqueId[];
+extern const char kMediaGalleryRememberedGalleries[];
+
 #if defined(USE_AURA)
 extern const char kShelfAutoHideBehavior[];
 extern const char kUseDefaultPinnedApps[];
