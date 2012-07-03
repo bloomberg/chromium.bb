@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/crx_installer_error.h"
 
 class Browser;
+class Profile;
 class SkBitmap;
 
 namespace extensions {
@@ -24,7 +25,7 @@ class ExtensionWebstorePrivateApiTest;
 // around extension installation.
 class ExtensionInstallUI {
  public:
-  static ExtensionInstallUI* Create(Browser* browser);
+  static ExtensionInstallUI* Create(Profile* profile);
 
   virtual ~ExtensionInstallUI();
 
@@ -50,12 +51,12 @@ class ExtensionInstallUI {
   // in tests.
   static void DisableFailureUIForTests();
 
-  Browser* browser() { return browser_; }
+  Profile* profile() { return profile_; }
 
  protected:
   ExtensionInstallUI();
 
-  Browser* browser_;
+  Profile* profile_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_UI_H_

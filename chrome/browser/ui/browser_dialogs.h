@@ -69,6 +69,12 @@ void HideHungRendererDialog(content::WebContents* contents);
 void ShowTabModalConfirmDialog(TabModalConfirmDialogDelegate* delegate,
                                TabContents* tab_contents);
 
+#if !defined(OS_MACOSX)
+// Shows the create web app shortcut dialog box.
+void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
+                                     TabContents* tab_contents);
+#endif
+
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_BROWSER_DIALOGS_H_

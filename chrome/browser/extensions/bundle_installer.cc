@@ -272,7 +272,7 @@ void BundleInstaller::ShowPrompt() {
       // thread hopping.
       browser = browser::FindLastActiveWithProfile(profile_);
     }
-    install_ui_.reset(new ExtensionInstallPrompt(browser));
+    install_ui_.reset(chrome::CreateExtensionInstallPromptWithBrowser(browser));
     install_ui_->ConfirmBundleInstall(this, permissions);
   }
 }

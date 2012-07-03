@@ -4051,8 +4051,9 @@ void TestingAutomationProvider::InstallExtension(
     // If the given path has a 'crx' extension, assume it is a packed extension
     // and install it. Otherwise load it as an unpacked extension.
     if (extension_path.MatchesExtension(FILE_PATH_LITERAL(".crx"))) {
-      ExtensionInstallPrompt* client =
-          (with_ui ? new ExtensionInstallPrompt(browser) : NULL);
+      ExtensionInstallPrompt* client = (with_ui ?
+          chrome::CreateExtensionInstallPromptWithBrowser(browser) :
+          NULL);
       scoped_refptr<CrxInstaller> installer(
           CrxInstaller::Create(service, client));
       if (!with_ui)

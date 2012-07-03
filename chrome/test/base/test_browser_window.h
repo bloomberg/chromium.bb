@@ -81,8 +81,6 @@ class TestBrowserWindow : public BrowserWindow {
       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE {}
-  virtual void ShowCreateWebAppShortcutsDialog(
-      TabContents* tab_contents) OVERRIDE {}
   virtual void ShowCreateChromeAppShortcutsDialog(
       Profile* profile,
       const extensions::Extension* app) OVERRIDE {}

@@ -359,7 +359,7 @@ void WebstoreInlineInstaller::OnWebstoreParseSuccess(
     return;
   }
 
-  install_ui_.reset(new ExtensionInstallPrompt(browser));
+  install_ui_.reset(chrome::CreateExtensionInstallPromptWithBrowser(browser));
   install_ui_->ConfirmInlineInstall(this, dummy_extension_, &icon_, prompt);
   // Control flow finishes up in InstallUIProceed or InstallUIAbort.
 }

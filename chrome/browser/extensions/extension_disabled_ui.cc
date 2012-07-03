@@ -98,7 +98,7 @@ ExtensionDisabledDialogDelegate::ExtensionDisabledDialogDelegate(
     : service_(service), extension_(extension) {
   AddRef();  // Balanced in Proceed or Abort.
 
-  install_ui_.reset(new ExtensionInstallPrompt(browser));
+  install_ui_.reset(chrome::CreateExtensionInstallPromptWithBrowser(browser));
   install_ui_->ConfirmReEnable(this, extension_);
 }
 

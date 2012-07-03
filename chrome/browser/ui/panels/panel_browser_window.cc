@@ -395,11 +395,6 @@ void PanelBrowserWindow::HandleKeyboardEvent(
   native_panel_->HandlePanelKeyboardEvent(event);
 }
 
-void PanelBrowserWindow::ShowCreateWebAppShortcutsDialog(
-    TabContents* tab_contents) {
-  NOTIMPLEMENTED();
-}
-
 void PanelBrowserWindow::ShowCreateChromeAppShortcutsDialog(
     Profile* profile,
     const extensions::Extension* app) {

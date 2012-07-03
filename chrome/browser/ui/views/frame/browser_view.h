@@ -324,8 +324,6 @@ class BrowserView : public BrowserWindow,
       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual void ShowCreateWebAppShortcutsDialog(
-      TabContents* tab_contents) OVERRIDE;
   virtual void ShowCreateChromeAppShortcutsDialog(
       Profile*, const extensions::Extension* app) OVERRIDE;
   virtual void Cut() OVERRIDE;

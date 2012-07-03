@@ -366,7 +366,8 @@ void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
     return;
   }
 
-  install_prompt_.reset(new ExtensionInstallPrompt(GetCurrentBrowser()));
+  install_prompt_.reset(
+      chrome::CreateExtensionInstallPromptWithBrowser(GetCurrentBrowser()));
   install_prompt_->ConfirmWebstoreInstall(this, dummy_extension_, &icon_);
   // Control flow finishes up in InstallUIProceed or InstallUIAbort.
 }

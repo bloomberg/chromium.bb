@@ -13,10 +13,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_install_dialog.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/page_navigator.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -89,7 +87,7 @@ void AppendRatingStarsShim(const gfx::ImageSkia* skiaImage, void* data) {
 @synthesize userCountField = userCountField_;
 
 - (id)initWithParentWindow:(NSWindow*)window
-                   browser:(Browser*)browser
+                 navigator:(content::PageNavigator*)navigator
                   delegate:(ExtensionInstallPrompt::Delegate*)delegate
                     prompt:(const ExtensionInstallPrompt::Prompt&)prompt {
   NSString* nibpath = nil;
@@ -117,7 +115,7 @@ void AppendRatingStarsShim(const gfx::ImageSkia* skiaImage, void* data) {
 
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     parentWindow_ = window;
-    browser_ = browser;
+    navigator_ = navigator;
     delegate_ = delegate;
     prompt_.reset(new ExtensionInstallPrompt::Prompt(prompt));
   }
@@ -135,7 +133,7 @@ void AppendRatingStarsShim(const gfx::ImageSkia* skiaImage, void* data) {
 - (IBAction)storeLinkClicked:(id)sender {
   GURL store_url(extension_urls::GetWebstoreItemDetailURLPrefix() +
                  prompt_->extension()->id());
-  browser_->OpenURL(OpenURLParams(
+  navigator_->OpenURL(OpenURLParams(
       store_url, Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
       false));
 
@@ -318,21 +316,14 @@ void AppendRatingStarsShim(const gfx::ImageSkia* skiaImage, void* data) {
 @end  // ExtensionInstallDialogController
 
 void ShowExtensionInstallDialogImpl(
-    Browser* browser,
+    gfx::NativeWindow parent,
+    content::PageNavigator* navigator,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
-  BrowserWindow* window = browser->window();
-  if (!window) {
-    delegate->InstallUIAbort(false);
-    return;
-  }
-
-  gfx::NativeWindow native_window = window->GetNativeWindow();
-
   ExtensionInstallDialogController* controller =
       [[ExtensionInstallDialogController alloc]
-        initWithParentWindow:native_window
-                     browser:browser
+        initWithParentWindow:parent
+                     navigator:navigator
                     delegate:delegate
                       prompt:prompt];
 

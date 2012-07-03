@@ -311,9 +311,6 @@ class BrowserWindow : public BaseWindow {
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) = 0;
 
-  // Shows the create web app shortcut dialog box.
-  virtual void ShowCreateWebAppShortcutsDialog(TabContents* tab_contents) = 0;
-
   // Shows the create chrome app shortcut dialog box.
   virtual void ShowCreateChromeAppShortcutsDialog(Profile* profile,
       const extensions::Extension* app) = 0;

@@ -15,6 +15,7 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/platform_util.h"
@@ -922,8 +923,15 @@ bool CanViewSource(const Browser* browser) {
   return chrome::GetActiveWebContents(browser)->GetController().CanViewSource();
 }
 
+void CreateApplicationShortcuts(Browser* browser) {
+  content::RecordAction(UserMetricsAction("CreateShortcut"));
+  chrome::GetActiveTabContents(browser)->extension_tab_helper()->
+      CreateApplicationShortcuts();
+}
+
 bool CanCreateApplicationShortcuts(const Browser* browser) {
-  return web_app::IsValidUrl(chrome::GetActiveWebContents(browser)->GetURL());
+  return chrome::GetActiveTabContents(browser)->extension_tab_helper()->
+      CanCreateApplicationShortcuts();
 }
 
 void ConvertTabToAppWindow(Browser* browser,

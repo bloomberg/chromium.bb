@@ -15,10 +15,11 @@
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/common/web_apps.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-class ExtensionTabHelperDelegate;
 class TabContents;
 struct WebApplicationInfo;
 
@@ -40,21 +41,29 @@ class ExtensionTabHelper
       public ImageLoadingTracker::Observer,
       public WebstoreInlineInstaller::Delegate,
       public AppNotifyChannelSetup::Delegate,
-      public base::SupportsWeakPtr<ExtensionTabHelper> {
+      public base::SupportsWeakPtr<ExtensionTabHelper>,
+      public content::NotificationObserver {
  public:
+  // Different types of action when web app info is available.
+  // OnDidGetApplicationInfo uses this to dispatch calls.
+  enum WebAppAction {
+    NONE,             // No action at all.
+    CREATE_SHORTCUT,  // Bring up create application shortcut dialog.
+    UPDATE_SHORTCUT   // Update icon for app shortcut.
+  };
+
   explicit ExtensionTabHelper(TabContents* tab_contents);
   virtual ~ExtensionTabHelper();
 
   // Copies the internal state from another ExtensionTabHelper.
   void CopyStateFrom(const ExtensionTabHelper& source);
 
-  ExtensionTabHelperDelegate* delegate() const { return delegate_; }
-  void set_delegate(ExtensionTabHelperDelegate* d) { delegate_ = d; }
+  void CreateApplicationShortcuts();
+  bool CanCreateApplicationShortcuts() const;
 
-  // Requests application info for the specified page. This is an asynchronous
-  // request. The delegate is notified by way of OnDidGetApplicationInfo when
-  // the data is available.
-  void GetApplicationInfo(int32 page_id);
+  void set_pending_web_app_action(WebAppAction action) {
+    pending_web_app_action_ = action;
+  }
 
   // Gets the ID of the tab.
   int tab_id() const;
@@ -171,14 +180,21 @@ class ExtensionTabHelper
       const std::string& error,
       const AppNotifyChannelSetup* setup) OVERRIDE;
 
+  // content::NotificationObserver.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  // Requests application info for the specified page. This is an asynchronous
+  // request. The delegate is notified by way of OnDidGetApplicationInfo when
+  // the data is available.
+  void GetApplicationInfo(int32 page_id);
+
   // Data for app extensions ---------------------------------------------------
 
   // Our observers. Declare at top so that it will outlive all other members,
   // since they might add themselves as observers.
   ObserverList<Observer> observers_;
-
-  // Delegate for notifying our owner about stuff. Not owned by us.
-  ExtensionTabHelperDelegate* delegate_;
 
   // If non-null this tab is an app tab and this is the extension the tab was
   // created for.
@@ -196,6 +212,12 @@ class ExtensionTabHelper
 
   // Cached web app info data.
   WebApplicationInfo web_app_info_;
+
+  // Which deferred action to perform when OnDidGetApplicationInfo is notified
+  // from a WebContents.
+  WebAppAction pending_web_app_action_;
+
+  content::NotificationRegistrar registrar_;
 
   TabContents* tab_contents_;
 

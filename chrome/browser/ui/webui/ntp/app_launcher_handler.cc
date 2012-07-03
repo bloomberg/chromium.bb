@@ -973,7 +973,8 @@ ExtensionInstallPrompt* AppLauncherHandler::GetExtensionInstallPrompt() {
   if (!extension_install_ui_.get()) {
     Browser* browser = browser::FindBrowserWithWebContents(
         web_ui()->GetWebContents());
-    extension_install_ui_.reset(new ExtensionInstallPrompt(browser));
+    extension_install_ui_.reset(
+        chrome::CreateExtensionInstallPromptWithBrowser(browser));
   }
   return extension_install_ui_.get();
 }

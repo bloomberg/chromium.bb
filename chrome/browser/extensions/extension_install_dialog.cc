@@ -59,7 +59,8 @@ AutoConfirmForTest CheckAutoConfirmCommandLineSwitch() {
 
 }  // namespace
 
-void ShowExtensionInstallDialog(Browser* browser,
+void ShowExtensionInstallDialog(gfx::NativeWindow parent,
+                                content::PageNavigator* navigator,
                                 ExtensionInstallPrompt::Delegate* delegate,
                                 const ExtensionInstallPrompt::Prompt& prompt) {
   AutoConfirmForTest auto_confirm = CheckAutoConfirmCommandLineSwitch();
@@ -67,5 +68,9 @@ void ShowExtensionInstallDialog(Browser* browser,
     DoAutoConfirm(auto_confirm, delegate);
     return;
   }
-  ShowExtensionInstallDialogImpl(browser, delegate, prompt);
+  if (!parent) {
+    delegate->InstallUIAbort(false);
+    return;
+  }
+  ShowExtensionInstallDialogImpl(parent, navigator, delegate, prompt);
 }

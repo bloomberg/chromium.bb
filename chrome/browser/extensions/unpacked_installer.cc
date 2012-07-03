@@ -51,7 +51,7 @@ SimpleExtensionLoadPrompt::SimpleExtensionLoadPrompt(
     : service_weak_(extension_service),
       extension_(extension) {
   Browser* browser = browser::FindLastActiveWithProfile(profile);
-  install_ui_.reset(new ExtensionInstallPrompt(browser));
+  install_ui_.reset(chrome::CreateExtensionInstallPromptWithBrowser(browser));
 }
 
 SimpleExtensionLoadPrompt::~SimpleExtensionLoadPrompt() {

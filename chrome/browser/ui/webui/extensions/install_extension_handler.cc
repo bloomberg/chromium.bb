@@ -86,7 +86,7 @@ void InstallExtensionHandler::HandleInstallMessage(const ListValue* args) {
   scoped_refptr<CrxInstaller> crx_installer(
       CrxInstaller::Create(
           ExtensionSystem::Get(profile)->extension_service(),
-          new ExtensionInstallPrompt(browser)));
+          chrome::CreateExtensionInstallPromptWithBrowser(browser)));
   crx_installer->set_off_store_install_allow_reason(
       CrxInstaller::OffStoreInstallAllowedFromSettingsPage);
 

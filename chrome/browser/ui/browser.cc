@@ -49,7 +49,6 @@
 #include "chrome/browser/download/download_started_animation.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
-#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -308,7 +307,6 @@ Browser::Browser(Type type, Profile* profile)
       initial_show_state_(ui::SHOW_STATE_DEFAULT),
       is_session_restore_(false),
       weak_factory_(this),
-      pending_web_app_action_(NONE),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           content_setting_bubble_model_delegate_(
               new BrowserContentSettingBubbleModelDelegate(this))),
@@ -815,31 +813,6 @@ void Browser::OpenFile() {
                                   string16(), directory,
                                   NULL, 0, FILE_PATH_LITERAL(""),
                                   parent_window, NULL);
-}
-
-void Browser::OpenCreateShortcutsDialog() {
-  content::RecordAction(UserMetricsAction("CreateShortcut"));
-#if !defined(OS_MACOSX)
-  TabContents* current_tab = chrome::GetActiveTabContents(this);
-  DCHECK(current_tab &&
-      web_app::IsValidUrl(current_tab->web_contents()->GetURL())) <<
-          "Menu item should be disabled.";
-
-  NavigationEntry* entry =
-      current_tab->web_contents()->GetController().GetLastCommittedEntry();
-  if (!entry)
-    return;
-
-  // RVH's GetApplicationInfo should not be called before it returns.
-  DCHECK(pending_web_app_action_ == NONE);
-  pending_web_app_action_ = CREATE_SHORTCUT;
-
-  // Start fetching web app info for CreateApplicationShortcut dialog and show
-  // the dialog when the data is available in OnDidGetApplicationInfo.
-  current_tab->extension_tab_helper()->GetApplicationInfo(entry->GetPageID());
-#else
-  NOTIMPLEMENTED();
-#endif
 }
 
 void Browser::UpdateDownloadShelfVisibility(bool visible) {
@@ -1535,20 +1508,6 @@ void Browser::LoadingStateChanged(WebContents* source) {
           chrome::GetActiveTabContents(this)->core_tab_helper()->
               GetStatusText());
     }
-
-    if (!is_loading && pending_web_app_action_ == UPDATE_SHORTCUT) {
-      // Schedule a shortcut update when web application info is available if
-      // last committed entry is not NULL. Last committed entry could be NULL
-      // when an interstitial page is injected (e.g. bad https certificate,
-      // malware site etc). When this happens, we abort the shortcut update.
-      NavigationEntry* entry = source->GetController().GetLastCommittedEntry();
-      if (entry) {
-        TabContents::FromWebContents(source)->
-            extension_tab_helper()->GetApplicationInfo(entry->GetPageID());
-      } else {
-        pending_web_app_action_ = NONE;
-      }
-    }
   }
 }
 
@@ -2054,49 +2013,6 @@ void Browser::OnZoomChanged(TabContents* source,
     if (can_show_bubble && window_->IsActive())
       window_->ShowZoomBubble(zoom_percent);
   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Browser, ExtensionTabHelperDelegate implementation:
-
-void Browser::OnDidGetApplicationInfo(TabContents* source,
-                                      int32 page_id) {
-  if (chrome::GetActiveTabContents(this) != source)
-    return;
-
-  NavigationEntry* entry =
-      source->web_contents()->GetController().GetLastCommittedEntry();
-  if (!entry || (entry->GetPageID() != page_id))
-    return;
-
-  switch (pending_web_app_action_) {
-    case CREATE_SHORTCUT: {
-      window()->ShowCreateWebAppShortcutsDialog(source);
-      break;
-    }
-    case UPDATE_SHORTCUT: {
-      web_app::UpdateShortcutForTabContents(source);
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  pending_web_app_action_ = NONE;
-}
-
-void Browser::OnInstallApplication(TabContents* source,
-                                   const WebApplicationInfo& web_app) {
-  ExtensionService* extension_service = profile()->GetExtensionService();
-  if (!extension_service)
-    return;
-
-  scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(
-      extension_service,
-      extension_service->show_extensions_prompts() ?
-      new ExtensionInstallPrompt(this) : NULL));
-  installer->InstallWebApp(web_app);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2612,7 +2528,6 @@ void Browser::SetAsDelegate(TabContents* tab, Browser* delegate) {
   tab->zoom_controller()->set_observer(delegate);
   tab->constrained_window_tab_helper()->set_delegate(delegate);
   tab->core_tab_helper()->set_delegate(delegate);
-  tab->extension_tab_helper()->set_delegate(delegate);
   tab->search_engine_tab_helper()->set_delegate(delegate);
 }
 

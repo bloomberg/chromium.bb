@@ -479,7 +479,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       browser_->OpenFile();
       break;
     case IDC_CREATE_SHORTCUTS:
-      browser_->OpenCreateShortcutsDialog();
+      CreateApplicationShortcuts(browser_);
       break;
     case IDC_DEV_TOOLS:
       ToggleDevToolsWindow(browser_, DEVTOOLS_TOGGLE_ACTION_NONE);

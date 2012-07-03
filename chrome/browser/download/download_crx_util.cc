@@ -40,7 +40,7 @@ ExtensionInstallPrompt* CreateExtensionInstallPrompt(Profile* profile) {
     mock_install_prompt_for_testing = NULL;
   } else {
     Browser* browser = browser::FindLastActiveWithProfile(profile);
-    result = new ExtensionInstallPrompt(browser);
+    result = chrome::CreateExtensionInstallPromptWithBrowser(browser);
   }
 
   return result;

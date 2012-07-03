@@ -231,7 +231,8 @@ FilePath ExtensionBrowserTest::PackExtensionWithOptions(
 // This class is used to simulate an installation abort by the user.
 class MockAbortExtensionInstallPrompt : public ExtensionInstallPrompt {
  public:
-  MockAbortExtensionInstallPrompt() : ExtensionInstallPrompt(NULL) {}
+  MockAbortExtensionInstallPrompt() : ExtensionInstallPrompt(NULL, NULL, NULL) {
+  }
 
   // Simulate a user abort on an extension installation.
   virtual void ConfirmInstall(Delegate* delegate, const Extension* extension) {
@@ -246,8 +247,10 @@ class MockAbortExtensionInstallPrompt : public ExtensionInstallPrompt {
 
 class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
  public:
-  explicit MockAutoConfirmExtensionInstallPrompt(Browser* browser) :
-      ExtensionInstallPrompt(browser) {}
+  explicit MockAutoConfirmExtensionInstallPrompt(
+      gfx::NativeWindow parent,
+      content::PageNavigator* navigator,
+      Profile* profile) : ExtensionInstallPrompt(parent, navigator, profile) {}
 
   // Proceed without confirmation prompt.
   virtual void ConfirmInstall(Delegate* delegate, const Extension* extension) {
@@ -284,12 +287,18 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
 
   {
     ExtensionInstallPrompt* install_ui = NULL;
-    if (ui_type == INSTALL_UI_TYPE_CANCEL)
+    if (ui_type == INSTALL_UI_TYPE_CANCEL) {
       install_ui = new MockAbortExtensionInstallPrompt();
-    else if (ui_type == INSTALL_UI_TYPE_NORMAL)
-      install_ui = new ExtensionInstallPrompt(browser);
-    else if (ui_type == INSTALL_UI_TYPE_AUTO_CONFIRM)
-      install_ui = new MockAutoConfirmExtensionInstallPrompt(browser);
+    } else if (ui_type == INSTALL_UI_TYPE_NORMAL) {
+      install_ui = chrome::CreateExtensionInstallPromptWithBrowser(browser);
+    } else if (ui_type == INSTALL_UI_TYPE_AUTO_CONFIRM) {
+      gfx::NativeWindow parent =
+          browser->window() ? browser->window()->GetNativeWindow() : NULL;
+      install_ui = new MockAutoConfirmExtensionInstallPrompt(
+          parent,
+          browser,
+          browser->profile());
+    }
 
     // TODO(tessamac): Update callers to always pass an unpacked extension
     //                 and then always pack the extension here.

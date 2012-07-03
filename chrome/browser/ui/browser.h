@@ -19,7 +19,6 @@
 #include "base/string16.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/event_disposition.h"
-#include "chrome/browser/extensions/extension_tab_helper_delegate.h"
 #include "chrome/browser/instant/instant_controller_delegate.h"
 #include "chrome/browser/intents/device_attached_intent_source.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
@@ -105,7 +104,6 @@ class Browser : public TabStripModelDelegate,
                 public BlockedContentTabHelperDelegate,
                 public BookmarkTabHelperDelegate,
                 public ZoomObserver,
-                public ExtensionTabHelperDelegate,
                 public content::PageNavigator,
                 public content::NotificationObserver,
                 public SelectFileDialog::Listener,
@@ -158,14 +156,6 @@ class Browser : public TabStripModelDelegate,
     // There are active downloads associated with this incognito profile
     // that would be canceled.
     DOWNLOAD_CLOSE_LAST_WINDOW_IN_INCOGNITO_PROFILE,
-  };
-
-  // Different types of action when web app info is available.
-  // OnDidGetApplicationInfo uses this to dispatch calls.
-  enum WebAppAction {
-    NONE,             // No action at all.
-    CREATE_SHORTCUT,  // Bring up create application shortcut dialog.
-    UPDATE_SHORTCUT   // Update icon for app shortcut.
   };
 
   struct CreateParams {
@@ -393,7 +383,6 @@ class Browser : public TabStripModelDelegate,
 
   // Show various bits of UI
   void OpenFile();
-  void OpenCreateShortcutsDialog();
 
   void UpdateDownloadShelfVisibility(bool visible);
 
@@ -531,10 +520,6 @@ class Browser : public TabStripModelDelegate,
 
   // Show the first run search engine bubble on the location bar.
   void ShowFirstRunBubble();
-
-  void set_pending_web_app_action(WebAppAction action) {
-    pending_web_app_action_ = action;
-  }
 
   ExtensionWindowController* extension_window_controller() const {
     return extension_window_controller_.get();
@@ -738,13 +723,6 @@ class Browser : public TabStripModelDelegate,
   virtual void OnZoomChanged(TabContents* source,
                              int zoom_percent,
                              bool can_show_bubble) OVERRIDE;
-
-  // Overridden from ExtensionTabHelperDelegate:
-  virtual void OnDidGetApplicationInfo(TabContents* source,
-                                       int32 page_id) OVERRIDE;
-  virtual void OnInstallApplication(
-      TabContents* source,
-      const WebApplicationInfo& app_info) OVERRIDE;
 
   // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path,
@@ -1010,10 +988,6 @@ class Browser : public TabStripModelDelegate,
 
   // Keep track of the encoding auto detect pref.
   BooleanPrefMember encoding_auto_detect_;
-
-  // Which deferred action to perform when OnDidGetApplicationInfo is notified
-  // from a WebContents. Currently, only one pending action is allowed.
-  WebAppAction pending_web_app_action_;
 
   // Helper which implements the ContentSettingBubbleModel interface.
   scoped_ptr<BrowserContentSettingBubbleModelDelegate>

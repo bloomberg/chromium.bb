@@ -1186,10 +1186,6 @@ void BrowserView::ConfirmBrowserCloseWithPendingDownloads() {
   DownloadInProgressDialogView::Show(browser_.get(), GetNativeWindow());
 }
 
-void BrowserView::ShowCreateWebAppShortcutsDialog(TabContents* tab_contents) {
-  chrome::ShowCreateWebAppShortcutsDialog(GetNativeWindow(), tab_contents);
-}
-
 void BrowserView::ShowCreateChromeAppShortcutsDialog(
     Profile* profile,
     const extensions::Extension* app) {

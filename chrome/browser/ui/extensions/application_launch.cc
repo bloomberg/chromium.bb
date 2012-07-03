@@ -245,13 +245,15 @@ WebContents* OpenAppShortcutWindow(Profile* profile,
     return NULL;
 
   if (update_shortcut) {
+    TabContents* tab_contents = TabContents::FromWebContents(tab);
     // Set UPDATE_SHORTCUT as the pending web app action. This action is picked
     // up in LoadingStateChanged to schedule a GetApplicationInfo. And when
     // the web app info is available, ExtensionTabHelper notifies Browser via
     // OnDidGetApplicationInfo, which calls
     // web_app::UpdateShortcutForTabContents when it sees UPDATE_SHORTCUT as
     // pending web app action.
-    app_browser->set_pending_web_app_action(Browser::UPDATE_SHORTCUT);
+    tab_contents->extension_tab_helper()->set_pending_web_app_action(
+        ExtensionTabHelper::UPDATE_SHORTCUT);
   }
   return tab;
 }

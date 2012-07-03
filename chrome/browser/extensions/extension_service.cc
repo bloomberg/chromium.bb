@@ -580,7 +580,7 @@ bool ExtensionService::UpdateExtension(
   Browser* browser = browser::FindLastActiveWithProfile(profile_);
   ExtensionInstallPrompt* client =
       (!pending_extension_info || pending_extension_info->install_silently()) ?
-      NULL : new ExtensionInstallPrompt(browser);
+      NULL : chrome::CreateExtensionInstallPromptWithBrowser(browser);
 
   scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(this, client));
   installer->set_expected_id(id);

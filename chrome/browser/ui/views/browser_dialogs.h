@@ -83,10 +83,6 @@ void EditSearchEngine(gfx::NativeWindow parent,
                       EditSearchEngineControllerDelegate* delegate,
                       Profile* profile);
 
-// Shows the create web app shortcut dialog box.
-void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
-                                     TabContents* tab_contents);
-
 // Shows the create chrome app shortcut dialog box.
 void ShowCreateChromeAppShortcutsDialog(gfx::NativeWindow parent_window,
                                         Profile* profile,

@@ -14,7 +14,7 @@ class TabContents;
 
 class ExtensionInstallUIDefault : public ExtensionInstallUI {
  public:
-  explicit ExtensionInstallUIDefault(Browser* browser);
+  explicit ExtensionInstallUIDefault(Profile* profile);
   virtual ~ExtensionInstallUIDefault();
 
   // ExtensionInstallUI implementation:

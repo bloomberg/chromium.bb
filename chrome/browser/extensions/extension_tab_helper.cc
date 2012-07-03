@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_tab_helper.h"
 
+#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/page_action_controller.h"
 #include "chrome/browser/extensions/script_badge_controller.h"
@@ -12,8 +13,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
+#include "chrome/browser/ui/web_applications/web_app_ui.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -22,14 +26,21 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/extension_switch_utils.h"
 #include "content/public/browser/invalidate_type.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/gfx/image/image.h"
 
+using content::NavigationController;
+using content::NavigationEntry;
 using content::RenderViewHost;
 using content::WebContents;
 using extensions::Extension;
@@ -45,10 +56,10 @@ const char kPermissionError[] = "permission_error";
 
 ExtensionTabHelper::ExtensionTabHelper(TabContents* tab_contents)
     : content::WebContentsObserver(tab_contents->web_contents()),
-      delegate_(NULL),
       extension_app_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_function_dispatcher_(tab_contents->profile(), this)),
+      pending_web_app_action_(NONE),
       tab_contents_(tab_contents),
       active_tab_permission_manager_(tab_contents) {
   if (extensions::switch_utils::AreScriptBadgesEnabled()) {
@@ -58,6 +69,10 @@ ExtensionTabHelper::ExtensionTabHelper(TabContents* tab_contents)
         new ScriptExecutorImpl(tab_contents->web_contents()));
     location_bar_controller_.reset(new PageActionController(tab_contents));
   }
+  registrar_.Add(this,
+                 content::NOTIFICATION_LOAD_STOP,
+                 content::Source<NavigationController>(
+                    &tab_contents->web_contents()->GetController()));
 }
 
 ExtensionTabHelper::~ExtensionTabHelper() {
@@ -68,8 +83,27 @@ void ExtensionTabHelper::CopyStateFrom(const ExtensionTabHelper& source) {
   extension_app_icon_ = source.extension_app_icon_;
 }
 
-void ExtensionTabHelper::GetApplicationInfo(int32 page_id) {
-  Send(new ExtensionMsg_GetApplicationInfo(routing_id(), page_id));
+void ExtensionTabHelper::CreateApplicationShortcuts() {
+  DCHECK(CanCreateApplicationShortcuts());
+  NavigationEntry* entry =
+      tab_contents_->web_contents()->GetController().GetLastCommittedEntry();
+  if (!entry)
+    return;
+
+  pending_web_app_action_ = CREATE_SHORTCUT;
+
+  // Start fetching web app info for CreateApplicationShortcut dialog and show
+  // the dialog when the data is available in OnDidGetApplicationInfo.
+  GetApplicationInfo(entry->GetPageID());
+}
+
+bool ExtensionTabHelper::CanCreateApplicationShortcuts() const {
+#if defined(OS_MACOSX)
+  return false;
+#else
+  return web_app::IsValidUrl(tab_contents_->web_contents()->GetURL()) &&
+      pending_web_app_action_ == NONE;
+#endif
 }
 
 int ExtensionTabHelper::tab_id() const {
@@ -178,15 +212,52 @@ bool ExtensionTabHelper::OnMessageReceived(const IPC::Message& message) {
 
 void ExtensionTabHelper::OnDidGetApplicationInfo(
     int32 page_id, const WebApplicationInfo& info) {
+#if !defined(OS_MACOSX)
   web_app_info_ = info;
 
-  if (delegate_)
-    delegate_->OnDidGetApplicationInfo(tab_contents_, page_id);
+  NavigationEntry* entry =
+      tab_contents_->web_contents()->GetController().GetLastCommittedEntry();
+  if (!entry || (entry->GetPageID() != page_id))
+    return;
+
+  switch (pending_web_app_action_) {
+    case CREATE_SHORTCUT: {
+      chrome::ShowCreateWebAppShortcutsDialog(
+          tab_contents_->web_contents()->GetView()->GetTopLevelNativeWindow(),
+          tab_contents_);
+      break;
+    }
+    case UPDATE_SHORTCUT: {
+      web_app::UpdateShortcutForTabContents(tab_contents_);
+      break;
+    }
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  pending_web_app_action_ = NONE;
+#endif
 }
 
 void ExtensionTabHelper::OnInstallApplication(const WebApplicationInfo& info) {
-  if (delegate_)
-    delegate_->OnInstallApplication(tab_contents_, info);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  ExtensionService* extension_service = profile->GetExtensionService();
+  if (!extension_service)
+    return;
+
+  ExtensionInstallPrompt* prompt = NULL;
+  if (extension_service->show_extensions_prompts()) {
+    gfx::NativeWindow parent =
+        tab_contents_->web_contents()->GetView()->GetTopLevelNativeWindow();
+    prompt = new ExtensionInstallPrompt(parent,
+                                        tab_contents_->web_contents(),
+                                        tab_contents_->profile());
+  }
+  scoped_refptr<CrxInstaller> installer(
+      CrxInstaller::Create(extension_service, prompt));
+  installer->InstallWebApp(info);
 }
 
 void ExtensionTabHelper::OnInlineWebstoreInstall(
@@ -378,4 +449,29 @@ void ExtensionTabHelper::OnInlineInstallFailure(int install_id,
 
 WebContents* ExtensionTabHelper::GetAssociatedWebContents() const {
   return web_contents();
+}
+
+void ExtensionTabHelper::GetApplicationInfo(int32 page_id) {
+  Send(new ExtensionMsg_GetApplicationInfo(routing_id(), page_id));
+}
+
+void ExtensionTabHelper::Observe(int type,
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
+  DCHECK(type == content::NOTIFICATION_LOAD_STOP);
+  const NavigationController& controller =
+      *content::Source<NavigationController>(source).ptr();
+  DCHECK_EQ(controller.GetWebContents(), tab_contents_->web_contents());
+
+  if (pending_web_app_action_ == UPDATE_SHORTCUT) {
+    // Schedule a shortcut update when web application info is available if
+    // last committed entry is not NULL. Last committed entry could be NULL
+    // when an interstitial page is injected (e.g. bad https certificate,
+    // malware site etc). When this happens, we abort the shortcut update.
+    NavigationEntry* entry = controller.GetLastCommittedEntry();
+    if (entry)
+      GetApplicationInfo(entry->GetPageID());
+    else
+      pending_web_app_action_ = NONE;
+  }
 }

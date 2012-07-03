@@ -23,12 +23,17 @@
 
 class Browser;
 class ExtensionInstallUI;
-class MessageLoop;
 class InfoBarDelegate;
+class MessageLoop;
+class Profile;
 
 namespace base {
 class DictionaryValue;
 }  // namespace base
+
+namespace content {
+class PageNavigator;
+}
 
 namespace extensions {
 class BundleInstaller;
@@ -160,7 +165,11 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
       const std::string& localized_description,
       std::string* error);
 
-  explicit ExtensionInstallPrompt(Browser* browser);
+  // Creates a prompt with a parent window and a navigator that can be used to
+  // load pages.
+  ExtensionInstallPrompt(gfx::NativeWindow parent,
+                         content::PageNavigator* navigator,
+                         Profile* profile);
   virtual ~ExtensionInstallPrompt();
 
   ExtensionInstallUI* install_ui() const { return install_ui_.get(); }
@@ -270,7 +279,8 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
   // Shows the actual UI (the icon should already be loaded).
   void ShowConfirmation();
 
-  Browser* browser_;
+  gfx::NativeWindow parent_;
+  content::PageNavigator* navigator_;
   MessageLoop* ui_loop_;
 
   // The extensions installation icon.
@@ -303,5 +313,15 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
   // purpose of showing the install UI.
   ImageLoadingTracker tracker_;
 };
+
+namespace chrome {
+
+// Creates an ExtensionInstallPrompt from |browser|. Caller assumes ownership.
+// TODO(beng): remove this once various extensions types are weaned from
+//             Browser.
+ExtensionInstallPrompt* CreateExtensionInstallPromptWithBrowser(
+    Browser* browser);
+
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_PROMPT_H_

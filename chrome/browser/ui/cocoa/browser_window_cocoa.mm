@@ -530,11 +530,6 @@ void BrowserWindowCocoa::HandleKeyboardEvent(
     [BrowserWindowUtils handleKeyboardEvent:event.os_event inWindow:window()];
 }
 
-void BrowserWindowCocoa::ShowCreateWebAppShortcutsDialog(
-    TabContents* tab_contents) {
-  NOTIMPLEMENTED();
-}
-
 void BrowserWindowCocoa::ShowCreateChromeAppShortcutsDialog(
     Profile* profile, const extensions::Extension* app) {
   NOTIMPLEMENTED();

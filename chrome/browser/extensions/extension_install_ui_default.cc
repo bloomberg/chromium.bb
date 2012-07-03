@@ -87,15 +87,15 @@ class ErrorInfobarDelegate : public ConfirmInfoBarDelegate {
 
 }  // namespace
 
-ExtensionInstallUIDefault::ExtensionInstallUIDefault(Browser* browser)
+ExtensionInstallUIDefault::ExtensionInstallUIDefault(Profile* profile)
     : skip_post_install_ui_(false),
       previous_using_native_theme_(false),
       use_app_installed_bubble_(false) {
-  browser_ = browser;
+  profile_ = profile;
 
-  // Remember the current theme in case the user presses undo.
-  if (browser) {
-    Profile* profile = browser->profile();
+  // |profile_| can be NULL during tests.
+  if (profile_) {
+    // Remember the current theme in case the user presses undo.
     const Extension* previous_theme =
         ThemeServiceFactory::GetThemeForProfile(profile);
     if (previous_theme)
@@ -115,13 +115,13 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
 
   if (extension->is_theme()) {
     ShowThemeInfoBar(previous_theme_id_, previous_using_native_theme_,
-                     extension, browser_->profile());
+                     extension, profile_);
     return;
   }
 
   // Extensions aren't enabled by default in incognito so we confirm
   // the install in a normal window.
-  Profile* current_profile = browser_->profile()->GetOriginalProfile();
+  Profile* current_profile = profile_->GetOriginalProfile();
   Browser* browser = browser::FindOrCreateTabbedBrowser(current_profile);
   if (browser->tab_count() == 0)
     browser->AddBlankTab(true);
@@ -149,7 +149,7 @@ void ExtensionInstallUIDefault::OnInstallFailure(
   if (disable_failure_ui_for_tests || skip_post_install_ui_)
     return;
 
-  Browser* browser = browser::FindLastActiveWithProfile(browser_->profile());
+  Browser* browser = browser::FindLastActiveWithProfile(profile_);
   TabContents* tab_contents = chrome::GetActiveTabContents(browser);
   if (!tab_contents)
     return;
@@ -226,8 +226,8 @@ InfoBarDelegate* ExtensionInstallUIDefault::GetNewThemeInstalledInfoBarDelegate(
 }
 
 // static
-ExtensionInstallUI* ExtensionInstallUI::Create(Browser* browser) {
-  return new ExtensionInstallUIDefault(browser);
+ExtensionInstallUI* ExtensionInstallUI::Create(Profile* profile) {
+  return new ExtensionInstallUIDefault(profile);
 }
 
 // static

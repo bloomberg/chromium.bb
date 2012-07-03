@@ -14,6 +14,7 @@
 #include "chrome/browser/shell_integration_linux.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -47,11 +48,14 @@ const int kDescriptionLabelHeightLines = 3;
 
 }  // namespace
 
-// static
-void CreateWebApplicationShortcutsDialogGtk::Show(
-    GtkWindow* parent, TabContents* tab_contents) {
-  new CreateWebApplicationShortcutsDialogGtk(parent, tab_contents);
+namespace chrome {
+
+void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
+                                     TabContents* tab_contents) {
+  new CreateWebApplicationShortcutsDialogGtk(parent_window, tab_contents);
 }
+
+}  // namespace chrome
 
 void CreateChromeApplicationShortcutsDialogGtk::Show(GtkWindow* parent,
                                                      Profile* profile,

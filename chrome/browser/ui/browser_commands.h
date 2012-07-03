@@ -143,6 +143,7 @@ void ViewSource(Browser* browser,
 void ViewSelectedSource(Browser* browser);
 bool CanViewSource(const Browser* browser);
 
+void CreateApplicationShortcuts(Browser* browser);
 bool CanCreateApplicationShortcuts(const Browser* browser);
 
 void ConvertTabToAppWindow(Browser* browser, content::WebContents* contents);

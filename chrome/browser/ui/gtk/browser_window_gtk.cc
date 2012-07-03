@@ -1225,11 +1225,6 @@ void BrowserWindowGtk::HandleKeyboardEvent(
     gtk_window_activate_key(window_, os_event);
 }
 
-void BrowserWindowGtk::ShowCreateWebAppShortcutsDialog(
-    TabContents* tab_contents) {
-  CreateWebApplicationShortcutsDialogGtk::Show(window_, tab_contents);
-}
-
 void BrowserWindowGtk::ShowCreateChromeAppShortcutsDialog(
     Profile* profile, const extensions::Extension* app) {
   CreateChromeApplicationShortcutsDialogGtk::Show(window_, profile, app);

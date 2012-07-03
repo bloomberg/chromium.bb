@@ -77,7 +77,8 @@ void ExtensionNavigationObserver::PromptToEnableExtensionIfNecessary(
 
     Browser* browser = browser::FindBrowserWithWebContents(
         nav_controller->GetWebContents());
-    extension_install_prompt_.reset(new ExtensionInstallPrompt(browser));
+    extension_install_prompt_.reset(
+        chrome::CreateExtensionInstallPromptWithBrowser(browser));
     extension_install_prompt_->ConfirmReEnable(this, extension);
   }
 }

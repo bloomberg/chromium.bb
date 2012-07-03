@@ -10,13 +10,11 @@
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/page_navigator.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
@@ -84,8 +82,8 @@ namespace browser {
 // ExtensionInstallPrompt::Delegate instance.
 class ExtensionInstallDialog {
  public:
-  ExtensionInstallDialog(Browser* browser,
-                         GtkWindow* parent,
+  ExtensionInstallDialog(gfx::NativeWindow parent,
+                         content::PageNavigator* navigator,
                          ExtensionInstallPrompt::Delegate *delegate,
                          const ExtensionInstallPrompt::Prompt& prompt);
  private:
@@ -97,18 +95,18 @@ class ExtensionInstallDialog {
   GtkWidget* CreateWidgetForIssueAdvice(
       const IssueAdviceInfoEntry& issue_advice, int pixel_width);
 
-  Browser* browser_;
+  content::PageNavigator* navigator_;
   ExtensionInstallPrompt::Delegate* delegate_;
   std::string extension_id_;  // Set for INLINE_INSTALL_PROMPT.
   GtkWidget* dialog_;
 };
 
 ExtensionInstallDialog::ExtensionInstallDialog(
-    Browser* browser,
-    GtkWindow* parent,
+    gfx::NativeWindow parent,
+    content::PageNavigator* navigator,
     ExtensionInstallPrompt::Delegate *delegate,
     const ExtensionInstallPrompt::Prompt& prompt)
-    : browser_(browser),
+    : navigator_(navigator),
       delegate_(delegate),
       dialog_(NULL) {
   bool show_permissions = prompt.GetPermissionCount() > 0;
@@ -315,7 +313,7 @@ void ExtensionInstallDialog::OnResponse(GtkWidget* dialog, int response_id) {
 void ExtensionInstallDialog::OnStoreLinkClick(GtkWidget* sender) {
   GURL store_url(
       extension_urls::GetWebstoreItemDetailURLPrefix() + extension_id_);
-  browser_->OpenURL(OpenURLParams(
+  navigator_->OpenURL(OpenURLParams(
       store_url, content::Referrer(), NEW_FOREGROUND_TAB,
       content::PAGE_TRANSITION_LINK, false));
 
@@ -382,16 +380,9 @@ GtkWidget* ExtensionInstallDialog::CreateWidgetForIssueAdvice(
 }  // namespace browser
 
 void ShowExtensionInstallDialogImpl(
-    Browser* browser,
+    gfx::NativeWindow parent,
+    content::PageNavigator* navigator,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
-  BrowserWindowGtk* browser_window = static_cast<BrowserWindowGtk*>(
-      browser->window());
-  if (!browser_window) {
-    delegate->InstallUIAbort(false);
-    return;
-  }
-
-  new browser::ExtensionInstallDialog(browser, browser_window->window(),
-                                      delegate, prompt);
+  new browser::ExtensionInstallDialog(parent, navigator, delegate, prompt);
 }

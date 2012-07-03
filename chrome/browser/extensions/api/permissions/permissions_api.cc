@@ -208,7 +208,8 @@ bool RequestPermissionsFunction::RunImpl() {
     InstallUIAbort(true);
   } else {
     CHECK_EQ(DO_NOT_SKIP, auto_confirm_for_tests);
-    install_ui_.reset(new ExtensionInstallPrompt(GetCurrentBrowser()));
+    install_ui_.reset(
+        chrome::CreateExtensionInstallPromptWithBrowser(GetCurrentBrowser()));
     install_ui_->ConfirmPermissions(
         this, GetExtension(), requested_permissions_.get());
   }

@@ -15,7 +15,9 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "ui/gfx/image/image_skia.h"
 
-class Browser;
+namespace content {
+class PageNavigator;
+}
 
 // Displays the extension or bundle install prompt, and notifies the
 // ExtensionInstallPrompt::Delegate of success or failure.
@@ -38,7 +40,7 @@ class Browser;
   IBOutlet NSTextField* userCountField_;
 
   NSWindow* parentWindow_;  // weak
-  Browser* browser_;  // weak
+  content::PageNavigator* navigator_;  // weak
   ExtensionInstallPrompt::Delegate* delegate_;  // weak
   scoped_ptr<ExtensionInstallPrompt::Prompt> prompt_;
 }
@@ -57,7 +59,7 @@ class Browser;
 @property(nonatomic, readonly) NSTextField* userCountField;
 
 - (id)initWithParentWindow:(NSWindow*)window
-                   browser:(Browser*)browser
+                 navigator:(content::PageNavigator*)navigator
                   delegate:(ExtensionInstallPrompt::Delegate*)delegate
                     prompt:(const ExtensionInstallPrompt::Prompt&)prompt;
 - (void)runAsModalSheet;

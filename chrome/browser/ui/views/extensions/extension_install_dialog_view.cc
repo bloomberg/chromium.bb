@@ -12,10 +12,8 @@
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/page_navigator.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -75,7 +73,7 @@ void AddResourceIcon(const gfx::ImageSkia* skia_image, void* data) {
 class ExtensionInstallDialogView : public views::DialogDelegateView,
                                    public views::LinkListener {
  public:
-  ExtensionInstallDialogView(Browser* browser,
+  ExtensionInstallDialogView(content::PageNavigator* navigator,
                              ExtensionInstallPrompt::Delegate* delegate,
                              const ExtensionInstallPrompt::Prompt& prompt);
   virtual ~ExtensionInstallDialogView();
@@ -103,7 +101,7 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
     return prompt_.type() == ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT;
   }
 
-  Browser* browser_;
+  content::PageNavigator* navigator_;
   ExtensionInstallPrompt::Delegate* delegate_;
   ExtensionInstallPrompt::Prompt prompt_;
 
@@ -111,10 +109,10 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
 };
 
 ExtensionInstallDialogView::ExtensionInstallDialogView(
-    Browser* browser,
+    content::PageNavigator* navigator,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt)
-    : browser_(browser),
+    : navigator_(navigator),
       delegate_(delegate),
       prompt_(prompt) {
   // Possible grid layouts:
@@ -349,24 +347,16 @@ void ExtensionInstallDialogView::LinkClicked(views::Link* source,
   OpenURLParams params(
       store_url, Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
       false);
-  browser_->OpenURL(params);
+  navigator_->OpenURL(params);
   GetWidget()->Close();
 }
 
 void ShowExtensionInstallDialogImpl(
-    Browser* browser,
+    gfx::NativeWindow parent,
+    content::PageNavigator* navigator,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
-  BrowserWindow* browser_window = browser->window();
-  if (!browser_window) {
-    delegate->InstallUIAbort(false);
-    return;
-  }
-
-  ExtensionInstallDialogView* dialog = new ExtensionInstallDialogView(
-      browser, delegate, prompt);
-
-  views::Widget* window =  views::Widget::CreateWindowWithParent(
-      dialog, browser_window->GetNativeWindow());
-  window->Show();
+  views::Widget::CreateWindowWithParent(
+      new ExtensionInstallDialogView(navigator, delegate, prompt),
+      parent)->Show();
 }

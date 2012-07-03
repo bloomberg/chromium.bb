@@ -69,7 +69,8 @@ void GetAuthTokenFunction::OnIssueAdviceSuccess(
   // Existing grant was revoked and we used NO_FORCE, so we got info back
   // instead.
   if (interactive_) {
-    install_ui_.reset(new ExtensionInstallPrompt(GetCurrentBrowser()));
+    install_ui_.reset(
+        chrome::CreateExtensionInstallPromptWithBrowser(GetCurrentBrowser()));
     install_ui_->ConfirmIssueAdvice(this, GetExtension(), issue_advice);
   } else {
     error_ = kNoGrant;

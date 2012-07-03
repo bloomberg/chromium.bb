@@ -408,7 +408,8 @@ bool SetEnabledFunction::RunImpl() {
         return false;
       }
       AddRef(); // Matched in InstallUIProceed/InstallUIAbort
-      install_prompt_.reset(new ExtensionInstallPrompt(GetCurrentBrowser()));
+      install_prompt_.reset(
+          chrome::CreateExtensionInstallPromptWithBrowser(GetCurrentBrowser()));
       install_prompt_->ConfirmReEnable(this, extension);
       return true;
     }

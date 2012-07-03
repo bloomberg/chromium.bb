@@ -20,7 +20,7 @@
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -29,16 +29,13 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/extensions/url_pattern.h"
+#include "content/public/browser/page_navigator.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
-
-#if defined(USE_ASH)
-#include "ash/shell.h"
-#endif
 
 using extensions::BundleInstaller;
 using extensions::Extension;
@@ -261,12 +258,16 @@ scoped_refptr<Extension>
       error);
 }
 
-ExtensionInstallPrompt::ExtensionInstallPrompt(Browser* browser)
+ExtensionInstallPrompt::ExtensionInstallPrompt(
+    gfx::NativeWindow parent,
+    content::PageNavigator* navigator,
+    Profile* profile)
     : record_oauth2_grant_(ShouldAutomaticallyApproveScopes()),
-      browser_(browser),
+      parent_(parent),
+      navigator_(navigator),
       ui_loop_(MessageLoop::current()),
       extension_(NULL),
-      install_ui_(ExtensionInstallUI::Create(browser)),
+      install_ui_(ExtensionInstallUI::Create(profile)),
       delegate_(NULL),
       prompt_(UNSET_PROMPT_TYPE),
       prompt_type_(UNSET_PROMPT_TYPE),
@@ -435,7 +436,7 @@ void ExtensionInstallPrompt::FetchOAuthIssueAdviceIfNeeded() {
     return;
   }
 
-  Profile* profile = install_ui_->browser()->profile();
+  Profile* profile = install_ui_->profile();
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile);
   std::vector<std::string> scopes;
   scopes.assign(permissions_->scopes().begin(), permissions_->scopes().end());
@@ -477,12 +478,12 @@ void ExtensionInstallPrompt::ShowConfirmation() {
     case INSTALL_PROMPT: {
       prompt_.set_extension(extension_);
       prompt_.set_icon(gfx::Image(icon_));
-      ShowExtensionInstallDialog(browser_, delegate_, prompt_);
+      ShowExtensionInstallDialog(parent_, navigator_, delegate_, prompt_);
       break;
     }
     case BUNDLE_INSTALL_PROMPT: {
       prompt_.set_bundle(bundle_);
-      ShowExtensionInstallDialog(browser_, delegate_, prompt_);
+      ShowExtensionInstallDialog(parent_, navigator_, delegate_, prompt_);
       break;
     }
     default:
@@ -496,3 +497,17 @@ bool ExtensionInstallPrompt::ShouldAutomaticallyApproveScopes() {
   return !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDemandUserScopeApproval);
 }
+
+namespace chrome {
+
+ExtensionInstallPrompt* CreateExtensionInstallPromptWithBrowser(
+    Browser* browser) {
+  // |browser| can be NULL in unit tests.
+  if (!browser)
+    return new ExtensionInstallPrompt(NULL, NULL, NULL);
+  gfx::NativeWindow parent =
+      browser->window() ? browser->window()->GetNativeWindow() : NULL;
+  return new ExtensionInstallPrompt(parent, browser, browser->profile());
+}
+
+}  // namespace chrome

@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -31,8 +32,10 @@ namespace {
 
 class MockInstallPrompt : public ExtensionInstallPrompt {
  public:
-  explicit MockInstallPrompt(Browser* browser) :
-      ExtensionInstallPrompt(browser),
+  explicit MockInstallPrompt(gfx::NativeWindow parent,
+                             content::PageNavigator* navigator,
+                             Profile* profile) :
+      ExtensionInstallPrompt(parent, navigator, profile),
       confirmation_requested_(false),
       extension_(NULL) {}
 
@@ -63,6 +66,12 @@ class MockInstallPrompt : public ExtensionInstallPrompt {
   string16 error_;
   const Extension* extension_;
 };
+
+MockInstallPrompt* CreateMockInstallPromptForBrowser(Browser* browser) {
+  gfx::NativeWindow parent =
+      browser->window() ? browser->window()->GetNativeWindow() : NULL;
+  return new MockInstallPrompt(parent, browser, browser->profile());
+}
 
 }  // namespace
 
@@ -113,7 +122,8 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
 
     ExtensionService* service = browser()->profile()->GetExtensionService();
 
-    MockInstallPrompt* mock_prompt = new MockInstallPrompt(browser());
+    MockInstallPrompt* mock_prompt =
+        CreateMockInstallPromptForBrowser(browser());
     mock_prompt->set_record_oauth2_grant(record_oauth2_grant);
     scoped_refptr<CrxInstaller> installer =
         InstallWithPrompt("browsertest/scopes", std::string(), mock_prompt);
@@ -136,7 +146,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, MAYBE_Whitelisting) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
 
   // Even whitelisted extensions with NPAPI should not prompt.
-  MockInstallPrompt* mock_prompt = new MockInstallPrompt(browser());
+  MockInstallPrompt* mock_prompt =
+      CreateMockInstallPromptForBrowser(browser());
   scoped_refptr<CrxInstaller> installer =
       InstallWithPrompt("uitest/plugins", id, mock_prompt);
   EXPECT_FALSE(mock_prompt->confirmation_requested());
@@ -183,7 +194,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PackAndInstallExtension) {
   std::string crx_path_string(crx_path.value().begin(), crx_path.value().end());
   GURL url = GURL(std::string("file:///").append(crx_path_string));
 
-  MockInstallPrompt* mock_prompt = new MockInstallPrompt(browser());
+  MockInstallPrompt* mock_prompt =
+      CreateMockInstallPromptForBrowser(browser());
   download_crx_util::SetMockInstallPromptForTesting(mock_prompt);
 
   LOG(ERROR) << "PackAndInstallExtension: Getting download manager";
@@ -228,7 +240,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, MAYBE_AllowOffStore) {
   const bool kTestData[] = {false, true};
 
   for (size_t i = 0; i < arraysize(kTestData); ++i) {
-    MockInstallPrompt* mock_prompt = new MockInstallPrompt(browser());
+    MockInstallPrompt* mock_prompt =
+        CreateMockInstallPromptForBrowser(browser());
     scoped_refptr<CrxInstaller> crx_installer(
         CrxInstaller::Create(service, mock_prompt));
     crx_installer->set_install_cause(
