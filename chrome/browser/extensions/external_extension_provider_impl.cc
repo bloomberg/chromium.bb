@@ -113,12 +113,25 @@ void ExternalExtensionProviderImpl::SetPrefs(DictionaryValue* prefs) {
     }
 
     FilePath::StringType external_crx;
+    Value* external_version_value;
     std::string external_version;
     std::string external_update_url;
 
     bool has_external_crx = extension->GetString(kExternalCrx, &external_crx);
-    bool has_external_version = extension->GetString(kExternalVersion,
-                                                     &external_version);
+
+    bool has_external_version = false;
+    if (extension->Get(kExternalVersion, &external_version_value)) {
+      if (external_version_value->IsType(Value::TYPE_STRING)) {
+        external_version_value->GetAsString(&external_version);
+        has_external_version = true;
+      } else {
+        LOG(WARNING) << "Malformed extension dictionary for extension: "
+                     << extension_id.c_str() << ". " << kExternalVersion
+                     << " value must be a string.";
+        continue;
+      }
+    }
+
     bool has_external_update_url = extension->GetString(kExternalUpdateUrl,
                                                         &external_update_url);
     if (has_external_crx != has_external_version) {

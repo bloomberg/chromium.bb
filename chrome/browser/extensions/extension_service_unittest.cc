@@ -3894,6 +3894,7 @@ TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
   // - One that contains a malformed version.
   // - One that has an invalid id.
   // - One that has a non-dictionary value.
+  // - One that has an integer 'external_version' instead of a string.
   // The final extension is valid, and we check that it is read to make sure
   // failures don't stop valid records from being read.
   json_data =
@@ -3924,6 +3925,10 @@ TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
       "  },"
       "  \"This is not a valid id!\": {},"
       "  \"hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh\": true,"
+      "  \"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\": {"
+      "    \"external_crx\": \"RandomExtension4.crx\","
+      "    \"external_version\": 1.0"
+      "  },"
       "  \"pppppppppppppppppppppppppppppppp\": {"
       "    \"external_crx\": \"RandomValidExtension.crx\","
       "    \"external_version\": \"1.0\""
