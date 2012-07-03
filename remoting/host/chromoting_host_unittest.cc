@@ -228,6 +228,16 @@ class ChromotingHostTest : public testing::Test {
     get_client(connection_index) = client;
   }
 
+  // Change the session route for |client1_|.
+  void ChangeSessionRoute(const std::string& channel_name,
+                          const protocol::TransportRoute& route) {
+    host_->OnSessionRouteChange(get_client(0), channel_name, route);
+  }
+
+  void DisconnectAllClients() {
+    host_->DisconnectAllClients();
+  }
+
   // Helper method to disconnect client 1 from the host.
   void DisconnectClient1() {
     client1_->OnConnectionClosed(connection1_, protocol::OK);
@@ -592,6 +602,40 @@ TEST_F(ChromotingHostTest, IncomingSessionOverload) {
   EXPECT_EQ(protocol::SessionManager::OVERLOAD, response);
 
   host_->Shutdown(base::Bind(&DoNothing));
+}
+
+TEST_F(ChromotingHostTest, OnSessionRouteChange) {
+  std::string channel_name("ChannelName");
+  protocol::TransportRoute route;
+
+  ExpectHostAndSessionManagerStart();
+  Expectation video_packet_sent = ExpectClientConnected(
+      0, InvokeWithoutArgs(CreateFunctor(
+          this, &ChromotingHostTest::ChangeSessionRoute, channel_name, route)));
+  Expectation route_change =
+      EXPECT_CALL(host_status_observer_, OnClientRouteChange(
+          session_jid1_, channel_name, _))
+      .After(video_packet_sent)
+      .WillOnce(InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost));
+  ExpectClientDisconnected(0, true, route_change, InvokeWithoutArgs(DoNothing));
+  EXPECT_CALL(host_status_observer_, OnShutdown());
+
+  host_->Start();
+  SimulateClientConnection(0, true, false);
+  message_loop_.Run();
+}
+
+TEST_F(ChromotingHostTest, DisconnectAllClients) {
+  ExpectHostAndSessionManagerStart();
+  Expectation video_packet_sent = ExpectClientConnected(
+      0, InvokeWithoutArgs(this, &ChromotingHostTest::DisconnectAllClients));
+  ExpectClientDisconnected(0, true, video_packet_sent,
+      InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost));
+  EXPECT_CALL(host_status_observer_, OnShutdown());
+
+  host_->Start();
+  SimulateClientConnection(0, true, false);
+  message_loop_.Run();
 }
 
 }  // namespace remoting
