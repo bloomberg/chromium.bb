@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/hit_test.h"
@@ -229,10 +230,14 @@ gfx::Rect FramePainter::GetWindowBoundsForClientBounds(
 int FramePainter::NonClientHitTest(views::NonClientFrameView* view,
                                    const gfx::Point& point) {
   gfx::Rect expanded_bounds = view->bounds();
-  int outside_bounds = ui::GetDisplayLayout() == ui::LAYOUT_TOUCH ?
-      kResizeOutsideBoundsSizeTouch :
-      kResizeOutsideBoundsSize;
+  int outside_bounds = kResizeOutsideBoundsSize;
+
+  if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH &&
+      aura::Env::GetInstance()->is_touch_down()) {
+    outside_bounds = kResizeOutsideBoundsSizeTouch;
+  }
   expanded_bounds.Inset(-outside_bounds, -outside_bounds);
+
   if (!expanded_bounds.Contains(point))
     return HTNOWHERE;
 
