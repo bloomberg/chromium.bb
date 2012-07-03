@@ -192,6 +192,14 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     # on ChromeOS).
     self.SetUp()
 
+    global _BROWSER_PID
+    try:
+      _BROWSER_PID = self.GetBrowserInfo()['browser_pid']
+    except JSONInterfaceError:
+      raise JSONInterfaceError('Unable to get browser_pid over automation '
+                               'channel on first attempt.  Something went very '
+                               'wrong.  Chrome probably did not launch.')
+
     # Forcibly trigger all plugins to get registered.  crbug.com/94123
     # Sometimes flash files loaded too quickly after firing browser
     # ends up getting downloaded, which seems to indicate that the plugin
@@ -208,9 +216,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     for remote in self.remotes:
       remote.CreateTarget(self)
       remote.setUp()
-
-    global _BROWSER_PID
-    _BROWSER_PID = self.GetBrowserInfo()['browser_pid']
 
   def setUp(self):
     """Override this method to launch browser differently.
