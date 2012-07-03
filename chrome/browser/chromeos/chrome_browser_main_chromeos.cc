@@ -36,6 +36,7 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/session_manager_observer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/low_memory_observer.h"
 #include "chrome/browser/chromeos/net/cros_network_change_notifier_factory.h"
 #include "chrome/browser/chromeos/net/network_change_notifier_chromeos.h"
@@ -262,6 +263,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   // Initialize DBusThreadManager for the browser. This must be done after
   // the main message loop is started, as it uses the message loop.
   chromeos::DBusThreadManager::Initialize();
+  // Add PowerManagerClient observer for WallpaperManager. WallpaperManager
+  // is initialized before DBusThreadManager.
+  chromeos::WallpaperManager::Get()->AddPowerManagerClientObserver();
+
   chromeos::CrosDBusService::Initialize();
 
   // Initialize the session manager observer so that we'll take actions

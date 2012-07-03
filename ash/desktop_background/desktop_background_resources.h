@@ -29,11 +29,11 @@ struct ASH_EXPORT WallpaperInfo {
 
 const SkColor kLoginWallpaperColor = 0xFEFEFE;
 
-ASH_EXPORT int GetSolidColorIndex();
-ASH_EXPORT int GetInvalidWallpaperIndex();
 ASH_EXPORT int GetDefaultWallpaperIndex();
 ASH_EXPORT int GetGuestWallpaperIndex();
-ASH_EXPORT int GetRandomWallpaperIndex();
+ASH_EXPORT int GetInvalidWallpaperIndex();
+ASH_EXPORT int GetNextWallpaperIndex(int index);
+ASH_EXPORT int GetSolidColorIndex();
 ASH_EXPORT int GetWallpaperCount();
 ASH_EXPORT const WallpaperInfo& GetWallpaperInfo(int index);
 

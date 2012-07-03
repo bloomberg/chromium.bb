@@ -244,14 +244,6 @@ const int kGuestWallpaperIndex = kDefaultWallpaperIndex;
 
 namespace ash {
 
-int GetSolidColorIndex() {
-  return kSolidColorIndex;
-}
-
-int GetInvalidWallpaperIndex() {
-  return kInvalidWallpaperIndex;
-}
-
 int GetDefaultWallpaperIndex() {
   DCHECK(kDefaultWallpaperIndex < kDefaultWallpaperCount);
   return std::min(kDefaultWallpaperIndex, kDefaultWallpaperCount - 1);
@@ -262,10 +254,17 @@ int GetGuestWallpaperIndex() {
   return std::min(kGuestWallpaperIndex, kDefaultWallpaperCount - 1);
 }
 
-int GetRandomWallpaperIndex() {
+int GetInvalidWallpaperIndex() {
+  return kInvalidWallpaperIndex;
+}
+
+int GetNextWallpaperIndex(int index) {
   DCHECK(kLastRandomWallpaperIndex < kDefaultWallpaperCount);
-  return base::RandInt(0,
-      std::min(kLastRandomWallpaperIndex, kDefaultWallpaperCount - 1));
+  return (index + 1) % (kLastRandomWallpaperIndex + 1);
+}
+
+int GetSolidColorIndex() {
+  return kSolidColorIndex;
 }
 
 int GetWallpaperCount() {
