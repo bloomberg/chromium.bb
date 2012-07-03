@@ -21,8 +21,8 @@ scoped_ptr<DesktopEnvironment> DesktopEnvironment::Create(
     ChromotingHostContext* context) {
   scoped_ptr<Capturer> capturer(Capturer::Create());
   scoped_ptr<EventExecutor> event_executor = EventExecutor::Create(
-      context->desktop_message_loop()->message_loop_proxy(),
-      context->ui_message_loop(), capturer.get());
+      context->desktop_task_runner(), context->ui_task_runner(),
+      capturer.get());
 
   if (capturer.get() == NULL || event_executor.get() == NULL) {
     LOG(ERROR) << "Unable to create DesktopEnvironment";
@@ -40,8 +40,8 @@ scoped_ptr<DesktopEnvironment> DesktopEnvironment::CreateForService(
     ChromotingHostContext* context) {
   scoped_ptr<Capturer> capturer(Capturer::Create());
   scoped_ptr<EventExecutor> event_executor = EventExecutor::Create(
-      context->desktop_message_loop()->message_loop_proxy(),
-      context->ui_message_loop(), capturer.get());
+      context->desktop_task_runner(), context->ui_task_runner(),
+      capturer.get());
 
   if (capturer.get() == NULL || event_executor.get() == NULL) {
     LOG(ERROR) << "Unable to create DesktopEnvironment";
@@ -50,8 +50,8 @@ scoped_ptr<DesktopEnvironment> DesktopEnvironment::CreateForService(
 
 #if defined(OS_WIN)
   event_executor.reset(new SessionEventExecutorWin(
-      context->desktop_message_loop(),
-      context->file_message_loop(),
+      context->desktop_task_runner(),
+      context->file_task_runner(),
       event_executor.Pass()));
 #endif
 

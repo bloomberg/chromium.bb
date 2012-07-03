@@ -16,10 +16,8 @@
 #include "remoting/host/scoped_thread_desktop_win.h"
 #include "remoting/protocol/host_event_stub.h"
 
-class MessageLoop;
-
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 } // namespace base
 
 namespace IPC {
@@ -31,9 +29,10 @@ namespace remoting {
 class SessionEventExecutorWin : public EventExecutor,
                                 public IPC::Listener {
  public:
-  SessionEventExecutorWin(MessageLoop* message_loop,
-                          base::MessageLoopProxy* io_message_loop,
-                          scoped_ptr<EventExecutor> nested_executor);
+  SessionEventExecutorWin(
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_ptr<EventExecutor> nested_executor);
   ~SessionEventExecutorWin();
 
   // EventExecutor implementation.
@@ -58,7 +57,7 @@ class SessionEventExecutorWin : public EventExecutor,
   // Pointer to the next event executor.
   scoped_ptr<EventExecutor> nested_executor_;
 
-  MessageLoop* message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   ScopedThreadDesktopWin desktop_;
 

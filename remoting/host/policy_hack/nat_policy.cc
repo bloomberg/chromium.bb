@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
 #include "base/values.h"
@@ -28,8 +28,8 @@ const int kFallbackReloadDelayMinutes = 15;
 
 const char NatPolicy::kNatPolicyName[] = "RemoteAccessHostFirewallTraversal";
 
-NatPolicy::NatPolicy(base::MessageLoopProxy* message_loop_proxy)
-    : message_loop_proxy_(message_loop_proxy),
+NatPolicy::NatPolicy(scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : task_runner_(task_runner),
       current_nat_enabled_state_(false),
       first_state_published_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
@@ -40,10 +40,10 @@ NatPolicy::~NatPolicy() {
 
 void NatPolicy::StartWatching(const NatEnabledCallback& nat_enabled_cb) {
   if (!OnPolicyThread()) {
-    message_loop_proxy_->PostTask(FROM_HERE,
-                                  base::Bind(&NatPolicy::StartWatching,
-                                             base::Unretained(this),
-                                             nat_enabled_cb));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&NatPolicy::StartWatching,
+                                      base::Unretained(this),
+                                      nat_enabled_cb));
     return;
   }
 
@@ -53,9 +53,9 @@ void NatPolicy::StartWatching(const NatEnabledCallback& nat_enabled_cb) {
 
 void NatPolicy::StopWatching(base::WaitableEvent* done) {
   if (!OnPolicyThread()) {
-    message_loop_proxy_->PostTask(FROM_HERE,
-                                  base::Bind(&NatPolicy::StopWatching,
-                                             base::Unretained(this), done));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&NatPolicy::StopWatching,
+                                      base::Unretained(this), done));
     return;
   }
 
@@ -74,14 +74,14 @@ void NatPolicy::ScheduleFallbackReloadTask() {
 
 void NatPolicy::ScheduleReloadTask(const base::TimeDelta& delay) {
   DCHECK(OnPolicyThread());
-  message_loop_proxy_->PostDelayedTask(
+  task_runner_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&NatPolicy::Reload, weak_factory_.GetWeakPtr()),
       delay);
 }
 
 bool NatPolicy::OnPolicyThread() const {
-  return message_loop_proxy_->BelongsToCurrentThread();
+  return task_runner_->BelongsToCurrentThread();
 }
 
 void NatPolicy::UpdateNatPolicy(base::DictionaryValue* new_policy) {

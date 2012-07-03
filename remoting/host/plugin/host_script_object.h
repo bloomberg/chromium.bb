@@ -290,7 +290,7 @@ class HostNPScriptObject : public HostStatusObserver {
   ScopedRefNPObject on_nat_traversal_policy_changed_func_;
   ScopedRefNPObject on_state_changed_func_;
   base::PlatformThreadId np_thread_id_;
-  scoped_refptr<PluginMessageLoopProxy> plugin_message_loop_proxy_;
+  scoped_refptr<PluginMessageLoopProxy> plugin_task_runner_;
 
   scoped_ptr<ChromotingHostContext> host_context_;
   HostKeyPair host_key_pair_;

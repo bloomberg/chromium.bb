@@ -22,7 +22,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
 #include "base/values.h"
@@ -44,9 +44,9 @@ const int kSettleIntervalSeconds = 5;
 
 class NatPolicyLinux : public NatPolicy {
  public:
-  NatPolicyLinux(base::MessageLoopProxy* message_loop_proxy,
+  NatPolicyLinux(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                  const FilePath& config_dir)
-      : NatPolicy(message_loop_proxy),
+      : NatPolicy(task_runner),
         config_dir_(config_dir),
         ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
     // Detach the factory because we ensure that only the policy thread ever
@@ -268,9 +268,10 @@ class NatPolicyLinux : public NatPolicy {
   base::WeakPtrFactory<NatPolicyLinux> weak_factory_;
 };
 
-NatPolicy* NatPolicy::Create(base::MessageLoopProxy* message_loop_proxy) {
+NatPolicy* NatPolicy::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   FilePath policy_dir(kPolicyDir);
-  return new NatPolicyLinux(message_loop_proxy, policy_dir);
+  return new NatPolicyLinux(task_runner, policy_dir);
 }
 
 }  // namespace policy_hack

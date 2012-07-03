@@ -68,22 +68,19 @@ class ChromotingHostTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     message_loop_proxy_ = base::MessageLoopProxy::current();
-    ON_CALL(context_, main_message_loop())
-        .WillByDefault(Return(&message_loop_));
-    ON_CALL(context_, encode_message_loop())
-        .WillByDefault(Return(&message_loop_));
-    ON_CALL(context_, network_message_loop())
-        .WillByDefault(Return(message_loop_proxy_.get()));
-    ON_CALL(context_, ui_message_loop())
-        .WillByDefault(Return(message_loop_proxy_.get()));
-    EXPECT_CALL(context_, main_message_loop())
-        .Times(AnyNumber());
-    EXPECT_CALL(context_, encode_message_loop())
-        .Times(AnyNumber());
-    EXPECT_CALL(context_, network_message_loop())
-        .Times(AnyNumber());
-    EXPECT_CALL(context_, ui_message_loop())
-        .Times(AnyNumber());
+
+    EXPECT_CALL(context_, ui_task_runner())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(message_loop_proxy_.get()));
+    EXPECT_CALL(context_, capture_task_runner())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(message_loop_proxy_.get()));
+    EXPECT_CALL(context_, encode_task_runner())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(message_loop_proxy_.get()));
+    EXPECT_CALL(context_, network_task_runner())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(message_loop_proxy_.get()));
 
     scoped_ptr<Capturer> capturer(new CapturerFake());
     event_executor_ = new MockEventExecutor();
@@ -207,22 +204,22 @@ class ChromotingHostTest : public testing::Test {
         desktop_environment_->capturer(), base::TimeDelta());
     connection_ptr->set_host_stub(client);
 
-    context_.network_message_loop()->PostTask(
+    context_.network_task_runner()->PostTask(
         FROM_HERE, base::Bind(&ChromotingHostTest::AddClientToHost,
                               host_, client));
 
     if (authenticate) {
-      context_.network_message_loop()->PostTask(
+      context_.network_task_runner()->PostTask(
           FROM_HERE, base::Bind(&ClientSession::OnConnectionAuthenticated,
                                 base::Unretained(client), connection_ptr));
       if (!reject) {
-        context_.network_message_loop()->PostTask(
+        context_.network_task_runner()->PostTask(
             FROM_HERE,
             base::Bind(&ClientSession::OnConnectionChannelsConnected,
                        base::Unretained(client), connection_ptr));
       }
     } else {
-      context_.network_message_loop()->PostTask(
+      context_.network_task_runner()->PostTask(
           FROM_HERE, base::Bind(&ClientSession::OnConnectionClosed,
                                 base::Unretained(client), connection_ptr,
                                 protocol::AUTHENTICATION_FAILED));

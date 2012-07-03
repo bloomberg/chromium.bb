@@ -146,7 +146,7 @@ class HostProcess
 
   void ConfigUpdatedDelayed() {
     if (LoadConfig()) {
-      context_->network_message_loop()->PostTask(
+      context_->network_task_runner()->PostTask(
           FROM_HERE,
           base::Bind(&HostProcess::CreateAuthenticatorFactory,
                      base::Unretained(this)));
@@ -158,21 +158,22 @@ class HostProcess
 #if defined(OS_WIN)
   class ConfigChangedDelegate : public base::files::FilePathWatcher::Delegate {
    public:
-    ConfigChangedDelegate(base::MessageLoopProxy* message_loop,
-                          const base::Closure& callback)
-        : message_loop_(message_loop),
+    ConfigChangedDelegate(
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+        const base::Closure& callback)
+        : task_runner_(task_runner),
           callback_(callback) {
     }
 
     void OnFilePathChanged(const FilePath& path) OVERRIDE {
-      message_loop_->PostTask(FROM_HERE, callback_);
+      task_runner_->PostTask(FROM_HERE, callback_);
     }
 
     void OnFilePathError(const FilePath& path) OVERRIDE {
     }
 
    private:
-    scoped_refptr<base::MessageLoopProxy> message_loop_;
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
     base::Closure callback_;
 
     DISALLOW_COPY_AND_ASSIGN(ConfigChangedDelegate);
@@ -215,7 +216,7 @@ class HostProcess
     StartWatchingNatPolicy();
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
-    context_->file_message_loop()->PostTask(
+    context_->file_task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&HostProcess::ListenForConfigChanges,
                    base::Unretained(this)));
@@ -243,7 +244,7 @@ class HostProcess
  private:
   void StartWatchingNatPolicy() {
     nat_policy_.reset(
-        policy_hack::NatPolicy::Create(context_->file_message_loop()));
+        policy_hack::NatPolicy::Create(context_->file_task_runner()));
     nat_policy_->StartWatching(
         base::Bind(&HostProcess::OnNatPolicyUpdate, base::Unretained(this)));
   }
@@ -314,8 +315,8 @@ class HostProcess
   }
 
   void OnNatPolicyUpdate(bool nat_traversal_enabled) {
-    if (!context_->network_message_loop()->BelongsToCurrentThread()) {
-      context_->network_message_loop()->PostTask(FROM_HERE, base::Bind(
+    if (!context_->network_task_runner()->BelongsToCurrentThread()) {
+      context_->network_task_runner()->PostTask(FROM_HERE, base::Bind(
           &HostProcess::OnNatPolicyUpdate, base::Unretained(this),
           nat_traversal_enabled));
       return;
@@ -336,7 +337,7 @@ class HostProcess
   }
 
   void StartHost() {
-    DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
+    DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
     DCHECK(!host_);
 
     if (!signal_strategy_.get()) {
@@ -429,7 +430,7 @@ class HostProcess
   }
 
   void RestartHost() {
-    DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
+    DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
     if (restarting_ || shutting_down_)
       return;
@@ -440,7 +441,7 @@ class HostProcess
   }
 
   void RestartOnHostShutdown() {
-    DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
+    DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
     if (shutting_down_)
       return;
@@ -455,7 +456,7 @@ class HostProcess
   }
 
   void Shutdown(int exit_code) {
-    DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
+    DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
     if (shutting_down_)
       return;
@@ -467,7 +468,7 @@ class HostProcess
   }
 
   void OnShutdownFinished() {
-    DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
+    DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
     // Destroy networking objects while we are on the network thread.
     host_ = NULL;

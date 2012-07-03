@@ -12,8 +12,11 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop_proxy.h"
 #include "remoting/host/host_status_observer.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace remoting {
 
@@ -44,9 +47,8 @@ class HostUserInterface : public HostStatusObserver {
   }
   ChromotingHost* get_host() const { return host_; }
 
-  // Message loop accessors.
-  base::MessageLoopProxy* network_message_loop() const;
-  base::MessageLoopProxy* ui_message_loop() const;
+  base::SingleThreadTaskRunner* network_task_runner() const;
+  base::SingleThreadTaskRunner* ui_task_runner() const;
 
   // Invokes the session disconnect callback passed to Start().
   void DisconnectSession() const;

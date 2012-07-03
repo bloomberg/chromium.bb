@@ -85,7 +85,7 @@ HostNPScriptObject::HostNPScriptObject(
       am_currently_logging_(false),
       state_(kDisconnected),
       np_thread_id_(base::PlatformThread::CurrentId()),
-      plugin_message_loop_proxy_(
+      plugin_task_runner_(
           new PluginMessageLoopProxy(plugin_thread_delegate)),
       failed_login_attempts_(0),
       disconnected_event_(true, false),
@@ -101,7 +101,7 @@ HostNPScriptObject::~HostNPScriptObject() {
 
   HostLogHandler::UnregisterLoggingScriptObject(this);
 
-  plugin_message_loop_proxy_->Detach();
+  plugin_task_runner_->Detach();
 
   // Stop listening for policy updates.
   if (nat_policy_.get()) {
@@ -135,17 +135,17 @@ HostNPScriptObject::~HostNPScriptObject() {
 }
 
 bool HostNPScriptObject::Init() {
-  DCHECK(plugin_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
   VLOG(2) << "Init";
 
-  host_context_.reset(new ChromotingHostContext(plugin_message_loop_proxy_));
+  host_context_.reset(new ChromotingHostContext(plugin_task_runner_));
   if (!host_context_->Start()) {
     host_context_.reset();
     return false;
   }
 
   nat_policy_.reset(
-      policy_hack::NatPolicy::Create(host_context_->network_message_loop()));
+      policy_hack::NatPolicy::Create(host_context_->network_task_runner()));
   nat_policy_->StartWatching(
       base::Bind(&HostNPScriptObject::OnNatPolicyUpdate,
                  base::Unretained(this)));
@@ -388,7 +388,7 @@ bool HostNPScriptObject::Enumerate(std::vector<std::string>* values) {
 }
 
 void HostNPScriptObject::OnAccessDenied(const std::string& jid) {
-  DCHECK(host_context_->network_message_loop()->BelongsToCurrentThread());
+  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   ++failed_login_attempts_;
   if (failed_login_attempts_ == kMaxLoginAttempts) {
@@ -397,7 +397,7 @@ void HostNPScriptObject::OnAccessDenied(const std::string& jid) {
 }
 
 void HostNPScriptObject::OnClientAuthenticated(const std::string& jid) {
-  DCHECK(host_context_->network_message_loop()->BelongsToCurrentThread());
+  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   if (state_ == kDisconnecting) {
     // Ignore the new connection if we are disconnecting.
@@ -413,13 +413,13 @@ void HostNPScriptObject::OnClientAuthenticated(const std::string& jid) {
 }
 
 void HostNPScriptObject::OnClientDisconnected(const std::string& jid) {
-  DCHECK(host_context_->network_message_loop()->BelongsToCurrentThread());
+  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
   client_username_.clear();
   DisconnectInternal();
 }
 
 void HostNPScriptObject::OnShutdown() {
-  DCHECK(host_context_->network_message_loop()->BelongsToCurrentThread());
+  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   register_request_.reset();
   log_to_server_.reset();
@@ -436,7 +436,7 @@ void HostNPScriptObject::OnShutdown() {
 bool HostNPScriptObject::Connect(const NPVariant* args,
                                  uint32_t arg_count,
                                  NPVariant* result) {
-  DCHECK(plugin_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
   LOG(INFO) << "Connecting...";
 
@@ -478,8 +478,8 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
 void HostNPScriptObject::ReadPolicyAndConnect(const std::string& uid,
                                               const std::string& auth_token,
                                               const std::string& auth_service) {
-  if (!host_context_->network_message_loop()->BelongsToCurrentThread()) {
-    host_context_->network_message_loop()->PostTask(
+  if (!host_context_->network_task_runner()->BelongsToCurrentThread()) {
+    host_context_->network_task_runner()->PostTask(
         FROM_HERE, base::Bind(
             &HostNPScriptObject::ReadPolicyAndConnect, base::Unretained(this),
             uid, auth_token, auth_service));
@@ -504,14 +504,14 @@ void HostNPScriptObject::FinishConnectMainThread(
     const std::string& uid,
     const std::string& auth_token,
     const std::string& auth_service) {
-  if (host_context_->main_message_loop() != MessageLoop::current()) {
-    host_context_->main_message_loop()->PostTask(FROM_HERE, base::Bind(
+  if (!host_context_->capture_task_runner()->BelongsToCurrentThread()) {
+    host_context_->capture_task_runner()->PostTask(FROM_HERE, base::Bind(
         &HostNPScriptObject::FinishConnectMainThread, base::Unretained(this),
         uid, auth_token, auth_service));
     return;
   }
 
-  // DesktopEnvironment must be initialized on the main thread.
+  // DesktopEnvironment must be initialized on the capture thread.
   //
   // TODO(sergeyu): Fix DesktopEnvironment so that it can be created
   // on either the UI or the network thread so that we can avoid
@@ -525,8 +525,8 @@ void HostNPScriptObject::FinishConnectNetworkThread(
     const std::string& uid,
     const std::string& auth_token,
     const std::string& auth_service) {
-  if (!host_context_->network_message_loop()->BelongsToCurrentThread()) {
-    host_context_->network_message_loop()->PostTask(FROM_HERE, base::Bind(
+  if (!host_context_->network_task_runner()->BelongsToCurrentThread()) {
+    host_context_->network_task_runner()->PostTask(FROM_HERE, base::Bind(
         &HostNPScriptObject::FinishConnectNetworkThread, base::Unretained(this),
         uid, auth_token, auth_service));
     return;
@@ -595,7 +595,7 @@ void HostNPScriptObject::FinishConnectNetworkThread(
 bool HostNPScriptObject::Disconnect(const NPVariant* args,
                                     uint32_t arg_count,
                                     NPVariant* result) {
-  DCHECK(plugin_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
   if (arg_count != 0) {
     SetException("disconnect: bad number of arguments");
     return false;
@@ -609,7 +609,7 @@ bool HostNPScriptObject::Disconnect(const NPVariant* args,
 bool HostNPScriptObject::Localize(const NPVariant* args,
                                   uint32_t arg_count,
                                   NPVariant* result) {
-  DCHECK(plugin_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
   if (arg_count != 1) {
     SetException("localize: bad number of arguments");
     return false;
@@ -848,8 +848,8 @@ bool HostNPScriptObject::StopDaemon(const NPVariant* args,
 }
 
 void HostNPScriptObject::DisconnectInternal() {
-  if (!host_context_->network_message_loop()->BelongsToCurrentThread()) {
-    host_context_->network_message_loop()->PostTask(
+  if (!host_context_->network_task_runner()->BelongsToCurrentThread()) {
+    host_context_->network_task_runner()->PostTask(
         FROM_HERE, base::Bind(&HostNPScriptObject::DisconnectInternal,
                               base::Unretained(this)));
     return;
@@ -877,7 +877,7 @@ void HostNPScriptObject::DisconnectInternal() {
       // synchronously, bug SignalStrategy::Listener handlers are not
       // allowed to destroy SignalStrategy, so post task to call
       // Shutdown() later.
-      host_context_->network_message_loop()->PostTask(
+      host_context_->network_task_runner()->PostTask(
           FROM_HERE, base::Bind(
               &ChromotingHost::Shutdown, host_,
               base::Bind(&HostNPScriptObject::OnShutdownFinished,
@@ -886,14 +886,14 @@ void HostNPScriptObject::DisconnectInternal() {
 }
 
 void HostNPScriptObject::OnShutdownFinished() {
-  DCHECK(host_context_->network_message_loop()->BelongsToCurrentThread());
+  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   disconnected_event_.Signal();
 }
 
 void HostNPScriptObject::OnNatPolicyUpdate(bool nat_traversal_enabled) {
-  if (!host_context_->network_message_loop()->BelongsToCurrentThread()) {
-    host_context_->network_message_loop()->PostTask(
+  if (!host_context_->network_task_runner()->BelongsToCurrentThread()) {
+    host_context_->network_task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&HostNPScriptObject::OnNatPolicyUpdate,
                    base::Unretained(this), nat_traversal_enabled));
@@ -926,7 +926,7 @@ void HostNPScriptObject::OnReceivedSupportID(
     bool success,
     const std::string& support_id,
     const base::TimeDelta& lifetime) {
-  DCHECK(host_context_->network_message_loop()->BelongsToCurrentThread());
+  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   if (!success) {
     SetState(kError);
@@ -952,7 +952,7 @@ void HostNPScriptObject::OnReceivedSupportID(
 }
 
 void HostNPScriptObject::SetState(State state) {
-  DCHECK(host_context_->network_message_loop()->BelongsToCurrentThread());
+  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
   switch (state_) {
     case kDisconnected:
       DCHECK(state == kStarting ||
@@ -990,8 +990,8 @@ void HostNPScriptObject::SetState(State state) {
 }
 
 void HostNPScriptObject::NotifyStateChanged(State state) {
-  if (!plugin_message_loop_proxy_->BelongsToCurrentThread()) {
-    plugin_message_loop_proxy_->PostTask(
+  if (!plugin_task_runner_->BelongsToCurrentThread()) {
+    plugin_task_runner_->PostTask(
         FROM_HERE, base::Bind(&HostNPScriptObject::NotifyStateChanged,
                               base::Unretained(this), state));
     return;
@@ -1006,7 +1006,7 @@ void HostNPScriptObject::NotifyStateChanged(State state) {
   }
 }
 void HostNPScriptObject::PostLogDebugInfo(const std::string& message) {
-  if (plugin_message_loop_proxy_->BelongsToCurrentThread()) {
+  if (plugin_task_runner_->BelongsToCurrentThread()) {
     // Make sure we're not currently processing a log message.
     // We only need to check this if we're on the plugin thread.
     if (am_currently_logging_)
@@ -1015,7 +1015,7 @@ void HostNPScriptObject::PostLogDebugInfo(const std::string& message) {
 
   // Always post (even if we're already on the correct thread) so that debug
   // log messages are shown in the correct order.
-  plugin_message_loop_proxy_->PostTask(
+  plugin_task_runner_->PostTask(
       FROM_HERE, base::Bind(&HostNPScriptObject::LogDebugInfo,
                             base::Unretained(this), message));
 }
@@ -1025,7 +1025,7 @@ void HostNPScriptObject::SetWindow(NPWindow* np_window) {
 }
 
 void HostNPScriptObject::LocalizeStrings(NPObject* localize_func) {
-  DCHECK(plugin_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
   UiStrings ui_strings;
   string16 direction;
@@ -1080,8 +1080,8 @@ bool HostNPScriptObject::LocalizeString(NPObject* localize_func,
 }
 
 void HostNPScriptObject::UpdateWebappNatPolicy(bool nat_traversal_enabled) {
-  if (!plugin_message_loop_proxy_->BelongsToCurrentThread()) {
-    plugin_message_loop_proxy_->PostTask(
+  if (!plugin_task_runner_->BelongsToCurrentThread()) {
+    plugin_task_runner_->PostTask(
         FROM_HERE, base::Bind(&HostNPScriptObject::UpdateWebappNatPolicy,
                               base::Unretained(this), nat_traversal_enabled));
     return;
@@ -1105,8 +1105,8 @@ void HostNPScriptObject::InvokeGenerateKeyPairCallback(
     const ScopedRefNPObject& callback,
     const std::string& private_key,
     const std::string& public_key) {
-  if (!plugin_message_loop_proxy_->BelongsToCurrentThread()) {
-    plugin_message_loop_proxy_->PostTask(
+  if (!plugin_task_runner_->BelongsToCurrentThread()) {
+    plugin_task_runner_->PostTask(
         FROM_HERE, base::Bind(
             &HostNPScriptObject::InvokeGenerateKeyPairCallback,
             base::Unretained(this), callback, private_key, public_key));
@@ -1124,8 +1124,8 @@ void HostNPScriptObject::InvokeGenerateKeyPairCallback(
 void HostNPScriptObject::InvokeAsyncResultCallback(
     const ScopedRefNPObject& callback,
     DaemonController::AsyncResult result) {
-  if (!plugin_message_loop_proxy_->BelongsToCurrentThread()) {
-    plugin_message_loop_proxy_->PostTask(
+  if (!plugin_task_runner_->BelongsToCurrentThread()) {
+    plugin_task_runner_->PostTask(
         FROM_HERE, base::Bind(
             &HostNPScriptObject::InvokeAsyncResultCallback,
             base::Unretained(this), callback, result));
@@ -1141,8 +1141,8 @@ void HostNPScriptObject::InvokeAsyncResultCallback(
 void HostNPScriptObject::InvokeGetDaemonConfigCallback(
     const ScopedRefNPObject& callback,
     scoped_ptr<base::DictionaryValue> config) {
-  if (!plugin_message_loop_proxy_->BelongsToCurrentThread()) {
-    plugin_message_loop_proxy_->PostTask(
+  if (!plugin_task_runner_->BelongsToCurrentThread()) {
+    plugin_task_runner_->PostTask(
         FROM_HERE, base::Bind(
             &HostNPScriptObject::InvokeGetDaemonConfigCallback,
             base::Unretained(this), callback, base::Passed(&config)));
@@ -1162,8 +1162,8 @@ void HostNPScriptObject::InvokeGetDaemonConfigCallback(
 
 void HostNPScriptObject::InvokeGetDaemonVersionCallback(
     const ScopedRefNPObject& callback, const std::string& version) {
-  if (!plugin_message_loop_proxy_->BelongsToCurrentThread()) {
-    plugin_message_loop_proxy_->PostTask(
+  if (!plugin_task_runner_->BelongsToCurrentThread()) {
+    plugin_task_runner_->PostTask(
         FROM_HERE, base::Bind(
             &HostNPScriptObject::InvokeGetDaemonVersionCallback,
             base::Unretained(this), callback, version));
@@ -1180,8 +1180,8 @@ void HostNPScriptObject::InvokeGetUsageStatsConsentCallback(
     bool supported,
     bool allowed,
     bool set_by_policy) {
-  if (!plugin_message_loop_proxy_->BelongsToCurrentThread()) {
-    plugin_message_loop_proxy_->PostTask(
+  if (!plugin_task_runner_->BelongsToCurrentThread()) {
+    plugin_task_runner_->PostTask(
         FROM_HERE, base::Bind(
             &HostNPScriptObject::InvokeGetUsageStatsConsentCallback,
             base::Unretained(this), callback, supported, allowed,
@@ -1200,7 +1200,7 @@ void HostNPScriptObject::InvokeGetUsageStatsConsentCallback(
 }
 
 void HostNPScriptObject::LogDebugInfo(const std::string& message) {
-  DCHECK(plugin_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
   if (log_debug_info_func_.get()) {
     am_currently_logging_ = true;
     NPVariant log_message;
@@ -1217,7 +1217,7 @@ void HostNPScriptObject::LogDebugInfo(const std::string& message) {
 bool HostNPScriptObject::InvokeAndIgnoreResult(NPObject* func,
                                                const NPVariant* args,
                                                uint32_t arg_count) {
-  DCHECK(plugin_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
   NPVariant np_result;
   bool is_good = g_npnetscape_funcs->invokeDefault(plugin_, func, args,
                                                    arg_count, &np_result);
@@ -1227,7 +1227,7 @@ bool HostNPScriptObject::InvokeAndIgnoreResult(NPObject* func,
 }
 
 void HostNPScriptObject::SetException(const std::string& exception_string) {
-  DCHECK(plugin_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
   g_npnetscape_funcs->setexception(parent_, exception_string.c_str());
   LOG(INFO) << exception_string;
 }

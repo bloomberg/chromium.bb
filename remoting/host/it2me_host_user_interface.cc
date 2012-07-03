@@ -30,14 +30,14 @@ It2MeHostUserInterface::It2MeHostUserInterface(ChromotingHostContext* context)
 }
 
 It2MeHostUserInterface::~It2MeHostUserInterface() {
-  DCHECK(ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(ui_task_runner()->BelongsToCurrentThread());
 
   ShowContinueWindow(false);
 }
 
 void It2MeHostUserInterface::Start(ChromotingHost* host,
                                    const base::Closure& disconnect_callback) {
-  DCHECK(network_message_loop()->BelongsToCurrentThread());
+  DCHECK(network_task_runner()->BelongsToCurrentThread());
 
   HostUserInterface::Start(host, disconnect_callback);
   continue_window_ = ContinueWindow::Create();
@@ -49,7 +49,7 @@ void It2MeHostUserInterface::OnClientAuthenticated(const std::string& jid) {
     // connections may be an attacker, so both are suspect and we have
     // to reject the second connection and shutdown the host.
     get_host()->RejectAuthenticatingClient();
-    network_message_loop()->PostTask(FROM_HERE, base::Bind(
+    network_task_runner()->PostTask(FROM_HERE, base::Bind(
         &ChromotingHost::Shutdown, get_host(), base::Closure()));
   } else {
     HostUserInterface::OnClientAuthenticated(jid);
@@ -58,14 +58,14 @@ void It2MeHostUserInterface::OnClientAuthenticated(const std::string& jid) {
 
 void It2MeHostUserInterface::ProcessOnClientAuthenticated(
     const std::string& username) {
-  DCHECK(ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(ui_task_runner()->BelongsToCurrentThread());
 
   HostUserInterface::ProcessOnClientAuthenticated(username);
   StartContinueWindowTimer(true);
 }
 
 void It2MeHostUserInterface::ProcessOnClientDisconnected() {
-  DCHECK(ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(ui_task_runner()->BelongsToCurrentThread());
 
   HostUserInterface::ProcessOnClientDisconnected();
   ShowContinueWindow(false);
@@ -85,7 +85,7 @@ void It2MeHostUserInterface::StartForTest(
 }
 
 void It2MeHostUserInterface::ContinueSession(bool continue_session) {
-  DCHECK(ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(ui_task_runner()->BelongsToCurrentThread());
 
   if (continue_session) {
     get_host()->PauseSession(false);
@@ -96,14 +96,14 @@ void It2MeHostUserInterface::ContinueSession(bool continue_session) {
 }
 
 void It2MeHostUserInterface::OnContinueWindowTimer() {
-  DCHECK(ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(ui_task_runner()->BelongsToCurrentThread());
 
   get_host()->PauseSession(true);
   ShowContinueWindow(true);
 
   // Cancel any pending timer and post one to hide the continue window.
   timer_weak_factory_.InvalidateWeakPtrs();
-  ui_message_loop()->PostDelayedTask(
+  ui_task_runner()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&It2MeHostUserInterface::OnShutdownHostTimer,
                  timer_weak_factory_.GetWeakPtr()),
@@ -111,14 +111,14 @@ void It2MeHostUserInterface::OnContinueWindowTimer() {
 }
 
 void It2MeHostUserInterface::OnShutdownHostTimer() {
-  DCHECK(ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(ui_task_runner()->BelongsToCurrentThread());
 
   ShowContinueWindow(false);
   DisconnectSession();
 }
 
 void It2MeHostUserInterface::ShowContinueWindow(bool show) {
-  DCHECK(ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(ui_task_runner()->BelongsToCurrentThread());
 
   if (show) {
     continue_window_->Show(get_host(), base::Bind(
@@ -129,12 +129,12 @@ void It2MeHostUserInterface::ShowContinueWindow(bool show) {
 }
 
 void It2MeHostUserInterface::StartContinueWindowTimer(bool start) {
-  DCHECK(ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(ui_task_runner()->BelongsToCurrentThread());
 
   // Abandon previous timer events by invalidating their weak pointer to us.
   timer_weak_factory_.InvalidateWeakPtrs();
   if (start) {
-    ui_message_loop()->PostDelayedTask(
+    ui_task_runner()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&It2MeHostUserInterface::OnContinueWindowTimer,
                    timer_weak_factory_.GetWeakPtr()),

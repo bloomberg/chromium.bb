@@ -17,8 +17,8 @@ TEST(ChromotingHostContextTest, StartAndStop) {
 
   context.Start();
   EXPECT_TRUE(context.jingle_thread());
-  EXPECT_TRUE(context.main_message_loop());
-  EXPECT_TRUE(context.encode_message_loop());
+  EXPECT_TRUE(context.capture_task_runner());
+  EXPECT_TRUE(context.encode_task_runner());
 }
 
 }  // namespace remoting

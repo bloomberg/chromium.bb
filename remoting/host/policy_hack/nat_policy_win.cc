@@ -42,8 +42,8 @@ class NatPolicyWin :
   public NatPolicy,
   public base::win::ObjectWatcher::Delegate {
  public:
-  explicit NatPolicyWin(base::MessageLoopProxy* message_loop_proxy)
-      : NatPolicy(message_loop_proxy),
+  explicit NatPolicyWin(scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : NatPolicy(task_runner),
         user_policy_changed_event_(false, false),
         machine_policy_changed_event_(false, false),
         user_policy_watcher_failed_(false),
@@ -177,8 +177,9 @@ class NatPolicyWin :
   bool machine_policy_watcher_failed_;
 };
 
-NatPolicy* NatPolicy::Create(base::MessageLoopProxy* message_loop_proxy) {
-  return new NatPolicyWin(message_loop_proxy);
+NatPolicy* NatPolicy::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  return new NatPolicyWin(task_runner);
 }
 
 }  // namespace policy_hack

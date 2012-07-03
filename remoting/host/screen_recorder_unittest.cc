@@ -86,9 +86,8 @@ class ScreenRecorderTest : public testing::Test {
     connection_->SetEventHandler(&handler_);
 
     record_ = new ScreenRecorder(
-        &message_loop_, &message_loop_,
-        base::MessageLoopProxy::current(),
-        &capturer_, encoder_);
+        message_loop_.message_loop_proxy(), message_loop_.message_loop_proxy(),
+        message_loop_.message_loop_proxy(), &capturer_, encoder_);
   }
 
   virtual void TearDown() OVERRIDE {

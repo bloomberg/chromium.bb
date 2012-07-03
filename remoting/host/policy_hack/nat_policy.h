@@ -10,7 +10,7 @@
 
 namespace base {
 class DictionaryValue;
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 class TimeDelta;
 class WaitableEvent;
 }  // namespace base
@@ -26,7 +26,7 @@ class NatPolicy {
   // Called with the current status of whether or not NAT traversal is enabled.
   typedef base::Callback<void(bool)> NatEnabledCallback;
 
-  explicit NatPolicy(base::MessageLoopProxy* message_loop_proxy);
+  explicit NatPolicy(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   virtual ~NatPolicy();
 
   // This guarantees that the |nat_enabled_cb| is called at least once with
@@ -40,7 +40,8 @@ class NatPolicy {
 
   // Implemented by each platform.  This message loop should be an IO message
   // loop.
-  static NatPolicy* Create(base::MessageLoopProxy* message_loop_proxy);
+  static NatPolicy* Create(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
  protected:
   virtual void StartWatchingInternal() = 0;
@@ -62,7 +63,7 @@ class NatPolicy {
   static const char kNatPolicyName[];
 
  private:
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   NatEnabledCallback nat_enabled_cb_;
   bool current_nat_enabled_state_;

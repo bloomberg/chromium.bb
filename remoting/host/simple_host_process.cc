@@ -153,7 +153,7 @@ class SimpleHost : public HeartbeatSender::Listener {
       xmpp_auth_service_ = kChromotingTokenDefaultServiceName;
     }
 
-    context_.network_message_loop()->PostTask(FROM_HERE, base::Bind(
+    context_.network_task_runner()->PostTask(FROM_HERE, base::Bind(
         &SimpleHost::StartHost, base::Unretained(this)));
 
     message_loop_.MessageLoop::Run();
@@ -226,8 +226,8 @@ class SimpleHost : public HeartbeatSender::Listener {
     if (fake_) {
       scoped_ptr<Capturer> capturer(new CapturerFake());
       scoped_ptr<EventExecutor> event_executor = EventExecutor::Create(
-          context_.desktop_message_loop()->message_loop_proxy(),
-          context_.ui_message_loop(), capturer.get());
+          context_.desktop_task_runner(),
+          context_.ui_task_runner(), capturer.get());
       desktop_environment_ = DesktopEnvironment::CreateFake(
           &context_, capturer.Pass(), event_executor.Pass());
     } else {
@@ -280,7 +280,7 @@ class SimpleHost : public HeartbeatSender::Listener {
   }
 
   void Shutdown(int exit_code) {
-    DCHECK(context_.network_message_loop()->BelongsToCurrentThread());
+    DCHECK(context_.network_task_runner()->BelongsToCurrentThread());
 
     if (shutting_down_)
       return;
@@ -292,7 +292,7 @@ class SimpleHost : public HeartbeatSender::Listener {
   }
 
   void OnShutdownFinished() {
-    DCHECK(context_.network_message_loop()->BelongsToCurrentThread());
+    DCHECK(context_.network_task_runner()->BelongsToCurrentThread());
 
     // Destroy networking objects while we are on the network thread.
     host_ = NULL;

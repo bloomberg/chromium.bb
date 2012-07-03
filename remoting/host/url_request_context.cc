@@ -42,10 +42,10 @@ class ProxyConfigServiceDirect : public net::ProxyConfigService {
 };
 
 net::ProxyConfigService* CreateSystemProxyConfigService(
-    base::MessageLoopProxy* ui_message_loop_,
+    base::SingleThreadTaskRunner* ui_task_runner,
     base::SingleThreadTaskRunner* io_thread_task_runner,
     MessageLoopForIO* file_message_loop) {
-  DCHECK(ui_message_loop_->BelongsToCurrentThread());
+  DCHECK(ui_task_runner->BelongsToCurrentThread());
 
 #if defined(OS_WIN)
   return new net::ProxyConfigServiceWin();
@@ -113,12 +113,12 @@ URLRequestContext::~URLRequestContext() {
 }
 
 URLRequestContextGetter::URLRequestContextGetter(
-    base::MessageLoopProxy* ui_message_loop,
-    MessageLoop* io_message_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     MessageLoopForIO* file_message_loop)
-    : network_task_runner_(io_message_loop->message_loop_proxy()) {
+    : network_task_runner_(network_task_runner) {
   proxy_config_service_.reset(CreateSystemProxyConfigService(
-      ui_message_loop, network_task_runner_, file_message_loop));
+      ui_task_runner, network_task_runner_, file_message_loop));
 }
 
 net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
@@ -134,6 +134,7 @@ URLRequestContextGetter::GetNetworkTaskRunner() const {
   return network_task_runner_;
 }
 
-URLRequestContextGetter::~URLRequestContextGetter() {}
+URLRequestContextGetter::~URLRequestContextGetter() {
+}
 
 }  // namespace remoting

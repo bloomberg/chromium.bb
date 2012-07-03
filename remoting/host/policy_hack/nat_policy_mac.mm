@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/sys_string_conversions.h"
 #include "base/values.h"
 
@@ -22,8 +22,8 @@ namespace policy_hack {
 // |kFallbackReloadDelayMinutes| which is sufficient for right now.
 class NatPolicyMac : public NatPolicy {
  public:
-  explicit NatPolicyMac(base::MessageLoopProxy* message_loop_proxy)
-     : NatPolicy(message_loop_proxy) {
+  explicit NatPolicyMac(scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+     : NatPolicy(task_runner) {
   }
 
   virtual ~NatPolicyMac() {
@@ -63,8 +63,9 @@ class NatPolicyMac : public NatPolicy {
   }
 };
 
-NatPolicy* NatPolicy::Create(base::MessageLoopProxy* message_loop_proxy) {
-  return new NatPolicyMac(message_loop_proxy);
+NatPolicy* NatPolicy::Create(
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  return new NatPolicyMac(task_runner);
 }
 
 }  // namespace policy_hack
