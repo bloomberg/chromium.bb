@@ -9,8 +9,8 @@
 import sys
 
 
-BASE_DOWNLOAD_URL = \
-    'http://commondatastorage.googleapis.com/nativeclient-archive2'
+BASE_DOWNLOAD_URL = (
+    'https://commondatastorage.googleapis.com/nativeclient-archive2')
 
 PLATFORM_MAPPING = {
     'windows': {

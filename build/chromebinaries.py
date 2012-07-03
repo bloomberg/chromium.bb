@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -10,7 +10,8 @@ import os.path
 import re
 import urllib
 
-BASE_URL = 'http://commondatastorage.googleapis.com/chromium-browser-continuous'
+BASE_URL = (
+    'https://commondatastorage.googleapis.com/chromium-browser-continuous')
 
 directory_pattern = re.compile('<Prefix>([\w\d]+/[\d]+)/?</Prefix>', re.I)
 nextmarker_pattern = re.compile(
