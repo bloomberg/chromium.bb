@@ -274,7 +274,13 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, UpdateExtensionEvent) {
   ASSERT_EQ(extension_misc::UNLOAD_REASON_UPDATE, unload_reason);
 }
 
-IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, NewVersionEvent) {
+// Test is flaky on Windows, see http://crbug.com/135635
+#if defined(OS_WIN)
+#define MAYBE_NewVersionEvent DISABLED_NewVersionEvent
+#else
+#define MAYBE_NewVersionEvent NewVersionEvent
+#endif
+IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, MAYBE_NewVersionEvent) {
   const char kOldVersion[] = "0.0";
 
   content::BrowserThread::PostBlockingPoolSequencedTask(
