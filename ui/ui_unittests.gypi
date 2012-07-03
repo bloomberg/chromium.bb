@@ -95,6 +95,7 @@
         'gfx/font_list_unittest.cc',
         'gfx/font_unittest.cc',
         'gfx/image/image_mac_unittest.mm',
+        'gfx/image/image_skia_unittest.cc',
         'gfx/image/image_unittest.cc',
         'gfx/image/image_unittest_util.cc',
         'gfx/image/image_unittest_util.h',

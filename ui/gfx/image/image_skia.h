@@ -14,13 +14,15 @@
 #include "ui/gfx/image/image_skia_rep.h"
 
 namespace gfx {
+class ImageSkiaSource;
+class Size;
 
 namespace internal {
 class ImageSkiaStorage;
 }  // namespace internal
 
 // Container for the same image at different densities, similar to NSImage.
-// Image height and width are in DIP (Device Indepent Pixel) coordinates.
+// Image height and width are in DIP (Density Indepent Pixel) coordinates.
 //
 // ImageSkia should be used whenever possible instead of SkBitmap.
 // Functions that mutate the image should operate on the gfx::ImageSkiaRep
@@ -31,8 +33,12 @@ class UI_EXPORT ImageSkia {
  public:
   typedef std::vector<ImageSkiaRep> ImageSkiaReps;
 
-  // Creates instance with no bitmaps.
+  // Creates an instance with no bitmaps.
   ImageSkia();
+
+  // Creates an instance that will use the |source| to get the image
+  // for scale factors. |size| specifes the size of the image in DIP.
+  ImageSkia(ImageSkiaSource* source, const gfx::Size& size);
 
   // Adds ref to passed in bitmap.
   // DIP width and height are set based on scale factor of 1x.
@@ -95,9 +101,13 @@ class UI_EXPORT ImageSkia {
   // Width and height of image in DIP coordinate system.
   int width() const;
   int height() const;
+  gfx::Size size() const;
 
   // Wrapper function for SkBitmap::extractBitmap.
-  // Operates on each stored image rep.
+  // Operates on each stored image rep. Note that it may not have
+  // all image reps for supported scale factors.
+  // TODO(oshima|pkotwicz): Investigate if this can be eliminated
+  // after ImageSkiaSource conversion.
   bool extractSubset(ImageSkia* dst, const SkIRect& subset) const;
 
   // Returns pointer to an SkBitmap contained by this object.
@@ -106,21 +116,16 @@ class UI_EXPORT ImageSkia {
   const SkBitmap* bitmap() const;
 
   // Returns a vector with the image reps contained in this object.
+  // There is no guarantee that this will return all images rep for
+  // supported scale factors.
+  // TODO(oshima): Update all use of this API and make this to fail
+  // when source is used.
   std::vector<gfx::ImageSkiaRep> image_reps() const;
 
  private:
   // Initialize ImageSkiaStorage with passed in parameters.
   // If the image rep's bitmap is empty, ImageStorage is set to NULL.
   void Init(const gfx::ImageSkiaRep& image_rep);
-
-  // A null image rep to return as not to return a temporary.
-  static gfx::ImageSkiaRep& NullImageRep();
-
-  // Returns the iterator of the image rep whose density best matches
-  // |scale_factor|.
-  // ImageSkiaStorage cannot be NULL when this function is called.
-  ImageSkiaReps::iterator FindRepresentation(
-      ui::ScaleFactor scale_factor) const;
 
   // A refptr so that ImageRepSkia can be copied cheaply.
   scoped_refptr<internal::ImageSkiaStorage> storage_;

@@ -4,6 +4,8 @@
 
 #include "ui/gfx/image/image_skia_rep.h"
 
+#include "ui/gfx/size.h"
+
 namespace gfx {
 
 ImageSkiaRep::ImageSkiaRep()
@@ -13,13 +15,13 @@ ImageSkiaRep::ImageSkiaRep()
 ImageSkiaRep::~ImageSkiaRep() {
 }
 
-ImageSkiaRep::ImageSkiaRep(int width, int height,
+ImageSkiaRep::ImageSkiaRep(const gfx::Size& size,
                            ui::ScaleFactor scale_factor)
     : scale_factor_(scale_factor) {
   float scale = ui::GetScaleFactorScale(scale_factor);
   bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
-                    static_cast<int>(width * scale),
-                    static_cast<int>(height * scale));
+                    static_cast<int>(size.width() * scale),
+                    static_cast<int>(size.height() * scale));
   bitmap_.allocPixels();
 }
 

@@ -11,6 +11,7 @@
 #include "ui/base/ui_export.h"
 
 namespace gfx {
+class Size;
 
 // An ImageSkiaRep represents a bitmap and the scale factor it is intended for.
 class UI_EXPORT ImageSkiaRep {
@@ -19,10 +20,9 @@ class UI_EXPORT ImageSkiaRep {
   ImageSkiaRep();
   ~ImageSkiaRep();
 
-  // Creates a bitmap with kARGB_8888_Config config with given DIP |width| and
-  // |height| and |scale_factor|.
-  // Allocates pixels.
-  ImageSkiaRep(int width, int height, ui::ScaleFactor scale_factor);
+  // Creates a bitmap with kARGB_8888_Config config with given |size| in DIP.
+  // This allocates pixels in the bitmap.
+  ImageSkiaRep(const gfx::Size& size, ui::ScaleFactor scale_factor);
 
   // Creates a bitmap with a default scale factor of 1x.
   // Adds ref to |src|.
