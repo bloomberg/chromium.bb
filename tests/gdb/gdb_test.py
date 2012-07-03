@@ -5,6 +5,7 @@
 
 import json
 import os
+import re
 import subprocess
 
 
@@ -46,9 +47,26 @@ def GenerateManifest(nexe, runnable_ld, name):
   return filename
 
 
-def RemovePrefix(prefix, string):
-    assert string.startswith(prefix)
-    return string[len(prefix):]
+# Match FOO=BAR, where BAR is one of:
+#   "BAZ" (c-string), where BAZ does not contain "
+#   {BAZ} (tuple), where BAZ does not contain { and }
+#   [BAZ] (list), where BAZ does not contain [ and ]
+# WARNING! returns invalid matches when c-strings contain \"{}[]!
+_RESULT_RE = re.compile('\,([^=]+)=("([^"]*)"|{([^{}]*)}|\[([^[\]]*)\])')
+
+def ParseRecord(s, prefix):
+  res = {}
+  assert s.startswith(prefix)
+  try:
+    # Oversimplification: match some results, break nesting.
+    for m in _RESULT_RE.finditer(s[len(prefix):]):
+      # Oversimplification: ignore tuples and lists.
+      if m.group(3):
+        res[m.group(1)] = m.group(3)
+  except:
+    # Oversimplification: ignore parsing failures.
+    pass
+  return res
 
 
 class Gdb(object):
@@ -92,38 +110,31 @@ class Gdb(object):
         return results
       results.append(line)
 
-  def _GetResultClass(self, result):
+  def _GetResultRecord(self, result):
     for line in result:
       if line.startswith('^'):
-        return line[1:].split(',', 1)[0]
+        return line
 
-  def _GetLastAsyncStatus(self, result):
+  def _GetLastExecAsyncRecord(self, result):
     for line in reversed(result):
       if line.startswith('*'):
-        return line[1:].split(',', 1)[0]
+        return line
 
   def Command(self, command):
-    res = self._SendRequest(command)
-    assert self._GetResultClass(res) == 'done'
-    return res
+    res = self._GetResultRecord(self._SendRequest(command))
+    return ParseRecord(res, '^done')
 
   def ResumeCommand(self, command):
-    res = self._SendRequest(command)
-    assert self._GetResultClass(res) == 'running'
-    res = self._GetResponse()
-    assert self._GetLastAsyncStatus(res) == 'stopped'
-    return res
+    res = self._GetResultRecord(self._SendRequest(command))
+    assert res.startswith('^running')
+    res = self._GetLastExecAsyncRecord(self._GetResponse())
+    return ParseRecord(res, '*stopped')
 
   def Quit(self):
-    res = self._SendRequest('-gdb-exit')
-    assert self._GetResultClass(res) == 'exit'
+    assert self._GetResultRecord(self._SendRequest('-gdb-exit')) == '^exit'
 
   def Eval(self, expression):
-    result = self.Command('-data-evaluate-expression ' + expression)
-    assert len(result) == 1, result
-    value = RemovePrefix('^done,value="', result[0])
-    assert value.endswith('"')
-    return value[:-1]
+    return self.Command('-data-evaluate-expression ' + expression)['value']
 
   def Connect(self, program):
     self._GetResponse()
@@ -147,4 +158,3 @@ def RunTest(test_func, test_name, program):
   finally:
     sel_ldr.kill()
     sel_ldr.wait()
-

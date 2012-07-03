@@ -8,10 +8,10 @@ import os
 
 def test(gdb):
   gdb.Command('break set_global_var')
-  gdb.ResumeCommand('continue')
+  assert gdb.ResumeCommand('continue')['reason'] == 'breakpoint-hit'
   assert gdb.Eval('global_var') == '2'
   assert gdb.Eval('arg') == '1'
-  gdb.ResumeCommand('finish')
+  assert gdb.ResumeCommand('finish')['reason'] == 'function-finished'
   assert gdb.Eval('global_var') == '1'
   assert gdb.Eval('local_var') == '3'
   gdb.Quit()

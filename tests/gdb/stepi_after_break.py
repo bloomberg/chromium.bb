@@ -9,11 +9,13 @@ import os
 
 def test(gdb):
   gdb.Command('break main')
-  gdb.ResumeCommand('continue')
+  assert gdb.ResumeCommand('continue')['reason'] == 'breakpoint-hit'
+  # From GDB/MI documentation, 'stepi' statement should be
+  #   assert gdb.ResumeCommand('stepi')['reason'] == 'end-stepping-range'
+  # but in reality 'stepi' stop reason is simply omitted.
   gdb.ResumeCommand('stepi')
   gdb.Quit()
   return 0
 
 if __name__ == '__main__':
   gdb_test.RunTest(test, 'stepi_after_break', os.environ['GDB_TEST_GUEST'])
-
