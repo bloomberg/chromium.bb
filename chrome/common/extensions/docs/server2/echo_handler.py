@@ -51,7 +51,7 @@ class Server(webapp.RequestHandler):
       fetcher = SubversionFetcher(branch, EXTENSIONS_PATH, urlfetch)
       cache_timeout_seconds = 300
     cache_builder = FetcherCache.Builder(fetcher, cache_timeout_seconds)
-    api_data_source = APIDataSource(cache_builder, [API_PATH])
+    api_data_source = APIDataSource(cache_builder, API_PATH)
     template_data_source = TemplateDataSource(
         branch,
         api_data_source,

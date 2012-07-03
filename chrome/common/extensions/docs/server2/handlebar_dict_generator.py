@@ -73,6 +73,8 @@ class HandlebarDictGenerator(object):
     return function_dict
 
   def _GenerateCallback(self, callback):
+    if not callback:
+      return {}
     callback_dict = {
       'name': 'callback',
       'parameters': []

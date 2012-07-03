@@ -23,7 +23,7 @@ class APIDataSourceTest(unittest.TestCase):
   def testSimple(self):
     fetcher = LocalFetcher(self._base_path)
     cache_builder = FetcherCache.Builder(fetcher, 0)
-    data_source = APIDataSource(cache_builder, ['./'])
+    data_source = APIDataSource(cache_builder, './')
 
     # Take the dict out of the list.
     expected = json.loads(self._ReadLocalFile('expected_test_file.json'),
