@@ -399,9 +399,6 @@ void OpenAll(gfx::NativeWindow parent,
   }
 
   bool opened_url = false;
-  if (initial_disposition == OFF_THE_RECORD)
-    profile = profile->GetOffTheRecordProfile();
-
   for (size_t i = 0; i < nodes.size(); ++i)
     OpenAllImpl(nodes[i], initial_disposition, &navigator, &opened_url);
 }
