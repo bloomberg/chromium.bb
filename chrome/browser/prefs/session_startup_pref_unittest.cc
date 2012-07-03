@@ -159,3 +159,23 @@ TEST_F(SessionStartupPrefTest, HomePageMigrationHomepageIsNTP) {
 
   EXPECT_EQ(SessionStartupPref::DEFAULT, pref.type);
 }
+
+#if defined(OS_MACOSX)
+// See SessionStartupPref::MigrateMacDefaultPrefIfNecessary.
+TEST_F(SessionStartupPrefTest, MacDefaultStartupPrefMigration) {
+  if (!restore_utils::IsWindowRestoreEnabled())
+    return;
+
+  // Use an old profile.
+  pref_service_->SetString(prefs::kProfileCreatedByVersion, "19.0.0.0");
+  ASSERT_TRUE(SessionStartupPref::TypeIsDefault(pref_service_.get()));
+
+  // Trigger the migration.
+  SessionStartupPref pref = SessionStartupPref::GetStartupPref(
+      pref_service_.get());
+
+  // The pref is now explicit.
+  EXPECT_EQ(SessionStartupPref::LAST, pref.type);
+  EXPECT_FALSE(SessionStartupPref::TypeIsDefault(pref_service_.get()));
+}
+#endif

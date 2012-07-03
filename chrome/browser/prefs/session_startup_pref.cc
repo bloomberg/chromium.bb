@@ -121,11 +121,7 @@ SessionStartupPref SessionStartupPref::GetStartupPref(PrefService* prefs) {
   DCHECK(prefs);
 
   MigrateIfNecessary(prefs);
-
-#if defined(OS_MACOSX)
-  if (restore_utils::IsWindowRestoreEnabled())
-    MigrateMacDefaultPrefIfNecessary(prefs);
-#endif
+  MigrateMacDefaultPrefIfNecessary(prefs);
 
   SessionStartupPref pref(
       PrefValueToType(prefs->GetInteger(prefs::kRestoreOnStartup)));
@@ -188,7 +184,10 @@ void SessionStartupPref::MigrateIfNecessary(PrefService* prefs) {
 
 // static
 void SessionStartupPref::MigrateMacDefaultPrefIfNecessary(PrefService* prefs) {
+#if defined(OS_MACOSX)
   DCHECK(prefs);
+  if (!restore_utils::IsWindowRestoreEnabled())
+    return;
   // The default startup pref used to be LAST, now it is DEFAULT. Don't change
   // the setting for existing profiles (even if the user has never changed it),
   // but make new profiles default to DEFAULT.
@@ -196,6 +195,7 @@ void SessionStartupPref::MigrateMacDefaultPrefIfNecessary(PrefService* prefs) {
       prefs::kProfileCreatedByVersion)).IsOlderThan("21.0.1180.0");
   if (old_profile_version && TypeIsDefault(prefs))
     prefs->SetInteger(prefs::kRestoreOnStartup, kPrefValueLast);
+#endif
 }
 
 // static
