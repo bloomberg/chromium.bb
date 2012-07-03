@@ -14,9 +14,14 @@
       <div id="user-image-preview">
         <img id="user-image-preview-img" alt=""
              src="chrome://theme/IDR_LOGIN_DEFAULT_USER">
-        <div id="user-image-stream-area">
-          <video id="user-image-stream" autoplay></video>
+        <div class="user-image-stream-area">
+          <div class="perspective-box">
+            <div id="user-image-stream-crop">
+              <video class="user-image-stream" autoplay></video>
+            </div>
+          </div>
           <div class="spinner"></div>
+          <button id="flip-photo" class="custom-appearance"></button>
         </div>
         <p id="user-image-preview-caption"></p>
         <button id="discard-photo"></button>

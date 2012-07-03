@@ -343,7 +343,8 @@ cr.define('oobe', function() {
       UserImagesGrid.decorate(imageGrid);
 
       // Preview image will track the selected item's URL.
-      imageGrid.previewElement = $('user-image-preview');
+      var previewElement = $('user-image-preview');
+      imageGrid.previewElement = previewElement;
       imageGrid.selectionType = 'default';
 
       imageGrid.addEventListener('select',
@@ -376,6 +377,17 @@ cr.define('oobe', function() {
           'click', this.handleTakePhoto_.bind(this));
       $('discard-photo').addEventListener(
           'click', imageGrid.discardPhoto.bind(imageGrid));
+
+      // Toggle 'animation' class for the duration of WebKit transition.
+      $('flip-photo').addEventListener(
+          'click', function(e) {
+            previewElement.classList.add('animation');
+            imageGrid.flipPhoto = !imageGrid.flipPhoto;
+          });
+      $('user-image-stream-crop').addEventListener(
+          'webkitTransitionEnd', function(e) {
+            previewElement.classList.remove('animation');
+          });
     },
 
     /**

@@ -409,6 +409,18 @@ cr.define('options', function() {
     },
 
     /**
+     * Whether the camera live stream and photo should be flipped horizontally.
+     * @type {boolean}
+     */
+    get flipPhoto() {
+      return this.flipPhoto_ || false;
+    },
+    set flipPhoto(value) {
+      this.flipPhoto_ = value;
+      this.previewElement.classList[value ? 'add' : 'remove']('flip-x');
+    },
+
+    /**
      * Performs photo capture from the live camera stream.
      * @param {function=} opt_callback Callback that receives taken photo as
      *     data URL.
@@ -463,6 +475,10 @@ cr.define('options', function() {
       }
       src.x = (width - src.width) / 2;
       src.y = (height - src.height) / 2;
+      if (this.flipPhoto) {
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1.0, 1.0);
+      }
       ctx.drawImage(video, src.x, src.y, src.width, src.height,
                     0, 0, destSize.width, destSize.height);
       return canvas.toDataURL('image/png');

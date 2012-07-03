@@ -7,8 +7,13 @@
     <div id="user-image-preview">
       <img class="user-image-preview-img" i18n-values="alt:previewAltText">
       <div class="user-image-stream-area">
-        <video class="user-image-stream" autoplay></video>
+        <div class="perspective-box">
+          <div id="user-image-stream-crop">
+            <video class="user-image-stream" autoplay></video>
+          </div>
+        </div>
         <div class="spinner"></div>
+        <button id="flip-photo" class="custom-appearance"></button>
       </div>
       <button id="discard-photo"></button>
       <button id="take-photo"></button>

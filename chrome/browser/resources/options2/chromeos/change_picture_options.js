@@ -264,7 +264,8 @@ cr.define('options', function() {
       UserImagesGrid.decorate(imageGrid);
 
       // Preview image will track the selected item's URL.
-      imageGrid.previewElement = $('user-image-preview');
+      var previewElement = $('user-image-preview');
+      imageGrid.previewElement = previewElement;
       imageGrid.selectionType = 'default';
 
       imageGrid.addEventListener('select',
@@ -290,6 +291,17 @@ cr.define('options', function() {
           'click', this.handleTakePhoto_.bind(this));
       $('discard-photo').addEventListener(
           'click', imageGrid.discardPhoto.bind(imageGrid));
+
+      // Toggle 'animation' class for the duration of WebKit transition.
+      $('flip-photo').addEventListener(
+          'click', function(e) {
+            previewElement.classList.add('animation');
+            imageGrid.flipPhoto = !imageGrid.flipPhoto;
+          });
+      $('user-image-stream-crop').addEventListener(
+          'webkitTransitionEnd', function(e) {
+            previewElement.classList.remove('animation');
+          });
 
       // Old user image data (if present).
       this.oldImage_ = null;
@@ -344,7 +356,7 @@ cr.define('options', function() {
     },
 
     /**
-     * Handles "Take photo" button activation.
+     * Handles "Take photo" button click.
      * @private
      */
     handleTakePhoto_: function() {
