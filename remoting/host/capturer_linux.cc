@@ -37,7 +37,9 @@ static bool ShouldUseXDamage() {
 // A class representing a full-frame pixel buffer
 class VideoFrameBuffer {
  public:
-  VideoFrameBuffer() : bytes_per_row_(0), needs_update_(true) {}
+  VideoFrameBuffer() : bytes_per_row_(0), needs_update_(true) {
+    size_.set(0, 0);
+  }
 
   void Update(Display* display, Window root_window) {
     if (needs_update_) {
