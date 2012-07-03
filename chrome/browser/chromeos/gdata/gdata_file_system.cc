@@ -315,13 +315,18 @@ void SaveFeedOnBlockingPoolForDebugging(
   }
 }
 
-// Gets the file size of |local_file|.
-void GetLocalFileSizeOnBlockingPool(
+// Gets the file size and the content type of |local_file|.
+void GetLocalFileInfoOnBlockingPool(
     const FilePath& local_file,
     base::PlatformFileError* error,
-    int64* file_size) {
+    int64* file_size,
+    std::string* content_type) {
   DCHECK(error);
   DCHECK(file_size);
+  DCHECK(content_type);
+
+  if (!net::GetMimeTypeFromExtension(local_file.Extension(), content_type))
+    *content_type = kMimeTypeOctetStream;
 
   *file_size = 0;
   *error = file_util::GetFileSize(local_file, file_size) ?
@@ -1084,20 +1089,23 @@ void GDataFileSystem::TransferRegularFile(
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   int64* file_size = new int64;
+  std::string* content_type = new std::string;
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
       sequence_token_,
-      base::Bind(&GetLocalFileSizeOnBlockingPool,
+      base::Bind(&GetLocalFileInfoOnBlockingPool,
                  local_file_path,
                  error,
-                 file_size),
+                 file_size,
+                 content_type),
       base::Bind(&GDataFileSystem::StartFileUploadOnUIThread,
                  ui_weak_ptr_,
                  local_file_path,
                  remote_dest_file_path,
                  callback,
                  base::Owned(error),
-                 base::Owned(file_size)));
+                 base::Owned(file_size),
+                 base::Owned(content_type)));
 }
 
 void GDataFileSystem::StartFileUploadOnUIThread(
@@ -1105,12 +1113,14 @@ void GDataFileSystem::StartFileUploadOnUIThread(
     const FilePath& remote_dest_file,
     const FileOperationCallback& callback,
     base::PlatformFileError* error,
-    int64* file_size) {
+    int64* file_size,
+    std::string* content_type) {
   // This method needs to run on the UI thread as required by
   // GDataUploader::UploadNewFile().
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(error);
   DCHECK(file_size);
+  DCHECK(content_type);
 
   if (*error != base::PLATFORM_FILE_OK) {
     if (!callback.is_null())
@@ -1128,11 +1138,7 @@ void GDataFileSystem::StartFileUploadOnUIThread(
   upload_file_info->title = remote_dest_file.BaseName().value();
   upload_file_info->content_length = *file_size;
   upload_file_info->all_bytes_present = true;
-  std::string mime_type;
-  if (!net::GetMimeTypeFromExtension(local_file.Extension(),
-                                     &upload_file_info->content_type)) {
-    upload_file_info->content_type = kMimeTypeOctetStream;
-  }
+  upload_file_info->content_type = *content_type;
 
   upload_file_info->completion_callback =
       base::Bind(&GDataFileSystem::OnTransferCompleted,
