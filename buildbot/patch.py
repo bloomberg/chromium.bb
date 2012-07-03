@@ -519,12 +519,6 @@ class LocalPatch(GitRepoPatch):
       remote_ref: The ref on the remote host to push to.
       dryrun: Do the git push with --dry-run
     """
-    if push_url is None:
-      push_url = constants.GERRIT_SSH_URL
-      if cros_build_lib.IsProjectInternal(self.sourceroot, self.project):
-        push_url = constants.GERRIT_INT_SSH_URL
-      push_url = os.path.join(push_url, self.project)
-
     carbon_copy = self._GetCarbonCopy()
     cmd = ['push', push_url, '%s:%s' % (carbon_copy, remote_ref)]
     if dryrun:
@@ -658,9 +652,8 @@ def PrepareLocalPatches(manifest, patches):
   """Finish validation of parameters, and save patches to a temp folder.
 
   Args:
-    sourceroot: The repo where local patches come from.
+    manifest: The manifest object for the checkout in question.
     patches:  A list of user-specified patches, in project[:branch] form.
-    manifest_branch: The manifest branch of the buildroot.
 
   Raises:
     PatchException if:
