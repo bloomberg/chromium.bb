@@ -8,13 +8,15 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ppapi/thunk/resource_creation_api.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 namespace webkit {
 namespace ppapi {
 
 class PluginInstance;
 
-class ResourceCreationImpl : public ::ppapi::thunk::ResourceCreationAPI {
+class WEBKIT_PLUGINS_EXPORT ResourceCreationImpl
+    : public NON_EXPORTED_BASE(::ppapi::thunk::ResourceCreationAPI) {
  public:
   explicit ResourceCreationImpl(PluginInstance* instance);
   virtual ~ResourceCreationImpl();

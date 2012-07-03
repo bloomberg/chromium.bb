@@ -323,7 +323,6 @@ PluginInstance::PluginInstance(
       has_webkit_focus_(false),
       has_content_area_focus_(false),
       find_identifier_(-1),
-      resource_creation_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       plugin_find_interface_(NULL),
       plugin_input_event_interface_(NULL),
       plugin_messaging_interface_(NULL),
@@ -362,6 +361,8 @@ PluginInstance::PluginInstance(
   message_channel_.reset(new MessageChannel(this));
 
   view_data_.is_page_visible = delegate->IsPageVisible();
+
+  resource_creation_ = delegate_->CreateResourceCreationAPI(this);
 }
 
 PluginInstance::~PluginInstance() {

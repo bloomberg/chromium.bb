@@ -37,6 +37,7 @@
 #include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/shared_impl/ppb_instance_shared.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
+#include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
@@ -47,7 +48,6 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppb_flash_impl.h"
 #include "webkit/plugins/ppapi/ppp_pdf.h"
-#include "webkit/plugins/ppapi/resource_creation_impl.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
 struct PP_Point;
@@ -117,7 +117,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // nonzero.
   PP_Instance pp_instance() const { return pp_instance_; }
 
-  ResourceCreationImpl& resource_creation() { return resource_creation_; }
+  ::ppapi::thunk::ResourceCreationAPI& resource_creation() {
+    return *resource_creation_.get();
+  }
 
   // Does some pre-destructor cleanup on the instance. This is necessary
   // because some cleanup depends on the plugin instance still existing (like
@@ -541,7 +543,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   int find_identifier_;
 
   // Helper object that creates resources.
-  ResourceCreationImpl resource_creation_;
+  scoped_ptr< ::ppapi::thunk::ResourceCreationAPI> resource_creation_;
 
   // The plugin-provided interfaces.
   const PPP_Find_Dev* plugin_find_interface_;

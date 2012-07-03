@@ -44,6 +44,7 @@
 #include "content/renderer/pepper/pepper_broker_impl.h"
 #include "content/renderer/pepper/pepper_device_enumeration_event_handler.h"
 #include "content/renderer/pepper/pepper_hung_plugin_filter.h"
+#include "content/renderer/pepper/pepper_in_process_resource_creation.h"
 #include "content/renderer/pepper/pepper_platform_audio_input_impl.h"
 #include "content/renderer/pepper/pepper_platform_audio_output_impl.h"
 #include "content/renderer/pepper/pepper_platform_context_3d_impl.h"
@@ -595,6 +596,13 @@ void PepperPluginDelegateImpl::InstanceDeleted(
     last_mouse_event_target_ = NULL;
   if (focused_plugin_ == instance)
     PluginFocusChanged(instance, false);
+}
+
+scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
+PepperPluginDelegateImpl::CreateResourceCreationAPI(
+    webkit::ppapi::PluginInstance* instance) {
+  return scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>(
+      new PepperInProcessResourceCreation(render_view_, instance));
 }
 
 SkBitmap* PepperPluginDelegateImpl::GetSadPluginBitmap() {

@@ -61,7 +61,12 @@ class PPB_X509Certificate_Fields;
 struct DeviceRefData;
 struct HostPortPair;
 struct Preferences;
+
+namespace thunk {
+class ResourceCreationAPI;
 }
+
+}  // namespace ppapi
 
 namespace skia {
 class PlatformCanvas;
@@ -342,6 +347,10 @@ class PluginDelegate {
   // the destructor, so it's important that the instance is not dereferenced
   // from this call.
   virtual void InstanceDeleted(PluginInstance* instance) = 0;
+
+  // Creates the resource creation API for the given instance.
+  virtual scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
+      CreateResourceCreationAPI(PluginInstance* instance) = 0;
 
   // Returns a pointer (ownership not transferred) to the bitmap to paint the
   // sad plugin screen with. Returns NULL on failure.

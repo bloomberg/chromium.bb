@@ -56,6 +56,11 @@ void MockPluginDelegate::InstanceCreated(PluginInstance* instance) {
 void MockPluginDelegate::InstanceDeleted(PluginInstance* instance) {
 }
 
+scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
+MockPluginDelegate::CreateResourceCreationAPI(PluginInstance* instance) {
+  return scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>();
+}
+
 SkBitmap* MockPluginDelegate::GetSadPluginBitmap() {
   return NULL;
 }
