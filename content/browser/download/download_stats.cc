@@ -306,21 +306,18 @@ void RecordContiguousWriteTime(base::TimeDelta time_blocked) {
   UMA_HISTOGRAM_TIMES("Download.FileThreadBlockedTime", time_blocked);
 }
 
-void RecordNetworkBandwidth(size_t length,
-                            base::TimeDelta elapsed_time,
-                            base::TimeDelta paused_time) {
-  size_t non_pause_time_ms = (elapsed_time - paused_time).InMilliseconds();
-  if (0u == non_pause_time_ms)
-    non_pause_time_ms = 1;
+// Record what percentage of the time we have the network flow controlled.
+void RecordNetworkBlockage(base::TimeDelta resource_handler_lifetime,
+                           base::TimeDelta resource_handler_blocked_time) {
+  int percentage = 0;
+  // Avoid division by zero errors.
+  if (resource_handler_blocked_time != base::TimeDelta()) {
+    percentage =
+        resource_handler_blocked_time * 100 / resource_handler_lifetime;
+  }
 
-  // Note that this will be somewhat higher than sustainable network
-  // bandwidth because of buffering in the kernel during pauses.
-  // Using Bytes/s rather than bits/s so that this value is easily
-  // comparable with BandwidthOverall and BandwidthDisk.
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Download.BandwidthNetworkBytesPerSecond",
-      (1000 * length / non_pause_time_ms),
-      1, 100000000, 50);
+  UMA_HISTOGRAM_COUNTS_100("Download.ResourceHandlerBlockedPercentage",
+                           percentage);
 }
 
 void RecordFileBandwidth(size_t length,
@@ -339,6 +336,8 @@ void RecordFileBandwidth(size_t length,
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Download.BandwidthDiskBytesPerSecond",
       (1000 * length / disk_write_time_ms), 1, 50000000, 50);
+  UMA_HISTOGRAM_COUNTS_100("Download.DiskBandwidthUsedPercentage",
+                           disk_write_time_ms * 100 / elapsed_time_ms);
 }
 
 void RecordSavePackageEvent(SavePackageEvent event) {

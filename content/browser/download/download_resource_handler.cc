@@ -342,6 +342,8 @@ bool DownloadResourceHandler::OnResponseCompleted(
   }
 
   download_stats::RecordAcceptsRanges(accept_ranges_, bytes_read_);
+  download_stats::RecordNetworkBlockage(
+      base::TimeTicks::Now() - download_start_time_, total_pause_time_);
 
   CallStartedCB(DownloadId(), error_code);
 
@@ -352,11 +354,6 @@ bool DownloadResourceHandler::OnResponseCompleted(
 
   stream_writer_.reset();  // We no longer need the stream.
   read_buffer_ = NULL;
-
-  // Stats
-  download_stats::RecordNetworkBandwidth(
-      bytes_read_, base::TimeTicks::Now() - download_start_time_,
-      total_pause_time_);
 
   return true;
 }

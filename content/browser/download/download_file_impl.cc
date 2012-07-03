@@ -186,6 +186,7 @@ void DownloadFileImpl::StreamActive() {
           result = AppendDataToFile(
               incoming_data.get()->data(), incoming_data_size);
           disk_writes_time_ += (base::TimeTicks::Now() - write_start);
+          bytes_seen_ += incoming_data_size;
           total_incoming_data_size += incoming_data_size;
           reason = content::ConvertNetErrorToInterruptReason(
               result, content::DOWNLOAD_INTERRUPT_FROM_DISK);
@@ -224,7 +225,6 @@ void DownloadFileImpl::StreamActive() {
 
   if (total_incoming_data_size)
     download_stats::RecordFileThreadReceiveBuffers(num_buffers);
-  bytes_seen_ += total_incoming_data_size;
 
   download_stats::RecordContiguousWriteTime(now - start);
 
