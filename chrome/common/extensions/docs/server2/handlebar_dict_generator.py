@@ -20,6 +20,19 @@ def _RemoveNoDocs(item):
         item.remove(i)
   return False
 
+def _GetLinkToRefType(namespace_name, ref_type):
+  terms = ref_type.split('.')
+  if len(terms) > 1:
+    text = '.'.join(terms[1:])
+    href = terms[0] + '.html' + '#type-' + text
+  else:
+    href = namespace_name + '.html' + '#type-' +ref_type
+    text = ref_type
+  return ({
+    "href": href,
+    "text": text
+  })
+
 class HandlebarDictGenerator(object):
   """Uses a Model from the JSON Schema Compiler and generates a dict that
   a Handlebar template can use for a data source.
@@ -45,11 +58,12 @@ class HandlebarDictGenerator(object):
   def _GenerateType(self, type_):
     type_dict = {
       'name': type_.name,
-      'type': type_.type_.name,
+      'type': type_.type_.name.lower(),
       'description': type_.description,
       'properties': self._GenerateProperties(type_.properties),
       'functions': self._GenerateFunctions(type_.functions)
     }
+
     # Only Array types have 'item_type'.
     if type_.type_ == model.PropertyType.ARRAY:
       type_dict['array'] = self._GenerateType(type_.item_type)
@@ -68,6 +82,7 @@ class HandlebarDictGenerator(object):
       'callback': self._GenerateCallback(function.callback),
       'parameters': []
     }
+
     for param in function.params:
       function_dict['parameters'].append(self._GenerateProperty(param))
     return function_dict
@@ -77,10 +92,14 @@ class HandlebarDictGenerator(object):
       return {}
     callback_dict = {
       'name': 'callback',
+      'simple_type': {'type': 'function'},
+      'optional': callback.optional,
       'parameters': []
     }
     for param in callback.params:
       callback_dict['parameters'].append(self._GenerateProperty(param))
+    if (len(callback_dict['parameters']) > 0):
+      callback_dict['parameters'][-1]['last_parameter'] = True
     return callback_dict
 
   def _GenerateProperties(self, properties):
@@ -92,18 +111,26 @@ class HandlebarDictGenerator(object):
   def _GenerateProperty(self, property_):
     property_dict = {
       'name': property_.name,
-      'type': property_.type_.name,
+      'type': property_.type_.name.lower(),
       'optional': property_.optional,
       'description': property_.description,
       'properties': self._GenerateProperties(property_.properties)
     }
+
     if property_.type_ == model.PropertyType.CHOICES:
       property_dict['choices'] = []
       for choice_name in property_.choices:
-        property_dict['choices'].append(
-            self._GenerateProperty(property_.choices[choice_name]))
+        property_dict['choices'].append(self._GenerateProperty(
+            property_.choices[choice_name]))
+      # We keep track of which is last for knowing when to add "or" between
+      # choices in templates.
+      if len(property_dict['choices']) > 0:
+        property_dict['choices'][-1]['last_choice'] = True
     elif property_.type_ == model.PropertyType.REF:
-      property_dict['ref'] = property_.ref_type
+      property_dict['link'] = _GetLinkToRefType(self._namespace.name,
+                                                property_.ref_type)
     elif property_.type_ == model.PropertyType.ARRAY:
       property_dict['array'] = self._GenerateProperty(property_.item_type)
+    else:
+      property_dict['simple_type'] = {'type': property_dict['type']}
     return property_dict

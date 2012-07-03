@@ -4,19 +4,19 @@
   {{?api.functions}}
     <h3 id="methods">Methods</h3>
     {{#api.functions}}
-      {{+partials.function}}
+      {{+partials.function api:api}}
     {{/}}
   {{/api.functions}}
   {{?api.events}}
     <h3 id="events">Events</h3>
     {{#api.events}}
-      {{+partials.event}}
+      {{+partials.event api:api}}
     {{/}}
   {{/api.events}}
   {{?api.types}}
     <h3 id="types">Types</h3>
     {{#api.types}}
-      {{+partials.type}}
+      {{+partials.type api:api}}
     {{/}}
   {{/api.types}}
 </div>

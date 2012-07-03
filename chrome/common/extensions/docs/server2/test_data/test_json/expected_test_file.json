@@ -2,84 +2,112 @@
   "functions": [
     {
       "callback": {
-        "name": "callback",
         "parameters": [
           {
-            "name": "results",
-            "type": "ARRAY",
+            "name": "results", 
+            "type": "array", 
+            "last_parameter": true, 
             "array": {
-              "name": "resultsElement",
-              "ref": "TypeA",
-              "type": "REF",
-              "optional": false,
-              "properties": [],
+              "name": "resultsElement", 
+              "type": "ref", 
+              "link": {
+                "text": "TypeA", 
+                "href": "tester.html#type-TypeA"
+              }, 
+              "optional": false, 
+              "properties": [], 
               "description": null
-            },
-            "optional": false,
-            "properties": [],
+            }, 
+            "optional": false, 
+            "properties": [], 
             "description": null
           }
-        ]
-      },
-      "name": "get",
+        ], 
+        "optional": false, 
+        "name": "callback", 
+        "simple_type": {
+          "type": "function"
+        }
+      }, 
+      "name": "get", 
       "parameters": [
         {
-          "name": "a",
-          "type": "CHOICES",
+          "name": "a", 
+          "type": "choices", 
           "choices": [
             {
-              "optional": true,
-              "properties": [],
-              "type": "STRING",
-              "name": "a",
+              "name": "a", 
+              "simple_type": {
+                "type": "string"
+              }, 
+              "type": "string", 
+              "optional": true, 
+              "properties": [], 
               "description": null
-            },
+            }, 
             {
-              "name": "a",
-              "type": "ARRAY",
+              "last_choice": true, 
+              "name": "a", 
+              "type": "array", 
               "array": {
-                "optional": false,
-                "properties": [],
-                "type": "STRING",
-                "name": "aElement",
+                "name": "aElement", 
+                "simple_type": {
+                  "type": "string"
+                }, 
+                "type": "string", 
+                "optional": false, 
+                "properties": [], 
                 "description": null
-              },
-              "optional": true,
-              "properties": [],
+              }, 
+              "optional": true, 
+              "properties": [], 
               "description": null
             }
-          ],
-          "optional": false,
-          "properties": [],
+          ], 
+          "optional": false, 
+          "properties": [], 
           "description": "a param"
         }
-      ],
+      ], 
       "description": "Gets stuff."
     }
-  ],
-  "name": "tester",
+  ], 
+  "name": "tester", 
   "types": [
     {
       "properties": [
         {
-          "name": "b",
-          "type": "ARRAY",
+          "name": "a", 
+          "simple_type": {
+            "type": "string"
+          }, 
+          "type": "string", 
+          "optional": false, 
+          "properties": [], 
+          "description": null
+        }, 
+        {
+          "name": "b", 
+          "type": "array", 
           "array": {
-            "name": "bElement",
-            "ref": "TypeA",
-            "type": "REF",
-            "optional": false,
-            "properties": [],
+            "name": "bElement", 
+            "type": "ref", 
+            "link": {
+              "text": "TypeA", 
+              "href": "tester.html#type-TypeA"
+            }, 
+            "optional": false, 
+            "properties": [], 
             "description": null
-          },
-          "optional": true,
-          "properties": [],
+          }, 
+          "optional": true, 
+          "properties": [], 
           "description": "List of TypeA."
         }
-      ],
-      "functions": [],
-      "type": "OBJECT",
-      "name": "TypeA",
+      ], 
+      "functions": [], 
+      "type": "object", 
+      "name": "TypeA", 
       "description": "A cool thing."
     }
   ]

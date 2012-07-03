@@ -1,0 +1,15 @@
+<h4>Callback function</h4>
+<p>
+  {{?optional}}
+      If you specify the <em>callback</em> parameter, it should
+      specify a function that looks like this:
+  {{/}}
+  {{^optional}}
+      The <em>callback</em> parameter should specify a function
+      that looks like this:
+  {{/}}
+</p>
+<pre>function({{#parameters}}{{+partials.variable_type}} {{name}}{{^last_parameter}}, {{/}}{{/}}) <span class="subdued">{...}</span>;</pre>
+<dl>
+  {{#parameters}}{{+partials.property}}{{/}}
+</dl>

@@ -111,6 +111,9 @@ class Callback(object):
   def __init__(self, parent, json):
     params = json['parameters']
     self.parent = parent
+    self.optional = False
+    if 'optional' in json:
+      self.optional = json['optional'] == True
     self.params = []
     if len(params) == 0:
       return
