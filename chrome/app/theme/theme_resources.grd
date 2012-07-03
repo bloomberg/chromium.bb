@@ -200,18 +200,10 @@
         <include name="IDR_MANAGED_MODE_AVATAR" file="default_100_percent/managed_mode_avatar_mac.png" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('_google_chrome')">
-        <include name="IDR_WEBSTORE_ICON" file="google_chrome/webstore_icon.png" type="BINDATA" />
-        <include name="IDR_WEBSTORE_ICON_16" file="google_chrome/webstore_icon_16.png" type="BINDATA" />
-        <include name="IDR_WEBSTORE_ICON_24" file="google_chrome/webstore_icon_24.png" type="BINDATA" />
-        <include name="IDR_WEBSTORE_ICON_32" file="google_chrome/webstore_icon_32.png" type="BINDATA" />
         <include name="IDR_WIZARD_ICON" file="google_chrome/wizard_icon.png" type="BINDATA" />
         <include name="IDR_WIZARD_ICON_RTL" file="google_chrome/wizard_icon_rtl.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('_google_chrome')">
-        <include name="IDR_WEBSTORE_ICON" file="chromium/webstore_icon.png" type="BINDATA" />
-        <include name="IDR_WEBSTORE_ICON_16" file="chromium/webstore_icon_16.png" type="BINDATA" />
-        <include name="IDR_WEBSTORE_ICON_24" file="chromium/webstore_icon_24.png" type="BINDATA" />
-        <include name="IDR_WEBSTORE_ICON_32" file="chromium/webstore_icon_32.png" type="BINDATA" />
         <include name="IDR_WIZARD_ICON" file="chromium/wizard_icon.png" type="BINDATA" />
         <include name="IDR_WIZARD_ICON_RTL" file="chromium/wizard_icon_rtl.png" type="BINDATA" />
       </if>

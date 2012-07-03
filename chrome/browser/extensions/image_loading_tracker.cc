@@ -18,6 +18,7 @@
 #include "content/public/browser/notification_service.h"
 #include "grit/component_extension_resources_map.h"
 #include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
