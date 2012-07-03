@@ -73,7 +73,6 @@
       'popups',
       'prefs',
       'prefs_ui',
-      'process_count',
       'protector',
       'pyauto_webdriver',
       'search_engines',
@@ -139,8 +138,6 @@
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
       # crbug.com/112051
       '-prefs_ui.PrefsUITest.testChangeExceptionBehaviorUI',
-      # crbug.com/131212
-      '-process_count',
       # crbug.com/88593
       '-sync.SyncTest.testPersonalStuffSyncSection',
       # crbug.com/95140
@@ -457,8 +454,6 @@
       '-plugins.PluginsTest.testBlockAllPlugins',
       '-popups.PopupsTest.testMultiplePopups',
       '-popups.PopupsTest.testPopupBlockedEverySec',
-      '-process_count.ProcessCountTest.testProcessCountCombination',
-      '-process_count.ProcessCountTest.testProcessCountFlashProcess',
     ],
 
     'win': [
@@ -522,8 +517,6 @@
       # ===========================
       # Permanently-disabled tests.
       # ===========================
-      # Preloaded extensions affect process count: crbug.com/94350
-      '-process_count',
       # Disable sync.SyncIntegrationTest on the QA bots in FULL,
       # until sync protobufs are copied over.
       '-sync.SyncIntegrationTest',
@@ -561,8 +554,6 @@
       # ===========================
       # Permanently-disabled tests.
       # ===========================
-      # Consistently failing on Mac QA bots only: crbug.com/97810
-      '-process_count',
     ],
 
     'linux': [
