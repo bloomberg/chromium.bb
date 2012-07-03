@@ -685,6 +685,10 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     """
     test_description = 'ComposeDiscard'
 
+    # TODO(dennisjeffrey): Remove following line once crosbug.com/32357 is
+    # fixed.
+    self._test_length_sec = 60 * 60 * 5  # Run test for 5 hours.
+
     def scenario():
       # Click the "Compose" button, enter some text into the "To" field, enter
       # some text into the "Subject" field, then click the "Discard" button to
@@ -730,6 +734,10 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     results from testGmailComposeDiscard above.
     """
     test_description = 'ComposeDiscardSleep'
+
+    # TODO(dennisjeffrey): Remove following line once crosbug.com/32357 is
+    # fixed.
+    self._test_length_sec = 60 * 60 * 5  # Run test for 5 hours.
 
     def scenario():
       # Click the "Compose" button, enter some text into the "To" field, enter
@@ -994,6 +1002,10 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
     memory bloat.
     """
     test_description = 'AlternateStreams'
+
+    # TODO(dennisjeffrey): Remove following line once crosbug.com/32357 is
+    # fixed.
+    self._test_length_sec = 60 * 60 * 3  # Run test for 3 hours.
 
     def scenario():
       # Click the "Friends" button, wait for 1 second, click the "Family"
