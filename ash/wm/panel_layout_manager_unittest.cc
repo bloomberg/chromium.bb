@@ -30,7 +30,6 @@ class PanelLayoutManagerTest : public ash::test::AshTestBase {
   virtual ~PanelLayoutManagerTest() {}
 
   virtual void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kAuraPanelManager);
     ash::test::AshTestBase::SetUp();
     ASSERT_TRUE(ash::test::TestLauncherDelegate::instance());
 
