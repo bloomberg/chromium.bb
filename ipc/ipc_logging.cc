@@ -130,8 +130,8 @@ void Logging::OnSendMessage(Message* message, const std::string& channel_id) {
     // This is actually the delayed reply to a sync message.  Create a string
     // of the output parameters, add it to the LogData that was earlier stashed
     // with the reply, and log the result.
-    data->channel = channel_id;
     GenerateLogData("", *message, data, true);
+    data->channel = channel_id;
     Log(*data);
     delete data;
     message->set_sync_log_data(NULL);
