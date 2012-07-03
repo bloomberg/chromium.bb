@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/public/syncable/model_type_payload_map.h"
+#include "sync/internal_api/public/base/model_type_payload_map.h"
 
 #include <string>
 
@@ -41,6 +41,33 @@ TEST_F(ModelTypePayloadMapTest, TypePayloadMapToValue) {
   ExpectDictStringValue(encoded, *value, "Bookmarks");
   ExpectDictStringValue("", *value, "Apps");
   EXPECT_FALSE(value->HasKey("Preferences"));
+}
+
+TEST_F(ModelTypePayloadMapTest, CoalescePayloads) {
+  syncable::ModelTypePayloadMap original;
+  std::string empty_payload;
+  std::string payload1 = "payload1";
+  std::string payload2 = "payload2";
+  std::string payload3 = "payload3";
+  original[syncable::BOOKMARKS] = empty_payload;
+  original[syncable::PASSWORDS] = payload1;
+  original[syncable::AUTOFILL] = payload2;
+  original[syncable::THEMES] = payload3;
+
+  syncable::ModelTypePayloadMap update;
+  update[syncable::BOOKMARKS] = empty_payload;  // Same.
+  update[syncable::PASSWORDS] = empty_payload;  // Overwrite with empty.
+  update[syncable::AUTOFILL] = payload1;        // Overwrite with non-empty.
+  update[syncable::SESSIONS] = payload2;        // New.
+  // Themes untouched.
+
+  CoalescePayloads(&original, update);
+  ASSERT_EQ(5U, original.size());
+  EXPECT_EQ(empty_payload, original[syncable::BOOKMARKS]);
+  EXPECT_EQ(payload1, original[syncable::PASSWORDS]);
+  EXPECT_EQ(payload1, original[syncable::AUTOFILL]);
+  EXPECT_EQ(payload2, original[syncable::SESSIONS]);
+  EXPECT_EQ(payload3, original[syncable::THEMES]);
 }
 
 }  // namespace

@@ -6,7 +6,7 @@
 #define SYNC_SYNCABLE_TRANSACTION_OBSERVER_H_
 #pragma once
 
-#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/syncable/write_transaction_info.h"
 
 namespace syncer {

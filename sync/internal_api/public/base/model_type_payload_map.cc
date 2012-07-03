@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/public/syncable/model_type_payload_map.h"
+#include "sync/internal_api/public/base/model_type_payload_map.h"
 
 #include <vector>
 
@@ -33,17 +33,6 @@ ModelTypeSet ModelTypePayloadMapToEnumSet(
     types.Put(it->first);
   }
   return types;
-}
-
-ModelTypePayloadMap ModelTypePayloadMapFromRoutingInfo(
-    const syncer::ModelSafeRoutingInfo& routes,
-    const std::string& payload) {
-  ModelTypePayloadMap types_with_payloads;
-  for (syncer::ModelSafeRoutingInfo::const_iterator i = routes.begin();
-       i != routes.end(); ++i) {
-    types_with_payloads[i->first] = payload;
-  }
-  return types_with_payloads;
 }
 
 std::string ModelTypePayloadMapToString(
@@ -82,23 +71,6 @@ void CoalescePayloads(ModelTypePayloadMap* original,
       // payload if the new one is non-empty.
       (*original)[i->first] = i->second;
     }
-  }
-}
-
-void PurgeStalePayload(ModelTypePayloadMap* original,
-                       const ModelSafeRoutingInfo& routing_info) {
-  std::vector<ModelTypePayloadMap::iterator> iterators_to_delete;
-  for (ModelTypePayloadMap::iterator i = original->begin();
-       i != original->end(); ++i) {
-    if (routing_info.end() == routing_info.find(i->first)) {
-      iterators_to_delete.push_back(i);
-    }
-  }
-
-  for (std::vector<ModelTypePayloadMap::iterator>::iterator
-       it = iterators_to_delete.begin(); it != iterators_to_delete.end();
-       ++it) {
-    original->erase(*it);
   }
 }
 

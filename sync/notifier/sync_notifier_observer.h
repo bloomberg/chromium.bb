@@ -6,7 +6,7 @@
 #define SYNC_NOTIFIER_SYNC_NOTIFIER_OBSERVER_H_
 #pragma once
 
-#include "sync/internal_api/public/syncable/model_type_payload_map.h"
+#include "sync/internal_api/public/base/model_type_payload_map.h"
 #include "sync/notifier/notifications_disabled_reason.h"
 
 namespace syncer {

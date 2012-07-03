@@ -6,7 +6,7 @@
 #define SYNC_UTIL_EXPERIMENTS_
 #pragma once
 
-#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/base/model_type.h"
 
 namespace syncer {
 

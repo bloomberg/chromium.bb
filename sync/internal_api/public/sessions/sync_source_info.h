@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "sync/internal_api/public/syncable/model_type.h"
-#include "sync/internal_api/public/syncable/model_type_payload_map.h"
+#include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/base/model_type_payload_map.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace base {

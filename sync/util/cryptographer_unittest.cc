@@ -8,7 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
-#include "sync/internal_api/public/syncable/model_type_test_util.h"
+#include "sync/internal_api/public/base/model_type_test_util.h"
 #include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/protocol/password_specifics.pb.h"
 #include "sync/test/fake_encryptor.h"

@@ -8,7 +8,8 @@
 #include <iterator>
 
 #include "base/logging.h"
-#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/syncable/directory.h"
 
 namespace syncer {
@@ -45,6 +46,23 @@ std::set<ModelSafeGroup> ComputeEnabledGroups(
     }
   }
   return enabled_groups;
+}
+
+void PurgeStalePayload(syncable::ModelTypePayloadMap* original,
+                       const ModelSafeRoutingInfo& routing_info) {
+  std::vector<syncable::ModelTypePayloadMap::iterator> iterators_to_delete;
+  for (syncable::ModelTypePayloadMap::iterator i = original->begin();
+       i != original->end(); ++i) {
+    if (routing_info.end() == routing_info.find(i->first)) {
+      iterators_to_delete.push_back(i);
+    }
+  }
+
+  for (std::vector<syncable::ModelTypePayloadMap::iterator>::iterator
+       it = iterators_to_delete.begin(); it != iterators_to_delete.end();
+       ++it) {
+    original->erase(*it);
+  }
 }
 
 }  // namesepace

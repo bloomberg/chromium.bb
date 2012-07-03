@@ -29,6 +29,17 @@ std::string ModelSafeRoutingInfoToString(
   return json;
 }
 
+syncable::ModelTypePayloadMap ModelSafeRoutingInfoToPayloadMap(
+    const ModelSafeRoutingInfo& routes,
+    const std::string& payload) {
+  syncable::ModelTypePayloadMap types_with_payloads;
+  for (ModelSafeRoutingInfo::const_iterator i = routes.begin();
+       i != routes.end(); ++i) {
+    types_with_payloads[i->first] = payload;
+  }
+  return types_with_payloads;
+}
+
 syncable::ModelTypeSet GetRoutingInfoTypes(
     const ModelSafeRoutingInfo& routing_info) {
   syncable::ModelTypeSet types;

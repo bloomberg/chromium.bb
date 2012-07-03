@@ -102,8 +102,7 @@ class SyncerCommandTestBase : public testing::Test,
   // Lazily create a session requesting all datatypes with no payload.
   sessions::SyncSession* session() {
     syncable::ModelTypePayloadMap types =
-        syncable::ModelTypePayloadMapFromRoutingInfo(routing_info_,
-                                                     std::string());
+        ModelSafeRoutingInfoToPayloadMap(routing_info_, std::string());
     return session(sessions::SyncSourceInfo(types));
   }
 

@@ -10,7 +10,7 @@
 #include "base/location.h"
 
 #include "sync/api/sync_error.h"
-#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 
 namespace browser_sync {

@@ -5,7 +5,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "sync/engine/process_updates_command.h"
-#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/sessions/session_state.h"
 #include "sync/sessions/sync_session.h"
 #include "sync/syncable/syncable_id.h"

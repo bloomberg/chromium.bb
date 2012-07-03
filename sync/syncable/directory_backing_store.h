@@ -12,7 +12,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
-#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/syncable/dir_open_result.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/metahandle_set.h"

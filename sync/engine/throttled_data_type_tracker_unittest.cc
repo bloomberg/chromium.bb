@@ -4,7 +4,7 @@
 
 #include "sync/engine/throttled_data_type_tracker.h"
 
-#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;

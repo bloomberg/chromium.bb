@@ -603,8 +603,7 @@ void SyncScheduler::ScheduleConfiguration(
 
   SyncSession* session = new SyncSession(session_context_, this,
       SyncSourceInfo(source,
-                     syncable::ModelTypePayloadMapFromRoutingInfo(
-                         routes, std::string())),
+                     ModelSafeRoutingInfoToPayloadMap(routes, std::string())),
       routes, workers);
   SyncSessionJob job(SyncSessionJob::CONFIGURATION, TimeTicks::Now(),
                      make_linked_ptr(session),
@@ -1032,7 +1031,7 @@ void SyncScheduler::PollTimerCallback() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   ModelSafeRoutingInfo r;
   ModelTypePayloadMap types_with_payloads =
-      syncable::ModelTypePayloadMapFromRoutingInfo(r, std::string());
+      ModelSafeRoutingInfoToPayloadMap(r, std::string());
   SyncSourceInfo info(GetUpdatesCallerInfo::PERIODIC, types_with_payloads);
   SyncSession* s = CreateSyncSession(info);
 

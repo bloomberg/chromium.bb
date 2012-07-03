@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/base/model_type.h"
 
 namespace tracked_objects {
 class Location;

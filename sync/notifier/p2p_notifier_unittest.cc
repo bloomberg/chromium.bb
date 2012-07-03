@@ -7,7 +7,7 @@
 #include <cstddef>
 
 #include "jingle/notifier/listener/fake_push_client.h"
-#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/notifier/mock_sync_notifier_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

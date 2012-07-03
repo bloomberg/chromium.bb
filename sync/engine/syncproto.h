@@ -8,7 +8,7 @@
 #define SYNC_ENGINE_SYNCPROTO_H_
 #pragma once
 
-#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/syncable_id.h"
 

@@ -9,8 +9,8 @@
 #include <set>
 #include <utility>  // for pair<>
 
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/read_node.h"
-#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/syncable/base_transaction.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/entry.h"

@@ -11,7 +11,7 @@
 #include "sync/engine/conflict_resolver.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/throttled_data_type_tracker.h"
-#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/sessions/session_state.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/syncable/syncable_id.h"
@@ -494,45 +494,6 @@ TEST_F(SyncSessionTest, MakeTypePayloadMapFromBitSet) {
   EXPECT_EQ(types_with_payloads[syncable::BOOKMARKS], payload);
   EXPECT_EQ(types_with_payloads[syncable::PASSWORDS], payload);
   EXPECT_EQ(types_with_payloads[syncable::AUTOFILL], payload);
-}
-
-TEST_F(SyncSessionTest, MakeTypePayloadMapFromRoutingInfo) {
-  std::string payload = "test";
-  syncable::ModelTypePayloadMap types_with_payloads
-      = syncable::ModelTypePayloadMapFromRoutingInfo(routes_, payload);
-  ASSERT_EQ(routes_.size(), types_with_payloads.size());
-  for (ModelSafeRoutingInfo::iterator iter = routes_.begin();
-       iter != routes_.end();
-       ++iter) {
-    EXPECT_EQ(payload, types_with_payloads[iter->first]);
-  }
-}
-
-TEST_F(SyncSessionTest, CoalescePayloads) {
-  syncable::ModelTypePayloadMap original;
-  std::string empty_payload;
-  std::string payload1 = "payload1";
-  std::string payload2 = "payload2";
-  std::string payload3 = "payload3";
-  original[syncable::BOOKMARKS] = empty_payload;
-  original[syncable::PASSWORDS] = payload1;
-  original[syncable::AUTOFILL] = payload2;
-  original[syncable::THEMES] = payload3;
-
-  syncable::ModelTypePayloadMap update;
-  update[syncable::BOOKMARKS] = empty_payload;  // Same.
-  update[syncable::PASSWORDS] = empty_payload;  // Overwrite with empty.
-  update[syncable::AUTOFILL] = payload1;        // Overwrite with non-empty.
-  update[syncable::SESSIONS] = payload2;        // New.
-  // Themes untouched.
-
-  CoalescePayloads(&original, update);
-  ASSERT_EQ(5U, original.size());
-  EXPECT_EQ(empty_payload, original[syncable::BOOKMARKS]);
-  EXPECT_EQ(payload1, original[syncable::PASSWORDS]);
-  EXPECT_EQ(payload1, original[syncable::AUTOFILL]);
-  EXPECT_EQ(payload2, original[syncable::SESSIONS]);
-  EXPECT_EQ(payload3, original[syncable::THEMES]);
 }
 
 }  // namespace

@@ -12,7 +12,7 @@
 #include "base/time.h"
 #include "sync/engine/syncproto.h"
 #include "sync/engine/throttled_data_type_tracker.h"
-#include "sync/internal_api/public/syncable/model_type_test_util.h"
+#include "sync/internal_api/public/base/model_type_test_util.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/protocol/password_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"

@@ -12,8 +12,8 @@
 
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "sync/api/sync_error.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/configure_reason.h"
-#include "sync/internal_api/public/syncable/model_type.h"
 
 namespace browser_sync {
 

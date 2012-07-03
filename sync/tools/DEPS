@@ -2,5 +2,5 @@ include_rules = [
   "+jingle/notifier/base",
   "+net",
   "+sync/notifier",
-  "+sync/internal_api/public/syncable",
+  "+sync/internal_api/public/base",
 ]

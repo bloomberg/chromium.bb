@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/values.h"
-#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_test_util.h"

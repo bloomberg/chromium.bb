@@ -32,8 +32,8 @@
 #include "sync/engine/syncproto.h"
 #include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/engine/traffic_recorder.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
-#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/protocol/preference_specifics.pb.h"
@@ -179,7 +179,7 @@ class SyncerTest : public testing::Test,
     GetModelSafeRoutingInfo(&info);
     GetWorkers(&workers);
     syncable::ModelTypePayloadMap types =
-        syncable::ModelTypePayloadMapFromRoutingInfo(info, std::string());
+        ModelSafeRoutingInfoToPayloadMap(info, std::string());
     return new SyncSession(context_.get(), this,
         sessions::SyncSourceInfo(sync_pb::GetUpdatesCallerInfo::UNKNOWN, types),
         info, workers);

@@ -11,7 +11,7 @@
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/engine/traffic_logger.h"
-#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/sync_enums.pb.h"
 #include "sync/protocol/sync_protocol_error.h"

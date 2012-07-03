@@ -8,7 +8,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/time.h"
-#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/base/model_type.h"
 
 // For now, this just implements UMA_HISTOGRAM_LONG_TIMES. This can be adjusted
 // if we feel the min, max, or bucket count amount are not appropriate.

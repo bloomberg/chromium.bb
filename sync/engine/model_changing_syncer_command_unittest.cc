@@ -6,7 +6,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "sync/engine/model_changing_syncer_command.h"
-#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/sessions/sync_session.h"
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/syncer_command_test.h"

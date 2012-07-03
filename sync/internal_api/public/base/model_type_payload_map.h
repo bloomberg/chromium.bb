@@ -4,15 +4,14 @@
 //
 // Definition of ModelTypePayloadMap and various utility functions.
 
-#ifndef SYNC_INTERNAL_PUBLIC_API_SYNCABLE_MODEL_TYPE_PAYLOAD_MAP_H_
-#define SYNC_INTERNAL_PUBLIC_API_SYNCABLE_MODEL_TYPE_PAYLOAD_MAP_H_
+#ifndef SYNC_INTERNAL_PUBLIC_API_BASE_MODEL_TYPE_PAYLOAD_MAP_H_
+#define SYNC_INTERNAL_PUBLIC_API_BASE_MODEL_TYPE_PAYLOAD_MAP_H_
 #pragma once
 
 #include <map>
 #include <string>
 
-#include "sync/internal_api/public/engine/model_safe_worker.h"
-#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/base/model_type.h"
 
 namespace base {
 class DictionaryValue;
@@ -35,12 +34,6 @@ ModelTypePayloadMap ModelTypePayloadMapFromEnumSet(
 ModelTypeSet ModelTypePayloadMapToEnumSet(
     const ModelTypePayloadMap& payload_map);
 
-// Make a TypePayloadMap for all the enabled types in a
-// ModelSafeRoutingInfo using a default payload.
-ModelTypePayloadMap ModelTypePayloadMapFromRoutingInfo(
-    const syncer::ModelSafeRoutingInfo& routes,
-    const std::string& payload);
-
 std::string ModelTypePayloadMapToString(
     const ModelTypePayloadMap& model_type_payloads);
 
@@ -53,9 +46,6 @@ base::DictionaryValue* ModelTypePayloadMapToValue(
 void CoalescePayloads(ModelTypePayloadMap* original,
                       const ModelTypePayloadMap& update);
 
-void PurgeStalePayload(ModelTypePayloadMap* original,
-                       const syncer::ModelSafeRoutingInfo& routing_info);
-
 }  // namespace syncable
 }  // namespace syncer
 
@@ -66,12 +56,10 @@ namespace syncable {
 using ::syncer::syncable::ModelTypePayloadMap;
 using ::syncer::syncable::ModelTypePayloadMapFromEnumSet;
 using ::syncer::syncable::ModelTypePayloadMapToEnumSet;
-using ::syncer::syncable::ModelTypePayloadMapFromRoutingInfo;
 using ::syncer::syncable::ModelTypePayloadMapToString;
 using ::syncer::syncable::ModelTypePayloadMapToValue;
 using ::syncer::syncable::CoalescePayloads;
-using ::syncer::syncable::PurgeStalePayload;
 
 }  // namespace syncable
 
-#endif  // SYNC_INTERNAL_PUBLIC_API_SYNCABLE_MODEL_TYPE_PAYLOAD_MAP_H_
+#endif  // SYNC_INTERNAL_PUBLIC_API_BASE_MODEL_TYPE_PAYLOAD_MAP_H_

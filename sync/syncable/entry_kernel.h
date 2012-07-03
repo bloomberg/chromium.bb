@@ -8,7 +8,7 @@
 
 #include "base/time.h"
 #include "base/values.h"
-#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/immutable.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/metahandle_set.h"

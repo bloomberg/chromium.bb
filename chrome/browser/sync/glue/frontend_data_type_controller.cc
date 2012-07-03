@@ -13,7 +13,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_error.h"
-#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/util/data_type_histogram.h"
 
 using content::BrowserThread;
