@@ -87,6 +87,9 @@ able to build DumpRenderTree to build extension_docs. The build.py script will
 look in typical locations for the DumpRenderTree executable, but you may set
 the path to DumpRenderTree explicitly with --dump-render-tree-path.
 
+To rebuild just one page, you can use the --page-name=<page> flag (the name of
+the page is the filename without the .html suffix).
+
 
 Debugging Broken Builds
 

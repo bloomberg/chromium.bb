@@ -5,14 +5,15 @@
 
 import cgi
 import logging
-import re
 import os
+import re
 
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 
+import app_known_issues
 
 DEFAULT_CACHE_TIME = 300
 VIEW_VC_ROOT = 'http://src.chromium.org'
@@ -114,7 +115,6 @@ def GetBranch(channel):
   branch = match.group(1)
   memcache.add(channel.name, branch, DEFAULT_CACHE_TIME)
   return branch
-
 
 class MainPage(webapp.RequestHandler):
   def redirectToIndexIfNecessary(self):
@@ -239,6 +239,7 @@ class MainPage(webapp.RequestHandler):
 
 
 application = webapp.WSGIApplication([
+  ('/app_known_issues_snippet.html', app_known_issues.Handler),
   ('/.*', MainPage),
 ], debug=False)
 
