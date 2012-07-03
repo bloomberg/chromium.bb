@@ -49,8 +49,11 @@ ShellMainDelegate::~ShellMainDelegate() {
 }
 
 bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
     InitLogging();
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kAllowFileAccessFromFiles);
+  }
 #if defined(OS_MACOSX)
   OverrideFrameworkBundlePath();
 #endif

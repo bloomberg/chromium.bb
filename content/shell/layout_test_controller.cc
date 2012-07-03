@@ -16,6 +16,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTestingSupport.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -23,6 +24,7 @@ using WebKit::WebFrame;
 using WebKit::WebElement;
 using WebKit::WebRect;
 using WebKit::WebSize;
+using WebKit::WebTestingSupport;
 using WebKit::WebView;
 
 namespace content {
@@ -139,6 +141,10 @@ LayoutTestController::LayoutTestController(RenderView* render_view)
 }
 
 LayoutTestController::~LayoutTestController() {
+}
+
+void LayoutTestController::DidClearWindowObject(WebFrame* frame) {
+  WebTestingSupport::injectInternalsObject(frame);
 }
 
 void LayoutTestController::DidFinishLoad(WebFrame* frame) {
