@@ -11,7 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/synchronization/cancellation_flag.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/history_provider.h"
 #include "chrome/browser/autocomplete/history_provider_util.h"
 #include "chrome/browser/autocomplete/url_prefix.h"

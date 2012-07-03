@@ -8,7 +8,9 @@
 
 #include <string>
 
-#include "chrome/browser/autocomplete/autocomplete.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/history_provider.h"
 #include "chrome/browser/history/history_types.h"
@@ -101,6 +103,8 @@ class HistoryQuickProvider : public HistoryProvider {
 
   // This provider is disabled when true.
   static bool disabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(HistoryQuickProvider);
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_HISTORY_QUICK_PROVIDER_H_

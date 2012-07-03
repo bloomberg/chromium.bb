@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/common/url_constants.h"

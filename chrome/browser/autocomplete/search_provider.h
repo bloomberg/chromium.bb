@@ -7,10 +7,6 @@
 // "Search <engine> for ...", including searching for the current input string,
 // search history, and search suggestions.  An instance of it gets created and
 // managed by the autocomplete controller.
-//
-// For more information on the autocomplete system in general, including how
-// the autocomplete controller and autocomplete providers work, see
-// chrome/browser/autocomplete.h.
 
 #ifndef CHROME_BROWSER_AUTOCOMPLETE_SEARCH_PROVIDER_H_
 #define CHROME_BROWSER_AUTOCOMPLETE_SEARCH_PROVIDER_H_
@@ -21,15 +17,15 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_id.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class Profile;
@@ -74,7 +70,7 @@ class SearchProvider : public AutocompleteProvider,
   void FinalizeInstantQuery(const string16& input_text,
                             const string16& suggest_text);
 
-  // AutocompleteProvider
+  // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) OVERRIDE;
   virtual void Stop() OVERRIDE;

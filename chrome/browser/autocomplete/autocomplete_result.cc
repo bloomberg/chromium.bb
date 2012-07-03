@@ -8,7 +8,7 @@
 #include <iterator>
 
 #include "base/logging.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 
 // static

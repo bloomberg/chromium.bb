@@ -8,9 +8,10 @@
 
 #include "ash/ash_switches.h"
 #include "base/command_line.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/extension_app_provider.h"
 #include "chrome/browser/event_disposition.h"
 #include "chrome/browser/extensions/extension_service.h"

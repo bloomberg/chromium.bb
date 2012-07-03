@@ -6,7 +6,7 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/common/url_constants.h"

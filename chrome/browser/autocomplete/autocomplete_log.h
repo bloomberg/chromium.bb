@@ -10,7 +10,7 @@
 
 #include "base/string16.h"
 #include "base/time.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_types.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/common/metrics/proto/omnibox_event.pb.h"

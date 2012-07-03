@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/values.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
-#include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
+#include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
@@ -17,8 +17,7 @@
 
 namespace options2 {
 
-HomePageOverlayHandler::HomePageOverlayHandler()
-    : autocomplete_controller_(NULL) {
+HomePageOverlayHandler::HomePageOverlayHandler() {
 }
 
 HomePageOverlayHandler::~HomePageOverlayHandler() {

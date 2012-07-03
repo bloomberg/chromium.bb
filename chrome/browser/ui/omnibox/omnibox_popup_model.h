@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
+#include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 
 class OmniboxPopupView;

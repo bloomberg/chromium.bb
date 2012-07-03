@@ -24,6 +24,7 @@
 #include "base/win/scoped_select_object.h"
 #include "base/win/windows_version.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/browser_process.h"

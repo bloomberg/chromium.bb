@@ -1,33 +1,26 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-//
-// This file contains the Extension App autocomplete provider. The provider
-// is responsible for keeping track of which Extension Apps are installed and
-// their URLs.  An instance of it gets created and managed by the autocomplete
-// controller.
-//
-// For more information on the autocomplete system in general, including how
-// the autocomplete controller and autocomplete providers work, see
-// chrome/browser/autocomplete.h.
 
 #ifndef CHROME_BROWSER_AUTOCOMPLETE_EXTENSION_APP_PROVIDER_H_
 #define CHROME_BROWSER_AUTOCOMPLETE_EXTENSION_APP_PROVIDER_H_
 #pragma once
 
-#include <utility>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "webkit/glue/window_open_disposition.h"
 
+// This provider is responsible for keeping track of which Extension Apps are
+// installed and their URLs.  An instance of it gets created and managed by
+// AutocompleteController.
 class ExtensionAppProvider : public AutocompleteProvider,
                              public content::NotificationObserver {
  public:

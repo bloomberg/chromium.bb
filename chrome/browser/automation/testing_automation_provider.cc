@@ -24,9 +24,9 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
@@ -3144,8 +3144,8 @@ void TestingAutomationProvider::GetOmniboxInfo(Browser* browser,
   // Fill up matches.
   ListValue* matches = new ListValue;
   const AutocompleteResult& result = model->result();
-  for (AutocompleteResult::const_iterator i = result.begin();
-       i != result.end(); ++i) {
+  for (AutocompleteResult::const_iterator i(result.begin()); i != result.end();
+       ++i) {
     const AutocompleteMatch& match = *i;
     DictionaryValue* item = new DictionaryValue;  // owned by return_value
     item->SetString("type", AutocompleteMatch::TypeToString(match.type));

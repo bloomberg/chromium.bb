@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view_model.h"

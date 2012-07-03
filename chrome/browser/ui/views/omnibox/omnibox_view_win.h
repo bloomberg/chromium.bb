@@ -16,7 +16,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_comptr.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"

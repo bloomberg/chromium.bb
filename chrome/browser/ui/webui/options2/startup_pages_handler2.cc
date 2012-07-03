@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/string_number_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
-#include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
+#include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -23,8 +23,7 @@
 namespace options2 {
 
 StartupPagesHandler::StartupPagesHandler()
-    : autocomplete_controller_(NULL),
-      startup_custom_pages_table_model_(NULL) {
+    : startup_custom_pages_table_model_(NULL) {
 }
 
 StartupPagesHandler::~StartupPagesHandler() {

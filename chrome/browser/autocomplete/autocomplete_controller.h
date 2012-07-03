@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "base/timer.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/autocomplete_types.h"
