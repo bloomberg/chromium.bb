@@ -1224,6 +1224,7 @@ FileManager.prototype = {
     // TODO(dgozman): refactor render/update/display stuff.
     columns[0].renderFunction = this.renderName_.bind(this);
     columns[1].renderFunction = this.renderSize_.bind(this);
+    columns[1].defaultOrder = 'desc';
     columns[2].renderFunction = this.renderType_.bind(this);
     columns[3].renderFunction = this.renderDate_.bind(this);
     columns[3].defaultOrder = 'desc';
