@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
   static const char kRDebugSwitch[] = "--r_debug=";
   if (argc > 2 &&
       0 == strncmp(argv[1], kRDebugSwitch, sizeof(kRDebugSwitch) - 1)) {
-    handle_r_debug(&argv[1][sizeof(kRDebugSwitch) - 1], argv[0]);
+    NaClHandleRDebug(&argv[1][sizeof(kRDebugSwitch) - 1], argv[0]);
     --argc;
     ++argv;
   }

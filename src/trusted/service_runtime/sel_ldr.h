@@ -763,7 +763,7 @@ void NaClVmIoPendingCheck_mu(struct NaClApp *nap,
 void NaClGdbHook(struct NaClApp const *nap);
 
 #if NACL_LINUX
-void handle_r_debug(const char *switch_value, char *argv0);
+void NaClHandleRDebug(const char *switch_value, char *argv0);
 #endif
 
 EXTERN_C_END

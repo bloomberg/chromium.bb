@@ -13,8 +13,8 @@
  * or the dynamic linker or the shared libraries are in memory,
  * so it won't find any symbols.  But we can fake it out to find us.
  *
- * The launcher passes --r_debug=0xXXXXXXXXXXXXXXXX.  The bootstrap
- * program replaces the Xs with the address of its _r_debug
+ * The launcher passes --r_debug=0xXXXXXXXXXXXXXXXX.
+ * nacl_helper_bootstrap replaces the Xs with the address of its _r_debug
  * structure.  The debugger will look for that symbol by name to
  * discover the addresses of key dynamic linker data structures.
  * Since all it knows about is the original main executable, which
@@ -27,7 +27,7 @@
  * the debugger will find all the symbols in the normal way.
  */
 
-void handle_r_debug(const char *switch_value, char *argv0) {
+void NaClHandleRDebug(const char *switch_value, char *argv0) {
   char *endp = NULL;
   uintptr_t r_debug_addr = strtoul(switch_value, &endp, 0);
   if (r_debug_addr != 0 && *endp == '\0') {

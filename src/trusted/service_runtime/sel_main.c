@@ -273,7 +273,7 @@ int main(int  argc,
         break;
 #if NACL_LINUX
       case 'D':
-        handle_r_debug(optarg, argv[0]);
+        NaClHandleRDebug(optarg, argv[0]);
         break;
 #endif
       case 'e':
