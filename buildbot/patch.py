@@ -331,9 +331,24 @@ class GitRepoPatch(object):
     rev = self.Fetch(project_dir)
 
     tracking_branch = self._GetUpstreamBranch(buildroot)
-    return_obj = cros_build_lib.RunCommand(
-        ['git', 'log', '--format=%B%x00', '%s..%s^' % (tracking_branch, rev)],
-        cwd=project_dir, redirect_stdout=True, print_cmd=False)
+    try:
+      return_obj = cros_build_lib.RunGitCommand(
+          project_dir,
+          ['log', '--format=%B%x00', '%s..%s^' % (tracking_branch, rev)])
+    except cros_build_lib.RunCommandError, e:
+      if e.result.returncode != 128:
+        raise
+      # Errorcode 128 means "object not found"; either we've got an
+      # internal bug (tracking_branch was wrong, fetch somehow didn't get
+      # that actual rev, etc), or... this is the first commit in a repository.
+      # The following code checks for that, raising the original
+      # exception if not.
+      result = cros_build_lib.RunGitCommand(project_dir,
+                                            ['rev-list', '-n2', rev])
+      if len(result.output.split()) != 1:
+        raise
+      # First commit of a repository; obviously, it has no dependencies.
+      return []
 
     patches = []
     if return_obj.output:

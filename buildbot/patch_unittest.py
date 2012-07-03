@@ -242,6 +242,10 @@ I am the first commit.
 
   def testGerritDependencies(self):
     git1 = self._MakeRepo('git1', self.source)
+    # Check that we handle the edge case of the first commit in a
+    # repo...
+    patch = self._MkPatch(git1, self._GetSha1(git1, 'HEAD'))
+    self.assertEqual(patch.GerritDependencies(git1), [])
     cid1, cid2, cid3 = self.MakeChangeId(3)
     patch = self.CommitChangeIdFile(git1, cid1)
     # Since it's parent is ToT, there are no deps.
