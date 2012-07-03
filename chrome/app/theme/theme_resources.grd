@@ -328,43 +328,23 @@
         <include name="IDR_PROFILE_PICTURE_LOADING" file="default_100_percent/profile_loading.png" type="BINDATA" />
         <include name="IDR_SHUTDOWN_ICON" file="default_100_percent/shutdown_icon.png" type="BINDATA" />
         <include name="IDR_SPINNER" file="default_100_percent/spinner.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_ACCESSIBILITY" file="default_100_percent/statusbar_accessibility.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_BATTERY_LARGE_ALL" file="default_100_percent/statusbar_battery_large_all.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_BATTERY_SMALL_ALL" file="default_100_percent/statusbar_battery_small_all.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_CAPS_LOCK" file="default_100_percent/statusbar_caps_lock.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_EDIT" file="default_100_percent/statusbar_edit.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_MENU" file="default_100_percent/statusbar_menu.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_3G" file="default_100_percent/statusbar_network_3g.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_3G_WARN" file="default_100_percent/statusbar_network_3g_warn.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_3G_ERROR" file="default_100_percent/statusbar_network_3g_error.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_3G_UNKNOWN" file="default_100_percent/statusbar_network_3g_unknown.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_1X" file="default_100_percent/statusbar_network_1x.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_1X_WARN" file="default_100_percent/statusbar_network_1x_warn.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_1X_ERROR" file="default_100_percent/statusbar_network_1x_error.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_1X_UNKNOWN" file="default_100_percent/statusbar_network_1x_unknown.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_ARCS" file="default_100_percent/statusbar_network_arcs.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_ARCS_LARGE" file="default_100_percent/statusbar_network_arcs_large.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS" file="default_100_percent/statusbar_network_bars.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS_LARGE" file="default_100_percent/statusbar_network_bars_large.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_DISCONNECTED" file="default_100_percent/statusbar_network_disconnected.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_EDGE" file="default_100_percent/statusbar_network_edge.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_GPRS" file="default_100_percent/statusbar_network_gprs.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_HSPA" file="default_100_percent/statusbar_network_hspa.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_HSPA_PLUS" file="default_100_percent/statusbar_network_hspa_plus.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_LTE" file="default_100_percent/statusbar_network_lte.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_LTE_ADVANCED" file="default_100_percent/statusbar_network_lte_advanced.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_GPRS" file="default_100_percent/statusbar_network_gprs.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_ROAMING" file="default_100_percent/statusbar_network_roaming.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_VOLUME_ICON1" file="default_100_percent/statusbar_volume_icon1.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_VOLUME_ICON2" file="default_100_percent/statusbar_volume_icon2.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_VOLUME_ICON3" file="default_100_percent/statusbar_volume_icon3.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_VOLUME_ICON_MUTE" file="default_100_percent/statusbar_volume_icon_mute.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_VOLUME_SLIDER_EMPTY" file="default_100_percent/statusbar_volume_slider_empty.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_VOLUME_SLIDER_FULL" file="default_100_percent/statusbar_volume_slider_full.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_VOLUME_SLIDER_THUMB" file="default_100_percent/statusbar_volume_slider_thumb.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_WINDOW_MAXIMIZE" file="default_100_percent/statusbar_window_maximize.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_WINDOW_RESTORE" file="default_100_percent/statusbar_window_restore.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_WIRED_LARGE" file="default_100_percent/statusbar_wired_large.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_WIRED_BLACK" file="default_100_percent/statusbar_wiredb.png" type="BINDATA" />
         <include name="IDR_USER_IMAGE_NO_VIDEO" file="default_100_percent/no_video.png" type="BINDATA" />
         <include name="IDR_USER_IMAGE_CAPTURE" file="default_100_percent/snapshot_wide.png" type="BINDATA" />
         <include name="IDR_USER_IMAGE_RECYCLE" file="default_100_percent/discard_wide.png" type="BINDATA" />

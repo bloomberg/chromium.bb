@@ -189,7 +189,6 @@
         <include name="IDR_AURA_SHADOW_SMALL_BOTTOM_LEFT" file="default_100_percent/ash/small_shadow_bottom_left.png" type="BINDATA" />
         <include name="IDR_AURA_SHADOW_SMALL_BOTTOM" file="default_100_percent/ash/small_shadow_bottom.png" type="BINDATA" />
         <include name="IDR_AURA_SHADOW_SMALL_BOTTOM_RIGHT" file="default_100_percent/ash/small_shadow_bottom_right.png" type="BINDATA" />
-        <include name="IDR_AURA_STATUS_MOCK" file="default_100_percent/ash/statusbar.png" type="BINDATA" />
       </if>
 
       <!-- Wallpapers used by Ash when building ChromiumOS. -->
