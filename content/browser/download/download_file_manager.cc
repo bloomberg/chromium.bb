@@ -100,8 +100,7 @@ void DownloadFileManager::CreateDownloadFile(
       info.get(), stream.Pass(), download_manager, get_hash, bound_net_log));
 
   content::DownloadInterruptReason interrupt_reason(
-      content::ConvertNetErrorToInterruptReason(
-          download_file->Initialize(), content::DOWNLOAD_INTERRUPT_FROM_DISK));
+      download_file->Initialize());
   if (interrupt_reason == content::DOWNLOAD_INTERRUPT_REASON_NONE) {
     DCHECK(GetDownloadFile(info->download_id) == NULL);
     downloads_[info->download_id] = download_file.release();
@@ -213,8 +212,9 @@ void DownloadFileManager::RenameDownloadFile(
   }
 
   // Do the actual rename
-  net::Error rename_error = download_file->Rename(new_path);
-  if (net::OK != rename_error) {
+  content::DownloadInterruptReason rename_error =
+      download_file->Rename(new_path);
+  if (content::DOWNLOAD_INTERRUPT_REASON_NONE != rename_error) {
     DownloadManager* download_manager = download_file->GetDownloadManager();
     DCHECK(download_manager);
 
@@ -225,9 +225,7 @@ void DownloadFileManager::RenameDownloadFile(
                    global_id.local(),
                    download_file->BytesSoFar(),
                    download_file->GetHashState(),
-                   content::ConvertNetErrorToInterruptReason(
-                       rename_error,
-                       content::DOWNLOAD_INTERRUPT_FROM_DISK)));
+                   rename_error));
 
     new_path.clear();
   }

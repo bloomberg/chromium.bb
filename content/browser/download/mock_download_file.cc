@@ -11,7 +11,7 @@ MockDownloadFile::MockDownloadFile() {
   // This is here because |Initialize()| is normally called right after
   // construction.
   ON_CALL(*this, Initialize())
-      .WillByDefault(Return(net::OK));
+      .WillByDefault(Return(content::DOWNLOAD_INTERRUPT_REASON_NONE));
 }
 
 MockDownloadFile::~MockDownloadFile() {

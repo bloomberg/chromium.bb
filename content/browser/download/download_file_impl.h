@@ -40,8 +40,9 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
   virtual ~DownloadFileImpl();
 
   // DownloadFile functions.
-  virtual net::Error Initialize() OVERRIDE;
-  virtual net::Error Rename(const FilePath& full_path) OVERRIDE;
+  virtual content::DownloadInterruptReason Initialize() OVERRIDE;
+  virtual content::DownloadInterruptReason Rename(
+      const FilePath& full_path) OVERRIDE;
   virtual void Detach() OVERRIDE;
   virtual void Cancel() OVERRIDE;
   virtual void AnnotateWithSourceInformation() OVERRIDE;
@@ -59,8 +60,8 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
 
  protected:
   // For test class overrides.
-  virtual net::Error AppendDataToFile(const char* data,
-                                      size_t data_len);
+  virtual content::DownloadInterruptReason AppendDataToFile(
+      const char* data, size_t data_len);
 
  private:
   // Called when there's some activity on stream_reader_ that needs to be

@@ -12,7 +12,7 @@
 #include "base/file_path.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_id.h"
-#include "net/base/net_errors.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 
 namespace content {
 
@@ -27,12 +27,13 @@ class CONTENT_EXPORT DownloadFile {
   virtual ~DownloadFile() {}
 
   // If calculate_hash is true, sha256 hash will be calculated.
-  // Returns net::OK on success, or a network error code on failure.
-  virtual net::Error Initialize() = 0;
+  // Returns DOWNLOAD_INTERRUPT_REASON_NONE on success, or a network
+  // error code on failure.
+  virtual DownloadInterruptReason Initialize() = 0;
 
   // Rename the download file.
   // Returns net::OK on success, or a network error code on failure.
-  virtual net::Error Rename(const FilePath& full_path) = 0;
+  virtual DownloadInterruptReason Rename(const FilePath& full_path) = 0;
 
   // Detach the file so it is not deleted on destruction.
   virtual void Detach() = 0;

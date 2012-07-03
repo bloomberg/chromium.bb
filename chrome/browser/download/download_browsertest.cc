@@ -776,8 +776,8 @@ class DownloadTest : public InProcessBrowserTest {
           content::TestFileErrorInjector::DebugString(
               info.error_info.code)
       << " instance = " << info.error_info.operation_instance
-      << " error = " << net::ErrorToString(
-         info.error_info.net_error);
+      << " error = " << content::InterruptReasonDebugString(
+         info.error_info.error);
 
     injector->ClearErrors();
     injector->AddError(info.error_info);
@@ -2190,7 +2190,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsFile) {
         "",
         content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
         0,
-        net::ERR_FILE_NO_SPACE
+        content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
       }
     },
     {  // Direct download with injected "Disk full" error in Initialize().
@@ -2203,7 +2203,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsFile) {
         "",
         content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
         0,
-        net::ERR_FILE_NO_SPACE
+        content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
       }
     },
     {  // Navigated download with injected "Disk full" error in Write().
@@ -2216,7 +2216,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsFile) {
         "",
         content::TestFileErrorInjector::FILE_OPERATION_WRITE,
         0,
-        net::ERR_FILE_NO_SPACE
+        content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
       }
     },
     {  // Direct download with injected "Disk full" error in Write().
@@ -2229,7 +2229,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsFile) {
         "",
         content::TestFileErrorInjector::FILE_OPERATION_WRITE,
         0,
-        net::ERR_FILE_NO_SPACE
+        content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
       }
     },
     {  // Navigated download with injected "Failed" error in Initialize().
@@ -2242,7 +2242,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsFile) {
         "",
         content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
         0,
-        net::ERR_FAILED
+        content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
       }
     },
     {  // Direct download with injected "Failed" error in Initialize().
@@ -2255,7 +2255,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsFile) {
         "",
         content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
         0,
-        net::ERR_FAILED
+        content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
       }
     },
     {  // Navigated download with injected "Failed" error in Write().
@@ -2268,7 +2268,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsFile) {
         "",
         content::TestFileErrorInjector::FILE_OPERATION_WRITE,
         0,
-        net::ERR_FAILED
+        content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
       }
     },
     {  // Direct download with injected "Failed" error in Write().
@@ -2281,7 +2281,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsFile) {
         "",
         content::TestFileErrorInjector::FILE_OPERATION_WRITE,
         0,
-        net::ERR_FAILED
+        content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
       }
     },
     {  // Navigated download with injected "Name too long" error in
@@ -2295,7 +2295,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsFile) {
         "",
         content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
         0,
-        net::ERR_FILE_PATH_TOO_LONG
+        content::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG,
       }
     },
     {  // Direct download with injected "Name too long" error in Initialize().
@@ -2308,7 +2308,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsFile) {
         "",
         content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
         0,
-        net::ERR_FILE_PATH_TOO_LONG
+        content::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG,
       }
     },
     {  // Navigated download with injected "Name too long" error in Write().
@@ -2321,7 +2321,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsFile) {
         "",
         content::TestFileErrorInjector::FILE_OPERATION_WRITE,
         0,
-        net::ERR_INVALID_HANDLE
+        content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
       }
     },
     {  // Direct download with injected "Name too long" error in Write().
@@ -2334,7 +2334,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsFile) {
         "",
         content::TestFileErrorInjector::FILE_OPERATION_WRITE,
         0,
-        net::ERR_INVALID_HANDLE
+        content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
       }
     },
     {  // Direct download with injected "Disk full" error in 2nd Write().
@@ -2347,7 +2347,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsFile) {
         "",
         content::TestFileErrorInjector::FILE_OPERATION_WRITE,
         1,
-        net::ERR_FILE_NO_SPACE
+        content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
       }
     }
   };

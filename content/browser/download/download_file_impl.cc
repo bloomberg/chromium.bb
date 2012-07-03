@@ -58,12 +58,13 @@ DownloadFileImpl::DownloadFileImpl(
 DownloadFileImpl::~DownloadFileImpl() {
 }
 
-// BaseFile delegated functions.
-net::Error DownloadFileImpl::Initialize() {
+content::DownloadInterruptReason DownloadFileImpl::Initialize() {
   update_timer_.reset(new base::RepeatingTimer<DownloadFileImpl>());
   net::Error result = file_.Initialize();
-  if (result != net::OK)
-    return result;
+  if (result != net::OK) {
+    return content::ConvertNetErrorToInterruptReason(
+        result, content::DOWNLOAD_INTERRUPT_FROM_DISK);
+  }
 
   stream_reader_->RegisterCallback(
       base::Bind(&DownloadFileImpl::StreamActive, weak_factory_.GetWeakPtr()));
@@ -72,21 +73,26 @@ net::Error DownloadFileImpl::Initialize() {
   // Initial pull from the straw.
   StreamActive();
 
-  return result;
+  return content::DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
-net::Error DownloadFileImpl::AppendDataToFile(const char* data,
-                                              size_t data_len) {
+content::DownloadInterruptReason DownloadFileImpl::AppendDataToFile(
+    const char* data, size_t data_len) {
   if (!update_timer_->IsRunning()) {
     update_timer_->Start(FROM_HERE,
                          base::TimeDelta::FromMilliseconds(kUpdatePeriodMs),
                          this, &DownloadFileImpl::SendUpdate);
   }
-  return file_.AppendDataToFile(data, data_len);
+  return content::ConvertNetErrorToInterruptReason(
+      file_.AppendDataToFile(data, data_len),
+      content::DOWNLOAD_INTERRUPT_FROM_DISK);
 }
 
-net::Error DownloadFileImpl::Rename(const FilePath& full_path) {
-  return file_.Rename(full_path);
+content::DownloadInterruptReason DownloadFileImpl::Rename(
+    const FilePath& full_path) {
+  return content::ConvertNetErrorToInterruptReason(
+      file_.Rename(full_path),
+      content::DOWNLOAD_INTERRUPT_FROM_DISK);
 }
 
 void DownloadFileImpl::Detach() {
@@ -175,7 +181,6 @@ void DownloadFileImpl::StreamActive() {
   do {
     state = stream_reader_->Read(&incoming_data, &incoming_data_size);
 
-    net::Error result = net::OK;
     switch (state) {
       case content::ByteStreamReader::STREAM_EMPTY:
         break;
@@ -183,13 +188,11 @@ void DownloadFileImpl::StreamActive() {
         {
           ++num_buffers;
           base::TimeTicks write_start(base::TimeTicks::Now());
-          result = AppendDataToFile(
+          reason = AppendDataToFile(
               incoming_data.get()->data(), incoming_data_size);
           disk_writes_time_ += (base::TimeTicks::Now() - write_start);
           bytes_seen_ += incoming_data_size;
           total_incoming_data_size += incoming_data_size;
-          reason = content::ConvertNetErrorToInterruptReason(
-              result, content::DOWNLOAD_INTERRUPT_FROM_DISK);
         }
         break;
       case content::ByteStreamReader::STREAM_COMPLETE:

@@ -14,7 +14,6 @@
 #include "content/browser/download/download_file.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_manager.h"
-#include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,9 +25,11 @@ class MockDownloadFile : virtual public content::DownloadFile {
   virtual ~MockDownloadFile();
 
   // DownloadFile functions.
-  MOCK_METHOD0(Initialize, net::Error());
-  MOCK_METHOD2(AppendDataToFile, net::Error(const char* data, size_t data_len));
-  MOCK_METHOD1(Rename, net::Error(const FilePath& full_path));
+  MOCK_METHOD0(Initialize, content::DownloadInterruptReason());
+  MOCK_METHOD2(AppendDataToFile, content::DownloadInterruptReason(
+      const char* data, size_t data_len));
+  MOCK_METHOD1(Rename, content::DownloadInterruptReason(
+      const FilePath& full_path));
   MOCK_METHOD0(Detach, void());
   MOCK_METHOD0(Cancel, void());
   MOCK_METHOD0(Finish, void());
