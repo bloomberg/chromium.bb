@@ -12,6 +12,9 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 
+// Panel tests are flaking on linux CQ. http://crbug.com/135377
+#if !defined(OS_LINUX)
+
 class OldDockedPanelBrowserTest : public OldBasePanelBrowserTest {
  public:
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -279,3 +282,5 @@ IN_PROC_BROWSER_TEST_F(OldDockedPanelBrowserTest, CloseSqueezedPanels) {
 
   panel_manager->CloseAll();
 }
+
+#endif  // !OS_LINUX

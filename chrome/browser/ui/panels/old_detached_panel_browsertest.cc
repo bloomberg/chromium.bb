@@ -9,6 +9,9 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 
+// Panel tests are flaking on linux CQ. http://crbug.com/135377
+#if !defined(OS_LINUX)
+
 class OldDetachedPanelBrowserTest : public OldBasePanelBrowserTest {
 };
 
@@ -166,3 +169,5 @@ IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, MAYBE_ClickTitlebar) {
 
   panel_manager->CloseAll();
 }
+
+#endif  // !OS_LINUX

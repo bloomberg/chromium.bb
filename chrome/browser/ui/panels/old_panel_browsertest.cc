@@ -41,6 +41,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/screen.h"
 
+// Panel tests are flaking on linux CQ. http://crbug.com/135377
+#if !defined(OS_LINUX)
+
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadItem;
@@ -1802,3 +1805,5 @@ IN_PROC_BROWSER_TEST_F(OldPanelDownloadTest, MAYBE_DownloadNoTabbedBrowser) {
 
   chrome::CloseWindow(panel_browser);
 }
+
+#endif  // !OS_LINUX
