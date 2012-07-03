@@ -1134,7 +1134,7 @@ dtls_RecordSetRecvd(DTLSRecvdRecords *records, PRUint64 seq)
 }
 
 SECStatus
-DTLS_GetTimeout(PRFileDesc *socket, PRIntervalTime *timeout)
+DTLS_GetHandshakeTimeout(PRFileDesc *socket, PRIntervalTime *timeout)
 {
     sslSocket * ss = NULL;
     PRIntervalTime elapsed;
