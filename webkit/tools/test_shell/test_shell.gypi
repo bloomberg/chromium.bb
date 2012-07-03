@@ -241,9 +241,6 @@
       },
       'conditions': [
         ['OS=="win"', {
-          'dependencies': [
-            'layout_test_helper',
-          ],
           'resource_include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit',
           ],
@@ -286,7 +283,6 @@
         ['OS=="mac"', {
           'product_name': 'TestShell',
           'dependencies': [
-            'layout_test_helper',
             '<(DEPTH)/third_party/mesa/mesa.gyp:osmesa',
           ],
           'variables': {
@@ -641,43 +637,6 @@
             },
           ],
           'includes': [ '../../../build/grit_target.gypi' ],
-        },
-      ],
-    }],
-   ['OS=="win"', {
-      'targets': [
-        {
-          # Helper application that disables ClearType during the
-          # running of the layout tests
-          'target_name': 'layout_test_helper',
-          'type': 'executable',
-          'variables': {
-            'chromium_code': 1,
-          },
-          'sources': [
-            'win/layout_test_helper.cc',
-          ],
-        },
-      ],
-    }],
-   ['OS=="mac"', {
-      'targets': [
-        {
-          # Helper application that manages the color sync profile on mac
-          # for the test shells run by the layout tests.
-          'target_name': 'layout_test_helper',
-          'type': 'executable',
-          'variables': {
-            'chromium_code': 1,
-          },
-          'sources': [
-            'mac/layout_test_helper.mm',
-          ],
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/AppKit.framework',
-            ],
-          },
         },
       ],
     }],
