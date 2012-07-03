@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/pepper_message_filter.h"
+#include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -18,10 +18,10 @@
 #include "base/threading/worker_pool.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "content/browser/renderer_host/pepper_lookup_request.h"
-#include "content/browser/renderer_host/pepper_tcp_server_socket.h"
-#include "content/browser/renderer_host/pepper_tcp_socket.h"
-#include "content/browser/renderer_host/pepper_udp_socket.h"
+#include "content/browser/renderer_host/pepper/pepper_lookup_request.h"
+#include "content/browser/renderer_host/pepper/pepper_tcp_server_socket.h"
+#include "content/browser/renderer_host/pepper/pepper_tcp_socket.h"
+#include "content/browser/renderer_host/pepper/pepper_udp_socket.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/pepper_messages.h"

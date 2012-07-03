@@ -12,7 +12,7 @@
 #include "base/version.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service_impl.h"
-#include "content/browser/renderer_host/pepper_file_message_filter.h"
+#include "content/browser/renderer_host/pepper/pepper_file_message_filter.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/plugin_messages.h"
 #include "content/public/browser/browser_context.h"

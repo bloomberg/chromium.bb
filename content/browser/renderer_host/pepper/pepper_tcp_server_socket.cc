@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/pepper_tcp_server_socket.h"
+#include "content/browser/renderer_host/pepper/pepper_tcp_server_socket.h"
 
 #include <cstddef>
 
 #include "base/logging.h"
-#include "content/browser/renderer_host/pepper_message_filter.h"
+#include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"

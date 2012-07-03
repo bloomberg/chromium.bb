@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/pepper_udp_socket.h"
+#include "content/browser/renderer_host/pepper/pepper_udp_socket.h"
 
 #include <string.h>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "content/browser/renderer_host/pepper_message_filter.h"
+#include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
