@@ -11,9 +11,11 @@
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/stringprintf.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -104,6 +106,10 @@ static const char* const kDoReportCommand = "doReport";
 static const char* const kDontReportCommand = "dontReport";
 static const char* const kDisplayCheckBox = "displaycheckbox";
 static const char* const kBoxChecked = "boxchecked";
+// Special command that we use when the user navigated away from the
+// page.  E.g., closed the tab or the window.  This is only used by
+// RecordUserReactionTime.
+static const char* const kNavigatedAwayMetaCommand = "closed";
 
 // static
 SafeBrowsingBlockingPageFactory* SafeBrowsingBlockingPage::factory_ = NULL;
@@ -198,6 +204,7 @@ std::string SafeBrowsingBlockingPage::GetHTMLContents() {
     html = rb.GetRawDataResource(
         IDR_SAFE_BROWSING_MULTIPLE_THREAT_BLOCK,
         ui::SCALE_FACTOR_NONE).as_string();
+    is_malware_interstitial_ = true;
   } else {
     SafeBrowsingService::UrlCheckResult threat_type =
         unsafe_resources_[0].threat_type;
@@ -206,6 +213,7 @@ std::string SafeBrowsingBlockingPage::GetHTMLContents() {
       html = rb.GetRawDataResource(
           IDR_SAFE_BROWSING_MALWARE_BLOCK,
           ui::SCALE_FACTOR_NONE).as_string();
+      is_malware_interstitial_ = true;
     } else {  // Phishing.
       DCHECK(threat_type == SafeBrowsingService::URL_PHISHING ||
              threat_type == SafeBrowsingService::CLIENT_SIDE_PHISHING_URL);
@@ -213,9 +221,10 @@ std::string SafeBrowsingBlockingPage::GetHTMLContents() {
       html = rb.GetRawDataResource(
           IDR_SAFE_BROWSING_PHISHING_BLOCK,
           ui::SCALE_FACTOR_NONE).as_string();
+      is_malware_interstitial_ = false;
     }
   }
-
+  interstitial_show_time_ = base::TimeTicks::Now();
   return jstemplate_builder::GetTemplatesHtml(html, &strings, "template_root");
 }
 
@@ -428,7 +437,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
   if (command.length() > 1 && command[0] == '"') {
     command = command.substr(1, command.length() - 2);
   }
-
+  RecordUserReactionTime(cmd);
   if (command == kDoReportCommand) {
     SetReportingPreference(true);
     return;
@@ -598,6 +607,8 @@ void SafeBrowsingBlockingPage::OnProceed() {
 }
 
 void SafeBrowsingBlockingPage::OnDontProceed() {
+  // Calling this method twice will not double-count.
+  RecordUserReactionTime(kNavigatedAwayMetaCommand);
   // We could have already called Proceed(), in which case we must not notify
   // the SafeBrowsingService again, as the client has been deleted.
   if (proceeded_)
@@ -674,6 +685,54 @@ void SafeBrowsingBlockingPage::RecordUserAction(BlockingPageEvent event) {
   }
 
   content::RecordComputedAction(action);
+}
+
+void SafeBrowsingBlockingPage::RecordUserReactionTime(
+    const std::string& command) {
+  if (interstitial_show_time_.is_null())
+    return;  // We already reported the user reaction time.
+  base::TimeDelta dt = base::TimeTicks::Now() - interstitial_show_time_;
+  DVLOG(1) << "User reaction time for command:" << command
+           << " on is_malware:" << is_malware_interstitial_
+           << " warning took " << dt.InMilliseconds() << "ms";
+  bool recorded = true;
+  if (is_malware_interstitial_) {
+    // There are six ways in which the malware interstitial can go
+    // away.  We handle all of them here but we group two together: closing the
+    // tag / browser window and clicking on the back button in the browser (not
+    // the big green button) are considered the same action.
+    if (command == kProceedCommand) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.MalwareInterstitialTimeProceed", dt);
+    } else if (command == kTakeMeBackCommand) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.MalwareInterstitialTimeTakeMeBack", dt);
+    } else if (command == kShowDiagnosticCommand) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.MalwareInterstitialTimeDiagnostic", dt);
+    } else if (command == kShowPrivacyCommand) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.MalwareInterstitialTimePrivacyPolicy",
+                                 dt);
+    } else if (command == kNavigatedAwayMetaCommand) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.MalwareInterstitialTimeClosed", dt);
+    } else {
+      recorded = false;
+    }
+  } else {
+    // Same as above but for phishing warnings.
+    if (command == kProceedCommand) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.PhishingInterstitialTimeProceed", dt);
+    } else if (command == kTakeMeBackCommand) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.PhishingInterstitialTimeTakeMeBack", dt);
+    } else if (command == kShowDiagnosticCommand) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.PhishingInterstitialTimeReportError", dt);
+    } else if (command == kShowPrivacyCommand) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.PhishingInterstitialTimeLearnMore", dt);
+    } else if (command == kNavigatedAwayMetaCommand) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("SB2.PhishingInterstitialTimeClosed", dt);
+    } else {
+      recorded = false;
+    }
+  }
+  if (recorded)  // Making sure we don't double-count reaction times.
+    interstitial_show_time_ = base::TimeTicks();  //  Resets the show time.
 }
 
 void SafeBrowsingBlockingPage::FinishMalwareDetails(int64 delay_ms) {
