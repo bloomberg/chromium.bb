@@ -39,7 +39,7 @@ void PerformanceMonitor::Start() {
 }
 
 void PerformanceMonitor::InitOnBackgroundThread() {
-  CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   database_ = Database::Create(database_path_);
 }
 
@@ -54,7 +54,7 @@ bool PerformanceMonitor::SetDatabasePath(const FilePath& path) {
 }
 
 void PerformanceMonitor::FinishInit() {
-  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   RegisterForNotifications();
   CheckForVersionUpdate();
 }
@@ -90,15 +90,16 @@ void PerformanceMonitor::AddEventOnBackgroundThread(scoped_ptr<Event> event) {
 }
 
 void PerformanceMonitor::GetStateValueOnBackgroundThread(
-    std::string key, base::Callback<void(std::string)> callback) {
-  CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    const std::string& key,
+    const StateValueCallback& callback) {
+  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   std::string state_value = database_->GetStateValue(key);
 
   callback.Run(state_value);
 }
 
 void PerformanceMonitor::CheckForVersionUpdate() {
-  base::Callback<void(std::string)> callback =
+  StateValueCallback callback =
       base::Bind(&PerformanceMonitor::CheckForVersionUpdateHelper,
                  base::Unretained(this));
 
@@ -112,7 +113,7 @@ void PerformanceMonitor::CheckForVersionUpdate() {
 }
 
 void PerformanceMonitor::CheckForVersionUpdateHelper(
-    std::string previous_version) {
+    const std::string& previous_version) {
   chrome::VersionInfo version;
   DCHECK(version.is_valid());
 

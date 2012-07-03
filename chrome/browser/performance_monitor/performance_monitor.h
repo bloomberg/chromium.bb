@@ -22,6 +22,7 @@ class Database;
 
 class PerformanceMonitor : public content::NotificationObserver {
  public:
+  typedef base::Callback<void(const std::string&)> StateValueCallback;
 
   // Set the path which the PerformanceMonitor should use for the database files
   // constructed. This must be done prior to the initialization of the
@@ -64,15 +65,16 @@ class PerformanceMonitor : public content::NotificationObserver {
 
   void FinishInit();
 
-  // Register for the apprioriate notifications as a NotificationObserver.
+  // Register for the appropriate notifications as a NotificationObserver.
   void RegisterForNotifications();
 
   // Gets the corresponding value of |key| from the database, and then runs
   // |callback| with that value as a parameter.
   void GetStateValueOnBackgroundThread(
-      std::string key, base::Callback<void(std::string)> callback);
+      const std::string& key,
+      const StateValueCallback& callback);
 
-  void CheckForVersionUpdateHelper(std::string previous_version);
+  void CheckForVersionUpdateHelper(const std::string& previous_version);
 
   // Wrapper function for inserting events into the database.
   void AddEvent(scoped_ptr<Event> event);
