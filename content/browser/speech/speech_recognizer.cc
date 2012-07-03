@@ -92,11 +92,22 @@ SpeechRecognizer::SpeechRecognizer(
       state_(STATE_IDLE) {
   DCHECK(listener_ != NULL);
   DCHECK(recognition_engine_ != NULL);
-  endpointer_.set_speech_input_complete_silence_length(
-      base::Time::kMicrosecondsPerSecond / 2);
-  endpointer_.set_long_speech_input_complete_silence_length(
-      base::Time::kMicrosecondsPerSecond);
-  endpointer_.set_long_speech_length(3 * base::Time::kMicrosecondsPerSecond);
+  if (is_single_shot) {
+    // In single shot recognition, the session is automatically ended after:
+    //  - 0.5 seconds of silence if time <  3 seconds
+    //  - 1   seconds of silence if time >= 3 seconds
+    endpointer_.set_speech_input_complete_silence_length(
+        base::Time::kMicrosecondsPerSecond / 2);
+    endpointer_.set_long_speech_input_complete_silence_length(
+        base::Time::kMicrosecondsPerSecond);
+    endpointer_.set_long_speech_length(3 * base::Time::kMicrosecondsPerSecond);
+  } else {
+    // In continuous recognition, the session is automatically ended after 15
+    // seconds of silence.
+    const int64 cont_timeout_us = base::Time::kMicrosecondsPerSecond * 15;
+    endpointer_.set_speech_input_complete_silence_length(cont_timeout_us);
+    endpointer_.set_long_speech_length(0);  // Use only a single timeout.
+  }
   endpointer_.StartSession();
   recognition_engine_->set_delegate(this);
 }
@@ -466,9 +477,7 @@ SpeechRecognizer::DetectUserSpeechOrTimeout(const FSMEventArgs&) {
 
 SpeechRecognizer::FSMState
 SpeechRecognizer::DetectEndOfSpeech(const FSMEventArgs& event_args) {
-  // End-of-speech detection is performed only in one-shot mode.
-  // TODO(primiano): What about introducing a longer timeout for continuous rec?
-  if (is_single_shot_ && endpointer_.speech_input_complete())
+  if (endpointer_.speech_input_complete())
     return StopCaptureAndWaitForResult(event_args);
   return STATE_RECOGNIZING;
 }
