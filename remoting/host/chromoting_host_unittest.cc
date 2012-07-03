@@ -56,7 +56,7 @@ ACTION(RunDoneTask) {
   arg1.Run();
 }
 
-void NullTask() {
+void DoNothing() {
 }
 
 }  // namespace
@@ -106,78 +106,78 @@ class ChromotingHostTest : public testing::Test {
         scoped_ptr<ContinueWindow>(continue_window_),
         scoped_ptr<LocalInputMonitor>(local_input_monitor_));
 
-    session_ = new MockSession();
+    session1_ = new MockSession();
     session2_ = new MockSession();
-    session_unowned_.reset(new MockSession());
-    session2_unowned_.reset(new MockSession());
-    session_config_ = SessionConfig::GetDefault();
-    session_jid_ = "user@domain/rest-of-jid";
+    session_unowned1_.reset(new MockSession());
+    session_unowned2_.reset(new MockSession());
+    session_config1_ = SessionConfig::GetDefault();
+    session_jid1_ = "user@domain/rest-of-jid";
     session_config2_ = SessionConfig::GetDefault();
-    session2_jid_ = "user2@domain/rest-of-jid";
-    session_unowned_config_ = SessionConfig::GetDefault();
-    session_unowned_jid_ = "user3@doman/rest-of-jid";
-    session2_unowned_config_ = SessionConfig::GetDefault();
-    session2_unowned_jid_ = "user4@doman/rest-of-jid";
+    session_jid2_ = "user2@domain/rest-of-jid";
+    session_unowned_config1_ = SessionConfig::GetDefault();
+    session_unowned_jid1_ = "user3@doman/rest-of-jid";
+    session_unowned_config2_ = SessionConfig::GetDefault();
+    session_unowned_jid2_ = "user4@doman/rest-of-jid";
 
-    EXPECT_CALL(*session_, jid())
-        .WillRepeatedly(ReturnRef(session_jid_));
+    EXPECT_CALL(*session1_, jid())
+        .WillRepeatedly(ReturnRef(session_jid1_));
     EXPECT_CALL(*session2_, jid())
-        .WillRepeatedly(ReturnRef(session2_jid_));
-    EXPECT_CALL(*session_unowned_, jid())
-        .WillRepeatedly(ReturnRef(session_unowned_jid_));
-    EXPECT_CALL(*session2_unowned_, jid())
-        .WillRepeatedly(ReturnRef(session2_unowned_jid_));
-    EXPECT_CALL(*session_, SetStateChangeCallback(_))
+        .WillRepeatedly(ReturnRef(session_jid2_));
+    EXPECT_CALL(*session_unowned1_, jid())
+        .WillRepeatedly(ReturnRef(session_unowned_jid1_));
+    EXPECT_CALL(*session_unowned2_, jid())
+        .WillRepeatedly(ReturnRef(session_unowned_jid2_));
+    EXPECT_CALL(*session1_, SetStateChangeCallback(_))
         .Times(AnyNumber());
     EXPECT_CALL(*session2_, SetStateChangeCallback(_))
         .Times(AnyNumber());
-    EXPECT_CALL(*session_unowned_, SetStateChangeCallback(_))
+    EXPECT_CALL(*session_unowned1_, SetStateChangeCallback(_))
         .Times(AnyNumber())
         .WillRepeatedly(Invoke(
             this, &ChromotingHostTest::SetSessionStateChangeCallback));
-    EXPECT_CALL(*session2_unowned_, SetStateChangeCallback(_))
+    EXPECT_CALL(*session_unowned2_, SetStateChangeCallback(_))
         .Times(AnyNumber());
-    EXPECT_CALL(*session_, SetRouteChangeCallback(_))
+    EXPECT_CALL(*session1_, SetRouteChangeCallback(_))
         .Times(AnyNumber());
     EXPECT_CALL(*session2_, SetRouteChangeCallback(_))
         .Times(AnyNumber());
-    EXPECT_CALL(*session_unowned_, SetRouteChangeCallback(_))
+    EXPECT_CALL(*session_unowned1_, SetRouteChangeCallback(_))
         .Times(AnyNumber());
-    EXPECT_CALL(*session2_unowned_, SetRouteChangeCallback(_))
+    EXPECT_CALL(*session_unowned2_, SetRouteChangeCallback(_))
         .Times(AnyNumber());
-    EXPECT_CALL(*session_, config())
-        .WillRepeatedly(ReturnRef(session_config_));
+    EXPECT_CALL(*session1_, config())
+        .WillRepeatedly(ReturnRef(session_config1_));
     EXPECT_CALL(*session2_, config())
         .WillRepeatedly(ReturnRef(session_config2_));
 
-    owned_connection_.reset(new MockConnectionToClient(
-        session_, &host_stub_, desktop_environment_->event_executor()));
-    connection_ = owned_connection_.get();
+    owned_connection1_.reset(new MockConnectionToClient(
+        session1_, &host_stub1_, desktop_environment_->event_executor()));
+    connection1_ = owned_connection1_.get();
     owned_connection2_.reset(new MockConnectionToClient(
         session2_, &host_stub2_, desktop_environment_->event_executor()));
     connection2_ = owned_connection2_.get();
 
-    ON_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
+    ON_CALL(video_stub1_, ProcessVideoPacketPtr(_, _))
         .WillByDefault(DeleteArg<0>());
     ON_CALL(video_stub2_, ProcessVideoPacketPtr(_, _))
         .WillByDefault(DeleteArg<0>());
-    ON_CALL(*connection_, video_stub())
-        .WillByDefault(Return(&video_stub_));
-    ON_CALL(*connection_, client_stub())
-        .WillByDefault(Return(&client_stub_));
-    ON_CALL(*connection_, session())
-        .WillByDefault(Return(session_));
+    ON_CALL(*connection1_, video_stub())
+        .WillByDefault(Return(&video_stub1_));
+    ON_CALL(*connection1_, client_stub())
+        .WillByDefault(Return(&client_stub1_));
+    ON_CALL(*connection1_, session())
+        .WillByDefault(Return(session1_));
     ON_CALL(*connection2_, video_stub())
         .WillByDefault(Return(&video_stub2_));
     ON_CALL(*connection2_, client_stub())
         .WillByDefault(Return(&client_stub2_));
     ON_CALL(*connection2_, session())
         .WillByDefault(Return(session2_));
-    EXPECT_CALL(*connection_, video_stub())
+    EXPECT_CALL(*connection1_, video_stub())
         .Times(AnyNumber());
-    EXPECT_CALL(*connection_, client_stub())
+    EXPECT_CALL(*connection1_, client_stub())
         .Times(AnyNumber());
-    EXPECT_CALL(*connection_, session())
+    EXPECT_CALL(*connection1_, session())
         .Times(AnyNumber());
     EXPECT_CALL(*connection2_, video_stub())
         .Times(AnyNumber());
@@ -196,7 +196,7 @@ class ChromotingHostTest : public testing::Test {
   void SimulateClientConnection(int connection_index, bool authenticate,
                                 bool reject) {
     scoped_ptr<protocol::ConnectionToClient> connection =
-        ((connection_index == 0) ? owned_connection_ : owned_connection2_).
+        ((connection_index == 0) ? owned_connection1_ : owned_connection2_).
         PassAs<protocol::ConnectionToClient>();
     protocol::ConnectionToClient* connection_ptr = connection.get();
     ClientSession* client = new ClientSession(
@@ -225,16 +225,12 @@ class ChromotingHostTest : public testing::Test {
                                 protocol::AUTHENTICATION_FAILED));
     }
 
-    if (connection_index == 0) {
-      client_ = client;
-    } else {
-      client2_ = client;
-    }
+    get_client(connection_index) = client;
   }
 
-  // Helper method to remove a client connection from ChromotingHost.
-  void RemoveClientSession() {
-    client_->OnConnectionClosed(connection_, protocol::OK);
+  // Helper method to disconnect client 1 from the host.
+  void DisconnectClient1() {
+    client1_->OnConnectionClosed(connection1_, protocol::OK);
   }
 
   // Notify |host_| that the authenticating client has been rejected.
@@ -242,14 +238,9 @@ class ChromotingHostTest : public testing::Test {
     host_->RejectAuthenticatingClient();
   }
 
-  // Notify |host_| that |client_| has closed.
-  void ClientSessionClosed() {
-    host_->OnSessionClosed(client_);
-  }
-
-  // Notify |host_| that |client2_| has closed.
-  void ClientSession2Closed() {
-    host_->OnSessionClosed(client2_);
+  // Notify |host_| that a client session has closed.
+  void NotifyClientSessionClosed(int connection_index) {
+    host_->OnSessionClosed(get_client(connection_index));
   }
 
   void SetSessionStateChangeCallback(
@@ -278,6 +269,93 @@ class ChromotingHostTest : public testing::Test {
     PostQuitTask(&message_loop_);
   }
 
+  // Expect the host to start.
+  void ExpectHostStart() {
+    EXPECT_CALL(*disconnect_window_, Hide());
+    EXPECT_CALL(*continue_window_, Hide());
+  }
+
+  // Expect the host and session manager to start, and return the expectation
+  // that the session manager has started.
+  Expectation ExpectHostAndSessionManagerStart() {
+    ExpectHostStart();
+    return EXPECT_CALL(*session_manager_, Init(_, host_.get()));
+  }
+
+  // Expect a client to connect.
+  // Return an expectation that a session has started, and that the first
+  // video packet has been sent to the client.
+  // Do |action| when that happens.
+  template <class A>
+  Expectation ExpectClientConnected(int connection_index, A action) {
+    const std::string& session_jid = get_session_jid(connection_index);
+    MockVideoStub& video_stub = get_video_stub(connection_index);
+
+    Expectation client_authenticated =
+        EXPECT_CALL(host_status_observer_, OnClientAuthenticated(session_jid));
+    EXPECT_CALL(host_status_observer_, OnClientConnected(session_jid))
+        .After(client_authenticated);
+    Expectation session_started =
+        EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_))
+        .After(client_authenticated);
+    Expectation video_packet_sent =
+        EXPECT_CALL(video_stub, ProcessVideoPacketPtr(_, _))
+        .After(session_started)
+        .WillOnce(DoAll(
+            action,
+            RunDoneTask()))
+        .RetiresOnSaturation();
+    EXPECT_CALL(video_stub, ProcessVideoPacketPtr(_, _))
+        .Times(AnyNumber())
+        .After(video_packet_sent)
+        .WillRepeatedly(RunDoneTask());
+    return video_packet_sent;
+  }
+
+  // Return an expectation that a client will disconnect after a given
+  // expectation. The given action will be done after the event executor is
+  // notified that the session has finished.
+  template <class A>
+  Expectation ExpectClientDisconnected(int connection_index,
+                                       bool expect_host_status_change,
+                                       Expectation after,
+                                       A action) {
+    MockConnectionToClient* connection = get_connection(connection_index);
+
+    Expectation client_disconnected =
+        EXPECT_CALL(*connection, Disconnect())
+            .After(after)
+            .WillOnce(InvokeWithoutArgs(CreateFunctor(
+                this, &ChromotingHostTest::NotifyClientSessionClosed,
+                connection_index)))
+            .RetiresOnSaturation();
+    ExpectClientDisconnectEffects(connection_index,
+                                  expect_host_status_change,
+                                  after,
+                                  action);
+    return client_disconnected;
+  }
+
+  // Expect the side-effects of a client disconnection, after a given
+  // expectation. The given action will be done after the event executor is
+  // notifed that the session has finished.
+  template <class A>
+  void ExpectClientDisconnectEffects(int connection_index,
+                                     bool expect_host_status_change,
+                                     Expectation after,
+                                     A action) {
+    const std::string& session_jid = get_session_jid(connection_index);
+
+    EXPECT_CALL(*event_executor_, OnSessionFinished())
+        .After(after)
+        .WillOnce(action);
+    if (expect_host_status_change) {
+      EXPECT_CALL(host_status_observer_, OnClientDisconnected(session_jid))
+          .After(after)
+          .RetiresOnSaturation();
+    }
+  }
+
  protected:
   MessageLoop message_loop_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
@@ -290,30 +368,30 @@ class ChromotingHostTest : public testing::Test {
   MockHostStatusObserver host_status_observer_;
   MockChromotingHostContext context_;
   protocol::MockSessionManager* session_manager_;
-  MockConnectionToClient* connection_;
-  scoped_ptr<MockConnectionToClient> owned_connection_;
-  ClientSession* client_;
-  std::string session_jid_;
-  MockSession* session_;  // Owned by |connection_|.
-  SessionConfig session_config_;
-  MockVideoStub video_stub_;
-  MockClientStub client_stub_;
-  MockHostStub host_stub_;
+  MockConnectionToClient* connection1_;
+  scoped_ptr<MockConnectionToClient> owned_connection1_;
+  ClientSession* client1_;
+  std::string session_jid1_;
+  MockSession* session1_;  // Owned by |connection_|.
+  SessionConfig session_config1_;
+  MockVideoStub video_stub1_;
+  MockClientStub client_stub1_;
+  MockHostStub host_stub1_;
   MockConnectionToClient* connection2_;
   scoped_ptr<MockConnectionToClient> owned_connection2_;
   ClientSession* client2_;
-  std::string session2_jid_;
+  std::string session_jid2_;
   MockSession* session2_;  // Owned by |connection2_|.
   SessionConfig session_config2_;
   MockVideoStub video_stub2_;
   MockClientStub client_stub2_;
   MockHostStub host_stub2_;
-  scoped_ptr<MockSession> session_unowned_;  // Not owned by a connection.
-  SessionConfig session_unowned_config_;
-  std::string session_unowned_jid_;
-  scoped_ptr<MockSession> session2_unowned_;  // Not owned by a connection.
-  SessionConfig session2_unowned_config_;
-  std::string session2_unowned_jid_;
+  scoped_ptr<MockSession> session_unowned1_;  // Not owned by a connection.
+  SessionConfig session_unowned_config1_;
+  std::string session_unowned_jid1_;
+  scoped_ptr<MockSession> session_unowned2_;  // Not owned by a connection.
+  SessionConfig session_unowned_config2_;
+  std::string session_unowned_jid2_;
   protocol::Session::StateChangeCallback session_state_change_callback_;
   scoped_ptr<protocol::CandidateSessionConfig> empty_candidate_config_;
   scoped_ptr<protocol::CandidateSessionConfig> default_candidate_config_;
@@ -322,16 +400,29 @@ class ChromotingHostTest : public testing::Test {
   MockDisconnectWindow* disconnect_window_;
   MockContinueWindow* continue_window_;
   MockLocalInputMonitor* local_input_monitor_;
+
+  MockConnectionToClient*& get_connection(int connection_index) {
+    return (connection_index == 0) ? connection1_ : connection2_;
+  }
+
+  ClientSession*& get_client(int connection_index) {
+    return (connection_index == 0) ? client1_ : client2_;
+  }
+
+  const std::string& get_session_jid(int connection_index) {
+    return (connection_index == 0) ? session_jid1_ : session_jid2_;
+  }
+
+  MockVideoStub& get_video_stub(int connection_index) {
+    return (connection_index == 0) ? video_stub1_ : video_stub2_;
+  }
 };
 
 TEST_F(ChromotingHostTest, StartAndShutdown) {
-  Expectation start = EXPECT_CALL(*session_manager_, Init(_, host_.get()));
-  EXPECT_CALL(*disconnect_window_, Hide()).After(start);
-  EXPECT_CALL(*continue_window_, Hide()).After(start);
+  Expectation start = ExpectHostAndSessionManagerStart();
   EXPECT_CALL(host_status_observer_, OnShutdown()).After(start);
 
   host_->Start();
-
   message_loop_.PostTask(
       FROM_HERE, base::Bind(
           &ChromotingHost::Shutdown, host_.get(),
@@ -340,244 +431,107 @@ TEST_F(ChromotingHostTest, StartAndShutdown) {
 }
 
 TEST_F(ChromotingHostTest, Connect) {
-  EXPECT_CALL(*session_manager_, Init(_, host_.get()));
-  EXPECT_CALL(*disconnect_window_, Hide());
-  EXPECT_CALL(*continue_window_, Hide());
+  ExpectHostAndSessionManagerStart();
+
+  // Shut down the host when the first video packet is received.
+  Expectation video_packet_sent = ExpectClientConnected(
+      0, InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost));
+  Expectation client_disconnected = ExpectClientDisconnected(
+      0, true, video_packet_sent, InvokeWithoutArgs(DoNothing));
+  EXPECT_CALL(host_status_observer_, OnShutdown()).After(client_disconnected);
 
   host_->Start();
-
-  // When the video packet is received we first shut down ChromotingHost,
-  // then execute the done task.
-  Expectation status_authenticated =
-      EXPECT_CALL(host_status_observer_, OnClientAuthenticated(session_jid_));
-  EXPECT_CALL(host_status_observer_, OnClientConnected(session_jid_))
-      .After(status_authenticated);
-  Expectation start =
-      EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_))
-      .After(status_authenticated);
-  Expectation stop =
-      EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
-      .After(start)
-      .WillOnce(DoAll(
-          InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost),
-          RunDoneTask()))
-      .RetiresOnSaturation();
-  EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
-      .Times(AnyNumber())
-      .After(stop)
-      .WillRepeatedly(RunDoneTask());
-  EXPECT_CALL(*connection_, Disconnect())
-      .After(stop)
-      .WillOnce(
-          InvokeWithoutArgs(this, &ChromotingHostTest::ClientSessionClosed))
-      .RetiresOnSaturation();
-  Expectation status_disconnected =
-      EXPECT_CALL(host_status_observer_, OnClientDisconnected(session_jid_))
-      .After(stop);
-  EXPECT_CALL(*event_executor_, OnSessionFinished())
-      .After(stop);
-  EXPECT_CALL(host_status_observer_, OnShutdown()).After(status_disconnected);
-
   SimulateClientConnection(0, true, false);
   message_loop_.Run();
 }
 
 TEST_F(ChromotingHostTest, RejectAuthenticatingClient) {
-  EXPECT_CALL(*session_manager_, Init(_, host_.get()));
-  EXPECT_CALL(*disconnect_window_, Hide());
-  EXPECT_CALL(*continue_window_, Hide());
+  Expectation start = ExpectHostAndSessionManagerStart();
+  EXPECT_CALL(host_status_observer_, OnClientAuthenticated(session_jid1_))
+      .WillOnce(InvokeWithoutArgs(
+      this, &ChromotingHostTest::RejectAuthenticatingClient));
+  ExpectClientDisconnected(
+      0, true, start,
+      InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost));
+  EXPECT_CALL(host_status_observer_, OnShutdown());
 
   host_->Start();
-
-  {
-    InSequence s;
-    EXPECT_CALL(host_status_observer_, OnClientAuthenticated(session_jid_))
-        .WillOnce(InvokeWithoutArgs(
-        this, &ChromotingHostTest::RejectAuthenticatingClient));
-    EXPECT_CALL(*connection_, Disconnect())
-        .WillOnce(
-            InvokeWithoutArgs(this, &ChromotingHostTest::ClientSessionClosed))
-        .RetiresOnSaturation();
-    EXPECT_CALL(host_status_observer_, OnClientDisconnected(session_jid_));
-    EXPECT_CALL(*event_executor_, OnSessionFinished())
-        .WillOnce(InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost));
-    EXPECT_CALL(host_status_observer_, OnShutdown());
-  }
-
   SimulateClientConnection(0, true, true);
   message_loop_.Run();
 }
 
 TEST_F(ChromotingHostTest, AuthenticationFailed) {
-  EXPECT_CALL(*session_manager_, Init(_, host_.get()));
-  EXPECT_CALL(*disconnect_window_, Hide());
-  EXPECT_CALL(*continue_window_, Hide());
+  ExpectHostAndSessionManagerStart();
+  EXPECT_CALL(host_status_observer_, OnAccessDenied(session_jid1_))
+      .WillOnce(InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost));
+  EXPECT_CALL(host_status_observer_, OnShutdown());
 
   host_->Start();
-
-  {
-    InSequence s;
-    EXPECT_CALL(host_status_observer_, OnAccessDenied(session_jid_))
-        .WillOnce(InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost));
-    EXPECT_CALL(host_status_observer_, OnShutdown());
-  }
-
   SimulateClientConnection(0, false, false);
   message_loop_.Run();
 }
 
 TEST_F(ChromotingHostTest, Reconnect) {
-  EXPECT_CALL(*session_manager_, Init(_, host_.get()));
-  EXPECT_CALL(*disconnect_window_, Hide());
-  EXPECT_CALL(*continue_window_, Hide());
+  ExpectHostAndSessionManagerStart();
+
+  // When a video packet is received on the first connection, disconnect it,
+  // then quit the message loop.
+  Expectation video_packet_sent1 = ExpectClientConnected(0, DoAll(
+      InvokeWithoutArgs(this, &ChromotingHostTest::DisconnectClient1),
+      InvokeWithoutArgs(this, &ChromotingHostTest::QuitMainMessageLoop)));
+  ExpectClientDisconnectEffects(
+      0, true, video_packet_sent1, InvokeWithoutArgs(DoNothing));
+
+  // When a video packet is received on the second connection, shut down the
+  // host.
+  Expectation video_packet_sent2 = ExpectClientConnected(
+      1, InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost));
+  Expectation client_disconnected2 = ExpectClientDisconnected(
+      1, true, video_packet_sent2, InvokeWithoutArgs(DoNothing));
+  EXPECT_CALL(host_status_observer_, OnShutdown()).After(client_disconnected2);
 
   host_->Start();
-
-  // When the video packet is received we first disconnect the mock
-  // connection, then run the done task, then quit the message loop.
-  Expectation status_authenticated1 =
-      EXPECT_CALL(host_status_observer_, OnClientAuthenticated(session_jid_));
-  EXPECT_CALL(host_status_observer_, OnClientConnected(session_jid_))
-      .After(status_authenticated1);
-  Expectation start1 =
-      EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_))
-      .After(status_authenticated1);
-  Expectation stop1 = EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
-      .After(start1)
-      .WillOnce(DoAll(
-          InvokeWithoutArgs(this, &ChromotingHostTest::RemoveClientSession),
-          RunDoneTask(),
-          InvokeWithoutArgs(this, &ChromotingHostTest::QuitMainMessageLoop)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
-      .Times(AnyNumber())
-      .After(stop1)
-      .WillRepeatedly(RunDoneTask());
-  EXPECT_CALL(*event_executor_, OnSessionFinished())
-      .After(stop1);
-  EXPECT_CALL(host_status_observer_, OnClientDisconnected(session_jid_))
-      .After(stop1);
-
   SimulateClientConnection(0, true, false);
   message_loop_.Run();
-
-  Expectation status_authenticated2 =
-      EXPECT_CALL(host_status_observer_, OnClientAuthenticated(session2_jid_));
-  EXPECT_CALL(host_status_observer_, OnClientConnected(session2_jid_))
-      .After(status_authenticated2);
-  Expectation start2 =
-      EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_))
-      .After(status_authenticated2);
-  Expectation stop2 = EXPECT_CALL(video_stub2_, ProcessVideoPacketPtr(_, _))
-      .After(start2)
-      .WillOnce(DoAll(
-          InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost),
-          RunDoneTask()))
-      .RetiresOnSaturation();
-  EXPECT_CALL(video_stub2_, ProcessVideoPacketPtr(_, _))
-      .Times(AnyNumber())
-      .After(stop2)
-      .WillRepeatedly(RunDoneTask());
-  EXPECT_CALL(*connection2_, Disconnect())
-      .After(stop2)
-      .WillOnce(
-          InvokeWithoutArgs(this, &ChromotingHostTest::ClientSession2Closed))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*event_executor_, OnSessionFinished())
-      .After(stop2);
-  Expectation status_disconnected2 =
-      EXPECT_CALL(host_status_observer_, OnClientDisconnected(session2_jid_))
-      .After(stop2);
-  EXPECT_CALL(host_status_observer_, OnShutdown()).After(status_disconnected2);
-
   SimulateClientConnection(1, true, false);
   message_loop_.Run();
 }
 
 TEST_F(ChromotingHostTest, ConnectWhenAnotherClientIsConnected) {
-  EXPECT_CALL(*session_manager_, Init(_, host_.get()));
-  EXPECT_CALL(*disconnect_window_, Hide());
-  EXPECT_CALL(*continue_window_, Hide());
+  ExpectHostAndSessionManagerStart();
+
+  // When a video packet is received, connect the second connection.
+  // This should disconnect the first connection.
+  Expectation video_packet_sent1 = ExpectClientConnected(
+      0,
+      InvokeWithoutArgs(
+          CreateFunctor(
+              this,
+              &ChromotingHostTest::SimulateClientConnection, 1, true, false)));
+  ExpectClientDisconnected(
+      0, true, video_packet_sent1, InvokeWithoutArgs(DoNothing));
+  Expectation video_packet_sent2 = ExpectClientConnected(
+      1, InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost));
+  Expectation client_disconnected2 = ExpectClientDisconnected(
+      1, true, video_packet_sent2, InvokeWithoutArgs(DoNothing));
+  EXPECT_CALL(host_status_observer_, OnShutdown()).After(client_disconnected2);
 
   host_->Start();
-
-  // When a video packet is received we connect the second mock
-  // connection.
-  Expectation status_authenticated1 =
-      EXPECT_CALL(host_status_observer_, OnClientAuthenticated(session_jid_));
-  EXPECT_CALL(host_status_observer_, OnClientConnected(session_jid_))
-      .After(status_authenticated1);
-  Expectation start1 =
-      EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_))
-      .After(status_authenticated1);
-  Expectation start2 = EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
-      .After(start1)
-      .WillOnce(DoAll(
-          InvokeWithoutArgs(
-              CreateFunctor(
-                  this,
-                  &ChromotingHostTest::SimulateClientConnection, 1, true,
-                  false)),
-          RunDoneTask()))
-      .RetiresOnSaturation();
-  EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
-      .Times(AnyNumber())
-      .After(start2)
-      .WillRepeatedly(RunDoneTask());
-  EXPECT_CALL(*event_executor_, OnSessionFinished()).After(start2);
-  EXPECT_CALL(host_status_observer_, OnClientDisconnected(session_jid_))
-      .After(start2);
-  EXPECT_CALL(host_status_observer_, OnClientAuthenticated(session2_jid_))
-      .After(start2);
-  EXPECT_CALL(host_status_observer_, OnClientConnected(session2_jid_))
-      .After(start2);
-  EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_)).After(start2);
-  EXPECT_CALL(*connection_, Disconnect())
-      .After(start2)
-      .WillOnce(
-          InvokeWithoutArgs(this, &ChromotingHostTest::ClientSessionClosed))
-      .RetiresOnSaturation();
-  Expectation stop2 = EXPECT_CALL(video_stub2_, ProcessVideoPacketPtr(_, _))
-      .After(start2)
-      .WillOnce(DoAll(
-          InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost),
-          RunDoneTask()))
-      .RetiresOnSaturation();
-  EXPECT_CALL(video_stub2_, ProcessVideoPacketPtr(_, _))
-      .Times(AnyNumber())
-      .After(stop2)
-      .WillRepeatedly(RunDoneTask());
-  Expectation status_disconnected2 =
-      EXPECT_CALL(host_status_observer_, OnClientDisconnected(session2_jid_))
-      .After(stop2);
-  EXPECT_CALL(*event_executor_, OnSessionFinished()).After(stop2);
-  EXPECT_CALL(*connection2_, Disconnect())
-      .After(stop2)
-      .WillOnce(
-          InvokeWithoutArgs(this, &ChromotingHostTest::ClientSession2Closed))
-      .RetiresOnSaturation();
-  EXPECT_CALL(host_status_observer_, OnShutdown())
-      .After(status_disconnected2);
-
   SimulateClientConnection(0, true, false);
   message_loop_.Run();
 }
 
 TEST_F(ChromotingHostTest, IncomingSessionDeclined) {
-  EXPECT_CALL(*disconnect_window_, Hide());
-  EXPECT_CALL(*continue_window_, Hide());
-
+  ExpectHostStart();
   protocol::SessionManager::IncomingSessionResponse response =
       protocol::SessionManager::ACCEPT;
-  host_->OnIncomingSession(session_, &response);
+  host_->OnIncomingSession(session1_, &response);
   EXPECT_EQ(protocol::SessionManager::DECLINE, response);
 }
 
 TEST_F(ChromotingHostTest, IncomingSessionIncompatible) {
-  EXPECT_CALL(*session_manager_, Init(_, host_.get()));
-  EXPECT_CALL(*disconnect_window_, Hide());
-  EXPECT_CALL(*continue_window_, Hide());
-  EXPECT_CALL(*session_unowned_, candidate_config()).WillOnce(Return(
+  ExpectHostAndSessionManagerStart();
+  EXPECT_CALL(*session_unowned1_, candidate_config()).WillOnce(Return(
       empty_candidate_config_.get()));
   EXPECT_CALL(host_status_observer_, OnShutdown());
 
@@ -587,20 +541,18 @@ TEST_F(ChromotingHostTest, IncomingSessionIncompatible) {
 
   protocol::SessionManager::IncomingSessionResponse response =
       protocol::SessionManager::ACCEPT;
-  host_->OnIncomingSession(session_unowned_.get(), &response);
+  host_->OnIncomingSession(session_unowned1_.get(), &response);
   EXPECT_EQ(protocol::SessionManager::INCOMPATIBLE, response);
 
-  host_->Shutdown(base::Bind(&NullTask));
+  host_->Shutdown(base::Bind(&DoNothing));
 }
 
 TEST_F(ChromotingHostTest, IncomingSessionAccepted) {
-  EXPECT_CALL(*session_manager_, Init(_, host_.get()));
-  EXPECT_CALL(*disconnect_window_, Hide());
-  EXPECT_CALL(*continue_window_, Hide());
-  EXPECT_CALL(*session_unowned_, candidate_config()).WillOnce(Return(
+  ExpectHostAndSessionManagerStart();
+  EXPECT_CALL(*session_unowned1_, candidate_config()).WillOnce(Return(
       default_candidate_config_.get()));
-  EXPECT_CALL(*session_unowned_, set_config(_));
-  EXPECT_CALL(*session_unowned_, Close()).WillOnce(InvokeWithoutArgs(
+  EXPECT_CALL(*session_unowned1_, set_config(_));
+  EXPECT_CALL(*session_unowned1_, Close()).WillOnce(InvokeWithoutArgs(
       this, &ChromotingHostTest::NotifyConnectionClosed));
   EXPECT_CALL(host_status_observer_, OnAccessDenied(_));
   EXPECT_CALL(host_status_observer_, OnShutdown());
@@ -611,20 +563,18 @@ TEST_F(ChromotingHostTest, IncomingSessionAccepted) {
 
   protocol::SessionManager::IncomingSessionResponse response =
       protocol::SessionManager::DECLINE;
-  host_->OnIncomingSession(session_unowned_.release(), &response);
+  host_->OnIncomingSession(session_unowned1_.release(), &response);
   EXPECT_EQ(protocol::SessionManager::ACCEPT, response);
 
-  host_->Shutdown(base::Bind(&NullTask));
+  host_->Shutdown(base::Bind(&DoNothing));
 }
 
 TEST_F(ChromotingHostTest, IncomingSessionOverload) {
-  EXPECT_CALL(*session_manager_, Init(_, host_.get()));
-  EXPECT_CALL(*disconnect_window_, Hide());
-  EXPECT_CALL(*continue_window_, Hide());
-  EXPECT_CALL(*session_unowned_, candidate_config()).WillOnce(Return(
+  ExpectHostAndSessionManagerStart();
+  EXPECT_CALL(*session_unowned1_, candidate_config()).WillOnce(Return(
       default_candidate_config_.get()));
-  EXPECT_CALL(*session_unowned_, set_config(_));
-  EXPECT_CALL(*session_unowned_, Close()).WillOnce(InvokeWithoutArgs(
+  EXPECT_CALL(*session_unowned1_, set_config(_));
+  EXPECT_CALL(*session_unowned1_, Close()).WillOnce(InvokeWithoutArgs(
       this, &ChromotingHostTest::NotifyConnectionClosed));
   EXPECT_CALL(host_status_observer_, OnAccessDenied(_));
   EXPECT_CALL(host_status_observer_, OnShutdown());
@@ -635,13 +585,13 @@ TEST_F(ChromotingHostTest, IncomingSessionOverload) {
 
   protocol::SessionManager::IncomingSessionResponse response =
       protocol::SessionManager::DECLINE;
-  host_->OnIncomingSession(session_unowned_.release(), &response);
+  host_->OnIncomingSession(session_unowned1_.release(), &response);
   EXPECT_EQ(protocol::SessionManager::ACCEPT, response);
 
-  host_->OnIncomingSession(session2_unowned_.get(), &response);
+  host_->OnIncomingSession(session_unowned2_.get(), &response);
   EXPECT_EQ(protocol::SessionManager::OVERLOAD, response);
 
-  host_->Shutdown(base::Bind(&NullTask));
+  host_->Shutdown(base::Bind(&DoNothing));
 }
 
 }  // namespace remoting
