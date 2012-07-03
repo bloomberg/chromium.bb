@@ -4,6 +4,7 @@
 
 """Generic utils."""
 
+import codecs
 import errno
 import logging
 import os
@@ -76,21 +77,13 @@ class PrintableObject(object):
 
 
 def FileRead(filename, mode='rU'):
-  content = None
-  f = open(filename, mode)
-  try:
-    content = f.read()
-  finally:
-    f.close()
-  return content
+  with codecs.open(filename, mode=mode, encoding='utf-8') as f:
+    return f.read()
 
 
 def FileWrite(filename, content, mode='w'):
-  f = open(filename, mode)
-  try:
+  with codecs.open(filename, mode=mode, encoding='utf-8') as f:
     f.write(content)
-  finally:
-    f.close()
 
 
 def rmtree(path):
