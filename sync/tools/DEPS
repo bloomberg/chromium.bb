@@ -1,6 +1,9 @@
 include_rules = [
   "+jingle/notifier/base",
   "+net",
+  "+sync/internal_api/public",
+  "+sync/js",
   "+sync/notifier",
-  "+sync/internal_api/public/base",
+  # TODO(akalin): Remove this when we use the system encryptor.
+  "+sync/test/fake_encryptor.h",
 ]

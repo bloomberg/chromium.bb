@@ -771,6 +771,24 @@
         'tools/sync_listen_notifications.cc',
       ],
     },
+
+    # A standalone command-line sync client.
+    {
+      'target_name': 'sync_client',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../jingle/jingle.gyp:notifier',
+        '../net/net.gyp:net',
+        '../net/net.gyp:net_test_support',
+        'sync',
+        'sync_notifier',
+        'syncapi_core',
+      ],
+      'sources': [
+        'tools/sync_client.cc',
+      ],
+    },
   ],
   'conditions': [
     # Special target to wrap a gtest_target_type==shared_library

@@ -38,6 +38,13 @@
 
 namespace {
 
+const char kEmailSwitch[] = "email";
+const char kTokenSwitch[] = "token";
+const char kHostPortSwitch[] = "host-port";
+const char kTrySslTcpFirstSwitch[] = "try-ssltcp-first";
+const char kAllowInsecureConnectionSwitch[] = "allow-insecure-connection";
+const char kNotificationMethodSwitch[] = "notification-method";
+
 // Class to print received notifications events.
 class NotificationPrinter : public syncer::SyncNotifierObserver {
  public:
@@ -96,50 +103,11 @@ class NullInvalidationStateTracker
   }
 
   virtual void SetInvalidationState(const std::string& state) OVERRIDE {
-    LOG(INFO) << "Setting invalidation state to: " << state;
+    std::string base64_state;
+    CHECK(base::Base64Encode(state, &base64_state));
+    LOG(INFO) << "Setting invalidation state to: " << base64_state;
   }
 };
-
-const char kEmailSwitch[] = "email";
-const char kTokenSwitch[] = "token";
-const char kHostPortSwitch[] = "host-port";
-const char kTrySslTcpFirstSwitch[] = "try-ssltcp-first";
-const char kAllowInsecureConnectionSwitch[] = "allow-insecure-connection";
-const char kNotificationMethodSwitch[] = "notification-method";
-
-notifier::NotifierOptions ParseNotifierOptions(
-    const CommandLine& command_line,
-    const scoped_refptr<net::URLRequestContextGetter>&
-        request_context_getter) {
-  notifier::NotifierOptions notifier_options;
-  notifier_options.request_context_getter = request_context_getter;
-
-  if (command_line.HasSwitch(kHostPortSwitch)) {
-    notifier_options.xmpp_host_port =
-        net::HostPortPair::FromString(
-            command_line.GetSwitchValueASCII(kHostPortSwitch));
-    LOG(INFO) << "Using " << notifier_options.xmpp_host_port.ToString()
-              << " for test sync notification server.";
-  }
-
-  notifier_options.try_ssltcp_first =
-      command_line.HasSwitch(kTrySslTcpFirstSwitch);
-  LOG_IF(INFO, notifier_options.try_ssltcp_first)
-      << "Trying SSL/TCP port before XMPP port for notifications.";
-
-  notifier_options.allow_insecure_connection =
-      command_line.HasSwitch(kAllowInsecureConnectionSwitch);
-  LOG_IF(INFO, notifier_options.allow_insecure_connection)
-      << "Allowing insecure XMPP connections.";
-
-  if (command_line.HasSwitch(kNotificationMethodSwitch)) {
-    notifier_options.notification_method =
-        notifier::StringToNotificationMethod(
-            command_line.GetSwitchValueASCII(kNotificationMethodSwitch));
-  }
-
-  return notifier_options;
-}
 
 // Needed to use a real host resolver.
 class MyTestURLRequestContext : public TestURLRequestContext {
@@ -175,6 +143,40 @@ class MyTestURLRequestContextGetter : public TestURLRequestContextGetter {
 
   scoped_ptr<MyTestURLRequestContext> context_;
 };
+
+notifier::NotifierOptions ParseNotifierOptions(
+    const CommandLine& command_line,
+    const scoped_refptr<net::URLRequestContextGetter>&
+        request_context_getter) {
+  notifier::NotifierOptions notifier_options;
+  notifier_options.request_context_getter = request_context_getter;
+
+  if (command_line.HasSwitch(kHostPortSwitch)) {
+    notifier_options.xmpp_host_port =
+        net::HostPortPair::FromString(
+            command_line.GetSwitchValueASCII(kHostPortSwitch));
+    LOG(INFO) << "Using " << notifier_options.xmpp_host_port.ToString()
+              << " for test sync notification server.";
+  }
+
+  notifier_options.try_ssltcp_first =
+      command_line.HasSwitch(kTrySslTcpFirstSwitch);
+  LOG_IF(INFO, notifier_options.try_ssltcp_first)
+      << "Trying SSL/TCP port before XMPP port for notifications.";
+
+  notifier_options.allow_insecure_connection =
+      command_line.HasSwitch(kAllowInsecureConnectionSwitch);
+  LOG_IF(INFO, notifier_options.allow_insecure_connection)
+      << "Allowing insecure XMPP connections.";
+
+  if (command_line.HasSwitch(kNotificationMethodSwitch)) {
+    notifier_options.notification_method =
+        notifier::StringToNotificationMethod(
+            command_line.GetSwitchValueASCII(kNotificationMethodSwitch));
+  }
+
+  return notifier_options;
+}
 
 }  // namespace
 
