@@ -595,12 +595,6 @@ class Directory {
   EntryKernel* GetPossibleFirstChild(
       const ScopedKernelLock& lock, const Id& parent_id);
 
-  // Return a pointer to what is probably (but not certainly) the last
-  // child of |parent_id|, or NULL if |parent_id| definitely has no
-  // children.
-  EntryKernel* GetPossibleLastChildForTest(
-      const ScopedKernelLock& lock, const Id& parent_id);
-
   syncer::Cryptographer cryptographer_;
 
   Kernel* kernel_;

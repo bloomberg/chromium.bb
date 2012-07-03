@@ -1109,7 +1109,7 @@ bool Directory::GetFirstChildId(BaseTransaction* trans,
 bool Directory::GetLastChildIdForTest(
     BaseTransaction* trans, const Id& parent_id, Id* last_child_id) {
   ScopedKernelLock lock(this);
-  EntryKernel* entry = GetPossibleLastChildForTest(lock, parent_id);
+  EntryKernel* entry = GetPossibleFirstChild(lock, parent_id);
   if (!entry) {
     *last_child_id = Id();
     return true;
@@ -1233,31 +1233,6 @@ EntryKernel* Directory::GetPossibleFirstChild(
     // ordering.
     if (entry->ref(PREV_ID).IsRoot() ||
         entry->ref(PREV_ID) != entry->ref(NEXT_ID)) {
-      return entry;
-    }
-  }
-  // There were no children in the linked list.
-  return NULL;
-}
-
-EntryKernel* Directory::GetPossibleLastChildForTest(
-    const ScopedKernelLock& lock, const Id& parent_id) {
-  // We can use the server positional ordering as a hint because it's generally
-  // in sync with the local (linked-list) positional ordering, and we have an
-  // index on it.
-  ParentIdChildIndex::iterator begin_range =
-      GetParentChildIndexLowerBound(lock, parent_id);
-  ParentIdChildIndex::iterator candidate =
-      GetParentChildIndexUpperBound(lock, parent_id);
-
-  while (begin_range != candidate) {
-    --candidate;
-    EntryKernel* entry = *candidate;
-
-    // Filter out self-looped items, which are temporarily not in the child
-    // ordering.
-    if (entry->ref(NEXT_ID).IsRoot() ||
-        entry->ref(NEXT_ID) != entry->ref(PREV_ID)) {
       return entry;
     }
   }
