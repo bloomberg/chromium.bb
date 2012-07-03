@@ -364,6 +364,21 @@ void ExtensionInstallPrompt::ConfirmPermissions(
   LoadImageIfNeeded();
 }
 
+void ExtensionInstallPrompt::ConfirmIssueAdvice(
+    Delegate* delegate,
+    const Extension* extension,
+    const IssueAdviceInfo& issue_advice) {
+  DCHECK(ui_loop_ == MessageLoop::current());
+  extension_ = extension;
+  delegate_ = delegate;
+  prompt_type_ = PERMISSIONS_PROMPT;
+
+  record_oauth2_grant_ = true;
+  prompt_.SetOAuthIssueAdvice(issue_advice);
+
+  LoadImageIfNeeded();
+}
+
 void ExtensionInstallPrompt::OnInstallSuccess(const Extension* extension,
                                               SkBitmap* icon) {
   extension_ = extension;
@@ -411,6 +426,7 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
 void ExtensionInstallPrompt::FetchOAuthIssueAdviceIfNeeded() {
   const Extension::OAuth2Info& oauth2_info = extension_->oauth2_info();
   if (ShouldAutomaticallyApproveScopes() ||
+      prompt_.GetOAuthIssueCount() != 0U ||
       oauth2_info.client_id.empty() ||
       permissions_->scopes().empty() ||
       prompt_type_ == BUNDLE_INSTALL_PROMPT ||
@@ -450,7 +466,9 @@ void ExtensionInstallPrompt::OnMintTokenFailure(
 
 void ExtensionInstallPrompt::ShowConfirmation() {
   prompt_.set_type(prompt_type_);
-  prompt_.SetPermissions(permissions_->GetWarningMessages());
+
+  if (permissions_)
+    prompt_.SetPermissions(permissions_->GetWarningMessages());
 
   switch (prompt_type_) {
     case PERMISSIONS_PROMPT:

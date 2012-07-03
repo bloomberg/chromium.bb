@@ -214,6 +214,14 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
                                   const extensions::Extension* extension,
                                   const extensions::PermissionSet* permissions);
 
+  // This is called by the extension identity API to verify whether an
+  // extension can be granted an OAuth2 token.
+  //
+  // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
+  virtual void ConfirmIssueAdvice(Delegate* delegate,
+                                  const extensions::Extension* extension,
+                                  const IssueAdviceInfo& issue_advice);
+
   // Installation was successful. This is declared virtual for testing.
   virtual void OnInstallSuccess(const extensions::Extension* extension,
                                 SkBitmap* icon);

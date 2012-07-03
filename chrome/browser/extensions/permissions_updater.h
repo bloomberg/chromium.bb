@@ -45,6 +45,9 @@ class PermissionsUpdater {
   void GrantActivePermissions(const Extension* extension,
                               bool record_oauth2_grant);
 
+  // Grants just the OAuth2 scopes in the extension's active permissions.
+  void GrantOAuth2Permissions(const Extension* extension);
+
   // Sets the |extension|'s active permissions to |permissions|.
   void UpdateActivePermissions(const Extension* extension,
                                const PermissionSet* permissions);

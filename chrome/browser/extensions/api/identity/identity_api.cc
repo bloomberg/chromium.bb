@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -23,45 +24,31 @@ const char kInvalidClientId[] = "Invalid OAuth2 Client ID.";
 const char kInvalidScopes[] = "Invalid OAuth2 scopes.";
 const char kInvalidRedirect[] = "Did not redirect to the right URL.";
 const char kAuthFailure[] = "OAuth2 request failed: ";
-const char kGrantRevoked[] = "OAuth2 not granted or revoked.";
+const char kNoGrant[] = "OAuth2 not granted or revoked.";
+const char kUserRejected[] = "The user did not approve access.";
 
 }  // namespace
 
-GetAuthTokenFunction::GetAuthTokenFunction() {}
+GetAuthTokenFunction::GetAuthTokenFunction() : interactive_(false) {}
 GetAuthTokenFunction::~GetAuthTokenFunction() {}
 
 bool GetAuthTokenFunction::RunImpl() {
-  const Extension* extension = GetExtension();
-  Extension::OAuth2Info oauth2_info = extension->oauth2_info();
+  DictionaryValue* arg = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &arg));
+  arg->GetBoolean("interactive", &interactive_);
 
-  if (oauth2_info.client_id.empty()) {
-    error_ = kInvalidClientId;
+  // Balanced in OnIssueAdviceSuccess|OnMintTokenSuccess|OnMintTokenFailure|
+  // InstallUIAbort.
+  AddRef();
+
+  if (StartFlow(ExtensionInstallPrompt::ShouldAutomaticallyApproveScopes() ?
+                    OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE :
+                    OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE)) {
+    return true;
+  } else {
+    Release();
     return false;
   }
-
-  if (oauth2_info.scopes.size() == 0) {
-    error_ = kInvalidScopes;
-    return false;
-  }
-
-  AddRef();  // Balanced in OnMintTokenSuccess|Failure.
-
-  TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
-
-  flow_.reset(new OAuth2MintTokenFlow(
-      profile()->GetRequestContext(),
-      this,
-      OAuth2MintTokenFlow::Parameters(
-          token_service->GetOAuth2LoginRefreshToken(),
-          extension->id(),
-          oauth2_info.client_id,
-          oauth2_info.scopes,
-          ExtensionInstallPrompt::ShouldAutomaticallyApproveScopes() ?
-              OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE :
-              OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE)));
-  flow_->Start();
-
-  return true;
 }
 
 void GetAuthTokenFunction::OnMintTokenSuccess(const std::string& access_token) {
@@ -81,19 +68,56 @@ void GetAuthTokenFunction::OnIssueAdviceSuccess(
     const IssueAdviceInfo& issue_advice) {
   // Existing grant was revoked and we used NO_FORCE, so we got info back
   // instead.
-  error_ = kGrantRevoked;
+  if (interactive_) {
+    install_ui_.reset(new ExtensionInstallPrompt(GetCurrentBrowser()));
+    install_ui_->ConfirmIssueAdvice(this, GetExtension(), issue_advice);
+  } else {
+    error_ = kNoGrant;
+    SendResponse(false);
+    Release();  // Balanced in RunImpl.
+  }
+}
 
-  // Remove the oauth2 scopes from the extension's granted permissions, if
-  // revoked server-side.
-  scoped_refptr<PermissionSet> scopes =
-      new PermissionSet(GetExtension()->GetActivePermissions()->scopes());
-  profile()->GetExtensionService()->extension_prefs()->RemoveGrantedPermissions(
-      GetExtension()->id(), scopes);
+void GetAuthTokenFunction::InstallUIProceed() {
+  DCHECK(install_ui_->record_oauth2_grant());
+  // The user has accepted the scopes, so we may now force (recording a grant
+  // and receiving a token).
+  bool success = StartFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE);
+  DCHECK(success);
+}
 
-  // TODO(estade): need to prompt the user for scope permissions.
-
+void GetAuthTokenFunction::InstallUIAbort(bool user_initiated) {
+  error_ = kUserRejected;
   SendResponse(false);
   Release();  // Balanced in RunImpl.
+}
+
+bool GetAuthTokenFunction::StartFlow(OAuth2MintTokenFlow::Mode mode) {
+  const Extension* extension = GetExtension();
+  Extension::OAuth2Info oauth2_info = extension->oauth2_info();
+
+  if (oauth2_info.client_id.empty()) {
+    error_ = kInvalidClientId;
+    return false;
+  }
+
+  if (oauth2_info.scopes.size() == 0) {
+    error_ = kInvalidScopes;
+    return false;
+  }
+
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
+  flow_.reset(new OAuth2MintTokenFlow(
+      profile()->GetRequestContext(),
+      this,
+      OAuth2MintTokenFlow::Parameters(
+          token_service->GetOAuth2LoginRefreshToken(),
+          extension->id(),
+          oauth2_info.client_id,
+          oauth2_info.scopes,
+          mode)));
+  flow_->Start();
+  return true;
 }
 
 LaunchWebAuthFlowFunction::LaunchWebAuthFlowFunction() {}

@@ -7,16 +7,18 @@ var pass = chrome.test.callbackPass;
 
 chrome.test.runTests([
   function getAuthToken() {
-    chrome.experimental.identity.getAuthToken(pass(function(token) {
-      assertEq("auth_token", token);
+    chrome.experimental.identity.getAuthToken(
+        {},
+        pass(function(token) {
+      assertEq('auth_token', token);
     }));
   },
 
   function launchAuthFlow() {
     chrome.experimental.identity.launchWebAuthFlow(
-        {url: "https://some/url"},
+        {url: 'https://some/url'},
         pass(function(url) {
-      assertEq("https://abcd.chromiumapp.org/cb#access_token=tok", url);
+      assertEq('https://abcd.chromiumapp.org/cb#access_token=tok', url);
     }));
   }
 ]);

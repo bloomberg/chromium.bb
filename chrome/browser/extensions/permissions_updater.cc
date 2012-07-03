@@ -97,6 +97,20 @@ void PermissionsUpdater::GrantActivePermissions(const Extension* extension,
   GetExtensionPrefs()->AddGrantedPermissions(extension->id(), permissions);
 }
 
+void PermissionsUpdater::GrantOAuth2Permissions(const Extension* extension) {
+  CHECK(extension);
+
+  // We only maintain the granted permissions prefs for INTERNAL and LOAD
+  // extensions.
+  if (extension->location() != Extension::LOAD &&
+      extension->location() != Extension::INTERNAL)
+    return;
+
+  scoped_refptr<const PermissionSet> permissions =
+      new PermissionSet(extension->GetActivePermissions()->scopes());
+  GetExtensionPrefs()->AddGrantedPermissions(extension->id(), permissions);
+}
+
 void PermissionsUpdater::UpdateActivePermissions(
     const Extension* extension, const PermissionSet* permissions) {
   GetExtensionPrefs()->SetActivePermissions(extension->id(), permissions);

@@ -14,6 +14,17 @@
         "description": "Gets an OAuth2 access token as specified by the manifest.",
         "parameters": [
           {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "interactive": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether to prompt the user in case of failure. Default is false."
+              }
+            }
+          },
+          {
             "name": "callback",
             "type": "function",
             "parameters": [
