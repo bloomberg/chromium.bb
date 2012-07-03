@@ -43,10 +43,6 @@ int ServiceProcessMain(const content::MainFunctionParams& parameters) {
   if (!state->Initialize())
     return 0;
 
-#if defined(OS_WIN)
-  content::InitializeSandbox(parameters.sandbox_info);
-#endif  // defined(OS_WIN)
-
   ServiceProcess service_process;
   if (service_process.Initialize(&main_message_loop,
                                  parameters.command_line,
