@@ -253,47 +253,6 @@ class SpecialPopupRow : public views::View {
   DISALLOW_COPY_AND_ASSIGN(SpecialPopupRow);
 };
 
-// A view for closable notification views, laid out like:
-//  -------------------
-// | icon  contents  x |
-//  ----------------v--
-// The close button will call OnClose() when clicked.
-class TrayNotificationView : public views::View,
-                             public views::ButtonListener {
- public:
-  // If icon_id is 0, no icon image will be set. SetIconImage can be called
-  // to later set the icon image.
-  explicit TrayNotificationView(int icon_id);
-  virtual ~TrayNotificationView();
-
-  // InitView must be called once with the contents to be displayed.
-  void InitView(views::View* contents);
-
-  // Sets/updates the icon image.
-  void SetIconImage(const gfx::ImageSkia& image);
-
-  // Replaces the contents view.
-  void UpdateView(views::View* new_contents);
-
-  // Replaces the contents view and updates the icon image.
-  void UpdateViewAndImage(views::View* new_contents,
-                          const gfx::ImageSkia& image);
-
-  // Overridden from ButtonListener.
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
-
- protected:
-  // Called when the closed button is pressed.
-  virtual void OnClose() = 0;
-
- private:
-  int icon_id_;
-  views::ImageView* icon_;
-
-  DISALLOW_COPY_AND_ASSIGN(TrayNotificationView);
-};
-
 // Sets up a Label properly for the tray (sets color, font etc.).
 void SetupLabelForTray(views::Label* label);
 

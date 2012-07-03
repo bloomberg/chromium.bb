@@ -188,6 +188,8 @@
         'system/tray/tray_item_more.h',
         'system/tray/tray_item_view.cc',
         'system/tray/tray_item_view.h',
+        'system/tray/tray_notification_view.cc',
+        'system/tray/tray_notification_view.h',
         'system/tray/tray_views.cc',
         'system/tray/tray_views.h',
         'system/tray_accessibility.cc',

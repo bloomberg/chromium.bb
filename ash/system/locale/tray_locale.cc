@@ -5,6 +5,7 @@
 #include "ash/system/locale/tray_locale.h"
 
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_notification_view.h"
 #include "ash/system/tray/tray_views.h"
 #include "base/string16.h"
 #include "grit/ash_strings.h"
@@ -77,8 +78,7 @@ class LocaleNotificationView : public TrayNotificationView {
                          const std::string& cur_locale,
                          const std::string& from_locale,
                          const std::string& to_locale)
-      : TrayNotificationView(IDR_AURA_UBER_TRAY_LOCALE),
-        tray_(tray),
+      : TrayNotificationView(tray, IDR_AURA_UBER_TRAY_LOCALE),
         delegate_(delegate) {
     views::View* container = new LocaleMessageView(
         delegate, cur_locale, from_locale, to_locale);
@@ -99,11 +99,9 @@ class LocaleNotificationView : public TrayNotificationView {
   virtual void OnClose() OVERRIDE {
     if (delegate_)
       delegate_->AcceptLocaleChange();
-    tray_->HideNotificationView();
   }
 
  private:
-  TrayLocale* tray_;
   LocaleObserver::Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(LocaleNotificationView);

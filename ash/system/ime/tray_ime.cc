@@ -13,6 +13,7 @@
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_item_view.h"
+#include "ash/system/tray/tray_notification_view.h"
 #include "ash/system/tray/tray_views.h"
 #include "base/logging.h"
 #include "base/timer.h"
@@ -169,8 +170,7 @@ class IMEDetailedView : public TrayDetailsView,
 class IMENotificationView : public TrayNotificationView {
  public:
   explicit IMENotificationView(TrayIME* tray)
-      : TrayNotificationView(IDR_AURA_UBER_TRAY_IME),
-        tray_(tray) {
+      : TrayNotificationView(tray, IDR_AURA_UBER_TRAY_IME) {
     SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
     IMEInfo current;
     delegate->GetCurrentIME(&current);
@@ -202,17 +202,15 @@ class IMENotificationView : public TrayNotificationView {
       StartAutoCloseTimer(autoclose_delay_);
   }
 
-  // Overridden from TrayNotificationView:
-  virtual void OnClose() OVERRIDE {
-    Close();
+  // Overridden from TrayNotificationView.
+  virtual void OnClickAction() OVERRIDE {
+    tray()->PopupDetailedView(0, true);
   }
 
  private:
   void Close() {
-    tray_->HideNotificationView();
+    tray()->HideNotificationView();
   }
-
-  TrayIME* tray_;
 
   int autoclose_delay_;
   base::OneShotTimer<IMENotificationView> autoclose_;

@@ -382,6 +382,14 @@ class WebNotificationView : public views::View,
     return true;
   }
 
+  virtual ui::GestureStatus OnGestureEvent(
+      const views::GestureEvent& event) OVERRIDE {
+    if (event.type() != ui::ET_GESTURE_TAP)
+      return ui::GESTURE_STATUS_UNKNOWN;
+    tray_->OnClicked(notification_.id);
+    return ui::GESTURE_STATUS_CONSUMED;
+  }
+
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE {

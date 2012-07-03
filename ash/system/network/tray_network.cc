@@ -12,6 +12,7 @@
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_item_view.h"
+#include "ash/system/tray/tray_notification_view.h"
 #include "ash/system/tray/tray_views.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
@@ -661,8 +662,7 @@ class NetworkErrorView : public views::View,
 class NetworkNotificationView : public TrayNotificationView {
  public:
   explicit NetworkNotificationView(TrayNetwork* tray)
-      : TrayNotificationView(0),
-        tray_(tray) {
+      : TrayNotificationView(tray, 0) {
     CreateErrorView();
     InitView(network_error_view_);
     SetIconImage(*ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -671,13 +671,11 @@ class NetworkNotificationView : public TrayNotificationView {
 
   // Overridden from TrayNotificationView.
   virtual void OnClose() OVERRIDE {
-    tray_->ClearNetworkError(network_error_view_->error_type());
+    tray_network()->ClearNetworkError(network_error_view_->error_type());
   }
 
-  // Overridden from views::View.
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
-    tray_->PopupDetailedView(0, true);
-    return true;
+  virtual void OnClickAction() OVERRIDE {
+    tray()->PopupDetailedView(0, true);
   }
 
   void Update() {
@@ -688,16 +686,19 @@ class NetworkNotificationView : public TrayNotificationView {
   }
 
  private:
-  void CreateErrorView() {
-    // Display the first (highest priority) error.
-    CHECK(!tray_->errors()->messages().empty());
-    NetworkErrors::ErrorMap::const_iterator iter =
-        tray_->errors()->messages().begin();
-    network_error_view_ =
-        new NetworkErrorView(tray_, iter->first, iter->second);
+  TrayNetwork* tray_network() {
+    return static_cast<TrayNetwork*>(tray());
   }
 
-  TrayNetwork* tray_;
+  void CreateErrorView() {
+    // Display the first (highest priority) error.
+    CHECK(!tray_network()->errors()->messages().empty());
+    NetworkErrors::ErrorMap::const_iterator iter =
+        tray_network()->errors()->messages().begin();
+    network_error_view_ =
+        new NetworkErrorView(tray_network(), iter->first, iter->second);
+  }
+
   tray::NetworkErrorView* network_error_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkNotificationView);

@@ -11,6 +11,7 @@
 #include "ash/system/power/power_supply_status.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_notification_view.h"
 #include "ash/system/tray/tray_views.h"
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
@@ -91,8 +92,7 @@ class PowerTrayView : public views::ImageView {
 class PowerNotificationView : public TrayNotificationView {
  public:
   explicit PowerNotificationView(TrayPower* tray)
-      : TrayNotificationView(0),
-        tray_(tray) {
+      : TrayNotificationView(tray, 0) {
     power_status_view_ =
         new PowerStatusView(PowerStatusView::VIEW_NOTIFICATION);
     InitView(power_status_view_);
@@ -103,13 +103,7 @@ class PowerNotificationView : public TrayNotificationView {
     power_status_view_->UpdatePowerStatus(status);
   }
 
-  // Overridden from TrayNotificationView:
-  virtual void OnClose() OVERRIDE {
-    tray_->HideNotificationView();
-  }
-
  private:
-  TrayPower* tray_;
   PowerStatusView* power_status_view_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerNotificationView);
