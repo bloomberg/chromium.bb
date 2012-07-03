@@ -643,6 +643,14 @@ const char kEapSubjectMatchProperty[] = "EAP.SubjectMatch";
 const char kHTTPProxyPortProperty[] = "HTTPProxyPort";
 const char kIPConfigProperty[] = "IPConfig";
 const char kPhysicalTechnologyProperty[] = "PhysicalTechnology";
+const char kWifiVendorInformationProperty[] = "WiFi.VendorInformation";
+
+// WiFi Service Vendor Information dictionary properties.
+const char kVendorWPSManufacturerProperty[] = "Manufacturer";
+const char kVendorWPSModelNameProperty[] = "ModelName";
+const char kVendorWPSModelNumberProperty[] = "ModelNumber";
+const char kVendorWPSDeviceNameProperty[] = "DeviceName";
+const char kVendorOUIListProperty[] = "OUIList";
 }  // namespace shill
 
 namespace cashew {
