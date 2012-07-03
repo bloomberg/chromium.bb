@@ -117,13 +117,10 @@ cr.define('login', function() {
       // being sent for some reason when you open the status area menus despite
       // blur being sent.
       if (!this.isGuest) {
-        this.passwordEmpty = true;
         this.passwordElement.addEventListener('keydown',
             this.parentNode.handleKeyDown.bind(this.parentNode));
         this.passwordElement.addEventListener('keypress',
             this.handlePasswordKeyPress_.bind(this));
-        this.passwordElement.addEventListener('keyup',
-            this.handlePasswordKeyUp_.bind(this));
         this.passwordElement.addEventListener('blur',
             this.parentNode.handleBlur.bind(this.parentNode));
       } else {
@@ -144,15 +141,6 @@ cr.define('login', function() {
     },
 
     /**
-     * Handles keyup event on password input.
-     * @param {Event} e Keyup Event object.
-     * @private
-     */
-    handlePasswordKeyUp_: function(e) {
-      this.passwordEmpty = !e.target.value;
-    },
-
-    /**
      * Handles keypress event (i.e. any textual input) on password input.
      * @param {Event} e Keypress Event object.
      * @private
@@ -164,7 +152,6 @@ cr.define('login', function() {
         e.preventDefault();
         return;
       }
-      this.passwordEmpty = false;
     },
 
     /**
@@ -197,14 +184,6 @@ cr.define('login', function() {
      */
     get passwordElement() {
       return this.nameElement.nextElementSibling;
-    },
-
-    /**
-     * Gets password hint label.
-     * @type {!HTMLDivElement}
-     */
-    get passwordHintElement() {
-      return this.passwordElement.nextElementSibling;
     },
 
     /**
@@ -333,14 +312,6 @@ cr.define('login', function() {
         this.removeUserButtonElement.classList.remove('active');
         this.removeUserButtonElement.textContent = '';
       }
-    },
-
-    /**
-     * Whether the password field is empty.
-     * @type {boolean}
-     */
-    set passwordEmpty(empty) {
-      this.passwordElement.classList[empty ? 'add' : 'remove']('empty');
     },
 
     /**

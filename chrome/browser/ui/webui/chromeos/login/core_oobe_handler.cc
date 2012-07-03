@@ -93,8 +93,13 @@ void CoreOobeHandler::ShowOobeUI(bool show) {
 
 void CoreOobeHandler::UpdateOobeUIVisibility() {
   // Don't show version label on the stable channel by default.
-  base::FundamentalValue show_version(
-      chrome::VersionInfo::GetChannel() != chrome::VersionInfo::CHANNEL_STABLE);
+  bool should_show_version = true;
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
+      channel == chrome::VersionInfo::CHANNEL_BETA) {
+    should_show_version = false;
+  }
+  base::FundamentalValue show_version(should_show_version);
   web_ui()->CallJavascriptFunction("cr.ui.Oobe.showVersion", show_version);
   base::FundamentalValue show_value(show_oobe_ui_);
   web_ui()->CallJavascriptFunction("cr.ui.Oobe.showOobeUI", show_value);

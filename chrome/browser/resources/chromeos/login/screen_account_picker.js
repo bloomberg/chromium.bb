@@ -94,7 +94,7 @@ cr.define('login', function() {
         preselectedPod.addEventListener('webkitTransitionEnd', function f(e) {
           if (e.target == preselectedPod) {
             podRow.focusPod(preselectedPod);
-            preselectedPod.removeEventListener(f);
+            preselectedPod.removeEventListener('webkitTransitionEnd', f);
             // Delay the accountPickerReady signal so that if there are any
             // timeouts waiting to fire we can process these first. This was
             // causing crbug.com/112218 as the account pod was sometimes focuse

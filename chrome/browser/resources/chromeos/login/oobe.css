@@ -1193,7 +1193,7 @@ html[dir=rtl] .error-message {
   color: #666;
   position: absolute;
   text-align: center;
-  top: 8px;
+  top: 40px;
   width: 100%;
 }
 

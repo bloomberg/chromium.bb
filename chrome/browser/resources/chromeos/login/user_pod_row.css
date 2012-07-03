@@ -10,31 +10,51 @@ podrow {
   -webkit-box-pack: center;
   -webkit-transition: all 200ms ease-in-out;
   display: -webkit-box;
-  height: 225px;
   position: relative;
 }
 
+html[oobe=old] podrow {
+  height: 225px;
+}
+
 .pod {
-  -webkit-transition: all 230ms ease;
   border-radius: 2px;
   cursor: pointer;
-  margin: 0 10px;
   outline: none;
   padding: 10px;
   position: relative;
   text-align: center;
+}
+
+html[oobe=old] .pod {
+  -webkit-transition: all 230ms ease;
+  margin: 0 10px;
   width: 170px;
 }
 
-.pod .user-image {
+html[oobe=new] .pod {
+  -webkit-transition: all 180ms ease;
+  background-color: white;
+  box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2),
+              0 2px 6px rgba(0, 0, 0, 0.15),
+              0 3px 0 rgba(0, 0, 0, 0.08);
+  margin: 0 20px;
+  padding-bottom: 3px;
+  width: 160px;
+}
+
+html[oobe=old] .pod .user-image {
   -webkit-transition: all 140ms ease;
   background-color: #fff;
   border: 1px solid #ccc;
   border-radius: 2px;
   box-shadow: 0 3px 12px #ccc;
-  height: 160px;
   margin-bottom: 10px;
   padding: 4px;
+}
+
+.pod .user-image {
+  height: 160px;
   width: 160px;
 }
 
@@ -46,9 +66,21 @@ podrow {
   opacity: .75;
 }
 
-.pod.focused .user-image {
+html[oobe=old] .pod.focused .user-image {
   -webkit-transform: translateY(-1px);
   box-shadow: 0 6px 16px #a4a4a4;
+}
+
+html[oobe=new] .user-image {
+  opacity: 0.7;
+}
+
+html[oobe=new] .pod.focused .user-image {
+  opacity: 1;
+}
+
+html[oobe=new] .pod:not(.focused) {
+  -webkit-transform: scale(0.9);
 }
 
 .pod.init {
@@ -72,12 +104,24 @@ podrow {
 }
 
 .name {
-  -webkit-transition: opacity 800ms ease;
   color: #565656;
   font-size: 18px;
-  margin: 4px 0;
+  margin: 10px 0 4px;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+html[oobe=old] .name {
+  -webkit-transition: opacity 800ms ease;
+  margin-top: 4px;
+}
+
+html[oobe=new] .name {
+  -webkit-transition: all 170ms ease;
+  font-size: 18px;
+  height: 26px;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .name.init {
@@ -89,6 +133,12 @@ podrow {
 }
 
 .pod input[type='password'] {
+  box-sizing: border-box;
+  padding: 4px 6px;
+  width: 100%;
+}
+
+html[oobe=old] .pod input[type='password'] {
   -webkit-border-radius: 2px;
   -webkit-transition: box-shadow 100ms, background 100ms, border 500ms;
   border: 1px solid #aaa;
@@ -97,17 +147,22 @@ podrow {
               0 0 1px transparent,
               0 0 1px transparent,
               0 0 1px transparent;
-  box-sizing: border-box;
   height: 26px;
-  padding: 4px 6px; 
-  width: 100%;
+}
+
+html[oobe=new] .pod input[type='password'] {
+  -webkit-transition: opacity linear 150ms;
+  background: white;
+  border: none;
+  height: 40px;
+  outline: none;
 }
 
 .pod:not(.focused) input[type='password'] {
   display: none;
 }
 
-.pod input[type='password']:focus {
+html[oobe=old] .pod input[type='password']:focus {
   -webkit-transition: box-shadow 200ms, background 200ms, border 200ms;
   background: #f8f8f8;
   border-color: rgb(64, 128, 250);
@@ -125,8 +180,13 @@ podrow {
   display: inline-block;
   height: 26px;
   max-width: 100%;
-  min-width: 94px;
+  min-width: 72px !important;
   padding: 4px 8px;
+}
+
+html[oobe=new] .pod .enter-guest-button,
+html[oobe=new] .pod .signin-button {
+  margin: 6px 0;
 }
 
 .pod:not(.focused) .enter-guest-button,
@@ -134,38 +194,21 @@ podrow {
   display: none;
 }
 
-/* TODO(ivankr): this element is anchored to .pod while should be to
- * .password. Perhaps add a DIV container for both .password and .password-hint.
- */
-.pod .password-hint {
-  box-sizing: border-box;
-  cursor: text;
-  height: 22px;
-  opacity: 0.3;
-  overflow: hidden;
-  padding: 4px 8px;
-  position: absolute;
-  text-align: left;
-  text-overflow: ellipsis;
-  top: 194px;
-  visibility: hidden;
-  white-space: nowrap;
-  width: 170px;
-  z-index: 1;
-}
-
-.pod.focused input[type='password']:not([hidden]).empty + .password-hint {
-  visibility: visible;
-}
-
 .pod .capslock-hint {
   cursor: text;
   padding: 4px 8px;
   position: absolute;
   right: 10px;
-  top: 194px;
   visibility: hidden;
   z-index: 1;
+}
+
+html[oobe=old] .pod .capslock-hint {
+  top: 194px;
+}
+
+html[oobe=new] .pod .capslock-hint {
+  top: 180px;
 }
 
 html[dir=rtl] .pod .capslock-hint {
@@ -192,9 +235,17 @@ html[dir=rtl] .pod .capslock-hint {
   opacity: 0;
   padding: 0;
   position: absolute;
+  width: 16px;
+}
+
+html[oobe=old] .remove-user-button {
   right: 14px;
   top: 14px;
-  width: 16px;
+}
+
+html[oobe=new] .remove-user-button {
+  right: 10px;
+  top: 10px;
 }
 
 .pod .remove-user-button:focus,
@@ -234,7 +285,6 @@ html[dir=rtl] .pod .capslock-hint {
   background: rgba(0, 0, 0, 0.5);
   color: white;
   font-size: small;
-  margin: 5px;
   padding: 3px 0;
   position: absolute;
   /* Width of .user-image. */
@@ -242,7 +292,11 @@ html[dir=rtl] .pod .capslock-hint {
   z-index: 1;
 }
 
-.pod.focused .signed-in-indicator {
+html[oobe=old] .signed-in-indicator {
+  margin: 5px;
+}
+
+html[oobe=old] .pod.focused .signed-in-indicator {
   /* Track shifting of .user-image on pod focus. */
   -webkit-transform: translateY(-1px);
   -webkit-transition: -webkit-transform 140ms ease;

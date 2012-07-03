@@ -11,6 +11,19 @@
   right: 0;
 }
 
+html[oobe=new][dir=ltr] #login-header-bar {
+  left: 15px;
+}
+
+html[oobe=new][dir=rtl] #login-header-bar {
+  right: 15px;
+}
+
+html[oobe=new] .header-bar-item {
+  /* Same as default status tray opacity. */
+  background-color: rgba(0, 0, 0, .39);
+}
+
 #login-header-bar button,
 #login-header-bar button:active,
 #login-header-bar button:focus,
@@ -26,12 +39,23 @@
   vertical-align: middle;
 }
 
-.header-bar-item {
+html[oobe=new] #login-header-bar button,
+html[oobe=new] #login-header-bar button:active,
+html[oobe=new] #login-header-bar button:focus,
+html[oobe=new] #login-header-bar button:hover {
+  color: white !important;
+  opacity: 1;
+}
+
+html[oobe=old] .header-bar-item {
   -webkit-padding-start: 15px;
   background-image: url('chrome://theme/IDR_DIVIDER_VERT');
   background-position: -2px center;
   background-repeat: no-repeat;
   background-size: 15px;
+}
+
+.header-bar-item {
   display: inline-block;
   height: 34px;
 }
@@ -40,7 +64,7 @@ html[dir=rtl] .header-bar-item {
   background-position: right center;
 }
 
-.header-bar-item:first-child {
+html[oobe=old] .header-bar-item:first-child {
   -webkit-padding-start: 9px;
   background: none;
 }
