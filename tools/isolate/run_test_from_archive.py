@@ -13,6 +13,7 @@ import json
 import logging
 import optparse
 import os
+import posixpath
 import re
 import shutil
 import stat
@@ -345,21 +346,35 @@ def run_tha_test(manifest, cache_dir, remote, max_cache_size, min_free_space):
       base_temp_dir = os.path.dirname(cache_dir)
     outdir = tempfile.mkdtemp(prefix='run_tha_test', dir=base_temp_dir)
 
+    if not 'files' in manifest:
+      print >> sys.stderr, 'No file to map'
+      return 1
+    if not 'command' in manifest:
+      print >> sys.stderr, 'No command to map run'
+      return 1
+
     try:
       with Profiler('GetFiles') as _prof:
         for filepath, properties in manifest['files'].iteritems():
-          infile = properties['sha-1']
           outfile = os.path.join(outdir, filepath)
-          cache.retrieve(infile)
           outfiledir = os.path.dirname(outfile)
           if not os.path.isdir(outfiledir):
             os.makedirs(outfiledir)
-          link_file(outfile, cache.path(infile), HARDLINK)
+          if 'sha-1' in properties:
+            # A normal file.
+            infile = properties['sha-1']
+            cache.retrieve(infile)
+            link_file(outfile, cache.path(infile), HARDLINK)
+          elif 'link' in properties:
+            # A symlink.
+            os.symlink(properties['link'], outfile)
+          else:
+            raise ValueError('Unexpected entry: %s' % properties)
           if 'mode' in properties:
             # It's not set on Windows.
             os.chmod(outfile, properties['mode'])
 
-      cwd = os.path.join(outdir, manifest['relative_cwd'])
+      cwd = os.path.join(outdir, manifest.get('relative_cwd', ''))
       if not os.path.isdir(cwd):
         os.makedirs(cwd)
       if manifest.get('read_only'):
@@ -383,32 +398,41 @@ def main():
   parser = optparse.OptionParser(
       usage='%prog <options>', description=sys.modules[__name__].__doc__)
   parser.add_option(
-      '-v', '--verbose', action='count', default=1, help='Use multiple times')
-  parser.add_option(
+      '-v', '--verbose', action='count', default=0, help='Use multiple times')
+  parser.add_option('--no-run', action='store_true', help='Skip the run part')
+
+  group = optparse.OptionGroup(parser, 'Data source')
+  group.add_option(
       '-m', '--manifest',
       metavar='FILE',
       help='File/url describing what to map or run')
-  parser.add_option('--no-run', action='store_true', help='Skip the run part')
-  parser.add_option(
+  group.add_option(
+      '-H', '--hash',
+      help='Hash of the manifest to grab from the hash table')
+  parser.add_option_group(group)
+
+  group.add_option(
+      '-r', '--remote', metavar='URL', help='Remote where to get the items')
+  group = optparse.OptionGroup(parser, 'Cache management')
+  group.add_option(
       '--cache',
       default='cache',
       metavar='DIR',
       help='Cache directory, default=%default')
-  parser.add_option(
-      '-r', '--remote', metavar='URL', help='Remote where to get the items')
-  parser.add_option(
+  group.add_option(
       '--max-cache-size',
       type='int',
       metavar='NNN',
       default=20*1024*1024*1024,
       help='Trim if the cache gets larger than this value, default=%default')
-  parser.add_option(
+  group.add_option(
       '--min-free-space',
       type='int',
       metavar='NNN',
       default=1*1024*1024*1024,
       help='Trim if disk free space becomes lower than this value, '
            'default=%default')
+  parser.add_option_group(group)
 
   options, args = parser.parse_args()
   level = [logging.ERROR, logging.INFO, logging.DEBUG][min(2, options.verbose)]
@@ -416,13 +440,16 @@ def main():
       level=level,
       format='%(levelname)5s %(module)15s(%(lineno)3d): %(message)s')
 
-  if not options.manifest:
-    parser.error('--manifest is required.')
+  if bool(options.manifest) == bool(options.hash):
+    parser.error('One and only one of --manifest or --hash is required.')
   if not options.remote:
     parser.error('--remote is required.')
   if args:
     parser.error('Unsupported args %s' % ' '.join(args))
 
+  if options.hash:
+    # First calculate the reference to it.
+    options.manifest = posixpath.join(options.remote, options.hash)
   manifest = json.load(open_remote(options.manifest))
   return run_tha_test(
       manifest, os.path.abspath(options.cache), options.remote,
