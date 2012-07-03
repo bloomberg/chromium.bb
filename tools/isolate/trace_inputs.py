@@ -966,7 +966,8 @@ class Strace(ApiBase):
 
       def handle_clone(self, _args, result):
         """Transfers cwd."""
-        if result == '? ERESTARTNOINTR (To be restarted)':
+        if result.startswith(('?', '-1')):
+          # The call failed.
           return
         # Update the other process right away.
         childpid = int(result)
