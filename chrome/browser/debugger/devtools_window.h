@@ -36,6 +36,7 @@ class Value;
 namespace content {
 class DevToolsAgentHost;
 class DevToolsClientHost;
+struct FileChooserParams;
 class RenderViewHost;
 class WebContents;
 }
@@ -121,6 +122,9 @@ class DevToolsWindow : private content::NotificationObserver,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual content::JavaScriptDialogCreator*
       GetJavaScriptDialogCreator() OVERRIDE;
+  virtual void RunFileChooser(
+      content::WebContents* web_contents,
+      const content::FileChooserParams& params) OVERRIDE;
 
   virtual void FrameNavigating(const std::string& url) OVERRIDE {}
 

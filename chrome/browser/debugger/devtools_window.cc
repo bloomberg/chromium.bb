@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -57,6 +58,7 @@ using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
 using content::DevToolsClientHost;
 using content::DevToolsManager;
+using content::FileChooserParams;
 using content::NativeWebKeyboardEvent;
 using content::NavigationController;
 using content::NavigationEntry;
@@ -751,3 +753,9 @@ content::JavaScriptDialogCreator* DevToolsWindow::GetJavaScriptDialogCreator() {
   }
   return content::WebContentsDelegate::GetJavaScriptDialogCreator();
 }
+
+void DevToolsWindow::RunFileChooser(WebContents* web_contents,
+                                    const FileChooserParams& params) {
+  FileSelectHelper::RunFileChooser(web_contents, params);
+}
+
