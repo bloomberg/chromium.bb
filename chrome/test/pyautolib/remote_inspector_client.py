@@ -712,6 +712,11 @@ class RemoteInspectorClient(object):
     self._logger = logging.getLogger('RemoteInspectorClient')
     self._logger.setLevel([logging.WARNING, logging.DEBUG][verbose])
 
+    # Creating _RemoteInspectorThread might raise an exception. This prevents an
+    # AttributeError in the destructor.
+    self._remote_inspector_thread = None
+    self._remote_inspector_driver_thread = None
+
     # Start up a thread for long-term communication with the remote inspector.
     self._remote_inspector_thread = _RemoteInspectorThread(
         tab_index, verbose, show_socket_messages)
