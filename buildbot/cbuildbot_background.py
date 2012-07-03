@@ -13,14 +13,13 @@ import sys
 import tempfile
 import traceback
 
-from chromite.buildbot import builderstage as bs
 from chromite.buildbot import cbuildbot_results as results_lib
 
 _PRINT_INTERVAL = 1
 _BUFSIZE = 1024
 
 
-class BackgroundException(bs.NonBacktraceBuildException):
+class BackgroundFailure(results_lib.StepFailure):
   pass
 
 
@@ -117,7 +116,7 @@ class BackgroundSteps(multiprocessing.Process):
       try:
         results_lib.Results.Clear()
         step()
-      except bs.NonBacktraceBuildException as ex:
+      except results_lib.StepFailure as ex:
         error = str(ex)
       except Exception:
         traceback.print_exc(file=sys.stderr)
@@ -146,7 +145,7 @@ def _ParallelSteps(steps):
 
   If exceptions occur in the steps, we join together the tracebacks and print
   them after all parallel tasks have finished running. Further, a
-  BackgroundException is raised with full stack traces of all exceptions.
+  BackgroundFailure is raised with full stack traces of all exceptions.
   """
 
   # First, start all the steps.
@@ -171,7 +170,7 @@ def _ParallelSteps(steps):
 
     # Propagate any exceptions.
     if tracebacks:
-      raise BackgroundException('\n' + ''.join(tracebacks))
+      raise BackgroundFailure('\n' + ''.join(tracebacks))
 
 
 def RunParallelSteps(steps):
@@ -184,7 +183,7 @@ def RunParallelSteps(steps):
 
   If exceptions occur in the steps, we join together the tracebacks and print
   them after all parallel tasks have finished running. Further, a
-  BackgroundException is raised with full stack traces of all exceptions.
+  BackgroundFailure is raised with full stack traces of all exceptions.
 
   Example:
     # This snippet will execute in parallel:
@@ -208,7 +207,7 @@ def _TaskRunner(queue, task, onexit=None):
 
   Returns when it encounters an _AllTasksComplete object on the queue.
   If exceptions occur, save them off and re-raise them as a
-  BackgroundException once we've finished processing the items in the queue.
+  BackgroundFailure once we've finished processing the items in the queue.
 
   Args:
     queue: A queue of tasks to run. Add tasks to this queue, and they will
@@ -239,7 +238,7 @@ def _TaskRunner(queue, task, onexit=None):
 
   # Propagate any exceptions.
   if tracebacks:
-    raise BackgroundException('\n' + ''.join(tracebacks))
+    raise BackgroundFailure('\n' + ''.join(tracebacks))
 
 
 @contextlib.contextmanager
@@ -256,7 +255,7 @@ def BackgroundTaskRunner(queue, task, processes=None, onexit=None):
 
   If exceptions occur in the steps, we join together the tracebacks and print
   them after all parallel tasks have finished running. Further, a
-  BackgroundException is raised with full stack traces of all exceptions.
+  BackgroundFailure is raised with full stack traces of all exceptions.
 
   Example:
     # This will run somefunc('small', 'cow') in the background
@@ -304,7 +303,7 @@ def RunTasksInProcessPool(task, inputs, processes=None):
 
   If exceptions occur in the steps, we join together the tracebacks and print
   them after all parallel tasks have finished running. Further, a
-  BackgroundException is raised with full stack traces of all exceptions.
+  BackgroundFailure is raised with full stack traces of all exceptions.
 
   Example:
     # This snippet will execute in parallel:

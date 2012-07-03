@@ -41,7 +41,7 @@ class NonHaltingBuilderStage(bs.BuilderStage):
   def Run(self):
     try:
       super(NonHaltingBuilderStage, self).Run()
-    except bs.NonBacktraceBuildException:
+    except results_lib.StepFailure:
       pass
 
 
@@ -669,7 +669,7 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         self.HandleValidationTimeout(inflight_builders)
 
       if failing_builders or inflight_builders:
-        raise bs.NonBacktraceBuildException()  # Suppress redundant output.
+        raise results_lib.StepFailure()
       else:
         self.HandleSuccess()
 
@@ -931,8 +931,6 @@ class ChromeTestStage(BoardSpecificBuilderStage):
                               self.GetImageDirSymlink(),
                               os.path.join(test_results_dir,
                                            'chrome_results'))
-    except commands.TestException:
-      raise bs.NonBacktraceBuildException()  # Suppress redundant output.
     finally:
       test_tarball = None
       if test_results_dir:
@@ -984,8 +982,6 @@ class VMTestStage(BoardSpecificBuilderStage):
                             whitelist_chrome_crashes=self._chrome_rev is None,
                             build_config=self._bot_id)
 
-    except commands.TestException:
-      raise bs.NonBacktraceBuildException()  # Suppress redundant output.
     finally:
       test_tarball = None
       if test_results_dir:

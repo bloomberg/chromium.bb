@@ -16,11 +16,105 @@ import unittest
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import cbuildbot_commands as commands
+from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 
 
-# pylint: disable=W0212,R0904
+# pylint: disable=E1101,W0212,R0904
+class RunBuildScriptTest(mox.MoxTestBase, cros_test_lib.TestCase):
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+
+  def tearDown(self):
+    self.mox.UnsetStubs()
+
+  def _assertRunBuildScript(self, in_chroot=False, tmpf=None, raises=None):
+    """Test the RunBuildScript function.
+
+    Args:
+      in_chroot: Whether to enter the chroot or not.
+      tmpf: If the chroot tempdir exists, a NamedTemporaryFile that contains
+            a list of the packages that failed to build.
+      raises: If the command should fail, the exception to be raised.
+    """
+
+    # Mock out functions used by RunBuildScript.
+    self.mox.StubOutWithMock(cros_build_lib, 'ReinterpretPathForChroot')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    self.mox.StubOutWithMock(os.path, 'exists')
+    self.mox.StubOutWithMock(tempfile, 'NamedTemporaryFile')
+
+    buildroot = '.'
+    cmd = ['example', 'command']
+
+    # If we enter the chroot, _RunBuildScript will try to create a temporary
+    # status file inside the chroot to track what packages failed (if any.)
+    kwargs = dict()
+    if in_chroot:
+      tempdir = os.path.join(buildroot, 'chroot', 'tmp')
+      os.path.exists(tempdir).AndReturn(tmpf is not None)
+      if tmpf is not None:
+        tempfile.NamedTemporaryFile(dir=tempdir).AndReturn(tmpf)
+        cros_build_lib.ReinterpretPathForChroot(tmpf.name).AndReturn(tmpf.name)
+        kwargs['extra_env'] = {'PARALLEL_EMERGE_STATUS_FILE': tmpf.name}
+
+    # Run the command, throwing an exception if it fails.
+    ret = cros_build_lib.RunCommand(cmd, cwd=buildroot, enter_chroot=in_chroot,
+                                    **kwargs)
+    if raises:
+      result = cros_build_lib.CommandResult()
+      ex = cros_build_lib.RunCommandError('command totally failed', result)
+      ret.AndRaise(ex)
+
+    # If the script failed, the exception should be raised and printed.
+    self.mox.ReplayAll()
+    if raises:
+      with self.OutputCapturer() as output:
+        self.assertRaises(raises, commands._RunBuildScript, buildroot,
+                          cmd, enter_chroot=in_chroot)
+        self.assertEquals(output.GetStdout(), '%s\n' % (ex,))
+    else:
+      commands._RunBuildScript(buildroot, cmd, enter_chroot=in_chroot)
+    self.mox.VerifyAll()
+
+  def testSuccessOutsideChroot(self):
+    """Test executing a command outside the chroot."""
+    self._assertRunBuildScript()
+
+  def testSuccessInsideChrootWithoutTempdir(self):
+    """Test executing a command inside a chroot without a tmp dir."""
+    self._assertRunBuildScript(in_chroot=True)
+
+  def testSuccessInsideChrootWithTempdir(self):
+    """Test executing a command inside a chroot with a tmp dir."""
+    with tempfile.NamedTemporaryFile() as tmpf:
+      self._assertRunBuildScript(in_chroot=True, tmpf=tmpf)
+
+  def testFailureOutsideChroot(self):
+    """Test a command failure outside the chroot."""
+    self._assertRunBuildScript(raises=results_lib.BuildScriptFailure)
+
+  def testFailureInsideChrootWithoutTempdir(self):
+    """Test a command failure inside the chroot without a temp directory."""
+    self._assertRunBuildScript(in_chroot=True,
+                               raises=results_lib.BuildScriptFailure)
+
+  def testFailureInsideChrootWithTempdir(self):
+    """Test a command failure inside the chroot with a temp directory."""
+    with tempfile.NamedTemporaryFile() as tmpf:
+      self._assertRunBuildScript(in_chroot=True, tmpf=tmpf,
+                                 raises=results_lib.BuildScriptFailure)
+
+  def testPackageBuildFailure(self):
+    """Test detecting a package build failure."""
+    with tempfile.NamedTemporaryFile() as tmpf:
+      tmpf.write('chromeos-base/chromeos-chrome')
+      self._assertRunBuildScript(in_chroot=True, tmpf=tmpf,
+                                 raises=results_lib.PackageBuildFailure)
+
+
 class CBuildBotTest(mox.MoxTestBase):
 
   def setUp(self):
@@ -53,6 +147,7 @@ class CBuildBotTest(mox.MoxTestBase):
 
   def tearDown(self):
     shutil.rmtree(self._work_dir)
+    self.mox.UnsetStubs()
 
   def testRunTestSuite(self):
     """Tests if we can parse the test_types so that sane commands are called."""
@@ -178,13 +273,10 @@ class CBuildBotTest(mox.MoxTestBase):
     """Test if we get None in revisions.pfq indicating Full Builds."""
     drop_file = commands._PACKAGE_FILE % {'buildroot': self._buildroot}
     cros_build_lib.RunCommand(
-        ['../../chromite/bin/cros_mark_as_stable', '--all',
-         '--boards=%s' % self._test_board,
+        ['cros_mark_as_stable', '--all', '--boards=%s' % self._test_board,
          '--overlays=%s' % ':'.join(self._chroot_overlays),
          '--drop_file=%s' % cros_build_lib.ReinterpretPathForChroot(drop_file),
-         'commit'],
-        cwd='%s/src/scripts' % self._buildroot,
-        enter_chroot=True)
+         'commit'], cwd=self._buildroot, enter_chroot=True)
 
     self.mox.ReplayAll()
     commands.UprevPackages(self._buildroot,
@@ -235,7 +327,7 @@ class CBuildBotTest(mox.MoxTestBase):
                               cwd=mox.StrContains(buildroot),
                               chroot_args=[],
                               enter_chroot=True,
-                              extra_env={})
+                              extra_env=None)
     self.mox.ReplayAll()
     commands.Build(buildroot=buildroot,
                    board='x86-generic',
@@ -257,7 +349,7 @@ class CBuildBotTest(mox.MoxTestBase):
                               cwd=mox.StrContains(buildroot),
                               chroot_args=[],
                               enter_chroot=True,
-                              extra_env={})
+                              extra_env=None)
     self.mox.ReplayAll()
     commands.Build(buildroot=buildroot,
                    board='x86-generic',

@@ -1437,6 +1437,11 @@ class EmergeQueue(object):
           # Tell the user why we're exiting.
           if self._failed:
             print "Packages failed: %s" % " ,".join(self._failed)
+            status_file = os.environ.get("PARALLEL_EMERGE_STATUS_FILE")
+            if status_file:
+              failed_pkgs = set(portage.cpv_getkey(x) for x in self._failed)
+              with open(status_file, "a") as f:
+                f.write("%s\n" % " ".join(failed_pkgs))
           else:
             print "Deadlock! Circular dependencies!"
           sys.exit(1)

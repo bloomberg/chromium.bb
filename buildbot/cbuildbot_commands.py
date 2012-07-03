@@ -16,6 +16,7 @@ import tempfile
 
 from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import cbuildbot_config
+from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import locking
@@ -39,10 +40,68 @@ _AUTOTEST_RPC_CLIENT = ('/b/build_internal/scripts/slave-internal/autotest_rpc/'
                         'autotest_rpc_client.py')
 _LOCAL_BUILD_FLAGS = ['--nousepkg', '--reuse_pkgs_from_local_boards']
 
-class TestException(Exception):
+class TestFailure(results_lib.StepFailure):
   pass
 
+
 # =========================== Command Helpers =================================
+
+
+def _RunBuildScript(buildroot, cmd, capture_output=False, **kwargs):
+  """Run a build script, wrapping exceptions as needed.
+
+  This wraps RunCommand(cmd, cwd=buildroot, **kwargs), adding extra logic to
+  help determine the cause of command failures.
+    - If a package fails to build, a PackageBuildFailure exception is thrown,
+      which lists exactly which packages failed to build.
+    - If the command fails for a different reason, a BuildScriptFailure
+      exception is thrown.
+
+  We detect what packages failed to build by creating a temporary status file,
+  and passing that status file to parallel_emerge via the
+  PARALLEL_EMERGE_STATUS_FILE variable.
+
+  Args:
+    buildroot: The root of the build directory.
+    cmd: The command to run.
+    capture_output: Whether or not to capture all output.
+    kwargs: Optional args passed to RunCommand; see RunCommand for specifics.
+  """
+  assert not kwargs.get('shell', False), 'Cannot execute shell commands'
+  kwargs.setdefault('cwd', buildroot)
+
+  # If we are entering the chroot, create status file for tracking what
+  # packages failed to build.
+  chroot_tmp = os.path.join(buildroot, 'chroot', 'tmp')
+  status_file = None
+  enter_chroot = kwargs.get('enter_chroot', False)
+  with cros_build_lib.ContextManagerStack() as stack:
+    if enter_chroot and os.path.exists(chroot_tmp):
+      kwargs['extra_env'] = (kwargs.get('extra_env') or {}).copy()
+      status_file = stack.Add(tempfile.NamedTemporaryFile, dir=chroot_tmp)
+      kwargs['extra_env']['PARALLEL_EMERGE_STATUS_FILE'] = \
+          cros_build_lib.ReinterpretPathForChroot(status_file.name)
+
+    try:
+      if capture_output:
+        return cros_build_lib.RunCommandCaptureOutput(cmd, **kwargs)
+      else:
+        return cros_build_lib.RunCommand(cmd, **kwargs)
+    except cros_build_lib.RunCommandError as ex:
+      # Print the original exception.
+      print ex
+
+      # Check whether a specific package failed. If so, wrap the
+      # exception appropriately.
+      if status_file is not None:
+        status_file.seek(0)
+        failed_packages = status_file.read().split()
+        if failed_packages:
+          raise results_lib.PackageBuildFailure(ex, cmd[0], failed_packages)
+
+      # Looks like a generic failure. Raise a BuildScriptFailure.
+      raise results_lib.BuildScriptFailure(ex, cmd[0])
+
 
 def _GetVMConstants(buildroot):
   """Returns minimum (vdisk_size, statefulfs_size) recommended for VM's."""
@@ -174,18 +233,17 @@ def MakeChroot(buildroot, replace, use_sdk, chrome_root=None, extra_env=None):
   if chrome_root:
     cmd.append('--chrome_root=%s' % chrome_root)
 
-  cros_build_lib.RunCommand(cmd, cwd=buildroot, extra_env=extra_env)
+  _RunBuildScript(buildroot, cmd, extra_env=extra_env)
 
 
 def RunChrootUpgradeHooks(buildroot, chrome_root=None):
   """Run the chroot upgrade hooks in the chroot."""
-  cwd = os.path.join(buildroot, 'src', 'scripts')
   chroot_args = []
   if chrome_root:
     chroot_args.append('--chrome_root=%s' % chrome_root)
 
-  cros_build_lib.RunCommand(['./run_chroot_version_hooks'], cwd=cwd,
-                            enter_chroot=True, chroot_args=chroot_args)
+  _RunBuildScript(buildroot, ['./run_chroot_version_hooks'],
+                  enter_chroot=True, chroot_args=chroot_args)
 
 
 def RefreshPackageStatus(buildroot, boards, debug):
@@ -195,7 +253,7 @@ def RefreshPackageStatus(buildroot, boards, debug):
 
   # First run check_gdata_token to validate or refresh auth token.
   cmd = [os.path.join(chromite_bin_dir, 'check_gdata_token')]
-  cros_build_lib.RunCommand(cmd, cwd=cwd, enter_chroot=False)
+  _RunBuildScript(buildroot, cmd, cwd=cwd)
 
   # Prepare refresh_package_status command to update the package spreadsheet.
   cmd = [os.path.join(chromite_bin_dir, 'refresh_package_status')]
@@ -209,7 +267,7 @@ def RefreshPackageStatus(buildroot, boards, debug):
     cmd.append('--test-spreadsheet')
 
   # Actually run prepared refresh_package_status command.
-  cros_build_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True)
+  _RunBuildScript(buildroot, cmd, enter_chroot=True)
 
   # Run sync_package_status to create Tracker issues for outdated
   # packages.  At the moment, this runs only for groups that have opted in.
@@ -223,13 +281,12 @@ def RefreshPackageStatus(buildroot, boards, debug):
 
   for cmdargs in cmdargslist:
     cmd = basecmd + cmdargs
-    cros_build_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True)
+    _RunBuildScript(buildroot, cmd, enter_chroot=True)
 
 
 def SetupBoard(buildroot, board, usepkg, latest_toolchain, extra_env=None,
                profile=None, chroot_upgrade=True):
   """Wrapper around setup_board."""
-  cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./setup_board', '--board=%s' % board]
 
   # This isn't the greatest thing, but emerge's dependency calculation
@@ -247,20 +304,13 @@ def SetupBoard(buildroot, board, usepkg, latest_toolchain, extra_env=None,
   if latest_toolchain:
     cmd.append('--latest_toolchain')
 
-  cros_build_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True,
-                            extra_env=extra_env)
+  _RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
 
 def Build(buildroot, board, build_autotest, usepkg, skip_toolchain_update,
           nowithdebug, extra_env=None, chrome_root=None):
   """Wrapper around build_packages."""
-  cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./build_packages', '--board=%s' % board]
-  if extra_env is None:
-    env = {}
-  else:
-    env = extra_env.copy()
-
   if not build_autotest: cmd.append('--nowithautotest')
 
   if skip_toolchain_update: cmd.append('--skip_toolchain_update')
@@ -275,13 +325,12 @@ def Build(buildroot, board, build_autotest, usepkg, skip_toolchain_update,
   if chrome_root:
     chroot_args.append('--chrome_root=%s' % chrome_root)
 
-  cros_build_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True, extra_env=env,
-                            chroot_args=chroot_args)
+  _RunBuildScript(buildroot, cmd, extra_env=extra_env, chroot_args=chroot_args,
+                  enter_chroot=True)
 
 
 def BuildImage(buildroot, board, images_to_build, version='', extra_env=None,
                root_boost=None):
-  cwd = os.path.join(buildroot, 'src', 'scripts')
   # Default to base if images_to_build is passed empty.
   if not images_to_build: images_to_build = ['base']
   version_str = '--version=%s' % version
@@ -290,22 +339,18 @@ def BuildImage(buildroot, board, images_to_build, version='', extra_env=None,
   if root_boost is not None:
     cmd += ['--rootfs_boost_size=%d' % root_boost]
   cmd += images_to_build
-  cros_build_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True,
-                            extra_env=extra_env)
+  _RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
 
 def BuildVMImageForTesting(buildroot, board, extra_env=None):
   (vdisk_size, statefulfs_size) = _GetVMConstants(buildroot)
-  cwd = os.path.join(buildroot, 'src', 'scripts')
-  cros_build_lib.RunCommand(
-      ['./image_to_vm.sh', '--board=%s' % board, '--test_image', '--full',
-       '--vdisk_size=%s' % vdisk_size, '--statefulfs_size=%s'
-       % statefulfs_size], cwd=cwd, enter_chroot=True, extra_env=extra_env)
+  cmd = ['./image_to_vm.sh', '--board=%s' % board, '--test_image',
+         '--full', '--vdisk_size=%s' % vdisk_size,
+         '--statefulfs_size=%s' % statefulfs_size]
+  _RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
 
 def RunUnitTests(buildroot, board, full, nowithdebug):
-  cwd = os.path.join(buildroot, 'src', 'scripts')
-
   cmd = ['cros_run_unit_tests', '--board=%s' % board]
 
   if nowithdebug:
@@ -318,7 +363,7 @@ def RunUnitTests(buildroot, board, full, nowithdebug):
             cros_build_lib.ReinterpretPathForChroot(_PACKAGE_FILE %
                                                     {'buildroot': buildroot})]
 
-  cros_build_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True)
+  _RunBuildScript(buildroot, cmd, enter_chroot=True)
 
 
 def RunChromeSuite(buildroot, board, image_dir, results_dir):
@@ -341,7 +386,7 @@ def RunChromeSuite(buildroot, board, image_dir, results_dir):
          'desktopui_BrowserTest.control.two',
          'desktopui_BrowserTest.control.three',
          'desktopui_PyAutoFunctionalTests.control.vm']
-  cros_build_lib.RunCommand(cmd, cwd=cwd, error_ok=True, enter_chroot=False)
+  cros_build_lib.RunCommand(cmd, cwd=cwd, error_ok=True)
 
 
 def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
@@ -375,11 +420,12 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
 
   result = cros_build_lib.RunCommand(cmd, cwd=cwd, error_ok=True)
   if result.returncode:
-    failed = open(results_dir_in_chroot + '/failed_test_command', 'w')
-    failed.write('%s exited with code %d' % (' '.join(cmd), result.returncode))
-    failed.close()
-    raise TestException('** VMTests failed with code %d **'
-      % result.returncode)
+    if os.path.exists(results_dir_in_chroot):
+      error = '%s exited with code %d' % (' '.join(cmd), result.returncode)
+      with open(results_dir_in_chroot + '/failed_test_command', 'w') as failed:
+        failed.write(error)
+    raise TestFailure('** VMTests failed with code %d **'
+                      % result.returncode)
 
 
 def ArchiveTestResults(buildroot, test_results_dir, prefix):
@@ -410,6 +456,7 @@ def ArchiveTestResults(buildroot, test_results_dir, prefix):
 
     return test_tarball
 
+  # pylint: disable=W0703
   except Exception, e:
     cros_build_lib.Warning(
         '========================================================')
@@ -575,30 +622,27 @@ def CleanupChromeKeywordsFile(boards, buildroot):
 
 def UprevPackages(buildroot, boards, overlays):
   """Uprevs non-browser chromium os packages that have changed."""
-  cwd = os.path.join(buildroot, 'src', 'scripts')
   chroot_overlays = [
       cros_build_lib.ReinterpretPathForChroot(path) for path in overlays ]
-  cros_build_lib.RunCommand(
-      ['../../chromite/bin/cros_mark_as_stable', '--all',
-       '--boards=%s' % ':'.join(boards),
-       '--overlays=%s' % ':'.join(chroot_overlays),
-       '--drop_file=%s' % cros_build_lib.ReinterpretPathForChroot(
-           _PACKAGE_FILE % {'buildroot': buildroot}),
-       'commit'], cwd=cwd, enter_chroot=True)
+  cmd = ['cros_mark_as_stable', '--all', '--boards=%s' % ':'.join(boards),
+         '--overlays=%s' % ':'.join(chroot_overlays),
+         '--drop_file=%s' % cros_build_lib.ReinterpretPathForChroot(
+             _PACKAGE_FILE % {'buildroot': buildroot}),
+         'commit']
+  _RunBuildScript(buildroot, cmd, enter_chroot=True)
 
 
 def UprevPush(buildroot, overlays, dryrun):
   """Pushes uprev changes to the main line."""
-  cwd = os.path.join(buildroot, 'src', 'scripts')
-  cmd = ['../../chromite/bin/cros_mark_as_stable',
+  cwd = os.path.join(buildroot, constants.CHROMITE_BIN_SUBDIR)
+  cmd = ['./cros_mark_as_stable',
          '--srcroot=%s' % os.path.join(buildroot, 'src'),
          '--overlays=%s' % ':'.join(overlays)
         ]
   if dryrun:
     cmd.append('--dryrun')
-
   cmd.append('push')
-  cros_build_lib.RunCommand(cmd, cwd=cwd)
+  _RunBuildScript(buildroot, cmd, cwd=cwd)
 
 
 def AddPackagesForPrebuilt(filename):
@@ -719,7 +763,7 @@ def UploadPrebuilts(buildroot, board, private_bucket, category,
     cmd.extend(['--git-sync'])
 
   cmd.extend(extra_args)
-  cros_build_lib.RunCommand(cmd, cwd=cwd)
+  _RunBuildScript(buildroot, cmd, cwd=cwd)
 
 
 def GenerateBreakpadSymbols(buildroot, board):
@@ -729,11 +773,10 @@ def GenerateBreakpadSymbols(buildroot, board):
     buildroot: The root directory where the build occurs.
     board: Board type that was built on this machine
   """
-  cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./cros_generate_breakpad_symbols', '--board=%s' % board]
-  max_procs = max([1, multiprocessing.cpu_count() / 2])
-  cros_build_lib.RunCommandCaptureOutput(cmd, cwd=cwd, enter_chroot=True,
-                                         extra_env={'NUM_JOBS':str(max_procs)})
+  extra_env = {'NUM_JOBS': str(max([1, multiprocessing.cpu_count() / 2]))}
+  _RunBuildScript(buildroot, cmd, enter_chroot=True, capture_output=True,
+                  extra_env=extra_env)
 
 
 def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
@@ -850,7 +893,6 @@ def BuildFactoryTestImage(buildroot, board, extra_env):
 
   # We use build_attempt=2 here to ensure that this image uses a different
   # output directory from our regular image and the factory shim image (below).
-  scripts_dir = os.path.join(buildroot, 'src', 'scripts')
   alias = _FACTORY_TEST
   cmd = ['./build_image',
          '--board=%s' % board,
@@ -859,8 +901,8 @@ def BuildFactoryTestImage(buildroot, board, extra_env):
          '--symlink=%s' % alias,
          '--build_attempt=2',
          'factory_test']
-  cros_build_lib.RunCommandCaptureOutput(
-      cmd, enter_chroot=True, extra_env=extra_env, cwd=scripts_dir)
+  _RunBuildScript(buildroot, cmd, extra_env=extra_env, capture_output=True,
+                  enter_chroot=True)
   return alias
 
 
@@ -877,7 +919,6 @@ def BuildFactoryInstallImage(buildroot, board, extra_env):
 
   # We use build_attempt=3 here to ensure that this image uses a different
   # output directory from our regular image and the factory test image.
-  scripts_dir = os.path.join(buildroot, 'src', 'scripts')
   alias = _FACTORY_SHIM
   cmd = ['./build_image',
          '--board=%s' % board,
@@ -885,8 +926,8 @@ def BuildFactoryInstallImage(buildroot, board, extra_env):
          '--symlink=%s' % alias,
          '--build_attempt=3',
          'factory_install']
-  cros_build_lib.RunCommandCaptureOutput(
-      cmd, enter_chroot=True, extra_env=extra_env, cwd=scripts_dir)
+  _RunBuildScript(buildroot, cmd, extra_env=extra_env, capture_output=True,
+                  enter_chroot=True)
   return alias
 
 
@@ -898,13 +939,11 @@ def MakeNetboot(buildroot, board, image_dir):
     board: Board type that was built on this machine.
     image_dir: Directory containing factory install shim.
   """
-  scripts_dir = os.path.join(buildroot, 'src', 'scripts')
   image = os.path.join(image_dir, 'factory_install_shim.bin')
   cmd = ['./make_netboot.sh',
          '--board=%s' % board,
          '--image=%s' % cros_build_lib.ReinterpretPathForChroot(image)]
-  cros_build_lib.RunCommandCaptureOutput(
-      cmd, enter_chroot=True, cwd=scripts_dir)
+  _RunBuildScript(buildroot, cmd, capture_output=True, enter_chroot=True)
 
 
 def BuildRecoveryImage(buildroot, board, image_dir, extra_env):
@@ -916,13 +955,12 @@ def BuildRecoveryImage(buildroot, board, image_dir, extra_env):
     image_dir: Directory containing base image.
     extra_env: Flags to be added to the environment for the new process.
   """
-  scripts_dir = os.path.join(buildroot, 'src', 'scripts')
   image = os.path.join(image_dir, 'chromiumos_base_image.bin')
   cmd = ['./mod_image_for_recovery.sh',
          '--board=%s' % board,
          '--image=%s' % cros_build_lib.ReinterpretPathForChroot(image)]
-  cros_build_lib.RunCommandCaptureOutput(
-      cmd, enter_chroot=True, extra_env=extra_env, cwd=scripts_dir)
+  _RunBuildScript(buildroot, cmd, extra_env=extra_env, capture_output=True,
+                  enter_chroot=True)
 
 
 def BuildTarball(buildroot, input_list, tarball_output, cwd=None,

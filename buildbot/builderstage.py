@@ -16,8 +16,6 @@ from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 
-class NonBacktraceBuildException(Exception):
-  pass
 
 class BuilderStage(object):
   """Parent class for stages to be performed by a builder."""
@@ -220,7 +218,7 @@ class BuilderStage(object):
     # Tell the user about the exception, and record it
     print '\n%s' % constants.STEP_FAILURE
     description = None
-    if isinstance(exception, NonBacktraceBuildException):
+    if isinstance(exception, results_lib.StepFailure):
       description = str(exception)
     else:
       description = traceback.format_exc()
@@ -267,7 +265,7 @@ class BuilderStage(object):
       result, description = self._HandleStageException(e)
       if result not in (results_lib.Results.FORGIVEN,
                         results_lib.Results.SUCCESS):
-        raise NonBacktraceBuildException()
+        raise results_lib.StepFailure()
     finally:
       elapsed_time = time.time() - start_time
       results_lib.Results.Record(self.name, result, description,

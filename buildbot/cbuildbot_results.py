@@ -34,6 +34,70 @@ def LoadCheckpoint(buildroot):
     Results.RestoreCompletedStages(load_file)
 
 
+class StepFailure(Exception):
+  """StepFailure exceptions indicate that a cbuildbot step failed.
+
+  Exceptions that derive from StepFailure should meet the following
+  criteria:
+    1) The failure indicates that a cbuildbot step failed.
+    2) The necessary information to debug the problem has already been
+       printed in the logs for the stage that failed.
+    3) __str__() should be brief enough to include in a Commit Queue
+       failure message.
+  """
+
+
+class BuildScriptFailure(StepFailure):
+  """This exception is thrown when a build command failed.
+
+  It is intended to provide a shorter summary of what command failed,
+  for usage in failure messages from the Commit Queue, so as to ensure
+  that developers aren't spammed with giant error messages when common
+  commands (e.g. build_packages) fail.
+  """
+
+  def __init__(self, exception, shortname):
+    """Construct a BuildScriptFailure object.
+
+    Args:
+      exception: A RunCommandError object.
+      shortname: Short name for the command we're running.
+    """
+    StepFailure.__init__(self)
+    assert isinstance(exception, cros_build_lib.RunCommandError)
+    self.exception = exception
+    self.shortname = shortname
+    self.args = (exception, shortname)
+
+  def __str__(self):
+    """Summarize a build command failure briefly."""
+    result = self.exception.result
+    if result.returncode:
+      return '%s failed (code=%s)' % (self.shortname, result.returncode)
+    else:
+      return self.exception.msg
+
+
+class PackageBuildFailure(BuildScriptFailure):
+  """This exception is thrown when packages fail to build."""
+
+  def __init__(self, exception, shortname, failed_packages):
+    """Construct a PackageBuildFailure object.
+
+    Args:
+      exception: The underlying exception.
+      shortname: Short name for the command we're running.
+      failed_packages: List of packages that failed to build.
+    """
+    BuildScriptFailure.__init__(self, exception, shortname)
+    self.failed_packages = set(failed_packages)
+    self.args += (failed_packages,)
+
+  def __str__(self):
+    return ('Packages failed in %s: %s'
+            % (self.shortname, ' '.join(sorted(self.failed_packages))))
+
+
 class _Results(object):
   """Static class that collects the results of our BuildStages as they run."""
 
@@ -196,23 +260,27 @@ class _Results(object):
       timestr = datetime.timedelta(seconds=math.ceil(run_time))
 
       out.write(line)
+      details = ''
       if result == self.SUCCESS:
-        out.write('%s PASS %s (%s)\n' % (edge, name, timestr))
-
+        status = 'PASS'
       elif result == self.FORGIVEN:
-        out.write('%s FAILED BUT FORGIVEN %s (%s)\n' %
-                   (edge, name, timestr))
+        status = 'FAILED BUT FORGIVEN'
       else:
+        status = 'FAIL'
         if isinstance(result, cros_build_lib.RunCommandError):
           # If there was a RunCommand error, give just the command that
           # failed, not its full argument list, since those are usually
           # too long.
-          out.write('%s FAIL %s (%s) in %s\n' %
-                     (edge, name, timestr, result.result.cmd[0]))
+          details = ' in %s' % result.result.cmd[0]
+        elif isinstance(result, BuildScriptFailure):
+          # BuildScriptFailure errors publish a 'short' name of the
+          # command that failed.
+          details = ' in %s' % result.shortname
         else:
           # There was a normal error. Give the type of exception.
-          out.write('%s FAIL %s (%s) with %s\n' %
-                     (edge, name, timestr, type(result).__name__))
+          details = ' with %s' % type(result).__name__
+
+      out.write('%s %s %s (%s)%s\n' % (edge, status, name, timestr, details))
 
     out.write(line)
 

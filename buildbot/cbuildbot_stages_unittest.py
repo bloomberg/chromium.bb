@@ -1296,7 +1296,7 @@ class BuildStagesResultsTest(unittest.TestCase):
     Pass2Stage(self.options, self.build_config).Run()
 
     self.assertRaises(
-      bs.NonBacktraceBuildException,
+      results_lib.StepFailure,
       FailStage(self.options, self.build_config).Run)
 
   def _verifyRunResults(self, expectedResults):
