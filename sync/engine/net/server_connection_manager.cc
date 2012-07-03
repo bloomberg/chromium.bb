@@ -326,7 +326,8 @@ bool FillMessageWithShareDetails(sync_pb::ClientToServerMessage* csm,
 std::ostream& operator << (std::ostream& s, const struct HttpResponse& hr) {
   s << " Response Code (bogus on error): " << hr.response_code;
   s << " Content-Length (bogus on error): " << hr.content_length;
-  s << " Server Status: " << hr.server_status;
+  s << " Server Status: "
+    << HttpResponse::GetServerConnectionCodeString(hr.server_status);
   return s;
 }
 
