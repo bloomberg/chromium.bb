@@ -411,6 +411,13 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
  protected:
   StrictMock<MockObserver> observer_;
 
+  // Temporary profile dir for test cases that create a second profile.  This is
+  // owned by the SafeBrowsingServiceTest object so that it will not get
+  // destructed until after the test Browser has been torn down, since the
+  // ImportantFileWriter may still be modifying it after the Profile object has
+  // been destroyed.
+  ScopedTempDir temp_profile_dir_;
+
   // Waits for pending tasks on the IO thread to complete. This is useful
   // to wait for the SafeBrowsingService to finish loading/stopping.
   void WaitForIOThread() {
@@ -733,13 +740,12 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
   EXPECT_TRUE(csd_service->enabled());
 
   // Add a new Profile. SBS should keep running.
-  ScopedTempDir temp_dir;
   LOG(INFO) << "creating ScopedTempDir";
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  LOG(INFO) << "created " << temp_dir.path().LossyDisplayName();
+  ASSERT_TRUE(temp_profile_dir_.CreateUniqueTempDir());
+  LOG(INFO) << "created " << temp_profile_dir_.path().LossyDisplayName();
   LOG(INFO) << "creating profile2";
   scoped_ptr<Profile> profile2(Profile::CreateProfile(
-      temp_dir.path(), NULL, Profile::CREATE_MODE_SYNCHRONOUS));
+      temp_profile_dir_.path(), NULL, Profile::CREATE_MODE_SYNCHRONOUS));
   ASSERT_TRUE(profile2.get() != NULL);
   LOG(INFO) << "get prefs2";
   PrefService* pref_service2 = profile2->GetPrefs();
