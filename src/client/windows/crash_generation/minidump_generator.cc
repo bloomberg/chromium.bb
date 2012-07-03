@@ -149,7 +149,8 @@ bool HandleTraceData::CollectHandleData(
                           AvrfResourceHandleTrace,
                           &RecordHandleOperations,
                           this) != ERROR_SUCCESS) {
-    return false;
+    // The handle tracing must have not been enabled.
+    return true;
   }
 
   // Now that |handle_| is initialized, purge all irrelevant operations.
