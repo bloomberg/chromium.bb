@@ -11,10 +11,8 @@
 #include "sync/test/engine/syncer_command_test.h"
 
 using ::testing::_;
-namespace syncer {
 
-using syncable::FIRST_REAL_MODEL_TYPE;
-using syncable::MODEL_TYPE_COUNT;
+namespace syncer {
 
 // A test fixture for tests exercising DownloadUpdatesCommandTest.
 class DownloadUpdatesCommandTest : public SyncerCommandTest {
@@ -29,9 +27,9 @@ class DownloadUpdatesCommandTest : public SyncerCommandTest {
         make_scoped_refptr(new FakeModelWorker(GROUP_DB)));
     workers()->push_back(
         make_scoped_refptr(new FakeModelWorker(GROUP_UI)));
-    (*mutable_routing_info())[syncable::AUTOFILL] = GROUP_DB;
-    (*mutable_routing_info())[syncable::BOOKMARKS] = GROUP_UI;
-    (*mutable_routing_info())[syncable::PREFERENCES] = GROUP_UI;
+    (*mutable_routing_info())[syncer::AUTOFILL] = GROUP_DB;
+    (*mutable_routing_info())[syncer::BOOKMARKS] = GROUP_UI;
+    (*mutable_routing_info())[syncer::PREFERENCES] = GROUP_UI;
     SyncerCommandTest::SetUp();
   }
 
@@ -51,9 +49,9 @@ TEST_F(DownloadUpdatesCommandTest, ExecuteNoPayloads) {
 TEST_F(DownloadUpdatesCommandTest, ExecuteWithPayloads) {
   ConfigureMockServerConnection();
   sessions::SyncSourceInfo source;
-  source.types[syncable::AUTOFILL] = "autofill_payload";
-  source.types[syncable::BOOKMARKS] = "bookmark_payload";
-  source.types[syncable::PREFERENCES] = "preferences_payload";
+  source.types[syncer::AUTOFILL] = "autofill_payload";
+  source.types[syncer::BOOKMARKS] = "bookmark_payload";
+  source.types[syncer::PREFERENCES] = "preferences_payload";
   mock_server()->ExpectGetUpdatesRequestTypes(
       GetRoutingInfoTypes(routing_info()));
   mock_server()->ExpectGetUpdatesRequestPayloads(source.types);

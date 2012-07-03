@@ -663,9 +663,9 @@ bool BookmarkModelAssociator::LoadAssociations() {
 bool BookmarkModelAssociator::CryptoReadyIfNecessary() {
   // We only access the cryptographer while holding a transaction.
   syncer::ReadTransaction trans(FROM_HERE, user_share_);
-  const syncable::ModelTypeSet encrypted_types =
+  const syncer::ModelTypeSet encrypted_types =
       syncer::GetEncryptedTypes(&trans);
-  return !encrypted_types.Has(syncable::BOOKMARKS) ||
+  return !encrypted_types.Has(syncer::BOOKMARKS) ||
       trans.GetCryptographer()->is_ready();
 }
 

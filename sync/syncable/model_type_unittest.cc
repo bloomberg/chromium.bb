@@ -12,14 +12,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
-namespace syncable {
 namespace {
 
 class ModelTypeTest : public testing::Test {};
 
 TEST_F(ModelTypeTest, ModelTypeToValue) {
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
+  for (int i = syncer::FIRST_REAL_MODEL_TYPE;
+       i < syncer::MODEL_TYPE_COUNT; ++i) {
     ModelType model_type = ModelTypeFromInt(i);
     base::ExpectStringValue(ModelTypeToString(model_type),
                             ModelTypeToValue(model_type));
@@ -31,8 +30,8 @@ TEST_F(ModelTypeTest, ModelTypeToValue) {
 }
 
 TEST_F(ModelTypeTest, ModelTypeFromValue) {
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
+  for (int i = syncer::FIRST_REAL_MODEL_TYPE;
+       i < syncer::MODEL_TYPE_COUNT; ++i) {
     ModelType model_type = ModelTypeFromInt(i);
     scoped_ptr<StringValue> value(ModelTypeToValue(model_type));
     EXPECT_EQ(model_type, ModelTypeFromValue(*value));
@@ -40,7 +39,7 @@ TEST_F(ModelTypeTest, ModelTypeFromValue) {
 }
 
 TEST_F(ModelTypeTest, ModelTypeSetToValue) {
-  const ModelTypeSet model_types(syncable::BOOKMARKS, syncable::APPS);
+  const ModelTypeSet model_types(syncer::BOOKMARKS, syncer::APPS);
 
   scoped_ptr<ListValue> value(ModelTypeSetToValue(model_types));
   EXPECT_EQ(2u, value->GetSize());
@@ -74,5 +73,4 @@ TEST_F(ModelTypeTest, IsRealDataType) {
 }
 
 }  // namespace
-}  // namespace syncable
 }  // namespace syncer

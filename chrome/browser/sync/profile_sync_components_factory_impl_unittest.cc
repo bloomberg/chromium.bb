@@ -31,22 +31,22 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
   }
 
   // Returns the collection of default datatypes.
-  static std::vector<syncable::ModelType> DefaultDatatypes() {
-    std::vector<syncable::ModelType> datatypes;
-    datatypes.push_back(syncable::APPS);
-    datatypes.push_back(syncable::APP_NOTIFICATIONS);
-    datatypes.push_back(syncable::APP_SETTINGS);
-    datatypes.push_back(syncable::AUTOFILL);
-    datatypes.push_back(syncable::AUTOFILL_PROFILE);
-    datatypes.push_back(syncable::BOOKMARKS);
-    datatypes.push_back(syncable::EXTENSIONS);
-    datatypes.push_back(syncable::EXTENSION_SETTINGS);
-    datatypes.push_back(syncable::PASSWORDS);
-    datatypes.push_back(syncable::PREFERENCES);
-    datatypes.push_back(syncable::SEARCH_ENGINES);
-    datatypes.push_back(syncable::SESSIONS);
-    datatypes.push_back(syncable::THEMES);
-    datatypes.push_back(syncable::TYPED_URLS);
+  static std::vector<syncer::ModelType> DefaultDatatypes() {
+    std::vector<syncer::ModelType> datatypes;
+    datatypes.push_back(syncer::APPS);
+    datatypes.push_back(syncer::APP_NOTIFICATIONS);
+    datatypes.push_back(syncer::APP_SETTINGS);
+    datatypes.push_back(syncer::AUTOFILL);
+    datatypes.push_back(syncer::AUTOFILL_PROFILE);
+    datatypes.push_back(syncer::BOOKMARKS);
+    datatypes.push_back(syncer::EXTENSIONS);
+    datatypes.push_back(syncer::EXTENSION_SETTINGS);
+    datatypes.push_back(syncer::PASSWORDS);
+    datatypes.push_back(syncer::PREFERENCES);
+    datatypes.push_back(syncer::SEARCH_ENGINES);
+    datatypes.push_back(syncer::SESSIONS);
+    datatypes.push_back(syncer::THEMES);
+    datatypes.push_back(syncer::TYPED_URLS);
     return datatypes;
   }
 
@@ -60,11 +60,11 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
   // not be in |map|.
   static void CheckDefaultDatatypesInMapExcept(
       DataTypeController::StateMap* map,
-      syncable::ModelType exception_type) {
-    std::vector<syncable::ModelType> defaults = DefaultDatatypes();
-    std::vector<syncable::ModelType>::iterator iter;
+      syncer::ModelType exception_type) {
+    std::vector<syncer::ModelType> defaults = DefaultDatatypes();
+    std::vector<syncer::ModelType>::iterator iter;
     for (iter = defaults.begin(); iter != defaults.end(); ++iter) {
-      if (exception_type != syncable::UNSPECIFIED && exception_type == *iter)
+      if (exception_type != syncer::UNSPECIFIED && exception_type == *iter)
         EXPECT_EQ(0U, map->count(*iter))
             << *iter << " found in dataypes map, shouldn't be there.";
       else
@@ -76,7 +76,7 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
   // Asserts that if you apply the command line switch |cmd_switch|,
   // all types are enabled except for |type|, which is disabled.
   void TestSwitchDisablesType(const char* cmd_switch,
-                              syncable::ModelType type) {
+                              syncer::ModelType type) {
     command_line_->AppendSwitch(cmd_switch);
     scoped_ptr<ProfileSyncService> pss(
         new ProfileSyncService(
@@ -110,45 +110,45 @@ TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDefault) {
   DataTypeController::StateMap controller_states;
   pss->GetDataTypeControllerStates(&controller_states);
   EXPECT_EQ(DefaultDatatypesCount(), controller_states.size());
-  CheckDefaultDatatypesInMapExcept(&controller_states, syncable::UNSPECIFIED);
+  CheckDefaultDatatypesInMapExcept(&controller_states, syncer::UNSPECIFIED);
 }
 
 TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDisableAutofill) {
   TestSwitchDisablesType(switches::kDisableSyncAutofill,
-                         syncable::AUTOFILL);
+                         syncer::AUTOFILL);
 }
 
 TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDisableBookmarks) {
   TestSwitchDisablesType(switches::kDisableSyncBookmarks,
-                         syncable::BOOKMARKS);
+                         syncer::BOOKMARKS);
 }
 
 TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDisablePreferences) {
   TestSwitchDisablesType(switches::kDisableSyncPreferences,
-                         syncable::PREFERENCES);
+                         syncer::PREFERENCES);
 }
 
 TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDisableThemes) {
   TestSwitchDisablesType(switches::kDisableSyncThemes,
-                         syncable::THEMES);
+                         syncer::THEMES);
 }
 
 TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDisableExtensions) {
   TestSwitchDisablesType(switches::kDisableSyncExtensions,
-                         syncable::EXTENSIONS);
+                         syncer::EXTENSIONS);
 }
 
 TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDisableApps) {
   TestSwitchDisablesType(switches::kDisableSyncApps,
-                         syncable::APPS);
+                         syncer::APPS);
 }
 
 TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDisableAutofillProfile) {
   TestSwitchDisablesType(switches::kDisableSyncAutofillProfile,
-                         syncable::AUTOFILL_PROFILE);
+                         syncer::AUTOFILL_PROFILE);
 }
 
 TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDisablePasswords) {
   TestSwitchDisablesType(switches::kDisableSyncPasswords,
-                         syncable::PASSWORDS);
+                         syncer::PASSWORDS);
 }

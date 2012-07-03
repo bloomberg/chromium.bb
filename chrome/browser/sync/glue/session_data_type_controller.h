@@ -28,7 +28,7 @@ class SessionDataTypeController : public FrontendDataTypeController,
   SessionModelAssociator* GetModelAssociator();
 
   // FrontendDataTypeController implementation.
-  virtual syncable::ModelType type() const OVERRIDE;
+  virtual syncer::ModelType type() const OVERRIDE;
 
   // NotificationObserver interface.
   virtual void Observe(int type,

@@ -29,7 +29,7 @@ class DataTypeErrorHandler {
   virtual syncer::SyncError CreateAndUploadError(
       const tracked_objects::Location& location,
       const std::string& message,
-      syncable::ModelType type) = 0;
+      syncer::ModelType type) = 0;
 
  protected:
   virtual ~DataTypeErrorHandler() { }

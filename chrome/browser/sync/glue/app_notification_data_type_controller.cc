@@ -23,7 +23,7 @@ AppNotificationDataTypeController::AppNotificationDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
-    : UIDataTypeController(syncable::APP_NOTIFICATIONS,
+    : UIDataTypeController(syncer::APP_NOTIFICATIONS,
                            profile_sync_factory,
                            profile,
                            sync_service) {

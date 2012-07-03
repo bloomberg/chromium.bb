@@ -53,13 +53,13 @@ class TestExtensionService : public ExtensionServiceInterface {
   virtual void CheckForUpdatesSoon() OVERRIDE;
 
   virtual syncer::SyncError MergeDataAndStartSyncing(
-      syncable::ModelType type,
+      syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
       scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) OVERRIDE;
-  virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
+  virtual void StopSyncing(syncer::ModelType type) OVERRIDE;
   virtual syncer::SyncDataList GetAllSyncData(
-      syncable::ModelType type) const OVERRIDE;
+      syncer::ModelType type) const OVERRIDE;
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) OVERRIDE;

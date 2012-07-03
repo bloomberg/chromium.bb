@@ -154,49 +154,49 @@ void NonFrontendDataTypeController::Stop() {
   // thread to finish the StartImpl() task.
   switch (state_) {
     case ASSOCIATING:
-      if (type() == syncable::PASSWORDS) {
+      if (type() == syncer::PASSWORDS) {
         LOG(INFO) << " Type is Passwords";
         StopWhileAssociating();
-      } else if (type() == syncable::TYPED_URLS) {
+      } else if (type() == syncer::TYPED_URLS) {
         LOG(INFO) << " Type is TypedUrl";
         StopWhileAssociating();
-      } else if (type() == syncable::APPS) {
+      } else if (type() == syncer::APPS) {
         LOG(INFO) << "Type is Apps";
         StopWhileAssociating();
-      } else if (type() == syncable::EXTENSIONS) {
+      } else if (type() == syncer::EXTENSIONS) {
         LOG(INFO) << "Type is Extension";
         StopWhileAssociating();
-      } else if (type() == syncable::PREFERENCES) {
+      } else if (type() == syncer::PREFERENCES) {
         LOG(INFO) << "Type is Preferences(Does not belong to non-frontend)";
         StopWhileAssociating();
-      } else if (type() == syncable::EXTENSION_SETTINGS) {
+      } else if (type() == syncer::EXTENSION_SETTINGS) {
         LOG(INFO) << "Type is Extension Settings";
         StopWhileAssociating();
-      } else if (type() == syncable::APP_SETTINGS) {
+      } else if (type() == syncer::APP_SETTINGS) {
         LOG(INFO) << "Type is App Settings.";
         StopWhileAssociating();
-      } else if (type() == syncable::BOOKMARKS) {
+      } else if (type() == syncer::BOOKMARKS) {
         LOG(INFO) << "Type is BOOKMARKS.";
         StopWhileAssociating();
-      } else if (type() == syncable::AUTOFILL_PROFILE) {
+      } else if (type() == syncer::AUTOFILL_PROFILE) {
         LOG(INFO) << "Type is AUTOFILL_PROFILE.";
         StopWhileAssociating();
-      } else if (type() == syncable::AUTOFILL) {
+      } else if (type() == syncer::AUTOFILL) {
         LOG(INFO) << "Type is AUTOFILL.";
         StopWhileAssociating();
-      } else if (type() == syncable::THEMES) {
+      } else if (type() == syncer::THEMES) {
         LOG(INFO) << "Type is THEMES.";
         StopWhileAssociating();
-      } else if (type() == syncable::NIGORI) {
+      } else if (type() == syncer::NIGORI) {
         LOG(INFO) << "Type is NIGORI.";
         StopWhileAssociating();
-      } else if (type() == syncable::SEARCH_ENGINES) {
+      } else if (type() == syncer::SEARCH_ENGINES) {
         LOG(INFO) << "Type is SEARCH_ENGINES.";
         StopWhileAssociating();
-      } else if (type() == syncable::SESSIONS) {
+      } else if (type() == syncer::SESSIONS) {
         LOG(INFO) << "Type is SESSIONS.";
         StopWhileAssociating();
-      } else if (type() == syncable::APP_NOTIFICATIONS) {
+      } else if (type() == syncer::APP_NOTIFICATIONS) {
         LOG(INFO) << "Type is APP_NOTIFICATIONS.";
         StopWhileAssociating();
       } else {
@@ -243,7 +243,7 @@ void NonFrontendDataTypeController::Stop() {
 
 std::string NonFrontendDataTypeController::name() const {
   // For logging only.
-  return syncable::ModelTypeToString(type());
+  return syncer::ModelTypeToString(type());
 }
 
 DataTypeController::State NonFrontendDataTypeController::state() const {
@@ -368,7 +368,7 @@ void NonFrontendDataTypeController::RecordAssociationTime(
 void NonFrontendDataTypeController::RecordStartFailure(StartResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures", type(),
-                            syncable::MODEL_TYPE_COUNT);
+                            syncer::MODEL_TYPE_COUNT);
 #define PER_DATA_TYPE_MACRO(type_str) \
     UMA_HISTOGRAM_ENUMERATION("Sync." type_str "StartFailure", result, \
                               MAX_START_RESULT);

@@ -75,10 +75,10 @@ TEST_F(InvalidationNotifierTest, Basic) {
   CreateAndObserveNotifier("fake_state");
   InSequence dummy;
 
-  syncable::ModelTypePayloadMap type_payloads;
-  type_payloads[syncable::PREFERENCES] = "payload";
-  type_payloads[syncable::BOOKMARKS] = "payload";
-  type_payloads[syncable::AUTOFILL] = "payload";
+  syncer::ModelTypePayloadMap type_payloads;
+  type_payloads[syncer::PREFERENCES] = "payload";
+  type_payloads[syncer::BOOKMARKS] = "payload";
+  type_payloads[syncer::AUTOFILL] = "payload";
 
   EXPECT_CALL(mock_observer_, OnNotificationsEnabled());
   EXPECT_CALL(mock_observer_,
@@ -100,7 +100,7 @@ TEST_F(InvalidationNotifierTest, Basic) {
   invalidation_notifier_->OnNotificationsEnabled();
 
   ObjectIdPayloadMap id_payloads;
-  for (syncable::ModelTypePayloadMap::const_iterator it = type_payloads.begin();
+  for (syncer::ModelTypePayloadMap::const_iterator it = type_payloads.begin();
        it != type_payloads.end(); ++it) {
     invalidation::ObjectId id;
     ASSERT_TRUE(RealModelTypeToObjectId(it->first, &id));

@@ -18,8 +18,8 @@ CleanupDisabledTypesCommand::~CleanupDisabledTypesCommand() {}
 
 SyncerError CleanupDisabledTypesCommand::ExecuteImpl(
     sessions::SyncSession* session) {
-  using syncable::ModelTypeSet;
-  using syncable::ModelTypeSetToString;
+  using syncer::ModelTypeSet;
+  using syncer::ModelTypeSetToString;
   // Because a full directory purge is slow, we avoid purging
   // undesired types unless we have reason to believe they were
   // previously enabled.  Because purging could theoretically fail on

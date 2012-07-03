@@ -25,7 +25,7 @@ class PasswordDataTypeController : public NonFrontendDataTypeController {
       ProfileSyncService* sync_service);
 
   // NonFrontendDataTypeController implementation
-  virtual syncable::ModelType type() const OVERRIDE;
+  virtual syncer::ModelType type() const OVERRIDE;
   virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE;
 
  protected:

@@ -16,8 +16,6 @@ namespace syncer {
 
 namespace {
 
-using syncable::HasModelTypes;
-using syncable::ModelTypeSet;
 using testing::_;
 
 class CleanupDisabledTypesCommandTest : public MockDirectorySyncerCommandTest {
@@ -26,7 +24,7 @@ class CleanupDisabledTypesCommandTest : public MockDirectorySyncerCommandTest {
 
   virtual void SetUp() {
     mutable_routing_info()->clear();
-    (*mutable_routing_info())[syncable::BOOKMARKS] = GROUP_PASSIVE;
+    (*mutable_routing_info())[syncer::BOOKMARKS] = GROUP_PASSIVE;
     MockDirectorySyncerCommandTest::SetUp();
   }
 };
@@ -35,7 +33,7 @@ class CleanupDisabledTypesCommandTest : public MockDirectorySyncerCommandTest {
 TEST_F(CleanupDisabledTypesCommandTest, NoPreviousRoutingInfo) {
   CleanupDisabledTypesCommand command;
   ModelTypeSet expected = ModelTypeSet::All();
-  expected.Remove(syncable::BOOKMARKS);
+  expected.Remove(syncer::BOOKMARKS);
   EXPECT_CALL(*mock_directory(),
               PurgeEntriesWithTypeIn(HasModelTypes(expected)));
   command.ExecuteImpl(session());
@@ -47,7 +45,7 @@ TEST_F(CleanupDisabledTypesCommandTest, NoPurge) {
 
   ModelSafeRoutingInfo prev(routing_info());
   session()->context()->set_previous_session_routing_info(prev);
-  (*mutable_routing_info())[syncable::AUTOFILL] = GROUP_PASSIVE;
+  (*mutable_routing_info())[syncer::AUTOFILL] = GROUP_PASSIVE;
   command.ExecuteImpl(session());
 
   prev = routing_info();
@@ -57,16 +55,16 @@ TEST_F(CleanupDisabledTypesCommandTest, NoPurge) {
 TEST_F(CleanupDisabledTypesCommandTest, TypeDisabled) {
   CleanupDisabledTypesCommand command;
 
-  (*mutable_routing_info())[syncable::AUTOFILL] = GROUP_PASSIVE;
-  (*mutable_routing_info())[syncable::THEMES] = GROUP_PASSIVE;
-  (*mutable_routing_info())[syncable::EXTENSIONS] = GROUP_PASSIVE;
+  (*mutable_routing_info())[syncer::AUTOFILL] = GROUP_PASSIVE;
+  (*mutable_routing_info())[syncer::THEMES] = GROUP_PASSIVE;
+  (*mutable_routing_info())[syncer::EXTENSIONS] = GROUP_PASSIVE;
 
   ModelSafeRoutingInfo prev(routing_info());
-  prev[syncable::PASSWORDS] = GROUP_PASSIVE;
-  prev[syncable::PREFERENCES] = GROUP_PASSIVE;
+  prev[syncer::PASSWORDS] = GROUP_PASSIVE;
+  prev[syncer::PREFERENCES] = GROUP_PASSIVE;
   session()->context()->set_previous_session_routing_info(prev);
 
-  const ModelTypeSet expected(syncable::PASSWORDS, syncable::PREFERENCES);
+  const ModelTypeSet expected(syncer::PASSWORDS, syncer::PREFERENCES);
   EXPECT_CALL(*mock_directory(),
               PurgeEntriesWithTypeIn(HasModelTypes(expected)));
   command.ExecuteImpl(session());

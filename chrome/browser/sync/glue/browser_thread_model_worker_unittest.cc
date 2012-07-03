@@ -42,9 +42,9 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
   // DoWork hasn't executed within action_timeout_ms() ms.
   void ScheduleWork() {
    // We wait until the callback is done. So it is safe to use unretained.
-   syncer::WorkCallback c =
-       base::Bind(&SyncBrowserThreadModelWorkerTest::DoWork,
-                  base::Unretained(this));
+    syncer::WorkCallback c =
+        base::Bind(&SyncBrowserThreadModelWorkerTest::DoWork,
+                   base::Unretained(this));
     timer()->Start(
         FROM_HERE,
         TimeDelta::FromMilliseconds(TestTimeouts::action_timeout_ms()),

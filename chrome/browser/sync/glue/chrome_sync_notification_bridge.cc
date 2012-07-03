@@ -28,7 +28,7 @@ ChromeSyncNotificationBridge::ChromeSyncNotificationBridge(
 ChromeSyncNotificationBridge::~ChromeSyncNotificationBridge() {}
 
 void ChromeSyncNotificationBridge::UpdateEnabledTypes(
-    const syncable::ModelTypeSet types) {
+    const syncer::ModelTypeSet types) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   enabled_types_ = types;
 }
@@ -59,14 +59,14 @@ void ChromeSyncNotificationBridge::Observe(
     return;
   }
 
-  content::Details<const syncable::ModelTypePayloadMap>
+  content::Details<const syncer::ModelTypePayloadMap>
       payload_details(details);
-  syncable::ModelTypePayloadMap payload_map = *(payload_details.ptr());
+  syncer::ModelTypePayloadMap payload_map = *(payload_details.ptr());
 
   if (payload_map.empty()) {
     // No model types to invalidate, invalidating all enabled types.
     payload_map =
-        syncable::ModelTypePayloadMapFromEnumSet(enabled_types_, std::string());
+        syncer::ModelTypePayloadMapFromEnumSet(enabled_types_, std::string());
   }
 
   observers_->Notify(

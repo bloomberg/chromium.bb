@@ -6,8 +6,8 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
+#include "chrome/browser/sync/test/integration/sync_test.h"
 
 using sessions_helper::CheckForeignSessionsAgainst;
 using sessions_helper::CheckInitialState;
@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest,
   }
 
   // Enable encryption on client 0, should propagate to all other clients.
-  ASSERT_TRUE(EnableEncryption(0, syncable::SESSIONS));
+  ASSERT_TRUE(EnableEncryption(0, syncer::SESSIONS));
 
   // Wait for sync.
   // TODO(zea): Fix sync completion detection so we don't need this. For now,
@@ -92,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest,
   // Get foreign session data from all clients and check it against all
   // client_windows.
   for (int i = 0; i < num_clients(); ++i) {
-    ASSERT_TRUE(IsEncrypted(i, syncable::SESSIONS));
+    ASSERT_TRUE(IsEncrypted(i, syncer::SESSIONS));
     ASSERT_TRUE(CheckForeignSessionsAgainst(i, client_windows));
   }
 }

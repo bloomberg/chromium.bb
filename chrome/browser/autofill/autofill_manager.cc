@@ -39,8 +39,8 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -257,10 +257,9 @@ void AutofillManager::UpdatePasswordGenerationState(
 
   bool password_sync_enabled = false;
   if (service) {
-    syncable::ModelTypeSet sync_set = service->GetPreferredDataTypes();
+    syncer::ModelTypeSet sync_set = service->GetPreferredDataTypes();
     password_sync_enabled =
-      service->HasSyncSetupCompleted() &&
-      sync_set.Has(syncable::PASSWORDS);
+      service->HasSyncSetupCompleted() && sync_set.Has(syncer::PASSWORDS);
   }
 
   bool password_manager_enabled =

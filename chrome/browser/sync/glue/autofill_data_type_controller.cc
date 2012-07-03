@@ -27,8 +27,8 @@ AutofillDataTypeController::AutofillDataTypeController(
         profile_sync_factory, profile, sync_service) {
 }
 
-syncable::ModelType AutofillDataTypeController::type() const {
-  return syncable::AUTOFILL;
+syncer::ModelType AutofillDataTypeController::type() const {
+  return syncer::AUTOFILL;
 }
 
 syncer::ModelSafeGroup AutofillDataTypeController::model_safe_group()

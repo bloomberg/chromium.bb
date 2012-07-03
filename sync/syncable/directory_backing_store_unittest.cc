@@ -1952,25 +1952,25 @@ TEST_P(MigrationTest, ToCurrentVersion) {
 
   // Check download_progress state (v75 migration)
   ASSERT_EQ(694,
-      dir_info.kernel_info.download_progress[syncable::BOOKMARKS]
+      dir_info.kernel_info.download_progress[syncer::BOOKMARKS]
       .timestamp_token_for_migration());
   ASSERT_FALSE(
-      dir_info.kernel_info.download_progress[syncable::BOOKMARKS]
+      dir_info.kernel_info.download_progress[syncer::BOOKMARKS]
       .has_token());
   ASSERT_EQ(32904,
-      dir_info.kernel_info.download_progress[syncable::BOOKMARKS]
+      dir_info.kernel_info.download_progress[syncer::BOOKMARKS]
       .data_type_id());
   ASSERT_FALSE(
-      dir_info.kernel_info.download_progress[syncable::THEMES]
+      dir_info.kernel_info.download_progress[syncer::THEMES]
       .has_timestamp_token_for_migration());
   ASSERT_TRUE(
-      dir_info.kernel_info.download_progress[syncable::THEMES]
+      dir_info.kernel_info.download_progress[syncer::THEMES]
       .has_token());
   ASSERT_TRUE(
-      dir_info.kernel_info.download_progress[syncable::THEMES]
+      dir_info.kernel_info.download_progress[syncer::THEMES]
       .token().empty());
   ASSERT_EQ(41210,
-      dir_info.kernel_info.download_progress[syncable::THEMES]
+      dir_info.kernel_info.download_progress[syncer::THEMES]
       .data_type_id());
 
   // Check metas

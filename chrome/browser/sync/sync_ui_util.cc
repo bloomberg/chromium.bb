@@ -604,7 +604,7 @@ void ConstructAboutInformation(ProfileSyncService* service,
                                     full_status.crypto_has_pending_keys);
     sync_ui_util::AddStringSyncDetails(encryption,
         "Encrypted Types",
-        syncable::ModelTypeSetToString(full_status.encrypted_types));
+        syncer::ModelTypeSetToString(full_status.encrypted_types));
 
 
     ListValue* cycles = AddSyncDetailsSection(

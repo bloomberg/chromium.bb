@@ -24,10 +24,9 @@
 #include "sync/protocol/typed_url_specifics.pb.h"
 
 namespace syncer {
-namespace syncable {
 
-void AddDefaultFieldValue(syncable::ModelType datatype,
-                              sync_pb::EntitySpecifics* specifics) {
+void AddDefaultFieldValue(ModelType datatype,
+                          sync_pb::EntitySpecifics* specifics) {
   switch (datatype) {
     case BOOKMARKS:
       specifics->mutable_bookmark();
@@ -276,11 +275,11 @@ const char* ModelTypeToString(ModelType model_type) {
 }
 
 StringValue* ModelTypeToValue(ModelType model_type) {
-  if (model_type >= syncable::FIRST_REAL_MODEL_TYPE) {
+  if (model_type >= FIRST_REAL_MODEL_TYPE) {
     return Value::CreateStringValue(ModelTypeToString(model_type));
-  } else if (model_type == syncable::TOP_LEVEL_FOLDER) {
+  } else if (model_type == TOP_LEVEL_FOLDER) {
     return Value::CreateStringValue("Top-level folder");
-  } else if (model_type == syncable::UNSPECIFIED) {
+  } else if (model_type == UNSPECIFIED) {
     return Value::CreateStringValue("Unspecified");
   }
   NOTREACHED();
@@ -540,5 +539,4 @@ bool IsRealDataType(ModelType model_type) {
   return model_type >= FIRST_REAL_MODEL_TYPE && model_type < MODEL_TYPE_COUNT;
 }
 
-}  // namespace syncable
 }  // namespace syncer

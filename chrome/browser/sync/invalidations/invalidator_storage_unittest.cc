@@ -237,9 +237,9 @@ TEST_F(InvalidatorStorageTest, DeserializeMapOutOfRange) {
   base::DictionaryValue dict_with_out_of_range_type;
 
   dict_with_out_of_range_type.SetString(
-      base::IntToString(syncable::TOP_LEVEL_FOLDER), "100");
+      base::IntToString(syncer::TOP_LEVEL_FOLDER), "100");
   dict_with_out_of_range_type.SetString(
-      base::IntToString(syncable::BOOKMARKS), "5");
+      base::IntToString(syncer::BOOKMARKS), "5");
 
   InvalidatorStorage::DeserializeMap(&dict_with_out_of_range_type, &map);
 
@@ -254,9 +254,9 @@ TEST_F(InvalidatorStorageTest, DeserializeMapInvalidFormat) {
   dict_with_invalid_format.SetString("whoops", "5");
   dict_with_invalid_format.SetString("ohnoes", "whoops");
   dict_with_invalid_format.SetString(
-      base::IntToString(syncable::BOOKMARKS), "ohnoes");
+      base::IntToString(syncer::BOOKMARKS), "ohnoes");
   dict_with_invalid_format.SetString(
-      base::IntToString(syncable::AUTOFILL), "10");
+      base::IntToString(syncer::AUTOFILL), "10");
 
   InvalidatorStorage::DeserializeMap(&dict_with_invalid_format, &map);
 
@@ -275,8 +275,8 @@ TEST_F(InvalidatorStorageTest, DeserializeMapBasic) {
   InvalidationVersionMap map;
   base::DictionaryValue dict;
 
-  dict.SetString(base::IntToString(syncable::AUTOFILL), "10");
-  dict.SetString(base::IntToString(syncable::BOOKMARKS), "15");
+  dict.SetString(base::IntToString(syncer::AUTOFILL), "10");
+  dict.SetString(base::IntToString(syncer::BOOKMARKS), "15");
 
   InvalidatorStorage::DeserializeMap(&dict, &map);
   EXPECT_EQ(2U, map.size());
@@ -288,9 +288,9 @@ TEST_F(InvalidatorStorageTest, DeserializeMapBasic) {
 // Migration should happen on construction of InvalidatorStorage.
 TEST_F(InvalidatorStorageTest, MigrateLegacyPreferences) {
   base::DictionaryValue* legacy_dict = new DictionaryValue;
-  legacy_dict->SetString(base::IntToString(syncable::AUTOFILL), "10");
-  legacy_dict->SetString(base::IntToString(syncable::BOOKMARKS), "32");
-  legacy_dict->SetString(base::IntToString(syncable::PREFERENCES), "54");
+  legacy_dict->SetString(base::IntToString(syncer::AUTOFILL), "10");
+  legacy_dict->SetString(base::IntToString(syncer::BOOKMARKS), "32");
+  legacy_dict->SetString(base::IntToString(syncer::PREFERENCES), "54");
   pref_service_.SetUserPref(prefs::kSyncMaxInvalidationVersions, legacy_dict);
   InvalidatorStorage storage(&pref_service_);
 

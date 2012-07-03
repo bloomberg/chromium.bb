@@ -79,11 +79,11 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
   // The meat and potatoes. Both of these methods will post a delayed task
   // to attempt the actual nudge (see ScheduleNudgeImpl).
   void ScheduleNudgeAsync(const base::TimeDelta& delay, NudgeSource source,
-                     syncable::ModelTypeSet types,
+                     syncer::ModelTypeSet types,
                      const tracked_objects::Location& nudge_location);
   void ScheduleNudgeWithPayloadsAsync(
       const base::TimeDelta& delay, NudgeSource source,
-      const syncable::ModelTypePayloadMap& types_with_payloads,
+      const syncer::ModelTypePayloadMap& types_with_payloads,
       const tracked_objects::Location& nudge_location);
 
   // Schedule a configuration cycle. May execute immediately or at a later time
@@ -91,7 +91,7 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
   // Note: The source argument of this function must come from the subset of
   // GetUpdatesCallerInfo values related to configurations.
   void ScheduleConfiguration(
-      syncable::ModelTypeSet types,
+      syncer::ModelTypeSet types,
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
 
   void CleanupDisabledTypes();
@@ -307,7 +307,7 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
   void ScheduleNudgeImpl(
       const base::TimeDelta& delay,
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
-      const syncable::ModelTypePayloadMap& types_with_payloads,
+      const syncer::ModelTypePayloadMap& types_with_payloads,
       bool is_canary_job, const tracked_objects::Location& nudge_location);
 
   // Returns true if the client is currently in exponential backoff.

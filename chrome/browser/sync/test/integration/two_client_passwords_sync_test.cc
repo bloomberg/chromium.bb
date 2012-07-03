@@ -73,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, DisablePasswords) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 
-  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncable::PASSWORDS));
+  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncer::PASSWORDS));
   PasswordForm form = CreateTestPasswordForm(0);
   AddLogin(GetVerifierPasswordStore(), form);
   ASSERT_EQ(1, GetVerifierPasswordCount());
@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, DisablePasswords) {
   ASSERT_TRUE(ProfileContainsSamePasswordFormsAsVerifier(0));
   ASSERT_FALSE(ProfileContainsSamePasswordFormsAsVerifier(1));
 
-  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncable::PASSWORDS));
+  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncer::PASSWORDS));
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
   ASSERT_EQ(1, GetPasswordCount(1));
@@ -254,10 +254,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
   // Following ensures types are enabled and active (see bug 87572).
   syncer::ModelSafeRoutingInfo routes;
   GetClient(0)->service()->GetModelSafeRoutingInfo(&routes);
-  ASSERT_EQ(syncer::GROUP_PASSWORD, routes[syncable::PASSWORDS]);
+  ASSERT_EQ(syncer::GROUP_PASSWORD, routes[syncer::PASSWORDS]);
   routes.clear();
   GetClient(1)->service()->GetModelSafeRoutingInfo(&routes);
-  ASSERT_EQ(syncer::GROUP_PASSWORD, routes[syncable::PASSWORDS]);
+  ASSERT_EQ(syncer::GROUP_PASSWORD, routes[syncer::PASSWORDS]);
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,

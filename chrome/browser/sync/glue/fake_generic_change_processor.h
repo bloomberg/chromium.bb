@@ -30,11 +30,11 @@ class FakeGenericChangeProcessor : public GenericChangeProcessor {
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) OVERRIDE;
   virtual syncer::SyncError GetSyncDataForType(
-      syncable::ModelType type,
+      syncer::ModelType type,
       syncer::SyncDataList* current_sync_data) OVERRIDE;
-  virtual bool SyncModelHasUserCreatedNodes(syncable::ModelType type,
+  virtual bool SyncModelHasUserCreatedNodes(syncer::ModelType type,
                                             bool* has_nodes) OVERRIDE;
-  virtual bool CryptoReadyIfNecessary(syncable::ModelType type) OVERRIDE;
+  virtual bool CryptoReadyIfNecessary(syncer::ModelType type) OVERRIDE;
 
  private:
   syncer::SyncError process_sync_changes_error_;
@@ -42,7 +42,7 @@ class FakeGenericChangeProcessor : public GenericChangeProcessor {
   bool sync_model_has_user_created_nodes_;
   bool sync_model_has_user_created_nodes_success_;
   bool crypto_ready_if_necessary_;
-  syncable::ModelType type_;
+  syncer::ModelType type_;
 };
 
 }  // namespace browser_sync

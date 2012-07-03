@@ -147,7 +147,7 @@ void SyncPromoHandler::DisplayConfigureSync(bool show_advanced,
     // everything by default. This makes the first run experience simpler. Note,
     // there's an advanced link in the sync promo that takes users to Settings
     // where the configure pane is not skipped.
-    service->OnUserChoseDatatypes(true, syncable::ModelTypeSet());
+    service->OnUserChoseDatatypes(true, syncer::ModelTypeSet());
     ConfigureSyncDone();
   }
 }

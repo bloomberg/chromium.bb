@@ -24,11 +24,11 @@ UIDataTypeController::UIDataTypeController()
       profile_(NULL),
       sync_service_(NULL),
       state_(NOT_RUNNING),
-      type_(syncable::UNSPECIFIED) {
+      type_(syncer::UNSPECIFIED) {
 }
 
 UIDataTypeController::UIDataTypeController(
-    syncable::ModelType type,
+    syncer::ModelType type,
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
@@ -41,7 +41,7 @@ UIDataTypeController::UIDataTypeController(
   DCHECK(profile_sync_factory);
   DCHECK(profile);
   DCHECK(sync_service);
-  DCHECK(syncable::IsRealDataType(type_));
+  DCHECK(syncer::IsRealDataType(type_));
 }
 
 UIDataTypeController::~UIDataTypeController() {
@@ -52,7 +52,7 @@ void UIDataTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!model_load_callback.is_null());
-  DCHECK(syncable::IsRealDataType(type_));
+  DCHECK(syncer::IsRealDataType(type_));
   if (state_ != NOT_RUNNING) {
     model_load_callback.Run(type(), syncer::SyncError(FROM_HERE,
                                               "Model already loaded",
@@ -224,7 +224,7 @@ void UIDataTypeController::StartDone(StartResult result) {
 
 void UIDataTypeController::Stop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(syncable::IsRealDataType(type_));
+  DCHECK(syncer::IsRealDataType(type_));
 
   State prev_state = state_;
   state_ = STOPPING;
@@ -255,8 +255,8 @@ void UIDataTypeController::Stop() {
   state_ = NOT_RUNNING;
 }
 
-syncable::ModelType UIDataTypeController::type() const {
-  DCHECK(syncable::IsRealDataType(type_));
+syncer::ModelType UIDataTypeController::type() const {
+  DCHECK(syncer::IsRealDataType(type_));
   return type_;
 }
 
@@ -265,13 +265,13 @@ void UIDataTypeController::StopModels() {
 }
 
 syncer::ModelSafeGroup UIDataTypeController::model_safe_group() const {
-  DCHECK(syncable::IsRealDataType(type_));
+  DCHECK(syncer::IsRealDataType(type_));
   return syncer::GROUP_UI;
 }
 
 std::string UIDataTypeController::name() const {
   // For logging only.
-  return syncable::ModelTypeToString(type());
+  return syncer::ModelTypeToString(type());
 }
 
 DataTypeController::State UIDataTypeController::state() const {
@@ -295,7 +295,7 @@ void UIDataTypeController::RecordAssociationTime(base::TimeDelta time) {
 void UIDataTypeController::RecordStartFailure(StartResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures", type(),
-                            syncable::MODEL_TYPE_COUNT);
+                            syncer::MODEL_TYPE_COUNT);
 #define PER_DATA_TYPE_MACRO(type_str) \
     UMA_HISTOGRAM_ENUMERATION("Sync." type_str "StartFailure", result, \
                               MAX_START_RESULT);

@@ -25,7 +25,7 @@ class NewNonFrontendDataTypeControllerMock
 
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(enabled, bool());
-  MOCK_CONST_METHOD0(type, syncable::ModelType());
+  MOCK_CONST_METHOD0(type, syncer::ModelType());
   MOCK_CONST_METHOD0(name, std::string());
   MOCK_CONST_METHOD0(model_safe_group, syncer::ModelSafeGroup());
   MOCK_CONST_METHOD0(state, State());

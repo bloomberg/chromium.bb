@@ -25,7 +25,7 @@ class ThemeModelAssociator : public AssociatorInterface {
   virtual ~ThemeModelAssociator();
 
   // Used by profile_sync_test_util.h.
-  static syncable::ModelType model_type() { return syncable::THEMES; }
+  static syncer::ModelType model_type() { return syncer::THEMES; }
 
   // AssociatorInterface implementation.
   virtual syncer::SyncError AssociateModels() OVERRIDE;

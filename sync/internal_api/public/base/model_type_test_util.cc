@@ -5,7 +5,6 @@
 #include "sync/internal_api/public/base/model_type_test_util.h"
 
 namespace syncer {
-namespace syncable {
 
 void PrintTo(ModelTypeSet model_types, ::std::ostream* os) {
   *os << ModelTypeSetToString(model_types);
@@ -50,5 +49,4 @@ class HasModelTypesMatcher
   return ::testing::MakeMatcher(new HasModelTypesMatcher(expected_types));
 }
 
-}  // namespace syncable
 }  // namespace syncer

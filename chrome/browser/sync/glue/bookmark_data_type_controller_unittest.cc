@@ -229,7 +229,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_CALL(*model_associator_, AssociateModels()).
       WillRepeatedly(Return(syncer::SyncError(FROM_HERE,
                                      "error",
-                                     syncable::BOOKMARKS)));
+                                     syncer::BOOKMARKS)));
 
   EXPECT_CALL(start_callback_,
               Run(DataTypeController::ASSOCIATION_FAILED, _));

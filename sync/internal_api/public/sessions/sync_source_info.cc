@@ -13,13 +13,12 @@ namespace sessions {
 SyncSourceInfo::SyncSourceInfo()
     : updates_source(sync_pb::GetUpdatesCallerInfo::UNKNOWN) {}
 
-SyncSourceInfo::SyncSourceInfo(
-    const syncable::ModelTypePayloadMap& t)
+SyncSourceInfo::SyncSourceInfo(const syncer::ModelTypePayloadMap& t)
     : updates_source(sync_pb::GetUpdatesCallerInfo::UNKNOWN), types(t) {}
 
 SyncSourceInfo::SyncSourceInfo(
     const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& u,
-    const syncable::ModelTypePayloadMap& t)
+    const syncer::ModelTypePayloadMap& t)
     : updates_source(u), types(t) {}
 
 SyncSourceInfo::~SyncSourceInfo() {}
@@ -28,7 +27,7 @@ DictionaryValue* SyncSourceInfo::ToValue() const {
   DictionaryValue* value = new DictionaryValue();
   value->SetString("updatesSource",
                    GetUpdatesSourceString(updates_source));
-  value->Set("types", syncable::ModelTypePayloadMapToValue(types));
+  value->Set("types", syncer::ModelTypePayloadMapToValue(types));
   return value;
 }
 

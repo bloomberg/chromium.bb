@@ -46,9 +46,8 @@ TEST_F(JsMutationEventObserverTest, OnChangesApplied) {
   // We don't test with passwords as that requires additional setup.
 
   // Build a list of example ChangeRecords.
-  syncer::ChangeRecord changes[syncable::MODEL_TYPE_COUNT];
-  for (int i = syncable::AUTOFILL_PROFILE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
+  syncer::ChangeRecord changes[syncer::MODEL_TYPE_COUNT];
+  for (int i = syncer::AUTOFILL_PROFILE; i < syncer::MODEL_TYPE_COUNT; ++i) {
     changes[i].id = i;
     switch (i % 3) {
       case 0:
@@ -71,16 +70,15 @@ TEST_F(JsMutationEventObserverTest, OnChangesApplied) {
   // starting from changes[i].
 
   // Set expectations for each data type.
-  for (int i = syncable::AUTOFILL_PROFILE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
+  for (int i = syncer::AUTOFILL_PROFILE; i < syncer::MODEL_TYPE_COUNT; ++i) {
     const std::string& model_type_str =
-        syncable::ModelTypeToString(syncable::ModelTypeFromInt(i));
+        syncer::ModelTypeToString(syncer::ModelTypeFromInt(i));
     DictionaryValue expected_details;
     expected_details.SetString("modelType", model_type_str);
     expected_details.SetString("writeTransactionId", "0");
     ListValue* expected_changes = new ListValue();
     expected_details.Set("changes", expected_changes);
-    for (int j = i; j < syncable::MODEL_TYPE_COUNT; ++j) {
+    for (int j = i; j < syncer::MODEL_TYPE_COUNT; ++j) {
       expected_changes->Append(changes[j].ToValue());
     }
     EXPECT_CALL(mock_js_event_handler_,
@@ -89,12 +87,11 @@ TEST_F(JsMutationEventObserverTest, OnChangesApplied) {
   }
 
   // Fire OnChangesApplied() for each data type.
-  for (int i = syncable::AUTOFILL_PROFILE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
+  for (int i = syncer::AUTOFILL_PROFILE; i < syncer::MODEL_TYPE_COUNT; ++i) {
     syncer::ChangeRecordList
         local_changes(changes + i, changes + arraysize(changes));
     js_mutation_event_observer_.OnChangesApplied(
-        syncable::ModelTypeFromInt(i),
+        syncer::ModelTypeFromInt(i),
         0, syncer::ImmutableChangeRecordList(&local_changes));
   }
 
@@ -104,21 +101,21 @@ TEST_F(JsMutationEventObserverTest, OnChangesApplied) {
 TEST_F(JsMutationEventObserverTest, OnChangesComplete) {
   InSequence dummy;
 
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
+  for (int i = syncer::FIRST_REAL_MODEL_TYPE;
+       i < syncer::MODEL_TYPE_COUNT; ++i) {
     DictionaryValue expected_details;
     expected_details.SetString(
         "modelType",
-        syncable::ModelTypeToString(syncable::ModelTypeFromInt(i)));
+        syncer::ModelTypeToString(syncer::ModelTypeFromInt(i)));
     EXPECT_CALL(mock_js_event_handler_,
                 HandleJsEvent("onChangesComplete",
                              HasDetailsAsDictionary(expected_details)));
   }
 
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
+  for (int i = syncer::FIRST_REAL_MODEL_TYPE;
+       i < syncer::MODEL_TYPE_COUNT; ++i) {
     js_mutation_event_observer_.OnChangesComplete(
-        syncable::ModelTypeFromInt(i));
+        syncer::ModelTypeFromInt(i));
   }
   PumpLoop();
 }

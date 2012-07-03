@@ -218,7 +218,7 @@ class SessionModelAssociator
   void FaviconsUpdated(const std::set<GURL>& urls);
 
   // Returns the syncable model type.
-  static syncable::ModelType model_type() { return syncable::SESSIONS; }
+  static syncer::ModelType model_type() { return syncer::SESSIONS; }
 
   // Testing only. Will cause the associator to call MessageLoop::Quit()
   // when a local change is made, or when timeout_milli occurs, whichever is

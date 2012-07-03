@@ -17,7 +17,7 @@ namespace browser_sync {
 
 SharedChangeProcessor::SharedChangeProcessor()
     : disconnected_(false),
-      type_(syncable::UNSPECIFIED),
+      type_(syncer::UNSPECIFIED),
       sync_service_(NULL),
       generic_change_processor_(NULL),
       error_handler_(NULL) {
@@ -49,11 +49,11 @@ base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
     ProfileSyncComponentsFactory* sync_factory,
     ProfileSyncService* sync_service,
     DataTypeErrorHandler* error_handler,
-    syncable::ModelType type) {
+    syncer::ModelType type) {
   DCHECK(sync_factory);
   DCHECK(sync_service);
   DCHECK(error_handler);
-  DCHECK_NE(type, syncable::UNSPECIFIED);
+  DCHECK_NE(type, syncer::UNSPECIFIED);
   backend_loop_ = base::MessageLoopProxy::current();
   AutoLock lock(monitor_lock_);
   if (disconnected_)

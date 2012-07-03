@@ -62,14 +62,14 @@ class NotificationPrinter : public syncer::SyncNotifierObserver {
   }
 
   virtual void OnIncomingNotification(
-      const syncable::ModelTypePayloadMap& type_payloads,
+      const syncer::ModelTypePayloadMap& type_payloads,
       syncer::IncomingNotificationSource source) OVERRIDE {
-    for (syncable::ModelTypePayloadMap::const_iterator it =
+    for (syncer::ModelTypePayloadMap::const_iterator it =
              type_payloads.begin(); it != type_payloads.end(); ++it) {
       LOG(INFO) << (source == syncer::REMOTE_NOTIFICATION ?
                     "Remote" : "Local")
                 << " Notification: type = "
-                << syncable::ModelTypeToString(it->first)
+                << syncer::ModelTypeToString(it->first)
                 << ", payload = " << it->second;
     }
   }
@@ -242,7 +242,7 @@ int main(int argc, char* argv[]) {
   sync_notifier->SetUniqueId(kUniqueId);
   sync_notifier->UpdateCredentials(email, token);
   // Listen for notifications for all known types.
-  sync_notifier->UpdateEnabledTypes(syncable::ModelTypeSet::All());
+  sync_notifier->UpdateEnabledTypes(syncer::ModelTypeSet::All());
 
   ui_loop.Run();
 

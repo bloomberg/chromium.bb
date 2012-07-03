@@ -74,7 +74,7 @@ void TestExtensionService::CheckForUpdatesSoon() {
 }
 
 syncer::SyncError TestExtensionService::MergeDataAndStartSyncing(
-    syncable::ModelType type,
+    syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
     scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) {
@@ -82,12 +82,12 @@ syncer::SyncError TestExtensionService::MergeDataAndStartSyncing(
   return syncer::SyncError();
 }
 
-void TestExtensionService::StopSyncing(syncable::ModelType type) {
+void TestExtensionService::StopSyncing(syncer::ModelType type) {
   ADD_FAILURE();
 }
 
 syncer::SyncDataList TestExtensionService::GetAllSyncData(
-    syncable::ModelType type) const {
+    syncer::ModelType type) const {
   ADD_FAILURE();
   return syncer::SyncDataList();
 }

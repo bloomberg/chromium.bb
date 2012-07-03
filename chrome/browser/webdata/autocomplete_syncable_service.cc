@@ -108,7 +108,7 @@ AutocompleteSyncableService::AutocompleteSyncableService()
 }
 
 syncer::SyncError AutocompleteSyncableService::MergeDataAndStartSyncing(
-    syncable::ModelType type,
+    syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
     scoped_ptr<syncer::SyncErrorFactory> error_handler) {
@@ -173,19 +173,19 @@ syncer::SyncError AutocompleteSyncableService::MergeDataAndStartSyncing(
   return error;
 }
 
-void AutocompleteSyncableService::StopSyncing(syncable::ModelType type) {
+void AutocompleteSyncableService::StopSyncing(syncer::ModelType type) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(syncable::AUTOFILL, type);
+  DCHECK_EQ(syncer::AUTOFILL, type);
 
   sync_processor_.reset(NULL);
   error_handler_.reset();
 }
 
 syncer::SyncDataList AutocompleteSyncableService::GetAllSyncData(
-    syncable::ModelType type) const {
+    syncer::ModelType type) const {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_processor_.get());
-  DCHECK_EQ(type, syncable::AUTOFILL);
+  DCHECK_EQ(type, syncer::AUTOFILL);
 
   syncer::SyncDataList current_data;
 
@@ -209,7 +209,7 @@ syncer::SyncError AutocompleteSyncableService::ProcessSyncChanges(
 
   if (!sync_processor_.get()) {
     syncer::SyncError error(FROM_HERE, "Models not yet associated.",
-                    syncable::AUTOFILL);
+                    syncer::AUTOFILL);
     return error;
   }
 

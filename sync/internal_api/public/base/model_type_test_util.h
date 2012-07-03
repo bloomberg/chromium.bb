@@ -12,7 +12,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace syncer {
-namespace syncable {
 
 // Defined for googletest.  Forwards to ModelTypeSetToString().
 void PrintTo(ModelTypeSet model_types, ::std::ostream* os);
@@ -22,7 +21,6 @@ void PrintTo(ModelTypeSet model_types, ::std::ostream* os);
 //   EXPECT_CALL(mock, ProcessModelTypes(HasModelTypes(expected_types)));
 ::testing::Matcher<ModelTypeSet> HasModelTypes(ModelTypeSet expected_types);
 
-}  // namespace syncable
 }  // namespace syncer
 
 #endif  // SYNC_INTERNAL_PUBLIC_API_BASE_MODEL_TYPE_TEST_UTIL_H_

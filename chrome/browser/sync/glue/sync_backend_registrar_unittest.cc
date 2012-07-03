@@ -22,17 +22,17 @@ using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::StrictMock;
 using content::BrowserThread;
-using syncable::FIRST_REAL_MODEL_TYPE;
-using syncable::AUTOFILL;
-using syncable::BOOKMARKS;
-using syncable::PREFERENCES;
-using syncable::THEMES;
-using syncable::NIGORI;
-using syncable::PASSWORDS;
-using syncable::MODEL_TYPE_COUNT;
-using syncable::ModelTypeSet;
-using syncable::ModelType;
-using syncable::ModelTypeFromInt;
+using syncer::FIRST_REAL_MODEL_TYPE;
+using syncer::AUTOFILL;
+using syncer::BOOKMARKS;
+using syncer::PREFERENCES;
+using syncer::THEMES;
+using syncer::NIGORI;
+using syncer::PASSWORDS;
+using syncer::MODEL_TYPE_COUNT;
+using syncer::ModelTypeSet;
+using syncer::ModelType;
+using syncer::ModelTypeFromInt;
 
 class SyncBackendRegistrarTest : public testing::Test {
  protected:

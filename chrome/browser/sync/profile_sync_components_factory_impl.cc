@@ -102,7 +102,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
   // disabled.
   if (!command_line_->HasSwitch(switches::kDisableSyncApps)) {
     pss->RegisterDataTypeController(
-        new ExtensionDataTypeController(syncable::APPS, this, profile_, pss));
+        new ExtensionDataTypeController(syncer::APPS, this, profile_, pss));
   }
 
   // Autofill sync is enabled by default.  Register unless explicitly
@@ -123,7 +123,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
   // disabled.
   if (!command_line_->HasSwitch(switches::kDisableSyncExtensions)) {
     pss->RegisterDataTypeController(
-        new ExtensionDataTypeController(syncable::EXTENSIONS,
+        new ExtensionDataTypeController(syncer::EXTENSIONS,
                                         this, profile_, pss));
   }
 
@@ -138,7 +138,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
   // disabled.
   if (!command_line_->HasSwitch(switches::kDisableSyncPreferences)) {
     pss->RegisterDataTypeController(
-        new UIDataTypeController(syncable::PREFERENCES, this, profile_, pss));
+        new UIDataTypeController(syncer::PREFERENCES, this, profile_, pss));
   }
 
 #if defined(ENABLE_THEMES)
@@ -175,7 +175,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
   if (!command_line_->HasSwitch(switches::kDisableSyncExtensionSettings)) {
     pss->RegisterDataTypeController(
         new ExtensionSettingDataTypeController(
-            syncable::EXTENSION_SETTINGS, this, profile_, pss));
+            syncer::EXTENSION_SETTINGS, this, profile_, pss));
   }
 
   // App setting sync is enabled by default.  Register unless explicitly
@@ -183,7 +183,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
   if (!command_line_->HasSwitch(switches::kDisableSyncAppSettings)) {
     pss->RegisterDataTypeController(
         new ExtensionSettingDataTypeController(
-            syncable::APP_SETTINGS, this, profile_, pss));
+            syncer::APP_SETTINGS, this, profile_, pss));
   }
 
   if (!command_line_->HasSwitch(switches::kDisableSyncAutofillProfile)) {
@@ -222,34 +222,34 @@ browser_sync::SharedChangeProcessor* ProfileSyncComponentsFactoryImpl::
 }
 
 base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
-    GetSyncableServiceForType(syncable::ModelType type) {
+    GetSyncableServiceForType(syncer::ModelType type) {
   if (!profile_) {  // For tests.
      return base::WeakPtr<syncer::SyncableService>();
   }
   switch (type) {
-    case syncable::PREFERENCES:
+    case syncer::PREFERENCES:
       return profile_->GetPrefs()->GetSyncableService()->AsWeakPtr();
-    case syncable::AUTOFILL:
-    case syncable::AUTOFILL_PROFILE: {
+    case syncer::AUTOFILL:
+    case syncer::AUTOFILL_PROFILE: {
       if (!web_data_service_.get())
         return base::WeakPtr<syncer::SyncableService>();
-      if (type == syncable::AUTOFILL) {
+      if (type == syncer::AUTOFILL) {
         return web_data_service_->GetAutocompleteSyncableService()->AsWeakPtr();
       } else {
         return web_data_service_->
                    GetAutofillProfileSyncableService()->AsWeakPtr();
       }
     }
-    case syncable::APPS:
-    case syncable::EXTENSIONS:
+    case syncer::APPS:
+    case syncer::EXTENSIONS:
       return extension_system_->extension_service()->AsWeakPtr();
-    case syncable::SEARCH_ENGINES:
+    case syncer::SEARCH_ENGINES:
       return TemplateURLServiceFactory::GetForProfile(profile_)->AsWeakPtr();
-    case syncable::APP_SETTINGS:
-    case syncable::EXTENSION_SETTINGS:
+    case syncer::APP_SETTINGS:
+    case syncer::EXTENSION_SETTINGS:
       return extension_system_->extension_service()->settings_frontend()->
           GetBackendForSync(type)->AsWeakPtr();
-    case syncable::APP_NOTIFICATIONS:
+    case syncer::APP_NOTIFICATIONS:
       return extension_system_->extension_service()->
           app_notification_manager()->AsWeakPtr();
     default:

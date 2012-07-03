@@ -27,7 +27,7 @@ namespace extensions {
 class SettingsSyncProcessor {
  public:
   SettingsSyncProcessor(const std::string& extension_id,
-                        syncable::ModelType type,
+                        syncer::ModelType type,
                         syncer::SyncChangeProcessor* sync_processor);
   ~SettingsSyncProcessor();
 
@@ -41,14 +41,14 @@ class SettingsSyncProcessor {
   // be taken, but this must be notified for internal bookkeeping.
   void NotifyChanges(const ValueStoreChangeList& changes);
 
-  syncable::ModelType type() { return type_; }
+  syncer::ModelType type() { return type_; }
 
  private:
   // ID of the extension the changes are for.
   const std::string extension_id_;
 
   // Sync model type. Either EXTENSION_SETTING or APP_SETTING.
-  const syncable::ModelType type_;
+  const syncer::ModelType type_;
 
   // The sync processor used to send changes to sync.
   syncer::SyncChangeProcessor* const sync_processor_;

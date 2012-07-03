@@ -133,7 +133,7 @@ TEST_F(SyncThemeDataTypeControllerTest, StartAssociationFailed) {
   SetAssociateExpectations();
   EXPECT_CALL(*model_associator_, AssociateModels()).
       WillRepeatedly(
-          Return(syncer::SyncError(FROM_HERE, "Error", syncable::THEMES)));
+          Return(syncer::SyncError(FROM_HERE, "Error", syncer::THEMES)));
 
   EXPECT_CALL(start_callback_,
               Run(DataTypeController::ASSOCIATION_FAILED, _));

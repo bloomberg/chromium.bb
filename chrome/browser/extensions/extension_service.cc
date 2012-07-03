@@ -763,10 +763,10 @@ bool ExtensionService::UninstallExtension(
       content::Details<const std::string>(&extension_id));
 
   if (app_sync_bundle_.HasExtensionId(extension_id) &&
-      sync_change.sync_data().GetDataType() == syncable::APPS) {
+      sync_change.sync_data().GetDataType() == syncer::APPS) {
     app_sync_bundle_.ProcessDeletion(extension_id, sync_change);
   } else if (extension_sync_bundle_.HasExtensionId(extension_id) &&
-             sync_change.sync_data().GetDataType() == syncable::EXTENSIONS) {
+             sync_change.sync_data().GetDataType() == syncer::EXTENSIONS) {
     extension_sync_bundle_.ProcessDeletion(extension_id, sync_change);
   }
 
@@ -1192,7 +1192,7 @@ void ExtensionService::CheckForUpdatesSoon() {
 }
 
 syncer::SyncError ExtensionService::MergeDataAndStartSyncing(
-    syncable::ModelType type,
+    syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
     scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) {
@@ -1200,13 +1200,13 @@ syncer::SyncError ExtensionService::MergeDataAndStartSyncing(
   CHECK(sync_error_factory.get());
 
   switch (type) {
-    case syncable::EXTENSIONS:
+    case syncer::EXTENSIONS:
       extension_sync_bundle_.SetupSync(sync_processor.release(),
                                        sync_error_factory.release(),
                                        initial_sync_data);
       break;
 
-    case syncable::APPS:
+    case syncer::APPS:
       app_sync_bundle_.SetupSync(sync_processor.release(),
                                  sync_error_factory.release(),
                                  initial_sync_data);
@@ -1225,11 +1225,11 @@ syncer::SyncError ExtensionService::MergeDataAndStartSyncing(
        i != sync_data_list.end();
        ++i) {
     switch (type) {
-        case syncable::EXTENSIONS:
+        case syncer::EXTENSIONS:
           sync_change_list.push_back(
               extension_sync_bundle_.CreateSyncChange(*i));
           break;
-        case syncable::APPS:
+        case syncer::APPS:
           sync_change_list.push_back(app_sync_bundle_.CreateSyncChange(*i));
           break;
       default:
@@ -1238,29 +1238,29 @@ syncer::SyncError ExtensionService::MergeDataAndStartSyncing(
   }
 
 
-  if (type == syncable::EXTENSIONS) {
+  if (type == syncer::EXTENSIONS) {
     extension_sync_bundle_.ProcessSyncChangeList(sync_change_list);
-  } else if (type == syncable::APPS) {
+  } else if (type == syncer::APPS) {
     app_sync_bundle_.ProcessSyncChangeList(sync_change_list);
   }
 
   return syncer::SyncError();
 }
 
-void ExtensionService::StopSyncing(syncable::ModelType type) {
-  if (type == syncable::APPS) {
+void ExtensionService::StopSyncing(syncer::ModelType type) {
+  if (type == syncer::APPS) {
     app_sync_bundle_.Reset();
-  } else if (type == syncable::EXTENSIONS) {
+  } else if (type == syncer::EXTENSIONS) {
     extension_sync_bundle_.Reset();
   }
 }
 
 syncer::SyncDataList ExtensionService::GetAllSyncData(
-    syncable::ModelType type) const {
-  if (type == syncable::EXTENSIONS) {
+    syncer::ModelType type) const {
+  if (type == syncer::EXTENSIONS) {
     return extension_sync_bundle_.GetAllSyncData();
 
-  } else if (type == syncable::APPS) {
+  } else if (type == syncer::APPS) {
     return app_sync_bundle_.GetAllSyncData();
   }
 
@@ -1276,11 +1276,11 @@ syncer::SyncError ExtensionService::ProcessSyncChanges(
   for (syncer::SyncChangeList::const_iterator i = change_list.begin();
       i != change_list.end();
       ++i) {
-    syncable::ModelType type = i->sync_data().GetDataType();
-    if (type == syncable::EXTENSIONS) {
+    syncer::ModelType type = i->sync_data().GetDataType();
+    if (type == syncer::EXTENSIONS) {
       extension_sync_bundle_.ProcessSyncChange(
           extensions::ExtensionSyncData(*i));
-    } else if (type == syncable::APPS) {
+    } else if (type == syncer::APPS) {
       app_sync_bundle_.ProcessSyncChange(extensions::AppSyncData(*i));
     }
   }
@@ -1350,7 +1350,7 @@ std::vector<extensions::AppSyncData> ExtensionService::GetAppSyncDataList()
 bool ExtensionService::ProcessExtensionSyncData(
     const extensions::ExtensionSyncData& extension_sync_data) {
   if (!ProcessExtensionSyncDataHelper(extension_sync_data,
-                                      syncable::EXTENSIONS)) {
+                                      syncer::EXTENSIONS)) {
     extension_sync_bundle_.AddPendingExtension(extension_sync_data.id(),
                                                extension_sync_data);
     CheckForUpdatesSoon();
@@ -1385,7 +1385,7 @@ bool ExtensionService::ProcessAppSyncData(
   }
 
   if (!ProcessExtensionSyncDataHelper(app_sync_data.extension_sync_data(),
-                                      syncable::APPS)) {
+                                      syncer::APPS)) {
     app_sync_bundle_.AddPendingApp(id, app_sync_data);
     CheckForUpdatesSoon();
     return false;
@@ -1395,12 +1395,12 @@ bool ExtensionService::ProcessAppSyncData(
 }
 
 bool ExtensionService::IsCorrectSyncType(const Extension& extension,
-                                         syncable::ModelType type) const {
-  if (type == syncable::EXTENSIONS &&
+                                         syncer::ModelType type) const {
+  if (type == syncer::EXTENSIONS &&
       extension.GetSyncType() == Extension::SYNC_TYPE_EXTENSION)
     return true;
 
-  if (type == syncable::APPS &&
+  if (type == syncer::APPS &&
       extension.GetSyncType() == Extension::SYNC_TYPE_APP)
     return true;
 
@@ -1409,7 +1409,7 @@ bool ExtensionService::IsCorrectSyncType(const Extension& extension,
 
 bool ExtensionService::ProcessExtensionSyncDataHelper(
     const extensions::ExtensionSyncData& extension_sync_data,
-    syncable::ModelType type) {
+    syncer::ModelType type) {
   const std::string& id = extension_sync_data.id();
   const Extension* extension = GetInstalledExtension(id);
 
@@ -1464,9 +1464,9 @@ bool ExtensionService::ProcessExtensionSyncDataHelper(
     // permissions.
     const bool kInstallSilently = true;
 
-    CHECK(type == syncable::EXTENSIONS || type == syncable::APPS);
+    CHECK(type == syncer::EXTENSIONS || type == syncer::APPS);
     ExtensionFilter filter =
-        (type == syncable::APPS) ? IsSyncableApp : IsSyncableExtension;
+        (type == syncer::APPS) ? IsSyncableApp : IsSyncableExtension;
 
     if (!pending_extension_manager()->AddFromSync(
             id,

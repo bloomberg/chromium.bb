@@ -152,7 +152,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     syncer::WriteNode node(&trans);
     std::string tag = url.url().spec();
     syncer::WriteNode::InitUniqueByCreationResult result =
-        node.InitUniqueByCreation(syncable::TYPED_URLS, typed_url_root, tag);
+        node.InitUniqueByCreation(syncer::TYPED_URLS, typed_url_root, tag);
     ASSERT_EQ(syncer::WriteNode::INIT_SUCCESS, result);
     TypedUrlModelAssociator::WriteToSyncNode(url, visits, &node);
   }
@@ -310,7 +310,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
 
 void AddTypedUrlEntries(ProfileSyncServiceTypedUrlTest* test,
                         const history::URLRows& entries) {
-  test->CreateRoot(syncable::TYPED_URLS);
+  test->CreateRoot(syncer::TYPED_URLS);
   for (size_t i = 0; i < entries.size(); ++i) {
     history::VisitVector visits;
     visits.push_back(history::VisitRow(
@@ -326,7 +326,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, EmptyNativeEmptySync) {
   EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
       WillOnce(Return(true));
   SetIdleChangeProcessorExpectations();
-  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  CreateRootHelper create_root(this, syncer::TYPED_URLS);
   TypedUrlModelAssociator* associator =
       StartSyncService(create_root.callback());
   history::URLRows sync_entries;
@@ -346,7 +346,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeEmptySync) {
   EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
       WillRepeatedly(DoAll(SetArgumentPointee<2>(visits), Return(true)));
   SetIdleChangeProcessorExpectations();
-  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  CreateRootHelper create_root(this, syncer::TYPED_URLS);
   TypedUrlModelAssociator* associator =
       StartSyncService(create_root.callback());
   history::URLRows sync_entries;
@@ -375,7 +375,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeErrorReadingVisits) {
               GetMostRecentVisitsForURL(native_entry2.id(), _, _)).
                   WillRepeatedly(Return(false));
   SetIdleChangeProcessorExpectations();
-  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
   history::URLRows sync_entries;
   GetTypedUrlsFromSyncDB(&sync_entries);
@@ -396,7 +396,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeWithBlankEmptySync) {
   EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
       WillRepeatedly(DoAll(SetArgumentPointee<2>(visits), Return(true)));
   SetIdleChangeProcessorExpectations();
-  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
   std::vector<history::URLRow> sync_entries;
   GetTypedUrlsFromSyncDB(&sync_entries);
@@ -545,7 +545,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAdd) {
       WillOnce(DoAll(SetArgumentPointee<2>(added_visits), Return(true)));
 
   SetIdleChangeProcessorExpectations();
-  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
 
   history::URLsModifiedDetails details;
@@ -574,7 +574,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAddWithBlank) {
       WillRepeatedly(DoAll(SetArgumentPointee<2>(added_visits), Return(true)));
 
   SetIdleChangeProcessorExpectations();
-  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
 
   history::URLsModifiedDetails details;
@@ -604,7 +604,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdate) {
   EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
       WillOnce(DoAll(SetArgumentPointee<2>(original_visits),
                      Return(true)));
-  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
 
   history::VisitVector updated_visits;
@@ -639,7 +639,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAddFromVisit) {
       WillOnce(DoAll(SetArgumentPointee<2>(added_visits), Return(true)));
 
   SetIdleChangeProcessorExpectations();
-  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
 
   history::URLVisitedDetails details;
@@ -669,7 +669,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdateFromVisit) {
   EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
       WillOnce(DoAll(SetArgumentPointee<2>(original_visits),
                            Return(true)));
-  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
 
   history::VisitVector updated_visits;
@@ -707,7 +707,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserIgnoreChangeUpdateFromVisit) {
   EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
       WillRepeatedly(DoAll(SetArgumentPointee<2>(original_visits),
                            Return(true)));
-  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
   history::URLRows new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
@@ -783,7 +783,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemove) {
   EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
       WillRepeatedly(DoAll(SetArgumentPointee<2>(original_visits1),
                            Return(true)));
-  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
 
   history::URLsDeletedDetails changes;
@@ -819,7 +819,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveArchive) {
   EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
       WillRepeatedly(DoAll(SetArgumentPointee<2>(original_visits1),
                            Return(true)));
-  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
 
   history::URLsDeletedDetails changes;
@@ -857,7 +857,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveAll) {
   EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
       WillRepeatedly(DoAll(SetArgumentPointee<2>(original_visits1),
                            Return(true)));
-  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
 
   history::URLRows new_sync_entries;
@@ -905,7 +905,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailWriteToHistoryBackend) {
   // unrecoverable error.
   ASSERT_FALSE(
       service_->failed_datatypes_handler().GetFailedTypes().Has(
-          syncable::TYPED_URLS));
+          syncer::TYPED_URLS));
   // Some calls should have succeeded, so the error percentage should be
   // somewhere > 0 and < 100.
   ASSERT_NE(0, associator->GetErrorPercentage());
@@ -931,13 +931,13 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailToGetTypedURLs) {
   EXPECT_CALL(error_handler_, CreateAndUploadError(_, _, _)).
               WillOnce(Return(syncer::SyncError(FROM_HERE,
                                         "Unit test",
-                                        syncable::TYPED_URLS)));
+                                        syncer::TYPED_URLS)));
   StartSyncService(base::Bind(&AddTypedUrlEntries, this, sync_entries));
   // Errors getting typed URLs will cause an unrecoverable error (since we can
   // do *nothing* in that case).
   ASSERT_TRUE(
       service_->failed_datatypes_handler().GetFailedTypes().Has(
-          syncable::TYPED_URLS));
+          syncer::TYPED_URLS));
   ASSERT_EQ(
       1u, service_->failed_datatypes_handler().GetFailedTypes().Size());
   // Can't check GetErrorPercentage(), because generating an unrecoverable

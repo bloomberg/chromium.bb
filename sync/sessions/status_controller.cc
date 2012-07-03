@@ -13,9 +13,6 @@
 namespace syncer {
 namespace sessions {
 
-using syncable::FIRST_REAL_MODEL_TYPE;
-using syncable::MODEL_TYPE_COUNT;
-
 StatusController::StatusController(const ModelSafeRoutingInfo& routes)
     : per_model_group_deleter_(&per_model_group_),
       group_restriction_in_effect_(false),
@@ -98,7 +95,7 @@ void StatusController::increment_num_updates_downloaded_by(int value) {
 }
 
 void StatusController::set_types_needing_local_migration(
-    syncable::ModelTypeSet types) {
+    syncer::ModelTypeSet types) {
   model_neutral_.types_needing_local_migration = types;
 }
 

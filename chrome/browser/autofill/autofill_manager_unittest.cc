@@ -2930,16 +2930,16 @@ TEST_F(AutofillManagerTest, UpdatePasswordSyncState) {
   ProfileSyncService* sync_service = ProfileSyncServiceFactory::GetForProfile(
       profile());
   sync_service->SetSyncSetupCompleted();
-  syncable::ModelTypeSet preferred_set;
-  preferred_set.Put(syncable::EXTENSIONS);
-  preferred_set.Put(syncable::PREFERENCES);
+  syncer::ModelTypeSet preferred_set;
+  preferred_set.Put(syncer::EXTENSIONS);
+  preferred_set.Put(syncer::PREFERENCES);
   sync_service->ChangePreferredDataTypes(preferred_set);
-  syncable::ModelTypeSet new_set = sync_service->GetPreferredDataTypes();
+  syncer::ModelTypeSet new_set = sync_service->GetPreferredDataTypes();
   UpdatePasswordGenerationState(false);
   EXPECT_EQ(0u, autofill_manager_->GetSentStates().size());
 
   // Now sync passwords.
-  preferred_set.Put(syncable::PASSWORDS);
+  preferred_set.Put(syncer::PASSWORDS);
   sync_service->ChangePreferredDataTypes(preferred_set);
   UpdatePasswordGenerationState(false);
   EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
@@ -2947,7 +2947,7 @@ TEST_F(AutofillManagerTest, UpdatePasswordSyncState) {
   autofill_manager_->ClearSentStates();
 
   // Add some additional synced state. Nothing should be sent.
-  preferred_set.Put(syncable::THEMES);
+  preferred_set.Put(syncer::THEMES);
   sync_service->ChangePreferredDataTypes(preferred_set);
   UpdatePasswordGenerationState(false);
   EXPECT_EQ(0u, autofill_manager_->GetSentStates().size());
@@ -2981,8 +2981,8 @@ TEST_F(AutofillManagerTest, UpdatePasswordGenerationState) {
   ProfileSyncService* sync_service = ProfileSyncServiceFactory::GetForProfile(
       profile());
   sync_service->SetSyncSetupCompleted();
-  syncable::ModelTypeSet preferred_set;
-  preferred_set.Put(syncable::PASSWORDS);
+  syncer::ModelTypeSet preferred_set;
+  preferred_set.Put(syncer::PASSWORDS);
   sync_service->ChangePreferredDataTypes(preferred_set);
 
   // Enabled state remains false, should not sent.

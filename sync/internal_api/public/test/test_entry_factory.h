@@ -42,18 +42,18 @@ class TestEntryFactory {
                           const syncable::Id& parent_id,
                           const std::string& name,
                           bool is_folder,
-                          syncable::ModelType model_type,
+                          syncer::ModelType model_type,
                           int64* metahandle_out);
 
   // Creates an item that is both unsynced an an unapplied update.  Returns the
   // metahandle of the created item.
   int64 CreateUnappliedAndUnsyncedItem(const std::string& name,
-                                       syncable::ModelType model_type);
+                                       syncer::ModelType model_type);
 
   // Creates an item that has neither IS_UNSYNED or IS_UNAPPLIED_UPDATE.  The
   // item is known to both the server and client.  Returns the metahandle of
   // the created item.
-  int64 CreateSyncedItem(const std::string& name, syncable::ModelType
+  int64 CreateSyncedItem(const std::string& name, syncer::ModelType
                          model_type, bool is_folder);
 
   int64 GetNextRevision();

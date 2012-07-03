@@ -22,7 +22,7 @@ SearchEngineDataTypeController::SearchEngineDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
-    : UIDataTypeController(syncable::SEARCH_ENGINES,
+    : UIDataTypeController(syncer::SEARCH_ENGINES,
                            profile_sync_factory,
                            profile,
                            sync_service) {

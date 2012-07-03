@@ -66,15 +66,15 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(CheckInitialState(0));
   ASSERT_TRUE(CheckInitialState(1));
 
-  ASSERT_TRUE(EnableEncryption(0, syncable::SESSIONS));
+  ASSERT_TRUE(EnableEncryption(0, syncer::SESSIONS));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(IsEncrypted(0, syncable::SESSIONS));
-  ASSERT_TRUE(IsEncrypted(1, syncable::SESSIONS));
+  ASSERT_TRUE(IsEncrypted(0, syncer::SESSIONS));
+  ASSERT_TRUE(IsEncrypted(1, syncer::SESSIONS));
 
   // Should enable encryption for all other types as well. Just check a subset.
-  ASSERT_TRUE(IsEncrypted(1, syncable::PREFERENCES));
-  ASSERT_TRUE(IsEncrypted(1, syncable::BOOKMARKS));
-  ASSERT_TRUE(IsEncrypted(1, syncable::APPS));
+  ASSERT_TRUE(IsEncrypted(1, syncer::PREFERENCES));
+  ASSERT_TRUE(IsEncrypted(1, syncer::BOOKMARKS));
+  ASSERT_TRUE(IsEncrypted(1, syncer::APPS));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
@@ -87,11 +87,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ScopedWindowMap client0_windows;
   ASSERT_TRUE(OpenTabAndGetLocalWindows(0, GURL(kURL1),
       client0_windows.GetMutable()));
-  ASSERT_TRUE(EnableEncryption(0, syncable::SESSIONS));
+  ASSERT_TRUE(EnableEncryption(0, syncer::SESSIONS));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
   // Get foreign session data from client 1.
-  ASSERT_TRUE(IsEncrypted(1, syncable::SESSIONS));
+  ASSERT_TRUE(IsEncrypted(1, syncer::SESSIONS));
   SyncedSessionVector sessions1;
   ASSERT_TRUE(GetSessionData(1, &sessions1));
 
@@ -107,11 +107,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(CheckInitialState(0));
   ASSERT_TRUE(CheckInitialState(1));
 
-  ASSERT_TRUE(EnableEncryption(0, syncable::SESSIONS));
-  ASSERT_TRUE(EnableEncryption(1, syncable::SESSIONS));
+  ASSERT_TRUE(EnableEncryption(0, syncer::SESSIONS));
+  ASSERT_TRUE(EnableEncryption(1, syncer::SESSIONS));
   ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(IsEncrypted(0, syncable::SESSIONS));
-  ASSERT_TRUE(IsEncrypted(1, syncable::SESSIONS));
+  ASSERT_TRUE(IsEncrypted(0, syncer::SESSIONS));
+  ASSERT_TRUE(IsEncrypted(1, syncer::SESSIONS));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, BothChanged) {

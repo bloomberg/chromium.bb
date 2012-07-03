@@ -25,7 +25,7 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
       ProfileSyncService* sync_service);
 
   // FrontendDataTypeController interface.
-  virtual syncable::ModelType type() const OVERRIDE;
+  virtual syncer::ModelType type() const OVERRIDE;
 
   // content::NotificationObserver interface.
   virtual void Observe(int type,

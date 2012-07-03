@@ -25,12 +25,12 @@ class MockDirectory : public Directory {
 
   MOCK_METHOD1(GetEntryByHandle, syncable::EntryKernel*(int64));
 
-  MOCK_METHOD2(set_last_downloadstamp, void(syncable::ModelType, int64));
+  MOCK_METHOD2(set_last_downloadstamp, void(syncer::ModelType, int64));
 
   MOCK_METHOD1(GetEntryByClientTag,
                syncable::EntryKernel*(const std::string&));
 
-  MOCK_METHOD1(PurgeEntriesWithTypeIn, void(syncable::ModelTypeSet));
+  MOCK_METHOD1(PurgeEntriesWithTypeIn, void(syncer::ModelTypeSet));
 
  private:
   syncer::FakeEncryptor encryptor_;

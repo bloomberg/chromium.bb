@@ -85,7 +85,7 @@ class ProfileSyncComponentsFactory {
   // Weak pointer may be unset if service is already destroyed.
   // Note: Should only be called on the same thread on which a datatype resides.
   virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
-      syncable::ModelType type) = 0;
+      syncer::ModelType type) = 0;
 
   // Legacy datatypes that need to be converted to the SyncableService API.
   virtual SyncComponents CreateBookmarkSyncComponents(

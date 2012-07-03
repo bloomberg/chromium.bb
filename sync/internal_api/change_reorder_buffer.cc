@@ -154,8 +154,7 @@ bool ChangeReorderBuffer::GetAllChangesInTreeOrder(
         CHECK_EQ(BaseNode::INIT_OK, node.InitByIdLookup(i->first));
 
         // We only care about parents of entry's with position-sensitive models.
-        if (syncable::ShouldMaintainPosition(
-                node.GetEntry()->GetModelType())) {
+        if (syncer::ShouldMaintainPosition(node.GetEntry()->GetModelType())) {
           parents_of_position_changes.insert(node.GetParentId());
         }
       }

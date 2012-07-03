@@ -24,7 +24,7 @@ class MockModelAssociationResultProcessor :
 
 FakeDataTypeController* GetController(
     const DataTypeController::TypeMap& controllers,
-    syncable::ModelType model_type) {
+    syncer::ModelType model_type) {
   DataTypeController::TypeMap::const_iterator it =
       controllers.find(model_type);
   if (it == controllers.end()) {
@@ -69,17 +69,17 @@ class ModelAssociationManagerTest : public testing::Test {
 // Start a type and make sure ModelAssociationManager callst the |Start|
 // method and calls the callback when it is done.
 TEST_F(ModelAssociationManagerTest, SimpleModelStart) {
-  controllers_[syncable::BOOKMARKS] =
-      new FakeDataTypeController(syncable::BOOKMARKS);
+  controllers_[syncer::BOOKMARKS] =
+      new FakeDataTypeController(syncer::BOOKMARKS);
   ModelAssociationManager model_association_manager(&controllers_,
                                                     &result_processor_);
-  syncable::ModelTypeSet types;
-  types.Put(syncable::BOOKMARKS);
+  syncer::ModelTypeSet types;
+  types.Put(syncer::BOOKMARKS);
   DataTypeManager::ConfigureResult expected_result(
       DataTypeManager::OK,
       types,
       std::list<syncer::SyncError>(),
-      syncable::ModelTypeSet());
+      syncer::ModelTypeSet());
   EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
 
@@ -87,27 +87,27 @@ TEST_F(ModelAssociationManagerTest, SimpleModelStart) {
   model_association_manager.StopDisabledTypes();
   model_association_manager.StartAssociationAsync();
 
-  EXPECT_EQ(GetController(controllers_, syncable::BOOKMARKS)->state(),
+  EXPECT_EQ(GetController(controllers_, syncer::BOOKMARKS)->state(),
             DataTypeController::MODEL_LOADED);
-  GetController(controllers_, syncable::BOOKMARKS)->FinishStart(
+  GetController(controllers_, syncer::BOOKMARKS)->FinishStart(
       DataTypeController::OK);
 }
 
 // Start a type and call stop before it finishes associating.
 TEST_F(ModelAssociationManagerTest, StopModelBeforeFinish) {
-  controllers_[syncable::BOOKMARKS] =
-      new FakeDataTypeController(syncable::BOOKMARKS);
+  controllers_[syncer::BOOKMARKS] =
+      new FakeDataTypeController(syncer::BOOKMARKS);
   ModelAssociationManager model_association_manager(&controllers_,
                                                     &result_processor_);
 
-  syncable::ModelTypeSet types;
-  types.Put(syncable::BOOKMARKS);
+  syncer::ModelTypeSet types;
+  types.Put(syncer::BOOKMARKS);
 
   DataTypeManager::ConfigureResult expected_result(
       DataTypeManager::ABORTED,
       types,
       std::list<syncer::SyncError>(),
-      syncable::ModelTypeSet());
+      syncer::ModelTypeSet());
 
   EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
@@ -116,26 +116,26 @@ TEST_F(ModelAssociationManagerTest, StopModelBeforeFinish) {
   model_association_manager.StopDisabledTypes();
   model_association_manager.StartAssociationAsync();
 
-  EXPECT_EQ(GetController(controllers_, syncable::BOOKMARKS)->state(),
+  EXPECT_EQ(GetController(controllers_, syncer::BOOKMARKS)->state(),
             DataTypeController::MODEL_LOADED);
   model_association_manager.Stop();
-  EXPECT_EQ(GetController(controllers_, syncable::BOOKMARKS)->state(),
+  EXPECT_EQ(GetController(controllers_, syncer::BOOKMARKS)->state(),
             DataTypeController::NOT_RUNNING);
 }
 
 // Start a type, let it finish and then call stop.
 TEST_F(ModelAssociationManagerTest, StopAfterFinish) {
-  controllers_[syncable::BOOKMARKS] =
-      new FakeDataTypeController(syncable::BOOKMARKS);
+  controllers_[syncer::BOOKMARKS] =
+      new FakeDataTypeController(syncer::BOOKMARKS);
   ModelAssociationManager model_association_manager(&controllers_,
                                                     &result_processor_);
-  syncable::ModelTypeSet types;
-  types.Put(syncable::BOOKMARKS);
+  syncer::ModelTypeSet types;
+  types.Put(syncer::BOOKMARKS);
   DataTypeManager::ConfigureResult expected_result(
       DataTypeManager::OK,
       types,
       std::list<syncer::SyncError>(),
-      syncable::ModelTypeSet());
+      syncer::ModelTypeSet());
   EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
 
@@ -143,32 +143,32 @@ TEST_F(ModelAssociationManagerTest, StopAfterFinish) {
   model_association_manager.StopDisabledTypes();
   model_association_manager.StartAssociationAsync();
 
-  EXPECT_EQ(GetController(controllers_, syncable::BOOKMARKS)->state(),
+  EXPECT_EQ(GetController(controllers_, syncer::BOOKMARKS)->state(),
             DataTypeController::MODEL_LOADED);
-  GetController(controllers_, syncable::BOOKMARKS)->FinishStart(
+  GetController(controllers_, syncer::BOOKMARKS)->FinishStart(
       DataTypeController::OK);
 
   model_association_manager.Stop();
-  EXPECT_EQ(GetController(controllers_, syncable::BOOKMARKS)->state(),
+  EXPECT_EQ(GetController(controllers_, syncer::BOOKMARKS)->state(),
             DataTypeController::NOT_RUNNING);
 }
 
 // Make a type fail model association and verify correctness.
 TEST_F(ModelAssociationManagerTest, TypeFailModelAssociation) {
-  controllers_[syncable::BOOKMARKS] =
-      new FakeDataTypeController(syncable::BOOKMARKS);
+  controllers_[syncer::BOOKMARKS] =
+      new FakeDataTypeController(syncer::BOOKMARKS);
   ModelAssociationManager model_association_manager(&controllers_,
                                                     &result_processor_);
-  syncable::ModelTypeSet types;
-  types.Put(syncable::BOOKMARKS);
+  syncer::ModelTypeSet types;
+  types.Put(syncer::BOOKMARKS);
   std::list<syncer::SyncError> errors;
-  syncer::SyncError error(FROM_HERE, "Failed", syncable::BOOKMARKS);
+  syncer::SyncError error(FROM_HERE, "Failed", syncer::BOOKMARKS);
   errors.push_back(error);
   DataTypeManager::ConfigureResult expected_result(
       DataTypeManager::PARTIAL_SUCCESS,
       types,
       errors,
-      syncable::ModelTypeSet());
+      syncer::ModelTypeSet());
   EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
 
@@ -176,28 +176,28 @@ TEST_F(ModelAssociationManagerTest, TypeFailModelAssociation) {
   model_association_manager.StopDisabledTypes();
   model_association_manager.StartAssociationAsync();
 
-  EXPECT_EQ(GetController(controllers_, syncable::BOOKMARKS)->state(),
+  EXPECT_EQ(GetController(controllers_, syncer::BOOKMARKS)->state(),
             DataTypeController::MODEL_LOADED);
-  GetController(controllers_, syncable::BOOKMARKS)->FinishStart(
+  GetController(controllers_, syncer::BOOKMARKS)->FinishStart(
       DataTypeController::ASSOCIATION_FAILED);
 }
 
 // Ensure configuring stops when a type returns a unrecoverable error.
 TEST_F(ModelAssociationManagerTest, TypeReturnUnrecoverableError) {
-  controllers_[syncable::BOOKMARKS] =
-      new FakeDataTypeController(syncable::BOOKMARKS);
+  controllers_[syncer::BOOKMARKS] =
+      new FakeDataTypeController(syncer::BOOKMARKS);
   ModelAssociationManager model_association_manager(&controllers_,
                                                     &result_processor_);
-  syncable::ModelTypeSet types;
-  types.Put(syncable::BOOKMARKS);
+  syncer::ModelTypeSet types;
+  types.Put(syncer::BOOKMARKS);
   std::list<syncer::SyncError> errors;
-  syncer::SyncError error(FROM_HERE, "Failed", syncable::BOOKMARKS);
+  syncer::SyncError error(FROM_HERE, "Failed", syncer::BOOKMARKS);
   errors.push_back(error);
   DataTypeManager::ConfigureResult expected_result(
       DataTypeManager::UNRECOVERABLE_ERROR,
       types,
       errors,
-      syncable::ModelTypeSet());
+      syncer::ModelTypeSet());
   EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
 
@@ -205,25 +205,25 @@ TEST_F(ModelAssociationManagerTest, TypeReturnUnrecoverableError) {
   model_association_manager.StopDisabledTypes();
   model_association_manager.StartAssociationAsync();
 
-  EXPECT_EQ(GetController(controllers_, syncable::BOOKMARKS)->state(),
+  EXPECT_EQ(GetController(controllers_, syncer::BOOKMARKS)->state(),
             DataTypeController::MODEL_LOADED);
-  GetController(controllers_, syncable::BOOKMARKS)->FinishStart(
+  GetController(controllers_, syncer::BOOKMARKS)->FinishStart(
       DataTypeController::UNRECOVERABLE_ERROR);
 }
 
 TEST_F(ModelAssociationManagerTest, InitializeAbortsLoad) {
-  controllers_[syncable::BOOKMARKS] =
-      new FakeDataTypeController(syncable::BOOKMARKS);
-  controllers_[syncable::THEMES] =
-      new FakeDataTypeController(syncable::THEMES);
+  controllers_[syncer::BOOKMARKS] =
+      new FakeDataTypeController(syncer::BOOKMARKS);
+  controllers_[syncer::THEMES] =
+      new FakeDataTypeController(syncer::THEMES);
 
-  GetController(controllers_, syncable::BOOKMARKS)->SetDelayModelLoad();
+  GetController(controllers_, syncer::BOOKMARKS)->SetDelayModelLoad();
   ModelAssociationManager model_association_manager(&controllers_,
                                                     &result_processor_);
-  syncable::ModelTypeSet types(syncable::BOOKMARKS, syncable::THEMES);
+  syncer::ModelTypeSet types(syncer::BOOKMARKS, syncer::THEMES);
 
-  syncable::ModelTypeSet expected_types_waiting_to_load;
-  expected_types_waiting_to_load.Put(syncable::BOOKMARKS);
+  syncer::ModelTypeSet expected_types_waiting_to_load;
+  expected_types_waiting_to_load.Put(syncer::BOOKMARKS);
   DataTypeManager::ConfigureResult expected_result_partially_done(
       DataTypeManager::PARTIAL_SUCCESS,
       types,
@@ -246,7 +246,7 @@ TEST_F(ModelAssociationManagerTest, InitializeAbortsLoad) {
   task.Run();  // Bookmark load times out here.
 
   // Apps finishes associating here.
-  GetController(controllers_, syncable::THEMES)->FinishStart(
+  GetController(controllers_, syncer::THEMES)->FinishStart(
       DataTypeController::OK);
 
   // At this point, BOOKMARKS is still waiting to load (as evidenced by
@@ -257,18 +257,18 @@ TEST_F(ModelAssociationManagerTest, InitializeAbortsLoad) {
   // to the type having completed loading.
   EXPECT_CALL(result_processor_, OnTypesLoaded()).Times(0);
 
-  EXPECT_EQ(GetController(controllers_, syncable::BOOKMARKS)->state(),
+  EXPECT_EQ(GetController(controllers_, syncer::BOOKMARKS)->state(),
             DataTypeController::MODEL_STARTING);
 
   model_association_manager.Initialize(types);
-  EXPECT_EQ(GetController(controllers_, syncable::BOOKMARKS)->state(),
+  EXPECT_EQ(GetController(controllers_, syncer::BOOKMARKS)->state(),
             DataTypeController::NOT_RUNNING);
 
   DataTypeManager::ConfigureResult expected_result_done(
       DataTypeManager::OK,
       types,
       std::list<syncer::SyncError>(),
-      syncable::ModelTypeSet());
+      syncer::ModelTypeSet());
   EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result_done));
 
@@ -276,27 +276,27 @@ TEST_F(ModelAssociationManagerTest, InitializeAbortsLoad) {
   model_association_manager.StartAssociationAsync();
 
   GetController(controllers_,
-                syncable::BOOKMARKS)->SimulateModelLoadFinishing();
-  GetController(controllers_, syncable::BOOKMARKS)->FinishStart(
+                syncer::BOOKMARKS)->SimulateModelLoadFinishing();
+  GetController(controllers_, syncer::BOOKMARKS)->FinishStart(
       DataTypeController::OK);
 }
 
 // Start 2 types. One of which timeout loading. Ensure that type is
 // fully configured eventually.
 TEST_F(ModelAssociationManagerTest, ModelStartWithSlowLoadingType) {
-  controllers_[syncable::BOOKMARKS] =
-      new FakeDataTypeController(syncable::BOOKMARKS);
-  controllers_[syncable::APPS] =
-      new FakeDataTypeController(syncable::APPS);
-  GetController(controllers_, syncable::BOOKMARKS)->SetDelayModelLoad();
+  controllers_[syncer::BOOKMARKS] =
+      new FakeDataTypeController(syncer::BOOKMARKS);
+  controllers_[syncer::APPS] =
+      new FakeDataTypeController(syncer::APPS);
+  GetController(controllers_, syncer::BOOKMARKS)->SetDelayModelLoad();
   ModelAssociationManager model_association_manager(&controllers_,
                                                     &result_processor_);
-  syncable::ModelTypeSet types;
-  types.Put(syncable::BOOKMARKS);
-  types.Put(syncable::APPS);
+  syncer::ModelTypeSet types;
+  types.Put(syncer::BOOKMARKS);
+  types.Put(syncer::APPS);
 
-  syncable::ModelTypeSet expected_types_waiting_to_load;
-  expected_types_waiting_to_load.Put(syncable::BOOKMARKS);
+  syncer::ModelTypeSet expected_types_waiting_to_load;
+  expected_types_waiting_to_load.Put(syncer::BOOKMARKS);
   DataTypeManager::ConfigureResult expected_result_partially_done(
       DataTypeManager::PARTIAL_SUCCESS,
       types,
@@ -307,7 +307,7 @@ TEST_F(ModelAssociationManagerTest, ModelStartWithSlowLoadingType) {
       DataTypeManager::OK,
       types,
       std::list<syncer::SyncError>(),
-      syncable::ModelTypeSet());
+      syncer::ModelTypeSet());
 
   EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result_partially_done));
@@ -328,11 +328,11 @@ TEST_F(ModelAssociationManagerTest, ModelStartWithSlowLoadingType) {
   task.Run();
 
   // Simulate delayed loading of bookmark model.
-  GetController(controllers_, syncable::APPS)->FinishStart(
+  GetController(controllers_, syncer::APPS)->FinishStart(
       DataTypeController::OK);
 
   GetController(controllers_,
-                syncable::BOOKMARKS)->SimulateModelLoadFinishing();
+                syncer::BOOKMARKS)->SimulateModelLoadFinishing();
 
   EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result_done));
@@ -343,9 +343,9 @@ TEST_F(ModelAssociationManagerTest, ModelStartWithSlowLoadingType) {
   model_association_manager.StartAssociationAsync();
 
   GetController(controllers_,
-                syncable::BOOKMARKS)->SimulateModelLoadFinishing();
+                syncer::BOOKMARKS)->SimulateModelLoadFinishing();
 
-  GetController(controllers_, syncable::BOOKMARKS)->FinishStart(
+  GetController(controllers_, syncer::BOOKMARKS)->FinishStart(
       DataTypeController::OK);
 }
 

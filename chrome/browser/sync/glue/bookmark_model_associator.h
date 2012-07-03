@@ -35,7 +35,7 @@ namespace browser_sync {
 class BookmarkModelAssociator
     : public PerDataTypeAssociatorInterface<BookmarkNode, int64> {
  public:
-  static syncable::ModelType model_type() { return syncable::BOOKMARKS; }
+  static syncer::ModelType model_type() { return syncer::BOOKMARKS; }
   // |expect_mobile_bookmarks_folder| controls whether or not we
   // expect the mobile bookmarks permanent folder to be created.
   // Should be set to true only by mobile clients.

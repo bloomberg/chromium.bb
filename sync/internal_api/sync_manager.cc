@@ -98,8 +98,6 @@ namespace syncer {
 
 using sessions::SyncSessionContext;
 using syncable::ImmutableWriteTransactionInfo;
-using syncable::ModelType;
-using syncable::ModelTypeSet;
 using syncable::SPECIFICS;
 
 const int SyncManager::kDefaultNudgeDelayMilliseconds = 200;
@@ -135,10 +133,10 @@ class SyncManager::SyncInternal
         created_on_loop_(MessageLoop::current()),
         nigori_overwrite_count_(0) {
     // Pre-fill |notification_info_map_|.
-    for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-         i < syncable::MODEL_TYPE_COUNT; ++i) {
+    for (int i = syncer::FIRST_REAL_MODEL_TYPE;
+         i < syncer::MODEL_TYPE_COUNT; ++i) {
       notification_info_map_.insert(
-          std::make_pair(syncable::ModelTypeFromInt(i), NotificationInfo()));
+          std::make_pair(syncer::ModelTypeFromInt(i), NotificationInfo()));
     }
 
     // Bind message handlers.
@@ -297,7 +295,7 @@ class SyncManager::SyncInternal
 
   // Cryptographer::Observer implementation.
   virtual void OnEncryptedTypesChanged(
-      syncable::ModelTypeSet encrypted_types,
+      syncer::ModelTypeSet encrypted_types,
       bool encrypt_everything) OVERRIDE;
 
   // SyncNotifierObserver implementation.
@@ -305,7 +303,7 @@ class SyncManager::SyncInternal
   virtual void OnNotificationsDisabled(
       syncer::NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
-      const syncable::ModelTypePayloadMap& type_payloads,
+      const syncer::ModelTypePayloadMap& type_payloads,
       syncer::IncomingNotificationSource source) OVERRIDE;
 
   void AddObserver(SyncManager::Observer* observer);
@@ -349,7 +347,7 @@ class SyncManager::SyncInternal
   // ExtraPasswordChangeRecordData field of |buffer|. Otherwise sets
   // |buffer|'s specifics field to contain the unencrypted data.
   void SetExtraChangeRecordData(int64 id,
-                                syncable::ModelType type,
+                                syncer::ModelType type,
                                 ChangeReorderBuffer* buffer,
                                 Cryptographer* cryptographer,
                                 const syncable::EntryKernel& original,
@@ -359,7 +357,7 @@ class SyncManager::SyncInternal
   // Called only by our NetworkChangeNotifier.
   virtual void OnIPAddressChanged() OVERRIDE;
 
-  syncable::ModelTypeSet InitialSyncEndedTypes() {
+  syncer::ModelTypeSet InitialSyncEndedTypes() {
     DCHECK(initialized_);
     return directory()->initial_sync_ended_types();
   }
@@ -396,7 +394,7 @@ class SyncManager::SyncInternal
     }
   };
 
-  typedef std::map<syncable::ModelType, NotificationInfo> NotificationInfoMap;
+  typedef std::map<syncer::ModelType, NotificationInfo> NotificationInfoMap;
   typedef JsArgList
       (SyncManager::SyncInternal::*UnboundJsMessageHandler)(const JsArgList&);
   typedef base::Callback<JsArgList(const JsArgList&)> JsMessageHandler;
@@ -421,7 +419,7 @@ class SyncManager::SyncInternal
     // If the datatype isn't one where the browser model cares about position,
     // don't bother notifying that data model of position-only changes.
     if (!ShouldMaintainPosition(
-            syncable::GetModelTypeFromSpecifics(b.ref(SPECIFICS))))
+            syncer::GetModelTypeFromSpecifics(b.ref(SPECIFICS))))
       return false;
     if (a.ref(syncable::NEXT_ID) != b.ref(syncable::NEXT_ID))
       return true;
@@ -440,12 +438,12 @@ class SyncManager::SyncInternal
     const syncable::EntryKernel& b = mutation.mutated;
     const sync_pb::EntitySpecifics& a_specifics = a.ref(SPECIFICS);
     const sync_pb::EntitySpecifics& b_specifics = b.ref(SPECIFICS);
-    DCHECK_EQ(syncable::GetModelTypeFromSpecifics(a_specifics),
-              syncable::GetModelTypeFromSpecifics(b_specifics));
-    syncable::ModelType model_type =
-        syncable::GetModelTypeFromSpecifics(b_specifics);
+    DCHECK_EQ(syncer::GetModelTypeFromSpecifics(a_specifics),
+              syncer::GetModelTypeFromSpecifics(b_specifics));
+    syncer::ModelType model_type =
+        syncer::GetModelTypeFromSpecifics(b_specifics);
     // Suppress updates to items that aren't tracked by any browser model.
-    if (model_type < syncable::FIRST_REAL_MODEL_TYPE ||
+    if (model_type < syncer::FIRST_REAL_MODEL_TYPE ||
         !a.ref(syncable::UNIQUE_SERVER_TAG).empty()) {
       return false;
     }
@@ -467,7 +465,7 @@ class SyncManager::SyncInternal
   }
 
   bool ChangeBuffersAreEmpty() {
-    for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
+    for (int i = 0; i < syncer::MODEL_TYPE_COUNT; ++i) {
       if (!change_buffers_[i].IsEmpty())
         return false;
     }
@@ -479,7 +477,7 @@ class SyncManager::SyncInternal
   // Called for every notification. This updates the notification statistics
   // to be displayed in about:sync.
   void UpdateNotificationInfo(
-      const syncable::ModelTypePayloadMap& type_payloads);
+      const syncer::ModelTypePayloadMap& type_payloads);
 
   // Checks for server reachabilty and requests a nudge.
   void OnIPAddressChangedImpl();
@@ -560,7 +558,7 @@ class SyncManager::SyncInternal
   // forwarded to the observer slightly later, at the TRANSACTION_ENDING
   // step by HandleTransactionEndingChangeEvent. The list is cleared in the
   // TRANSACTION_COMPLETE step by HandleTransactionCompleteChangeEvent.
-  ChangeReorderBuffer change_buffers_[syncable::MODEL_TYPE_COUNT];
+  ChangeReorderBuffer change_buffers_[syncer::MODEL_TYPE_COUNT];
 
   SyncManager::ChangeDelegate* change_delegate_;
 
@@ -633,10 +631,10 @@ class NudgeStrategy {
 
   static NudgeDelayStrategy GetNudgeDelayStrategy(const ModelType& type) {
     switch (type) {
-     case syncable::AUTOFILL:
+     case syncer::AUTOFILL:
        return ACCOMPANY_ONLY;
-     case syncable::PREFERENCES:
-     case syncable::SESSIONS:
+     case syncer::PREFERENCES:
+     case syncer::SESSIONS:
        return CUSTOM;
      default:
        return IMMEDIATE;
@@ -660,11 +658,11 @@ class NudgeStrategy {
        break;
      case CUSTOM:
        switch (model_type) {
-         case syncable::PREFERENCES:
+         case syncer::PREFERENCES:
            delay = TimeDelta::FromMilliseconds(
                SyncManager::kPreferencesNudgeDelayMilliseconds);
            break;
-         case syncable::SESSIONS:
+         case syncer::SESSIONS:
            delay = core->scheduler()->sessions_commit_delay();
            break;
          default:
@@ -747,7 +745,7 @@ void SyncManager::ThrowUnrecoverableError() {
       FROM_HERE, "Simulating unrecoverable error for testing purposes.");
 }
 
-syncable::ModelTypeSet SyncManager::InitialSyncEndedTypes() {
+syncer::ModelTypeSet SyncManager::InitialSyncEndedTypes() {
   return data_->InitialSyncEndedTypes();
 }
 
@@ -1013,7 +1011,7 @@ void SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback(
     const std::string& chrome_version,
     const base::Closure& done_callback,
     const std::string& session_name) {
-  if (!directory()->initial_sync_ended_for_type(syncable::NIGORI)) {
+  if (!directory()->initial_sync_ended_for_type(syncer::NIGORI)) {
     done_callback.Run();  // Should only happen during first time sync.
     return;
   }
@@ -1553,15 +1551,14 @@ void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
   Cryptographer* cryptographer = trans->GetCryptographer();
   if (!cryptographer || !cryptographer->is_ready())
     return;
-  syncable::ModelTypeSet encrypted_types = GetEncryptedTypes(trans);
-  for (syncable::ModelTypeSet::Iterator iter = encrypted_types.First();
+  syncer::ModelTypeSet encrypted_types = GetEncryptedTypes(trans);
+  for (syncer::ModelTypeSet::Iterator iter = encrypted_types.First();
        iter.Good(); iter.Inc()) {
-    if (iter.Get() == syncable::PASSWORDS ||
-        iter.Get() == syncable::NIGORI)
+    if (iter.Get() == syncer::PASSWORDS || iter.Get() == syncer::NIGORI)
       continue; // These types handle encryption differently.
 
     ReadNode type_root(trans);
-    std::string tag = syncable::ModelTypeToRootTag(iter.Get());
+    std::string tag = syncer::ModelTypeToRootTag(iter.Get());
     if (type_root.InitByTagLookup(tag) != syncer::BaseNode::INIT_OK)
       continue; // Don't try to reencrypt if the type's data is unavailable.
 
@@ -1595,8 +1592,7 @@ void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
   // Passwords are encrypted with their own legacy scheme.  Passwords are always
   // encrypted so we don't need to check GetEncryptedTypes() here.
   ReadNode passwords_root(trans);
-  std::string passwords_tag =
-      syncable::ModelTypeToRootTag(syncable::PASSWORDS);
+  std::string passwords_tag = syncer::ModelTypeToRootTag(syncer::PASSWORDS);
   if (passwords_root.InitByTagLookup(passwords_tag) ==
           syncer::BaseNode::INIT_OK) {
     int64 child_id = passwords_root.GetFirstChildId();
@@ -1774,9 +1770,9 @@ ModelTypeSet
   ReadTransaction read_trans(GetUserShare(), trans);
 
   ModelTypeSet models_with_changes;
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
-    const syncable::ModelType type = syncable::ModelTypeFromInt(i);
+  for (int i = syncer::FIRST_REAL_MODEL_TYPE;
+       i < syncer::MODEL_TYPE_COUNT; ++i) {
+    const syncer::ModelType type = syncer::ModelTypeFromInt(i);
     if (change_buffers_[type].IsEmpty())
       continue;
 
@@ -1810,7 +1806,7 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
       "CALCULATE_CHANGES called with unapplied old changes.";
 
   // The mutated model type, or UNSPECIFIED if nothing was mutated.
-  syncable::ModelTypeSet mutated_model_types;
+  syncer::ModelTypeSet mutated_model_types;
 
   const syncable::ImmutableEntryKernelMutationMap& mutations =
       write_transaction_info.Get().mutations;
@@ -1820,16 +1816,16 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
       continue;
     }
 
-    syncable::ModelType model_type =
-        syncable::GetModelTypeFromSpecifics(
+    syncer::ModelType model_type =
+        syncer::GetModelTypeFromSpecifics(
             it->second.mutated.ref(SPECIFICS));
-    if (model_type < syncable::FIRST_REAL_MODEL_TYPE) {
+    if (model_type < syncer::FIRST_REAL_MODEL_TYPE) {
       NOTREACHED() << "Permanent or underspecified item changed via syncapi.";
       continue;
     }
 
     // Found real mutation.
-    if (model_type != syncable::UNSPECIFIED) {
+    if (model_type != syncer::UNSPECIFIED) {
       mutated_model_types.Put(model_type);
     }
   }
@@ -1848,14 +1844,14 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
 }
 
 void SyncManager::SyncInternal::SetExtraChangeRecordData(int64 id,
-    syncable::ModelType type, ChangeReorderBuffer* buffer,
+    syncer::ModelType type, ChangeReorderBuffer* buffer,
     Cryptographer* cryptographer, const syncable::EntryKernel& original,
     bool existed_before, bool exists_now) {
   // If this is a deletion and the datatype was encrypted, we need to decrypt it
   // and attach it to the buffer.
   if (!exists_now && existed_before) {
     sync_pb::EntitySpecifics original_specifics(original.ref(SPECIFICS));
-    if (type == syncable::PASSWORDS) {
+    if (type == syncer::PASSWORDS) {
       // Passwords must use their own legacy ExtraPasswordChangeRecordData.
       scoped_ptr<sync_pb::PasswordSpecificsData> data(
           DecryptPasswordSpecifics(original_specifics, cryptographer));
@@ -1894,10 +1890,10 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
     bool exists_now = !it->second.mutated.ref(syncable::IS_DEL);
 
     // Omit items that aren't associated with a model.
-    syncable::ModelType type =
-        syncable::GetModelTypeFromSpecifics(
+    syncer::ModelType type =
+        syncer::GetModelTypeFromSpecifics(
             it->second.mutated.ref(SPECIFICS));
-    if (type < syncable::FIRST_REAL_MODEL_TYPE)
+    if (type < syncer::FIRST_REAL_MODEL_TYPE)
       continue;
 
     int64 handle = it->first;
@@ -1979,7 +1975,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
                           OnPassphraseRequired(syncer::REASON_DECRYPTION,
                                                pending_keys));
       } else if (!cryptographer->is_ready() &&
-                 event.snapshot.initial_sync_ended().Has(syncable::NIGORI)) {
+                 event.snapshot.initial_sync_ended().Has(syncer::NIGORI)) {
         DVLOG(1) << "OnPassphraseRequired sent because cryptographer is not "
                  << "ready";
         FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
@@ -2022,7 +2018,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
     if (is_notifiable_commit) {
       if (sync_notifier_.get()) {
         const ModelTypeSet changed_types =
-            syncable::ModelTypePayloadMapToEnumSet(
+            syncer::ModelTypePayloadMapToEnumSet(
                 event.snapshot.source().types);
         sync_notifier_->SendNotification(changed_types);
       } else {
@@ -2100,7 +2096,7 @@ DictionaryValue* SyncManager::SyncInternal::NotificationInfoToValue(
   for (NotificationInfoMap::const_iterator it = notification_info.begin();
       it != notification_info.end(); ++it) {
     const std::string& model_type_str =
-        syncable::ModelTypeToString(it->first);
+        syncer::ModelTypeToString(it->first);
     value->Set(model_type_str, it->second.ToValue());
   }
 
@@ -2233,7 +2229,7 @@ JsArgList SyncManager::SyncInternal::GetChildNodeIds(
 }
 
 void SyncManager::SyncInternal::OnEncryptedTypesChanged(
-    syncable::ModelTypeSet encrypted_types,
+    syncer::ModelTypeSet encrypted_types,
     bool encrypt_everything) {
   // NOTE: We're in a transaction.
   FOR_EACH_OBSERVER(
@@ -2242,8 +2238,8 @@ void SyncManager::SyncInternal::OnEncryptedTypesChanged(
 }
 
 void SyncManager::SyncInternal::UpdateNotificationInfo(
-    const syncable::ModelTypePayloadMap& type_payloads) {
-  for (syncable::ModelTypePayloadMap::const_iterator it = type_payloads.begin();
+    const syncer::ModelTypePayloadMap& type_payloads) {
+  for (syncer::ModelTypePayloadMap::const_iterator it = type_payloads.begin();
        it != type_payloads.end(); ++it) {
     NotificationInfo* info = &notification_info_map_[it->first];
     info->total_count++;
@@ -2290,7 +2286,7 @@ void SyncManager::SyncInternal::OnNotificationsDisabled(
 }
 
 void SyncManager::SyncInternal::OnIncomingNotification(
-    const syncable::ModelTypePayloadMap& type_payloads,
+    const syncer::ModelTypePayloadMap& type_payloads,
     syncer::IncomingNotificationSource source) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (source == syncer::LOCAL_NOTIFICATION) {
@@ -2318,11 +2314,11 @@ void SyncManager::SyncInternal::OnIncomingNotification(
     DictionaryValue details;
     ListValue* changed_types = new ListValue();
     details.Set("changedTypes", changed_types);
-    for (syncable::ModelTypePayloadMap::const_iterator
+    for (syncer::ModelTypePayloadMap::const_iterator
              it = type_payloads.begin();
          it != type_payloads.end(); ++it) {
       const std::string& model_type_str =
-          syncable::ModelTypeToString(it->first);
+          syncer::ModelTypeToString(it->first);
       changed_types->Append(Value::CreateStringValue(model_type_str));
     }
     details.SetString("source", (source == syncer::LOCAL_NOTIFICATION) ?
@@ -2374,7 +2370,7 @@ TimeDelta SyncManager::GetNudgeDelayTimeDelta(
   return data_->GetNudgeDelayTimeDelta(model_type);
 }
 
-syncable::ModelTypeSet SyncManager::GetEncryptedDataTypesForTest() const {
+syncer::ModelTypeSet SyncManager::GetEncryptedDataTypesForTest() const {
   ReadTransaction trans(FROM_HERE, GetUserShare());
   return GetEncryptedTypes(&trans);
 }
@@ -2414,8 +2410,8 @@ void SyncManager::SimulateDisableNotificationsForTest(int reason) {
 void SyncManager::TriggerOnIncomingNotificationForTest(
     ModelTypeSet model_types) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  syncable::ModelTypePayloadMap model_types_with_payloads =
-      syncable::ModelTypePayloadMapFromEnumSet(model_types,
+  syncer::ModelTypePayloadMap model_types_with_payloads =
+      syncer::ModelTypePayloadMapFromEnumSet(model_types,
           std::string());
 
   data_->OnIncomingNotification(model_types_with_payloads,
@@ -2453,9 +2449,9 @@ const char* PassphraseRequiredReasonToString(
 }
 
 // Helper function to determine if initial sync had ended for types.
-bool InitialSyncEndedForTypes(syncable::ModelTypeSet types,
+bool InitialSyncEndedForTypes(syncer::ModelTypeSet types,
                               syncer::UserShare* share) {
-  for (syncable::ModelTypeSet::Iterator i = types.First();
+  for (syncer::ModelTypeSet::Iterator i = types.First();
        i.Good(); i.Inc()) {
     if (!share->directory->initial_sync_ended_for_type(i.Get()))
       return false;
@@ -2463,11 +2459,11 @@ bool InitialSyncEndedForTypes(syncable::ModelTypeSet types,
   return true;
 }
 
-syncable::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
-    syncable::ModelTypeSet types,
+syncer::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
+    syncer::ModelTypeSet types,
     syncer::UserShare* share) {
-  syncable::ModelTypeSet result;
-  for (syncable::ModelTypeSet::Iterator i = types.First();
+  syncer::ModelTypeSet result;
+  for (syncer::ModelTypeSet::Iterator i = types.First();
        i.Good(); i.Inc()) {
     sync_pb::DataTypeProgressMarker marker;
     share->directory->GetDownloadProgress(i.Get(), &marker);

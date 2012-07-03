@@ -92,7 +92,7 @@ syncer::SyncError PasswordModelAssociator::AssociateModels() {
       std::string tag = MakeTag(**ix);
 
       syncer::ReadNode node(&trans);
-      if (node.InitByClientTagLookup(syncable::PASSWORDS, tag) ==
+      if (node.InitByClientTagLookup(syncer::PASSWORDS, tag) ==
               syncer::BaseNode::INIT_OK) {
         const sync_pb::PasswordSpecificsData& password =
             node.GetPasswordSpecifics();
@@ -102,7 +102,7 @@ syncer::SyncError PasswordModelAssociator::AssociateModels() {
 
         if (MergePasswords(password, **ix, &new_password)) {
           syncer::WriteNode write_node(&trans);
-          if (write_node.InitByClientTagLookup(syncable::PASSWORDS, tag) !=
+          if (write_node.InitByClientTagLookup(syncer::PASSWORDS, tag) !=
                   syncer::BaseNode::INIT_OK) {
             STLDeleteElements(&passwords);
             return error_handler_->CreateAndUploadError(
@@ -118,7 +118,7 @@ syncer::SyncError PasswordModelAssociator::AssociateModels() {
       } else {
         syncer::WriteNode node(&trans);
         syncer::WriteNode::InitUniqueByCreationResult result =
-            node.InitUniqueByCreation(syncable::PASSWORDS, password_root, tag);
+            node.InitUniqueByCreation(syncer::PASSWORDS, password_root, tag);
         if (result != syncer::WriteNode::INIT_SUCCESS) {
           STLDeleteElements(&passwords);
           return error_handler_->CreateAndUploadError(

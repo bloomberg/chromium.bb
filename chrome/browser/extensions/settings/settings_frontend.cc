@@ -264,15 +264,15 @@ SettingsFrontend::~SettingsFrontend() {
 }
 
 syncer::SyncableService* SettingsFrontend::GetBackendForSync(
-    syncable::ModelType type) const {
+    syncer::ModelType type) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::map<settings_namespace::Namespace, BackendWrappers>::const_iterator
       sync_backends = backends_.find(settings_namespace::SYNC);
   DCHECK(sync_backends != backends_.end());
   switch (type) {
-    case syncable::APP_SETTINGS:
+    case syncer::APP_SETTINGS:
       return sync_backends->second.app->GetBackend();
-    case syncable::EXTENSION_SETTINGS:
+    case syncer::EXTENSION_SETTINGS:
       return sync_backends->second.extension->GetBackend();
     default:
       NOTREACHED();

@@ -270,7 +270,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Returns all syncable TemplateURLs from this model as SyncData. This should
   // include every search engine and no Extension keywords.
   virtual syncer::SyncDataList GetAllSyncData(
-      syncable::ModelType type) const OVERRIDE;
+      syncer::ModelType type) const OVERRIDE;
   // Process new search engine changes from Sync, merging them into our local
   // data. This may send notifications if local search engines are added,
   // updated or removed.
@@ -281,11 +281,11 @@ class TemplateURLService : public WebDataServiceConsumer,
   // to Sync. This may send notifications if local search engines are added,
   // updated or removed.
   virtual syncer::SyncError MergeDataAndStartSyncing(
-      syncable::ModelType type,
+      syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
       scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) OVERRIDE;
-  virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
+  virtual void StopSyncing(syncer::ModelType type) OVERRIDE;
 
   // Processes a local TemplateURL change for Sync. |turl| is the TemplateURL
   // that has been modified, and |type| is the Sync ChangeType that took place.

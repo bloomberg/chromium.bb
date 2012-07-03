@@ -56,9 +56,9 @@ SyncData::~SyncData() {}
 // Static.
 SyncData SyncData::CreateLocalDelete(
     const std::string& sync_tag,
-    syncable::ModelType datatype) {
+    syncer::ModelType datatype) {
   sync_pb::EntitySpecifics specifics;
-  syncable::AddDefaultFieldValue(datatype, &specifics);
+  syncer::AddDefaultFieldValue(datatype, &specifics);
   return CreateLocalData(sync_tag, "", specifics);
 }
 
@@ -91,8 +91,8 @@ const sync_pb::EntitySpecifics& SyncData::GetSpecifics() const {
   return immutable_entity_.Get().specifics();
 }
 
-syncable::ModelType SyncData::GetDataType() const {
-  return syncable::GetModelTypeFromSpecifics(GetSpecifics());
+syncer::ModelType SyncData::GetDataType() const {
+  return syncer::GetModelTypeFromSpecifics(GetSpecifics());
 }
 
 const std::string& SyncData::GetTag() const {
@@ -119,7 +119,7 @@ std::string SyncData::ToString() const {
   if (!IsValid())
     return "<Invalid SyncData>";
 
-  std::string type = syncable::ModelTypeToString(GetDataType());
+  std::string type = syncer::ModelTypeToString(GetDataType());
   std::string specifics;
   scoped_ptr<DictionaryValue> value(
       syncer::EntitySpecificsToValue(GetSpecifics()));

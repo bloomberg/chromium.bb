@@ -594,11 +594,11 @@ void SyncTest::DisableNetwork(Profile* profile) {
   net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
 }
 
-bool SyncTest::EnableEncryption(int index, syncable::ModelType type) {
+bool SyncTest::EnableEncryption(int index, syncer::ModelType type) {
   return GetClient(index)->EnableEncryptionForType(type);
 }
 
-bool SyncTest::IsEncrypted(int index, syncable::ModelType type) {
+bool SyncTest::IsEncrypted(int index, syncer::ModelType type) {
   return GetClient(index)->IsTypeEncrypted(type);
 }
 
@@ -639,8 +639,7 @@ void SyncTest::EnableNotifications() {
   notifications_enabled_ = true;
 }
 
-void SyncTest::TriggerNotification(
-    syncable::ModelTypeSet changed_types) {
+void SyncTest::TriggerNotification(syncer::ModelTypeSet changed_types) {
   ASSERT_TRUE(ServerSupportsNotificationControl());
   const std::string& data =
       syncer::P2PNotificationData("from_server",
@@ -661,17 +660,16 @@ bool SyncTest::ServerSupportsErrorTriggering() const {
   return server_type_ == LOCAL_PYTHON_SERVER;
 }
 
-void SyncTest::TriggerMigrationDoneError(
-    syncable::ModelTypeSet model_types) {
+void SyncTest::TriggerMigrationDoneError(syncer::ModelTypeSet model_types) {
   ASSERT_TRUE(ServerSupportsErrorTriggering());
   std::string path = "chromiumsync/migrate";
   char joiner = '?';
-  for (syncable::ModelTypeSet::Iterator it = model_types.First();
+  for (syncer::ModelTypeSet::Iterator it = model_types.First();
        it.Good(); it.Inc()) {
     path.append(
         base::StringPrintf(
             "%ctype=%d", joiner,
-            syncable::GetSpecificsFieldNumberFromModelType(it.Get())));
+            syncer::GetSpecificsFieldNumberFromModelType(it.Get())));
     joiner = '&';
   }
   ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));

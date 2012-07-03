@@ -51,7 +51,7 @@ struct SyncConfigInfo {
 
   bool encrypt_all;
   bool sync_everything;
-  syncable::ModelTypeSet data_types;
+  syncer::ModelTypeSet data_types;
   std::string passphrase;
   bool passphrase_is_gaia;
 };
@@ -76,16 +76,16 @@ const char* kDataTypeNames[] = {
   "typedUrls"
 };
 
-const syncable::ModelType kDataTypes[] = {
-  syncable::APPS,
-  syncable::AUTOFILL,
-  syncable::BOOKMARKS,
-  syncable::EXTENSIONS,
-  syncable::PASSWORDS,
-  syncable::PREFERENCES,
-  syncable::SESSIONS,
-  syncable::THEMES,
-  syncable::TYPED_URLS
+const syncer::ModelType kDataTypes[] = {
+  syncer::APPS,
+  syncer::AUTOFILL,
+  syncer::BOOKMARKS,
+  syncer::EXTENSIONS,
+  syncer::PASSWORDS,
+  syncer::PREFERENCES,
+  syncer::SESSIONS,
+  syncer::THEMES,
+  syncer::TYPED_URLS
 };
 
 static const size_t kNumDataTypes = arraysize(kDataTypes);
@@ -400,9 +400,9 @@ void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
   DictionaryValue args;
 
   // Tell the UI layer which data types are registered/enabled by the user.
-  const syncable::ModelTypeSet registered_types =
+  const syncer::ModelTypeSet registered_types =
       service->GetRegisteredDataTypes();
-  const syncable::ModelTypeSet preferred_types =
+  const syncer::ModelTypeSet preferred_types =
       service->GetPreferredDataTypes();
   for (size_t i = 0; i < kNumDataTypes; ++i) {
     const std::string key_name = kDataTypeNames[i];

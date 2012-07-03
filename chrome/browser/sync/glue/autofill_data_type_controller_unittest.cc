@@ -101,10 +101,9 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
     last_start_error_ = error;
   }
 
-  void OnLoadFinished(syncable::ModelType type,
-                      syncer::SyncError error) {
+  void OnLoadFinished(syncer::ModelType type, syncer::SyncError error) {
     EXPECT_FALSE(error.IsSet());
-    EXPECT_EQ(type, syncable::AUTOFILL);
+    EXPECT_EQ(type, syncer::AUTOFILL);
   }
 
   virtual void TearDown() {

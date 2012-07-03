@@ -64,11 +64,11 @@ BaseNode::BaseNode() : password_data_(new sync_pb::PasswordSpecificsData) {}
 BaseNode::~BaseNode() {}
 
 std::string BaseNode::GenerateSyncableHash(
-    syncable::ModelType model_type, const std::string& client_tag) {
+    syncer::ModelType model_type, const std::string& client_tag) {
   // Blank PB with just the field in it has termination symbol,
   // handy for delimiter.
   sync_pb::EntitySpecifics serialized_type;
-  syncable::AddDefaultFieldValue(model_type, &serialized_type);
+  syncer::AddDefaultFieldValue(model_type, &serialized_type);
   std::string hash_input;
   serialized_type.AppendToString(&hash_input);
   hash_input.append(client_tag);
@@ -101,7 +101,7 @@ bool BaseNode::DecryptIfNecessary() {
   // we fill the unencrypted_data_ with a copy of the bookmark specifics that
   // follows the new bookmarks format.
   if (!specifics.has_encrypted()) {
-    if (GetModelType() == syncable::BOOKMARKS &&
+    if (GetModelType() == syncer::BOOKMARKS &&
         !specifics.bookmark().has_title() &&
         !GetTitle().empty()) {  // Last check ensures this isn't a new node.
       // We need to fill in the title.
@@ -122,7 +122,7 @@ bool BaseNode::DecryptIfNecessary() {
       DecryptToString(encrypted);
   if (plaintext_data.length() == 0) {
     LOG(ERROR) << "Failed to decrypt encrypted node of type " <<
-      syncable::ModelTypeToString(GetModelType()) << ".";
+      syncer::ModelTypeToString(GetModelType()) << ".";
     // Debugging for crbug.com/123223. We failed to decrypt the data, which
     // means we applied an update without having the key or lost the key at a
     // later point.
@@ -135,7 +135,7 @@ bool BaseNode::DecryptIfNecessary() {
     return false;
   }
   DVLOG(2) << "Decrypted specifics of type "
-           << syncable::ModelTypeToString(GetModelType())
+           << syncer::ModelTypeToString(GetModelType())
            << " with content: " << plaintext_data;
   return true;
 }
@@ -144,15 +144,15 @@ const sync_pb::EntitySpecifics& BaseNode::GetUnencryptedSpecifics(
     const syncable::Entry* entry) const {
   const sync_pb::EntitySpecifics& specifics = entry->Get(SPECIFICS);
   if (specifics.has_encrypted()) {
-    DCHECK_NE(syncable::GetModelTypeFromSpecifics(unencrypted_data_),
-              syncable::UNSPECIFIED);
+    DCHECK_NE(syncer::GetModelTypeFromSpecifics(unencrypted_data_),
+              syncer::UNSPECIFIED);
     return unencrypted_data_;
   } else {
     // Due to the change in bookmarks format, we need to check to see if this is
     // a legacy bookmarks (and has no title field in the proto). If it is, we
     // return the unencrypted_data_, which was filled in with the title by
     // DecryptIfNecessary().
-    if (GetModelType() == syncable::BOOKMARKS) {
+    if (GetModelType() == syncer::BOOKMARKS) {
       const sync_pb::BookmarkSpecifics& bookmark_specifics =
           specifics.bookmark();
       if (bookmark_specifics.has_title() ||
@@ -163,13 +163,13 @@ const sync_pb::EntitySpecifics& BaseNode::GetUnencryptedSpecifics(
         // |unencrypted_data_| to be non-empty.
         return specifics;
       } else {
-        DCHECK_EQ(syncable::GetModelTypeFromSpecifics(unencrypted_data_),
-                  syncable::BOOKMARKS);
+        DCHECK_EQ(syncer::GetModelTypeFromSpecifics(unencrypted_data_),
+                  syncer::BOOKMARKS);
         return unencrypted_data_;
       }
     } else {
-      DCHECK_EQ(syncable::GetModelTypeFromSpecifics(unencrypted_data_),
-                syncable::UNSPECIFIED);
+      DCHECK_EQ(syncer::GetModelTypeFromSpecifics(unencrypted_data_),
+                syncer::UNSPECIFIED);
       return specifics;
     }
   }
@@ -195,7 +195,7 @@ bool BaseNode::GetIsFolder() const {
 std::string BaseNode::GetTitle() const {
   std::string result;
   // TODO(zea): refactor bookmarks to not need this functionality.
-  if (syncable::BOOKMARKS == GetModelType() &&
+  if (syncer::BOOKMARKS == GetModelType() &&
       GetEntry()->Get(syncable::SPECIFICS).has_encrypted()) {
     // Special case for legacy bookmarks dealing with encryption.
     ServerNameToSyncAPIName(GetBookmarkSpecifics().title(), &result);
@@ -286,52 +286,52 @@ int64 BaseNode::GetExternalId() const {
 }
 
 const sync_pb::AppSpecifics& BaseNode::GetAppSpecifics() const {
-  DCHECK_EQ(syncable::APPS, GetModelType());
+  DCHECK_EQ(syncer::APPS, GetModelType());
   return GetEntitySpecifics().app();
 }
 
 const sync_pb::AutofillSpecifics& BaseNode::GetAutofillSpecifics() const {
-  DCHECK_EQ(syncable::AUTOFILL, GetModelType());
+  DCHECK_EQ(syncer::AUTOFILL, GetModelType());
   return GetEntitySpecifics().autofill();
 }
 
 const AutofillProfileSpecifics& BaseNode::GetAutofillProfileSpecifics() const {
-  DCHECK_EQ(GetModelType(), syncable::AUTOFILL_PROFILE);
+  DCHECK_EQ(GetModelType(), syncer::AUTOFILL_PROFILE);
   return GetEntitySpecifics().autofill_profile();
 }
 
 const sync_pb::BookmarkSpecifics& BaseNode::GetBookmarkSpecifics() const {
-  DCHECK_EQ(syncable::BOOKMARKS, GetModelType());
+  DCHECK_EQ(syncer::BOOKMARKS, GetModelType());
   return GetEntitySpecifics().bookmark();
 }
 
 const sync_pb::NigoriSpecifics& BaseNode::GetNigoriSpecifics() const {
-  DCHECK_EQ(syncable::NIGORI, GetModelType());
+  DCHECK_EQ(syncer::NIGORI, GetModelType());
   return GetEntitySpecifics().nigori();
 }
 
 const sync_pb::PasswordSpecificsData& BaseNode::GetPasswordSpecifics() const {
-  DCHECK_EQ(syncable::PASSWORDS, GetModelType());
+  DCHECK_EQ(syncer::PASSWORDS, GetModelType());
   return *password_data_;
 }
 
 const sync_pb::ThemeSpecifics& BaseNode::GetThemeSpecifics() const {
-  DCHECK_EQ(syncable::THEMES, GetModelType());
+  DCHECK_EQ(syncer::THEMES, GetModelType());
   return GetEntitySpecifics().theme();
 }
 
 const sync_pb::TypedUrlSpecifics& BaseNode::GetTypedUrlSpecifics() const {
-  DCHECK_EQ(syncable::TYPED_URLS, GetModelType());
+  DCHECK_EQ(syncer::TYPED_URLS, GetModelType());
   return GetEntitySpecifics().typed_url();
 }
 
 const sync_pb::ExtensionSpecifics& BaseNode::GetExtensionSpecifics() const {
-  DCHECK_EQ(syncable::EXTENSIONS, GetModelType());
+  DCHECK_EQ(syncer::EXTENSIONS, GetModelType());
   return GetEntitySpecifics().extension();
 }
 
 const sync_pb::SessionSpecifics& BaseNode::GetSessionSpecifics() const {
-  DCHECK_EQ(syncable::SESSIONS, GetModelType());
+  DCHECK_EQ(syncer::SESSIONS, GetModelType());
   return GetEntitySpecifics().session();
 }
 
@@ -339,15 +339,15 @@ const sync_pb::EntitySpecifics& BaseNode::GetEntitySpecifics() const {
   return GetUnencryptedSpecifics(GetEntry());
 }
 
-syncable::ModelType BaseNode::GetModelType() const {
+syncer::ModelType BaseNode::GetModelType() const {
   return GetEntry()->GetModelType();
 }
 
 void BaseNode::SetUnencryptedSpecifics(
     const sync_pb::EntitySpecifics& specifics) {
-  syncable::ModelType type = syncable::GetModelTypeFromSpecifics(specifics);
-  DCHECK_NE(syncable::UNSPECIFIED, type);
-  if (GetModelType() != syncable::UNSPECIFIED) {
+  syncer::ModelType type = syncer::GetModelTypeFromSpecifics(specifics);
+  DCHECK_NE(syncer::UNSPECIFIED, type);
+  if (GetModelType() != syncer::UNSPECIFIED) {
     DCHECK_EQ(GetModelType(), type);
   }
   unencrypted_data_.CopyFrom(specifics);

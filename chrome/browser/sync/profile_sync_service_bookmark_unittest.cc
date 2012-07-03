@@ -67,7 +67,7 @@ class TestBookmarkModelAssociator : public BookmarkModelAssociator {
   virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id) {
     std::string tag_str = std::string(tag.c_str(), tag.length());
     bool root_exists = false;
-    syncable::ModelType type = model_type();
+    syncer::ModelType type = model_type();
     {
       syncer::WriteTransaction trans(FROM_HERE, user_share_);
       syncer::ReadNode uber_root(&trans);
@@ -155,12 +155,12 @@ class FakeServerChange {
     EXPECT_EQ(BaseNode::INIT_OK, parent.InitByIdLookup(parent_id));
     syncer::WriteNode node(trans_);
     if (predecessor_id == 0) {
-      EXPECT_TRUE(node.InitByCreation(syncable::BOOKMARKS, parent, NULL));
+      EXPECT_TRUE(node.InitByCreation(syncer::BOOKMARKS, parent, NULL));
     } else {
       syncer::ReadNode predecessor(trans_);
       EXPECT_EQ(BaseNode::INIT_OK, predecessor.InitByIdLookup(predecessor_id));
       EXPECT_EQ(predecessor.GetParentId(), parent.GetId());
-      EXPECT_TRUE(node.InitByCreation(syncable::BOOKMARKS, parent,
+      EXPECT_TRUE(node.InitByCreation(syncer::BOOKMARKS, parent,
                                       &predecessor));
     }
     EXPECT_EQ(node.GetPredecessorId(), predecessor_id);

@@ -266,11 +266,11 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
       const sync_pb::EncryptedData& pending_keys) OVERRIDE;
   virtual void OnPassphraseAccepted() OVERRIDE;
   virtual void OnEncryptedTypesChanged(
-      syncable::ModelTypeSet encrypted_types,
+      syncer::ModelTypeSet encrypted_types,
       bool encrypt_everything) OVERRIDE;
   virtual void OnEncryptionComplete() OVERRIDE;
   virtual void OnMigrationNeededForTypes(
-      syncable::ModelTypeSet types) OVERRIDE;
+      syncer::ModelTypeSet types) OVERRIDE;
   virtual void OnExperimentsChanged(
       const syncer::Experiments& experiments) OVERRIDE;
   virtual void OnActionableError(
@@ -285,7 +285,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // and all data types will be synced.  |sync_everything| means "sync all
   // current and future data types."
   virtual void OnUserChoseDatatypes(bool sync_everything,
-      syncable::ModelTypeSet chosen_types);
+      syncer::ModelTypeSet chosen_types);
 
   // Get various information for displaying in the user interface.
   std::string QuerySyncStatusSummary();
@@ -377,7 +377,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Called when a datatype wishes to disable itself due to having hit an
   // unrecoverable error.
   virtual void DisableBrokenDatatype(
-      syncable::ModelType type,
+      syncer::ModelType type,
       const tracked_objects::Location& from_here,
       std::string message);
 
@@ -424,9 +424,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Overridden by tests.
   // TODO(zea): Remove these and have the dtc's call directly into the SBH.
   virtual void ActivateDataType(
-      syncable::ModelType type, syncer::ModelSafeGroup group,
+      syncer::ModelType type, syncer::ModelSafeGroup group,
       browser_sync::ChangeProcessor* change_processor);
-  virtual void DeactivateDataType(syncable::ModelType type);
+  virtual void DeactivateDataType(syncer::ModelType type);
 
   // SyncPrefObserver implementation.
   virtual void OnSyncManagedPrefChange(bool is_sync_managed) OVERRIDE;
@@ -441,18 +441,18 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // the sync backend so that exactly these datatypes are actively synced.  See
   // class comment for more on what it means for a datatype to be Preferred.
   virtual void ChangePreferredDataTypes(
-      syncable::ModelTypeSet preferred_types);
+      syncer::ModelTypeSet preferred_types);
 
   // Get the set of currently enabled data types (as chosen or configured by
   // the user).  See class comment for more on what it means for a datatype
   // to be Preferred.
-  virtual syncable::ModelTypeSet GetPreferredDataTypes() const;
+  virtual syncer::ModelTypeSet GetPreferredDataTypes() const;
 
   // Gets the set of all data types that could be allowed (the set that
   // should be advertised to the user).  These will typically only change
   // via a command-line option.  See class comment for more on what it means
   // for a datatype to be Registered.
-  virtual syncable::ModelTypeSet GetRegisteredDataTypes() const;
+  virtual syncer::ModelTypeSet GetRegisteredDataTypes() const;
 
   // Checks whether the Cryptographer is ready to encrypt and decrypt updates
   // for sensitive data types. Caller must be holding a
@@ -497,7 +497,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Fills |encrypted_types| with the set of currently encrypted types. Does
   // not account for types pending encryption.
-  virtual syncable::ModelTypeSet GetEncryptedDataTypes() const;
+  virtual syncer::ModelTypeSet GetEncryptedDataTypes() const;
 
   // Returns true if the syncer is waiting for new datatypes to be encrypted.
   virtual bool encryption_pending() const;
@@ -645,10 +645,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // About-flags experiment names for datatypes that aren't enabled by default
   // yet.
   static std::string GetExperimentNameForDataType(
-      syncable::ModelType data_type);
+      syncer::ModelType data_type);
 
   // Create and register a new datatype controller.
-  void RegisterNewDataType(syncable::ModelType data_type);
+  void RegisterNewDataType(syncer::ModelType data_type);
 
   // Helper method to process SyncConfigureDone after unwinding the stack that
   // originally posted this SyncConfigureDone.
@@ -667,7 +667,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // stats.
   void UpdateSelectedTypesHistogram(
       bool sync_everything,
-      const syncable::ModelTypeSet chosen_types) const;
+      const syncer::ModelTypeSet chosen_types) const;
 
 #if defined(OS_CHROMEOS)
   // Refresh spare sync bootstrap token for re-enabling the sync service.
@@ -753,7 +753,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // The current set of encrypted types.  Always a superset of
   // syncer::Cryptographer::SensitiveTypes().
-  syncable::ModelTypeSet encrypted_types_;
+  syncer::ModelTypeSet encrypted_types_;
 
   // Whether we want to encrypt everything.
   bool encrypt_everything_;

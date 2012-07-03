@@ -101,7 +101,7 @@ void UpdateApplicator::Advance() {
 }
 
 bool UpdateApplicator::SkipUpdate(const syncable::Entry& entry) {
-  syncable::ModelType type = entry.GetServerModelType();
+  syncer::ModelType type = entry.GetServerModelType();
   ModelSafeGroup g = GetGroupForModelType(type, routing_info_);
   // The set of updates passed to the UpdateApplicator should already
   // be group-filtered.
@@ -111,8 +111,8 @@ bool UpdateApplicator::SkipUpdate(const syncable::Entry& entry) {
   }
   if (g == GROUP_PASSIVE &&
       !routing_info_.count(type) &&
-      type != syncable::UNSPECIFIED &&
-      type != syncable::TOP_LEVEL_FOLDER) {
+      type != syncer::UNSPECIFIED &&
+      type != syncer::TOP_LEVEL_FOLDER) {
     DVLOG(1) << "Skipping update application, type not permitted.";
     return true;
   }

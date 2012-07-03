@@ -23,17 +23,17 @@ namespace sessions {
 // specific payloads which should be sent to the server.
 struct SyncSourceInfo {
   SyncSourceInfo();
-  explicit SyncSourceInfo(const syncable::ModelTypePayloadMap& t);
+  explicit SyncSourceInfo(const syncer::ModelTypePayloadMap& t);
   SyncSourceInfo(
       const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& u,
-      const syncable::ModelTypePayloadMap& t);
+      const syncer::ModelTypePayloadMap& t);
   ~SyncSourceInfo();
 
   // Caller takes ownership of the returned dictionary.
   base::DictionaryValue* ToValue() const;
 
   sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source;
-  syncable::ModelTypePayloadMap types;
+  syncer::ModelTypePayloadMap types;
 };
 
 }  // namespace sessions

@@ -18,7 +18,6 @@ class DictionaryValue;
 }
 
 namespace syncer {
-namespace syncable {
 
 // A container that contains a set of datatypes with possible string
 // payloads.
@@ -46,20 +45,6 @@ base::DictionaryValue* ModelTypePayloadMapToValue(
 void CoalescePayloads(ModelTypePayloadMap* original,
                       const ModelTypePayloadMap& update);
 
-}  // namespace syncable
 }  // namespace syncer
-
-// TODO(akalin): Move the names below to the 'syncer' namespace once
-// we move this file to public/base.
-namespace syncable {
-
-using ::syncer::syncable::ModelTypePayloadMap;
-using ::syncer::syncable::ModelTypePayloadMapFromEnumSet;
-using ::syncer::syncable::ModelTypePayloadMapToEnumSet;
-using ::syncer::syncable::ModelTypePayloadMapToString;
-using ::syncer::syncable::ModelTypePayloadMapToValue;
-using ::syncer::syncable::CoalescePayloads;
-
-}  // namespace syncable
 
 #endif  // SYNC_INTERNAL_PUBLIC_API_BASE_MODEL_TYPE_PAYLOAD_MAP_H_

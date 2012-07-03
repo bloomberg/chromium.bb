@@ -20,8 +20,8 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/webui/session_favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
+#include "chrome/browser/ui/webui/session_favicon_source.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -127,7 +127,7 @@ bool ForeignSessionHandler::IsTabSyncEnabled() {
   Profile* profile = Profile::FromWebUI(web_ui());
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  return service && service->GetPreferredDataTypes().Has(syncable::SESSIONS);
+  return service && service->GetPreferredDataTypes().Has(syncer::SESSIONS);
 }
 
 string16 ForeignSessionHandler::FormatSessionTime(const base::Time& time) {

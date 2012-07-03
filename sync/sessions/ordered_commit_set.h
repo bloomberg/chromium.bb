@@ -38,7 +38,7 @@ class OrderedCommitSet {
   }
 
   void AddCommitItem(const int64 metahandle, const syncable::Id& commit_id,
-                     syncable::ModelType type);
+                     syncer::ModelType type);
 
   const std::vector<syncable::Id>& GetAllCommitIds() const {
     return commit_ids_;
@@ -56,7 +56,7 @@ class OrderedCommitSet {
   }
 
   // Same as above, but for ModelType of the item.
-  syncable::ModelType GetModelTypeAt(const size_t position) const {
+  syncer::ModelType GetModelTypeAt(const size_t position) const {
     return types_[position];
   }
 
@@ -95,7 +95,7 @@ class OrderedCommitSet {
   struct CommitItem {
     int64 meta;
     syncable::Id id;
-    syncable::ModelType group;
+    syncer::ModelType group;
   };
 
   CommitItem GetCommitItemAt(const size_t position) const;
@@ -113,7 +113,7 @@ class OrderedCommitSet {
   // projection.  We could store it in commit_ids_, but sometimes we want
   // to just return the vector of Ids, so this is more straightforward
   // and shouldn't take up too much extra space since commit lists are small.
-  std::vector<syncable::ModelType> types_;
+  std::vector<syncer::ModelType> types_;
 
   syncer::ModelSafeRoutingInfo routes_;
 };

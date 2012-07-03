@@ -186,19 +186,19 @@ void InvalidatorStorage::DeserializeMap(
       LOG(WARNING) << "Invalid model type key: " << *it;
       continue;
     }
-    if ((model_type_int < syncable::FIRST_REAL_MODEL_TYPE) ||
-        (model_type_int >= syncable::MODEL_TYPE_COUNT)) {
+    if ((model_type_int < syncer::FIRST_REAL_MODEL_TYPE) ||
+        (model_type_int >= syncer::MODEL_TYPE_COUNT)) {
       LOG(WARNING) << "Out-of-range model type key: " << model_type_int;
       continue;
     }
-    const syncable::ModelType model_type =
-        syncable::ModelTypeFromInt(model_type_int);
+    const syncer::ModelType model_type =
+        syncer::ModelTypeFromInt(model_type_int);
     std::string max_version_str;
     CHECK(max_versions_dict->GetString(*it, &max_version_str));
     int64 max_version = 0;
     if (!base::StringToInt64(max_version_str, &max_version)) {
       LOG(WARNING) << "Invalid max invalidation version for "
-                   << syncable::ModelTypeToString(model_type) << ": "
+                   << syncer::ModelTypeToString(model_type) << ": "
                    << max_version_str;
       continue;
     }

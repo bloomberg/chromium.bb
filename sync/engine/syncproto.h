@@ -60,8 +60,8 @@ class SyncEntity : public IdWrapper<sync_pb::SyncEntity> {
             (has_bookmarkdata() && bookmarkdata().bookmark_folder()));
   }
 
-  syncable::ModelType GetModelType() const {
-    return syncable::GetModelType(*this);
+  syncer::ModelType GetModelType() const {
+    return syncer::GetModelType(*this);
   }
 };
 

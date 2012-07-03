@@ -291,7 +291,7 @@ struct EntryKernel {
     return id_fields[field - ID_FIELDS_BEGIN];
   }
 
-  syncable::ModelType GetServerModelType() const;
+  syncer::ModelType GetServerModelType() const;
 
   // Dumps all kernel info into a DictionaryValue and returns it.
   // Transfers ownership of the DictionaryValue to the caller.

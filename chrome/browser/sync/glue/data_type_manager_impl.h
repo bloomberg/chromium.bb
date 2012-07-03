@@ -65,7 +65,7 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   void Restart(syncer::ConfigureReason reason,
                BackendDataTypeConfigurer::NigoriState nigori_state);
-  void DownloadReady(syncable::ModelTypeSet failed_configuration_types);
+  void DownloadReady(syncer::ModelTypeSet failed_configuration_types);
 
   // Notification from the SBH that download failed due to a transient
   // error and it will be retried.
@@ -88,7 +88,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   // This list is determined at startup by various command line flags.
   const DataTypeController::TypeMap* controllers_;
   State state_;
-  std::map<syncable::ModelType, int> start_order_;
+  std::map<syncer::ModelType, int> start_order_;
   TypeSet last_requested_types_;
 
   // Whether an attempt to reconfigure was made while we were busy configuring.

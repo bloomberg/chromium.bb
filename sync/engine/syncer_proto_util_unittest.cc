@@ -265,9 +265,9 @@ TEST_F(SyncerProtoUtilTest, HandleThrottlingWithDatatypes) {
   ThrottledDataTypeTracker tracker(NULL);
   SyncProtocolError error;
   error.error_type = syncer::THROTTLED;
-  syncable::ModelTypeSet types;
-  types.Put(syncable::BOOKMARKS);
-  types.Put(syncable::PASSWORDS);
+  syncer::ModelTypeSet types;
+  types.Put(syncer::BOOKMARKS);
+  types.Put(syncer::PASSWORDS);
   error.error_data_types = types;
 
   base::TimeTicks ticks = base::TimeTicks::FromInternalValue(1);

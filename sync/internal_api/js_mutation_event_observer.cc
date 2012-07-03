@@ -44,14 +44,14 @@ const size_t kChangeLimit = 100;
 }  // namespace
 
 void JsMutationEventObserver::OnChangesApplied(
-    syncable::ModelType model_type,
+    syncer::ModelType model_type,
     int64 write_transaction_id,
     const syncer::ImmutableChangeRecordList& changes) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
-  details.SetString("modelType", syncable::ModelTypeToString(model_type));
+  details.SetString("modelType", syncer::ModelTypeToString(model_type));
   details.SetString("writeTransactionId",
                     base::Int64ToString(write_transaction_id));
   base::Value* changes_value = NULL;
@@ -74,18 +74,18 @@ void JsMutationEventObserver::OnChangesApplied(
 }
 
 void JsMutationEventObserver::OnChangesComplete(
-    syncable::ModelType model_type) {
+    syncer::ModelType model_type) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
-  details.SetString("modelType", syncable::ModelTypeToString(model_type));
+  details.SetString("modelType", syncer::ModelTypeToString(model_type));
   HandleJsEvent(FROM_HERE, "onChangesComplete", JsEventDetails(&details));
 }
 
 void JsMutationEventObserver::OnTransactionWrite(
     const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
-    syncable::ModelTypeSet models_with_changes) {
+    syncer::ModelTypeSet models_with_changes) {
   DCHECK(CalledOnValidThread());
   if (!event_handler_.IsInitialized()) {
     return;
@@ -94,7 +94,7 @@ void JsMutationEventObserver::OnTransactionWrite(
   details.Set("writeTransactionInfo",
               write_transaction_info.Get().ToValue(kChangeLimit));
   details.Set("modelsWithChanges",
-              syncable::ModelTypeSetToValue(models_with_changes));
+              syncer::ModelTypeSetToValue(models_with_changes));
   HandleJsEvent(FROM_HERE, "onTransactionWrite", JsEventDetails(&details));
 }
 

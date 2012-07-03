@@ -184,12 +184,12 @@ class MockConnectionManager : public syncer::ServerConnectionManager {
   // Expect that GetUpdates will request exactly the types indicated in
   // the bitset.
   void ExpectGetUpdatesRequestTypes(
-      syncable::ModelTypeSet expected_filter) {
+      syncer::ModelTypeSet expected_filter) {
     expected_filter_ = expected_filter;
   }
 
   void ExpectGetUpdatesRequestPayloads(
-      const syncable::ModelTypePayloadMap& payloads) {
+      const syncer::ModelTypePayloadMap& payloads) {
     expected_payloads_ = payloads;
   }
 
@@ -260,12 +260,12 @@ class MockConnectionManager : public syncer::ServerConnectionManager {
   bool IsModelTypePresentInSpecifics(
       const google::protobuf::RepeatedPtrField<
           sync_pb::DataTypeProgressMarker>& filter,
-      syncable::ModelType value);
+      syncer::ModelType value);
 
   sync_pb::DataTypeProgressMarker const* GetProgressMarkerForType(
       const google::protobuf::RepeatedPtrField<
           sync_pb::DataTypeProgressMarker>& filter,
-      syncable::ModelType value);
+      syncer::ModelType value);
 
   // When false, we pretend to have network connectivity issues.
   bool server_reachable_;
@@ -337,9 +337,9 @@ class MockConnectionManager : public syncer::ServerConnectionManager {
   // use the older sync_pb::SyncEntity_BookmarkData-style protocol.
   bool use_legacy_bookmarks_protocol_;
 
-  syncable::ModelTypeSet expected_filter_;
+  syncer::ModelTypeSet expected_filter_;
 
-  syncable::ModelTypePayloadMap expected_payloads_;
+  syncer::ModelTypePayloadMap expected_payloads_;
 
   int num_get_updates_requests_;
 

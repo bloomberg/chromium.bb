@@ -68,10 +68,10 @@ class StatusController {
       ModelSafeGroup group);
 
   // ClientToServer messages.
-  const syncable::ModelTypeSet updates_request_types() const {
+  const syncer::ModelTypeSet updates_request_types() const {
     return model_neutral_.updates_request_types;
   }
-  void set_updates_request_types(syncable::ModelTypeSet value) {
+  void set_updates_request_types(syncer::ModelTypeSet value) {
     model_neutral_.updates_request_types = value;
   }
   const ClientToServerResponse& updates_response() const {
@@ -143,7 +143,7 @@ class StatusController {
   }
 
   bool HasBookmarkCommitActivity() const {
-    return ActiveGroupRestrictionIncludesModel(syncable::BOOKMARKS);
+    return ActiveGroupRestrictionIncludesModel(syncer::BOOKMARKS);
   }
 
   const ModelNeutralState& model_neutral_state() const {
@@ -158,7 +158,7 @@ class StatusController {
   void increment_num_updates_downloaded_by(int value);
   void increment_num_tombstone_updates_downloaded_by(int value);
   void increment_num_reflected_updates_downloaded_by(int value);
-  void set_types_needing_local_migration(syncable::ModelTypeSet types);
+  void set_types_needing_local_migration(syncer::ModelTypeSet types);
   void increment_num_local_overwrites();
   void increment_num_server_overwrites();
   void set_sync_protocol_error(const SyncProtocolError& error);
@@ -179,7 +179,7 @@ class StatusController {
 
   // Check whether a particular model is included by the active group
   // restriction.
-  bool ActiveGroupRestrictionIncludesModel(syncable::ModelType model) const {
+  bool ActiveGroupRestrictionIncludesModel(syncer::ModelType model) const {
     if (!group_restriction_in_effect_)
       return true;
     ModelSafeRoutingInfo::const_iterator it = routing_info_.find(model);

@@ -422,13 +422,13 @@ class ExtensionService
 
   // syncer::SyncableService implementation.
   virtual syncer::SyncError MergeDataAndStartSyncing(
-      syncable::ModelType type,
+      syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
       scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) OVERRIDE;
-  virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
+  virtual void StopSyncing(syncer::ModelType type) OVERRIDE;
   virtual syncer::SyncDataList GetAllSyncData(
-      syncable::ModelType type) const OVERRIDE;
+      syncer::ModelType type) const OVERRIDE;
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) OVERRIDE;
@@ -653,7 +653,7 @@ class ExtensionService
 
   // Return true if the sync type of |extension| matches |type|.
   bool IsCorrectSyncType(const extensions::Extension& extension,
-                         syncable::ModelType type)
+                         syncer::ModelType type)
       const;
 
   // Handles setting the extension specific values in |extension_sync_data| to
@@ -662,7 +662,7 @@ class ExtensionService
   // tried again later.
   bool ProcessExtensionSyncDataHelper(
       const extensions::ExtensionSyncData& extension_sync_data,
-      syncable::ModelType type);
+      syncer::ModelType type);
 
   // Look up an extension by ID, optionally including either or both of enabled
   // and disabled extensions.

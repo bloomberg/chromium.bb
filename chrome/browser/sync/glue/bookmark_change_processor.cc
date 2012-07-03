@@ -230,12 +230,12 @@ void BookmarkChangeProcessor::BookmarkNodeChanged(BookmarkModel* model,
       LOG(ERROR) << "Deleted entry.";
     } else {
       syncer::Cryptographer* crypto = trans.GetCryptographer();
-      syncable::ModelTypeSet encrypted_types(crypto->GetEncryptedTypes());
+      syncer::ModelTypeSet encrypted_types(crypto->GetEncryptedTypes());
       const sync_pb::EntitySpecifics& specifics =
           sync_node.GetEntry()->Get(syncer::syncable::SPECIFICS);
       CHECK(specifics.has_encrypted());
       const bool can_decrypt = crypto->CanDecrypt(specifics.encrypted());
-      const bool agreement = encrypted_types.Has(syncable::BOOKMARKS);
+      const bool agreement = encrypted_types.Has(syncer::BOOKMARKS);
       if (!agreement && !can_decrypt) {
         error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
             "Could not InitByIdLookup on BookmarkNodeChanged, "
@@ -357,7 +357,7 @@ bool BookmarkChangeProcessor::PlaceSyncNode(MoveOrCreate operation,
   if (index == 0) {
     // Insert into first position.
     success = (operation == CREATE) ?
-        dst->InitByCreation(syncable::BOOKMARKS, sync_parent, NULL) :
+        dst->InitByCreation(syncer::BOOKMARKS, sync_parent, NULL) :
         dst->SetPosition(sync_parent, NULL);
     if (success) {
       DCHECK_EQ(dst->GetParentId(), sync_parent.GetId());
@@ -373,7 +373,7 @@ bool BookmarkChangeProcessor::PlaceSyncNode(MoveOrCreate operation,
       return false;
     }
     success = (operation == CREATE) ?
-        dst->InitByCreation(syncable::BOOKMARKS, sync_parent, &sync_prev) :
+        dst->InitByCreation(syncer::BOOKMARKS, sync_parent, &sync_prev) :
         dst->SetPosition(sync_parent, &sync_prev);
     if (success) {
       DCHECK_EQ(dst->GetParentId(), sync_parent.GetId());

@@ -19,7 +19,7 @@ namespace browser_sync {
 class ExtensionDataTypeController : public UIDataTypeController {
  public:
   ExtensionDataTypeController(
-      syncable::ModelType type,  // Either EXTENSIONS or APPS.
+      syncer::ModelType type,  // Either EXTENSIONS or APPS.
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);

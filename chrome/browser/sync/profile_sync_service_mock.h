@@ -49,19 +49,19 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_CONST_METHOD0(GetAuthenticatedUsername, string16());
   MOCK_METHOD2(OnUserChoseDatatypes,
                void(bool sync_everything,
-                    syncable::ModelTypeSet chosen_types));
+                    syncer::ModelTypeSet chosen_types));
 
   MOCK_METHOD2(OnUnrecoverableError,
                void(const tracked_objects::Location& location,
                const std::string& message));
-  MOCK_METHOD3(DisableBrokenDatatype, void(syncable::ModelType,
+  MOCK_METHOD3(DisableBrokenDatatype, void(syncer::ModelType,
                const tracked_objects::Location&,
                std::string message));
   MOCK_CONST_METHOD0(GetUserShare, syncer::UserShare*());
   MOCK_METHOD3(ActivateDataType,
-               void(syncable::ModelType, syncer::ModelSafeGroup,
+               void(syncer::ModelType, syncer::ModelSafeGroup,
                     browser_sync::ChangeProcessor*));
-  MOCK_METHOD1(DeactivateDataType, void(syncable::ModelType));
+  MOCK_METHOD1(DeactivateDataType, void(syncer::ModelType));
 
   MOCK_METHOD0(InitializeBackend, void());
   MOCK_METHOD1(AddObserver, void(Observer*));
@@ -73,9 +73,9 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD0(EnableEncryptEverything, void());
 
   MOCK_METHOD1(ChangePreferredDataTypes,
-               void(syncable::ModelTypeSet preferred_types));
-  MOCK_CONST_METHOD0(GetPreferredDataTypes, syncable::ModelTypeSet());
-  MOCK_CONST_METHOD0(GetRegisteredDataTypes, syncable::ModelTypeSet());
+               void(syncer::ModelTypeSet preferred_types));
+  MOCK_CONST_METHOD0(GetPreferredDataTypes, syncer::ModelTypeSet());
+  MOCK_CONST_METHOD0(GetRegisteredDataTypes, syncer::ModelTypeSet());
   MOCK_CONST_METHOD0(GetLastSessionSnapshot,
                      syncer::sessions::SyncSessionSnapshot());
 

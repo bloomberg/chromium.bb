@@ -250,7 +250,7 @@ UpdateAttemptResponse AttemptToUpdateEntry(
       !cryptographer->CanDecrypt(specifics.encrypted())) {
     // We can't decrypt this node yet.
     DVLOG(1) << "Received an undecryptable "
-             << syncable::ModelTypeToString(entry->GetServerModelType())
+             << syncer::ModelTypeToString(entry->GetServerModelType())
              << " update, returning encryption_conflict.";
     return CONFLICT_ENCRYPTION;
   } else if (specifics.has_password() &&
@@ -302,11 +302,11 @@ UpdateAttemptResponse AttemptToUpdateEntry(
 
   if (specifics.has_encrypted()) {
     DVLOG(2) << "Received a decryptable "
-             << syncable::ModelTypeToString(entry->GetServerModelType())
+             << syncer::ModelTypeToString(entry->GetServerModelType())
              << " update, applying normally.";
   } else {
     DVLOG(2) << "Received an unencrypted "
-             << syncable::ModelTypeToString(entry->GetServerModelType())
+             << syncer::ModelTypeToString(entry->GetServerModelType())
              << " update, applying normally.";
   }
 
@@ -386,7 +386,7 @@ void UpdateServerFieldsFromUpdate(
   }
   // Store the datatype-specific part as a protobuf.
   if (update.has_specifics()) {
-    DCHECK(update.GetModelType() != syncable::UNSPECIFIED)
+    DCHECK(update.GetModelType() != syncer::UNSPECIFIED)
         << "Storing unrecognized datatype in sync database.";
     target->Put(SERVER_SPECIFICS, update.specifics());
   } else if (update.has_bookmarkdata()) {
@@ -595,7 +595,7 @@ VerifyResult VerifyUpdateConsistency(
     syncable::MutableEntry* target,
     const bool deleted,
     const bool is_directory,
-    syncable::ModelType model_type) {
+    syncer::ModelType model_type) {
 
   CHECK(target->good());
 
@@ -603,7 +603,7 @@ VerifyResult VerifyUpdateConsistency(
   if (deleted)
     return VERIFY_SUCCESS;
 
-  if (model_type == syncable::UNSPECIFIED) {
+  if (model_type == syncer::UNSPECIFIED) {
     // This update is to an item of a datatype we don't recognize. The server
     // shouldn't have sent it to us.  Throw it on the ground.
     return VERIFY_SKIP;

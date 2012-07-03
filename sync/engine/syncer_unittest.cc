@@ -153,7 +153,7 @@ class SyncerTest : public testing::Test,
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
     // We're just testing the sync engine here, so we shunt everything to
     // the SyncerThread.  Datatypes which aren't enabled aren't in the map.
-    for (syncable::ModelTypeSet::Iterator it = enabled_datatypes_.First();
+    for (syncer::ModelTypeSet::Iterator it = enabled_datatypes_.First();
          it.Good(); it.Inc()) {
       (*out)[it.Get()] = GROUP_PASSIVE;
     }
@@ -178,7 +178,7 @@ class SyncerTest : public testing::Test,
     std::vector<ModelSafeWorker*> workers;
     GetModelSafeRoutingInfo(&info);
     GetWorkers(&workers);
-    syncable::ModelTypePayloadMap types =
+    syncer::ModelTypePayloadMap types =
         ModelSafeRoutingInfoToPayloadMap(info, std::string());
     return new SyncSession(context_.get(), this,
         sessions::SyncSourceInfo(sync_pb::GetUpdatesCallerInfo::UNKNOWN, types),
@@ -218,10 +218,10 @@ class SyncerTest : public testing::Test,
   virtual void SetUp() {
     dir_maker_.SetUp();
     mock_server_.reset(new MockConnectionManager(directory()));
-    EnableDatatype(syncable::BOOKMARKS);
-    EnableDatatype(syncable::NIGORI);
-    EnableDatatype(syncable::PREFERENCES);
-    EnableDatatype(syncable::NIGORI);
+    EnableDatatype(syncer::BOOKMARKS);
+    EnableDatatype(syncer::NIGORI);
+    EnableDatatype(syncer::PREFERENCES);
+    EnableDatatype(syncer::NIGORI);
     worker_ = new FakeModelWorker(GROUP_PASSIVE);
     std::vector<SyncEngineEventListener*> listeners;
     listeners.push_back(this);
@@ -280,7 +280,7 @@ class SyncerTest : public testing::Test,
     EXPECT_EQ("http://demo/", specifics.bookmark().url());
   }
 
-  bool initial_sync_ended_for_type(syncable::ModelType type) {
+  bool initial_sync_ended_for_type(syncer::ModelType type) {
     return directory()->initial_sync_ended_for_type(type);
   }
 
@@ -297,13 +297,13 @@ class SyncerTest : public testing::Test,
   }
   sync_pb::EntitySpecifics DefaultBookmarkSpecifics() {
     sync_pb::EntitySpecifics result;
-    AddDefaultFieldValue(syncable::BOOKMARKS, &result);
+    AddDefaultFieldValue(syncer::BOOKMARKS, &result);
     return result;
   }
 
   sync_pb::EntitySpecifics DefaultPreferencesSpecifics() {
     sync_pb::EntitySpecifics result;
-    AddDefaultFieldValue(syncable::PREFERENCES, &result);
+    AddDefaultFieldValue(syncer::PREFERENCES, &result);
     return result;
   }
   // Enumeration of alterations to entries for commit ordering tests.
@@ -406,8 +406,8 @@ class SyncerTest : public testing::Test,
       sessions::OrderedCommitSet output_set(routes);
       GetCommitIdsCommand command(limit, &output_set);
       std::set<int64> ready_unsynced_set;
-      command.FilterUnreadyEntries(&wtrans, syncable::ModelTypeSet(),
-                                   syncable::ModelTypeSet(), false,
+      command.FilterUnreadyEntries(&wtrans, syncer::ModelTypeSet(),
+                                   syncer::ModelTypeSet(), false,
                                    unsynced_handle_view, &ready_unsynced_set);
       command.BuildCommitIds(session_->write_transaction(), routes,
                              ready_unsynced_set);
@@ -458,7 +458,7 @@ class SyncerTest : public testing::Test,
     return entry.Get(META_HANDLE);
   }
 
-  void EnableDatatype(syncable::ModelType model_type) {
+  void EnableDatatype(syncer::ModelType model_type) {
     enabled_datatypes_.Put(model_type);
 
     ModelSafeRoutingInfo routing_info;
@@ -471,7 +471,7 @@ class SyncerTest : public testing::Test,
     mock_server_->ExpectGetUpdatesRequestTypes(enabled_datatypes_);
   }
 
-  void DisableDatatype(syncable::ModelType model_type) {
+  void DisableDatatype(syncer::ModelType model_type) {
     enabled_datatypes_.Remove(model_type);
 
     ModelSafeRoutingInfo routing_info;
@@ -559,7 +559,7 @@ class SyncerTest : public testing::Test,
   base::TimeDelta last_sessions_commit_delay_seconds_;
   scoped_refptr<ModelSafeWorker> worker_;
 
-  syncable::ModelTypeSet enabled_datatypes_;
+  syncer::ModelTypeSet enabled_datatypes_;
   syncer::TrafficRecorder traffic_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncerTest);
@@ -633,9 +633,9 @@ TEST_F(SyncerTest, GetCommitIdsCommandTruncates) {
 }
 
 TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
-  const syncable::ModelTypeSet throttled_types(syncable::BOOKMARKS);
+  const syncer::ModelTypeSet throttled_types(syncer::BOOKMARKS);
   sync_pb::EntitySpecifics bookmark_data;
-  AddDefaultFieldValue(syncable::BOOKMARKS, &bookmark_data);
+  AddDefaultFieldValue(syncer::BOOKMARKS, &bookmark_data);
 
   mock_server_->AddUpdateDirectory(1, 0, "A", 10, 10);
   SyncShareNudge();
@@ -688,7 +688,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
     EXPECT_TRUE(is_unsynced == entryA.Get(IS_UNSYNCED)); \
     EXPECT_TRUE(is_unapplied == entryA.Get(IS_UNAPPLIED_UPDATE)); \
     EXPECT_TRUE(prev_initialized == \
-              syncable::IsRealDataType(syncable::GetModelTypeFromSpecifics( \
+              syncer::IsRealDataType(syncer::GetModelTypeFromSpecifics( \
                   entryA.Get(BASE_SERVER_SPECIFICS)))); \
     EXPECT_TRUE(parent_id == -1 || \
                 entryA.Get(PARENT_ID) == id_fac.FromNumber(parent_id)); \
@@ -702,7 +702,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {
   sync_pb::EntitySpecifics bookmark, encrypted_bookmark;
   bookmark.mutable_bookmark()->set_url("url");
   bookmark.mutable_bookmark()->set_title("title");
-  AddDefaultFieldValue(syncable::BOOKMARKS, &encrypted_bookmark);
+  AddDefaultFieldValue(syncer::BOOKMARKS, &encrypted_bookmark);
   mock_server_->AddUpdateDirectory(1, 0, "A", 10, 10);
   mock_server_->AddUpdateDirectory(2, 0, "B", 10, 10);
   mock_server_->AddUpdateDirectory(3, 0, "C", 10, 10);
@@ -813,13 +813,13 @@ TEST_F(SyncerTest, EncryptionAwareConflicts) {
   bookmark.mutable_bookmark()->set_title("title");
   other_cryptographer.Encrypt(bookmark,
                               encrypted_bookmark.mutable_encrypted());
-  AddDefaultFieldValue(syncable::BOOKMARKS, &encrypted_bookmark);
+  AddDefaultFieldValue(syncer::BOOKMARKS, &encrypted_bookmark);
   modified_bookmark.mutable_bookmark()->set_title("title2");
   other_cryptographer.Encrypt(modified_bookmark,
                               modified_bookmark.mutable_encrypted());
   sync_pb::EntitySpecifics pref, encrypted_pref, modified_pref;
   pref.mutable_preference()->set_name("name");
-  AddDefaultFieldValue(syncable::PREFERENCES, &encrypted_pref);
+  AddDefaultFieldValue(syncer::PREFERENCES, &encrypted_pref);
   other_cryptographer.Encrypt(pref,
                               encrypted_pref.mutable_encrypted());
   modified_pref.mutable_preference()->set_name("name2");
@@ -990,7 +990,7 @@ TEST_F(SyncerTest, ReceiveOldNigori) {
       other_encrypted_specifics.mutable_encrypted());
   sync_pb::EntitySpecifics our_encrypted_specifics;
   our_encrypted_specifics.mutable_bookmark()->set_title("title2");
-  syncable::ModelTypeSet encrypted_types = syncable::ModelTypeSet::All();
+  syncer::ModelTypeSet encrypted_types = syncer::ModelTypeSet::All();
 
 
   // Receive the initial nigori node.
@@ -1015,7 +1015,7 @@ TEST_F(SyncerTest, ReceiveOldNigori) {
     cryptographer(&wtrans)->set_encrypt_everything();
     cryptographer(&wtrans)->UpdateNigoriFromEncryptedTypes(nigori);
     MutableEntry nigori_entry(&wtrans, GET_BY_SERVER_TAG,
-                              syncable::ModelTypeToRootTag(syncable::NIGORI));
+                              syncer::ModelTypeToRootTag(syncer::NIGORI));
     ASSERT_TRUE(nigori_entry.good());
     nigori_entry.Put(SPECIFICS, specifics);
     nigori_entry.Put(IS_UNSYNCED, true);
@@ -1041,7 +1041,7 @@ TEST_F(SyncerTest, ReceiveOldNigori) {
     // the newest, and the encrypted types should be the most recent
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry nigori_entry(&trans, GET_BY_SERVER_TAG,
-                       syncable::ModelTypeToRootTag(syncable::NIGORI));
+                       syncer::ModelTypeToRootTag(syncer::NIGORI));
     ASSERT_TRUE(nigori_entry.good());
     EXPECT_FALSE(nigori_entry.Get(IS_UNAPPLIED_UPDATE));
     EXPECT_FALSE(nigori_entry.Get(IS_UNSYNCED));
@@ -1066,7 +1066,7 @@ TEST_F(SyncerTest, NigoriConflicts) {
   KeyParams other_key_params = {"localhost", "dummy", "foobar"};
   syncer::Cryptographer other_cryptographer(&encryptor_);
   other_cryptographer.AddKey(other_key_params);
-  syncable::ModelTypeSet encrypted_types(syncable::PASSWORDS, syncable::NIGORI);
+  syncer::ModelTypeSet encrypted_types(syncer::PASSWORDS, syncer::NIGORI);
   sync_pb::EntitySpecifics initial_nigori_specifics;
   initial_nigori_specifics.mutable_nigori();
   mock_server_->SetNigori(1, 10, 10, initial_nigori_specifics);
@@ -1082,7 +1082,7 @@ TEST_F(SyncerTest, NigoriConflicts) {
 
   // Receive the initial nigori node.
   SyncShareNudge();
-  encrypted_types = syncable::ModelTypeSet::All();
+  encrypted_types = syncer::ModelTypeSet::All();
   {
     // Local changes with different passphrase, different types.
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
@@ -1097,7 +1097,7 @@ TEST_F(SyncerTest, NigoriConflicts) {
     cryptographer(&wtrans)->UpdateNigoriFromEncryptedTypes(nigori);
     cryptographer(&wtrans)->set_encrypt_everything();
     MutableEntry nigori_entry(&wtrans, GET_BY_SERVER_TAG,
-                              syncable::ModelTypeToRootTag(syncable::NIGORI));
+                              syncer::ModelTypeToRootTag(syncer::NIGORI));
     ASSERT_TRUE(nigori_entry.good());
     nigori_entry.Put(SPECIFICS, specifics);
     nigori_entry.Put(IS_UNSYNCED, true);
@@ -1127,7 +1127,7 @@ TEST_F(SyncerTest, NigoriConflicts) {
     // Ensure the nigori data merged (encrypted types).
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
     MutableEntry nigori_entry(&wtrans, GET_BY_SERVER_TAG,
-                              syncable::ModelTypeToRootTag(syncable::NIGORI));
+                              syncer::ModelTypeToRootTag(syncer::NIGORI));
     ASSERT_TRUE(nigori_entry.good());
     EXPECT_FALSE(nigori_entry.Get(IS_UNAPPLIED_UPDATE));
     EXPECT_FALSE(nigori_entry.Get(IS_UNSYNCED));
@@ -1158,7 +1158,7 @@ TEST_F(SyncerTest, NigoriConflicts) {
     // should have been unioned.
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
     MutableEntry nigori_entry(&wtrans, GET_BY_SERVER_TAG,
-                              syncable::ModelTypeToRootTag(syncable::NIGORI));
+                              syncer::ModelTypeToRootTag(syncer::NIGORI));
     ASSERT_TRUE(nigori_entry.good());
     EXPECT_FALSE(nigori_entry.Get(IS_UNAPPLIED_UPDATE));
     EXPECT_FALSE(nigori_entry.Get(IS_UNSYNCED));
@@ -1234,7 +1234,7 @@ TEST_F(SyncerTest, TestPurgeWhileUnsynced) {
   }
 
   directory()->PurgeEntriesWithTypeIn(
-      syncable::ModelTypeSet(syncable::PREFERENCES));
+      syncer::ModelTypeSet(syncer::PREFERENCES));
 
   SyncShareNudge();
   ASSERT_EQ(2U, mock_server_->committed_ids().size());
@@ -1269,7 +1269,7 @@ TEST_F(SyncerTest, TestPurgeWhileUnapplied) {
   }
 
   directory()->PurgeEntriesWithTypeIn(
-      syncable::ModelTypeSet(syncable::BOOKMARKS));
+      syncer::ModelTypeSet(syncer::BOOKMARKS));
 
   SyncShareNudge();
   directory()->SaveChanges();
@@ -2464,8 +2464,7 @@ TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
 }
 
 TEST_F(SyncerTest, ParentAndChildBothMatch) {
-  const syncable::FullModelTypeSet all_types =
-      syncable::FullModelTypeSet::All();
+  const syncer::FullModelTypeSet all_types = syncer::FullModelTypeSet::All();
   syncable::Id parent_id = ids_.NewServerId();
   syncable::Id child_id = ids_.NewServerId();
 
@@ -4019,28 +4018,28 @@ TEST_F(SyncerTest, GetUpdatesSetsRequestedTypes) {
   // The expectations of this test happen in the MockConnectionManager's
   // GetUpdates handler.  EnableDatatype sets the expectation value from our
   // set of enabled/disabled datatypes.
-  EnableDatatype(syncable::BOOKMARKS);
+  EnableDatatype(syncer::BOOKMARKS);
   SyncShareNudge();
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
 
-  EnableDatatype(syncable::AUTOFILL);
+  EnableDatatype(syncer::AUTOFILL);
   SyncShareNudge();
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
 
-  EnableDatatype(syncable::PREFERENCES);
+  EnableDatatype(syncer::PREFERENCES);
   SyncShareNudge();
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
 
-  DisableDatatype(syncable::BOOKMARKS);
+  DisableDatatype(syncer::BOOKMARKS);
   SyncShareNudge();
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
 
-  DisableDatatype(syncable::AUTOFILL);
+  DisableDatatype(syncer::AUTOFILL);
   SyncShareNudge();
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
 
-  DisableDatatype(syncable::PREFERENCES);
-  EnableDatatype(syncable::AUTOFILL);
+  DisableDatatype(syncer::PREFERENCES);
+  EnableDatatype(syncer::AUTOFILL);
   SyncShareNudge();
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
 }
@@ -4099,7 +4098,7 @@ TEST_F(SyncerTest, UpdateFailsThenDontCommit) {
 // Downloads two updates and applies them successfully.
 // This is the "happy path" alternative to ConfigureFailsDontApplyUpdates.
 TEST_F(SyncerTest, ConfigureDownloadsTwoBatchesSuccess) {
-  EXPECT_FALSE(initial_sync_ended_for_type(syncable::BOOKMARKS));
+  EXPECT_FALSE(initial_sync_ended_for_type(syncer::BOOKMARKS));
 
   syncable::Id node1 = ids_.NewServerId();
   syncable::Id node2 = ids_.NewServerId();
@@ -4125,12 +4124,12 @@ TEST_F(SyncerTest, ConfigureDownloadsTwoBatchesSuccess) {
   ASSERT_TRUE(n2.good());
   EXPECT_FALSE(n2.Get(IS_UNAPPLIED_UPDATE));
 
-  EXPECT_TRUE(initial_sync_ended_for_type(syncable::BOOKMARKS));
+  EXPECT_TRUE(initial_sync_ended_for_type(syncer::BOOKMARKS));
 }
 
 // Same as the above case, but this time the second batch fails to download.
 TEST_F(SyncerTest, ConfigureFailsDontApplyUpdates) {
-  EXPECT_FALSE(initial_sync_ended_for_type(syncable::BOOKMARKS));
+  EXPECT_FALSE(initial_sync_ended_for_type(syncer::BOOKMARKS));
 
   syncable::Id node1 = ids_.NewServerId();
   syncable::Id node2 = ids_.NewServerId();
@@ -4165,7 +4164,7 @@ TEST_F(SyncerTest, ConfigureFailsDontApplyUpdates) {
   // One update remains undownloaded.
   mock_server_->ClearUpdatesQueue();
 
-  EXPECT_FALSE(initial_sync_ended_for_type(syncable::BOOKMARKS));
+  EXPECT_FALSE(initial_sync_ended_for_type(syncer::BOOKMARKS));
 }
 
 // Test what happens if a client deletes, then recreates, an object very

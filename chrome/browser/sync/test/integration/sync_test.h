@@ -148,10 +148,10 @@ class SyncTest : public InProcessBrowserTest {
   virtual void DisableNetwork(Profile* profile);
 
   // Encrypts the datatype |type| for profile |index|.
-  bool EnableEncryption(int index, syncable::ModelType type);
+  bool EnableEncryption(int index, syncer::ModelType type);
 
   // Checks if the datatype |type| is encrypted for profile |index|.
-  bool IsEncrypted(int index, syncable::ModelType type);
+  bool IsEncrypted(int index, syncer::ModelType type);
 
   // Blocks until all sync clients have completed their mutual sync cycles.
   // Returns true if a quiescent state was successfully reached.
@@ -172,7 +172,7 @@ class SyncTest : public InProcessBrowserTest {
   // Trigger a notification to be sent to all clients.  This operation
   // is available only if ServerSupportsNotificationControl() returned
   // true.
-  void TriggerNotification(syncable::ModelTypeSet changed_types);
+  void TriggerNotification(syncer::ModelTypeSet changed_types);
 
   // Returns true if the server being used supports injecting errors.
   bool ServerSupportsErrorTriggering() const;
@@ -180,7 +180,7 @@ class SyncTest : public InProcessBrowserTest {
   // Triggers a migration for one or more datatypes, and waits
   // for the server to complete it.  This operation is available
   // only if ServerSupportsErrorTriggering() returned true.
-  void TriggerMigrationDoneError(syncable::ModelTypeSet model_types);
+  void TriggerMigrationDoneError(syncer::ModelTypeSet model_types);
 
   // Triggers the server to set its birthday to a random value thereby
   // the server would return a birthday error on next sync.

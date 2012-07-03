@@ -80,8 +80,8 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // The returned set is guaranteed to be a subset of
   // |registered_types|.  Returns |registered_types| directly if
   // HasKeepEverythingSynced() is true.
-  syncable::ModelTypeSet GetPreferredDataTypes(
-      syncable::ModelTypeSet registered_types) const;
+  syncer::ModelTypeSet GetPreferredDataTypes(
+      syncer::ModelTypeSet registered_types) const;
   // |preferred_types| should be a subset of |registered_types|.  All
   // types in |preferred_types| are marked preferred, and all types in
   // |registered_types| \ |preferred_types| are marked not preferred.
@@ -89,8 +89,8 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // HasKeepEverythingSynced() is true, but won't be visible until
   // SetKeepEverythingSynced(false) is called.
   void SetPreferredDataTypes(
-    syncable::ModelTypeSet registered_types,
-    syncable::ModelTypeSet preferred_types);
+    syncer::ModelTypeSet registered_types,
+    syncer::ModelTypeSet preferred_types);
 
   // This pref is set outside of sync.
   bool IsManaged() const;
@@ -107,7 +107,7 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
 #endif
 
   // Merges the given set of types with the set of acknowledged types.
-  void AcknowledgeSyncedTypes(syncable::ModelTypeSet types);
+  void AcknowledgeSyncedTypes(syncer::ModelTypeSet types);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -117,22 +117,22 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // For testing.
 
   void SetManagedForTest(bool is_managed);
-  syncable::ModelTypeSet GetAcknowledgeSyncedTypesForTest() const;
+  syncer::ModelTypeSet GetAcknowledgeSyncedTypesForTest() const;
 
  private:
   void RegisterPrefGroups();
   void RegisterPreferences();
 
   void RegisterDataTypePreferredPref(
-      syncable::ModelType type, bool is_preferred);
-  bool GetDataTypePreferred(syncable::ModelType type) const;
-  void SetDataTypePreferred(syncable::ModelType type, bool is_preferred);
+      syncer::ModelType type, bool is_preferred);
+  bool GetDataTypePreferred(syncer::ModelType type) const;
+  void SetDataTypePreferred(syncer::ModelType type, bool is_preferred);
 
   // Returns a ModelTypeSet based on |types| expanded to include pref groups
   // (see |pref_groups_|), but as a subset of |registered_types|.
-  syncable::ModelTypeSet ResolvePrefGroups(
-      syncable::ModelTypeSet registered_types,
-      syncable::ModelTypeSet types) const;
+  syncer::ModelTypeSet ResolvePrefGroups(
+      syncer::ModelTypeSet registered_types,
+      syncer::ModelTypeSet types) const;
 
   // May be NULL.
   PrefService* const pref_service_;
@@ -146,11 +146,11 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // Groups of prefs that always have the same value as a "master" pref.
   // For example, the APPS group has {APP_NOTIFICATIONS, APP_SETTINGS}
   // (as well as APPS, but that is implied), so
-  //   pref_groups_[syncable::APPS] =       { syncable::APP_NOTIFICATIONS,
-  //                                          syncable::APP_SETTINGS }
-  //   pref_groups_[syncable::EXTENSIONS] = { syncable::EXTENSION_SETTINGS }
+  //   pref_groups_[syncer::APPS] =       { syncer::APP_NOTIFICATIONS,
+  //                                          syncer::APP_SETTINGS }
+  //   pref_groups_[syncer::EXTENSIONS] = { syncer::EXTENSION_SETTINGS }
   // etc.
-  typedef std::map<syncable::ModelType, syncable::ModelTypeSet> PrefGroupsMap;
+  typedef std::map<syncer::ModelType, syncer::ModelTypeSet> PrefGroupsMap;
   PrefGroupsMap pref_groups_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncPrefs);

@@ -12,10 +12,10 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/sync/profile_sync_service_mock.h"
-#include "chrome/browser/signin/signin_manager_fake.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_manager_fake.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
@@ -46,21 +46,21 @@ const char kTestCaptchaImageUrl[] = "http://pizzamyheart/image";
 const char kTestCaptchaUnlockUrl[] = "http://pizzamyheart/unlock";
 
 // List of all the types a user can select in the sync config dialog.
-const syncable::ModelType kUserSelectableTypes[] = {
-  syncable::APPS,
-  syncable::AUTOFILL,
-  syncable::BOOKMARKS,
-  syncable::EXTENSIONS,
-  syncable::PASSWORDS,
-  syncable::PREFERENCES,
-  syncable::SESSIONS,
-  syncable::THEMES,
-  syncable::TYPED_URLS
+const syncer::ModelType kUserSelectableTypes[] = {
+  syncer::APPS,
+  syncer::AUTOFILL,
+  syncer::BOOKMARKS,
+  syncer::EXTENSIONS,
+  syncer::PASSWORDS,
+  syncer::PREFERENCES,
+  syncer::SESSIONS,
+  syncer::THEMES,
+  syncer::TYPED_URLS
 };
 
 // Returns a ModelTypeSet with all user selectable types set.
-syncable::ModelTypeSet GetAllTypes() {
-  syncable::ModelTypeSet types;
+syncer::ModelTypeSet GetAllTypes() {
+  syncer::ModelTypeSet types;
   for (size_t i = 0; i < arraysize(kUserSelectableTypes); ++i)
     types.Put(kUserSelectableTypes[i]);
   return types;
@@ -81,7 +81,7 @@ enum EncryptAllConfig {
 // the passed dictionary are added to the json.
 std::string GetConfiguration(const DictionaryValue* extra_values,
                              SyncAllDataConfig sync_all,
-                             syncable::ModelTypeSet types,
+                             syncer::ModelTypeSet types,
                              const std::string& passphrase,
                              EncryptAllConfig encrypt_all) {
   DictionaryValue result;
@@ -93,15 +93,15 @@ std::string GetConfiguration(const DictionaryValue* extra_values,
   if (!passphrase.empty())
     result.SetString("passphrase", passphrase);
   // Add all of our data types.
-  result.SetBoolean("appsSynced", types.Has(syncable::APPS));
-  result.SetBoolean("autofillSynced", types.Has(syncable::AUTOFILL));
-  result.SetBoolean("bookmarksSynced", types.Has(syncable::BOOKMARKS));
-  result.SetBoolean("extensionsSynced", types.Has(syncable::EXTENSIONS));
-  result.SetBoolean("passwordsSynced", types.Has(syncable::PASSWORDS));
-  result.SetBoolean("preferencesSynced", types.Has(syncable::PREFERENCES));
-  result.SetBoolean("sessionsSynced", types.Has(syncable::SESSIONS));
-  result.SetBoolean("themesSynced", types.Has(syncable::THEMES));
-  result.SetBoolean("typedUrlsSynced", types.Has(syncable::TYPED_URLS));
+  result.SetBoolean("appsSynced", types.Has(syncer::APPS));
+  result.SetBoolean("autofillSynced", types.Has(syncer::AUTOFILL));
+  result.SetBoolean("bookmarksSynced", types.Has(syncer::BOOKMARKS));
+  result.SetBoolean("extensionsSynced", types.Has(syncer::EXTENSIONS));
+  result.SetBoolean("passwordsSynced", types.Has(syncer::PASSWORDS));
+  result.SetBoolean("preferencesSynced", types.Has(syncer::PREFERENCES));
+  result.SetBoolean("sessionsSynced", types.Has(syncer::SESSIONS));
+  result.SetBoolean("themesSynced", types.Has(syncer::THEMES));
+  result.SetBoolean("typedUrlsSynced", types.Has(syncer::TYPED_URLS));
   std::string args;
   base::JSONWriter::Write(&result, &args);
   return args;
@@ -190,17 +190,17 @@ void CheckShowSyncSetupArgs(const DictionaryValue* dictionary,
 // types.
 void CheckConfigDataTypeArguments(DictionaryValue* dictionary,
                                   SyncAllDataConfig config,
-                                  syncable::ModelTypeSet types) {
+                                  syncer::ModelTypeSet types) {
   CheckBool(dictionary, "syncAllDataTypes", config == SYNC_ALL_DATA);
-  CheckBool(dictionary, "appsSynced", types.Has(syncable::APPS));
-  CheckBool(dictionary, "autofillSynced", types.Has(syncable::AUTOFILL));
-  CheckBool(dictionary, "bookmarksSynced", types.Has(syncable::BOOKMARKS));
-  CheckBool(dictionary, "extensionsSynced", types.Has(syncable::EXTENSIONS));
-  CheckBool(dictionary, "passwordsSynced", types.Has(syncable::PASSWORDS));
-  CheckBool(dictionary, "preferencesSynced", types.Has(syncable::PREFERENCES));
-  CheckBool(dictionary, "sessionsSynced", types.Has(syncable::SESSIONS));
-  CheckBool(dictionary, "themesSynced", types.Has(syncable::THEMES));
-  CheckBool(dictionary, "typedUrlsSynced", types.Has(syncable::TYPED_URLS));
+  CheckBool(dictionary, "appsSynced", types.Has(syncer::APPS));
+  CheckBool(dictionary, "autofillSynced", types.Has(syncer::AUTOFILL));
+  CheckBool(dictionary, "bookmarksSynced", types.Has(syncer::BOOKMARKS));
+  CheckBool(dictionary, "extensionsSynced", types.Has(syncer::EXTENSIONS));
+  CheckBool(dictionary, "passwordsSynced", types.Has(syncer::PASSWORDS));
+  CheckBool(dictionary, "preferencesSynced", types.Has(syncer::PREFERENCES));
+  CheckBool(dictionary, "sessionsSynced", types.Has(syncer::SESSIONS));
+  CheckBool(dictionary, "themesSynced", types.Has(syncer::THEMES));
+  CheckBool(dictionary, "typedUrlsSynced", types.Has(syncer::TYPED_URLS));
 }
 
 
@@ -881,7 +881,7 @@ TEST_P(SyncSetupHandlerTest, UnsuccessfullySetPassphrase) {
 // data type.
 TEST_P(SyncSetupHandlerTest, TestSyncIndividualTypes) {
   for (size_t i = 0; i < arraysize(kUserSelectableTypes); ++i) {
-    syncable::ModelTypeSet type_to_set;
+    syncer::ModelTypeSet type_to_set;
     type_to_set.Put(kUserSelectableTypes[i]);
     std::string args = GetConfiguration(
         NULL, CHOOSE_WHAT_TO_SYNC, type_to_set, "", ENCRYPT_PASSWORDS);
@@ -1031,7 +1031,7 @@ TEST_P(SyncSetupHandlerTest, ShowSetupSyncForAllTypesIndividually) {
     browser_sync::SyncPrefs sync_prefs(profile_->GetPrefs());
     sync_prefs.SetKeepEverythingSynced(false);
     SetDefaultExpectationsForConfigPage();
-    syncable::ModelTypeSet types;
+    syncer::ModelTypeSet types;
     types.Put(kUserSelectableTypes[i]);
     EXPECT_CALL(*mock_pss_, GetPreferredDataTypes()).
         WillRepeatedly(Return(types));

@@ -13,7 +13,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
-namespace syncable {
 namespace {
 
 using base::ExpectDictStringValue;
@@ -44,32 +43,31 @@ TEST_F(ModelTypePayloadMapTest, TypePayloadMapToValue) {
 }
 
 TEST_F(ModelTypePayloadMapTest, CoalescePayloads) {
-  syncable::ModelTypePayloadMap original;
+  syncer::ModelTypePayloadMap original;
   std::string empty_payload;
   std::string payload1 = "payload1";
   std::string payload2 = "payload2";
   std::string payload3 = "payload3";
-  original[syncable::BOOKMARKS] = empty_payload;
-  original[syncable::PASSWORDS] = payload1;
-  original[syncable::AUTOFILL] = payload2;
-  original[syncable::THEMES] = payload3;
+  original[syncer::BOOKMARKS] = empty_payload;
+  original[syncer::PASSWORDS] = payload1;
+  original[syncer::AUTOFILL] = payload2;
+  original[syncer::THEMES] = payload3;
 
-  syncable::ModelTypePayloadMap update;
-  update[syncable::BOOKMARKS] = empty_payload;  // Same.
-  update[syncable::PASSWORDS] = empty_payload;  // Overwrite with empty.
-  update[syncable::AUTOFILL] = payload1;        // Overwrite with non-empty.
-  update[syncable::SESSIONS] = payload2;        // New.
+  syncer::ModelTypePayloadMap update;
+  update[syncer::BOOKMARKS] = empty_payload;  // Same.
+  update[syncer::PASSWORDS] = empty_payload;  // Overwrite with empty.
+  update[syncer::AUTOFILL] = payload1;        // Overwrite with non-empty.
+  update[syncer::SESSIONS] = payload2;        // New.
   // Themes untouched.
 
   CoalescePayloads(&original, update);
   ASSERT_EQ(5U, original.size());
-  EXPECT_EQ(empty_payload, original[syncable::BOOKMARKS]);
-  EXPECT_EQ(payload1, original[syncable::PASSWORDS]);
-  EXPECT_EQ(payload1, original[syncable::AUTOFILL]);
-  EXPECT_EQ(payload2, original[syncable::SESSIONS]);
-  EXPECT_EQ(payload3, original[syncable::THEMES]);
+  EXPECT_EQ(empty_payload, original[syncer::BOOKMARKS]);
+  EXPECT_EQ(payload1, original[syncer::PASSWORDS]);
+  EXPECT_EQ(payload1, original[syncer::AUTOFILL]);
+  EXPECT_EQ(payload2, original[syncer::SESSIONS]);
+  EXPECT_EQ(payload3, original[syncer::THEMES]);
 }
 
 }  // namespace
-}  // namespace syncable
 }  // namespace syncer

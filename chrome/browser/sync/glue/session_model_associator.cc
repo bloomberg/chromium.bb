@@ -52,7 +52,7 @@
 using content::BrowserThread;
 using content::NavigationEntry;
 using prefs::kSyncSessionsGUID;
-using syncable::SESSIONS;
+using syncer::SESSIONS;
 
 namespace browser_sync {
 
@@ -745,7 +745,7 @@ syncer::SyncError SessionModelAssociator::AssociateModels() {
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
 
     syncer::ReadNode root(&trans);
-    if (root.InitByTagLookup(syncable::ModelTypeToRootTag(model_type())) !=
+    if (root.InitByTagLookup(syncer::ModelTypeToRootTag(model_type())) !=
             syncer::BaseNode::INIT_OK) {
       return error_handler_->CreateAndUploadError(
           FROM_HERE,
@@ -1397,13 +1397,13 @@ void SessionModelAssociator::TabNodePool::FreeTabNode(int64 sync_id) {
 
 void SessionModelAssociator::AttemptSessionsDataRefresh() const {
   DVLOG(1) << "Triggering sync refresh for sessions datatype.";
-  const syncable::ModelType type = syncable::SESSIONS;
-  syncable::ModelTypePayloadMap payload_map;
+  const syncer::ModelType type = syncer::SESSIONS;
+  syncer::ModelTypePayloadMap payload_map;
   payload_map[type] = "";
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
       content::Source<Profile>(profile_),
-      content::Details<const syncable::ModelTypePayloadMap>(&payload_map));
+      content::Details<const syncer::ModelTypePayloadMap>(&payload_map));
 }
 
 bool SessionModelAssociator::GetLocalSession(
@@ -1581,7 +1581,7 @@ void SessionModelAssociator::BlockUntilLocalChangeForTest(
 bool SessionModelAssociator::CryptoReadyIfNecessary() {
   // We only access the cryptographer while holding a transaction.
   syncer::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-  const syncable::ModelTypeSet encrypted_types =
+  const syncer::ModelTypeSet encrypted_types =
       syncer::GetEncryptedTypes(&trans);
   return !encrypted_types.Has(SESSIONS) ||
          sync_service_->IsCryptographerReady(&trans);

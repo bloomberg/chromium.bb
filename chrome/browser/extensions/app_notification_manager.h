@@ -68,7 +68,7 @@ class AppNotificationManager
 
   // Returns all syncable notifications from this model as syncer::SyncData.
   virtual syncer::SyncDataList GetAllSyncData(
-      syncable::ModelType type) const OVERRIDE;
+      syncer::ModelType type) const OVERRIDE;
   // Process notifications related changes from Sync, merging them into
   // our model.
   virtual syncer::SyncError ProcessSyncChanges(
@@ -76,11 +76,11 @@ class AppNotificationManager
       const syncer::SyncChangeList& change_list) OVERRIDE;
   // Associate and merge sync data model with our data model.
   virtual syncer::SyncError MergeDataAndStartSyncing(
-      syncable::ModelType type,
+      syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
       scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) OVERRIDE;
-  virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
+  virtual void StopSyncing(syncer::ModelType type) OVERRIDE;
 
  private:
   friend class AppNotificationManagerSyncTest;

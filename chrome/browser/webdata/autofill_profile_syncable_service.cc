@@ -58,7 +58,7 @@ AutofillProfileSyncableService::AutofillProfileSyncableService()
 }
 
 syncer::SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
-    syncable::ModelType type,
+    syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
     scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) {
@@ -160,9 +160,9 @@ syncer::SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
   return error;
 }
 
-void AutofillProfileSyncableService::StopSyncing(syncable::ModelType type) {
+void AutofillProfileSyncableService::StopSyncing(syncer::ModelType type) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, syncable::AUTOFILL_PROFILE);
+  DCHECK_EQ(type, syncer::AUTOFILL_PROFILE);
 
   sync_processor_.reset();
   sync_error_factory_.reset();
@@ -171,10 +171,10 @@ void AutofillProfileSyncableService::StopSyncing(syncable::ModelType type) {
 }
 
 syncer::SyncDataList AutofillProfileSyncableService::GetAllSyncData(
-    syncable::ModelType type) const {
+    syncer::ModelType type) const {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_processor_.get());
-  DCHECK_EQ(type, syncable::AUTOFILL_PROFILE);
+  DCHECK_EQ(type, syncer::AUTOFILL_PROFILE);
 
   syncer::SyncDataList current_data;
 
@@ -191,7 +191,7 @@ syncer::SyncError AutofillProfileSyncableService::ProcessSyncChanges(
   DCHECK(CalledOnValidThread());
   if (!sync_processor_.get()) {
     syncer::SyncError error(FROM_HERE, "Models not yet associated.",
-                    syncable::AUTOFILL_PROFILE);
+                    syncer::AUTOFILL_PROFILE);
     return error;
   }
 
@@ -376,7 +376,7 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
   DCHECK(profile_map);
   DCHECK(bundle);
 
-  DCHECK_EQ(syncable::AUTOFILL_PROFILE, data.GetDataType());
+  DCHECK_EQ(syncer::AUTOFILL_PROFILE, data.GetDataType());
 
   const sync_pb::EntitySpecifics& specifics = data.GetSpecifics();
   const sync_pb::AutofillProfileSpecifics& autofill_specifics(

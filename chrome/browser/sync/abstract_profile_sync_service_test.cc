@@ -18,6 +18,7 @@
 
 using syncer::TestIdFactory;
 using content::BrowserThread;
+using syncer::ModelType;
 using syncer::UserShare;
 using syncer::syncable::BASE_VERSION;
 using syncer::syncable::CREATE;
@@ -25,7 +26,6 @@ using syncer::syncable::IS_DEL;
 using syncer::syncable::IS_DIR;
 using syncer::syncable::IS_UNAPPLIED_UPDATE;
 using syncer::syncable::IS_UNSYNCED;
-using syncer::syncable::ModelType;
 using syncer::syncable::MutableEntry;
 using syncer::syncable::SERVER_IS_DIR;
 using syncer::syncable::SERVER_VERSION;
@@ -37,7 +37,7 @@ using syncer::syncable::WriteTransaction;
 /* static */
 const std::string ProfileSyncServiceTestHelper::GetTagForType(
     ModelType model_type) {
-  return syncable::ModelTypeToRootTag(model_type);
+  return syncer::ModelTypeToRootTag(model_type);
 }
 
 /* static */
@@ -63,7 +63,7 @@ bool ProfileSyncServiceTestHelper::CreateRoot(ModelType model_type,
   node.Put(IS_DEL, false);
   node.Put(syncer::syncable::ID, ids->MakeServer(tag_name));
   sync_pb::EntitySpecifics specifics;
-  syncable::AddDefaultFieldValue(model_type, &specifics);
+  syncer::AddDefaultFieldValue(model_type, &specifics);
   node.Put(SPECIFICS, specifics);
 
   return true;

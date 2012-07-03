@@ -135,12 +135,12 @@ void AllStatus::IncrementNotificationsReceived() {
   ++status_.notifications_received;
 }
 
-void AllStatus::SetEncryptedTypes(syncable::ModelTypeSet types) {
+void AllStatus::SetEncryptedTypes(syncer::ModelTypeSet types) {
   ScopedStatusLock lock(this);
   status_.encrypted_types = types;
 }
 
-void AllStatus::SetThrottledTypes(const syncable::ModelTypeSet& types) {
+void AllStatus::SetThrottledTypes(const syncer::ModelTypeSet& types) {
   ScopedStatusLock lock(this);
   status_.throttled_types = types;
 }

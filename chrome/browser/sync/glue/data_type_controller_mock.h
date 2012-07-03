@@ -26,7 +26,7 @@ class ModelLoadCallbackMock {
   ModelLoadCallbackMock();
   virtual ~ModelLoadCallbackMock();
 
-  MOCK_METHOD2(Run, void(syncable::ModelType, syncer::SyncError));
+  MOCK_METHOD2(Run, void(syncer::ModelType, syncer::SyncError));
 };
 
 }  // namespace browser_sync

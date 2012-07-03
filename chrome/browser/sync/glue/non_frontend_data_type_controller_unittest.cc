@@ -61,7 +61,7 @@ class NonFrontendDataTypeControllerFake : public NonFrontendDataTypeController {
                                       sync_service),
         mock_(mock) {}
 
-  virtual syncable::ModelType type() const { return syncable::BOOKMARKS; }
+  virtual syncer::ModelType type() const { return syncer::BOOKMARKS; }
   virtual syncer::ModelSafeGroup model_safe_group() const {
     return syncer::GROUP_DB;
   }
@@ -250,7 +250,7 @@ TEST_F(SyncNonFrontendDataTypeControllerTest, StartAssociationFailed) {
       WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
   EXPECT_CALL(*model_associator_, AssociateModels()).
       WillOnce(
-          Return(syncer::SyncError(FROM_HERE, "Error", syncable::AUTOFILL)));
+          Return(syncer::SyncError(FROM_HERE, "Error", syncer::AUTOFILL)));
   EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   SetStartFailExpectations(DataTypeController::ASSOCIATION_FAILED);
   // Set up association to fail with an association failed error.

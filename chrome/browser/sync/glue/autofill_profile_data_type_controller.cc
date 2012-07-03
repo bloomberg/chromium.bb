@@ -34,8 +34,8 @@ AutofillProfileDataTypeController::AutofillProfileDataTypeController(
       personal_data_(NULL) {
 }
 
-syncable::ModelType AutofillProfileDataTypeController::type() const {
-  return syncable::AUTOFILL_PROFILE;
+syncer::ModelType AutofillProfileDataTypeController::type() const {
+  return syncer::AUTOFILL_PROFILE;
 }
 
 syncer::ModelSafeGroup

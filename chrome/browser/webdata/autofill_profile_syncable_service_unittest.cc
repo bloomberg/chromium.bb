@@ -170,10 +170,10 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeDataAndStartSyncing) {
 
   // Takes ownership of sync_processor_.
   autofill_syncable_service_.MergeDataAndStartSyncing(
-      syncable::AUTOFILL_PROFILE, data_list,
+      syncer::AUTOFILL_PROFILE, data_list,
       sync_processor_.PassAs<syncer::SyncChangeProcessor>(),
       scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
-  autofill_syncable_service_.StopSyncing(syncable::AUTOFILL_PROFILE);
+  autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
 }
 
 TEST_F(AutofillProfileSyncableServiceTest, GetAllSyncData) {
@@ -204,12 +204,12 @@ TEST_F(AutofillProfileSyncableServiceTest, GetAllSyncData) {
   syncer::SyncDataList data_list;
   // Takes ownership of sync_processor_.
   autofill_syncable_service_.MergeDataAndStartSyncing(
-      syncable::AUTOFILL_PROFILE, data_list,
+      syncer::AUTOFILL_PROFILE, data_list,
       sync_processor_.PassAs<syncer::SyncChangeProcessor>(),
       scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
 
   syncer::SyncDataList data =
-      autofill_syncable_service_.GetAllSyncData(syncable::AUTOFILL_PROFILE);
+      autofill_syncable_service_.GetAllSyncData(syncer::AUTOFILL_PROFILE);
 
   EXPECT_EQ(2U, data.size());
   EXPECT_EQ(guid_present1, data.front().GetSpecifics()
@@ -258,7 +258,7 @@ TEST_F(AutofillProfileSyncableServiceTest, ActOnChange) {
   ON_CALL(*sync_processor_, ProcessSyncChanges(_, _))
       .WillByDefault(
           Return(syncer::SyncError(FROM_HERE, std::string("an error"),
-                                   syncable::AUTOFILL_PROFILE)));
+                                   syncer::AUTOFILL_PROFILE)));
   EXPECT_CALL(*sync_processor_, ProcessSyncChanges(_, _)).Times(2);
 
   autofill_syncable_service_.set_sync_processor(sync_processor_.release());

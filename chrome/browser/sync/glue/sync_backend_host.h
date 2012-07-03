@@ -108,7 +108,7 @@ class SyncFrontend {
   // of encrypted types is syncer::Cryptographer::SensitiveTypes() and that
   // the encrypt everything flag is false.
   virtual void OnEncryptedTypesChanged(
-      syncable::ModelTypeSet encrypted_types,
+      syncer::ModelTypeSet encrypted_types,
       bool encrypt_everything) = 0;
 
   // Called after we finish encrypting the current set of encrypted
@@ -116,16 +116,14 @@ class SyncFrontend {
   virtual void OnEncryptionComplete() = 0;
 
   // Called to perform migration of |types|.
-  virtual void OnMigrationNeededForTypes(
-      syncable::ModelTypeSet types) = 0;
+  virtual void OnMigrationNeededForTypes(syncer::ModelTypeSet types) = 0;
 
   // Inform the Frontend that new datatypes are available for registration.
   virtual void OnExperimentsChanged(
       const syncer::Experiments& experiments) = 0;
 
   // Called when the sync cycle returns there is an user actionable error.
-  virtual void OnActionableError(
-      const syncer::SyncProtocolError& error) = 0;
+  virtual void OnActionableError(const syncer::SyncProtocolError& error) = 0;
 
  protected:
   // Don't delete through SyncFrontend interface.
@@ -169,7 +167,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
       SyncFrontend* frontend,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
       const GURL& service_url,
-      syncable::ModelTypeSet initial_types,
+      syncer::ModelTypeSet initial_types,
       const syncer::SyncCredentials& credentials,
       bool delete_sync_data_folder,
       syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
@@ -224,10 +222,10 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // is non-empty, then an error was encountered).
   virtual void ConfigureDataTypes(
       syncer::ConfigureReason reason,
-      syncable::ModelTypeSet types_to_add,
-      syncable::ModelTypeSet types_to_remove,
+      syncer::ModelTypeSet types_to_add,
+      syncer::ModelTypeSet types_to_remove,
       NigoriState nigori_state,
-      base::Callback<void(syncable::ModelTypeSet)> ready_task,
+      base::Callback<void(syncer::ModelTypeSet)> ready_task,
       base::Callback<void()> retry_callback) OVERRIDE;
 
   // Makes an asynchronous call to syncer to switch to config mode. When done
@@ -242,11 +240,11 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // no changes are dropped between model association and change
   // processor activation.
   void ActivateDataType(
-      syncable::ModelType type, syncer::ModelSafeGroup group,
+      syncer::ModelType type, syncer::ModelSafeGroup group,
       ChangeProcessor* change_processor);
 
   // Deactivates change processing for the given data type.
-  void DeactivateDataType(syncable::ModelType type);
+  void DeactivateDataType(syncer::ModelType type);
 
   // Called on |frontend_loop_| to obtain a handle to the UserShare needed
   // for creating transactions.
@@ -308,7 +306,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
     MessageLoop* sync_loop;
     SyncBackendRegistrar* registrar;
-   syncer::ModelSafeRoutingInfo routing_info;
+    syncer::ModelSafeRoutingInfo routing_info;
     std::vector<syncer::ModelSafeWorker*> workers;
     syncer::ExtensionsActivityMonitor* extensions_activity_monitor;
     syncer::WeakHandle<syncer::JsEventHandler> event_handler;
@@ -369,7 +367,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
     // The ready_task will be run when configuration is done with the
     // set of all types that failed configuration (i.e., if its
     // argument is non-empty, then an error was encountered).
-    base::Callback<void(syncable::ModelTypeSet)> ready_task;
+    base::Callback<void(syncer::ModelTypeSet)> ready_task;
 
     // The retry callback will be run when the download failed due to a
     // transient error. This is to notify DTM so it can apropriately inform
@@ -380,10 +378,10 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
     // The set of types that we are waiting to be initially synced in a
     // configuration cycle.
-    syncable::ModelTypeSet types_to_add;
+    syncer::ModelTypeSet types_to_add;
 
     // Additional details about which types were added.
-    syncable::ModelTypeSet added_types;
+    syncer::ModelTypeSet added_types;
     syncer::ConfigureReason reason;
     bool retry_in_progress;
   };
@@ -441,7 +439,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Invoked when the set of encrypted types or the encrypt
   // everything flag changes.
   void NotifyEncryptedTypesChanged(
-      syncable::ModelTypeSet encrypted_types,
+      syncer::ModelTypeSet encrypted_types,
       bool encrypt_everything);
 
   // Invoked when sync finishes encrypting new datatypes.
@@ -458,7 +456,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // part of the initialization process.
   void HandleNigoriConfigurationCompletedOnFrontendLoop(
       const syncer::WeakHandle<syncer::JsBackend>& js_backend,
-      syncable::ModelTypeSet failed_configuration_types);
+      syncer::ModelTypeSet failed_configuration_types);
 
   // Must be called on |frontend_loop_|.  |done_callback| is called on
   // |frontend_loop_|.

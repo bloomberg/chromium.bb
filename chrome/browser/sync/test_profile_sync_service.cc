@@ -45,10 +45,10 @@ SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}
 void SyncBackendHostForProfileSyncTest::
     SimulateSyncCycleCompletedInitialSyncEnded(
     const tracked_objects::Location& location) {
-  syncable::ModelTypeSet sync_ended;
+  syncer::ModelTypeSet sync_ended;
   if (!fail_initial_download_)
-    sync_ended = syncable::ModelTypeSet::All();
-  syncable::ModelTypePayloadMap download_progress_markers;
+    sync_ended = syncer::ModelTypeSet::All();
+  syncer::ModelTypePayloadMap download_progress_markers;
   HandleSyncCycleCompletedOnFrontendLoop(
       SyncSessionSnapshot(
           ModelNeutralState(), false, sync_ended, download_progress_markers,
@@ -88,11 +88,11 @@ void SyncBackendHostForProfileSyncTest::StartConfiguration(
     const base::Closure& callback) {
   SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop();
   if (IsDownloadingNigoriForTest()) {
-    syncable::ModelTypeSet sync_ended;
+    syncer::ModelTypeSet sync_ended;
 
     if (!fail_initial_download_)
-      sync_ended.Put(syncable::NIGORI);
-    syncable::ModelTypePayloadMap download_progress_markers;
+      sync_ended.Put(syncer::NIGORI);
+    syncer::ModelTypePayloadMap download_progress_markers;
     HandleSyncCycleCompletedOnFrontendLoop(
         SyncSessionSnapshot(
             ModelNeutralState(), false, sync_ended, download_progress_markers,
@@ -147,10 +147,10 @@ void TestProfileSyncService::SetInitialSyncEndedForAllTypes() {
   UserShare* user_share = GetUserShare();
   Directory* directory = user_share->directory.get();
 
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
+  for (int i = syncer::FIRST_REAL_MODEL_TYPE;
+       i < syncer::MODEL_TYPE_COUNT; ++i) {
     directory->set_initial_sync_ended_for_type(
-        syncable::ModelTypeFromInt(i), true);
+        syncer::ModelTypeFromInt(i), true);
   }
 }
 
@@ -174,9 +174,9 @@ void TestProfileSyncService::OnBackendInitialized(
       UserShare* user_share = GetUserShare();
       Directory* directory = user_share->directory.get();
 
-      if (!directory->initial_sync_ended_for_type(syncable::NIGORI)) {
+      if (!directory->initial_sync_ended_for_type(syncer::NIGORI)) {
         ProfileSyncServiceTestHelper::CreateRoot(
-            syncable::NIGORI, GetUserShare(),
+            syncer::NIGORI, GetUserShare(),
             id_factory());
 
         // A side effect of adding the NIGORI mode (normally done by the

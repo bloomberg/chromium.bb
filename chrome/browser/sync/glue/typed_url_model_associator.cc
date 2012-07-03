@@ -216,7 +216,7 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
       history::VisitVector& visits = visit_vectors[ix->id()];
 
       syncer::ReadNode node(&trans);
-      if (node.InitByClientTagLookup(syncable::TYPED_URLS, tag) ==
+      if (node.InitByClientTagLookup(syncer::TYPED_URLS, tag) ==
               syncer::BaseNode::INIT_OK) {
         // Same URL exists in sync data and in history data - compare the
         // entries to see if there's any difference.
@@ -236,7 +236,7 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
             MergeUrls(typed_url, *ix, &visits, &new_url, &added_visits);
         if (difference & DIFF_UPDATE_NODE) {
           syncer::WriteNode write_node(&trans);
-          if (write_node.InitByClientTagLookup(syncable::TYPED_URLS, tag) !=
+          if (write_node.InitByClientTagLookup(syncer::TYPED_URLS, tag) !=
                   syncer::BaseNode::INIT_OK) {
             return error_handler_->CreateAndUploadError(
                 FROM_HERE,
@@ -274,7 +274,7 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
         // Sync has never seen this URL before.
         syncer::WriteNode node(&trans);
         syncer::WriteNode::InitUniqueByCreationResult result =
-            node.InitUniqueByCreation(syncable::TYPED_URLS,
+            node.InitUniqueByCreation(syncer::TYPED_URLS,
                                       typed_url_root, tag);
         if (result != syncer::WriteNode::INIT_SUCCESS) {
           return error_handler_->CreateAndUploadError(
@@ -822,9 +822,9 @@ void TypedUrlModelAssociator::UpdateURLRowFromTypedUrlSpecifics(
 bool TypedUrlModelAssociator::CryptoReadyIfNecessary() {
   // We only access the cryptographer while holding a transaction.
   syncer::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-  const syncable::ModelTypeSet encrypted_types =
+  const syncer::ModelTypeSet encrypted_types =
       syncer::GetEncryptedTypes(&trans);
-  return !encrypted_types.Has(syncable::TYPED_URLS) ||
+  return !encrypted_types.Has(syncer::TYPED_URLS) ||
          sync_service_->IsCryptographerReady(&trans);
 }
 

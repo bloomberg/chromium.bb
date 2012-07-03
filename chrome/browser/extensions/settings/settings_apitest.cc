@@ -31,7 +31,7 @@ using settings_namespace::ToString;
 namespace {
 
 // TODO(kalman): test both EXTENSION_SETTINGS and APP_SETTINGS.
-const syncable::ModelType kModelType = syncable::EXTENSION_SETTINGS;
+const syncer::ModelType kModelType = syncer::EXTENSION_SETTINGS;
 
 class NoopSyncChangeProcessor : public syncer::SyncChangeProcessor {
  public:

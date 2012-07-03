@@ -29,12 +29,12 @@ class FakeSyncableService : public SyncableService {
 
   // SyncableService implementation.
   virtual SyncError MergeDataAndStartSyncing(
-      syncable::ModelType type,
+      syncer::ModelType type,
       const SyncDataList& initial_sync_data,
       scoped_ptr<SyncChangeProcessor> sync_processor,
       scoped_ptr<SyncErrorFactory> sync_error_factory) OVERRIDE;
-  virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
-  virtual SyncDataList GetAllSyncData(syncable::ModelType type) const OVERRIDE;
+  virtual void StopSyncing(syncer::ModelType type) OVERRIDE;
+  virtual SyncDataList GetAllSyncData(syncer::ModelType type) const OVERRIDE;
   virtual SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const SyncChangeList& change_list) OVERRIDE;
@@ -44,7 +44,7 @@ class FakeSyncableService : public SyncableService {
   SyncError merge_data_and_start_syncing_error_;
   SyncError process_sync_changes_error_;
   bool syncing_;
-  syncable::ModelType type_;
+  syncer::ModelType type_;
 };
 
 }  // namespace syncer

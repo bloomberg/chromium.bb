@@ -548,7 +548,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsMetahandlesToPurge) {
     }
   }
 
-  syncable::ModelTypeSet to_purge(BOOKMARKS);
+  syncer::ModelTypeSet to_purge(BOOKMARKS);
   dir_->PurgeEntriesWithTypeIn(to_purge);
 
   Directory::SaveChangesSnapshot snapshot1;
@@ -829,8 +829,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnsynced) {
 TEST_F(SyncableDirectoryTest, TestGetUnappliedUpdates) {
   std::vector<int64> handles;
   int64 handle1, handle2;
-  const syncable::FullModelTypeSet all_types =
-      syncable::FullModelTypeSet::All();
+  const syncer::FullModelTypeSet all_types = syncer::FullModelTypeSet::All();
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
 
@@ -1404,7 +1403,7 @@ TEST_F(OnDiskSyncableDirectoryTest, TestPurgeEntriesWithTypeIn) {
   dir_->set_initial_sync_ended_for_type(PREFERENCES, true);
   dir_->set_initial_sync_ended_for_type(AUTOFILL, true);
 
-  syncable::ModelTypeSet types_to_purge(PREFERENCES, AUTOFILL);
+  syncer::ModelTypeSet types_to_purge(PREFERENCES, AUTOFILL);
 
   TestIdFactory id_factory;
   // Create some items for each type.
@@ -1696,7 +1695,7 @@ TEST_F(OnDiskSyncableDirectoryTest, TestSaveChangesFailureWithPurge) {
   SwapInUnsaveableDirectory();
   ASSERT_TRUE(dir_->good());
 
-  syncable::ModelTypeSet set(BOOKMARKS);
+  syncer::ModelTypeSet set(BOOKMARKS);
   dir_->PurgeEntriesWithTypeIn(set);
   EXPECT_TRUE(IsInMetahandlesToPurge(handle1));
   ASSERT_FALSE(dir_->SaveChanges());

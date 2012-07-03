@@ -68,8 +68,8 @@ using browser_sync::ChangeProcessor;
 using browser_sync::DataTypeController;
 using browser_sync::DataTypeManager;
 using browser_sync::SyncBackendHost;
-using syncable::ModelType;
-using syncable::ModelTypeSet;
+using syncer::ModelType;
+using syncer::ModelTypeSet;
 using syncer::JsBackend;
 using syncer::JsController;
 using syncer::JsEventDetails;
@@ -262,15 +262,15 @@ void ProfileSyncService::RegisterDataTypeController(
 
 browser_sync::SessionModelAssociator*
     ProfileSyncService::GetSessionModelAssociator() {
-  if (data_type_controllers_.find(syncable::SESSIONS) ==
+  if (data_type_controllers_.find(syncer::SESSIONS) ==
       data_type_controllers_.end() ||
-      data_type_controllers_.find(syncable::SESSIONS)->second->state() !=
+      data_type_controllers_.find(syncer::SESSIONS)->second->state() !=
       DataTypeController::RUNNING) {
     return NULL;
   }
   return static_cast<browser_sync::SessionDataTypeController*>(
       data_type_controllers_.find(
-      syncable::SESSIONS)->second.get())->GetModelAssociator();
+      syncer::SESSIONS)->second.get())->GetModelAssociator();
 }
 
 void ProfileSyncService::GetDataTypeControllerStates(
@@ -325,7 +325,7 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
     return;
   }
 
-  syncable::ModelTypeSet initial_types;
+  syncer::ModelTypeSet initial_types;
   // If sync setup hasn't finished, we don't want to initialize routing info
   // for any data types so that we don't download updates for types that the
   // user chooses not to sync on the first DownloadUpdatesCommand.
@@ -366,9 +366,9 @@ void ProfileSyncService::CreateBackend() {
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
   if (encryption_pending())
     return true;
-  const syncable::ModelTypeSet preferred_types = GetPreferredDataTypes();
-  const syncable::ModelTypeSet encrypted_types = GetEncryptedDataTypes();
-  DCHECK(encrypted_types.Has(syncable::PASSWORDS));
+  const syncer::ModelTypeSet preferred_types = GetPreferredDataTypes();
+  const syncer::ModelTypeSet encrypted_types = GetEncryptedDataTypes();
+  DCHECK(encrypted_types.Has(syncer::PASSWORDS));
   return !Intersection(preferred_types, encrypted_types).Empty();
 }
 
@@ -564,9 +564,9 @@ void ProfileSyncService::ClearUnrecoverableError() {
 
 // static
 std::string ProfileSyncService::GetExperimentNameForDataType(
-    syncable::ModelType data_type) {
+    syncer::ModelType data_type) {
   switch (data_type) {
-    case syncable::SESSIONS:
+    case syncer::SESSIONS:
       return "sync-tabs";
     default:
       break;
@@ -575,7 +575,7 @@ std::string ProfileSyncService::GetExperimentNameForDataType(
   return "";
 }
 
-void ProfileSyncService::RegisterNewDataType(syncable::ModelType data_type) {
+void ProfileSyncService::RegisterNewDataType(syncer::ModelType data_type) {
   if (data_type_controllers_.count(data_type) > 0)
     return;
   NOTREACHED();
@@ -617,7 +617,7 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
 }
 
 void ProfileSyncService::DisableBrokenDatatype(
-    syncable::ModelType type,
+    syncer::ModelType type,
     const tracked_objects::Location& from_here,
     std::string message) {
   // First deactivate the type so that no further server changes are
@@ -724,15 +724,15 @@ void ProfileSyncService::OnExperimentsChanged(
     return;
   }
 
-  const syncable::ModelTypeSet registered_types = GetRegisteredDataTypes();
-  syncable::ModelTypeSet to_add;
-  const syncable::ModelTypeSet to_register =
+  const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
+  syncer::ModelTypeSet to_add;
+  const syncer::ModelTypeSet to_register =
       Difference(to_add, registered_types);
   DVLOG(2) << "OnExperimentsChanged called with types: "
-           << syncable::ModelTypeSetToString(to_add);
-  DVLOG(2) << "Enabling types: " << syncable::ModelTypeSetToString(to_register);
+           << syncer::ModelTypeSetToString(to_add);
+  DVLOG(2) << "Enabling types: " << syncer::ModelTypeSetToString(to_register);
 
-  for (syncable::ModelTypeSet::Iterator it = to_register.First();
+  for (syncer::ModelTypeSet::Iterator it = to_register.First();
        it.Good(); it.Inc()) {
     // Received notice to enable experimental type. Check if the type is
     // registered, and if not register a new datatype controller.
@@ -765,7 +765,7 @@ void ProfileSyncService::OnExperimentsChanged(
     // Otherwise, just leave the experimental types on by default.
     if (!to_register.Empty() && HasSyncSetupCompleted() && migrator_.get()) {
       DVLOG(1) << "Dynamically enabling new datatypes: "
-               << syncable::ModelTypeSetToString(to_register);
+               << syncer::ModelTypeSetToString(to_register);
       OnMigrationNeededForTypes(to_register);
     }
   }
@@ -861,7 +861,7 @@ void ProfileSyncService::OnPassphraseAccepted() {
 
   // Make sure the data types that depend on the passphrase are started at
   // this time.
-  const syncable::ModelTypeSet types = GetPreferredDataTypes();
+  const syncer::ModelTypeSet types = GetPreferredDataTypes();
 
   if (data_type_manager_.get()) {
     // Unblock the data type manager if necessary.
@@ -873,15 +873,15 @@ void ProfileSyncService::OnPassphraseAccepted() {
 }
 
 void ProfileSyncService::OnEncryptedTypesChanged(
-    syncable::ModelTypeSet encrypted_types,
+    syncer::ModelTypeSet encrypted_types,
     bool encrypt_everything) {
   encrypted_types_ = encrypted_types;
   encrypt_everything_ = encrypt_everything;
   DVLOG(1) << "Encrypted types changed to "
-           << syncable::ModelTypeSetToString(encrypted_types_)
+           << syncer::ModelTypeSetToString(encrypted_types_)
            << " (encrypt everything is set to "
            << (encrypt_everything_ ? "true" : "false") << ")";
-  DCHECK(encrypted_types_.Has(syncable::PASSWORDS));
+  DCHECK(encrypted_types_.Has(syncer::PASSWORDS));
 }
 
 void ProfileSyncService::OnEncryptionComplete() {
@@ -895,7 +895,7 @@ void ProfileSyncService::OnEncryptionComplete() {
 }
 
 void ProfileSyncService::OnMigrationNeededForTypes(
-    syncable::ModelTypeSet types) {
+    syncer::ModelTypeSet types) {
   DCHECK(backend_initialized_);
   DCHECK(data_type_manager_.get());
 
@@ -1019,23 +1019,23 @@ string16 ProfileSyncService::GetLastSyncedTimeString() const {
 }
 
 void ProfileSyncService::UpdateSelectedTypesHistogram(
-    bool sync_everything, const syncable::ModelTypeSet chosen_types) const {
+    bool sync_everything, const syncer::ModelTypeSet chosen_types) const {
   if (!HasSyncSetupCompleted() ||
       sync_everything != sync_prefs_.HasKeepEverythingSynced()) {
     UMA_HISTOGRAM_BOOLEAN("Sync.SyncEverything", sync_everything);
   }
 
   // Only log the data types that are shown in the sync settings ui.
-  const syncable::ModelType model_types[] = {
-    syncable::APPS,
-    syncable::AUTOFILL,
-    syncable::BOOKMARKS,
-    syncable::EXTENSIONS,
-    syncable::PASSWORDS,
-    syncable::PREFERENCES,
-    syncable::SESSIONS,
-    syncable::THEMES,
-    syncable::TYPED_URLS
+  const syncer::ModelType model_types[] = {
+    syncer::APPS,
+    syncer::AUTOFILL,
+    syncer::BOOKMARKS,
+    syncer::EXTENSIONS,
+    syncer::PASSWORDS,
+    syncer::PREFERENCES,
+    syncer::SESSIONS,
+    syncer::THEMES,
+    syncer::TYPED_URLS
   };
 
   const browser_sync::user_selectable_type::UserSelectableSyncType
@@ -1051,8 +1051,7 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
     browser_sync::user_selectable_type::TYPED_URLS
   };
 
-  COMPILE_ASSERT(17 == syncable::MODEL_TYPE_COUNT,
-                 UpdateCustomConfigHistogram);
+  COMPILE_ASSERT(17 == syncer::MODEL_TYPE_COUNT, UpdateCustomConfigHistogram);
   COMPILE_ASSERT(arraysize(model_types) ==
                  browser_sync::user_selectable_type::SELECTABLE_DATATYPE_COUNT,
                  UpdateCustomConfigHistogram);
@@ -1060,9 +1059,9 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
                  UpdateCustomConfigHistogram);
 
   if (!sync_everything) {
-    const syncable::ModelTypeSet current_types = GetPreferredDataTypes();
+    const syncer::ModelTypeSet current_types = GetPreferredDataTypes();
     for (size_t i = 0; i < arraysize(model_types); ++i) {
-      const syncable::ModelType type = model_types[i];
+      const syncer::ModelType type = model_types[i];
       if (chosen_types.Has(type) &&
           (!HasSyncSetupCompleted() || !current_types.Has(type))) {
         // Selected type has changed - log it.
@@ -1093,7 +1092,7 @@ void ProfileSyncService::RefreshSpareBootstrapToken(
 #endif
 
 void ProfileSyncService::OnUserChoseDatatypes(bool sync_everything,
-    syncable::ModelTypeSet chosen_types) {
+    syncer::ModelTypeSet chosen_types) {
   if (!backend_.get() && !HasUnrecoverableError()) {
     NOTREACHED();
     return;
@@ -1109,11 +1108,11 @@ void ProfileSyncService::OnUserChoseDatatypes(bool sync_everything,
 }
 
 void ProfileSyncService::ChangePreferredDataTypes(
-    syncable::ModelTypeSet preferred_types) {
+    syncer::ModelTypeSet preferred_types) {
 
   DVLOG(1) << "ChangePreferredDataTypes invoked";
-  const syncable::ModelTypeSet registered_types = GetRegisteredDataTypes();
-  const syncable::ModelTypeSet registered_preferred_types =
+  const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
+  const syncer::ModelTypeSet registered_preferred_types =
       Intersection(registered_types, preferred_types);
   sync_prefs_.SetPreferredDataTypes(registered_types,
                                     registered_preferred_types);
@@ -1122,17 +1121,17 @@ void ProfileSyncService::ChangePreferredDataTypes(
   ReconfigureDatatypeManager();
 }
 
-syncable::ModelTypeSet ProfileSyncService::GetPreferredDataTypes() const {
-  const syncable::ModelTypeSet registered_types = GetRegisteredDataTypes();
-  const syncable::ModelTypeSet preferred_types =
+syncer::ModelTypeSet ProfileSyncService::GetPreferredDataTypes() const {
+  const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
+  const syncer::ModelTypeSet preferred_types =
       sync_prefs_.GetPreferredDataTypes(registered_types);
-  const syncable::ModelTypeSet failed_types =
+  const syncer::ModelTypeSet failed_types =
       failed_datatypes_handler_.GetFailedTypes();
   return Difference(preferred_types, failed_types);
 }
 
-syncable::ModelTypeSet ProfileSyncService::GetRegisteredDataTypes() const {
-  syncable::ModelTypeSet registered_types;
+syncer::ModelTypeSet ProfileSyncService::GetRegisteredDataTypes() const {
+  syncer::ModelTypeSet registered_types;
   // The data_type_controllers_ are determined by command-line flags; that's
   // effectively what controls the values returned here.
   for (DataTypeController::TypeMap::const_iterator it =
@@ -1184,7 +1183,7 @@ void ProfileSyncService::ConfigureDataTypeManager() {
                        base::Unretained(this))));
   }
 
-  const syncable::ModelTypeSet types = GetPreferredDataTypes();
+  const syncer::ModelTypeSet types = GetPreferredDataTypes();
   if (IsPassphraseRequiredForDecryption()) {
     // We need a passphrase still. We don't bother to attempt to configure
     // until we receive an OnPassphraseAccepted (which triggers a configure).
@@ -1315,7 +1314,7 @@ Value* ProfileSyncService::GetTypeStatusMap() const {
 }
 
 void ProfileSyncService::ActivateDataType(
-    syncable::ModelType type, syncer::ModelSafeGroup group,
+    syncer::ModelType type, syncer::ModelSafeGroup group,
     ChangeProcessor* change_processor) {
   if (!backend_.get()) {
     NOTREACHED();
@@ -1325,7 +1324,7 @@ void ProfileSyncService::ActivateDataType(
   backend_->ActivateDataType(type, group, change_processor);
 }
 
-void ProfileSyncService::DeactivateDataType(syncable::ModelType type) {
+void ProfileSyncService::DeactivateDataType(syncer::ModelType type) {
   if (!backend_.get())
     return;
   backend_->DeactivateDataType(type);
@@ -1419,8 +1418,8 @@ bool ProfileSyncService::EncryptEverythingEnabled() const {
   return encrypt_everything_ || encryption_pending_;
 }
 
-syncable::ModelTypeSet ProfileSyncService::GetEncryptedDataTypes() const {
-  DCHECK(encrypted_types_.Has(syncable::PASSWORDS));
+syncer::ModelTypeSet ProfileSyncService::GetEncryptedDataTypes() const {
+  DCHECK(encrypted_types_.Has(syncer::PASSWORDS));
   // We may be called during the setup process before we're
   // initialized.  In this case, we default to the sensitive types.
   return encrypted_types_;
@@ -1493,7 +1492,7 @@ void ProfileSyncService::Observe(int type,
         std::string message =
           "Sync configuration failed with status " +
           DataTypeManager::ConfigureStatusToString(configure_status_) +
-          " during " + syncable::ModelTypeToString(error.type()) +
+          " during " + syncer::ModelTypeToString(error.type()) +
           ": " + error.message();
         LOG(ERROR) << "ProfileSyncService error: "
                    << message;

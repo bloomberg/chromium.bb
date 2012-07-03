@@ -20,7 +20,7 @@ EntryKernel::EntryKernel() : dirty_(false) {
 
 EntryKernel::~EntryKernel() {}
 
-syncable::ModelType EntryKernel::GetServerModelType() const {
+syncer::ModelType EntryKernel::GetServerModelType() const {
   ModelType specifics_type = GetModelTypeFromSpecifics(ref(SERVER_SPECIFICS));
   if (specifics_type != UNSPECIFIED)
     return specifics_type;

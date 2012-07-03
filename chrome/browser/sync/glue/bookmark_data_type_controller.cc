@@ -28,8 +28,8 @@ BookmarkDataTypeController::BookmarkDataTypeController(
                                  sync_service) {
 }
 
-syncable::ModelType BookmarkDataTypeController::type() const {
-  return syncable::BOOKMARKS;
+syncer::ModelType BookmarkDataTypeController::type() const {
+  return syncer::BOOKMARKS;
 }
 
 void BookmarkDataTypeController::Observe(

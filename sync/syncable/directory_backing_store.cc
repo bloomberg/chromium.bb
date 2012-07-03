@@ -544,14 +544,14 @@ ModelType DirectoryBackingStore::ModelIdToModelTypeEnum(
     const void* data, int size) {
   sync_pb::EntitySpecifics specifics;
   if (!specifics.ParseFromArray(data, size))
-    return syncable::UNSPECIFIED;
-  return syncable::GetModelTypeFromSpecifics(specifics);
+    return syncer::UNSPECIFIED;
+  return syncer::GetModelTypeFromSpecifics(specifics);
 }
 
 // static
 string DirectoryBackingStore::ModelTypeEnumToModelId(ModelType model_type) {
   sync_pb::EntitySpecifics specifics;
-  syncable::AddDefaultFieldValue(model_type, &specifics);
+  syncer::AddDefaultFieldValue(model_type, &specifics);
   return specifics.SerializeAsString();
 }
 

@@ -41,7 +41,7 @@ class SyncUIDataTypeControllerTest : public testing::Test {
  public:
   SyncUIDataTypeControllerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
-        type_(syncable::PREFERENCES),
+        type_(syncer::PREFERENCES),
         change_processor_(new FakeGenericChangeProcessor()) {}
 
   virtual void SetUp() {
@@ -100,7 +100,7 @@ class SyncUIDataTypeControllerTest : public testing::Test {
   ProfileMock profile_;
   scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
   ProfileSyncServiceMock profile_sync_service_;
-  const syncable::ModelType type_;
+  const syncer::ModelType type_;
   StartCallbackMock start_callback_;
   ModelLoadCallbackMock model_load_callback_;
   scoped_refptr<UIDataTypeController> preference_dtc_;

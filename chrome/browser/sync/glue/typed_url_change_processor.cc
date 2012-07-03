@@ -127,18 +127,18 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
 
   syncer::WriteNode update_node(trans);
   syncer::BaseNode::InitByLookupResult result =
-      update_node.InitByClientTagLookup(syncable::TYPED_URLS, tag);
+      update_node.InitByClientTagLookup(syncer::TYPED_URLS, tag);
   if (result == syncer::BaseNode::INIT_OK) {
     model_associator_->WriteToSyncNode(url, visit_vector, &update_node);
   } else if (result == syncer::BaseNode::INIT_FAILED_DECRYPT_IF_NECESSARY) {
     // TODO(tim): Investigating bug 121587.
     syncer::Cryptographer* crypto = trans->GetCryptographer();
-    syncable::ModelTypeSet encrypted_types(crypto->GetEncryptedTypes());
+    syncer::ModelTypeSet encrypted_types(crypto->GetEncryptedTypes());
     const sync_pb::EntitySpecifics& specifics =
         update_node.GetEntry()->Get(syncer::syncable::SPECIFICS);
     CHECK(specifics.has_encrypted());
     const bool can_decrypt = crypto->CanDecrypt(specifics.encrypted());
-    const bool agreement = encrypted_types.Has(syncable::TYPED_URLS);
+    const bool agreement = encrypted_types.Has(syncer::TYPED_URLS);
     if (!agreement && !can_decrypt) {
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Could not InitByIdLookup in CreateOrUpdateSyncNode, "
@@ -167,7 +167,7 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
   } else {
     syncer::WriteNode create_node(trans);
     syncer::WriteNode::InitUniqueByCreationResult result =
-        create_node.InitUniqueByCreation(syncable::TYPED_URLS,
+        create_node.InitUniqueByCreation(syncer::TYPED_URLS,
                                          typed_url_root, tag);
     if (result != syncer::WriteNode::INIT_SUCCESS) {
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
@@ -205,7 +205,7 @@ void TypedUrlChangeProcessor::HandleURLsDeleted(
       syncer::WriteNode sync_node(&trans);
       // The deleted URL could have been non-typed, so it might not be found
       // in the sync DB.
-      if (sync_node.InitByClientTagLookup(syncable::TYPED_URLS,
+      if (sync_node.InitByClientTagLookup(syncer::TYPED_URLS,
                                           row->url().spec()) ==
               syncer::BaseNode::INIT_OK) {
         sync_node.Remove();
@@ -281,7 +281,7 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
 
     // Check that the changed node is a child of the typed_urls folder.
     DCHECK(typed_url_root.GetId() == sync_node.GetParentId());
-    DCHECK(syncable::TYPED_URLS == sync_node.GetModelType());
+    DCHECK(syncer::TYPED_URLS == sync_node.GetModelType());
 
     const sync_pb::TypedUrlSpecifics& typed_url(
         sync_node.GetTypedUrlSpecifics());

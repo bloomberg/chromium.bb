@@ -44,15 +44,15 @@ BaseNode::InitByLookupResult ReadNode::InitByIdLookup(int64 id) {
     return INIT_FAILED_ENTRY_NOT_GOOD;
   if (entry_->Get(syncable::IS_DEL))
     return INIT_FAILED_ENTRY_IS_DEL;
-  syncable::ModelType model_type = GetModelType();
-  LOG_IF(WARNING, model_type == syncable::UNSPECIFIED ||
-                  model_type == syncable::TOP_LEVEL_FOLDER)
+  syncer::ModelType model_type = GetModelType();
+  LOG_IF(WARNING, model_type == syncer::UNSPECIFIED ||
+                  model_type == syncer::TOP_LEVEL_FOLDER)
       << "SyncAPI InitByIdLookup referencing unusual object.";
   return DecryptIfNecessary() ? INIT_OK : INIT_FAILED_DECRYPT_IF_NECESSARY;
 }
 
 BaseNode::InitByLookupResult ReadNode::InitByClientTagLookup(
-    syncable::ModelType model_type,
+    syncer::ModelType model_type,
     const std::string& tag) {
   DCHECK(!entry_) << "Init called twice";
   if (tag.empty())
@@ -88,9 +88,9 @@ BaseNode::InitByLookupResult ReadNode::InitByTagLookup(
     return INIT_FAILED_ENTRY_NOT_GOOD;
   if (entry_->Get(syncable::IS_DEL))
     return INIT_FAILED_ENTRY_IS_DEL;
-  syncable::ModelType model_type = GetModelType();
-  LOG_IF(WARNING, model_type == syncable::UNSPECIFIED ||
-                  model_type == syncable::TOP_LEVEL_FOLDER)
+  syncer::ModelType model_type = GetModelType();
+  LOG_IF(WARNING, model_type == syncer::UNSPECIFIED ||
+                  model_type == syncer::TOP_LEVEL_FOLDER)
       << "SyncAPI InitByTagLookup referencing unusually typed object.";
   return DecryptIfNecessary() ? INIT_OK : INIT_FAILED_DECRYPT_IF_NECESSARY;
 }

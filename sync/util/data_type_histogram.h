@@ -21,7 +21,7 @@
 // version of the datatype.
 //
 // Example usage (ignoring newlines necessary for multiline macro):
-// std::vector<syncable::ModelType> types = GetEntryTypes();
+// std::vector<syncer::ModelType> types = GetEntryTypes();
 // for (int i = 0; i < types.size(); ++i) {
 // #define PER_DATA_TYPE_MACRO(type_str)
 //     UMA_HISTOGRAM_ENUMERATION("Sync." type_str "StartFailures",
@@ -37,54 +37,54 @@
 #define SYNC_DATA_TYPE_HISTOGRAM(datatype) \
   do { \
     switch (datatype) { \
-      case syncable::BOOKMARKS: \
+      case syncer::BOOKMARKS: \
         PER_DATA_TYPE_MACRO("Bookmarks"); \
         break; \
-      case syncable::PREFERENCES: \
+      case syncer::PREFERENCES: \
         PER_DATA_TYPE_MACRO("Preferences"); \
         break; \
-      case syncable::PASSWORDS: \
+      case syncer::PASSWORDS: \
         PER_DATA_TYPE_MACRO("Passwords"); \
         break; \
-      case syncable::AUTOFILL: \
+      case syncer::AUTOFILL: \
         PER_DATA_TYPE_MACRO("Autofill"); \
         break; \
-      case syncable::AUTOFILL_PROFILE: \
+      case syncer::AUTOFILL_PROFILE: \
         PER_DATA_TYPE_MACRO("AutofillProfiles"); \
         break; \
-      case syncable::THEMES: \
+      case syncer::THEMES: \
         PER_DATA_TYPE_MACRO("Themes"); \
         break; \
-      case syncable::TYPED_URLS: \
+      case syncer::TYPED_URLS: \
         PER_DATA_TYPE_MACRO("TypedUrls"); \
         break; \
-      case syncable::EXTENSIONS: \
+      case syncer::EXTENSIONS: \
         PER_DATA_TYPE_MACRO("Extensions"); \
         break; \
-      case syncable::NIGORI: \
+      case syncer::NIGORI: \
         PER_DATA_TYPE_MACRO("Nigori"); \
         break; \
-      case syncable::SEARCH_ENGINES: \
+      case syncer::SEARCH_ENGINES: \
         PER_DATA_TYPE_MACRO("SearchEngines"); \
         break; \
-      case syncable::SESSIONS: \
+      case syncer::SESSIONS: \
         PER_DATA_TYPE_MACRO("Sessions"); \
         break; \
-      case syncable::APPS: \
+      case syncer::APPS: \
         PER_DATA_TYPE_MACRO("Apps"); \
         break; \
-      case syncable::APP_SETTINGS: \
+      case syncer::APP_SETTINGS: \
         PER_DATA_TYPE_MACRO("AppSettings"); \
         break; \
-      case syncable::EXTENSION_SETTINGS: \
+      case syncer::EXTENSION_SETTINGS: \
         PER_DATA_TYPE_MACRO("ExtensionSettings"); \
         break; \
-      case syncable::APP_NOTIFICATIONS: \
+      case syncer::APP_NOTIFICATIONS: \
         PER_DATA_TYPE_MACRO("AppNotifications"); \
         break; \
       default: \
         NOTREACHED() << "Unknown datatype " \
-                     << syncable::ModelTypeToString(datatype); \
+                     << syncer::ModelTypeToString(datatype); \
     } \
   } while (0)
 

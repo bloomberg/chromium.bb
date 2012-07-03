@@ -40,7 +40,7 @@ class FailedDatatypesHandler {
   std::vector<syncer::SyncError> GetAllErrors() const;
 
   // Returns the types that are failing.
-  syncable::ModelTypeSet GetFailedTypes() const;
+  syncer::ModelTypeSet GetFailedTypes() const;
 
  private:
   // Returns if there are any failed types.

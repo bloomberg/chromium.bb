@@ -15,7 +15,7 @@ base::DictionaryValue* ModelSafeRoutingInfoToValue(
   base::DictionaryValue* dict = new base::DictionaryValue();
   for (ModelSafeRoutingInfo::const_iterator it = routing_info.begin();
        it != routing_info.end(); ++it) {
-    dict->SetString(syncable::ModelTypeToString(it->first),
+    dict->SetString(syncer::ModelTypeToString(it->first),
                     ModelSafeGroupToString(it->second));
   }
   return dict;
@@ -29,10 +29,10 @@ std::string ModelSafeRoutingInfoToString(
   return json;
 }
 
-syncable::ModelTypePayloadMap ModelSafeRoutingInfoToPayloadMap(
+syncer::ModelTypePayloadMap ModelSafeRoutingInfoToPayloadMap(
     const ModelSafeRoutingInfo& routes,
     const std::string& payload) {
-  syncable::ModelTypePayloadMap types_with_payloads;
+  syncer::ModelTypePayloadMap types_with_payloads;
   for (ModelSafeRoutingInfo::const_iterator i = routes.begin();
        i != routes.end(); ++i) {
     types_with_payloads[i->first] = payload;
@@ -40,9 +40,9 @@ syncable::ModelTypePayloadMap ModelSafeRoutingInfoToPayloadMap(
   return types_with_payloads;
 }
 
-syncable::ModelTypeSet GetRoutingInfoTypes(
+syncer::ModelTypeSet GetRoutingInfoTypes(
     const ModelSafeRoutingInfo& routing_info) {
-  syncable::ModelTypeSet types;
+  syncer::ModelTypeSet types;
   for (ModelSafeRoutingInfo::const_iterator it = routing_info.begin();
        it != routing_info.end(); ++it) {
     types.Put(it->first);
@@ -50,11 +50,11 @@ syncable::ModelTypeSet GetRoutingInfoTypes(
   return types;
 }
 
-ModelSafeGroup GetGroupForModelType(const syncable::ModelType type,
+ModelSafeGroup GetGroupForModelType(const syncer::ModelType type,
                                     const ModelSafeRoutingInfo& routes) {
   ModelSafeRoutingInfo::const_iterator it = routes.find(type);
   if (it == routes.end()) {
-    if (type != syncable::UNSPECIFIED && type != syncable::TOP_LEVEL_FOLDER)
+    if (type != syncer::UNSPECIFIED && type != syncer::TOP_LEVEL_FOLDER)
       LOG(WARNING) << "Entry does not belong to active ModelSafeGroup!";
     return GROUP_PASSIVE;
   }

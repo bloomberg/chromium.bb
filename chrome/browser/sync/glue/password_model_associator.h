@@ -47,7 +47,7 @@ class PasswordModelAssociator
  public:
   typedef std::vector<webkit::forms::PasswordForm> PasswordVector;
 
-  static syncable::ModelType model_type() { return syncable::PASSWORDS; }
+  static syncer::ModelType model_type() { return syncer::PASSWORDS; }
   PasswordModelAssociator(ProfileSyncService* sync_service,
                           PasswordStore* password_store,
                           DataTypeErrorHandler* error_handler);

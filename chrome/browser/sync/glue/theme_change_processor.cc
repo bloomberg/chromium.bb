@@ -43,7 +43,7 @@ void ThemeChangeProcessor::Observe(
 
   syncer::WriteTransaction trans(FROM_HERE, share_handle());
   syncer::WriteNode node(&trans);
-  if (node.InitByClientTagLookup(syncable::THEMES,
+  if (node.InitByClientTagLookup(syncer::THEMES,
                                  kCurrentThemeClientTag) !=
           syncer::BaseNode::INIT_OK) {
     std::string err = "Could not create node with client tag: ";
@@ -105,7 +105,7 @@ void ThemeChangeProcessor::ApplyChangesFromSyncModel(
           "Theme node lookup failed.");
       return;
     }
-    DCHECK_EQ(node.GetModelType(), syncable::THEMES);
+    DCHECK_EQ(node.GetModelType(), syncer::THEMES);
     DCHECK(profile_);
     theme_specifics = node.GetThemeSpecifics();
   }

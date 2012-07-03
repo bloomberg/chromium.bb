@@ -299,14 +299,14 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   DataTypeManager::ConfigureStatus status = DataTypeManager::ABORTED;
   syncer::SyncError error(
-      FROM_HERE, "Association failed.", syncable::BOOKMARKS);
+      FROM_HERE, "Association failed.", syncer::BOOKMARKS);
   std::list<syncer::SyncError> errors;
   errors.push_back(error);
   browser_sync::DataTypeManager::ConfigureResult result(
       status,
-      syncable::ModelTypeSet(),
+      syncer::ModelTypeSet(),
       errors,
-      syncable::ModelTypeSet());
+      syncer::ModelTypeSet());
   EXPECT_CALL(*data_type_manager, Configure(_, _)).
       WillRepeatedly(
           DoAll(

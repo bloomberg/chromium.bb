@@ -24,8 +24,7 @@ syncer::Cryptographer* BaseTransaction::GetCryptographer() const {
   return directory_->GetCryptographer(this->GetWrappedTrans());
 }
 
-syncable::ModelTypeSet GetEncryptedTypes(
-    const syncer::BaseTransaction* trans) {
+syncer::ModelTypeSet GetEncryptedTypes(const syncer::BaseTransaction* trans) {
   return trans->GetCryptographer()->GetEncryptedTypes();
 }
 

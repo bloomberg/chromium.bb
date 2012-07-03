@@ -22,13 +22,13 @@
 
 namespace browser_sync {
 
-using syncable::ModelType;
-using syncable::ModelTypeSet;
-using syncable::ModelTypeToString;
-using syncable::BOOKMARKS;
-using syncable::APPS;
-using syncable::PASSWORDS;
-using syncable::PREFERENCES;
+using syncer::ModelType;
+using syncer::ModelTypeSet;
+using syncer::ModelTypeToString;
+using syncer::BOOKMARKS;
+using syncer::APPS;
+using syncer::PASSWORDS;
+using syncer::PREFERENCES;
 using testing::_;
 using testing::Mock;
 using testing::ResultOf;
@@ -215,7 +215,7 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureSlowLoadingType) {
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::PARTIAL_SUCCESS);
 
-  syncable::ModelTypeSet types;
+  syncer::ModelTypeSet types;
   types.Put(BOOKMARKS);
   types.Put(APPS);
 

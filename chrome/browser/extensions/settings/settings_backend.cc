@@ -33,7 +33,7 @@ SettingsBackend::SettingsBackend(
       base_path_(base_path),
       quota_(quota),
       observers_(observers),
-      sync_type_(syncable::UNSPECIFIED) {
+      sync_type_(syncer::UNSPECIFIED) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
@@ -135,7 +135,7 @@ std::set<std::string> SettingsBackend::GetKnownExtensionIDs() const {
 static void AddAllSyncData(
     const std::string& extension_id,
     const DictionaryValue& src,
-    syncable::ModelType type,
+    syncer::ModelType type,
     syncer::SyncDataList* dst) {
   for (DictionaryValue::Iterator it(src); it.HasNext(); it.Advance()) {
     dst->push_back(settings_sync_util::CreateData(
@@ -144,12 +144,12 @@ static void AddAllSyncData(
 }
 
 syncer::SyncDataList SettingsBackend::GetAllSyncData(
-    syncable::ModelType type) const {
+    syncer::ModelType type) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   // Ignore the type, it's just for sanity checking; assume that whatever base
   // path we're constructed with is correct for the sync type.
-  DCHECK(type == syncable::EXTENSION_SETTINGS ||
-         type == syncable::APP_SETTINGS);
+  DCHECK(type == syncer::EXTENSION_SETTINGS ||
+         type == syncer::APP_SETTINGS);
 
   // For all extensions, get all their settings.  This has the effect
   // of bringing in the entire state of extension settings in memory; sad.
@@ -172,14 +172,14 @@ syncer::SyncDataList SettingsBackend::GetAllSyncData(
 }
 
 syncer::SyncError SettingsBackend::MergeDataAndStartSyncing(
-    syncable::ModelType type,
+    syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
     scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(type == syncable::EXTENSION_SETTINGS ||
-         type == syncable::APP_SETTINGS);
-  DCHECK_EQ(sync_type_, syncable::UNSPECIFIED);
+  DCHECK(type == syncer::EXTENSION_SETTINGS ||
+         type == syncer::APP_SETTINGS);
+  DCHECK_EQ(sync_type_, syncer::UNSPECIFIED);
   DCHECK(!sync_processor_.get());
   DCHECK(sync_processor.get());
   DCHECK(sync_error_factory.get());
@@ -265,11 +265,11 @@ syncer::SyncError SettingsBackend::ProcessSyncChanges(
   return syncer::SyncError();
 }
 
-void SettingsBackend::StopSyncing(syncable::ModelType type) {
+void SettingsBackend::StopSyncing(syncer::ModelType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(type == syncable::EXTENSION_SETTINGS ||
-         type == syncable::APP_SETTINGS);
-  DCHECK(sync_type_ == type || sync_type_ == syncable::UNSPECIFIED);
+  DCHECK(type == syncer::EXTENSION_SETTINGS ||
+         type == syncer::APP_SETTINGS);
+  DCHECK(sync_type_ == type || sync_type_ == syncer::UNSPECIFIED);
 
   for (StorageObjMap::iterator it = storage_objs_.begin();
       it != storage_objs_.end(); ++it) {
@@ -278,7 +278,7 @@ void SettingsBackend::StopSyncing(syncable::ModelType type) {
     it->second->StopSyncing();
   }
 
-  sync_type_ = syncable::UNSPECIFIED;
+  sync_type_ = syncer::UNSPECIFIED;
   sync_processor_.reset();
   sync_error_factory_.reset();
 }

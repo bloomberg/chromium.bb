@@ -66,12 +66,12 @@ class DataTypeController
   typedef base::Callback<void(StartResult,
                               const syncer::SyncError&)> StartCallback;
 
-  typedef base::Callback<void(syncable::ModelType,
+  typedef base::Callback<void(syncer::ModelType,
                               syncer::SyncError)> ModelLoadCallback;
 
-  typedef std::map<syncable::ModelType,
+  typedef std::map<syncer::ModelType,
                    scoped_refptr<DataTypeController> > TypeMap;
-  typedef std::map<syncable::ModelType, DataTypeController::State> StateMap;
+  typedef std::map<syncer::ModelType, DataTypeController::State> StateMap;
 
   // Returns true if the start result should trigger an unrecoverable error.
   // Public so unit tests can use this function as well.
@@ -95,7 +95,7 @@ class DataTypeController
   virtual void Stop() = 0;
 
   // Unique model type for this data type controller.
-  virtual syncable::ModelType type() const = 0;
+  virtual syncer::ModelType type() const = 0;
 
   // Name of this data type.  For logging purposes only.
   virtual std::string name() const = 0;
@@ -113,7 +113,7 @@ class DataTypeController
   virtual syncer::SyncError CreateAndUploadError(
       const tracked_objects::Location& location,
       const std::string& message,
-      syncable::ModelType type) OVERRIDE;
+      syncer::ModelType type) OVERRIDE;
 
  protected:
   friend struct content::BrowserThread::DeleteOnThread<

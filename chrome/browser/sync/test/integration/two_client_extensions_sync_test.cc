@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -244,13 +244,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, DisableExtensions) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 
-  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncable::EXTENSIONS));
+  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncer::EXTENSIONS));
   InstallExtension(GetProfile(0), 1);
   InstallExtension(verifier(), 1);
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_FALSE(AllProfilesHaveSameExtensionsAsVerifier());
 
-  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncable::EXTENSIONS));
+  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncer::EXTENSIONS));
   ASSERT_TRUE(AwaitQuiescence());
   InstallExtensionsPendingForSync(GetProfile(0));
   InstallExtensionsPendingForSync(GetProfile(1));

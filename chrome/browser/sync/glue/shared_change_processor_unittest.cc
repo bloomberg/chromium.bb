@@ -102,12 +102,12 @@ class SyncSharedChangeProcessorTest : public testing::Test {
   void ConnectOnDBThread(
       const scoped_refptr<SharedChangeProcessor>& shared_change_processor) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    EXPECT_CALL(sync_factory_, GetSyncableServiceForType(syncable::AUTOFILL)).
+    EXPECT_CALL(sync_factory_, GetSyncableServiceForType(syncer::AUTOFILL)).
         WillOnce(GetWeakPtrToSyncableService(db_syncable_service_.get()));
     EXPECT_TRUE(shared_change_processor->Connect(&sync_factory_,
                                                  &sync_service_,
                                                  &error_handler_,
-                                                 syncable::AUTOFILL));
+                                                 syncer::AUTOFILL));
   }
 
   MessageLoopForUI ui_loop_;

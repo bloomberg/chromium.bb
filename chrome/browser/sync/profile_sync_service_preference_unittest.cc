@@ -63,21 +63,21 @@ class ProfileSyncServicePreferenceTest
   int64 SetSyncedValue(const std::string& name, const Value& value) {
     syncer::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
     syncer::ReadNode root(&trans);
-    if (root.InitByTagLookup(syncable::ModelTypeToRootTag(
-            syncable::PREFERENCES)) != syncer::BaseNode::INIT_OK) {
+    if (root.InitByTagLookup(syncer::ModelTypeToRootTag(
+            syncer::PREFERENCES)) != syncer::BaseNode::INIT_OK) {
       return syncer::kInvalidId;
     }
 
     syncer::WriteNode tag_node(&trans);
     syncer::WriteNode node(&trans);
 
-    if (tag_node.InitByClientTagLookup(syncable::PREFERENCES, name) ==
+    if (tag_node.InitByClientTagLookup(syncer::PREFERENCES, name) ==
             syncer::BaseNode::INIT_OK) {
       return WriteSyncedValue(name, value, &tag_node);
     }
 
     syncer::WriteNode::InitUniqueByCreationResult result =
-        node.InitUniqueByCreation(syncable::PREFERENCES, root, name);
+        node.InitUniqueByCreation(syncer::PREFERENCES, root, name);
     if (result == syncer::WriteNode::INIT_SUCCESS)
       return WriteSyncedValue(name, value, &node);
 
@@ -130,12 +130,12 @@ class ProfileSyncServicePreferenceTest
         prefs_->GetSyncableService());
     if (!pref_sync_service_)
       return false;
-    EXPECT_CALL(*factory, GetSyncableServiceForType(syncable::PREFERENCES)).
+    EXPECT_CALL(*factory, GetSyncableServiceForType(syncer::PREFERENCES)).
         WillOnce(Return(pref_sync_service_->AsWeakPtr()));
 
     EXPECT_CALL(*factory, CreateDataTypeManager(_, _)).
         WillOnce(ReturnNewDataTypeManager());
-    dtc_ = new UIDataTypeController(syncable::PREFERENCES,
+    dtc_ = new UIDataTypeController(syncer::PREFERENCES,
                                     factory,
                                     profile_.get(),
                                     service_.get());
@@ -163,7 +163,7 @@ class ProfileSyncServicePreferenceTest
     syncer::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
     syncer::ReadNode node(&trans);
 
-    if (node.InitByClientTagLookup(syncable::PREFERENCES, name) !=
+    if (node.InitByClientTagLookup(syncer::PREFERENCES, name) !=
             syncer::BaseNode::INIT_OK) {
       return NULL;
     }
@@ -230,7 +230,7 @@ class AddPreferenceEntriesHelper {
  private:
   void AddPreferenceEntriesCallback(ProfileSyncServicePreferenceTest* test,
                                     const PreferenceValues& entries) {
-    if (!test->CreateRoot(syncable::PREFERENCES))
+    if (!test->CreateRoot(syncer::PREFERENCES))
       return;
 
     for (PreferenceValues::const_iterator i = entries.begin();
@@ -247,7 +247,7 @@ class AddPreferenceEntriesHelper {
 
 TEST_F(ProfileSyncServicePreferenceTest, CreatePrefSyncData) {
   prefs_->SetString(prefs::kHomePage, example_url0_);
-  CreateRootHelper create_root(this, syncable::PREFERENCES);
+  CreateRootHelper create_root(this, syncer::PREFERENCES);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   ASSERT_TRUE(create_root.success());
 
@@ -269,7 +269,7 @@ TEST_F(ProfileSyncServicePreferenceTest, ModelAssociationDoNotSyncDefaults) {
   const PrefService::Preference* pref =
       prefs_->FindPreference(prefs::kHomePage);
   EXPECT_TRUE(pref->IsDefaultValue());
-  CreateRootHelper create_root(this, syncable::PREFERENCES);
+  CreateRootHelper create_root(this, syncer::PREFERENCES);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   ASSERT_TRUE(create_root.success());
   EXPECT_TRUE(IsSynced(prefs::kHomePage));
@@ -286,7 +286,7 @@ TEST_F(ProfileSyncServicePreferenceTest, ModelAssociationEmptyCloud) {
     url_list->Append(Value::CreateStringValue(example_url0_));
     url_list->Append(Value::CreateStringValue(example_url1_));
   }
-  CreateRootHelper create_root(this, syncable::PREFERENCES);
+  CreateRootHelper create_root(this, syncer::PREFERENCES);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   ASSERT_TRUE(create_root.success());
 
@@ -359,7 +359,7 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedPreferenceWithDefaultValue) {
       prefs_->FindPreference(prefs::kHomePage);
   EXPECT_TRUE(pref->IsDefaultValue());
 
-  CreateRootHelper create_root(this, syncable::PREFERENCES);
+  CreateRootHelper create_root(this, syncer::PREFERENCES);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   ASSERT_TRUE(create_root.success());
 
@@ -373,7 +373,7 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedPreferenceWithDefaultValue) {
 
 TEST_F(ProfileSyncServicePreferenceTest, UpdatedPreferenceWithValue) {
   profile_->GetPrefs()->SetString(prefs::kHomePage, example_url0_);
-  CreateRootHelper create_root(this, syncable::PREFERENCES);
+  CreateRootHelper create_root(this, syncer::PREFERENCES);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   ASSERT_TRUE(create_root.success());
 
@@ -387,7 +387,7 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedPreferenceWithValue) {
 
 TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeActionUpdate) {
   profile_->GetPrefs()->SetString(prefs::kHomePage, example_url0_);
-  CreateRootHelper create_root(this, syncable::PREFERENCES);
+  CreateRootHelper create_root(this, syncer::PREFERENCES);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   ASSERT_TRUE(create_root.success());
 
@@ -408,7 +408,7 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeActionUpdate) {
 }
 
 TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeActionAdd) {
-  CreateRootHelper create_root(this, syncable::PREFERENCES);
+  CreateRootHelper create_root(this, syncer::PREFERENCES);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   ASSERT_TRUE(create_root.success());
 
@@ -431,7 +431,7 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeActionAdd) {
 }
 
 TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeUnknownPreference) {
-  CreateRootHelper create_root(this, syncable::PREFERENCES);
+  CreateRootHelper create_root(this, syncer::PREFERENCES);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   ASSERT_TRUE(create_root.success());
 
@@ -457,7 +457,7 @@ TEST_F(ProfileSyncServicePreferenceTest, ManagedPreferences) {
       Value::CreateStringValue("http://example.com"));
   prefs_->SetManagedPref(prefs::kHomePage, managed_value->DeepCopy());
 
-  CreateRootHelper create_root(this, syncable::PREFERENCES);
+  CreateRootHelper create_root(this, syncer::PREFERENCES);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   ASSERT_TRUE(create_root.success());
 
@@ -487,7 +487,7 @@ TEST_F(ProfileSyncServicePreferenceTest, ManagedPreferences) {
 }
 
 TEST_F(ProfileSyncServicePreferenceTest, DynamicManagedPreferences) {
-  CreateRootHelper create_root(this, syncable::PREFERENCES);
+  CreateRootHelper create_root(this, syncer::PREFERENCES);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   ASSERT_TRUE(create_root.success());
 
@@ -515,7 +515,7 @@ TEST_F(ProfileSyncServicePreferenceTest, DynamicManagedPreferences) {
 
 TEST_F(ProfileSyncServicePreferenceTest,
        DynamicManagedPreferencesWithSyncChange) {
-  CreateRootHelper create_root(this, syncable::PREFERENCES);
+  CreateRootHelper create_root(this, syncer::PREFERENCES);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   ASSERT_TRUE(create_root.success());
 
@@ -559,7 +559,7 @@ TEST_F(ProfileSyncServicePreferenceTest, DynamicManagedDefaultPreferences) {
   const PrefService::Preference* pref =
       prefs_->FindPreference(prefs::kHomePage);
   EXPECT_TRUE(pref->IsDefaultValue());
-  CreateRootHelper create_root(this, syncable::PREFERENCES);
+  CreateRootHelper create_root(this, syncer::PREFERENCES);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   ASSERT_TRUE(create_root.success());
   EXPECT_TRUE(IsSynced(prefs::kHomePage));

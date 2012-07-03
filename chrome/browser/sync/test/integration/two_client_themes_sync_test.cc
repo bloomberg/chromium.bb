@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/browser/sync/test/integration/themes_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/sync/test/integration/themes_helper.h"
 
 using themes_helper::GetCustomTheme;
 using themes_helper::GetThemeID;
@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, DisableThemes) {
   ASSERT_FALSE(UsingCustomTheme(GetProfile(1)));
   ASSERT_FALSE(UsingCustomTheme(verifier()));
 
-  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncable::THEMES));
+  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncer::THEMES));
   UseCustomTheme(GetProfile(0), 0);
   UseCustomTheme(verifier(), 0);
   ASSERT_TRUE(AwaitQuiescence());
@@ -208,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, DisableThemes) {
   ASSERT_FALSE(UsingCustomTheme(GetProfile(1)));
   ASSERT_EQ(GetCustomTheme(0), GetThemeID(verifier()));
 
-  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncable::THEMES));
+  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncer::THEMES));
   ASSERT_TRUE(AwaitQuiescence());
 
   ASSERT_EQ(GetCustomTheme(0), GetThemeID(GetProfile(0)));

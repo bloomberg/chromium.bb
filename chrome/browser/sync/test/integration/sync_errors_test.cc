@@ -100,14 +100,14 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ErrorWhileSettingUp) {
     // In Non auto start enabled environments if the setup sync fails then
     // the setup would fail. So setup sync normally.
     ASSERT_TRUE(SetupSync()) << "Setup sync failed";
-    ASSERT_TRUE(clients()[0]->DisableSyncForDatatype(syncable::AUTOFILL));
+    ASSERT_TRUE(clients()[0]->DisableSyncForDatatype(syncer::AUTOFILL));
 
     // Trigger error on every 2 out of 3 requests.
     TriggerSyncError(protocol_error, SyncTest::ERROR_FREQUENCY_TWO_THIRDS);
 
     // Now enable a datatype, whose first 2 syncs would fail, but we should
     // recover and setup succesfully on the third attempt.
-    ASSERT_TRUE(clients()[0]->EnableSyncForDatatype(syncable::AUTOFILL));
+    ASSERT_TRUE(clients()[0]->EnableSyncForDatatype(syncer::AUTOFILL));
   }
 }
 
@@ -159,14 +159,14 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, AuthErrorTest) {
 // TODO(lipalani): Fix the typed_url dtc so this test case can pass.
 IN_PROC_BROWSER_TEST_F(SyncErrorTest, DISABLED_DisableDatatypeWhileRunning) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  syncable::ModelTypeSet synced_datatypes =
-        GetClient(0)->service()->GetPreferredDataTypes();
-  ASSERT_TRUE(synced_datatypes.Has(syncable::TYPED_URLS));
+  syncer::ModelTypeSet synced_datatypes =
+      GetClient(0)->service()->GetPreferredDataTypes();
+  ASSERT_TRUE(synced_datatypes.Has(syncer::TYPED_URLS));
   GetProfile(0)->GetPrefs()->SetBoolean(
       prefs::kSavingBrowserHistoryDisabled, true);
 
   synced_datatypes = GetClient(0)->service()->GetPreferredDataTypes();
-  ASSERT_FALSE(synced_datatypes.Has(syncable::TYPED_URLS));
+  ASSERT_FALSE(synced_datatypes.Has(syncer::TYPED_URLS));
 
   const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
   SetTitle(0, node1, L"new_title1");

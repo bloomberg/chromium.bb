@@ -19,10 +19,6 @@ namespace syncer {
 using sessions::StatusController;
 using sessions::SyncSession;
 using std::string;
-using syncable::FIRST_REAL_MODEL_TYPE;
-using syncable::MODEL_TYPE_COUNT;
-using syncable::ModelTypeSet;
-using syncable::ModelTypeSetToString;
 
 DownloadUpdatesCommand::DownloadUpdatesCommand(
     bool create_mobile_bookmarks_folder)
@@ -51,7 +47,7 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
            << ModelTypeSetToString(enabled_types);
   DCHECK(!enabled_types.Empty());
 
-  const syncable::ModelTypePayloadMap& type_payload_map =
+  const syncer::ModelTypePayloadMap& type_payload_map =
       session->source().types;
   for (ModelTypeSet::Iterator it = enabled_types.First();
        it.Good(); it.Inc()) {
@@ -60,7 +56,7 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
     dir->GetDownloadProgress(it.Get(), progress_marker);
 
     // Set notification hint if present.
-    syncable::ModelTypePayloadMap::const_iterator type_payload =
+    syncer::ModelTypePayloadMap::const_iterator type_payload =
         type_payload_map.find(it.Get());
     if (type_payload != type_payload_map.end()) {
       progress_marker->set_notification_hint(type_payload->second);

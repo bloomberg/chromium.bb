@@ -10,7 +10,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using syncable::ModelType;
+using syncer::ModelType;
 namespace browser_sync {
 
 FakeDataTypeController::FakeDataTypeController(ModelType type)

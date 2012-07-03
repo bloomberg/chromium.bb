@@ -28,8 +28,8 @@ PasswordDataTypeController::PasswordDataTypeController(
                                     sync_service) {
 }
 
-syncable::ModelType PasswordDataTypeController::type() const {
-  return syncable::PASSWORDS;
+syncer::ModelType PasswordDataTypeController::type() const {
+  return syncer::PASSWORDS;
 }
 
 syncer::ModelSafeGroup PasswordDataTypeController::model_safe_group()

@@ -21,7 +21,7 @@ class ThemeDataTypeController : public FrontendDataTypeController {
       ProfileSyncService* sync_service);
 
   // DataTypeController implementation.
-  virtual syncable::ModelType type() const OVERRIDE;
+  virtual syncer::ModelType type() const OVERRIDE;
 
  private:
   virtual ~ThemeDataTypeController();

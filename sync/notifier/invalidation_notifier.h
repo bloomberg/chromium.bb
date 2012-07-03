@@ -57,9 +57,9 @@ class InvalidationNotifier
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
   virtual void UpdateEnabledTypes(
-      syncable::ModelTypeSet enabled_types) OVERRIDE;
+      syncer::ModelTypeSet enabled_types) OVERRIDE;
   virtual void SendNotification(
-      syncable::ModelTypeSet changed_types) OVERRIDE;
+      syncer::ModelTypeSet changed_types) OVERRIDE;
 
   // ChromeInvalidationClient::Listener implementation.
   virtual void OnInvalidate(const ObjectIdPayloadMap& id_payloads) OVERRIDE;

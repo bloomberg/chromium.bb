@@ -36,7 +36,7 @@ class ChangeProcessor;
 // don't have to worry about thread safety. The main start/stop funtionality is
 // implemented by default.
 // Derived classes must implement (at least):
-//    syncable::ModelType type() const
+//    syncer::ModelType type() const
 //    void CreateSyncComponents();
 // NOTE: This class is deprecated! New sync datatypes should be using the
 // syncer::SyncableService API and the UIDataTypeController instead.
@@ -53,7 +53,7 @@ class FrontendDataTypeController : public DataTypeController {
       const ModelLoadCallback& model_load_callback) OVERRIDE;
   virtual void StartAssociating(const StartCallback& start_callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
-  virtual syncable::ModelType type() const = 0;
+  virtual syncer::ModelType type() const = 0;
   virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE;
   virtual std::string name() const OVERRIDE;
   virtual State state() const OVERRIDE;

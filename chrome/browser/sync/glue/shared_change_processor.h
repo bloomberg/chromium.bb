@@ -64,7 +64,7 @@ class SharedChangeProcessor
     ProfileSyncComponentsFactory* sync_factory,
     ProfileSyncService* sync_service,
     DataTypeErrorHandler* error_handler,
-    syncable::ModelType type);
+    syncer::ModelType type);
 
   // Disconnects from the generic change processor. May be called from any
   // thread. After this, all attempts to interact with the change processor by
@@ -109,7 +109,7 @@ class SharedChangeProcessor
   bool disconnected_;
 
   // The sync datatype we were last connected to.
-  syncable::ModelType type_;
+  syncer::ModelType type_;
 
   // The ProfileSyncService we're currently connected to.
   ProfileSyncService* sync_service_;

@@ -92,14 +92,14 @@ void JsSyncManagerObserver::OnBootstrapTokenUpdated(
 }
 
 void JsSyncManagerObserver::OnEncryptedTypesChanged(
-    syncable::ModelTypeSet encrypted_types,
+    syncer::ModelTypeSet encrypted_types,
     bool encrypt_everything) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
   details.Set("encryptedTypes",
-               syncable::ModelTypeSetToValue(encrypted_types));
+              syncer::ModelTypeSetToValue(encrypted_types));
   details.SetBoolean("encryptEverything", encrypt_everything);
   HandleJsEvent(FROM_HERE,
                 "onEncryptedTypesChanged", JsEventDetails(&details));

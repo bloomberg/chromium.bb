@@ -87,11 +87,11 @@ void InvalidationNotifier::UpdateCredentials(
 }
 
 void InvalidationNotifier::UpdateEnabledTypes(
-    syncable::ModelTypeSet enabled_types) {
+    syncer::ModelTypeSet enabled_types) {
   DCHECK(CalledOnValidThread());
   CHECK(!invalidation_client_id_.empty());
   ObjectIdSet ids;
-  for (syncable::ModelTypeSet::Iterator it = enabled_types.First(); it.Good();
+  for (syncer::ModelTypeSet::Iterator it = enabled_types.First(); it.Good();
        it.Inc()) {
     invalidation::ObjectId id;
     if (!RealModelTypeToObjectId(it.Get(), &id)) {
@@ -104,7 +104,7 @@ void InvalidationNotifier::UpdateEnabledTypes(
 }
 
 void InvalidationNotifier::SendNotification(
-    syncable::ModelTypeSet changed_types) {
+    syncer::ModelTypeSet changed_types) {
   DCHECK(CalledOnValidThread());
   // Do nothing.
 }
@@ -112,10 +112,10 @@ void InvalidationNotifier::SendNotification(
 void InvalidationNotifier::OnInvalidate(const ObjectIdPayloadMap& id_payloads) {
   DCHECK(CalledOnValidThread());
   // TODO(dcheng): This should probably be a utility function somewhere...
-  syncable::ModelTypePayloadMap type_payloads;
+  syncer::ModelTypePayloadMap type_payloads;
   for (ObjectIdPayloadMap::const_iterator it = id_payloads.begin();
        it != id_payloads.end(); ++it) {
-    syncable::ModelType model_type;
+    syncer::ModelType model_type;
     if (!ObjectIdToRealModelType(it->first, &model_type)) {
       DLOG(WARNING) << "Invalid object ID: " << ObjectIdToString(it->first);
       continue;

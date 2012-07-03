@@ -79,7 +79,7 @@ void GenericChangeProcessor::CommitChangesFromSyncModel() {
   if (syncer_changes_.empty())
     return;
   if (!local_service_) {
-    syncable::ModelType type = syncer_changes_[0].sync_data().GetDataType();
+    syncer::ModelType type = syncer_changes_[0].sync_data().GetDataType();
     syncer::SyncError error(FROM_HERE, "Local service destroyed.", type);
     error_handler()->OnSingleDatatypeUnrecoverableError(error.location(),
                                                         error.message());
@@ -95,13 +95,13 @@ void GenericChangeProcessor::CommitChangesFromSyncModel() {
 }
 
 syncer::SyncError GenericChangeProcessor::GetSyncDataForType(
-    syncable::ModelType type,
+    syncer::ModelType type,
     syncer::SyncDataList* current_sync_data) {
   DCHECK(CalledOnValidThread());
-  std::string type_name = syncable::ModelTypeToString(type);
+  std::string type_name = syncer::ModelTypeToString(type);
   syncer::ReadTransaction trans(FROM_HERE, share_handle());
   syncer::ReadNode root(&trans);
-  if (root.InitByTagLookup(syncable::ModelTypeToRootTag(type)) !=
+  if (root.InitByTagLookup(syncer::ModelTypeToRootTag(type)) !=
           syncer::BaseNode::INIT_OK) {
     syncer::SyncError error(FROM_HERE,
                     "Server did not create the top-level " + type_name +
@@ -111,7 +111,7 @@ syncer::SyncError GenericChangeProcessor::GetSyncDataForType(
   }
 
   // TODO(akalin): We'll have to do a tree traversal for bookmarks.
-  DCHECK_NE(type, syncable::BOOKMARKS);
+  DCHECK_NE(type, syncer::BOOKMARKS);
 
   int64 sync_child_id = root.GetFirstChildId();
   while (sync_child_id != syncer::kInvalidId) {
@@ -141,7 +141,7 @@ syncer::SyncError LogLookupFailure(
     syncer::BaseNode::InitByLookupResult lookup_result,
     const tracked_objects::Location& from_here,
     const std::string& error_prefix,
-    syncable::ModelType type,
+    syncer::ModelType type,
     DataTypeErrorHandler* error_handler) {
   switch (lookup_result) {
     case syncer::BaseNode::INIT_FAILED_ENTRY_NOT_GOOD: {
@@ -193,11 +193,12 @@ syncer::SyncError LogLookupFailure(
   }
 }
 
-syncer::SyncError AttemptDelete(const syncer::SyncChange& change,
-                        syncable::ModelType type,
-                        const std::string& type_str,
-                        syncer::WriteNode* node,
-                        DataTypeErrorHandler* error_handler) {
+syncer::SyncError AttemptDelete(
+    const syncer::SyncChange& change,
+    syncer::ModelType type,
+    const std::string& type_str,
+    syncer::WriteNode* node,
+    DataTypeErrorHandler* error_handler) {
   DCHECK_EQ(change.change_type(), syncer::SyncChange::ACTION_DELETE);
   if (change.sync_data().IsLocal()) {
     const std::string& tag = change.sync_data().GetTag();
@@ -250,9 +251,9 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
        iter != list_of_changes.end();
        ++iter) {
     const syncer::SyncChange& change = *iter;
-    DCHECK_NE(change.sync_data().GetDataType(), syncable::UNSPECIFIED);
-    syncable::ModelType type = change.sync_data().GetDataType();
-    std::string type_str = syncable::ModelTypeToString(type);
+    DCHECK_NE(change.sync_data().GetDataType(), syncer::UNSPECIFIED);
+    syncer::ModelType type = change.sync_data().GetDataType();
+    std::string type_str = syncer::ModelTypeToString(type);
     syncer::WriteNode sync_node(&trans);
     if (change.change_type() == syncer::SyncChange::ACTION_DELETE) {
       syncer::SyncError error =
@@ -267,7 +268,7 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
       // etc.).
       syncer::ReadNode root_node(&trans);
       if (root_node.InitByTagLookup(
-              syncable::ModelTypeToRootTag(change.sync_data().GetDataType())) !=
+              syncer::ModelTypeToRootTag(change.sync_data().GetDataType())) !=
                   syncer::BaseNode::INIT_OK) {
         syncer::SyncError error(FROM_HERE,
                         "Failed to look up root node for type " + type_str,
@@ -366,7 +367,7 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
           return error;
         } else {
           syncer::Cryptographer* crypto = trans.GetCryptographer();
-          syncable::ModelTypeSet encrypted_types(crypto->GetEncryptedTypes());
+          syncer::ModelTypeSet encrypted_types(crypto->GetEncryptedTypes());
           const sync_pb::EntitySpecifics& specifics =
               sync_node.GetEntry()->Get(syncer::syncable::SPECIFICS);
           CHECK(specifics.has_encrypted());
@@ -436,18 +437,18 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
 }
 
 bool GenericChangeProcessor::SyncModelHasUserCreatedNodes(
-    syncable::ModelType type,
+    syncer::ModelType type,
     bool* has_nodes) {
   DCHECK(CalledOnValidThread());
   DCHECK(has_nodes);
-  DCHECK_NE(type, syncable::UNSPECIFIED);
-  std::string type_name = syncable::ModelTypeToString(type);
+  DCHECK_NE(type, syncer::UNSPECIFIED);
+  std::string type_name = syncer::ModelTypeToString(type);
   std::string err_str = "Server did not create the top-level " + type_name +
       " node. We might be running against an out-of-date server.";
   *has_nodes = false;
   syncer::ReadTransaction trans(FROM_HERE, share_handle());
   syncer::ReadNode type_root_node(&trans);
-  if (type_root_node.InitByTagLookup(syncable::ModelTypeToRootTag(type)) !=
+  if (type_root_node.InitByTagLookup(syncer::ModelTypeToRootTag(type)) !=
           syncer::BaseNode::INIT_OK) {
     LOG(ERROR) << err_str;
     return false;
@@ -459,12 +460,12 @@ bool GenericChangeProcessor::SyncModelHasUserCreatedNodes(
   return true;
 }
 
-bool GenericChangeProcessor::CryptoReadyIfNecessary(syncable::ModelType type) {
+bool GenericChangeProcessor::CryptoReadyIfNecessary(syncer::ModelType type) {
   DCHECK(CalledOnValidThread());
-  DCHECK_NE(type, syncable::UNSPECIFIED);
+  DCHECK_NE(type, syncer::UNSPECIFIED);
   // We only access the cryptographer while holding a transaction.
   syncer::ReadTransaction trans(FROM_HERE, share_handle());
-  const syncable::ModelTypeSet encrypted_types = GetEncryptedTypes(&trans);
+  const syncer::ModelTypeSet encrypted_types = GetEncryptedTypes(&trans);
   return !encrypted_types.Has(type) ||
          trans.GetCryptographer()->is_ready();
 }

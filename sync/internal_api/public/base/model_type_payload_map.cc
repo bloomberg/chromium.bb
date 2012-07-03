@@ -12,13 +12,12 @@
 #include "base/values.h"
 
 namespace syncer {
-namespace syncable {
 
 ModelTypePayloadMap ModelTypePayloadMapFromEnumSet(
-    syncable::ModelTypeSet types,
+    syncer::ModelTypeSet types,
     const std::string& payload) {
   ModelTypePayloadMap types_with_payloads;
-  for (syncable::ModelTypeSet::Iterator it = types.First();
+  for (syncer::ModelTypeSet::Iterator it = types.First();
        it.Good(); it.Inc()) {
     types_with_payloads[it.Get()] = payload;
   }
@@ -53,7 +52,7 @@ DictionaryValue* ModelTypePayloadMapToValue(
     std::string base64_marker;
     bool encoded = base::Base64Encode(it->second, &base64_marker);
     DCHECK(encoded);
-    value->SetString(syncable::ModelTypeToString(it->first), base64_marker);
+    value->SetString(syncer::ModelTypeToString(it->first), base64_marker);
   }
   return value;
 }
@@ -74,6 +73,4 @@ void CoalescePayloads(ModelTypePayloadMap* original,
   }
 }
 
-}  // namespace syncable
 }  // namespace syncer
-

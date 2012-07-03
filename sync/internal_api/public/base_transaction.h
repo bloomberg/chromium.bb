@@ -46,8 +46,7 @@ class BaseTransaction {
   DISALLOW_COPY_AND_ASSIGN(BaseTransaction);
 };
 
-syncable::ModelTypeSet GetEncryptedTypes(
-    const syncer::BaseTransaction* trans);
+syncer::ModelTypeSet GetEncryptedTypes(const syncer::BaseTransaction* trans);
 
 }  // namespace syncer
 

@@ -61,14 +61,15 @@ class GenericChangeProcessor : public ChangeProcessor,
       const syncer::SyncChangeList& change_list) OVERRIDE;
 
   // Fills |current_sync_data| with all the syncer data for the specified type.
-  virtual syncer::SyncError GetSyncDataForType(syncable::ModelType type,
-                                       syncer::SyncDataList* current_sync_data);
+  virtual syncer::SyncError GetSyncDataForType(
+      syncer::ModelType type,
+      syncer::SyncDataList* current_sync_data);
 
   // Generic versions of AssociatorInterface methods. Called by
   // syncer::SyncableServiceAdapter or the DataTypeController.
-  virtual bool SyncModelHasUserCreatedNodes(syncable::ModelType type,
+  virtual bool SyncModelHasUserCreatedNodes(syncer::ModelType type,
                                             bool* has_nodes);
-  virtual bool CryptoReadyIfNecessary(syncable::ModelType type);
+  virtual bool CryptoReadyIfNecessary(syncer::ModelType type);
 
  protected:
   // ChangeProcessor interface.

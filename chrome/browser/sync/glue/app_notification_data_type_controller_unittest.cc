@@ -86,7 +86,7 @@ class SyncAppNotificationDataTypeControllerTest
 
   virtual void TearDown() {
     // Must be done before we pump the loop.
-    syncable_service_.StopSyncing(syncable::APP_NOTIFICATIONS);
+    syncable_service_.StopSyncing(syncer::APP_NOTIFICATIONS);
     app_notif_dtc_ = NULL;
     PumpLoop();
   }
@@ -121,7 +121,7 @@ class SyncAppNotificationDataTypeControllerTest
     EXPECT_CALL(model_load_callback_, Run(_, _));
     // Ownership gets passed to caller of CreateGenericChangeProcessor.
     EXPECT_CALL(*profile_sync_factory_,
-                GetSyncableServiceForType(syncable::APP_NOTIFICATIONS)).
+                GetSyncableServiceForType(syncer::APP_NOTIFICATIONS)).
         WillOnce(Return(syncable_service_.AsWeakPtr()));
     EXPECT_CALL(*profile_sync_factory_, CreateSharedChangeProcessor()).
         WillOnce(MakeSharedChangeProcessor());
@@ -218,7 +218,7 @@ TEST_F(SyncAppNotificationDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_CALL(start_callback_,
               Run(DataTypeController::ASSOCIATION_FAILED, _));
   syncable_service_.set_merge_data_and_start_syncing_error(
-      syncer::SyncError(FROM_HERE, "Error", syncable::APP_NOTIFICATIONS));
+      syncer::SyncError(FROM_HERE, "Error", syncer::APP_NOTIFICATIONS));
 
   Start();
   EXPECT_EQ(DataTypeController::DISABLED, app_notif_dtc_->state());

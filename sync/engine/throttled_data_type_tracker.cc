@@ -12,15 +12,15 @@ namespace syncer {
 ThrottledDataTypeTracker::ThrottledDataTypeTracker(AllStatus *allstatus)
     : allstatus_(allstatus) {
   if (allstatus_) {
-    allstatus_->SetThrottledTypes(syncable::ModelTypeSet());
+    allstatus_->SetThrottledTypes(syncer::ModelTypeSet());
   }
 }
 
 ThrottledDataTypeTracker::~ThrottledDataTypeTracker() { }
 
-void ThrottledDataTypeTracker::SetUnthrottleTime(syncable::ModelTypeSet types,
+void ThrottledDataTypeTracker::SetUnthrottleTime(syncer::ModelTypeSet types,
                                                  const base::TimeTicks& time) {
-  for (syncable::ModelTypeSet::Iterator it = types.First();
+  for (syncer::ModelTypeSet::Iterator it = types.First();
        it.Good(); it.Inc()) {
     unthrottle_times_[it.Get()] = time;
   }
@@ -60,8 +60,8 @@ void ThrottledDataTypeTracker::PruneUnthrottledTypes(
   }
 }
 
-syncable::ModelTypeSet ThrottledDataTypeTracker::GetThrottledTypes() const {
-  syncable::ModelTypeSet types;
+syncer::ModelTypeSet ThrottledDataTypeTracker::GetThrottledTypes() const {
+  syncer::ModelTypeSet types;
   for (UnthrottleTimes::const_iterator it = unthrottle_times_.begin();
        it != unthrottle_times_.end(); ++it) {
     types.Put(it->first);

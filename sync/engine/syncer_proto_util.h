@@ -78,7 +78,7 @@ class SyncerProtoUtil {
   // EntitySpecifics is used as a filter for the GetUpdates message to tell
   // the server which datatypes to send back.  This adds a datatype so that
   // it's included in the filter.
-  static void AddToEntitySpecificDatatypesFilter(syncable::ModelType datatype,
+  static void AddToEntitySpecificDatatypesFilter(syncer::ModelType datatype,
       sync_pb::EntitySpecifics* filter);
 
   // Get a debug string representation of the client to server response.

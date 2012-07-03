@@ -213,13 +213,13 @@ void SessionChangeProcessor::Observe(
         entry->GetVirtualURL().is_valid() &&
         entry->GetVirtualURL().spec() == kNTPOpenTabSyncURL) {
       DVLOG(1) << "Triggering sync refresh for sessions datatype.";
-      const syncable::ModelType type = syncable::SESSIONS;
-      syncable::ModelTypePayloadMap payload_map;
+      const syncer::ModelType type = syncer::SESSIONS;
+      syncer::ModelTypePayloadMap payload_map;
       payload_map[type] = "";
       content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
           content::Source<Profile>(profile_),
-          content::Details<const syncable::ModelTypePayloadMap>(&payload_map));
+          content::Details<const syncer::ModelTypePayloadMap>(&payload_map));
     }
   }
 
@@ -277,8 +277,8 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
       // Deletions are all or nothing (since we only ever delete entire
       // sessions). Therefore we don't care if it's a tab node or meta node,
       // and just ensure we've disassociated.
-      DCHECK_EQ(syncable::GetModelTypeFromSpecifics(it->specifics),
-                syncable::SESSIONS);
+      DCHECK_EQ(syncer::GetModelTypeFromSpecifics(it->specifics),
+                syncer::SESSIONS);
       const sync_pb::SessionSpecifics& specifics = it->specifics.session();
       if (specifics.session_tag() == local_tag) {
         // Another client has attempted to delete our local data (possibly by
@@ -303,7 +303,7 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
 
     // Check that the changed node is a child of the session folder.
     DCHECK(root.GetId() == sync_node.GetParentId());
-    DCHECK(syncable::SESSIONS == sync_node.GetModelType());
+    DCHECK(syncer::SESSIONS == sync_node.GetModelType());
 
     const sync_pb::SessionSpecifics& specifics(
         sync_node.GetSessionSpecifics());

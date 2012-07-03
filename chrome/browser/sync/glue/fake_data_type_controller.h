@@ -21,7 +21,7 @@ namespace browser_sync {
 // functionality.)
 class FakeDataTypeController : public DataTypeController {
  public:
-  explicit FakeDataTypeController(syncable::ModelType type);
+  explicit FakeDataTypeController(syncer::ModelType type);
 
   virtual void LoadModels(
       const ModelLoadCallback& model_load_callback) OVERRIDE;
@@ -34,7 +34,7 @@ class FakeDataTypeController : public DataTypeController {
 
   virtual void Stop() OVERRIDE;
 
-  virtual syncable::ModelType type() const OVERRIDE;
+  virtual syncer::ModelType type() const OVERRIDE;
 
   virtual std::string name() const OVERRIDE;
 
@@ -60,7 +60,7 @@ class FakeDataTypeController : public DataTypeController {
  private:
   DataTypeController::State state_;
   bool model_load_delayed_;
-  syncable::ModelType type_;
+  syncer::ModelType type_;
   StartCallback last_start_callback_;
   ModelLoadCallback model_load_callback_;
 };

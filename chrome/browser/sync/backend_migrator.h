@@ -55,7 +55,7 @@ class BackendMigrator {
   virtual ~BackendMigrator();
 
   // Starts a sequence of events that will disable and reenable |types|.
-  void MigrateTypes(syncable::ModelTypeSet types);
+  void MigrateTypes(syncer::ModelTypeSet types);
 
   void AddMigrationObserver(MigrationObserver* observer);
   bool HasMigrationObserver(MigrationObserver* observer) const;
@@ -68,7 +68,7 @@ class BackendMigrator {
   void OnConfigureDone(const DataTypeManager::ConfigureResult& result);
 
   // Returns the types that are currently pending migration (if any).
-  syncable::ModelTypeSet GetPendingMigrationTypesForTest() const;
+  syncer::ModelTypeSet GetPendingMigrationTypesForTest() const;
 
  private:
   void ChangeState(State new_state);
@@ -94,7 +94,7 @@ class BackendMigrator {
 
   ObserverList<MigrationObserver> migration_observers_;
 
-  syncable::ModelTypeSet to_migrate_;
+  syncer::ModelTypeSet to_migrate_;
 
   base::WeakPtrFactory<BackendMigrator> weak_ptr_factory_;
 

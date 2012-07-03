@@ -10,13 +10,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/value_store/failing_value_store.h"
 #include "chrome/browser/extensions/settings/leveldb_settings_storage_factory.h"
 #include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/browser/extensions/settings/settings_storage_factory.h"
 #include "chrome/browser/extensions/settings/settings_sync_util.h"
 #include "chrome/browser/extensions/settings/settings_test_util.h"
 #include "chrome/browser/extensions/settings/syncable_settings_storage.h"
+#include "chrome/browser/value_store/failing_value_store.h"
 #include "chrome/browser/value_store/testing_value_store.h"
 #include "content/public/test/test_browser_thread.h"
 #include "sync/api/sync_change_processor.h"
@@ -196,7 +196,7 @@ class TestingValueStoreFactory : public SettingsStorageFactory {
 
 void AssignSettingsService(syncer::SyncableService** dst,
                            const SettingsFrontend* frontend,
-                           syncable::ModelType type) {
+                           syncer::ModelType type) {
   *dst = frontend->GetBackendForSync(type);
 }
 
@@ -235,7 +235,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
   }
 
   // Gets the syncer::SyncableService for the given sync type.
-  syncer::SyncableService* GetSyncableService(syncable::ModelType model_type) {
+  syncer::SyncableService* GetSyncableService(syncer::ModelType model_type) {
     MessageLoop::current()->RunAllPending();
     return frontend_->GetBackendForSync(model_type);
   }
@@ -243,7 +243,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
   // Gets all the sync data from the SyncableService for a sync type as a map
   // from extension id to its sync data.
   std::map<std::string, SettingSyncDataList> GetAllSyncData(
-      syncable::ModelType model_type) {
+      syncer::ModelType model_type) {
     syncer::SyncDataList as_list =
         GetSyncableService(model_type)->GetAllSyncData(model_type);
     std::map<std::string, SettingSyncDataList> as_map;
@@ -272,7 +272,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
 // sync by roughly alternative which one to test.
 
 TEST_F(ExtensionSettingsSyncTest, NoDataDoesNotInvokeSync) {
-  syncable::ModelType model_type = syncable::EXTENSION_SETTINGS;
+  syncer::ModelType model_type = syncer::EXTENSION_SETTINGS;
   Extension::Type type = Extension::TYPE_EXTENSION;
 
   EXPECT_EQ(0u, GetAllSyncData(model_type).size());
@@ -297,7 +297,7 @@ TEST_F(ExtensionSettingsSyncTest, NoDataDoesNotInvokeSync) {
 }
 
 TEST_F(ExtensionSettingsSyncTest, InSyncDataDoesNotInvokeSync) {
-  syncable::ModelType model_type = syncable::APP_SETTINGS;
+  syncer::ModelType model_type = syncer::APP_SETTINGS;
   Extension::Type type = Extension::TYPE_PACKAGED_APP;
 
   StringValue value1("fooValue");
@@ -347,7 +347,7 @@ TEST_F(ExtensionSettingsSyncTest, InSyncDataDoesNotInvokeSync) {
 }
 
 TEST_F(ExtensionSettingsSyncTest, LocalDataWithNoSyncDataIsPushedToSync) {
-  syncable::ModelType model_type = syncable::EXTENSION_SETTINGS;
+  syncer::ModelType model_type = syncer::EXTENSION_SETTINGS;
   Extension::Type type = Extension::TYPE_EXTENSION;
 
   StringValue value1("fooValue");
@@ -379,7 +379,7 @@ TEST_F(ExtensionSettingsSyncTest, LocalDataWithNoSyncDataIsPushedToSync) {
 }
 
 TEST_F(ExtensionSettingsSyncTest, AnySyncDataOverwritesLocalData) {
-  syncable::ModelType model_type = syncable::APP_SETTINGS;
+  syncer::ModelType model_type = syncer::APP_SETTINGS;
   Extension::Type type = Extension::TYPE_PACKAGED_APP;
 
   StringValue value1("fooValue");
@@ -419,7 +419,7 @@ TEST_F(ExtensionSettingsSyncTest, AnySyncDataOverwritesLocalData) {
 }
 
 TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
-  syncable::ModelType model_type = syncable::EXTENSION_SETTINGS;
+  syncer::ModelType model_type = syncer::EXTENSION_SETTINGS;
   Extension::Type type = Extension::TYPE_EXTENSION;
 
   StringValue value1("fooValue");
@@ -492,7 +492,7 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
 }
 
 TEST_F(ExtensionSettingsSyncTest, PushToSync) {
-  syncable::ModelType model_type = syncable::APP_SETTINGS;
+  syncer::ModelType model_type = syncer::APP_SETTINGS;
   Extension::Type type = Extension::TYPE_PACKAGED_APP;
 
   StringValue value1("fooValue");
@@ -648,13 +648,13 @@ TEST_F(ExtensionSettingsSyncTest, ExtensionAndAppSettingsSyncSeparately) {
   storage2->Set(DEFAULTS, "bar", value2);
 
   std::map<std::string, SettingSyncDataList> extension_sync_data =
-      GetAllSyncData(syncable::EXTENSION_SETTINGS);
+      GetAllSyncData(syncer::EXTENSION_SETTINGS);
   EXPECT_EQ(1u, extension_sync_data.size());
   EXPECT_EQ(1u, extension_sync_data["s1"].size());
   EXPECT_PRED_FORMAT2(ValuesEq, &value1, &extension_sync_data["s1"][0].value());
 
   std::map<std::string, SettingSyncDataList> app_sync_data =
-      GetAllSyncData(syncable::APP_SETTINGS);
+      GetAllSyncData(syncer::APP_SETTINGS);
   EXPECT_EQ(1u, app_sync_data.size());
   EXPECT_EQ(1u, app_sync_data["s2"].size());
   EXPECT_PRED_FORMAT2(ValuesEq, &value2, &app_sync_data["s2"][0].value());
@@ -662,35 +662,35 @@ TEST_F(ExtensionSettingsSyncTest, ExtensionAndAppSettingsSyncSeparately) {
   // Stop each separately, there should be no changes either time.
   syncer::SyncDataList sync_data;
   sync_data.push_back(settings_sync_util::CreateData(
-      "s1", "foo", value1, syncable::EXTENSION_SETTINGS));
+      "s1", "foo", value1, syncer::EXTENSION_SETTINGS));
 
-  GetSyncableService(syncable::EXTENSION_SETTINGS)->MergeDataAndStartSyncing(
-      syncable::EXTENSION_SETTINGS,
+  GetSyncableService(syncer::EXTENSION_SETTINGS)->MergeDataAndStartSyncing(
+      syncer::EXTENSION_SETTINGS,
       sync_data,
       sync_processor_delegate_.PassAs<syncer::SyncChangeProcessor>(),
       scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
-  GetSyncableService(syncable::EXTENSION_SETTINGS)->
-      StopSyncing(syncable::EXTENSION_SETTINGS);
+  GetSyncableService(syncer::EXTENSION_SETTINGS)->
+      StopSyncing(syncer::EXTENSION_SETTINGS);
   EXPECT_EQ(0u, sync_processor_->changes().size());
 
   sync_data.clear();
   sync_data.push_back(settings_sync_util::CreateData(
-      "s2", "bar", value2, syncable::APP_SETTINGS));
+      "s2", "bar", value2, syncer::APP_SETTINGS));
 
   scoped_ptr<SyncChangeProcessorDelegate> app_settings_delegate_(
       new SyncChangeProcessorDelegate(sync_processor_.get()));
-  GetSyncableService(syncable::APP_SETTINGS)->MergeDataAndStartSyncing(
-      syncable::APP_SETTINGS,
+  GetSyncableService(syncer::APP_SETTINGS)->MergeDataAndStartSyncing(
+      syncer::APP_SETTINGS,
       sync_data,
       app_settings_delegate_.PassAs<syncer::SyncChangeProcessor>(),
       scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
-  GetSyncableService(syncable::APP_SETTINGS)->
-      StopSyncing(syncable::APP_SETTINGS);
+  GetSyncableService(syncer::APP_SETTINGS)->
+      StopSyncing(syncer::APP_SETTINGS);
   EXPECT_EQ(0u, sync_processor_->changes().size());
 }
 
 TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
-  syncable::ModelType model_type = syncable::EXTENSION_SETTINGS;
+  syncer::ModelType model_type = syncer::EXTENSION_SETTINGS;
   Extension::Type type = Extension::TYPE_EXTENSION;
 
   StringValue fooValue("fooValue");
@@ -890,7 +890,7 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
 TEST_F(ExtensionSettingsSyncTest, FailingProcessChangesDisablesSync) {
   // The test above tests a failing ProcessSyncChanges too, but here test with
   // an initially passing MergeDataAndStartSyncing.
-  syncable::ModelType model_type = syncable::APP_SETTINGS;
+  syncer::ModelType model_type = syncer::APP_SETTINGS;
   Extension::Type type = Extension::TYPE_PACKAGED_APP;
 
   StringValue fooValue("fooValue");
@@ -988,7 +988,7 @@ TEST_F(ExtensionSettingsSyncTest, FailingProcessChangesDisablesSync) {
 }
 
 TEST_F(ExtensionSettingsSyncTest, FailingGetAllSyncDataDoesntStopSync) {
-  syncable::ModelType model_type = syncable::EXTENSION_SETTINGS;
+  syncer::ModelType model_type = syncer::EXTENSION_SETTINGS;
   Extension::Type type = Extension::TYPE_EXTENSION;
 
   StringValue fooValue("fooValue");
@@ -1043,7 +1043,7 @@ TEST_F(ExtensionSettingsSyncTest, FailingGetAllSyncDataDoesntStopSync) {
 }
 
 TEST_F(ExtensionSettingsSyncTest, FailureToReadChangesToPushDisablesSync) {
-  syncable::ModelType model_type = syncable::APP_SETTINGS;
+  syncer::ModelType model_type = syncer::APP_SETTINGS;
   Extension::Type type = Extension::TYPE_PACKAGED_APP;
 
   StringValue fooValue("fooValue");
@@ -1147,7 +1147,7 @@ TEST_F(ExtensionSettingsSyncTest, FailureToReadChangesToPushDisablesSync) {
 }
 
 TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalStateDisablesSync) {
-  syncable::ModelType model_type = syncable::EXTENSION_SETTINGS;
+  syncer::ModelType model_type = syncer::EXTENSION_SETTINGS;
   Extension::Type type = Extension::TYPE_EXTENSION;
 
   StringValue fooValue("fooValue");
@@ -1238,7 +1238,7 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalStateDisablesSync) {
 }
 
 TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalChangeDisablesSync) {
-  syncable::ModelType model_type = syncable::EXTENSION_SETTINGS;
+  syncer::ModelType model_type = syncer::EXTENSION_SETTINGS;
   Extension::Type type = Extension::TYPE_EXTENSION;
 
   StringValue fooValue("fooValue");
@@ -1336,7 +1336,7 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalChangeDisablesSync) {
 
 TEST_F(ExtensionSettingsSyncTest,
        LargeOutgoingChangeRejectedButIncomingAccepted) {
-  syncable::ModelType model_type = syncable::APP_SETTINGS;
+  syncer::ModelType model_type = syncer::APP_SETTINGS;
   Extension::Type type = Extension::TYPE_PACKAGED_APP;
 
   // This value should be larger than the limit in settings_backend.cc.

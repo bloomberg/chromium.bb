@@ -46,16 +46,16 @@ class DebugInfoEventListener : public syncer::SyncManager::Observer,
   virtual void OnStopSyncingPermanently() OVERRIDE;
   virtual void OnUpdatedToken(const std::string& token) OVERRIDE;
   virtual void OnEncryptedTypesChanged(
-      syncable::ModelTypeSet encrypted_types,
+      syncer::ModelTypeSet encrypted_types,
       bool encrypt_everything) OVERRIDE;
   virtual void OnEncryptionComplete() OVERRIDE;
   virtual void OnActionableError(
       const syncer::SyncProtocolError& sync_error) OVERRIDE;
 
   // Sync manager events.
-  void OnNudgeFromDatatype(syncable::ModelType datatype);
+  void OnNudgeFromDatatype(syncer::ModelType datatype);
   void OnIncomingNotification(
-      const syncable::ModelTypePayloadMap& type_payloads);
+      const syncer::ModelTypePayloadMap& type_payloads);
 
   // DebugInfoGetter Implementation.
   virtual void GetAndClearDebugInfo(sync_pb::DebugInfo* debug_info) OVERRIDE;

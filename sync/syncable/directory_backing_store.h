@@ -113,7 +113,7 @@ class DirectoryBackingStore : public base::NonThreadSafe {
   // Drop all tables in preparation for reinitialization.
   void DropAllTables();
 
-  // Serialization helpers for syncable::ModelType.  These convert between
+  // Serialization helpers for syncer::ModelType.  These convert between
   // the ModelType enum and the values we persist in the database to identify
   // a model.  We persist a default instance of the specifics protobuf as the
   // ID, rather than the enum value.

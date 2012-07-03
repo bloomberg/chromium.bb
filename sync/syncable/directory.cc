@@ -623,7 +623,7 @@ void Directory::PurgeEntriesWithTypeIn(ModelTypeSet types) {
       }
 
       // Ensure meta tracking for these data types reflects the deleted state.
-      for (syncable::ModelTypeSet::Iterator it = types.First();
+      for (syncer::ModelTypeSet::Iterator it = types.First();
            it.Good(); it.Inc()) {
         set_initial_sync_ended_for_type_unsafe(it.Get(), false);
         kernel_->persisted_info.reset_download_progress(it.Get());
@@ -798,7 +798,7 @@ int64 Directory::unsynced_entity_count() const {
 
 FullModelTypeSet Directory::GetServerTypesWithUnappliedUpdates(
     BaseTransaction* trans) const {
-  syncable::FullModelTypeSet server_types;
+  syncer::FullModelTypeSet server_types;
   ScopedKernelLock lock(this);
   for (int i = UNSPECIFIED; i < MODEL_TYPE_COUNT; ++i) {
     const ModelType type = ModelTypeFromInt(i);

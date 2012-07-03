@@ -864,8 +864,8 @@ void TemplateURLService::Observe(int type,
 }
 
 syncer::SyncDataList TemplateURLService::GetAllSyncData(
-    syncable::ModelType type) const {
-  DCHECK_EQ(syncable::SEARCH_ENGINES, type);
+    syncer::ModelType type) const {
+  DCHECK_EQ(syncer::SEARCH_ENGINES, type);
 
   syncer::SyncDataList current_data;
   for (TemplateURLVector::const_iterator iter = template_urls_.begin();
@@ -889,7 +889,7 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
     const syncer::SyncChangeList& change_list) {
   if (!models_associated_) {
     syncer::SyncError error(FROM_HERE, "Models not yet associated.",
-                    syncable::SEARCH_ENGINES);
+                    syncer::SEARCH_ENGINES);
     return error;
   }
   DCHECK(loaded_);
@@ -906,7 +906,7 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
   syncer::SyncError error;
   for (syncer::SyncChangeList::const_iterator iter = change_list.begin();
       iter != change_list.end(); ++iter) {
-    DCHECK_EQ(syncable::SEARCH_ENGINES, iter->sync_data().GetDataType());
+    DCHECK_EQ(syncer::SEARCH_ENGINES, iter->sync_data().GetDataType());
 
     std::string guid =
         iter->sync_data().GetSpecifics().search_engine().sync_guid();
@@ -1011,12 +1011,12 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
 }
 
 syncer::SyncError TemplateURLService::MergeDataAndStartSyncing(
-    syncable::ModelType type,
+    syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
     scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) {
   DCHECK(loaded_);
-  DCHECK_EQ(type, syncable::SEARCH_ENGINES);
+  DCHECK_EQ(type, syncer::SEARCH_ENGINES);
   DCHECK(!sync_processor_.get());
   DCHECK(sync_processor.get());
   DCHECK(sync_error_factory.get());
@@ -1049,7 +1049,7 @@ syncer::SyncError TemplateURLService::MergeDataAndStartSyncing(
 
   // Build maps of our sync GUIDs to syncer::SyncData.
   SyncDataMap local_data_map = CreateGUIDToSyncDataMap(
-      GetAllSyncData(syncable::SEARCH_ENGINES));
+      GetAllSyncData(syncer::SEARCH_ENGINES));
   SyncDataMap sync_data_map = CreateGUIDToSyncDataMap(initial_sync_data);
 
   for (SyncDataMap::const_iterator iter = sync_data_map.begin();
@@ -1152,8 +1152,8 @@ syncer::SyncError TemplateURLService::MergeDataAndStartSyncing(
   return syncer::SyncError();
 }
 
-void TemplateURLService::StopSyncing(syncable::ModelType type) {
-  DCHECK_EQ(type, syncable::SEARCH_ENGINES);
+void TemplateURLService::StopSyncing(syncer::ModelType type) {
+  DCHECK_EQ(type, syncer::SEARCH_ENGINES);
   models_associated_ = false;
   sync_processor_.reset();
   sync_error_factory_.reset();

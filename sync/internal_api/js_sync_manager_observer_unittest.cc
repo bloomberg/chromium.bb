@@ -64,10 +64,10 @@ TEST_F(JsSyncManagerObserverTest, NoArgNotifiations) {
 }
 
 TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
-  syncable::ModelTypePayloadMap download_progress_markers;
+  syncer::ModelTypePayloadMap download_progress_markers;
   sessions::SyncSessionSnapshot snapshot(sessions::ModelNeutralState(),
                                          false,
-                                         syncable::ModelTypeSet(),
+                                         syncer::ModelTypeSet(),
                                          download_progress_markers,
                                          false,
                                          true,
@@ -186,14 +186,14 @@ TEST_F(JsSyncManagerObserverTest, OnEncryptedTypesChanged) {
   const bool encrypt_everything = false;
   expected_details.Set("encryptedTypes", encrypted_type_values);
   expected_details.SetBoolean("encryptEverything", encrypt_everything);
-  syncable::ModelTypeSet encrypted_types;
+  syncer::ModelTypeSet encrypted_types;
 
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
-    syncable::ModelType type = syncable::ModelTypeFromInt(i);
+  for (int i = syncer::FIRST_REAL_MODEL_TYPE;
+       i < syncer::MODEL_TYPE_COUNT; ++i) {
+    syncer::ModelType type = syncer::ModelTypeFromInt(i);
     encrypted_types.Put(type);
     encrypted_type_values->Append(Value::CreateStringValue(
-        syncable::ModelTypeToString(type)));
+        syncer::ModelTypeToString(type)));
   }
 
   EXPECT_CALL(mock_js_event_handler_,

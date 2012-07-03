@@ -50,16 +50,16 @@ class SettingsBackend : public syncer::SyncableService {
 
   // syncer::SyncableService implementation.
   virtual syncer::SyncDataList GetAllSyncData(
-      syncable::ModelType type) const OVERRIDE;
+      syncer::ModelType type) const OVERRIDE;
   virtual syncer::SyncError MergeDataAndStartSyncing(
-      syncable::ModelType type,
+      syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
       scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) OVERRIDE;
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) OVERRIDE;
-  virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
+  virtual void StopSyncing(syncer::ModelType type) OVERRIDE;
 
  private:
   // Gets a weak reference to the storage area for a given extension,
@@ -96,7 +96,7 @@ class SettingsBackend : public syncer::SyncableService {
 
   // Current sync model type.  Will be UNSPECIFIED if sync hasn't been enabled
   // yet, and either SETTINGS or APP_SETTINGS if it has been.
-  syncable::ModelType sync_type_;
+  syncer::ModelType sync_type_;
 
   // Current sync processor, if any.
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;

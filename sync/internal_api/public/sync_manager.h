@@ -122,7 +122,7 @@ class SyncManager {
     // operations, a delete may temporarily orphan a node that is
     // updated later in the list.
     virtual void OnChangesApplied(
-        syncable::ModelType model_type,
+        syncer::ModelType model_type,
         const BaseTransaction* trans,
         const ImmutableChangeRecordList& changes) = 0;
 
@@ -137,7 +137,7 @@ class SyncManager {
     // those changes, let the transaction fall out of scope, and then commit
     // those changes from within OnChangesComplete (postponing the blocking
     // I/O to when it no longer holds any lock).
-    virtual void OnChangesComplete(syncable::ModelType model_type) = 0;
+    virtual void OnChangesComplete(syncer::ModelType model_type) = 0;
 
    protected:
     virtual ~ChangeDelegate();
@@ -165,11 +165,11 @@ class SyncManager {
     // be able to apply changes without being under a transaction.
     // But that's a ways off...
     virtual void OnChangesApplied(
-        syncable::ModelType model_type,
+        syncer::ModelType model_type,
         int64 write_transaction_id,
         const ImmutableChangeRecordList& changes) = 0;
 
-    virtual void OnChangesComplete(syncable::ModelType model_type) = 0;
+    virtual void OnChangesComplete(syncer::ModelType model_type) = 0;
 
    protected:
     virtual ~ChangeObserver();
@@ -324,7 +324,7 @@ class SyncManager {
     //
     // Called from within a transaction.
     virtual void OnEncryptedTypesChanged(
-        syncable::ModelTypeSet encrypted_types,
+        syncer::ModelTypeSet encrypted_types,
         bool encrypt_everything) = 0;
 
     // Called after we finish encrypting the current set of encrypted
@@ -399,13 +399,13 @@ class SyncManager {
   void ThrowUnrecoverableError();
 
   // Returns the set of types for which we have stored some sync data.
-  syncable::ModelTypeSet InitialSyncEndedTypes();
+  syncer::ModelTypeSet InitialSyncEndedTypes();
 
   // Update tokens that we're using in Sync. Email must stay the same.
   void UpdateCredentials(const SyncCredentials& credentials);
 
   // Called when the user disables or enables a sync type.
-  void UpdateEnabledTypes(const syncable::ModelTypeSet& enabled_types);
+  void UpdateEnabledTypes(const syncer::ModelTypeSet& enabled_types);
 
   // Put the syncer in normal mode ready to perform nudges and polls.
   void StartSyncingNormally(
@@ -437,7 +437,7 @@ class SyncManager {
   // Switches the mode of operation to CONFIGURATION_MODE and
   // schedules a config task to fetch updates for |types|.
   void RequestConfig(const syncer::ModelSafeRoutingInfo& routing_info,
-                     const syncable::ModelTypeSet& types,
+                     const syncer::ModelTypeSet& types,
                      syncer::ConfigureReason reason);
 
   void RequestCleanupDisabledTypes(
@@ -511,7 +511,7 @@ class SyncManager {
 
   // Gets the set of encrypted types from the cryptographer
   // Note: opens a transaction.  May be called from any thread.
-  syncable::ModelTypeSet GetEncryptedDataTypesForTest() const;
+  syncer::ModelTypeSet GetEncryptedDataTypesForTest() const;
 
   // Reads the nigori node to determine if any experimental features should
   // be enabled.
@@ -529,7 +529,7 @@ class SyncManager {
   void SimulateDisableNotificationsForTest(int reason);
 
   void TriggerOnIncomingNotificationForTest(
-      syncable::ModelTypeSet model_types);
+      syncer::ModelTypeSet model_types);
 
   static const int kDefaultNudgeDelayMilliseconds;
   static const int kPreferencesNudgeDelayMilliseconds;
@@ -541,7 +541,7 @@ class SyncManager {
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, NudgeDelayTest);
 
   // For unit tests.
-  base::TimeDelta GetNudgeDelayTimeDelta(const syncable::ModelType& model_type);
+  base::TimeDelta GetNudgeDelayTimeDelta(const syncer::ModelType& model_type);
 
   base::ThreadChecker thread_checker_;
 
@@ -551,10 +551,10 @@ class SyncManager {
   DISALLOW_COPY_AND_ASSIGN(SyncManager);
 };
 
-bool InitialSyncEndedForTypes(syncable::ModelTypeSet types, UserShare* share);
+bool InitialSyncEndedForTypes(syncer::ModelTypeSet types, UserShare* share);
 
-syncable::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
-    syncable::ModelTypeSet types,
+syncer::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
+    syncer::ModelTypeSet types,
     syncer::UserShare* share);
 
 const char* ConnectionStatusToString(ConnectionStatus status);

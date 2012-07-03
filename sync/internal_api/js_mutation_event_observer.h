@@ -44,15 +44,15 @@ class JsMutationEventObserver
 
   // syncer::SyncManager::ChangeObserver implementation.
   virtual void OnChangesApplied(
-      syncable::ModelType model_type,
+      syncer::ModelType model_type,
       int64 write_transaction_id,
       const syncer::ImmutableChangeRecordList& changes) OVERRIDE;
-  virtual void OnChangesComplete(syncable::ModelType model_type) OVERRIDE;
+  virtual void OnChangesComplete(syncer::ModelType model_type) OVERRIDE;
 
   // syncable::TransactionObserver implementation.
   virtual void OnTransactionWrite(
       const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
-      syncable::ModelTypeSet models_with_changes) OVERRIDE;
+      syncer::ModelTypeSet models_with_changes) OVERRIDE;
 
  private:
   base::WeakPtrFactory<JsMutationEventObserver> weak_ptr_factory_;

@@ -32,9 +32,9 @@ struct UserShare;
 
 class ProfileSyncServiceTestHelper {
  public:
-  static const std::string GetTagForType(syncable::ModelType model_type);
+  static const std::string GetTagForType(syncer::ModelType model_type);
 
-  static bool CreateRoot(syncable::ModelType model_type,
+  static bool CreateRoot(syncer::ModelType model_type,
                          syncer::UserShare* service,
                          syncer::TestIdFactory* ids);
 
@@ -57,7 +57,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE;
 
-  bool CreateRoot(syncable::ModelType model_type);
+  bool CreateRoot(syncer::ModelType model_type);
 
   static ProfileKeyedService* BuildTokenService(Profile* profile);
  protected:
@@ -73,7 +73,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
 class CreateRootHelper {
  public:
   CreateRootHelper(AbstractProfileSyncServiceTest* test,
-                   syncable::ModelType model_type);
+                   syncer::ModelType model_type);
   virtual ~CreateRootHelper();
 
   const base::Closure& callback() const;
@@ -84,7 +84,7 @@ class CreateRootHelper {
 
   base::Closure callback_;
   AbstractProfileSyncServiceTest* test_;
-  syncable::ModelType model_type_;
+  syncer::ModelType model_type_;
   bool success_;
 };
 

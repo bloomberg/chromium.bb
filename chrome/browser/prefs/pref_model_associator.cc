@@ -18,7 +18,7 @@
 #include "sync/protocol/preference_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 
-using syncable::PREFERENCES;
+using syncer::PREFERENCES;
 
 PrefModelAssociator::PrefModelAssociator()
     : models_associated_(false),
@@ -107,7 +107,7 @@ void PrefModelAssociator::InitPrefAndAssociate(
 }
 
 syncer::SyncError PrefModelAssociator::MergeDataAndStartSyncing(
-    syncable::ModelType type,
+    syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
     scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) {
@@ -163,7 +163,7 @@ syncer::SyncError PrefModelAssociator::MergeDataAndStartSyncing(
   return syncer::SyncError();
 }
 
-void PrefModelAssociator::StopSyncing(syncable::ModelType type) {
+void PrefModelAssociator::StopSyncing(syncer::ModelType type) {
   DCHECK_EQ(type, PREFERENCES);
   models_associated_ = false;
   sync_processor_.reset();
@@ -274,7 +274,7 @@ Value* PrefModelAssociator::MergeDictionaryValues(
 // not registered locally as syncable and do not inform the syncer of
 // non-user controlled preferences.
 syncer::SyncDataList PrefModelAssociator::GetAllSyncData(
-    syncable::ModelType type)
+    syncer::ModelType type)
     const {
   DCHECK_EQ(PREFERENCES, type);
   syncer::SyncDataList current_data;

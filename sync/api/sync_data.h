@@ -21,7 +21,7 @@ class SyncEntity;
 
 namespace syncer {
 
-typedef syncable::ModelType SyncDataType;
+typedef syncer::ModelType SyncDataType;
 
 // A light-weight container for immutable sync data. Pass-by-value and storage
 // in STL containers are supported and encouraged if helpful.
@@ -44,7 +44,7 @@ class SyncData {
   // overwritten if the datatype is encrypted.
   static SyncData CreateLocalDelete(
       const std::string& sync_tag,
-      syncable::ModelType datatype);
+      syncer::ModelType datatype);
   static SyncData CreateLocalData(
       const std::string& sync_tag,
       const std::string& non_unique_title,

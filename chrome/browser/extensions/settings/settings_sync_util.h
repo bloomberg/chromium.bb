@@ -23,27 +23,27 @@ syncer::SyncData CreateData(
     const std::string& extension_id,
     const std::string& key,
     const base::Value& value,
-    syncable::ModelType type);
+    syncer::ModelType type);
 
 // Creates an "add" sync change for an extension or app setting.
 syncer::SyncChange CreateAdd(
     const std::string& extension_id,
     const std::string& key,
     const base::Value& value,
-    syncable::ModelType type);
+    syncer::ModelType type);
 
 // Creates an "update" sync change for an extension or app setting.
 syncer::SyncChange CreateUpdate(
     const std::string& extension_id,
     const std::string& key,
     const base::Value& value,
-    syncable::ModelType type);
+    syncer::ModelType type);
 
 // Creates a "delete" sync change for an extension or app setting.
 syncer::SyncChange CreateDelete(
     const std::string& extension_id,
     const std::string& key,
-    syncable::ModelType type);
+    syncer::ModelType type);
 
 }  // namespace settings_sync_util
 

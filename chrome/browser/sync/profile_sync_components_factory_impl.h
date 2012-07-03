@@ -38,7 +38,7 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
       CreateSharedChangeProcessor() OVERRIDE;
 
   virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
-      syncable::ModelType type) OVERRIDE;
+      syncer::ModelType type) OVERRIDE;
 
   // Legacy datatypes that need to be converted to the SyncableService API.
   virtual SyncComponents CreateBookmarkSyncComponents(

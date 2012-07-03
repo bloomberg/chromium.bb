@@ -50,7 +50,7 @@ class DataTypeManager {
     UNRECOVERABLE_ERROR  // We got an unrecoverable error during startup.
   };
 
-  typedef syncable::ModelTypeSet TypeSet;
+  typedef syncer::ModelTypeSet TypeSet;
 
   // Note: |errors| is only filled when status is not OK.
   struct ConfigureResult {
@@ -60,7 +60,7 @@ class DataTypeManager {
     ConfigureResult(ConfigureStatus status,
                     TypeSet requested_types,
                     const std::list<syncer::SyncError>& failed_data_types,
-                    syncable::ModelTypeSet waiting_to_start);
+                    syncer::ModelTypeSet waiting_to_start);
     ~ConfigureResult();
     ConfigureStatus status;
     TypeSet requested_types;
@@ -73,7 +73,7 @@ class DataTypeManager {
     // forward here and allow these types to continue loading in the
     // background. When these types are loaded DataTypeManager will
     // be informed and another configured cycle will be started.
-    syncable::ModelTypeSet waiting_to_start;
+    syncer::ModelTypeSet waiting_to_start;
   };
 
   virtual ~DataTypeManager() {}

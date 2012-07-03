@@ -28,9 +28,6 @@ namespace syncer {
 using sessions::SyncSession;
 using sessions::SyncSessionSnapshot;
 using sessions::SyncSourceInfo;
-using syncable::ModelTypeSet;
-using syncable::ModelTypeSetToString;
-using syncable::ModelTypePayloadMap;
 using sync_pb::GetUpdatesCallerInfo;
 
 namespace {
@@ -324,11 +321,11 @@ SyncScheduler::JobProcessDecision SyncScheduler::DecideOnJob(
     return CONTINUE;
 
   // See if our type is throttled.
-  syncable::ModelTypeSet throttled_types =
+  syncer::ModelTypeSet throttled_types =
       session_context_->throttled_data_type_tracker()->GetThrottledTypes();
   if (job.purpose == SyncSessionJob::NUDGE &&
       job.session->source().updates_source == GetUpdatesCallerInfo::LOCAL) {
-    syncable::ModelTypeSet requested_types;
+    syncer::ModelTypeSet requested_types;
     for (ModelTypePayloadMap::const_iterator i =
          job.session->source().types.begin();
          i != job.session->source().types.end();
@@ -465,7 +462,7 @@ void SyncScheduler::ScheduleNudgeAsync(
       << "types " << ModelTypeSetToString(types);
 
   ModelTypePayloadMap types_with_payloads =
-      syncable::ModelTypePayloadMapFromEnumSet(types, std::string());
+      syncer::ModelTypePayloadMapFromEnumSet(types, std::string());
   SyncScheduler::ScheduleNudgeImpl(delay,
                                    GetUpdatesFromNudgeSource(source),
                                    types_with_payloads,
@@ -482,7 +479,7 @@ void SyncScheduler::ScheduleNudgeWithPayloadsAsync(
       << "Nudge scheduled with delay " << delay.InMilliseconds() << " ms, "
       << "source " << GetNudgeSourceString(source) << ", "
       << "payloads "
-      << syncable::ModelTypePayloadMapToString(types_with_payloads);
+      << syncer::ModelTypePayloadMapToString(types_with_payloads);
 
   SyncScheduler::ScheduleNudgeImpl(delay,
                                    GetUpdatesFromNudgeSource(source),
@@ -503,7 +500,7 @@ void SyncScheduler::ScheduleNudgeImpl(
       << delay.InMilliseconds() << " ms, "
       << "source " << GetUpdatesSourceString(source) << ", "
       << "payloads "
-      << syncable::ModelTypePayloadMapToString(types_with_payloads)
+      << syncer::ModelTypePayloadMapToString(types_with_payloads)
       << (is_canary_job ? " (canary)" : "");
 
   SyncSourceInfo info(source, types_with_payloads);
@@ -554,7 +551,7 @@ void GetModelSafeParamsForTypes(ModelTypeSet types,
   typedef std::vector<ModelSafeWorker*>::const_iterator iter;
   for (ModelTypeSet::Iterator it = types.First();
        it.Good(); it.Inc()) {
-    const syncable::ModelType t = it.Get();
+    const syncer::ModelType t = it.Get();
     ModelSafeRoutingInfo::const_iterator route = current_routes.find(t);
     DCHECK(route != current_routes.end());
     ModelSafeGroup group = route->second;

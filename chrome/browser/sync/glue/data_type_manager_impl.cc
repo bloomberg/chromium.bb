@@ -113,16 +113,16 @@ void DataTypeManagerImpl::Restart(
   // The task will be invoked when updates are downloaded.
   state_ = DOWNLOAD_PENDING;
   // Hopefully http://crbug.com/79970 will make this less verbose.
-  syncable::ModelTypeSet all_types;
+  syncer::ModelTypeSet all_types;
   for (DataTypeController::TypeMap::const_iterator it =
            controllers_->begin(); it != controllers_->end(); ++it) {
     all_types.Put(it->first);
   }
-  const syncable::ModelTypeSet types_to_add = last_requested_types_;
+  const syncer::ModelTypeSet types_to_add = last_requested_types_;
   // Check that types_to_add \subseteq all_types.
   DCHECK(all_types.HasAll(types_to_add));
   // Set types_to_remove to all_types \setminus types_to_add.
-  const syncable::ModelTypeSet types_to_remove =
+  const syncer::ModelTypeSet types_to_remove =
       Difference(all_types, types_to_add);
   configurer_->ConfigureDataTypes(
       reason,
@@ -181,7 +181,7 @@ void DataTypeManagerImpl::OnDownloadRetry() {
 }
 
 void DataTypeManagerImpl::DownloadReady(
-    syncable::ModelTypeSet failed_configuration_types) {
+    syncer::ModelTypeSet failed_configuration_types) {
   DCHECK_EQ(state_, DOWNLOAD_PENDING);
 
   // Ignore |failed_configuration_types| if we need to reconfigure
@@ -196,7 +196,7 @@ void DataTypeManagerImpl::DownloadReady(
     ChromeReportUnrecoverableError();
     std::string error_msg =
         "Configuration failed for types " +
-        syncable::ModelTypeSetToString(failed_configuration_types);
+        syncer::ModelTypeSetToString(failed_configuration_types);
     syncer::SyncError error(FROM_HERE, error_msg,
                     failed_configuration_types.First().Get());
     Abort(UNRECOVERABLE_ERROR, error);
@@ -300,7 +300,7 @@ void DataTypeManagerImpl::Abort(ConfigureStatus status,
   ConfigureResult result(status,
                          last_requested_types_,
                          error_list,
-                         syncable::ModelTypeSet());
+                         syncer::ModelTypeSet());
   NotifyDone(result);
 }
 

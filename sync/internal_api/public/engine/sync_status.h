@@ -80,12 +80,12 @@ struct SyncStatus {
   int useful_sync_cycles;
 
   // Encryption related.
-  syncable::ModelTypeSet encrypted_types;
+  syncer::ModelTypeSet encrypted_types;
   bool cryptographer_ready;
   bool crypto_has_pending_keys;
 
   // Per-datatype throttled status.
-  syncable::ModelTypeSet throttled_types;
+  syncer::ModelTypeSet throttled_types;
 
   // The unique identifer for this client.
   std::string unique_id;

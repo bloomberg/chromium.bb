@@ -23,7 +23,7 @@ class ThrottledDataTypeTracker {
   ~ThrottledDataTypeTracker();
 
   // Throttles a set of data types until the specified time is reached.
-  void SetUnthrottleTime(syncable::ModelTypeSet types,
+  void SetUnthrottleTime(syncer::ModelTypeSet types,
                          const base::TimeTicks& time);
 
   // Given an input of the current time (usually from time::Now()), removes from
@@ -31,7 +31,7 @@ class ThrottledDataTypeTracker {
   void PruneUnthrottledTypes(const base::TimeTicks& time);
 
   // Returns the set of types which are currently throttled.
-  syncable::ModelTypeSet GetThrottledTypes() const;
+  syncer::ModelTypeSet GetThrottledTypes() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ThrottledDataTypeTrackerTest,
@@ -39,7 +39,7 @@ class ThrottledDataTypeTracker {
   FRIEND_TEST_ALL_PREFIXES(ThrottledDataTypeTrackerTest,
                            GetCurrentlyThrottledTypesTest);
 
-  typedef std::map<syncable::ModelType, base::TimeTicks> UnthrottleTimes;
+  typedef std::map<syncer::ModelType, base::TimeTicks> UnthrottleTimes;
 
   // This is a map from throttled data types to the time at which they can be
   // unthrottled.

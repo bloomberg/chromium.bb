@@ -64,7 +64,7 @@ const string& Entry::Get(StringField field) const {
   return kernel_->ref(field);
 }
 
-syncable::ModelType Entry::GetServerModelType() const {
+syncer::ModelType Entry::GetServerModelType() const {
   ModelType specifics_type = kernel_->GetServerModelType();
   if (specifics_type != UNSPECIFIED)
     return specifics_type;
@@ -81,7 +81,7 @@ syncable::ModelType Entry::GetServerModelType() const {
   return UNSPECIFIED;
 }
 
-syncable::ModelType Entry::GetModelType() const {
+syncer::ModelType Entry::GetModelType() const {
   ModelType specifics_type = GetModelTypeFromSpecifics(Get(SPECIFICS));
   if (specifics_type != UNSPECIFIED)
     return specifics_type;

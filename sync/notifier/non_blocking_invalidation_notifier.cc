@@ -38,7 +38,7 @@ class NonBlockingInvalidationNotifier::Core
   void SetUniqueId(const std::string& unique_id);
   void SetStateDeprecated(const std::string& state);
   void UpdateCredentials(const std::string& email, const std::string& token);
-  void UpdateEnabledTypes(syncable::ModelTypeSet enabled_types);
+  void UpdateEnabledTypes(syncer::ModelTypeSet enabled_types);
 
   // SyncNotifierObserver implementation (all called on I/O thread by
   // InvalidationNotifier).
@@ -46,7 +46,7 @@ class NonBlockingInvalidationNotifier::Core
   virtual void OnNotificationsDisabled(
       NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
-      const syncable::ModelTypePayloadMap& type_payloads,
+      const syncer::ModelTypePayloadMap& type_payloads,
       IncomingNotificationSource source) OVERRIDE;
 
  private:
@@ -123,7 +123,7 @@ void NonBlockingInvalidationNotifier::Core::UpdateCredentials(
 }
 
 void NonBlockingInvalidationNotifier::Core::UpdateEnabledTypes(
-    syncable::ModelTypeSet enabled_types) {
+    syncer::ModelTypeSet enabled_types) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   invalidation_notifier_->UpdateEnabledTypes(enabled_types);
 }
@@ -142,7 +142,7 @@ void NonBlockingInvalidationNotifier::Core::OnNotificationsDisabled(
 }
 
 void NonBlockingInvalidationNotifier::Core::OnIncomingNotification(
-    const syncable::ModelTypePayloadMap& type_payloads,
+    const syncer::ModelTypePayloadMap& type_payloads,
     IncomingNotificationSource source) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   delegate_observer_.Call(FROM_HERE,
@@ -237,7 +237,7 @@ void NonBlockingInvalidationNotifier::UpdateCredentials(
 }
 
 void NonBlockingInvalidationNotifier::UpdateEnabledTypes(
-    syncable::ModelTypeSet enabled_types) {
+    syncer::ModelTypeSet enabled_types) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   if (!network_task_runner_->PostTask(
           FROM_HERE,
@@ -248,7 +248,7 @@ void NonBlockingInvalidationNotifier::UpdateEnabledTypes(
 }
 
 void NonBlockingInvalidationNotifier::SendNotification(
-    syncable::ModelTypeSet changed_types) {
+    syncer::ModelTypeSet changed_types) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   // InvalidationClient doesn't implement SendNotification(), so no
   // need to forward on the call.
@@ -268,7 +268,7 @@ void NonBlockingInvalidationNotifier::OnNotificationsDisabled(
 }
 
 void NonBlockingInvalidationNotifier::OnIncomingNotification(
-        const syncable::ModelTypePayloadMap& type_payloads,
+        const syncer::ModelTypePayloadMap& type_payloads,
         IncomingNotificationSource source) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,

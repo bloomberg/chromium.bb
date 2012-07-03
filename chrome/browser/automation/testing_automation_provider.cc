@@ -4845,12 +4845,12 @@ void TestingAutomationProvider::GetSyncInfo(Browser* browser,
     sync_info->SetString("last synced", service->GetLastSyncedTimeString());
     sync_info->SetInteger("updates received", status.updates_received);
     ListValue* synced_datatype_list = new ListValue;
-    const syncable::ModelTypeSet synced_datatypes =
+    const syncer::ModelTypeSet synced_datatypes =
         service->GetPreferredDataTypes();
-    for (syncable::ModelTypeSet::Iterator it = synced_datatypes.First();
+    for (syncer::ModelTypeSet::Iterator it = synced_datatypes.First();
          it.Good(); it.Inc()) {
       synced_datatype_list->Append(
-          new StringValue(syncable::ModelTypeToString(it.Get())));
+          new StringValue(syncer::ModelTypeToString(it.Get())));
     }
     sync_info->Set("synced datatypes", synced_datatype_list);
   }
@@ -4951,9 +4951,9 @@ void TestingAutomationProvider::EnableSyncForDatatypes(
     for (int i = 0; i < num_datatypes; ++i) {
       std::string datatype_string;
       datatypes->GetString(i, &datatype_string);
-      syncable::ModelType datatype =
-          syncable::ModelTypeFromString(datatype_string);
-      if (datatype == syncable::UNSPECIFIED) {
+      syncer::ModelType datatype =
+          syncer::ModelTypeFromString(datatype_string);
+      if (datatype == syncer::UNSPECIFIED) {
         AutomationJSONReply(this, reply_message).SendError(StringPrintf(
             "Invalid datatype string: %s.", datatype_string.c_str()));
         return;
@@ -5000,9 +5000,9 @@ void TestingAutomationProvider::DisableSyncForDatatypes(
     for (int i = 0; i < num_datatypes; i++) {
       std::string datatype_string;
       datatypes->GetString(i, &datatype_string);
-      syncable::ModelType datatype =
-          syncable::ModelTypeFromString(datatype_string);
-      if (datatype == syncable::UNSPECIFIED) {
+      syncer::ModelType datatype =
+          syncer::ModelTypeFromString(datatype_string);
+      if (datatype == syncer::UNSPECIFIED) {
         AutomationJSONReply(this, reply_message).SendError(StringPrintf(
             "Invalid datatype string: %s.", datatype_string.c_str()));
         return;

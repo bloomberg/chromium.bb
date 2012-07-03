@@ -17,10 +17,10 @@ bool ObjectIdLessThan::operator()(const invalidation::ObjectId& lhs,
          (lhs.source() == rhs.source() && lhs.name() < rhs.name());
 }
 
-bool RealModelTypeToObjectId(syncable::ModelType model_type,
+bool RealModelTypeToObjectId(syncer::ModelType model_type,
                              invalidation::ObjectId* object_id) {
   std::string notification_type;
-  if (!syncable::RealModelTypeToNotificationType(
+  if (!syncer::RealModelTypeToNotificationType(
           model_type, &notification_type)) {
     return false;
   }
@@ -30,9 +30,9 @@ bool RealModelTypeToObjectId(syncable::ModelType model_type,
 }
 
 bool ObjectIdToRealModelType(const invalidation::ObjectId& object_id,
-                             syncable::ModelType* model_type) {
+                             syncer::ModelType* model_type) {
   return
-      syncable::NotificationTypeToRealModelType(
+      syncer::NotificationTypeToRealModelType(
           object_id.name(), model_type);
 }
 

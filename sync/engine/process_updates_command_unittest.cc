@@ -27,8 +27,8 @@ class ProcessUpdatesCommandTest : public SyncerCommandTest {
         make_scoped_refptr(new FakeModelWorker(GROUP_UI)));
     workers()->push_back(
         make_scoped_refptr(new FakeModelWorker(GROUP_DB)));
-    (*mutable_routing_info())[syncable::BOOKMARKS] = GROUP_UI;
-    (*mutable_routing_info())[syncable::AUTOFILL] = GROUP_DB;
+    (*mutable_routing_info())[syncer::BOOKMARKS] = GROUP_UI;
+    (*mutable_routing_info())[syncer::AUTOFILL] = GROUP_DB;
     SyncerCommandTest::SetUp();
   }
 

@@ -46,7 +46,7 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
                                    profile,
                                    sync_service),
         mock_(mock) {}
-  virtual syncable::ModelType type() const { return syncable::BOOKMARKS; }
+  virtual syncer::ModelType type() const { return syncer::BOOKMARKS; }
 
  private:
   virtual void CreateSyncComponents() {
@@ -209,7 +209,7 @@ TEST_F(SyncFrontendDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_CALL(*model_associator_, AssociateModels()).
       WillOnce(Return(syncer::SyncError(FROM_HERE,
                                 "error",
-                                syncable::PREFERENCES)));
+                                syncer::PREFERENCES)));
 
   EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   SetStartFailExpectations(DataTypeController::ASSOCIATION_FAILED);

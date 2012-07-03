@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/profiles/profile.h"
@@ -11,6 +10,7 @@
 #include "chrome/browser/sync/test/integration/apps_helper.h"
 #include "chrome/browser/sync/test/integration/sync_app_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/common/extensions/extension_constants.h"
 
 using apps_helper::AllProfilesHaveSameAppsAsVerifier;
 using apps_helper::CopyNTPOrdinals;
@@ -292,14 +292,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, DisableApps) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 
-  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncable::APPS));
+  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncer::APPS));
   InstallApp(GetProfile(0), 0);
   InstallApp(verifier(), 0);
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(HasSameAppsAsVerifier(0));
   ASSERT_FALSE(HasSameAppsAsVerifier(1));
 
-  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncable::APPS));
+  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncer::APPS));
   ASSERT_TRUE(AwaitQuiescence());
 
   InstallAppsPendingForSync(GetProfile(0));

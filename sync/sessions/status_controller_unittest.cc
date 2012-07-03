@@ -12,7 +12,7 @@ namespace sessions {
 class StatusControllerTest : public testing::Test {
  public:
   virtual void SetUp() {
-    routes_[syncable::BOOKMARKS] = GROUP_UI;
+    routes_[syncer::BOOKMARKS] = GROUP_UI;
   }
  protected:
   ModelSafeRoutingInfo routes_;

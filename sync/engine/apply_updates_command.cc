@@ -22,7 +22,7 @@ std::set<ModelSafeGroup> ApplyUpdatesCommand::GetGroupsToChange(
     const sessions::SyncSession& session) const {
   std::set<ModelSafeGroup> groups_with_unapplied_updates;
 
-  syncable::FullModelTypeSet server_types_with_unapplied_updates;
+  syncer::FullModelTypeSet server_types_with_unapplied_updates;
   {
     syncable::Directory* dir = session.context()->directory();
     syncable::ReadTransaction trans(FROM_HERE, dir);
@@ -30,7 +30,7 @@ std::set<ModelSafeGroup> ApplyUpdatesCommand::GetGroupsToChange(
         dir->GetServerTypesWithUnappliedUpdates(&trans);
   }
 
-  for (syncable::FullModelTypeSet::Iterator it =
+  for (syncer::FullModelTypeSet::Iterator it =
            server_types_with_unapplied_updates.First(); it.Good(); it.Inc()) {
     groups_with_unapplied_updates.insert(
         GetGroupForModelType(it.Get(), session.routing_info()));
@@ -46,10 +46,10 @@ SyncerError ApplyUpdatesCommand::ModelChangingExecuteImpl(
 
   // Compute server types with unapplied updates that fall under our
   // group restriction.
-  const syncable::FullModelTypeSet server_types_with_unapplied_updates =
+  const syncer::FullModelTypeSet server_types_with_unapplied_updates =
       dir->GetServerTypesWithUnappliedUpdates(&trans);
-  syncable::FullModelTypeSet server_type_restriction;
-  for (syncable::FullModelTypeSet::Iterator it =
+  syncer::FullModelTypeSet server_type_restriction;
+  for (syncer::FullModelTypeSet::Iterator it =
            server_types_with_unapplied_updates.First(); it.Good(); it.Inc()) {
     if (GetGroupForModelType(it.Get(), session->routing_info()) ==
         session->status_controller().group_restriction()) {
@@ -75,7 +75,7 @@ SyncerError ApplyUpdatesCommand::ModelChangingExecuteImpl(
   // some subset of the currently synced datatypes.
   const sessions::StatusController& status(session->status_controller());
   if (status.ServerSaysNothingMoreToDownload()) {
-    for (syncable::ModelTypeSet::Iterator it =
+    for (syncer::ModelTypeSet::Iterator it =
              status.updates_request_types().First(); it.Good(); it.Inc()) {
       // This gets persisted to the directory's backing store.
       dir->set_initial_sync_ended_for_type(it.Get(), true);

@@ -55,7 +55,7 @@ syncer::SyncError ThemeModelAssociator::AssociateModels() {
   // TODO(akalin): When we have timestamps, we may want to do
   // something more intelligent than preferring the sync data over our
   // local data.
-  if (node.InitByClientTagLookup(syncable::THEMES, kCurrentThemeClientTag) ==
+  if (node.InitByClientTagLookup(syncer::THEMES, kCurrentThemeClientTag) ==
       syncer::BaseNode::INIT_OK) {
     // Update the current theme from the sync data.
     // TODO(akalin): If the sync data does not have
@@ -69,7 +69,7 @@ syncer::SyncError ThemeModelAssociator::AssociateModels() {
     // Set the sync data from the current theme.
     syncer::WriteNode node(&trans);
     syncer::WriteNode::InitUniqueByCreationResult result =
-        node.InitUniqueByCreation(syncable::THEMES, root,
+        node.InitUniqueByCreation(syncer::THEMES, root,
                                   kCurrentThemeClientTag);
     if (result != syncer::WriteNode::INIT_SUCCESS) {
       return error_handler_->CreateAndUploadError(
@@ -109,9 +109,9 @@ bool ThemeModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 bool ThemeModelAssociator::CryptoReadyIfNecessary() {
   // We only access the cryptographer while holding a transaction.
   syncer::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-  const syncable::ModelTypeSet encrypted_types =
+  const syncer::ModelTypeSet encrypted_types =
       syncer::GetEncryptedTypes(&trans);
-  return !encrypted_types.Has(syncable::THEMES) ||
+  return !encrypted_types.Has(syncer::THEMES) ||
          sync_service_->IsCryptographerReady(&trans);
 }
 

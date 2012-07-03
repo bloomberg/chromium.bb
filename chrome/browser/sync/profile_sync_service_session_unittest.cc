@@ -288,7 +288,7 @@ class CreateRootHelper {
  private:
   void CreateRootCallback(ProfileSyncServiceSessionTest* test) {
     success_ = ProfileSyncServiceTestHelper::CreateRoot(
-        syncable::SESSIONS, test->sync_service()->GetUserShare(), test->ids());
+        syncer::SESSIONS, test->sync_service()->GetUserShare(), test->ids());
   }
 
   base::Closure callback_;
@@ -313,7 +313,7 @@ TEST_F(ProfileSyncServiceSessionTest, WriteSessionToNode) {
   syncer::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   syncer::ReadNode node(&trans);
   ASSERT_EQ(syncer::BaseNode::INIT_OK,
-            node.InitByClientTagLookup(syncable::SESSIONS, machine_tag));
+            node.InitByClientTagLookup(syncer::SESSIONS, machine_tag));
   const sync_pb::SessionSpecifics& specifics(node.GetSessionSpecifics());
   ASSERT_EQ(machine_tag, specifics.session_tag());
   ASSERT_TRUE(specifics.has_header());
@@ -1022,10 +1022,10 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MissingHeaderAndTab) {
     // Create a sync node with the local tag but neither header nor tab field.
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::ReadNode root(&trans);
-    root.InitByTagLookup(syncable::ModelTypeToRootTag(syncable::SESSIONS));
+    root.InitByTagLookup(syncer::ModelTypeToRootTag(syncer::SESSIONS));
     syncer::WriteNode extra_header(&trans);
     syncer::WriteNode::InitUniqueByCreationResult result =
-        extra_header.InitUniqueByCreation(syncable::SESSIONS, root, "new_tag");
+        extra_header.InitUniqueByCreation(syncer::SESSIONS, root, "new_tag");
     ASSERT_EQ(syncer::WriteNode::INIT_SUCCESS, result);
     sync_pb::SessionSpecifics specifics;
     specifics.set_session_tag(local_tag);
@@ -1053,10 +1053,10 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MultipleHeaders) {
     // Create another sync node with a header field and the local tag.
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::ReadNode root(&trans);
-    root.InitByTagLookup(syncable::ModelTypeToRootTag(syncable::SESSIONS));
+    root.InitByTagLookup(syncer::ModelTypeToRootTag(syncer::SESSIONS));
     syncer::WriteNode extra_header(&trans);
     syncer::WriteNode::InitUniqueByCreationResult result =
-        extra_header.InitUniqueByCreation(syncable::SESSIONS,
+        extra_header.InitUniqueByCreation(syncer::SESSIONS,
                                           root, local_tag + "_");
     ASSERT_EQ(syncer::WriteNode::INIT_SUCCESS, result);
     sync_pb::SessionSpecifics specifics;
@@ -1086,10 +1086,10 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_CorruptedForeign) {
     std::string foreign_tag = "foreign_tag";
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::ReadNode root(&trans);
-    root.InitByTagLookup(syncable::ModelTypeToRootTag(syncable::SESSIONS));
+    root.InitByTagLookup(syncer::ModelTypeToRootTag(syncer::SESSIONS));
     syncer::WriteNode extra_header(&trans);
     syncer::WriteNode::InitUniqueByCreationResult result =
-        extra_header.InitUniqueByCreation(syncable::SESSIONS,
+        extra_header.InitUniqueByCreation(syncer::SESSIONS,
                                           root, foreign_tag);
     ASSERT_EQ(syncer::WriteNode::INIT_SUCCESS, result);
     sync_pb::SessionSpecifics specifics;
@@ -1119,9 +1119,9 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MissingLocalTabNode) {
 
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::ReadNode root(&trans);
-    root.InitByTagLookup(syncable::ModelTypeToRootTag(syncable::SESSIONS));
+    root.InitByTagLookup(syncer::ModelTypeToRootTag(syncer::SESSIONS));
     syncer::WriteNode tab_node(&trans);
-    ASSERT_TRUE(tab_node.InitByClientTagLookup(syncable::SESSIONS, tab_tag));
+    ASSERT_TRUE(tab_node.InitByClientTagLookup(syncer::SESSIONS, tab_tag));
     tab_node.Remove();
   }
   error = model_associator_->AssociateModels();
@@ -1191,7 +1191,7 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_CorruptedLocalHeader) {
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::WriteNode header(&trans);
     ASSERT_EQ(syncer::BaseNode::INIT_OK,
-              header.InitByClientTagLookup(syncable::SESSIONS, local_tag));
+              header.InitByClientTagLookup(syncer::SESSIONS, local_tag));
     sync_pb::SessionSpecifics specifics;
     header.SetSessionSpecifics(specifics);
   }

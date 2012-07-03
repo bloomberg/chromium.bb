@@ -155,11 +155,11 @@ class LoggingChangeDelegate : public syncer::SyncManager::ChangeDelegate {
   virtual ~LoggingChangeDelegate() {}
 
   virtual void OnChangesApplied(
-      syncable::ModelType model_type,
+      syncer::ModelType model_type,
       const syncer::BaseTransaction* trans,
       const syncer::ImmutableChangeRecordList& changes) OVERRIDE {
     LOG(INFO) << "Changes applied for "
-              << syncable::ModelTypeToString(model_type);
+              << syncer::ModelTypeToString(model_type);
     size_t i = 1;
     size_t change_count = changes.Get().size();
     for (syncer::ChangeRecordList::const_iterator it =
@@ -177,9 +177,9 @@ class LoggingChangeDelegate : public syncer::SyncManager::ChangeDelegate {
     }
   }
 
-  virtual void OnChangesComplete(syncable::ModelType model_type) OVERRIDE {
+  virtual void OnChangesComplete(syncer::ModelType model_type) OVERRIDE {
     LOG(INFO) << "Changes complete for "
-              << syncable::ModelTypeToString(model_type);
+              << syncer::ModelTypeToString(model_type);
   }
 };
 
@@ -314,9 +314,9 @@ int main(int argc, char* argv[]) {
   CHECK(database_dir.CreateUniqueTempDir());
 
   // Set up model type parameters.
-  const syncable::ModelTypeSet model_types = syncable::ModelTypeSet::All();
+  const syncer::ModelTypeSet model_types = syncer::ModelTypeSet::All();
   syncer::ModelSafeRoutingInfo routing_info;
-  for (syncable::ModelTypeSet::Iterator it = model_types.First();
+  for (syncer::ModelTypeSet::Iterator it = model_types.First();
        it.Good(); it.Inc()) {
     routing_info[it.Get()] = syncer::GROUP_PASSIVE;
   }

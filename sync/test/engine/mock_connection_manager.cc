@@ -26,9 +26,6 @@ using sync_pb::SyncEnums;
 
 namespace syncer {
 
-using syncable::FIRST_REAL_MODEL_TYPE;
-using syncable::MODEL_TYPE_COUNT;
-using syncable::ModelType;
 using syncable::WriteTransaction;
 
 static char kValidAuthToken[] = "AuthToken";
@@ -247,8 +244,8 @@ sync_pb::SyncEntity* MockConnectionManager::SetNigori(
   sync_pb::SyncEntity* ent = GetUpdateResponse()->add_entries();
   ent->set_id_string(TestIdFactory::FromNumber(id).GetServerId());
   ent->set_parent_id_string(TestIdFactory::FromNumber(0).GetServerId());
-  ent->set_server_defined_unique_tag(syncable::ModelTypeToRootTag(
-      syncable::NIGORI));
+  ent->set_server_defined_unique_tag(syncer::ModelTypeToRootTag(
+      syncer::NIGORI));
   ent->set_name("Nigori");
   ent->set_non_unique_name("Nigori");
   ent->set_version(version);
@@ -404,7 +401,7 @@ void MockConnectionManager::ProcessGetUpdates(
   // Verify that the GetUpdates filter sent by the Syncer matches the test
   // expectation.
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
-    ModelType model_type = syncable::ModelTypeFromInt(i);
+    ModelType model_type = syncer::ModelTypeFromInt(i);
     sync_pb::DataTypeProgressMarker const* progress_marker =
         GetProgressMarkerForType(gu.from_progress_marker(), model_type);
     EXPECT_EQ(expected_filter_.Has(model_type), (progress_marker != NULL))
@@ -428,7 +425,7 @@ void MockConnectionManager::ProcessGetUpdates(
   sync_pb::GetUpdatesResponse* updates = &update_queue_.front();
   for (int i = 0; i < updates->entries_size(); ++i) {
     if (!updates->entries(i).deleted()) {
-      ModelType entry_type = syncable::GetModelType(updates->entries(i));
+      ModelType entry_type = syncer::GetModelType(updates->entries(i));
       EXPECT_TRUE(
         IsModelTypePresentInSpecifics(gu.from_progress_marker(), entry_type))
           << "Syncer did not request updates being provided by the test.";
@@ -557,8 +554,8 @@ const CommitResponse& MockConnectionManager::last_commit_response() const {
 bool MockConnectionManager::IsModelTypePresentInSpecifics(
     const google::protobuf::RepeatedPtrField<
         sync_pb::DataTypeProgressMarker>& filter,
-    syncable::ModelType value) {
-  int data_type_id = syncable::GetSpecificsFieldNumberFromModelType(value);
+    syncer::ModelType value) {
+  int data_type_id = syncer::GetSpecificsFieldNumberFromModelType(value);
   for (int i = 0; i < filter.size(); ++i) {
     if (filter.Get(i).data_type_id() == data_type_id) {
       return true;
@@ -571,8 +568,8 @@ sync_pb::DataTypeProgressMarker const*
     MockConnectionManager::GetProgressMarkerForType(
         const google::protobuf::RepeatedPtrField<
             sync_pb::DataTypeProgressMarker>& filter,
-        syncable::ModelType value) {
-  int data_type_id = syncable::GetSpecificsFieldNumberFromModelType(value);
+        syncer::ModelType value) {
+  int data_type_id = syncer::GetSpecificsFieldNumberFromModelType(value);
   for (int i = 0; i < filter.size(); ++i) {
     if (filter.Get(i).data_type_id() == data_type_id) {
       return &(filter.Get(i));

@@ -45,10 +45,10 @@ syncer::SyncData CreateData(
     const std::string& extension_id,
     const std::string& key,
     const Value& value,
-    syncable::ModelType type) {
+    syncer::ModelType type) {
   sync_pb::EntitySpecifics specifics;
   switch (type) {
-    case syncable::EXTENSION_SETTINGS:
+    case syncer::EXTENSION_SETTINGS:
       PopulateExtensionSettingSpecifics(
           extension_id,
           key,
@@ -56,7 +56,7 @@ syncer::SyncData CreateData(
           specifics.mutable_extension_setting());
       break;
 
-    case syncable::APP_SETTINGS:
+    case syncer::APP_SETTINGS:
       PopulateAppSettingSpecifics(
           extension_id,
           key,
@@ -76,7 +76,7 @@ syncer::SyncChange CreateAdd(
     const std::string& extension_id,
     const std::string& key,
     const Value& value,
-    syncable::ModelType type) {
+    syncer::ModelType type) {
   return syncer::SyncChange(
       syncer::SyncChange::ACTION_ADD,
       CreateData(extension_id, key, value, type));
@@ -86,7 +86,7 @@ syncer::SyncChange CreateUpdate(
     const std::string& extension_id,
     const std::string& key,
     const Value& value,
-    syncable::ModelType type) {
+    syncer::ModelType type) {
   return syncer::SyncChange(
       syncer::SyncChange::ACTION_UPDATE,
       CreateData(extension_id, key, value, type));
@@ -95,7 +95,7 @@ syncer::SyncChange CreateUpdate(
 syncer::SyncChange CreateDelete(
     const std::string& extension_id,
     const std::string& key,
-    syncable::ModelType type) {
+    syncer::ModelType type) {
   DictionaryValue no_value;
   return syncer::SyncChange(
       syncer::SyncChange::ACTION_DELETE,

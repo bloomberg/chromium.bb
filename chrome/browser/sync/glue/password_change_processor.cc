@@ -83,7 +83,7 @@ void PasswordChangeProcessor::Observe(
       case PasswordStoreChange::ADD: {
         syncer::WriteNode sync_node(&trans);
         syncer::WriteNode::InitUniqueByCreationResult result =
-            sync_node.InitUniqueByCreation(syncable::PASSWORDS, password_root,
+            sync_node.InitUniqueByCreation(syncer::PASSWORDS, password_root,
                                            tag);
         if (result == syncer::WriteNode::INIT_SUCCESS) {
           PasswordModelAssociator::WriteToSyncNode(change->form(), &sync_node);
@@ -208,7 +208,7 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
 
     // Check that the changed node is a child of the passwords folder.
     DCHECK_EQ(password_root.GetId(), sync_node.GetParentId());
-    DCHECK_EQ(syncable::PASSWORDS, sync_node.GetModelType());
+    DCHECK_EQ(syncer::PASSWORDS, sync_node.GetModelType());
 
     const sync_pb::PasswordSpecificsData& password_data =
         sync_node.GetPasswordSpecifics();

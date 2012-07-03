@@ -21,7 +21,7 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
       ProfileSyncComponentsFactory*,
       ProfileSyncService*,
       DataTypeErrorHandler*,
-      syncable::ModelType));
+      syncer::ModelType));
   MOCK_METHOD0(Disconnect, bool());
   MOCK_METHOD2(ProcessSyncChanges,
                syncer::SyncError(const tracked_objects::Location&,

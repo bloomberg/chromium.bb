@@ -55,7 +55,7 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
 
   virtual void TearDown() {
     // Must be done before we pump the loop.
-    syncable_service_.StopSyncing(syncable::SEARCH_ENGINES);
+    syncable_service_.StopSyncing(syncer::SEARCH_ENGINES);
     search_engine_dtc_ = NULL;
     test_util_.TearDown();
   }
@@ -70,7 +70,7 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
     // Ownership gets passed to caller of CreateGenericChangeProcessor.
     EXPECT_CALL(model_load_callback_, Run(_, _));
     EXPECT_CALL(*profile_sync_factory_,
-                GetSyncableServiceForType(syncable::SEARCH_ENGINES)).
+                GetSyncableServiceForType(syncer::SEARCH_ENGINES)).
         WillOnce(Return(syncable_service_.AsWeakPtr()));
     EXPECT_CALL(*profile_sync_factory_, CreateSharedChangeProcessor()).
         WillOnce(MakeSharedChangeProcessor());
@@ -79,11 +79,11 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
   }
 
   void SetActivateExpectations() {
-    EXPECT_CALL(service_, ActivateDataType(syncable::SEARCH_ENGINES, _, _));
+    EXPECT_CALL(service_, ActivateDataType(syncer::SEARCH_ENGINES, _, _));
   }
 
   void SetStopExpectations() {
-    EXPECT_CALL(service_, DeactivateDataType(syncable::SEARCH_ENGINES));
+    EXPECT_CALL(service_, DeactivateDataType(syncer::SEARCH_ENGINES));
   }
 
   void Start() {
@@ -161,7 +161,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_CALL(start_callback_,
               Run(DataTypeController::ASSOCIATION_FAILED, _));
   syncable_service_.set_merge_data_and_start_syncing_error(
-      syncer::SyncError(FROM_HERE, "Error", syncable::SEARCH_ENGINES));
+      syncer::SyncError(FROM_HERE, "Error", syncer::SEARCH_ENGINES));
 
   Start();
   EXPECT_EQ(DataTypeController::DISABLED, search_engine_dtc_->state());

@@ -28,8 +28,8 @@ SessionModelAssociator* SessionDataTypeController::GetModelAssociator() {
   return reinterpret_cast<SessionModelAssociator*>(model_associator_.get());
 }
 
-syncable::ModelType SessionDataTypeController::type() const {
-  return syncable::SESSIONS;
+syncer::ModelType SessionDataTypeController::type() const {
+  return syncer::SESSIONS;
 }
 
 bool SessionDataTypeController::StartModels() {

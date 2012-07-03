@@ -15,9 +15,9 @@ FailedDatatypesHandler::FailedDatatypesHandler(ProfileSyncService* service)
 FailedDatatypesHandler::~FailedDatatypesHandler() {
 }
 
-syncable::ModelTypeSet GetTypesFromErrorsList(
+syncer::ModelTypeSet GetTypesFromErrorsList(
     const std::vector<syncer::SyncError>& errors) {
-  syncable::ModelTypeSet result;
+  syncer::ModelTypeSet result;
   for (std::vector<syncer::SyncError>::const_iterator it = errors.begin();
        it != errors.end(); ++it) {
     DCHECK(!result.Has(it->type()));
@@ -26,8 +26,8 @@ syncable::ModelTypeSet GetTypesFromErrorsList(
   return result;
 }
 
-syncable::ModelTypeSet FailedDatatypesHandler::GetFailedTypes() const {
-  syncable::ModelTypeSet result = GetTypesFromErrorsList(startup_errors_);
+syncer::ModelTypeSet FailedDatatypesHandler::GetFailedTypes() const {
+  syncer::ModelTypeSet result = GetTypesFromErrorsList(startup_errors_);
   result.PutAll(GetTypesFromErrorsList(runtime_errors_));
   return result;
 }
@@ -35,7 +35,7 @@ syncable::ModelTypeSet FailedDatatypesHandler::GetFailedTypes() const {
 bool FailedDatatypesHandler::UpdateFailedDatatypes(
     const std::list<syncer::SyncError>& errors,
     FailureType failure_type) {
-  const syncable::ModelTypeSet types = GetFailedTypes();
+  const syncer::ModelTypeSet types = GetFailedTypes();
   if (failure_type == RUNTIME) {
     runtime_errors_.insert(runtime_errors_.end(),
                            errors.begin(),

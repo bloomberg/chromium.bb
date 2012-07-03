@@ -46,9 +46,9 @@ class MockSyncFrontend : public SyncFrontend {
                     const sync_pb::EncryptedData&));
   MOCK_METHOD0(OnPassphraseAccepted, void());
   MOCK_METHOD2(OnEncryptedTypesChanged,
-               void(syncable::ModelTypeSet, bool));
+               void(syncer::ModelTypeSet, bool));
   MOCK_METHOD0(OnEncryptionComplete, void());
-  MOCK_METHOD1(OnMigrationNeededForTypes, void(syncable::ModelTypeSet));
+  MOCK_METHOD1(OnMigrationNeededForTypes, void(syncer::ModelTypeSet));
   MOCK_METHOD1(OnExperimentsChanged,
       void(const syncer::Experiments&));
   MOCK_METHOD1(OnActionableError,
@@ -108,7 +108,7 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
   backend.Initialize(&mock_frontend,
                      syncer::WeakHandle<syncer::JsEventHandler>(),
                      GURL(k_mock_url),
-                     syncable::ModelTypeSet(),
+                     syncer::ModelTypeSet(),
                      credentials,
                      true,
                      &handler,

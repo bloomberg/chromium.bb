@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 namespace browser_sync {
 
 DataTypeManagerMock::DataTypeManagerMock()
-    : result_(OK, syncable::ModelTypeSet()) {
+    : result_(OK, syncer::ModelTypeSet()) {
 
   // By default, calling Configure will send a SYNC_CONFIGURE_START
   // and SYNC_CONFIGURE_DONE notification with a DataTypeManager::OK

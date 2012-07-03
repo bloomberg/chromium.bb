@@ -49,7 +49,7 @@ class TypedUrlModelAssociator : public AssociatorInterface {
   typedef std::vector<std::pair<GURL, std::vector<history::VisitInfo> > >
       TypedUrlVisitVector;
 
-  static syncable::ModelType model_type() { return syncable::TYPED_URLS; }
+  static syncer::ModelType model_type() { return syncer::TYPED_URLS; }
   TypedUrlModelAssociator(ProfileSyncService* sync_service,
                           history::HistoryBackend* history_backend,
                           DataTypeErrorHandler* error_handler);

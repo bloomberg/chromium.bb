@@ -49,13 +49,13 @@ void BridgedSyncNotifier::UpdateCredentials(
 }
 
 void BridgedSyncNotifier::UpdateEnabledTypes(
-    syncable::ModelTypeSet enabled_types) {
+    syncer::ModelTypeSet enabled_types) {
   if (delegate_.get())
     delegate_->UpdateEnabledTypes(enabled_types);
 }
 
 void BridgedSyncNotifier::SendNotification(
-    syncable::ModelTypeSet changed_types) {
+    syncer::ModelTypeSet changed_types) {
   if (delegate_.get())
     delegate_->SendNotification(changed_types);
 }

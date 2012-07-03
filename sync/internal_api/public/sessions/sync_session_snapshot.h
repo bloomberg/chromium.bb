@@ -33,8 +33,8 @@ class SyncSessionSnapshot {
   SyncSessionSnapshot(
       const ModelNeutralState& model_neutral_state,
       bool is_share_usable,
-      syncable::ModelTypeSet initial_sync_ended,
-      const syncable::ModelTypePayloadMap& download_progress_markers,
+      syncer::ModelTypeSet initial_sync_ended,
+      const syncer::ModelTypePayloadMap& download_progress_markers,
       bool more_to_sync,
       bool is_silenced,
       int num_encryption_conflicts,
@@ -58,8 +58,8 @@ class SyncSessionSnapshot {
   }
   int64 num_server_changes_remaining() const;
   bool is_share_usable() const;
-  syncable::ModelTypeSet initial_sync_ended() const;
-  syncable::ModelTypePayloadMap download_progress_markers() const;
+  syncer::ModelTypeSet initial_sync_ended() const;
+  syncer::ModelTypePayloadMap download_progress_markers() const;
   bool has_more_to_sync() const;
   bool is_silenced() const;
   int num_encryption_conflicts() const;
@@ -75,8 +75,8 @@ class SyncSessionSnapshot {
  private:
   ModelNeutralState model_neutral_state_;
   bool is_share_usable_;
-  syncable::ModelTypeSet initial_sync_ended_;
-  syncable::ModelTypePayloadMap download_progress_markers_;
+  syncer::ModelTypeSet initial_sync_ended_;
+  syncer::ModelTypePayloadMap download_progress_markers_;
   bool has_more_to_sync_;
   bool is_silenced_;
   int num_encryption_conflicts_;

@@ -37,7 +37,7 @@ namespace browser_sync {
 class UIDataTypeController : public DataTypeController {
  public:
   UIDataTypeController(
-      syncable::ModelType type,
+      syncer::ModelType type,
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
@@ -47,7 +47,7 @@ class UIDataTypeController : public DataTypeController {
       const ModelLoadCallback& model_load_callback) OVERRIDE;
   virtual void StartAssociating(const StartCallback& start_callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
-  virtual syncable::ModelType type() const OVERRIDE;
+  virtual syncer::ModelType type() const OVERRIDE;
   virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE;
   virtual std::string name() const OVERRIDE;
   virtual State state() const OVERRIDE;
@@ -97,7 +97,7 @@ class UIDataTypeController : public DataTypeController {
   ModelLoadCallback model_load_callback_;
 
   // The sync datatype being controlled.
-  syncable::ModelType type_;
+  syncer::ModelType type_;
 
   // Sync's interface to the datatype. All sync changes for |type_| are pushed
   // through it to the datatype as well as vice versa.

@@ -79,7 +79,7 @@ void DebugInfoEventListener::OnUpdatedToken(const std::string& token) {
 }
 
 void DebugInfoEventListener::OnEncryptedTypesChanged(
-    syncable::ModelTypeSet encrypted_types,
+    syncer::ModelTypeSet encrypted_types,
     bool encrypt_everything) {
   CreateAndAddEvent(sync_pb::DebugEventInfo::ENCRYPTED_TYPES_CHANGED);
 }
@@ -101,23 +101,22 @@ void DebugInfoEventListener::SetCryptographerReady(bool ready) {
   cryptographer_ready_ = ready;
 }
 
-void DebugInfoEventListener::OnNudgeFromDatatype(
-    syncable::ModelType datatype) {
+void DebugInfoEventListener::OnNudgeFromDatatype(syncer::ModelType datatype) {
   sync_pb::DebugEventInfo event_info;
   event_info.set_nudging_datatype(
-      syncable::GetSpecificsFieldNumberFromModelType(datatype));
+      syncer::GetSpecificsFieldNumberFromModelType(datatype));
   AddEventToQueue(event_info);
 }
 
 void DebugInfoEventListener::OnIncomingNotification(
-     const syncable::ModelTypePayloadMap& type_payloads) {
+     const syncer::ModelTypePayloadMap& type_payloads) {
   sync_pb::DebugEventInfo event_info;
-  syncable::ModelTypeSet types = ModelTypePayloadMapToEnumSet(type_payloads);
+  syncer::ModelTypeSet types = ModelTypePayloadMapToEnumSet(type_payloads);
 
-  for (syncable::ModelTypeSet::Iterator it = types.First();
+  for (syncer::ModelTypeSet::Iterator it = types.First();
        it.Good(); it.Inc()) {
     event_info.add_datatypes_notified_from_server(
-        syncable::GetSpecificsFieldNumberFromModelType(it.Get()));
+        syncer::GetSpecificsFieldNumberFromModelType(it.Get()));
   }
 
   AddEventToQueue(event_info);

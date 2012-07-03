@@ -16,15 +16,14 @@ namespace extensions {
 
 SettingsSyncProcessor::SettingsSyncProcessor(
     const std::string& extension_id,
-    syncable::ModelType type,
+    syncer::ModelType type,
     syncer::SyncChangeProcessor* sync_processor)
     : extension_id_(extension_id),
       type_(type),
       sync_processor_(sync_processor),
       initialized_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  CHECK(type == syncable::EXTENSION_SETTINGS ||
-        type == syncable::APP_SETTINGS);
+  CHECK(type == syncer::EXTENSION_SETTINGS || type == syncer::APP_SETTINGS);
   CHECK(sync_processor);
 }
 

@@ -30,13 +30,13 @@ class ExtensionSettingDataTypeController
  public:
   ExtensionSettingDataTypeController(
       // Either EXTENSION_SETTINGS or APP_SETTINGS.
-      syncable::ModelType type,
+      syncer::ModelType type,
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* profile_sync_service);
 
   // NonFrontendDataTypeController implementation
-  virtual syncable::ModelType type() const OVERRIDE;
+  virtual syncer::ModelType type() const OVERRIDE;
   virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE;
 
  private:
@@ -49,7 +49,7 @@ class ExtensionSettingDataTypeController
   virtual bool StartModels() OVERRIDE;
 
   // Either EXTENSION_SETTINGS or APP_SETTINGS.
-  syncable::ModelType type_;
+  syncer::ModelType type_;
 
   // These only used on the UI thread.
   Profile* profile_;

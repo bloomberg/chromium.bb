@@ -19,7 +19,7 @@ using content::BrowserThread;
 namespace browser_sync {
 
 ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(
-    syncable::ModelType type,
+    syncer::ModelType type,
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* profile_sync_service)
@@ -30,11 +30,10 @@ ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(
       profile_(profile),
       profile_sync_service_(profile_sync_service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(type == syncable::EXTENSION_SETTINGS ||
-         type == syncable::APP_SETTINGS);
+  DCHECK(type == syncer::EXTENSION_SETTINGS || type == syncer::APP_SETTINGS);
 }
 
-syncable::ModelType ExtensionSettingDataTypeController::type() const {
+syncer::ModelType ExtensionSettingDataTypeController::type() const {
   return type_;
 }
 

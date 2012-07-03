@@ -240,7 +240,7 @@ syncer::SyncError SyncableSettingsStorage::ProcessSyncChanges(
     return syncer::SyncError(
         FROM_HERE,
         std::string("Sync is inactive for ") + extension_id_,
-        syncable::UNSPECIFIED);
+        syncer::UNSPECIFIED);
   }
 
   std::vector<syncer::SyncError> errors;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -344,7 +344,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, DisableAutofill) {
   ASSERT_TRUE(ProfilesMatch(0, 1));
   ASSERT_EQ(1U, GetAllProfiles(0).size());
 
-  ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncable::AUTOFILL));
+  ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::AUTOFILL));
   AddProfile(0, CreateAutofillProfile(PROFILE_FRASIER));
   MakeABookmarkChange(0);
   ASSERT_TRUE(AwaitQuiescence());
@@ -352,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, DisableAutofill) {
   ASSERT_EQ(2U, GetAllProfiles(0).size());
   ASSERT_EQ(1U, GetAllProfiles(1).size());
 
-  ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(syncable::AUTOFILL));
+  ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(syncer::AUTOFILL));
   MakeABookmarkChange(0);
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(ProfilesMatch(0, 1));

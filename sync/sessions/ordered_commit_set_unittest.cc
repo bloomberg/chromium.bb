@@ -15,10 +15,10 @@ namespace {
 class OrderedCommitSetTest : public testing::Test {
  public:
   OrderedCommitSetTest() {
-    routes_[syncable::BOOKMARKS] = syncer::GROUP_UI;
-    routes_[syncable::PREFERENCES] = syncer::GROUP_UI;
-    routes_[syncable::AUTOFILL] = syncer::GROUP_DB;
-    routes_[syncable::TOP_LEVEL_FOLDER] = syncer::GROUP_PASSIVE;
+    routes_[syncer::BOOKMARKS] = syncer::GROUP_UI;
+    routes_[syncer::PREFERENCES] = syncer::GROUP_UI;
+    routes_[syncer::AUTOFILL] = syncer::GROUP_DB;
+    routes_[syncer::TOP_LEVEL_FOLDER] = syncer::GROUP_PASSIVE;
   }
  protected:
   syncer::TestIdFactory ids_;
@@ -31,18 +31,18 @@ TEST_F(OrderedCommitSetTest, Projections) {
     expected.push_back(ids_.NewLocalId());
 
   OrderedCommitSet commit_set1(routes_), commit_set2(routes_);
-  commit_set1.AddCommitItem(0, expected[0], syncable::BOOKMARKS);
-  commit_set1.AddCommitItem(1, expected[1], syncable::BOOKMARKS);
-  commit_set1.AddCommitItem(2, expected[2], syncable::PREFERENCES);
+  commit_set1.AddCommitItem(0, expected[0], syncer::BOOKMARKS);
+  commit_set1.AddCommitItem(1, expected[1], syncer::BOOKMARKS);
+  commit_set1.AddCommitItem(2, expected[2], syncer::PREFERENCES);
   // Duplicates should be dropped.
-  commit_set1.AddCommitItem(2, expected[2], syncable::PREFERENCES);
-  commit_set1.AddCommitItem(3, expected[3], syncable::TOP_LEVEL_FOLDER);
-  commit_set1.AddCommitItem(4, expected[4], syncable::TOP_LEVEL_FOLDER);
-  commit_set2.AddCommitItem(7, expected[7], syncable::AUTOFILL);
-  commit_set2.AddCommitItem(6, expected[6], syncable::AUTOFILL);
-  commit_set2.AddCommitItem(5, expected[5], syncable::AUTOFILL);
+  commit_set1.AddCommitItem(2, expected[2], syncer::PREFERENCES);
+  commit_set1.AddCommitItem(3, expected[3], syncer::TOP_LEVEL_FOLDER);
+  commit_set1.AddCommitItem(4, expected[4], syncer::TOP_LEVEL_FOLDER);
+  commit_set2.AddCommitItem(7, expected[7], syncer::AUTOFILL);
+  commit_set2.AddCommitItem(6, expected[6], syncer::AUTOFILL);
+  commit_set2.AddCommitItem(5, expected[5], syncer::AUTOFILL);
   // Add something in set1 to set2, which should get dropped by AppendReverse.
-  commit_set2.AddCommitItem(0, expected[0], syncable::BOOKMARKS);
+  commit_set2.AddCommitItem(0, expected[0], syncer::BOOKMARKS);
   commit_set1.AppendReverse(commit_set2);
 
   // First, we should verify the projections are correct. Second, we want to
@@ -101,15 +101,15 @@ TEST_F(OrderedCommitSetTest, Projections) {
 TEST_F(OrderedCommitSetTest, HasBookmarkCommitId) {
   OrderedCommitSet commit_set(routes_);
 
-  commit_set.AddCommitItem(0, ids_.NewLocalId(), syncable::AUTOFILL);
-  commit_set.AddCommitItem(1, ids_.NewLocalId(), syncable::TOP_LEVEL_FOLDER);
+  commit_set.AddCommitItem(0, ids_.NewLocalId(), syncer::AUTOFILL);
+  commit_set.AddCommitItem(1, ids_.NewLocalId(), syncer::TOP_LEVEL_FOLDER);
   EXPECT_FALSE(commit_set.HasBookmarkCommitId());
 
-  commit_set.AddCommitItem(2, ids_.NewLocalId(), syncable::PREFERENCES);
-  commit_set.AddCommitItem(3, ids_.NewLocalId(), syncable::PREFERENCES);
+  commit_set.AddCommitItem(2, ids_.NewLocalId(), syncer::PREFERENCES);
+  commit_set.AddCommitItem(3, ids_.NewLocalId(), syncer::PREFERENCES);
   EXPECT_FALSE(commit_set.HasBookmarkCommitId());
 
-  commit_set.AddCommitItem(4, ids_.NewLocalId(), syncable::BOOKMARKS);
+  commit_set.AddCommitItem(4, ids_.NewLocalId(), syncer::BOOKMARKS);
   EXPECT_TRUE(commit_set.HasBookmarkCommitId());
 
   commit_set.Truncate(4);
@@ -121,7 +121,7 @@ TEST_F(OrderedCommitSetTest, AddAndRemoveEntries) {
 
   ASSERT_TRUE(commit_set.Empty());
 
-  commit_set.AddCommitItem(0, ids_.NewLocalId(), syncable::AUTOFILL);
+  commit_set.AddCommitItem(0, ids_.NewLocalId(), syncer::AUTOFILL);
   ASSERT_EQ(static_cast<size_t>(1), commit_set.Size());
 
   commit_set.Clear();

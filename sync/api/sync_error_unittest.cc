@@ -12,7 +12,7 @@
 namespace syncer {
 
 using std::string;
-using syncable::ModelType;
+using syncer::ModelType;
 
 namespace {
 
@@ -26,7 +26,7 @@ TEST_F(SyncErrorTest, Unset) {
 TEST_F(SyncErrorTest, Default) {
   tracked_objects::Location location = FROM_HERE;
   std::string msg = "test";
-  ModelType type = syncable::PREFERENCES;
+  ModelType type = syncer::PREFERENCES;
   SyncError error(location, msg, type);
   ASSERT_TRUE(error.IsSet());
   EXPECT_EQ(location.line_number(), error.location().line_number());
@@ -37,7 +37,7 @@ TEST_F(SyncErrorTest, Default) {
 TEST_F(SyncErrorTest, Reset) {
   tracked_objects::Location location = FROM_HERE;
   std::string msg = "test";
-  ModelType type = syncable::PREFERENCES;
+  ModelType type = syncer::PREFERENCES;
 
   SyncError error;
   EXPECT_FALSE(error.IsSet());
@@ -50,7 +50,7 @@ TEST_F(SyncErrorTest, Reset) {
 
   tracked_objects::Location location2 = FROM_HERE;
   std::string msg2 = "test";
-  ModelType type2 = syncable::PREFERENCES;
+  ModelType type2 = syncer::PREFERENCES;
   error.Reset(location2, msg2, type2);
   ASSERT_TRUE(error.IsSet());
   EXPECT_EQ(location2.line_number(), error.location().line_number());
@@ -61,7 +61,7 @@ TEST_F(SyncErrorTest, Reset) {
 TEST_F(SyncErrorTest, Copy) {
   tracked_objects::Location location = FROM_HERE;
   std::string msg = "test";
-  ModelType type = syncable::PREFERENCES;
+  ModelType type = syncer::PREFERENCES;
 
   SyncError error1;
   EXPECT_FALSE(error1.IsSet());
@@ -89,7 +89,7 @@ TEST_F(SyncErrorTest, Copy) {
 TEST_F(SyncErrorTest, Assign) {
   tracked_objects::Location location = FROM_HERE;
   std::string msg = "test";
-  ModelType type = syncable::PREFERENCES;
+  ModelType type = syncer::PREFERENCES;
 
   SyncError error1;
   EXPECT_FALSE(error1.IsSet());
@@ -116,7 +116,7 @@ TEST_F(SyncErrorTest, Assign) {
 TEST_F(SyncErrorTest, ToString) {
   tracked_objects::Location location = FROM_HERE;
   std::string msg = "test";
-  ModelType type = syncable::PREFERENCES;
+  ModelType type = syncer::PREFERENCES;
   std::string expected = "Preferences, Sync Error: test";
   SyncError error(location, msg, type);
   EXPECT_TRUE(error.IsSet());

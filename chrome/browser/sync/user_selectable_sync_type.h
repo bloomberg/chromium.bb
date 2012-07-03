@@ -20,7 +20,7 @@ namespace user_selectable_type {
 
 // THIS ENUM IS MEANT SOLELY FOR THE PURPOSE OF HISTOGRAM LOGGING. IF YOU ARE
 // LOOKING TO MODIFY SYNC FUNCTIONALITY AND NEED A LIST OF SYNC TYPES, USE
-// syncable::ModelType.
+// syncer::ModelType.
 
 enum UserSelectableSyncType {
   BOOKMARKS = 0,

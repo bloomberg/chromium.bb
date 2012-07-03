@@ -30,7 +30,7 @@ namespace {
 
 using base::WaitableEvent;
 using content::BrowserThread;
-using syncable::AUTOFILL_PROFILE;
+using syncer::AUTOFILL_PROFILE;
 using testing::_;
 using testing::AtLeast;
 using testing::DoAll;
@@ -72,7 +72,7 @@ class NewNonFrontendDataTypeControllerFake
         blocked_(false),
         mock_(mock) {}
 
-  virtual syncable::ModelType type() const OVERRIDE {
+  virtual syncer::ModelType type() const OVERRIDE {
     return AUTOFILL_PROFILE;
   }
   virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE {

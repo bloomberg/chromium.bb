@@ -65,7 +65,7 @@ void TestEntryFactory::CreateUnsyncedItem(
     const Id& parent_id,
     const string& name,
     bool is_folder,
-    syncable::ModelType model_type,
+    syncer::ModelType model_type,
     int64* metahandle_out) {
   WriteTransaction trans(FROM_HERE, UNITTEST, directory_);
   Id predecessor_id;
@@ -82,7 +82,7 @@ void TestEntryFactory::CreateUnsyncedItem(
   entry.Put(syncable::PARENT_ID, parent_id);
   CHECK(entry.PutPredecessor(predecessor_id));
   sync_pb::EntitySpecifics default_specifics;
-  syncable::AddDefaultFieldValue(model_type, &default_specifics);
+  syncer::AddDefaultFieldValue(model_type, &default_specifics);
   entry.Put(syncable::SPECIFICS, default_specifics);
   if (item_id.ServerKnows()) {
     entry.Put(syncable::SERVER_SPECIFICS, default_specifics);
@@ -96,7 +96,7 @@ void TestEntryFactory::CreateUnsyncedItem(
 
 int64 TestEntryFactory::CreateUnappliedAndUnsyncedItem(
     const string& name,
-    syncable::ModelType model_type) {
+    syncer::ModelType model_type) {
   int64 metahandle = 0;
   CreateUnsyncedItem(
       TestIdFactory::MakeServer(name), TestIdFactory::root(),
@@ -116,7 +116,7 @@ int64 TestEntryFactory::CreateUnappliedAndUnsyncedItem(
 }
 
 int64 TestEntryFactory::CreateSyncedItem(
-    const std::string& name, syncable::ModelType
+    const std::string& name, syncer::ModelType
     model_type, bool is_folder) {
   WriteTransaction trans(FROM_HERE, UNITTEST, directory_);
 
@@ -125,7 +125,7 @@ int64 TestEntryFactory::CreateSyncedItem(
   int64 version = GetNextRevision();
 
   sync_pb::EntitySpecifics default_specifics;
-  syncable::AddDefaultFieldValue(model_type, &default_specifics);
+  syncer::AddDefaultFieldValue(model_type, &default_specifics);
 
   MutableEntry entry(&trans, syncable::CREATE, parent_id, name);
   if (!entry.good()) {

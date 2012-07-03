@@ -32,7 +32,7 @@ class ChromeSyncNotificationBridge : public content::NotificationObserver {
   virtual ~ChromeSyncNotificationBridge();
 
   // Must be called on UI thread.
-  void UpdateEnabledTypes(const syncable::ModelTypeSet enabled_types);
+  void UpdateEnabledTypes(const syncer::ModelTypeSet enabled_types);
 
   // These can be called on any thread.
   virtual void AddObserver(syncer::SyncNotifierObserver* observer);
@@ -45,7 +45,7 @@ class ChromeSyncNotificationBridge : public content::NotificationObserver {
 
  private:
   content::NotificationRegistrar registrar_;
-  syncable::ModelTypeSet enabled_types_;
+  syncer::ModelTypeSet enabled_types_;
 
   // Because [Add/Remove]Observer can be called from any thread, we need a
   // thread-safe observerlist.

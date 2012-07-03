@@ -31,9 +31,7 @@ using sessions::StatusController;
 using syncable::BaseTransaction;
 using syncable::Directory;
 using syncable::Entry;
-using syncable::GetModelTypeFromSpecifics;
 using syncable::Id;
-using syncable::IsRealDataType;
 using syncable::MutableEntry;
 using syncable::WriteTransaction;
 
@@ -223,7 +221,7 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
     }
 
     // We manually merge nigori data.
-    if (entry.GetModelType() == syncable::NIGORI) {
+    if (entry.GetModelType() == syncer::NIGORI) {
       // Create a new set of specifics based on the server specifics (which
       // preserves their encryption keys).
       sync_pb::EntitySpecifics specifics =

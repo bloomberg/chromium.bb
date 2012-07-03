@@ -25,7 +25,7 @@ namespace {
 using ::testing::NiceMock;
 using ::testing::StrictMock;
 using content::BrowserThread;
-using syncer::syncable::HasModelTypes;
+using syncer::HasModelTypes;
 
 class MockChromeSyncNotificationBridge : public ChromeSyncNotificationBridge {
  public:
@@ -49,8 +49,8 @@ class MockSyncNotifier : public syncer::SyncNotifier {
   MOCK_METHOD1(SetUniqueId, void(const std::string&));
   MOCK_METHOD1(SetStateDeprecated, void(const std::string&));
   MOCK_METHOD2(UpdateCredentials, void(const std::string&, const std::string&));
-  MOCK_METHOD1(UpdateEnabledTypes, void(syncable::ModelTypeSet));
-  MOCK_METHOD1(SendNotification, void(syncable::ModelTypeSet));
+  MOCK_METHOD1(UpdateEnabledTypes, void(syncer::ModelTypeSet));
+  MOCK_METHOD1(SendNotification, void(syncer::ModelTypeSet));
 };
 
 // All tests just verify that each call is passed through to the delegate, with
@@ -106,16 +106,14 @@ TEST_F(BridgedSyncNotifierTest, UpdateCredentials) {
 }
 
 TEST_F(BridgedSyncNotifierTest, UpdateEnabledTypes) {
-  syncable::ModelTypeSet enabled_types(syncable::BOOKMARKS,
-                                       syncable::PREFERENCES);
+  syncer::ModelTypeSet enabled_types(syncer::BOOKMARKS, syncer::PREFERENCES);
   EXPECT_CALL(*mock_delegate_,
               UpdateEnabledTypes(HasModelTypes(enabled_types)));
   bridged_notifier_.UpdateEnabledTypes(enabled_types);
 }
 
 TEST_F(BridgedSyncNotifierTest, SendNotification) {
-  syncable::ModelTypeSet changed_types(syncable::SESSIONS,
-                                       syncable::EXTENSIONS);
+  syncer::ModelTypeSet changed_types(syncer::SESSIONS, syncer::EXTENSIONS);
   EXPECT_CALL(*mock_delegate_, SendNotification(HasModelTypes(changed_types)));
   bridged_notifier_.SendNotification(changed_types);
 }

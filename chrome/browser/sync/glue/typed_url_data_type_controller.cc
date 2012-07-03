@@ -72,8 +72,8 @@ TypedUrlDataTypeController::TypedUrlDataTypeController(
   pref_registrar_.Add(prefs::kSavingBrowserHistoryDisabled, this);
 }
 
-syncable::ModelType TypedUrlDataTypeController::type() const {
-  return syncable::TYPED_URLS;
+syncer::ModelType TypedUrlDataTypeController::type() const {
+  return syncer::TYPED_URLS;
 }
 
 syncer::ModelSafeGroup TypedUrlDataTypeController::model_safe_group()
@@ -101,7 +101,7 @@ void TypedUrlDataTypeController::Observe(
         // generate an unrecoverable error. This can be fixed by restarting
         // Chrome (on restart, typed urls will not be a registered type).
         if (state() != NOT_RUNNING && state() != STOPPING) {
-          profile_sync_service()->DisableBrokenDatatype(syncable::TYPED_URLS,
+          profile_sync_service()->DisableBrokenDatatype(syncer::TYPED_URLS,
               FROM_HERE, "History saving is now disabled by policy.");
         }
       }

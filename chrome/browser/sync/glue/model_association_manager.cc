@@ -13,9 +13,9 @@
 
 #include "chrome/browser/sync/glue/model_association_manager.h"
 
-#include "content/public/browser/browser_thread.h"
 #include <algorithm>
 #include <functional>
+#include "content/public/browser/browser_thread.h"
 
 #include "base/debug/trace_event.h"
 
@@ -25,7 +25,7 @@
 
 
 using content::BrowserThread;
-using syncable::ModelTypeSet;
+using syncer::ModelTypeSet;
 
 namespace browser_sync {
 // The amount of time we wait for a datatype to load. If the type has
@@ -35,26 +35,26 @@ namespace browser_sync {
 const int64 kDataTypeLoadWaitTimeInSeconds = 120;
 namespace {
 
-static const syncable::ModelType kStartOrder[] = {
-  syncable::NIGORI,               //  Listed for completeness.
-  syncable::BOOKMARKS,            //  UI thread datatypes.
-  syncable::PREFERENCES,
-  syncable::EXTENSIONS,
-  syncable::APPS,
-  syncable::THEMES,
-  syncable::SEARCH_ENGINES,
-  syncable::SESSIONS,
-  syncable::APP_NOTIFICATIONS,
-  syncable::AUTOFILL,             // Non-UI thread datatypes.
-  syncable::AUTOFILL_PROFILE,
-  syncable::EXTENSION_SETTINGS,
-  syncable::APP_SETTINGS,
-  syncable::TYPED_URLS,
-  syncable::PASSWORDS,
+static const syncer::ModelType kStartOrder[] = {
+  syncer::NIGORI,               //  Listed for completeness.
+  syncer::BOOKMARKS,            //  UI thread datatypes.
+  syncer::PREFERENCES,
+  syncer::EXTENSIONS,
+  syncer::APPS,
+  syncer::THEMES,
+  syncer::SEARCH_ENGINES,
+  syncer::SESSIONS,
+  syncer::APP_NOTIFICATIONS,
+  syncer::AUTOFILL,             // Non-UI thread datatypes.
+  syncer::AUTOFILL_PROFILE,
+  syncer::EXTENSION_SETTINGS,
+  syncer::APP_SETTINGS,
+  syncer::TYPED_URLS,
+  syncer::PASSWORDS,
 };
 
 COMPILE_ASSERT(arraysize(kStartOrder) ==
-               syncable::MODEL_TYPE_COUNT - syncable::FIRST_REAL_MODEL_TYPE,
+               syncer::MODEL_TYPE_COUNT - syncer::FIRST_REAL_MODEL_TYPE,
                kStartOrder_IncorrectSize);
 
 // Comparator used when sorting data type controllers.
@@ -62,7 +62,7 @@ class SortComparator : public std::binary_function<DataTypeController*,
                                                    DataTypeController*,
                                                    bool> {
  public:
-  explicit SortComparator(std::map<syncable::ModelType, int>* order)
+  explicit SortComparator(std::map<syncer::ModelType, int>* order)
       : order_(order) { }
 
   // Returns true if lhs precedes rhs.
@@ -71,7 +71,7 @@ class SortComparator : public std::binary_function<DataTypeController*,
   }
 
  private:
-  std::map<syncable::ModelType, int>* order_;
+  std::map<syncer::ModelType, int>* order_;
 };
 
 }  // namespace
@@ -99,8 +99,7 @@ ModelAssociationManager::ModelAssociationManager(
 ModelAssociationManager::~ModelAssociationManager() {
 }
 
-void ModelAssociationManager::Initialize(
-    syncable::ModelTypeSet desired_types) {
+void ModelAssociationManager::Initialize(syncer::ModelTypeSet desired_types) {
   // TODO(tim): Bug 134550.  CHECKing to ensure no reentrancy on dev channel.
   // Remove this.
   CHECK_EQ(state_, IDLE);
@@ -229,7 +228,7 @@ void ModelAssociationManager::Stop() {
     DataTypeManager::ConfigureResult result(DataTypeManager::ABORTED,
                                             desired_types_,
                                             failed_datatypes_info_,
-                                            syncable::ModelTypeSet());
+                                            syncer::ModelTypeSet());
     result_processor_->OnModelAssociationDone(result);
   }
 
@@ -254,7 +253,7 @@ bool ModelAssociationManager::GetControllersNeedingStart(
         needs_start->push_back(dtc->second.get());
       if (dtc->second->state() == DataTypeController::DISABLED) {
         DVLOG(1) << "ModelAssociationManager: Found "\
-                << syncable::ModelTypeToString(dtc->second->type())
+                << syncer::ModelTypeToString(dtc->second->type())
                  << " in disabled state.";
       }
     }
@@ -267,10 +266,10 @@ void ModelAssociationManager::AppendToFailedDatatypesAndLogError(
     const syncer::SyncError& error) {
   failed_datatypes_info_.push_back(error);
   LOG(ERROR) << "Failed to associate models for "
-             << syncable::ModelTypeToString(error.type());
+             << syncer::ModelTypeToString(error.type());
   UMA_HISTOGRAM_ENUMERATION("Sync.ConfigureFailed",
                             error.type(),
-                            syncable::MODEL_TYPE_COUNT);
+                            syncer::MODEL_TYPE_COUNT);
 }
 
 void ModelAssociationManager::TypeStartCallback(
@@ -341,7 +340,7 @@ void ModelAssociationManager::TypeStartCallback(
   DataTypeManager::ConfigureResult configure_result(configure_status,
                                                     desired_types_,
                                                     errors,
-                                                    syncable::ModelTypeSet());
+                                                    syncer::ModelTypeSet());
   result_processor_->OnModelAssociationDone(configure_result);
 }
 
@@ -374,9 +373,9 @@ void ModelAssociationManager::LoadModelForNextType() {
 }
 
 void ModelAssociationManager::ModelLoadCallback(
-    syncable::ModelType type, syncer::SyncError error) {
+    syncer::ModelType type, syncer::SyncError error) {
   DVLOG(1) << "ModelAssociationManager: ModelLoadCallback for "
-          << syncable::ModelTypeToString(type);
+          << syncer::ModelTypeToString(type);
   if (state_ == CONFIGURING) {
     DVLOG(1) << "ModelAssociationManager: ModelLoadCallback while configuring";
     for (std::vector<DataTypeController*>::iterator it =
@@ -467,7 +466,7 @@ void ModelAssociationManager::StartAssociatingNextType() {
         DataTypeManager::CONFIGURE_BLOCKED,
         desired_types_,
         failed_datatypes_info_,
-        syncable::ModelTypeSet());
+        syncer::ModelTypeSet());
     state_ = IDLE;
     result_processor_->OnModelAssociationDone(configure_result);
     return;
@@ -492,8 +491,8 @@ void ModelAssociationManager::StartAssociatingNextType() {
   return;
 }
 
-syncable::ModelTypeSet ModelAssociationManager::GetTypesWaitingToLoad() {
-  syncable::ModelTypeSet result;
+syncer::ModelTypeSet ModelAssociationManager::GetTypesWaitingToLoad() {
+  syncer::ModelTypeSet result;
   for (std::vector<DataTypeController*>::const_iterator it =
            pending_model_load_.begin();
        it != pending_model_load_.end();

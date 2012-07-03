@@ -20,7 +20,7 @@ OrderedCommitSet::~OrderedCommitSet() {}
 
 void OrderedCommitSet::AddCommitItem(const int64 metahandle,
                                      const syncable::Id& commit_id,
-                                     syncable::ModelType type) {
+                                     syncer::ModelType type) {
   if (!HaveCommitItem(metahandle)) {
     inserted_metahandles_.insert(metahandle);
     metahandle_order_.push_back(metahandle);
@@ -100,7 +100,7 @@ OrderedCommitSet::CommitItem OrderedCommitSet::GetCommitItemAt(
 
 bool OrderedCommitSet::HasBookmarkCommitId() const {
   ModelSafeRoutingInfo::const_iterator group
-      = routes_.find(syncable::BOOKMARKS);
+      = routes_.find(syncer::BOOKMARKS);
   if (group == routes_.end())
     return false;
   Projections::const_iterator proj = projections_.find(group->second);
@@ -108,7 +108,7 @@ bool OrderedCommitSet::HasBookmarkCommitId() const {
     return false;
   DCHECK_LE(proj->second.size(), types_.size());
   for (size_t i = 0; i < proj->second.size(); i++) {
-    if (types_[proj->second[i]] == syncable::BOOKMARKS)
+    if (types_[proj->second[i]] == syncer::BOOKMARKS)
       return true;
   }
   return false;

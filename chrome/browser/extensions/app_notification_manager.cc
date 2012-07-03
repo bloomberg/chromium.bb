@@ -179,10 +179,10 @@ void AppNotificationManager::Observe(
 }
 
 syncer::SyncDataList AppNotificationManager::GetAllSyncData(
-    syncable::ModelType type) const {
+    syncer::ModelType type) const {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(loaded());
-  DCHECK_EQ(syncable::APP_NOTIFICATIONS, type);
+  DCHECK_EQ(syncer::APP_NOTIFICATIONS, type);
   syncer::SyncDataList data;
   for (NotificationMap::const_iterator iter = notifications_->begin();
       iter != notifications_->end(); ++iter) {
@@ -219,7 +219,7 @@ syncer::SyncError AppNotificationManager::ProcessSyncChanges(
   for (syncer::SyncChangeList::const_iterator iter = change_list.begin();
        iter != change_list.end(); ++iter) {
     syncer::SyncData sync_data = iter->sync_data();
-    DCHECK_EQ(syncable::APP_NOTIFICATIONS, sync_data.GetDataType());
+    DCHECK_EQ(syncer::APP_NOTIFICATIONS, sync_data.GetDataType());
     syncer::SyncChange::SyncChangeType change_type = iter->change_type();
 
     scoped_ptr<AppNotification> new_notif(CreateNotificationFromSyncData(
@@ -284,7 +284,7 @@ syncer::SyncError AppNotificationManager::ProcessSyncChanges(
 }
 
 syncer::SyncError AppNotificationManager::MergeDataAndStartSyncing(
-    syncable::ModelType type,
+    syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
     scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) {
@@ -293,7 +293,7 @@ syncer::SyncError AppNotificationManager::MergeDataAndStartSyncing(
   // this method is called by waiting until the load notification is received
   // from AppNotificationManager.
   DCHECK(loaded());
-  DCHECK_EQ(type, syncable::APP_NOTIFICATIONS);
+  DCHECK_EQ(type, syncer::APP_NOTIFICATIONS);
   DCHECK(!sync_processor_.get());
   DCHECK(sync_processor.get());
   DCHECK(sync_error_factory.get());
@@ -305,13 +305,13 @@ syncer::SyncError AppNotificationManager::MergeDataAndStartSyncing(
   AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
 
   SyncDataMap local_data_map;
-  PopulateGuidToSyncDataMap(GetAllSyncData(syncable::APP_NOTIFICATIONS),
+  PopulateGuidToSyncDataMap(GetAllSyncData(syncer::APP_NOTIFICATIONS),
                             &local_data_map);
 
   for (syncer::SyncDataList::const_iterator iter = initial_sync_data.begin();
        iter != initial_sync_data.end(); ++iter) {
     const syncer::SyncData& sync_data = *iter;
-    DCHECK_EQ(syncable::APP_NOTIFICATIONS, sync_data.GetDataType());
+    DCHECK_EQ(syncer::APP_NOTIFICATIONS, sync_data.GetDataType());
     scoped_ptr<AppNotification> sync_notif(CreateNotificationFromSyncData(
         sync_data));
     CHECK(sync_notif.get());
@@ -348,8 +348,8 @@ syncer::SyncError AppNotificationManager::MergeDataAndStartSyncing(
   return error;
 }
 
-void AppNotificationManager::StopSyncing(syncable::ModelType type) {
-  DCHECK_EQ(type, syncable::APP_NOTIFICATIONS);
+void AppNotificationManager::StopSyncing(syncer::ModelType type) {
+  DCHECK_EQ(type, syncer::APP_NOTIFICATIONS);
   models_associated_ = false;
   sync_processor_.reset();
   sync_error_factory_.reset();
