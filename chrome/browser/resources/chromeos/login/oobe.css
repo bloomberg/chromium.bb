@@ -268,13 +268,13 @@ html[oobe=new] .step {
   position: absolute;
 }
 
-html[dir=ltr] .step {
+html[oobe=old][dir=ltr] .step {
   /* TODO(nkostylev): Change to new transitions. */
   -webkit-transition: left 200ms, opacity 200ms, visibility 200ms ease-in-out;
   left: 0;
 }
 
-html[dir=rtl] .step {
+html[oobe=old][dir=rtl] .step {
   /* TODO(nkostylev): Change to new transitions. */
   -webkit-transition: right 200ms, opacity 200ms, visibility 200ms ease-in-out;
   right: 0;

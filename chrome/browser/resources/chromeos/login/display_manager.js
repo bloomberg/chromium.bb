@@ -182,14 +182,23 @@ cr.define('cr.ui.login', function() {
 
       if (this.currentStep_ != nextStepIndex &&
           !oldStep.classList.contains('hidden')) {
-        oldStep.addEventListener('webkitTransitionEnd', function f(e) {
-          oldStep.removeEventListener('webkitTransitionEnd', f);
+        // TODO(nkostylev): Remove when new transitions are added back.
+        if (this.isNewOobe()) {
           if (oldStep.classList.contains('faded') ||
               oldStep.classList.contains('left') ||
               oldStep.classList.contains('right')) {
             oldStep.classList.add('hidden');
           }
-        });
+        } else {
+          oldStep.addEventListener('webkitTransitionEnd', function f(e) {
+            oldStep.removeEventListener('webkitTransitionEnd', f);
+            if (oldStep.classList.contains('faded') ||
+                oldStep.classList.contains('left') ||
+                oldStep.classList.contains('right')) {
+              oldStep.classList.add('hidden');
+            }
+          });
+        }
       } else {
         // First screen on OOBE launch.
         newHeader.classList.remove('right');
