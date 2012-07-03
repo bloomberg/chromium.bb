@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,8 +20,7 @@ const char ClientView::kViewClassName[] =
 // ClientView, public:
 
 ClientView::ClientView(Widget* widget, View* contents_view)
-    : widget_(widget),
-      contents_view_(contents_view) {
+    : contents_view_(contents_view) {
 }
 
 int ClientView::NonClientHitTest(const gfx::Point& point) {

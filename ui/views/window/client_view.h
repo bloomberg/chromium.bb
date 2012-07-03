@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,9 +77,6 @@ class VIEWS_EXPORT ClientView : public View {
   }
 
  private:
-  // The Widget that hosts this ClientView.
-  Widget* widget_;
-
   // The View that this ClientView contains.
   View* contents_view_;
 };

@@ -175,9 +175,6 @@ class SigIntTestRunner : public TestRunner {
     // Send SingInt and verify the process exited.
     EXPECT_TRUE(registry->SendInput(pid_, "\003"));
   }
-
- private:
-  bool output_received_;
 };
 
 }  // namespace

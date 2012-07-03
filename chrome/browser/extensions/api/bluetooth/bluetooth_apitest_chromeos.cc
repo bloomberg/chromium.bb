@@ -62,7 +62,6 @@ class BluetoothApiTest : public PlatformAppApiTest {
         bluetooth_event_router();
   }
 
-  chromeos::BluetoothAdapter* original_adapter_;
   scoped_refptr<Extension> empty_extension_;
 };
 

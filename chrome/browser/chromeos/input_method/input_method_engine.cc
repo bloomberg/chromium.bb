@@ -525,8 +525,7 @@ void InputMethodEngineImpl::OnCandidateClicked(unsigned int index,
 class InputMethodEngineStub : public InputMethodEngine {
  public:
   InputMethodEngineStub()
-      : observer_(NULL), active_(false), next_context_id_(1),
-        context_id_(-1) {}
+      : observer_(NULL), active_(false) {}
 
   ~InputMethodEngineStub() {
   }
@@ -626,12 +625,6 @@ class InputMethodEngineStub : public InputMethodEngine {
 
   // True when this IME is active, false if deactive.
   bool active_;
-
-  // Next id that will be assigned to a context.
-  int next_context_id_;
-
-  // ID that is used for the current input context.  False if there is no focus.
-  int context_id_;
 
   // User specified id of this IME.
   std::string engine_id_;
