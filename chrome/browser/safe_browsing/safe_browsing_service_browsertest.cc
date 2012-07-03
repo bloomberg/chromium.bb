@@ -399,10 +399,13 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   void CreateCSDService() {
     safe_browsing::ClientSideDetectionService* csd_service =
         safe_browsing::ClientSideDetectionService::Create(NULL);
+    LOG(INFO) << "CSDS created";
     SafeBrowsingService* sb_service =
         g_browser_process->safe_browsing_service();
     sb_service->csd_service_.reset(csd_service);
+    LOG(INFO) << "refreshing..";
     sb_service->RefreshState();
+    LOG(INFO) << "refreshed";
   }
 
  protected:
@@ -411,9 +414,11 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   // Waits for pending tasks on the IO thread to complete. This is useful
   // to wait for the SafeBrowsingService to finish loading/stopping.
   void WaitForIOThread() {
+    LOG(INFO) << "waiting for io thread";
     scoped_refptr<base::ThreadTestHelper> io_helper(new base::ThreadTestHelper(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
     ASSERT_TRUE(io_helper->Run());
+    LOG(INFO) << "done waiting";
   }
 
  private:
@@ -707,16 +712,19 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadHashTimedOut) {
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
+  LOG(INFO) << __FUNCTION__;
   CreateCSDService();
   SafeBrowsingService* sb_service = g_browser_process->safe_browsing_service();
   safe_browsing::ClientSideDetectionService* csd_service =
       sb_service->safe_browsing_detection_service();
+  LOG(INFO) << "get prefs";
   PrefService* pref_service = browser()->profile()->GetPrefs();
 
   ASSERT_TRUE(sb_service != NULL);
   ASSERT_TRUE(csd_service != NULL);
   ASSERT_TRUE(pref_service != NULL);
 
+  LOG(INFO) << "checking pref";
   EXPECT_TRUE(pref_service->GetBoolean(prefs::kSafeBrowsingEnabled));
 
   // SBS might still be starting, make sure this doesn't flake.
@@ -726,41 +734,51 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
 
   // Add a new Profile. SBS should keep running.
   ScopedTempDir temp_dir;
+  LOG(INFO) << "creating ScopedTempDir";
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  LOG(INFO) << "created " << temp_dir.path().LossyDisplayName();
+  LOG(INFO) << "creating profile2";
   scoped_ptr<Profile> profile2(Profile::CreateProfile(
       temp_dir.path(), NULL, Profile::CREATE_MODE_SYNCHRONOUS));
   ASSERT_TRUE(profile2.get() != NULL);
+  LOG(INFO) << "get prefs2";
   PrefService* pref_service2 = profile2->GetPrefs();
+  LOG(INFO) << "checking pref2";
   EXPECT_TRUE(pref_service2->GetBoolean(prefs::kSafeBrowsingEnabled));
   // We don't expect the state to have changed, but if it did, wait for it.
   WaitForIOThread();
   EXPECT_TRUE(sb_service->enabled());
   EXPECT_TRUE(csd_service->enabled());
 
+  LOG(INFO) << "setting pref";
   // Change one of the prefs. SBS should keep running.
   pref_service->SetBoolean(prefs::kSafeBrowsingEnabled, false);
   WaitForIOThread();
   EXPECT_TRUE(sb_service->enabled());
   EXPECT_TRUE(csd_service->enabled());
 
+  LOG(INFO) << "setting pref2";
   // Change the other pref. SBS should stop now.
   pref_service2->SetBoolean(prefs::kSafeBrowsingEnabled, false);
   WaitForIOThread();
   EXPECT_FALSE(sb_service->enabled());
   EXPECT_FALSE(csd_service->enabled());
 
+  LOG(INFO) << "setting pref2";
   // Turn it back on. SBS comes back.
   pref_service2->SetBoolean(prefs::kSafeBrowsingEnabled, true);
   WaitForIOThread();
   EXPECT_TRUE(sb_service->enabled());
   EXPECT_TRUE(csd_service->enabled());
 
+  LOG(INFO) << "deleting profile2";
   // Delete the Profile. SBS stops again.
   pref_service2 = NULL;
   profile2.reset();
   WaitForIOThread();
   EXPECT_FALSE(sb_service->enabled());
   EXPECT_FALSE(csd_service->enabled());
+  LOG(INFO) << __FUNCTION__ << " done";
 }
 
 }  // namespace
