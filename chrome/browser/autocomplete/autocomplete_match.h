@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_MATCH_H_
 #pragma once
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -297,5 +297,6 @@ struct AutocompleteMatch {
 
 typedef AutocompleteMatch::ACMatchClassification ACMatchClassification;
 typedef std::vector<ACMatchClassification> ACMatchClassifications;
+typedef std::vector<AutocompleteMatch> ACMatches;
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_MATCH_H_

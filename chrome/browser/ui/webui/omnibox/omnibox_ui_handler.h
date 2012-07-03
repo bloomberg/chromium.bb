@@ -6,10 +6,12 @@
 #define CHROME_BROWSER_UI_WEBUI_OMNIBOX_OMNIBOX_UI_HANDLER_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
-#include "chrome/browser/autocomplete/autocomplete_types.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 class AutocompleteController;

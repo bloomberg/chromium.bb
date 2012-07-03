@@ -11,14 +11,15 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
-#include "chrome/browser/autocomplete/autocomplete_types.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/common/metrics/proto/omnibox_event.pb.h"
 
 class AutocompleteInput;
-struct AutocompleteMatch;
 class AutocompleteProviderListener;
 class GURL;
 class Profile;
+
+typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 
 // The AutocompleteProviders each return different kinds of matches,
 // such as history or search matches.  These matches are given
@@ -270,5 +271,7 @@ class AutocompleteProvider
  private:
   DISALLOW_COPY_AND_ASSIGN(AutocompleteProvider);
 };
+
+typedef std::vector<AutocompleteProvider*> ACProviders;
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_PROVIDER_H_

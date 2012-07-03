@@ -12,9 +12,9 @@
 #include "base/string16.h"
 #include "base/timer.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
+#include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
-#include "chrome/browser/autocomplete/autocomplete_types.h"
 
 class AutocompleteControllerDelegate;
 class KeywordProvider;
@@ -141,8 +141,8 @@ class AutocompleteController : public AutocompleteProviderListener {
   // Populates provider_info with diagnostic information about the status
   // of various providers.  In turn, calls
   // AutocompleteProvider::AddProviderInfo() so each provider can add
-  // provider-specific information, information we want to log for a
-  // particular provider but not others.
+  // provider-specific information, information we want to log for a particular
+  // provider but not others.
   void AddProvidersInfo(ProvidersInfo* provider_info) const;
 
  private:

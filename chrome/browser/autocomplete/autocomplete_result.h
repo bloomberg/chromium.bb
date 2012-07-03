@@ -11,11 +11,10 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "chrome/browser/autocomplete/autocomplete_types.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "googleurl/src/gurl.h"
 
 class AutocompleteInput;
-struct AutocompleteMatch;
 class AutocompleteProvider;
 
 // All matches from all providers for a particular query.  This also tracks
