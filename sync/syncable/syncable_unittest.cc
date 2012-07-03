@@ -1283,6 +1283,10 @@ TEST_F(SyncableDirectoryTest, OldClientLeftUnsyncedDeletedLocalItem) {
   // The ID of the entry which will be unsynced, is_del and !ServerKnows().
   Id zombie_id = id_factory.NewLocalId();
 
+  // We're about to do some bad things.  Tell the directory verification
+  // routines to look the other way.
+  dir_->SetInvariantCheckLevel(OFF);
+
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
 
@@ -1317,6 +1321,10 @@ TEST_F(SyncableDirectoryTest, OldClientLeftUnsyncedDeletedLocalItem) {
 
   {
     ReadTransaction trans(FROM_HERE, dir_.get());
+
+    // The directory loading routines should have cleaned things up, making it
+    // safe to check invariants once again.
+    dir_->FullyCheckTreeInvariants(&trans);
 
     Entry server_knows(&trans, GET_BY_ID, server_knows_id);
     EXPECT_TRUE(server_knows.good());
@@ -1862,8 +1870,8 @@ class SyncableClientTagTest : public SyncableDirectoryTest {
     if (id.ServerKnows()) {
       me.Put(BASE_VERSION, kBaseVersion);
     }
-    me.Put(IS_DEL, deleted);
     me.Put(IS_UNSYNCED, true);
+    me.Put(IS_DEL, deleted);
     me.Put(IS_DIR, false);
     return me.Put(UNIQUE_CLIENT_TAG, tag);
   }
@@ -1877,7 +1885,11 @@ class SyncableClientTagTest : public SyncableDirectoryTest {
     EXPECT_EQ(me.Get(ID), id);
     EXPECT_EQ(me.Get(UNIQUE_CLIENT_TAG), test_tag_);
     EXPECT_EQ(me.Get(IS_DEL), deleted);
-    EXPECT_EQ(me.Get(IS_UNSYNCED), true);
+
+    // We only sync deleted items that the server knew about.
+    if (me.Get(ID).ServerKnows() || !me.Get(IS_DEL)) {
+      EXPECT_EQ(me.Get(IS_UNSYNCED), true);
+    }
   }
 
  protected:

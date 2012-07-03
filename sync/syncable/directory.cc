@@ -980,6 +980,15 @@ bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
                       trans))
         return false;
     }
+    // Server-unknown items that are locally deleted should not be sent up to
+    // the server.  They must be !IS_UNSYNCED.
+    if (!SyncAssert(!(!id.ServerKnows() &&
+                      e.Get(IS_DEL) &&
+                      e.Get(IS_UNSYNCED)), FROM_HERE,
+                    "Locally deleted item must not be unsynced.",
+                    trans)) {
+      return false;
+    }
   }
   return true;
 }
