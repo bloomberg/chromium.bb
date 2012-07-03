@@ -27,7 +27,12 @@ class WebApplicationTest : public TabContentsTestHarness {
   content::TestBrowserThread ui_thread_;
 };
 
-TEST_F(WebApplicationTest, GetShortcutInfoForTab) {
+#if defined(OS_MACOSX)
+#define MAYBE_GetShortcutInfoForTab DISABLED_GetShortcutInfoForTab
+#else
+#define MAYBE_GetShortcutInfoForTab GetShortcutInfoForTab
+#endif
+TEST_F(WebApplicationTest, MAYBE_GetShortcutInfoForTab) {
   const string16 title = ASCIIToUTF16("TEST_TITLE");
   const string16 description = ASCIIToUTF16("TEST_DESCRIPTION");
   const GURL url("http://www.foo.com/bar");
