@@ -51,7 +51,8 @@ def HttpDownload(url, target, username=None, password=None, verbose=True):
     if i:
       sys.stdout.write('Download failed on %s, retrying... (%d)\n' % (url, i))
     try:
-      src = urllib2.urlopen(url)
+      # 30 second timeout to ensure we fail and retry on stalled connections.
+      src = urllib2.urlopen(url, timeout=30)
       try:
         download_utils.WriteDataFromStream(target, src, chunk_size=2**20,
                                            verbose=verbose)
