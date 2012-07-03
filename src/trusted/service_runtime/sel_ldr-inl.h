@@ -162,12 +162,22 @@ static INLINE uintptr_t NaClEndOfStaticText(struct NaClApp *nap) {
 static INLINE uintptr_t NaClSandboxCodeAddr(struct NaClApp *nap,
                                             uintptr_t addr) {
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
+  /*
+   * If misaligned, round up to the following bundle boundary.
+   * With the original nacl-gcc toolchain, a return address is
+   * always on a bundle boundary, so this is always a no-op and
+   * the ABI specification was that a misaligned return address
+   * has undefined results.  With the next-generation gcc
+   * toolchain, a return address on the stack may be mid-bundle
+   * and the ABI specification is that the real address to use is
+   * found by rounding up to the following bundle.
+   */
+  addr += (uintptr_t) nap->bundle_size - 1;
+  addr &= ~((uintptr_t) nap->bundle_size - 1);
 # if NACL_BUILD_SUBARCH == 32
-  return addr & ~(((uintptr_t) nap->bundle_size) - 1);
+  return addr;
 # elif NACL_BUILD_SUBARCH == 64
-  return (((addr & ~(((uintptr_t) nap->bundle_size) - 1))
-           & ((((uintptr_t) 1) << 32) - 1))
-          + nap->mem_start);
+  return nap->mem_start + (uint32_t) addr;
 # else
 #  error "What kind of x86 are we on anyway?!?"
 # endif

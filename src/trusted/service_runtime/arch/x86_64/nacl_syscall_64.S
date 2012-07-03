@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -226,6 +226,7 @@ IDENTIFIER(NaClGetTlsFastPath):
         /* sandbox the return, straight off the untrusted stack */
         movq    0x8(%rsp), %rcx
         addq    $0x10, %rsp
+        addl    $31, %ecx
         andl    $0xffffffe0, %ecx
         addq    %r15, %rcx
         jmp     *%rcx
