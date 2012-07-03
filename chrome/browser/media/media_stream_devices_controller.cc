@@ -59,12 +59,11 @@ MediaStreamDevicesController::MediaStreamDevicesController(
     const content::MediaStreamRequest* request,
     const content::MediaResponseCallback& callback)
     : profile_(profile),
-      request_(request),
+      request_(*request),
       callback_(callback) {
-  DCHECK(request_);
-  has_audio_ = request_->devices.count(
+  has_audio_ = request_.devices.count(
       content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE) != 0;
-  has_video_ = request_->devices.count(
+  has_video_ = request_.devices.count(
       content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE) != 0;
 }
 
@@ -73,7 +72,7 @@ MediaStreamDevicesController::~MediaStreamDevicesController() {}
 bool MediaStreamDevicesController::DismissInfoBarAndTakeActionOnSettings() {
   // Deny the request if the security origin is empty, this happens with
   // file access without |--allow-file-access-from-files| flag.
-  if (request_->security_origin.is_empty()) {
+  if (request_.security_origin.is_empty()) {
     Deny();
     return true;
   }
@@ -115,8 +114,8 @@ MediaStreamDevicesController::GetAudioDevices() const {
     return content::MediaStreamDevices();
 
   content::MediaStreamDeviceMap::const_iterator it =
-      request_->devices.find(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE);
-  DCHECK(it != request_->devices.end());
+      request_.devices.find(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE);
+  DCHECK(it != request_.devices.end());
   return it->second;
 }
 
@@ -126,13 +125,13 @@ MediaStreamDevicesController::GetVideoDevices() const {
     return content::MediaStreamDevices();
 
   content::MediaStreamDeviceMap::const_iterator it =
-      request_->devices.find(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE);
-  DCHECK(it != request_->devices.end());
+      request_.devices.find(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE);
+  DCHECK(it != request_.devices.end());
   return it->second;
 }
 
 const GURL& MediaStreamDevicesController::GetSecurityOrigin() const {
-  return request_->security_origin;
+  return request_.security_origin;
 }
 
 void MediaStreamDevicesController::Accept(const std::string& audio_id,
@@ -167,8 +166,8 @@ void MediaStreamDevicesController::AddDeviceWithId(
     std::string* device_name) {
   DCHECK(devices);
   content::MediaStreamDeviceMap::const_iterator device_it =
-      request_->devices.find(type);
-  if (device_it == request_->devices.end())
+      request_.devices.find(type);
+  if (device_it == request_.devices.end())
     return;
 
   content::MediaStreamDevices::const_iterator it = std::find_if(
@@ -182,7 +181,7 @@ void MediaStreamDevicesController::AddDeviceWithId(
 
 bool MediaStreamDevicesController::ShouldAlwaysAllowOrigin() {
   return profile_->GetHostContentSettingsMap()->ShouldAllowAllContent(
-      request_->security_origin, request_->security_origin,
+      request_.security_origin, request_.security_origin,
       CONTENT_SETTINGS_TYPE_MEDIASTREAM);
 }
 
@@ -207,7 +206,7 @@ void MediaStreamDevicesController::AlwaysAllowOriginAndDevices(
     dictionary_value->SetString(kVideoKey, video_device);
 
   ContentSettingsPattern primary_pattern =
-      ContentSettingsPattern::FromURLNoWildcard(request_->security_origin);
+      ContentSettingsPattern::FromURLNoWildcard(request_.security_origin);
   profile_->GetHostContentSettingsMap()->SetWebsiteSetting(
       primary_pattern,
       ContentSettingsPattern::Wildcard(),
@@ -238,8 +237,8 @@ void MediaStreamDevicesController::GetAlwaysAllowedDevices(
   // Checks the media exceptions to get the "always allowed" devices.
   scoped_ptr<Value> value(
       profile_->GetHostContentSettingsMap()->GetWebsiteSetting(
-          request_->security_origin,
-          request_->security_origin,
+          request_.security_origin,
+          request_.security_origin,
           CONTENT_SETTINGS_TYPE_MEDIASTREAM,
           NO_RESOURCE_IDENTIFIER,
           NULL));
@@ -270,8 +269,8 @@ std::string MediaStreamDevicesController::GetDeviceIdByName(
     content::MediaStreamDeviceType type,
     const std::string& name) {
   content::MediaStreamDeviceMap::const_iterator device_it =
-      request_->devices.find(type);
-  if (device_it != request_->devices.end()) {
+      request_.devices.find(type);
+  if (device_it != request_.devices.end()) {
     content::MediaStreamDevices::const_iterator it = std::find_if(
         device_it->second.begin(), device_it->second.end(),
         DeviceNameEquals(name));
@@ -286,8 +285,8 @@ std::string MediaStreamDevicesController::GetDeviceIdByName(
 std::string MediaStreamDevicesController::GetFirstDeviceId(
     content::MediaStreamDeviceType type) {
   content::MediaStreamDeviceMap::const_iterator device_it =
-      request_->devices.find(type);
-  if (device_it != request_->devices.end())
+      request_.devices.find(type);
+  if (device_it != request_.devices.end())
     return device_it->second.begin()->device_id;
 
   return std::string();

@@ -270,6 +270,7 @@
         'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
         'browser/renderer_host/media/audio_input_device_manager_unittest.cc',
         'browser/renderer_host/media/audio_renderer_host_unittest.cc',
+        'browser/renderer_host/media/media_stream_device_settings_unittest.cc',
         'browser/renderer_host/media/media_stream_dispatcher_host_unittest.cc',
         'browser/renderer_host/media/video_capture_controller_unittest.cc',
         'browser/renderer_host/media/video_capture_host_unittest.cc',

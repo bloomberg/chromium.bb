@@ -112,14 +112,14 @@ namespace {
 
 // Sends the request to the appropriate WebContents.
 void DoDeviceRequest(
-    const MediaStreamDeviceSettingsRequest* request,
+    const MediaStreamDeviceSettingsRequest& request,
     const content::MediaResponseCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Send the permission request to the web contents.
   content::RenderViewHostImpl* host =
-      content::RenderViewHostImpl::FromID(request->render_process_id,
-                                          request->render_view_id);
+      content::RenderViewHostImpl::FromID(request.render_process_id,
+                                          request.render_view_id);
 
   // Tab may have gone away.
   if (!host || !host->GetDelegate()) {
@@ -127,7 +127,7 @@ void DoDeviceRequest(
     return;
   }
 
-  host->GetDelegate()->RequestMediaAccessPermission(request, callback);
+  host->GetDelegate()->RequestMediaAccessPermission(&request, callback);
 }
 
 }  // namespace
@@ -166,7 +166,17 @@ void MediaStreamDeviceSettings::RemovePendingCaptureRequest(
 
   SettingsRequests::iterator request_it = requests_.find(label);
   if (request_it != requests_.end()) {
+    // Proceed the next pending request for the same page.
     MediaStreamDeviceSettingsRequest* request = request_it->second;
+    std::string new_label = FindReadyRequestForView(request->render_view_id,
+                                                    request->render_process_id);
+    if (!new_label.empty()) {
+      PostRequestToUi(new_label);
+    }
+
+    // TODO(xians): Post a cancel request on UI thread to dismiss the infobar
+    // if request has been sent to the UI.
+    // Remove the request from the queue.
     requests_.erase(request_it);
     delete request;
   }
@@ -252,7 +262,10 @@ void MediaStreamDeviceSettings::PostResponse(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   SettingsRequests::iterator req = requests_.find(label);
-  DCHECK(req != requests_.end()) << "Invalid request label.";
+  // Return if the request has been removed.
+  if (req == requests_.end())
+    return;
+
   DCHECK(requester_);
   MediaStreamDeviceSettingsRequest* request = req->second;
   requests_.erase(req);
@@ -356,7 +369,7 @@ void MediaStreamDeviceSettings::PostRequestToUi(const std::string& label) {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&DoDeviceRequest, request, callback));
+      base::Bind(&DoDeviceRequest, *request, callback));
 }
 
 }  // namespace media_stream
