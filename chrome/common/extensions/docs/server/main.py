@@ -151,11 +151,6 @@ class MainPage(webapp.RequestHandler):
       self.redirect('http://developers.google.com/chrome')
       return False
 
-    # TODO(aa): Remove this soon.
-    if (len(self.path) > 1 and self.path[1] == 'apps' and
-        not self.request.url.startswith('http://localhost')):
-      return False
-
     return self.redirectToIndexIfNecessary()
 
 
