@@ -3019,9 +3019,7 @@ FileManager.prototype = {
       galleryFrame.contentWindow.FileType = FileType;
       galleryFrame.contentWindow.util = util;
 
-      // Gallery shoud treat GData folder as readonly even when online
-      // until we learn to save files directly to GData.
-      var readonly = self.isOnReadonlyDirectory() || self.isOnGData();
+      var readonly = self.isOnReadonlyDirectory();
       var currentDir = self.directoryModel_.getCurrentDirEntry();
       var downloadsDir = self.directoryModel_.getRootsList().item(0);
 
