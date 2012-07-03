@@ -380,10 +380,6 @@
         }],
         ['os_posix == 1', {
           'sources': [
-            'source/talk/base/openssladapter.cc',
-            'source/talk/base/openssladapter.h',
-            'source/talk/base/openssldigest.cc',
-            'source/talk/base/openssldigest.h',
             'source/talk/base/unixfilesystem.cc',
             'source/talk/base/unixfilesystem.h',
           ],
@@ -406,9 +402,6 @@
         }],
         ['OS=="android"', {
           'sources!': [
-            # The openssl is not available in android build.
-            'source/talk/base/openssldigest.cc',
-            'source/talk/base/openssldigest.h',
             # These depend on jsoncpp which we don't load because we probably
             # don't actually need this code at all.
             'source/talk/base/json.cc',
