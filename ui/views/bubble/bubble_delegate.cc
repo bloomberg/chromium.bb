@@ -95,8 +95,7 @@ Widget* CreateBorderWidget(BubbleDelegateView* bubble) {
 // TODO(msw): Remove debugging code; see crbug.com/134504
 bool IsDebugClosingValue(const views::Widget* w) {
   return w == reinterpret_cast<Widget*>(BubbleDelegateView::kDebugClosing1) ||
-         w == reinterpret_cast<Widget*>(BubbleDelegateView::kDebugClosing2) ||
-         w == reinterpret_cast<Widget*>(BubbleDelegateView::kDebugClosing3);
+         w == reinterpret_cast<Widget*>(BubbleDelegateView::kDebugClosing2);
 }
 
 }  // namespace
@@ -112,7 +111,6 @@ const SkColor BubbleDelegateView::kBackgroundColor = SK_ColorWHITE;
 // TODO(msw): Remove magic debugging numbers; see crbug.com/134504
 const ptrdiff_t BubbleDelegateView::kDebugClosing1 = 0xBAD111;
 const ptrdiff_t BubbleDelegateView::kDebugClosing2 = 0xBAD222;
-const ptrdiff_t BubbleDelegateView::kDebugClosing3 = 0xBAD333;
 
 BubbleDelegateView::BubbleDelegateView()
     : close_on_esc_(true),
@@ -154,8 +152,8 @@ BubbleDelegateView::~BubbleDelegateView() {
   // TODO(msw): Remove debugging code; see crbug.com/134504
   if (anchor_widget() != NULL && !IsDebugClosingValue(anchor_widget()))
     anchor_widget()->RemoveObserver(this);
-  anchor_widget_ = reinterpret_cast<views::Widget*>(kDebugClosing3);
-  anchor_view_ = reinterpret_cast<views::View*>(kDebugClosing3);
+  anchor_widget_ = reinterpret_cast<views::Widget*>(kDebugClosing1);
+  anchor_view_ = reinterpret_cast<views::View*>(kDebugClosing1);
 }
 
 // static
@@ -186,16 +184,6 @@ View* BubbleDelegateView::GetInitiallyFocusedView() {
 
 BubbleDelegateView* BubbleDelegateView::AsBubbleDelegate() {
   return this;
-}
-
-void BubbleDelegateView::WindowClosing() {
-  // TODO(msw): This function is overriden by subclasses; leave logic to dtor???
-  // TODO(msw): Remove debugging code; see crbug.com/134504
-  if (anchor_widget() != NULL && !IsDebugClosingValue(anchor_widget())) {
-    anchor_widget()->RemoveObserver(this);
-    anchor_view_ = reinterpret_cast<views::View*>(kDebugClosing1);
-    anchor_widget_ = reinterpret_cast<views::Widget*>(kDebugClosing1);
-  }
 }
 
 View* BubbleDelegateView::GetContentsView() {

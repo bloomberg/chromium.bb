@@ -316,9 +316,13 @@ void BookmarkBubbleView::ShowEditor() {
       reinterpret_cast<views::Widget*>(BubbleDelegateView::kDebugClosing1));
   CHECK_NE(parent,
       reinterpret_cast<views::Widget*>(BubbleDelegateView::kDebugClosing2));
-  CHECK_NE(parent,
-      reinterpret_cast<views::Widget*>(BubbleDelegateView::kDebugClosing3));
   CHECK_NE(parent, static_cast<views::Widget*>(NULL));
+
+  CHECK_NE(anchor_view(),
+           reinterpret_cast<views::View*>(BubbleDelegateView::kDebugClosing1));
+  CHECK_NE(anchor_view(),
+           reinterpret_cast<views::View*>(BubbleDelegateView::kDebugClosing2));
+  CHECK_NE(anchor_view(), static_cast<views::View*>(NULL));
 
   Profile* profile = profile_;
   ApplyEdits();

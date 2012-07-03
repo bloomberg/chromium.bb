@@ -34,7 +34,6 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // TODO(msw): Remove magic debugging numbers; see crbug.com/134504
   static const ptrdiff_t kDebugClosing1;
   static const ptrdiff_t kDebugClosing2;
-  static const ptrdiff_t kDebugClosing3;
 
   BubbleDelegateView();
   BubbleDelegateView(View* anchor_view,
@@ -47,7 +46,6 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // WidgetDelegate overrides:
   virtual View* GetInitiallyFocusedView() OVERRIDE;
   virtual BubbleDelegateView* AsBubbleDelegate() OVERRIDE;
-  virtual void WindowClosing() OVERRIDE;
   virtual View* GetContentsView() OVERRIDE;
   virtual NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) OVERRIDE;
