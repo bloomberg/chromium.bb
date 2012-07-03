@@ -27,6 +27,7 @@
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_server_properties_impl.h"
+#include "net/url_request/url_request_job_factory.h"
 #include "webkit/database/database_tracker.h"
 
 using content::BrowserThread;
@@ -246,8 +247,19 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
   main_context->set_chrome_url_data_manager_backend(
       chrome_url_data_manager_backend());
 
-  main_context->set_job_factory(job_factory());
-  extensions_context->set_job_factory(job_factory());
+  main_job_factory_.reset(new net::URLRequestJobFactory);
+  extensions_job_factory_.reset(new net::URLRequestJobFactory);
+
+  net::URLRequestJobFactory* job_factories[2];
+  job_factories[0] = main_job_factory_.get();
+  job_factories[1] = extensions_job_factory_.get();
+
+  for (int i = 0; i < 2; i++) {
+    SetUpJobFactoryDefaults(job_factories[i]);
+  }
+
+  main_context->set_job_factory(main_job_factory_.get());
+  extensions_context->set_job_factory(extensions_job_factory_.get());
 }
 
 ChromeURLRequestContext*

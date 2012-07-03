@@ -437,12 +437,24 @@ void ProfileImplIOData::LazyInitializeInternal(
   main_context->set_chrome_url_data_manager_backend(
       chrome_url_data_manager_backend());
 
-  main_context->set_job_factory(job_factory());
-  media_request_context_->set_job_factory(job_factory());
-  extensions_context->set_job_factory(job_factory());
+  main_job_factory_.reset(new net::URLRequestJobFactory);
+  media_request_job_factory_.reset(new net::URLRequestJobFactory);
+  extensions_job_factory_.reset(new net::URLRequestJobFactory);
 
-  job_factory()->AddInterceptor(
-      new chrome_browser_net::ConnectInterceptor(predictor_.get()));
+  net::URLRequestJobFactory* job_factories[3];
+  job_factories[0] = main_job_factory_.get();
+  job_factories[1] = media_request_job_factory_.get();
+  job_factories[2] = extensions_job_factory_.get();
+
+  for (int i = 0; i < 3; i++) {
+    SetUpJobFactoryDefaults(job_factories[i]);
+    job_factories[i]->AddInterceptor(
+        new chrome_browser_net::ConnectInterceptor(predictor_.get()));
+  }
+
+  main_context->set_job_factory(main_job_factory_.get());
+  media_request_context_->set_job_factory(media_request_job_factory_.get());
+  extensions_context->set_job_factory(extensions_job_factory_.get());
 
   lazy_params_.reset();
 }

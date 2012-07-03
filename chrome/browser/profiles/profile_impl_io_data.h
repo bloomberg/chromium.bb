@@ -155,6 +155,10 @@ class ProfileImplIOData : public ProfileIOData {
 
   mutable scoped_ptr<ChromeURLRequestContext> media_request_context_;
 
+  mutable scoped_ptr<net::URLRequestJobFactory> main_job_factory_;
+  mutable scoped_ptr<net::URLRequestJobFactory> media_request_job_factory_;
+  mutable scoped_ptr<net::URLRequestJobFactory> extensions_job_factory_;
+
   // Parameters needed for isolated apps.
   FilePath app_path_;
 

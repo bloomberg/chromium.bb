@@ -509,47 +509,6 @@ void ProfileIOData::LazyInitialize() const {
       command_line.GetSwitchValueASCII(switches::kHstsHosts);
   transport_security_persister_.get()->DeserializeFromCommandLine(serialized);
 
-  // NOTE(willchan): Keep these protocol handlers in sync with
-  // ProfileIOData::IsHandledProtocol().
-  job_factory_.reset(new net::URLRequestJobFactory);
-  if (profile_params_->protocol_handler_registry) {
-    job_factory_->AddInterceptor(
-        new ProtocolHandlerRegistryInterceptor(
-            profile_params_->protocol_handler_registry));
-  }
-  bool set_protocol = job_factory_->SetProtocolHandler(
-      chrome::kExtensionScheme,
-      CreateExtensionProtocolHandler(is_incognito(),
-                                     profile_params_->extension_info_map));
-  DCHECK(set_protocol);
-  set_protocol = job_factory_->SetProtocolHandler(
-      chrome::kExtensionResourceScheme,
-      CreateExtensionResourceProtocolHandler());
-  DCHECK(set_protocol);
-  set_protocol = job_factory_->SetProtocolHandler(
-      chrome::kChromeUIScheme,
-      ChromeURLDataManagerBackend::CreateProtocolHandler(
-          chrome_url_data_manager_backend_.get()));
-  DCHECK(set_protocol);
-  set_protocol = job_factory_->SetProtocolHandler(
-      chrome::kChromeDevToolsScheme,
-      CreateDevToolsProtocolHandler(chrome_url_data_manager_backend_.get()));
-  DCHECK(set_protocol);
-#if defined(OS_CHROMEOS)
-  if (!is_incognito()) {
-    set_protocol = job_factory_->SetProtocolHandler(
-        chrome::kDriveScheme, new gdata::GDataProtocolHandler());
-    DCHECK(set_protocol);
-  }
-#if !defined(GOOGLE_CHROME_BUILD)
-  // Install the GView request interceptor that will redirect requests
-  // of compatible documents (PDF, etc) to the GView document viewer.
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  if (parsed_command_line.HasSwitch(switches::kEnableGView))
-    job_factory_->AddInterceptor(new chromeos::GViewRequestInterceptor);
-#endif  // !defined(GOOGLE_CHROME_BUILD)
-#endif  // defined(OS_CHROMEOS)
-
   // Take ownership over these parameters.
   cookie_settings_ = profile_params_->cookie_settings;
 #if defined(ENABLE_NOTIFICATIONS)
@@ -578,6 +537,49 @@ void ProfileIOData::ApplyProfileParamsToContext(
   context->set_accept_charset(profile_params_->accept_charset);
   context->set_referrer_charset(profile_params_->referrer_charset);
   context->set_ssl_config_service(profile_params_->ssl_config_service);
+}
+
+void ProfileIOData::SetUpJobFactoryDefaults(
+    net::URLRequestJobFactory* job_factory) const {
+  // NOTE(willchan): Keep these protocol handlers in sync with
+  // ProfileIOData::IsHandledProtocol().
+  if (profile_params_->protocol_handler_registry) {
+    job_factory->AddInterceptor(
+        new ProtocolHandlerRegistryInterceptor(
+            profile_params_->protocol_handler_registry));
+  }
+  bool set_protocol = job_factory->SetProtocolHandler(
+      chrome::kExtensionScheme,
+      CreateExtensionProtocolHandler(is_incognito(),
+                                     profile_params_->extension_info_map));
+  DCHECK(set_protocol);
+  set_protocol = job_factory->SetProtocolHandler(
+      chrome::kExtensionResourceScheme,
+      CreateExtensionResourceProtocolHandler());
+  DCHECK(set_protocol);
+  set_protocol = job_factory->SetProtocolHandler(
+      chrome::kChromeUIScheme,
+      ChromeURLDataManagerBackend::CreateProtocolHandler(
+          chrome_url_data_manager_backend_.get()));
+  DCHECK(set_protocol);
+  set_protocol = job_factory->SetProtocolHandler(
+      chrome::kChromeDevToolsScheme,
+      CreateDevToolsProtocolHandler(chrome_url_data_manager_backend_.get()));
+  DCHECK(set_protocol);
+#if defined(OS_CHROMEOS)
+  if (!is_incognito()) {
+    set_protocol = job_factory->SetProtocolHandler(
+        chrome::kDriveScheme, new gdata::GDataProtocolHandler());
+    DCHECK(set_protocol);
+  }
+#if !defined(GOOGLE_CHROME_BUILD)
+  // Install the GView request interceptor that will redirect requests
+  // of compatible documents (PDF, etc) to the GView document viewer.
+  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  if (parsed_command_line.HasSwitch(switches::kEnableGView))
+    job_factory->AddInterceptor(new chromeos::GViewRequestInterceptor);
+#endif  // !defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(OS_CHROMEOS)
 }
 
 void ProfileIOData::ShutdownOnUIThread() {

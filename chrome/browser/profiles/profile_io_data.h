@@ -184,6 +184,8 @@ class ProfileIOData {
   void InitializeOnUIThread(Profile* profile);
   void ApplyProfileParamsToContext(ChromeURLRequestContext* context) const;
 
+  void SetUpJobFactoryDefaults(net::URLRequestJobFactory* job_factory) const;
+
   // Lazy initializes the ProfileIOData object the first time a request context
   // is requested. The lazy logic is implemented here. The actual initialization
   // is done in LazyInitializeInternal(), implemented by subtypes. Static helper
@@ -218,10 +220,6 @@ class ProfileIOData {
 
   net::ProxyService* proxy_service() const {
     return proxy_service_.get();
-  }
-
-  net::URLRequestJobFactory* job_factory() const {
-    return job_factory_.get();
   }
 
   void set_http_server_properties_manager(
@@ -330,7 +328,6 @@ class ProfileIOData {
       fraudulent_certificate_reporter_;
   mutable scoped_ptr<net::ProxyService> proxy_service_;
   mutable scoped_ptr<net::TransportSecurityState> transport_security_state_;
-  mutable scoped_ptr<net::URLRequestJobFactory> job_factory_;
   mutable scoped_ptr<chrome_browser_net::HttpServerPropertiesManager>
       http_server_properties_manager_;
 
