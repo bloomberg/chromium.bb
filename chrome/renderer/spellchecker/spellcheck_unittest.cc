@@ -339,6 +339,25 @@ TEST_F(SpellCheckTest, SpellCheckStrings_EN_US) {
     // acknowledgement but not acknowledgements" <http://crbug.com/128896>
     {L"acknowledgement", true},
     {L"acknowledgements", true},
+
+    // Issue 123290: "Spellchecker should treat numbers as word characters"
+    {L"0th", true},
+    {L"1st", true},
+    {L"2nd", true},
+    {L"3rd", true},
+    {L"4th", true},
+    {L"5th", true},
+    {L"6th", true},
+    {L"7th", true},
+    {L"8th", true},
+    {L"9th", true},
+    {L"10th", true},
+    {L"100th", true},
+    {L"1000th", true},
+    {L"25", true},
+    {L"2012", true},
+    {L"100,000,000", true},
+    {L"3.141592653", true},
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,7 +64,7 @@ void SpellcheckCharAttribute::CreateRuleSets(const std::string& language) {
       // For instance, U+05F4 is MidLetter. So, this may be
       // better, but it leads to an empty set error in Thai.
       // "$ALetter   = [[\\p{script=%s}] & [\\p{Word_Break = ALetter}]];"
-      "$ALetter      = [\\p{script=%s}];"
+      "$ALetter      = [\\p{script=%s} [0123456789]];"
       "$MidNumLet    = [\\p{Word_Break = MidNumLet}];"
       "$MidLetter    = [\\p{Word_Break = MidLetter}%s];"
       "$MidNum       = [\\p{Word_Break = MidNum}];"

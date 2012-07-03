@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,8 +30,8 @@ TEST(SpellcheckWordIteratorTest, SplitWord) {
   // should extract only the words used by the specified language from this text
   // and normalize them so our spell-checker can check their spellings.
   const wchar_t kTestText[] =
-      // Numbers
-      L"0123456789"
+      // Graphic characters
+      L"!@#$%^&*()"
       // Latin (including a contraction character and a ligature).
       L"hello:hello a\xFB03x"
       // Greek
