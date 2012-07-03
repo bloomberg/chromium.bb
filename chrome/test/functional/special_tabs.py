@@ -53,8 +53,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://histograms': { 'title': 'About Histograms' },
     'chrome://history': { 'title': 'History' },
     'chrome://media-internals': { 'title': 'Media Internals' },
-    # about:memory broken on win - crbug.com/134988
-    # 'chrome://memory-redirect': { 'title': 'About Memory' },
+    'chrome://memory-redirect': { 'title': 'About Memory' },
     'chrome://net-internals': {},
     'chrome://net-internals/help.html': {},
     'chrome://newtab': { 'title': 'New Tab', 'CSP': False },
