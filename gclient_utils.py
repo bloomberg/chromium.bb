@@ -77,12 +77,9 @@ class PrintableObject(object):
 
 
 def FileRead(filename, mode='rU'):
-  with codecs.open(filename, mode=mode, encoding='utf-8') as f:
-    content = f.read()
-    if mode.endswith('U'):
-      # codecs.open() has different behavior than open() on python 2.6.
-      return content.replace('\r\n', '\n')
-    return content
+  with open(filename, mode=mode) as f:
+    # codecs.open() has different behavior than open() on python 2.6.
+    return f.read().decode('utf-8')
 
 
 def FileWrite(filename, content, mode='w'):
