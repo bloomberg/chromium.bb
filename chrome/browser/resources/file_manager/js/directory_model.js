@@ -208,6 +208,18 @@ DirectoryModel.prototype.isSearching = function() {
 };
 
 /**
+ * @private
+ * Used when initiating a search to determine if the performed search should
+ * be gdata content search.
+ * @return {boolean} True if we should perform gdata content search.
+ */
+DirectoryModel.prototype.shouldDoGDataContentSearch_ = function() {
+  return this.isSearching() &&
+         this.getRootType() == DirectoryModel.RootType.GDATA &&
+         !this.isOffline();
+};
+
+/**
  * @param {string} path Path to check.
  * @return {boolean} True if the |path| is read only.
  */
@@ -478,8 +490,7 @@ DirectoryModel.prototype.createScanner_ = function(list, successCallback) {
       self.rescanLater();
   }
 
-  if (!this.isSearching() ||
-      this.getCurrentRootType() != DirectoryModel.RootType.GDATA) {
+  if (!this.shouldDoGDataContentSearch_()) {
     return new DirectoryModel.Scanner(
         this.getCurrentDirEntry(),
         list,
@@ -1261,8 +1272,8 @@ DirectoryModel.prototype.search = function(query,
   this.addEventListener('rescan-completed', this.onSearchRescan_);
 
   // If we are offline, let's fallback to file name search inside dir.
-  if (this.getRootType() == DirectoryModel.RootType.GDATA &&
-      !this.isOffline()) {
+  // |this.isSearching_| should be set by now.
+  if (this.shouldDoGDataContentSearch_()) {
     var self = this;
     this.searchQuery_ = query;
     this.rescanSoon();
