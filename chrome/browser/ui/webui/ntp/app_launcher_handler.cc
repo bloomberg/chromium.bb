@@ -268,6 +268,8 @@ void AppLauncherHandler::Observe(int type,
 
       scoped_ptr<DictionaryValue> app_info(GetAppInfo(extension));
       if (app_info.get()) {
+        visible_apps_.insert(extension);
+
         ExtensionPrefs* prefs = extension_service_->extension_prefs();
         scoped_ptr<base::FundamentalValue> highlight(Value::CreateBooleanValue(
               prefs->IsFromBookmark(extension->id()) &&
@@ -292,6 +294,8 @@ void AppLauncherHandler::Observe(int type,
               content::Details<extensions::UnloadedExtensionInfo>(
                   details)->reason == extension_misc::UNLOAD_REASON_UNINSTALL));
       if (app_info.get()) {
+        visible_apps_.erase(extension);
+
         scoped_ptr<base::FundamentalValue> from_page(
             Value::CreateBooleanValue(!extension_id_prompting_.empty()));
         web_ui()->CallJavascriptFunction(
@@ -351,45 +355,12 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   AutoReset<bool> auto_reset(&ignore_changes_, true);
 
   ListValue* list = new ListValue();
-  const ExtensionSet* extensions = extension_service_->extensions();
-  ExtensionSet::const_iterator it;
-  for (it = extensions->begin(); it != extensions->end(); ++it) {
+
+  for (std::set<const Extension*>::iterator it = visible_apps_.begin();
+       it != visible_apps_.end(); ++it) {
     const Extension* extension = *it;
     if (extension->ShouldDisplayInLauncher()) {
       DictionaryValue* app_info = GetAppInfo(extension);
-      list->Append(app_info);
-    } else {
-      // This is necessary because in some previous versions of chrome, we set a
-      // page index for non-app extensions. Old profiles can persist this error,
-      // and this fixes it. This caused GetNaturalAppPageIndex() to break
-      // (see http://crbug.com/98325) before it was an ordinal value.
-      ExtensionSorting* sortings =
-          extension_service_->extension_prefs()->extension_sorting();
-      if (sortings->GetPageOrdinal(extension->id()).IsValid())
-        sortings->ClearOrdinals(extension->id());
-    }
-  }
-
-  extensions = extension_service_->disabled_extensions();
-  for (it = extensions->begin(); it != extensions->end(); ++it) {
-    if ((*it)->ShouldDisplayInLauncher()) {
-      DictionaryValue* app_info = new DictionaryValue();
-      CreateAppInfo(*it,
-                    NULL,
-                    extension_service_,
-                    app_info);
-      list->Append(app_info);
-    }
-  }
-
-  extensions = extension_service_->terminated_extensions();
-  for (it = extensions->begin(); it != extensions->end(); ++it) {
-    if ((*it)->ShouldDisplayInLauncher()) {
-      DictionaryValue* app_info = new DictionaryValue();
-      CreateAppInfo(*it,
-                    NULL,
-                    extension_service_,
-                    app_info);
       list->Append(app_info);
     }
   }
@@ -480,6 +451,19 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
     ignore_changes_ = true;
     UninstallDefaultApps();
     ignore_changes_ = false;
+  }
+
+  // The first time we load the apps we must add all current app to the list
+  // of apps visible on the NTP.
+  if (!has_loaded_apps_) {
+    const ExtensionSet* extensions = extension_service_->extensions();
+    visible_apps_.insert(extensions->begin(), extensions->end());
+
+    extensions = extension_service_->disabled_extensions();
+    visible_apps_.insert(extensions->begin(), extensions->end());
+
+    extensions = extension_service_->terminated_extensions();
+    visible_apps_.insert(extensions->begin(), extensions->end());
   }
 
   SetAppToBeHighlighted();
