@@ -795,16 +795,6 @@ HistoryService* ProfileImpl::GetHistoryServiceWithoutCreating() {
   return HistoryServiceFactory::GetForProfileIfExists(this).get();
 }
 
-history::ShortcutsBackend* ProfileImpl::GetShortcutsBackend() {
-  // This is called on one thread only - UI, so no magic is needed to protect
-  // against the multiple concurrent calls.
-  if (!shortcuts_backend_.get()) {
-    shortcuts_backend_ = new history::ShortcutsBackend(GetPath(), this);
-    CHECK(shortcuts_backend_->Init());
-  }
-  return shortcuts_backend_.get();
-}
-
 DownloadManagerDelegate* ProfileImpl::GetDownloadManagerDelegate() {
   return DownloadServiceFactory::GetForProfile(this)->
       GetDownloadManagerDelegate();

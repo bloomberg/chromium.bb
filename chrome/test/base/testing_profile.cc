@@ -26,6 +26,8 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
+#include "chrome/browser/history/shortcuts_backend.h"
+#include "chrome/browser/history/shortcuts_backend_factory.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -502,10 +504,6 @@ policy::PolicyService* TestingProfile::GetPolicyService() {
 #endif
   }
   return policy_service_.get();
-}
-
-history::ShortcutsBackend* TestingProfile::GetShortcutsBackend() {
-  return NULL;
 }
 
 void TestingProfile::SetPrefService(PrefService* prefs) {

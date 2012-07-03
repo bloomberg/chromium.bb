@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/shortcuts_backend_factory.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/media_gallery/media_gallery_registry_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
@@ -236,6 +237,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #if defined(ENABLE_SESSION_SERVICE)
   SessionServiceFactory::GetInstance();
 #endif
+  ShortcutsBackendFactory::GetInstance();
   SigninManagerFactory::GetInstance();
 #if defined(ENABLE_INPUT_SPEECH)
   SpeechInputExtensionManager::InitializeFactory();

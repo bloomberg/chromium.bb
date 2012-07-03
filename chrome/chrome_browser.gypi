@@ -1176,6 +1176,8 @@
         'browser/history/snippet.h',
         'browser/history/shortcuts_backend.cc',
         'browser/history/shortcuts_backend.h',
+        'browser/history/shortcuts_backend_factory.cc',
+        'browser/history/shortcuts_backend_factory.h',
         'browser/history/shortcuts_database.cc',
         'browser/history/shortcuts_database.h',
         'browser/history/starred_url_database.cc',

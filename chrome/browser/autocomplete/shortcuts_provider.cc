@@ -23,6 +23,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/shortcuts_backend_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -51,11 +52,12 @@ ShortcutsProvider::ShortcutsProvider(AutocompleteProviderListener* listener,
                                      Profile* profile)
     : AutocompleteProvider(listener, profile, "ShortcutsProvider"),
       languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
-      initialized_(false),
-      shortcuts_backend_(profile->GetShortcutsBackend()) {
-  if (shortcuts_backend_.get()) {
-    shortcuts_backend_->AddObserver(this);
-    if (shortcuts_backend_->initialized())
+      initialized_(false) {
+  scoped_refptr<history::ShortcutsBackend> backend =
+      ShortcutsBackendFactory::GetForProfile(profile_);
+  if (backend) {
+    backend->AddObserver(this);
+    if (backend->initialized())
       initialized_ = true;
   }
 }
@@ -110,8 +112,10 @@ void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {
 }
 
 ShortcutsProvider::~ShortcutsProvider() {
-  if (shortcuts_backend_.get())
-    shortcuts_backend_->RemoveObserver(this);
+  scoped_refptr<history::ShortcutsBackend> backend =
+      ShortcutsBackendFactory::GetForProfileIfExists(profile_);
+  if (backend)
+    backend->RemoveObserver(this);
 }
 
 void ShortcutsProvider::OnShortcutsLoaded() {
@@ -124,23 +128,29 @@ void ShortcutsProvider::DeleteMatchesWithURLs(const std::set<GURL>& urls) {
 }
 
 void ShortcutsProvider::DeleteShortcutsWithURLs(const std::set<GURL>& urls) {
-  if (!shortcuts_backend_.get())
+  scoped_refptr<history::ShortcutsBackend> backend =
+      ShortcutsBackendFactory::GetForProfileIfExists(profile_);
+  if (!backend)
     return;  // We are off the record.
   for (std::set<GURL>::const_iterator url = urls.begin(); url != urls.end();
        ++url)
-    shortcuts_backend_->DeleteShortcutsWithUrl(*url);
+    backend->DeleteShortcutsWithUrl(*url);
 }
 
 void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
+  scoped_refptr<history::ShortcutsBackend> backend =
+      ShortcutsBackendFactory::GetForProfileIfExists(profile_);
+  if (!backend)
+    return;
   // Get the URLs from the shortcuts database with keys that partially or
   // completely match the search term.
   string16 term_string(base::i18n::ToLower(input.text()));
   DCHECK(!term_string.empty());
 
   for (history::ShortcutsBackend::ShortcutMap::const_iterator it =
-       FindFirstMatch(term_string);
-       it != shortcuts_backend_->shortcuts_map().end() &&
-            StartsWith(it->first, term_string, true); ++it)
+           FindFirstMatch(term_string, backend.get());
+       it != backend->shortcuts_map().end() &&
+           StartsWith(it->first, term_string, true); ++it)
     matches_.push_back(ShortcutToACMatch(input, term_string, it->second));
   std::partial_sort(matches_.begin(),
       matches_.begin() +
@@ -257,14 +267,16 @@ ACMatchClassifications ShortcutsProvider::ClassifyAllMatchesInString(
 }
 
 history::ShortcutsBackend::ShortcutMap::const_iterator
-    ShortcutsProvider::FindFirstMatch(const string16& keyword) {
+    ShortcutsProvider::FindFirstMatch(const string16& keyword,
+                                      history::ShortcutsBackend* backend) {
+  DCHECK(backend);
   history::ShortcutsBackend::ShortcutMap::const_iterator it =
-      shortcuts_backend_->shortcuts_map().lower_bound(keyword);
+      backend->shortcuts_map().lower_bound(keyword);
   // Lower bound not necessarily matches the keyword, check for item pointed by
   // the lower bound iterator to at least start with keyword.
-  return ((it == shortcuts_backend_->shortcuts_map().end()) ||
+  return ((it == backend->shortcuts_map().end()) ||
     StartsWith(it->first, keyword, true)) ? it :
-    shortcuts_backend_->shortcuts_map().end();
+    backend->shortcuts_map().end();
 }
 
 // static
@@ -302,13 +314,4 @@ int ShortcutsProvider::CalculateScore(
 
   return static_cast<int>((base_score / exp(decay_exponent / decay_divisor)) +
       0.5);
-}
-
-void ShortcutsProvider::set_shortcuts_backend(
-    history::ShortcutsBackend* shortcuts_backend) {
-  DCHECK(shortcuts_backend);
-  shortcuts_backend_ = shortcuts_backend;
-  shortcuts_backend_->AddObserver(this);
-  if (shortcuts_backend_->initialized())
-    initialized_ = true;
 }

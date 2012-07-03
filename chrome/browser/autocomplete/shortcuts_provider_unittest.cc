@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -23,6 +23,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/history/shortcuts_backend.h"
+#include "chrome/browser/history/shortcuts_backend_factory.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
@@ -31,6 +32,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using history::ShortcutsBackend;
 
 namespace {
 
@@ -157,11 +159,11 @@ class ShortcutsProviderTest : public testing::Test,
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 
-  scoped_ptr<TestingProfile> profile_;
+  TestingProfile profile_;
 
   ACMatches ac_matches_;  // The resulting matches after running RunTest.
 
-  scoped_refptr<history::ShortcutsBackend> mock_backend_;
+  scoped_refptr<ShortcutsBackend> backend_;
   scoped_refptr<ShortcutsProvider> provider_;
 };
 
@@ -170,16 +172,15 @@ ShortcutsProviderTest::ShortcutsProviderTest()
       file_thread_(BrowserThread::FILE, &message_loop_) {
 }
 
-void ShortcutsProviderTest::OnProviderUpdate(bool updated_matches) {
-}
+void ShortcutsProviderTest::OnProviderUpdate(bool updated_matches) {}
 
 void ShortcutsProviderTest::SetUp() {
-  profile_.reset(new TestingProfile());
-  profile_->CreateHistoryService(true, false);
-  provider_ = new ShortcutsProvider(this, profile_.get());
-  mock_backend_ = new history::ShortcutsBackend(FilePath(), profile_.get());
-  mock_backend_->Init();
-  provider_->set_shortcuts_backend(mock_backend_.get());
+  ShortcutsBackendFactory::GetInstance()->SetTestingFactoryAndUse(
+      &profile_, &ShortcutsBackendFactory::BuildProfileNoDatabaseForTesting);
+  backend_ = ShortcutsBackendFactory::GetForProfile(&profile_);
+  ASSERT_TRUE(backend_.get());
+  profile_.CreateHistoryService(true, false);
+  provider_ = new ShortcutsProvider(this, &profile_);
   FillData(shortcut_test_db, arraysize(shortcut_test_db));
 }
 
@@ -192,17 +193,19 @@ void ShortcutsProviderTest::TearDown() {
 
 void ShortcutsProviderTest::FillData(TestShortcutInfo* db, size_t db_size) {
   DCHECK(provider_.get());
+  size_t expected_size = backend_->shortcuts_map().size() + db_size;
   for (size_t i = 0; i < db_size; ++i) {
     const TestShortcutInfo& cur = db[i];
-    history::ShortcutsBackend::Shortcut shortcut(cur.guid,
+    ShortcutsBackend::Shortcut shortcut(cur.guid,
         ASCIIToUTF16(cur.title), GURL(cur.url), ASCIIToUTF16(cur.contents),
         AutocompleteMatch::ClassificationsFromString(cur.contents_class),
         ASCIIToUTF16(cur.description),
         AutocompleteMatch::ClassificationsFromString(cur.description_class),
         base::Time::Now() - base::TimeDelta::FromDays(cur.days_from_now),
         cur.typed_count);
-    mock_backend_->AddShortcut(shortcut);
+    backend_->AddShortcut(shortcut);
   }
+  EXPECT_EQ(expected_size, backend_->shortcuts_map().size());
 }
 
 ShortcutsProviderTest::SetShouldContain::SetShouldContain(
@@ -560,7 +563,7 @@ TEST_F(ShortcutsProviderTest, CalculateScore) {
       ACMatchClassification(0, ACMatchClassification::NONE));
   spans_description.push_back(
       ACMatchClassification(2, ACMatchClassification::MATCH));
-  history::ShortcutsBackend::Shortcut shortcut(std::string(),
+  ShortcutsBackend::Shortcut shortcut(std::string(),
       ASCIIToUTF16("test"), GURL("http://www.test.com"),
       ASCIIToUTF16("www.test.com"), spans_content, ASCIIToUTF16("A test"),
       spans_description, base::Time::Now(), 1);
@@ -628,19 +631,15 @@ TEST_F(ShortcutsProviderTest, DeleteMatch) {
       "Erase this shortcut!", "0,0", 1, 1},
   };
 
-  size_t original_shortcuts_count =
-      provider_->shortcuts_backend_->shortcuts_map().size();
+  size_t original_shortcuts_count = backend_->shortcuts_map().size();
 
   FillData(shortcuts_to_test_delete, arraysize(shortcuts_to_test_delete));
 
-  EXPECT_EQ(original_shortcuts_count + 3,
-            provider_->shortcuts_backend_->shortcuts_map().size());
-  EXPECT_FALSE(provider_->shortcuts_backend_->shortcuts_map().end() ==
-               provider_->shortcuts_backend_->shortcuts_map().find(
-                   ASCIIToUTF16("delete")));
-  EXPECT_FALSE(provider_->shortcuts_backend_->shortcuts_map().end() ==
-               provider_->shortcuts_backend_->shortcuts_map().find(
-                   ASCIIToUTF16("erase")));
+  EXPECT_EQ(original_shortcuts_count + 3, backend_->shortcuts_map().size());
+  EXPECT_FALSE(backend_->shortcuts_map().end() ==
+               backend_->shortcuts_map().find(ASCIIToUTF16("delete")));
+  EXPECT_FALSE(backend_->shortcuts_map().end() ==
+               backend_->shortcuts_map().find(ASCIIToUTF16("erase")));
 
   AutocompleteMatch match(provider_, 1200, true,
                           AutocompleteMatch::HISTORY_TITLE);
@@ -653,23 +652,18 @@ TEST_F(ShortcutsProviderTest, DeleteMatch) {
 
   // |shortcuts_to_test_delete[0]| and |shortcuts_to_test_delete[1]| should be
   // deleted, but not |shortcuts_to_test_delete[2]| as it has different url.
-  EXPECT_EQ(original_shortcuts_count + 1,
-            provider_->shortcuts_backend_->shortcuts_map().size());
-  EXPECT_FALSE(provider_->shortcuts_backend_->shortcuts_map().end() ==
-               provider_->shortcuts_backend_->shortcuts_map().find(
-                   ASCIIToUTF16("delete")));
-  EXPECT_TRUE(provider_->shortcuts_backend_->shortcuts_map().end() ==
-              provider_->shortcuts_backend_->shortcuts_map().find(
-                  ASCIIToUTF16("erase")));
+  EXPECT_EQ(original_shortcuts_count + 1, backend_->shortcuts_map().size());
+  EXPECT_FALSE(backend_->shortcuts_map().end() ==
+               backend_->shortcuts_map().find(ASCIIToUTF16("delete")));
+  EXPECT_TRUE(backend_->shortcuts_map().end() ==
+              backend_->shortcuts_map().find(ASCIIToUTF16("erase")));
 
   match.destination_url = GURL(shortcuts_to_test_delete[2].url);
   match.contents = ASCIIToUTF16(shortcuts_to_test_delete[2].contents);
   match.description = ASCIIToUTF16(shortcuts_to_test_delete[2].description);
 
   provider_->DeleteMatch(match);
-  EXPECT_EQ(original_shortcuts_count,
-            provider_->shortcuts_backend_->shortcuts_map().size());
-  EXPECT_TRUE(provider_->shortcuts_backend_->shortcuts_map().end() ==
-              provider_->shortcuts_backend_->shortcuts_map().find(
-                  ASCIIToUTF16("delete")));
+  EXPECT_EQ(original_shortcuts_count, backend_->shortcuts_map().size());
+  EXPECT_TRUE(backend_->shortcuts_map().end() ==
+              backend_->shortcuts_map().find(ASCIIToUTF16("delete")));
 }

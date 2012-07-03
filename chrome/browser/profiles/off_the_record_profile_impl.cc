@@ -238,10 +238,6 @@ FaviconService* OffTheRecordProfileImpl::GetFaviconService(
   return NULL;
 }
 
-history::ShortcutsBackend* OffTheRecordProfileImpl::GetShortcutsBackend() {
-  return NULL;
-}
-
 policy::PolicyService* OffTheRecordProfileImpl::GetPolicyService() {
   return profile_->GetPolicyService();
 }

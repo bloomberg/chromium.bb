@@ -160,7 +160,6 @@ class TestingProfile : public Profile {
   // this by calling CreateRequestContext(). See the note at GetRequestContext
   // for more information.
   net::CookieMonster* GetCookieMonster();
-  virtual history::ShortcutsBackend* GetShortcutsBackend() OVERRIDE;
   virtual policy::PolicyService* GetPolicyService() OVERRIDE;
   // Sets the profile's PrefService. If a pref service hasn't been explicitly
   // set GetPrefs creates one, so normally you need not invoke this. If you need

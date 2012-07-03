@@ -12,12 +12,13 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_constants.h"
 #include "sql/statement.h"
 
 namespace {
 
-// Using define instead of const char, so I could use ## in the statements.
-#define kShortcutsDBName "omni_box_shortcuts"
+const char* kShortcutsTableName = "omni_box_shortcuts";
 
 void BindShortcutToStatement(
     const history::ShortcutsBackend::Shortcut& shortcut,
@@ -40,7 +41,7 @@ bool DeleteShortcut(const char* field_name,
                     const std::string& id,
                     sql::Connection& db) {
   sql::Statement s(db.GetUniqueStatement(
-      base::StringPrintf("DELETE FROM %s WHERE %s = ?", kShortcutsDBName,
+      base::StringPrintf("DELETE FROM %s WHERE %s = ?", kShortcutsTableName,
                          field_name).c_str()));
   s.BindString(0, id);
 
@@ -51,11 +52,8 @@ bool DeleteShortcut(const char* field_name,
 
 namespace history {
 
-const FilePath::CharType ShortcutsDatabase::kShortcutsDatabaseName[] =
-    FILE_PATH_LITERAL("Shortcuts");
-
-ShortcutsDatabase::ShortcutsDatabase(const FilePath& folder_path)
-    : database_path_(folder_path.Append(FilePath(kShortcutsDatabaseName))) {
+ShortcutsDatabase::ShortcutsDatabase(Profile* profile) {
+  database_path_ = profile->GetPath().Append(chrome::kShortcutsDatabaseName);
 }
 
 bool ShortcutsDatabase::Init() {
@@ -81,10 +79,10 @@ bool ShortcutsDatabase::Init() {
 bool ShortcutsDatabase::AddShortcut(
     const ShortcutsBackend::Shortcut& shortcut) {
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
-      "INSERT INTO " kShortcutsDBName
-      " (id, text, url, contents, contents_class, description,"
-      " description_class, last_access_time, number_of_hits) "
-      "VALUES (?,?,?,?,?,?,?,?,?)"));
+      base::StringPrintf("INSERT INTO %s (id, text, url, contents, "
+          "contents_class, description, description_class, last_access_time, "
+          "number_of_hits) VALUES (?,?,?,?,?,?,?,?,?)",
+          kShortcutsTableName).c_str()));
   BindShortcutToStatement(shortcut, &s);
 
   return s.Run();
@@ -93,11 +91,10 @@ bool ShortcutsDatabase::AddShortcut(
 bool ShortcutsDatabase::UpdateShortcut(
     const ShortcutsBackend::Shortcut& shortcut) {
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
-    "UPDATE " kShortcutsDBName " "
-      "SET id=?, text=?, url=?, contents=?, contents_class=?,"
-      "     description=?, description_class=?, last_access_time=?,"
-      "     number_of_hits=? "
-      "WHERE id=?"));
+      base::StringPrintf("UPDATE %s SET id=?, text=?, url=?, contents=?, "
+          "contents_class=?, description=?, description_class=?, "
+          "last_access_time=?, number_of_hits=? WHERE id=?",
+          kShortcutsTableName).c_str()));
   BindShortcutToStatement(shortcut, &s);
   s.BindString(9, shortcut.id);
 
@@ -125,7 +122,8 @@ bool ShortcutsDatabase::DeleteShortcutsWithUrl(
 }
 
 bool ShortcutsDatabase::DeleteAllShortcuts() {
-  if (!db_.Execute("DELETE FROM " kShortcutsDBName))
+  if (!db_.Execute(base::StringPrintf("DELETE FROM %s",
+                                      kShortcutsTableName).c_str()))
     return false;
 
   ignore_result(db_.Execute("VACUUM"));
@@ -136,9 +134,9 @@ bool ShortcutsDatabase::DeleteAllShortcuts() {
 bool ShortcutsDatabase::LoadShortcuts(GuidToShortcutMap* shortcuts) {
   DCHECK(shortcuts);
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
-      "SELECT id, text, url, contents, contents_class, "
-      "description, description_class, last_access_time, number_of_hits "
-      "FROM " kShortcutsDBName));
+      base::StringPrintf("SELECT id, text, url, contents, contents_class, "
+          "description, description_class, last_access_time, number_of_hits "
+          "FROM %s", kShortcutsTableName).c_str()));
 
   if (!s.is_valid())
     return false;
@@ -159,7 +157,7 @@ bool ShortcutsDatabase::LoadShortcuts(GuidToShortcutMap* shortcuts) {
 ShortcutsDatabase::~ShortcutsDatabase() {}
 
 bool ShortcutsDatabase::EnsureTable() {
-  if (!db_.DoesTableExist(kShortcutsDBName)) {
+  if (!db_.DoesTableExist(kShortcutsTableName)) {
     if (!db_.Execute(base::StringPrintf(
                      "CREATE TABLE %s ( "
                      "id VARCHAR PRIMARY KEY, "
@@ -170,7 +168,7 @@ bool ShortcutsDatabase::EnsureTable() {
                      "description VARCHAR, "
                      "description_class VARCHAR, "
                      "last_access_time INTEGER, "
-                     "number_of_hits INTEGER)", kShortcutsDBName).c_str())) {
+                     "number_of_hits INTEGER)", kShortcutsTableName).c_str())) {
       NOTREACHED();
       return false;
     }

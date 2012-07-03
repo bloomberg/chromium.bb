@@ -82,11 +82,11 @@ ShortcutsBackend::Shortcut::~Shortcut() {
 
 // ShortcutsBackend -----------------------------------------------------------
 
-ShortcutsBackend::ShortcutsBackend(const FilePath& db_folder_path,
-                                   Profile *profile)
+ShortcutsBackend::ShortcutsBackend(Profile* profile, bool suppress_db)
     : current_state_(NOT_INITIALIZED),
-      db_(new ShortcutsDatabase(db_folder_path)),
-      no_db_access_(db_folder_path.empty()) {
+      no_db_access_(suppress_db) {
+  if (!suppress_db)
+    db_ = new ShortcutsDatabase(profile);
   // |profile| can be NULL in tests.
   if (profile) {
     notification_registrar_.Add(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
@@ -263,6 +263,12 @@ void ShortcutsBackend::Observe(int type,
   AddShortcut(Shortcut(base::GenerateGUID(), log->text, match.destination_url,
       match.contents, match.contents_class, match.description,
       match.description_class, base::Time::Now(), 1));
+}
+
+void ShortcutsBackend::ShutdownOnUIThread() {
+  DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
+  notification_registrar_.RemoveAll();
 }
 
 }  // namespace history

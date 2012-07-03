@@ -154,6 +154,7 @@ const FilePath::CharType kPreferencesFilename[] = FPL("Preferences");
 const FilePath::CharType kReadmeFilename[] = FPL("README");
 const FilePath::CharType kSafeBrowsingBaseFilename[] = FPL("Safe Browsing");
 const FilePath::CharType kServiceStateFileName[] = FPL("Service State");
+const FilePath::CharType kShortcutsDatabaseName[] = FPL("Shortcuts");
 const FilePath::CharType kSingletonCookieFilename[] = FPL("SingletonCookie");
 const FilePath::CharType kSingletonLockFilename[] = FPL("SingletonLock");
 const FilePath::CharType kSingletonSocketFilename[] = FPL("SingletonSocket");

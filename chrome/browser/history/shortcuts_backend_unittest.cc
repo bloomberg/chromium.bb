@@ -10,7 +10,9 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/shortcuts_backend.h"
+#include "chrome/browser/history/shortcuts_backend_factory.h"
 #include "chrome/browser/history/shortcuts_database.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "sql/statement.h"
 
@@ -28,7 +30,8 @@ class ShortcutsBackendTest : public testing::Test,
   ShortcutsBackendTest()
       : ui_thread_(BrowserThread::UI, &ui_message_loop_),
         db_thread_(BrowserThread::DB),
-        load_notified_(false) {}
+        load_notified_(false),
+        changed_notified_(false) {}
 
   void SetUp();
   void TearDown();
@@ -38,20 +41,23 @@ class ShortcutsBackendTest : public testing::Test,
 
   void InitBackend();
 
-  ScopedTempDir temp_dir_;
+  TestingProfile profile_;
   scoped_refptr<ShortcutsBackend> backend_;
   MessageLoopForUI ui_message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
 
   bool load_notified_;
+  bool changed_notified_;
 };
 
 void ShortcutsBackendTest::SetUp() {
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  backend_ = new ShortcutsBackend(temp_dir_.path(), NULL);
-  backend_->AddObserver(this);
   db_thread_.Start();
+  ShortcutsBackendFactory::GetInstance()->SetTestingFactoryAndUse(
+      &profile_, &ShortcutsBackendFactory::BuildProfileForTesting);
+  backend_ = ShortcutsBackendFactory::GetForProfile(&profile_);
+  ASSERT_TRUE(backend_.get());
+  backend_->AddObserver(this);
 }
 
 void ShortcutsBackendTest::TearDown() {
@@ -65,12 +71,14 @@ void ShortcutsBackendTest::OnShortcutsLoaded() {
 }
 
 void ShortcutsBackendTest::OnShortcutsChanged() {
+  changed_notified_ = true;
 }
 
 void ShortcutsBackendTest::InitBackend() {
-  EXPECT_FALSE(load_notified_);
-  EXPECT_FALSE(backend_->initialized());
-  EXPECT_TRUE(backend_->Init());
+  ShortcutsBackend* backend = ShortcutsBackendFactory::GetForProfile(&profile_);
+  ASSERT_TRUE(backend);
+  ASSERT_FALSE(load_notified_);
+  ASSERT_FALSE(backend_->initialized());
   MessageLoop::current()->Run();
   EXPECT_TRUE(load_notified_);
   EXPECT_TRUE(backend_->initialized());
@@ -78,6 +86,7 @@ void ShortcutsBackendTest::InitBackend() {
 
 TEST_F(ShortcutsBackendTest, AddAndUpdateShortcut) {
   InitBackend();
+  EXPECT_FALSE(changed_notified_);
   ShortcutsBackend::Shortcut shortcut("BD85DBA2-8C29-49F9-84AE-48E1E90880DF",
       ASCIIToUTF16("goog"), GURL("http://www.google.com"),
       ASCIIToUTF16("Google"),
@@ -86,6 +95,8 @@ TEST_F(ShortcutsBackendTest, AddAndUpdateShortcut) {
       AutocompleteMatch::ClassificationsFromString("0,1"), base::Time::Now(),
       100);
   EXPECT_TRUE(backend_->AddShortcut(shortcut));
+  EXPECT_TRUE(changed_notified_);
+  changed_notified_ = false;
 
   const ShortcutsBackend::ShortcutMap& shortcuts = backend_->shortcuts_map();
   ASSERT_TRUE(shortcuts.end() != shortcuts.find(shortcut.text));
@@ -93,6 +104,7 @@ TEST_F(ShortcutsBackendTest, AddAndUpdateShortcut) {
   EXPECT_EQ(shortcut.contents, shortcuts.find(shortcut.text)->second.contents);
   shortcut.contents = ASCIIToUTF16("Google Web Search");
   EXPECT_TRUE(backend_->UpdateShortcut(shortcut));
+  EXPECT_TRUE(changed_notified_);
   EXPECT_EQ(shortcut.id, shortcuts.find(shortcut.text)->second.id);
   EXPECT_EQ(shortcut.contents, shortcuts.find(shortcut.text)->second.contents);
 }

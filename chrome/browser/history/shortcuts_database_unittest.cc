@@ -9,6 +9,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/shortcuts_database.h"
+#include "chrome/test/base/testing_profile.h"
 #include "sql/statement.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,13 +53,13 @@ class ShortcutsDatabaseTest : public testing::Test {
 
   void AddAll();
 
-  ScopedTempDir temp_dir_;
+  scoped_ptr<TestingProfile> profile_;
   scoped_refptr<ShortcutsDatabase> db_;
 };
 
 void ShortcutsDatabaseTest::SetUp() {
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  db_ = new ShortcutsDatabase(temp_dir_.path());
+  profile_.reset(new TestingProfile());
+  db_ = new ShortcutsDatabase(profile_.get());
   ASSERT_TRUE(db_->Init());
   ClearDB();
 }

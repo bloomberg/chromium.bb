@@ -79,6 +79,7 @@ extern const FilePath::CharType kPreferencesFilename[];
 extern const FilePath::CharType kReadmeFilename[];
 extern const FilePath::CharType kSafeBrowsingBaseFilename[];
 extern const FilePath::CharType kServiceStateFileName[];
+extern const FilePath::CharType kShortcutsDatabaseName[];
 extern const FilePath::CharType kSingletonCookieFilename[];
 extern const FilePath::CharType kSingletonLockFilename[];
 extern const FilePath::CharType kSingletonSocketFilename[];

@@ -73,19 +73,15 @@ class ShortcutsProvider
   // Returns iterator to first item in |shortcuts_map_| matching |keyword|.
   // Returns shortcuts_map_.end() if there are no matches.
   history::ShortcutsBackend::ShortcutMap::const_iterator FindFirstMatch(
-      const string16& keyword);
+      const string16& keyword,
+      history::ShortcutsBackend* backend);
 
   static int CalculateScore(
       const string16& terms,
       const history::ShortcutsBackend::Shortcut& shortcut);
 
-  // For unit-test only.
-  void set_shortcuts_backend(history::ShortcutsBackend* shortcuts_backend);
-
   std::string languages_;
   bool initialized_;
-
-  scoped_refptr<history::ShortcutsBackend> shortcuts_backend_;
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_SHORTCUTS_PROVIDER_H_

@@ -19,6 +19,7 @@
 #include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -31,7 +32,7 @@ class ShortcutsDatabase;
 
 // This class manages the shortcut provider backend - access to database on the
 // db thread, etc.
-class ShortcutsBackend : public base::RefCountedThreadSafe<ShortcutsBackend>,
+class ShortcutsBackend : public RefcountedProfileKeyedService,
                          public content::NotificationObserver {
  public:
   // The following struct encapsulates one previously selected omnibox shortcut.
@@ -70,9 +71,9 @@ class ShortcutsBackend : public base::RefCountedThreadSafe<ShortcutsBackend>,
   typedef std::multimap<string16, ShortcutsBackend::Shortcut> ShortcutMap;
 
   // |profile| is necessary for profile notifications only and can be NULL in
-  // unit-tests. |db_folder_path| could be an empty path only in unit-tests as
-  // well. It means there is no database created, all things are done in memory.
-  ShortcutsBackend(const FilePath& db_folder_path, Profile* profile);
+  // unit-tests. For unit testing, set |suppress_db| to true to prevent creation
+  // of the database, in which case all operations are performed in memory only.
+  ShortcutsBackend(Profile* profile, bool suppress_db);
 
   // The interface is guaranteed to be called on the thread AddObserver()
   // was called.
@@ -142,12 +143,16 @@ class ShortcutsBackend : public base::RefCountedThreadSafe<ShortcutsBackend>,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // RefcountedProfileKeyedService
+  virtual void ShutdownOnUIThread() OVERRIDE;
+
   enum CurrentState {
     NOT_INITIALIZED,  // Backend created but not initialized.
     INITIALIZING,  // Init() called, but not completed yet.
     INITIALIZED,  // Initialization completed, all accessors can be safely
                   // called.
   };
+
   CurrentState current_state_;
   ObserverList<ShortcutsBackendObserver> observer_list_;
   scoped_refptr<ShortcutsDatabase> db_;

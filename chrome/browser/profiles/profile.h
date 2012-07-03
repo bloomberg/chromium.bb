@@ -254,11 +254,6 @@ class Profile : public content::BrowserContext {
   // doesn't already exist.
   virtual HistoryService* GetHistoryServiceWithoutCreating() = 0;
 
-  // Returns the ShortcutsBackend for this profile. This is owned by
-  // the Profile and created on the first call. Callers that outlive the life of
-  // this profile need to be sure they refcount the returned value.
-  virtual history::ShortcutsBackend* GetShortcutsBackend() = 0;
-
   // Returns the PolicyService that provides policies for this profile.
   virtual policy::PolicyService* GetPolicyService() = 0;
 
