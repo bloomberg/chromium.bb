@@ -151,7 +151,7 @@ TEST(LoggingFilterInterpreterTest, SimpleTest) {
   base_interpreter2->expected_hwstate_ = &hardware_state;
   base_interpreter2->expected_hwprops_ = hwprops;
 
-  EXPECT_TRUE(replay.Replay(&interpreter2));
+  replay.Replay(&interpreter2);
   string final_log = interpreter2.log_.Encode();
   EXPECT_EQ(initial_log, final_log);
   EXPECT_EQ(1, base_interpreter2->interpret_call_count_);
