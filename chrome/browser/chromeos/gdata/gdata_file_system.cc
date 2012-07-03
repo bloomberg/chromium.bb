@@ -3413,16 +3413,6 @@ GDataFileSystem::FindFirstMissingParentDirectory(
   return DIRECTORY_ALREADY_PRESENT;
 }
 
-GURL GDataFileSystem::GetUploadUrlForDirectory(
-    const FilePath& destination_directory) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Find directory element within the cached file system snapshot.
-  GDataEntry* entry = GetGDataEntryByPath(destination_directory);
-  GDataDirectory* dir = entry ? entry->AsGDataDirectory() : NULL;
-  return dir ? dir->upload_url() : GURL();
-}
-
 base::PlatformFileError GDataFileSystem::RemoveEntryFromGData(
     const FilePath& file_path, std::string* resource_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

@@ -481,10 +481,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
     documents_service_ = new_document_service;
   }
 
-  // Finds and returns upload url of a given directory. Returns empty url
-  // if directory can't be found.
-  GURL GetUploadUrlForDirectory(const FilePath& destination_directory);
-
  private:
   friend class GDataFileSystemTest;
   FRIEND_TEST_ALL_PREFIXES(GDataFileSystemTest,

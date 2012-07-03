@@ -25,6 +25,7 @@ class DownloadItem;
 namespace gdata {
 
 class GDataFileSystem;
+class GDataDirectoryProto;
 class DocumentsServiceInterface;
 
 class GDataUploaderInterface {
@@ -118,6 +119,17 @@ class GDataUploader : public GDataUploaderInterface {
   void OnResumeUploadResponseReceived(int upload_id,
                                       const ResumeUploadResponse& response,
                                       scoped_ptr<DocumentEntry> entry);
+
+  // Callback for handling results of ReadDirectoryByPath() initiated by
+  // OpenCompletionCallback(). This callback reads the directory entry to
+  // determine the upload path.
+  void OnReadDirectoryByPath(int upload_id,
+                             base::PlatformFileError error,
+                             bool hide_hosted_documents,
+                             scoped_ptr<GDataDirectoryProto> dir_proto);
+
+  // Initiate the upload.
+  void InitiateUpload(UploadFileInfo* uploader_file_info);
 
   // When upload completes, move the file into the gdata cache.
   void MoveFileToCache(UploadFileInfo* upload_file_info);
