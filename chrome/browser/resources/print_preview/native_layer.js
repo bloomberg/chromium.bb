@@ -149,7 +149,6 @@ cr.define('print_preview', function() {
                 print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
         'printWithCloudPrint': destination != null && !destination.isLocal,
         'deviceName': destination == null ? 'foo' : destination.id,
-        'cloudPrintID': destination == null ? 'foo' : destination.id,
         'generateDraftData': printTicketStore.isDocumentModifiable,
         'fitToPageEnabled': printTicketStore.isFitToPageEnabled(),
 
@@ -160,6 +159,10 @@ cr.define('print_preview', function() {
         'copies': printTicketStore.getCopies(),
         'collate': printTicketStore.isCollateEnabled()
       };
+
+      // Set 'cloudPrintID' only if the destination is not local.
+      if (!destination.isLocal)
+        ticket['cloudPrintID'] = destination.id;
 
       if (printTicketStore.hasMarginsCapability() &&
           printTicketStore.getMarginsType() ==
