@@ -107,8 +107,7 @@ void ExtensionDevToolsBridge::InspectedContentsClosing() {
   // event in extensions.
   std::string json("[{}]");
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      on_tab_close_event_name_, json, profile_, GURL(),
-      extensions::EventFilteringInfo());
+      on_tab_close_event_name_, json, profile_, GURL());
 
   // This may result in this object being destroyed.
   extension_devtools_manager_->BridgeClosingForTab(tab_id_);
@@ -120,8 +119,7 @@ void ExtensionDevToolsBridge::DispatchOnInspectorFrontend(
 
   std::string json = base::StringPrintf("[%s]", data.c_str());
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      on_page_event_name_, json, profile_, GURL(),
-      extensions::EventFilteringInfo());
+      on_page_event_name_, json, profile_, GURL());
 }
 
 void ExtensionDevToolsBridge::ContentsReplaced(WebContents* new_contents) {

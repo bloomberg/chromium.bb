@@ -31,23 +31,19 @@ class MessageSender : public content::NotificationObserver {
     event_router->DispatchEventToRenderers("test.onMessage",
         "[{\"lastMessage\":false,\"data\":\"no restriction\"}]",
         content::Source<Profile>(source).ptr(),
-        GURL(),
-        EventFilteringInfo());
+        GURL());
     event_router->DispatchEventToRenderers("test.onMessage",
         "[{\"lastMessage\":false,\"data\":\"http://a.com/\"}]",
         content::Source<Profile>(source).ptr(),
-        GURL("http://a.com/"),
-        EventFilteringInfo());
+        GURL("http://a.com/"));
     event_router->DispatchEventToRenderers("test.onMessage",
         "[{\"lastMessage\":false,\"data\":\"http://b.com/\"}]",
         content::Source<Profile>(source).ptr(),
-        GURL("http://b.com/"),
-        EventFilteringInfo());
+        GURL("http://b.com/"));
     event_router->DispatchEventToRenderers("test.onMessage",
         "[{\"lastMessage\":true,\"data\":\"last message\"}]",
         content::Source<Profile>(source).ptr(),
-        GURL(),
-        EventFilteringInfo());
+        GURL());
   }
 
   content::NotificationRegistrar registrar_;
