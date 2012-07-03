@@ -138,8 +138,9 @@ class TestRLZTracker : public RLZTracker {
 
     // Set new access points RLZ string, like the actual server ping would have
     // done.
-    rlz_lib::SetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, kNewOmniboxRlzString);
-    rlz_lib::SetAccessPointRlz(rlz_lib::CHROME_HOME_PAGE,
+    rlz_lib::SetAccessPointRlz(RLZTracker::CHROME_OMNIBOX,
+                               kNewOmniboxRlzString);
+    rlz_lib::SetAccessPointRlz(RLZTracker::CHROME_HOME_PAGE,
                                kNewHomepageRlzString);
     return true;
   }
@@ -308,13 +309,6 @@ void RlzLibTest::ExpectReactivationRlzPingSent(bool expected) {
   EXPECT_EQ(expected, tracker_.was_ping_sent_for_brand(brand.c_str()));
 }
 
-TEST_F(RlzLibTest, RecordProductEvent) {
-  RLZTracker::RecordProductEvent(rlz_lib::CHROME, rlz_lib::CHROME_OMNIBOX,
-                                 rlz_lib::FIRST_SEARCH);
-
-  ExpectEventRecorded("C1F", true);
-}
-
 // The events that affect the different RLZ scenarios are the following:
 //
 //  A: the user starts chrome for the first time
@@ -338,6 +332,8 @@ TEST_F(RlzLibTest, RecordProductEvent) {
 //  C2S event is recorded
 //  RLZ ping sent
 //
+//  On Mac, C5 / C6 are sent instead of C1 / C2.
+//
 // Variations on the above scenarios:
 //
 //  - if the delay specified to InitRlzDelayed() is negative, then the RLZ
@@ -345,18 +341,43 @@ TEST_F(RlzLibTest, RecordProductEvent) {
 //
 // Also want to test that pre-warming the RLZ string cache works correctly.
 
+#if !defined(OS_MACOSX)
+const char kC1I[] = "C1I";
+const char kC1S[] = "C1S";
+const char kC1F[] = "C1F";
+
+const char kC2I[] = "C2I";
+const char kC2S[] = "C2S";
+const char kC2F[] = "C2F";
+#else
+const char kC1I[] = "C5I";
+const char kC1S[] = "C5S";
+const char kC1F[] = "C5F";
+
+const char kC2I[] = "C6I";
+const char kC2S[] = "C6S";
+const char kC2F[] = "C6F";
+#endif
+
+TEST_F(RlzLibTest, RecordProductEvent) {
+  RLZTracker::RecordProductEvent(rlz_lib::CHROME, RLZTracker::CHROME_OMNIBOX,
+                                 rlz_lib::FIRST_SEARCH);
+
+  ExpectEventRecorded(kC1F, true);
+}
+
 TEST_F(RlzLibTest, QuickStopAfterStart) {
   RLZTracker::InitRlzDelayed(true, 20, true, true);
 
   // Omnibox events.
-  ExpectEventRecorded("C1I", false);
-  ExpectEventRecorded("C1S", false);
-  ExpectEventRecorded("C1F", false);
+  ExpectEventRecorded(kC1I, false);
+  ExpectEventRecorded(kC1S, false);
+  ExpectEventRecorded(kC1F, false);
 
   // Home page events.
-  ExpectEventRecorded("C2I", false);
-  ExpectEventRecorded("C2S", false);
-  ExpectEventRecorded("C2F", false);
+  ExpectEventRecorded(kC2I, false);
+  ExpectEventRecorded(kC2S, false);
+  ExpectEventRecorded(kC2F, false);
 
   ExpectRlzPingSent(false);
 }
@@ -366,14 +387,14 @@ TEST_F(RlzLibTest, DelayedInitOnly) {
   InvokeDelayedInit();
 
   // Omnibox events.
-  ExpectEventRecorded("C1I", true);
-  ExpectEventRecorded("C1S", true);
-  ExpectEventRecorded("C1F", false);
+  ExpectEventRecorded(kC1I, true);
+  ExpectEventRecorded(kC1S, true);
+  ExpectEventRecorded(kC1F, false);
 
   // Home page events.
-  ExpectEventRecorded("C2I", true);
-  ExpectEventRecorded("C2S", true);
-  ExpectEventRecorded("C2F", false);
+  ExpectEventRecorded(kC2I, true);
+  ExpectEventRecorded(kC2S, true);
+  ExpectEventRecorded(kC2F, false);
 
   ExpectRlzPingSent(true);
 }
@@ -383,14 +404,14 @@ TEST_F(RlzLibTest, DelayedInitOnlyNoFirstRunNoRlzStrings) {
   InvokeDelayedInit();
 
   // Omnibox events.
-  ExpectEventRecorded("C1I", true);
-  ExpectEventRecorded("C1S", true);
-  ExpectEventRecorded("C1F", false);
+  ExpectEventRecorded(kC1I, true);
+  ExpectEventRecorded(kC1S, true);
+  ExpectEventRecorded(kC1F, false);
 
   // Home page events.
-  ExpectEventRecorded("C2I", true);
-  ExpectEventRecorded("C2S", true);
-  ExpectEventRecorded("C2F", false);
+  ExpectEventRecorded(kC2I, true);
+  ExpectEventRecorded(kC2S, true);
+  ExpectEventRecorded(kC2F, false);
 
   ExpectRlzPingSent(true);
 }
@@ -398,21 +419,21 @@ TEST_F(RlzLibTest, DelayedInitOnlyNoFirstRunNoRlzStrings) {
 TEST_F(RlzLibTest, DelayedInitOnlyNoFirstRun) {
   // Set some dummy RLZ strings to simulate that we already ran before and
   // performed a successful ping to the RLZ server.
-  rlz_lib::SetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, kOmniboxRlzString);
-  rlz_lib::SetAccessPointRlz(rlz_lib::CHROME_HOME_PAGE, kHomepageRlzString);
+  rlz_lib::SetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, kOmniboxRlzString);
+  rlz_lib::SetAccessPointRlz(RLZTracker::CHROME_HOME_PAGE, kHomepageRlzString);
 
   RLZTracker::InitRlzDelayed(false, 20, true, true);
   InvokeDelayedInit();
 
   // Omnibox events.
-  ExpectEventRecorded("C1I", true);
-  ExpectEventRecorded("C1S", false);
-  ExpectEventRecorded("C1F", false);
+  ExpectEventRecorded(kC1I, true);
+  ExpectEventRecorded(kC1S, false);
+  ExpectEventRecorded(kC1F, false);
 
   // Home page events.
-  ExpectEventRecorded("C2I", true);
-  ExpectEventRecorded("C2S", false);
-  ExpectEventRecorded("C2F", false);
+  ExpectEventRecorded(kC2I, true);
+  ExpectEventRecorded(kC2S, false);
+  ExpectEventRecorded(kC2F, false);
 
   ExpectRlzPingSent(true);
 }
@@ -422,14 +443,14 @@ TEST_F(RlzLibTest, DelayedInitOnlyNoGoogleDefaultSearchOrHomepage) {
   InvokeDelayedInit();
 
   // Omnibox events.
-  ExpectEventRecorded("C1I", true);
-  ExpectEventRecorded("C1S", false);
-  ExpectEventRecorded("C1F", false);
+  ExpectEventRecorded(kC1I, true);
+  ExpectEventRecorded(kC1S, false);
+  ExpectEventRecorded(kC1F, false);
 
   // Home page events.
-  ExpectEventRecorded("C2I", true);
-  ExpectEventRecorded("C2S", false);
-  ExpectEventRecorded("C2F", false);
+  ExpectEventRecorded(kC2I, true);
+  ExpectEventRecorded(kC2S, false);
+  ExpectEventRecorded(kC2F, false);
 
   ExpectRlzPingSent(true);
 }
@@ -439,14 +460,14 @@ TEST_F(RlzLibTest, OmniboxUsageOnly) {
   SimulateOmniboxUsage();
 
   // Omnibox events.
-  ExpectEventRecorded("C1I", false);
-  ExpectEventRecorded("C1S", false);
-  ExpectEventRecorded("C1F", true);
+  ExpectEventRecorded(kC1I, false);
+  ExpectEventRecorded(kC1S, false);
+  ExpectEventRecorded(kC1F, true);
 
   // Home page events.
-  ExpectEventRecorded("C2I", false);
-  ExpectEventRecorded("C2S", false);
-  ExpectEventRecorded("C2F", false);
+  ExpectEventRecorded(kC2I, false);
+  ExpectEventRecorded(kC2S, false);
+  ExpectEventRecorded(kC2F, false);
 
   ExpectRlzPingSent(false);
 }
@@ -456,14 +477,14 @@ TEST_F(RlzLibTest, HomepageUsageOnly) {
   SimulateHomepageUsage();
 
   // Omnibox events.
-  ExpectEventRecorded("C1I", false);
-  ExpectEventRecorded("C1S", false);
-  ExpectEventRecorded("C1F", false);
+  ExpectEventRecorded(kC1I, false);
+  ExpectEventRecorded(kC1S, false);
+  ExpectEventRecorded(kC1F, false);
 
   // Home page events.
-  ExpectEventRecorded("C2I", false);
-  ExpectEventRecorded("C2S", false);
-  ExpectEventRecorded("C2F", true);
+  ExpectEventRecorded(kC2I, false);
+  ExpectEventRecorded(kC2S, false);
+  ExpectEventRecorded(kC2F, true);
 
   ExpectRlzPingSent(false);
 }
@@ -475,14 +496,14 @@ TEST_F(RlzLibTest, UsageBeforeDelayedInit) {
   InvokeDelayedInit();
 
   // Omnibox events.
-  ExpectEventRecorded("C1I", true);
-  ExpectEventRecorded("C1S", true);
-  ExpectEventRecorded("C1F", true);
+  ExpectEventRecorded(kC1I, true);
+  ExpectEventRecorded(kC1S, true);
+  ExpectEventRecorded(kC1F, true);
 
   // Home page events.
-  ExpectEventRecorded("C2I", true);
-  ExpectEventRecorded("C2S", true);
-  ExpectEventRecorded("C2F", true);
+  ExpectEventRecorded(kC2I, true);
+  ExpectEventRecorded(kC2S, true);
+  ExpectEventRecorded(kC2F, true);
 
   ExpectRlzPingSent(true);
 }
@@ -494,14 +515,14 @@ TEST_F(RlzLibTest, OmniboxUsageAfterDelayedInit) {
   SimulateHomepageUsage();
 
   // Omnibox events.
-  ExpectEventRecorded("C1I", true);
-  ExpectEventRecorded("C1S", true);
-  ExpectEventRecorded("C1F", true);
+  ExpectEventRecorded(kC1I, true);
+  ExpectEventRecorded(kC1S, true);
+  ExpectEventRecorded(kC1F, true);
 
   // Home page events.
-  ExpectEventRecorded("C2I", true);
-  ExpectEventRecorded("C2S", true);
-  ExpectEventRecorded("C2F", true);
+  ExpectEventRecorded(kC2I, true);
+  ExpectEventRecorded(kC2S, true);
+  ExpectEventRecorded(kC2F, true);
 
   ExpectRlzPingSent(true);
 }
@@ -511,14 +532,14 @@ TEST_F(RlzLibTest, OmniboxUsageSendsPingWhenDelayNegative) {
   SimulateOmniboxUsage();
 
   // Omnibox events.
-  ExpectEventRecorded("C1I", true);
-  ExpectEventRecorded("C1S", true);
-  ExpectEventRecorded("C1F", true);
+  ExpectEventRecorded(kC1I, true);
+  ExpectEventRecorded(kC1S, true);
+  ExpectEventRecorded(kC1F, true);
 
   // Home page events.
-  ExpectEventRecorded("C2I", true);
-  ExpectEventRecorded("C2S", true);
-  ExpectEventRecorded("C2F", false);
+  ExpectEventRecorded(kC2I, true);
+  ExpectEventRecorded(kC2S, true);
+  ExpectEventRecorded(kC2F, false);
 
   ExpectRlzPingSent(true);
 }
@@ -528,78 +549,80 @@ TEST_F(RlzLibTest, HomepageUsageDoesNotSendPingWhenDelayNegative) {
   SimulateHomepageUsage();
 
   // Omnibox events.
-  ExpectEventRecorded("C1I", false);
-  ExpectEventRecorded("C1S", false);
-  ExpectEventRecorded("C1F", false);
+  ExpectEventRecorded(kC1I, false);
+  ExpectEventRecorded(kC1S, false);
+  ExpectEventRecorded(kC1F, false);
 
   // Home page events.
-  ExpectEventRecorded("C2I", false);
-  ExpectEventRecorded("C2S", false);
-  ExpectEventRecorded("C2F", true);
+  ExpectEventRecorded(kC2I, false);
+  ExpectEventRecorded(kC2S, false);
+  ExpectEventRecorded(kC2F, true);
 
   ExpectRlzPingSent(false);
 }
 
 TEST_F(RlzLibTest, GetAccessPointRlzOnIoThread) {
   // Set dummy RLZ string.
-  rlz_lib::SetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, kOmniboxRlzString);
+  rlz_lib::SetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, kOmniboxRlzString);
 
   string16 rlz;
 
   tracker_.set_assume_not_ui_thread(true);
-  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz));
+  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
   EXPECT_STREQ(kOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
 }
 
 TEST_F(RlzLibTest, GetAccessPointRlzNotOnIoThread) {
   // Set dummy RLZ string.
-  rlz_lib::SetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, kOmniboxRlzString);
+  rlz_lib::SetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, kOmniboxRlzString);
 
   string16 rlz;
 
   tracker_.set_assume_not_ui_thread(false);
-  EXPECT_FALSE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz));
+  EXPECT_FALSE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
 }
 
 TEST_F(RlzLibTest, GetAccessPointRlzIsCached) {
   // Set dummy RLZ string.
-  rlz_lib::SetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, kOmniboxRlzString);
+  rlz_lib::SetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, kOmniboxRlzString);
 
   string16 rlz;
 
   tracker_.set_assume_not_ui_thread(false);
-  EXPECT_FALSE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz));
+  EXPECT_FALSE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
 
   tracker_.set_assume_not_ui_thread(true);
-  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz));
+  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
   EXPECT_STREQ(kOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
 
   tracker_.set_assume_not_ui_thread(false);
-  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz));
+  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
   EXPECT_STREQ(kOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
 }
 
 TEST_F(RlzLibTest, PingUpdatesRlzCache) {
   // Set dummy RLZ string.
-  rlz_lib::SetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, kOmniboxRlzString);
-  rlz_lib::SetAccessPointRlz(rlz_lib::CHROME_HOME_PAGE, kHomepageRlzString);
+  rlz_lib::SetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, kOmniboxRlzString);
+  rlz_lib::SetAccessPointRlz(RLZTracker::CHROME_HOME_PAGE, kHomepageRlzString);
 
   string16 rlz;
 
   // Prime the cache.
   tracker_.set_assume_not_ui_thread(true);
 
-  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz));
+  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
   EXPECT_STREQ(kOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
-  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_HOME_PAGE, &rlz));
+  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(
+        RLZTracker::CHROME_HOME_PAGE, &rlz));
   EXPECT_STREQ(kHomepageRlzString, UTF16ToUTF8(rlz).c_str());
 
   // Make sure cache is valid.
   tracker_.set_assume_not_ui_thread(false);
 
-  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz));
+  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
   EXPECT_STREQ(kOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
-  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_HOME_PAGE, &rlz));
+  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(
+        RLZTracker::CHROME_HOME_PAGE, &rlz));
   EXPECT_STREQ(kHomepageRlzString, UTF16ToUTF8(rlz).c_str());
 
   // Perform ping.
@@ -611,9 +634,10 @@ TEST_F(RlzLibTest, PingUpdatesRlzCache) {
   // Make sure cache is now updated.
   tracker_.set_assume_not_ui_thread(false);
 
-  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz));
+  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
   EXPECT_STREQ(kNewOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
-  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_HOME_PAGE, &rlz));
+  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(
+        RLZTracker::CHROME_HOME_PAGE, &rlz));
   EXPECT_STREQ(kNewHomepageRlzString, UTF16ToUTF8(rlz).c_str());
 }
 

@@ -93,8 +93,8 @@ const char* GetAccessPointName(AccessPoint point) {
   case PARTNER_AP_3:                  return "V3";
   case PARTNER_AP_4:                  return "V4";
   case PARTNER_AP_5:                  return "V5";
-  case UNDEFINED_AP_H:                return "RH";
-  case UNDEFINED_AP_I:                return "RI";
+  case CHROME_MAC_OMNIBOX:            return "C5";
+  case CHROME_MAC_HOME_PAGE:          return "C6";
   case UNDEFINED_AP_J:                return "RJ";
   case UNDEFINED_AP_K:                return "RK";
   case UNDEFINED_AP_L:                return "RL";

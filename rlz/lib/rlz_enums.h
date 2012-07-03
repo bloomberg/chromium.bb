@@ -55,11 +55,12 @@ enum AccessPoint {
   PARTNER_AP_4,
   PARTNER_AP_5,
 
+  CHROME_MAC_OMNIBOX,  // Chrome searches through the address bar omnibox (mac).
+  CHROME_MAC_HOME_PAGE,// Chrome searches through Google as home page (mac).
+
   // Unclaimed access points - should be used first before creating new APs.
   // Please also make sure you re-name the enum before using an unclaimed value;
   // this acts as a check to ensure we don't have collisions.
-  UNDEFINED_AP_H,
-  UNDEFINED_AP_I,
   UNDEFINED_AP_J,
   UNDEFINED_AP_K,
   UNDEFINED_AP_L,
