@@ -65,7 +65,6 @@ class SpellCheckMessageFilter : public content::BrowserMessageFilter {
 #if !defined(OS_MACOSX)
   int route_id_;
   int identifier_;
-  int document_tag_;
 #endif
 };
 

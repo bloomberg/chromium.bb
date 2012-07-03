@@ -39,7 +39,7 @@ class GoogleInitializer {
  public:
   typedef void (*VoidFunction)(void);
   GoogleInitializer(const char* name, VoidFunction ctor, VoidFunction dtor)
-      : name_(name), destructor_(dtor) {
+      : /* name_(name), */ destructor_(dtor) {
     // TODO(dmikurube): Re-enable the commented-out code.
     // We commented out the following line, since Chromium does not have the
     // proper includes to log using these macros.
@@ -65,7 +65,8 @@ class GoogleInitializer {
   }
 
  private:
-  const char* const name_;
+  // TODO(dmikurube): Re-enable the commented-out code.
+  // const char* const name_;
   const VoidFunction destructor_;
 };
 

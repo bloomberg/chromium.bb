@@ -14,6 +14,7 @@
 //   currently, on by default in debug builds and off by default in
 //   release.
 
+#include "base/command_line.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 

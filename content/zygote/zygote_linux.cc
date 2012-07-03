@@ -24,7 +24,6 @@
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "base/posix/unix_domain_socket.h"
-#include "content/common/seccomp_sandbox.h"
 #include "content/common/set_process_title.h"
 #include "content/common/sandbox_methods_linux.h"
 #include "content/common/zygote_commands_linux.h"
@@ -73,7 +72,9 @@ Zygote::Zygote(int sandbox_flags,
                int proc_fd_for_seccomp)
     : sandbox_flags_(sandbox_flags),
       helper_(helper),
+#if defined(SECCOMP_SANDBOX)
       proc_fd_for_seccomp_(proc_fd_for_seccomp),
+#endif
       initial_uma_sample_(0),
       initial_uma_boundary_value_(0) {
   if (helper_) {

@@ -136,7 +136,6 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface,
   void EnqueueDataFrame(DataFrame* df);
   virtual void GetOutput() OVERRIDE;
  private:
-  uint64 seq_num_;
   BufferedSpdyFramer* buffered_spdy_framer_;
   bool valid_spdy_session_;  // True if we have seen valid data on this session.
                              // Use this to fail fast when junk is sent to our

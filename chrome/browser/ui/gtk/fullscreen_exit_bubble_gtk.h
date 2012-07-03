@@ -62,7 +62,6 @@ class FullscreenExitBubbleGtk : public FullscreenExitBubble {
   GtkWidget* instruction_label_;
   GtkWidget* hbox_;
   GtkWidget* message_label_;
-  GtkWidget* button_link_hbox_;
   GtkWidget* link_;
   GtkWidget* allow_button_;
   GtkWidget* deny_button_;
