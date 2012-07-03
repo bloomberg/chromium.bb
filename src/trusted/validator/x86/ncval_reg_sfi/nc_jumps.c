@@ -470,8 +470,19 @@ static void NaClValidateCallAlignment(NaClValidatorState* vstate) {
     NaClPcAddress printable_next_addr =
         NaClInstStatePrintableAddress(vstate->cur_inst_state) +
         NaClInstStateLength(vstate->cur_inst_state);
+    /* NOTE: Previously the validator recorded an error for call instructions
+     * that were not aligned against the end of a bundle, as these, while
+     * safe, are not correct with the current code generation idioms.
+     * This #if defined(ERROR_ON_CALL_BUNDLE_ALIGNMENT) was added to allow
+     * experimentation with different call/return idioms.
+     */
     NaClValidatorInstMessage(
-        LOG_ERROR, vstate, vstate->cur_inst_state,
+#if defined(ERROR_ON_CALL_BUNDLE_ALIGNMENT)
+        LOG_ERROR,
+#else
+        LOG_WARNING,
+#endif
+        vstate, vstate->cur_inst_state,
         "Bad call alignment, return pc = %"NACL_PRIxNaClPcAddress"\n",
         printable_next_addr);
   }

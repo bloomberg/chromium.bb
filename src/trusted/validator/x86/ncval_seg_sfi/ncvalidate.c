@@ -513,9 +513,17 @@ static void ValidateCallAlignment(const NCDecoderInst *dinst) {
   NaClPcAddress fallthru = dinst->inst_addr + dinst->inst.bytes.length;
   struct NCValidatorState* vstate = NCVALIDATOR_STATE_DOWNCAST(dinst->dstate);
   if (fallthru & vstate->bundle_mask) {
+#if defined(ERROR_ON_CALL_BUNDLE_ALIGNMENT)
+    /* NOTE: Previously the validator recorded an error for call instructions
+     * that were not aligned against the end of a bundle, as these, while
+     * safe, are not correct with the current code generation idioms.
+     * This #if defined(ERROR_ON_CALL_BUNDLE_ALIGNMENT) was added to allow
+     * experimentation with different call/return idioms.
+     */
     ValidatePrintInstructionError(dinst, "Bad call alignment", vstate);
     /* This makes bad call alignment a fatal error. */
     NCStatsBadAlignment(vstate);
+#endif
   }
 }
 

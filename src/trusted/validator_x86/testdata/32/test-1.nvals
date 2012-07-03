@@ -1,8 +1,5 @@
-VALIDATOR: 80000006: Bad call alignment
 VALIDATOR: 80000006: JUMP TARGET out of range
-VALIDATOR: 8000000b: Bad call alignment
 VALIDATOR: 8000000b: JUMP TARGET out of range
-VALIDATOR: 80000010: Bad call alignment
 VALIDATOR: 80000010: JUMP TARGET out of range
 VALIDATOR: 80000016: ret instruction (not allowed)
 VALIDATOR: 80000016: Illegal instruction
@@ -20,7 +17,7 @@ Problems:
 1 illegal instructions
 3 bad jump targets
 1 illegal unprotected indirect jumps (including ret)
-3 instruction alignment defects
+0 instruction alignment defects
 0 segmentation errors
 0 bad prefix
 0 bad instruction length

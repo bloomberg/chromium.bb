@@ -1,9 +1,4 @@
-VALIDATOR: 805464b: Bad call alignment
 VALIDATOR: 805464b: JUMP TARGET out of range
-VALIDATOR: 805466b: Bad call alignment
-VALIDATOR: 805468b: Bad call alignment
-VALIDATOR: 80546cb: Bad call alignment
-VALIDATOR: 80546eb: Bad call alignment
 VALIDATOR: 80546eb: JUMP TARGET out of range
 *** <input> IS UNSAFE ***
 
@@ -23,7 +18,7 @@ Problems:
 0 illegal instructions
 2 bad jump targets
 0 illegal unprotected indirect jumps (including ret)
-5 instruction alignment defects
+0 instruction alignment defects
 0 segmentation errors
 0 bad prefix
 0 bad instruction length
