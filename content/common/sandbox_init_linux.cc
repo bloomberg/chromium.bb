@@ -165,6 +165,8 @@ playground2::Sandbox::ErrorCode GpuProcessPolicy(int sysno) {
       return playground2::Sandbox::SB_ALLOWED;
     case __NR_socket:
       return EACCES;  // Nvidia binary driver.
+    case __NR_fchmod:
+      return EPERM;  // ATI binary driver.
     default:
       if (IsGettimeSyscall(sysno) ||
           IsKillSyscall(sysno)) { // GPU watchdog.
@@ -220,6 +222,7 @@ playground2::Sandbox::ErrorCode FlashProcessPolicy(int sysno) {
     case __NR_sched_yield:
     case __NR_shutdown:
     case __NR_sched_getaffinity:
+    case __NR_sched_setscheduler:
     case __NR_dup:  // Flash Access.
     // These are under investigation, and hopefully not here for the long term.
     case __NR_shmctl:
@@ -228,6 +231,8 @@ playground2::Sandbox::ErrorCode FlashProcessPolicy(int sysno) {
       return playground2::Sandbox::SB_ALLOWED;
     case __NR_ioctl:
       return ENOTTY;  // Flash Access.
+    case __NR_socket:
+      return EACCES;
 
     default:
       if (IsGettimeSyscall(sysno) ||
