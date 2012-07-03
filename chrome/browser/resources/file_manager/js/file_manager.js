@@ -3529,6 +3529,9 @@ FileManager.prototype = {
    */
   FileManager.prototype.showLowDiskSpaceWarning_ = function(show) {
     var box = this.dialogDom_.querySelector('.downloads-warning');
+
+    if (box.hidden == !show) return;
+
     if (show) {
       var html = util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING'));
       box.lastElementChild.innerHTML = html;
@@ -4345,57 +4348,58 @@ FileManager.prototype = {
    */
   FileManager.prototype.checkFreeSpace_ = function(currentPath) {
     var dir = DirectoryModel.DOWNLOADS_DIRECTORY;
-    if (currentPath.substr(1, dir.length) == dir) {
-      // Setup short timeout if currentPath just changed.
-      if (this.checkFreeSpaceTimer_)
-        clearTimeout(this.checkFreeSpaceTimer_);
 
-      // Right after changing directory the bottom pannel usually hides.
-      // Simultaneous animation looks unpleasent. Also showing the warning is
-      // lower priority task. So delay it.
-      this.checkFreeSpaceTimer_ = setTimeout(doCheck, 500);
-    } else {
+    var scheduleCheck = function(timeout) {
       if (this.checkFreeSpaceTimer_) {
         clearTimeout(this.checkFreeSpaceTimer_);
-        this.checkFreeSpaceTimer_ = 0;
-
-        // Hide warning immediately.
-        this.showLowDiskSpaceWarning_(false);
+        this.checkFreeSpaceTimer_ = null;
       }
-    }
 
-    var self = this;
-    function doCheck() {
-      var path = '/' + dir;
-      self.resolvePath(path, function(downloadsDirEntry) {
-        chrome.fileBrowserPrivate.getSizeStats(downloadsDirEntry.toURL(),
+      if (timeout) {
+        this.checkFreeSpaceTimer_ = setTimeout(doCheck, timeout);
+      }
+    }.bind(this);
+
+    var doCheck = function() {
+      // Remember our invocation timer, because getSizeStats is long and
+      // asynchronous call.
+      var selfTimer = this.checkFreeSpaceTimer_;
+
+      chrome.fileBrowserPrivate.getSizeStats(
+          util.makeFilesystemUrl('/' + dir),
           function(sizeStats) {
-            // sizeStats is undefined if some error occur.
-            var lowDiskSpace = false;
-            if (sizeStats && sizeStats.totalSizeKB > 0) {
-              var ratio = sizeStats.remainingSizeKB / sizeStats.totalSizeKB;
+            // If new check started while we were in async getSizeStats call,
+            // then we shouldn't do anything.
+            if (selfTimer != this.checkFreeSpaceTimer_) return;
 
-              lowDiskSpace = ratio < 0.2;
-              self.showLowDiskSpaceWarning_(lowDiskSpace);
-            }
+            // sizeStats is undefined, if some error occurs.
+            var lowDiskSpace =
+                sizeStats &&
+                sizeStats.totalSizeKB > 0 &&
+                sizeStats.remainingSizeKB / sizeStats.totalSizeKB < 0.2;
 
-            // If disk space is low check it more often. User can delete files
+            this.showLowDiskSpaceWarning_(lowDiskSpace);
+
+            // If disk space is low, check it more often. User can delete files
             // manually and we should not bother her with warning in this case.
-            setTimeout(doCheck, lowDiskSpace ? 1000 * 5 : 1000 * 30);
-          });
-      }, onError);
+            scheduleCheck(lowDiskSpace ? 1000 * 5 : 1000 * 30);
+          }.bind(this));
+    }.bind(this);
 
-      function onError(err) {
-        console.log('Error while checking free space: ' + err);
-        setTimeout(doCheck, 1000 * 60);
-      }
+    if (currentPath.substr(1, dir.length) == dir) {
+      // Setup short timeout if currentPath just changed.
+      scheduleCheck(500);
+    } else {
+      scheduleCheck(0);
+
+      this.showLowDiskSpaceWarning_(false);
     }
   };
 
   /**
    * Handler invoked on preference setting in gdata context menu.
    * @param {String} pref  The preference to alter.
-   * @param {boolean} invert Invert the value if true.
+   * @param {boolean} inverted Invert the value if true.
    * @param {Event}  event The click event.
    */
   FileManager.prototype.onGDataPrefClick_ = function(pref, inverted, event) {
