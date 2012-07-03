@@ -103,6 +103,9 @@ def generate_simplified(files, root_dir, variables, relative_cwd):
   Cleans up and extracts only files from within root_dir then processes
   variables and relative_cwd.
   """
+  logging.info(
+      'generate_simplified(%d files, %s, %s, %s)' %
+      (len(files), root_dir, variables, relative_cwd))
   # Constants.
   # Skip log in PRODUCT_DIR. Note that these are applied on '/' style path
   # separator.
@@ -114,14 +117,12 @@ def generate_simplified(files, root_dir, variables, relative_cwd):
 
   # Preparation work.
   relative_cwd = cleanup_path(relative_cwd)
-  # Creates the right set of variables here. We only care about
-  # PATH_VARIABLES.
+  # Creates the right set of variables here. We only care about PATH_VARIABLES.
   variables = dict(
       ('<(%s)' % k, variables[k]) for k in PATH_VARIABLES if k in variables)
 
   # Actual work: Process the files.
   files = trace_inputs.extract_directories(root_dir, files, default_blacklist)
-  files = (f.replace_variables(variables) for f in files)
 
   def fix(f):
     """Bases the file on the most restrictive variable."""
@@ -133,6 +134,11 @@ def generate_simplified(files, root_dir, variables, relative_cwd):
       # relative_cwd is usually the directory containing the gyp file. It may be
       # empty if the whole directory containing the gyp file is needed.
       f = posix_relpath(f, relative_cwd) or './'
+
+    for variable, root_path in variables.iteritems():
+      if f.startswith(root_path):
+        f = variable + f[len(root_path):]
+        break
 
     # Now strips off known files we want to ignore and to any specific mangling
     # as necessary. It's easier to do it here than generate a blacklist.
