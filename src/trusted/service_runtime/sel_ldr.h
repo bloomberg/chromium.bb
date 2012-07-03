@@ -764,6 +764,7 @@ void NaClGdbHook(struct NaClApp const *nap);
 
 #if NACL_LINUX
 void NaClHandleRDebug(const char *switch_value, char *argv0);
+void NaClHandleReservedAtZero(const char *switch_value);
 #endif
 
 EXTERN_C_END

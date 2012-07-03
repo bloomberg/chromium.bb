@@ -187,6 +187,7 @@ elif env.Bit('linux'):
     'linux/sel_memory.c',
     'linux/nacl_oop_debugger_hooks.c',
     'linux/nacl_thread_nice.c',
+    'linux/reserved_at_zero.c',
     'posix/addrspace_teardown.c',
   ]
   if env.Bit('build_x86'):
@@ -374,15 +375,16 @@ if (env.Bit('linux') and not env.CrossToolsBuild() and
                                   '-U__STDC_HOSTED__',
                                   '-D__STDC_HOSTED__=1',
                                   '-Qunused-arguments'])
+
   if env.Bit('target_x86_64'):
     ld_emul = 'elf_x86_64'
-    defsym = ''
+    reserve_top = '0x0'
   elif env.Bit('target_x86_32'):
     ld_emul = 'elf_i386'
-    defsym = '--defsym RESERVE_TOP=0x40000000'
+    reserve_top = '0x40000000'
   elif env.Bit('target_arm'):
     ld_emul = 'armelf_linux_eabi'
-    defsym = '--defsym RESERVE_TOP=0x40002000'
+    reserve_top = '0x40002000'
 
   bootstrap_obj = bootstrap_env.ComponentObject('linux/nacl_bootstrap.c')
   bootstrap_raw = bootstrap_env.Command(
@@ -390,9 +392,9 @@ if (env.Bit('linux') and not env.CrossToolsBuild() and
       [bootstrap_obj],
       ("env CXX='${CXX}' ${PYTHON} %s " +
        '-m %s --build-id -static -z max-page-size=0x1000 ' +
-       defsym + ' --script %s -o ${TARGET} ${SOURCES}') %
-      (bootstrap_env.File('linux/ld_bfd.py'),
-       ld_emul, bootstrap_env.File('linux/nacl_bootstrap.x')),
+       '--defsym RESERVE_TOP=%s --script %s -o ${TARGET} ${SOURCES}') %
+      (bootstrap_env.File('linux/ld_bfd.py'), ld_emul, reserve_top,
+       bootstrap_env.File('linux/nacl_bootstrap.x')),
       )
 
   # This is a terrible kludge in lieu of SCons having decent support for

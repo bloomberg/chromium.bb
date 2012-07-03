@@ -36,7 +36,7 @@ TEXT_START = 0x10000;
 /*
  * The symbol RESERVE_TOP is the top of the range we are trying to reserve.
  * This is set via --defsym on the linker command line, because the correct
- * value differs for each machine.  It's not defined at all if we do not
+ * value differs for each machine.  It is defined to be 0x0 if we do not
  * actually need any space reserved for this configuration.
  */
 
@@ -110,7 +110,7 @@ SECTIONS {
   . = ALIGN(CONSTANT(COMMONPAGESIZE));
   RESERVE_START = .;
   .reserve : {
-    . += DEFINED(RESERVE_TOP) ? (RESERVE_TOP - RESERVE_START) : 0;
+    . += (RESERVE_TOP > RESERVE_START) ? (RESERVE_TOP - RESERVE_START) : 0;
   } :reserve
 
   /*

@@ -154,6 +154,7 @@ static void PrintUsage() {
 #if NACL_LINUX
 static const struct option longopts[] = {
   { "r_debug", required_argument, NULL, 'D' },
+  { "reserved_at_zero", required_argument, NULL, 'z' },
   { NULL, 0, NULL, 0 }
 };
 
@@ -257,7 +258,7 @@ int main(int  argc,
    */
   while ((opt = my_getopt(argc, argv,
 #if NACL_LINUX
-                       "+D:"
+                       "+D:z:"
 #endif
                        "aB:ceE:f:Fgh:i:l:Qr:RsSvw:X:Z")) != -1) {
     switch (opt) {
@@ -366,6 +367,11 @@ int main(int  argc,
       case 'X':
         export_addr_to = strtol(optarg, (char **) 0, 0);
         break;
+#if NACL_LINUX
+      case 'z':
+        NaClHandleReservedAtZero(optarg);
+        break;
+#endif
       case 'Z':
         NaClLog(LOG_WARNING, "Enabling Fixed-Feature CPU Mode\n");
         nap->fixed_feature_cpu_mode = 1;

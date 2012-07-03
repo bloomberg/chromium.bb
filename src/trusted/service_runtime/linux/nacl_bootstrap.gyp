@@ -10,19 +10,19 @@
     ['target_arch=="x64"', {
       'variables': {
         # No extra reservation.
-        'nacl_reserve_top': [],
+        'nacl_reserve_top': '0x0',
       }
     }],
     ['target_arch=="ia32"', {
       'variables': {
         # 1G address space.
-        'nacl_reserve_top': ['--defsym', 'RESERVE_TOP=0x40000000'],
+        'nacl_reserve_top': '0x40000000',
       }
     }],
     ['target_arch=="arm"', {
       'variables': {
         # 1G address space, plus 8K guard area above.
-        'nacl_reserve_top': ['--defsym', 'RESERVE_TOP=0x40002000'],
+        'nacl_reserve_top': '0x40002000',
       }
     }],
   ],
@@ -170,7 +170,7 @@
                      '-static',
                      # Link with custom linker script for special
                      # layout.  The script uses the symbol RESERVE_TOP.
-                     '<@(nacl_reserve_top)',
+                     '--defsym', 'RESERVE_TOP=<(nacl_reserve_top)',
                      '--script=<(linker_script)',
                      '-o', '<@(_outputs)',
                      # On x86-64, the default page size with some

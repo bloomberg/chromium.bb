@@ -35,11 +35,14 @@ static int my_errno;
 
 #define MAX_PHNUM               12
 
+typedef uintptr_t __attribute__((may_alias)) stack_val_t;
+
 /*
- * This exact magic argument string is recognized in check_r_debug_arg, below.
- * Requiring the argument to have those Xs as a template both simplifies
- * our argument matching code and saves us from having to reformat the
- * whole stack to find space for a string longer than the original argument.
+ * These exact magic argument strings are recognized in check_r_debug_arg
+ * and check_reserved_at_zero_arg, below. Requiring the arguments to have
+ * those Xs as a template both simplifies our argument matching code and saves
+ * us from having to reformat the whole stack to find space for a string longer
+ * than the original argument.
  */
 #define R_DEBUG_TEMPLATE_PREFIX "--r_debug=0x"
 #define R_DEBUG_TEMPLATE_DIGITS "XXXXXXXXXXXXXXXX"
@@ -47,6 +50,13 @@ static const char kRDebugTemplate[] =
     R_DEBUG_TEMPLATE_PREFIX R_DEBUG_TEMPLATE_DIGITS;
 static const size_t kRDebugPrefixLen = sizeof(R_DEBUG_TEMPLATE_PREFIX) - 1;
 
+#define RESERVED_AT_ZERO_TEMPLATE_PREFIX "--reserved_at_zero=0x"
+#define RESERVED_AT_ZERO_TEMPLATE_DIGITS "XXXXXXXX"
+static const char kReservedAtZeroTemplate[] =
+    RESERVED_AT_ZERO_TEMPLATE_PREFIX RESERVED_AT_ZERO_TEMPLATE_DIGITS;
+static const size_t kReservedAtZeroPrefixLen =
+    sizeof(RESERVED_AT_ZERO_TEMPLATE_PREFIX) - 1;
+extern size_t RESERVE_TOP;
 
 /*
  * We're not using <string.h> functions here, to avoid dependencies.
@@ -375,6 +385,21 @@ static ElfW(Addr) load_elf_file(const char *filename,
   return ehdr.e_entry + load_bias;
 }
 
+/*
+ * Replace template digits with a fill value.  This function places the
+ * bottom num_digits of the hex representation of fill into the string
+ * pointed to by start.
+ */
+static void fill_in_template_digits(char *start, size_t num_digits,
+                                    uintptr_t fill) {
+  while (num_digits-- > 0) {
+    start[num_digits] = "0123456789abcdef"[fill & 0xf];
+    fill >>= 4;
+  }
+  if (fill != 0)
+    fail("fill_in_template_digits",
+         "fill has significant digits beyond num_digits", NULL, 0, NULL, 0);
+}
 
 /*
  * GDB looks for this symbol name when it cannot find PT_DYNAMIC->DT_DEBUG.
@@ -392,12 +417,24 @@ struct r_debug _r_debug __attribute__((nocommon, section(".r_debug")));
  */
 static int check_r_debug_arg(char *arg) {
   if (my_strcmp(arg, kRDebugTemplate) == 0) {
-    uintptr_t addr = (uintptr_t) &_r_debug;
-    size_t i = 16;
-    while (i-- > 0) {
-      arg[kRDebugPrefixLen + i] = "0123456789abcdef"[addr & 0xf];
-      addr >>= 4;
-    }
+    fill_in_template_digits(arg + kRDebugPrefixLen,
+                            sizeof(R_DEBUG_TEMPLATE_DIGITS) - 1,
+                            (uintptr_t) &_r_debug);
+    return 1;
+  }
+  return 0;
+}
+
+/*
+ * If the argument matches the kReservedAtZeroTemplate string, then replace
+ * the 8 Xs with the hexadecimal representation of the amount of
+ * prereserved memory.
+ */
+static int check_reserved_at_zero_arg(char *arg) {
+  if (my_strcmp(arg, kReservedAtZeroTemplate) == 0) {
+    fill_in_template_digits(arg + kReservedAtZeroPrefixLen,
+                            sizeof(RESERVED_AT_ZERO_TEMPLATE_DIGITS) - 1,
+                            (uintptr_t) &RESERVE_TOP);
     return 1;
   }
   return 0;
@@ -425,7 +462,7 @@ static int check_r_debug_arg(char *arg) {
  * program.  We need to modify argc, move argv[1..] back to the argv[0..]
  * position, and also examine and modify the auxiliary vector on the stack.
  */
-ElfW(Addr) do_load(uintptr_t *stack) {
+ElfW(Addr) do_load(stack_val_t *stack) {
   size_t i;
   int argn;
 
@@ -443,7 +480,7 @@ ElfW(Addr) do_load(uintptr_t *stack) {
   ElfW(auxv_t) *av = auxv;
   while (av->a_type != AT_NULL)
     ++av;
-  size_t stack_words = (uintptr_t *) (av + 1) - &stack[1];
+  size_t stack_words = (stack_val_t *) (av + 1) - &stack[1];
 
   if (argc < 2)
     fail("Usage", "PROGRAM ARGS...", NULL, 0, NULL, 0);
@@ -460,13 +497,17 @@ ElfW(Addr) do_load(uintptr_t *stack) {
     stack[i] = stack[i + 1];
 
   /*
-   * If one of our arguments is the kRDebugTemplate string, then
-   * we'll modify that argument string in place to specify the
-   * address of our _r_debug structure.
+   * If an argument is the kRDebugTemplate or kReservedAtZeroTemplate
+   * string, then we'll modify that argument string in place to specify
+   * the address of our _r_debug structure (for kRDebugTemplate) or the
+   * amount of prereserved address space (for kReservedAtZeroTemplate).
+   * We expect that the arguments matching the templates are the first
+   * arguments provided.
    */
   for (argn = 1; argn < argc; ++argn) {
-    if (check_r_debug_arg(argv[argn]))
-      break;
+    if (!check_r_debug_arg(argv[argn]) &&
+        !check_reserved_at_zero_arg(argv[argn]))
+     break;
   }
 
   /*

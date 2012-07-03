@@ -169,6 +169,7 @@
             }],
             ['OS=="linux"', {
               'sources': [
+                'linux/reserved_at_zero.c',
                 'linux/sel_memory.c',
                 'linux/nacl_oop_debugger_hooks.c',
                 'linux/nacl_thread_nice.c',
