@@ -6,10 +6,10 @@
 /// This example demonstrates the use of persistent file I/O
 
 #define __STDC_LIMIT_MACROS
-#include <stdint.h>
 #include <sstream>
 #include <string>
 
+#include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/cpp/file_io.h"
 #include "ppapi/cpp/file_ref.h"
@@ -18,6 +18,10 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/utility/completion_callback_factory.h"
+
+#ifndef INT32_MAX
+#define INT32_MAX (0x7FFFFFFF)
+#endif
 
 namespace {
 /// Used for our simple protocol to communicate with Javascript

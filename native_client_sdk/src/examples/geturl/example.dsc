@@ -1,10 +1,11 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win'],
   'TARGETS': [
     {
       'NAME' : 'geturl',
       'TYPE' : 'main',
       'SOURCES' : ['geturl.cc', 'geturl_handler.cc', 'geturl_handler.h'],
+      'LIBS': ['ppapi_cpp']
     }
   ],
   'DATA': ['geturl_success.html'],

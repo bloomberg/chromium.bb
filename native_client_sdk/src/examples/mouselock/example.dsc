@@ -1,10 +1,11 @@
 {
-  'TOOLS': ['newlib', 'glibc'],
+  'TOOLS': ['newlib', 'glibc', 'win'],
   'TARGETS': [
     {
       'NAME' : 'mouselock',
       'TYPE' : 'main',
       'SOURCES' : ['mouselock.cc', 'mouselock.h'],
+      'LIBS': ['ppapi_cpp']
     }
   ],
   'DATA': ['check_browser.js'],

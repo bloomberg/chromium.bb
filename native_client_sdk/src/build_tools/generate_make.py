@@ -9,7 +9,8 @@ import optparse
 import os
 import sys
 
-from make_rules import BuildToolDict, BUILD_RULES
+from make_rules import BuildDefineList, BuildLibList, BuildToolDict
+from make_rules import GetBuildRule, BUILD_RULES
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SDK_SRC_DIR = os.path.dirname(SCRIPT_DIR)
@@ -19,6 +20,11 @@ SRC_DIR = os.path.dirname(SDK_DIR)
 OUT_DIR = os.path.join(SRC_DIR, 'out')
 PPAPI_DIR = os.path.join(SRC_DIR, 'ppapi')
 
+# Add SDK make tools scripts to the python path.
+sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
+import getos
+
+SUPPORTED_HOSTS = ['win']
 
 def ErrorExit(text):
   sys.stderr.write(text + '\n')
@@ -27,7 +33,9 @@ def ErrorExit(text):
 
 def Replace(text, replacements):
   for key in replacements:
-    text = text.replace(key, replacements[key])
+    val = replacements[key]
+    if val is not None:
+      text = text.replace(key, val)
   return text
 
 
@@ -57,7 +65,6 @@ def SetVar(varname, values):
 
 def GenerateCopyList(desc):
   sources = []
-
   # Add sources for each target
   for target in desc['TARGETS']:
     sources.extend(target['SOURCES'])
@@ -90,10 +97,10 @@ def GetPlatforms(plat_list, plat_filter):
   return platforms
 
 
-def GenerateToolDefaults(desc, platforms):
+def GenerateToolDefaults(desc, tools):
   defaults = ''
-  for platform in platforms:
-    defaults += BUILD_RULES[platform]['DEFS']
+  for tool in tools:
+    defaults += BUILD_RULES[tool]['DEFS']
   return defaults  
 
 
@@ -120,86 +127,124 @@ def GenerateSettings(desc, tools):
   return settings
 
 
-def GenerateTargets(desc, tools):
-  prereqs = desc.get('PREREQ', [])
-  target_def = ''
- 
-  if prereqs:
-    target_def = '.PHONY : PREREQS\nPREREQS:\n'
-    for prereq in prereqs:
-      target_def += '\t+$(MAKE) -C %s all\n' % prereq
-    target_def+= '\nall : PREREQS ' + (' '.join(targets))
-  else:
-    target_def += 'all : ALL_TARGETS' 
+def GetTarget(tool, targ_type, replace):
+  pattern = BUILD_RULES[tool]['TOOL'][targ_type]
+  return Replace(pattern, replace)
 
 
-def GenerateNEXE(target, tool):
+def GenerateCompile(target, tool, arch, srcs):
+  """Generates a Compile target.
+
+  For the given target, toolset and architecture, returns a rule to generate
+  the object files for the set of sources.
+  
+  Returns:
+    Returns a tuple containin the objects and the rule.
+  """
   rules = ''
   name = target['NAME']
-  srcs = GetSourcesDict(target['SOURCES'])
-  for arch in BUILD_RULES[tool]['ARCHES']:
-    object_sets = []
-    if srcs['.c']:
-      replace = BuildToolDict(tool, name, arch, 'c')
-      compile_rule = BUILD_RULES[tool]['CC']
-      rules += Replace(compile_rule, replace)
-      object_sets.append('$(%s)' % replace['<OBJS>'])
+  object_sets = []
 
-    if srcs['.cc']:
-      replace = BuildToolDict(tool, name, arch, 'cc')
-      compile_rule = BUILD_RULES[tool]['CXX']
-      rules += Replace(compile_rule, replace)
-      object_sets.append('$(%s)' % replace['<OBJS>'])
+  defines = target.get('DEFINES', [])
+  defs = BuildDefineList(tool, defines)
 
-    objs = ' '.join(object_sets)
-    link_rule = BUILD_RULES[tool][ target['TYPE'] ]
-    replace = BuildToolDict(tool, name, arch, 'nexe', OBJS=objs)
-    rules += Replace(link_rule, replace) 
-  return rules
+  if srcs['.c']:
+    replace = BuildToolDict(tool, name, arch, 'c', DEFLIST=defs)
+    compile_rule = GetBuildRule(tool, 'CC')
+    rules += Replace(compile_rule, replace)
+    object_sets.append('$(%s)' % replace['<OBJS>'])
+
+  if srcs['.cc']:
+    replace = BuildToolDict(tool, name, arch, 'cc', DEFLIST=defs)
+    compile_rule = GetBuildRule(tool, 'CXX')
+    rules += Replace(compile_rule, replace)
+    object_sets.append('$(%s)' % replace['<OBJS>'])
+  return (' '.join(object_sets), rules)
 
 
-def GenerateRules(desc, tools):
-  rules = ''
-  for tc in tools:
-    rules += '\n#\n# Rules for %s toolchain\n#\n%s:\n\t$(MKDIR) %s\n' % (
-        tc, tc, tc)
-    nexe = None
-    for target in desc['TARGETS']:
-      name = target['NAME']
-      srcs = target['SOURCES']
-      rules += GenerateNEXE(target, tc)
-      if target['TYPE'] == 'main':
-    	main = target
+def GenerateLink(target, tool, arch, objs):
+  """Generate a Link target.
 
-    if main:
-      rules += GenerateNMF(main, tc)
-  return rules
+  Returns:
+    Returns a tuple containing the rule and target.
+  """
+  targ_type =  target['TYPE'] 
+  link_rule = GetBuildRule(tool, targ_type.upper())
+  libs = target.get('LIBS', [])
+  libs = BuildLibList(tool, libs)
+  replace = BuildToolDict(tool, target['NAME'], arch, 'nexe',
+                          OBJS=objs, LIBLIST=libs)
+  rule = Replace(link_rule, replace) 
+  target_out = GetTarget(tool, targ_type, replace)
+  return target_out, rule
 
 
 def GenerateNMF(target, tool):
-  nmf_rule = BUILD_RULES[tool]['nmf']
+  nmf_rule = BUILD_RULES[tool]['NMF']
   replace = BuildToolDict(tool, target['NAME'])
-  return Replace(nmf_rule, replace)
+  rule = Replace(nmf_rule, replace)
+  target_out = GetTarget(tool, 'nmf', replace)
+  return  target_out, rule
+
+
+def GenerateRules(desc, tools):
+  all_targets = []
+  rules = ''
+  clean = []
+  for tc in tools:
+    rules += '\n#\n# Rules for %s toolchain\n#\n%s:\n\t$(MKDIR) %s\n' % (
+        tc, tc, tc)
+    main = None
+    for target in desc['TARGETS']:
+      name = target['NAME']
+      srcs = GetSourcesDict(target['SOURCES'])
+      for arch in BUILD_RULES[tc]['ARCHES']:
+        objs, comp_rule = GenerateCompile(target, tc, arch, srcs)
+        targs, link_rule = GenerateLink(target, tc, arch, objs)
+        rules += comp_rule + link_rule
+        clean.append(objs)
+
+      if target['TYPE'] == 'main':
+        main = target
+      elif target['TYPE'] == 'lib':
+        all_targets.append(targs)
+
+    if main:
+      targs, nmf_rule = GenerateNMF(main, tc)
+      rules += nmf_rule
+      all_targets.append(targs)
+  rules += '\n.PHONY : clean\nclean:\n\t$(RM) ' + ' '.join(clean)
+  return ' '.join(all_targets), rules
+
+
+
+def GenerateTargets(desc, tools):
+  targets = []
+  rules = ''
+  for tc in tools:
+    for target in desc['TARGETS']:
+      name = target['NAME']
+      replace = BuildToolDict(tc, name)
+      target = GetTarget(tc, target['TYPE'], replace)
+      if target:
+        targets.append(target)
+  return targets
 
 
 def GenerateReplacements(desc, tools):
   # Generate target settings
   plats = GetPlatforms(desc['TOOLS'], tools)
-  
+
   settings = GenerateSettings(desc, tools)
   tool_def = GenerateToolDefaults(desc, tools)
-  rules = GenerateRules(desc, tools)
+  all_targets, rules = GenerateRules(desc, tools)
+
   prelaunch = desc.get('LAUNCH', '')
   prerun = desc.get('PRE', '')
   postlaunch = desc.get('POST', '')
 
-  targets = []
-  target_def = ''
-  for tool in tools:
-    for target in desc['TARGETS']:
-      if target['TYPE'] == 'main':
-	targets.append('%s/%s.nmf' % (tool, target['NAME']))  
-  target_def = 'all: ' + ' '.join(targets)        
+  targets = GenerateTargets(desc, tools)
+  target_def = 'all: ' +  all_targets
 
   return {
       '__PROJECT_SETTINGS__' : settings,
@@ -215,7 +260,7 @@ def GenerateReplacements(desc, tools):
 
 # 'KEY' : ( <TYPE>, [Accepted Values], <Required?>)
 DSC_FORMAT = {
-    'TOOLS' : (list, ['newlib', 'glibc', 'pnacl'], True),
+    'TOOLS' : (list, ['newlib', 'glibc', 'pnacl', 'win'], True),
     'PREREQ' : (list, '', False),
     'TARGETS' : (list, {
         'NAME': (str, '', True),
@@ -436,15 +481,16 @@ def ProcessProject(srcroot, dstroot, desc, toolchains):
   repdict = GenerateReplacements(desc, tools)
   make_path = os.path.join(out_dir, 'Makefile')
   WriteReplaced(template, make_path, repdict)
+
   outdir = os.path.dirname(os.path.abspath(make_path))
   pepperdir = os.path.dirname(os.path.dirname(outdir))
   AddMakeBat(pepperdir, outdir)
   return (name, desc['DEST'])
 
 
-def GenerateExamplesMakefile(in_path, out_path, examples):
+def GenerateMasterMakefile(in_path, out_path, projects):
   """Generate a Master Makefile that builds all examples. """
-  replace = {  '__PROJECT_LIST__' : SetVar('PROJECTS', examples) }
+  replace = {  '__PROJECT_LIST__' : SetVar('PROJECTS', projects) }
   WriteReplaced(in_path, out_path, replace)
 
   outdir = os.path.dirname(os.path.abspath(out_path))
@@ -455,7 +501,7 @@ def GenerateExamplesMakefile(in_path, out_path, examples):
 def main(argv):
   parser = optparse.OptionParser()
   parser.add_option('--dstroot', help='Set root for destination.',
-      dest='dstroot', default=OUT_DIR)
+      dest='dstroot', default=os.path.join(OUT_DIR, 'pepper_canary'))
   parser.add_option('--master', help='Create master Makefile.',
       action='store_true', dest='master', default=False)
   parser.add_option('--newlib', help='Create newlib examples.',
@@ -468,6 +514,8 @@ def main(argv):
       action='store_true', dest='host', default=False)
 
   toolchains = []
+  platform = getos.GetPlatform()
+
   options, args = parser.parse_args(argv)
   if options.newlib:
     toolchains.append('newlib')
@@ -476,7 +524,7 @@ def main(argv):
   if options.pnacl:
     toolchains.append('pnacl')
   if options.host:
-    toolchains.append('host')
+    toolchains.append(platform)
 
   # By default support newlib and glibc
   if not toolchains:
@@ -484,6 +532,7 @@ def main(argv):
     print 'Using default toolchains: ' + ' '.join(toolchains)
 
   examples = []
+  libs = []
   for filename in args:
     desc = LoadProject(filename, toolchains)
     if not desc:
@@ -494,16 +543,21 @@ def main(argv):
     if not ProcessProject(srcroot, options.dstroot, desc, toolchains):
       ErrorExit('\n*** Failed to process project: %s ***' % filename)
 
-    # if this is an example, do the HTML files as well
+    # if this is an example add it to the master make and update the html
     if desc['DEST'] == 'examples':
       examples.append(desc['NAME'])
       ProcessHTML(srcroot, options.dstroot, desc, toolchains)
 
+    # if this is a library add it to the master make
+    if desc['DEST'] == 'src':
+      libs.append(desc['NAME'])
 
   if options.master:
     master_in = os.path.join(SDK_EXAMPLE_DIR, 'Makefile')
     master_out = os.path.join(options.dstroot, 'examples', 'Makefile')
-    GenerateExamplesMakefile(master_in, master_out, examples)
+    GenerateMasterMakefile(master_in, master_out, examples)
+    master_out = os.path.join(options.dstroot, 'src', 'Makefile')
+    GenerateMasterMakefile(master_in, master_out, libs)
   return 0
 
 

@@ -8,7 +8,8 @@
         'pi_generator.cc',
         'pi_generator.h',
         'pi_generator_module.cc'
-      ]
+      ],
+      'LIBS': ['ppapi_cpp']
     }
   ],
   'DEST': 'examples',

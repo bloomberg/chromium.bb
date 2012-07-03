@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl'],
+  'TOOLS': ['newlib', 'pnacl', 'win'],
   'TARGETS': [
     {
       'NAME' : 'hello_world_gles',
@@ -10,7 +10,7 @@
         '-I../../src',
         '-I../../src/ppapi/lib/gl'
       ],
-      'LDFLAGS': ['-g', '-pthread', '-lppapi', '-lppapi_gles2']
+      'LIBS': ['ppapi_gles2']
     }
   ],
   'DATA': [

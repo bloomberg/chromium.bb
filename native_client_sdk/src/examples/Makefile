@@ -23,6 +23,11 @@ TARGET_LIST+=$(1)_TARGET
 .PHONY: $(1)_TARGET
 $(1)_TARGET:
 	+$(MAKE) -C $(1)
+
+CLEAN_LIST+=$(1)_CLEAN
+.PHONY: $(1)_CLEAN
+$(1)_CLEAN:
+	+$(MAKE) -C $(1) clean
 endef
 
 
@@ -32,6 +37,9 @@ $(foreach proj,$(PROJECTS),$(eval $(call TARGET,$(proj))))
 
 all: $(TARGET_LIST)
 	echo "Done building targets."
+
+clean: $(CLEAN_LIST)
+	echo "Done cleaning targets."
 
 RUN: all
 	echo "Staring up python webserver."

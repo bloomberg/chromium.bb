@@ -42,6 +42,7 @@ __PROJECT_TARGETS__
 CP:=python $(NACL_SDK_ROOT)/tools/oshelpers.py cp
 MKDIR:=python $(NACL_SDK_ROOT)/tools/oshelpers.py mkdir
 MV:=python $(NACL_SDK_ROOT)/tools/oshelpers.py mv
+RM:=python $(NACL_SDK_ROOT)/tools/oshelpers.py rm
 
 
 #
@@ -81,20 +82,9 @@ export CYGWIN
 
 
 #
-# NaCl Tools
+# Defaults for TOOLS
 #
-NEWLIB_CC?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-gcc -c
-NEWLIB_CXX?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-g++ -c
-NEWLIB_LINK?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-g++
-NEWLIB_DUMP?=$(TC_PATH)/$(OSNAME)_x86_newlib/x86_64-nacl/bin/objdump
-NEWLIB_PATHS:=
-
-GLIBC_CC?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-gcc -c
-GLIBC_CXX?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-g++ -c
-GLIBC_LINK?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-g++
-GLIBC_DUMP?=$(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/bin/objdump
-GLIBC_PATHS:=-L $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib32
-GLIBC_PATHS+=-L $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib
+__PROJECT_TOOLS__
 
 __PROJECT_RULES__
 

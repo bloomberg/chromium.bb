@@ -206,10 +206,18 @@ def InstallHeaders(tc_dst_inc, pepper_ver, tc_name):
   buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'cpp', 'dev', '*.h'),
           os.path.join(ppapi, 'cpp', 'dev'))
   buildbot_common.MakeDir(os.path.join(ppapi, 'utility', 'graphics'))
+  buildbot_common.MakeDir(os.path.join(ppapi, 'utility', 'threading'))
+  buildbot_common.MakeDir(os.path.join(ppapi, 'utility', 'websocket'))
   buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'utility','*.h'),
           os.path.join(ppapi, 'utility'))
   buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'utility', 'graphics', '*.h'),
           os.path.join(ppapi, 'utility', 'graphics'))
+  buildbot_common.CopyDir(
+          os.path.join(PPAPI_DIR, 'utility', 'threading', '*.h'),
+          os.path.join(ppapi, 'utility', 'threading'))
+  buildbot_common.CopyDir(
+          os.path.join(PPAPI_DIR, 'utility', 'websocket', '*.h'),
+          os.path.join(ppapi, 'utility', 'websocket'))
 
   # Copy in the gles2 headers
   buildbot_common.MakeDir(os.path.join(ppapi, 'gles2'))
@@ -356,9 +364,15 @@ EXAMPLE_LIST = [
 ]
 
 LIBRARY_LIST = [
-#  'gles2',
+  'ppapi_cpp',
+  'ppapi_gles2',
 ]
 
+LIB_DICT = {
+  'linux': [],
+  'mac': [],
+  'win': ['x86_32']
+}
 
 def CopyExamples(pepperdir, toolchains):
   buildbot_common.BuildStep('Copy examples')
@@ -371,6 +385,19 @@ def CopyExamples(pepperdir, toolchains):
   exampledir = os.path.join(pepperdir, 'examples')
   buildbot_common.RemoveDir(exampledir)
   buildbot_common.MakeDir(exampledir)
+
+  libdir = os.path.join(pepperdir, 'lib')
+  buildbot_common.RemoveDir(libdir)
+  buildbot_common.MakeDir(libdir)
+
+  plat = getos.GetPlatform()
+  for arch in LIB_DICT[plat]:
+    buildbot_common.MakeDir(os.path.join(libdir, '%s_%s_host' % (plat, arch)))
+
+  srcdir = os.path.join(pepperdir, 'src')
+  buildbot_common.RemoveDir(srcdir)
+  buildbot_common.MakeDir(srcdir)
+
 
   # Copy individual files
   files = ['favicon.ico', 'httpd.cmd', 'httpd.py', 'index.html']
@@ -427,7 +454,7 @@ def main(args):
   if options.pnacl:
     toolchains = ['pnacl']
   else:
-    toolchains = ['newlib', 'glibc']
+    toolchains = ['newlib', 'glibc', 'host']
   print 'Building: ' + ' '.join(toolchains)
   skip = options.only_examples or options.only_updater
 
@@ -461,7 +488,7 @@ def main(args):
   buildbot_common.RemoveDir(pepperold)
   if not skip_untar:
     buildbot_common.RemoveDir(pepperdir)
-    buildbot_common.MakeDir(os.path.join(pepperdir, 'src'))
+    buildbot_common.MakeDir(os.path.join(pepperdir, 'include'))
     buildbot_common.MakeDir(os.path.join(pepperdir, 'toolchain'))
     buildbot_common.MakeDir(os.path.join(pepperdir, 'tools'))
   else:
@@ -480,7 +507,7 @@ def main(args):
 
   if not skip_build:
     BuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains)
-    InstallHeaders(os.path.join(pepperdir, 'src'), None, 'libs')
+    InstallHeaders(os.path.join(pepperdir, 'include'), None, 'libs')
 
   if not skip_build:
     buildbot_common.BuildStep('Copy make OS helpers')
@@ -505,6 +532,17 @@ def main(args):
   if 'pnacl' in toolchains:
     tarname = 'p' + tarname
   tarfile = os.path.join(OUT_DIR, tarname)
+
+  # Ship with libraries prebuilt, so run that first
+  buildbot_common.BuildStep('Build Libraries')
+  src_dir = os.path.join(pepperdir, 'src')
+  makefile = os.path.join(src_dir, 'Makefile')
+  if os.path.isfile(makefile):
+    print "\n\nMake: " + src_dir
+    buildbot_common.Run(['make', '-j8'],
+                        cwd=os.path.abspath(src_dir), shell=True)
+    buildbot_common.Run(['make', '-j8', 'clean'],
+                        cwd=os.path.abspath(src_dir), shell=True)
 
   if not skip_tar:
     buildbot_common.BuildStep('Tar Pepper Bundle')
@@ -574,7 +612,7 @@ def main(args):
       if server:
         server.Shutdown()
 
-  # build examples.
+  # Build Examples (libraries built previously).
   if not skip_examples:
     buildbot_common.BuildStep('Build Examples')
     example_dir = os.path.join(pepperdir, 'examples')
@@ -584,7 +622,7 @@ def main(args):
       buildbot_common.Run(['make', '-j8'],
                           cwd=os.path.abspath(example_dir), shell=True)
 
-  # test examples.
+  # Test examples.
   if not skip_examples and not skip_test_examples:
     buildbot_common.BuildStep('Test Examples')
     env = copy.copy(os.environ)

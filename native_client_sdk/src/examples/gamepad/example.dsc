@@ -5,6 +5,7 @@
       'NAME' : 'gamepad',
       'TYPE' : 'main',
       'SOURCES' : ['gamepad.cc', 'gamepad_module.cc', 'gamepad.h'],
+      'LIBS': ['ppapi_cpp']
     }
   ],
   'DEST': 'examples',

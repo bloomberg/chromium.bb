@@ -11,6 +11,7 @@
         'view.cc',
         'view.h',
       ],
+      'LIBS': ['ppapi_cpp']
     }
   ],
   'DEST': 'examples',

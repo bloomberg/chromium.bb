@@ -1,10 +1,11 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win'],
   'TARGETS': [
     {
       'NAME' : 'load_progress',
       'TYPE' : 'main',
       'SOURCES' : ['load_progress.cc'],
+      'LIBS': ['ppapi_cpp']
     }
   ],
   'DATA': ['check_browser.js'],

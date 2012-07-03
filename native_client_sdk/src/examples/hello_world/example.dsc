@@ -1,11 +1,10 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win'],
   'TARGETS': [
     {
       'NAME' : 'hello_world',
       'TYPE' : 'main',
       'SOURCES' : ['hello_world.c'],
-      'LDFLAGS' : ['-g', '-pthread', '-lppapi']
     }
   ],
   'DEST': 'examples',

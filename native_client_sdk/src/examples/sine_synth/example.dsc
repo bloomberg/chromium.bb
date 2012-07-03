@@ -1,10 +1,11 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win'],
   'TARGETS': [
     {
       'NAME' : 'sine_synth',
       'TYPE' : 'main',
-      'SOURCES' : ['sine_synth.cc']
+      'SOURCES' : ['sine_synth.cc'],
+      'LIBS': ['ppapi_cpp']
     }
   ],
   'DEST': 'examples',

@@ -1,10 +1,11 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win'],
   'TARGETS': [
     {
       'NAME' : 'file_histogram',
       'TYPE' : 'main',
       'SOURCES' : ['file_histogram.cc'],
+      'LIBS': ['ppapi_cpp']
     }
   ],
   'DEST': 'examples',

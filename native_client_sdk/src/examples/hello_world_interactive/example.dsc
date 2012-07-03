@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win'],
   'TARGETS': [
     {
       'NAME' : 'hello_world_interactive',
@@ -8,7 +8,8 @@
         'hello_world.cc',
         'helper_functions.cc',
         'helper_functions.h'
-      ]
+      ],
+      'LIBS': ['ppapi_cpp']
     }
   ],
   'DEST': 'examples',

@@ -1,10 +1,11 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win'],
   'TARGETS': [
     {
       'NAME' : 'websocket',
       'TYPE' : 'main',
-      'SOURCES' : ['websocket.cc']
+      'SOURCES' : ['websocket.cc'],
+      'LIBS': ['ppapi_cpp']
     }
   ],
   'DEST': 'examples',

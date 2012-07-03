@@ -1,9 +1,9 @@
 {
-  'TOOLS': ['newlib', 'glibc'],
+  'TOOLS': ['win'],
   'SEARCH' : ['../../../../ppapi/lib/gl/gles2'],
   'TARGETS': [
     {
-      'NAME' : 'libgles2',
+      'NAME' : 'ppapi_gles2',
       'TYPE' : 'lib',
       'SOURCES' : [
         'gl2ext_ppapi.c',
@@ -13,6 +13,6 @@
     }
   ],
   'DEST': 'src',
-  'NAME': 'gles2',
+  'NAME': 'ppapi_gles2',
 }
 

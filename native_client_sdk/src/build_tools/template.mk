@@ -21,9 +21,6 @@ CHROME_PATH?=Undefined
 # Defaults
 #
 NACL_WARNINGS:=-Wno-long-long -Wall -Wswitch-enum -Werror -pedantic
-NACL_CCFLAGS:=-O0 -g -pthread $(NACL_WARNINGS)
-NACL_CXXFLAGS:= -O0 -g -pthread -std=gnu++98 $(NACL_WARNINGS)
-NACL_LDFLAGS:=-g -pthread -lppapi_cpp -lppapi 
 
 #
 # Project Settings
@@ -41,6 +38,7 @@ __PROJECT_TARGETS__
 CP:=python $(NACL_SDK_ROOT)/tools/oshelpers.py cp
 MKDIR:=python $(NACL_SDK_ROOT)/tools/oshelpers.py mkdir
 MV:=python $(NACL_SDK_ROOT)/tools/oshelpers.py mv
+RM:=python $(NACL_SDK_ROOT)/tools/oshelpers.py rm
 
 
 #
