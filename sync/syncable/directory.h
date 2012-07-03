@@ -33,7 +33,6 @@ class BaseTransaction;
 class WriteTransaction;
 class ScopedKernelLock;
 class DirectoryBackingStore;
-class IdFilter;
 
 // How syncable indices & Indexers work.
 //

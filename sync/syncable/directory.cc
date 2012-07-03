@@ -825,28 +825,6 @@ void Directory::GetUnappliedUpdateMetaHandles(
   }
 }
 
-class IdFilter {
- public:
-  virtual ~IdFilter() { }
-  virtual bool ShouldConsider(const Id& id) const = 0;
-};
-
-
-class FullScanFilter : public IdFilter {
- public:
-  virtual bool ShouldConsider(const Id& id) const {
-    return true;
-  }
-};
-
-class SomeIdsFilter : public IdFilter {
- public:
-  virtual bool ShouldConsider(const Id& id) const {
-    return std::binary_search(ids_.begin(), ids_.end(), id);
-  }
-  std::vector<Id> ids_;
-};
-
 bool Directory::CheckInvariantsOnTransactionClose(
     syncable::BaseTransaction* trans,
     const EntryKernelMutationMap& mutations) {
