@@ -158,6 +158,7 @@ class RegistryEntry {
                                             ShellUtil::kRegVerbOpen));
 
       const wchar_t* const verbs[] = { ShellUtil::kRegVerbOpen,
+                                       ShellUtil::kRegVerbOpenNewWindow,
                                        ShellUtil::kRegVerbRun };
       for (size_t i = 0; i < arraysize(verbs); ++i) {
         string16 sub_path(model_id_shell);
@@ -837,6 +838,7 @@ const wchar_t* ShellUtil::kRegApplicationIcon = L"ApplicationIcon";
 const wchar_t* ShellUtil::kRegApplicationCompany = L"ApplicationCompany";
 const wchar_t* ShellUtil::kRegExePath = L"\\.exe";
 const wchar_t* ShellUtil::kRegVerbOpen = L"open";
+const wchar_t* ShellUtil::kRegVerbOpenNewWindow = L"opennewwindow";
 const wchar_t* ShellUtil::kRegVerbRun = L"run";
 const wchar_t* ShellUtil::kRegCommand = L"command";
 const wchar_t* ShellUtil::kRegDelegateExecute = L"DelegateExecute";

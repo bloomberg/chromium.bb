@@ -113,6 +113,9 @@ class ShellUtil {
   // Registry value name of the open verb.
   static const wchar_t* kRegVerbOpen;
 
+  // Registry value name of the opennewwindow verb.
+  static const wchar_t* kRegVerbOpenNewWindow;
+
   // Registry value name of the run verb.
   static const wchar_t* kRegVerbRun;
 
