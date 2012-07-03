@@ -53,8 +53,5 @@ SyscallReturnIsSandboxed:
          */
         movl $1, %eax
         addl $0x8, %esp
-        pop %ecx
-        add $31, %ecx
-        and $0xffffffe0, %ecx
-        jmp *%ecx
+        naclret
         .p2align 5 /* -- pnacl toolchain leaves "..." without this */

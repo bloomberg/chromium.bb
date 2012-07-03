@@ -29,8 +29,7 @@ get_x86_direction_flag:
         setb %al
 
         naclasp $8, %r15
-        pop %r11
-        nacljmp %r11d, %r15
+        naclret
 
 #elif defined(__i386__)
 
@@ -49,8 +48,7 @@ get_x86_direction_flag:
         setb %al
 
         add $4, %esp
-        pop %ecx
-        nacljmp %ecx
+        naclret
 
 #else
 # error Unknown platform

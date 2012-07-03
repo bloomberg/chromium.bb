@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
     /*
@@ -14,8 +14,7 @@
     popq %r11
     movl %r11d,%ebp
     addq %r15,%rbp
-    popq %r11
-    nacljmp %r11d,%r15
+    naclret
 
     .p2align NACLENTRYALIGN,0xf4
 
@@ -29,7 +28,6 @@
     popq %r11
     movl %r11d,%ebp
     addq %r15,%rbp
-    popq %r11
-    nacljmp %r11d,%r15
+    naclret
 
     .p2align NACLENTRYALIGN,0xf4

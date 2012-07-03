@@ -58,9 +58,5 @@ SyscallReturnIsSandboxed:
          * Now we're at the next bundle, where the return is rounded to.
          */
         movl $1, %eax
-        pop %rcx
-        addl $31, %ecx
-        andl $0xffffffe0, %ecx
-        addq %r15, %rcx
-        jmp *%rcx
+        naclret
         .p2align 5 /* -- pnacl toolchain leaves "..." without this */
