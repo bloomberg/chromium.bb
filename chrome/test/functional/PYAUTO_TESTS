@@ -298,6 +298,7 @@
       'chromeos_time',
       'chromeos_update',
       'chromeos_wifi_sanity',
+      'secure_shell',
 
       # ===========================
       # Permanently-disabled tests.
