@@ -408,5 +408,15 @@ bool MutableEntry::Put(BitTemp field, bool value) {
   return true;
 }
 
+// This function sets only the flags needed to get this entry to sync.
+bool MarkForSyncing(MutableEntry* e) {
+  DCHECK_NE(static_cast<MutableEntry*>(NULL), e);
+  DCHECK(!e->IsRoot()) << "We shouldn't mark a permanent object for syncing.";
+  if (!(e->Put(IS_UNSYNCED, true)))
+    return false;
+  e->Put(SYNCING, false);
+  return true;
+}
+
 }  // namespace syncable
 }  // namespace syncer
