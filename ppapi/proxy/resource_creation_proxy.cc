@@ -184,6 +184,13 @@ PP_Resource ResourceCreationProxy::CreateImageData(PP_Instance instance,
                                                   init_to_zero);
 }
 
+PP_Resource ResourceCreationProxy::CreateGraphics2D(PP_Instance instance,
+                                                    const PP_Size& size,
+                                                    PP_Bool is_always_opaque) {
+  return PPB_Graphics2D_Proxy::CreateProxyResource(instance, size,
+                                                   is_always_opaque);
+}
+
 #if !defined(OS_NACL)
 PP_Resource ResourceCreationProxy::CreateAudioTrusted(PP_Instance instance) {
   // Proxied plugins can't create trusted audio devices.
@@ -251,13 +258,6 @@ PP_Resource ResourceCreationProxy::CreateFlashMenu(
 PP_Resource ResourceCreationProxy::CreateFlashMessageLoop(
     PP_Instance instance) {
   return PPB_Flash_MessageLoop_Proxy::CreateProxyResource(instance);
-}
-
-PP_Resource ResourceCreationProxy::CreateGraphics2D(PP_Instance instance,
-                                                    const PP_Size& size,
-                                                    PP_Bool is_always_opaque) {
-  return PPB_Graphics2D_Proxy::CreateProxyResource(instance, size,
-                                                   is_always_opaque);
 }
 
 PP_Resource ResourceCreationProxy::CreateHostResolverPrivate(

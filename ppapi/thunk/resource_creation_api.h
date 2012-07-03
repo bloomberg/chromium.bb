@@ -102,6 +102,9 @@ class ResourceCreationAPI {
                                       PP_ImageDataFormat format,
                                       const PP_Size& size,
                                       PP_Bool init_to_zero) = 0;
+  virtual PP_Resource CreateGraphics2D(PP_Instance instance,
+                                       const PP_Size& size,
+                                       PP_Bool is_always_opaque) = 0;
 #if !defined(OS_NACL)
   virtual PP_Resource CreateAudioTrusted(PP_Instance instance) = 0;
   virtual PP_Resource CreateAudioInput0_1(
@@ -124,9 +127,6 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateFlashMenu(PP_Instance instance,
                                       const PP_Flash_Menu* menu_data) = 0;
   virtual PP_Resource CreateFlashMessageLoop(PP_Instance instance) = 0;
-  virtual PP_Resource CreateGraphics2D(PP_Instance instance,
-                                       const PP_Size& size,
-                                       PP_Bool is_always_opaque) = 0;
   virtual PP_Resource CreateGraphics3D(PP_Instance instance,
                                        PP_Resource share_context,
                                        const int32_t* attrib_list) = 0;

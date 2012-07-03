@@ -178,7 +178,6 @@
               'proxy/ppb_flash_proxy.cc',
               'proxy/ppb_flash_menu_proxy.cc',
               'proxy/ppb_flash_message_loop_proxy.cc',
-              'proxy/ppb_graphics_2d_proxy.cc',
               'proxy/ppb_graphics_3d_proxy.cc',
               'proxy/ppb_host_resolver_private_proxy.cc',
               'proxy/ppb_network_monitor_private_proxy.cc',

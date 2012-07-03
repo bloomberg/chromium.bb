@@ -277,7 +277,6 @@
               'thunk/ppb_flash_thunk.cc',
               'thunk/ppb_flash_message_loop_thunk.cc',
               'thunk/ppb_gles_chromium_texture_mapping_thunk.cc',
-              'thunk/ppb_graphics_2d_thunk.cc',
               'thunk/ppb_graphics_3d_thunk.cc',
               'thunk/ppb_graphics_3d_trusted_thunk.cc',
               'thunk/ppb_host_resolver_private_thunk.cc',
