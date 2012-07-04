@@ -9,7 +9,7 @@
 
   require('json_schema');
   require('event_bindings');
-  var lastError = requireNative('lastError');
+  var lastError = require('lastError');
   var miscNatives = requireNative('miscellaneous_bindings');
   var CloseChannel = miscNatives.CloseChannel;
   var PortAddRef = miscNatives.PortAddRef;
