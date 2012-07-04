@@ -1325,11 +1325,11 @@ class Dtrace(ApiBase):
       match = self.RE_EXECVE.match(args)
       if not match:
         raise TracingFailure(
-            'Failed to parse arguments: %s' % args,
+            'Failed to parse arguments: %r' % args,
             None, None, None)
       proc = self.processes[pid]
       proc.executable = match.group(1)
-      proc.command = process_quoted_arguments(match.group(3))
+      proc.command = self.process_escaped_arguments(match.group(3))
       if int(match.group(2)) != len(proc.command):
         raise TracingFailure(
             'Failed to parse execve() arguments: %s' % args,
@@ -1399,6 +1399,38 @@ class Dtrace(ApiBase):
     def _handle_ignored(pid, args):
       """Is called for all the event traces that are not handled."""
       raise NotImplementedError('Please implement me')
+
+    @staticmethod
+    def process_escaped_arguments(text):
+      """Extracts escaped arguments on a string and return the arguments as a
+      list.
+
+      Implemented as an automaton.
+
+      Example:
+        With text = '\\001python2.7\\001-c\\001print(\\"hi\\")\\0', the
+        function will return ['python2.7', '-c', 'print("hi")]
+      """
+      if not text.endswith('\\0'):
+        raise ValueError('String is not null terminated: %r' % text, text)
+      text = text[:-2]
+
+      def unescape(x):
+        """Replaces '\\' with '\' and '\?' (where ? is anything) with ?.
+
+        Implemented as an automaton.
+        """
+        out = []
+        escaped = False
+        for i in x:
+          if i == '\\' and not escaped:
+            escaped = True
+            continue
+          escaped = False
+          out.append(i)
+        return ''.join(out)
+
+      return [unescape(i) for i in text.split('\\001')]
 
   class Tracer(ApiBase.Tracer):
     # pylint: disable=C0301
@@ -1617,39 +1649,38 @@ class Dtrace(ApiBase):
       }
       syscall::exec*:return /trackedpid[pid] && errno == 0/ {
         /* We need to join strings here, as using multiple printf() would
-         * cause tearing when multiple threads/processes are traced. */
+         * cause tearing when multiple threads/processes are traced.
+         * Since it is impossible to escape a string and join it to another one,
+         * like sprintf("%s%S", previous, more), use hackery.
+         * Each of the elements are split with a \\1. \\0 cannot be used because
+         * it is simply ignored. This will conflict with any program putting a
+         * \\1 in their execve() string but this should be "rare enough" */
         this->args = "";
         /* Process exec_argv[0] */
         this->args = strjoin(
-            this->args, (self->exec_argc > 0) ? ", \\"" : "");
-        this->args = strjoin(
             this->args, (self->exec_argc > 0) ? self->exec_argv0 : "");
-        this->args = strjoin(this->args, (self->exec_argc > 0) ? "\\"" : "");
 
         /* Process exec_argv[1] */
         this->args = strjoin(
-            this->args, (self->exec_argc > 1) ? ", \\"" : "");
+            this->args, (self->exec_argc > 1) ? "\\1" : "");
         this->args = strjoin(
             this->args, (self->exec_argc > 1) ? self->exec_argv1 : "");
-        this->args = strjoin(this->args, (self->exec_argc > 1) ? "\\"" : "");
 
         /* Process exec_argv[2] */
         this->args = strjoin(
-            this->args, (self->exec_argc > 2) ? ", \\"" : "");
+            this->args, (self->exec_argc > 2) ? "\\1" : "");
         this->args = strjoin(
             this->args, (self->exec_argc > 2) ? self->exec_argv2 : "");
-        this->args = strjoin(this->args, (self->exec_argc > 2) ? "\\"" : "");
 
         /* Process exec_argv[3] */
         this->args = strjoin(
-            this->args, (self->exec_argc > 3) ? ", \\"" : "");
+            this->args, (self->exec_argc > 3) ? "\\1" : "");
         this->args = strjoin(
             this->args, (self->exec_argc > 3) ? self->exec_argv3 : "");
-        this->args = strjoin(this->args, (self->exec_argc > 3) ? "\\"" : "");
 
         /* Prints self->exec_argc to permits verifying the internal
          * consistency since this code is quite fishy. */
-        printf("%d %d %s(\\"%s\\", [%d%s])\\n",
+        printf("%d %d %s(\\"%s\\", [%d, %S])\\n",
                logindex, pid, probefunc,
                self->exec_arg0,
                self->exec_argc,
@@ -1786,7 +1817,7 @@ class Dtrace(ApiBase):
               os.getpid(),
               self._script,
               self._dummy_file_id,
-              self.D_CODE)
+              self.D_CODE) + self.D_CODE_EXECVE
 
     def trace(self, cmd, cwd, tracename, output):
       """Runs dtrace on an executable.

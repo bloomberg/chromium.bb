@@ -257,7 +257,7 @@ class TraceInputsImport(TraceInputsBase):
   # Similar to TraceInputs test fixture except that it calls the function
   # directly, so the Results instance can be inspected.
   # Roughly, make sure the API is stable.
-  def _execute(self, command):
+  def _execute_trace(self, command):
     # Similar to what trace_test_cases.py does.
     api = self.trace_inputs.get_api()
     _, _ = self.trace_inputs.trace(
@@ -403,7 +403,7 @@ class TraceInputsImport(TraceInputsBase):
     # Deliberately start the trace from the wrong path. Starts it from the
     # directory 'data' so 'data/data/trace_inputs/child1.py' is not accessible,
     # so child2.py process is not started.
-    results = self._execute(self.get_child_command(False))
+    results = self._execute_trace(self.get_child_command(False))
     expected = self._gen_dict_wrong_path()
     actual = results.flatten()
     self.assertTrue(actual['root'].pop('pid'))
@@ -411,7 +411,7 @@ class TraceInputsImport(TraceInputsBase):
 
   def test_trace(self):
     expected = self._gen_dict_full_gyp()
-    results = self._execute(self.get_child_command(True))
+    results = self._execute_trace(self.get_child_command(True))
     actual = results.flatten()
     self.assertTrue(actual['root'].pop('pid'))
     self.assertTrue(actual['root']['children'][0].pop('pid'))
@@ -534,7 +534,7 @@ class TraceInputsImport(TraceInputsBase):
         },
       }
       cmd = [sys.executable, os.path.join('trace_inputs', 'symlink.py')]
-      results = self._execute(cmd)
+      results = self._execute_trace(cmd)
       actual = results.flatten()
       self.assertTrue(actual['root'].pop('pid'))
       self.assertEquals(expected, actual)
@@ -548,6 +548,25 @@ class TraceInputsImport(TraceInputsBase):
       simplified = self.trace_inputs.extract_directories(
           ROOT_DIR, results.files, blacklist)
       self.assertEquals(files, [f.path for f in simplified])
+
+  def test_trace_quoted(self):
+    results = self._execute_trace([sys.executable, '-c', 'print("hi")'])
+    expected = {
+      'root': {
+        'children': [],
+        'command': [
+          self.executable,
+          '-c',
+          'print("hi")',
+        ],
+        'executable': self.real_executable,
+        'files': [],
+        'initial_cwd': self.initial_cwd,
+      },
+    }
+    actual = results.flatten()
+    self.assertTrue(actual['root'].pop('pid'))
+    self.assertEquals(expected, actual)
 
 
 if __name__ == '__main__':

@@ -38,6 +38,18 @@ class TraceInputs(unittest.TestCase):
     for actual, expected in test_cases:
       self.assertEquals(expected, trace_inputs.process_quoted_arguments(actual))
 
+  def test_process_escaped_arguments(self):
+    test_cases = (
+      ('foo\\0', ['foo']),
+      ('foo\\001bar\\0', ['foo', 'bar']),
+      ('\\"foo\\"\\0', ['"foo"']),
+    )
+    for actual, expected in test_cases:
+      self.assertEquals(
+          expected,
+          trace_inputs.Dtrace.Context.process_escaped_arguments(actual))
+
+
   def test_variable_abs(self):
     value = trace_inputs.Results.File(None, '/foo/bar', False)
     actual = value.replace_variables({'$FOO': '/foo'})
