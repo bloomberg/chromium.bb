@@ -49,6 +49,14 @@ class DeviceNameEquals {
   std::string device_name_;
 };
 
+// Whether |request| contains any device of given |type|.
+bool HasDevice(const content::MediaStreamRequest& request,
+               content::MediaStreamDeviceType type) {
+  content::MediaStreamDeviceMap::const_iterator device_it =
+      request.devices.find(type);
+  return device_it != request.devices.end() && !device_it->second.empty();
+}
+
 const char kAudioKey[] = "audio";
 const char kVideoKey[] = "video";
 
@@ -61,10 +69,10 @@ MediaStreamDevicesController::MediaStreamDevicesController(
     : profile_(profile),
       request_(*request),
       callback_(callback) {
-  has_audio_ = request_.devices.count(
-      content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE) != 0;
-  has_video_ = request_.devices.count(
-      content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE) != 0;
+  has_audio_ =
+      HasDevice(request_, content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE);
+  has_video_ =
+      HasDevice(request_, content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE);
 }
 
 MediaStreamDevicesController::~MediaStreamDevicesController() {}
