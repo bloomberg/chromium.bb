@@ -3023,6 +3023,7 @@ void WebContentsImpl::OnDialogClosed(RenderViewHost* rvh,
     // If a beforeunload dialog is canceled, we need to stop the throbber from
     // spinning, since we forced it to start spinning in Navigate.
     DidStopLoading();
+    controller_.DiscardNonCommittedEntries();
 
     close_start_time_ = base::TimeTicks();
   }

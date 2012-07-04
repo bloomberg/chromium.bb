@@ -351,6 +351,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
   alert->CloseModalDialog();
   EXPECT_FALSE(chrome::GetActiveWebContents(browser())->IsLoading());
 
+  // Verify there are no pending history items after the dialog is cancelled.
+  // (see crbug.com/93858)
+  NavigationEntry* entry = chrome::GetActiveWebContents(browser())->
+      GetController().GetPendingEntry();
+  EXPECT_EQ(NULL, entry);
+
   // Wait for the ShouldClose_ACK to arrive.  We can detect it by waiting for
   // the pending RVH to be destroyed.
   host_destroyed_observer.Wait();
