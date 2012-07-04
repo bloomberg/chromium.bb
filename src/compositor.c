@@ -2145,11 +2145,12 @@ pointer_cursor_surface_configure(struct weston_surface *es,
 	weston_surface_configure(seat->sprite, x, y,
 				 es->buffer->width, es->buffer->height);
 
+	empty_region(&es->input);
+
 	if (!weston_surface_is_mapped(es)) {
 		wl_list_insert(&es->compositor->cursor_layer.surface_list,
 			       &es->layer_link);
 		weston_surface_assign_output(es);
-		empty_region(&es->input);
 	}
 }
 
