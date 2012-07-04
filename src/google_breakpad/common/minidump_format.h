@@ -611,7 +611,8 @@ typedef enum {
   MD_OS_MAC_OS_X      = 0x8101,  /* Mac OS X/Darwin */
   MD_OS_IOS           = 0x8102,  /* iOS */
   MD_OS_LINUX         = 0x8201,  /* Linux */
-  MD_OS_SOLARIS       = 0x8202   /* Solaris */
+  MD_OS_SOLARIS       = 0x8202,  /* Solaris */
+  MD_OS_ANDROID       = 0x8203   /* Android */
 } MDOSPlatform;
 
 

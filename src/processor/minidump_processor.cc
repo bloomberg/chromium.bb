@@ -401,6 +401,11 @@ bool MinidumpProcessor::GetOSInfo(Minidump *dump, SystemInfo *info) {
       break;
     }
 
+    case MD_OS_ANDROID: {
+      info->os = "Android";
+      break;
+    }
+
     default: {
       // Assign the numeric platform ID into the OS string.
       char os_string[11];
@@ -838,6 +843,7 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, u_int64_t *address) {
       break;
     }
 
+    case MD_OS_ANDROID:
     case MD_OS_LINUX: {
       switch (exception_code) {
         case MD_EXCEPTION_CODE_LIN_SIGHUP:

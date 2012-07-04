@@ -53,6 +53,9 @@
 #include <link.h>
 #endif
 #include <stdio.h>
+#if defined(__ANDROID__)
+#include <sys/system_properties.h>
+#endif
 #if !defined(__ANDROID__)
 #include <sys/ucontext.h>
 #include <sys/user.h>
@@ -1246,7 +1249,11 @@ class MinidumpWriter {
   }
 
   bool WriteOSInformation(MDRawSystemInfo* sys_info) {
+#if defined(__ANDROID__)
+    sys_info->platform_id = MD_OS_ANDROID;
+#else
     sys_info->platform_id = MD_OS_LINUX;
+#endif
 
     struct utsname uts;
     if (uname(&uts))
@@ -1282,6 +1289,23 @@ class MinidumpWriter {
       strcat(buf, *cur_info);
       space_left -= info_len;
     }
+
+#ifdef __ANDROID__
+    // On Android, try to get the build fingerprint and append it.
+    // Fail gracefully because there is no guarantee that the system
+    // property will always be available or accessible.
+    char fingerprint[PROP_VALUE_MAX];
+    int fingerprint_len = __system_property_get("ro.build.fingerprint",
+                                                fingerprint);
+    // System property values shall always be zero-terminated.
+    // Be paranoid and don't trust the system.
+    if (fingerprint_len > 0 && fingerprint_len < PROP_VALUE_MAX) {
+      const char* separator = " ";
+      if (!first_item)
+        strlcat(buf, separator, buf_len);
+      strlcat(buf, fingerprint, buf_len);
+    }
+#endif
 
     MDLocationDescriptor location;
     if (!minidump_writer_.WriteString(buf, 0, &location))
