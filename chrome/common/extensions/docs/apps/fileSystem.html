@@ -227,6 +227,7 @@
                       <var><span>options</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>FileEntryCallback</span></var></span>)</div>
               <div class="description">
+                <p>Ask the user to choose a file.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -331,6 +332,7 @@
                       <var><span>fileEntry</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>GetDisplayPathCallback</span></var></span>)</div>
               <div class="description">
+                <p>Get the display path of a FileEntry object. The display path is based on the full path of the file on the local file system, but may be made more readable for display purposes.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -434,6 +436,7 @@
                       <var><span>fileEntry</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>FileEntryCallback</span></var></span>)</div>
               <div class="description">
+                <p>Get a writable FileEntry from another FileEntry. This call will fail if the application does not have the fileSystemWrite permission.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -579,7 +582,7 @@
                 </div>
               </em>
           </dt>
-          <dd>Valid types are 'openFile', 'openWritableFile' or 'saveFile'. Both 'openFile' and 'openWritableFile' will prompt the user to open an existing file, with 'openFile' returning a read-only FileEntry on success. 'saveFile' will prompt the user to choose an existing file or a new file, and will return a writable FileEntry. The default is 'openFile'.</dd>
+          <dd>Type of the prompt to show. Valid types are 'openFile', 'openWritableFile' or 'saveFile'. Both 'openFile' and 'openWritableFile' will prompt the user to open an existing file, with 'openFile' returning a read-only FileEntry on success. 'saveFile' will prompt the user to choose an existing file or a new file, and will return a writable FileEntry. Calls to chooseFile with either 'openWritableFile' or 'saveFile' will fail unless the application has the fileSystemWrite permission. The default is 'openFile'.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->

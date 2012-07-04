@@ -6,22 +6,35 @@
 
 namespace fileSystem {
   dictionary ChooseFileOptions {
-    // Valid types are 'openFile', 'openWritableFile' or 'saveFile'. Both
-    // 'openFile' and 'openWritableFile' will prompt the user to open an
+    // Type of the prompt to show. Valid types are 'openFile',
+    // 'openWritableFile' or 'saveFile'.
+    //
+    // Both 'openFile' and 'openWritableFile' will prompt the user to open an
     // existing file, with 'openFile' returning a read-only FileEntry on
     // success. 'saveFile' will prompt the user to choose an existing file or
-    // a new file, and will return a writable FileEntry. The default is
-    // 'openFile'.
+    // a new file, and will return a writable FileEntry.
+    // Calls to chooseFile with either 'openWritableFile' or 'saveFile' will
+    // fail unless the application has the fileSystemWrite permission.
+    //
+    // The default is 'openFile'.
     DOMString? type;
   };
   callback GetDisplayPathCallback = void (DOMString displayPath);
   callback FileEntryCallback = void ([instanceOf=fileEntry] object fileEntry);
 
   interface Functions {
+    // Get the display path of a FileEntry object. The display path is based on
+    // the full path of the file on the local file system, but may be made more
+    // readable for display purposes.
     static void getDisplayPath([instanceOf=FileEntry] object fileEntry,
                                GetDisplayPathCallback callback);
+
+    // Get a writable FileEntry from another FileEntry. This call will fail
+    // if the application does not have the fileSystemWrite permission.
     static void getWritableFileEntry([instanceOf=FileEntry] object fileEntry,
                                      FileEntryCallback callback);
+
+    // Ask the user to choose a file.
     static void chooseFile(optional ChooseFileOptions options,
                            FileEntryCallback callback);
   };

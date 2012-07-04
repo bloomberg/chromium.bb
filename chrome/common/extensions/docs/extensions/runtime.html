@@ -196,6 +196,14 @@
                 <a href="#apiReference">API reference: chrome.runtime</a>
                 <ol>
                   <li>
+            <a href="#properties">Properties</a>
+            <ol>
+              <li>
+                <a href="#property-lastError">lastError</a>
+              </li>
+            </ol>
+          </li>
+                  <li>
             <a href="#global-methods">Methods</a>
             <ol>
               <li>
@@ -251,7 +259,70 @@
         <a name="apiReference"></a>
         <h2>API reference: chrome.runtime</h2>
           <!-- PROPERTIES -->
-           <!-- /apiGroup -->
+          <div class="apiGroup">
+            <a name="properties"></a>
+            <h3 id="properties">Properties</h3>
+            <div>
+              <a name="property-lastError"></a>
+              <h4>lastError</h4>
+              <div class="summary">
+                <!-- Note: intentionally longer 80 columns -->
+                <span>chrome.runtime.</span><span>lastError</span>
+              </div>
+              <div>
+          <dt>
+            <var>lastError</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>This will be defined during an API method callback if there was an error</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>message</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Details about the error which occurred.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </div> <!-- /apiGroup -->
           <!-- METHODS -->
           <div id="methodsTemplate" class="apiGroup">
             <a name="global-methods"></a>
@@ -361,7 +432,6 @@
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="runtime.html#type-runtime.ManifestDetails">runtime.ManifestDetails</a>
@@ -557,9 +627,7 @@
                 </div>
               </em>
           </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
+          <dd>The version of the extension/app</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -605,7 +673,7 @@
                         <span>
                           array of <span><span>
                       <span>
-                        <span>any</span>
+                        <span>string</span>
                       </span>
                     </span></span>
                         </span>
