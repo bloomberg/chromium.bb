@@ -315,10 +315,23 @@ while read name id comment ; do
 		: # Nothing
 	      done
 	      cd "$name/native_client/tools/SRC/$i"
-	      while read name id comment ; do
-		if [[ "$i" == "$name" ]]; then
-		  git diff "$id"{^..,} | patch -p1 ||
-		    touch "../../../../$$.error" "../../../../$$.error.$name"
+	      while read tag id comment ; do
+		if [[ "$i" == "$tag" ]]; then
+		  if [[ "$name" == ppapi1[45678] ]] && [[ "$i" == "newlib" ]] &&
+		     [[ "$id" == "4353bc00936874bb78aa3ba21c648b4f4c3f946b" ]]; then
+		    # Ignore error
+		    git diff "$id"{^..,} | patch -p1 ||
+		    ( rejfiles="$(find -name '*.rej')"
+		      if [[ "$rejfiles" != "./newlib/libc/include/machine/setjmp.h.rej" ]]; then
+		        touch "../../../../../$$.error" "../../../../../$$.error.$name"
+		      else
+		        rm ./newlib/libc/include/machine/setjmp.h.rej
+		      fi
+		    )
+		  else
+		    git diff "$id"{^..,} | patch -p1 ||
+		      touch "../../../../../$$.error" "../../../../../$$.error.$name"
+		  fi
 		fi
 	      done
 	    ) < "$1"
@@ -339,26 +352,28 @@ while read name id comment ; do
 	else
 	  declare -r url=$url_prefix/toolchain/"$rev"/naclsdk_"$2"_x86.tgz
 	fi
-	# If toolchain is already available then another try will not change anything
-	curl --fail --location --url "$url" -o /dev/null || (
-	  cd native_client
-	  export BUILD_COMPATIBLE_TOOLCHAINS=no
-	  export BUILDBOT_GOT_REVISION="$rev"
-	  if [[ "$2" == "win" ]]; then (
-	    # Use extended globbing (cygwin should always have it).
-	    shopt -s extglob
-	    # Filter out cygwin python (everything under /usr or /bin, or *cygwin*).
-	    export PATH=${PATH/#\/bin*([^:])/}
-	    export PATH=${PATH//:\/bin*([^:])/}
-	    export PATH=${PATH/#\/usr*([^:])/}
-	    export PATH=${PATH//:\/usr*([^:])/}
-	    export PATH=${PATH/#*([^:])cygwin*([^:])/}
-	    export PATH=${PATH//:*([^:])cygwin*([^:])/}
-	    python_slave buildbot/buildbot_selector.py
-	  ) else
-	    python buildbot/buildbot_selector.py
-	  fi
-	)
+	if [[ ! -e "../$$.error.$name" ]]; then
+	  # If toolchain is already available then another try will not change anything
+	  curl --fail --location --url "$url" -o /dev/null || (
+	    cd native_client
+	    export BUILD_COMPATIBLE_TOOLCHAINS=no
+	    export BUILDBOT_GOT_REVISION="$rev"
+	    if [[ "$2" == "win" ]]; then (
+	      # Use extended globbing (cygwin should always have it).
+	      shopt -s extglob
+	      # Filter out cygwin python (everything under /usr or /bin, or *cygwin*).
+	      export PATH=${PATH/#\/bin*([^:])/}
+	      export PATH=${PATH//:\/bin*([^:])/}
+	      export PATH=${PATH/#\/usr*([^:])/}
+	      export PATH=${PATH//:\/usr*([^:])/}
+	      export PATH=${PATH/#*([^:])cygwin*([^:])/}
+	      export PATH=${PATH//:*([^:])cygwin*([^:])/}
+	      python_slave buildbot/buildbot_selector.py
+	    ) else
+	      python buildbot/buildbot_selector.py
+	    fi
+	  )
+	fi
       fi
     ) ;;
   esac || touch "$$.error" "$$.error.$name" &
