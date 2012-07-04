@@ -129,10 +129,12 @@ void GpuVideoDecodeAccelerator::NotifyError(
   if (init_done_msg_) {
     // If we get an error while we're initializing, NotifyInitializeDone won't
     // be called, so we need to send the reply (with an error) here.
-    init_done_msg_->set_reply_error();
+    GpuCommandBufferMsg_CreateVideoDecoder::WriteReplyParams(
+        init_done_msg_, -1);
     if (!Send(init_done_msg_))
       DLOG(ERROR) << "Send(init_done_msg_) failed";
     init_done_msg_ = NULL;
+    return;
   }
   if (!Send(new AcceleratedVideoDecoderHostMsg_ErrorNotification(
           host_route_id_, error))) {
@@ -275,6 +277,8 @@ void GpuVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer(
 }
 
 void GpuVideoDecodeAccelerator::NotifyInitializeDone() {
+  GpuCommandBufferMsg_CreateVideoDecoder::WriteReplyParams(
+      init_done_msg_, host_route_id_);
   if (!Send(init_done_msg_))
     DLOG(ERROR) << "Send(init_done_msg_) failed";
   init_done_msg_ = NULL;

@@ -494,6 +494,11 @@ CommandBufferProxyImpl::CreateVideoDecoder(
     return NULL;
   }
 
+  if (decoder_route_id < 0) {
+    DLOG(ERROR) << "Failed to Initialize GPU decoder on profile: " << profile;
+    return NULL;
+  }
+
   scoped_refptr<GpuVideoDecodeAcceleratorHost> decoder_host =
       new GpuVideoDecodeAcceleratorHost(channel_, decoder_route_id, client);
   bool inserted = video_decoder_hosts_.insert(std::make_pair(

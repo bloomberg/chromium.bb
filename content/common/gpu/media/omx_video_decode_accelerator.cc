@@ -101,6 +101,7 @@ OmxVideoDecodeAccelerator::OmxVideoDecodeAccelerator(
     media::VideoDecodeAccelerator::Client* client)
     : message_loop_(MessageLoop::current()),
       component_handle_(NULL),
+      init_begun_(false),
       client_state_(OMX_StateMax),
       current_state_change_(NO_TRANSITION),
       input_buffer_count_(0),
@@ -163,6 +164,7 @@ bool OmxVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile) {
   if (!AllocateFakeOutputBuffers())  // Does its own RETURN_ON_FAILURE dances.
     return false;
 
+  init_begun_ = true;
   return true;
 }
 
@@ -620,7 +622,7 @@ void OmxVideoDecodeAccelerator::StopOnError(
     media::VideoDecodeAccelerator::Error error) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
-  if (client_)
+  if (client_ && init_begun_)
     client_->NotifyError(error);
   client_ = NULL;
 

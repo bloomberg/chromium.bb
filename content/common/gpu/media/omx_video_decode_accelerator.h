@@ -138,6 +138,10 @@ class CONTENT_EXPORT OmxVideoDecodeAccelerator :
   // Decode bitstream buffers that were queued (see queued_bitstream_buffers_).
   void DecodeQueuedBitstreamBuffers();
 
+  // True once Initialize() has returned true; before this point there's never a
+  // point in calling client_->NotifyError().
+  bool init_begun_;
+
   // IL-client state.
   OMX_STATETYPE client_state_;
   // See comment on CurrentStateChange above.

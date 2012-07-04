@@ -77,12 +77,12 @@ bool VaapiVideoDecodeAccelerator::Initialize(
   bool res = decoder_.Initialize(
       profile, x_display_, glx_context_, make_context_current_,
       base::Bind(&VaapiVideoDecodeAccelerator::OutputPicCallback, this));
-  RETURN_AND_NOTIFY_ON_FAILURE(res, "Failed initializing decoder",
-                               PLATFORM_FAILURE, false);
+  if (!res) {
+    DVLOG(1) << "Failed initializing decoder";
+    return false;
+  }
 
-  res = decoder_thread_.Start();
-  RETURN_AND_NOTIFY_ON_FAILURE(res, "Failed starting decoder thread",
-                               PLATFORM_FAILURE, false);
+  CHECK(decoder_thread_.Start());
 
   state_ = kInitialized;
 

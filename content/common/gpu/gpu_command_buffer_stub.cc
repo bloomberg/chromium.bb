@@ -587,8 +587,6 @@ void GpuCommandBufferStub::OnCreateVideoDecoder(
     IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnCreateVideoDecoder");
   int decoder_route_id = channel_->GenerateRouteID();
-  GpuCommandBufferMsg_CreateVideoDecoder::WriteReplyParams(
-      reply_message, decoder_route_id);
   GpuVideoDecodeAccelerator* decoder =
       new GpuVideoDecodeAccelerator(this, decoder_route_id, this);
   video_decoders_.AddWithID(decoder, decoder_route_id);
