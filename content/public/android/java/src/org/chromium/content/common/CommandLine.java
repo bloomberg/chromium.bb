@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Java mirror of Chrome command-line utilities (e.g. class CommandLine from base/command_line.h).
  * Command line program adb_command_line can be used to set the Chrome command line:
- * adb shell "echo chrome --my-param > /data/local/chrome-command-line"
+ * adb shell "echo chrome --my-param > /data/local/tmp/chrome-command-line"
  */
 public abstract class CommandLine {
     // Block onCreate() of Chrome until a Java debugger is attached.

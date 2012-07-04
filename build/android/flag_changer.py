@@ -7,7 +7,7 @@ import warnings
 
 
 # Location where chrome reads command line flags from
-CHROME_COMMAND_FILE = '/data/local/chrome-command-line'
+CHROME_COMMAND_FILE = '/data/local/tmp/chrome-command-line'
 
 class FlagChanger(object):
   """Changes the flags Chrome runs with.
