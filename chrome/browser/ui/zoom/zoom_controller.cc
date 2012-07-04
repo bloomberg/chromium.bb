@@ -26,7 +26,7 @@ ZoomController::ZoomController(TabContents* tab_contents)
   registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
                  content::NotificationService::AllBrowserContextsAndSources());
 
-  UpdateState();
+  UpdateState(false);
 }
 
 ZoomController::~ZoomController() {
@@ -39,7 +39,7 @@ void ZoomController::DidNavigateMainFrame(
     const content::FrameNavigateParams& params) {
   // If the main frame's content has changed, the new page may have a different
   // zoom level from the old one.
-  UpdateState();
+  UpdateState(false);
 }
 
 void ZoomController::Observe(int type,
@@ -49,17 +49,18 @@ void ZoomController::Observe(int type,
     case chrome::NOTIFICATION_PREF_CHANGED: {
       std::string* pref_name = content::Details<std::string>(details).ptr();
       DCHECK(pref_name && *pref_name == prefs::kDefaultZoomLevel);
+      UpdateState(false);
+      break;
     }
-    // Fall through.
     case content::NOTIFICATION_ZOOM_LEVEL_CHANGED:
-      UpdateState();
+      UpdateState(!content::Details<std::string>(details)->empty());
       break;
     default:
       NOTREACHED();
   }
 }
 
-void ZoomController::UpdateState() {
+void ZoomController::UpdateState(bool can_show_bubble) {
   double current_zoom_level = tab_contents_->web_contents()->GetZoomLevel();
   double default_zoom_level = default_zoom_level_.GetValue();
 
@@ -86,6 +87,6 @@ void ZoomController::UpdateState() {
     if (observer_)
       observer_->OnZoomChanged(tab_contents_,
                                zoom_percent,
-                               state != NONE);
+                               can_show_bubble && state != NONE);
   }
 }
