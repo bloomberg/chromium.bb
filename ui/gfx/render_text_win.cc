@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/i18n/break_iterator.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -302,11 +303,9 @@ RenderTextWin::~RenderTextWin() {
 }
 
 base::i18n::TextDirection RenderTextWin::GetTextDirection() {
-  // TODO(benrg): Code moved from RenderText::GetTextDirection. Needs to be
-  // replaced by a correct Windows implementation.
-  if (base::i18n::IsRTL())
-    return base::i18n::RIGHT_TO_LEFT;
-  return base::i18n::LEFT_TO_RIGHT;
+  EnsureLayout();
+  return (script_state_.uBidiLevel == 0) ?
+      base::i18n::LEFT_TO_RIGHT : base::i18n::RIGHT_TO_LEFT;
 }
 
 Size RenderTextWin::GetStringSize() {
@@ -365,12 +364,13 @@ SelectionModel RenderTextWin::AdjacentCharSelectionModel(
   DCHECK(!needs_layout_);
   internal::TextRun* run;
   size_t run_index = GetRunContainingCaret(selection);
-  if (run_index == runs_.size()) {
+  if (run_index >= runs_.size()) {
     // The cursor is not in any run: we're at the visual and logical edge.
     SelectionModel edge = EdgeSelectionModel(direction);
     if (edge.caret_pos() == selection.caret_pos())
       return edge;
-    run = direction == CURSOR_RIGHT ? runs_.front() : runs_.back();
+    int visual_index = (direction == CURSOR_RIGHT) ? 0 : runs_.size() - 1;
+    run = runs_[visual_to_logical_[visual_index]];
   } else {
     // If the cursor is moving within the current run, just move it by one
     // grapheme in the appropriate direction.
@@ -596,6 +596,13 @@ void RenderTextWin::ItemizeLogicalText() {
   runs_.reset();
   string_size_ = Size(0, GetFont().GetHeight());
   common_baseline_ = 0;
+
+  // Use the first strong character direction as the base text direction.
+  // TODO(msw): Use the application text direction instead of LTR by default?
+  script_state_.uBidiLevel =
+      (base::i18n::GetFirstStrongCharacterDirection(text()) ==
+           base::i18n::RIGHT_TO_LEFT) ? 1 : 0;
+
   if (text().empty())
     return;
 

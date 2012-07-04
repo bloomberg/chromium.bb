@@ -239,11 +239,7 @@ TEST_F(TextfieldViewsModelTest, EditString_ComplexScript) {
 
   // The first 2 characters are not strong directionality characters.
   model.SetText(WideToUTF16(L"\x002C\x0020\x05D1\x05BC\x05B7\x05E9\x05BC"));
-#if defined(OS_WIN)
-  model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
-#else
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_LEFT, false);
-#endif
   EXPECT_TRUE(model.Backspace());
   EXPECT_EQ(WideToUTF16(L"\x002C\x0020\x05D1\x05BC\x05B7\x05E9"),
             model.GetText());

@@ -13,6 +13,10 @@
 #include "base/win/windows_version.h"
 #endif
 
+#if defined(TOOLKIT_GTK)
+#include <gtk/gtk.h>
+#endif
+
 namespace gfx {
 
 namespace {
@@ -22,6 +26,17 @@ namespace {
 // |index| == |range.end()|.
 bool IndexInRange(const ui::Range& range, size_t index) {
   return index >= range.start() && index < range.end();
+}
+
+// A test utility function to set the application default text direction.
+void SetRTL(bool rtl) {
+  // Override the current locale/direction.
+  base::i18n::SetICUDefaultLocale(rtl ? "he" : "en");
+#if defined(TOOLKIT_GTK)
+  // Do the same for GTK, which does not rely on the ICU default locale.
+  gtk_widget_set_default_direction(rtl ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
+#endif
+  EXPECT_EQ(rtl, base::i18n::IsRTL());
 }
 
 }  // namespace
@@ -335,7 +350,6 @@ TEST_F(RenderTextTest, PasswordCensorship) {
 
 // TODO(benrg): No Windows implementation yet.
 #if !defined(OS_WIN)
-
   render_text->SetObscured(true);
 
   // Surrogate pairs are counted as one code point.
@@ -363,6 +377,42 @@ TEST_F(RenderTextTest, PasswordCensorship) {
     TestVisualCursorMotionInObscuredField(render_text.get(), text, true);
   }
 #endif  // !defined(OS_WIN)
+}
+
+TEST_F(RenderTextTest, GetTextDirection) {
+  const bool was_rtl = base::i18n::IsRTL();
+  // Ensure that text direction is set by the first strong character direction.
+  scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
+  for (size_t i = 0; i < 2; ++i) {
+    // Toggle the application default text direction (to try each direction).
+    SetRTL(!base::i18n::IsRTL());
+
+    // Blank strings (and those without directionality) default to LTR.
+    render_text->SetText(string16());
+    EXPECT_EQ(base::i18n::LEFT_TO_RIGHT, render_text->GetTextDirection());
+    render_text->SetText(ASCIIToUTF16(" "));
+    EXPECT_EQ(base::i18n::LEFT_TO_RIGHT, render_text->GetTextDirection());
+
+    // Pure LTR.
+    render_text->SetText(ASCIIToUTF16("abc"));
+    EXPECT_EQ(base::i18n::LEFT_TO_RIGHT, render_text->GetTextDirection());
+    // LTR-RTL
+    render_text->SetText(WideToUTF16(L"abc\x05d0\x05d1\x05d2"));
+    EXPECT_EQ(base::i18n::LEFT_TO_RIGHT, render_text->GetTextDirection());
+    // LTR-RTL-LTR.
+    render_text->SetText(WideToUTF16(L"a"L"\x05d1"L"b"));
+    EXPECT_EQ(base::i18n::LEFT_TO_RIGHT, render_text->GetTextDirection());
+    // Pure RTL.
+    render_text->SetText(WideToUTF16(L"\x05d0\x05d1\x05d2"));
+    EXPECT_EQ(base::i18n::RIGHT_TO_LEFT, render_text->GetTextDirection());
+    // RTL-LTR
+    render_text->SetText(WideToUTF16(L"\x05d0\x05d1\x05d2"L"abc"));
+    EXPECT_EQ(base::i18n::RIGHT_TO_LEFT, render_text->GetTextDirection());
+    // RTL-LTR-RTL.
+    render_text->SetText(WideToUTF16(L"\x05d0"L"a"L"\x05d1"));
+    EXPECT_EQ(base::i18n::RIGHT_TO_LEFT, render_text->GetTextDirection());
+  }
+  EXPECT_EQ(was_rtl, base::i18n::IsRTL());
 }
 
 void RunMoveCursorLeftRightTest(RenderText* render_text,
@@ -459,36 +509,20 @@ TEST_F(RenderTextTest, MoveCursorLeftRightInRtl) {
   render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, false);
   std::vector<SelectionModel> expected;
 
-#if defined(OS_LINUX)
   expected.push_back(SelectionModel(0, CURSOR_BACKWARD));
-#else
-  expected.push_back(SelectionModel(3, CURSOR_FORWARD));
-#endif
   expected.push_back(SelectionModel(1, CURSOR_BACKWARD));
   expected.push_back(SelectionModel(2, CURSOR_BACKWARD));
   expected.push_back(SelectionModel(3, CURSOR_BACKWARD));
-#if defined(OS_LINUX)
   expected.push_back(SelectionModel(3, CURSOR_FORWARD));
-#else
-  expected.push_back(SelectionModel(0, CURSOR_BACKWARD));
-#endif
   RunMoveCursorLeftRightTest(render_text.get(), expected, CURSOR_LEFT);
 
   expected.clear();
 
-#if defined(OS_LINUX)
   expected.push_back(SelectionModel(3, CURSOR_FORWARD));
-#else
-  expected.push_back(SelectionModel(0, CURSOR_BACKWARD));
-#endif
   expected.push_back(SelectionModel(2, CURSOR_FORWARD));
   expected.push_back(SelectionModel(1, CURSOR_FORWARD));
   expected.push_back(SelectionModel(0, CURSOR_FORWARD));
-#if defined(OS_LINUX)
   expected.push_back(SelectionModel(0, CURSOR_BACKWARD));
-#else
-  expected.push_back(SelectionModel(3, CURSOR_FORWARD));
-#endif
   RunMoveCursorLeftRightTest(render_text.get(), expected, CURSOR_RIGHT);
 }
 
@@ -498,7 +532,6 @@ TEST_F(RenderTextTest, MoveCursorLeftRightInRtlLtr) {
   render_text->SetText(WideToUTF16(L"\x05d0\x05d1\x05d2"L"abc"));
   render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, false);
   std::vector<SelectionModel> expected;
-#if defined(OS_LINUX)
   expected.push_back(SelectionModel(0, CURSOR_BACKWARD));
   expected.push_back(SelectionModel(1, CURSOR_BACKWARD));
   expected.push_back(SelectionModel(2, CURSOR_BACKWARD));
@@ -507,21 +540,9 @@ TEST_F(RenderTextTest, MoveCursorLeftRightInRtlLtr) {
   expected.push_back(SelectionModel(4, CURSOR_FORWARD));
   expected.push_back(SelectionModel(3, CURSOR_FORWARD));
   expected.push_back(SelectionModel(6, CURSOR_FORWARD));
-#else
-  expected.push_back(SelectionModel(6, CURSOR_FORWARD));
-  expected.push_back(SelectionModel(5, CURSOR_FORWARD));
-  expected.push_back(SelectionModel(4, CURSOR_FORWARD));
-  expected.push_back(SelectionModel(3, CURSOR_FORWARD));
-  expected.push_back(SelectionModel(1, CURSOR_BACKWARD));
-  expected.push_back(SelectionModel(2, CURSOR_BACKWARD));
-  expected.push_back(SelectionModel(3, CURSOR_BACKWARD));
-  expected.push_back(SelectionModel(0, CURSOR_BACKWARD));
-#endif
-
   RunMoveCursorLeftRightTest(render_text.get(), expected, CURSOR_LEFT);
 
   expected.clear();
-#if defined(OS_LINUX)
   expected.push_back(SelectionModel(6, CURSOR_FORWARD));
   expected.push_back(SelectionModel(4, CURSOR_BACKWARD));
   expected.push_back(SelectionModel(5, CURSOR_BACKWARD));
@@ -530,16 +551,6 @@ TEST_F(RenderTextTest, MoveCursorLeftRightInRtlLtr) {
   expected.push_back(SelectionModel(1, CURSOR_FORWARD));
   expected.push_back(SelectionModel(0, CURSOR_FORWARD));
   expected.push_back(SelectionModel(0, CURSOR_BACKWARD));
-#else
-  expected.push_back(SelectionModel(0, CURSOR_BACKWARD));
-  expected.push_back(SelectionModel(2, CURSOR_FORWARD));
-  expected.push_back(SelectionModel(1, CURSOR_FORWARD));
-  expected.push_back(SelectionModel(0, CURSOR_FORWARD));
-  expected.push_back(SelectionModel(4, CURSOR_BACKWARD));
-  expected.push_back(SelectionModel(5, CURSOR_BACKWARD));
-  expected.push_back(SelectionModel(6, CURSOR_BACKWARD));
-  expected.push_back(SelectionModel(6, CURSOR_FORWARD));
-#endif
   RunMoveCursorLeftRightTest(render_text.get(), expected, CURSOR_RIGHT);
 }
 
@@ -549,35 +560,19 @@ TEST_F(RenderTextTest, MoveCursorLeftRightInRtlLtrRtl) {
   render_text->SetText(WideToUTF16(L"\x05d0"L"a"L"\x05d1"));
   render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, false);
   std::vector<SelectionModel> expected;
-#if defined(OS_LINUX)
   expected.push_back(SelectionModel(0, CURSOR_BACKWARD));
   expected.push_back(SelectionModel(1, CURSOR_BACKWARD));
   expected.push_back(SelectionModel(1, CURSOR_FORWARD));
   expected.push_back(SelectionModel(3, CURSOR_BACKWARD));
   expected.push_back(SelectionModel(3, CURSOR_FORWARD));
-#else
-  expected.push_back(SelectionModel(3, CURSOR_FORWARD));
-  expected.push_back(SelectionModel(3, CURSOR_BACKWARD));
-  expected.push_back(SelectionModel(1, CURSOR_FORWARD));
-  expected.push_back(SelectionModel(1, CURSOR_BACKWARD));
-  expected.push_back(SelectionModel(0, CURSOR_BACKWARD));
-#endif
   RunMoveCursorLeftRightTest(render_text.get(), expected, CURSOR_LEFT);
 
   expected.clear();
-#if defined(OS_LINUX)
   expected.push_back(SelectionModel(3, CURSOR_FORWARD));
   expected.push_back(SelectionModel(2, CURSOR_FORWARD));
   expected.push_back(SelectionModel(2, CURSOR_BACKWARD));
   expected.push_back(SelectionModel(0, CURSOR_FORWARD));
   expected.push_back(SelectionModel(0, CURSOR_BACKWARD));
-#else
-  expected.push_back(SelectionModel(0, CURSOR_BACKWARD));
-  expected.push_back(SelectionModel(0, CURSOR_FORWARD));
-  expected.push_back(SelectionModel(2, CURSOR_BACKWARD));
-  expected.push_back(SelectionModel(2, CURSOR_FORWARD));
-  expected.push_back(SelectionModel(3, CURSOR_FORWARD));
-#endif
   RunMoveCursorLeftRightTest(render_text.get(), expected, CURSOR_RIGHT);
 }
 
@@ -706,14 +701,8 @@ TEST_F(RenderTextTest, EdgeSelectionModels) {
     { kLatin,       base::i18n::LEFT_TO_RIGHT },
     { kLTRGrapheme, base::i18n::LEFT_TO_RIGHT },
     { kHindiLatin,  base::i18n::LEFT_TO_RIGHT },
-#if defined(OS_LINUX)
-    // On Linux, the whole string is displayed RTL, rather than individual runs.
     { kRTLGrapheme, base::i18n::RIGHT_TO_LEFT },
     { kHebrewLatin, base::i18n::RIGHT_TO_LEFT },
-#else
-    { kRTLGrapheme, base::i18n::LEFT_TO_RIGHT },
-    { kHebrewLatin, base::i18n::LEFT_TO_RIGHT },
-#endif
   };
 
   // TODO(asvitkine): Disable tests that fail on XP bots due to lack of complete
@@ -1187,12 +1176,10 @@ TEST_F(RenderTextTest, DisplayRectShowsCursorLTR) {
   EXPECT_EQ(width, render_text->GetUpdatedCursorBounds().x());
 }
 
-// TODO(asvitkine): This test fails on desktop Linux. http://crbug.com/134009
-#if !defined(OS_LINUX) || defined(OS_CHROMEOS)
 TEST_F(RenderTextTest, DisplayRectShowsCursorRTL) {
-  // Set the locale to Hebrew for RTL UI.
-  std::string locale = l10n_util::GetApplicationLocale("");
-  base::i18n::SetICUDefaultLocale("he");
+  // Set the application default text direction to RTL.
+  const bool was_rtl = base::i18n::IsRTL();
+  SetRTL(true);
 
   scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
   render_text->SetText(WideToUTF16(L"abcdefghijklmnopqrstuvwxzyabcdefg"));
@@ -1244,9 +1231,9 @@ TEST_F(RenderTextTest, DisplayRectShowsCursorRTL) {
   EXPECT_EQ(render_text->display_rect().width() - width - 1,
             render_text->GetUpdatedCursorBounds().x());
 
-  // Reset locale.
-  base::i18n::SetICUDefaultLocale(locale);
+  // Reset the application default text direction to LTR.
+  SetRTL(was_rtl);
+  EXPECT_EQ(was_rtl, base::i18n::IsRTL());
 }
-#endif  // !defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 }  // namespace gfx

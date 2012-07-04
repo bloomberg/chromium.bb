@@ -1407,14 +1407,7 @@ TEST_F(NativeTextfieldViewsTest, TextCursorDisplayInRTLTest) {
   SendKeyEvent('a');
   EXPECT_EQ(WideToUTF16(L"\x05E1\x5E2"L"a"), textfield_->text());
   x = GetCursorBounds().x();
-#if defined(OS_WIN)
-  // In Windows, the text is always in LTR directionality even in RTL UI.
-  // TODO(xji): it should change if we fix the directionality in Window's
-  // NativeTextfieldViews
-  EXPECT_LT(prev_x, x);
-#else
   EXPECT_EQ(prev_x, x);
-#endif
   prev_x = x;
 
   SendKeyEvent('b');
@@ -1504,20 +1497,12 @@ TEST_F(NativeTextfieldViewsTest, HitOutsideTextAreaTest) {
 
   SendKeyEvent(ui::VKEY_HOME);
   bound = GetCursorBounds();
-#if defined(OS_WIN)
-  MouseClick(bound, -10);
-#else
   MouseClick(bound, 10);
-#endif
   EXPECT_EQ(bound, GetCursorBounds());
 
   SendKeyEvent(ui::VKEY_END);
   bound = GetCursorBounds();
-#if defined(OS_WIN)
-  MouseClick(bound, 10);
-#else
   MouseClick(bound, -10);
-#endif
   EXPECT_EQ(bound, GetCursorBounds());
 }
 
@@ -1545,20 +1530,12 @@ TEST_F(NativeTextfieldViewsTest, HitOutsideTextAreaInRTLTest) {
   textfield_->SetText(WideToUTF16(L"ab\x05E1\x5E2"));
   SendKeyEvent(ui::VKEY_HOME);
   bound = GetCursorBounds();
-#if defined(OS_WIN)
-  MouseClick(bound, 10);
-#else
   MouseClick(bound, -10);
-#endif
   EXPECT_EQ(bound, GetCursorBounds());
 
   SendKeyEvent(ui::VKEY_END);
   bound = GetCursorBounds();
-#if defined(OS_WIN)
-  MouseClick(bound, -10);
-#else
   MouseClick(bound, 10);
-#endif
   EXPECT_EQ(bound, GetCursorBounds());
 
   // Reset locale.
@@ -1642,14 +1619,7 @@ TEST_F(NativeTextfieldViewsTest, OverflowInRTLTest) {
   NonClientMouseClick();
 
   MouseClick(bound, 1);
-#if defined(OS_WIN)
-  // In Windows, the text is always in LTR directionality even in RTL UI.
-  // TODO(xji): it should change if we fix the directionality in Window's
-  // NativeTextfieldViews
-  EXPECT_EQ(0U, textfield_->GetCursorPosition());
-#else
   EXPECT_EQ(500U, textfield_->GetCursorPosition());
-#endif
 #endif  // !defined(OS_WIN)
 
   // Reset locale.

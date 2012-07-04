@@ -22,9 +22,10 @@ namespace {
 // If necessary, wraps |text| with RTL/LTR directionality characters based on
 // |flags| and |text| content.
 // Returns true if the text will be rendered right-to-left.
-// TODO(asvitkine): Support setting directionality directly on RenderText, so
-//                  that wrapping the text is not needed.
+// TODO(msw): Nix this, now that RenderTextWin supports directionality directly.
 bool AdjustStringDirection(int flags, string16* text) {
+  // TODO(msw): FORCE_LTR_DIRECTIONALITY does not work for RTL text now.
+
   // If the string is empty or LTR was forced, simply return false since the
   // default RenderText directionality is already LTR.
   if (text->empty() || (flags & gfx::Canvas::FORCE_LTR_DIRECTIONALITY))
