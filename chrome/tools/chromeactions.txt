@@ -122,6 +122,7 @@
 0xbecb3852be04c506	BadMessageTerminate_IDBMF
 0xd7e4d61883121c76	BadMessageTerminate_NC
 0x448f44d226b839b7	BadMessageTerminate_NC17
+0xd267646495d87640	BadMessageTerminate_RDH
 0xce2d3186346ab161	BadMessageTerminate_RVD
 0xf845124429e7aa80	BadMessageTerminate_RVH
 0xcb59a352ad13dc91	BadMessageTerminate_RWH
@@ -840,6 +841,7 @@
 0xcbbec2e6e4bc9bc7	MediaContextMenu_Pause
 0x8b5912c6a1d5add6	MediaContextMenu_Play
 0xc2d04b65a8ff1f89	MediaContextMenu_Unmute
+0xfa4408343dc15b72	MixedScript_LoadAnyway_Bubble
 0x409a073e57298782	MostVisited0
 0xaf4909be766297ab	MostVisited1
 0x6028c57529e1608f	MostVisited2
@@ -1228,6 +1230,10 @@
 0xedf6e4b0b320885f	ToggleItalic
 0x904d810f7dd68a8e	ToggleUnderline
 0xb92bc75c64039682	Toolbar_DragStar
+0x8ce9fbd537e4983c	TouchscreenScroll
+0x112c55c811540624	TouchscreenScrollFling
+0x5d7f9a146f393dfc	TrackpadScroll
+0x6f2d421111db4527	TrackpadScrollFling
 0xaf70b1ac863830a4	Transpose
 0x852721aa5fc738df	Underline
 0x1cdc076b28f70afa	Undo
