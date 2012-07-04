@@ -781,6 +781,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kExperimentalWallpaperUI)
   },
   {
+    "enable-html5-camera",
+    IDS_FLAGS_ENABLE_HTML5_CAMERA,
+    IDS_FLAGS_ENABLE_HTML5_CAMERA_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableHtml5Camera),
+  },
+  {
     "enable-new-oobe",
     IDS_FLAGS_ENABLE_NEW_OOBE,
     IDS_FLAGS_ENABLE_NEW_OOBE_DESCRIPTION,
