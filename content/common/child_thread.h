@@ -18,8 +18,11 @@
 class FileSystemDispatcher;
 class MessageLoop;
 class QuotaDispatcher;
-class ResourceDispatcher;
 class SocketStreamDispatcher;
+
+namespace content {
+class ResourceDispatcher;
+}
 
 namespace IPC {
 class SyncChannel;
@@ -61,7 +64,7 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   // but on windows the child process directly allocates the block.
   base::SharedMemory* AllocateSharedMemory(size_t buf_size);
 
-  ResourceDispatcher* resource_dispatcher();
+  content::ResourceDispatcher* resource_dispatcher();
 
   SocketStreamDispatcher* socket_stream_dispatcher() {
     return socket_stream_dispatcher_.get();
@@ -129,7 +132,7 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   MessageRouter router_;
 
   // Handles resource loads for this process.
-  scoped_ptr<ResourceDispatcher> resource_dispatcher_;
+  scoped_ptr<content::ResourceDispatcher> resource_dispatcher_;
 
   // Handles SocketStream for this process.
   scoped_ptr<SocketStreamDispatcher> socket_stream_dispatcher_;

@@ -21,6 +21,8 @@
 using webkit_glue::ResourceLoaderBridge;
 using webkit_glue::ResourceResponseInfo;
 
+namespace content {
+
 static const char test_page_url[] = "http://www.google.com/";
 static const char test_page_headers[] =
   "HTTP/1.1 200 OK\nContent-Type:text/html\n\n";
@@ -113,7 +115,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
       EXPECT_EQ(test_page_url, request.url.spec());
 
       // received response message
-      content::ResourceResponseHead response;
+      ResourceResponseHead response;
       std::string raw_headers(test_page_headers);
       std::replace(raw_headers.begin(), raw_headers.end(), '\n', '\0');
       response.headers = new net::HttpResponseHeaders(raw_headers);
@@ -172,7 +174,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     request_info.routing_id = 0;
     RequestExtraData extra_data(WebKit::WebReferrerPolicyDefault,
                                 true, 0, false, -1, true,
-                                content::PAGE_TRANSITION_LINK, -1, -1);
+                                PAGE_TRANSITION_LINK, -1, -1);
     request_info.extra_data = &extra_data;
 
     return dispatcher_->CreateBridge(request_info);
@@ -241,7 +243,7 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
   void InitMessages() {
     set_defer_loading(true);
 
-    content::ResourceResponseHead response_head;
+    ResourceResponseHead response_head;
     response_head.status.set_status(net::URLRequestStatus::SUCCESS);
 
     IPC::Message* response_message =
@@ -339,3 +341,5 @@ TEST_F(DeferredResourceLoadingTest, DeferredLoadTest) {
   message_loop.RunAllPending();
   delete bridge;
 }
+
+}  // namespace content

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,6 @@
 namespace content {
 class ResourceDispatcherDelegate;
 struct ResourceResponseHead;
-}
 
 // This class serves as a communication interface between the
 // ResourceDispatcherHost in the browser process and the ResourceLoaderBridge in
@@ -65,7 +64,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
 
   // This does not take ownership of the delegate. It is expected that the
   // delegate have a longer lifetime than the ResourceDispatcher.
-  void set_delegate(content::ResourceDispatcherDelegate* delegate) {
+  void set_delegate(ResourceDispatcherDelegate* delegate) {
     delegate_ = delegate;
   }
 
@@ -110,13 +109,13 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
       int request_id,
       int64 position,
       int64 size);
-  void OnReceivedResponse(int request_id, const content::ResourceResponseHead&);
+  void OnReceivedResponse(int request_id, const ResourceResponseHead&);
   void OnReceivedCachedMetadata(int request_id, const std::vector<char>& data);
   void OnReceivedRedirect(
       const IPC::Message& message,
       int request_id,
       const GURL& new_url,
-      const content::ResourceResponseHead& response_head);
+      const ResourceResponseHead& response_head);
   void OnReceivedData(
       const IPC::Message& message,
       int request_id,
@@ -142,7 +141,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
 
   void ToResourceResponseInfo(
       const PendingRequestInfo& request_info,
-      const content::ResourceResponseHead& browser_info,
+      const ResourceResponseHead& browser_info,
       webkit_glue::ResourceResponseInfo* renderer_info) const;
 
   base::TimeTicks ToRendererCompletionTime(
@@ -170,9 +169,11 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
 
   base::WeakPtrFactory<ResourceDispatcher> weak_factory_;
 
-  content::ResourceDispatcherDelegate* delegate_;
+  ResourceDispatcherDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcher);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_RESOURCE_DISPATCHER_H_

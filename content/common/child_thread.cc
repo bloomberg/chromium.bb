@@ -28,6 +28,7 @@
 #include "content/common/handle_enumerator_win.h"
 #endif
 
+using content::ResourceDispatcher;
 using tracked_objects::ThreadData;
 
 ChildThread::ChildThread() {
