@@ -114,13 +114,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
-    session_manager_proxy_->ConnectToSignal(
-        chromium::kChromiumInterface,
-        chromium::kUnlockScreenFailedSignal,
-        base::Bind(&PowerManagerClientImpl::ScreenUnlockFailedSignalReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&PowerManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
 
     power_manager_proxy_->ConnectToSignal(
         power_manager::kPowerManagerInterface,
@@ -585,10 +578,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
                               UNLOCK_SCREEN_FINISHED,
                               NUM_UNLOCK_SCREEN_STATES);
     FOR_EACH_OBSERVER(Observer, observers_, UnlockScreen());
-  }
-
-  void ScreenUnlockFailedSignalReceived(dbus::Signal* signal) {
-    FOR_EACH_OBSERVER(Observer, observers_, UnlockScreenFailed());
   }
 
   void IdleNotifySignalReceived(dbus::Signal* signal) {

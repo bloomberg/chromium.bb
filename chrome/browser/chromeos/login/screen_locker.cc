@@ -103,10 +103,6 @@ class ScreenLockObserver : public chromeos::PowerManagerClient::Observer,
     chromeos::ScreenLocker::Hide();
   }
 
-  virtual void UnlockScreenFailed() OVERRIDE {
-    chromeos::ScreenLocker::UnlockScreenFailed();
-  }
-
  private:
   bool session_started_;
   content::NotificationRegistrar registrar_;
@@ -312,24 +308,6 @@ void ScreenLocker::Hide() {
   DCHECK(screen_locker_);
   VLOG(1) << "Hide: Deleting ScreenLocker: " << screen_locker_;
   MessageLoopForUI::current()->DeleteSoon(FROM_HERE, screen_locker_);
-}
-
-// static
-void ScreenLocker::UnlockScreenFailed() {
-  DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
-  if (screen_locker_) {
-    // Power manager decided no to unlock the screen even if a user
-    // typed in password, for example, when a user closed the lid
-    // immediately after typing in the password.
-    VLOG(1) << "UnlockScreenFailed: re-enabling screen locker.";
-    screen_locker_->EnableInput();
-  } else {
-    // This can happen when a user requested unlock, but PowerManager
-    // rejected because the computer is closed, then PowerManager unlocked
-    // because it's open again and the above failure message arrives.
-    // This'd be extremely rare, but may still happen.
-    VLOG(1) << "UnlockScreenFailed: screen is already unlocked.";
-  }
 }
 
 // static

@@ -963,9 +963,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         UpdateAfterLoginStatusChange(GetUserLoginStatus());
   }
 
-  virtual void UnlockScreenFailed() OVERRIDE {
-  }
-
   // TODO(sad): Override more from PowerManagerClient::Observer here (e.g.
   // PowerButtonStateChanged etc.).
 

@@ -93,9 +93,6 @@ class ScreenLocker : public LoginStatusConsumer {
   // Hide the screen locker.
   static void Hide();
 
-  // Notifies that PowerManager rejected UnlockScreen request.
-  static void UnlockScreenFailed();
-
   // Returns the tester
   static test::ScreenLockerTester* GetTester();
 

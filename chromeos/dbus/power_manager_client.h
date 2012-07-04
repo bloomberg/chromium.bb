@@ -80,9 +80,6 @@ class CHROMEOS_EXPORT PowerManagerClient {
     // Called when the screen is unlocked.
     virtual void UnlockScreen() {}
 
-    // Called when the screen fails to unlock.
-    virtual void UnlockScreenFailed() {}
-
     // Called when we go idle for threshold time.
     virtual void IdleNotify(int64 threshold_secs) {}
 
