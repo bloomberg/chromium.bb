@@ -180,8 +180,8 @@ SearchBuilder::SearchBuilder(
       results_(results) {
   search_box_->SetHintText(
       l10n_util::GetStringUTF16(IDS_SEARCH_BOX_HINT));
-  search_box_->SetIcon(*ResourceBundle::GetSharedInstance().
-      GetBitmapNamed(IDR_OMNIBOX_SEARCH));
+  search_box_->SetIcon(*ui::ResourceBundle::GetSharedInstance().
+      GetImageSkiaNamed(IDR_OMNIBOX_SEARCH));
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kAppListShowAppsOnly)) {
