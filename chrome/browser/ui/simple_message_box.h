@@ -9,7 +9,7 @@
 #include "base/string16.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace browser {
+namespace chrome {
 
 enum MessageBoxResult {
   MESSAGE_BOX_RESULT_NO = 0,
@@ -35,6 +35,6 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
                                 const string16& message,
                                 MessageBoxType type);
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_SIMPLE_MESSAGE_BOX_H_

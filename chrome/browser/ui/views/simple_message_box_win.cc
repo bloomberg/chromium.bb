@@ -6,7 +6,7 @@
 
 #include "ui/base/win/message_box_win.h"
 
-namespace browser {
+namespace chrome {
 
 MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
                                 const string16& title,
@@ -20,4 +20,4 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
       MESSAGE_BOX_RESULT_NO : MESSAGE_BOX_RESULT_YES;
 }
 
-}  // namespace browser
+}  // namespace chrome

@@ -91,19 +91,18 @@ void RecordBreakpadStatusUMA(MetricsService* metrics) {
 
 void WarnAboutMinimumSystemRequirements() {
   if (base::win::GetVersion() < base::win::VERSION_XP) {
-    const string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-    const string16 message =
-        l10n_util::GetStringUTF16(IDS_UNSUPPORTED_OS_PRE_WIN_XP);
-    browser::ShowMessageBox(NULL, title, message,
-                            browser::MESSAGE_BOX_TYPE_WARNING);
+    chrome::ShowMessageBox(NULL,
+        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+        l10n_util::GetStringUTF16(IDS_UNSUPPORTED_OS_PRE_WIN_XP),
+        chrome::MESSAGE_BOX_TYPE_WARNING);
   }
 }
 
 void ShowCloseBrowserFirstMessageBox() {
-  const string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-  const string16 message = l10n_util::GetStringUTF16(IDS_UNINSTALL_CLOSE_APP);
-  browser::ShowMessageBox(NULL, title, message,
-                          browser::MESSAGE_BOX_TYPE_WARNING);
+  chrome::ShowMessageBox(NULL,
+                         l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+                         l10n_util::GetStringUTF16(IDS_UNINSTALL_CLOSE_APP),
+                         chrome::MESSAGE_BOX_TYPE_WARNING);
 }
 
 int DoUninstallTasks(bool chrome_still_running) {

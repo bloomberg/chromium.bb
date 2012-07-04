@@ -158,9 +158,9 @@ void ImporterHost::StartImportSettings(
 void ImporterHost::OnGoogleGAIACookieChecked(bool result) {
 #if defined(OS_WIN)
   if (!result) {
-    browser::ShowMessageBox(NULL,
+    chrome::ShowMessageBox(NULL,
         l10n_util::GetStringUTF16(IDS_IMPORTER_GOOGLE_LOGIN_TEXT), string16(),
-        browser::MESSAGE_BOX_TYPE_INFORMATION);
+        chrome::MESSAGE_BOX_TYPE_INFORMATION);
 
     GURL url("https://accounts.google.com/ServiceLogin");
     DCHECK(profile_);

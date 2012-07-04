@@ -23,7 +23,7 @@
 #include "ui/aura/root_window.h"
 #endif
 
-namespace browser {
+namespace chrome {
 
 namespace {
 
@@ -187,4 +187,4 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
   return dialog->result();
 }
 
-}  // namespace browser
+}  // namespace chrome

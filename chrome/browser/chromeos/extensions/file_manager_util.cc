@@ -214,13 +214,13 @@ void ShowWarningMessageBox(Profile* profile, const FilePath& path) {
   // TODO: if FindOrCreateTabbedBrowser creates a new browser the returned
   // browser is leaked.
   Browser* browser = browser::FindOrCreateTabbedBrowser(profile);
-  browser::ShowMessageBox(
+  chrome::ShowMessageBox(
       browser->window()->GetNativeWindow(),
       l10n_util::GetStringFUTF16(
           IDS_FILE_BROWSER_ERROR_VIEWING_FILE_TITLE,
           UTF8ToUTF16(path.BaseName().value())),
       l10n_util::GetStringUTF16(IDS_FILE_BROWSER_ERROR_VIEWING_FILE),
-      browser::MESSAGE_BOX_TYPE_WARNING);
+      chrome::MESSAGE_BOX_TYPE_WARNING);
 }
 
 // Called when a file on GData was found. Opens the file found at |file_path|

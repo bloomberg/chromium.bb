@@ -18,16 +18,16 @@ void ExtensionsStartupUtil::OnPackSuccess(
     const FilePath& crx_path,
     const FilePath& output_private_key_path) {
   pack_job_succeeded_ = true;
-  browser::ShowMessageBox(NULL, ASCIIToUTF16("Extension Packaging Success"),
+  chrome::ShowMessageBox(NULL, ASCIIToUTF16("Extension Packaging Success"),
       PackExtensionJob::StandardSuccessMessage(crx_path,
                                                output_private_key_path),
-      browser::MESSAGE_BOX_TYPE_INFORMATION);
+      chrome::MESSAGE_BOX_TYPE_INFORMATION);
 }
 
 void ExtensionsStartupUtil::OnPackFailure(const std::string& error_message,
                                           ExtensionCreator::ErrorType type) {
-  browser::ShowMessageBox(NULL, ASCIIToUTF16("Extension Packaging Error"),
-      UTF8ToUTF16(error_message), browser::MESSAGE_BOX_TYPE_WARNING);
+  chrome::ShowMessageBox(NULL, ASCIIToUTF16("Extension Packaging Error"),
+      UTF8ToUTF16(error_message), chrome::MESSAGE_BOX_TYPE_WARNING);
 }
 
 bool ExtensionsStartupUtil::PackExtension(const CommandLine& cmd_line) {

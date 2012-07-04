@@ -179,11 +179,11 @@ void ChromeWebContentsViewDelegateGtk::OnSetFloatingPosition(
   g_value_unset(&value);
 }
 
-namespace browser {
+namespace chrome {
 
 content::WebContentsViewDelegate* CreateWebContentsViewDelegate(
     content::WebContents* web_contents) {
   return new ChromeWebContentsViewDelegateGtk(web_contents);
 }
 
-}  // namespace browser
+}  // namespace chrome

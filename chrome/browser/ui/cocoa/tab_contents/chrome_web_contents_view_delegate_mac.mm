@@ -53,11 +53,11 @@ void ChromeWebContentsViewDelegateMac::ShowContextMenu(
   context_menu_->Init();
 }
 
-namespace browser {
+namespace chrome {
 
 content::WebContentsViewDelegate* CreateWebContentsViewDelegate(
     content::WebContents* web_contents) {
   return new ChromeWebContentsViewDelegateMac(web_contents);
 }
 
-}  // namespace browser
+}  // namespace chrome

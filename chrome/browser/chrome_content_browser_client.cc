@@ -407,7 +407,7 @@ content::WebContentsView*
 content::WebContentsViewDelegate*
     ChromeContentBrowserClient::GetWebContentsViewDelegate(
         content::WebContents* web_contents) {
-  return browser::CreateWebContentsViewDelegate(web_contents);
+  return chrome::CreateWebContentsViewDelegate(web_contents);
 }
 
 void ChromeContentBrowserClient::RenderViewHostCreated(

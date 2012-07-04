@@ -41,7 +41,7 @@ void OnDialogResponse(GtkWidget* widget, int response, void* user_data) {
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
 MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
                                 const string16& title,
@@ -82,4 +82,4 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
   return MESSAGE_BOX_RESULT_YES;
 }
 
-}  // namespace browser
+}  // namespace chrome

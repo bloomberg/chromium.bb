@@ -13,9 +13,9 @@ void ShowProfileErrorDialog(int message_id) {
 #if defined(OS_ANDROID)
   NOTIMPLEMENTED();
 #else
-  browser::ShowMessageBox(NULL,
-                          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-                          l10n_util::GetStringUTF16(message_id),
-                          browser::MESSAGE_BOX_TYPE_WARNING);
+  chrome::ShowMessageBox(NULL,
+                         l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+                         l10n_util::GetStringUTF16(message_id),
+                         chrome::MESSAGE_BOX_TYPE_WARNING);
 #endif
 }
