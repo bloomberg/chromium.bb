@@ -1109,9 +1109,10 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
     done();
   }
 
-  function onSingleError(index, error, defaultValue) {
+  function onSingleError(index, defaultValue, error) {
     groups[index] = defaultValue || [];
     done();
+    console.error('Error resolving root dir ', index, 'error: ', error);
   }
 
   var root = this.root_;
