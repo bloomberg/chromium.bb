@@ -4,6 +4,7 @@
 
 #include "net/tools/flip_server/spdy_interface.h"
 
+#include <algorithm>
 #include <string>
 
 #include "net/spdy/spdy_framer.h"
@@ -388,11 +389,14 @@ void SpdySM::CopyHeaders(SpdyHeaderBlock& dest, const BalsaHeaders& headers) {
     if (!hi->first.length() || !hi->second.length())
       continue;
 
-    SpdyHeaderBlock::iterator fhi = dest.find(hi->first.as_string());
+    // Key must be all lower case in SPDY headers.
+    std::string key = hi->first.as_string();
+    std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+    SpdyHeaderBlock::iterator fhi = dest.find(key);
     if (fhi == dest.end()) {
-      dest[hi->first.as_string()] = hi->second.as_string();
+      dest[key] = hi->second.as_string();
     } else {
-      dest[hi->first.as_string()] = (
+      dest[key] = (
           std::string(fhi->second.data(), fhi->second.size()) + "\0" +
           std::string(hi->second.data(), hi->second.size()));
     }
