@@ -546,7 +546,7 @@ void PrintPreviewHandler::OnSigninComplete(
 
 void PrintPreviewHandler::HandleSignin(const ListValue* /*args*/) {
   gfx::NativeWindow modal_parent =
-      preview_web_contents()->GetView()->GetTopLevelNativeWindow();
+      platform_util::GetTopLevel(preview_web_contents()->GetNativeView());
   print_dialog_cloud::CreateCloudPrintSigninDialog(
       preview_web_contents()->GetBrowserContext(),
       modal_parent,
@@ -570,7 +570,7 @@ void PrintPreviewHandler::HandlePrintWithCloudPrint(const ListValue* /*args*/) {
   DCHECK_GT(data->size(), 0U);
 
   gfx::NativeWindow modal_parent =
-      preview_web_contents()->GetView()->GetTopLevelNativeWindow();
+      platform_util::GetTopLevel(preview_web_contents()->GetNativeView());
   print_dialog_cloud::CreatePrintDialogForBytes(
       preview_web_contents()->GetBrowserContext(),
       modal_parent,
