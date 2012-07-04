@@ -169,33 +169,54 @@ class Line(object):
     self.number = number
 
 class LeafNode(object):
-  def trimLeadingNewLine(self):
+  def __init__(self, line):
+    self._line = line
+
+  def startsWithNewLine(self):
+    return False
+
+  def trimStartingNewLine(self):
     pass
 
-  def trimTrailingSpaces(self):
+  def trimEndingSpaces(self):
     return 0
 
-  def trimTrailingNewLine(self):
+  def trimEndingNewLine(self):
     pass
 
-  def trailsWithEmptyLine(self):
+  def endsWithEmptyLine(self):
     return False
+
+  def getStartLine(self):
+    return self._line
+
+  def getEndLine(self):
+    return self._line
 
 class DecoratorNode(object):
   def __init__(self, content):
     self._content = content
 
-  def trimLeadingNewLine(self):
-    self._content.trimLeadingNewLine()
+  def startsWithNewLine(self):
+    return self._content.startsWithNewLine()
 
-  def trimTrailingSpaces(self):
-    return self._content.trimTrailingSpaces()
+  def trimStartingNewLine(self):
+    self._content.trimStartingNewLine()
 
-  def trimTrailingNewLine(self):
-    self._content.trimTrailingNewLine()
+  def trimEndingSpaces(self):
+    return self._content.trimEndingSpaces()
 
-  def trailsWithEmptyLine(self):
-    return self._content.trailsWithEmptyLine()
+  def trimEndingNewLine(self):
+    self._content.trimEndingNewLine()
+
+  def endsWithEmptyLine(self):
+    return self._content.endsWithEmptyLine()
+
+  def getStartLine(self):
+    return self._content.getStartLine()
+
+  def getEndLine(self):
+    return self._content.getEndLine()
 
 class InlineNode(DecoratorNode):
   def __init__(self, content):
@@ -235,61 +256,71 @@ class IndentedNode(DecoratorNode):
 class BlockNode(DecoratorNode):
   def __init__(self, content):
     DecoratorNode.__init__(self, content)
-    content.trimLeadingNewLine()
-    content.trimTrailingSpaces()
+    content.trimStartingNewLine()
+    content.trimEndingSpaces()
 
   def render(self, renderState):
     self._content.render(renderState)
 
 class NodeCollection(object):
   def __init__(self, nodes):
+    if len(nodes) == 0:
+      raise ValueError()
     self._nodes = nodes
 
   def render(self, renderState):
     for node in self._nodes:
       node.render(renderState)
 
-  def trimLeadingNewLine(self):
-    if len(self._nodes) > 0:
-      self._nodes[0].trimLeadingNewLine()
+  def startsWithNewLine(self):
+    return self._nodes[0].startsWithNewLine()
 
-  def trimTrailingSpaces(self):
-    if len(self._nodes) > 0:
-      return self._nodes[-1].trimTrailingSpaces()
-    return 0
+  def trimStartingNewLine(self):
+    self._nodes[0].trimStartingNewLine()
 
-  def trimTrailingNewLine(self):
-    if len(self._nodes) > 0:
-      self._nodes[-1].trimTrailingNewLine()
+  def trimEndingSpaces(self):
+    return self._nodes[-1].trimEndingSpaces()
 
-  def trailsWithEmptyLine(self):
-    if len(self._nodes) > 0:
-      return self._nodes[-1].trailsWithEmptyLine()
-    return False
+  def trimEndingNewLine(self):
+    self._nodes[-1].trimEndingNewLine()
+
+  def endsWithEmptyLine(self):
+    return self._nodes[-1].endsWithEmptyLine()
+
+  def getStartLine(self):
+    return self._nodes[0].getStartLine()
+
+  def getEndLine(self):
+    return self._nodes[-1].getEndLine()
 
 class StringNode(object):
   """ Just a string.
   """
-  def __init__(self, string):
+  def __init__(self, string, startLine, endLine):
     self._string = string
+    self._startLine = startLine
+    self._endLine = endLine
 
   def render(self, renderState):
     renderState.text.append(self._string)
 
-  def trimLeadingNewLine(self):
-    if self._string.startswith('\n'):
+  def startsWithNewLine(self):
+    return self._string.startswith('\n')
+
+  def trimStartingNewLine(self):
+    if self.startsWithNewLine():
       self._string = self._string[1:]
 
-  def trimTrailingSpaces(self):
+  def trimEndingSpaces(self):
     originalLength = len(self._string)
     self._string = self._string[:self._lastIndexOfSpaces()]
     return originalLength - len(self._string)
 
-  def trimTrailingNewLine(self):
+  def trimEndingNewLine(self):
     if self._string.endswith('\n'):
       self._string = self._string[:len(self._string) - 1]
 
-  def trailsWithEmptyLine(self):
+  def endsWithEmptyLine(self):
     index = self._lastIndexOfSpaces()
     return index == 0 or self._string[index - 1] == '\n'
 
@@ -299,10 +330,17 @@ class StringNode(object):
       index -= 1
     return index
 
+  def getStartLine(self):
+    return self._startLine
+
+  def getEndLine(self):
+    return self._endLine
+
 class EscapedVariableNode(LeafNode):
   """ {{foo}}
   """
-  def __init__(self, id):
+  def __init__(self, id, line):
+    LeafNode.__init__(self, line)
     self._id = id
 
   def render(self, renderState):
@@ -324,7 +362,8 @@ class EscapedVariableNode(LeafNode):
 class UnescapedVariableNode(LeafNode):
   """ {{{foo}}}
   """
-  def __init__(self, id):
+  def __init__(self, id, line):
+    LeafNode.__init__(self, line)
     self._id = id
 
   def render(self, renderState):
@@ -403,7 +442,8 @@ class InvertedSectionNode(DecoratorNode):
 class JsonNode(LeafNode):
   """ {{*foo}}
   """
-  def __init__(self, id):
+  def __init__(self, id, line):
+    LeafNode.__init__(self, line)
     self._id = id
 
   def render(self, renderState):
@@ -414,7 +454,8 @@ class JsonNode(LeafNode):
 class PartialNode(LeafNode):
   """ {{+foo}}
   """
-  def __init__(self, id):
+  def __init__(self, id, line):
+    LeafNode.__init__(self, line)
     self._id = id
     self._args = None
 
@@ -440,9 +481,8 @@ class PartialNode(LeafNode):
     value._topNode.render(partialRenderState)
 
     text = partialRenderState.text.toString()
-    lastIndex = len(text) - 1
-    if lastIndex >= 0 and text[lastIndex] == '\n':
-      text = text[:lastIndex]
+    if len(text) > 0 and text[-1] == '\n':
+      text = text[:-1]
 
     renderState.text.append(text)
     renderState.errors.extend(partialRenderState.errors)
@@ -550,13 +590,15 @@ class Handlebar(object):
   def __init__(self, template):
     self.source = template
     tokens = TokenStream(template)
-    self._topNode = self._parseSection(tokens, None)
+    self._topNode = self._parseSection(tokens)
+    if not self._topNode:
+      raise ParseException("Template is empty")
     if tokens.hasNext():
       raise ParseException("There are still tokens remaining, "
                            "was there an end-section without a start-section:",
                            tokens.nextLine)
 
-  def _parseSection(self, tokens, previousNode):
+  def _parseSection(self, tokens):
     nodes = []
     sectionEnded = False
 
@@ -565,17 +607,19 @@ class Handlebar(object):
       node = None
 
       if token == Token.CHARACTER:
-        node = StringNode(tokens.advanceOverNextString())
+        startLine = tokens.nextLine
+        string = tokens.advanceOverNextString()
+        node = StringNode(string, startLine, tokens.nextLine)
       elif token == Token.OPEN_VARIABLE or \
            token == Token.OPEN_UNESCAPED_VARIABLE or \
            token == Token.OPEN_START_JSON:
         id = self._openSectionOrTag(tokens)
-        node = token.clazz(id)
+        node = token.clazz(id, tokens.nextLine)
       elif token == Token.OPEN_START_PARTIAL:
         tokens.advance()
         id = Identifier(tokens.advanceOverNextString(excluded=' '),
                         tokens.nextLine)
-        partialNode = PartialNode(id)
+        partialNode = PartialNode(id, tokens.nextLine)
 
         while tokens.nextToken == Token.CHARACTER:
           tokens.advance()
@@ -591,20 +635,11 @@ class Handlebar(object):
       elif token == Token.OPEN_START_SECTION or \
            token == Token.OPEN_START_VERTED_SECTION or \
            token == Token.OPEN_START_INVERTED_SECTION:
-        startLine = tokens.nextLine
-
         id = self._openSectionOrTag(tokens)
-        section = self._parseSection(tokens, previousNode)
+        section = self._parseSection(tokens)
         self._closeSection(tokens, id)
-
-        node = token.clazz(id, section)
-
-        if startLine.number != tokens.nextLine.number:
-          node = BlockNode(node)
-          if previousNode:
-            previousNode.trimTrailingSpaces();
-          if tokens.nextContents == '\n':
-            tokens.advance()
+        if section:
+          node = token.clazz(id, section)
       elif token == Token.OPEN_COMMENT:
         self._advanceOverComment(tokens)
       elif token == Token.OPEN_END_SECTION:
@@ -615,25 +650,40 @@ class Handlebar(object):
       elif Token.CLOSE_MUSTACHE:
         raise ParseException("Orphaned " + tokens.nextToken.name,
                              tokens.nextLine)
-    
-      if not node:
+
+      if node:
+        nodes.append(node)
+
+    for i, node in enumerate(nodes):
+      if isinstance(node, StringNode):
         continue
 
-      if not isinstance(node, StringNode) and \
-         not isinstance(node, BlockNode):
-        if (not previousNode or previousNode.trailsWithEmptyLine()) and \
-           (not tokens.hasNext() or tokens.nextContents == '\n'):
-          indentation = 0
-          if previousNode:
-            indentation = previousNode.trimTrailingSpaces()
-          tokens.advance()
-          node = IndentedNode(node, indentation)
-        else:
-          node = InlineNode(node)
+      previousNode = nodes[i - 1] if i > 0 else None
+      nextNode = nodes[i + 1] if i < len(nodes) - 1 else None
+      renderedNode = None
 
-      previousNode = node
-      nodes.append(node)
+      if node.getStartLine() != node.getEndLine():
+        renderedNode = BlockNode(node)
+        if previousNode:
+          previousNode.trimEndingSpaces()
+        if nextNode:
+          nextNode.trimStartingNewLine()
+      elif isinstance(node, LeafNode) and \
+           (previousNode == None or previousNode.endsWithEmptyLine()) and \
+           (nextNode == None or nextNode.startsWithNewLine()):
+        indentation = 0
+        if previousNode:
+          indentation = previousNode.trimEndingSpaces()
+        if nextNode:
+          nextNode.trimStartingNewLine()
+        renderedNode = IndentedNode(node, indentation)
+      else:
+        renderedNode = InlineNode(node)
 
+      nodes[i] = renderedNode
+
+    if len(nodes) == 0:
+      return None
     if len(nodes) == 1:
       return nodes[0]
     return NodeCollection(nodes)
