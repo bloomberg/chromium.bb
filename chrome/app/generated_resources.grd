@@ -6839,6 +6839,18 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_MEDIA_STREAM_ASK_RADIO" desc="A radio button in Content Settings dialog to allow site to query the permision to access capture devices.">
         Ask me when a site requires access to my camera and microphone (recommended)
       </message>
+      <message name="IDS_MEDIA_GALLERY_SECTION_LABEL" desc="The label for the section of content settings that relates to media galleries.">
+        Media galleries
+      </message>
+      <message name="IDS_MEDIA_GALLERY_MANAGE_TITLE" desc="The title of the media gallery manager overlay.">
+        Media galleries
+      </message>
+      <message name="IDS_MEDIA_GALLERY_MANAGE_BUTTON" desc="The text for the button that opens the media gallery manager overlay.">
+        Manage galleries
+      </message>
+      <message name="IDS_MEDIA_GALLERY_ADD_NEW_BUTTON" desc="The text for the button that opens a dialog to select a new media gallery.">
+        Add gallery
+      </message>
 
       <!-- Mac and ChromeOS users do not close their browser. Mac users quit it and ChromeOS users log out. -->
       <if expr="not is_macosx and not pp_ifdef('chromeos')">

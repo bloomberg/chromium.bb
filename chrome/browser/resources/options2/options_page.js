@@ -10,7 +10,7 @@ cr.define('options', function() {
    * Base class for options page.
    * @constructor
    * @param {string} name Options page name.
-   * @param {string} title Options page title, used for navigation bar.
+   * @param {string} title Options page title, used for history.
    * @extends {EventTarget}
    */
   function OptionsPage(name, title, pageDivName) {

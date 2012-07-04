@@ -77,6 +77,10 @@ cr.define('options', function() {
         };
       }
 
+      $('manage-galleries-button').onclick = function(event) {
+        OptionsPage.navigateToPage('manageGalleries');
+      };
+
       if (cr.isChromeOS)
         UIAccountTweaks.applyGuestModeVisibility(document);
 
