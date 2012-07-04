@@ -138,6 +138,14 @@ void UpdateRenderText(const gfx::Rect& rect,
   display_rect.set_height(font.GetHeight());
   render_text->SetDisplayRect(display_rect);
 
+  // Set the text alignment explicitly based on the directionality of the UI,
+  // if not specified.
+  if (!(flags & (gfx::Canvas::TEXT_ALIGN_CENTER |
+                 gfx::Canvas::TEXT_ALIGN_RIGHT |
+                 gfx::Canvas::TEXT_ALIGN_LEFT))) {
+    flags |= gfx::Canvas::DefaultCanvasTextAlignment();
+  }
+
   if (flags & gfx::Canvas::TEXT_ALIGN_RIGHT)
     render_text->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   else if (flags & gfx::Canvas::TEXT_ALIGN_CENTER)
