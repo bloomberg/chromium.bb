@@ -105,6 +105,15 @@ a:visited {
 .failedUrl {
   word-wrap: break-word;
 }
+
+#logo-img {
+  /* "Not allowed to load local resource: chrome://theme/IDR_PRODUCT_LOGO",
+      so embed the resource manually. */
+  content: -webkit-image-set(
+      url('../../app/theme/default_100_percent/%DISTRIBUTION%/product_logo.png') 1x,
+      url('../../app/theme/default_200_percent/%DISTRIBUTION%/product_logo.png') 2x);
+}
+
 </style>
 </head>
 
@@ -142,7 +151,7 @@ if (window.screen.colorDepth >= 24)
 <div id="cell">
  <div id="box">
   <h1>
-   <img src="../../app/theme/%DISTRIBUTION%/product_logo.png" />
+   <img id="logo-img">
    <span i18n-content="heading"></span>
   </h1>
 

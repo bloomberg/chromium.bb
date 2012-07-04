@@ -185,6 +185,9 @@ html[dir='rtl'] #attribution {
 
 #logo-img {
   margin-top: 4px;
+
+  /* TODO: Remove once http://crbug.com/135179 is fixed */
+  content: url('chrome://theme/IDR_PRODUCT_LOGO');
 }
 
 body.bare-minimum #footer {

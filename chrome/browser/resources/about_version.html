@@ -40,6 +40,10 @@ about:version template page
         width: 180px;
         margin-left: 40px;
       }
+      #logo-img {
+        /* TODO: Remove once http://crbug.com/135179 is fixed */
+        content: url('chrome://theme/IDR_PRODUCT_LOGO');
+      }
       #company {
         text-align: right;
         font-size: 0.7em;
@@ -66,7 +70,8 @@ about:version template page
   <body>
     <div id="outer">
       <div id="logo">
-        <img src="../../app/theme/%DISTRIBUTION%/product_logo.png" />
+        <!-- TODO: Revert back to src= once http://crbug.com/135179 is fixed -->
+        <img id="logo-img">
         <div id="company" i18n-content="company"></div>
         <div id="copyright" i18n-content="copyright"></div>
       </div>
