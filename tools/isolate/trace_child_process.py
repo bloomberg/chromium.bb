@@ -16,8 +16,18 @@ import subprocess
 import sys
 
 
+def fix_python_path(cmd):
+  """Returns the fixed command line to call the right python executable."""
+  out = cmd[:]
+  if out[0] == 'python':
+    out[0] = sys.executable
+  elif out[0].endswith('.py'):
+    out.insert(0, sys.executable)
+  return out
+
+
 def main():
-  cmd = sys.argv[2:]
+  cmd = fix_python_path(sys.argv[2:])
 
   # The reason os.execve() is not used is that we don't want the modules
   # imported here to influence the executable being traced, so we need a fresh
