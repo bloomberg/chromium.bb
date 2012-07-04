@@ -44,5 +44,8 @@ const char kAuraLegacyPowerButton[] = "aura-legacy-power-button";
 // Avoid drawing drop shadows under windows.
 const char kAuraNoShadows[] = "aura-no-shadows";
 
+// Use Aura to manage windows of type WINDOW_TYPE_PANEL.
+const char kAuraPanelManager[] = "aura-panels";
+
 }  // namespace switches
 }  // namespace ash

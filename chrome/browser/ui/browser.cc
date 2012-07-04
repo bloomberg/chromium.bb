@@ -1424,10 +1424,17 @@ void Browser::ShowFirstRunBubble() {
 // Browser, protected:
 
 BrowserWindow* Browser::CreateBrowserWindow() {
-#if !defined(USE_ASH)
-  if (is_type_panel())
-    return PanelManager::GetInstance()->CreatePanel(this)->browser_window();
+  bool create_panel = false;
+#if defined(USE_ASH)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAuraPanelManager))
+    create_panel = is_type_panel();
+#elif !defined(OS_CHROMEOS)
+  create_panel = is_type_panel();
 #endif
+  if (create_panel)
+    return PanelManager::GetInstance()->CreatePanel(this)->browser_window();
+
   return BrowserWindow::CreateBrowserWindow(this);
 }
 

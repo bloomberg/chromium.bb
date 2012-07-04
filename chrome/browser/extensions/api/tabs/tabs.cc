@@ -554,8 +554,13 @@ bool CreateWindowFunction::RunImpl() {
       } else if (type_str == keys::kWindowTypeValuePanel) {
         extension_id = GetExtension()->id();
         bool use_panels = false;
-#if !defined(OS_ANDROID) && !defined(USE_ASH)
+#if !defined(OS_ANDROID)
         use_panels = PanelManager::ShouldUsePanels(extension_id);
+#endif
+#if defined(USE_ASH)
+        if (CommandLine::ForCurrentProcess()->HasSwitch(
+                ash::switches::kAuraPanelManager))
+          use_panels = true;
 #endif
         if (use_panels)
           window_type = Browser::TYPE_PANEL;
@@ -571,7 +576,18 @@ bool CreateWindowFunction::RunImpl() {
   if (window_type == Browser::TYPE_PANEL) {
     std::string title =
         web_app::GenerateApplicationNameFromExtensionId(extension_id);
-#if !defined(USE_ASH)
+#if defined(USE_ASH)
+  // Aura Panels create a new PanelViewAura.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+            ash::switches::kAuraPanelManager)) {
+    // Note: Panels ignore all but the first url provided.
+    PanelViewAura* panel_view = new PanelViewAura(title);
+    panel_view->Init(window_profile, urls[0], panel_bounds);
+      result_.reset(panel_view->extension_window_controller()->
+                    CreateWindowValueWithTabs());
+      return true;
+    }
+#else
     if (CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kBrowserlessPanels)) {
       // Note: Panels ignore all but the first url provided.

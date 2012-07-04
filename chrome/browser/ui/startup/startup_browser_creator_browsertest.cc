@@ -316,6 +316,31 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutTabPref) {
       std::string::npos) << new_browser->app_name_;
 }
 
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutPanel) {
+  // Load an app with launch.container = 'panel'.
+  const Extension* extension_app = NULL;
+  ASSERT_NO_FATAL_FAILURE(LoadApp("app_with_panel_container", &extension_app));
+
+  CommandLine command_line(CommandLine::NO_PROGRAM);
+  command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
+  chrome::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
+  StartupBrowserCreatorImpl launch(FilePath(), command_line, first_run);
+  ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
+
+  // The launch should have created a new browser, with a panel type.
+  Browser* new_browser = NULL;
+  ASSERT_NO_FATAL_FAILURE(FindOneOtherBrowser(&new_browser));
+
+  // Expect an app panel.
+  EXPECT_TRUE(new_browser->is_type_panel() && new_browser->is_app());
+
+  // The new browser's app_name should include the app's ID.
+  EXPECT_NE(
+      new_browser->app_name_.find(extension_app->id()),
+      std::string::npos) << new_browser->app_name_;
+}
+
 #endif  // !defined(OS_MACOSX)
 
 #endif  // !defined(OS_CHROMEOS)

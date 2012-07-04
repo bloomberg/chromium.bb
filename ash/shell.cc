@@ -762,15 +762,18 @@ void Shell::InitLayoutManagersForPrimaryDisplay(
       set_shelf(shelf());
 
   // Create Panel layout manager
-  aura::Window* panel_container = GetContainer(
-      GetPrimaryRootWindow(),
-      internal::kShellWindowId_PanelContainer);
-  panel_layout_manager_ =
-      new internal::PanelLayoutManager(panel_container);
-  panel_container->SetEventFilter(
-      new internal::PanelWindowEventFilter(
-          panel_container, panel_layout_manager_));
-  panel_container->SetLayoutManager(panel_layout_manager_);
+  if (CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kAuraPanelManager)) {
+    aura::Window* panel_container = GetContainer(
+        GetPrimaryRootWindow(),
+        internal::kShellWindowId_PanelContainer);
+    panel_layout_manager_ =
+        new internal::PanelLayoutManager(panel_container);
+    panel_container->SetEventFilter(
+        new internal::PanelWindowEventFilter(
+            panel_container, panel_layout_manager_));
+    panel_container->SetLayoutManager(panel_layout_manager_);
+  }
 }
 
 void Shell::DisableWorkspaceGridLayout() {

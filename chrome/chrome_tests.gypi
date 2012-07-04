@@ -2923,6 +2923,7 @@
         'browser/ui/gtk/view_id_util_browsertest.cc',
         'browser/ui/intents/web_intent_picker_controller_browsertest.cc',
         'browser/ui/login/login_prompt_browsertest.cc',
+        'browser/ui/panels/panel_app_browsertest.cc',
         'browser/ui/panels/panel_browser_view_browsertest.cc',
         'browser/ui/prefs/prefs_tab_helper_browsertest.cc',
         'browser/ui/startup/startup_browser_creator_browsertest.cc',
@@ -3147,6 +3148,7 @@
             'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',
             'browser/service/service_process_control_browsertest.cc',
             # chromeos does not use cross-platform panels
+            'browser/ui/panels/panel_app_browsertest.cc',
             'browser/ui/panels/panel_browser_view_browsertest.cc',
           ],
           'dependencies': [
