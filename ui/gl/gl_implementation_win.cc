@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <d3dx9.h>
-
 #include <vector>
 
 #include "base/at_exit.h"
@@ -26,9 +24,10 @@
 namespace gfx {
 
 namespace {
-
-typedef std::vector<base::NativeLibrary> LibraryArray;
-LibraryArray* g_d3dx_libraries;
+// This is the D3DX_SDK_VERSION for the last 'separate' DirectX SDK which
+// is from June 2010. Since June 2012 Microsoft includes DirectX in the regular
+// Windows SDK and the D3DX library has been deprecated.
+const int kPinnedD3DXVersion = 43;
 
 void GL_BINDING_CALL MarshalClearDepthToClearDepthf(GLclampd depth) {
   glClearDepthf(static_cast<GLclampf>(depth));
@@ -37,17 +36,6 @@ void GL_BINDING_CALL MarshalClearDepthToClearDepthf(GLclampd depth) {
 void GL_BINDING_CALL MarshalDepthRangeToDepthRangef(GLclampd z_near,
                                                     GLclampd z_far) {
   glDepthRangef(static_cast<GLclampf>(z_near), static_cast<GLclampf>(z_far));
-}
-
-void UnloadD3DXLibraries(void* unused) {
-  if (g_d3dx_libraries) {
-    for (LibraryArray::iterator it = g_d3dx_libraries->begin();
-         it != g_d3dx_libraries->end(); ++it) {
-      base::UnloadNativeLibrary(*it);
-    }
-    delete g_d3dx_libraries;
-    g_d3dx_libraries = NULL;
-  }
 }
 
 bool LoadD3DXLibrary(const FilePath& module_path,
@@ -60,12 +48,6 @@ bool LoadD3DXLibrary(const FilePath& module_path,
       return false;
     }
   }
-
-  if (!g_d3dx_libraries) {
-    g_d3dx_libraries = new LibraryArray;
-    base::AtExitManager::RegisterCallback(UnloadD3DXLibraries, NULL);
-  }
-  g_d3dx_libraries->push_back(library);
   return true;
 }
 
@@ -133,9 +115,9 @@ bool InitializeGLBindings(GLImplementation implementation) {
       // are loaded before ANGLE is loaded in case they are not in the default
       // search path.
       LoadD3DXLibrary(module_path, base::StringPrintf(L"d3dcompiler_%d.dll",
-                                                      D3DX_SDK_VERSION));
+                                                      kPinnedD3DXVersion));
       LoadD3DXLibrary(module_path, base::StringPrintf(L"d3dx9_%d.dll",
-                                                      D3DX_SDK_VERSION));
+                                                      kPinnedD3DXVersion));
 
       FilePath gles_path;
       const CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -282,9 +264,7 @@ void ClearGLBindings() {
   ClearGLBindingsOSMESA();
   ClearGLBindingsWGL();
   SetGLImplementation(kGLImplementationNone);
-
   UnloadGLNativeLibraries();
-  UnloadD3DXLibraries(NULL);
 }
 
 }  // namespace gfx
