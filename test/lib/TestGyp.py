@@ -330,6 +330,167 @@ class TestGypGypd(TestGypBase):
   format = 'gypd'
 
 
+class TestGypAndroid(TestGypBase):
+  """
+  Subclass for testing the GYP Android makefile generator. Note that
+  build/envsetup.sh and lunch must have been run before running tests.
+
+  TODO: This is currently an incomplete implementation. We do not support
+  run_built_executable(), so we pass only tests which do not use this. As a
+  result, support for host targets is not properly tested.
+  """
+  format = 'android'
+
+  # Note that we can't use mmm as the build tool because ...
+  # - it builds all targets, whereas we need to pass a target
+  # - it is a function, whereas the test runner assumes the build tool is a file
+  # Instead we use make and duplicate the logic from mmm.
+  build_tool_list = ['make']
+
+  # We use our custom target 'gyp_all_modules', as opposed to the 'all_modules'
+  # target used by mmm, to build only those targets which are part of the gyp
+  # target 'all'.
+  ALL = 'gyp_all_modules'
+
+  def __init__(self, gyp=None, *args, **kw):
+    # Android requires build and test output to be outside its source tree.
+    # We use the following working directory for the test's source, but the
+    # test's build output still goes to $ANDROID_PRODUCT_OUT.
+    # Note that some tests explicitly set format='gypd' to invoke the gypd
+    # backend. This writes to the source tree, but there's no way around this.
+    kw['workdir'] = os.path.join('/tmp', 'gyptest',
+                                 kw.get('workdir', 'testworkarea'))
+    # We need to remove all gyp outputs from out/. Ths is because some tests
+    # don't have rules to regenerate output, so they will simply re-use stale
+    # output if present. Since the test working directory gets regenerated for
+    # each test run, this can confuse things.
+    # We don't have a list of build outputs because we don't know which
+    # dependent targets were built. Instead we delete all gyp-generated output.
+    # This may be excessive, but should be safe.
+    out_dir = os.environ['ANDROID_PRODUCT_OUT']
+    obj_dir = os.path.join(out_dir, 'obj')
+    shutil.rmtree(os.path.join(obj_dir, 'GYP'), ignore_errors = True)
+    shutil.rmtree(os.path.join(obj_dir, 'NONE'), ignore_errors = True)
+    for x in ['EXECUTABLES', 'STATIC_LIBRARIES', 'SHARED_LIBRARIES']:
+      for d in os.listdir(os.path.join(obj_dir, x)):
+        if d.endswith('_gyp_intermediates'):
+          shutil.rmtree(os.path.join(obj_dir, x, d), ignore_errors = True)
+    for x in [os.path.join('obj', 'lib'), os.path.join('system', 'lib')]:
+      for d in os.listdir(os.path.join(out_dir, x)):
+        if d.endswith('_gyp.so'):
+          os.remove(os.path.join(out_dir, x, d))
+
+    super(TestGypAndroid, self).__init__(*args, **kw)
+
+  def target_name(self, target):
+    if target == self.ALL:
+      return self.ALL
+    # The default target is 'droid'. However, we want to use our special target
+    # to build only the gyp target 'all'.
+    if target in (None, self.DEFAULT):
+      return self.ALL
+    return target
+
+  def build(self, gyp_file, target=None, **kw):
+    """
+    Runs a build using the Android makefiles generated from the specified
+    gyp_file. This logic is taken from Android's mmm.
+    """
+    arguments = kw.get('arguments', [])[:]
+    arguments.append(self.target_name(target))
+    arguments.append('-C')
+    arguments.append(os.environ['ANDROID_BUILD_TOP'])
+    kw['arguments'] = arguments
+    chdir = kw.get('chdir', '')
+    makefile = os.path.join(self.workdir, chdir, 'GypAndroid.mk')
+    os.environ['ONE_SHOT_MAKEFILE'] = makefile
+    result = self.run(program=self.build_tool, **kw)
+    del os.environ['ONE_SHOT_MAKEFILE']
+    return result
+
+  def android_module(self, group, name, subdir):
+    if subdir:
+      name = '%s_%s' % (subdir, name)
+    if group == 'SHARED_LIBRARIES':
+      name = 'lib_%s' % name
+    return '%s_gyp' % name
+
+  def intermediates_dir(self, group, module_name):
+    return os.path.join(os.environ['ANDROID_PRODUCT_OUT'], 'obj', group,
+                        '%s_intermediates' % module_name)
+
+  def built_file_path(self, name, type=None, **kw):
+    """
+    Returns a path to the specified file name, of the specified type,
+    as built by Android. Note that we don't support the configuration
+    parameter.
+    """
+    # Built files are in $ANDROID_PRODUCT_OUT. This requires copying logic from
+    # the Android build system.
+    if type == None:
+      return os.path.join(os.environ['ANDROID_PRODUCT_OUT'], 'obj', 'GYP',
+                          'shared_intermediates', name)
+    subdir = kw.get('subdir')
+    if type == self.EXECUTABLE:
+      # We don't install executables
+      group = 'EXECUTABLES'
+      module_name = self.android_module(group, name, subdir)
+      return os.path.join(self.intermediates_dir(group, module_name), name)
+    if type == self.STATIC_LIB:
+      group = 'STATIC_LIBRARIES'
+      module_name = self.android_module(group, name, subdir)
+      return os.path.join(self.intermediates_dir(group, module_name),
+                          '%s.a' % module_name)
+    if type == self.SHARED_LIB:
+      group = 'SHARED_LIBRARIES'
+      module_name = self.android_module(group, name, subdir)
+      return os.path.join(self.intermediates_dir(group, module_name), 'LINKED',
+                          '%s.so' % module_name)
+    assert False, 'Unhandled type'
+
+  def run_built_executable(self, name, *args, **kw):
+    """
+    Runs an executable program built from a gyp-generated configuration.
+
+    This is not correctly implemented for Android. For now, we simply check
+    that the executable file exists.
+    """
+    # Running executables requires a device. Even if we build for target x86,
+    # the binary is not built with the correct toolchain options to actually
+    # run on the host.
+
+    # Copied from TestCommon.run()
+    try:
+      match = kw['match']
+      del kw['match']
+    except KeyError:
+      match = self.match
+    status = None
+    if os.path.exists(self.built_file_path(name)):
+      status = 1
+    self._complete(None, None, None, None, status, self.match)
+
+  def match_single_line(self, lines = None, expected_line = None):
+    """
+    Checks that specified line appears in the text.
+    """
+    for line in lines.split('\n'):
+        if line == expected_line:
+            return 1
+    return
+
+  def up_to_date(self, gyp_file, target=None, **kw):
+    """
+    Verifies that a build of the specified target is up to date.
+    """
+    kw['stdout'] = ("make: Nothing to be done for `%s'." %
+                    self.target_name(target))
+
+    # We need to supply a custom matcher, since we don't want to depend on the
+    # exact stdout string.
+    kw['match'] = self.match_single_line
+    return self.build(gyp_file, target, **kw)
+
 class TestGypMake(TestGypBase):
   """
   Subclass for testing the GYP Make generator.
@@ -411,7 +572,7 @@ class TestGypMake(TestGypBase):
     elif type == self.SHARED_LIB and sys.platform != 'darwin':
       result.append('lib.target')
     subdir = kw.get('subdir')
-    if subdir:
+    if subdir and type != self.SHARED_LIB:
       result.append(subdir)
     result.append(self.built_file_basename(name, type, **kw))
     return self.workpath(*result)
@@ -546,7 +707,7 @@ class TestGypNinja(TestGypOnMSToolchain):
       if sys.platform != 'darwin' and sys.platform != 'win32':
         result.append('lib')
     subdir = kw.get('subdir')
-    if subdir:
+    if subdir and type != self.SHARED_LIB:
       result.append(subdir)
     result.append(self.built_file_basename(name, type, **kw))
     return self.workpath(*result)
@@ -828,6 +989,7 @@ class TestGypXcode(TestGypBase):
 
 format_class_list = [
   TestGypGypd,
+  TestGypAndroid,
   TestGypMake,
   TestGypMSVS,
   TestGypNinja,
