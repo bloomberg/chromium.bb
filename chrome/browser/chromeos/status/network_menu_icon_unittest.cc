@@ -104,7 +104,8 @@ class NetworkMenuIconTest : public testing::Test {
     wifi_encrypted_50_image_ = NetworkMenuIcon::GenerateImageFromComponents(
         NetworkMenuIcon::GetImage(NetworkMenuIcon::ARCS, 3,
                                   NetworkMenuIcon::COLOR_DARK),
-        NULL, NULL, NULL, rb_.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_SECURE));
+        NULL, NULL, NULL,
+        rb_.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_SECURE_DARK));
     // Wifi disconnected (strength = 0%) = ARCS0 icon.
     wifi_disconnected_image_ = NetworkMenuIcon::GenerateImageFromComponents(
         NetworkMenuIcon::GetImage(NetworkMenuIcon::ARCS, 0,
@@ -120,7 +121,7 @@ class NetworkMenuIconTest : public testing::Test {
             NetworkMenuIcon::GetImage(
                 NetworkMenuIcon::BARS, 3,
                 NetworkMenuIcon::COLOR_DARK),
-        NULL, NULL, NULL, rb_.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_4G));
+        rb_.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_4G_DARK), NULL, NULL, NULL);
     // 3G connected, strength = 100% = BARS4 icon + 3G badge.
     cellular_connected_100_image_ =
         NetworkMenuIcon::GenerateImageFromComponents(
@@ -128,19 +129,20 @@ class NetworkMenuIconTest : public testing::Test {
                 NetworkMenuIcon::BARS,
                 NetworkMenuIcon::NumImages(NetworkMenuIcon::BARS) - 1,
                 NetworkMenuIcon::COLOR_DARK),
-        NULL, NULL, NULL, rb_.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_3G));
+        rb_.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_3G_DARK), NULL, NULL, NULL);
     // 3G connected, strength = 50%, roaming = BARS2 icon + roaming & 3G badges.
     cellular_roaming_50_image_ = NetworkMenuIcon::GenerateImageFromComponents(
         NetworkMenuIcon::GetImage(NetworkMenuIcon::BARS, 3,
                                   NetworkMenuIcon::COLOR_DARK),
-        rb_.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_ROAMING), NULL,
-        NULL, rb_.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_3G));
+        rb_.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_3G_DARK), NULL, NULL,
+        rb_.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_ROAMING_DARK));
     // 3G disconnected (strength = 0%) = BARS0 icon + 3G badge.
     cellular_disconnected_image_ =
         NetworkMenuIcon::GenerateImageFromComponents(
             NetworkMenuIcon::GetImage(NetworkMenuIcon::BARS, 0,
                                       NetworkMenuIcon::COLOR_DARK),
-            NULL, NULL, NULL, rb_.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_3G));
+            rb_.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_3G_DARK), NULL, NULL,
+            NULL);
     // 3G connecting = IDR_STATUSBAR_NETWORK_BARS1 (faded).
     cellular_connecting_image_ = NetworkMenuIcon::GenerateConnectingImage(
         NetworkMenuIcon::GetImage(NetworkMenuIcon::BARS, 1,

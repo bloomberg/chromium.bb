@@ -372,11 +372,20 @@
       <structure type="chrome_scaled_image" name="IDR_STAR" file="star.png" />
       <structure type="chrome_scaled_image" name="IDR_STAR_LIT" file="star_lit.png" />
       <if expr="pp_ifdef('chromeos')">
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_3G_DARK" file="statusbar_network_3g_dark.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_3G_LIGHT" file="statusbar_network_3g_light.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_4G_DARK" file="statusbar_network_4g_dark.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_4G_LIGHT" file="statusbar_network_4g_light.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_ARCS_DARK" file="statusbar_network_arcs_dark.png" /> 
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_ARCS_LIGHT" file="statusbar_network_arcs_light.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_BARS_DARK" file="statusbar_network_bars_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_BARS_LIGHT" file="statusbar_network_bars_light.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_SECURE" file="statusbar_network_secure.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_EDGE_DARK" file="statusbar_network_edge_dark.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_EDGE_LIGHT" file="statusbar_network_edge_light.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_ROAMING_DARK" file="statusbar_network_roaming_dark.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_ROAMING_LIGHT" file="statusbar_network_roaming_light.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_SECURE_DARK" file="statusbar_network_secure_dark.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_SECURE_LIGHT" file="statusbar_network_secure_light.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_VPN" file="statusbar_vpn_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_VPN_BADGE" file="statusbar_network_vpn_badge.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_WIRED" file="statusbar_wired.png" />

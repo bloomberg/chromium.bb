@@ -82,7 +82,8 @@ int CellularStrengthIndex(const CellularNetwork* cellular) {
 }
 
 const gfx::ImageSkia* BadgeForNetworkTechnology(
-    const CellularNetwork* cellular) {
+    const CellularNetwork* cellular,
+    NetworkMenuIcon::ResourceColorTheme color) {
   const int kUnknownBadgeType = -1;
   int id = kUnknownBadgeType;
   switch (cellular->network_technology()) {
@@ -94,7 +95,9 @@ const gfx::ImageSkia* BadgeForNetworkTechnology(
         case CellularNetwork::DATA_VERY_LOW:
         case CellularNetwork::DATA_LOW:
         case CellularNetwork::DATA_NORMAL:
-          id = IDR_STATUSBAR_NETWORK_3G;
+          id = (color == NetworkMenuIcon::COLOR_DARK) ?
+              IDR_STATUSBAR_NETWORK_3G_DARK :
+              IDR_STATUSBAR_NETWORK_3G_LIGHT;
           break;
         case CellularNetwork::DATA_UNKNOWN:
           id = IDR_STATUSBAR_NETWORK_3G_UNKNOWN;
@@ -123,10 +126,14 @@ const gfx::ImageSkia* BadgeForNetworkTechnology(
       id = IDR_STATUSBAR_NETWORK_GPRS;
       break;
     case NETWORK_TECHNOLOGY_EDGE:
-      id = IDR_STATUSBAR_NETWORK_EDGE;
+      id = (color == NetworkMenuIcon::COLOR_DARK) ?
+          IDR_STATUSBAR_NETWORK_EDGE_DARK :
+          IDR_STATUSBAR_NETWORK_EDGE_LIGHT;
       break;
     case NETWORK_TECHNOLOGY_UMTS:
-      id = IDR_STATUSBAR_NETWORK_3G;
+      id =  (color == NetworkMenuIcon::COLOR_DARK) ?
+          IDR_STATUSBAR_NETWORK_3G_DARK :
+          IDR_STATUSBAR_NETWORK_3G_LIGHT;
       break;
     case NETWORK_TECHNOLOGY_HSPA:
       id = IDR_STATUSBAR_NETWORK_HSPA;
@@ -489,6 +496,7 @@ class NetworkIcon {
     chromeos::NetworkLibrary* cros =
         chromeos::CrosLibrary::Get()->GetNetworkLibrary();
 
+    bool use_dark_icons = resource_color_theme_ == NetworkMenuIcon::COLOR_DARK;
     switch (network->type()) {
       case TYPE_ETHERNET: {
         if (network->disconnected()) {
@@ -500,14 +508,14 @@ class NetworkIcon {
       case TYPE_WIFI: {
         const WifiNetwork* wifi =
             static_cast<const WifiNetwork*>(network);
-        if (wifi->encrypted() &&
-            resource_color_theme_ == NetworkMenuIcon::COLOR_DARK)
+        if (wifi->encrypted() && use_dark_icons)
           bottom_right_badge_ = rb.GetImageSkiaNamed(
-              IDR_STATUSBAR_NETWORK_SECURE);
+              IDR_STATUSBAR_NETWORK_SECURE_DARK);
         break;
       }
       case TYPE_WIMAX: {
-        bottom_right_badge_ = rb.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_4G);
+        top_left_badge_ = rb.GetImageSkiaNamed(use_dark_icons ?
+             IDR_STATUSBAR_NETWORK_4G_DARK : IDR_STATUSBAR_NETWORK_4G_LIGHT);
         break;
       }
       case TYPE_CELLULAR: {
@@ -516,10 +524,13 @@ class NetworkIcon {
         if (cellular->roaming_state() == ROAMING_STATE_ROAMING &&
             !cros->IsCellularAlwaysInRoaming()) {
           // For cellular that always in roaming don't show roaming badge.
-          top_left_badge_ = rb.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_ROAMING);
+          bottom_right_badge_ = rb.GetImageSkiaNamed(use_dark_icons ?
+              IDR_STATUSBAR_NETWORK_ROAMING_DARK :
+              IDR_STATUSBAR_NETWORK_ROAMING_LIGHT);
         }
         if (!cellular->connecting())
-          bottom_right_badge_ = BadgeForNetworkTechnology(cellular);
+          top_left_badge_ = BadgeForNetworkTechnology(cellular,
+                                                      resource_color_theme_);
         break;
       }
       default:
@@ -631,8 +642,8 @@ class NetworkIcon {
     const CellularNetwork* cellular =
         static_cast<const CellularNetwork*>(network);
     const gfx::ImageSkia* technology_badge = BadgeForNetworkTechnology(
-        cellular);
-    if (technology_badge != bottom_right_badge_) {
+        cellular, resource_color_theme_);
+    if (technology_badge != top_left_badge_) {
       dirty = true;
     }
     if (cellular->roaming_state() != roaming_state_) {
