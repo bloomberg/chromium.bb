@@ -37,7 +37,7 @@ namespace ui {
 void ResourceBundle::LoadCommonResources() {
   // Always load the 1x data pack first as the 2x data pack contains both 1x and
   // 2x images. The 1x data pack only has 1x images, thus passes in an accurate
-  // scale factor to gfx::ImageSkia::AddBitmapForScale.
+  // scale factor to gfx::ImageSkia::AddRepresentation.
 
   AddDataPack(GetResourcesPakFilePath("chrome.pak"),
               SCALE_FACTOR_100P);
@@ -63,7 +63,7 @@ void ResourceBundle::LoadCommonResources() {
                 SCALE_FACTOR_100P);
     if (ShouldLoad2xResources()) {
       // 2x non touch
-      AddDataPack(GetResourcesPakFilePath("theme_resources_standard_2x.pak"),
+      AddDataPack(GetResourcesPakFilePath("theme_resources_2x.pak"),
                   SCALE_FACTOR_200P);
       AddDataPack(GetResourcesPakFilePath("ui_resources_2x.pak"),
                   SCALE_FACTOR_200P);
