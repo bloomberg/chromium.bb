@@ -243,6 +243,9 @@ void PanelLayoutManager::OnWindowActivated(aura::Window* active,
 ////////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager private implementation:
 void PanelLayoutManager::Relayout() {
+  if (!launcher_ || !launcher_->widget())
+    return;
+
   if (in_layout_)
     return;
   AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
