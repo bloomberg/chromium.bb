@@ -399,8 +399,6 @@ void Canvas::DrawStringWithHalo(const string16& text,
   DrawImageInt(text_bitmap, x - 1, y - 1);
 }
 
-// TODO(asvitkine): Remove the ifdef once all platforms use canvas_skia.cc.
-#if defined(OS_WIN)
 void Canvas::DrawFadeTruncatingString(
       const string16& text,
       TruncateFadeMode truncate_mode,
@@ -467,6 +465,5 @@ void Canvas::DrawFadeTruncatingString(
   render_text->Draw(this);
   canvas_->restore();
 }
-#endif
 
 }  // namespace gfx

@@ -373,7 +373,6 @@ class UI_EXPORT Canvas {
   // Apply transformation on the canvas.
   void Transform(const ui::Transform& transform);
 
-#if defined(OS_WIN)
   // Draws the given string with the beginning and/or the end using a fade
   // gradient. When truncating the head
   // |desired_characters_to_truncate_from_head| specifies the maximum number of
@@ -385,7 +384,6 @@ class UI_EXPORT Canvas {
       const gfx::Font& font,
       SkColor color,
       const gfx::Rect& display_rect);
-#endif
 
   skia::PlatformCanvas* platform_canvas() const { return owned_canvas_.get(); }
   SkCanvas* sk_canvas() const { return canvas_; }

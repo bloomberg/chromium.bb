@@ -543,14 +543,8 @@ void BaseTab::PaintTitle(gfx::Canvas* canvas, SkColor title_color) {
     Browser::FormatTitleForDisplay(&title);
   }
 
-#if defined(OS_WIN)
   canvas->DrawFadeTruncatingString(title, gfx::Canvas::TruncateFadeTail, 0,
                                    *font_, title_color, title_bounds);
-#else
-  canvas->DrawStringInt(title, *font_, title_color,
-                        title_bounds.x(), title_bounds.y(),
-                        title_bounds.width(), title_bounds.height());
-#endif
 }
 
 void BaseTab::AnimationProgressed(const ui::Animation* animation) {
