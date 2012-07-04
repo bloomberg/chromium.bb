@@ -215,7 +215,7 @@ class RegistryEntry {
       // resource for name, description, and company.
       entries->push_front(new RegistryEntry(
           chrome_application, ShellUtil::kRegApplicationName,
-          dist->GetAppShortCutName().append(suffix)));
+          dist->GetAppShortCutName()));
       entries->push_front(new RegistryEntry(
           chrome_application, ShellUtil::kRegApplicationDescription,
           dist->GetAppDescription()));
