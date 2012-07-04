@@ -133,30 +133,42 @@ cr.define('cr.ui', function() {
       var item = this.selectedItem;
 
       var self = this;
-      function selectNextVisible(m) {
+      function selectNextAvailable(m) {
         var children = self.children;
         var len = children.length;
         var i = self.selectedIndex;
         if (i == -1 && m == -1) {
-          // Edge case when we need to go the last item fisrt.
+          // Edge case when needed to go the last item first.
           i = 0;
         }
+
+        // "i" may be negative(-1), so modulus operation and cycle below
+        // wouldn't work as assumed. This trick makes startPosition positive
+        // without altering it's modulo.
+        var startPosition = (i + len) % len;
+
         while (true) {
           i = (i + m + len) % len;
+
+          // Check not to enter into infinite loop if all items are hidden or
+          // disabled.
+          if (i == startPosition)
+            break;
+
           item = children[i];
-          if (item && !item.isSeparator() && !item.hidden)
+          if (item && !item.isSeparator() && !item.hidden && !item.disabled)
             break;
         }
-        if (item)
+        if (item && !item.disabled)
           self.selectedIndex = i;
       }
 
       switch (e.keyIdentifier) {
         case 'Down':
-          selectNextVisible(1);
+          selectNextAvailable(1);
           return true;
         case 'Up':
-          selectNextVisible(-1);
+          selectNextAvailable(-1);
           return true;
         case 'Enter':
         case 'U+0020': // Space

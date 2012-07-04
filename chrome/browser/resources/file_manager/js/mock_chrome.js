@@ -524,8 +524,13 @@ chrome.fileBrowserPrivate = {
       UNMOUNT_DEVICE_BUTTON_LABEL: 'Unmount',
       FORMAT_DEVICE_BUTTON_LABEL: 'Format',
 
+      GDATA_MENU_HELP: 'Help',
       GDATA_MOBILE_CONNECTION_OPTION: 'Do not use mobile data for sync',
       GDATA_SHOW_HOSTED_FILES_OPTION: 'Show Google Docs files',
+      GDATA_WAITING_FOR_SPACE_INFO: 'Waiting for space info...',
+      GDATA_FAILED_SPACE_INFO: 'Failed to retrieve space info',
+      GDATA_BUY_MORE_SPACE: 'Buy more...',
+      GDATA_SPACE_AVAILABLE: '$1 left',
 
       OFFLINE_COLUMN_LABEL: 'Available offline',
       GDATA_LOADING: 'Hang with us. We\'re fetching your files.',

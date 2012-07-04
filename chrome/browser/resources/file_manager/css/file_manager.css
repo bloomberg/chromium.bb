@@ -1426,3 +1426,42 @@ body:not([type='saveas-file']):not([type='full-page'])
 .dialog-container:not([gdrive-welcome='page']) #no-search-results[show] {
   display: block;
 }
+
+#gdata-space-info {
+  -webkit-box-pack: justify;
+  display: -webkit-box;
+}
+
+#gdata-space-info-label {
+  display: block;
+}
+
+#gdata-space-info > div {
+  -webkit-box-flex: 1;
+  border: 1px solid rgb(192, 192, 192);
+  display: block;
+  height: 11px;
+  margin: 8px 0 9px 10px;
+}
+
+#gdata-space-info-bar[pending] {
+  -webkit-animation-duration: 800ms;
+  -webkit-animation-iteration-count: infinite;
+  -webkit-animation-name: bg;
+  -webkit-animation-timing-function: linear;
+  background-color: rgb(192, 192, 192);
+  background-image: -webkit-linear-gradient(315deg, transparent,
+      transparent 33%, rgba(0, 0, 0, 0.12) 33%, rgba(0, 0, 0, 0.12) 66%,
+      transparent 66%, transparent);
+  background-position: 0 0;
+  background-repeat: repeat-x;
+  background-size: 16px 8px;
+}
+
+#gdata-space-info-bar {
+  background-color: rgb(192, 192, 192);
+  border: 1px solid rgb(255, 255, 255);
+  box-sizing: border-box;
+  height: 100%;
+  width: 50%;
+}

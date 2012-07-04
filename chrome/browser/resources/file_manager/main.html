@@ -93,42 +93,58 @@
       <command id="rename" i18n-values="label:RENAME_BUTTON_LABEL"></command>
       <command id="delete" i18n-values="label:DELETE_BUTTON_LABEL"></command>
       <command id="newfolder" i18n-values="label:NEW_FOLDER_BUTTON_LABEL"
-      ></command>
+          ></command>
 
       <command id="unmount" i18n-values="label:UNMOUNT_DEVICE_BUTTON_LABEL"
-      ></command>
+          ></command>
       <command id="format" i18n-values="label:FORMAT_DEVICE_BUTTON_LABEL"
-      ></command>
+          ></command>
+
+      <command id="gdata-buy-more-space"
+          i18n-values="label:GDATA_BUY_MORE_SPACE"
+          ></command>
+      <command id="gdata-help" i18n-values="label:GDATA_MENU_HELP"
+          ></command>
     </commands>
 
     <menu class="file-context-menu chrome-menu">
-      <menuitem command='#cut' visibleif='full-page'></menuitem>
-      <menuitem command='#copy' visibleif='full-page'></menuitem>
-      <menuitem command='#paste' visibleif='full-page'></menuitem>
-      <hr visibleif='full-page'>
-      <menuitem command='#rename'></menuitem>
-      <menuitem command='#delete'></menuitem>
-      <hr visibleif='saveas-file full-page'>
-      <menuitem command='#newfolder'
-          visibleif='saveas-file full-page'></menuitem>
+      <menuitem command="#cut" visibleif="full-page"></menuitem>
+      <menuitem command="#copy" visibleif="full-page"></menuitem>
+      <menuitem command="#paste" visibleif="full-page"></menuitem>
+      <hr visibleif="full-page">
+      <menuitem command="#rename"></menuitem>
+      <menuitem command="#delete"></menuitem>
+      <hr visibleif="saveas-file full-page">
+      <menuitem command="#newfolder"
+          visibleif="saveas-file full-page"></menuitem>
     </menu>
 
     <menu class="roots-context-menu chrome-menu" >
-      <menuitem command='#unmount'></menuitem>
-      <menuitem command='#format'></menuitem>
+      <menuitem command="#unmount"></menuitem>
+      <menuitem command="#format"></menuitem>
     </menu>
-    
-    <menu id=docs-settings class="chrome-menu">
-      <menuitem id=gdata-sync-settings
+
+    <menu id="docs-settings" class="chrome-menu">
+      <menuitem id="gdata-sync-settings"
           i18n-content=GDATA_MOBILE_CONNECTION_OPTION></menuitem>
-      <menuitem id=gdata-hosted-settings
+      <menuitem id="gdata-hosted-settings"
           i18n-content=GDATA_SHOW_HOSTED_FILES_OPTION></menuitem>
+      <hr>
+      <div id="gdata-space-info" disabled>
+        <span id="gdata-space-info-label"
+            i18n-content=GDATA_WAITING_FOR_SPACE_INFO
+            ></span>
+        <div><div id="gdata-space-info-bar" style="width:100%" pending></div
+            ></div>
+      </div>
+      <menuitem command="#gdata-buy-more-space"></menuitem>
+      <menuitem command="#gdata-help"></menuitem>
     </menu>
 
     <menu id="tasks-menu" class="chrome-menu">
     </menu>
 
-    <div class=dialog-title invisibleif='full-page'>[TITLE]</div>
+    <div class=dialog-title invisibleif="full-page">[TITLE]</div>
     <div class=dialog-container>
       <div class=dialog-sidebar>
         <list id="roots-list"></list>
@@ -189,18 +205,17 @@
               <button id="tasks" class="combobutton" menu="#tasks-menu">
               </button>
               <button id="delete-button" command="#delete"
-                      i18n-content="DELETE_BUTTON_LABEL">
+                  i18n-content="DELETE_BUTTON_LABEL">
               </button>
             </div>
           </div>
-          <div id='unmounted-panel'></div>
+          <div id="unmounted-panel"></div>
         </div>
       </div>
     </div>
-    <div class=dialog-footer invisibleif='full-page'>
-      <div id=filename-input-box>
-        <div class=filename-label i18n-content=FILENAME_LABEL
-             >[FILENAME]</div>
+    <div class=dialog-footer invisibleif="full-page">
+      <div id="filename-input-box">
+        <div class=filename-label i18n-content=FILENAME_LABEL>[FILENAME]</div>
         <input type=text spellcheck=false>
       </div>
       <div class=horizontal-spacer></div>
@@ -209,8 +224,7 @@
       <div class=progress-bar>
         <div class=progress-track></div>
       </div>
-      <button class=cancel i18n-content=CANCEL_LABEL
-              >[CANCEL]</button>
+      <button class=cancel i18n-content=CANCEL_LABEL>[CANCEL]</button>
     </div>
     <div class="butter-bar before-show">
       <div class="content">
@@ -221,7 +235,7 @@
       </div>
       <div class="actions hide-in-butter"></div>
     </div>
-    <div id=drag-image-container></div>
-    <iframe id=command-dispatcher hidden></iframe>
+    <div id="drag-image-container"></div>
+    <iframe id="command-dispatcher" hidden></iframe>
   </body>
 </html>

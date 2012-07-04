@@ -88,6 +88,12 @@ FileManager.prototype = {
       'https://www.google.com/settings/storage';
 
   /**
+   * Location of Google Drive specific help.
+   */
+  var GOOGLE_DRIVE_HELP =
+      'https://support.google.com/chromeos/?p=filemanager_drivehelp';
+
+  /**
    * Location of the help page about connecting to Google Drive.
    */
   var GOOGLE_DRIVE_ERROR_HELP_URL =
@@ -582,9 +588,17 @@ FileManager.prototype = {
         this.dialogDom_.querySelector('.roots-context-menu');
     cr.ui.Menu.decorate(this.rootsContextMenu_);
 
-    this.docsSettingsMenu_ =
-        this.dialogDom_.querySelector('#docs-settings');
-    cr.ui.Menu.decorate(this.docsSettingsMenu_);
+    this.gdataSettingsMenu_ = this.dialogDom_.querySelector('#gdata-settings');
+    cr.ui.decorate(this.gdataSettingsMenu_, cr.ui.MenuButton);
+
+    this.gdataSettingsMenu_.addEventListener('menushow',
+        this.onGDataMenuShow_.bind(this));
+
+    this.gdataSpaceInfo_ = this.dialogDom_.querySelector('#gdata-space-info');
+    this.gdataSpaceInfoLabel_ =
+        this.dialogDom_.querySelector('#gdata-space-info-label');
+    this.gdataSpaceInfoBar_ =
+        this.dialogDom_.querySelector('#gdata-space-info-bar');
 
     this.document_.addEventListener('command', this.onCommand_.bind(this));
   };
@@ -625,7 +639,6 @@ FileManager.prototype = {
     this.butter_ = this.dialogDom_.querySelector('.butter-bar');
     this.unmountedPanel_ = this.dialogDom_.querySelector('#unmounted-panel');
 
-    cr.ui.decorate('#gdata-settings', cr.ui.MenuButton);
     cr.ui.Table.decorate(this.table_);
     cr.ui.Grid.decorate(this.grid_);
 
@@ -674,11 +687,11 @@ FileManager.prototype = {
         'click', this.onThumbnailViewButtonClick_.bind(this));
 
     this.syncButton = this.dialogDom_.querySelector('#gdata-sync-settings');
-    this.syncButton.addEventListener('click', this.onGDataPrefClick_.bind(
+    this.syncButton.addEventListener('activate', this.onGDataPrefClick_.bind(
         this, 'cellularDisabled', false /* not inverted */));
 
     this.hostedButton = this.dialogDom_.querySelector('#gdata-hosted-settings');
-    this.hostedButton.addEventListener('click', this.onGDataPrefClick_.bind(
+    this.hostedButton.addEventListener('activate', this.onGDataPrefClick_.bind(
         this, 'hostedFilesDisabled', true /* inverted */));
 
     cr.ui.ComboButton.decorate(this.taskItems_);
@@ -1109,6 +1122,10 @@ FileManager.prototype = {
 
         return entry && DirectoryModel.getRootType(entry.fullPath) ==
                         DirectoryModel.RootType.REMOVABLE;
+
+      case 'gdata-help':
+      case 'gdata-buy-more-space':
+        return this.isOnGData();
     }
   };
 
@@ -1415,7 +1432,14 @@ FileManager.prototype = {
         this.confirm.show(str('FORMATTING_WARNING'), function() {
           chrome.fileBrowserPrivate.formatDevice(entry.toURL());
         });
+        return;
 
+      case 'gdata-buy-more-space':
+        window.open(GOOGLE_DRIVE_BUY_STORAGE, 'buy-more-space');
+        return;
+
+      case 'gdata-help':
+        window.open(GOOGLE_DRIVE_HELP, 'help');
         return;
     }
   };
@@ -4602,5 +4626,34 @@ FileManager.prototype = {
 
     return maybeShowBanner;
   };
-})();
 
+  /**
+   * Listener invoked on gdata menu show event, to update gdata free/total
+   * space info in opened menu.
+   * @private
+   */
+  FileManager.prototype.onGDataMenuShow_ = function() {
+    this.updateCommands_();
+    this.gdataSpaceInfoBar_.setAttribute('pending', '');
+    chrome.fileBrowserPrivate.getSizeStats(
+        this.directoryModel_.getCurrentDirEntry().toURL(), function(result) {
+          if (!chrome.extension.lastError) {
+            this.gdataSpaceInfoBar_.removeAttribute('pending');
+
+            var sizeInGb = util.bytesToSi(result.remainingSizeKB * 1024);
+            this.gdataSpaceInfoLabel_.textContent =
+                strf('GDATA_SPACE_AVAILABLE', sizeInGb);
+
+            var usedSpace = result.totalSizeKB - result.remainingSizeKB;
+
+            this.gdataSpaceInfoBar_.style.display = '';
+            this.gdataSpaceInfoBar_.style.width =
+                (100 * usedSpace / result.totalSizeKB) + '%';
+          } else {
+            this.gdataSpaceInfoBar_.style.display = 'none';
+            this.gdataSpaceInfoLabel_.textContent =
+                str('GDATA_FAILED_SPACE_INFO');
+          }
+        }.bind(this));
+  }
+})();

@@ -11126,14 +11126,29 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_CONFIRM_MOBILE_DATA_USE_PLURAL" desc="Message informing the user that opening several files from Google Drive will use mobile data.">
         Fetching these files will use approximately <ph name="FILE_SIZE">$1<ex>44 MB</ex></ph> of mobile data.
       </message>
-      <message name="IDS_FILE_BROWSER_GDATA_MOBILE_CONNECTION_OPTION" desc="Options that determines if we will allow Google Drive content sync over mobile conntections.">
+      <message name="IDS_FILE_BROWSER_GDATA_PRODUCT_NAME" desc="Google Drive product name." translateable="false">
+        Google Drive
+      </message>
+      <message name="IDS_FILE_BROWSER_GDATA_MOBILE_CONNECTION_OPTION" desc="Option that determines if we will allow Google Drive content sync over mobile connections.">
         Do not use mobile data for sync
       </message>
-      <message name="IDS_FILE_BROWSER_GDATA_SHOW_HOSTED_FILES_OPTION" desc="Options that determines if we will show hosted Google Docs files in file browser.">
+      <message name="IDS_FILE_BROWSER_GDATA_SHOW_HOSTED_FILES_OPTION" desc="Option that determines if we will show hosted Google Docs files in file browser.">
         Show Google Docs files
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_MENU_HELP" desc="In the Google Drive settings menu, name of the Help item.">
         Help
+      </message>
+      <message name="IDS_FILE_BROWSER_GDATA_SPACE_AVAILABLE" desc="Menu item showing space left on Google Drive">
+        <ph name="SPACE_AVAILABLE">$1<ex>4.8 GB</ex></ph> left
+      </message>
+      <message name="IDS_FILE_BROWSER_GDATA_BUY_MORE_SPACE" desc="Menu item, offering user to buy more space on Google Drive">
+        Buy more...
+      </message>
+      <message name="IDS_FILE_BROWSER_GDATA_WAITING_FOR_SPACE_INFO" desc="Menu item, saying that FileBrowser is waiting for account's space information from GData servers. When actual data arrives, this item will be replaced with IDS_FILE_BROWSER_GDATA_SPACE_AVAILABLE">
+        Waiting for space info...
+      </message>
+      <message name="IDS_FILE_BROWSER_GDATA_FAILED_SPACE_INFO" desc="Menu item, saying that FileBrowser is failed to retrieve account's space information from GData servers.">
+        Failed to retrieve space info
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_OUT_OF_SPACE_HEADER" desc="Message informing the user that there is not enough space to make the selected file(s) available offline.">
         You have run out of space

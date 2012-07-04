@@ -113,18 +113,24 @@ cr.define('cr.ui', function() {
     showMenu: function() {
       this.hideMenu();
 
-      this.menu.hidden = false;
-      this.setAttribute('menu-shown', '');
+      var event = document.createEvent('UIEvents');
+      event.initUIEvent('menushow', true, true, window, null);
 
-      // when the menu is shown we steal all keyboard events.
-      var doc = this.ownerDocument;
-      var win = doc.defaultView;
-      this.showingEvents_.add(doc, 'keydown', this, true);
-      this.showingEvents_.add(doc, 'mousedown', this, true);
-      this.showingEvents_.add(doc, 'blur', this, true);
-      this.showingEvents_.add(win, 'resize', this);
-      this.showingEvents_.add(this.menu, 'activate', this);
-      this.positionMenu_();
+      if (this.dispatchEvent(event)) {
+        this.menu.hidden = false;
+
+        this.setAttribute('menu-shown', '');
+
+        // when the menu is shown we steal all keyboard events.
+        var doc = this.ownerDocument;
+        var win = doc.defaultView;
+        this.showingEvents_.add(doc, 'keydown', this, true);
+        this.showingEvents_.add(doc, 'mousedown', this, true);
+        this.showingEvents_.add(doc, 'blur', this, true);
+        this.showingEvents_.add(win, 'resize', this);
+        this.showingEvents_.add(this.menu, 'activate', this);
+        this.positionMenu_();
+      }
     },
 
     /**
@@ -224,7 +230,7 @@ cr.define('cr.ui', function() {
         'drop-down-arrow-hover', ARROW_WIDTH, ARROW_HEIGHT, hoverColor);
     createDropDownArrowCanvas(
         'drop-down-arrow-active', ARROW_WIDTH, ARROW_HEIGHT, activeColor);
-  }
+  };
 
   // Export
   return {

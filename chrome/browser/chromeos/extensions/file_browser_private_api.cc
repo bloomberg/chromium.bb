@@ -1273,12 +1273,41 @@ void GetSizeStatsFunction::GetLocalPathsResponseOnUIThread(
     return;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(
-          &GetSizeStatsFunction::CallGetSizeStatsOnFileThread,
-          this,
-          files[0].path.value()));
+  if (files[0].path == gdata::util::GetGDataMountPointPath()) {
+    gdata::GDataSystemService* system_service =
+        gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+
+    gdata::GDataFileSystem* file_system =
+        system_service->file_system();
+
+    file_system->GetAvailableSpace(
+        base::Bind(&GetSizeStatsFunction::GetGDataAvailableSpaceCallback,
+                   this));
+
+  } else {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(
+            &GetSizeStatsFunction::CallGetSizeStatsOnFileThread,
+            this,
+            files[0].path.value()));
+  }
+}
+
+void GetSizeStatsFunction::GetGDataAvailableSpaceCallback(
+    base::PlatformFileError error,
+    int64 bytes_total,
+    int64 bytes_used) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error == base::PLATFORM_FILE_OK) {
+    int64 bytes_remaining = bytes_total - bytes_used;
+    GetSizeStatsCallbackOnUIThread(static_cast<size_t>(bytes_total/1024),
+                                   static_cast<size_t>(bytes_remaining/1024));
+  } else {
+    error_ = base::StringPrintf(kFileError, static_cast<int>(error));
+    SendResponse(false);
+  }
 }
 
 void GetSizeStatsFunction::CallGetSizeStatsOnFileThread(
@@ -1295,11 +1324,10 @@ void GetSizeStatsFunction::CallGetSizeStatsOnFileThread(
       base::Bind(
           &GetSizeStatsFunction::GetSizeStatsCallbackOnUIThread,
           this,
-          mount_path, total_size_kb, remaining_size_kb));
+          total_size_kb, remaining_size_kb));
 }
 
 void GetSizeStatsFunction::GetSizeStatsCallbackOnUIThread(
-    const std::string&  mount_path,
     size_t total_size_kb,
     size_t remaining_size_kb) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1545,8 +1573,13 @@ bool FileDialogStringsFunction::RunImpl() {
   SET_STRING(IDS_FILE_BROWSER, UNSUPPORTED_FILESYSTEM_WARNING);
   SET_STRING(IDS_FILE_BROWSER, FORMATTING_WARNING);
 
+  SET_STRING(IDS_FILE_BROWSER, GDATA_MENU_HELP);
   SET_STRING(IDS_FILE_BROWSER, GDATA_SHOW_HOSTED_FILES_OPTION);
   SET_STRING(IDS_FILE_BROWSER, GDATA_MOBILE_CONNECTION_OPTION);
+  SET_STRING(IDS_FILE_BROWSER, GDATA_SPACE_AVAILABLE);
+  SET_STRING(IDS_FILE_BROWSER, GDATA_WAITING_FOR_SPACE_INFO);
+  SET_STRING(IDS_FILE_BROWSER, GDATA_FAILED_SPACE_INFO);
+  SET_STRING(IDS_FILE_BROWSER, GDATA_BUY_MORE_SPACE);
 
   SET_STRING(IDS_FILE_BROWSER, SELECT_FOLDER_TITLE);
   SET_STRING(IDS_FILE_BROWSER, SELECT_OPEN_FILE_TITLE);

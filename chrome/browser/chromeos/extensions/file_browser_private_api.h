@@ -348,8 +348,11 @@ class GetSizeStatsFunction : public FileBrowserFunction {
   // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
   void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
 
-  void GetSizeStatsCallbackOnUIThread(const std::string& mount_path,
-                                      size_t total_size_kb,
+  void GetGDataAvailableSpaceCallback(base::PlatformFileError error,
+                                int64 bytes_total,
+                                int64 bytes_used);
+
+  void GetSizeStatsCallbackOnUIThread(size_t total_size_kb,
                                       size_t remaining_size_kb);
   void CallGetSizeStatsOnFileThread(const std::string& mount_path);
 };
