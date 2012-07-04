@@ -460,6 +460,11 @@ html[dir='rtl'] .signin-box input[type=password] {
   font-weight: bold;
 }
 
+/* The help links inside the signin box labels should use a normal font. */
+.signin-box label a {
+  font-weight: normal;
+}
+
 /* Sign in miscellaneous. */
 
 .signin-box .throbber {
