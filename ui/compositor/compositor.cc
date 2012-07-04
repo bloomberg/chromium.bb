@@ -157,6 +157,7 @@ Compositor::Compositor(CompositorDelegate* delegate,
 #endif
 
   host_.initialize(this, root_web_layer_, settings);
+  host_.setSurfaceReady();
   root_web_layer_.setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
 }
 
@@ -224,9 +225,10 @@ void Compositor::Draw(bool force_clear) {
     return;
 
   last_started_frame_++;
-  FOR_EACH_OBSERVER(CompositorObserver,
-                    observer_list_,
-                    OnCompositingWillStart(this));
+  if (!g_compositor_thread)
+    FOR_EACH_OBSERVER(CompositorObserver,
+                      observer_list_,
+                      OnCompositingWillStart(this));
 
   // TODO(nduca): Temporary while compositor calls
   // compositeImmediately() directly.
@@ -341,6 +343,12 @@ void Compositor::didRebindGraphicsContext(bool success) {
 }
 
 void Compositor::didCommitAndDrawFrame() {
+  // TODO(backer): Plumb through an earlier impl side will start.
+  if (g_compositor_thread)
+    FOR_EACH_OBSERVER(CompositorObserver,
+                      observer_list_,
+                      OnCompositingWillStart(this));
+
   FOR_EACH_OBSERVER(CompositorObserver,
                     observer_list_,
                     OnCompositingStarted(this));

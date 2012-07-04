@@ -23,4 +23,6 @@ const char kUIShowLayerTree[] = "ui-show-layer-tree";
 
 const char kUIEnablePerTilePainting[] = "ui-enable-per-tile-painting";
 
+const char kUIEnableThreadedCompositing[] = "ui-enable-threaded-compositing";
+
 }  // namespace switches

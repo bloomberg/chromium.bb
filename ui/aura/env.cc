@@ -4,6 +4,7 @@
 
 #include "ui/aura/env.h"
 
+#include "base/command_line.h"
 #include "ui/aura/cursor_manager.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/event_filter.h"
@@ -11,6 +12,7 @@
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/compositor_switches.h"
 
 #if defined(USE_X11)
 #include "ui/aura/display_change_observer_x11.h"
@@ -85,7 +87,9 @@ void Env::Init() {
 #if defined(USE_X11)
   display_change_observer_.reset(new internal::DisplayChangeObserverX11);
 #endif
-  ui::Compositor::Initialize(false);
+  ui::Compositor::Initialize(
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUIEnableThreadedCompositing));
 }
 
 void Env::NotifyWindowInitialized(Window* window) {
