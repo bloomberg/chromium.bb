@@ -802,6 +802,11 @@
         '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
         '../third_party/isimpledom/isimpledom.gyp:isimpledom',
       ],
+      'defines': [
+        # This prevents the inclusion of atlhost.h which paired
+        # with the windows 8 sdk it does the wrong thing.
+        '__ATLHOST_H__',
+      ],
       'link_settings': {
         'libraries': [
           '-lcomctl32.lib',
@@ -817,9 +822,6 @@
           },
         },
       },
-      'include_dirs': [
-        '$(DXSDK_DIR)/include',
-      ],
     }],
     ['toolkit_uses_gtk == 1', {
       'dependencies': [
