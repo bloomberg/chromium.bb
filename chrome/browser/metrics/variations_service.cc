@@ -282,18 +282,12 @@ bool VariationsService::CheckStudyVersion(
   }
 
   if (filter.has_min_version()) {
-    const Version min_version(filter.min_version());
-    if (!min_version.IsValid())
-      return false;
-    if (version.CompareTo(min_version) < 0)
+    if (version.CompareToWildcardString(filter.min_version()) < 0)
       return false;
   }
 
   if (filter.has_max_version()) {
-    const Version max_version(filter.max_version());
-    if (!max_version.IsValid())
-      return false;
-    if (version.CompareTo(max_version) > 0)
+    if (version.CompareToWildcardString(filter.max_version()) > 0)
       return false;
   }
 
@@ -331,6 +325,18 @@ bool VariationsService::ValidateStudyAndComputeTotalProbability(
   // At the moment, a missing default_experiment_name makes the study invalid.
   if (study.default_experiment_name().empty()) {
     DVLOG(1) << study.name() << " has no default experiment defined.";
+    return false;
+  }
+  if (study.filter().has_min_version() &&
+      !Version::IsValidWildcardString(study.filter().min_version())) {
+    DVLOG(1) << study.name() << " has invalid min version: "
+             << study.filter().min_version();
+    return false;
+  }
+  if (study.filter().has_max_version() &&
+      !Version::IsValidWildcardString(study.filter().max_version())) {
+    DVLOG(1) << study.name() << " has invalid max version: "
+             << study.filter().max_version();
     return false;
   }
 

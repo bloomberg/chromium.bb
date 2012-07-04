@@ -130,6 +130,13 @@ TEST(VariationsServiceTest, CheckStudyVersion) {
     { "1.3.2", "1.2.3", false },
     { "2.1.2", "1.2.3", false },
     { "0.3.4", "1.2.3", true },
+    // Wildcards.
+    { "1.*", "1.2.3", true },
+    { "1.2.*", "1.2.3", true },
+    { "1.2.3.*", "1.2.3", true },
+    { "1.2.4.*", "1.2.3", false },
+    { "2.*", "1.2.3", false },
+    { "0.3.*", "1.2.3", true },
   };
 
   const struct {
@@ -142,6 +149,15 @@ TEST(VariationsServiceTest, CheckStudyVersion) {
     { "1.2.4", "1.2.3", true },
     { "2.1.1", "1.2.3", true },
     { "2.1.1", "2.3.4", false },
+    // Wildcards
+    { "2.1.*", "2.3.4", false },
+    { "2.*", "2.3.4", true },
+    { "2.3.*", "2.3.4", true },
+    { "2.3.4.*", "2.3.4", true },
+    { "2.3.4.0.*", "2.3.4", true },
+    { "2.4.*", "2.3.4", true },
+    { "1.3.*", "2.3.4", false },
+    { "1.*", "2.3.4", false },
   };
 
   chrome_variations::Study_Filter filter;
@@ -154,7 +170,7 @@ TEST(VariationsServiceTest, CheckStudyVersion) {
     const bool result =
         VariationsService::CheckStudyVersion(filter, min_test_cases[i].version);
     EXPECT_EQ(min_test_cases[i].expected_result, result) <<
-        "Case " << i << " failed!";
+        "Min. version case " << i << " failed!";
   }
   filter.clear_min_version();
 
@@ -163,7 +179,7 @@ TEST(VariationsServiceTest, CheckStudyVersion) {
     const bool result =
         VariationsService::CheckStudyVersion(filter, max_test_cases[i].version);
     EXPECT_EQ(max_test_cases[i].expected_result, result) <<
-        "Case " << i << " failed!";
+        "Max version case " << i << " failed!";
   }
 
   // Check intersection semantics.
@@ -187,20 +203,6 @@ TEST(VariationsServiceTest, CheckStudyVersion) {
       }
     }
   }
-}
-
-// The current client logic does not handle version number strings containing
-// wildcards. Check that any such values received from the server result in the
-// study being disqualified.
-TEST(VariationsServiceTest, CheckStudyVersionWildcards) {
-  chrome_variations::Study_Filter filter;
-
-  filter.set_min_version("1.0.*");
-  EXPECT_FALSE(VariationsService::CheckStudyVersion(filter, "1.2.3"));
-
-  filter.clear_min_version();
-  filter.set_max_version("2.0.*");
-  EXPECT_FALSE(VariationsService::CheckStudyVersion(filter, "1.2.3"));
 }
 
 TEST(VariationsServiceTest, CheckStudyStartDate) {
@@ -270,6 +272,34 @@ TEST(VariationsServiceTest, ValidateStudy) {
       study, &total_probability);
   EXPECT_TRUE(valid);
   EXPECT_EQ(300, total_probability);
+
+  // Min version checks.
+  study.mutable_filter()->set_min_version("1.2.3.*");
+  valid = VariationsService::ValidateStudyAndComputeTotalProbability(
+      study, &total_probability);
+  EXPECT_TRUE(valid);
+  study.mutable_filter()->set_min_version("1.*.3");
+  valid = VariationsService::ValidateStudyAndComputeTotalProbability(
+      study, &total_probability);
+  EXPECT_FALSE(valid);
+  study.mutable_filter()->set_min_version("1.2.3");
+  valid = VariationsService::ValidateStudyAndComputeTotalProbability(
+      study, &total_probability);
+  EXPECT_TRUE(valid);
+
+  // Max version checks.
+  study.mutable_filter()->set_max_version("2.3.4.*");
+  valid = VariationsService::ValidateStudyAndComputeTotalProbability(
+      study, &total_probability);
+  EXPECT_TRUE(valid);
+  study.mutable_filter()->set_max_version("*.3");
+  valid = VariationsService::ValidateStudyAndComputeTotalProbability(
+      study, &total_probability);
+  EXPECT_FALSE(valid);
+  study.mutable_filter()->set_max_version("2.3.4");
+  valid = VariationsService::ValidateStudyAndComputeTotalProbability(
+      study, &total_probability);
+  EXPECT_TRUE(valid);
 
   study.clear_default_experiment_name();
   valid = VariationsService::ValidateStudyAndComputeTotalProbability(study,
