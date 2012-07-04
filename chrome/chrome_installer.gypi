@@ -581,10 +581,10 @@
             {
               'destination': '<(PRODUCT_DIR)/installer/theme/',
               'files': [
-                '<(branding_dir)/product_logo_16.png',
+                'default_100_percent/<(branding_dir)/product_logo_16.png',
                 '<(branding_dir)/product_logo_22.png',
                 '<(branding_dir)/product_logo_24.png',
-                '<(branding_dir)/product_logo_32.png',
+                'default_100_percent/<(branding_dir)/product_logo_32.png',
                 '<(branding_dir)/product_logo_48.png',
                 '<(branding_dir)/product_logo_64.png',
                 '<(branding_dir)/product_logo_128.png',

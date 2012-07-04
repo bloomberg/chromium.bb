@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/confirm_bubble_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {

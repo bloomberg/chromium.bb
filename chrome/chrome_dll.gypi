@@ -228,7 +228,7 @@
                 # resource bundle because that's the interface that
                 # Authorization Services uses.  Also, Authorization Services
                 # can't deal with .icns files.
-                'app/theme/<(theme_dir_name)/product_logo_32.png',
+                'app/theme/default_100_percent/<(theme_dir_name)/product_logo_32.png',
 
                 'app/framework-Info.plist',
                 'app/nibs/AboutIPC.xib',

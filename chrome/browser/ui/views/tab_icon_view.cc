@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
 #include "grit/ui_resources_standard.h"
 #include "ui/base/resource/resource_bundle.h"

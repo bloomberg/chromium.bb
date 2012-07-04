@@ -11,7 +11,7 @@
 #import "chrome/browser/ui/cocoa/confirm_bubble_cocoa.h"
 #import "chrome/browser/ui/cocoa/confirm_bubble_controller.h"
 #include "chrome/browser/ui/confirm_bubble_model.h"
-#include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #import "testing/gtest_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #import "ui/gfx/point.h"

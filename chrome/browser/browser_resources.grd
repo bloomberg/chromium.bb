@@ -18,6 +18,8 @@
       <if expr="is_win">
         <structure name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory.html" flattenhtml="true" type="chrome_html" />
       </if>
+      <structure name="IDR_HELP_CSS" file="resources\help\help.css" flattenhtml="true" type="chrome_html" />
+      <structure name="IDR_HELP_HTML" file="resources\help\help.html" flattenhtml="true" type="chrome_html" />
       <structure name="IDR_EXTENSIONS_HTML" file="resources\extensions\extensions.html" flattenhtml="true" type="chrome_html" />
       <structure name="IDR_NEW_TAB_4_HTML" file="resources\ntp4\new_tab.html" flattenhtml="true" type="chrome_html" />
       <structure name="IDR_NEW_TAB_4_THEME_CSS" file="resources\ntp4\new_tab_theme.css" flattenhtml="true" type="chrome_html" />
@@ -73,8 +75,6 @@
       <include name="IDR_FLAGS_HTML_WARNING" file="resources\flags_warning.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FLAGS_JS" file="resources\flags.js" type="BINDATA" />
       <include name="IDR_GAIA_LOGIN_HTML" file="sync\resources\gaia_login.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_HELP_CSS" file="resources\help\help.css" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_HELP_HTML" file="resources\help\help.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_HELP_JS" file="resources\help\help.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GPU_BLACKLIST" file="resources\software_rendering_list.json" type="BINDATA" />
       <include name="IDR_GPU_INTERNALS_HTML" file="resources\gpu_internals\gpu_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />

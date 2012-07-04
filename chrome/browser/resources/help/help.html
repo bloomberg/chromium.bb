@@ -18,7 +18,8 @@
       <h1 i18n-content="aboutTitle"></h1>
     </header>
     <div id="about-container">
-      <img src="chrome://theme/IDR_PRODUCT_LOGO_32">
+      <!-- TODO: Revert back to src= once http://crbug.com/135179 is fixed -->
+      <img id="help-product-logo">
       <div id="product-description">
         <h2 i18n-content="aboutProductTitle"></h2>
         <span i18n-content="aboutProductDescription"></span>

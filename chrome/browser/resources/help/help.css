@@ -13,6 +13,11 @@ body {
   margin-top: 10px;
 }
 
+#help-product-logo {
+  /* TODO: Remove once http://crbug.com/135179 is fixed */
+  content: url('chrome://theme/IDR_PRODUCT_LOGO_32');
+}
+
 #product-description {
   -webkit-margin-start: 10px;
 }
