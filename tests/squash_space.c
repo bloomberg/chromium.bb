@@ -6,7 +6,9 @@
 int main(int argc, char **argv)
 {
 
+  int i;
   int result = 0;
+
   const char *tests[] = {
     /* first column is the text, the second is the expected value */
     " ", " ",
@@ -45,11 +47,6 @@ int main(int argc, char **argv)
     "    \n    ", " \n ",
     "\n    ",     "\n "
   };
-
-  int tests_len = sizeof(tests)/sizeof(char*);
-
-  for (int i = 0; i < tests_len; i += 2)
-    result |= check_translation("squash_space_with_repeated.utb", tests[i], NULL, tests[i+1]);
 
   /* A number of strings that we want to squash, i.e. they should all
      result in an output of one space */
@@ -95,15 +92,20 @@ int main(int argc, char **argv)
   };
   const char *expected = " ";
 
+  int tests_len = sizeof(tests)/sizeof(char*);
+
+  for (i = 0; i < tests_len; i += 2)
+    result |= check_translation("squash_space_with_repeated.utb", tests[i], NULL, tests[i+1]);
+
   tests_len = sizeof(strings)/sizeof(char*);
 
-  for (int i = 0; i < tests_len; i++)
+  for (i = 0; i < tests_len; i++)
     result |= check_translation("squash_space_with_correct.utb", strings[i], NULL, expected);
 
-  for (int i = 0; i < tests_len; i++)
+  for (i = 0; i < tests_len; i++)
     result |= check_translation("squash_space_with_context_1.utb", strings[i], NULL, expected);
 
-  for (int i = 0; i < tests_len; i++)
+  for (i = 0; i < tests_len; i++)
     result |= check_translation("squash_space_with_context_2.utb", strings[i], NULL, expected);
 
 
