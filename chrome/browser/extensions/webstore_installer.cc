@@ -38,6 +38,10 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
+#endif
+
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadId;
@@ -93,8 +97,14 @@ GURL GetWebstoreInstallURL(
 void GetDownloadFilePath(
     const FilePath& download_directory, const std::string& id,
     const base::Callback<void(const FilePath&)>& callback) {
-  const FilePath& directory(g_download_directory_for_tests ?
-      *g_download_directory_for_tests : download_directory);
+  FilePath directory(g_download_directory_for_tests ?
+                     *g_download_directory_for_tests : download_directory);
+
+#if defined (OS_CHROMEOS)
+  // Do not use drive for extension downloads.
+  if (gdata::util::IsUnderGDataMountPoint(directory))
+    directory = download_util::GetDefaultDownloadDirectory();
+#endif
 
   // Ensure the download directory exists. TODO(asargent) - make this use
   // common code from the downloads system.
