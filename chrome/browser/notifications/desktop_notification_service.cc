@@ -410,22 +410,28 @@ void DesktopNotificationService::RequestPermission(
   if (setting == CONTENT_SETTING_ASK) {
     // Show an info bar requesting permission.
     TabContents* tab_contents = TabContents::FromWebContents(contents);
-    InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
-    infobar_helper->AddInfoBar(new NotificationPermissionInfoBarDelegate(
-        infobar_helper,
-        DesktopNotificationServiceFactory::GetForProfile(
-            tab_contents->profile()),
-        origin,
-        DisplayNameForOrigin(origin),
-        process_id,
-        route_id,
-        callback_context));
-  } else {
-    // Notify renderer immediately.
-    RenderViewHost* host = RenderViewHost::FromID(process_id, route_id);
-    if (host)
-      host->DesktopNotificationPermissionRequestDone(callback_context);
+    // |tab_contents| may be NULL, e.g., if this request originated in a
+    // browser action popup, extension background page, or any HTML that runs
+    // outside of a tab.
+    if (tab_contents) {
+      InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+      infobar_helper->AddInfoBar(new NotificationPermissionInfoBarDelegate(
+          infobar_helper,
+          DesktopNotificationServiceFactory::GetForProfile(
+              tab_contents->profile()),
+          origin,
+          DisplayNameForOrigin(origin),
+          process_id,
+          route_id,
+          callback_context));
+      return;
+    }
   }
+
+  // Notify renderer immediately.
+  RenderViewHost* host = RenderViewHost::FromID(process_id, route_id);
+  if (host)
+    host->DesktopNotificationPermissionRequestDone(callback_context);
 }
 
 #if !defined(OS_WIN)
