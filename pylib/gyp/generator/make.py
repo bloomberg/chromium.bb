@@ -1590,18 +1590,19 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
                            phony = True)
 
 
-  def WriteList(self, list, variable=None, prefix='', quoter=QuoteIfNecessary):
+  def WriteList(self, value_list, variable=None, prefix='',
+                quoter=QuoteIfNecessary):
     """Write a variable definition that is a list of values.
 
     E.g. WriteList(['a','b'], 'foo', prefix='blah') writes out
          foo = blaha blahb
     but in a pretty-printed style.
     """
-    self.fp.write(variable + " := ")
-    if list:
-      list = [quoter(prefix + l) for l in list]
-      self.fp.write(" \\\n\t".join(list))
-    self.fp.write("\n\n")
+    values = ''
+    if value_list:
+      value_list = [quoter(prefix + l) for l in value_list]
+      values = ' \\\n\t' + ' \\\n\t'.join(value_list)
+    self.fp.write('%s :=%s\n\n' % (variable, values))
 
 
   def WriteDoCmd(self, outputs, inputs, command, part_of_all, comment=None,

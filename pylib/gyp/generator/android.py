@@ -875,7 +875,7 @@ class AndroidMkWriter(object):
       self.WriteLn('\t$(hide) touch $@')
 
 
-  def WriteList(self, list, variable=None, prefix='',
+  def WriteList(self, value_list, variable=None, prefix='',
                 quoter=make.QuoteIfNecessary, local_pathify=False):
     """Write a variable definition that is a list of values.
 
@@ -883,15 +883,13 @@ class AndroidMkWriter(object):
          foo = blaha blahb
     but in a pretty-printed style.
     """
-    self.fp.write(variable + " := ")
-    if list:
-      list = [quoter(prefix + l) for l in list]
+    values = ''
+    if value_list:
+      value_list = [quoter(prefix + l) for l in value_list]
       if local_pathify:
-        list = [self.LocalPathify(l) for l in list]
-      self.fp.write(" \\\n\t".join(list))
-    self.fp.write("\n\n")
-
-
+        value_list = [self.LocalPathify(l) for l in value_list]
+      values = ' \\\n\t' + ' \\\n\t'.join(value_list)
+    self.fp.write('%s :=%s\n\n' % (variable, values))
 
 
   def WriteLn(self, text=''):
