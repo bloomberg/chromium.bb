@@ -14,38 +14,69 @@ class Orientation {
   // can_provide_{alpha,beta,gamma,absolute} is true if data can be provided
   // for that variable.
 
-  Orientation(bool can_provide_alpha, double alpha,
-              bool can_provide_beta, double beta,
-              bool can_provide_gamma, double gamma,
-              bool can_provide_absolute, bool absolute)
-      : alpha_(alpha),
-        beta_(beta),
-        gamma_(gamma),
-        absolute_(absolute),
-        can_provide_alpha_(can_provide_alpha),
-        can_provide_beta_(can_provide_beta),
-        can_provide_gamma_(can_provide_gamma),
-        can_provide_absolute_(can_provide_absolute) {
-  }
-
   Orientation()
-      : alpha_(0),
-        beta_(0),
-        gamma_(0),
-        absolute_(false),
-        can_provide_alpha_(false),
+      : can_provide_alpha_(false),
         can_provide_beta_(false),
         can_provide_gamma_(false),
         can_provide_absolute_(false) {
   }
+  Orientation(const Orientation& orientation)
+      : alpha_(orientation.alpha()),
+        beta_(orientation.beta()),
+        gamma_(orientation.gamma()),
+        absolute_(orientation.absolute()),
+        can_provide_alpha_(orientation.can_provide_alpha()),
+        can_provide_beta_(orientation.can_provide_beta()),
+        can_provide_gamma_(orientation.can_provide_gamma()),
+        can_provide_absolute_(orientation.can_provide_absolute()) {
+  }
+  void operator=(const Orientation& source) {
+    alpha_ = source.alpha();
+    beta_ = source.beta();
+    gamma_ = source.gamma();
+    absolute_ = source.absolute();
+    can_provide_alpha_ = source.can_provide_alpha();
+    can_provide_beta_ = source.can_provide_beta();
+    can_provide_gamma_ = source.can_provide_gamma();
+    can_provide_absolute_ = source.can_provide_absolute();
+  }
 
   static Orientation Empty() { return Orientation(); }
 
-  bool IsEmpty() const {
+  bool is_empty() const {
     return !can_provide_alpha_ && !can_provide_beta_ && !can_provide_gamma_
         && !can_provide_absolute_;
   }
 
+  void set_alpha(double alpha) {
+    can_provide_alpha_ = true;
+    alpha_ = alpha;
+  }
+  bool can_provide_alpha() const { return can_provide_alpha_; }
+  double alpha() const { return alpha_; }
+
+  void set_beta(double beta) {
+    can_provide_beta_ = true;
+    beta_ = beta;
+  }
+  bool can_provide_beta() const { return can_provide_beta_; }
+  double beta() const { return beta_; }
+
+  void set_gamma(double gamma) {
+    can_provide_gamma_ = true;
+    gamma_ = gamma;
+  }
+  bool can_provide_gamma() const { return can_provide_gamma_; }
+  double gamma() const { return gamma_; }
+
+  void set_absolute(bool absolute) {
+    can_provide_absolute_ = true;
+    absolute_ = absolute;
+  }
+  bool can_provide_absolute() const { return can_provide_absolute_; }
+  bool absolute() const { return absolute_; }
+
+ private:
   double alpha_;
   double beta_;
   double gamma_;

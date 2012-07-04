@@ -70,8 +70,13 @@ bool DataFetcherImplAndroid::GetOrientation(Orientation* orientation) {
 void DataFetcherImplAndroid::GotOrientation(
     JNIEnv*, jobject, double alpha, double beta, double gamma) {
   base::AutoLock autolock(next_orientation_lock_);
-  next_orientation_.reset(
-      new Orientation(true, alpha, true, beta, true, gamma, true, true));
+
+  Orientation* orientation = new Orientation();
+  orientation->set_alpha(alpha);
+  orientation->set_beta(beta);
+  orientation->set_gamma(gamma);
+  orientation->set_absolute(true);
+  next_orientation_.reset(orientation);
 }
 
 bool DataFetcherImplAndroid::Start(int rate_in_milliseconds) {

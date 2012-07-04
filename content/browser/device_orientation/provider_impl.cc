@@ -83,7 +83,7 @@ void ProviderImpl::DoInitializePollingThread(
       last_orientation_ = orientation;
 
       // Notify observers.
-      if (!orientation.IsEmpty())
+      if (!orientation.is_empty())
         ScheduleDoNotify(orientation);
 
       // Start polling.
@@ -115,7 +115,7 @@ void ProviderImpl::DoNotify(const Orientation& orientation) {
   for (Iterator i = observers_.begin(), e = observers_.end(); i != e; ++i)
     (*i)->OnOrientationUpdate(orientation);
 
-  if (orientation.IsEmpty()) {
+  if (orientation.is_empty()) {
     // Notify observers about failure to provide data exactly once.
     observers_.clear();
     Stop();
@@ -140,7 +140,7 @@ void ProviderImpl::DoPoll() {
     return;
   }
 
-  if (!orientation.IsEmpty() &&
+  if (!orientation.is_empty() &&
       SignificantlyDifferent(orientation, last_orientation_)) {
     last_orientation_ = orientation;
     ScheduleDoNotify(orientation);
@@ -180,20 +180,20 @@ bool IsElementSignificantlyDifferent(bool can_provide_element1,
 // observers should be notified of the new orientation.
 bool ProviderImpl::SignificantlyDifferent(const Orientation& o1,
                                           const Orientation& o2) {
-  return IsElementSignificantlyDifferent(o1.can_provide_alpha_,
-                                         o2.can_provide_alpha_,
-                                         o1.alpha_,
-                                         o2.alpha_) ||
-      IsElementSignificantlyDifferent(o1.can_provide_beta_,
-                                         o2.can_provide_beta_,
-                                         o1.beta_,
-                                         o2.beta_) ||
-      IsElementSignificantlyDifferent(o1.can_provide_gamma_,
-                                         o2.can_provide_gamma_,
-                                         o1.gamma_,
-                                         o2.gamma_) ||
-      (o1.can_provide_absolute_ != o2.can_provide_absolute_
-       || o1.absolute_ != o2.absolute_);
+  return IsElementSignificantlyDifferent(o1.can_provide_alpha(),
+                                         o2.can_provide_alpha(),
+                                         o1.alpha(),
+                                         o2.alpha()) ||
+         IsElementSignificantlyDifferent(o1.can_provide_beta(),
+                                         o2.can_provide_beta(),
+                                         o1.beta(),
+                                         o2.beta()) ||
+         IsElementSignificantlyDifferent(o1.can_provide_gamma(),
+                                         o2.can_provide_gamma(),
+                                         o1.gamma(),
+                                         o2.gamma()) ||
+         (o1.can_provide_absolute() != o2.can_provide_absolute() ||
+          o1.absolute() != o2.absolute());
 }
 
 base::TimeDelta ProviderImpl::SamplingInterval() const {

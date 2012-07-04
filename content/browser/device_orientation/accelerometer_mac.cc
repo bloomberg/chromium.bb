@@ -63,32 +63,27 @@ bool AccelerometerMac::GetOrientation(Orientation* orientation) {
   //
   const double kRad2deg = 180.0 / M_PI;
 
-  orientation->alpha_ = 0.0;
-  orientation->beta_  = kRad2deg * atan2(-axis_value[1], axis_value[2]);
-  orientation->gamma_ = kRad2deg * asin(axis_value[0]);
-  orientation->absolute_ = false;
+  orientation->set_beta(kRad2deg * atan2(-axis_value[1], axis_value[2]));
+  orientation->set_gamma(kRad2deg * asin(axis_value[0]));
+  // TODO(aousterh): should absolute_ be set to false here?
+  // See crbug.com/136010.
 
   // Make sure that the interval boundaries comply with the specification. At
   // this point, beta is [-180, 180] and gamma is [-90, 90], but the spec has
   // the upper bound open on both.
-  if (orientation->beta_ == 180.0) {
-    orientation->beta_ = -180.0;  // -180 == 180 (upside-down)
+  if (orientation->beta() == 180.0) {
+    orientation->set_beta(-180.0);  // -180 == 180 (upside-down)
   }
-  if (orientation->gamma_ == 90.0) {
+  if (orientation->gamma() == 90.0) {
     static double just_less_than_90 = nextafter(90, 0);
-    orientation->gamma_ = just_less_than_90;
+    orientation->set_gamma(just_less_than_90);
   }
 
   // At this point, DCHECKing is paranoia. Never hurts.
-  DCHECK_GE(orientation->beta_, -180.0);
-  DCHECK_LT(orientation->beta_,  180.0);
-  DCHECK_GE(orientation->gamma_, -90.0);
-  DCHECK_LT(orientation->gamma_,  90.0);
-
-  orientation->can_provide_alpha_ = false;
-  orientation->can_provide_beta_  = true;
-  orientation->can_provide_gamma_ = true;
-  orientation->can_provide_absolute_ = false;
+  DCHECK_GE(orientation->beta(), -180.0);
+  DCHECK_LT(orientation->beta(),  180.0);
+  DCHECK_GE(orientation->gamma(), -90.0);
+  DCHECK_LT(orientation->gamma(),  90.0);
 
   return true;
 }

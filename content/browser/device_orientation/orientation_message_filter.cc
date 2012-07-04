@@ -61,14 +61,14 @@ OrientationMessageFilter::ObserverDelegate::~ObserverDelegate() {
 void OrientationMessageFilter::ObserverDelegate::OnOrientationUpdate(
     const Orientation& orientation) {
   DeviceOrientationMsg_Updated_Params params;
-  params.can_provide_alpha = orientation.can_provide_alpha_;
-  params.alpha = orientation.alpha_;
-  params.can_provide_beta = orientation.can_provide_beta_;
-  params.beta = orientation.beta_;
-  params.can_provide_gamma = orientation.can_provide_gamma_;
-  params.gamma = orientation.gamma_;
-  params.can_provide_absolute = orientation.can_provide_absolute_;
-  params.absolute = orientation.absolute_;
+  params.can_provide_alpha = orientation.can_provide_alpha();
+  params.alpha = orientation.alpha();
+  params.can_provide_beta = orientation.can_provide_beta();
+  params.beta = orientation.beta();
+  params.can_provide_gamma = orientation.can_provide_gamma();
+  params.gamma = orientation.gamma();
+  params.can_provide_absolute = orientation.can_provide_absolute();
+  params.absolute = orientation.absolute();
 
   sender_->Send(new DeviceOrientationMsg_Updated(render_view_id_, params));
 }

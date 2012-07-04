@@ -54,8 +54,12 @@ class DeviceOrientationBrowserTest : public InProcessBrowserTest {
 
 // crbug.com/113952
 IN_PROC_BROWSER_TEST_F(DeviceOrientationBrowserTest, BasicTest) {
-  const Orientation kTestOrientation(true, 1, true, 2, true, 3, true, true);
-  scoped_refptr<MockProvider> provider(new MockProvider(kTestOrientation));
+  Orientation test_orientation;
+  test_orientation.set_alpha(1);
+  test_orientation.set_beta(2);
+  test_orientation.set_gamma(3);
+  test_orientation.set_absolute(true);
+  scoped_refptr<MockProvider> provider(new MockProvider(test_orientation));
   Provider::SetInstanceForTests(provider.get());
 
   // The test page will register an event handler for orientation events,
