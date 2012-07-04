@@ -497,6 +497,51 @@ bool HasImportSwitch(const CommandLine& command_line) {
           command_line.HasSwitch(switches::kImportFromFile));
 }
 
+// Set up a uniformity field trial. |one_time_randomized| indicates if the
+// field trial is one-time randomized or session-randomized. |trial_name_string|
+// must contain a "%d" since the percentage of the group will be inserted in
+// the trial name. |num_trial_groups| must be a divisor of 100 (e.g. 5, 20)
+void SetupSingleUniformityFieldTrial(bool one_time_randomized,
+                                     const std::string& trial_name_string,
+                                     const chrome_variations::ID trial_base_id,
+                                     int num_trial_groups) {
+  // Probability per group remains constant for all uniformity trials, what
+  // changes is the probability divisor.
+  static const base::FieldTrial::Probability kProbabilityPerGroup = 1;
+  const std::string kDefaultGroupName = "default";
+  const base::FieldTrial::Probability divisor = num_trial_groups;
+
+  DCHECK_EQ(100 % num_trial_groups, 0);
+  const int group_percent = 100 / num_trial_groups;
+  const std::string trial_name = StringPrintf(trial_name_string.c_str(),
+                                              group_percent);
+
+  DVLOG(1) << "Trial name = " << trial_name;
+
+  scoped_refptr<base::FieldTrial> trial(
+      base::FieldTrialList::FactoryGetFieldTrial(
+          trial_name, divisor, kDefaultGroupName, 2015, 1, 1, NULL));
+  if (one_time_randomized)
+      trial->UseOneTimeRandomization();
+  experiments_helper::AssociateGoogleVariationID(trial_name, kDefaultGroupName,
+      trial_base_id);
+  // Loop starts with group 1 because the field trial automatically creates a
+  // default group, which would be group 0.
+  for (int group_number = 1; group_number < num_trial_groups; ++group_number) {
+    const std::string group_name = StringPrintf("group_%02d", group_number);
+    DVLOG(1) << "    Group name = " << group_name;
+    trial->AppendGroup(group_name, kProbabilityPerGroup);
+    experiments_helper::AssociateGoogleVariationID(trial_name, group_name,
+        static_cast<chrome_variations::ID>(trial_base_id + group_number));
+  }
+
+  // Now that all groups have been appended, call group() on the trial to
+  // ensure that our trial is registered. This resolves an off-by-one issue
+  // where the default group never gets chosen if we don't "use" the trial.
+  int chosen_group = trial->group();
+  DVLOG(1) << "Chosen Group: " << chosen_group;
+}
+
 }  // namespace
 
 namespace chrome_browser {
@@ -1009,7 +1054,7 @@ void ChromeBrowserMainParts::SetupUniformityFieldTrials() {
   // One field trial will be created for each entry in this array. The i'th
   // field trial will have |trial_sizes[i]| groups in it, including the default
   // group. Each group will have a probability of 1/|trial_sizes[i]|.
-  const int trial_sizes[] = { 100, 20, 10, 5, 2 };
+  const int num_trial_groups[] = { 100, 20, 10, 5, 2 };
 
   // Declare our variation ID bases along side this array so we can loop over it
   // and assign the IDs appropriately. So for example, the 1 percent experiments
@@ -1022,40 +1067,18 @@ void ChromeBrowserMainParts::SetupUniformityFieldTrials() {
       chrome_variations::kUniformity50PercentBase
   };
 
-  // Probability per group remains constant for all uniformity trials, what
-  // changes is the probability divisor.
-  static const base::FieldTrial::Probability kProbabilityPerGroup = 1;
-  for (size_t i = 0; i < arraysize(trial_sizes); ++i) {
-    const base::FieldTrial::Probability divisor = trial_sizes[i];
-
-    const int group_percent = 100 / trial_sizes[i];
-    const std::string trial_name =
-        StringPrintf("UMA-Uniformity-Trial-%d-Percent", group_percent);
-
-    DVLOG(1) << "Trial name = " << trial_name;
-
-    scoped_refptr<base::FieldTrial> trial(
-        base::FieldTrialList::FactoryGetFieldTrial(
-            trial_name, divisor, "default", 2015, 1, 1, NULL));
-    trial->UseOneTimeRandomization();
-    experiments_helper::AssociateGoogleVariationID(trial_name, "default",
-        trial_base_ids[i]);
-    // Loop starts with group 1 because the field trial automatically creates a
-    // default group, which would be group 0.
-    for (int group_number = 1; group_number < trial_sizes[i]; ++group_number) {
-      const std::string group_name = StringPrintf("group_%02d", group_number);
-      DVLOG(1) << "    Group name = " << group_name;
-      trial->AppendGroup(group_name, kProbabilityPerGroup);
-      experiments_helper::AssociateGoogleVariationID(trial_name, group_name,
-          static_cast<chrome_variations::ID>(trial_base_ids[i] + group_number));
-    }
-
-    // Now that all groups have been appended, call group() on the trial to
-    // ensure that our trial is registered. This resolves an off-by-one issue
-    // where the default group never gets chosen if we don't "use" the trial.
-    int chosen_group = trial->group();
-    DVLOG(1) << "Chosen Group: " << chosen_group;
+  const std::string kOneTimeRandomizedTrialName =
+      "UMA-Uniformity-Trial-%d-Percent";
+  for (size_t i = 0; i < arraysize(num_trial_groups); ++i) {
+    SetupSingleUniformityFieldTrial(true, kOneTimeRandomizedTrialName,
+                                       trial_base_ids[i], num_trial_groups[i]);
   }
+
+  // Setup a 5% session-randomized uniformity trial.
+  const std::string kSessionRandomizedTrialName =
+      "UMA-Session-Randomized-Uniformity-Trial-%d-Percent";
+  SetupSingleUniformityFieldTrial(false, kSessionRandomizedTrialName,
+      chrome_variations::kUniformitySessionRandomized5PercentBase, 20);
 }
 
 void ChromeBrowserMainParts::DisableNewTabFieldTrialIfNecesssary() {

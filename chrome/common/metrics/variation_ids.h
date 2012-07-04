@@ -66,7 +66,12 @@ enum ID {
   kDynamicUniformityDefault = 3300137,
   kDynamicUniformityGroup01 = 3300138,
 
-  kUniformityTrialsMax      = 3300138,
+  // Uniformity5PercentSessionRandomized: 3300139 - 3300158
+  kUniformitySessionRandomized5PercentBase  = 3300139,
+  kUniformitySessionRandomized5PercentLimit =
+      kUniformitySessionRandomized5PercentBase + 20,
+
+  kUniformityTrialsMax      = 3300158,
 
   // Some values reserved for unit and integration tests.
   kTestValueA = 3300200,

@@ -132,8 +132,9 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // computer startup has on retention and usage of Chrome.
   void AutoLaunchChromeFieldTrial();
 
-  // A collection of field trials intended to test the uniformity and
-  // correctness of the field trial control, bucketing and reporting systems.
+  // A collection of one-time-randomized and session-randomized field trials
+  // intended to test the uniformity and correctness of the field trial control,
+  // bucketing and reporting systems.
   void SetupUniformityFieldTrials();
 
   // Disables the new tab field trial if not running in desktop mode.
