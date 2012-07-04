@@ -242,9 +242,11 @@ class Cache(object):
   def remove_lru_file(self):
     try:
       filename = self.state.pop(0)
-      logging.info('Trimming %s' % filename)
-      self.files_removed.append((filename, os.stat(filename).st_size))
-      os.remove(self.path(filename))
+      full_path = self.path(filename)
+      size = os.stat(full_path).st_size
+      logging.info('Trimming %s: %d bytes' % (filename, size))
+      self.files_removed.append((filename, size))
+      os.remove(full_path)
     except OSError as e:
       logging.error('Error attempting to delete a file\n%s' % e)
 
