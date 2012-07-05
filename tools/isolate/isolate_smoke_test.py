@@ -28,6 +28,7 @@ EXPECTED_MODES = (
   'hashtable',
   'help',
   'noop',
+  'merge',
   'read',
   'remap',
   'run',
@@ -334,7 +335,14 @@ class Isolate(unittest.TestCase):
       files = [f for f in files if not f.startswith('symlink_')]
 
     # modes read and trace are tested together.
-    for mode in ('check', 'hashtable', 'read_trace', 'remap', 'run'):
+    modes_to_check = list(EXPECTED_MODES)
+    modes_to_check.remove('help')
+    modes_to_check.remove('merge')
+    modes_to_check.remove('noop')
+    modes_to_check.remove('read')
+    modes_to_check.remove('trace')
+    modes_to_check.append('trace_read_merge')
+    for mode in modes_to_check:
       expected_cases = set('test_%s' % f for f in files)
       fixture_name = 'Isolate_%s' % mode
       fixture = getattr(sys.modules[__name__], fixture_name)
@@ -470,6 +478,7 @@ class Isolate_hashtable(IsolateModeBase):
       self._expect_results(['symlink_partial.py'], None, None)
 
 
+
 class Isolate_remap(IsolateModeBase):
   LEVEL = isolate.STATS_ONLY
 
@@ -590,9 +599,22 @@ class Isolate_run(IsolateModeBase):
       self._expect_results(['symlink_partial.py'], None, None)
 
 
-class Isolate_read_trace(IsolateModeBase):
-  # Tests both trace and read.
+class Isolate_trace_read_merge(IsolateModeBase):
+  # Tests both trace, read and merge.
+  # Warning: merge updates .isolate files. But they are currently in their
+  # canonical format so they shouldn't be changed.
   LEVEL = isolate.STATS_ONLY
+
+  def _check_merge(self, filename):
+    filepath = os.path.join(ROOT_DIR, 'data', 'isolate', filename)
+    expected = 'Updating %s\n' % filepath
+    with open(filepath, 'rb') as f:
+      old_content = f.read()
+    out = self._execute('merge', filename, [], True) or ''
+    self.assertEquals(expected, out)
+    with open(filepath, 'rb') as f:
+      new_content = f.read()
+    self.assertEquals(old_content, new_content)
 
   def test_fail(self):
     # Even if the process returns non-zero, the trace will still be good.
@@ -611,6 +633,7 @@ class Isolate_read_trace(IsolateModeBase):
         })
     out = self._execute('read', 'fail.isolate', [], True) or ''
     self.assertEquals(expected.splitlines(), out.splitlines())
+    self._check_merge('fail.isolate')
 
   def test_missing_trailing_slash(self):
     try:
@@ -671,6 +694,7 @@ class Isolate_read_trace(IsolateModeBase):
         })
     out = self._execute('read', 'touch_root.isolate', [], True)
     self.assertEquals(expected, out)
+    self._check_merge('touch_root.isolate')
 
   def test_with_flag(self):
     out = self._execute(
@@ -689,6 +713,7 @@ class Isolate_read_trace(IsolateModeBase):
     }
     out = self._execute('read', 'with_flag.isolate', [], True)
     self.assertEquals(self._wrap_in_condition(expected), out)
+    self._check_merge('with_flag.isolate')
 
   if sys.platform != 'win32':
     def test_symlink_full(self):
@@ -708,6 +733,7 @@ class Isolate_read_trace(IsolateModeBase):
       }
       out = self._execute('read', 'symlink_full.isolate', [], True)
       self.assertEquals(self._wrap_in_condition(expected), out)
+      self._check_merge('symlink_full.isolate')
 
     def test_symlink_partial(self):
       out = self._execute(
@@ -717,13 +743,15 @@ class Isolate_read_trace(IsolateModeBase):
       self._expect_results(['symlink_partial.py'], None, None)
       expected = {
         isolate.isolate_common.KEY_TRACKED: [
-          # Note that .isolate format mandates / and not os.path.sep.
-          'files2/test_file2.txt',
           'symlink_partial.py',
+        ],
+        isolate.isolate_common.KEY_UNTRACKED: [
+          'files2/test_file2.txt',
         ],
       }
       out = self._execute('read', 'symlink_partial.isolate', [], True)
       self.assertEquals(self._wrap_in_condition(expected), out)
+      self._check_merge('symlink_partial.isolate')
 
 
 class IsolateNoOutdir(IsolateBase):
@@ -841,7 +869,7 @@ class IsolateNoOutdir(IsolateBase):
     ]
     self.assertEquals(files, list_files_tree(self.tempdir))
 
-  def test_read_trace(self):
+  def test_trace_read_merge(self):
     self._execute('trace', ['--isolate', self.filename()], False)
     # Read the trace before cleaning up. No need to specify self.filename()
     # because add the needed information is in the .state file.
@@ -853,6 +881,13 @@ class IsolateNoOutdir(IsolateBase):
       ],
     }
     self.assertEquals(self._wrap_in_condition(expected), output)
+
+    output = self._execute('merge', [], True)
+    expected = 'Updating %s\n' % os.path.join(
+        self.root, 'data', 'isolate', 'touch_root.isolate')
+    self.assertEquals(expected, output)
+    # In theory the file is going to be updated but in practice its content
+    # won't change.
 
     # Clean the directory from the logs, which are OS-specific.
     isolate.trace_inputs.get_api().clean_trace(

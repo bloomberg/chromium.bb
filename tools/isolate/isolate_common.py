@@ -65,11 +65,13 @@ def default_blacklist(f):
       f in ('.git', '.svn'))
 
 
-def classify_files(files):
+def classify_files(root_dir, tracked, untracked):
   """Converts the list of files into a .isolate 'variables' dictionary.
 
   Arguments:
-  - files: list of files names to generate a dictionary out of.
+  - tracked: list of files names to generate a dictionary out of that should
+             probably be tracked.
+  - untracked: list of files names that must not be tracked.
   """
   # These directories are not guaranteed to be always present on every builder.
   OPTIONAL_DIRECTORIES = (
@@ -77,27 +79,42 @@ def classify_files(files):
     'third_party/WebKit/LayoutTests',
   )
 
-  tracked = []
-  untracked = []
-  for filepath in sorted(files):
-    if (not filepath.endswith('/') and
-        ' ' not in filepath and
-        not any(i in filepath for i in OPTIONAL_DIRECTORIES)):
-      # A file, without whitespace, in a non-optional directory.
-      tracked.append(filepath)
+  new_tracked = []
+  new_untracked = list(untracked)
+
+  def should_be_tracked(filepath):
+    """Returns True if it is a file without whitespace in a non-optional
+    directory that has no symlink in its path.
+    """
+    if filepath.endswith('/'):
+      return False
+    if ' ' in filepath:
+      return False
+    if any(i in filepath for i in OPTIONAL_DIRECTORIES):
+      return False
+    # Look if any element in the path is a symlink.
+    split = filepath.split('/')
+    for i in range(len(split)):
+      if os.path.islink(os.path.join(root_dir, '/'.join(split[:i+1]))):
+        return False
+    return True
+
+  for filepath in sorted(tracked):
+    if should_be_tracked(filepath):
+      new_tracked.append(filepath)
     else:
       # Anything else.
-      untracked.append(filepath)
+      new_untracked.append(filepath)
 
   variables = {}
-  if tracked:
-    variables[KEY_TRACKED] = tracked
-  if untracked:
-    variables[KEY_UNTRACKED] = untracked
+  if new_tracked:
+    variables[KEY_TRACKED] = sorted(new_tracked)
+  if new_untracked:
+    variables[KEY_UNTRACKED] = sorted(new_untracked)
   return variables
 
 
-def generate_simplified(files, root_dir, variables, relative_cwd):
+def generate_simplified(tracked, untracked, root_dir, variables, relative_cwd):
   """Generates a clean and complete .isolate 'variables' dictionary.
 
   Cleans up and extracts only files from within root_dir then processes
@@ -105,7 +122,7 @@ def generate_simplified(files, root_dir, variables, relative_cwd):
   """
   logging.info(
       'generate_simplified(%d files, %s, %s, %s)' %
-      (len(files), root_dir, variables, relative_cwd))
+      (len(tracked) + len(untracked), root_dir, variables, relative_cwd))
   # Constants.
   # Skip log in PRODUCT_DIR. Note that these are applied on '/' style path
   # separator.
@@ -123,7 +140,13 @@ def generate_simplified(files, root_dir, variables, relative_cwd):
       for k in PATH_VARIABLES if k in variables)
 
   # Actual work: Process the files.
-  files = trace_inputs.extract_directories(root_dir, files, default_blacklist)
+  # TODO(maruel): if all the files in a directory are in part tracked and in
+  # part untracked, the directory will not be extracted. Tracked files should be
+  # 'promoted' to be untracked as needed.
+  tracked = trace_inputs.extract_directories(
+      root_dir, tracked, default_blacklist)
+  untracked = trace_inputs.extract_directories(
+      root_dir, untracked, default_blacklist)
 
   def fix(f):
     """Bases the file on the most restrictive variable."""
@@ -171,12 +194,15 @@ def generate_simplified(files, root_dir, variables, relative_cwd):
 
     return f
 
-  return classify_files(set(filter(None, (fix(f.path) for f in files))))
+  tracked = set(filter(None, (fix(f.path) for f in tracked)))
+  untracked = set(filter(None, (fix(f.path) for f in untracked)))
+  return classify_files(root_dir, tracked, untracked)
 
 
-def generate_isolate(files, root_dir, variables, relative_cwd):
+def generate_isolate(tracked, untracked, root_dir, variables, relative_cwd):
   """Generates a clean and complete .isolate file."""
-  result = generate_simplified(files, root_dir, variables, relative_cwd)
+  result = generate_simplified(
+      tracked, untracked, root_dir, variables, relative_cwd)
   return {
     'conditions': [
       ['OS=="%s"' % get_flavor(), {

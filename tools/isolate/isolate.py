@@ -584,6 +584,29 @@ def load_complete_state(options, level):
   return complete_state
 
 
+def read(complete_state):
+  """Reads a trace and returns the .isolate dictionary."""
+  api = trace_inputs.get_api()
+  logfile = complete_state.result_file + '.log'
+  if not os.path.isfile(logfile):
+    raise ExecutionError(
+        'No log file \'%s\' to read, did you forget to \'trace\'?' % logfile)
+  try:
+    results = trace_inputs.load_trace(
+        logfile, complete_state.root_dir, api, isolate_common.default_blacklist)
+    value = isolate_common.generate_isolate(
+        results.existent,
+        [],
+        complete_state.root_dir,
+        complete_state.saved_state.variables,
+        complete_state.result.relative_cwd)
+    return value
+  except trace_inputs.TracingFailure, e:
+    raise ExecutionError(
+        'Reading traces failed for: %s\n%s' %
+          (' '.join(complete_state.result.command), str(e)))
+
+
 def CMDcheck(args):
   """Checks that all the inputs are present and update .result."""
   parser = OptionParserIsolate(command='check')
@@ -658,6 +681,38 @@ def CMDnoop(args):
   return 0
 
 
+def CMDmerge(args):
+  """Reads and merges the data from the trace back into the original .isolate.
+
+  Ignores --outdir.
+  """
+  parser = OptionParserIsolate(command='merge', require_result=False)
+  options, _ = parser.parse_args(args)
+  complete_state = load_complete_state(options, NO_INFO)
+  value = read(complete_state)
+
+  # Now take that data and union it into the original .isolate file.
+  with open(complete_state.saved_state.isolate_file, 'r') as f:
+    prev_content = f.read()
+  prev_config = merge_isolate.load_gyp(
+      merge_isolate.eval_content(prev_content),
+      merge_isolate.extract_comment(prev_content),
+      merge_isolate.DEFAULT_OSES)
+  new_config = merge_isolate.load_gyp(
+      value,
+      '',
+      merge_isolate.DEFAULT_OSES)
+  config = merge_isolate.union(prev_config, new_config)
+  # pylint: disable=E1103
+  data = merge_isolate.convert_map_to_gyp(
+      *merge_isolate.reduce_inputs(*merge_isolate.invert_map(config.flatten())))
+  print 'Updating %s' % complete_state.saved_state.isolate_file
+  with open(complete_state.saved_state.isolate_file, 'wb') as f:
+    merge_isolate.print_all(config.file_comment, data, f)
+
+  return 0
+
+
 def CMDread(args):
   """Reads the trace file generated with command 'trace'.
 
@@ -666,26 +721,8 @@ def CMDread(args):
   parser = OptionParserIsolate(command='read', require_result=False)
   options, _ = parser.parse_args(args)
   complete_state = load_complete_state(options, NO_INFO)
-
-  api = trace_inputs.get_api()
-  logfile = complete_state.result_file + '.log'
-  if not os.path.isfile(logfile):
-    raise ExecutionError(
-        'No log file \'%s\' to read, did you forget to \'trace\'?' % logfile)
-  try:
-    results = trace_inputs.load_trace(
-        logfile, complete_state.root_dir, api, isolate_common.default_blacklist)
-    value = isolate_common.generate_isolate(
-        results.existent,
-        complete_state.root_dir,
-        complete_state.saved_state.variables,
-        complete_state.result.relative_cwd)
-    isolate_common.pretty_print(value, sys.stdout)
-  except trace_inputs.TracingFailure, e:
-    raise ExecutionError(
-        'Reading traces failed for: %s\n%s' %
-          (' '.join(complete_state.result.command), str(e)))
-
+  value = read(complete_state)
+  isolate_common.pretty_print(value, sys.stdout)
   return 0
 
 

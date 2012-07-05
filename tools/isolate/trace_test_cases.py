@@ -155,6 +155,7 @@ def trace_test_cases(
             'variables':
               isolate_common.generate_simplified(
                   item_results.existent,
+                  [],
                   root_dir,
                   variables,
                   cwd_dir),
@@ -179,6 +180,7 @@ def trace_test_cases(
 
   value = isolate_common.generate_isolate(
       files,
+      [],
       root_dir,
       variables,
       cwd_dir)

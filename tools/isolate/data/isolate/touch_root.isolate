@@ -8,8 +8,8 @@
       'touch_root.py',
     ],
     'isolate_dependency_tracked': [
-      'touch_root.py',
       '../../isolate.py',
+      'touch_root.py',
     ],
   },
 }
