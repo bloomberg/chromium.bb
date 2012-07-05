@@ -21,7 +21,6 @@
   do {                                                              \
     if (!(result)) {                                                \
       DVLOG(1) << log;                                              \
-      Destroy();                                                    \
       NotifyError(error_code);                                      \
       return ret;                                                   \
     }                                                               \
@@ -44,9 +43,11 @@ void VaapiVideoDecodeAccelerator::NotifyError(Error error) {
 
   DVLOG(1) << "Notifying of error " << error;
 
-  if (client_)
+  if (client_) {
     client_->NotifyError(error);
-  client_ = NULL;
+    client_ptr_factory_.InvalidateWeakPtrs();
+  }
+  Destroy();
 }
 
 VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
@@ -57,9 +58,10 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
       input_ready_(&lock_),
       output_ready_(&lock_),
       message_loop_(MessageLoop::current()),
-      client_(client),
+      client_ptr_factory_(client),
+      client_(client_ptr_factory_.GetWeakPtr()),
       decoder_thread_("VaapiDecoderThread") {
-  DCHECK(client_);
+  DCHECK(client);
 }
 
 VaapiVideoDecodeAccelerator::~VaapiVideoDecodeAccelerator() {
@@ -87,13 +89,8 @@ bool VaapiVideoDecodeAccelerator::Initialize(
   state_ = kInitialized;
 
   message_loop_->PostTask(FROM_HERE, base::Bind(
-      &VaapiVideoDecodeAccelerator::NotifyInitializeDone, this));
+      &Client::NotifyInitializeDone, client_));
   return true;
-}
-
-void VaapiVideoDecodeAccelerator::NotifyInitializeDone() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-  client_->NotifyInitializeDone();
 }
 
 // TODO(posciak, fischman): try to move these to constructor parameters,
@@ -103,14 +100,6 @@ void VaapiVideoDecodeAccelerator::SetGlxState(Display* x_display,
   DCHECK_EQ(message_loop_, MessageLoop::current());
   x_display_ = x_display;
   glx_context_ = glx_context;
-}
-
-void VaapiVideoDecodeAccelerator::NotifyInputBufferRead(int input_buffer_id) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-
-  DVLOG(4) << "Notifying end of input buffer " << input_buffer_id;
-  if (client_)
-    client_->NotifyEndOfBitstreamBuffer(input_buffer_id);
 }
 
 void VaapiVideoDecodeAccelerator::SyncAndNotifyPictureReady(int32 input_id,
@@ -126,11 +115,9 @@ void VaapiVideoDecodeAccelerator::SyncAndNotifyPictureReady(int32 input_id,
                                PLATFORM_FAILURE, );
 
   // And notify the client a picture is ready to be displayed.
-  media::Picture picture(output_id, input_id);
   DVLOG(4) << "Notifying output picture id " << output_id
            << " for input "<< input_id << " is ready";
-  if (client_)
-    client_->PictureReady(picture);
+  client_->PictureReady(media::Picture(output_id, input_id));
 }
 
 void VaapiVideoDecodeAccelerator::MapAndQueueNewInputBuffer(
@@ -159,6 +146,16 @@ void VaapiVideoDecodeAccelerator::MapAndQueueNewInputBuffer(
 void VaapiVideoDecodeAccelerator::InitialDecodeTask() {
   DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
 
+  // Since multiple Decode()'s can be in flight at once, it's possible that a
+  // Decode() that seemed like an initial one is actually later in the stream
+  // and we're already kDecoding.  Let the normal DecodeTask take over in that
+  // case.
+  {
+    base::AutoLock auto_lock(lock_);
+    if (state_ != kInitialized && state_ != kIdle)
+      return;
+  }
+
   // Try to initialize or resume playback after reset.
   for (;;) {
     if (!GetInputBuffer())
@@ -169,10 +166,23 @@ void VaapiVideoDecodeAccelerator::InitialDecodeTask() {
         curr_input_buffer_->id);
     switch (res) {
       case VaapiH264Decoder::kReadyToDecode:
-        message_loop_->PostTask(FROM_HERE, base::Bind(
-            &VaapiVideoDecodeAccelerator::ReadyToDecode, this,
-                decoder_.GetRequiredNumOfPictures(),
-                gfx::Size(decoder_.pic_width(), decoder_.pic_height())));
+        if (state_ == kInitialized) {
+          base::AutoLock auto_lock(lock_);
+          state_ = kPicturesRequested;
+          int num_pics = decoder_.GetRequiredNumOfPictures();
+          gfx::Size size(decoder_.pic_width(), decoder_.pic_height());
+          DVLOG(1) << "Requesting " << num_pics << " pictures of size: "
+                   << size.width() << "x" << size.height();
+          message_loop_->PostTask(FROM_HERE, base::Bind(
+              &Client::ProvidePictureBuffers, client_,
+              num_pics, size, GL_TEXTURE_2D));
+        } else {
+          base::AutoLock auto_lock(lock_);
+          DCHECK_EQ(state_, kIdle);
+          state_ = kDecoding;
+          decoder_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
+              &VaapiVideoDecodeAccelerator::DecodeTask, this));
+        }
         return;
 
       case VaapiH264Decoder::kNeedMoreStreamData:
@@ -246,8 +256,9 @@ void VaapiVideoDecodeAccelerator::ReturnCurrInputBuffer() {
   DCHECK(curr_input_buffer_.get());
   int32 id = curr_input_buffer_->id;
   curr_input_buffer_.reset();
+  DVLOG(4) << "End of input buffer " << id;
   message_loop_->PostTask(FROM_HERE, base::Bind(
-        &VaapiVideoDecodeAccelerator::NotifyInputBufferRead, this, id));
+      &Client::NotifyEndOfBitstreamBuffer, client_, id));
 }
 
 bool VaapiVideoDecodeAccelerator::GetOutputBuffers() {
@@ -314,29 +325,6 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
             PLATFORM_FAILURE, );
         return;
     }
-  }
-}
-
-void VaapiVideoDecodeAccelerator::ReadyToDecode(int num_pics,
-                                                const gfx::Size& size) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-
-  base::AutoLock auto_lock(lock_);
-  switch (state_) {
-    case kInitialized:
-      DVLOG(1) << "Requesting " << num_pics << " pictures of size: "
-               << size.width() << "x" << size.height();
-      if (client_)
-        client_->ProvidePictureBuffers(num_pics, size, GL_TEXTURE_2D);
-      state_ = kPicturesRequested;
-      break;
-    case kIdle:
-      state_ = kDecoding;
-      decoder_thread_.message_loop()->PostTask(FROM_HERE,
-          base::Bind(&VaapiVideoDecodeAccelerator::DecodeTask, this));
-      break;
-    default:
-      NOTREACHED() << "Invalid state";
   }
 }
 
@@ -452,8 +440,8 @@ void VaapiVideoDecodeAccelerator::FinishFlush() {
 
   state_ = kIdle;
 
-  if (client_)
-    client_->NotifyFlushDone();
+  message_loop_->PostTask(FROM_HERE, base::Bind(
+      &Client::NotifyFlushDone, client_));
 
   DVLOG(1) << "Flush finished";
 }
@@ -495,18 +483,22 @@ void VaapiVideoDecodeAccelerator::FinishReset() {
 
   base::AutoLock auto_lock(lock_);
   if (state_ != kResetting) {
-    DCHECK_EQ(state_, kDestroying);
+    DCHECK(state_ == kDestroying || state_ == kUninitialized) << state_;
     return;  // We could've gotten destroyed already.
   }
 
   // Drop all remaining input buffers, if present.
-  while (!input_buffers_.empty())
+  while (!input_buffers_.empty()) {
+    message_loop_->PostTask(FROM_HERE, base::Bind(
+        &Client::NotifyEndOfBitstreamBuffer, client_,
+        input_buffers_.front()->id));
     input_buffers_.pop();
+  }
 
   state_ = kIdle;
 
-  if (client_)
-    client_->NotifyResetDone();
+  message_loop_->PostTask(FROM_HERE, base::Bind(
+      &Client::NotifyResetDone, client_));
 
   DVLOG(1) << "Reset finished";
 }
@@ -521,7 +513,7 @@ void VaapiVideoDecodeAccelerator::Destroy() {
   base::AutoLock auto_lock(lock_);
   state_ = kDestroying;
 
-  client_ = NULL;
+  client_ptr_factory_.InvalidateWeakPtrs();
 
   {
     base::AutoUnlock auto_unlock(lock_);
