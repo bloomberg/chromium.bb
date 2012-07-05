@@ -580,8 +580,6 @@ bool VaapiH264Decoder::AssignPictureBuffer(int32 picture_buffer_id,
 bool VaapiH264Decoder::CreateVASurfaces() {
   DCHECK_NE(pic_width_, -1);
   DCHECK_NE(pic_height_, -1);
-  if (state_ == kAfterReset)
-    return true;
   DCHECK_EQ(state_, kInitialized);
 
   // Allocate VASurfaces in driver.
@@ -675,27 +673,24 @@ int VaapiH264Decoder::FillVARefFramesFromDPB(VAPictureH264 *va_pics,
 // Can only be called when all surfaces are already bound
 // to textures (cannot be run at the same time as AssignPictureBuffer).
 bool VaapiH264Decoder::AssignSurfaceToPoC(int poc) {
-  DCHECK_GT(num_available_decode_surfaces_, 0) << decode_surfaces_.size();
-
   // Find a surface not currently holding data used for reference and/or
   // to be displayed and mark it as used.
   DecodeSurfaces::iterator iter = decode_surfaces_.begin();
   for (; iter != decode_surfaces_.end(); ++iter) {
-    if (!iter->second->available())
-      continue;
+    if (iter->second->available()) {
+      --num_available_decode_surfaces_;
+      DCHECK_GE(num_available_decode_surfaces_, 0);
 
-    --num_available_decode_surfaces_;
-    DCHECK_GE(num_available_decode_surfaces_, 0);
-
-    // Associate with input id and poc and mark as unavailable.
-    iter->second->Acquire(curr_input_id_, poc);
-    DVLOG(4) << "Will use surface " << iter->second->va_surface_id()
-             << " for POC " << iter->second->poc()
-             << " input ID: " << iter->second->input_id();
-    bool inserted = poc_to_decode_surfaces_.insert(std::make_pair(
-        poc, iter->second.get())).second;
-    DCHECK(inserted);
-    return true;
+      // Associate with input id and poc and mark as unavailable.
+      iter->second->Acquire(curr_input_id_, poc);
+      DVLOG(4) << "Will use surface " << iter->second->va_surface_id()
+               << " for POC " << iter->second->poc()
+               << " input ID: " << iter->second->input_id();
+      bool inserted = poc_to_decode_surfaces_.insert(std::make_pair(poc,
+          iter->second.get())).second;
+      DCHECK(inserted);
+      return true;
+    }
   }
 
   // Could not find an available surface.
@@ -894,7 +889,7 @@ bool VaapiH264Decoder::SendVASliceParam(H264SliceHeader* slice_hdr) {
   SHDRToSP(slice_beta_offset_div2);
 
   if (((slice_hdr->IsPSlice() || slice_hdr->IsSPSlice()) &&
-       pps->weighted_pred_flag) ||
+        pps->weighted_pred_flag) ||
       (slice_hdr->IsBSlice() && pps->weighted_bipred_idc == 1)) {
     SHDRToSP(luma_log2_weight_denom);
     SHDRToSP(chroma_log2_weight_denom);
@@ -1506,7 +1501,6 @@ bool VaapiH264Decoder::OutputPic(H264Picture* pic) {
 
 bool VaapiH264Decoder::Flush() {
   // Output all pictures that are waiting to be outputted.
-  FinishPrevFrameIfPresent();
   H264Picture::PtrVector to_output;
   dpb_.GetNotOutputtedPicsAppending(to_output);
   // Sort them by ascending POC to output in order.
@@ -1986,7 +1980,7 @@ VaapiH264Decoder::DecResult VaapiH264Decoder::DecodeInitial(int32 input_id) {
         // have all reference pictures that they may require.
         // fallthrough
       default:
-        // Skip everything unless it's SPS or an IDR slice (if after reset).
+        // Skip everything unless it's PPS or an IDR slice (if after reset).
         DVLOG(4) << "Skipping NALU";
         break;
     }
@@ -2014,6 +2008,9 @@ VaapiH264Decoder::DecResult VaapiH264Decoder::DecodeOneFrame(int32 input_id) {
   if (state_ != kDecoding) {
     DVLOG(1) << "Decoder not ready: error in stream or not initialized";
     return kDecodeError;
+  } else if (num_available_decode_surfaces_ < 1) {
+    DVLOG(4) << "No output surfaces available";
+    return kNoOutputAvailable;
   }
 
   // All of the actions below might result in decoding a picture from
@@ -2022,10 +2019,6 @@ VaapiH264Decoder::DecResult VaapiH264Decoder::DecodeOneFrame(int32 input_id) {
   // Note: this may drop some already decoded frames if there are errors
   // further in the stream, but we are OK with that.
   while (1) {
-    if (num_available_decode_surfaces_ < 1) {
-      DVLOG(4) << "No output surfaces available";
-      return kNoOutputAvailable;
-    }
     par_res = parser_.AdvanceToNextNALU(&nalu);
     if (par_res == H264Parser::kEOStream)
       return kNeedMoreStreamData;

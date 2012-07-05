@@ -4,13 +4,12 @@
 //
 // The bulk of this file is support code; sorry about that.  Here's an overview
 // to hopefully help readers of this code:
-// - RenderingHelper is charged with interacting with X11/{EGL/GLES2,GLX/GL} or
-//   Win/EGL.
+// - RenderingHelper is charged with interacting with X11, EGL, and GLES2.
 // - ClientState is an enum for the state of the decode client used by the test.
 // - ClientStateNotification is a barrier abstraction that allows the test code
 //   to be written sequentially and wait for the decode client to see certain
 //   state transitions.
-// - GLRenderingVDAClient is a VideoDecodeAccelerator::Client implementation
+// - EglRenderingVDAClient is a VideoDecodeAccelerator::Client implementation
 // - Finally actual TEST cases are at the bottom of this file, using the above
 //   infrastructure.
 
@@ -43,12 +42,10 @@
 
 #if defined(OS_WIN)
 #include "content/common/gpu/media/dxva_video_decode_accelerator.h"
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+#include "content/common/gpu/media/omx_video_decode_accelerator.h"
 #elif defined(OS_MACOSX)
 #include "content/common/gpu/media/mac_video_decode_accelerator.h"
-#elif defined(ARCH_CPU_X86_FAMILY)
-#include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
-#elif defined(ARCH_CPU_ARMEL)
-#include "content/common/gpu/media/omx_video_decode_accelerator.h"
 #else
 #error The VideoAccelerator tests are not supported on this platform.
 #endif  // defined(OS_WIN)
@@ -114,19 +111,19 @@ void ParseTestVideoData(FilePath::StringType data,
     CHECK(base::StringToInt(elements[7], profile));
 }
 
-// State of the GLRenderingVDAClient below.  Order matters here as the test
+// State of the EglRenderingVDAClient below.  Order matters here as the test
 // makes assumptions about it.
 enum ClientState {
-  CS_CREATED = 0,
-  CS_DECODER_SET = 1,
-  CS_INITIALIZED = 2,
-  CS_FLUSHING = 3,
-  CS_FLUSHED = 4,
-  CS_DONE = 5,
-  CS_RESETTING = 6,
-  CS_RESET = 7,
-  CS_ERROR = 8,
-  CS_DESTROYED = 9,
+  CS_CREATED,
+  CS_DECODER_SET,
+  CS_INITIALIZED,
+  CS_FLUSHING,
+  CS_FLUSHED,
+  CS_DONE,
+  CS_RESETTING,
+  CS_RESET,
+  CS_ERROR,
+  CS_DESTROYED,
   CS_MAX,  // Must be last entry.
 };
 
@@ -177,7 +174,7 @@ enum ResetPoint {
 
 // Client that can accept callbacks from a VideoDecodeAccelerator and is used by
 // the TESTs below.
-class GLRenderingVDAClient : public VideoDecodeAccelerator::Client {
+class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
  public:
   // Doesn't take ownership of |rendering_helper| or |note|, which must outlive
   // |*this|.
@@ -190,7 +187,7 @@ class GLRenderingVDAClient : public VideoDecodeAccelerator::Client {
   // calls have been made, N>=0 means interpret as ClientState.
   // Both |reset_after_frame_num| & |delete_decoder_state| apply only to the
   // last play-through (governed by |num_play_throughs|).
-  GLRenderingVDAClient(RenderingHelper* rendering_helper,
+  EglRenderingVDAClient(RenderingHelper* rendering_helper,
                         int rendering_window_id,
                         ClientStateNotification* note,
                         const std::string& encoded_data,
@@ -202,7 +199,7 @@ class GLRenderingVDAClient : public VideoDecodeAccelerator::Client {
                         int frame_width,
                         int frame_height,
                         int profile);
-  virtual ~GLRenderingVDAClient();
+  virtual ~EglRenderingVDAClient();
   void CreateDecoder();
 
   // VideoDecodeAccelerator::Client implementation.
@@ -264,7 +261,7 @@ class GLRenderingVDAClient : public VideoDecodeAccelerator::Client {
   int profile_;
 };
 
-GLRenderingVDAClient::GLRenderingVDAClient(
+EglRenderingVDAClient::EglRenderingVDAClient(
     RenderingHelper* rendering_helper,
     int rendering_window_id,
     ClientStateNotification* note,
@@ -294,37 +291,29 @@ GLRenderingVDAClient::GLRenderingVDAClient(
   CHECK_GT(num_play_throughs, 0);
 }
 
-GLRenderingVDAClient::~GLRenderingVDAClient() {
+EglRenderingVDAClient::~EglRenderingVDAClient() {
   DeleteDecoder();  // Clean up in case of expected error.
   CHECK(decoder_deleted());
   STLDeleteValues(&picture_buffers_by_id_);
   SetState(CS_DESTROYED);
 }
 
-static bool DoNothingReturnTrue() { return true; }
-
-void GLRenderingVDAClient::CreateDecoder() {
+void EglRenderingVDAClient::CreateDecoder() {
   CHECK(decoder_deleted());
 #if defined(OS_WIN)
   scoped_refptr<DXVAVideoDecodeAccelerator> decoder =
       new DXVAVideoDecodeAccelerator(this);
-#elif defined(OS_MACOSX)
-  scoped_refptr<MacVideoDecodeAccelerator> decoder =
-      new MacVideoDecodeAccelerator(this);
-  decoder->SetCGLContext(
-      static_cast<CGLContextObj>(rendering_helper_->GetGLContext()));
-#elif defined(ARCH_CPU_ARMEL)
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
   scoped_refptr<OmxVideoDecodeAccelerator> decoder =
       new OmxVideoDecodeAccelerator(this);
   decoder->SetEglState(
       static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
       static_cast<EGLContext>(rendering_helper_->GetGLContext()));
-#elif defined(ARCH_CPU_X86_FAMILY)
-  scoped_refptr<VaapiVideoDecodeAccelerator> decoder =
-      new VaapiVideoDecodeAccelerator(this, base::Bind(&DoNothingReturnTrue));
-  decoder->SetGlxState(
-      static_cast<Display*>(rendering_helper_->GetGLDisplay()),
-      static_cast<GLXContext>(rendering_helper_->GetGLContext()));
+#elif defined(OS_MACOSX)
+  scoped_refptr<MacVideoDecodeAccelerator> decoder =
+      new MacVideoDecodeAccelerator(this);
+  decoder->SetCGLContext(
+      static_cast<CGLContextObj>(rendering_helper_->GetGLContext()));
 #endif  // OS_WIN
   decoder_ = decoder.release();
   SetState(CS_DECODER_SET);
@@ -338,7 +327,7 @@ void GLRenderingVDAClient::CreateDecoder() {
   CHECK(decoder_->Initialize(profile));
 }
 
-void GLRenderingVDAClient::ProvidePictureBuffers(
+void EglRenderingVDAClient::ProvidePictureBuffers(
     uint32 requested_num_of_buffers,
     const gfx::Size& dimensions,
     uint32 texture_target) {
@@ -362,7 +351,7 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
   decoder_->AssignPictureBuffers(buffers);
 }
 
-void GLRenderingVDAClient::DismissPictureBuffer(int32 picture_buffer_id) {
+void EglRenderingVDAClient::DismissPictureBuffer(int32 picture_buffer_id) {
   PictureBufferById::iterator it =
       picture_buffers_by_id_.find(picture_buffer_id);
   CHECK(it != picture_buffers_by_id_.end());
@@ -372,7 +361,7 @@ void GLRenderingVDAClient::DismissPictureBuffer(int32 picture_buffer_id) {
   picture_buffers_by_id_.erase(it);
 }
 
-void GLRenderingVDAClient::PictureReady(const media::Picture& picture) {
+void EglRenderingVDAClient::PictureReady(const media::Picture& picture) {
   // We shouldn't be getting pictures delivered after Reset has completed.
   CHECK_LT(state_, CS_RESET);
 
@@ -407,26 +396,21 @@ void GLRenderingVDAClient::PictureReady(const media::Picture& picture) {
   decoder_->ReusePictureBuffer(picture.picture_buffer_id());
 }
 
-void GLRenderingVDAClient::NotifyInitializeDone() {
+void EglRenderingVDAClient::NotifyInitializeDone() {
   SetState(CS_INITIALIZED);
   initialize_done_ticks_ = base::TimeTicks::Now();
   for (int i = 0; i < num_in_flight_decodes_; ++i)
     DecodeNextNALUs();
-  DCHECK_EQ(outstanding_decodes_, num_in_flight_decodes_);
 }
 
-void GLRenderingVDAClient::NotifyEndOfBitstreamBuffer(
+void EglRenderingVDAClient::NotifyEndOfBitstreamBuffer(
     int32 bitstream_buffer_id) {
-  // TODO(fischman): this test currently relies on this notification to make
-  // forward progress during a Reset().  But the VDA::Reset() API doesn't
-  // guarantee this, so stop relying on it (and remove the notifications from
-  // VaapiVideoDecodeAccelerator::FinishReset()).
   ++num_done_bitstream_buffers_;
   --outstanding_decodes_;
   DecodeNextNALUs();
 }
 
-void GLRenderingVDAClient::NotifyFlushDone() {
+void EglRenderingVDAClient::NotifyFlushDone() {
   if (decoder_deleted())
     return;
   SetState(CS_FLUSHED);
@@ -438,13 +422,12 @@ void GLRenderingVDAClient::NotifyFlushDone() {
   SetState(CS_RESETTING);
 }
 
-void GLRenderingVDAClient::NotifyResetDone() {
+void EglRenderingVDAClient::NotifyResetDone() {
   if (decoder_deleted())
     return;
 
   if (reset_after_frame_num_ == MID_STREAM_RESET) {
     reset_after_frame_num_ = END_OF_STREAM_RESET;
-    DecodeNextNALUs();
     return;
   }
 
@@ -459,7 +442,7 @@ void GLRenderingVDAClient::NotifyResetDone() {
     DeleteDecoder();
 }
 
-void GLRenderingVDAClient::NotifyError(VideoDecodeAccelerator::Error error) {
+void EglRenderingVDAClient::NotifyError(VideoDecodeAccelerator::Error error) {
   SetState(CS_ERROR);
 }
 
@@ -469,7 +452,7 @@ static bool LookingAtNAL(const std::string& encoded, size_t pos) {
       encoded[pos + 2] == 0 && encoded[pos + 3] == 1;
 }
 
-void GLRenderingVDAClient::SetState(ClientState new_state) {
+void EglRenderingVDAClient::SetState(ClientState new_state) {
   note_->Notify(new_state);
   state_ = new_state;
   if (!remaining_play_throughs_ && new_state == delete_decoder_state_) {
@@ -478,7 +461,7 @@ void GLRenderingVDAClient::SetState(ClientState new_state) {
   }
 }
 
-void GLRenderingVDAClient::DeleteDecoder() {
+void EglRenderingVDAClient::DeleteDecoder() {
   if (decoder_deleted())
     return;
   decoder_->Destroy();
@@ -494,7 +477,7 @@ void GLRenderingVDAClient::DeleteDecoder() {
     SetState(static_cast<ClientState>(i));
 }
 
-void GLRenderingVDAClient::GetRangeForNextNALUs(
+void EglRenderingVDAClient::GetRangeForNextNALUs(
     size_t start_pos, size_t* end_pos) {
   *end_pos = start_pos;
   CHECK(LookingAtNAL(encoded_data_, start_pos));
@@ -511,7 +494,7 @@ void GLRenderingVDAClient::GetRangeForNextNALUs(
   }
 }
 
-void GLRenderingVDAClient::DecodeNextNALUs() {
+void EglRenderingVDAClient::DecodeNextNALUs() {
   if (decoder_deleted())
     return;
   if (encoded_data_next_pos_to_decode_ == encoded_data_.size()) {
@@ -545,7 +528,7 @@ void GLRenderingVDAClient::DecodeNextNALUs() {
   }
 }
 
-double GLRenderingVDAClient::frames_per_second() {
+double EglRenderingVDAClient::frames_per_second() {
   base::TimeDelta delta = last_frame_delivered_ticks_ - initialize_done_ticks_;
   if (delta.InSecondsF() == 0)
     return 0;
@@ -557,26 +540,17 @@ double GLRenderingVDAClient::frames_per_second() {
 // - Number of concurrent decoders.
 // - Number of concurrent in-flight Decode() calls per decoder.
 // - Number of play-throughs.
-// - reset_after_frame_num: see GLRenderingVDAClient ctor.
-// - delete_decoder_phase: see GLRenderingVDAClient ctor.
+// - reset_after_frame_num: see EglRenderingVDAClient ctor.
+// - delete_decoder_phase: see EglRenderingVDAClient ctor.
 class VideoDecodeAcceleratorTest
     : public ::testing::TestWithParam<
   Tuple6<int, int, int, int, ResetPoint, ClientState> > {
 };
 
-// Helper so that gtest failures emit a more readable version of the tuple than
-// its byte representation.
-::std::ostream& operator<<(
-    ::std::ostream& os,
-    const Tuple6<int, int, int, int, ResetPoint, ClientState>& t) {
-  return os << t.a << ", " << t.b << ", " << t.c << ", " << t.d << ", " << t.e
-            << ", " << t.f;
-}
-
 // Wait for |note| to report a state and if it's not |expected_state| then
 // assert |client| has deleted its decoder.
 static void AssertWaitForStateOrDeleted(ClientStateNotification* note,
-                                        GLRenderingVDAClient* client,
+                                        EglRenderingVDAClient* client,
                                         ClientState expected_state) {
   ClientState state = note->Wait();
   if (state == expected_state) return;
@@ -620,20 +594,20 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
   if (num_frames > 0 && reset_after_frame_num >= 0)
     num_frames += reset_after_frame_num;
 
-  // Suppress GL swapping in all but a few tests, to cut down overall test
-  // runtime.
+  // Suppress EGL surface swapping in all but a few tests, to cut down overall
+  // test runtime.
   const bool suppress_swap_to_display = num_NALUs_per_decode > 1;
 
   std::vector<ClientStateNotification*> notes(num_concurrent_decoders, NULL);
-  std::vector<GLRenderingVDAClient*> clients(num_concurrent_decoders, NULL);
+  std::vector<EglRenderingVDAClient*> clients(num_concurrent_decoders, NULL);
 
   // Read in the video data.
   std::string data_str;
   CHECK(file_util::ReadFileToString(FilePath(test_video_file), &data_str))
-      << "test_video_file: " << FilePath(test_video_file).MaybeAsASCII();
+      << "test_video_file: " << test_video_file;
 
   // Initialize the rendering helper.
-  base::Thread rendering_thread("GLRenderingVDAClientThread");
+  base::Thread rendering_thread("EglRenderingVDAClientThread");
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_DEFAULT;
 #if defined(OS_WIN)
@@ -658,7 +632,7 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
   for (size_t index = 0; index < num_concurrent_decoders; ++index) {
     ClientStateNotification* note = new ClientStateNotification();
     notes[index] = note;
-    GLRenderingVDAClient* client = new GLRenderingVDAClient(
+    EglRenderingVDAClient* client = new EglRenderingVDAClient(
         rendering_helper.get(), index, note, data_str, num_NALUs_per_decode,
         num_in_flight_decodes, num_play_throughs, reset_after_frame_num,
         delete_decoder_state, frame_width, frame_height, profile);
@@ -666,7 +640,7 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
 
     rendering_thread.message_loop()->PostTask(
         FROM_HERE,
-        base::Bind(&GLRenderingVDAClient::CreateDecoder,
+        base::Bind(&EglRenderingVDAClient::CreateDecoder,
                    base::Unretained(client)));
 
     ASSERT_EQ(note->Wait(), CS_DECODER_SET);
@@ -717,7 +691,7 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
     // allowed to finish.
     if (delete_decoder_state < CS_FLUSHED)
       continue;
-    GLRenderingVDAClient* client = clients[i];
+    EglRenderingVDAClient* client = clients[i];
     if (num_frames > 0)
       EXPECT_EQ(client->num_decoded_frames(), num_frames);
     if (num_NALUs > 0 && reset_after_frame_num < 0) {
@@ -732,7 +706,7 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
 
   rendering_thread.message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&STLDeleteElements<std::vector<GLRenderingVDAClient*> >,
+      base::Bind(&STLDeleteElements<std::vector<EglRenderingVDAClient*> >,
                  &clients));
   rendering_thread.message_loop()->PostTask(
       FROM_HERE,
@@ -823,14 +797,6 @@ int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);  // Removes gtest-specific args.
   CommandLine::Init(argc, argv);
 
-  // Needed to enable DVLOG through --vmodule.
-  CHECK(logging::InitLogging(
-      NULL,
-      logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
-      logging::DONT_LOCK_LOG_FILE,
-      logging::APPEND_TO_OLD_LOG_FILE,
-      logging::ENABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS));
-
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   DCHECK(cmd_line);
 
@@ -841,8 +807,6 @@ int main(int argc, char **argv) {
       test_video_data = it->second.c_str();
       continue;
     }
-    if (it->first == "v" || it->first == "vmodule")
-      continue;
     LOG(FATAL) << "Unexpected switch: " << it->first << ":" << it->second;
   }
 

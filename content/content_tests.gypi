@@ -579,61 +579,62 @@
     },
   ],
   'conditions': [
-    ['chromeos==1 or OS=="linux" or OS=="win" or OS=="mac"', {
+    ['target_arch=="arm" or OS=="win" or OS=="mac"', {
       'targets': [
-          {
-            'target_name': 'video_decode_accelerator_unittest',
-            'type': 'executable',
-            'dependencies': [
-              'content',
-              '../base/base.gyp:base',
-              '../testing/gtest.gyp:gtest',
-              '../media/media.gyp:media',
-              '../ui/gl/gl.gyp:gl',
-              '../ui/ui.gyp:ui',
-            ],
-            'include_dirs': [
-              '<(DEPTH)/third_party/angle/include',
-            ],
-            'sources': [
-              'common/gpu/media/rendering_helper.h',
-              'common/gpu/media/rendering_helper_mac.mm',
-              'common/gpu/media/rendering_helper_gl.cc',
-              'common/gpu/media/video_decode_accelerator_unittest.cc',
-            ],
-            'conditions': [
-              ['target_arch=="arm"', {
-                # TODO(fischman): remove this name override when autotest config
-                # is ready.
-                'target_name': 'omx_video_decode_accelerator_unittest',
-                'include_dirs': [
-                  '<(DEPTH)/third_party/openmax/il',
-                ],
-              }],
-              ['OS=="mac"', {
-                'sources!': [
-                  'common/gpu/media/rendering_helper_gl.cc',
-                ],
-              }],
-              ['OS=="win"', {
-                'dependencies': [
-                  '../third_party/angle/src/build_angle.gyp:libEGL',
-                  '../third_party/angle/src/build_angle.gyp:libGLESv2',
-                ],
-              }],
-              ['win_use_allocator_shim==1', {
-                'dependencies': [
-                  '../base/allocator/allocator.gyp:allocator',
-                ],
-              }],
-              ['target_arch != "arm" and (OS=="linux" or chromeos == 1)', {
-                'include_dirs': [
-                  '<(DEPTH)/third_party/libva',
-                ],
-              }],
-            ],
-          },
-        ]
+        {
+          'conditions': [
+            ['target_arch=="arm"', {
+              'target_name': 'omx_video_decode_accelerator_unittest',
+              'include_dirs': [
+                '<(DEPTH)/third_party/openmax/il',
+              ],
+            }],
+            ['OS=="mac"', {
+              'target_name': 'video_decode_accelerator_unittest',
+              'dependencies': [
+                '../ui/gl/gl.gyp:gl',
+                '../ui/ui.gyp:ui',
+              ],
+              'sources!': [
+                'common/gpu/media/rendering_helper_egl.cc',
+              ],
+            }],
+            ['OS=="win"', {
+              'target_name': 'dxva_video_decode_accelerator_unittest',
+              'dependencies': [
+                '../third_party/angle/src/build_angle.gyp:libEGL',
+                '../third_party/angle/src/build_angle.gyp:libGLESv2',
+                '../ui/gl/gl.gyp:gl',
+              ],
+              'conditions': [
+                ['win_use_allocator_shim==1', {
+                  'dependencies': [
+                    '../base/allocator/allocator.gyp:allocator',
+                  ],
+                }],
+              ],
+            }],
+          ],
+          'defines!': ['CONTENT_IMPLEMENTATION'],
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'content',
+            '../testing/gtest.gyp:gtest',
+            '../media/media.gyp:media',
+            '../ui/ui.gyp:ui',
+          ],
+          'include_dirs': [
+            '<(DEPTH)/third_party/angle/include',
+          ],
+          'sources': [
+            'common/gpu/media/rendering_helper.h',
+            'common/gpu/media/rendering_helper_mac.mm',
+            'common/gpu/media/rendering_helper_egl.cc',
+            'common/gpu/media/video_decode_accelerator_unittest.cc',
+          ],
+        }
+      ],
     }],
     ['chromeos == 1', {
       'targets': [

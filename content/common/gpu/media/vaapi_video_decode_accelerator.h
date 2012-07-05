@@ -16,14 +16,12 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
-#include "content/common/content_export.h"
 #include "content/common/gpu/media/vaapi_h264_decoder.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/video/picture.h"
@@ -32,8 +30,7 @@
 // Class to provide video decode acceleration for Intel systems with hardware
 // support for it, and on which libva is available.
 // Decoding tasks are performed in a separate decoding thread.
-class CONTENT_EXPORT VaapiVideoDecodeAccelerator :
-    public media::VideoDecodeAccelerator {
+class VaapiVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
  public:
   VaapiVideoDecodeAccelerator(
       Client* client,
@@ -55,9 +52,21 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator :
  private:
   virtual ~VaapiVideoDecodeAccelerator();
 
+  void NotifyInitializeDone();
+
+  // Notify the client that the input buffer has been consumed.
+  void NotifyInputBufferRead(int input_buffer_id);
+
   // Ensure data has been synced with the output texture and notify
   // the client it is ready for displaying.
   void SyncAndNotifyPictureReady(int32 input_id, int32 output_id);
+
+  // Posted by the decoder thread to notify VAVDA that the decoder has
+  // initially parsed the stream and is ready to decode. If the pictures have
+  // not yet been requested, it will request the client to provide |num_pics|
+  // textures of given |size| and wait for them, otherwise will post
+  // a DecodeTask directly.
+  void ReadyToDecode(int num_pics, const gfx::Size& size);
 
   // Notify the client that an error has occurred and decoding cannot continue.
   void NotifyError(Error error);
@@ -175,9 +184,8 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator :
   MessageLoop* message_loop_;
 
   // To expose client callbacks from VideoDecodeAccelerator.
-  // NOTE: all calls to these objects *MUST* be executed on message_loop_.
-  base::WeakPtrFactory<Client> client_ptr_factory_;
-  base::WeakPtr<Client> client_;
+  // NOTE: all calls to this object *MUST* be executed on message_loop_.
+  Client* client_;
 
   base::Thread decoder_thread_;
   content::VaapiH264Decoder decoder_;
