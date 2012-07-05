@@ -362,28 +362,19 @@ Gallery.prototype.onImageContentChanged_ = function() {
   var revision = this.imageView_.getContentRevision();
   if (revision == 0) {
     // Just loaded.
-    this.bubble_.hidden = true;
-    ImageUtil.setAttribute(this.filenameSpacer_, 'saved', false);
-    ImageUtil.setAttribute(this.filenameSpacer_, 'overwrite', false);
-  }  
+    var key = 'gallery-overwrite-bubble';
+    var times = key in localStorage ? parseInt(localStorage[key], 10) : 0;
+    if (times < Gallery.OVERWRITE_BUBBLE_MAX_TIMES) {
+      this.bubble_.hidden = false;
+      if (this.isEditing_()) {
+        localStorage[key] = times + 1;
+      }
+    }
+  }
 
   if (revision == 1) {
     // First edit.
     ImageUtil.setAttribute(this.filenameSpacer_, 'saved', true);
-    ImageUtil.setAttribute(this.filenameSpacer_, 'overwrite', true);
-
-    var key = 'gallery-overwrite-original';
-    var overwrite = key in localStorage ? (localStorage[key] == "true") : true;
-    this.overwriteOriginal_.checked = overwrite;
-    this.applyOverwrite_(overwrite);
-
-    key = 'gallery-overwrite-bubble';
-    var times = key in localStorage ? parseInt(localStorage[key], 10) : 0;
-    if (times < Gallery.OVERWRITE_BUBBLE_MAX_TIMES) {
-      this.bubble_.hidden = false;
-      localStorage[key] = times + 1;
-    }
-
     ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('Edit'));
   }
 };
@@ -393,6 +384,13 @@ Gallery.prototype.flashSavedLabel_ = function() {
       ImageUtil.setAttribute.bind(null, this.savedLabel_, 'highlighted');
   setTimeout(selLabelHighlighted.bind(null, true), 0);
   setTimeout(selLabelHighlighted.bind(null, false), 300);
+};
+
+Gallery.prototype.applyDefaultOverwrite_ = function() {
+  var key = 'gallery-overwrite-original';
+  var overwrite = key in localStorage ? (localStorage[key] == "true") : true;
+  this.overwriteOriginal_.checked = overwrite;
+  this.applyOverwrite_(overwrite);
 };
 
 Gallery.prototype.applyOverwrite_ = function(overwrite) {
@@ -594,6 +592,22 @@ Gallery.prototype.prefetchImage = function(id, url) {
 Gallery.prototype.openImage = function(id, url, metadata, slide, callback) {
   this.selectedImageMetadata_ = ImageUtil.deepCopy(metadata);
   this.updateFilename_(url);
+  if (this.ribbon_.getSelectedItem()) {
+    // In edit mode, read overwrite setting.
+    // In view mode, don't change the name, so passing |true|.
+    if (this.isEditing_()) {
+      this.applyDefaultOverwrite_();
+    } else {
+      this.applyOverwrite_(true);
+    }
+
+    if (!this.ribbon_.getSelectedItem().isOriginal()) {
+      // For once edited image, do not allow the 'overwrite' setting.
+      ImageUtil.setAttribute(this.filenameSpacer_, 'saved', true);
+    } else {
+      ImageUtil.setAttribute(this.filenameSpacer_, 'saved', false);
+    }
+  }
 
   this.showSpinner_(true);
 
@@ -710,12 +724,14 @@ Gallery.prototype.onEdit_ = function() {
 
   // isEditing_ has just been flipped to a new value.
   if (this.isEditing_()) {
+    this.applyDefaultOverwrite_();
     if (this.context_.readonlyDirName) {
       this.editor_.getPrompt().showAt(
           'top', 'readonly_warning', 0, this.context_.readonlyDirName);
     }
     this.cancelFading_();
   } else {
+    this.applyOverwrite_(true);
     this.editor_.getPrompt().hide();
     this.initiateFading_();
   }
@@ -1207,7 +1223,8 @@ Ribbon.Item.prototype.saveToFile = function(
   var self = this;
 
   var name = this.getNameAfterSaving();
-  this.original_ = false;
+  // If we do overwrite original, keep this one as 'original'.
+  this.original_ = this.nameForSaving_ == null;
   this.nameForSaving_ = null;
 
   function onSuccess(url) {
