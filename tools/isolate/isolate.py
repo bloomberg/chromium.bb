@@ -80,9 +80,9 @@ def expand_directory_and_symlink(indir, relfile, blacklist):
       symlink_path = os.path.join(indir, symlink_relfile)
       pointed = os.readlink(symlink_path)
       dest_infile = normpath(
-          trace_inputs.safe_join(
-              os.path.join(os.path.dirname(symlink_path), pointed),
-              rest))
+          os.path.join(os.path.dirname(symlink_path), pointed))
+      if rest:
+        dest_infile = trace_inputs.safe_join(dest_infile, rest)
       if not dest_infile.startswith(indir):
         raise run_test_from_archive.MappingError(
             'Can\'t map symlink reference %s (from %s) ->%s outside of %s' %
