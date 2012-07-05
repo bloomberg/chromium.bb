@@ -6,7 +6,13 @@
 #define CHROME_COMMON_EXTENSIONS_EVENT_FILTERING_INFO_H_
 #pragma once
 
+#include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
+#include "v8/include/v8.h"
+
+namespace base {
+class Value;
+}
 
 namespace extensions {
 
@@ -28,6 +34,8 @@ class EventFilteringInfo {
   const GURL& url() const { return url_; }
 
   std::string AsJSONString() const;
+  scoped_ptr<base::Value> AsValue() const;
+  bool IsEmpty() const;
 
  private:
   bool has_url_;

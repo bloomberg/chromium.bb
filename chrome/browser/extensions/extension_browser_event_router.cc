@@ -453,7 +453,7 @@ void ExtensionBrowserEventRouter::DispatchEvent(Profile* profile,
     return;
 
   profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-      event_name, json_args, profile, GURL());
+      event_name, json_args, profile, GURL(), extensions::EventFilteringInfo());
 }
 
 void ExtensionBrowserEventRouter::DispatchEventToExtension(

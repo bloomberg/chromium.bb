@@ -16,6 +16,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
+namespace {
+
 class MenuControllerTest : public CocoaTest {
 };
 
@@ -330,3 +332,5 @@ TEST_F(MenuControllerTest, OpenClose) {
   // Expect that the delegate got notified properly.
   EXPECT_TRUE(delegate.did_close_);
 }
+
+}  // namespace

@@ -279,6 +279,21 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
   void SetRegisteredEvents(const std::string& extension_id,
                            const std::set<std::string>& events);
 
+  // Adds a filter to an event.
+  void AddFilterToEvent(const std::string& event_name,
+                        const std::string& extension_id,
+                        const DictionaryValue* filter);
+
+  // Removes a filter from an event.
+  void RemoveFilterFromEvent(const std::string& event_name,
+                             const std::string& extension_id,
+                             const DictionaryValue* filter);
+
+  // Returns the dictionary of event filters that the given extension has
+  // registered.
+  const DictionaryValue* GetFilteredEvents(
+      const std::string& extension_id) const;
+
   // Controls the omnibox default suggestion as set by the extension.
   extensions::ExtensionOmniboxSuggestion GetOmniboxDefaultSuggestion(
       const std::string& extension_id);

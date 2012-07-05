@@ -167,6 +167,22 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BroadcastEvent) {
                 GetLocationBarForTesting()->PageActionVisibleCount());
 }
 
+IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, Filters) {
+  const Extension* extension = LoadExtensionAndWait("filters");
+  ASSERT_TRUE(extension);
+
+  // Lazy Background Page doesn't exist yet.
+  ExtensionProcessManager* pm =
+      browser()->profile()->GetExtensionProcessManager();
+  EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
+
+  // Open a tab to a URL that will fire a webNavigation event.
+  LazyBackgroundObserver page_complete;
+  ui_test_utils::NavigateToURL(
+      browser(), test_server()->GetURL("files/extensions/test_file.html"));
+  page_complete.Wait();
+}
+
 // Tests that the lazy background page receives the onInstalled event and shuts
 // down.
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, OnInstalled) {

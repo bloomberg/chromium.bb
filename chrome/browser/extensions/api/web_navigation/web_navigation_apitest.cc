@@ -33,6 +33,7 @@ using content::WebContents;
 #define MAYBE_WebNavigationReferenceFragment \
     DISABLED_WebNavigationReferenceFragment
 #define MAYBE_WebNavigationOpenTab DISABLED_WebNavigationOpenTab
+#define MAYBE_WebNavigationFilteredTest DISABLED_WebNavigationFilteredTest
 #else
 #define MAYBE_WebNavigationIFrame WebNavigationIFrame
 #define MAYBE_WebNavigationFailures WebNavigationFailures
@@ -42,6 +43,7 @@ using content::WebContents;
 #define MAYBE_WebNavigationSimpleLoad WebNavigationSimpleLoad
 #define MAYBE_WebNavigationReferenceFragment WebNavigationReferenceFragment
 #define MAYBE_WebNavigationOpenTab WebNavigationOpenTab
+#define MAYBE_WebNavigationFilteredTest WebNavigationFilteredTest
 #endif
 
 namespace extensions {
@@ -172,6 +174,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationFailures) {
 
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_failures.html")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationFilteredTest) {
+  FrameNavigationState::set_allow_extension_scheme(true);
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
+
+  ASSERT_TRUE(
+      RunExtensionSubtest("webnavigation", "test_filtered.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationUserAction) {
