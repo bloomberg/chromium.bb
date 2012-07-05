@@ -3,7 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import collections
 import json
 import os
 import unittest
@@ -24,8 +23,7 @@ class DictGeneratorTest(unittest.TestCase):
   def _GenerateTest(self, filename):
     expected_json = json.loads(self._ReadLocalFile('expected_' + filename))
     gen = HandlebarDictGenerator(
-        json.loads(comment_eater.Nom(self._ReadLocalFile(filename)),
-            object_pairs_hook=collections.OrderedDict)[0])
+        json.loads(comment_eater.Nom(self._ReadLocalFile(filename)))[0])
     self.assertEquals(expected_json, gen.Generate())
 
   def testGenerate(self):

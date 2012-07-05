@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import collections
 import json
 import os
 
@@ -23,8 +22,7 @@ class APIDataSource(object):
 
   def _LoadJsonAPI(self, api):
     generator = HandlebarDictGenerator(
-        json.loads(json_comment_eater.Nom(api),
-            object_pairs_hook=collections.OrderedDict)[0])
+        json.loads(json_comment_eater.Nom(api))[0])
     return generator.Generate()
 
   def _LoadIdlAPI(self, api):
