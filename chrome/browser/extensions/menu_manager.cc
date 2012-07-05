@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_menu_manager.h"
+#include "chrome/browser/extensions/menu_manager.h"
 
 #include <algorithm>
 
@@ -32,6 +32,8 @@
 
 using content::WebContents;
 
+namespace extensions {
+
 namespace {
 
 // Keys for serialization to and from Value to store in the preferences.
@@ -50,16 +52,16 @@ const char kTypeKey[] = "type";
 
 void SetIdKeyValue(base::DictionaryValue* properties,
                    const char* key,
-                   const ExtensionMenuItem::Id& id) {
+                   const MenuItem::Id& id) {
   if (id.uid == 0)
     properties->SetString(key, id.string_uid);
   else
     properties->SetInteger(key, id.uid);
 }
 
-ExtensionMenuItem::List MenuItemsFromValue(const std::string& extension_id,
-                                           base::Value* value) {
-  ExtensionMenuItem::List items;
+MenuItem::List MenuItemsFromValue(const std::string& extension_id,
+                                  base::Value* value) {
+  MenuItem::List items;
 
   base::ListValue* list = NULL;
   if (!value || !value->GetAsList(&list))
@@ -69,7 +71,7 @@ ExtensionMenuItem::List MenuItemsFromValue(const std::string& extension_id,
     base::DictionaryValue* dict = NULL;
     if (!list->GetDictionary(i, &dict))
       continue;
-    ExtensionMenuItem* item = ExtensionMenuItem::Populate(
+    MenuItem* item = MenuItem::Populate(
         extension_id, *dict, NULL);
     if (!item)
       continue;
@@ -78,8 +80,7 @@ ExtensionMenuItem::List MenuItemsFromValue(const std::string& extension_id,
   return items;
 }
 
-scoped_ptr<base::Value> MenuItemsToValue(
-    const ExtensionMenuItem::List& items) {
+scoped_ptr<base::Value> MenuItemsToValue(const MenuItem::List& items) {
   scoped_ptr<base::ListValue> list(new ListValue());
   for (size_t i = 0; i < items.size(); ++i)
     list->Append(items[i]->ToValue().release());
@@ -88,12 +89,12 @@ scoped_ptr<base::Value> MenuItemsToValue(
 
 }  // namespace
 
-ExtensionMenuItem::ExtensionMenuItem(const Id& id,
-                                     const std::string& title,
-                                     bool checked,
-                                     bool enabled,
-                                     Type type,
-                                     const ContextList& contexts)
+MenuItem::MenuItem(const Id& id,
+                   const std::string& title,
+                   bool checked,
+                   bool enabled,
+                   Type type,
+                   const ContextList& contexts)
     : id_(id),
       title_(title),
       type_(type),
@@ -103,14 +104,14 @@ ExtensionMenuItem::ExtensionMenuItem(const Id& id,
       parent_id_(0) {
 }
 
-ExtensionMenuItem::~ExtensionMenuItem() {
+MenuItem::~MenuItem() {
   STLDeleteElements(&children_);
 }
 
-ExtensionMenuItem* ExtensionMenuItem::ReleaseChild(const Id& child_id,
-                                                   bool recursive) {
+MenuItem* MenuItem::ReleaseChild(const Id& child_id,
+                                 bool recursive) {
   for (List::iterator i = children_.begin(); i != children_.end(); ++i) {
-    ExtensionMenuItem* child = NULL;
+    MenuItem* child = NULL;
     if ((*i)->id() == child_id) {
       child = *i;
       children_.erase(i);
@@ -124,16 +125,16 @@ ExtensionMenuItem* ExtensionMenuItem::ReleaseChild(const Id& child_id,
   return NULL;
 }
 
-void ExtensionMenuItem::GetFlattenedSubtree(ExtensionMenuItem::List* list) {
+void MenuItem::GetFlattenedSubtree(MenuItem::List* list) {
   list->push_back(this);
   for (List::iterator i = children_.begin(); i != children_.end(); ++i)
     (*i)->GetFlattenedSubtree(list);
 }
 
-std::set<ExtensionMenuItem::Id> ExtensionMenuItem::RemoveAllDescendants() {
+std::set<MenuItem::Id> MenuItem::RemoveAllDescendants() {
   std::set<Id> result;
   for (List::iterator i = children_.begin(); i != children_.end(); ++i) {
-    ExtensionMenuItem* child = *i;
+    MenuItem* child = *i;
     result.insert(child->id());
     std::set<Id> removed = child->RemoveAllDescendants();
     result.insert(removed.begin(), removed.end());
@@ -142,7 +143,7 @@ std::set<ExtensionMenuItem::Id> ExtensionMenuItem::RemoveAllDescendants() {
   return result;
 }
 
-string16 ExtensionMenuItem::TitleWithReplacement(
+string16 MenuItem::TitleWithReplacement(
     const string16& selection, size_t max_length) const {
   string16 result = UTF8ToUTF16(title_);
   // TODO(asargent) - Change this to properly handle %% escaping so you can
@@ -154,19 +155,19 @@ string16 ExtensionMenuItem::TitleWithReplacement(
   return result;
 }
 
-bool ExtensionMenuItem::SetChecked(bool checked) {
+bool MenuItem::SetChecked(bool checked) {
   if (type_ != CHECKBOX && type_ != RADIO)
     return false;
   checked_ = checked;
   return true;
 }
 
-void ExtensionMenuItem::AddChild(ExtensionMenuItem* item) {
+void MenuItem::AddChild(MenuItem* item) {
   item->parent_id_.reset(new Id(id_));
   children_.push_back(item);
 }
 
-scoped_ptr<DictionaryValue> ExtensionMenuItem::ToValue() const {
+scoped_ptr<DictionaryValue> MenuItem::ToValue() const {
   scoped_ptr<DictionaryValue> value(new DictionaryValue);
   // Should only be called for extensions with event pages, which only have
   // string IDs for items.
@@ -191,9 +192,9 @@ scoped_ptr<DictionaryValue> ExtensionMenuItem::ToValue() const {
 }
 
 // static
-ExtensionMenuItem* ExtensionMenuItem::Populate(const std::string& extension_id,
-                                               const DictionaryValue& value,
-                                               std::string* error) {
+MenuItem* MenuItem::Populate(const std::string& extension_id,
+                             const DictionaryValue& value,
+                             std::string* error) {
   bool incognito = false;
   if (!value.GetBoolean(kIncognitoKey, &incognito))
     return NULL;
@@ -223,7 +224,7 @@ ExtensionMenuItem* ExtensionMenuItem::Populate(const std::string& extension_id,
   if (!contexts.Populate(*contexts_value))
     return NULL;
 
-  scoped_ptr<ExtensionMenuItem> result(new ExtensionMenuItem(
+  scoped_ptr<MenuItem> result(new MenuItem(
       id, title, checked, enabled, type, contexts));
 
   if (!result->PopulateURLPatterns(
@@ -241,11 +242,10 @@ ExtensionMenuItem* ExtensionMenuItem::Populate(const std::string& extension_id,
   return result.release();
 }
 
-bool ExtensionMenuItem::PopulateURLPatterns(
-    const DictionaryValue& properties,
-    const char* document_url_patterns_key,
-    const char* target_url_patterns_key,
-    std::string* error) {
+bool MenuItem::PopulateURLPatterns(const DictionaryValue& properties,
+                                   const char* document_url_patterns_key,
+                                   const char* target_url_patterns_key,
+                                   std::string* error) {
   if (properties.HasKey(document_url_patterns_key)) {
     ListValue* list = NULL;
     if (!properties.GetList(document_url_patterns_key, &list))
@@ -267,26 +267,26 @@ bool ExtensionMenuItem::PopulateURLPatterns(
   return true;
 }
 
-ExtensionMenuManager::ExtensionMenuManager(Profile* profile)
+MenuManager::MenuManager(Profile* profile)
     : profile_(profile) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile));
 
-  extensions::StateStore* store = ExtensionSystem::Get(profile_)->state_store();
+  StateStore* store = ExtensionSystem::Get(profile_)->state_store();
   if (store)
     store->RegisterKey(kContextMenusKey);
 }
 
-ExtensionMenuManager::~ExtensionMenuManager() {
+MenuManager::~MenuManager() {
   MenuItemMap::iterator i;
   for (i = context_items_.begin(); i != context_items_.end(); ++i) {
     STLDeleteElements(&(i->second));
   }
 }
 
-std::set<std::string> ExtensionMenuManager::ExtensionIds() {
+std::set<std::string> MenuManager::ExtensionIds() {
   std::set<std::string> id_set;
   for (MenuItemMap::const_iterator i = context_items_.begin();
        i != context_items_.end(); ++i) {
@@ -295,7 +295,7 @@ std::set<std::string> ExtensionMenuManager::ExtensionIds() {
   return id_set;
 }
 
-const ExtensionMenuItem::List* ExtensionMenuManager::MenuItems(
+const MenuItem::List* MenuManager::MenuItems(
     const std::string& extension_id) {
   MenuItemMap::iterator i = context_items_.find(extension_id);
   if (i != context_items_.end()) {
@@ -304,9 +304,9 @@ const ExtensionMenuItem::List* ExtensionMenuManager::MenuItems(
   return NULL;
 }
 
-bool ExtensionMenuManager::AddContextItem(
-    const extensions::Extension* extension,
-    ExtensionMenuItem* item) {
+bool MenuManager::AddContextItem(
+    const Extension* extension,
+    MenuItem* item) {
   const std::string& extension_id = item->extension_id();
   // The item must have a non-empty extension id, and not have already been
   // added.
@@ -319,7 +319,7 @@ bool ExtensionMenuManager::AddContextItem(
   context_items_[extension_id].push_back(item);
   items_by_id_[item->id()] = item;
 
-  if (item->type() == ExtensionMenuItem::RADIO) {
+  if (item->type() == MenuItem::RADIO) {
     if (item->checked())
       RadioItemSelected(item);
     else
@@ -333,10 +333,10 @@ bool ExtensionMenuManager::AddContextItem(
   return true;
 }
 
-bool ExtensionMenuManager::AddChildItem(const ExtensionMenuItem::Id& parent_id,
-                                        ExtensionMenuItem* child) {
-  ExtensionMenuItem* parent = GetItemById(parent_id);
-  if (!parent || parent->type() != ExtensionMenuItem::NORMAL ||
+bool MenuManager::AddChildItem(const MenuItem::Id& parent_id,
+                               MenuItem* child) {
+  MenuItem* parent = GetItemById(parent_id);
+  if (!parent || parent->type() != MenuItem::NORMAL ||
       parent->incognito() != child->incognito() ||
       parent->extension_id() != child->extension_id() ||
       ContainsKey(items_by_id_, child->id()))
@@ -344,21 +344,20 @@ bool ExtensionMenuManager::AddChildItem(const ExtensionMenuItem::Id& parent_id,
   parent->AddChild(child);
   items_by_id_[child->id()] = child;
 
-  if (child->type() == ExtensionMenuItem::RADIO)
+  if (child->type() == MenuItem::RADIO)
     SanitizeRadioList(parent->children());
   return true;
 }
 
-bool ExtensionMenuManager::DescendantOf(
-    ExtensionMenuItem* item,
-    const ExtensionMenuItem::Id& ancestor_id) {
+bool MenuManager::DescendantOf(MenuItem* item,
+                               const MenuItem::Id& ancestor_id) {
   // Work our way up the tree until we find the ancestor or NULL.
-  ExtensionMenuItem::Id* id = item->parent_id();
+  MenuItem::Id* id = item->parent_id();
   while (id != NULL) {
     DCHECK(*id != item->id());  // Catch circular graphs.
     if (*id == ancestor_id)
       return true;
-    ExtensionMenuItem* next = GetItemById(*id);
+    MenuItem* next = GetItemById(*id);
     if (!next) {
       NOTREACHED();
       return false;
@@ -368,11 +367,10 @@ bool ExtensionMenuManager::DescendantOf(
   return false;
 }
 
-bool ExtensionMenuManager::ChangeParent(
-    const ExtensionMenuItem::Id& child_id,
-    const ExtensionMenuItem::Id* parent_id) {
-  ExtensionMenuItem* child = GetItemById(child_id);
-  ExtensionMenuItem* new_parent = parent_id ? GetItemById(*parent_id) : NULL;
+bool MenuManager::ChangeParent(const MenuItem::Id& child_id,
+                               const MenuItem::Id* parent_id) {
+  MenuItem* child = GetItemById(child_id);
+  MenuItem* new_parent = parent_id ? GetItemById(*parent_id) : NULL;
   if ((parent_id && (child_id == *parent_id)) || !child ||
       (!new_parent && parent_id != NULL) ||
       (new_parent && (DescendantOf(new_parent, child_id) ||
@@ -380,14 +378,14 @@ bool ExtensionMenuManager::ChangeParent(
                       child->extension_id() != new_parent->extension_id())))
     return false;
 
-  ExtensionMenuItem::Id* old_parent_id = child->parent_id();
+  MenuItem::Id* old_parent_id = child->parent_id();
   if (old_parent_id != NULL) {
-    ExtensionMenuItem* old_parent = GetItemById(*old_parent_id);
+    MenuItem* old_parent = GetItemById(*old_parent_id);
     if (!old_parent) {
       NOTREACHED();
       return false;
     }
-    ExtensionMenuItem* taken =
+    MenuItem* taken =
       old_parent->ReleaseChild(child_id, false /* non-recursive search*/);
     DCHECK(taken == child);
     SanitizeRadioList(old_parent->children());
@@ -399,8 +397,8 @@ bool ExtensionMenuManager::ChangeParent(
       NOTREACHED();
       return false;
     }
-    ExtensionMenuItem::List& list = i->second;
-    ExtensionMenuItem::List::iterator j = std::find(list.begin(), list.end(),
+    MenuItem::List& list = i->second;
+    MenuItem::List::iterator j = std::find(list.begin(), list.end(),
                                                     child);
     if (j == list.end()) {
       NOTREACHED();
@@ -421,12 +419,11 @@ bool ExtensionMenuManager::ChangeParent(
   return true;
 }
 
-bool ExtensionMenuManager::RemoveContextMenuItem(
-    const ExtensionMenuItem::Id& id) {
+bool MenuManager::RemoveContextMenuItem(const MenuItem::Id& id) {
   if (!ContainsKey(items_by_id_, id))
     return false;
 
-  ExtensionMenuItem* menu_item = GetItemById(id);
+  MenuItem* menu_item = GetItemById(id);
   DCHECK(menu_item);
   std::string extension_id = menu_item->extension_id();
   MenuItemMap::iterator i = context_items_.find(extension_id);
@@ -436,9 +433,9 @@ bool ExtensionMenuManager::RemoveContextMenuItem(
   }
 
   bool result = false;
-  std::set<ExtensionMenuItem::Id> items_removed;
-  ExtensionMenuItem::List& list = i->second;
-  ExtensionMenuItem::List::iterator j;
+  std::set<MenuItem::Id> items_removed;
+  MenuItem::List& list = i->second;
+  MenuItem::List::iterator j;
   for (j = list.begin(); j < list.end(); ++j) {
     // See if the current top-level item is a match.
     if ((*j)->id() == id) {
@@ -452,7 +449,7 @@ bool ExtensionMenuManager::RemoveContextMenuItem(
     } else {
       // See if the item to remove was found as a descendant of the current
       // top-level item.
-      ExtensionMenuItem* child = (*j)->ReleaseChild(id, true /* recursive */);
+      MenuItem* child = (*j)->ReleaseChild(id, true /* recursive */);
       if (child) {
         items_removed = child->RemoveAllDescendants();
         items_removed.insert(id);
@@ -466,7 +463,7 @@ bool ExtensionMenuManager::RemoveContextMenuItem(
   DCHECK(result);  // The check at the very top should have prevented this.
 
   // Clear entries from the items_by_id_ map.
-  std::set<ExtensionMenuItem::Id>::iterator removed_iter;
+  std::set<MenuItem::Id>::iterator removed_iter;
   for (removed_iter = items_removed.begin();
        removed_iter != items_removed.end();
        ++removed_iter) {
@@ -480,17 +477,16 @@ bool ExtensionMenuManager::RemoveContextMenuItem(
   return result;
 }
 
-void ExtensionMenuManager::RemoveAllContextItems(
-    const std::string& extension_id) {
-  ExtensionMenuItem::List::iterator i;
+void MenuManager::RemoveAllContextItems(const std::string& extension_id) {
+  MenuItem::List::iterator i;
   for (i = context_items_[extension_id].begin();
        i != context_items_[extension_id].end(); ++i) {
-    ExtensionMenuItem* item = *i;
+    MenuItem* item = *i;
     items_by_id_.erase(item->id());
 
     // Remove descendants from this item and erase them from the lookup cache.
-    std::set<ExtensionMenuItem::Id> removed_ids = item->RemoveAllDescendants();
-    std::set<ExtensionMenuItem::Id>::const_iterator j;
+    std::set<MenuItem::Id> removed_ids = item->RemoveAllDescendants();
+    std::set<MenuItem::Id>::const_iterator j;
     for (j = removed_ids.begin(); j != removed_ids.end(); ++j) {
       items_by_id_.erase(*j);
     }
@@ -500,9 +496,8 @@ void ExtensionMenuManager::RemoveAllContextItems(
   icon_manager_.RemoveIcon(extension_id);
 }
 
-ExtensionMenuItem* ExtensionMenuManager::GetItemById(
-    const ExtensionMenuItem::Id& id) const {
-  std::map<ExtensionMenuItem::Id, ExtensionMenuItem*>::const_iterator i =
+MenuItem* MenuManager::GetItemById(const MenuItem::Id& id) const {
+  std::map<MenuItem::Id, MenuItem*>::const_iterator i =
       items_by_id_.find(id);
   if (i != items_by_id_.end())
     return i->second;
@@ -510,12 +505,12 @@ ExtensionMenuItem* ExtensionMenuManager::GetItemById(
     return NULL;
 }
 
-void ExtensionMenuManager::RadioItemSelected(ExtensionMenuItem* item) {
+void MenuManager::RadioItemSelected(MenuItem* item) {
   // If this is a child item, we need to get a handle to the list from its
   // parent. Otherwise get a handle to the top-level list.
-  const ExtensionMenuItem::List* list = NULL;
+  const MenuItem::List* list = NULL;
   if (item->parent_id()) {
-    ExtensionMenuItem* parent = GetItemById(*item->parent_id());
+    MenuItem* parent = GetItemById(*item->parent_id());
     if (!parent) {
       NOTREACHED();
       return;
@@ -530,7 +525,7 @@ void ExtensionMenuManager::RadioItemSelected(ExtensionMenuItem* item) {
   }
 
   // Find where |item| is in the list.
-  ExtensionMenuItem::List::const_iterator item_location;
+  MenuItem::List::const_iterator item_location;
   for (item_location = list->begin(); item_location != list->end();
        ++item_location) {
     if (*item_location == item)
@@ -542,12 +537,12 @@ void ExtensionMenuManager::RadioItemSelected(ExtensionMenuItem* item) {
   }
 
   // Iterate backwards from |item| and uncheck any adjacent radio items.
-  ExtensionMenuItem::List::const_iterator i;
+  MenuItem::List::const_iterator i;
   if (item_location != list->begin()) {
     i = item_location;
     do {
       --i;
-      if ((*i)->type() != ExtensionMenuItem::RADIO)
+      if ((*i)->type() != MenuItem::RADIO)
         break;
       (*i)->SetChecked(false);
     } while (i != list->begin());
@@ -555,7 +550,7 @@ void ExtensionMenuManager::RadioItemSelected(ExtensionMenuItem* item) {
 
   // Now iterate forwards from |item| and uncheck any adjacent radio items.
   for (i = item_location + 1; i != list->end(); ++i) {
-    if ((*i)->type() != ExtensionMenuItem::RADIO)
+    if ((*i)->type() != MenuItem::RADIO)
       break;
     (*i)->SetChecked(false);
   }
@@ -567,26 +562,25 @@ static void AddURLProperty(DictionaryValue* dictionary,
     dictionary->SetString(key, url.possibly_invalid_spec());
 }
 
-void ExtensionMenuManager::ExecuteCommand(
-    Profile* profile,
-    WebContents* web_contents,
-    const content::ContextMenuParams& params,
-    const ExtensionMenuItem::Id& menu_item_id) {
+void MenuManager::ExecuteCommand(Profile* profile,
+                                 WebContents* web_contents,
+                                 const content::ContextMenuParams& params,
+                                 const MenuItem::Id& menu_item_id) {
   ExtensionEventRouter* event_router = profile->GetExtensionEventRouter();
   if (!event_router)
     return;
 
-  ExtensionMenuItem* item = GetItemById(menu_item_id);
+  MenuItem* item = GetItemById(menu_item_id);
   if (!item)
     return;
 
   // ExtensionService/Extension can be NULL in unit tests :(
   ExtensionService* service =
       ExtensionSystem::Get(profile_)->extension_service();
-  const extensions::Extension* extension = service ?
+  const Extension* extension = service ?
       service->extensions()->GetByID(menu_item_id.extension_id) : NULL;
 
-  if (item->type() == ExtensionMenuItem::RADIO)
+  if (item->type() == MenuItem::RADIO)
     RadioItemSelected(item);
 
   ListValue args;
@@ -628,15 +622,15 @@ void ExtensionMenuManager::ExecuteCommand(
   else
     args.Append(new DictionaryValue());
 
-  if (item->type() == ExtensionMenuItem::CHECKBOX ||
-      item->type() == ExtensionMenuItem::RADIO) {
+  if (item->type() == MenuItem::CHECKBOX ||
+      item->type() == MenuItem::RADIO) {
     bool was_checked = item->checked();
     properties->SetBoolean("wasChecked", was_checked);
 
     // RADIO items always get set to true when you click on them, but CHECKBOX
     // items get their state toggled.
     bool checked =
-        (item->type() == ExtensionMenuItem::RADIO) ? true : !was_checked;
+        (item->type() == MenuItem::RADIO) ? true : !was_checked;
 
     item->SetChecked(checked);
     properties->SetBoolean("checked", item->checked());
@@ -664,11 +658,10 @@ void ExtensionMenuManager::ExecuteCommand(
       ExtensionEventRouter::USER_GESTURE_ENABLED);
 }
 
-void ExtensionMenuManager::SanitizeRadioList(
-    const ExtensionMenuItem::List& item_list) {
-  ExtensionMenuItem::List::const_iterator i = item_list.begin();
+void MenuManager::SanitizeRadioList(const MenuItem::List& item_list) {
+  MenuItem::List::const_iterator i = item_list.begin();
   while (i != item_list.end()) {
-    if ((*i)->type() != ExtensionMenuItem::RADIO) {
+    if ((*i)->type() != MenuItem::RADIO) {
       ++i;
       break;
     }
@@ -676,11 +669,11 @@ void ExtensionMenuManager::SanitizeRadioList(
     // Uncheck any checked radio items in the run, and at the end reset
     // the appropriate one to checked. If no check radio items were found,
     // then check the first radio item in the run.
-    ExtensionMenuItem::List::const_iterator last_checked = item_list.end();
-    ExtensionMenuItem::List::const_iterator radio_run_iter;
+    MenuItem::List::const_iterator last_checked = item_list.end();
+    MenuItem::List::const_iterator radio_run_iter;
     for (radio_run_iter = i; radio_run_iter != item_list.end();
         ++radio_run_iter) {
-      if ((*radio_run_iter)->type() != ExtensionMenuItem::RADIO) {
+      if ((*radio_run_iter)->type() != MenuItem::RADIO) {
         break;
       }
 
@@ -699,11 +692,11 @@ void ExtensionMenuManager::SanitizeRadioList(
   }
 }
 
-bool ExtensionMenuManager::ItemUpdated(const ExtensionMenuItem::Id& id) {
+bool MenuManager::ItemUpdated(const MenuItem::Id& id) {
   if (!ContainsKey(items_by_id_, id))
     return false;
 
-  ExtensionMenuItem* menu_item = GetItemById(id);
+  MenuItem* menu_item = GetItemById(id);
   DCHECK(menu_item);
 
   if (menu_item->parent_id()) {
@@ -721,41 +714,40 @@ bool ExtensionMenuManager::ItemUpdated(const ExtensionMenuItem::Id& id) {
   return true;
 }
 
-void ExtensionMenuManager::WriteToStorage(
-    const extensions::Extension* extension) {
+void MenuManager::WriteToStorage(const Extension* extension) {
   if (!extension->has_lazy_background_page())
     return;
-  const ExtensionMenuItem::List* top_items = MenuItems(extension->id());
-  ExtensionMenuItem::List all_items;
+  const MenuItem::List* top_items = MenuItems(extension->id());
+  MenuItem::List all_items;
   if (top_items) {
-    for (ExtensionMenuItem::List::const_iterator i = top_items->begin();
+    for (MenuItem::List::const_iterator i = top_items->begin();
          i != top_items->end(); ++i) {
       (*i)->GetFlattenedSubtree(&all_items);
     }
   }
 
-  extensions::StateStore* store = ExtensionSystem::Get(profile_)->state_store();
+  StateStore* store = ExtensionSystem::Get(profile_)->state_store();
   if (store)
     store->SetExtensionValue(extension->id(), kContextMenusKey,
                              MenuItemsToValue(all_items));
 }
 
-void ExtensionMenuManager::ReadFromStorage(const std::string& extension_id,
-                                           scoped_ptr<base::Value> value) {
-  const extensions::Extension* extension =
+void MenuManager::ReadFromStorage(const std::string& extension_id,
+                                  scoped_ptr<base::Value> value) {
+  const Extension* extension =
       ExtensionSystem::Get(profile_)->extension_service()->extensions()->
           GetByID(extension_id);
   if (!extension)
     return;
 
-  ExtensionMenuItem::List items = MenuItemsFromValue(extension_id, value.get());
+  MenuItem::List items = MenuItemsFromValue(extension_id, value.get());
   for (size_t i = 0; i < items.size(); ++i) {
     if (items[i]->parent_id()) {
       // Parent IDs are stored in the parent_id field for convenience, but
       // they have not yet been validated. Separate them out here.
       // Because of the order in which we store items in the prefs, parents will
       // precede children, so we should already know about any parent items.
-      scoped_ptr<ExtensionMenuItem::Id> parent_id;
+      scoped_ptr<MenuItem::Id> parent_id;
       parent_id.swap(items[i]->parent_id_);
       AddChildItem(*parent_id, items[i]);
     } else {
@@ -764,59 +756,57 @@ void ExtensionMenuManager::ReadFromStorage(const std::string& extension_id,
   }
 }
 
-void ExtensionMenuManager::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void MenuManager::Observe(int type,
+                          const content::NotificationSource& source,
+                          const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     // Remove menu items for disabled/uninstalled extensions.
-    const extensions::Extension* extension =
-        content::Details<extensions::UnloadedExtensionInfo>(details)->extension;
+    const Extension* extension =
+        content::Details<UnloadedExtensionInfo>(details)->extension;
     if (ContainsKey(context_items_, extension->id())) {
       RemoveAllContextItems(extension->id());
     }
   } else if (type == chrome::NOTIFICATION_EXTENSION_LOADED) {
-    const extensions::Extension* extension =
-        content::Details<const extensions::Extension>(details).ptr();
-    extensions::StateStore* store =
-        ExtensionSystem::Get(profile_)->state_store();
+    const Extension* extension =
+        content::Details<const Extension>(details).ptr();
+    StateStore* store = ExtensionSystem::Get(profile_)->state_store();
     if (store && extension->has_lazy_background_page()) {
       store->GetExtensionValue(extension->id(), kContextMenusKey,
-          base::Bind(&ExtensionMenuManager::ReadFromStorage,
+          base::Bind(&MenuManager::ReadFromStorage,
                      AsWeakPtr(), extension->id()));
     }
   }
 }
 
-const SkBitmap& ExtensionMenuManager::GetIconForExtension(
+const SkBitmap& MenuManager::GetIconForExtension(
     const std::string& extension_id) {
   return icon_manager_.GetIcon(extension_id);
 }
 
-ExtensionMenuItem::Id::Id()
+MenuItem::Id::Id()
     : incognito(false), extension_id(""), uid(0), string_uid("") {
 }
 
-ExtensionMenuItem::Id::Id(bool incognito, const std::string& extension_id)
+MenuItem::Id::Id(bool incognito, const std::string& extension_id)
     : incognito(incognito), extension_id(extension_id), uid(0),
       string_uid("") {
 }
 
-ExtensionMenuItem::Id::~Id() {
+MenuItem::Id::~Id() {
 }
 
-bool ExtensionMenuItem::Id::operator==(const Id& other) const {
+bool MenuItem::Id::operator==(const Id& other) const {
   return (incognito == other.incognito &&
           extension_id == other.extension_id &&
           uid == other.uid &&
           string_uid == other.string_uid);
 }
 
-bool ExtensionMenuItem::Id::operator!=(const Id& other) const {
+bool MenuItem::Id::operator!=(const Id& other) const {
   return !(*this == other);
 }
 
-bool ExtensionMenuItem::Id::operator<(const Id& other) const {
+bool MenuItem::Id::operator<(const Id& other) const {
   if (incognito < other.incognito)
     return true;
   if (incognito == other.incognito) {
@@ -831,3 +821,5 @@ bool ExtensionMenuItem::Id::operator<(const Id& other) const {
   }
   return false;
 }
+
+}  // namespace extensions

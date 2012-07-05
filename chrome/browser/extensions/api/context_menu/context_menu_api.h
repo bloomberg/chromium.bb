@@ -7,10 +7,10 @@
 #pragma once
 
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/extensions/extension_menu_manager.h"
+#include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 
-class ExtensionMenuItem;
+class MenuItem;
 
 namespace base {
 class DictionaryValue;
@@ -25,36 +25,35 @@ class ExtensionContextMenuFunction : public SyncExtensionFunction {
   // Helper function to read and parse a list of menu item contexts.
   bool ParseContexts(const base::DictionaryValue& properties,
                      const char* key,
-                     ExtensionMenuItem::ContextList* result);
+                     MenuItem::ContextList* result);
 
   // Looks in properties for the "type" key, and reads the value in |result|. On
   // error, returns false and puts an error message into error_. If the key is
   // not present, |result| is set to |default_value| and the return value is
   // true.
   bool ParseType(const base::DictionaryValue& properties,
-                 const ExtensionMenuItem::Type& default_value,
-                 ExtensionMenuItem::Type* result);
+                 const MenuItem::Type& default_value,
+                 MenuItem::Type* result);
 
   // Helper to read and parse the "checked" property.
-  bool ParseChecked(ExtensionMenuItem::Type type,
+  bool ParseChecked(MenuItem::Type type,
                     const base::DictionaryValue& properties,
                     bool default_value,
                     bool* checked);
 
   // Helper to read an ID from the Value*. The ID can be either a string or
   // integer.
-  bool ParseID(const Value* value,
-               ExtensionMenuItem::Id* result);
+  bool ParseID(const Value* value, MenuItem::Id* result);
 
   // If the parentId key was specified in properties, this will try looking up
-  // an ExtensionMenuItem with that id and set it into |result|. Returns false
+  // an MenuItem with that id and set it into |result|. Returns false
   // on error, with an explanation written into error_. Note that if the
   // parentId key is not in properties, this will return true and leave |result|
   // unset. Also, it is considered an error if the item found has a type other
   // than NORMAL.
   bool GetParent(const base::DictionaryValue& properties,
-                 const ExtensionMenuManager& manager,
-                 ExtensionMenuItem** result);
+                 const MenuManager& manager,
+                 MenuItem** result);
 };
 
 class CreateContextMenuFunction : public ExtensionContextMenuFunction {

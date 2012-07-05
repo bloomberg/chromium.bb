@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 
+using extensions::MenuItem;
+
 class RenderViewContextMenuTest : public testing::Test {
  public:
   RenderViewContextMenuTest() { }
@@ -18,7 +20,7 @@ class RenderViewContextMenuTest : public testing::Test {
   // Proxy defined here to minimize friend classes in RenderViewContextMenu
   static bool ExtensionContextAndPatternMatch(
       const content::ContextMenuParams& params,
-      ExtensionMenuItem::ContextList contexts,
+      MenuItem::ContextList contexts,
       const URLPatternSet& patterns) {
     return RenderViewContextMenu::ExtensionContextAndPatternMatch(params,
         contexts, patterns);
@@ -36,31 +38,31 @@ static content::ContextMenuParams CreateParams(int contexts) {
   rv.page_url = GURL("http://test.page/");
 
   static const char16 selected_text[] = { 's', 'e', 'l', 0 };
-  if (contexts & ExtensionMenuItem::SELECTION)
+  if (contexts & MenuItem::SELECTION)
     rv.selection_text = selected_text;
 
-  if (contexts & ExtensionMenuItem::LINK)
+  if (contexts & MenuItem::LINK)
     rv.link_url = GURL("http://test.link/");
 
-  if (contexts & ExtensionMenuItem::EDITABLE)
+  if (contexts & MenuItem::EDITABLE)
     rv.is_editable = true;
 
-  if (contexts & ExtensionMenuItem::IMAGE) {
+  if (contexts & MenuItem::IMAGE) {
     rv.src_url = GURL("http://test.image/");
     rv.media_type = WebKit::WebContextMenuData::MediaTypeImage;
   }
 
-  if (contexts & ExtensionMenuItem::VIDEO) {
+  if (contexts & MenuItem::VIDEO) {
     rv.src_url = GURL("http://test.video/");
     rv.media_type = WebKit::WebContextMenuData::MediaTypeVideo;
   }
 
-  if (contexts & ExtensionMenuItem::AUDIO) {
+  if (contexts & MenuItem::AUDIO) {
     rv.src_url = GURL("http://test.audio/");
     rv.media_type = WebKit::WebContextMenuData::MediaTypeAudio;
   }
 
-  if (contexts & ExtensionMenuItem::FRAME)
+  if (contexts & MenuItem::FRAME)
     rv.frame_url = GURL("http://test.frame/");
 
   return rv;
@@ -80,8 +82,8 @@ static URLPatternSet CreatePatternSet(const std::string& pattern) {
 TEST_F(RenderViewContextMenuTest, TargetIgnoredForPage) {
   content::ContextMenuParams params = CreateParams(0);
 
-  ExtensionMenuItem::ContextList contexts;
-  contexts.Add(ExtensionMenuItem::PAGE);
+  MenuItem::ContextList contexts;
+  contexts.Add(MenuItem::PAGE);
 
   URLPatternSet patterns = CreatePatternSet("*://test.none/*");
 
@@ -89,11 +91,11 @@ TEST_F(RenderViewContextMenuTest, TargetIgnoredForPage) {
 }
 
 TEST_F(RenderViewContextMenuTest, TargetCheckedForLink) {
-  content::ContextMenuParams params = CreateParams(ExtensionMenuItem::LINK);
+  content::ContextMenuParams params = CreateParams(MenuItem::LINK);
 
-  ExtensionMenuItem::ContextList contexts;
-  contexts.Add(ExtensionMenuItem::PAGE);
-  contexts.Add(ExtensionMenuItem::LINK);
+  MenuItem::ContextList contexts;
+  contexts.Add(MenuItem::PAGE);
+  contexts.Add(MenuItem::LINK);
 
   URLPatternSet patterns = CreatePatternSet("*://test.none/*");
 
@@ -101,11 +103,11 @@ TEST_F(RenderViewContextMenuTest, TargetCheckedForLink) {
 }
 
 TEST_F(RenderViewContextMenuTest, TargetCheckedForImage) {
-  content::ContextMenuParams params = CreateParams(ExtensionMenuItem::IMAGE);
+  content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
 
-  ExtensionMenuItem::ContextList contexts;
-  contexts.Add(ExtensionMenuItem::PAGE);
-  contexts.Add(ExtensionMenuItem::IMAGE);
+  MenuItem::ContextList contexts;
+  contexts.Add(MenuItem::PAGE);
+  contexts.Add(MenuItem::IMAGE);
 
   URLPatternSet patterns = CreatePatternSet("*://test.none/*");
 
@@ -113,11 +115,11 @@ TEST_F(RenderViewContextMenuTest, TargetCheckedForImage) {
 }
 
 TEST_F(RenderViewContextMenuTest, TargetCheckedForVideo) {
-  content::ContextMenuParams params = CreateParams(ExtensionMenuItem::VIDEO);
+  content::ContextMenuParams params = CreateParams(MenuItem::VIDEO);
 
-  ExtensionMenuItem::ContextList contexts;
-  contexts.Add(ExtensionMenuItem::PAGE);
-  contexts.Add(ExtensionMenuItem::VIDEO);
+  MenuItem::ContextList contexts;
+  contexts.Add(MenuItem::PAGE);
+  contexts.Add(MenuItem::VIDEO);
 
   URLPatternSet patterns = CreatePatternSet("*://test.none/*");
 
@@ -125,11 +127,11 @@ TEST_F(RenderViewContextMenuTest, TargetCheckedForVideo) {
 }
 
 TEST_F(RenderViewContextMenuTest, TargetCheckedForAudio) {
-  content::ContextMenuParams params = CreateParams(ExtensionMenuItem::AUDIO);
+  content::ContextMenuParams params = CreateParams(MenuItem::AUDIO);
 
-  ExtensionMenuItem::ContextList contexts;
-  contexts.Add(ExtensionMenuItem::PAGE);
-  contexts.Add(ExtensionMenuItem::AUDIO);
+  MenuItem::ContextList contexts;
+  contexts.Add(MenuItem::PAGE);
+  contexts.Add(MenuItem::AUDIO);
 
   URLPatternSet patterns = CreatePatternSet("*://test.none/*");
 
@@ -137,12 +139,12 @@ TEST_F(RenderViewContextMenuTest, TargetCheckedForAudio) {
 }
 
 TEST_F(RenderViewContextMenuTest, MatchWhenLinkedImageMatchesTarget) {
-  content::ContextMenuParams params = CreateParams(ExtensionMenuItem::IMAGE |
-                                                   ExtensionMenuItem::LINK);
+  content::ContextMenuParams params = CreateParams(MenuItem::IMAGE |
+                                                   MenuItem::LINK);
 
-  ExtensionMenuItem::ContextList contexts;
-  contexts.Add(ExtensionMenuItem::LINK);
-  contexts.Add(ExtensionMenuItem::IMAGE);
+  MenuItem::ContextList contexts;
+  contexts.Add(MenuItem::LINK);
+  contexts.Add(MenuItem::IMAGE);
 
   URLPatternSet patterns = CreatePatternSet("*://test.link/*");
 
@@ -150,12 +152,12 @@ TEST_F(RenderViewContextMenuTest, MatchWhenLinkedImageMatchesTarget) {
 }
 
 TEST_F(RenderViewContextMenuTest, MatchWhenLinkedImageMatchesSource) {
-  content::ContextMenuParams params = CreateParams(ExtensionMenuItem::IMAGE |
-                                                   ExtensionMenuItem::LINK);
+  content::ContextMenuParams params = CreateParams(MenuItem::IMAGE |
+                                                   MenuItem::LINK);
 
-  ExtensionMenuItem::ContextList contexts;
-  contexts.Add(ExtensionMenuItem::LINK);
-  contexts.Add(ExtensionMenuItem::IMAGE);
+  MenuItem::ContextList contexts;
+  contexts.Add(MenuItem::LINK);
+  contexts.Add(MenuItem::IMAGE);
 
   URLPatternSet patterns = CreatePatternSet("*://test.image/*");
 
@@ -163,12 +165,12 @@ TEST_F(RenderViewContextMenuTest, MatchWhenLinkedImageMatchesSource) {
 }
 
 TEST_F(RenderViewContextMenuTest, NoMatchWhenLinkedImageMatchesNeither) {
-  content::ContextMenuParams params = CreateParams(ExtensionMenuItem::IMAGE |
-                                                   ExtensionMenuItem::LINK);
+  content::ContextMenuParams params = CreateParams(MenuItem::IMAGE |
+                                                   MenuItem::LINK);
 
-  ExtensionMenuItem::ContextList contexts;
-  contexts.Add(ExtensionMenuItem::LINK);
-  contexts.Add(ExtensionMenuItem::IMAGE);
+  MenuItem::ContextList contexts;
+  contexts.Add(MenuItem::LINK);
+  contexts.Add(MenuItem::IMAGE);
 
   URLPatternSet patterns = CreatePatternSet("*://test.none/*");
 
@@ -176,10 +178,10 @@ TEST_F(RenderViewContextMenuTest, NoMatchWhenLinkedImageMatchesNeither) {
 }
 
 TEST_F(RenderViewContextMenuTest, TargetIgnoredForFrame) {
-  content::ContextMenuParams params = CreateParams(ExtensionMenuItem::FRAME);
+  content::ContextMenuParams params = CreateParams(MenuItem::FRAME);
 
-  ExtensionMenuItem::ContextList contexts;
-  contexts.Add(ExtensionMenuItem::FRAME);
+  MenuItem::ContextList contexts;
+  contexts.Add(MenuItem::FRAME);
 
   URLPatternSet patterns = CreatePatternSet("*://test.none/*");
 
@@ -187,10 +189,10 @@ TEST_F(RenderViewContextMenuTest, TargetIgnoredForFrame) {
 }
 
 TEST_F(RenderViewContextMenuTest, TargetIgnoredForEditable) {
-  content::ContextMenuParams params = CreateParams(ExtensionMenuItem::EDITABLE);
+  content::ContextMenuParams params = CreateParams(MenuItem::EDITABLE);
 
-  ExtensionMenuItem::ContextList contexts;
-  contexts.Add(ExtensionMenuItem::EDITABLE);
+  MenuItem::ContextList contexts;
+  contexts.Add(MenuItem::EDITABLE);
 
   URLPatternSet patterns = CreatePatternSet("*://test.none/*");
 
@@ -199,10 +201,10 @@ TEST_F(RenderViewContextMenuTest, TargetIgnoredForEditable) {
 
 TEST_F(RenderViewContextMenuTest, TargetIgnoredForSelection) {
   content::ContextMenuParams params =
-      CreateParams(ExtensionMenuItem::SELECTION);
+      CreateParams(MenuItem::SELECTION);
 
-  ExtensionMenuItem::ContextList contexts;
-  contexts.Add(ExtensionMenuItem::SELECTION);
+  MenuItem::ContextList contexts;
+  contexts.Add(MenuItem::SELECTION);
 
   URLPatternSet patterns = CreatePatternSet("*://test.none/*");
 
@@ -211,11 +213,11 @@ TEST_F(RenderViewContextMenuTest, TargetIgnoredForSelection) {
 
 TEST_F(RenderViewContextMenuTest, TargetIgnoredForSelectionOnLink) {
   content::ContextMenuParams params = CreateParams(
-      ExtensionMenuItem::SELECTION | ExtensionMenuItem::LINK);
+      MenuItem::SELECTION | MenuItem::LINK);
 
-  ExtensionMenuItem::ContextList contexts;
-  contexts.Add(ExtensionMenuItem::SELECTION);
-  contexts.Add(ExtensionMenuItem::LINK);
+  MenuItem::ContextList contexts;
+  contexts.Add(MenuItem::SELECTION);
+  contexts.Add(MenuItem::LINK);
 
   URLPatternSet patterns = CreatePatternSet("*://test.none/*");
 
@@ -224,11 +226,11 @@ TEST_F(RenderViewContextMenuTest, TargetIgnoredForSelectionOnLink) {
 
 TEST_F(RenderViewContextMenuTest, TargetIgnoredForSelectionOnImage) {
   content::ContextMenuParams params = CreateParams(
-      ExtensionMenuItem::SELECTION | ExtensionMenuItem::IMAGE);
+      MenuItem::SELECTION | MenuItem::IMAGE);
 
-  ExtensionMenuItem::ContextList contexts;
-  contexts.Add(ExtensionMenuItem::SELECTION);
-  contexts.Add(ExtensionMenuItem::IMAGE);
+  MenuItem::ContextList contexts;
+  contexts.Add(MenuItem::SELECTION);
+  contexts.Add(MenuItem::IMAGE);
 
   URLPatternSet patterns = CreatePatternSet("*://test.none/*");
 

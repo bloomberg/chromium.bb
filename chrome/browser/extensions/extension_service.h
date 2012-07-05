@@ -28,7 +28,6 @@
 #include "chrome/browser/extensions/app_sync_bundle.h"
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
-#include "chrome/browser/extensions/extension_menu_manager.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_sync_bundle.h"
@@ -36,6 +35,7 @@
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
+#include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
@@ -493,7 +493,7 @@ class ExtensionService
 
   ExtensionsQuotaService* quota_service() { return &quota_service_; }
 
-  ExtensionMenuManager* menu_manager() { return &menu_manager_; }
+  extensions::MenuManager* menu_manager() { return &menu_manager_; }
 
   AppNotificationManager* app_notification_manager() {
     return app_notification_manager_.get();
@@ -784,7 +784,7 @@ class ExtensionService
   scoped_ptr<extensions::ComponentLoader> component_loader_;
 
   // Keeps track of menu items added by extensions.
-  ExtensionMenuManager menu_manager_;
+  extensions::MenuManager menu_manager_;
 
   // Keeps track of app notifications.
   scoped_refptr<AppNotificationManager> app_notification_manager_;

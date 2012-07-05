@@ -15,14 +15,13 @@
 #include "base/observer_list.h"
 #include "base/string16.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
-#include "chrome/browser/extensions/extension_menu_manager.h"
+#include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_observer.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/page_transition_types.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class ExtensionMenuItem;
 class PrintPreviewContextMenuObserver;
 class Profile;
 class SpellingMenuObserver;
@@ -35,6 +34,7 @@ class WebContents;
 
 namespace extensions {
 class Extension;
+class MenuItem;
 }
 
 namespace gfx {
@@ -178,8 +178,8 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
       int command_id,
       ui::Accelerator* accelerator) = 0;
 
-  // Attempts to get an ExtensionMenuItem given the id of a context menu item.
-  ExtensionMenuItem* GetExtensionMenuItem(int id) const;
+  // Attempts to get an MenuItem given the id of a context menu item.
+  extensions::MenuItem* GetExtensionMenuItem(int id) const;
 
   content::ContextMenuParams params_;
   content::WebContents* source_web_contents_;
@@ -190,9 +190,8 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   // True if we are showing for an external tab contents. The default is false.
   bool external_;
 
-  // Maps the id from a context menu item to the ExtensionMenuItem's internal
-  // id.
-  std::map<int, ExtensionMenuItem::Id> extension_item_map_;
+  // Maps the id from a context menu item to the MenuItem's internal id.
+  std::map<int, extensions::MenuItem::Id> extension_item_map_;
 
  private:
   friend class RenderViewContextMenuTest;
@@ -201,10 +200,10 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   static bool IsInternalResourcesURL(const GURL& url);
   static bool ExtensionContextAndPatternMatch(
       const content::ContextMenuParams& params,
-      ExtensionMenuItem::ContextList contexts,
+      extensions::MenuItem::ContextList contexts,
       const URLPatternSet& target_url_patterns);
-  static ExtensionMenuItem::List GetRelevantExtensionItems(
-      const ExtensionMenuItem::List& items,
+  static extensions::MenuItem::List GetRelevantExtensionItems(
+      const extensions::MenuItem::List& items,
       const content::ContextMenuParams& params,
       Profile* profile,
       bool can_cross_incognito);
@@ -241,7 +240,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
 
   // Used for recursively adding submenus of extension items.
   void RecursivelyAppendExtensionItems(
-      const std::vector<ExtensionMenuItem*>& items,
+      const std::vector<extensions::MenuItem*>& items,
       bool can_cross_incognito,
       ui::SimpleMenuModel* menu_model,
       int* index);
