@@ -482,6 +482,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   }
 
  private:
+  friend class GDataCacheTest;
   friend class GDataFileSystemTest;
   FRIEND_TEST_ALL_PREFIXES(GDataFileSystemTest,
                            FindFirstMissingParentDirectory);
