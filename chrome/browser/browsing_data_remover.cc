@@ -297,7 +297,13 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     download_manager->ClearLastDownloadPath();
   }
 
-  if (remove_mask & REMOVE_COOKIES) {
+  // We ignore the REMOVE_COOKIES request if UNPROTECTED_WEB is not set,
+  // so that callers who request REMOVE_SITE_DATA with PROTECTED_WEB
+  // don't accidentally remove the cookies that are associated with the
+  // UNPROTECTED_WEB origin. This is necessary because cookies are not separated
+  // between UNPROTECTED_WEB and PROTECTED_WEB.
+  if (remove_mask & REMOVE_COOKIES &&
+      origin_set_mask_ & BrowsingDataHelper::UNPROTECTED_WEB) {
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Cookies"));
     // Since we are running on the UI thread don't call GetURLRequestContext().
     net::URLRequestContextGetter* rq_context = profile_->GetRequestContext();
@@ -330,7 +336,10 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 #endif
   }
 
-  if (remove_mask & REMOVE_SERVER_BOUND_CERTS) {
+  // Server bound certs are not separated for protected and unprotected web
+  // origins. We check the origin_set_mask_ to prevent unintended deletion.
+  if (remove_mask & REMOVE_SERVER_BOUND_CERTS &&
+      origin_set_mask_ & BrowsingDataHelper::UNPROTECTED_WEB) {
     content::RecordAction(
         UserMetricsAction("ClearBrowsingData_ServerBoundCerts"));
     // Since we are running on the UI thread don't call GetURLRequestContext().
@@ -362,7 +371,10 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
                    base::Unretained(this)));
   }
 
-  if (remove_mask & REMOVE_PLUGIN_DATA) {
+  // Plugin is data not separated for protected and unprotected web origins. We
+  // check the origin_set_mask_ to prevent unintended deletion.
+  if (remove_mask & REMOVE_PLUGIN_DATA &&
+      origin_set_mask_ & BrowsingDataHelper::UNPROTECTED_WEB) {
     content::RecordAction(UserMetricsAction("ClearBrowsingData_LSOData"));
 
     waiting_for_clear_plugin_data_ = true;
