@@ -200,8 +200,6 @@
     'browser/android/content_view_client.h',
     'browser/android/content_view_impl.cc',
     'browser/android/content_view_impl.h',
-    'browser/android/device_info.cc',
-    'browser/android/device_info.h',
     'browser/android/download_controller.cc',
     'browser/android/download_controller.h',
     'browser/android/ime_utils.cc',

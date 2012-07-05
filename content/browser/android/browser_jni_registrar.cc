@@ -10,11 +10,11 @@
 #include "content/browser/android/content_settings.h"
 #include "content/browser/android/content_view_client.h"
 #include "content/browser/android/content_view_impl.h"
-#include "content/browser/android/device_info.h"
 #include "content/browser/android/download_controller.h"
 #include "content/browser/android/sandboxed_process_launcher.h"
 #include "content/browser/android/touch_point.h"
 #include "content/browser/geolocation/location_api_adapter_android.h"
+#include "content/common/android/device_info.h"
 
 namespace {
 base::android::RegistrationMethod kContentRegisteredMethods[] = {

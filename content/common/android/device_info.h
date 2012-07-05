@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_DEVICE_INFO_H_
-#define CONTENT_BROWSER_ANDROID_DEVICE_INFO_H_
+#ifndef CONTENT_COMMON_ANDROID_DEVICE_INFO_H_
+#define CONTENT_COMMON_ANDROID_DEVICE_INFO_H_
 #pragma once
 
 #include <jni.h>
@@ -39,4 +39,4 @@ bool RegisterDeviceInfo(JNIEnv* env);
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ANDROID_DEVICE_INFO_H_
+#endif  // CONTENT_COMMON_ANDROID_DEVICE_INFO_H_

@@ -104,6 +104,8 @@
     'common/android/command_line.h',
     'common/android/common_jni_registrar.cc',
     'common/android/common_jni_registrar.h',
+    'common/android/device_info.cc',
+    'common/android/device_info.h',
     'common/android/surface_callback.cc',
     'common/android/surface_callback.h',
     'common/android/surface_texture_bridge.cc',
