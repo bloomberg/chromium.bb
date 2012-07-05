@@ -285,6 +285,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDefaultMediaStreamSetting,
     prefs::kManagedDefaultMediaStreamSetting,
     Value::TYPE_INTEGER },
+  { key::kDisableSafeBrowsingProceedAnyway,
+    prefs::kSafeBrowsingProceedAnywayDisabled,
+    Value::TYPE_BOOLEAN },
 
 #if defined(OS_CHROMEOS)
   { key::kChromeOsLockOnIdleSuspend,

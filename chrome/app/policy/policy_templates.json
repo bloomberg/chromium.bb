@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 149
+#   For your editing convenience: highest ID currently used: 150
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -2728,9 +2728,7 @@
       'name': 'RestrictSigninToPattern',
       'type': 'string',
       'supported_on': ['chrome.*:21-'],
-      'features': {
-        'dynamic_refresh': True,
-      },
+      'features': {'dynamic_refresh': True},
       'example_value': '*@domain.com',
       'id': 147,
       'caption': '''Restrict which users are allowed to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
@@ -2739,6 +2737,20 @@
       An appropriate error is displayed if a user tries to log in with a username that does not match this pattern.
 
       If this policy is left not set or blank, then any user can sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+    },
+    {
+      'name': 'DisableSafeBrowsingProceedAnyway',
+      'type': 'main',
+      'supported_on': ['chrome.*:22-', 'chrome_os:0.22-'],
+      'features': {'dynamic_refresh': True},
+      'example_value': True,
+      'id': 150,
+      'caption': '''Disable proceeding from the Safe Browsing warning page''',
+      'desc': '''Disable proceeding from the Safe Browsing warning page.
+
+      The Safe Browsing service shows a warning page when users navigate to sites that are flagged as potentially mallicious. Enabling this setting prevents users from proceeding anyway from the warning page to the malicious site.
+
+      If this setting is disabled or not configured then users can choose to proceed to the flagged site after being shown the warning.''',
     },
   ],
   'messages': {

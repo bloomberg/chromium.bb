@@ -243,6 +243,8 @@ class PolicyPrefsTestCases(object):
         ('kBackgroundModeEnabled', True, [BROWSER], ['win', 'linux']),
     'RestrictSigninToPattern': ('kGoogleServicesUsernamePattern',
                                 '.*@google.com', [], ['win', 'mac', 'linux']),
+    'DisableSafeBrowsingProceedAnyway':
+        ('kSafeBrowsingProceedAnywayDisabled', True, [], OS_ALL),
 
     # ChromeOS-only policies:
     # TODO(frankf): Add prefs for these after crosbug.com/28756 is fixed.
