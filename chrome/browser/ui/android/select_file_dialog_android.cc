@@ -7,7 +7,8 @@
 #include "base/logging.h"
 
 // static
-SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
+SelectFileDialog* SelectFileDialog::Create(Listener* listener,
+                                           ui::SelectFilePolicy* policy) {
   // see crbug.com/116131 to track implemenation of SelectFileDialog
   NOTIMPLEMENTED();
   return NULL;
