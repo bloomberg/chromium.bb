@@ -52,42 +52,42 @@ static void Event_Get_Time(struct timeval*, bool);
 int
 Event_Get_Left(EvdevPtr device)
 {
-    struct input_absinfo* absinfo = &device->info.absinfo[ABS_X];
+    struct input_absinfo* absinfo = &device->info.absinfo[ABS_MT_POSITION_X];
     return absinfo->minimum;
 }
 
 int
 Event_Get_Right(EvdevPtr device)
 {
-    struct input_absinfo* absinfo = &device->info.absinfo[ABS_X];
+    struct input_absinfo* absinfo = &device->info.absinfo[ABS_MT_POSITION_X];
     return absinfo->maximum;
 }
 
 int
 Event_Get_Top(EvdevPtr device)
 {
-    struct input_absinfo* absinfo = &device->info.absinfo[ABS_Y];
+    struct input_absinfo* absinfo = &device->info.absinfo[ABS_MT_POSITION_Y];
     return absinfo->minimum;
 }
 
 int
 Event_Get_Bottom(EvdevPtr device)
 {
-    struct input_absinfo* absinfo = &device->info.absinfo[ABS_Y];
+    struct input_absinfo* absinfo = &device->info.absinfo[ABS_MT_POSITION_Y];
     return absinfo->maximum;
 }
 
 int
 Event_Get_Res_Y(EvdevPtr device)
 {
-    struct input_absinfo* absinfo = &device->info.absinfo[ABS_Y];
+    struct input_absinfo* absinfo = &device->info.absinfo[ABS_MT_POSITION_Y];
     return absinfo->resolution;
 }
 
 int
 Event_Get_Res_X(EvdevPtr device)
 {
-    struct input_absinfo* absinfo = &device->info.absinfo[ABS_X];
+    struct input_absinfo* absinfo = &device->info.absinfo[ABS_MT_POSITION_X];
     return absinfo->resolution;
 }
 
