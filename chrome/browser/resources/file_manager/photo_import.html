@@ -1,0 +1,66 @@
+<!DOCTYPE HTML>
+<!--
+  -- Copyright (c) 2012 The Chromium Authors. All rights reserved.
+  -- Use of this source code is governed by a BSD-style license that can be
+  -- found in the LICENSE file.
+  -->
+<html>
+<head>
+  <link rel="stylesheet" href="../shared/css/list.css"></link>
+  <link rel="stylesheet" href="../shared/css/dialogs.css"></link>
+
+  <link rel="stylesheet" type="text/css" href="css/common.css"/>
+  <link rel="stylesheet" type="text/css" href="css/media_controls.css"/>
+  <link rel="stylesheet" type="text/css" href="css/select_album_dialog.css"/>
+  <link rel="stylesheet" type="text/css" href="css/tile_view.css"/>
+  <link rel="stylesheet" type="text/css" href="css/photo_import.css"/>
+
+  <script src="js/photo/photo_import_scripts.js"></script>
+
+  <if expr="0">
+    <!-- This file has not been flattened, load individual scripts.
+         Keep the list in sync with photoapp_scripts.js. -->
+    <script src="../shared/js/load_time_data.js"></script>
+    <script src="../shared/js/util.js"></script>
+    <script src="../shared/js/i18n_template_no_process.js"></script>
+
+    <script src="../shared/js/cr.js"></script>
+    <script src="../shared/js/event_tracker.js"></script>
+    <script src="../shared/js/cr/ui.js"></script>
+    <script src="../shared/js/cr/event_target.js"></script>
+    <script src="../shared/js/cr/ui/touch_handler.js"></script>
+    <script src="../shared/js/cr/ui/array_data_model.js"></script>
+    <script src="../shared/js/cr/ui/dialogs.js"></script>
+    <script src="../shared/js/cr/ui/list_item.js"></script>
+    <script src="../shared/js/cr/ui/list_selection_model.js"></script>
+    <script src="../shared/js/cr/ui/list_single_selection_model.js"></script>
+    <script src="../shared/js/cr/ui/list_selection_controller.js"></script>
+    <script src="../shared/js/cr/ui/list.js"></script>
+    <script src="../shared/js/cr/ui/grid.js"></script>
+
+    <script src="js/util.js"></script>
+    <script src="js/file_type.js"></script>
+    <script src="js/metadata/metadata_cache.js"></script>
+    <script src="js/metrics.js"></script>
+    <script src="js/image_editor/image_util.js"></script>
+    <script src="js/media/media_util.js"></script>
+
+    <script src="js/photo/select_album_dialog.js"></script>
+    <script src="js/photo/tile_view.js"></script>
+    <script src="js/photo/photo_import.js"></script>
+  </if>
+</head>
+
+<body>
+  <div class="photo-import">
+    <div class="grid-container">
+      <div class="titlebar">
+        <div class="title"></div>
+        <button class="import"></button>
+      </div>
+      <grid></grid>
+    </div>
+    <div class="spinner"></div>
+  </div>
+</body>
+</html>
