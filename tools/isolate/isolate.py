@@ -78,8 +78,6 @@ def expand_directory_and_symlink(indir, relfile, blacklist):
   with:
     ln -s .. foo
   """
-  logging.debug(
-      'expand_directory_and_symlink(%s, %s, %s)' % (indir, relfile, blacklist))
   if os.path.isabs(relfile):
     raise run_test_from_archive.MappingError(
         'Can\'t map absolute path %s' % relfile)
@@ -149,9 +147,6 @@ def expand_directories_and_symlinks(indir, infiles, blacklist):
 
   Files are specified in os native path separatro.
   """
-  logging.debug(
-      'expand_directories_and_symlinks(%s, %s, %s)' %
-        (indir, infiles, blacklist))
   outfiles = []
   for relfile in infiles:
     outfiles.extend(expand_directory_and_symlink(indir, relfile, blacklist))
@@ -315,8 +310,8 @@ def determine_root_dir(relative_root, infiles):
     if deepest_root.startswith(x):
       deepest_root = x
   logging.debug(
-      'determine_root_dir(%s, %s) -> %s' % (
-          relative_root, infiles, deepest_root))
+      'determine_root_dir(%s, %d files) -> %s' % (
+          relative_root, len(infiles), deepest_root))
   return deepest_root
 
 
@@ -415,7 +410,7 @@ class Result(Flattenable):
   def __str__(self):
     out = '%s(\n' % self.__class__.__name__
     out += '  command: %s\n' % self.command
-    out += '  files: %s\n' % ', '.join(sorted(self.files))
+    out += '  files: %d\n' % len(self.files)
     out += '  read_only: %s\n' % self.read_only
     out += '  relative_cwd: %s)' % self.relative_cwd
     return out
@@ -761,7 +756,8 @@ def CMDrun(args):
         complete_state.root_dir,
         complete_state.result.files.keys(),
         run_test_from_archive.HARDLINK)
-    cwd = os.path.join(options.outdir, complete_state.result.relative_cwd)
+    cwd = os.path.normpath(
+        os.path.join(options.outdir, complete_state.result.relative_cwd))
     if not os.path.isdir(cwd):
       os.makedirs(cwd)
     if complete_state.result.read_only:
@@ -791,17 +787,18 @@ def CMDtrace(args):
   options, _ = parser.parse_args(args)
   complete_state = load_complete_state(options, STATS_ONLY)
 
-  cwd = os.path.join(
-      complete_state.root_dir, complete_state.result.relative_cwd)
+  cwd = os.path.normpath(os.path.join(
+      complete_state.root_dir, complete_state.result.relative_cwd))
   logging.info('Running %s, cwd=%s' % (complete_state.result.command, cwd))
   if not complete_state.result.command:
     raise ExecutionError('No command to run')
   api = trace_inputs.get_api()
   logfile = complete_state.result_file + '.log'
+  cmd = trace_inputs.fix_python_path(complete_state.result.command)
   try:
     with api.get_tracer(logfile) as tracer:
       result, _ = tracer.trace(
-          complete_state.result.command,
+          cmd,
           cwd,
           'default',
           True)
