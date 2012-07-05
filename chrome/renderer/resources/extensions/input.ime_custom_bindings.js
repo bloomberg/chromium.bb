@@ -25,7 +25,7 @@ chromeHidden.registerCustomHook('input.ime', function() {
     for (var i = 0; i < this.listeners_.length; i++) {
       try {
         var requestId = keyData.requestId;
-        var result = this.listeners_[i].apply(null, args);
+        var result = this.listeners_[i].callback.apply(null, args);
         chrome.input.ime.eventHandled(requestId, result);
       } catch (e) {
         console.error('Error in event handler for onKeyEvent: ' + e.stack);
