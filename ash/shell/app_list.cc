@@ -212,7 +212,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
                              gfx::Canvas::TEXT_VALIGN_MIDDLE |
                              gfx::Canvas::NO_SUBPIXEL_RENDERING);
 
-    return gfx::ImageSkia(canvas.ExtractBitmap());
+    return gfx::ImageSkia(canvas.ExtractImageSkiaRep());
   }
 
   void DecorateSearchBox(app_list::SearchBoxModel* search_box_model) {
