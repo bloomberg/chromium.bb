@@ -119,7 +119,8 @@ def generate_simplified(files, root_dir, variables, relative_cwd):
   relative_cwd = cleanup_path(relative_cwd)
   # Creates the right set of variables here. We only care about PATH_VARIABLES.
   variables = dict(
-      ('<(%s)' % k, variables[k]) for k in PATH_VARIABLES if k in variables)
+      ('<(%s)' % k, variables[k].replace(os.path.sep, '/'))
+      for k in PATH_VARIABLES if k in variables)
 
   # Actual work: Process the files.
   files = trace_inputs.extract_directories(root_dir, files, default_blacklist)
