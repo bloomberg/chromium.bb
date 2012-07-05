@@ -6,7 +6,7 @@
 
 #include <map>
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(ARCH_CPU_ARMEL)
 #include "third_party/angle/include/EGL/egl.h"  // Must precede ui/gl headers!
 #endif
 
@@ -19,10 +19,6 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
-
-#if defined(ARCH_CPU_ARMEL)
-#include "third_party/angle/include/GLES2/gl2.h"
-#endif  // ARCH_CPU_ARMEL
 
 #if !defined(OS_WIN) && defined(ARCH_CPU_X86_FAMILY)
 #define GL_VARIANT_GLX 1
@@ -255,7 +251,10 @@ void RenderingHelperGL::Initialize(bool suppress_swap_to_display,
     windows_.push_back(window);
 #else
     int depth = DefaultDepth(x_display_, DefaultScreen(x_display_));
+
+#if defined(GL_VARIANT_GLX)
     CHECK_EQ(depth, x_visual_->depth);
+#endif
 
     XSetWindowAttributes window_attributes;
     window_attributes.background_pixel =
