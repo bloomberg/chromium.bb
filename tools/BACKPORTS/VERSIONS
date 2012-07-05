@@ -72,9 +72,10 @@ ppapi20	8428
   glibc		c4697f709fa233bdc58ec31b1db5c177fa650be7	Correct building runnable-ld.so to ensure that the stack on entry to main is aligned for 0mod16 on x86-32
   glibc		a9de56786e660d88f7d27c00ab7f89f3502ec25e	Fix bswap_64 for x86-64
   newlib	67e351079b71e78eaad782a19ffa9f3ff2c1d78d	Avoid duplicate symbol for _dummy_mallocr
-  newlib	4353bc00936874bb78aa3ba21c648b4f4c3f946b	Avoid setjmp-dj.h include for __native_client__
   newlib	41d8ddb5d302646fadc1e21eb7e6012bc001cf14	Move 'rep' prefixes onto instruction lines
   newlib	51a8366a0898bc47ee78a7f6ed01e8bd40eee4d0	Use 'naclret' in x86 assembly code
+  # Skipped (change is incompatible with old NaCl repos: tests fail)
+  # newlib	4353bc00936874bb78aa3ba21c648b4f4c3f946b	Avoid setjmp-dj.h include for __native_client__
   # Skipped (only affect ARM/PNaCl build which is not in SDK yet):
   # newlib	97c773a2dcff012b48016efa87565ab49f6e4dc0	Apply basic pnacl patch to nacl-newlib.git
   # newlib	43290a40c6d871b8668dd2bf8955d26c62775afc	Use LLVM intrinsics for square root
