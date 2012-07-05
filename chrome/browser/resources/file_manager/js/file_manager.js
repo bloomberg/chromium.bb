@@ -1087,10 +1087,10 @@ FileManager.prototype = {
       // Hack goes below, since we don't receive beforepaste event, but receive
       // beforecut and beforecopy events.
       case 'paste':
-        return this.isRenamingInProgress()
-                   ? this.document_.queryCommandEnabled(commandId)
-                   : (!!this.fileTransferController_ &&
-                      this.fileTransferController_.queryPasteCommandEnabled());
+        return this.isRenamingInProgress() ?
+               this.document_.queryCommandEnabled(commandId) :
+               (!!this.fileTransferController_ &&
+                this.fileTransferController_.queryPasteCommandEnabled());
 
       case 'rename':
         return (// Initialized to the point where we have a current directory
@@ -1102,11 +1102,9 @@ FileManager.prototype = {
                 this.selection.totalCount == 1);
 
       case 'delete':
-        return (this.isRenamingInProgress()
-                ? this.document_.queryCommandEnabled(commandId)
-                : !readonly &&
-                  this.selection &&
-                  this.selection.totalCount > 0);
+        return this.isRenamingInProgress() ?
+               this.document_.queryCommandEnabled(commandId) :
+               !readonly && this.selection && this.selection.totalCount > 0;
 
       case 'newfolder':
         return !readonly &&
