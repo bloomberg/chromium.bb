@@ -185,7 +185,8 @@ if sys.platform != 'win32':
         self.fail()
       except trace_inputs.TracingFailure, e:
         expected = (
-          'Found internal inconsitency in process lifetime detection',
+          'Found internal inconsitency in process lifetime detection '
+          'while finding the root process',
           None,
           None,
           None,

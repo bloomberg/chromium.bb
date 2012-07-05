@@ -1113,7 +1113,8 @@ class Strace(ApiBase):
         child = self.root().get_or_set_proc(childpid)
         if child.parentid is not None or childpid in self.children:
           raise TracingFailure(
-              'Found internal inconsitency in process lifetime detection',
+              'Found internal inconsitency in process lifetime detection '
+              'during a clone() call',
               None, None, None)
 
         # Copy the cwd object.
@@ -1194,15 +1195,17 @@ class Strace(ApiBase):
       root = [p for p in self.processes.itervalues() if not p.parentid]
       if len(root) != 1:
         raise TracingFailure(
-            'Found internal inconsitency in process lifetime detection',
+            'Found internal inconsitency in process lifetime detection '
+            'while finding the root process',
             None,
             None,
             None,
-            root)
+            sorted(p.pid for p in root))
       process = root[0].to_results_process()
       if sorted(self.processes) != sorted(p.pid for p in process.all):
         raise TracingFailure(
-            'Found internal inconsitency in process lifetime detection',
+            'Found internal inconsitency in process lifetime detection '
+            'while looking for len(tree) == len(list)',
             None,
             None,
             None,
@@ -1399,7 +1402,8 @@ class Dtrace(ApiBase):
       # Internal concistency check.
       if sorted(self.processes) != sorted(p.pid for p in process.all):
         raise TracingFailure(
-            'Found internal inconsitency in process lifetime detection',
+            'Found internal inconsitency in process lifetime detection '
+            'while looking for len(tree) == len(list)',
             None,
             None,
             None,
@@ -2194,7 +2198,8 @@ class LogmanTrace(ApiBase):
       # Internal concistency check.
       if sorted(self.processes) != sorted(p.pid for p in process.all):
         raise TracingFailure(
-            'Found internal inconsitency in process lifetime detection',
+            'Found internal inconsitency in process lifetime detection '
+            'while looking for len(tree) == len(list)',
             None,
             None,
             None,
