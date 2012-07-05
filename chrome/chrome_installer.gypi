@@ -154,6 +154,7 @@
                 # (generated_resources.grd) doesn't match the generated file
                 # (installer_util_strings.h).
                 '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/installer_util_strings.h',
+                '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/installer_util_strings.rc',
               ],
               'action': ['python',
                          '<(create_string_rc_py)',
