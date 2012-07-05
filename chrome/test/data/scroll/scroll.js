@@ -8,7 +8,7 @@
 // USAGE:
 //   1. To start the scrolling, invoke __scroll_test().
 //   2. Wait for __scrolling_complete to be true
-//   3. Read __initial_frame_times and __repeat_frame_times arrays.
+//   3. Read __frame_times array.
 
 
 // Function that sets a callback called when the next frame is rendered.

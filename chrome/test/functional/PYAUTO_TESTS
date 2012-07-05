@@ -629,6 +629,7 @@
       # ===========================
       # Invoked outside of the pyauto_tests framework.
       '-perf.BenchmarkPerfTest.testSpaceport',
+      '-perf.PopularSitesScrollTest.test2012Q2',
     ],
     'win': [
       # ==================================================
