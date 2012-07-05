@@ -70,32 +70,33 @@ def expand_directory_and_symlink(indir, relfile, blacklist):
     raise run_test_from_archive.MappingError(
         'Can\'t map file %s outside %s' % (infile, indir))
 
-  # Look if any item in relfile is a symlink.
-  base, symlink, rest = trace_inputs.split_at_symlink(indir, relfile)
-  if symlink:
-    # Append everything pointed by the symlink. If the symlink is recursive,
-    # this code blows up.
-    symlink_relfile = os.path.join(base, symlink)
-    symlink_path = os.path.join(indir, symlink_relfile)
-    pointed = os.readlink(symlink_path)
-    dest_infile = normpath(
-        trace_inputs.safe_join(
-            os.path.join(os.path.dirname(symlink_path), pointed),
-            rest))
-    if not dest_infile.startswith(indir):
-      raise run_test_from_archive.MappingError(
-          'Can\'t map symlink reference %s (from %s) ->%s outside of %s' %
-          (symlink_relfile, relfile, dest_infile, indir))
-    if infile.startswith(dest_infile):
-      raise run_test_from_archive.MappingError(
-          'Can\'t map recursive symlink reference %s->%s' %
-          (symlink_relfile, dest_infile))
-    dest_relfile = dest_infile[len(indir)+1:]
-    logging.info('Found symlink: %s -> %s' % (symlink_relfile, dest_relfile))
-    out = expand_directory_and_symlink(indir, dest_relfile, blacklist)
-    # Add the symlink itself.
-    out.append(symlink_relfile)
-    return out
+  if sys.platform != 'win32':
+    # Look if any item in relfile is a symlink.
+    base, symlink, rest = trace_inputs.split_at_symlink(indir, relfile)
+    if symlink:
+      # Append everything pointed by the symlink. If the symlink is recursive,
+      # this code blows up.
+      symlink_relfile = os.path.join(base, symlink)
+      symlink_path = os.path.join(indir, symlink_relfile)
+      pointed = os.readlink(symlink_path)
+      dest_infile = normpath(
+          trace_inputs.safe_join(
+              os.path.join(os.path.dirname(symlink_path), pointed),
+              rest))
+      if not dest_infile.startswith(indir):
+        raise run_test_from_archive.MappingError(
+            'Can\'t map symlink reference %s (from %s) ->%s outside of %s' %
+            (symlink_relfile, relfile, dest_infile, indir))
+      if infile.startswith(dest_infile):
+        raise run_test_from_archive.MappingError(
+            'Can\'t map recursive symlink reference %s->%s' %
+            (symlink_relfile, dest_infile))
+      dest_relfile = dest_infile[len(indir)+1:]
+      logging.info('Found symlink: %s -> %s' % (symlink_relfile, dest_relfile))
+      out = expand_directory_and_symlink(indir, dest_relfile, blacklist)
+      # Add the symlink itself.
+      out.append(symlink_relfile)
+      return out
 
   if relfile.endswith(os.path.sep):
     if not os.path.isdir(infile):
