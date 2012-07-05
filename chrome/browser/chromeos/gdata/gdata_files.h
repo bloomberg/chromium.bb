@@ -342,6 +342,9 @@ class GDataRootDirectory : public GDataDirectory {
   // A map table of file's resource string to its GDataFile* entry.
   typedef std::map<std::string, GDataEntry*> ResourceMap;
 
+  // Callback for GetEntryByResourceIdAsync.
+  typedef base::Callback<void(GDataEntry* entry)> GetEntryByResourceIdCallback;
+
   GDataRootDirectory();
   virtual ~GDataRootDirectory();
 
@@ -370,7 +373,13 @@ class GDataRootDirectory : public GDataDirectory {
                        const FindEntryCallback& callback);
 
   // Returns the GDataEntry* with the corresponding |resource_id|.
+  // TODO(achuith): Get rid of this in favor of async version crbug.com/13957.
   GDataEntry* GetEntryByResourceId(const std::string& resource_id);
+
+  // Returns the GDataEntry* in the callback with the corresponding
+  // |resource_id|. TODO(achuith): Rename this to GetEntryByResourceId.
+  void GetEntryByResourceIdAsync(const std::string& resource_id,
+                                 const GetEntryByResourceIdCallback& callback);
 
   // Replaces file entry with the same resource id as |fresh_file| with its
   // fresh value |fresh_file|.

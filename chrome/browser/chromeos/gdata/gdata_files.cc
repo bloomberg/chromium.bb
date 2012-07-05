@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 
+#include <vector>
+
 #include "base/utf_string_conversions.h"
 #include "base/platform_file.h"
 #include "base/stringprintf.h"
@@ -23,6 +25,19 @@ const char kEscapedSlash[] = "\xE2\x88\x95";
 std::string ExtractResourceId(const GURL& url) {
   return net::UnescapeURLComponent(url.ExtractFileName(),
                                    net::UnescapeRule::URL_SPECIAL_CHARS);
+}
+
+// Replaces file entry |old_entry| with its fresh value |fresh_file|.
+void RefreshFileInternal(scoped_ptr<GDataFile> fresh_file,
+                         GDataEntry* old_entry) {
+  GDataDirectory* entry_parent = old_entry ? old_entry->parent() : NULL;
+  if (entry_parent) {
+    DCHECK_EQ(fresh_file->resource_id(), old_entry->resource_id());
+    DCHECK(old_entry->AsGDataFile());
+
+    entry_parent->RemoveEntry(old_entry);
+    entry_parent->AddEntry(fresh_file.release());
+  }
 }
 
 }  // namespace
@@ -481,21 +496,6 @@ void GDataRootDirectory::FindEntryByPath(const FilePath& file_path,
   callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, NULL);
 }
 
-void GDataRootDirectory::RefreshFile(scoped_ptr<GDataFile> fresh_file) {
-  DCHECK(fresh_file.get());
-
-  GDataEntry* old_entry = GetEntryByResourceId(fresh_file->resource_id());
-  GDataDirectory* entry_parent = old_entry ? old_entry->parent() : NULL;
-
-  if (entry_parent) {
-    DCHECK_EQ(fresh_file->resource_id(), old_entry->resource_id());
-    DCHECK(old_entry->AsGDataFile());
-
-    entry_parent->RemoveEntry(old_entry);
-    entry_parent->AddEntry(fresh_file.release());
-  }
-}
-
 GDataEntry* GDataRootDirectory::GetEntryByResourceId(
     const std::string& resource) {
   // GDataFileSystem has already locked.
@@ -503,6 +503,22 @@ GDataEntry* GDataRootDirectory::GetEntryByResourceId(
   if (iter == resource_map_.end())
     return NULL;
   return iter->second;
+}
+
+void GDataRootDirectory::GetEntryByResourceIdAsync(
+    const std::string& resource_id,
+    const GetEntryByResourceIdCallback& callback) {
+  GDataEntry* entry = GetEntryByResourceId(resource_id);
+  callback.Run(entry);
+}
+
+void GDataRootDirectory::RefreshFile(scoped_ptr<GDataFile> fresh_file) {
+  DCHECK(fresh_file.get());
+
+  // Need to get a reference here because Passed() could get evaluated first.
+  const std::string& resource_id = fresh_file->resource_id();
+  GetEntryByResourceIdAsync(resource_id,
+      base::Bind(&RefreshFileInternal, base::Passed(&fresh_file)));
 }
 
 // Convert to/from proto.

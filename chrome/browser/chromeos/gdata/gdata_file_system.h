@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -1144,6 +1145,13 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const std::string& resource_id,
       const std::string& md5,
       const FilePath& cache_file_path);
+  // Callback for GDataRootDirectory::GetEntryByResourceIdAsync.
+  void OnGetFileCompleteForUpdateFileByEntry(
+    const FileOperationCallback& callback,
+    const std::string& md5,
+    const FilePath& cache_file_path,
+    GDataEntry* entry);
+
 
   // Called when GDataUploader::UploadUpdatedFile() is completed for
   // UpdateFileByResourceId().
@@ -1184,9 +1192,18 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const std::string& resource_id,
       const GetFileCallback& get_file_callback,
       const GetDownloadDataCallback& get_download_data_callback);
+  void GetFileByEntryOnUIThread(
+      const GetFileCallback& get_file_callback,
+      const GetDownloadDataCallback& get_download_data_callback,
+      GDataEntry* entry);
+  void GetFileInfoByEntryOnUIThread(
+      const GetFileInfoWithFilePathCallback& callback,
+      GDataEntry* entry);
   void UpdateFileByResourceIdOnUIThread(
       const std::string& resource_id,
       const FileOperationCallback& callback);
+  void UpdateFileByEntryOnUIThread(const FileOperationCallback& callback,
+      GDataEntry* entry);
   void GetEntryInfoByPathAsyncOnUIThread(
       const FilePath& file_path,
       const GetEntryInfoCallback& callback);
@@ -1203,6 +1220,10 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const FilePath& file_path);
   void OnRequestDirectoryRefresh(GetDocumentsParams* params,
                                  base::PlatformFileError error);
+  void RequestDirectoryRefreshByEntry(const FilePath& directory_path,
+      const std::string& directory_resource_id,
+      const FileResourceIdMap& file_map,
+      GDataEntry* directory_entry);
   void GetAvailableSpaceOnUIThread(const GetAvailableSpaceCallback& callback);
   void AddUploadedFileOnUIThread(UploadMode upload_mode,
                                  const FilePath& virtual_dir_path,
