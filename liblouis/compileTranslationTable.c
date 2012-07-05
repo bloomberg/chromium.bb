@@ -1469,6 +1469,7 @@ parseChars (FileInfo * nested, CharsString * result, CharsString * token)
   int in = 0;
   int out = 0;
   int lastOutSize = 0;
+  int lastIn;
   unsigned int ch = 0;
   int numBytes = 0;
   unsigned int utf32 = 0;
@@ -1547,12 +1548,11 @@ parseChars (FileInfo * nested, CharsString * result, CharsString * token)
 		    }
 		  break;
 		default:
-		  compileError (nested,
-				  "invalid escape sequence '\\%c'", ch);
+		  compileError (nested, "invalid escape sequence '\\%c'", ch);
 		  ok = 0;
 		  break;
 		}
-	    in++;
+	      in++;
 	    }
 	  result->chars[out++] = (widechar) ch;
 	  if (out >= MAXSTRING)
@@ -1563,6 +1563,7 @@ parseChars (FileInfo * nested, CharsString * result, CharsString * token)
 	  continue;
 	}
       lastOutSize = out;
+      lastIn = in;
       for (numBytes = MAXBYTES - 1; numBytes >= 0; numBytes--)
 	if (ch >= first0Bit[numBytes])
 	  break;
@@ -1571,6 +1572,14 @@ parseChars (FileInfo * nested, CharsString * result, CharsString * token)
 	{
 	  if (in >= MAXSTRING)
 	    break;
+	  if (token->chars[in] < 128 || (token->chars[in] & 0x0040))
+	    {
+	      compileWarning (nested,
+	      "invalid UTF-8. Assuming Latin-1.");
+	      result->chars[out++] = token->chars[lastIn];
+	      in = lastIn + 1;
+	      continue;
+	    }
 	  utf32 = (utf32 << 6) + (token->chars[in++] & 0x3f);
 	}
       if (CHARSIZE == 2 && utf32 > 0xffff)
@@ -2248,18 +2257,6 @@ passAddName (CharsString * name, int var)
   curname->next = passNames;
   passNames = curname;
   return 1;
-}
-
-static void
-passDeallocateNames (void)
-{
-  while (passNames)
-    {
-      struct PassName *curname = passNames;
-      passNames = passNames->next;
-      if (curname)
-	free (curname);
-    }
 }
 
 static pass_Codes
@@ -4791,6 +4788,8 @@ cleanup:
     deallocateCharacterClasses ();
   if (ruleNames)
     deallocateRuleNames ();
+  if (warningCount)
+    lou_logPrint ("%d warnings issued", warningCount);
   if (!errorCount)
     {
       setDefaults ();
@@ -5192,5 +5191,6 @@ lou_getTablePaths ()
 void
 debugHook ()
 {
-  char *hook = "debug hook";
+  char *hook = "debug hook\n";
+  printf (hook);
 }
