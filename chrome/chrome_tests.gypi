@@ -1001,6 +1001,7 @@
         # All unittests in browser, common, renderer and service.
         'browser/about_flags_unittest.cc',
         'browser/app_controller_mac_unittest.mm',
+        'browser/autocomplete/autocomplete_input_unittest.cc',
         'browser/autocomplete/autocomplete_result_unittest.cc',
         'browser/autocomplete/autocomplete_unittest.cc',
         'browser/autocomplete/builtin_provider_unittest.cc',
