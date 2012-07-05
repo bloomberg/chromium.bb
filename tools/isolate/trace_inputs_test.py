@@ -64,13 +64,63 @@ class TraceInputs(unittest.TestCase):
     self.assertEquals(os.path.join('/usr', '$FOO/bar'), actual.full_path)
     self.assertEquals(True, actual.tainted)
 
-  def test_native_case_windows(self):
-    if sys.platform != 'win32':
-      return
-    windows_path = os.environ['SystemRoot']
-    self.assertEquals(
-        trace_inputs.get_native_path_case(windows_path.lower()),
-        trace_inputs.get_native_path_case(windows_path.upper()))
+  if sys.platform == 'win32':
+    def test_native_case_windows(self):
+      windows_path = os.environ['SystemRoot']
+      self.assertEquals(
+          trace_inputs.get_native_path_case(windows_path.lower()),
+          trace_inputs.get_native_path_case(windows_path.upper()))
+
+  if sys.platform != 'win32':
+    def test_symlink(self):
+      # This test will fail if the checkout is in a symlink.
+      actual = trace_inputs.split_at_symlink(None, ROOT_DIR)
+      expected = (ROOT_DIR, None, None)
+      self.assertEquals(expected, actual)
+
+      actual = trace_inputs.split_at_symlink(
+          None, os.path.join(ROOT_DIR, 'data', 'trace_inputs'))
+      expected = (
+          os.path.join(ROOT_DIR, 'data', 'trace_inputs'), None, None)
+      self.assertEquals(expected, actual)
+
+      actual = trace_inputs.split_at_symlink(
+          None, os.path.join(ROOT_DIR, 'data', 'trace_inputs', 'files2'))
+      expected = (
+          os.path.join(ROOT_DIR, 'data', 'trace_inputs'), 'files2', '')
+      self.assertEquals(expected, actual)
+
+      actual = trace_inputs.split_at_symlink(
+          ROOT_DIR, os.path.join('data', 'trace_inputs', 'files2'))
+      expected = (
+          os.path.join('data', 'trace_inputs'), 'files2', '')
+      self.assertEquals(expected, actual)
+      actual = trace_inputs.split_at_symlink(
+          ROOT_DIR, os.path.join('data', 'trace_inputs', 'files2', 'bar'))
+      expected = (
+          os.path.join('data', 'trace_inputs'), 'files2', '/bar')
+      self.assertEquals(expected, actual)
+
+    def test_native_case_symlink_right_case(self):
+      actual = trace_inputs.get_native_path_case(
+          os.path.join(ROOT_DIR, 'data', 'trace_inputs'))
+      self.assertEquals('trace_inputs', os.path.basename(actual))
+
+      # Make sure the symlink is not resolved.
+      actual = trace_inputs.get_native_path_case(
+          os.path.join(ROOT_DIR, 'data', 'trace_inputs', 'files2'))
+      self.assertEquals('files2', os.path.basename(actual))
+
+  if sys.platform == 'darwin':
+    def test_native_case_symlink_wrong_case(self):
+      actual = trace_inputs.get_native_path_case(
+          os.path.join(ROOT_DIR, 'data', 'trace_inputs'))
+      self.assertEquals('trace_inputs', os.path.basename(actual))
+
+      # Make sure the symlink is not resolved.
+      actual = trace_inputs.get_native_path_case(
+          os.path.join(ROOT_DIR, 'data', 'trace_inputs', 'Files2'))
+      self.assertEquals('files2', os.path.basename(actual))
 
 
 if sys.platform != 'win32':

@@ -237,8 +237,47 @@ elif sys.platform == 'darwin':
   isabs = os.path.isabs
 
 
+  def _find_item_native_case(root_path, item):
+    """Gets the native path case of a single item based at root_path.
+
+    There is no API to get the native path case of symlinks on OSX. So it
+    needs to be done the slow way.
+    """
+    item = item.lower()
+    for element in os.listdir(root_path):
+      if element.lower() == item:
+        return element
+
+
+  def _native_case(p):
+    """Gets the native path case. Warning: this function resolves symlinks."""
+    logging.debug('native_case(%s)' % p)
+    try:
+      rel_ref, _ = Carbon.File.FSPathMakeRef(p)
+      return rel_ref.FSRefMakePath()
+    except MacOS.Error, e:
+      raise OSError(
+          e.args[0], 'Failed to get native path for %s' % p, p, e.args[1])
+
+
+  def _split_at_symlink_native(base_path, rest):
+    """Returns the native path for a symlink."""
+    base, symlink, rest = split_at_symlink(base_path, rest)
+    if symlink:
+      if not base_path:
+        base_path = base
+      else:
+        base_path = safe_join(base_path, base)
+      symlink = _find_item_native_case(base_path, symlink)
+    return base, symlink, rest
+
+
   def get_native_path_case(path):
-    """Returns the native path case for an existing file."""
+    """Returns the native path case for an existing file.
+
+    Technically, it's only HFS+ on OSX that is case preserving and
+    insensitive. It's the default setting on HFS+ but can be changed.
+    """
     if not isabs(path):
       raise ValueError(
           'Can\'t get native path case for a non-absolute path: %s' % path,
@@ -246,14 +285,30 @@ elif sys.platform == 'darwin':
     if path.startswith('/dev'):
       # /dev is not visible from Carbon, causing an exception.
       return path
-    # Technically, it's only HFS+ on OSX that is case insensitive. It's the
-    # default setting on HFS+ but can be changed.
-    try:
-      rel_ref, _ = Carbon.File.FSPathMakeRef(path)
-      return rel_ref.FSRefMakePath()
-    except MacOS.Error, e:
-      raise OSError(
-          e.args[0], 'Failed to get native path for %s' % path, path, e.args[1])
+
+    # Starts assuming there is no symlink along the path.
+    resolved = _native_case(path)
+    if resolved.lower() == path.lower():
+      # This code path is incredibly faster.
+      return resolved
+
+    # There was a symlink, process it.
+    base, symlink, rest = _split_at_symlink_native(None, path)
+    assert symlink, (path, base, symlink, rest)
+    prev = base
+    base = safe_join(_native_case(base), symlink)
+    assert len(base) > len(prev)
+    while rest:
+      prev = base
+      relbase, symlink, rest = _split_at_symlink_native(base, rest)
+      base = safe_join(base, relbase)
+      assert len(base) > len(prev), (prev, base, symlink)
+      if symlink:
+        base = safe_join(base, symlink)
+      assert len(base) > len(prev), (prev, base, symlink)
+    # Make sure no symlink was resolved.
+    assert base.lower() == path.lower(), (base, path)
+    return base
 
 
 else:  # OSes other than Windows and OSX.
@@ -280,6 +335,72 @@ else:  # OSes other than Windows and OSX.
     # it. This function implementation already normalizes the path on the other
     # OS so this needs to be done here to be coherent between OSes.
     return os.path.normpath(path)
+
+
+if sys.platform != 'win32':  # All non-Windows OSes.
+
+
+  def safe_join(*args):
+    """Joins path elements like os.path.join() but doesn't abort on absolute
+    path.
+
+    os.path.join('foo', '/bar') == '/bar'
+    but safe_join('foo', '/bar') == 'foo/bar'.
+    """
+    out = ''
+    for element in args:
+      if element.startswith(os.path.sep):
+        if out.endswith(os.path.sep):
+          out += element[1:]
+        else:
+          out += element
+      else:
+        if out.endswith(os.path.sep):
+          out += element
+        else:
+          out += os.path.sep + element
+    return out
+
+
+  def split_at_symlink(base_dir, relfile):
+    """Scans each component of relfile and cut the string at the symlink if
+    there is any.
+
+    Returns a tuple (base_path, symlink, rest), with symlink == rest == None if
+    not symlink was found.
+    """
+    if base_dir:
+      assert relfile
+      assert os.path.isabs(base_dir)
+      index = 0
+    else:
+      assert os.path.isabs(relfile)
+      index = 1
+
+    def at_root(rest):
+      if base_dir:
+        return safe_join(base_dir, rest)
+      return rest
+
+    while True:
+      try:
+        index = relfile.index(os.path.sep, index)
+      except ValueError:
+        index = len(relfile)
+      full = at_root(relfile[:index])
+      if os.path.islink(full):
+        # A symlink!
+        base = os.path.dirname(relfile[:index])
+        symlink = os.path.basename(relfile[:index])
+        rest = relfile[index:]
+        logging.debug(
+            'split_at_symlink(%s, %s) -> (%s, %s, %s)' %
+            (base_dir, relfile, base, symlink, rest))
+        return base, symlink, rest
+      if index == len(relfile):
+        break
+      index += 1
+    return relfile, None, None
 
 
 def fix_python_path(cmd):
@@ -445,6 +566,7 @@ class Results(object):
       self.path = path
 
       self.tainted = tainted
+      self._real_path = None
       self._size = None
       # For compatibility with Directory object interface.
       # Shouldn't be used normally, only exists to simplify algorithms.
@@ -477,6 +599,13 @@ class Results(object):
         return os.path.join(self.root, self.path)
       return self.path
 
+    @property
+    def real_path(self):
+      """Returns the path with symlinks resolved."""
+      if not self._real_path:
+        self._real_path = os.path.realpath(self.full_path)
+      return self._real_path
+
     def flatten(self):
       return {
         'path': self.path,
@@ -488,8 +617,14 @@ class Results(object):
       # Check internal consistency.
       assert self.tainted or (isabs(root) and root.endswith(os.path.sep)), root
       if not self.full_path.startswith(root):
-        return None
-      return self._clone(root, self.full_path[len(root):], self.tainted)
+        # Now try to resolve the symlinks to see if it can be reached this way.
+        # Only try *after* trying without resolving symlink.
+        if not self.real_path.startswith(root):
+          return None
+        path = self.real_path
+      else:
+        path = self.full_path
+      return self._clone(root, path[len(root):], self.tainted)
 
     def replace_variables(self, variables):
       """Replaces the root of this File with one of the variables if it matches.
@@ -676,9 +811,13 @@ class ApiBase(object):
             return x
           return get_native_path_case(x)
 
+        files = [
+          f for f in set(map(render_to_string_and_fix_case, self.files))
+          if not os.path.isdir(f)
+        ]
         return Results.Process(
             self.pid,
-            set(map(render_to_string_and_fix_case, self.files)),
+            files,
             render_to_string_and_fix_case(self.executable),
             self.command,
             render_to_string_and_fix_case(self.initial_cwd),

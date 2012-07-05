@@ -39,17 +39,7 @@ class TraceTestCases(unittest.TestCase):
         # So it'll look like /usr/bin/python2.7
         self.executable += suffix
 
-    self.real_executable = trace_inputs.get_native_path_case(
-        self.executable)
-
-    if sys.platform == 'darwin':
-      # Interestingly, only OSX does resolve the symlink manually before
-      # starting the executable.
-      if os.path.islink(self.real_executable):
-        self.real_executable = os.path.normpath(
-            os.path.join(
-                os.path.dirname(self.real_executable),
-                os.readlink(self.real_executable)))
+    self.real_executable = trace_inputs.get_native_path_case(self.executable)
 
   def tearDown(self):
     if self.temp_file:

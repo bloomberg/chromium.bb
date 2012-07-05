@@ -67,15 +67,6 @@ class TraceInputsBase(unittest.TestCase):
         unicode(self.executable))
     trace_inputs = None
 
-    if sys.platform == 'darwin':
-      # Interestingly, only OSX does resolve the symlink manually before
-      # starting the executable.
-      if os.path.islink(self.real_executable):
-        self.real_executable = os.path.normpath(
-            os.path.join(
-                os.path.dirname(self.real_executable),
-                os.readlink(self.real_executable)))
-
     # self.naked_executable will only be naked on Windows.
     self.naked_executable = unicode(sys.executable)
     if sys.platform == 'win32':

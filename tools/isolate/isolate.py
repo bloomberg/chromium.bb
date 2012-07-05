@@ -52,23 +52,6 @@ def normpath(path):
   return out
 
 
-def split_at_symlink(indir, relfile):
-  """Scans each component of relfile and cut the string at the symlink if there
-  is any.
-
-  Returns a tuple (symlink, rest), with rest == None if not symlink was found.
-  """
-  parts = relfile.rstrip(os.path.sep).split(os.path.sep)
-  for i in range(len(parts)):
-    if os.path.islink(os.path.join(indir, *parts[:i])):
-      # A symlink! Keep the trailing os.path.sep if there was any.
-      out = os.path.join(*parts[:i])
-      rest = os.path.sep.join(parts[i:])
-      logging.debug('split_at_symlink(%s) -> (%s, %s)' % (relfile, out, rest))
-      return out, rest
-  return relfile, None
-
-
 def expand_directory_and_symlink(indir, relfile, blacklist):
   """Expands a single input. It can result in multiple outputs.
 
@@ -88,20 +71,21 @@ def expand_directory_and_symlink(indir, relfile, blacklist):
         'Can\'t map file %s outside %s' % (infile, indir))
 
   # Look if any item in relfile is a symlink.
-  symlink_relfile, rest = split_at_symlink(indir, relfile)
-  if rest is not None:
+  base, symlink, rest = trace_inputs.split_at_symlink(indir, relfile)
+  if symlink:
     # Append everything pointed by the symlink. If the symlink is recursive,
     # this code blows up.
-    pointed = os.readlink(os.path.join(indir, symlink_relfile))
-    # Override infile with the new destination.
+    symlink_relfile = os.path.join(base, symlink)
+    symlink_path = os.path.join(indir, symlink_relfile)
+    pointed = os.readlink(symlink_path)
     dest_infile = normpath(
-        os.path.join(indir, os.path.dirname(symlink_relfile), pointed, rest))
-    if os.path.isdir(dest_infile):
-      dest_infile += os.path.sep
+        trace_inputs.safe_join(
+            os.path.join(os.path.dirname(symlink_path), pointed),
+            rest))
     if not dest_infile.startswith(indir):
       raise run_test_from_archive.MappingError(
-          'Can\'t map symlink reference %s->%s outside of %s' %
-          (symlink_relfile, dest_infile, indir))
+          'Can\'t map symlink reference %s (from %s) ->%s outside of %s' %
+          (symlink_relfile, relfile, dest_infile, indir))
     if infile.startswith(dest_infile):
       raise run_test_from_archive.MappingError(
           'Can\'t map recursive symlink reference %s->%s' %
