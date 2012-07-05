@@ -287,7 +287,6 @@ BUGCR131189 WIN : fast/layers/scroll-with-transform-layer.html = IMAGE
 BUGCR131189 WIN : fast/lists/008.html = IMAGE
 BUGCR131189 WIN : fast/lists/008-vertical.html = IMAGE
 BUGCR131189 WIN : fast/lists/dynamic-marker-crash.html = IMAGE
-BUGCR131189 LINUX WIN : fast/multicol/client-rects.html = IMAGE
 BUGCR131189 WIN : fast/overflow/overflow-rtl-vertical.html = IMAGE
 BUGCR131189 WIN : fast/overflow/overflow-rtl.html = IMAGE
 BUGCR131189 LINUX WIN : fast/overflow/overflow-update-transform.html = IMAGE
