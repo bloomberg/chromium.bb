@@ -44,7 +44,7 @@ static Value* LoadJSONFile(const std::string& filename) {
 MockDocumentsService::MockDocumentsService() {
   ON_CALL(*this, Authenticate(_))
       .WillByDefault(Invoke(this, &MockDocumentsService::AuthenticateStub));
-  ON_CALL(*this, GetDocuments(_, _, _, _, _))
+  ON_CALL(*this, GetDocuments(_, _, _))
       .WillByDefault(Invoke(this, &MockDocumentsService::GetDocumentsStub));
   ON_CALL(*this, GetAccountMetadata(_))
       .WillByDefault(Invoke(this,
@@ -86,11 +86,9 @@ void MockDocumentsService::AuthenticateStub(
 
 void MockDocumentsService::GetDocumentsStub(
     const GURL& feed_url,
-    int start_changestamp,
-    const std::string& search_string,
-    const std::string& directory_resource_id,
+    const DocumentsServiceInterface::GetDocumentsOptions& options,
     const GetDataCallback& callback) {
-  if (search_string.empty()) {
+  if (options.search_query.empty()) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, HTTP_SUCCESS, base::Passed(&feed_data_)));

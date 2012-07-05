@@ -968,9 +968,9 @@ void GDataFileSystem::LoadFeedFromServer(
   const base::TimeTicks start_time = base::TimeTicks::Now();
   documents_service_->GetDocuments(
       GURL(),   // root feed start.
-      start_changestamp,
-      search_query,
-      directory_resource_id,
+      DocumentsServiceInterface::GetDocumentsOptions(start_changestamp,
+                                                     search_query,
+                                                     directory_resource_id),
       base::Bind(&GDataFileSystem::OnGetDocuments,
                  ui_weak_ptr_,
                  initial_origin,
@@ -2654,9 +2654,10 @@ void GDataFileSystem::OnGetDocuments(ContentOrigin initial_origin,
     // Kick of the remaining part of the feeds.
     documents_service_->GetDocuments(
         next_feed_url,
-        params->start_changestamp,
-        params->search_query,
-        params->directory_resource_id,
+        DocumentsServiceInterface::GetDocumentsOptions(
+            params->start_changestamp,
+            params->search_query,
+            params->directory_resource_id),
         base::Bind(&GDataFileSystem::OnGetDocuments,
                    ui_weak_ptr_,
                    initial_origin,

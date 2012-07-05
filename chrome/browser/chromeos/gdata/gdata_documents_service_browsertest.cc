@@ -110,9 +110,10 @@ IN_PROC_BROWSER_TEST_F(GDataTest, GetDocuments) {
   base::Value* result_data = NULL;
   service_->GetDocuments(
       gdata_test_server_.GetURL("files/chromeos/gdata/root_feed.json"),
-      0,  // start_changestamp
-      std::string(),  // search string
-      std::string(),  // directory resource ID
+      gdata::DocumentsServiceInterface::GetDocumentsOptions(
+          0,  // start_changestamp
+          std::string(),  // search string
+          std::string()),  // directory resource ID
       base::Bind(&TestGetDocumentsCallback, &result, &result_data));
   ui_test_utils::RunMessageLoop();
 
@@ -135,9 +136,10 @@ IN_PROC_BROWSER_TEST_F(GDataTest, GetDocumentsFailure) {
   base::Value* result_data = NULL;
   service_->GetDocuments(
       gdata_test_server_.GetURL("files/chromeos/gdata/testfile.txt"),
-      0,  // start_changestamp
-      std::string(),  // search string
-      std::string(),  // directory resource ID
+      gdata::DocumentsServiceInterface::GetDocumentsOptions(
+          0,  // start_changestamp
+          std::string(),  // search string
+          std::string()),  // directory resource ID
       base::Bind(&TestGetDocumentsCallback, &result, &result_data));
   ui_test_utils::RunMessageLoop();
 
