@@ -135,25 +135,31 @@ input[type='submit'][disabled]:hover {
 }
 
 .progress-bar {
-  border: 1px solid #999;
+  background-image: -webkit-linear-gradient(top, #e9e9e9 0, #f9f9f9 100%);
+  border: 1px solid #a1a1a1;
+  border-radius: 3px;
   margin-top: 3px;
-  padding: 1px;
   width: 320px;
 }
 
 .progress-track {
-  -webkit-animation-duration: 800ms;
-  -webkit-animation-iteration-count: infinite;
-  -webkit-animation-name: bg;
-  -webkit-animation-timing-function: linear;
-  background-color: #ccc;
-  background-image: -webkit-linear-gradient(315deg, transparent,
-      transparent 33%, rgba(0, 0, 0, 0.12) 33%, rgba(0, 0, 0, 0.12) 66%,
-      transparent 66%, transparent);
-  background-position: 0 0;
-  background-repeat: repeat-x;
-  background-size: 16px 8px;
-  height: 5px;
+  background-color: rgb(76, 86, 106);
+  border: 1px solid black;
+  border-radius: 3px;
+  height: 6px;
+  margin: -1px;
+}
+
+.progress-track:before {
+  background-image: -webkit-linear-gradient(top, rgb(89, 103, 128) 0,
+                                                 rgb(76, 86, 106) 100%);
+  border: 1px solid rgb(124, 133, 147);
+  border-bottom-color: rgb(116, 124, 136);
+  border-radius: 3px;
+  border-top-color: rgb(173, 181, 195);
+  content: '';
+  display: block;
+  height: 4px;
 }
 
 @-webkit-keyframes bg {
