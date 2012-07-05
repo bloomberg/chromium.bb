@@ -2,6 +2,7 @@
 <html>
   <head>
     {{+partials.header_head}}
+    <link href="/static/css/api.css" rel="stylesheet" type="text/css">
     {{+partials.title}}
   </head>
   <body>
@@ -9,7 +10,7 @@
     <div id="gc-container">
       {{+partials.sidenav}}
       <div id="gc-pagecontent">
-        <h1 id="pageTitle">chrome.{{api.name}}</h1>
+        <h1 class="page_title">chrome.{{api.name}}</h1>
         {{+partials.table_of_contents}}
 {{- This is unindented because it contains <pre> tags -}}
 {{+intro}}

@@ -11,6 +11,16 @@
     </p>
     <script src="static/js/branch.js" type="text/javascript"></script>
     <script src="static/js/sidebar.js" type="text/javascript"></script>
+    <script src="static/js/prettify.js" type="text/javascript"></script>
+    <script>
+      (function() {
+        // Auto syntax highlight all pre tags.
+        var preElements = document.getElementsByTagName('pre');
+        for (var i = 0; i < preElements.length; i++)
+          preElements[i].classList.add('prettyprint');
+        prettyPrint();
+      })();
+    </script>
     <script>
       initSidebar();
     </script>
