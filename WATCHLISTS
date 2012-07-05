@@ -344,6 +344,12 @@
                   'ui/views/view.cc|'\
                   'ui/views/widget/.*',
     },
+    'website_settings': {
+      'filepath': 'chrome/browser/content_settings/*'\
+                  '|chrome/browser/ui/views/website_settings/*'\
+                  '|chrome/browser/ui/website_settings/*'\
+                  '|chrome/common/content_settings*',
+    },
     'webkit': {
       'filepath': 'webkit/.*',
     },
@@ -488,6 +494,7 @@
                  'timurrrr+watch@chromium.org'],
     'views': ['tfarina@chromium.org'],
     'views_core': ['ben+watch@chromium.org'],
+    'website_settings': ['markusheintz@chromium.org'],
     'webkit': ['darin-cc@chromium.org'],
     'worker': ['jam@chromium.org'],
     'x11': ['derat+watch@chromium.org',
