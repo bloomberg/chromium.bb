@@ -75,7 +75,7 @@ void PaginationModel::SetTransition(const Transition& transition) {
          transition.target_page <= total_pages_);
   DCHECK(transition.progress >= 0 && transition.progress <= 1);
 
-  if (transition_ == transition)
+  if (transition_.Equals(transition))
     return;
 
   transition_ = transition;

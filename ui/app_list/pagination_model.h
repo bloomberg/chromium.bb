@@ -33,7 +33,7 @@ class APP_LIST_EXPORT PaginationModel : public ui::AnimationDelegate {
           progress(progress) {
     }
 
-    bool operator==(const Transition& rhs) const {
+    bool Equals(const Transition& rhs) const {
       return target_page == rhs.target_page && progress == rhs.progress;
     }
 
