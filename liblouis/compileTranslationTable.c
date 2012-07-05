@@ -223,7 +223,7 @@ typedef struct
 CharsString;
 
 static int errorCount;
-
+static int warningCount;
 static TranslationTableHeader *table;
 static TranslationTableOffset tableSize;
 static TranslationTableOffset tableUsed;
@@ -688,10 +688,33 @@ compileError (FileInfo * nested, char *format, ...)
 #endif
   va_end (arguments);
   if (nested)
-    lou_logPrint ("%s:%d: %s", nested->fileName, nested->lineNumber, buffer);
+    lou_logPrint ("%s:%d: error: %s", nested->fileName,
+		  nested->lineNumber, buffer);
   else
-    lou_logPrint ("%s", buffer);
+    lou_logPrint ("error: %s", buffer);
   errorCount++;
+#endif
+}
+
+static void
+compileWarning (FileInfo * nested, char *format, ...)
+{
+#ifndef __SYMBIAN32__
+  char buffer[MAXSTRING];
+  va_list arguments;
+  va_start (arguments, format);
+#ifdef _WIN32
+  (void) _vsnprintf (buffer, sizeof (buffer), format, arguments);
+#else
+  (void) vsnprintf (buffer, sizeof (buffer), format, arguments);
+#endif
+  va_end (arguments);
+  if (nested)
+    lou_logPrint ("%s:%d: warning: %s", nested->fileName,
+		  nested->lineNumber, buffer);
+  else
+    lou_logPrint ("warning: %s", buffer);
+  warningCount++;
 #endif
 }
 
@@ -1437,69 +1460,64 @@ hexValue (FileInfo * nested, const widechar * digits, int length)
   return (widechar) binaryValue;
 }
 
+#define MAXBYTES 7
+static int first0Bit[MAXBYTES] = { 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0XFE };
+
 static int
 parseChars (FileInfo * nested, CharsString * result, CharsString * token)
 {
-/*interpret ruleChars string */
-  int count = 0;
-  int index;
-  for (index = 0; index < token->length; index++)
+  int in = 0;
+  int out = 0;
+  int lastOutSize = 0;
+  unsigned int ch = 0;
+  int numBytes = 0;
+  unsigned int utf32 = 0;
+  int k;
+  while (in < token->length)
     {
-      widechar character = token->chars[index];
-      if (character == '\\')
-	{			/* escape sequence */
-	  int ok = 0;
-	  if (++index < token->length)
-	    {
-	      switch (character = token->chars[index])
+      ch = token->chars[in++] & 0xff;
+      if (ch < 128)
+	{
+	  if (ch == '\\')
+	    {			/* escape sequence */
+	      int ok = 1;
+	      switch (ch = token->chars[in])
 		{
 		case '\\':
-		  ok = 1;
 		  break;
 		case 'e':
-		  character = 0x1b;
-		  ok = 1;
+		  ch = 0x1b;
 		  break;
 		case 'f':
-		  character = 12;
-		  ok = 1;
+		  ch = 12;
 		  break;
 		case 'n':
-		  character = 10;
-		  ok = 1;
+		  ch = 10;
 		  break;
 		case 'r':
-		  character = 13;
-		  ok = 1;
+		  ch = 13;
 		  break;
 		case 's':
-		  character = ' ';
-		  ok = 1;
+		  ch = ' ';
 		  break;
 		case 't':
-		  character = 9;
-		  ok = 1;
+		  ch = 9;
 		  break;
 		case 'v':
-		  character = 22;
-		  ok = 1;
+		  ch = 22;
 		  break;
 		case 'w':
-		  character = ENDSEGMENT;
-		  ok = 1;
+		  ch = ENDSEGMENT;
 		  break;
 		case 34:
-		  character = QUOTESUB;
-		  ok = 1;
+		  ch = QUOTESUB;
 		  break;
 		case 'X':
 		case 'x':
-		  if (token->length - index > 4)
+		  if (token->length - in > 4)
 		    {
-		      character =
-			hexValue (nested, &token->chars[index + 1], 4);
-		      index += 4;
-		      ok = 1;
+		      ch = hexValue (nested, &token->chars[in + 1], 4);
+		      in += 4;
 		    }
 		  break;
 		case 'y':
@@ -1509,40 +1527,62 @@ parseChars (FileInfo * nested, CharsString * result, CharsString * token)
 		    not32:
 		      compileError (nested,
 				    "liblouis has not been compiled for 32-bit Unicode");
+		      ok = 0;
 		      break;
 		    }
-		  if (token->length - index > 5)
+		  if (token->length - in > 5)
 		    {
-		      character =
-			hexValue (nested, &token->chars[index + 1], 5);
-		      index += 5;
-		      ok = 1;
+		      ch = hexValue (nested, &token->chars[in + 1], 5);
+		      in += 5;
 		    }
 		  break;
 		case 'z':
 		case 'Z':
 		  if (CHARSIZE == 2)
 		    goto not32;
-		  if (token->length - index > 8)
+		  if (token->length - in > 8)
 		    {
-		      character =
-			hexValue (nested, &token->chars[index + 1], 8);
-		      index += 8;
-		      ok = 1;
+		      ch = hexValue (nested, &token->chars[in + 1], 8);
+		      in += 8;
 		    }
 		  break;
+		default:
+		  compileError (nested,
+				  "invalid escape sequence '\\%c'", ch);
+		  ok = 0;
+		  break;
 		}
+	    in++;
 	    }
-	  if (!ok)
+	  result->chars[out++] = (widechar) ch;
+	  if (out >= MAXSTRING)
 	    {
-	      index++;
-	      compileError (nested, "invalid escape sequence.");
-	      return 0;
+	      result->length = out;
+	      return 1;
 	    }
+	  continue;
 	}
-      result->chars[count++] = character;
+      lastOutSize = out;
+      for (numBytes = MAXBYTES - 1; numBytes >= 0; numBytes--)
+	if (ch >= first0Bit[numBytes])
+	  break;
+      utf32 = ch & (0XFF - first0Bit[numBytes]);
+      for (k = 0; k < numBytes; k++)
+	{
+	  if (in >= MAXSTRING)
+	    break;
+	  utf32 = (utf32 << 6) + (token->chars[in++] & 0x3f);
+	}
+      if (CHARSIZE == 2 && utf32 > 0xffff)
+	utf32 = 0xffff;
+      result->chars[out++] = (widechar) utf32;
+      if (out >= MAXSTRING)
+	{
+	  result->length = lastOutSize;
+	  return 1;
+	}
     }
-  result->length = count;
+  result->length = out;
   return 1;
 }
 
@@ -4684,6 +4724,7 @@ compileTranslationTable (const char *tl)
   int listLength;
   int currentListPos = 0;
   errorCount = 0;
+  warningCount = 0;
   fileCount = 0;
   table = NULL;
   characterClasses = NULL;
