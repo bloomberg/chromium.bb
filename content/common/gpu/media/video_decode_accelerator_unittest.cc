@@ -301,9 +301,7 @@ GLRenderingVDAClient::~GLRenderingVDAClient() {
   SetState(CS_DESTROYED);
 }
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX) && defined(ARCH_CPU_X86_FAMILY)
 static bool DoNothingReturnTrue() { return true; }
-#endif
 
 void GLRenderingVDAClient::CreateDecoder() {
   CHECK(decoder_deleted());
