@@ -11,6 +11,7 @@
         "type": "object",
         "optional": true,
         "description": "This will be defined during an API method callback if there was an error",
+        "unprivileged": true,
         "properties": {
           "message": {
             "optional": true,
@@ -18,6 +19,11 @@
             "description": "Details about the error which occurred."
           }
         }
+      },
+      "id": {
+        "type": "string",
+        "description": "The ID of the extension/app.",
+        "unprivileged": true
       }
     },
     "types": [
@@ -77,6 +83,7 @@
         "name": "getManifest",
         "description": "Returns details about the app or extension from the manifest",
         "type": "function",
+        "unprivileged": true,
         "parameters": [],
         "returns": {
           "$ref": "ManifestDetails",

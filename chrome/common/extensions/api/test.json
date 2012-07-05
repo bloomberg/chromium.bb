@@ -68,6 +68,7 @@
       },
       {
         "name": "log",
+        "unprivileged": true,
         "type": "function",
         "description": "Logs a message during internal unit testing.",
         "parameters": [

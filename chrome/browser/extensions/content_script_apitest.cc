@@ -120,8 +120,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptCSSLocalization) {
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptExtensionAPIs) {
   ASSERT_TRUE(StartTestServer());
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
   const extensions::Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("content_scripts/extension_api"));
 

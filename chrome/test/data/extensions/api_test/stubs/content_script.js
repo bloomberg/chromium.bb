@@ -73,7 +73,9 @@ function testPath(path, expectError) {
       // to throw an error on access.
       try {
         if (typeof(module[parts[i]]) == "undefined" &&
-            path != "extension.lastError") {
+            path != "extension.lastError" &&
+            path != "runtime.lastError" &&
+            path != "runtime.id") {
           logToConsoleAndStdout(" fail (undefined and not throwing error): " +
                                 path);
           return false;

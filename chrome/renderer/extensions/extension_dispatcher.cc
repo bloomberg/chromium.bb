@@ -747,7 +747,6 @@ void ExtensionDispatcher::DidCreateScriptContext(
   if (extension)
     manifest_version = extension->manifest_version();
   context->DispatchOnLoadEvent(
-      is_extension_process_,
       ChromeRenderProcessObserver::is_incognito_process(),
       manifest_version);
 

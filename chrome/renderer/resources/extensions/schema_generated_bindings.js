@@ -207,7 +207,7 @@
   }
 
   chromeHidden.onLoad.addListener(function(extensionId,
-                                           isExtensionProcess,
+                                           contextType,
                                            isIncognitoProcess,
                                            manifestVersion) {
     var apiDefinitions = GetExtensionAPIDefinition();
@@ -255,7 +255,7 @@
       // based on the presence of "unprivileged" and whether this is an
       // extension process (versus e.g. a content script).
       function isSchemaAccessAllowed(itemSchema) {
-        return isExtensionProcess ||
+        return (contextType == 'BLESSED_EXTENSION') ||
                apiDef.unprivileged ||
                itemSchema.unprivileged;
       }
@@ -436,7 +436,7 @@
         apiFunctions: new NamespacedAPIFunctions(apiDef.namespace,
                                                  apiFunctions),
         apiDefinitions: apiDefinitions,
-      }, extensionId);
+      }, extensionId, contextType);
     });
 
     // TODO(mihaip): remove this alias once the webstore stops calling

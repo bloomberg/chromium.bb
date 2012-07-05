@@ -40,21 +40,34 @@ const char* kChildKinds[] = {
   "events"
 };
 
+// Returns true if |dict| has an unprivileged "true" property.
+bool IsUnprivileged(const DictionaryValue* dict) {
+  bool unprivileged = false;
+  return dict->GetBoolean("unprivileged", &unprivileged) && unprivileged;
+}
+
 // Returns whether the list at |name_space_node|.|child_kind| contains any
 // children with an { "unprivileged": true } property.
 bool HasUnprivilegedChild(const DictionaryValue* name_space_node,
                           const std::string& child_kind) {
   ListValue* child_list = NULL;
-  name_space_node->GetList(child_kind, &child_list);
-  if (!child_list)
-    return false;
+  DictionaryValue* child_dict = NULL;
 
-  for (size_t i = 0; i < child_list->GetSize(); ++i) {
-    DictionaryValue* item = NULL;
-    CHECK(child_list->GetDictionary(i, &item));
-    bool unprivileged = false;
-    if (item->GetBoolean("unprivileged", &unprivileged))
-      return unprivileged;
+  if (name_space_node->GetList(child_kind, &child_list)) {
+    for (size_t i = 0; i < child_list->GetSize(); ++i) {
+      DictionaryValue* item = NULL;
+      CHECK(child_list->GetDictionary(i, &item));
+      if (IsUnprivileged(item))
+        return true;
+    }
+  } else if (name_space_node->GetDictionary(child_kind, &child_dict)) {
+    for (DictionaryValue::Iterator it(*child_dict); it.HasNext();
+         it.Advance()) {
+      const DictionaryValue* item = NULL;
+      CHECK(it.value().GetAsDictionary(&item));
+      if (IsUnprivileged(item))
+        return true;
+    }
   }
 
   return false;
@@ -247,7 +260,8 @@ void ExtensionAPI::LoadSchema(const std::string& name,
     if (schema->GetBoolean("unprivileged", &unprivileged) && unprivileged) {
       completely_unprivileged_apis_.insert(schema_namespace);
     } else if (HasUnprivilegedChild(schema, "functions") ||
-               HasUnprivilegedChild(schema, "events")) {
+               HasUnprivilegedChild(schema, "events") ||
+               HasUnprivilegedChild(schema, "properties")) {
       partially_unprivileged_apis_.insert(schema_namespace);
     }
 

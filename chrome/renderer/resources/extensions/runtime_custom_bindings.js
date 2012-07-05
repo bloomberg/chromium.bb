@@ -9,17 +9,14 @@ var extensionNatives = requireNative('extension');
 var GetExtensionViews = extensionNatives.GetExtensionViews;
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
-chromeHidden.registerCustomHook('runtime', function(bindingsAPI, extensionId) {
-  var apiFunctions = bindingsAPI.apiFunctions;
+chromeHidden.registerCustomHook('runtime', function(bindings, id, contextType) {
+  var apiFunctions = bindings.apiFunctions;
 
-  apiFunctions.setCustomCallback('getBackgroundPage',
-                                 function(name, request, response) {
-    if (request.callback) {
-      var bg = GetExtensionViews(-1, 'BACKGROUND')[0] || null;
-      request.callback(bg);
-    }
-    request.callback = null;
-  });
+  //
+  // Unprivileged APIs.
+  //
+
+  chrome.runtime.id = id;
 
   apiFunctions.setHandleRequest('getManifest', function() {
     return runtimeNatives.GetManifest();
@@ -29,7 +26,22 @@ chromeHidden.registerCustomHook('runtime', function(bindingsAPI, extensionId) {
     path = String(path);
     if (!path.length || path[0] != '/')
       path = '/' + path;
-    return 'chrome-extension://' + extensionId + path;
+    return 'chrome-extension://' + id + path;
+  });
+
+  //
+  // Privileged APIs.
+  //
+  if (contextType != 'BLESSED_EXTENSION')
+    return;
+
+  apiFunctions.setCustomCallback('getBackgroundPage',
+                                 function(name, request, response) {
+    if (request.callback) {
+      var bg = GetExtensionViews(-1, 'BACKGROUND')[0] || null;
+      request.callback(bg);
+    }
+    request.callback = null;
   });
 
 });

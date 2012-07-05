@@ -83,9 +83,7 @@ class ChromeV8Context {
 
   // Fires the onload and onunload events on the chromeHidden object.
   // TODO(aa): Move this to EventBindings.
-  void DispatchOnLoadEvent(bool is_extension_process,
-                           bool is_incognito_process,
-                           int manifest_version);
+  void DispatchOnLoadEvent(bool is_incognito_process, int manifest_version);
   void DispatchOnUnloadEvent();
 
   // Call the named method of the chromeHidden object in this context.
