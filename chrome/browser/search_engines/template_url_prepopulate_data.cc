@@ -9,6 +9,7 @@
 #endif
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
 #include "base/string_piece.h"
@@ -2722,6 +2723,7 @@ const PrepopulatedEngine* kAllEngines[] =
 // value we call the CountryID.
 
 const int kCountryIDUnknown = -1;
+const int kCountryIDNotSet = 0;
 
 inline int CountryCharsToCountryID(char c1, char c2) {
   return c1 << 8 | c2;
@@ -2829,12 +2831,12 @@ int GetCurrentCountryID() {
 
 #elif defined(OS_ANDROID)
 
+// Initialized by InitCountryCode().
+int g_country_code_at_install = kCountryIDNotSet;
+
 int GetCurrentCountryID() {
-  const std::string country_code_at_install =
-      TemplateURLPrepopulateData::GetCountryCodeAtInstall();
-  return country_code_at_install.empty() ? kCountryIDUnknown :
-      CountryCharsToCountryIDWithUpdate(country_code_at_install[0],
-                                        country_code_at_install[1]);
+  DCHECK(g_country_code_at_install != kCountryIDNotSet);
+  return g_country_code_at_install;
 }
 
 #elif defined(OS_POSIX)
@@ -3444,5 +3446,19 @@ SearchEngineType GetEngineType(const std::string& url) {
 
   return SEARCH_ENGINE_OTHER;
 }
+
+#if defined(OS_ANDROID)
+
+void InitCountryCode(const std::string& country_code) {
+  if (country_code.size() != 2) {
+    DLOG(ERROR) << "Invalid country code: " << country_code;
+    g_country_code_at_install = kCountryIDUnknown;
+  } else {
+    g_country_code_at_install =
+        CountryCharsToCountryIDWithUpdate(country_code[0], country_code[1]);
+  }
+}
+
+#endif
 
 }  // namespace TemplateURLPrepopulateData

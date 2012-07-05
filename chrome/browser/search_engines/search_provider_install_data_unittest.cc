@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/search_provider_install_data.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -187,6 +188,10 @@ SearchProviderInstallDataTest::SearchProviderInstallDataTest()
 
 void SearchProviderInstallDataTest::SetUp() {
   testing::Test::SetUp();
+#if defined(OS_ANDROID)
+  TemplateURLPrepopulateData::InitCountryCode(
+      std::string() /* unknown country code */);
+#endif
   util_.SetUp();
   util_.StartIOThread();
   install_data_ = new SearchProviderInstallData(util_.profile(),
