@@ -547,9 +547,20 @@ FileTransferController.prototype = {
    */
   get selectedEntries_() {
     var list = this.fileList_;
-    return this.fileListSelection_.selectedIndexes.map(function(index) {
+    var selectedIndexes = this.fileListSelection_.selectedIndexes;
+    var entries = selectedIndexes.map(function(index) {
       return list.item(index);
     });
+
+    // TODO(serya): Diagnostics for http://crbug/129642
+    if (entries.indexOf(undefined) != -1) {
+      var index = entries.indexOf(undefined);
+      entries = entries.filter(function(e) { return !!e; });
+      console.error('Invalid selection found: list items: ', list.length,
+                    'wrong indexe value: ', selectedIndexes[index],
+                    'Stack trace: ', new Error().stack);
+    }
+    return entries;
   },
 
   selectDropEffect_: function(event, destinationPath) {
