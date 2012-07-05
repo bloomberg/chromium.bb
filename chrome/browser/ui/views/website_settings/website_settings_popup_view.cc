@@ -243,7 +243,7 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
       l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TAB_LABEL_PERMISSIONS),
       CreatePermissionsTab());
   tabbed_pane_->AddTab(
-      l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TAB_LABEL_IDENTITY),
+      l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TAB_LABEL_CONNECTION),
       CreateIdentityTab());
   tabbed_pane_->SelectTabAt(0);
   tabbed_pane_->set_listener(this);
@@ -488,7 +488,7 @@ views::View* WebsiteSettingsPopupView::CreateIdentityTab() {
   layout->AddView(identity_info_content_, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::CENTER);
   views::View* section = CreateSection(
-      l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TITEL_IDENTITY),
+      l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TITLE_IDENTITY),
       section_content,
       NULL);
   pane->AddChildView(section);
@@ -496,7 +496,7 @@ views::View* WebsiteSettingsPopupView::CreateIdentityTab() {
   // Add connection section.
   connection_info_content_ = new views::View();
   section = CreateSection(
-      l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TITEL_CONNECTION),
+      l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TITLE_CONNECTION),
       connection_info_content_,
       NULL);
   pane->AddChildView(section);

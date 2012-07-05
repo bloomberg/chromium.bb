@@ -155,7 +155,7 @@ const CGFloat kTabViewContentsPadding = kFramePadding;
 - (NSView*)addConnectionTabToTabView:(NSTabView*)tabView {
   scoped_nsobject<NSTabViewItem> item([[NSTabViewItem alloc] init]);
   [item setLabel:
-      l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_TAB_LABEL_IDENTITY)];
+      l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_TAB_LABEL_CONNECTION)];
 
   scoped_nsobject<NSView> contentView([[WebsiteSettingsContentView alloc]
       initWithFrame:[tabView_ contentRect]]);

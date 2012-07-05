@@ -181,7 +181,7 @@ void WebsiteSettingsPopupGtk::InitContents() {
       GTK_NOTEBOOK(notebook), permission_tab_contents, label);
 
   label = theme_service_->BuildLabel(
-      l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TAB_LABEL_IDENTITY),
+      l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TAB_LABEL_CONNECTION),
       ui::kGdkBlack);
   gtk_widget_show(label);
   gtk_notebook_append_page(GTK_NOTEBOOK(notebook), info_tab, label);
@@ -345,7 +345,7 @@ void WebsiteSettingsPopupGtk::SetIdentityInfo(
   // Add to contents.
   gtk_box_pack_start(
       GTK_BOX(identity_tab_contents_), CreateSection(
-          l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TITEL_IDENTITY),
+          l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TITLE_IDENTITY),
           identity_box),
       TRUE,
       FALSE,
@@ -357,7 +357,7 @@ void WebsiteSettingsPopupGtk::SetIdentityInfo(
        GTK_BOX(identity_tab_contents_),
        CreateSection(
            l10n_util::GetStringUTF8(
-               IDS_WEBSITE_SETTINGS_TITEL_CONNECTION),
+               IDS_WEBSITE_SETTINGS_TITLE_CONNECTION),
            connection_box),
        TRUE,
        FALSE,

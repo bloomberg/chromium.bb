@@ -263,16 +263,16 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_SHOW_SITE_DATA" desc="The label of the Show Cookies and Site Data link in the site data section of the Website Settings popup.">
         Show cookies and site data
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_TAB_LABEL_IDENTITY" desc="The label of the identity tab of the Website Settings popup.">
-        Identity
+      <message name="IDS_WEBSITE_SETTINGS_TAB_LABEL_CONNECTION" desc="The label of the connection tab of the Website Settings popup.">
+        Connection
       </message>
       <message name="IDS_WEBSITE_SETTINGS_TAB_LABEL_PERMISSIONS" desc="The label of the permissions tab of the Website Settings popup.">
         Permissions
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_TITEL_IDENTITY" desc="Titel of the identity section of the Website Settings popup.">
+      <message name="IDS_WEBSITE_SETTINGS_TITLE_IDENTITY" desc="Title of the identity section of the Website Settings popup.">
         Identity
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_TITEL_CONNECTION" desc="Title of the connection section of the Website Settings popup.">
+      <message name="IDS_WEBSITE_SETTINGS_TITLE_CONNECTION" desc="Title of the connection section of the Website Settings popup.">
         Connection
       </message>
       <message name="IDS_WEBSITE_SETTINGS_IDENTITY_VERIFIED" desc="Text that is displayed in the header of the Website Settings popup if the identity of a website is verified.">
