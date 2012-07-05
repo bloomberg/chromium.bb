@@ -868,11 +868,12 @@ emit_header(struct protocol *protocol, int server)
 	       "\n"
 	       "#include <stdint.h>\n"
 	       "#include <stddef.h>\n"
-	       "#include \"wayland-util.h\"\n\n"
+	       "#include \"%s\"\n\n"
 	       "struct wl_client;\n"
 	       "struct wl_resource;\n\n",
 	       protocol->uppercase_name, s,
-	       protocol->uppercase_name, s);
+	       protocol->uppercase_name, s,
+	       server ? "wayland-util.h" : "wayland-client.h");
 
 	wl_list_for_each(i, &protocol->interface_list, link)
 		printf("struct %s;\n", i->name);
