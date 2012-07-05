@@ -1097,6 +1097,9 @@ class Strace(ApiBase):
     def trace(self, cmd, cwd, tracename, output):
       """Runs strace on an executable."""
       logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, tracename, output))
+      assert os.path.isabs(cmd[0]), cmd[0]
+      assert os.path.isabs(cwd), cwd
+      assert os.path.normpath(cwd) == cwd, cwd
       with self._lock:
         if not self._initialized:
           raise TracingFailure(
@@ -1479,6 +1482,9 @@ class Dtrace(ApiBase):
     # The script will kill itself only once waiting_to_die == 1 and
     # current_processes == 0, so that both getlogin() was called and that
     # all traced processes exited.
+    #
+    # TODO(maruel): Use cacheable predicates. See
+    # https://wikis.oracle.com/display/DTrace/Performance+Considerations
     D_CODE = """
       dtrace:::BEGIN {
         waiting_to_die = 0;
@@ -1828,6 +1834,9 @@ class Dtrace(ApiBase):
       trace_child_process.py starts the executable to trace.
       """
       logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, tracename, output))
+      assert os.path.isabs(cmd[0]), cmd[0]
+      assert os.path.isabs(cwd), cwd
+      assert os.path.normpath(cwd) == cwd, cwd
       with self._lock:
         if not self._initialized:
           raise TracingFailure(
@@ -2038,6 +2047,10 @@ class LogmanTrace(ApiBase):
 
     def to_results(self):
       """Uses self._initial_pid to determine the initial process."""
+      if not self._initial_pid:
+        raise TracingFailure(
+            'Failed to detect the initial process',
+            None, None, None)
       process = self.processes[self._initial_pid].to_results_process()
       # Internal concistency check.
       if sorted(self.processes) != sorted(p.pid for p in process.all):
@@ -2159,6 +2172,8 @@ class LogmanTrace(ApiBase):
       if pid in self.processes:
         logging.info('Terminated: %d' % pid)
         self.processes[pid].cwd = None
+      else:
+        logging.debug('Terminated: %d' % pid)
 
     def handle_Process_Start(self, line):
       """Handles a new child process started by PID."""
@@ -2174,6 +2189,10 @@ class LogmanTrace(ApiBase):
 
       ppid = line[self.PID]
       pid = int(line[PROCESS_ID], 16)
+      logging.debug(
+          'New process %d->%d (%s) %s' %
+            (ppid, pid, line[IMAGE_FILE_NAME], line[COMMAND_LINE]))
+
       if ppid == self._tracer_pid:
         # Need to ignore processes we don't know about because the log is
         # system-wide. self._tracer_pid shall start only one process.
@@ -2251,6 +2270,7 @@ class LogmanTrace(ApiBase):
       # the parent process.
       pid = int(line[PROCESS_ID], 16)
       tid = int(line[TTHREAD_ID], 16)
+      logging.debug('New thread pid:%d, tid:%d' % (pid, tid))
       self._threads_active[tid] = pid
 
     @classmethod
@@ -2342,6 +2362,9 @@ class LogmanTrace(ApiBase):
 
     def trace(self, cmd, cwd, tracename, output):
       logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, tracename, output))
+      assert os.path.isabs(cmd[0]), cmd[0]
+      assert os.path.isabs(cwd), cwd
+      assert os.path.normpath(cwd) == cwd, cwd
       with self._lock:
         if not self._initialized:
           raise TracingFailure(
@@ -2614,6 +2637,8 @@ def extract_directories(root_dir, files, blacklist):
     - files: list of Results.File instances.
     - blacklist: regexp of files to ignore, for example r'.+\.pyc'.
   """
+  logging.info(
+      'extract_directories(%s, %d files, ...)' % (root_dir, len(files)))
   assert not any(isinstance(f, Results.Directory) for f in files)
   # Remove non existent files.
   files = [f for f in files if f.existent]
@@ -2674,7 +2699,6 @@ def trace(logfile, cmd, cwd, api, output):
   - output: if True, returns output, otherwise prints it at the console.
   """
   cmd = fix_python_path(cmd)
-  assert os.path.isabs(cmd[0]), cmd[0]
   api.clean_trace(logfile)
   with api.get_tracer(logfile) as tracer:
     return tracer.trace(cmd, cwd, 'default', output)
