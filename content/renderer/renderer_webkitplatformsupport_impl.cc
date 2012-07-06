@@ -196,7 +196,7 @@ bool SendSyncMessageFromAnyThread(IPC::SyncMessage* msg) {
   base::TimeTicks begin = base::TimeTicks::Now();
   const bool success = SendSyncMessageFromAnyThreadInternal(msg);
   base::TimeDelta delta = base::TimeTicks::Now() - begin;
-  HISTOGRAM_TIMES("RendererSyncIPC.ElapsedTime", delta);
+  UMA_HISTOGRAM_TIMES("RendererSyncIPC.ElapsedTime", delta);
   return success;
 }
 
