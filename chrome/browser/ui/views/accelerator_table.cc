@@ -7,9 +7,8 @@
 #include "base/basictypes.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "ui/base/events.h"
-#include "ui/base/keycodes/keyboard_codes.h"
 
-namespace browser {
+namespace chrome {
 
 // NOTE: Keep this list in the same (mostly-alphabetical) order as
 // the Windows accelerators in ../../app/chrome_dll.rc.
@@ -150,4 +149,4 @@ const AcceleratorMapping kAcceleratorMap[] = {
 
 const size_t kAcceleratorMapLength = arraysize(kAcceleratorMap);
 
-}  // namespace browser
+}  // namespace chrome

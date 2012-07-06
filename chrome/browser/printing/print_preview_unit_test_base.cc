@@ -22,7 +22,7 @@ void PrintPreviewUnitTestBase::SetUp() {
   testing_local_state_->SetUserPref(prefs::kPrintPreviewDisabled,
                                     Value::CreateBooleanValue(false));
 
-  browser::RegisterLocalState(testing_local_state_.get());
+  chrome::RegisterLocalState(testing_local_state_.get());
   TestingBrowserProcess* testing_browser_process =
       static_cast<TestingBrowserProcess*>(g_browser_process);
   EXPECT_FALSE(testing_browser_process->local_state());

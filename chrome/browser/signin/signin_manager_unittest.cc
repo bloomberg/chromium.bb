@@ -46,7 +46,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
  public:
   virtual void SetUp() OVERRIDE {
     prefs_.reset(new TestingPrefService);
-    browser::RegisterLocalState(prefs_.get());
+    chrome::RegisterLocalState(prefs_.get());
     static_cast<TestingBrowserProcess*>(g_browser_process)->SetLocalState(
         prefs_.get());
     TokenServiceTestHarness::SetUp();

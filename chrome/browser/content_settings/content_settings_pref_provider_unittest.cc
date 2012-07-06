@@ -156,12 +156,12 @@ TEST_F(PrefProviderTest, Incognito) {
   PrefService* regular_prefs = builder.WithUserPrefs(user_prefs).Create();
 
   Profile::RegisterUserPrefs(regular_prefs);
-  browser::RegisterUserPrefs(regular_prefs);
+  chrome::RegisterUserPrefs(regular_prefs);
 
   PrefService* otr_prefs = builder.WithUserPrefs(otr_user_prefs).Create();
 
   Profile::RegisterUserPrefs(otr_prefs);
-  browser::RegisterUserPrefs(otr_prefs);
+  chrome::RegisterUserPrefs(otr_prefs);
 
   TestingProfile profile;
   TestingProfile* otr_profile = new TestingProfile;

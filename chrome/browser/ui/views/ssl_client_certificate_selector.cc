@@ -279,10 +279,7 @@ void SSLClientCertificateSelector::CreateViewCertButton() {
   layout->AddView(view_cert_button_);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// SSLClientCertificateSelector public interface:
-
-namespace browser {
+namespace chrome {
 
 void ShowSSLClientCertificateSelector(
     TabContents* tab_contents,
@@ -295,4 +292,4 @@ void ShowSSLClientCertificateSelector(
        tab_contents, network_session, cert_request_info, callback))->Init();
 }
 
-}  // namespace browser
+}  // namespace chrome

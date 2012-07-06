@@ -85,7 +85,7 @@ class OffTheRecordProfileImplTest : public BrowserWithTestWindowTest {
 
   virtual void SetUp() OVERRIDE {
     prefs_.reset(new TestingPrefService);
-    browser::RegisterLocalState(prefs_.get());
+    chrome::RegisterLocalState(prefs_.get());
 
     browser_process()->SetLocalState(prefs_.get());
 

@@ -93,7 +93,7 @@ class ProxyPolicyTest : public testing::Test {
     if (with_managed_policies)
       builder.WithManagedPolicies(policy_service_.get());
     PrefService* prefs = builder.Create();
-    browser::RegisterUserPrefs(prefs);
+    chrome::RegisterUserPrefs(prefs);
     return prefs;
   }
 

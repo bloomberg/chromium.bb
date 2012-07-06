@@ -410,7 +410,7 @@ void ExtensionServiceTestBase::InitializeExtensionService(
   PrefService* prefs =
       PrefServiceMockBuilder().WithUserFilePrefs(pref_file).Create();
   Profile::RegisterUserPrefs(prefs);
-  browser::RegisterUserPrefs(prefs);
+  chrome::RegisterUserPrefs(prefs);
   profile->SetPrefService(prefs);
 
   ThemeServiceFactory::GetInstance()->ForceRegisterPrefsForTest(prefs);

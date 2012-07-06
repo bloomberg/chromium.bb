@@ -107,7 +107,18 @@
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #endif
 
-namespace browser {
+namespace {
+
+enum MigratedPreferences {
+  NO_PREFS = 0,
+  DNS_PREFS = 1 << 0,
+  WINDOWS_PREFS = 1 << 1,
+  GOOGLE_URL_TRACKER_PREFS = 1 << 2,
+};
+
+}  // namespace
+
+namespace chrome {
 
 void RegisterLocalState(PrefService* local_state) {
   // Prefs in Local State
@@ -141,14 +152,14 @@ void RegisterLocalState(PrefService* local_state) {
 #endif  // defined(ENABLE_TASK_MANAGER)
 
 #if defined(TOOLKIT_VIEWS)
-  chrome::RegisterBrowserViewPrefs(local_state);
-  chrome::RegisterTabStripLayoutTypePrefs(local_state);
+  RegisterBrowserViewPrefs(local_state);
+  RegisterTabStripLayoutTypePrefs(local_state);
 #endif
 
 #if !defined(OS_ANDROID)
   AppsPromo::RegisterPrefs(local_state);
   BackgroundModeManager::RegisterPrefs(local_state);
-  chrome::RegisterBrowserPrefs(local_state);
+  RegisterBrowserPrefs(local_state);
   FlagsUI::RegisterPrefs(local_state);
   ManagedMode::RegisterPrefs(local_state);
   PromoResourceService::RegisterPrefs(local_state);
@@ -173,7 +184,7 @@ void RegisterLocalState(PrefService* local_state) {
 #endif
 
 #if defined(OS_MACOSX)
-  chrome::RegisterObsoleteOSInfobarPrefs(local_state);
+  RegisterObsoleteOSInfobarPrefs(local_state);
   confirm_quit::RegisterLocalState(local_state);
 #endif
 }
@@ -183,7 +194,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   AlternateErrorPageTabObserver::RegisterUserPrefs(user_prefs);
   AutofillManager::RegisterUserPrefs(user_prefs);
   bookmark_utils::RegisterUserPrefs(user_prefs);
-  chrome::ChromeContentBrowserClient::RegisterUserPrefs(user_prefs);
+  ChromeContentBrowserClient::RegisterUserPrefs(user_prefs);
   ChromeVersionService::RegisterUserPrefs(user_prefs);
   chrome_browser_net::HttpServerPropertiesManager::RegisterPrefs(user_prefs);
   chrome_browser_net::Predictor::RegisterUserPrefs(user_prefs);
@@ -210,7 +221,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-  chrome::RegisterInvertBubbleUserPrefs(user_prefs);
+  RegisterInvertBubbleUserPrefs(user_prefs);
 #elif defined(TOOLKIT_GTK)
   BrowserWindowGtk::RegisterUserPrefs(user_prefs);
 #endif
@@ -229,8 +240,8 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   extensions::ComponentLoader::RegisterUserPrefs(user_prefs);
   ExtensionPrefs::RegisterUserPrefs(user_prefs);
   ExtensionWebUI::RegisterUserPrefs(user_prefs);
-  chrome::RegisterBrowserUserPrefs(user_prefs);
-  chrome::RegisterAutolaunchPrefs(user_prefs);
+  RegisterBrowserUserPrefs(user_prefs);
+  RegisterAutolaunchPrefs(user_prefs);
   DevToolsWindow::RegisterUserPrefs(user_prefs);
   PepperFlashSettingsManager::RegisterUserPrefs(user_prefs);
   PinnedTabCodec::RegisterUserPrefs(user_prefs);
@@ -324,4 +335,4 @@ void MigrateBrowserPrefs(Profile* profile, PrefService* local_state) {
   }
 }
 
-}  // namespace browser
+}  // namespace chrome

@@ -195,7 +195,7 @@ void TabContentsSSLHelper::ShowClientCertificateRequestDialog(
     const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
     const base::Callback<void(net::X509Certificate*)>& callback) {
-  browser::ShowSSLClientCertificateSelector(
+  chrome::ShowSSLClientCertificateSelector(
       tab_contents_, network_session, cert_request_info, callback);
 }
 

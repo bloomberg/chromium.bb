@@ -21,8 +21,8 @@
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_trial.h"
-#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_browser_main.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/component_updater/component_updater_configurator.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
@@ -704,7 +704,7 @@ void BrowserProcessImpl::CreateLocalState() {
                                      false));
 
   // Initialize the prefs of the local state.
-  browser::RegisterLocalState(local_state_.get());
+  chrome::RegisterLocalState(local_state_.get());
 
   pref_change_registrar_.Init(local_state_.get());
 

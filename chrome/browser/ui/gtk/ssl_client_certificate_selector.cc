@@ -383,10 +383,7 @@ void SSLClientCertificateSelector::OnPromptShown(GtkWidget* widget,
 
 }  // namespace
 
-///////////////////////////////////////////////////////////////////////////////
-// SSLClientAuthHandler platform specific implementation:
-
-namespace browser {
+namespace chrome {
 
 void ShowSSLClientCertificateSelector(
     TabContents* tab_contents,
@@ -398,4 +395,4 @@ void ShowSSLClientCertificateSelector(
       tab_contents, network_session, cert_request_info, callback))->Show();
 }
 
-}  // namespace browser
+}  // namespace chrome

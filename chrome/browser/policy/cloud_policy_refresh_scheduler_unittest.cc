@@ -53,7 +53,7 @@ class CloudPolicyRefreshSchedulerTest : public testing::Test {
   CloudPolicyRefreshSchedulerTest()
       : task_runner_(new TestTaskRunner()),
         network_change_notifier_(net::NetworkChangeNotifier::CreateMock()) {
-    browser::RegisterLocalState(&prefs_);
+    chrome::RegisterLocalState(&prefs_);
     prefs_.SetInteger(prefs::kUserPolicyRefreshRate, kPolicyRefreshRate);
   }
 

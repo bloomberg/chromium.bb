@@ -26,11 +26,11 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
-#include "chrome/browser/history/shortcuts_backend.h"
-#include "chrome/browser/history/shortcuts_backend_factory.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/shortcuts_backend.h"
+#include "chrome/browser/history/shortcuts_backend_factory.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -523,7 +523,7 @@ void TestingProfile::CreateTestingPrefService() {
   testing_prefs_ = new TestingPrefService();
   prefs_.reset(testing_prefs_);
   Profile::RegisterUserPrefs(prefs_.get());
-  browser::RegisterUserPrefs(prefs_.get());
+  chrome::RegisterUserPrefs(prefs_.get());
 }
 
 PrefService* TestingProfile::GetPrefs() {

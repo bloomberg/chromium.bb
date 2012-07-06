@@ -6,8 +6,8 @@
 
 #include "base/basictypes.h"
 #include "base/port.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/metrics/metrics_log.h"
@@ -46,7 +46,7 @@ class TestMetricsLog : public MetricsLog {
  public:
   TestMetricsLog(const std::string& client_id, int session_id)
       : MetricsLog(client_id, session_id) {
-    browser::RegisterLocalState(&prefs_);
+    chrome::RegisterLocalState(&prefs_);
 
 #if defined(OS_CHROMEOS)
     prefs_.SetInteger(prefs::kStabilityChildProcessCrashCount, 10);

@@ -58,12 +58,12 @@ class BrowserNonClientFrameView : public views::NonClientFrameView {
   scoped_ptr<AvatarMenuButton> avatar_button_;
 };
 
-namespace browser {
+namespace chrome {
 
 // Provided by a browser_non_client_frame_view_factory_*.cc implementation
 BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     BrowserFrame* frame, BrowserView* browser_view);
 
-}  // browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_H_

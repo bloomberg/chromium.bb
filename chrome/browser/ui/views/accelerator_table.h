@@ -11,7 +11,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 
 // This contains the list of accelerators for the Aura implementation.
-namespace browser {
+namespace chrome {
 
 struct AcceleratorMapping {
   ui::KeyboardCode keycode;
@@ -25,6 +25,6 @@ extern const AcceleratorMapping kAcceleratorMap[];
 // The numbers of elements in kAcceleratorMap.
 extern const size_t kAcceleratorMapLength;
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_VIEWS_ACCELERATOR_TABLE_H_

@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 #endif
 
-namespace browser {
+namespace chrome {
 
 BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     BrowserFrame* frame, BrowserView* browser_view) {
@@ -40,4 +40,4 @@ BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
   return frame_view;
 }
 
-}  // namespace browser
+}  // namespace chrome

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 
-#include "base/i18n/rtl.h"
 #include "base/chromeos/chromeos_version.h"
+#include "base/i18n/rtl.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -125,7 +125,7 @@ views::NonClientFrameView* BrowserFrame::CreateNonClientFrameView() {
   } else {
 #endif
     browser_frame_view_ =
-        browser::CreateBrowserNonClientFrameView(this, browser_view_);
+        chrome::CreateBrowserNonClientFrameView(this, browser_view_);
 #if defined(OS_WIN) && !defined(USE_AURA)
   }
 #endif

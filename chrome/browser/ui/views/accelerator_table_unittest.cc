@@ -13,11 +13,13 @@
 #include "ash/accelerators/accelerator_table.h"
 #endif  // USE_ASH
 
+namespace chrome {
+
 namespace {
 
 struct Cmp {
-  bool operator()(const browser::AcceleratorMapping& lhs,
-                  const browser::AcceleratorMapping& rhs) {
+  bool operator()(const AcceleratorMapping& lhs,
+                  const AcceleratorMapping& rhs) const {
     if (lhs.keycode != rhs.keycode)
       return lhs.keycode < rhs.keycode;
     return lhs.modifiers < rhs.modifiers;
@@ -28,9 +30,9 @@ struct Cmp {
 }  // namespace
 
 TEST(AcceleratorTableTest, CheckDuplicatedAccelerators) {
-  std::set<browser::AcceleratorMapping, Cmp> acclerators;
-  for (size_t i = 0; i < browser::kAcceleratorMapLength; ++i) {
-    const browser::AcceleratorMapping& entry = browser::kAcceleratorMap[i];
+  std::set<AcceleratorMapping, Cmp> acclerators;
+  for (size_t i = 0; i < kAcceleratorMapLength; ++i) {
+    const AcceleratorMapping& entry = kAcceleratorMap[i];
     EXPECT_TRUE(acclerators.insert(entry).second)
         << "Duplicated accelerator: " << entry.keycode << ", "
         << (entry.modifiers & ui::EF_SHIFT_DOWN) << ", "
@@ -41,16 +43,16 @@ TEST(AcceleratorTableTest, CheckDuplicatedAccelerators) {
 
 #if defined(USE_ASH)
 TEST(AcceleratorTableTest, CheckDuplicatedAcceleratorsAsh) {
-  std::set<browser::AcceleratorMapping, Cmp> acclerators;
-  for (size_t i = 0; i < browser::kAcceleratorMapLength; ++i) {
-    const browser::AcceleratorMapping& entry = browser::kAcceleratorMap[i];
+  std::set<AcceleratorMapping, Cmp> acclerators;
+  for (size_t i = 0; i < kAcceleratorMapLength; ++i) {
+    const AcceleratorMapping& entry = kAcceleratorMap[i];
     acclerators.insert(entry);
   }
   for (size_t i = 0; i < ash::kAcceleratorDataLength; ++i) {
     const ash::AcceleratorData& ash_entry = ash::kAcceleratorData[i];
     if (!ash_entry.trigger_on_press)
       continue;  // kAcceleratorMap does not have any release accelerators.
-    browser::AcceleratorMapping entry;
+    AcceleratorMapping entry;
     entry.keycode = ash_entry.keycode;
     entry.modifiers = ash_entry.modifiers;
     entry.command_id = 0;  // dummy
@@ -62,3 +64,5 @@ TEST(AcceleratorTableTest, CheckDuplicatedAcceleratorsAsh) {
   }
 }
 #endif  // USE_ASH
+
+}  // namespace chrome

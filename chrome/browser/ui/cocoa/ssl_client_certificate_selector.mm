@@ -131,7 +131,7 @@ class NotificationProxy : public SSLClientAuthObserver {
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
 void ShowSSLClientCertificateSelector(
     TabContents* tabContents,
@@ -147,7 +147,7 @@ void ShowSSLClientCertificateSelector(
   [selector displayDialog:tabContents];
 }
 
-}  // namespace browser
+}  // namespace chrome
 
 @implementation SSLClientCertificateSelectorCocoa
 

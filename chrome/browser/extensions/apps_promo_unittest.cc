@@ -49,7 +49,7 @@ ExtensionAppsPromo::ExtensionAppsPromo()
 }
 
 void ExtensionAppsPromo::SetUp() {
-  browser::RegisterUserPrefs(&prefs_);
+  chrome::RegisterUserPrefs(&prefs_);
 }
 
 // TODO(dpolukhin): On Chrome OS all apps are installed via external extensions,

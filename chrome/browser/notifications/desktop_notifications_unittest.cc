@@ -98,7 +98,7 @@ void DesktopNotificationsTest::SetUp() {
   ash::Shell::CreateInstance(NULL);
 #endif
 
-  browser::RegisterLocalState(&local_state_);
+  chrome::RegisterLocalState(&local_state_);
   profile_.reset(new TestingProfile());
   balloon_collection_ = new MockBalloonCollection();
   ui_manager_.reset(NotificationUIManager::Create(&local_state_,

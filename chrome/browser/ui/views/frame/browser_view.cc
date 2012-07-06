@@ -2309,10 +2309,10 @@ void BrowserView::LoadAccelerators() {
   views::FocusManager* focus_manager = GetFocusManager();
   DCHECK(focus_manager);
   // Let's fill our own accelerator table.
-  for (size_t i = 0; i < browser::kAcceleratorMapLength; ++i) {
-    ui::Accelerator accelerator(browser::kAcceleratorMap[i].keycode,
-                                browser::kAcceleratorMap[i].modifiers);
-    accelerator_table_[accelerator] = browser::kAcceleratorMap[i].command_id;
+  for (size_t i = 0; i < chrome::kAcceleratorMapLength; ++i) {
+    ui::Accelerator accelerator(chrome::kAcceleratorMap[i].keycode,
+                                chrome::kAcceleratorMap[i].modifiers);
+    accelerator_table_[accelerator] = chrome::kAcceleratorMap[i].command_id;
 
     // Also register with the focus manager.
     focus_manager->RegisterAccelerator(
