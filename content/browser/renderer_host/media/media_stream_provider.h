@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,10 @@
 
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
+
+namespace base {
+class MessageLoopProxy;
+}
 
 namespace media_stream {
 
@@ -59,8 +63,9 @@ class CONTENT_EXPORT MediaStreamProviderListener {
 // Implemented by a manager class providing captured media.
 class CONTENT_EXPORT MediaStreamProvider {
  public:
-  // Registers a listener, only one listener is allowed.
-  virtual void Register(MediaStreamProviderListener* listener) = 0;
+  // Registers a listener and a device message loop.
+  virtual void Register(MediaStreamProviderListener* listener,
+                        base::MessageLoopProxy* device_thread_loop) = 0;
 
   // Unregisters the previously registered listener.
   virtual void Unregister() = 0;

@@ -7,10 +7,12 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/video_capture_messages.h"
 
+using content::BrowserMainLoop;
 using content::BrowserMessageFilter;
 using content::BrowserThread;
 
@@ -23,11 +25,7 @@ struct VideoCaptureHost::Entry {
   scoped_refptr<VideoCaptureController> controller;
 };
 
-VideoCaptureHost::VideoCaptureHost(content::ResourceContext* resource_context,
-                                   media::AudioManager* audio_manager)
-    : resource_context_(resource_context),
-      audio_manager_(audio_manager) {
-}
+VideoCaptureHost::VideoCaptureHost() {}
 
 VideoCaptureHost::~VideoCaptureHost() {}
 
@@ -281,6 +279,5 @@ void VideoCaptureHost::DeleteVideoCaptureControllerOnIOThread(
 
 media_stream::VideoCaptureManager* VideoCaptureHost::GetVideoCaptureManager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return media_stream::MediaStreamManager::GetForResourceContext(
-      resource_context_, audio_manager_)->video_capture_manager();
+  return BrowserMainLoop::GetMediaStreamManager()->video_capture_manager();
 }

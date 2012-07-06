@@ -15,7 +15,6 @@
 #include <map>
 
 #include "base/memory/ref_counted.h"
-#include "base/threading/thread.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
@@ -30,13 +29,8 @@ class VideoCaptureControllerEventHandler;
 namespace media_stream {
 
 // VideoCaptureManager opens/closes and start/stops video capture devices.
-// It is deleted on the FILE thread so that it can call base::Thread::Stop()
-// there without blocking UI/IO threads. This is also needed for incognito
-// window. When incognito window is closed, IO thread is not in shutdown mode
-// and base::Thread::Stop() can't be called on IO thread.
 class CONTENT_EXPORT VideoCaptureManager
-    : public base::RefCountedThreadSafe<VideoCaptureManager,
-          content::BrowserThread::DeleteOnFileThread>,
+    : public base::RefCountedThreadSafe<VideoCaptureManager>,
       public MediaStreamProvider {
  public:
   // Calling |Start| of this id will open the first device, even though open has
@@ -47,7 +41,8 @@ class CONTENT_EXPORT VideoCaptureManager
   VideoCaptureManager();
 
   // Implements MediaStreamProvider.
-  virtual void Register(MediaStreamProviderListener* listener) OVERRIDE;
+  virtual void Register(MediaStreamProviderListener* listener,
+                        base::MessageLoopProxy* device_thread_loop) OVERRIDE;
 
   virtual void Unregister() OVERRIDE;
 
@@ -78,7 +73,6 @@ class CONTENT_EXPORT VideoCaptureManager
   // video capture device. Due to timing requirements, the function must be
   // called before EnumerateDevices and Open.
   void UseFakeDevice();
-  MessageLoop* GetMessageLoop();
 
   // Called by VideoCaptureHost to get a controller for |capture_params|.
   // The controller is returned via calling |added_cb|.
@@ -93,18 +87,14 @@ class CONTENT_EXPORT VideoCaptureManager
 
  private:
   friend class ::MockVideoCaptureManager;
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::FILE>;
-  friend class base::DeleteHelper<VideoCaptureManager>;
-  friend class base::RefCountedThreadSafe<VideoCaptureManager,
-          content::BrowserThread::DeleteOnFileThread>;
+  friend class base::RefCountedThreadSafe<VideoCaptureManager>;
 
   virtual ~VideoCaptureManager();
 
   typedef std::list<VideoCaptureControllerEventHandler*> Handlers;
   struct Controller;
 
-  // Called by the public functions, executed on vc_device_thread_.
+  // Called by the public functions, executed on device thread.
   void OnEnumerateDevices();
   void OnOpen(int capture_session_id, const StreamDeviceInfo& device);
   void OnClose(int capture_session_id);
@@ -126,7 +116,7 @@ class CONTENT_EXPORT VideoCaptureManager
   void OnDevicesEnumerated(const StreamDeviceInfoArray& devices);
   void OnError(int capture_session_id, MediaStreamProviderError error);
 
-  // Executed on vc_device_thread_ to make sure Listener is called from
+  // Executed on device thread to make sure Listener is called from
   // Browser::IO thread.
   void PostOnOpened(int capture_session_id);
   void PostOnClosed(int capture_session_id);
@@ -139,17 +129,17 @@ class CONTENT_EXPORT VideoCaptureManager
   bool DeviceInUse(const media::VideoCaptureDevice* video_capture_device);
   media::VideoCaptureDevice* GetOpenedDevice(
       const StreamDeviceInfo& device_info);
-  bool IsOnCaptureDeviceThread() const;
+  bool IsOnDeviceThread() const;
   media::VideoCaptureDevice* GetDeviceInternal(int capture_session_id);
 
-  // Thread for all calls to VideoCaptureDevice.
-  base::Thread vc_device_thread_;
+  // The message loop of media stream device thread that this object runs on.
+  scoped_refptr<base::MessageLoopProxy> device_loop_;
 
   // Only accessed on Browser::IO thread.
   MediaStreamProviderListener* listener_;
   int new_capture_session_id_;
 
-  // Only accessed from vc_device_thread_.
+  // Only accessed from device thread.
   // VideoCaptureManager owns all VideoCaptureDevices and is responsible for
   // deleting the instances when they are not used any longer.
   typedef std::map<int, media::VideoCaptureDevice*> VideoCaptureDevices;
@@ -158,7 +148,7 @@ class CONTENT_EXPORT VideoCaptureManager
   // Set to true if using fake devices for testing, false by default.
   bool use_fake_device_;
 
-  // Only accessed from vc_device_thread_.
+  // Only accessed from device thread.
   // VideoCaptureManager owns all VideoCaptureController's and is responsible
   // for deleting the instances when they are not used any longer.
   // VideoCaptureDevice is one-to-one mapped to VideoCaptureController.

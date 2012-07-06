@@ -526,10 +526,12 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   // TODO(dtrainor, klobag): Enable this when BrowserMainLoop gets
   // included in Android builds.  Tracked via 115941.
   media::AudioManager* audio_manager = BrowserMainLoop::GetAudioManager();
-  channel_->AddFilter(new AudioInputRendererHost(
-      resource_context, audio_manager));
+  media_stream::MediaStreamManager* media_stream_manager =
+      BrowserMainLoop::GetMediaStreamManager();
+  channel_->AddFilter(new AudioInputRendererHost(audio_manager,
+                                                 media_stream_manager));
   channel_->AddFilter(new AudioRendererHost(audio_manager, media_observer));
-  channel_->AddFilter(new VideoCaptureHost(resource_context, audio_manager));
+  channel_->AddFilter(new VideoCaptureHost());
 #endif
   channel_->AddFilter(new AppCacheDispatcherHost(
       static_cast<ChromeAppCacheService*>(
@@ -547,8 +549,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   gpu_message_filter_ = new GpuMessageFilter(GetID(), widget_helper_.get());
   channel_->AddFilter(gpu_message_filter_);
 #if defined(ENABLE_WEBRTC)
-  channel_->AddFilter(new media_stream::MediaStreamDispatcherHost(
-      resource_context, GetID(), BrowserMainLoop::GetAudioManager()));
+  channel_->AddFilter(new media_stream::MediaStreamDispatcherHost(GetID()));
 #endif
   channel_->AddFilter(
       GetContentClient()->browser()->AllowPepperPrivateFileAPI() ?

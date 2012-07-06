@@ -137,7 +137,6 @@ MediaStreamDeviceSettings::MediaStreamDeviceSettings(
     : requester_(requester),
       use_fake_ui_(false) {
   DCHECK(requester_);
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
 MediaStreamDeviceSettings::~MediaStreamDeviceSettings() {

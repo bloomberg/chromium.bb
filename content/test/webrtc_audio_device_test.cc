@@ -12,10 +12,12 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/win/scoped_com_initializer.h"
+#include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/mock_media_observer.h"
+#include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_paths.h"
@@ -50,13 +52,13 @@ class WebRTCMockRenderProcess : public RenderProcess {
   virtual ~WebRTCMockRenderProcess() {}
 
   // RenderProcess implementation.
-  virtual skia::PlatformCanvas* GetDrawingCanvas(TransportDIB** memory,
-                                                 const gfx::Rect& rect) {
+  virtual skia::PlatformCanvas* GetDrawingCanvas(
+      TransportDIB** memory, const gfx::Rect& rect) OVERRIDE {
     return NULL;
   }
-  virtual void ReleaseTransportDIB(TransportDIB* memory) {}
-  virtual bool UseInProcessPlugins() const { return false; }
-  virtual void AddBindings(int bindings) {}
+  virtual void ReleaseTransportDIB(TransportDIB* memory) OVERRIDE {}
+  virtual bool UseInProcessPlugins() const OVERRIDE { return false; }
+  virtual void AddBindings(int bindings) OVERRIDE {}
   virtual int GetEnabledBindings() const { return 0; }
   virtual bool HasInitializedMediaLibrary() const { return false; }
 
@@ -197,6 +199,14 @@ void WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
 
   audio_manager_.reset(media::AudioManager::Create());
 
+  scoped_refptr<media_stream::AudioInputDeviceManager>
+      audio_input_device_manager(new media_stream::AudioInputDeviceManager(
+          audio_manager_.get()));
+  scoped_refptr<media_stream::VideoCaptureManager> video_capture_manager(
+      new media_stream::VideoCaptureManager());
+  media_stream_manager_.reset(new media_stream::MediaStreamManager(
+      audio_input_device_manager, video_capture_manager));
+
   // Populate our resource context.
   test_request_context_.reset(new TestURLRequestContext());
   MockResourceContext* resource_context =
@@ -214,6 +224,7 @@ void WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
 void WebRTCAudioDeviceTest::UninitializeIOThread() {
   resource_context_.reset();
 
+  media_stream_manager_.reset();
   audio_manager_.reset();
   test_request_context_.reset();
   initialize_com_.reset();
@@ -226,7 +237,7 @@ void WebRTCAudioDeviceTest::CreateChannel(const char* name) {
   audio_render_host_->OnChannelConnected(base::GetCurrentProcId());
 
   audio_input_renderer_host_ = new AudioInputRendererHost(
-      resource_context_.get(), audio_manager_.get());
+      audio_manager_.get(), media_stream_manager_.get());
   audio_input_renderer_host_->OnChannelConnected(base::GetCurrentProcId());
 
   channel_.reset(new IPC::Channel(name, IPC::Channel::MODE_SERVER, this));

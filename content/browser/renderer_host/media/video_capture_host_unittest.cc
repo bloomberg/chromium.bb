@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
@@ -71,11 +72,11 @@ class DumpVideo {
 
 class MockVideoCaptureHost : public VideoCaptureHost {
  public:
-  MockVideoCaptureHost(content::ResourceContext* resource_context,
-                       media::AudioManager* audio_manager)
-      : VideoCaptureHost(resource_context, audio_manager),
+  MockVideoCaptureHost(media_stream::MediaStreamManager* manager)
+      : VideoCaptureHost(),
         return_buffers_(false),
-        dump_video_(false) {}
+        dump_video_(false),
+        manager_(manager) {}
 
   // A list of mock methods.
   MOCK_METHOD4(OnNewBufferCreated,
@@ -125,7 +126,7 @@ class MockVideoCaptureHost : public VideoCaptureHost {
   // This method is used to dispatch IPC messages to the renderer. We intercept
   // these messages here and dispatch to our mock methods to verify the
   // conversation between this object and the renderer.
-  virtual bool Send(IPC::Message* message) {
+  virtual bool Send(IPC::Message* message) OVERRIDE {
     CHECK(message);
 
     // In this method we dispatch the messages to the according handlers as if
@@ -142,6 +143,10 @@ class MockVideoCaptureHost : public VideoCaptureHost {
 
     delete message;
     return true;
+  }
+
+  virtual media_stream::VideoCaptureManager* GetVideoCaptureManager() OVERRIDE {
+    return manager_->video_capture_manager();
   }
 
   // These handler methods do minimal things and delegate to the mock methods.
@@ -185,6 +190,7 @@ class MockVideoCaptureHost : public VideoCaptureHost {
   bool return_buffers_;
   bool dump_video_;
   DumpVideo dumper_;
+  media_stream::MediaStreamManager* manager_;
 };
 
 ACTION_P(ExitMessageLoop, message_loop) {
@@ -196,32 +202,35 @@ class VideoCaptureHostTest : public testing::Test {
   VideoCaptureHostTest() {}
 
  protected:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     // Create a message loop so VideoCaptureHostTest can use it.
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
-
-    // ResourceContext must be created on the UI thread.
-    ui_thread_.reset(new BrowserThreadImpl(BrowserThread::UI,
-                                           message_loop_.get()));
 
     // MediaStreamManager must be created on the IO thread.
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
                                            message_loop_.get()));
 
+    // Create our own MediaStreamManager.
     audio_manager_.reset(media::AudioManager::Create());
+    scoped_refptr<media_stream::AudioInputDeviceManager>
+        audio_input_device_manager(
+            new media_stream::AudioInputDeviceManager(audio_manager_.get()));
+    scoped_refptr<media_stream::VideoCaptureManager> video_capture_manager(
+        new media_stream::VideoCaptureManager());
+    media_stream_manager_.reset(new media_stream::MediaStreamManager(
+        audio_input_device_manager, video_capture_manager));
 
 #ifndef TEST_REAL_CAPTURE_DEVICE
-    media_stream::MediaStreamManager::GetForResourceContext(
-        &resource_context_, audio_manager_.get())->UseFakeDevice();
+    media_stream_manager_->UseFakeDevice();
 #endif
 
-    host_ = new MockVideoCaptureHost(&resource_context_, audio_manager_.get());
+    host_ = new MockVideoCaptureHost(media_stream_manager_.get());
 
     // Simulate IPC channel connected.
     host_->OnChannelConnected(base::GetCurrentProcId());
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     // Verifies and removes the expectations on host_ and
     // returns true iff successful.
     Mock::VerifyAndClearExpectations(host_);
@@ -238,36 +247,7 @@ class VideoCaptureHostTest : public testing::Test {
     host_ = NULL;
 
     // We need to continue running message_loop_ to complete all destructions.
-    SyncWithVideoCaptureManagerThread();
-  }
-
-  // Called on the VideoCaptureManager thread.
-  static void PostQuitMessageLoop(MessageLoop* message_loop) {
-    message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-  }
-
-  // Called on the main thread.
-  static void PostQuitOnVideoCaptureManagerThread(
-      MessageLoop* message_loop, content::ResourceContext* resource_context,
-      media:: AudioManager* audio_manager) {
-    media_stream::MediaStreamManager* manager =
-        media_stream::MediaStreamManager::GetForResourceContext(
-            resource_context, audio_manager);
-    manager->video_capture_manager()->GetMessageLoop()->PostTask(
-        FROM_HERE, base::Bind(&PostQuitMessageLoop, message_loop));
-  }
-
-  // SyncWithVideoCaptureManagerThread() waits until all pending tasks on the
-  // video_capture_manager thread are executed while also processing pending
-  // task in message_loop_ on the current thread. It is used to synchronize
-  // with the video capture manager thread when we are stopping a video
-  // capture device.
-  void SyncWithVideoCaptureManagerThread() {
-    message_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&PostQuitOnVideoCaptureManagerThread, message_loop_.get(),
-                   &resource_context_, audio_manager_.get()));
-    message_loop_->Run();
+    message_loop_->RunAllPending();
   }
 
   void StartCapture() {
@@ -325,13 +305,14 @@ class VideoCaptureHostTest : public testing::Test {
   void StopCapture() {
     EXPECT_CALL(*host_, OnStateChanged(kDeviceId,
                                        video_capture::kStopped))
-        .Times(AtLeast(1));
+        .WillOnce(ExitMessageLoop(message_loop_.get()));
 
     host_->OnStopCapture(kDeviceId);
     host_->SetReturnReceviedDibs(true);
     host_->ReturnReceivedDibs(kDeviceId);
 
-    SyncWithVideoCaptureManagerThread();
+    message_loop_->Run();
+
     host_->SetReturnReceviedDibs(false);
     // Expect the VideoCaptureDevice has been stopped
     EXPECT_EQ(0u, host_->entries_.size());
@@ -356,17 +337,17 @@ class VideoCaptureHostTest : public testing::Test {
         .Times(1);
     VideoCaptureControllerID id(kDeviceId);
     host_->OnError(id);
-    SyncWithVideoCaptureManagerThread();
+    // Wait for the error callback.
+    message_loop_->RunAllPending();
   }
 
   scoped_refptr<MockVideoCaptureHost> host_;
 
  private:
   scoped_ptr<MessageLoop> message_loop_;
-  scoped_ptr<BrowserThreadImpl> ui_thread_;
   scoped_ptr<BrowserThreadImpl> io_thread_;
   scoped_ptr<media::AudioManager> audio_manager_;
-  content::MockResourceContext resource_context_;
+  scoped_ptr<media_stream::MediaStreamManager> media_stream_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureHostTest);
 };

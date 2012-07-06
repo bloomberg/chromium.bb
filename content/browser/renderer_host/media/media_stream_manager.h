@@ -29,19 +29,15 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/supports_user_data.h"
+#include "base/threading/thread.h"
+#include "base/win/scoped_com_initializer.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/browser/renderer_host/media/media_stream_settings_requester.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_thread.h"
 
-namespace content {
-class ResourceContext;
-}
-
-namespace media {
-class AudioManager;
-}
+using base::win::ScopedCOMInitializer;
 
 namespace media_stream {
 
@@ -50,22 +46,31 @@ class MediaStreamDeviceSettings;
 class MediaStreamRequester;
 class VideoCaptureManager;
 
+// Thread that enters MTA on windows, and is base::Thread on linux and mac.
+class DeviceThread : public base::Thread {
+ public:
+  explicit DeviceThread(const char* name)
+      : base::Thread(name),
+        com_init_(ScopedCOMInitializer::kMTA) {}
+
+ private:
+  ScopedCOMInitializer com_init_;
+  DISALLOW_COPY_AND_ASSIGN(DeviceThread);
+};
+
 // MediaStreamManager is used to generate and close new media devices, not to
 // start the media flow.
 // The classes requesting new media streams are answered using
 // MediaStreamManager::Listener.
 class CONTENT_EXPORT MediaStreamManager
     : public MediaStreamProviderListener,
-      public SettingsRequester,
-      public base::SupportsUserData::Data {
+      public SettingsRequester {
  public:
-  // Returns the MediaStreamManager for the given ResourceContext. If it hasn't
-  // been created yet, it will be constructed with the given AudioManager.
-  static MediaStreamManager* GetForResourceContext(
-      content::ResourceContext* resource_context,
-      media::AudioManager* audio_manager);
+  // This class takes the ownerships of the |audio_input_device_manager|
+  // and |video_capture_manager|.
+  MediaStreamManager(AudioInputDeviceManager* audio_input_device_manager,
+                     VideoCaptureManager* video_capture_manager);
 
-  explicit MediaStreamManager(media::AudioManager* audio_manager);
   virtual ~MediaStreamManager();
 
   // Used to access VideoCaptureManager.
@@ -130,6 +135,8 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Used by unit test to make sure fake devices are used instead of a real
   // devices, which is needed for server based testing.
+  // TODO(xians): Remove this hack since we can create our own
+  // MediaStreamManager in our unit tests.
   void UseFakeDevice();
 
  private:
@@ -149,9 +156,16 @@ class CONTENT_EXPORT MediaStreamManager
   void StartEnumeration(DeviceRequest* new_request,
                         std::string* label);
 
+  // Helper to ensure the device thread and pass the message loop to device
+  // managers, it also register itself as the listener to the device managers.
+  void EnsureDeviceThreadAndListener();
+
+  // Device thread shared by VideoCaptureManager and AudioInputDeviceManager.
+  scoped_ptr<base::Thread> device_thread_;
+
   scoped_ptr<MediaStreamDeviceSettings> device_settings_;
-  scoped_refptr<VideoCaptureManager> video_capture_manager_;
   scoped_refptr<AudioInputDeviceManager> audio_input_device_manager_;
+  scoped_refptr<VideoCaptureManager> video_capture_manager_;
 
   // Keeps track of device types currently being enumerated to not enumerate
   // when not necessary.
@@ -160,7 +174,6 @@ class CONTENT_EXPORT MediaStreamManager
   // All non-closed request.
   typedef std::map<std::string, DeviceRequest> DeviceRequests;
   DeviceRequests requests_;
-  media::AudioManager* audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamManager);
 };

@@ -6,8 +6,8 @@
 // communicates with MediaStreamManager and AudioInputRendererHost on the
 // browser IO thread, handles queries like enumerate/open/close from
 // MediaStreamManager and start/stop from AudioInputRendererHost.
-
-// All the queries and work are handled on the IO thread.
+// The work for enumerate/open/close is handled asynchronously on Media Stream
+// device thread, while start/stop are synchronous on the IO thread.
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_DEVICE_MANAGER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_DEVICE_MANAGER_H_
@@ -44,7 +44,8 @@ class CONTENT_EXPORT AudioInputDeviceManager
   explicit AudioInputDeviceManager(media::AudioManager* audio_manager);
 
   // MediaStreamProvider implementation, called on IO thread.
-  virtual void Register(MediaStreamProviderListener* listener) OVERRIDE;
+  virtual void Register(MediaStreamProviderListener* listener,
+                        base::MessageLoopProxy* device_thread_loop) OVERRIDE;
   virtual void Unregister() OVERRIDE;
   virtual void EnumerateDevices() OVERRIDE;
   virtual int Open(const StreamDeviceInfo& device) OVERRIDE;
@@ -61,20 +62,32 @@ class CONTENT_EXPORT AudioInputDeviceManager
   friend class base::RefCountedThreadSafe<AudioInputDeviceManager>;
   virtual ~AudioInputDeviceManager();
 
+  // Executed on media stream device thread.
+  void EnumerateOnDeviceThread();
+  void OpenOnDeviceThread(int session_id, const StreamDeviceInfo& device);
+  void CloseOnDeviceThread(int session_id);
+
   // Executed on IO thread to call Listener.
   void DevicesEnumeratedOnIOThread(StreamDeviceInfoArray* devices);
   void OpenedOnIOThread(int session_id);
   void ClosedOnIOThread(int session_id);
   void ErrorOnIOThread(int session_id, MediaStreamProviderError error);
 
+  bool IsOnDeviceThread() const;
+
+  // Only accessed on Browser::IO thread.
   MediaStreamProviderListener* listener_;
   int next_capture_session_id_;
   typedef std::map<int, AudioInputDeviceManagerEventHandler*> EventHandlerMap;
   EventHandlerMap event_handlers_;
+
+  // Only accessed from media stream device thread.
   typedef std::map<int, media::AudioDeviceName> AudioInputDeviceMap;
   AudioInputDeviceMap devices_;
-  // TODO(tommi): Is it necessary to store this as a member?
   media::AudioManager* audio_manager_;
+
+  // The message loop of media stream device thread that this object runs on.
+  scoped_refptr<base::MessageLoopProxy> device_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputDeviceManager);
 };

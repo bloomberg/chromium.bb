@@ -45,20 +45,11 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "ipc/ipc_message.h"
 
-namespace content {
-class ResourceContext;
-}  // namespace content
-
-namespace media {
-class AudioManager;
-}
-
 class CONTENT_EXPORT VideoCaptureHost
     : public content::BrowserMessageFilter,
       public VideoCaptureControllerEventHandler {
  public:
-  explicit VideoCaptureHost(content::ResourceContext* resource_context,
-                            media::AudioManager* audio_manager);
+  VideoCaptureHost();
 
   // content::BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
@@ -140,17 +131,14 @@ class CONTENT_EXPORT VideoCaptureHost
   void DeleteVideoCaptureControllerOnIOThread(
       const VideoCaptureControllerID& controller_id);
 
-  // Helpers.
-  media_stream::VideoCaptureManager* GetVideoCaptureManager();
+  // Returns the video capture manager. This is a virtual function so that
+  // the unit tests can inject their own MediaStreamManager.
+  virtual media_stream::VideoCaptureManager* GetVideoCaptureManager();
 
   struct Entry;
   typedef std::map<VideoCaptureControllerID, Entry*> EntryMap;
   // A map of VideoCaptureControllerID to its state and VideoCaptureController.
   EntryMap entries_;
-
-  // Used to get a pointer to VideoCaptureManager to start/stop capture devices.
-  content::ResourceContext* resource_context_;
-  media::AudioManager* audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureHost);
 };

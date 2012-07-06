@@ -15,10 +15,6 @@
 #include "content/common/media/media_stream_options.h"
 #include "content/public/browser/browser_message_filter.h"
 
-namespace content {
-class ResourceContext;
-}  // namespace content
-
 namespace media_stream {
 
 // MediaStreamDispatcherHost is a delegate for Media Stream API messages used by
@@ -28,9 +24,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
     : public content::BrowserMessageFilter,
       public MediaStreamRequester {
  public:
-  MediaStreamDispatcherHost(content::ResourceContext* resource_context,
-                            int render_process_id,
-                            media::AudioManager* audio_manager);
+  explicit MediaStreamDispatcherHost(int render_process_id);
 
   // MediaStreamRequester implementation.
   virtual void StreamGenerated(
@@ -78,12 +72,11 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
                     const GURL& security_origin);
 
   // Returns the media stream manager to forward events to,
-  // creating one if needed.
-  MediaStreamManager* manager();
+  // creating one if needed. It is a virtual function so that the unit tests
+  // can inject their own MediaStreamManager.
+  virtual MediaStreamManager* GetManager();
 
-  content::ResourceContext* resource_context_;
   int render_process_id_;
-  media::AudioManager* audio_manager_;
 
   struct StreamRequest;
   typedef std::map<std::string, StreamRequest> StreamMap;

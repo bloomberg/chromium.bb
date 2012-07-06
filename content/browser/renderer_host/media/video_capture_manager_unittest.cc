@@ -43,8 +43,9 @@ class MockMediaStreamProviderListener : public MediaStreamProviderListener {
   MOCK_METHOD3(Error, void(MediaStreamType, int,
                            MediaStreamProviderError));
 
-  virtual void DevicesEnumerated(MediaStreamType stream_type,
-                                 const StreamDeviceInfoArray& devices) {
+  virtual void DevicesEnumerated(
+      MediaStreamType stream_type,
+      const StreamDeviceInfoArray& devices) OVERRIDE {
     devices_.clear();
     for (StreamDeviceInfoArray::const_iterator it = devices.begin();
         it != devices.end();
@@ -62,66 +63,34 @@ class MockMediaStreamProviderListener : public MediaStreamProviderListener {
 namespace {
 
 // Needed as an input argument to Start().
-class MockFrameObserver: public media::VideoCaptureDevice::EventHandler {
+class MockFrameObserver : public media::VideoCaptureDevice::EventHandler {
  public:
-  virtual void OnError() {}
+  virtual void OnError() OVERRIDE {}
   void OnFrameInfo(const media::VideoCaptureCapability& info) {}
   virtual void OnIncomingCapturedFrame(const uint8* data, int length,
-                                       base::Time timestamp) {}
+                                       base::Time timestamp) OVERRIDE {}
 };
 
 // Test class
 class VideoCaptureManagerTest : public testing::Test {
  public:
-  VideoCaptureManagerTest()
-      : vcm_(),
-        listener_(),
-        message_loop_(),
-        io_thread_(),
-        frame_observer_() {
-  }
+  VideoCaptureManagerTest() {}
   virtual ~VideoCaptureManagerTest() {}
 
  protected:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     listener_.reset(new media_stream::MockMediaStreamProviderListener());
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
                                            message_loop_.get()));
     vcm_ = new media_stream::VideoCaptureManager();
     vcm_->UseFakeDevice();
-    vcm_->Register(listener_.get());
+    vcm_->Register(listener_.get(), message_loop_->message_loop_proxy());
     frame_observer_.reset(new MockFrameObserver());
   }
 
-  virtual void TearDown() {
-    io_thread_.reset();
-  }
+  virtual void TearDown() OVERRIDE {}
 
-  // Called on the VideoCaptureManager thread.
-  static void PostQuitMessageLoop(MessageLoop* message_loop) {
-    message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-  }
-
-  // Called on the main thread.
-  static void PostQuitOnVideoCaptureManagerThread(
-      MessageLoop* message_loop, media_stream::VideoCaptureManager* vcm) {
-    vcm->GetMessageLoop()->PostTask(
-        FROM_HERE, base::Bind(&PostQuitMessageLoop, message_loop));
-  }
-
-  // SyncWithVideoCaptureManagerThread() waits until all pending tasks on the
-  // video_capture_manager internal thread are executed while also processing
-  // pending task in message_loop_ on the current thread. It is used to
-  // synchronize with the video capture manager thread when we are stopping a
-  // video capture device.
-  void SyncWithVideoCaptureManagerThread() {
-    message_loop_->PostTask(
-        FROM_HERE, base::Bind(&PostQuitOnVideoCaptureManagerThread,
-                              message_loop_.get(),
-                              vcm_));
-    message_loop_->Run();
-  }
   scoped_refptr<media_stream::VideoCaptureManager> vcm_;
   scoped_ptr<media_stream::MockMediaStreamProviderListener> listener_;
   scoped_ptr<MessageLoop> message_loop_;
@@ -149,7 +118,7 @@ TEST_F(VideoCaptureManagerTest, CreateAndClose) {
   vcm_->EnumerateDevices();
 
   // Wait to get device callback.
-  SyncWithVideoCaptureManagerThread();
+  message_loop_->RunAllPending();
 
   int video_session_id = vcm_->Open(listener_->devices_.front());
 
@@ -164,7 +133,7 @@ TEST_F(VideoCaptureManagerTest, CreateAndClose) {
   vcm_->Close(video_session_id);
 
   // Wait to check callbacks before removing the listener.
-  SyncWithVideoCaptureManagerThread();
+  message_loop_->RunAllPending();
   vcm_->Unregister();
 }
 
@@ -183,7 +152,7 @@ TEST_F(VideoCaptureManagerTest, OpenTwice) {
   vcm_->EnumerateDevices();
 
   // Wait to get device callback.
-  SyncWithVideoCaptureManagerThread();
+  message_loop_->RunAllPending();
 
   int video_session_id_first = vcm_->Open(listener_->devices_.front());
 
@@ -196,7 +165,7 @@ TEST_F(VideoCaptureManagerTest, OpenTwice) {
   vcm_->Close(video_session_id_second);
 
   // Wait to check callbacks before removing the listener.
-  SyncWithVideoCaptureManagerThread();
+  message_loop_->RunAllPending();
   vcm_->Unregister();
 }
 
@@ -215,7 +184,7 @@ TEST_F(VideoCaptureManagerTest, OpenTwo) {
   vcm_->EnumerateDevices();
 
   // Wait to get device callback.
-  SyncWithVideoCaptureManagerThread();
+  message_loop_->RunAllPending();
 
   media_stream::StreamDeviceInfoArray::iterator it =
       listener_->devices_.begin();
@@ -228,7 +197,7 @@ TEST_F(VideoCaptureManagerTest, OpenTwo) {
   vcm_->Close(video_session_id_second);
 
   // Wait to check callbacks before removing the listener.
-  SyncWithVideoCaptureManagerThread();
+  message_loop_->RunAllPending();
   vcm_->Unregister();
 }
 
@@ -244,7 +213,7 @@ TEST_F(VideoCaptureManagerTest, OpenNotExisting) {
   vcm_->EnumerateDevices();
 
   // Wait to get device callback.
-  SyncWithVideoCaptureManagerThread();
+  message_loop_->RunAllPending();
 
   media_stream::MediaStreamType stream_type =
       content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE;
@@ -257,7 +226,7 @@ TEST_F(VideoCaptureManagerTest, OpenNotExisting) {
   vcm_->Open(dummy_device);
 
   // Wait to check callbacks before removing the listener.
-  SyncWithVideoCaptureManagerThread();
+  message_loop_->RunAllPending();
   vcm_->Unregister();
 }
 
@@ -286,7 +255,7 @@ TEST_F(VideoCaptureManagerTest, StartUsingId) {
              base::Closure());
 
   // Wait to check callbacks before removing the listener.
-  SyncWithVideoCaptureManagerThread();
+  message_loop_->RunAllPending();
   vcm_->Unregister();
 }
 
@@ -305,7 +274,7 @@ TEST_F(VideoCaptureManagerTest, CloseWithoutStop) {
   vcm_->EnumerateDevices();
 
   // Wait to get device callback.
-  SyncWithVideoCaptureManagerThread();
+  message_loop_->RunAllPending();
 
   int video_session_id = vcm_->Open(listener_->devices_.front());
 
@@ -322,7 +291,7 @@ TEST_F(VideoCaptureManagerTest, CloseWithoutStop) {
   vcm_->Stop(video_session_id, base::Closure());
 
   // Wait to check callbacks before removing the listener
-  SyncWithVideoCaptureManagerThread();
+  message_loop_->RunAllPending();
   vcm_->Unregister();
 }
 

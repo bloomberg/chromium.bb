@@ -25,6 +25,9 @@
 #include "content/browser/in_process_webkit/webkit_thread.h"
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/plugin_service_impl.h"
+#include "content/browser/renderer_host/media/audio_input_device_manager.h"
+#include "content/browser/renderer_host/media/media_stream_manager.h"
+#include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/trace_controller_impl.h"
@@ -210,6 +213,10 @@ media::AudioManager* BrowserMainLoop::GetAudioManager() {
   return g_current_browser_main_loop->audio_manager_.get();
 }
 
+// static
+media_stream::MediaStreamManager* BrowserMainLoop::GetMediaStreamManager() {
+  return g_current_browser_main_loop->media_stream_manager_.get();
+}
 // BrowserMainLoop construction / destruction =============================
 
 BrowserMainLoop::BrowserMainLoop(const content::MainFunctionParams& parameters)
@@ -325,6 +332,13 @@ void BrowserMainLoop::MainMessageLoopStart() {
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   audio_manager_.reset(media::AudioManager::Create());
   online_state_observer_.reset(new BrowserOnlineStateObserver);
+  scoped_refptr<media_stream::AudioInputDeviceManager>
+      audio_input_device_manager(
+          new media_stream::AudioInputDeviceManager(audio_manager_.get()));
+  scoped_refptr<media_stream::VideoCaptureManager> video_capture_manager(
+      new media_stream::VideoCaptureManager());
+  media_stream_manager_.reset(new media_stream::MediaStreamManager(
+      audio_input_device_manager, video_capture_manager));
 
 #if defined(OS_WIN)
   system_message_window_.reset(new SystemMessageWindowWin);
@@ -469,6 +483,10 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     resource_dispatcher_host_.get()->Shutdown();
 
   speech_recognition_manager_.reset();
+
+  // MediaStreamManager needs to be deleted on IO thread in order to unregister
+  // itself as the listener to VideoCaptureManager and AudioInputDeviceManager.
+  BrowserThread::DeleteOnIOThread::Destruct(media_stream_manager_.release());
 
 #if defined(USE_AURA)
   ImageTransportFactory::Terminate();

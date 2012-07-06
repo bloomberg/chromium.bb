@@ -87,12 +87,7 @@ ACTION_P(ExitMessageLoop, message_loop) {
 
 class AudioInputDeviceManagerTest : public testing::Test {
  public:
-  AudioInputDeviceManagerTest()
-      : message_loop_(),
-        io_thread_(),
-        manager_(),
-        audio_input_listener_() {
-  }
+  AudioInputDeviceManagerTest() {}
 
   // Returns true iff machine has an audio input device.
   bool CanRunAudioInputDeviceTests() {
@@ -100,27 +95,28 @@ class AudioInputDeviceManagerTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     // The test must run on Browser::IO.
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
                                            message_loop_.get()));
-    audio_manager_.reset(media::AudioManager::Create());
 
+    audio_manager_.reset(media::AudioManager::Create());
     manager_ = new AudioInputDeviceManager(audio_manager_.get());
     audio_input_listener_.reset(new MockAudioInputDeviceManagerListener());
-    manager_->Register(audio_input_listener_.get());
+    manager_->Register(audio_input_listener_.get(),
+                       message_loop_->message_loop_proxy());
 
     // Gets the enumerated device list from the AudioInputDeviceManager.
     manager_->EnumerateDevices();
     EXPECT_CALL(*audio_input_listener_, DevicesEnumerated(_))
         .Times(1);
 
-    // Waits for the callback.
+    // Wait until we get the list.
     message_loop_->RunAllPending();
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     manager_->Unregister();
     io_thread_.reset();
   }

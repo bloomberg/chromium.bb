@@ -14,17 +14,13 @@
 #include "content/browser/renderer_host/media/media_stream_device_settings.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
-#include "content/browser/resource_context_impl.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/media_observer.h"
 #include "googleurl/src/gurl.h"
-#include "media/audio/audio_manager.h"
 
 using content::BrowserThread;
-
-static const char* kMediaStreamManagerKeyName = "content_media_stream_manager";
 
 namespace media_stream {
 
@@ -116,50 +112,36 @@ struct MediaStreamManager::DeviceRequest {
   StreamDeviceInfoArray video_devices;
 };
 
-// static
-MediaStreamManager* MediaStreamManager::GetForResourceContext(
-    content::ResourceContext* resource_context,
-    media::AudioManager* audio_manager) {
-  MediaStreamManager* rv = static_cast<MediaStreamManager*>(
-      resource_context->GetUserData(kMediaStreamManagerKeyName));
-  if (!rv) {
-    rv = new MediaStreamManager(audio_manager);
-    resource_context->SetUserData(kMediaStreamManagerKeyName, rv);
-  }
-  return rv;
-}
-
-MediaStreamManager::MediaStreamManager(media::AudioManager* audio_manager)
+MediaStreamManager::MediaStreamManager(
+    AudioInputDeviceManager* audio_input_device_manager,
+    VideoCaptureManager* video_capture_manager)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           device_settings_(new MediaStreamDeviceSettings(this))),
-      enumeration_in_progress_(content::NUM_MEDIA_STREAM_DEVICE_TYPES, false),
-      audio_manager_(audio_manager) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+      audio_input_device_manager_(audio_input_device_manager),
+      video_capture_manager_(video_capture_manager),
+      enumeration_in_progress_(content::NUM_MEDIA_STREAM_DEVICE_TYPES, false) {
 }
 
 MediaStreamManager::~MediaStreamManager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (video_capture_manager_.get())
+  if (device_thread_.get()) {
     video_capture_manager_->Unregister();
-  if (audio_input_device_manager_.get())
     audio_input_device_manager_->Unregister();
+    device_thread_->Stop();
+  }
 }
 
 VideoCaptureManager* MediaStreamManager::video_capture_manager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!video_capture_manager_.get()) {
-    video_capture_manager_ = new VideoCaptureManager();
-    video_capture_manager_->Register(this);
-  }
+  DCHECK(video_capture_manager_.get());
+  EnsureDeviceThreadAndListener();
   return video_capture_manager_.get();
 }
 
 AudioInputDeviceManager* MediaStreamManager::audio_input_device_manager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!audio_input_device_manager_.get()) {
-    audio_input_device_manager_ =  new AudioInputDeviceManager(audio_manager_);
-    audio_input_device_manager_->Register(this);
-  }
+  DCHECK(audio_input_device_manager_.get());
+  EnsureDeviceThreadAndListener();
   return audio_input_device_manager_.get();
 }
 
@@ -365,6 +347,19 @@ void MediaStreamManager::StartEnumeration(
   }
 
   (*label) = request_label;
+}
+
+void MediaStreamManager::EnsureDeviceThreadAndListener() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (device_thread_.get())
+    return;
+
+  device_thread_.reset(new DeviceThread("MediaStreamDeviceThread"));
+  CHECK(device_thread_->Start());
+
+  audio_input_device_manager_->Register(this,
+                                        device_thread_->message_loop_proxy());
+  video_capture_manager_->Register(this, device_thread_->message_loop_proxy());
 }
 
 void MediaStreamManager::Opened(MediaStreamType stream_type,

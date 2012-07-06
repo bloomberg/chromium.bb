@@ -64,13 +64,13 @@
 #include "media/audio/audio_io.h"
 #include "media/audio/simple_sources.h"
 
-namespace content {
-class ResourceContext;
-}
-
 namespace media {
 class AudioManager;
 class AudioParameters;
+}
+
+namespace media_stream {
+class MediaStreamManager;
 }
 
 class CONTENT_EXPORT AudioInputRendererHost
@@ -100,8 +100,9 @@ class CONTENT_EXPORT AudioInputRendererHost
   };
 
   // Called from UI thread from the owner of this object.
-  AudioInputRendererHost(content::ResourceContext* resource_context,
-                         media::AudioManager* audio_manager);
+  AudioInputRendererHost(
+      media::AudioManager* audio_manager,
+      media_stream::MediaStreamManager* media_stream_manager);
 
   // content::BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
@@ -197,9 +198,11 @@ class CONTENT_EXPORT AudioInputRendererHost
   // Returns 0 if not found.
   int LookupSessionById(int stream_id);
 
-  // Used to get an instance of AudioInputDeviceManager.
-  content::ResourceContext* resource_context_;
+  // Used to create an AudioInputController.
   media::AudioManager* audio_manager_;
+
+  // Used to access to AudioInputDeviceManager.
+  media_stream::MediaStreamManager* media_stream_manager_;
 
   // A map of stream IDs to audio sources.
   typedef std::map<int, AudioEntry*> AudioEntryMap;

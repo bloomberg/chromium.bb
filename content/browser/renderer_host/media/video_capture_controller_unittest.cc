@@ -151,7 +151,7 @@ class VideoCaptureControllerTest : public testing::Test {
   virtual ~VideoCaptureControllerTest() {}
 
  protected:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
     file_thread_.reset(new BrowserThreadImpl(BrowserThread::FILE,
                                              message_loop_.get()));
@@ -166,8 +166,7 @@ class VideoCaptureControllerTest : public testing::Test {
                                                    message_loop_.get()));
   }
 
-  virtual void TearDown() {
-  }
+  virtual void TearDown() OVERRIDE {}
 
   scoped_ptr<MessageLoop> message_loop_;
   scoped_ptr<BrowserThreadImpl> file_thread_;
