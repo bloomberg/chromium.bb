@@ -11,8 +11,10 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/md5.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
+#include "base/string_util.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -88,7 +90,7 @@ bool VerifyChromeShortcut(const std::wstring& exe_path,
   return true;
 }
 
-class ShellUtilTest : public testing::Test {
+class ShellUtilTestWithDirAndDist : public testing::Test {
  protected:
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -103,7 +105,7 @@ class ShellUtilTest : public testing::Test {
 };
 
 // Test that we can open archives successfully.
-TEST_F(ShellUtilTest, UpdateChromeShortcutTest) {
+TEST_F(ShellUtilTestWithDirAndDist, UpdateChromeShortcutTest) {
   // Create an executable in test path by copying ourself to it.
   wchar_t exe_full_path_str[MAX_PATH];
   EXPECT_FALSE(::GetModuleFileName(NULL, exe_full_path_str, MAX_PATH) == 0);
@@ -170,7 +172,7 @@ TEST_F(ShellUtilTest, UpdateChromeShortcutTest) {
                                    description2, 1));
 }
 
-TEST_F(ShellUtilTest, CreateChromeDesktopShortcutTest) {
+TEST_F(ShellUtilTestWithDirAndDist, CreateChromeDesktopShortcutTest) {
   // Run this test on Vista+ only if we are running elevated.
   if (base::win::GetVersion() > base::win::VERSION_XP && !IsUserAnAdmin()) {
     LOG(ERROR) << "Must be admin to run this test on Vista+";
@@ -363,14 +365,14 @@ TEST_F(ShellUtilTest, CreateChromeDesktopShortcutTest) {
       profile_names));
 }
 
-TEST_F(ShellUtilTest, BuildAppModelIdBasic) {
+TEST_F(ShellUtilTestWithDirAndDist, BuildAppModelIdBasic) {
   std::vector<string16> components;
   const string16 base_app_id(dist_->GetBaseAppId());
   components.push_back(base_app_id);
   ASSERT_EQ(base_app_id, ShellUtil::BuildAppModelId(components));
 }
 
-TEST_F(ShellUtilTest, BuildAppModelIdManySmall) {
+TEST_F(ShellUtilTestWithDirAndDist, BuildAppModelIdManySmall) {
   std::vector<string16> components;
   const string16 suffixed_app_id(dist_->GetBaseAppId().append(L".gab"));
   components.push_back(suffixed_app_id);
@@ -380,7 +382,7 @@ TEST_F(ShellUtilTest, BuildAppModelIdManySmall) {
             ShellUtil::BuildAppModelId(components));
 }
 
-TEST_F(ShellUtilTest, BuildAppModelIdLongUsernameNormalProfile) {
+TEST_F(ShellUtilTestWithDirAndDist, BuildAppModelIdLongUsernameNormalProfile) {
   std::vector<string16> components;
   const string16 long_appname(
       L"Chrome.a_user_who_has_a_crazy_long_name_with_some_weird@symbols_in_it_"
@@ -391,7 +393,7 @@ TEST_F(ShellUtilTest, BuildAppModelIdLongUsernameNormalProfile) {
             ShellUtil::BuildAppModelId(components));
 }
 
-TEST_F(ShellUtilTest, BuildAppModelIdLongEverything) {
+TEST_F(ShellUtilTestWithDirAndDist, BuildAppModelIdLongEverything) {
   std::vector<string16> components;
   const string16 long_appname(
       L"Chrome.a_user_who_has_a_crazy_long_name_with_some_weird@symbols_in_it_"
@@ -403,4 +405,39 @@ TEST_F(ShellUtilTest, BuildAppModelIdLongEverything) {
   ASSERT_LE(constructed_app_id.length(), installer::kMaxAppModelIdLength);
   ASSERT_EQ(L"Chrome.a_user_wer_64_characters.A_crazy_profilethat_is_possible",
             constructed_app_id);
+}
+
+TEST(ShellUtilTest, GetUserSpecificRegistrySuffix) {
+  string16 suffix;
+  ASSERT_TRUE(ShellUtil::GetUserSpecificRegistrySuffix(&suffix));
+  ASSERT_TRUE(StartsWith(suffix, L".", true));
+  ASSERT_EQ(27, suffix.length());
+  ASSERT_TRUE(ContainsOnlyChars(suffix.substr(1),
+                                L"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"));
+}
+
+TEST(ShellUtilTest, GetOldUserSpecificRegistrySuffix) {
+  string16 suffix;
+  ASSERT_TRUE(ShellUtil::GetOldUserSpecificRegistrySuffix(&suffix));
+  ASSERT_TRUE(StartsWith(suffix, L".", true));
+
+  wchar_t user_name[256];
+  DWORD size = arraysize(user_name);
+  ASSERT_NE(0, ::GetUserName(user_name, &size));
+  ASSERT_GE(size, 1U);
+  ASSERT_STREQ(user_name, suffix.substr(1).c_str());
+}
+
+TEST(ShellUtilTest, ByteArrayToBase32) {
+  // Tests from http://tools.ietf.org/html/rfc4648#section-10.
+  const unsigned char test_array[] = { 'f', 'o', 'o', 'b', 'a', 'r' };
+
+  const string16 expected[] = { L"", L"MY", L"MZXQ", L"MZXW6", L"MZXW6YQ",
+                                L"MZXW6YTB", L"MZXW6YTBOI"};
+
+  // Run the tests, with one more letter in the input every pass.
+  for (int i = 0; i < arraysize(expected); ++i) {
+    ASSERT_EQ(expected[i],
+              ShellUtil::ByteArrayToBase32(test_array, i));
+  }
 }

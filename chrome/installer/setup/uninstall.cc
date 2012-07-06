@@ -533,15 +533,9 @@ bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
   // Delete Software\Classes\Chrome (Same comment as above applies for this too)
   string16 chrome_app_id(ShellUtil::kRegClasses);
   chrome_app_id.push_back(FilePath::kSeparators[0]);
-  if (browser_entry_suffix.empty()) {
-    // An unsuffixed appid used to be registered on some user-level install
-    // (dev-channel 21.0.1171.0). Make sure it gets cleaned up here.
-    // Note: this couldn't be cleaned on update as a currently running old
-    // chrome might still be using the unsuffixed appid when the registration
-    // update steps run.
-    InstallUtil::DeleteRegistryKey(root, chrome_app_id + dist->GetBaseAppId());
-  }
-  chrome_app_id.append(ShellUtil::GetBrowserModelId(dist, chrome_exe.value()));
+  // Append the requested suffix manually here (as ShellUtil::GetBrowserModelId
+  // would otherwise try to figure out the currently installed suffix).
+  chrome_app_id.append(dist->GetBaseAppId() + browser_entry_suffix);
   InstallUtil::DeleteRegistryKey(root, chrome_app_id);
 
   // Delete all Start Menu Internet registrations that refer to this Chrome.
@@ -809,6 +803,17 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   if (!suffix.empty()) {
     DeleteChromeRegistrationKeys(browser_dist, HKEY_CURRENT_USER, string16(),
                                  installer_state.target_path(), &ret);
+
+    // For similar reasons it is possible in very few installs (from 21.0.1180.0
+    // and fixed shortly after) to be installed with the new-style suffix, but
+    // have some old-style suffix registrations left behind.
+    string16 old_style_suffix;
+    if (ShellUtil::GetOldUserSpecificRegistrySuffix(&old_style_suffix) &&
+        suffix != old_style_suffix) {
+      DeleteChromeRegistrationKeys(browser_dist, HKEY_CURRENT_USER,
+                                   old_style_suffix,
+                                   installer_state.target_path(), &ret);
+    }
   }
 
   // Chrome is registered in HKLM for all system-level installs and for

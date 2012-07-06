@@ -246,8 +246,8 @@ class ShellUtil {
                                      const string16& chrome_exe);
 
   // Returns the AppUserModelId for |dist|. This identifier is unconditionally
-  // suffixed with the user id for user-level installs (in contrast to other
-  // registration entries which are suffix as described in
+  // suffixed with a unique id for this user on user-level installs (in contrast
+  // to other registration entries which are suffixed as described in
   // GetCurrentInstallationSuffix() above).
   static string16 GetBrowserModelId(BrowserDistribution* dist,
                                     const string16& chrome_exe);
@@ -407,6 +407,36 @@ class ShellUtil {
                                    const string16& icon_path,
                                    int icon_index,
                                    uint32 options);
+
+  // Sets |suffix| to the base 32 encoding of the md5 hash of this user's sid
+  // preceded by a dot.
+  // This is guaranteed to be unique on the machine and 27 characters long
+  // (including the '.').
+  // This suffix is then meant to be added to all registration that may conflict
+  // with another user-level Chrome install.
+  // Note that prior to Chrome 21, the suffix registered used to be the user's
+  // username (see GetOldUserSpecificRegistrySuffix() below). We still honor old
+  // installs registered that way, but it was wrong because some of the
+  // characters allowed in a username are not allowed in a ProgId.
+  // Returns true unless the OS call to retrieve the username fails.
+  // NOTE: Only the installer should use this suffix directly. Other callers
+  // should call GetCurrentInstallationSuffix().
+  static bool GetUserSpecificRegistrySuffix(string16* suffix);
+
+  // Sets |suffix| to this user's username preceded by a dot. This suffix should
+  // only be used to support legacy installs that used this suffixing
+  // style.
+  // Returns true unless the OS call to retrieve the username fails.
+  // NOTE: Only the installer should use this suffix directly. Other callers
+  // should call GetCurrentInstallationSuffix().
+  static bool GetOldUserSpecificRegistrySuffix(string16* suffix);
+
+  // Returns the base32 encoding (using the [A-Z2-7] alphabet) of |bytes|.
+  // |size| is the length of |bytes|.
+  // Note: This method does not suffix the output with '=' signs as technically
+  // required by the base32 standard for inputs that aren't a multiple of 5
+  // bytes.
+  static string16 ByteArrayToBase32(const uint8* bytes, size_t size);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellUtil);
