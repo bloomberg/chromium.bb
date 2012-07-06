@@ -55,7 +55,8 @@ GURL UrlForExtension(const Extension* extension,
 
   GURL url;
   if (!override_url.is_empty()) {
-    DCHECK(extension->web_extent().MatchesURL(override_url));
+    DCHECK(extension->web_extent().MatchesURL(override_url) ||
+           override_url.GetOrigin() == extension->url());
     url = override_url;
   } else {
     url = extension->GetFullLaunchURL();
