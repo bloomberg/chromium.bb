@@ -5,20 +5,20 @@
         "parameters": [
           {
             "name": "results",
-            "type": "array",
+            "optional": false,
             "last_parameter": true,
             "array": {
               "name": "resultsElement",
-              "type": "ref",
+              "optional": false,
               "link": {
                 "text": "TypeA",
                 "href": "tester.html#type-TypeA"
               },
-              "optional": false,
+              "type": "ref",
               "properties": [],
               "description": null
             },
-            "optional": false,
+            "type": "array",
             "properties": [],
             "description": null
           }
@@ -27,46 +27,76 @@
         "name": "callback",
         "simple_type": {
           "type": "function"
-        }
+        },
+        "last_item": true
       },
       "name": "get",
       "parameters": [
         {
           "name": "a",
-          "type": "choices",
+          "optional": false,
           "choices": [
             {
               "name": "a",
               "simple_type": {
                 "type": "string"
               },
-              "type": "string",
               "optional": true,
+              "type": "string",
               "properties": [],
               "description": null
             },
             {
               "last_choice": true,
               "name": "a",
-              "type": "array",
+              "optional": true,
               "array": {
                 "name": "aElement",
                 "simple_type": {
                   "type": "string"
                 },
-                "type": "string",
                 "optional": false,
+                "type": "string",
                 "properties": [],
                 "description": null
               },
-              "optional": true,
+              "type": "array",
+              "properties": [],
+              "description": null
+            }
+          ],
+          "type": "choices",
+          "properties": [],
+          "description": "a param"
+        },
+        {
+          "parameters": [
+            {
+              "name": "results",
+              "optional": false,
+              "last_parameter": true,
+              "array": {
+                "name": "resultsElement",
+                "optional": false,
+                "link": {
+                  "text": "TypeA",
+                  "href": "tester.html#type-TypeA"
+                },
+                "type": "ref",
+                "properties": [],
+                "description": null
+              },
+              "type": "array",
               "properties": [],
               "description": null
             }
           ],
           "optional": false,
-          "properties": [],
-          "description": "a param"
+          "name": "callback",
+          "simple_type": {
+            "type": "function"
+          },
+          "last_item": true
         }
       ],
       "description": "Gets stuff."
@@ -75,29 +105,32 @@
   "name": "tester",
   "types": [
     {
+      "functions": [],
+      "name": "TypeA",
+      "simple_type": {
+        "type": "object"
+      },
+      "type": "object",
       "properties": [
         {
           "name": "b",
-          "type": "array",
+          "optional": true,
           "array": {
             "name": "bElement",
-            "type": "ref",
+            "optional": false,
             "link": {
               "text": "TypeA",
               "href": "tester.html#type-TypeA"
             },
-            "optional": false,
+            "type": "ref",
             "properties": [],
             "description": null
           },
-          "optional": true,
+          "type": "array",
           "properties": [],
           "description": "List of TypeA."
         }
       ],
-      "functions": [],
-      "type": "object",
-      "name": "TypeA",
       "description": "A cool thing."
     }
   ]

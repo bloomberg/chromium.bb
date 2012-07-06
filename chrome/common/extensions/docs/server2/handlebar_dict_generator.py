@@ -58,15 +58,11 @@ class HandlebarDictGenerator(object):
   def _GenerateType(self, type_):
     type_dict = {
       'name': type_.name,
-      'type': type_.type_.name.lower(),
       'description': type_.description,
       'properties': self._GenerateProperties(type_.properties),
       'functions': self._GenerateFunctions(type_.functions)
     }
-
-    # Only Array types have 'item_type'.
-    if type_.type_ == model.PropertyType.ARRAY:
-      type_dict['array'] = self._GenerateType(type_.item_type)
+    self._RenderTypeInformation(type_, type_dict)
     return type_dict
 
   def _GenerateFunctions(self, functions):
@@ -82,9 +78,12 @@ class HandlebarDictGenerator(object):
       'callback': self._GenerateCallback(function.callback),
       'parameters': []
     }
-
     for param in function.params:
       function_dict['parameters'].append(self._GenerateProperty(param))
+    if function_dict['callback']:
+      function_dict['parameters'].append(function_dict['callback'])
+    if len(function_dict['parameters']) > 0:
+      function_dict['parameters'][-1]['last_item'] = True
     return function_dict
 
   def _GenerateCallback(self, callback):
@@ -111,26 +110,28 @@ class HandlebarDictGenerator(object):
   def _GenerateProperty(self, property_):
     property_dict = {
       'name': property_.name,
-      'type': property_.type_.name.lower(),
       'optional': property_.optional,
       'description': property_.description,
       'properties': self._GenerateProperties(property_.properties)
     }
+    self._RenderTypeInformation(property_, property_dict)
+    return property_dict
 
+  def _RenderTypeInformation(self, property_, dst_dict):
+    dst_dict['type'] = property_.type_.name.lower()
     if property_.type_ == model.PropertyType.CHOICES:
-      property_dict['choices'] = []
+      dst_dict['choices'] = []
       for choice_name in property_.choices:
-        property_dict['choices'].append(self._GenerateProperty(
+        dst_dict['choices'].append(self._GenerateProperty(
             property_.choices[choice_name]))
       # We keep track of which is last for knowing when to add "or" between
       # choices in templates.
-      if len(property_dict['choices']) > 0:
-        property_dict['choices'][-1]['last_choice'] = True
+      if len(dst_dict['choices']) > 0:
+        dst_dict['choices'][-1]['last_choice'] = True
     elif property_.type_ == model.PropertyType.REF:
-      property_dict['link'] = _GetLinkToRefType(self._namespace.name,
-                                                property_.ref_type)
+      dst_dict['link'] = _GetLinkToRefType(self._namespace.name,
+                                        property_.ref_type)
     elif property_.type_ == model.PropertyType.ARRAY:
-      property_dict['array'] = self._GenerateProperty(property_.item_type)
+      dst_dict['array'] = self._GenerateProperty(property_.item_type)
     else:
-      property_dict['simple_type'] = {'type': property_dict['type']}
-    return property_dict
+      dst_dict['simple_type'] = {'type': dst_dict['type']}
