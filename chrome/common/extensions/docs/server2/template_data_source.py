@@ -53,7 +53,8 @@ class TemplateDataSource(object):
     index = key.rfind('.html')
     if index > 0:
       key = key[:index]
-    real_path = key + '.html'
+    safe_key = key.replace('.', '_')
+    real_path = safe_key + '.html'
     for base_path in self._base_paths:
       try:
         return self._cache.get(base_path + '/' + real_path)

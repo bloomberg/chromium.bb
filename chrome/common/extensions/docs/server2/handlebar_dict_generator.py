@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import copy
+import logging
 import os
 
 import third_party.json_schema_compiler.model as model
@@ -40,14 +41,20 @@ class HandlebarDictGenerator(object):
   def __init__(self, json):
     clean_json = copy.deepcopy(json)
     _RemoveNoDocs(clean_json)
-    self._namespace = model.Namespace(clean_json, clean_json['namespace'])
+    try:
+      self._namespace = model.Namespace(clean_json, clean_json['namespace'])
+    except Exception as e:
+      logging.info(e)
 
   def Generate(self):
-    return {
-      'name': self._namespace.name,
-      'types': self._GenerateTypes(self._namespace.types),
-      'functions': self._GenerateFunctions(self._namespace.functions)
-    }
+    try:
+      return {
+        'name': self._namespace.name,
+        'types': self._GenerateTypes(self._namespace.types),
+        'functions': self._GenerateFunctions(self._namespace.functions)
+      }
+    except Exception as e:
+      logging.info(e)
 
   def _GenerateTypes(self, types):
     types_list = []
