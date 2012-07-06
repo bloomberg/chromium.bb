@@ -24,7 +24,7 @@ using content::BrowserThread;
 namespace {
 
 // The preferences used to manage ContentSettingsTypes.
-const char* kPrefToManageType[CONTENT_SETTINGS_NUM_TYPES] = {
+const char* kPrefToManageType[] = {
   prefs::kManagedDefaultCookiesSetting,
   prefs::kManagedDefaultImagesSetting,
   prefs::kManagedDefaultJavaScriptSetting,
@@ -35,8 +35,12 @@ const char* kPrefToManageType[CONTENT_SETTINGS_NUM_TYPES] = {
   NULL,  // No policy for default value of content type intents
   NULL,  // No policy for default value of content type auto-select-certificate
   NULL,  // No policy for default value of fullscreen requests
+  NULL,  // No policy for default value of mouse lock requests
+  NULL,  // No policy for default value of mixed script blocking
   prefs::kManagedDefaultMediaStreamSetting,
 };
+COMPILE_ASSERT(arraysize(kPrefToManageType) == CONTENT_SETTINGS_NUM_TYPES,
+               managed_content_settings_pref_names_array_size_incorrect);
 
 struct PrefsForManagedContentSettingsMapEntry {
   const char* pref_name;
@@ -164,8 +168,6 @@ void PolicyProvider::RegisterUserPrefs(PrefService* prefs) {
 }
 
 PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
-  DCHECK_EQ(arraysize(kPrefToManageType),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
   ReadManagedDefaultSettings();
   ReadManagedContentSettings(false);
 
