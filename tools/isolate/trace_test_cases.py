@@ -98,12 +98,17 @@ def get_test_cases(executable, whitelist, blacklist, index, shards):
 def trace_test_cases(
     executable, root_dir, cwd_dir, variables, test_cases, jobs, output_file):
   """Traces test cases one by one."""
+  assert not os.path.isabs(cwd_dir)
+  assert os.path.isabs(root_dir) and os.path.isdir(root_dir)
+  assert os.path.isfile(executable) and os.path.isabs(executable)
+
   if not test_cases:
     return 0
 
   # Resolve any symlink.
   root_dir = os.path.realpath(root_dir)
-  full_cwd_dir = os.path.join(root_dir, cwd_dir)
+  full_cwd_dir = os.path.normpath(os.path.join(root_dir, cwd_dir))
+  assert os.path.isdir(full_cwd_dir)
   logname = output_file + '.logs'
 
   progress = worker_pool.Progress(len(test_cases))
@@ -202,7 +207,7 @@ def main():
   parser.format_description = lambda *_: parser.description
   parser.add_option(
       '-c', '--cwd',
-      default='chrome',
+      default='',
       help='Signal to start the process from this relative directory. When '
            'specified, outputs the inputs files in a way compatible for '
            'gyp processing. Should be set to the relative path containing the '
@@ -277,9 +282,20 @@ def main():
   if bool(options.shards) != bool(options.index is not None):
     parser.error('Use both --index X --shards Y or none of them')
 
+  options.root_dir = os.path.abspath(options.root_dir)
+  if not os.path.isdir(options.root_dir):
+    parser.error('--root-dir "%s" must exist' % options.root_dir)
+  if not os.path.isdir(os.path.join(options.root_dir, options.cwd)):
+    parser.error(
+        '--cwd "%s" must be an existing directory relative to %s' %
+          (options.cwd, options.root_dir))
+
   executable = args[0]
   if not os.path.isabs(executable):
     executable = os.path.abspath(os.path.join(options.root_dir, executable))
+  if not os.path.isfile(executable):
+    parser.error('"%s" doesn\'t exist.' % executable)
+
   if not options.out:
     options.out = '%s.test_cases' % executable
 

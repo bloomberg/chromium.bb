@@ -98,7 +98,6 @@ class TraceTestCases(unittest.TestCase):
         '--timeout', '0',
         '--out', self.temp_file,
         '--root-dir', ROOT_DIR,
-        '--cwd', ROOT_DIR,
         '--variable', 'PRODUCT_DIR', 'data',
         TARGET_PATH,
     ]
@@ -108,7 +107,7 @@ class TraceTestCases(unittest.TestCase):
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate() or ('', '')  # pylint is confused.
-    self.assertEquals(0, proc.returncode)
+    self.assertEquals(0, proc.returncode, (out, err))
     if sys.platform == 'win32':
       # TODO(maruel): Figure out why replace('\r\n', '\n') doesn't work.
       out = out.replace('\r', '')
