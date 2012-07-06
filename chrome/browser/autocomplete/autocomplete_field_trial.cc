@@ -97,7 +97,7 @@ void AutocompleteFieldTrial::Activate() {
     trial->AppendGroup(group_name, 1);
     experiments_helper::AssociateGoogleVariationID(
         kSuggestFieldTrialName, group_name,
-        static_cast<chrome_variations::ID>(
+        static_cast<chrome_variations::VariationID>(
             chrome_variations::kSuggestIDMin + i));
   }
 

@@ -19,9 +19,10 @@ namespace experiments_helper {
 
 namespace {
 
-// Convenience helper to retrieve the chrome_variations::ID for a FieldTrial.
-// Note that this will do the group assignment in |trial| if not already done.
-chrome_variations::ID GetIDForTrial(base::FieldTrial* trial) {
+// Convenience helper to retrieve the chrome_variations::VariationID for a
+// FieldTrial. Note that this will do the group assignment in |trial| if not
+// already done.
+chrome_variations::VariationID GetIDForTrial(base::FieldTrial* trial) {
   return GetGoogleVariationID(trial->name(), trial->group_name());
 }
 
@@ -195,7 +196,7 @@ TEST_F(ExperimentsHelperTest, NoAssociation) {
   int winner_group = no_id_trial->AppendGroup(winner, 10);
 
   // Ensure that despite the fact that a normal winner is elected, it does not
-  // have a valid chrome_variations::ID associated with it.
+  // have a valid chrome_variations::VariationID associated with it.
   EXPECT_EQ(winner_group, no_id_trial->group());
   EXPECT_EQ(winner, no_id_trial->group_name());
   EXPECT_EQ(chrome_variations::kEmptyID, GetIDForTrial(no_id_trial.get()));

@@ -7,9 +7,11 @@
 #include "chrome/common/chrome_version_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace chrome_variations {
+
 namespace {
 
-// Converts |time| to chrome_variations::Study proto format.
+// Converts |time| to Study proto format.
 int64 TimeToProtoTime(const base::Time& time) {
   return (time - base::Time::UnixEpoch()).InSeconds();
 }
@@ -23,16 +25,16 @@ TEST(VariationsServiceTest, CheckStudyChannel) {
     chrome::VersionInfo::CHANNEL_BETA,
     chrome::VersionInfo::CHANNEL_STABLE,
   };
-  const chrome_variations::Study_Channel study_channels[] = {
-    chrome_variations::Study_Channel_CANARY,
-    chrome_variations::Study_Channel_DEV,
-    chrome_variations::Study_Channel_BETA,
-    chrome_variations::Study_Channel_STABLE,
+  const Study_Channel study_channels[] = {
+    Study_Channel_CANARY,
+    Study_Channel_DEV,
+    Study_Channel_BETA,
+    Study_Channel_STABLE,
   };
   ASSERT_EQ(arraysize(channels), arraysize(study_channels));
   bool channel_added[arraysize(channels)] = { 0 };
 
-  chrome_variations::Study_Filter filter;
+  Study_Filter filter;
 
   // Check in the forwarded order. The loop cond is <= arraysize(study_channels)
   // instead of < so that the result of adding the last channel gets checked.
@@ -70,18 +72,18 @@ TEST(VariationsServiceTest, CheckStudyChannel) {
 }
 
 TEST(VariationsServiceTest, CheckStudyPlatform) {
-  const chrome_variations::Study_Platform platforms[] = {
-    chrome_variations::Study_Platform_PLATFORM_WINDOWS,
-    chrome_variations::Study_Platform_PLATFORM_MAC,
-    chrome_variations::Study_Platform_PLATFORM_LINUX,
-    chrome_variations::Study_Platform_PLATFORM_CHROMEOS,
-    chrome_variations::Study_Platform_PLATFORM_ANDROID,
+  const Study_Platform platforms[] = {
+    Study_Platform_PLATFORM_WINDOWS,
+    Study_Platform_PLATFORM_MAC,
+    Study_Platform_PLATFORM_LINUX,
+    Study_Platform_PLATFORM_CHROMEOS,
+    Study_Platform_PLATFORM_ANDROID,
   };
-  ASSERT_EQ(chrome_variations::Study_Platform_Platform_ARRAYSIZE,
+  ASSERT_EQ(Study_Platform_Platform_ARRAYSIZE,
             static_cast<int>(arraysize(platforms)));
   bool platform_added[arraysize(platforms)] = { 0 };
 
-  chrome_variations::Study_Filter filter;
+  Study_Filter filter;
 
   // Check in the forwarded order. The loop cond is <= arraysize(platforms)
   // instead of < so that the result of adding the last channel gets checked.
@@ -160,7 +162,7 @@ TEST(VariationsServiceTest, CheckStudyVersion) {
     { "1.*", "2.3.4", false },
   };
 
-  chrome_variations::Study_Filter filter;
+  Study_Filter filter;
 
   // Min/max version not set should result in true.
   EXPECT_TRUE(VariationsService::CheckStudyVersion(filter, "1.2.3"));
@@ -217,7 +219,7 @@ TEST(VariationsServiceTest, CheckStudyStartDate) {
     { now + delta, false },
   };
 
-  chrome_variations::Study_Filter filter;
+  Study_Filter filter;
 
   // Start date not set should result in true.
   EXPECT_TRUE(VariationsService::CheckStudyStartDate(filter, now));
@@ -242,7 +244,7 @@ TEST(VariationsServiceTest, IsStudyExpired) {
     { now + delta, false },
   };
 
-  chrome_variations::Study study;
+  Study study;
 
   // Expiry date not set should result in false.
   EXPECT_FALSE(VariationsService::IsStudyExpired(study, now));
@@ -256,14 +258,14 @@ TEST(VariationsServiceTest, IsStudyExpired) {
 }
 
 TEST(VariationsServiceTest, ValidateStudy) {
-  chrome_variations::Study study;
+  Study study;
   study.set_default_experiment_name("def");
 
-  chrome_variations::Study_Experiment* experiment = study.add_experiment();
+  Study_Experiment* experiment = study.add_experiment();
   experiment->set_name("abc");
   experiment->set_probability_weight(100);
 
-  chrome_variations::Study_Experiment* default_group = study.add_experiment();
+  Study_Experiment* default_group = study.add_experiment();
   default_group->set_name("def");
   default_group->set_probability_weight(200);
 
@@ -321,10 +323,12 @@ TEST(VariationsServiceTest, ValidateStudy) {
   valid = VariationsService::ValidateStudyAndComputeTotalProbability(study,
       &total_probability);
   ASSERT_TRUE(valid);
-  chrome_variations::Study_Experiment* repeated_group = study.add_experiment();
+  Study_Experiment* repeated_group = study.add_experiment();
   repeated_group->set_name("abc");
   repeated_group->set_probability_weight(1);
   valid = VariationsService::ValidateStudyAndComputeTotalProbability(study,
       &total_probability);
   EXPECT_FALSE(valid);
 }
+
+}  // namespace chrome_variations

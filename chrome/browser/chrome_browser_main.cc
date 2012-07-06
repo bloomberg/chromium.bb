@@ -501,10 +501,11 @@ bool HasImportSwitch(const CommandLine& command_line) {
 // field trial is one-time randomized or session-randomized. |trial_name_string|
 // must contain a "%d" since the percentage of the group will be inserted in
 // the trial name. |num_trial_groups| must be a divisor of 100 (e.g. 5, 20)
-void SetupSingleUniformityFieldTrial(bool one_time_randomized,
-                                     const std::string& trial_name_string,
-                                     const chrome_variations::ID trial_base_id,
-                                     int num_trial_groups) {
+void SetupSingleUniformityFieldTrial(
+    bool one_time_randomized,
+    const std::string& trial_name_string,
+    const chrome_variations::VariationID trial_base_id,
+    int num_trial_groups) {
   // Probability per group remains constant for all uniformity trials, what
   // changes is the probability divisor.
   static const base::FieldTrial::Probability kProbabilityPerGroup = 1;
@@ -532,13 +533,14 @@ void SetupSingleUniformityFieldTrial(bool one_time_randomized,
     DVLOG(1) << "    Group name = " << group_name;
     trial->AppendGroup(group_name, kProbabilityPerGroup);
     experiments_helper::AssociateGoogleVariationID(trial_name, group_name,
-        static_cast<chrome_variations::ID>(trial_base_id + group_number));
+        static_cast<chrome_variations::VariationID>(trial_base_id +
+                                                    group_number));
   }
 
   // Now that all groups have been appended, call group() on the trial to
   // ensure that our trial is registered. This resolves an off-by-one issue
   // where the default group never gets chosen if we don't "use" the trial.
-  int chosen_group = trial->group();
+  const int chosen_group = trial->group();
   DVLOG(1) << "Chosen Group: " << chosen_group;
 }
 
@@ -624,7 +626,7 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   }
 #endif  // NDEBUG
 
-  VariationsService* variations_service =
+  chrome_variations::VariationsService* variations_service =
       browser_process_->variations_service();
   variations_service->CreateTrialsFromSeed(browser_process_->local_state());
 
@@ -1059,7 +1061,7 @@ void ChromeBrowserMainParts::SetupUniformityFieldTrials() {
   // Declare our variation ID bases along side this array so we can loop over it
   // and assign the IDs appropriately. So for example, the 1 percent experiments
   // should have a size of 100 (100/100 = 1).
-  const chrome_variations::ID trial_base_ids[] = {
+  const chrome_variations::VariationID trial_base_ids[] = {
       chrome_variations::kUniformity1PercentBase,
       chrome_variations::kUniformity5PercentBase,
       chrome_variations::kUniformity10PercentBase,

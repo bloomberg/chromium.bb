@@ -125,7 +125,7 @@ void RegisterLocalState(PrefService* local_state) {
   ProfileManager::RegisterPrefs(local_state);
   SigninManagerFactory::RegisterPrefs(local_state);
   SSLConfigServiceManager::RegisterPrefs(local_state);
-  VariationsService::RegisterPrefs(local_state);
+  chrome_variations::VariationsService::RegisterPrefs(local_state);
   WebCacheManager::RegisterPrefs(local_state);
 
 #if defined(ENABLE_CONFIGURATION_POLICY)

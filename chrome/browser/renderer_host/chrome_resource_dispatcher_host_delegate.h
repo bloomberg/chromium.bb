@@ -128,7 +128,7 @@ class ChromeResourceDispatcherHostDelegate
   // This consists of a list of valid IDs, and the actual transmitted header.
   // Note that since this cache is both initialized and accessed from the IO
   // thread, we do not need to synchronize its uses.
-  std::set<chrome_variations::ID> variation_ids_set_;
+  std::set<chrome_variations::VariationID> variation_ids_set_;
   std::string variation_ids_header_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeResourceDispatcherHostDelegate);

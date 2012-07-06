@@ -385,7 +385,7 @@ void ChromeResourceDispatcherHostDelegate::OnFieldTrialGroupFinalized(
     const std::string& trial_name,
     const std::string& group_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  chrome_variations::ID new_id =
+  chrome_variations::VariationID new_id =
       experiments_helper::GetGoogleVariationID(trial_name, group_name);
   if (new_id == chrome_variations::kEmptyID)
     return;
@@ -406,7 +406,7 @@ void ChromeResourceDispatcherHostDelegate::InitVariationIDsCacheIfNeeded() {
   base::FieldTrialList::GetFieldTrialSelectedGroups(&initial_groups);
   for (base::FieldTrial::SelectedGroups::const_iterator it =
        initial_groups.begin(); it != initial_groups.end(); ++it) {
-    chrome_variations::ID id =
+    chrome_variations::VariationID id =
         experiments_helper::GetGoogleVariationID(it->trial, it->group);
     if (id != chrome_variations::kEmptyID)
       variation_ids_set_.insert(id);
@@ -422,7 +422,7 @@ void ChromeResourceDispatcherHostDelegate::UpdateVariationIDsHeaderValue() {
   if (variation_ids_set_.empty())
     return;
   metrics::ChromeVariations proto;
-  for (std::set<chrome_variations::ID>::const_iterator it =
+  for (std::set<chrome_variations::VariationID>::const_iterator it =
       variation_ids_set_.begin(); it != variation_ids_set_.end(); ++it)
     proto.add_variation_id(*it);
 

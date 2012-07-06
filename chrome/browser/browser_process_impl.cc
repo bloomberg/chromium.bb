@@ -396,10 +396,10 @@ net::URLRequestContextGetter* BrowserProcessImpl::system_request_context() {
   return io_thread()->system_url_request_context_getter();
 }
 
-VariationsService* BrowserProcessImpl::variations_service() {
+chrome_variations::VariationsService* BrowserProcessImpl::variations_service() {
   DCHECK(CalledOnValidThread());
   if (!variations_service_.get())
-    variations_service_.reset(new VariationsService());
+    variations_service_.reset(new chrome_variations::VariationsService());
   return variations_service_.get();
 }
 

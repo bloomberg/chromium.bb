@@ -39,7 +39,7 @@ namespace chrome_variations {
 //
 // Anything within the range of a uint32 should be castable to an ID, but
 // please ensure that they are within the range of the min and max values.
-enum ID {
+enum VariationID {
   // Used to represent no associated Chrome variation ID.
   kEmptyID = 0,
 
