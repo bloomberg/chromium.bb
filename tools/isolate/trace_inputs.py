@@ -559,7 +559,7 @@ class Results(object):
     If tainted is true, it means it is not a real path anymore as a variable
     replacement occured.
     """
-    def __init__(self, root, path, tainted=False):
+    def __init__(self, root, path, tainted):
       """Represents a file accessed. May not be present anymore."""
       logging.debug('%s(%s, %s)' % (self.__class__.__name__, root, path))
       self.root = root
@@ -679,7 +679,7 @@ class Results(object):
       logging.debug('Process(%s, %d, ...)' % (pid, len(files)))
       self.pid = pid
       self.files = sorted(
-          (Results.File(None, f) for f in files), key=lambda x: x.path)
+          (Results.File(None, f, False) for f in files), key=lambda x: x.path)
       self.children = children
       self.executable = executable
       self.command = command
