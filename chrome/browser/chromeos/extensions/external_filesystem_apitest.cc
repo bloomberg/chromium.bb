@@ -310,8 +310,14 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
       kComponentFlags)) << message_;
 }
 
+// This test fails under AddressSanitizer, see http://crbug.com/136169.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_ContentSearch DISABLED_ContentSearch
+#else
+#define MAYBE_ContentSearch ContentSearch
+#endif
 IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
-                       ContentSearch) {
+                       MAYBE_ContentSearch) {
   SetupGDataFileSystemForTest();
 
   EXPECT_CALL(*mock_documents_service_, GetAccountMetadata(_)).Times(1);
