@@ -63,6 +63,8 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
   virtual void AbortSession(int session_id) OVERRIDE;
   virtual void AbortAllSessionsForListener(
         content::SpeechRecognitionEventListener* listener) OVERRIDE;
+  virtual void AbortAllSessionsForRenderView(int render_process_id,
+                                             int render_view_id) OVERRIDE;
   virtual void StopAudioCaptureForSession(int session_id) OVERRIDE;
   virtual const content::SpeechRecognitionSessionConfig& GetSessionConfig(
       int session_id) const OVERRIDE;

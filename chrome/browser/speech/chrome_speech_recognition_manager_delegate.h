@@ -16,7 +16,6 @@
 class SpeechRecognitionTrayIconController;
 
 namespace speech {
-
 // This is Chrome's implementation of the SpeechRecognitionManagerDelegate
 // interface.
 class ChromeSpeechRecognitionManagerDelegate
@@ -58,6 +57,7 @@ class ChromeSpeechRecognitionManagerDelegate
 
  private:
   class OptionalRequestInfo;
+  class TabWatcher;
 
   // Shows the recognition tray icon for a given |context_name|, eventually
   // with a notification balloon. The balloon is shown only once per profile
@@ -80,6 +80,9 @@ class ChromeSpeechRecognitionManagerDelegate
   // (which is copied into |last_session_config_|). Used for "try again".
   void RestartLastSession();
 
+  // Callback called by |tab_watcher_| on the IO thread to signal tab closure.
+  void TabClosedCallback(int render_process_id, int render_view_id);
+
   // Lazy initializers for bubble and tray icon controller.
   SpeechRecognitionBubbleController* GetBubbleController();
   SpeechRecognitionTrayIconController* GetTrayIconController();
@@ -88,9 +91,7 @@ class ChromeSpeechRecognitionManagerDelegate
   scoped_refptr<SpeechRecognitionTrayIconController> tray_icon_controller_;
   scoped_refptr<OptionalRequestInfo> optional_request_info_;
   scoped_ptr<content::SpeechRecognitionSessionConfig> last_session_config_;
-
-  // TODO(primiano) this information should be kept into the bubble_controller_.
-  int active_bubble_session_id_;
+  scoped_refptr<TabWatcher> tab_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSpeechRecognitionManagerDelegate);
 };

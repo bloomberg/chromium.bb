@@ -337,6 +337,20 @@ void SpeechRecognitionManagerImpl::AbortAllSessionsForListener(
   }
 }
 
+void SpeechRecognitionManagerImpl::AbortAllSessionsForRenderView(
+    int render_process_id,
+    int render_view_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  for (SessionsTable::iterator it = sessions_.begin(); it != sessions_.end();
+       ++it) {
+    Session& session = it->second;
+    if (session.context.render_process_id == render_process_id &&
+        session.context.render_view_id == render_view_id) {
+      AbortSession(session.id);
+    }
+  }
+}
+
 // -----------------------  Core FSM implementation ---------------------------
 void SpeechRecognitionManagerImpl::DispatchEvent(int session_id,
                                                  FSMEvent event) {

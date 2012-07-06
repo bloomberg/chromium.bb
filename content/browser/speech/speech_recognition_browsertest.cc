@@ -126,6 +126,10 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
     did_cancel_all_ = true;
   }
 
+  virtual void AbortAllSessionsForRenderView(int render_process_id,
+                                             int render_view_id) OVERRIDE {
+    NOTREACHED();
+  }
   virtual bool HasAudioInputDevices() OVERRIDE { return true; }
   virtual bool IsCapturingAudio() OVERRIDE { return true; }
   virtual string16 GetAudioInputDeviceModel() OVERRIDE { return string16(); }

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 
+#include <set>
 #include <string>
 
 #include "base/bind.h"
@@ -20,6 +21,9 @@
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
@@ -39,12 +43,9 @@
 
 using content::BrowserThread;
 using content::SpeechRecognitionManager;
-using content::SpeechRecognitionSessionContext;
 using content::WebContents;
 
 namespace {
-const int kNoActiveBubble =
-    content::SpeechRecognitionManager::kSessionIDInvalid;
 
 const char kExtensionPrefix[] = "chrome-extension://";
 
@@ -123,54 +124,154 @@ class ChromeSpeechRecognitionManagerDelegate::OptionalRequestInfo
   DISALLOW_COPY_AND_ASSIGN(OptionalRequestInfo);
 };
 
-ChromeSpeechRecognitionManagerDelegate::ChromeSpeechRecognitionManagerDelegate()
-    : active_bubble_session_id_(kNoActiveBubble) {
+// Simple utility to get notified when a WebContent (a tab or an extension's
+// background page) is closed or crashes. Both the callback site and the
+// callback thread are passed by the caller in the constructor.
+// There is no restriction on the constructor, however this class must be
+// destroyed on the UI thread, due to the NotificationRegistrar dependency.
+class ChromeSpeechRecognitionManagerDelegate::TabWatcher
+    : public base::RefCountedThreadSafe<TabWatcher>,
+      public content::NotificationObserver {
+ public:
+  typedef base::Callback<void(int render_process_id, int render_view_id)>
+      TabClosedCallback;
+
+  TabWatcher(TabClosedCallback tab_closed_callback,
+             BrowserThread::ID callback_thread)
+      : tab_closed_callback_(tab_closed_callback),
+        callback_thread_(callback_thread) {
+  }
+
+  // Starts monitoring the WebContents corresponding to the given
+  // |render_process_id|, |render_view_id| pair, invoking |tab_closed_callback_|
+  // if closed/unloaded.
+  void Watch(int render_process_id, int render_view_id) {
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
+          &TabWatcher::Watch, this, render_process_id, render_view_id));
+      return;
+    }
+
+    WebContents* web_contents = tab_util::GetWebContentsByID(render_process_id,
+                                                             render_view_id);
+    // Sessions initiated by speech input extension APIs will end up in a NULL
+    // WebContent here, but they are properly managed by the
+    // chrome::SpeechInputExtensionManager. However, sessions initiated within a
+    // extension using the (new) speech JS APIs, will be properly handled here.
+    // TODO(primiano) turn this line into a DCHECK once speech input extension
+    // API is deprecated.
+    if (!web_contents)
+      return;
+
+    // Avoid multiple registrations on |registrar_| for the same |web_contents|.
+    if (registered_web_contents_.find(web_contents) !=
+        registered_web_contents_.end()) {
+      return;
+    }
+    registered_web_contents_.insert(web_contents);
+
+    // Lazy initialize the registrar.
+    if (!registrar_.get())
+      registrar_.reset(new content::NotificationRegistrar());
+
+    registrar_->Add(this,
+                    content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+                    content::Source<WebContents>(web_contents));
+  }
+
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED, type);
+
+    WebContents* web_contents = content::Source<WebContents>(source).ptr();
+    int render_process_id = web_contents->GetRenderProcessHost()->GetID();
+    int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
+
+    registrar_->Remove(this,
+                       content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+                       content::Source<WebContents>(web_contents));
+    registered_web_contents_.erase(web_contents);
+
+    BrowserThread::PostTask(callback_thread_, FROM_HERE, base::Bind(
+        tab_closed_callback_, render_process_id, render_view_id));
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<TabWatcher>;
+
+  virtual ~TabWatcher() {
+    // Must be destroyed on the UI thread due to |registrar_| non thread-safety.
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  }
+
+  // Lazy-initialized and used on the UI thread to handle web contents
+  // notifications (tab closing).
+  scoped_ptr<content::NotificationRegistrar> registrar_;
+
+  // Keeps track of which WebContent(s) have been registered, in order to avoid
+  // double registrations on |registrar_|
+  std::set<content::WebContents*> registered_web_contents_;
+
+  // Callback used to notify, on the thread specified by |callback_thread_| the
+  // closure of a registered tab.
+  TabClosedCallback tab_closed_callback_;
+  content::BrowserThread::ID callback_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabWatcher);
+};
+
+ChromeSpeechRecognitionManagerDelegate
+::ChromeSpeechRecognitionManagerDelegate() {
 }
 
-ChromeSpeechRecognitionManagerDelegate::
-    ~ChromeSpeechRecognitionManagerDelegate() {
+ChromeSpeechRecognitionManagerDelegate
+::~ChromeSpeechRecognitionManagerDelegate() {
   if (tray_icon_controller_.get())
     tray_icon_controller_->Hide();
-  if (active_bubble_session_id_ != kNoActiveBubble) {
-    DCHECK(bubble_controller_.get());
-    bubble_controller_->CloseBubble(active_bubble_session_id_);
-  }
+  if (bubble_controller_.get())
+    bubble_controller_->CloseBubble();
 }
 
 void ChromeSpeechRecognitionManagerDelegate::InfoBubbleButtonClicked(
     int session_id, SpeechRecognitionBubble::Button button) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_EQ(active_bubble_session_id_, session_id);
 
   // Note, the session might have been destroyed, therefore avoid calls to the
   // manager which imply its existance (e.g., GetSessionContext()).
 
   if (button == SpeechRecognitionBubble::BUTTON_CANCEL) {
-    GetBubbleController()->CloseBubble(session_id);
+    GetBubbleController()->CloseBubble();
     last_session_config_.reset();
-    active_bubble_session_id_ = kNoActiveBubble;
 
     // We can safely call AbortSession even if the session has already ended,
     // the manager's public methods are reliable and will handle it properly.
     SpeechRecognitionManager::GetInstance()->AbortSession(session_id);
   } else if (button == SpeechRecognitionBubble::BUTTON_TRY_AGAIN) {
-    GetBubbleController()->CloseBubble(session_id);
-    active_bubble_session_id_ = kNoActiveBubble;
+    GetBubbleController()->CloseBubble();
     RestartLastSession();
+  } else {
+    NOTREACHED();
   }
 }
 
 void ChromeSpeechRecognitionManagerDelegate::InfoBubbleFocusChanged(
     int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_EQ(active_bubble_session_id_, session_id);
+
+  // This check is needed since on some systems (MacOS), in rare cases, if the
+  // user clicks repeatedly and fast on the input element, the FocusChanged
+  // event (corresponding to the old session that should be aborted) can be
+  // received after a new session (corresponding to the 2nd click) is started.
+  if (GetBubbleController()->GetActiveSessionID() != session_id)
+    return;
 
   // Note, the session might have been destroyed, therefore avoid calls to the
   // manager which imply its existance (e.g., GetSessionContext()).
-
-  GetBubbleController()->CloseBubble(session_id);
+  GetBubbleController()->CloseBubble();
   last_session_config_.reset();
-  active_bubble_session_id_ = kNoActiveBubble;
 
   // If the user clicks outside the bubble while capturing audio we abort the
   // session. Otherwise, i.e. audio capture is ended and we are just waiting for
@@ -183,9 +284,29 @@ void ChromeSpeechRecognitionManagerDelegate::RestartLastSession() {
   DCHECK(last_session_config_.get());
   SpeechRecognitionManager* manager = SpeechRecognitionManager::GetInstance();
   const int new_session_id = manager->CreateSession(*last_session_config_);
-  DCHECK_NE(new_session_id, kNoActiveBubble);
+  DCHECK_NE(SpeechRecognitionManager::kSessionIDInvalid, new_session_id);
   last_session_config_.reset();
   manager->StartSession(new_session_id);
+}
+
+void ChromeSpeechRecognitionManagerDelegate::TabClosedCallback(
+    int render_process_id, int render_view_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  SpeechRecognitionManager* manager = SpeechRecognitionManager::GetInstance();
+  // |manager| becomes NULL if a browser shutdown happens between the post of
+  // this task (from the UI thread) and this call (on the IO thread). In this
+  // case we just return.
+  if (!manager)
+    return;
+
+  manager->AbortAllSessionsForRenderView(render_process_id, render_view_id);
+
+  if (bubble_controller_.get() &&
+      bubble_controller_->IsShowingBubbleForRenderView(render_process_id,
+                                                       render_view_id)) {
+    bubble_controller_->CloseBubble();
+  }
 }
 
 void ChromeSpeechRecognitionManagerDelegate::OnRecognitionStart(
@@ -199,21 +320,27 @@ void ChromeSpeechRecognitionManagerDelegate::OnRecognitionStart(
         SpeechRecognitionManager::GetInstance()->GetSessionConfig(session_id)));
 
     // Create and show the bubble.
-    DCHECK_EQ(active_bubble_session_id_, kNoActiveBubble);
-    active_bubble_session_id_ = session_id;
     GetBubbleController()->CreateBubble(session_id,
                                         context.render_process_id,
                                         context.render_view_id,
                                         context.element_rect);
-
-    // TODO(primiano) Why not creating directly the bubble in warmup mode?
-    GetBubbleController()->SetBubbleWarmUpMode(session_id);
   }
+
+  // Register callback to auto abort session on tab closure.
+  // |tab_watcher_| is lazyly istantiated on the first call.
+  if (!tab_watcher_.get()) {
+    tab_watcher_ = new TabWatcher(
+        base::Bind(&ChromeSpeechRecognitionManagerDelegate::TabClosedCallback,
+                   base::Unretained(this)),
+        BrowserThread::IO);
+  }
+  tab_watcher_->Watch(context.render_process_id, context.render_view_id);
 }
 
 void ChromeSpeechRecognitionManagerDelegate::OnAudioStart(int session_id) {
   if (RequiresBubble(session_id)) {
-    GetBubbleController()->SetBubbleRecordingMode(session_id);
+    DCHECK_EQ(session_id, GetBubbleController()->GetActiveSessionID());
+    GetBubbleController()->SetBubbleRecordingMode();
   } else if (RequiresTrayIcon(session_id)) {
     // We post the action to the UI thread for sessions requiring a tray icon,
     // since ChromeSpeechRecognitionPreferences (which requires UI thread) is
@@ -242,8 +369,9 @@ void ChromeSpeechRecognitionManagerDelegate::OnSoundEnd(int session_id) {
 void ChromeSpeechRecognitionManagerDelegate::OnAudioEnd(int session_id) {
   // OnAudioEnd can be also raised after an abort, when the bubble has already
   // been closed.
-  if (RequiresBubble(session_id) && active_bubble_session_id_ == session_id) {
-    GetBubbleController()->SetBubbleRecognizingMode(session_id);
+  if (GetBubbleController()->GetActiveSessionID() == session_id) {
+    DCHECK(RequiresBubble(session_id));
+    GetBubbleController()->SetBubbleRecognizingMode();
   } else if (RequiresTrayIcon(session_id)) {
     GetTrayIconController()->Hide();
   }
@@ -251,19 +379,13 @@ void ChromeSpeechRecognitionManagerDelegate::OnAudioEnd(int session_id) {
 
 void ChromeSpeechRecognitionManagerDelegate::OnRecognitionResult(
     int session_id, const content::SpeechRecognitionResult& result) {
-  // A result can be dispatched when the bubble is not visible anymore (e.g.,
-  // lost focus while waiting for a result, thus continuing in background).
-  if (RequiresBubble(session_id) && active_bubble_session_id_ == session_id) {
-    GetBubbleController()->CloseBubble(session_id);
-    last_session_config_.reset();
-    active_bubble_session_id_ = kNoActiveBubble;
-  }
+  // The bubble will be closed upon the OnEnd event, which will follow soon.
 }
 
 void ChromeSpeechRecognitionManagerDelegate::OnRecognitionError(
     int session_id, const content::SpeechRecognitionError& error) {
   // An error can be dispatched when the bubble is not visible anymore.
-  if (active_bubble_session_id_ != session_id)
+  if (GetBubbleController()->GetActiveSessionID() != session_id)
     return;
   DCHECK(RequiresBubble(session_id));
 
@@ -299,28 +421,29 @@ void ChromeSpeechRecognitionManagerDelegate::OnRecognitionError(
       return;
   }
   GetBubbleController()->SetBubbleMessage(
-      session_id, l10n_util::GetStringUTF16(error_message_id));
+      l10n_util::GetStringUTF16(error_message_id));
 }
 
 void ChromeSpeechRecognitionManagerDelegate::OnAudioLevelsChange(
     int session_id, float volume, float noise_volume) {
-  if (active_bubble_session_id_ == session_id) {
+  if (GetBubbleController()->GetActiveSessionID() == session_id) {
     DCHECK(RequiresBubble(session_id));
-    GetBubbleController()->SetBubbleInputVolume(session_id,
-                                                volume, noise_volume);
+    GetBubbleController()->SetBubbleInputVolume(volume, noise_volume);
   } else if (RequiresTrayIcon(session_id)) {
     GetTrayIconController()->SetVUMeterVolume(volume);
   }
 }
 
 void ChromeSpeechRecognitionManagerDelegate::OnRecognitionEnd(int session_id) {
-  // No need to remove the bubble here, since either one of the following events
-  // must have happened prior to this callback:
-  // - A previous OnRecognitionResult event already closed the bubble.
-  // - An error occurred, so the bubble is showing the error and will be closed
-  //   when it will lose focus (by InfoBubbleFocusChanged()).
-  // - The bubble lost focus or the user pressed the Cancel button, thus it has
-  //   been closed by InfoBubbleFocusChanged(), which triggered an AbortSession.
+  // The only case in which the OnRecognitionEnd should not close the bubble is
+  // when we are showing an error. In this case the bubble will be closed by
+  // the |InfoBubbleFocusChanged| method, when the users clicks either the
+  // "Cancel" button or outside of the bubble.
+  if (GetBubbleController()->GetActiveSessionID() == session_id &&
+      !GetBubbleController()->IsShowingMessage()) {
+    DCHECK(RequiresBubble(session_id));
+    GetBubbleController()->CloseBubble();
+  }
 }
 
 void ChromeSpeechRecognitionManagerDelegate::GetDiagnosticInformation(

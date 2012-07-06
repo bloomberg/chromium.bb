@@ -49,6 +49,10 @@ class SpeechRecognitionManager {
   virtual void AbortAllSessionsForListener(
       SpeechRecognitionEventListener* listener) = 0;
 
+  // Aborts all sessions for a given RenderView, without providing any result.
+  virtual void AbortAllSessionsForRenderView(int render_process_id,
+                                             int render_view_id) = 0;
+
   // Stops audio capture for an existing session. The audio captured before the
   // call will be processed, possibly ending up with a result.
   virtual void StopAudioCaptureForSession(int session_id) = 0;
