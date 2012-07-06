@@ -422,8 +422,15 @@ class SavedState(Flattenable):
 
   def update(self, isolate_file, variables):
     """Updates the saved state with new information."""
-    self.isolate_file = trace_inputs.get_native_path_case(isolate_file)
+    self.isolate_file = isolate_file
     self.variables.update(variables)
+
+  @classmethod
+  def load(cls, data):
+    out = super(SavedState, cls).load(data)
+    if out.isolate_file:
+      out.isolate_file = trace_inputs.get_native_path_case(out.isolate_file)
+    return out
 
   def __str__(self):
     out = '%s(\n' % self.__class__.__name__
@@ -923,8 +930,9 @@ class OptionParserIsolate(OptionParserWithLogging):
       options.result = os.path.abspath(options.result.replace('/', os.path.sep))
 
     if options.isolate:
-      options.isolate = os.path.abspath(
-          options.isolate.replace('/', os.path.sep))
+      options.isolate = trace_inputs.get_native_path_case(
+          os.path.abspath(
+              options.isolate.replace('/', os.path.sep)))
 
     if options.outdir:
       options.outdir = os.path.abspath(

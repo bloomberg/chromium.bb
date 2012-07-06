@@ -78,11 +78,11 @@ class Isolate(unittest.TestCase):
 
   def test_savedstate_load(self):
     values = {
-      'isolate_file': 'maybe',
+      'isolate_file': os.path.join(ROOT_DIR, 'maybe'),
       'variables': {'foo': 42},
     }
     expected = {
-      'isolate_file': 'maybe',
+      'isolate_file': os.path.join(ROOT_DIR, 'maybe'),
       'variables': {'foo': 42},
     }
     self.assertEquals(expected, isolate.SavedState.load(values).flatten())
