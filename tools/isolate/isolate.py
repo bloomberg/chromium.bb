@@ -422,7 +422,7 @@ class SavedState(Flattenable):
 
   def update(self, isolate_file, variables):
     """Updates the saved state with new information."""
-    self.isolate_file = isolate_file
+    self.isolate_file = trace_inputs.get_native_path_case(isolate_file)
     self.variables.update(variables)
 
   def __str__(self):
@@ -533,7 +533,7 @@ class CompleteState(object):
       return isolate_dir
     assert isolate_dir.endswith(self.result.relative_cwd), (
         isolate_dir, self.result.relative_cwd)
-    return isolate_dir[:-len(self.result.relative_cwd)]
+    return isolate_dir[:-(len(self.result.relative_cwd) + 1)]
 
   @property
   def resultdir(self):
@@ -827,7 +827,7 @@ def CMDtrace(args):
   except trace_inputs.TracingFailure, e:
     raise ExecutionError(
         'Tracing failed for: %s\n%s' %
-          (' '.join(complete_state.result.command, str(e))))
+          (' '.join(complete_state.result.command), str(e)))
 
   complete_state.save_files()
   return result

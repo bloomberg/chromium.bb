@@ -577,7 +577,8 @@ class Results(object):
       assert tainted or bool(root) != bool(isabs(path)), (root, path)
       assert tainted or (
           not os.path.exists(self.full_path) or
-          self.full_path == get_native_path_case(self.full_path))
+          self.full_path == get_native_path_case(self.full_path)), (
+              tainted, self.full_path, get_native_path_case(self.full_path))
 
     @property
     def existent(self):
@@ -2091,7 +2092,7 @@ class Dtrace(ApiBase):
 
   @classmethod
   def parse_log(cls, logname, blacklist):
-    logging.info('parse_log(%s, %s)' % (logname, blacklist))
+    logging.info('parse_log(%s, ...)' % logname)
 
     def blacklist_more(filepath):
       # All the HFS metadata is in the form /.vol/...
@@ -2783,6 +2784,8 @@ def extract_directories(root_dir, files, blacklist):
   """
   logging.info(
       'extract_directories(%s, %d files, ...)' % (root_dir, len(files)))
+  assert not (root_dir or '').endswith(os.path.sep), root_dir
+  assert not root_dir or (get_native_path_case(root_dir) == root_dir)
   assert not any(isinstance(f, Results.Directory) for f in files)
   # Remove non existent files.
   files = [f for f in files if f.existent]
@@ -2794,10 +2797,11 @@ def extract_directories(root_dir, files, blacklist):
   # Creates a {directory: {filename: File}} mapping, up to root.
   buckets = {}
   if root_dir:
-    buckets[root_dir.rstrip(os.path.sep)] = {}
+    buckets[root_dir] = {}
   for fileobj in files:
     path = fileobj.full_path
     directory = os.path.dirname(path)
+    assert directory
     # Do not use os.path.basename() so trailing os.path.sep is kept.
     basename = path[len(directory)+1:]
     files_in_directory = buckets.setdefault(directory, {})
@@ -2827,9 +2831,8 @@ def extract_directories(root_dir, files, blacklist):
 
   # Reverse the mapping with what remains. The original instances are returned,
   # so the cached meta data is kept.
-  return sorted(
-      sum((x.values() for x in buckets.itervalues()), []),
-      key=lambda x: x.path)
+  files = sum((x.values() for x in buckets.itervalues()), [])
+  return sorted(files, key=lambda x: x.path)
 
 
 def trace(logfile, cmd, cwd, api, output):
