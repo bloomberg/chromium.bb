@@ -2661,8 +2661,7 @@ def MakeBaseTrustedEnv():
       'tests/unittests/shared/platform/build.scons',
       'tests/unittests/trusted/asan/build.scons',
       'tests/unittests/trusted/platform_qualify/build.scons',
-      'tests/unittests/trusted/service_runtime/build.scons',
-      'installer/build.scons'
+      'tests/unittests/trusted/service_runtime/build.scons'
       ], ppapi_scons_files['trusted_scons_files'])
     )
 
