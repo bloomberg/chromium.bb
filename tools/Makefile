@@ -825,10 +825,6 @@ gcc: BUILD/stamp-$(CROSSARCH)-gcc
 ##################################################################
 # Only linux and windows are supported.
 BUILD/stamp-$(CROSSARCH)-gdb: | SRC/gdb BUILD
-ifeq ($(PLATFORM),mac)
-	echo "Unsupported host" >&2
-	false
-endif
 	rm -rf BUILD/build-gdb-$(CROSSARCH)
 	mkdir BUILD/build-gdb-$(CROSSARCH)
 ifeq ($(PLATFORM),win)
@@ -911,9 +907,10 @@ endif
 	$(MAKE) -f $(THISMAKEFILE) glibc-adhoc-files
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-full-gcc
 ifeq ($(CANNED_REVISION), no)
-	case $$(SRC/binutils/config.guess) in \
-	*-linux*) $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-gdb ;; \
-	esac
+ifeq ($(PLATFORM), win)
+else
+	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-gdb
+endif
 endif
 	$(CREATE_REDIRECTORS) "$(DESTDIR)$(PREFIX)"
 	for dir in lib32 lib64 ; do ( \
@@ -959,9 +956,10 @@ ifeq ($(CANNED_REVISION), no)
 endif
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-gcc
 ifeq ($(CANNED_REVISION), no)
-	case $$(SRC/binutils/config.guess) in \
-	*-linux*) $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-gdb ;; \
-	esac
+ifeq ($(PLATFORM), win)
+else
+	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-gdb
+endif
 endif
 	$(CREATE_REDIRECTORS) "$(DESTDIR)$(PREFIX)"
 	rm -rf "$(DESTDIR)$(PREFIX)"/{include,lib/*.a*,lib/*.so*,lib32,lib64}
