@@ -777,10 +777,19 @@ def CMDrun(args):
   All the dependencies are mapped into the temporary directory and the
   directory is cleaned up after the target exits. Warning: if -outdir is
   specified, it is deleted upon exit.
+
+  Argument processing stops at the first non-recognized argument and these
+  arguments are appended to the command line of the target to run. For example,
+  use: isolate.py -r foo.results -- --gtest_filter=Foo.Bar
   """
   parser = OptionParserIsolate(command='run', require_result=False)
-  options, _ = parser.parse_args(args)
+  parser.enable_interspersed_args()
+  options, args = parser.parse_args(args)
   complete_state = load_complete_state(options, STATS_ONLY)
+  cmd = complete_state.result.command + args
+  if not cmd:
+    raise ExecutionError('No command to run')
+  cmd = trace_inputs.fix_python_path(cmd)
   try:
     if not options.outdir:
       options.outdir = tempfile.mkdtemp(prefix='isolate')
@@ -795,12 +804,12 @@ def CMDrun(args):
     cwd = os.path.normpath(
         os.path.join(options.outdir, complete_state.result.relative_cwd))
     if not os.path.isdir(cwd):
+      # It can happen when no files are mapped from the directory containing the
+      # .isolate file. But the directory must exist to be the current working
+      # directory.
       os.makedirs(cwd)
     if complete_state.result.read_only:
       run_test_from_archive.make_writable(options.outdir, True)
-    if not complete_state.result.command:
-      raise ExecutionError('No command to run')
-    cmd = trace_inputs.fix_python_path(complete_state.result.command)
     logging.info('Running %s, cwd=%s' % (cmd, cwd))
     result = subprocess.call(cmd, cwd=cwd)
   finally:
@@ -818,19 +827,24 @@ def CMDtrace(args):
   It runs the executable without remapping it, and traces all the files it and
   its child processes access. Then the 'read' command can be used to generate an
   updated .isolate file out of it.
+
+  Argument processing stops at the first non-recognized argument and these
+  arguments are appended to the command line of the target to run. For example,
+  use: isolate.py -r foo.results -- --gtest_filter=Foo.Bar
   """
   parser = OptionParserIsolate(command='trace')
-  options, _ = parser.parse_args(args)
+  parser.enable_interspersed_args()
+  options, args = parser.parse_args(args)
   complete_state = load_complete_state(options, STATS_ONLY)
-
+  cmd = complete_state.result.command + args
+  if not cmd:
+    raise ExecutionError('No command to run')
+  cmd = trace_inputs.fix_python_path(cmd)
   cwd = os.path.normpath(os.path.join(
       complete_state.root_dir, complete_state.result.relative_cwd))
-  logging.info('Running %s, cwd=%s' % (complete_state.result.command, cwd))
-  if not complete_state.result.command:
-    raise ExecutionError('No command to run')
+  logging.info('Running %s, cwd=%s' % (cmd, cwd))
   api = trace_inputs.get_api()
   logfile = complete_state.result_file + '.log'
-  cmd = trace_inputs.fix_python_path(complete_state.result.command)
   try:
     with api.get_tracer(logfile) as tracer:
       result, _ = tracer.trace(
@@ -839,9 +853,7 @@ def CMDtrace(args):
           'default',
           True)
   except trace_inputs.TracingFailure, e:
-    raise ExecutionError(
-        'Tracing failed for: %s\n%s' %
-          (' '.join(complete_state.result.command), str(e)))
+    raise ExecutionError('Tracing failed for: %s\n%s' % (' '.join(cmd), str(e)))
 
   complete_state.save_files()
   return result
@@ -906,7 +918,9 @@ class OptionParserIsolate(OptionParserWithLogging):
         default=default_variables,
         dest='variables',
         metavar='FOO BAR',
-        help='Variables to process in the .isolate file, default: %default')
+        help='Variables to process in the .isolate file, default: %default. '
+             'Variables are persistent accross calls, they are saved inside '
+             '<results>.state')
     group.add_option(
         '-o', '--outdir', metavar='DIR',
         help='Directory used to recreate the tree or store the hash table. '
@@ -923,7 +937,7 @@ class OptionParserIsolate(OptionParserWithLogging):
     On Windows, / and \ are often mixed together in a path.
     """
     options, args = OptionParserWithLogging.parse_args(self, *args, **kwargs)
-    if args:
+    if not self.allow_interspersed_args and args:
       self.error('Unsupported argument: %s' % args)
 
     options.variables = dict(options.variables)
@@ -945,7 +959,6 @@ class OptionParserIsolate(OptionParserWithLogging):
       options.outdir = os.path.abspath(
           options.outdir.replace('/', os.path.sep))
 
-    # Still returns args to stay consistent even if guaranteed to be empty.
     return options, args
 
 
