@@ -8,9 +8,9 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/android/content_view_impl.h"
-#include "content/browser/android/device_info.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/common/android/device_info.h"
 #include "content/common/view_messages.h"
 
 namespace content {
