@@ -116,6 +116,11 @@ message Study {
     // applies to all platforms.
     // Ex: [PLATFORM_WINDOWS, PLATFORM_MAC]
     repeated Platform platform = 5;
+
+    // List of locales that will receive this study. If omitted, the study
+    // applies to all locales.
+    // Ex: ["en-US", "en-CA"]
+    repeated string locale = 6;
   }
 
   // Filtering criteria for this study. A study that is filtered out for a given
