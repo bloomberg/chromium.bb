@@ -553,46 +553,29 @@ def write_json(filepath_or_handle, data, dense):
 class Results(object):
   """Results of a trace session."""
 
-  class File(object):
-    """A file that was accessed.
-
-    If tainted is true, it means it is not a real path anymore as a variable
-    replacement occured.
-    """
+  class _TouchedObject(object):
+    """Something, a file or a directory, that was accessed."""
     def __init__(self, root, path, tainted):
-      """Represents a file accessed. May not be present anymore."""
       logging.debug('%s(%s, %s)' % (self.__class__.__name__, root, path))
       self.root = root
       self.path = path
-
       self.tainted = tainted
+      # These are cache only.
       self._real_path = None
       self._size = None
-      # For compatibility with Directory object interface.
-      # Shouldn't be used normally, only exists to simplify algorithms.
-      self.nb_files = 1
 
       # Check internal consistency.
       assert path, path
       assert tainted or bool(root) != bool(isabs(path)), (root, path)
       assert tainted or (
           not os.path.exists(self.full_path) or
-          self.full_path == get_native_path_case(self.full_path)), (
+          (self.full_path.rstrip(os.path.sep) ==
+            get_native_path_case(self.full_path))), (
               tainted, self.full_path, get_native_path_case(self.full_path))
 
     @property
     def existent(self):
       return self.size != -1
-
-    @property
-    def size(self):
-      """File's size. -1 is not existent."""
-      if self._size is None and not self.tainted:
-        try:
-          self._size = os.stat(self.full_path).st_size
-        except OSError:
-          self._size = -1
-      return self._size
 
     @property
     def full_path(self):
@@ -607,11 +590,34 @@ class Results(object):
         self._real_path = os.path.realpath(self.full_path)
       return self._real_path
 
+    @property
+    def size(self):
+      """File's size. -1 is not existent."""
+      if self._size is None and not self.tainted:
+        try:
+          self._size = os.stat(self.full_path).st_size
+        except OSError:
+          self._size = -1
+      return self._size
+
     def flatten(self):
+      """Returns a dict representing this object."""
       return {
         'path': self.path,
         'size': self.size,
       }
+
+    def replace_variables(self, variables):
+      """Replaces the root of this File with one of the variables if it matches.
+
+      If a variable replacement occurs, the cloned object becomes tainted.
+      """
+      for variable, root_path in variables.iteritems():
+        if self.path.startswith(root_path):
+          return self._clone(
+              self.root, variable + self.path[len(root_path):], True)
+      # No need to clone, returns ourself.
+      return self
 
     def strip_root(self, root):
       """Returns a clone of itself with 'root' stripped off."""
@@ -627,32 +633,42 @@ class Results(object):
         path = self.full_path
       return self._clone(root, path[len(root):], self.tainted)
 
-    def replace_variables(self, variables):
-      """Replaces the root of this File with one of the variables if it matches.
+    def _clone(self, new_root, new_path, tainted):
+      raise NotImplementedError(self.__class__.__name__)
 
-      If a variable replacement occurs, the cloned object becomes tainted.
-      """
-      for variable, root_path in variables.iteritems():
-        if self.path.startswith(root_path):
-          return self._clone(
-              self.root, variable + self.path[len(root_path):], True)
-      # No need to clone, returns ourself.
-      return self
+  class File(_TouchedObject):
+    """A file that was accessed.
+
+    If tainted is true, it means it is not a real path anymore as a variable
+    replacement occured.
+    """
+    def __init__(self, root, path, tainted):
+      """Represents a file accessed. May not be present anymore."""
+      super(Results.File, self).__init__(root, path, tainted)
+      # For compatibility with Directory object interface.
+      # Shouldn't be used normally, only exists to simplify algorithms.
+      self.nb_files = 1
 
     def _clone(self, new_root, new_path, tainted):
       """Clones itself keeping meta-data."""
       out = self.__class__(new_root, new_path, tainted)
+      # Keep the cache for performance reason. It is also important when the
+      # file becomes tainted (with a variable instead of the real path) since
+      # self.path is not an on-disk path anymore so out._size cannot be updated.
       out._size = self.size
+      out._real_path = self._real_path
       return out
 
-  class Directory(File):
+  class Directory(_TouchedObject):
     """A directory of files. Must exist."""
     def __init__(self, root, path, tainted, size, nb_files):
       """path='.' is a valid value and must be handled appropriately."""
-      super(Results.Directory, self).__init__(root, path, tainted)
-      assert not self.path.endswith(os.path.sep), self.path
-      self.path = self.path + os.path.sep
+      assert not path.endswith(os.path.sep), path
+      super(Results.Directory, self).__init__(root, path + os.path.sep, tainted)
       self.nb_files = nb_files
+      # In that case, it's not a cache, it's an actual value that is never
+      # modified.
+      assert size
       self._size = size
 
     def flatten(self):
@@ -662,12 +678,14 @@ class Results(object):
 
     def _clone(self, new_root, new_path, tainted):
       """Clones itself keeping meta-data."""
-      return self.__class__(
+      out = self.__class__(
           new_root,
           new_path.rstrip(os.path.sep),
           tainted,
           self.size,
           self.nb_files)
+      out._real_path = self._real_path
+      return out
 
   class Process(object):
     """A process that was traced.
