@@ -67,6 +67,8 @@ Study_Platform GetCurrentPlatform() {
   return Study_Platform_PLATFORM_CHROMEOS;
 #elif defined(OS_ANDROID)
   return Study_Platform_PLATFORM_ANDROID;
+#elif defined(OS_IOS)
+  return Study_Platform_PLATFORM_IOS;
 #elif defined(OS_LINUX) || defined(OS_BSD) || defined(OS_SOLARIS)
   // Default BSD and SOLARIS to Linux to not break those builds, although these
   // platforms are not officially supported by Chrome.

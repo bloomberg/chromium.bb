@@ -72,12 +72,13 @@ TEST(VariationsServiceTest, CheckStudyChannel) {
 }
 
 TEST(VariationsServiceTest, CheckStudyPlatform) {
-  const Study_Platform platforms[] = {
-    Study_Platform_PLATFORM_WINDOWS,
-    Study_Platform_PLATFORM_MAC,
-    Study_Platform_PLATFORM_LINUX,
-    Study_Platform_PLATFORM_CHROMEOS,
-    Study_Platform_PLATFORM_ANDROID,
+  const chrome_variations::Study_Platform platforms[] = {
+    chrome_variations::Study_Platform_PLATFORM_WINDOWS,
+    chrome_variations::Study_Platform_PLATFORM_MAC,
+    chrome_variations::Study_Platform_PLATFORM_LINUX,
+    chrome_variations::Study_Platform_PLATFORM_CHROMEOS,
+    chrome_variations::Study_Platform_PLATFORM_ANDROID,
+    chrome_variations::Study_Platform_PLATFORM_IOS,
   };
   ASSERT_EQ(Study_Platform_Platform_ARRAYSIZE,
             static_cast<int>(arraysize(platforms)));

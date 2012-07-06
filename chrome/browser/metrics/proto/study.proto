@@ -76,11 +76,12 @@ message Study {
 
   // Possible Chrome operating system platforms.
   enum Platform {
-    PLATFORM_WINDOWS = 0;
-    PLATFORM_MAC = 1;
-    PLATFORM_LINUX = 2;
+    PLATFORM_WINDOWS  = 0;
+    PLATFORM_MAC      = 1;
+    PLATFORM_LINUX    = 2;
     PLATFORM_CHROMEOS = 3;
-    PLATFORM_ANDROID = 4;
+    PLATFORM_ANDROID  = 4;
+    PLATFORM_IOS      = 5;
   }
 
   // Filtering criteria specifying whether this study is applicable to a given
