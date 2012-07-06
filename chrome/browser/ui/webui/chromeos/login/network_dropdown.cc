@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
@@ -15,6 +16,14 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia.h"
+
+namespace {
+
+// Timeout between consecutive requests to network library for network
+// scan.
+const int kNetworkScanIntervalSecs = 60;
+
+}  // namespace
 
 namespace chromeos {
 
@@ -107,6 +116,9 @@ NetworkDropdown::NetworkDropdown(content::WebUI* web_ui,
   CrosLibrary::Get()->GetNetworkLibrary()->AddNetworkManagerObserver(this);
   CrosLibrary::Get()->GetNetworkLibrary()->RequestNetworkScan();
   Refresh();
+  network_scan_timer_.Start(FROM_HERE,
+      base::TimeDelta::FromSeconds(kNetworkScanIntervalSecs),
+      this, &NetworkDropdown::ForceNetworkScan);
 }
 
 NetworkDropdown::~NetworkDropdown() {
@@ -158,6 +170,11 @@ void NetworkDropdown::SetNetworkIconAndText() {
   base::StringValue icon(icon_str);
   web_ui_->CallJavascriptFunction("cr.ui.DropDown.updateNetworkTitle",
                                   title, icon);
+}
+
+void NetworkDropdown::ForceNetworkScan() {
+  CrosLibrary::Get()->GetNetworkLibrary()->RequestNetworkScan();
+  Refresh();
 }
 
 }  // namespace chromeos
