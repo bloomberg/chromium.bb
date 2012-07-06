@@ -385,11 +385,10 @@ class ShellUtil {
     SHORTCUT_NO_OPTIONS = 0,
     // Set DualMode property for Windows 8 Metro-enabled shortcuts.
     SHORTCUT_DUAL_MODE = 1 << 0,
-    // Create a new shortcut (overwriting if necessary). If not specified, only
-    // specified (non-null) properties are going to be modified on the existing
-    // shortcut (which has to exist).
+    // Create a new shortcut (overwriting if necessary).
     SHORTCUT_CREATE_ALWAYS = 1 << 1,
-    // Use an alternate, localized, application name for the shortcut.
+    // Use an alternate application name for the shortcut (e.g. "The Internet").
+    // This option is only applied to the Desktop shortcut.
     SHORTCUT_ALTERNATE = 1 << 2,
   };
 
@@ -399,6 +398,9 @@ class ShellUtil {
   // |icon_index|. If create_new is set to true, the function will create a new
   // shortcut if it doesn't exist.
   // |options|: bitfield for which the options come from ChromeShortcutOptions.
+  // If SHORTCUT_CREATE_ALWAYS is not set in |options|, only specified (non-
+  // null) properties on an existing shortcut will be modified. If the shortcut
+  // does not exist, this method is a no-op and returns false.
   static bool UpdateChromeShortcut(BrowserDistribution* dist,
                                    const string16& chrome_exe,
                                    const string16& shortcut,

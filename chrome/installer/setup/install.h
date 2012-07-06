@@ -37,18 +37,35 @@ void EscapeXmlAttributeValueInSingleQuotes(string16* att_value);
 bool CreateVisualElementsManifest(const FilePath& src_path,
                                   const Version& version);
 
-// This method creates Chrome shortcuts in various places for all users or only
-// for current user depending on whether it is a system wide install or a
-// user-level install.
-// Shortcuts that have been deleted since first install are not recreated during
-// update.
-// |options|: bitfield for which the options come from ChromeShortcutOptions.
-void CreateOrUpdateChromeShortcuts(const InstallerState& installer_state,
-                                   const FilePath& setup_path,
-                                   const Version& new_version,
-                                   installer::InstallStatus install_status,
-                                   const Product& product,
-                                   uint32 options);
+// This method, if SHORTCUT_CREATE_ALWAYS is specified in |options|, creates
+// Start Menu shortcuts for all users or only for the current user depending on
+// whether it is a system wide install or a user-level install. It also pins
+// the browser shortcut to the current user's taskbar.
+// If SHORTCUT_CREATE_ALWAYS is not specified in |options|: this method only
+// updates existing Start Menu shortcuts.
+// |setup_exe|: The path to the setup.exe stored in <version_dir>\Installer
+// post-install.
+// |options|: bitfield for which the options come from
+// ShellUtil::ChromeShortcutOptions.
+void CreateOrUpdateStartMenuAndTaskbarShortcuts(
+    const InstallerState& installer_state,
+    const FilePath& setup_exe,
+    const Product& product,
+    uint32 options);
+
+// This method, if SHORTCUT_CREATE_ALWAYS is specified in |options|, creates
+// Desktop and Quick Launch shortcuts for all users or only for the current user
+// depending on whether it is a system wide install or a user-level install.
+// If SHORTCUT_CREATE_ALWAYS is not specified in |options|: this method only
+// updates existing shortcuts.
+// |options|: bitfield for which the options come from
+// ShellUtil::ChromeShortcutOptions.
+// If SHORTCUT_ALTERNATE is specified in |options|, an alternate shortcut name
+// is used for the Desktop shortcut.
+void CreateOrUpdateDesktopAndQuickLaunchShortcuts(
+    const InstallerState& installer_state,
+    const Product& product,
+    uint32 options);
 
 // Registers Chrome on this machine.
 // If |make_chrome_default|, also attempts to make Chrome default (potentially
