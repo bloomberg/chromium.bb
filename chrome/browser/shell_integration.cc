@@ -76,7 +76,8 @@ CommandLine ShellIntegration::CommandLineArgsForLauncher(
     new_cmd_line.AppendSwitchPath(switches::kLoginProfile, profile);
 #else
   if (!profile_path.empty() && !extension_app_id.empty())
-    new_cmd_line.AppendSwitchPath(switches::kProfileDirectory, profile_path);
+    new_cmd_line.AppendSwitchPath(switches::kProfileDirectory,
+                                  profile_path.BaseName());
 #endif
 
   // If |extension_app_id| is present, we use the kAppId switch rather than
