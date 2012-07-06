@@ -738,6 +738,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kDisableThreadedCompositing,
       ::switches::kForceCompositingMode,
       ::switches::kGpuStartupDialog,
+      ::switches::kLoad2xResources,
       ::switches::kLoginProfile,
       ::switches::kScrollPixels,
       ::switches::kNoFirstRun,
