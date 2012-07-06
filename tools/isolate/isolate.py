@@ -668,10 +668,17 @@ def CMDhashtable(args):
     result_hash = hashlib.sha1(f.read()).hexdigest()
   logging.info(
       '%s -> %s' % (os.path.basename(complete_state.result_file), result_hash))
+  outfile = os.path.join(options.outdir, result_hash)
+  if os.path.isfile(outfile):
+    # Just do a quick check that the file size matches. If they do, skip the
+    # archive. This mean the build result didn't change at all.
+    out_size = os.stat(outfile).st_size
+    in_size = os.stat(complete_state.result_file).st_size
+    if in_size == out_size:
+      return
+
   run_test_from_archive.link_file(
-      os.path.join(options.outdir, result_hash),
-      complete_state.result_file,
-      run_test_from_archive.HARDLINK)
+      outfile, complete_state.result_file, run_test_from_archive.HARDLINK)
   return 0
 
 
