@@ -27,7 +27,8 @@ SemiMtCorrectingFilterInterpreter::SemiMtCorrectingFilterInterpreter(
       min_jump_distance_(prop_reg, "SemiMT Min Sensor Jump Distance", 150.0),
       max_jump_distance_(prop_reg, "SemiMT Max Sensor Jump Distance", 910.0),
       move_threshold_(prop_reg, "SemiMT Finger Move Threshold", 130.0),
-      jump_threshold_(prop_reg, "SemiMT Finger Jump Distance", 260.0) {
+      jump_threshold_(prop_reg, "SemiMT Finger Jump Distance", 260.0),
+      bounding_box_(prop_reg, "SemiMT Bounding Box Input", 0) {
   ClearHistory();
   next_.reset(next);
 }
@@ -37,14 +38,16 @@ Gesture* SemiMtCorrectingFilterInterpreter::SyncInterpret(
 
   if (is_semi_mt_device_) {
     if (interpreter_enabled_.val_) {
-      EnforceBoundingBoxFormat(hwstate);
+      if (bounding_box_.val_)
+        EnforceBoundingBoxFormat(hwstate);
       LowPressureFilter(hwstate);
       AssignTrackingId(hwstate);
       if (clip_non_linear_edge_.val_)
         ClipNonLinearFingerPosition(hwstate);
       SuppressTwoToOneFingerJump(hwstate);
       SuppressOneToTwoFingerJump(hwstate);
-      CorrectFingerPosition(hwstate);
+      if (bounding_box_.val_)
+        CorrectFingerPosition(hwstate);
       SuppressOneFingerJump(hwstate);
       SuppressSensorJump(hwstate);
       UpdateHistory(hwstate);

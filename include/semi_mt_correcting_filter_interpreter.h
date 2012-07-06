@@ -224,6 +224,11 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   // The threshold of a finger jump.
   DoubleProperty jump_threshold_;
 
+  // When true, kernel supplied finger data is processed as a bounding box
+  // (traditional semi-mt).  When false, kernel data is processed as
+  // individual fingers in MT-B format.
+  BoolProperty bounding_box_;
+
   scoped_ptr<Interpreter> next_;
 };
 

@@ -207,6 +207,7 @@ TEST(SemiMtCorrectingFilterInterpreterTest, CorrectFingerPositionTest) {
   hwprops.support_semi_mt = true;
   interpreter.SetHardwareProperties(hwprops);
   interpreter.interpreter_enabled_.val_ = true;
+  interpreter.bounding_box_.val_ = 1;
 
   interpreter.SyncInterpret(&hs[0], NULL);
 
@@ -296,6 +297,7 @@ TEST(SemiMtCorrectingFilterInterpreterTest, FingerCrossOverTest) {
   hwprops.support_semi_mt = true;
   interpreter.SetHardwareProperties(hwprops);
   interpreter.interpreter_enabled_.val_ = true;
+  interpreter.bounding_box_.val_ = 1;
 
   for (size_t i = 0; i < hwstate_index_finger_crossed; i++)
     interpreter.SyncInterpret(&hs[i], NULL);
@@ -485,6 +487,7 @@ TEST(SemiMtCorrectingFilterInterpreterTest, MovingFingerTest) {
 
   interpreter.SetHardwareProperties(hwprops);
   interpreter.interpreter_enabled_.val_ = true;
+  interpreter.bounding_box_.val_ = 1;
 
   // Test one, the moving finger should be the first finger.
   interpreter.SyncInterpret(&hs[0], NULL);
@@ -702,6 +705,7 @@ TEST(SemiMtCorrectingFilterInterpreterTest, WarpOnSwapTest) {
 
   interpreter.SetHardwareProperties(hwprops);
   interpreter.interpreter_enabled_.val_ = 1;
+  interpreter.bounding_box_.val_ = 1;
 
   for (size_t i = 0; i < arraysize(hs); i++) {
     interpreter.SyncInterpret(&hs[i], NULL);
