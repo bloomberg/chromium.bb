@@ -216,6 +216,8 @@
     'common/gpu/image_transport_surface_win.cc',
     'common/gpu/media/avc_config_record_builder.cc',
     'common/gpu/media/avc_config_record_builder.h',
+    'common/gpu/media/h264_bit_reader.cc',
+    'common/gpu/media/h264_bit_reader.h',
     'common/gpu/media/h264_parser.cc',
     'common/gpu/media/h264_parser.h',
     'common/gpu/media/mac_video_decode_accelerator.h',

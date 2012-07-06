@@ -645,6 +645,7 @@
             '../testing/gtest.gyp:gtest',
           ],
           'sources': [
+            'common/gpu/media/h264_bit_reader_unittest.cc',
             'common/gpu/media/h264_parser_unittest.cc',
           ],
         }
