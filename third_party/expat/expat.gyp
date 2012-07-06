@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -59,7 +59,7 @@
                 'COMPILED_FROM_DSP',
               ],
             }],
-            ['OS=="mac" or OS=="android" or os_bsd==1', {
+            ['OS=="mac" or OS=="ios" or OS=="android" or os_bsd==1', {
               'defines': [
                 'HAVE_EXPAT_CONFIG_H',
               ],
