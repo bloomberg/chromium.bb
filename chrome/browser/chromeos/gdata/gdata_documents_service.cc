@@ -58,17 +58,6 @@ const char* GetExportFormatParam(DocumentExportFormat format) {
 
 }  // namespace
 
-DocumentsServiceInterface::GetDocumentsOptions::GetDocumentsOptions(
-    int start_changestamp,
-    const std::string& search_query,
-    const std::string& directory_resource_id)
-    : start_changestamp(start_changestamp),
-      search_query(search_query),
-      directory_resource_id(directory_resource_id) {
-}
-
-DocumentsServiceInterface::GetDocumentsOptions::~GetDocumentsOptions() {}
-
 DocumentsService::DocumentsService()
     : profile_(NULL),
       runner_(NULL) {
@@ -105,16 +94,18 @@ void DocumentsService::Authenticate(const AuthStatusCallback& callback) {
 }
 
 void DocumentsService::GetDocuments(const GURL& url,
-                                    const GetDocumentsOptions& options,
+                                    int start_changestamp,
+                                    const std::string& search_query,
+                                    const std::string& directory_resource_id,
                                     const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   GetDocumentsOperation* operation =
       new GetDocumentsOperation(operation_registry(),
                                 profile_,
-                                options.start_changestamp,
-                                options.search_query,
-                                options.directory_resource_id,
+                                start_changestamp,
+                                search_query,
+                                directory_resource_id,
                                 callback);
   if (!url.is_empty())
     operation->SetUrl(url);

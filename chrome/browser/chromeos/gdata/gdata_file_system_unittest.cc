@@ -1049,7 +1049,7 @@ TEST_F(GDataFileSystemTest, DuplicatedAsyncInitialization) {
 
   EXPECT_CALL(*mock_doc_service_, GetAccountMetadata(_)).Times(1);
   EXPECT_CALL(*mock_doc_service_,
-              GetDocuments(Eq(GURL()), _, _)).Times(1);
+              GetDocuments(Eq(GURL()), _, _, _, _)).Times(1);
 
   EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(NotNull())).Times(1);
 
@@ -2505,7 +2505,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_NonexistentFile) {
 TEST_F(GDataFileSystemTest, ContentSearch) {
   LoadRootFeedDocument("root_feed.json");
 
-  EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _, _))
+  EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _, "foo", _, _))
       .Times(1);
 
   SearchCallback callback = base::Bind(&DriveSearchCallback, &message_loop_);
@@ -2530,7 +2530,7 @@ TEST_F(GDataFileSystemTest, GetAvailableSpace) {
 TEST_F(GDataFileSystemTest, RequestDirectoryRefresh) {
   // We'll fetch documents in the root directory with its resource ID.
   EXPECT_CALL(*mock_doc_service_,
-              GetDocuments(Eq(GURL()), _, _))
+              GetDocuments(Eq(GURL()), _, _, kGDataRootDirectoryResourceId, _))
       .Times(1);
   // We'll notify the directory change to the observer.
   EXPECT_CALL(*mock_directory_observer_,

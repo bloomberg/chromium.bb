@@ -124,7 +124,7 @@ ACTION_P2(MockCreateDirectoryCallback, status, value) {
 // Action used to set mock expecteations for GetDocuments.
 ACTION_P2(MockGetDocumentsCallback, status, value) {
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-      base::Bind(arg2, status, base::Passed(value)));
+      base::Bind(arg4, status, base::Passed(value)));
 }
 
 // Action used to mock expectations fo GetDocumentEntry.
@@ -272,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
   // Remote filesystem should first request root feed from gdata server.
   scoped_ptr<base::Value> documents_value(LoadJSONFile(kTestRootFeed));
   EXPECT_CALL(*mock_documents_service_,
-              GetDocuments(_, _, _))
+              GetDocuments(_, _, _, _, _))
       .WillOnce(MockGetDocumentsCallback(gdata::HTTP_SUCCESS,
                                          &documents_value));
 
@@ -325,14 +325,14 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
   // First, test will get drive root directory, to init file system.
   scoped_ptr<base::Value> documents_value(LoadJSONFile(kTestRootFeed));
   EXPECT_CALL(*mock_documents_service_,
-              GetDocuments(_, _, _))
+              GetDocuments(_, _, "", _, _))
       .WillOnce(MockGetDocumentsCallback(gdata::HTTP_SUCCESS,
                                          &documents_value));
 
   // We return the whole test file system in serch results.
   scoped_ptr<base::Value> search_value(LoadJSONFile(kTestRootFeed));
   EXPECT_CALL(*mock_documents_service_,
-              GetDocuments(_, _, _))
+              GetDocuments(_, _, "foo", _, _))
       .WillOnce(MockGetDocumentsCallback(gdata::HTTP_SUCCESS,
                                          &search_value));
 
