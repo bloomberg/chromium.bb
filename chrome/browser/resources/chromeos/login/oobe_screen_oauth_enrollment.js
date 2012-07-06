@@ -85,9 +85,6 @@ cr.define('oobe', function() {
     decorate: function() {
       $('oauth-enroll-error-retry').addEventListener('click',
                                                      this.doRetry_.bind(this));
-      $('oauth-enroll-cancel-auto-link').addEventListener(
-          'click',
-          this.confirmCancelAutoEnrollment_.bind(this));
       var links = document.querySelectorAll('.oauth-enroll-explain-link');
       for (var i = 0; i < links.length; i++) {
         links[i].addEventListener('click', this.showStep.bind(this, 'explain'));
@@ -252,18 +249,9 @@ cr.define('oobe', function() {
     },
 
     /**
-     * Retries the enrollment process after an error occurred in a previous
-     * attempt. This goes to the C++ side through |chrome| first to clean up the
-     * profile, so that the next attempt is performed with a clean state.
-     */
-    doRetry_: function() {
-      chrome.send('oauthEnrollRetry');
-    },
-
-    /**
      * Handler for cancellations of an enforced auto-enrollment.
      */
-    confirmCancelAutoEnrollment_: function() {
+    cancelAutoEnrollment: function() {
       if (!this.confirmDialog_) {
         this.confirmDialog_ = new cr.ui.dialogs.ConfirmDialog(document.body);
         this.confirmDialog_.setOkLabel(
@@ -275,6 +263,15 @@ cr.define('oobe', function() {
       this.confirmDialog_.show(
           localStrings.getString('oauthEnrollCancelAutoEnrollmentReally'),
           this.onConfirmCancelAutoEnrollment_.bind(this));
+    },
+
+    /**
+     * Retries the enrollment process after an error occurred in a previous
+     * attempt. This goes to the C++ side through |chrome| first to clean up the
+     * profile, so that the next attempt is performed with a clean state.
+     */
+    doRetry_: function() {
+      chrome.send('oauthEnrollRetry');
     },
 
     /**

@@ -9,6 +9,7 @@
 // TODO(xiyuan): Find a better to share those constants.
 /** @const */ var SCREEN_OOBE_NETWORK = 'connect';
 /** @const */ var SCREEN_OOBE_EULA = 'eula';
+/** @const */ var SCREEN_OOBE_ENROLLMENT = 'oauth-enrollment';
 /** @const */ var SCREEN_GAIA_SIGNIN = 'gaia-signin';
 /** @const */ var SCREEN_ACCOUNT_PICKER = 'account-picker';
 
@@ -95,6 +96,10 @@ cr.define('cr.ui.login', function() {
           // In this case update check will be skipped and OOBE will
           // proceed straight to enrollment screen when EULA is accepted.
           chrome.send('skipUpdateEnrollAfterEula');
+        } else if (currentStepId == SCREEN_OOBE_ENROLLMENT) {
+          // This accelerator is also used to manually cancel auto-enrollment.
+          if (this.currentScreen.cancelAutoEnrollment)
+            this.currentScreen.cancelAutoEnrollment();
         }
       } else if (name == ACCELERATOR_VERSION) {
         if (this.allowToggleVersion_)

@@ -289,9 +289,6 @@ void EnterpriseOAuthEnrollmentScreenHandler::GetLocalizedStrings(
       "oauthEnrollExplainButton",
       l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_BUTTON));
   localized_strings->SetString(
-      "oauthEnrollCancelAutoEnrollment",
-      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO));
-  localized_strings->SetString(
       "oauthEnrollCancelAutoEnrollmentReally",
       l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO_REALLY));
   localized_strings->SetString(
