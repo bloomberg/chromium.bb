@@ -93,7 +93,8 @@ AsyncResourceHandler::AsyncResourceHandler(
       rdh_(rdh),
       next_buffer_size_(kInitialReadBufSize),
       pending_data_count_(0),
-      did_defer_(false) {
+      did_defer_(false),
+      sent_received_response_msg_(false) {
   // Set a back-pointer from ResourceRequestInfoImpl to |this|, so that the
   // ResourceDispatcherHostImpl can send us IPC messages.
   // TODO(darin): Implement an IPC message filter instead?
@@ -183,6 +184,7 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
   response->head.response_start = TimeTicks::Now();
   filter_->Send(new ResourceMsg_ReceivedResponse(
       routing_id_, request_id, response->head));
+  sent_received_response_msg_ = true;
 
   if (request_->response_info().metadata) {
     std::vector<char> copy(request_->response_info().metadata->data(),
@@ -281,6 +283,14 @@ bool AsyncResourceHandler::OnResponseCompleted(
   char url_buf[128];
   base::strlcpy(url_buf, request_->url().spec().c_str(), arraysize(url_buf));
   base::debug::Alias(url_buf);
+
+  // TODO(gavinp): Remove this CHECK when we figure out the cause of
+  // http://crbug.com/124680 . This check mirrors closely check in
+  // WebURLLoaderImpl::OnCompletedRequest that routes this message to a WebCore
+  // ResourceHandleInternal which asserts on its state and crashes. By crashing
+  // when the message is sent, we should get better crash reports.
+  CHECK(status.status() != net::URLRequestStatus::SUCCESS ||
+        sent_received_response_msg_);
 
   TimeTicks completion_time = TimeTicks::Now();
   filter_->Send(new ResourceMsg_RequestComplete(routing_id_,

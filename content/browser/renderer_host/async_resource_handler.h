@@ -91,6 +91,8 @@ class AsyncResourceHandler : public ResourceHandler {
 
   bool did_defer_;
 
+  bool sent_received_response_msg_;
+
   DISALLOW_COPY_AND_ASSIGN(AsyncResourceHandler);
 };
 
