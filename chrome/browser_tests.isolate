@@ -7,7 +7,13 @@
       '../testing/test_env.py',
       '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
       '<(PRODUCT_DIR)/resources.pak',
+      '<(PRODUCT_DIR)/test_data/chrome/test/data/webui/async_gen.js',
       'test/data/extensions/api_test/tabs/basics/manifest.json',
+      'test/data/webui/test_api.js',
+      'third_party/mock4js/mock4js.js',
+    ],
+    'isolate_dependency_untracked': [
+      'test/data/extensions/api_test/accessibility/',
     ],
   },
   'conditions': [
@@ -99,7 +105,6 @@
           '<(PRODUCT_DIR)/pyproto/google/protobuf/text_format.py',
           '<(PRODUCT_DIR)/test_case.html',
           '<(PRODUCT_DIR)/test_case.html.mock-http-headers',
-          '<(PRODUCT_DIR)/test_data/chrome/test/data/webui/net_internals/net_internals_test.js',
           '<(PRODUCT_DIR)/test_data/chrome/test/data/webui/net_internals/timeline_view.js',
           '<(PRODUCT_DIR)/test_data/chrome/test/data/webui/ntp4.js',
           '<(PRODUCT_DIR)/test_page.css',
@@ -1137,6 +1142,9 @@
     }],
     ['OS=="mac"', {
       'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/ffmpegsumo.so',
+        ],
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/Chromium Framework.framework/',
           '<(PRODUCT_DIR)/Chromium.app/',
@@ -1313,9 +1321,9 @@
           '../third_party/tlslite/tlslite/utils/xmltools.py',
           '<(PRODUCT_DIR)/locales/en-US.pak',
           '<(PRODUCT_DIR)/test_data/chrome/test/data/webui/assertions.js',
-          '<(PRODUCT_DIR)/test_data/chrome/test/data/webui/async_gen.js',
           '<(PRODUCT_DIR)/test_data/chrome/test/data/webui/chrome_send_browsertest.js',
           '<(PRODUCT_DIR)/test_data/chrome/test/data/webui/mock4js_browsertest.js',
+          '<(PRODUCT_DIR)/test_data/chrome/test/data/webui/net_internals/net_internals_test.js',
           '<(PRODUCT_DIR)/test_data/chrome/test/data/webui/print_preview.js',
           '<(PRODUCT_DIR)/theme_resources_standard.pak',
           '<(PRODUCT_DIR)/ui_resources_standard.pak',
@@ -1330,8 +1338,6 @@
           'test/data/extensions/api_test/tabs/capture_visible_tab/manifest.json',
           'test/data/extensions/good/Extensions/bjafgdebaacbbbecmhlhpofkepfkgcpa/1.0/manifest.json',
           'test/data/webui/print_preview_hello_world_test.html',
-          'test/data/webui/test_api.js',
-          'third_party/mock4js/mock4js.js',
         ],
         'isolate_dependency_untracked': [
           '../third_party/WebKit/LayoutTests/fast/events/message-channel-gc.html',
@@ -1615,6 +1621,7 @@
           '<(PRODUCT_DIR)/test_data/chrome/browser/ui/webui/options2/options2_browsertest.js',
           '<(PRODUCT_DIR)/test_data/chrome/browser/ui/webui/options2/password_manager2_browsertest.js',
           '<(PRODUCT_DIR)/test_data/chrome/browser/ui/webui/options2/search_engine_manager2_browsertest.js',
+          '<(PRODUCT_DIR)/test_data/chrome/test/data/webui/net_internals/hsts_view.js',
           'test/data/extensions/api_test/accessibility/get_alerts_for_tab/background.js',
           'test/data/extensions/api_test/accessibility/get_alerts_for_tab/manifest.json',
           'test/data/extensions/api_test/alert/manifest.json',
@@ -1724,6 +1731,7 @@
         ],
         'isolate_dependency_untracked': [
           '../third_party/python_26/Lib/xml/parsers/',
+          '<(PRODUCT_DIR)/First Run',
           'test/data/extensions/api_test/content_scripts/css_l10n/_locales/',
           'test/data/extensions/api_test/content_scripts/existing_renderers/',
           'test/data/extensions/api_test/i18n/_locales/',
@@ -1737,9 +1745,6 @@
           'test/data/extensions/api_test/tabs/basics/events.js',
           'test/data/extensions/api_test/tabs/basics/f.html',
           'test/data/extensions/api_test/tabs/basics/tabs_util.js',
-        ],
-        'isolate_dependency_untracked': [
-          'test/data/extensions/api_test/accessibility/',
         ],
       },
     }],
