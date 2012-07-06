@@ -47,6 +47,12 @@ class Rietveld(object):
             extra_headers=extra_headers or {})
     else:
       self.rpc_server = upload.GetRpcServer(url, email)
+      # If email is given as an empty string, then assume we want to make
+      # requests that do not need authentication.  Bypass authentication by
+      # setting the flag to True.
+      if email == '':
+        self.rpc_server.authenticated = True
+
     self._xsrf_token = None
     self._xsrf_token_time = None
 

@@ -25,6 +25,10 @@ def main():
       '-v', '--verbose', action='count', default=0,
       help='Prints debugging infos')
   parser.add_option(
+      '-e',
+      '--email',
+      help='Email address for authenticating with Rietveld')
+  parser.add_option(
       '-i', '--issue', type='int', help='Rietveld issue number')
   parser.add_option(
       '-p', '--patchset', type='int', help='Rietveld issue\'s patchset number')
@@ -48,7 +52,7 @@ def main():
   if not options.issue:
     parser.error('Require --issue')
 
-  obj = rietveld.Rietveld(options.server, None, None)
+  obj = rietveld.Rietveld(options.server, options.email, None)
 
   if not options.patchset:
     options.patchset = obj.get_issue_properties(
