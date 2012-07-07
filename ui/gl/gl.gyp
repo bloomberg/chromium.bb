@@ -161,9 +161,6 @@
             '<(gl_binding_output_dir)/gl_bindings_autogen_wgl.cc',
             '<(gl_binding_output_dir)/gl_bindings_autogen_wgl.h',
           ],
-          'include_dirs': [
-            '$(DXSDK_DIR)/include',
-          ],
         }],
         ['OS=="mac"', {
           'sources': [
