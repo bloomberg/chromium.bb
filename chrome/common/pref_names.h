@@ -142,7 +142,6 @@ extern const char kAutologinEnabled[];
 extern const char kReverseAutologinEnabled[];
 extern const char kSafeBrowsingEnabled[];
 extern const char kSafeBrowsingReportingEnabled[];
-extern const char kSafeBrowsingProceedAnywayDisabled[];
 extern const char kIncognitoModeAvailability[];
 extern const char kSearchSuggestEnabled[];
 extern const char kConfirmToQuitEnabled[];

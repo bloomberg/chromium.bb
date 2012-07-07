@@ -321,11 +321,6 @@ const char kSafeBrowsingEnabled[] = "safebrowsing.enabled";
 const char kSafeBrowsingReportingEnabled[] =
     "safebrowsing.reporting_enabled";
 
-// Boolean that is true when the SafeBrowsing interstitial should not allow
-// users to proceed anyway.
-const char kSafeBrowsingProceedAnywayDisabled[] =
-    "safebrowsing.proceed_anyway_disabled";
-
 // Enum that specifies whether Incognito mode is:
 // 0 - Enabled. Default behaviour. Default mode is available on demand.
 // 1 - Disabled. Used cannot browse pages in Incognito mode.

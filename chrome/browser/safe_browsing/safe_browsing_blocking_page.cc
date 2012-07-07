@@ -240,8 +240,6 @@ void SafeBrowsingBlockingPage::PopulateStringDictionary(
   strings->SetString("description1", description1);
   strings->SetString("description2", description2);
   strings->SetString("description3", description3);
-  strings->SetBoolean("proceedDisabled",
-                      IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled));
 }
 
 void SafeBrowsingBlockingPage::PopulateMultipleThreatStringDictionary(
@@ -391,10 +389,19 @@ void SafeBrowsingBlockingPage::PopulateMalwareStringDictionary(
                        l10n_util::GetStringFUTF16(
                            IDS_SAFE_BROWSING_MALWARE_REPORTING_AGREE,
                            UTF8ToUTF16(privacy_link)));
-    if (IsPrefEnabled(prefs::kSafeBrowsingReportingEnabled))
+
+    Profile* profile = Profile::FromBrowserContext(
+        web_contents_->GetBrowserContext());
+    const PrefService::Preference* pref =
+        profile->GetPrefs()->FindPreference(
+            prefs::kSafeBrowsingReportingEnabled);
+
+    bool value;
+    if (pref && pref->GetValue()->GetAsBoolean(&value) && value) {
       strings->SetString(kBoxChecked, "yes");
-    else
+    } else {
       strings->SetString(kBoxChecked, "");
+    }
   }
 }
 
@@ -470,23 +477,18 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
     return;
   }
 
-  bool proceed_blocked = false;
   if (command == kProceedCommand) {
-    if (IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled)) {
-      proceed_blocked = true;
-    } else {
-      interstitial_page_->Proceed();
-      // |this| has been deleted after Proceed() returns.
-      return;
-    }
+    interstitial_page_->Proceed();
+    // We are deleted after this.
+    return;
   }
 
-  if (command == kTakeMeBackCommand || proceed_blocked) {
+  if (command == kTakeMeBackCommand) {
     if (is_main_frame_load_blocked_) {
       // If the load is blocked, we want to close the interstitial and discard
       // the pending entry.
       interstitial_page_->DontProceed();
-      // |this| has been deleted after DontProceed() returns.
+      // We are deleted after this.
       return;
     }
 
@@ -676,10 +678,7 @@ void SafeBrowsingBlockingPage::RecordUserAction(BlockingPageEvent event) {
       action.append("Proceed");
       break;
     case DONT_PROCEED:
-      if (IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled))
-        action.append("ForcedDontProceed");
-      else
-        action.append("DontProceed");
+      action.append("DontProceed");
       break;
     default:
       NOTREACHED() << "Unexpected event: " << event;
@@ -740,19 +739,19 @@ void SafeBrowsingBlockingPage::FinishMalwareDetails(int64 delay_ms) {
   if (malware_details_ == NULL)
     return;  // Not all interstitials have malware details (eg phishing).
 
-  if (IsPrefEnabled(prefs::kSafeBrowsingReportingEnabled)) {
+  Profile* profile = Profile::FromBrowserContext(
+      web_contents_->GetBrowserContext());
+  const PrefService::Preference* pref =
+      profile->GetPrefs()->FindPreference(prefs::kSafeBrowsingReportingEnabled);
+
+  bool value;
+  if (pref && pref->GetValue()->GetAsBoolean(&value) && value) {
     // Finish the malware details collection, send it over.
     BrowserThread::PostDelayedTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&MalwareDetails::FinishCollection, malware_details_.get()),
         base::TimeDelta::FromMilliseconds(delay_ms));
   }
-}
-
-bool SafeBrowsingBlockingPage::IsPrefEnabled(const char* pref) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  return profile->GetPrefs()->GetBoolean(pref);
 }
 
 // static
