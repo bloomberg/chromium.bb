@@ -30,6 +30,13 @@ div.chart {
    width: 900px;
 }
 
+div.event-label {
+   background: #fff;
+   border: 1px solid;
+   font: 0.6em;
+   position: absolute;
+}
+
 .hidden {
    visibility: hidden;
 }
