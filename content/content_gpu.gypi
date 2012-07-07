@@ -33,7 +33,6 @@
         '<(DEPTH)/third_party/angle/include',
         '<(DEPTH)/third_party/angle/src',
         '<(DEPTH)/third_party/wtl/include',
-        '$(DXSDK_DIR)/include',
       ],
       'dependencies': [
         '../third_party/angle/src/build_angle.gyp:libEGL',
