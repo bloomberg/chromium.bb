@@ -5,6 +5,7 @@
 #include "chrome/common/chrome_content_client.h"
 
 #include "base/command_line.h"
+#include "base/cpu.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -13,6 +14,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -257,6 +259,12 @@ bool GetBundledPepperFlash(content::PepperPluginInfo* plugin,
       switches::kDisableBundledPpapiFlash);
   if (force_disable)
     return false;
+
+// For Linux ia32, Flapper requires SSE2.
+#if defined(OS_LINUX) && defined(ARCH_CPU_X86)
+  if (!base::CPU()::has_sse2())
+    return false;
+#endif  // ARCH_CPU_X86
 
   FilePath flash_path;
   if (!PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &flash_path))
