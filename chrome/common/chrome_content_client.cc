@@ -262,7 +262,7 @@ bool GetBundledPepperFlash(content::PepperPluginInfo* plugin,
 
 // For Linux ia32, Flapper requires SSE2.
 #if defined(OS_LINUX) && defined(ARCH_CPU_X86)
-  if (!base::CPU()::has_sse2())
+  if (!base::CPU().has_sse2())
     return false;
 #endif  // ARCH_CPU_X86
 
