@@ -1064,17 +1064,17 @@ x11_compositor_create(struct wl_display *display,
 
 	if (weston_compositor_init(&c->base, display, argc, argv,
 				   config_file) < 0)
-		return NULL;
+		goto err_free;
 
 	c->dpy = XOpenDisplay(NULL);
 	if (c->dpy == NULL)
-		return NULL;
+		goto err_free;
 
 	c->conn = XGetXCBConnection(c->dpy);
 	XSetEventQueueOwner(c->dpy, XCBOwnsEventQueue);
 
 	if (xcb_connection_has_error(c->conn))
-		return NULL;
+		goto err_xdisplay;
 
 	s = xcb_setup_roots_iterator(xcb_get_setup(c->conn));
 	c->screen = s.data;
@@ -1084,20 +1084,20 @@ x11_compositor_create(struct wl_display *display,
 
 	c->base.wl_display = display;
 	if (x11_compositor_init_egl(c) < 0)
-		return NULL;
+		goto err_xdisplay;
 
 	c->base.destroy = x11_destroy;
 
 	if (weston_compositor_init_gl(&c->base) < 0)
-		return NULL;
+		goto err_egl;
 
 	if (x11_input_create(c, no_input) < 0)
-		return NULL;
+		goto err_egl;
 
 	for (i = 0, x = 0; i < count; i++) {
 		if (x11_compositor_create_output(c, x, 0, width, height,
 						 fullscreen, no_input) < 0)
-			return NULL;
+			goto err_x11_input;
 		x += width;
 	}
 
@@ -1109,6 +1109,16 @@ x11_compositor_create(struct wl_display *display,
 	wl_event_source_check(c->xcb_source);
 
 	return &c->base;
+
+err_x11_input:
+	x11_input_destroy(c);
+err_egl:
+	x11_compositor_fini_egl(c);
+err_xdisplay:
+	XCloseDisplay(c->dpy);
+err_free:
+	free(c);
+	return NULL;
 }
 
 WL_EXPORT struct weston_compositor *
