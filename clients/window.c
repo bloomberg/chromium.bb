@@ -1170,7 +1170,8 @@ tooltip_func(struct task *task, uint32_t events)
 		container_of(task, struct tooltip, tooltip_task);
 	uint64_t exp;
 
-	read(tooltip->tooltip_fd, &exp, sizeof (uint64_t));
+	if (read(tooltip->tooltip_fd, &exp, sizeof (uint64_t)) != sizeof (uint64_t))
+		abort();
 	window_create_tooltip(tooltip);
 }
 

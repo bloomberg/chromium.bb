@@ -302,7 +302,8 @@ clock_func(struct task *task, uint32_t events)
 		container_of(task, struct panel_clock, clock_task);
 	uint64_t exp;
 
-	read(clock->clock_fd, &exp, sizeof exp);
+	if (read(clock->clock_fd, &exp, sizeof exp) != sizeof exp)
+		abort();
 	widget_schedule_redraw(clock->widget);
 }
 
