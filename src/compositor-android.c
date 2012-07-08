@@ -419,31 +419,39 @@ android_compositor_create(struct wl_display *display, int argc, char *argv[],
 
 	if (weston_compositor_init(&compositor->base, display, argc, argv,
 				   config_file) < 0)
-		return NULL;
+		goto err_free;
 
 	compositor->base.destroy = android_compositor_destroy;
 
 	compositor->base.focus = 1;
 
-	/* FIXME: all cleanup on failure is missing */
-
 	output = android_output_create(compositor);
 	if (!output)
-		return NULL;
+		goto err_compositor;
 
 	if (android_init_egl(compositor, output) < 0)
-		return NULL;
+		goto err_output;
 
 	if (weston_compositor_init_gl(&compositor->base) < 0)
-		return NULL;
+		goto err_egl;
 
 	android_compositor_add_output(compositor, output);
 
 	compositor->seat = android_seat_create(compositor);
 	if (!compositor->seat)
-		return NULL;
+		goto err_egl;
 
 	return &compositor->base;
+
+err_egl:
+	android_fini_egl(compositor);
+err_output:
+	android_output_destroy(&output->base);
+err_compositor:
+	weston_compositor_shutdown(&compositor->base);
+err_free:
+	free(compositor);
+	return NULL;
 }
 
 WL_EXPORT struct weston_compositor *
