@@ -847,16 +847,16 @@ wayland_compositor_create(struct wl_display *display,
 
 	if (weston_compositor_init(&c->base, display, argc, argv,
 				   config_file) < 0)
-		return NULL;
+		goto err_free;
 
 	if (wayland_input_create(c) < 0)
-		return NULL;
+		goto err_compositor;
 
 	c->parent.wl_display = wl_display_connect(display_name);
 
 	if (c->parent.wl_display == NULL) {
 		weston_log("failed to create display: %m\n");
-		return NULL;
+		goto err_compositor;
 	}
 
 	wl_list_init(&c->input_list);
@@ -867,16 +867,16 @@ wayland_compositor_create(struct wl_display *display,
 
 	c->base.wl_display = display;
 	if (wayland_compositor_init_egl(c) < 0)
-		return NULL;
+		goto err_display;
 
 	c->base.destroy = wayland_destroy;
 
 	if (weston_compositor_init_gl(&c->base) < 0)
-		return NULL;
+		goto err_display;
 
 	create_border(c);
 	if (wayland_compositor_create_output(c, width, height) < 0)
-		return NULL;
+		goto err_display;
 
 	loop = wl_display_get_event_loop(c->base.wl_display);
 
@@ -885,9 +885,17 @@ wayland_compositor_create(struct wl_display *display,
 		wl_event_loop_add_fd(loop, fd, c->parent.event_mask,
 				     wayland_compositor_handle_event, c);
 	if (c->parent.wl_source == NULL)
-		return NULL;
+		goto err_display;
 
 	return &c->base;
+
+err_display:
+	wl_display_disconnect(c->parent.wl_display);
+err_compositor:
+	weston_compositor_shutdown(&c->base);
+err_free:
+	free(c);
+	return NULL;
 }
 
 WL_EXPORT struct weston_compositor *
