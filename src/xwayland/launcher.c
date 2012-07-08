@@ -274,6 +274,7 @@ create_lockfile(int display, char *lockfile, size_t lsize)
 			return -1;
 		}
 
+		close(fd);
 		errno = EEXIST;
 		return -1;
 	} else if (fd < 0) {
