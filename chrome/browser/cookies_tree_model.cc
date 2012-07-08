@@ -16,6 +16,7 @@
 #include "chrome/browser/browsing_data_server_bound_cert_helper.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "content/public/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -27,51 +28,17 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
-static const char kFileOriginNodeName[] = "file://";
-
-///////////////////////////////////////////////////////////////////////////////
-// CookieTreeNode, public:
-
-void CookieTreeNode::DeleteStoredObjects() {
-  std::for_each(children().begin(),
-                children().end(),
-                std::mem_fun(&CookieTreeNode::DeleteStoredObjects));
-}
-
-CookiesTreeModel* CookieTreeNode::GetModel() const {
-  if (parent())
-    return parent()->GetModel();
-  else
-    return NULL;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CookieTreeCookieNode, public:
-
-CookieTreeCookieNode::CookieTreeCookieNode(
-    std::list<net::CookieMonster::CanonicalCookie>::iterator cookie)
-    : CookieTreeNode(UTF8ToUTF16(cookie->Name())),
-      cookie_(cookie) {
-}
-
-CookieTreeCookieNode::~CookieTreeCookieNode() {}
-
-void CookieTreeCookieNode::DeleteStoredObjects() {
-  // notify CookieMonster that we should delete this cookie
-  GetModel()->cookie_helper_->DeleteCookie(*cookie_);
-  GetModel()->cookie_list_.erase(cookie_);
-}
-
-CookieTreeNode::DetailedInfo CookieTreeCookieNode::GetDetailedInfo() const {
-  return DetailedInfo(parent()->parent()->GetTitle()).InitCookie(&*cookie_);
-}
-
 namespace {
-// comparison functor, for use in CookieTreeRootNode
-class OriginNodeComparator {
- public:
-  bool operator() (const CookieTreeNode* lhs,
-                   const CookieTreeNode* rhs) {
+
+struct NodeTitleComparator {
+  bool operator()(const CookieTreeNode* lhs, const CookieTreeNode* rhs) {
+    return lhs->GetTitle() < rhs->GetTitle();
+  }
+};
+
+// Comparison functor, for use in CookieTreeRootNode.
+struct OriginNodeComparator {
+  bool operator()(const CookieTreeNode* lhs, const CookieTreeNode* rhs) {
     // We want to order by registry controlled domain, so we would get
     // google.com, ad.google.com, www.google.com,
     // microsoft.com, ad.microsoft.com. CanonicalizeHost transforms the origins
@@ -80,7 +47,6 @@ class OriginNodeComparator {
             CanonicalizeHost(rhs->GetTitle()));
   }
 
- private:
   static std::string CanonicalizeHost(const string16& host16) {
     // The canonicalized representation makes the registry controlled domain
     // come first, and then adds subdomains in reverse order, e.g.
@@ -124,6 +90,43 @@ class OriginNodeComparator {
 };
 
 }  // namespace
+
+///////////////////////////////////////////////////////////////////////////////
+// CookieTreeNode, public:
+
+void CookieTreeNode::DeleteStoredObjects() {
+  std::for_each(children().begin(),
+                children().end(),
+                std::mem_fun(&CookieTreeNode::DeleteStoredObjects));
+}
+
+CookiesTreeModel* CookieTreeNode::GetModel() const {
+  if (parent())
+    return parent()->GetModel();
+  else
+    return NULL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CookieTreeCookieNode, public:
+
+CookieTreeCookieNode::CookieTreeCookieNode(
+    std::list<net::CookieMonster::CanonicalCookie>::iterator cookie)
+    : CookieTreeNode(UTF8ToUTF16(cookie->Name())),
+      cookie_(cookie) {
+}
+
+CookieTreeCookieNode::~CookieTreeCookieNode() {}
+
+void CookieTreeCookieNode::DeleteStoredObjects() {
+  // notify CookieMonster that we should delete this cookie
+  GetModel()->cookie_helper_->DeleteCookie(*cookie_);
+  GetModel()->cookie_list_.erase(cookie_);
+}
+
+CookieTreeNode::DetailedInfo CookieTreeCookieNode::GetDetailedInfo() const {
+  return DetailedInfo(parent()->parent()->GetTitle()).InitCookie(&*cookie_);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeAppCacheNode, public:
@@ -330,9 +333,7 @@ CookieTreeOriginNode* CookieTreeRootNode::GetOrCreateOriginNode(
 
   // First see if there is an existing match.
   std::vector<CookieTreeNode*>::iterator origin_node_iterator =
-      std::lower_bound(children().begin(),
-                       children().end(),
-                       &origin_node,
+      std::lower_bound(children().begin(), children().end(), &origin_node,
                        OriginNodeComparator());
 
   if (origin_node_iterator != children().end() &&
@@ -359,9 +360,10 @@ CookieTreeNode::DetailedInfo CookieTreeRootNode::GetDetailedInfo() const {
 // CookieTreeOriginNode, public:
 
 // static
-std::wstring CookieTreeOriginNode::TitleForUrl(
-    const GURL& url) {
-  return UTF8ToWide(url.SchemeIsFile() ? kFileOriginNodeName : url.host());
+std::wstring CookieTreeOriginNode::TitleForUrl(const GURL& url) {
+  const std::string file_origin_node_name(
+      std::string(chrome::kFileScheme) + content::kStandardSchemeSeparator);
+  return UTF8ToWide(url.SchemeIsFile() ? file_origin_node_name : url.host());
 }
 
 CookieTreeOriginNode::CookieTreeOriginNode(const GURL& url)
@@ -595,24 +597,10 @@ CookieTreeServerBoundCertsNode::GetDetailedInfo() const {
       DetailedInfo::TYPE_SERVER_BOUND_CERTS);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// CookieTreeNode, protected
-
-bool CookieTreeNode::NodeTitleComparator::operator() (
-    const CookieTreeNode* lhs, const CookieTreeNode* rhs) {
-  const CookieTreeNode* left =
-      static_cast<const CookieTreeNode*>(lhs);
-  const CookieTreeNode* right =
-      static_cast<const CookieTreeNode*>(rhs);
-  return (left->GetTitle() < right->GetTitle());
-}
-
 void CookieTreeNode::AddChildSortedByTitle(CookieTreeNode* new_child) {
   DCHECK(new_child);
   std::vector<CookieTreeNode*>::iterator iter =
-      std::lower_bound(children().begin(),
-                       children().end(),
-                       new_child,
+      std::lower_bound(children().begin(), children().end(), new_child,
                        NodeTitleComparator());
   GetModel()->Add(this, new_child, iter - children().begin());
 }

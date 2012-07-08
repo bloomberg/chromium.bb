@@ -202,11 +202,6 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
   virtual DetailedInfo GetDetailedInfo() const = 0;
 
  protected:
-  class NodeTitleComparator {
-   public:
-    bool operator() (const CookieTreeNode* lhs, const CookieTreeNode* rhs);
-  };
-
   void AddChildSortedByTitle(CookieTreeNode* new_child);
 
  private:
