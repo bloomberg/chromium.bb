@@ -23,6 +23,7 @@ weston-desktop-shell
 weston-tablet-shell
 weston-screenshooter
 weston-terminal
+weston-screensaver
 wscreensaver
 editor
 text-protocol.c
