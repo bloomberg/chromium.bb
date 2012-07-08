@@ -3133,8 +3133,10 @@ window_show_menu(struct display *display,
 		return;
 
 	window = window_create_internal(parent->display, parent, TYPE_MENU);
-	if (!window)
+	if (!window) {
+		free(menu);
 		return;
+	}
 
 	menu->window = window;
 	menu->widget = window_add_widget(menu->window, menu);
