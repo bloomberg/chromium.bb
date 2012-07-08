@@ -120,8 +120,10 @@ wcap_decoder_create(const char *filename)
 		return NULL;
 
 	decoder->fd = open(filename, O_RDONLY);
-	if (decoder->fd == -1)
+	if (decoder->fd == -1) {
+		free(decoder);
 		return NULL;
+	}
 
 	fstat(decoder->fd, &buf);
 	decoder->size = buf.st_size;
