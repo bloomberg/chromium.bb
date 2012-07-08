@@ -359,8 +359,10 @@ load_image(const char *filename)
 	if (fp == NULL)
 		return NULL;
 
-	if (fread(header, sizeof header, 1, fp) != 1)
+	if (fread(header, sizeof header, 1, fp) != 1) {
+		fclose(fp);
 		return NULL;
+	}
 
 	rewind(fp);
 	for (i = 0; i < ARRAY_LENGTH(loaders); i++) {
