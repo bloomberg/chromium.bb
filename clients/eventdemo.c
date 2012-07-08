@@ -261,6 +261,7 @@ motion_handler(struct widget *widget, struct input *input, uint32_t time,
 
 /**
  * \brief Create and initialise a new eventdemo window.
+ * The returned eventdemo instance should be destroyed using \c eventdemo_destroy().
  * \param d associated display
  */
 static struct eventdemo *
@@ -320,6 +321,16 @@ eventdemo_create(struct display *d)
 	return e;
 }
 /**
+ * \brief Destroy eventdemo instance previously created by \c eventdemo_create().
+ * \param eventdemo eventdemo instance to destroy
+ */
+static void eventdemo_destroy(struct eventdemo * eventdemo)
+{
+	widget_destroy(eventdemo->widget);
+	window_destroy(eventdemo->window);
+	free(eventdemo);
+}
+/**
  * \brief command line options for eventdemo
  */
 static const struct weston_option eventdemo_options[] = {
@@ -365,6 +376,10 @@ main(int argc, char *argv[])
 	}
 
 	display_run(d);
+
+	/* Release resources */
+	eventdemo_destroy(e);
+	display_destroy(d);
 
 	return 0;
 }
