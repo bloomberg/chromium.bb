@@ -86,6 +86,18 @@ bool TemplateURLsHaveSamePrefs(const TemplateURL* url1,
       (url1->input_encodings() == url2->input_encodings());
 }
 
+const char kFirstPotentialEngineHistogramName[] =
+    "Search.FirstPotentialEngineCalled";
+
+// Values for an enumerated histogram used to track whenever
+// FirstPotentialDefaultEngine is called, and from where.
+enum FirstPotentialEngineCaller {
+  FIRST_POTENTIAL_CALLSITE_FIND_NEW_DSP,
+  FIRST_POTENTIAL_CALLSITE_FIND_NEW_DSP_SYNCING,
+  FIRST_POTENTIAL_CALLSITE_ON_LOAD,
+  FIRST_POTENTIAL_CALLSITE_MAX,
+};
+
 TemplateURL* FirstPotentialDefaultEngine(
     const TemplateURLService::TemplateURLVector& template_urls) {
   for (TemplateURLService::TemplateURLVector::const_iterator i(
@@ -599,6 +611,15 @@ TemplateURL* TemplateURLService::FindNewDefaultSearchProvider() {
   }
   // If not, use the first non-extension keyword of the templates that supports
   // search term replacement.
+  if (processing_syncer_changes_) {
+    UMA_HISTOGRAM_ENUMERATION(kFirstPotentialEngineHistogramName,
+                              FIRST_POTENTIAL_CALLSITE_FIND_NEW_DSP_SYNCING,
+                              FIRST_POTENTIAL_CALLSITE_MAX);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(kFirstPotentialEngineHistogramName,
+                              FIRST_POTENTIAL_CALLSITE_FIND_NEW_DSP,
+                              FIRST_POTENTIAL_CALLSITE_MAX);
+  }
   return FirstPotentialDefaultEngine(template_urls_);
 }
 
@@ -721,6 +742,8 @@ void TemplateURLService::OnWebDataServiceRequestDone(
       pending_synced_default_search_ = false;
     } else if (database_specified_a_default &&
                default_search_provider == NULL) {
+      UMA_HISTOGRAM_ENUMERATION(kFirstPotentialEngineHistogramName,
+          FIRST_POTENTIAL_CALLSITE_ON_LOAD, FIRST_POTENTIAL_CALLSITE_MAX);
       default_search_provider = FirstPotentialDefaultEngine(template_urls);
     }
 
