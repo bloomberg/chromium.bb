@@ -33,7 +33,7 @@ NaClForkDelegate::NaClForkDelegate()
  * Note these need to match up with their counterparts in nacl_helper_linux.c
  * and nacl_helper_bootstrap_linux.c.
  */
-const char kNaClHelperAtZero[] = "--at-zero";
+const char kNaClHelperReservedAtZero[] = "--reserved_at_zero=0xXXXXXXXX";
 const char kNaClHelperRDebug[] = "--r_debug=0xXXXXXXXXXXXXXXXX";
 
 void NaClForkDelegate::Init(const bool sandboxed,
@@ -66,7 +66,7 @@ void NaClForkDelegate::Init(const bool sandboxed,
   } else {
     CommandLine cmd_line(helper_bootstrap_exe);
     cmd_line.AppendArgPath(helper_exe);
-    cmd_line.AppendArgNative(kNaClHelperAtZero);
+    cmd_line.AppendArgNative(kNaClHelperReservedAtZero);
     cmd_line.AppendArgNative(kNaClHelperRDebug);
     base::LaunchOptions options;
     options.fds_to_remap = &fds_to_map;

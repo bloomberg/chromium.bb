@@ -123,17 +123,17 @@ void HandleForkRequest(const std::vector<int>& child_fds,
 
 }  // namespace
 
-static const char kNaClHelperAtZero[] = "at-zero";
+static const char kNaClHelperReservedAtZero[] = "reserved_at_zero";
 static const char kNaClHelperRDebug[] = "r_debug";
 
 /*
- * Since we were started by the bootstrap program rather than in the
+ * Since we were started by nacl_helper_bootstrap rather than in the
  * usual way, the debugger cannot figure out where our executable
  * or the dynamic linker or the shared libraries are in memory,
  * so it won't find any symbols.  But we can fake it out to find us.
  *
- * The zygote passes --r_debug=0xXXXXXXXXXXXXXXXX.  The bootstrap
- * program replaces the Xs with the address of its _r_debug
+ * The zygote passes --r_debug=0xXXXXXXXXXXXXXXXX.
+ * nacl_helper_bootstrap replaces the Xs with the address of its _r_debug
  * structure.  The debugger will look for that symbol by name to
  * discover the addresses of key dynamic linker data structures.
  * Since all it knows about is the original main executable, which
@@ -149,7 +149,7 @@ static void CheckRDebug(char *argv0) {
   std::string r_debug_switch_value =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kNaClHelperRDebug);
   if (!r_debug_switch_value.empty()) {
-    char *endp = NULL;
+    char *endp;
     uintptr_t r_debug_addr = strtoul(r_debug_switch_value.c_str(), &endp, 0);
     if (r_debug_addr != 0 && *endp == '\0') {
       struct r_debug *bootstrap_r_debug = (struct r_debug *) r_debug_addr;
@@ -172,6 +172,30 @@ static void CheckRDebug(char *argv0) {
   }
 }
 
+/*
+ * The zygote passes --reserved_at_zero=0xXXXXXXXX.
+ * nacl_helper_bootstrap replaces the Xs with the amount of prereserved
+ * sandbox memory.
+ *
+ * CheckReservedAtZero parses the value of the argument reserved_at_zero
+ * and returns the amount of prereserved sandbox memory.
+ */
+static size_t CheckReservedAtZero() {
+  size_t prereserved_sandbox_size = 0;
+  std::string reserved_at_zero_switch_value =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kNaClHelperReservedAtZero);
+  if (!reserved_at_zero_switch_value.empty()) {
+    char *endp;
+    prereserved_sandbox_size =
+        strtoul(reserved_at_zero_switch_value.c_str(), &endp, 0);
+    if (*endp != '\0')
+      LOG(ERROR) << "Could not parse reserved_at_zero argument value of "
+                 << reserved_at_zero_switch_value;
+  }
+  return prereserved_sandbox_size;
+}
+
 int main(int argc, char *argv[]) {
   CommandLine::Init(argc, argv);
   base::AtExitManager exit_manager;
@@ -190,21 +214,9 @@ int main(int argc, char *argv[]) {
   crypto::LoadNSSLibraries();
 #endif
   std::vector<int> empty; // for SendMsg() calls
-  size_t prereserved_sandbox_size = 0;
+  size_t prereserved_sandbox_size = CheckReservedAtZero();
 
   CheckRDebug(argv[0]);
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kNaClHelperAtZero)) {
-    // TODO(arbenson): Once nacl_bootstrap passes the amount of prereserved
-    // memory, change this to set g_prereserved_sandbox_size to that amount.
-#if defined(ARCH_CPU_X86)
-    // On x86-32, nacl_bootstrap has reserved 1 GB
-    prereserved_sandbox_size = 0x40000000;
-#elif defined(ARCH_CPU_ARMEL)
-    // On ARM, nacl_bootstrap has reserved 1 GB plus an 8 KB guard
-    prereserved_sandbox_size = 0x40002000;
-#endif
-  }
 
   // Send the zygote a message to let it know we are ready to help
   if (!UnixDomainSocket::SendMsg(kNaClZygoteDescriptor,
