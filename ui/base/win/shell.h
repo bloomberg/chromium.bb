@@ -15,7 +15,6 @@ class FilePath;
 
 namespace ui {
 namespace win {
-
 // Open or run a file via the Windows shell. In the event that there is no
 // default application registered for the file specified by 'full_path',
 // ask the user, via the Windows "Open With" dialog.
@@ -26,6 +25,14 @@ UI_EXPORT bool OpenItemViaShell(const FilePath& full_path);
 // zone on all downloads. This function is equivalent to OpenItemViaShell
 // without showing the zone warning dialog.
 UI_EXPORT bool OpenItemViaShellNoZoneCheck(const FilePath& full_path);
+
+// Lower level function that allows opening of non-files like urls or GUIDs
+// don't use it if one of the above will do. |mask| is a valid combination
+// of SEE_MASK_FLAG_XXX as stated in msdn. If there is no default application
+// registered for the item, it behaves the same as OpenItemViaShell.
+UI_EXPORT bool OpenAnyViaShell(const string16& full_path,
+                               const string16& directory,
+                               DWORD mask);
 
 // Ask the user, via the Windows "Open With" dialog, for an application to use
 // to open the file specified by 'full_path'.
