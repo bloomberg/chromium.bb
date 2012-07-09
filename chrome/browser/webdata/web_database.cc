@@ -163,7 +163,7 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
   // least as high as the compatible version number.
   int current_version = std::max(meta_table_.GetVersionNumber(),
                                  meta_table_.GetCompatibleVersionNumber());
-  if (current_version < meta_table_.GetCompatibleVersionNumber())
+  if (current_version > meta_table_.GetVersionNumber())
     ChangeVersion(&meta_table_, current_version, false);
 
   // Migrate if necessary.
