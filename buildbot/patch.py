@@ -34,38 +34,14 @@ class PatchException(Exception):
 class ApplyPatchException(PatchException):
   """Exception thrown if we fail to apply a patch."""
 
-  def __init__(self, patch, message=None, inflight=False, trivial=False,
-               files=()):
-    PatchException.__init__(self, patch, message=message)
+  def __init__(self, patch, inflight=False):
+    PatchException.__init__(self, patch)
     self.inflight = inflight
-    self.trivial = trivial
-    self.files = files = tuple(files)
-    # Reset args; else serialization can break.
-    self.args = (patch, message, inflight, trivial, files)
-
-  def _stringify_inflight(self):
-    return 'current patch series' if self.inflight else 'ToT'
+    self.args += (inflight,)
 
   def __str__(self):
-    s = 'Failed to cherry-pick patch %s to %s' % (
-        self.patch, self._stringify_inflight())
-    if self.trivial:
-      s += (' because file content merging is disabled for this '
-            'project.')
-    else:
-      s += '.'
-    if self.files:
-      s += '  The conflicting files were: %s\n' % ', '.join(sorted(self.files))
-    if self.message:
-      s += '  %s' % (self.message,)
-    return s
-
-
-class PatchAlreadyApplied(ApplyPatchException):
-
-  def __str__(self):
-    return "Failed to cherry-pick %s to %s since it's already committed" % (
-        self.patch, self._stringify_inflight())
+    return 'Change %s no longer cleanly applies against %s.' % (
+        self.patch, 'current patch series' if self.inflight else 'ToT')
 
 
 class DependencyError(PatchException):
@@ -168,7 +144,6 @@ class GitRepoPatch(object):
         parse it.
     """
     self._commit_message = None
-    self._subject_line = None
     self.project_url = project_url
     self.project = project
     self.ref = ref
@@ -180,12 +155,12 @@ class GitRepoPatch(object):
     self.change_id = self.id = change_id
     self._is_fetched = set()
 
-  def Fetch(self, git_repo):
-    """Fetch this patch into the given git repository.
+  def Fetch(self, target_repo):
+    """Fetch this patch into the target repository.
 
     FETCH_HEAD is implicitly reset by this operation.  Additionally,
     if the sha1 of the patch was not yet known, it is pulled and stored
-    on this object and the git_repo is updated w/ the requested git
+    on this object and the target_repo is updated w/ the requested git
     object.
 
     While doing so, we'll load the commit message and Change-Id if not
@@ -193,43 +168,36 @@ class GitRepoPatch(object):
 
     Finally, if the sha1 is known and it's already available in the target
     repository, this will skip the actual fetch operation (it's unneeded).
-
-    Args:
-      git_repo: The git repository to fetch this patch into.
-    Returns:
-      The sha1 of the patch.
     """
 
-    git_repo = os.path.normpath(git_repo)
-    if git_repo in self._is_fetched:
+    target_repo = os.path.normpath(target_repo)
+    if target_repo in self._is_fetched:
       return self.sha1
 
     def _PullData(rev):
       ret = cros_build_lib.RunGitCommand(
-          git_repo, ['log', '--format=%H%x00%s%x00%B', '-n1', rev],
+          target_repo, ['log', '--format=%H%x00%B', '-n1', rev],
           error_code_ok=True)
       if ret.returncode != 0:
-        return None, None, None
+        return None, None
       output = ret.output.split('\0')
-      if len(output) != 3:
-        return None, None, None
+      if len(output) != 2:
+        return None, None
       return [x.strip() for x in output]
 
     if self.sha1 is not None:
-      # See if we've already got the object.
-      sha1, subject, msg = _PullData(self.sha1)
+      # See if we've already got the object
+      sha1, msg = _PullData(self.sha1)
       if sha1 is not None:
         assert sha1 == self.sha1
-        self._EnsureId(msg)
         self._commit_message = msg
-        self._subject_line = subject
-        self._is_fetched.add(git_repo)
+        self._EnsureId(msg)
         return self.sha1
 
     cros_build_lib.RunGitCommand(
-        git_repo, ['fetch', self.project_url, self.ref])
+        target_repo, ['fetch', self.project_url, self.ref])
 
-    sha1, subject, msg = _PullData('FETCH_HEAD')
+    sha1, msg = _PullData('FETCH_HEAD')
 
     # Even if we know the sha1, still do a sanity check to ensure we
     # actually just fetched it.
@@ -240,73 +208,79 @@ class GitRepoPatch(object):
                              'most likely.' % (self, self.sha1, self.ref))
     else:
       self.sha1 = sha1
-    self._EnsureId(msg)
     self._commit_message = msg
-    self._subject_line = subject
-    self._is_fetched.add(git_repo)
+    self._EnsureId(msg)
+    self._is_fetched.add(target_repo)
     return self.sha1
 
-  def _CherryPick(self, git_repo, trivial=False, inflight=False):
-    """Attempts to cherry-pick the given rev into branch.
+  def _RebaseOnto(self, branch, upstream, project_dir, rev, trivial):
+    """Attempts to rebase the given rev into branch.
 
     Raises:
-      A ApplyPatchException if the request couldn't be handled.
+      cros_build_lib.RunCommandError:  If the rebase operation returns an error code.
+        In this case, we still rebase --abort (or equivalent) before
+        returning.
     """
-    # Note the --ff; we do *not* want the sha1 to change unless it
-    # has to.
-    cmd = ['cherry-pick', '--ff']
-    if trivial:
-      cmd += ['--strategy', 'resolve', '-X', 'trivial']
-    cmd.append(self.sha1)
+    try:
+      cmd = ['git', 'rebase']
+      if trivial:
+        cmd.extend(['--strategy', 'resolve', '-X', 'trivial'])
+      cmd.extend(['--onto', branch, upstream, rev])
 
-    skip_cleanup = False
-    trivial_induced = False
+      # Run the rebase command.
+      cros_build_lib.RunCommand(cmd, cwd=project_dir, print_cmd=False)
+
+    except cros_build_lib.RunCommandError:
+      cros_build_lib.RunCommand(['git', 'rebase', '--abort'],
+                                cwd=project_dir, print_cmd=False,
+                                error_code_ok=True)
+      raise
+
+  def _RebasePatch(self, upstream, project_dir, rev, trivial):
+    """Rebase patch fetched from gerrit onto constants.PATCH_BRANCH.
+
+    When the function completes, the constants.PATCH_BRANCH branch will be
+    pointing to the rebased change.
+
+    Arguments:
+      upstream: The upstream branch to base patch on.
+      project_dir: Directory of the project that is being patched.
+      rev: The rev we're rebasing into the tree.
+      trivial: Use trivial logic that only allows trivial merges.  Note:
+        Requires Git >= 1.7.6 -- bug <.  Bots have 1.7.6 installed.
+
+    Raises:
+      ApplyPatchException: If the patch failed to apply.
+    """
+    try:
+      self._RebaseOnto(constants.PATCH_BRANCH, upstream, project_dir, rev,
+                       trivial)
+    except cros_build_lib.RunCommandError:
+      # Ignore this error; next we fiddle with the patch a bit to
+      # discern what exception to throw.
+      pass
+    else:
+      cros_build_lib.RunCommand(
+          ['git', 'checkout', '-B', constants.PATCH_BRANCH, 'HEAD'],
+          cwd=project_dir, print_cmd=False)
+      return
 
     try:
-      cros_build_lib.RunGitCommand(git_repo, cmd)
-      skip_cleanup = True
-      return
-    except cros_build_lib.RunCommandError, error:
-      ret = error.result.returncode
-      if ret not in (1, 2):
-        cros_build_lib.Error(
-            "Unknown cherry-pick exit code %s; %s",
-            ret, error)
-        raise ApplyPatchException(
-            self, inflight=inflight,
-            message=("Unknown exit code %s returned from cherry-pick "
-                     "command: %s" % (ret, error)))
-      elif ret == 2:
-        # This was directly induced by a trivial file conflict; do an assert
-        # check to make sure git's error codes haven't changed under our feet.
-        # From there, the actual ApplyPatchException raised below sets trivial
-        # appropriately.
-        assert trivial
-        trivial_induced = True
-
-      # If there are no conflicts, then this is caused by the change already
-      # being merged.
-      result = cros_build_lib.RunGitCommand(
-          git_repo, ['status', '--porcelain'])
-
-      # Porcelain format is line per file, first two chars are the status code,
-      # then a space, then the filename.
-      # ?? means "untracked"; everything else is git tracked conflicts.
-      conflicts = [x[3:] for x in result.output.splitlines()
-                   if x and not x[:2] == '??']
-      if not conflicts:
-        skip_cleanup = True
-        raise PatchAlreadyApplied(self, inflight=inflight)
-
-      raise ApplyPatchException(self, inflight=inflight, files=conflicts,
-                                trivial=trivial_induced)
+      self._RebaseOnto(upstream, upstream, project_dir, rev, trivial)
+      raise ApplyPatchException(self, inflight=True)
+    except cros_build_lib.RunCommandError:
+      # Cleanup the rebase attempt.
+      cros_build_lib.RunCommandCaptureOutput(
+          ['git', 'rebase', '--abort'], cwd=project_dir, print_cmd=False,
+          error_code_ok=True)
+      raise ApplyPatchException(self, inflight=False)
 
     finally:
-      if not skip_cleanup:
-        cros_build_lib.RunGitCommand(
-            git_repo, ['reset', '--hard', 'HEAD'], error_code_ok=True)
+      # Ensure we're on the correct branch on the way out.
+      cros_build_lib.RunCommand(['git', 'checkout', constants.PATCH_BRANCH],
+                                cwd=project_dir, print_cmd=False)
 
-  def Apply(self, git_repo, upstream, trivial=False):
+  def Apply(self, git_repo, upstream, trivial=False, do_check=True):
     """Apply patch into a standalone git repo.
 
     The git repo does not need to be part of a repo checkout.
@@ -315,41 +289,25 @@ class GitRepoPatch(object):
       git_repo: The git repository to operate upon.
       upstream: The branch to base the patch on.
       trivial: Only allow trivial merges when applying change.
+      do_check: Check if tracking is the same as the given upstream.
     """
+    # Check that the patch is based on the same branch as project we are
+    # patching into.
+    # TODO(ferringb): remove this when cherry-pick lands; has questionable
+    # value now, has no relevance/value once cherry-picking is in.
+    branch_base = os.path.basename(upstream)
+    if self.tracking_branch != branch_base and do_check:
+      raise PatchException('branch %s for project %s is not tracking %s'
+                           % (self.ref, self.project, branch_base))
 
-    self.Fetch(git_repo)
-
-    logging.info('Attempting to cherry-pick change %s', self)
+    rev = self.Fetch(git_repo)
 
     if not cros_build_lib.DoesLocalBranchExist(git_repo,
                                                constants.PATCH_BRANCH):
       cmd = ['checkout', '-b', constants.PATCH_BRANCH, '-t', upstream]
       cros_build_lib.RunGitCommand(git_repo, cmd)
 
-    do_checkout = True
-    try:
-      self._CherryPick(git_repo, trivial=trivial, inflight=True)
-      do_checkout = False
-      return
-    except ApplyPatchException:
-      # So the cherry-pick failed; question is if it was due to a patch in the
-      # series, or if the patch is incompatible w/ ToT.  We identify this
-      # by switching to ToT, retrying, then restoring on the way out.
-      # Note the --detach; this is done so that if upstream is a short name,
-      # git isn't allowed to create a branch for this checkout- instead
-      # just goes to detached HEAD for the rev in question.
-      cros_build_lib.RunGitCommand(
-          git_repo, ['checkout', '-f', '--detach', upstream])
-
-      self._CherryPick(git_repo, trivial=trivial, inflight=False)
-      # Making it here means that it was an inflight issue; throw the original.
-      raise
-    finally:
-      # Ensure we're on the correct branch on the way out.
-      if do_checkout:
-        cros_build_lib.RunGitCommand(
-            git_repo, ['checkout', '-f', constants.PATCH_BRANCH],
-            error_code_ok=True)
+    self._RebasePatch(upstream, git_repo, rev, trivial)
 
   def ApplyAgainstManifest(self, manifest, trivial=False):
     """Applies the patch against the specified manifest.
@@ -361,9 +319,16 @@ class GitRepoPatch(object):
     Raises:
       ApplyPatchException: If the patch failed to apply.
     """
+    logging.info('Attempting to apply change %s', self)
     manifest_branch = manifest.GetProjectsLocalRevision(self.project)
+    do_check = manifest_branch.startswith('refs/')
+    if not do_check:
+      # Revision locked.  Use the manifest default branch which
+      # is set to the manifest locked revision, and
+      # suppress the tracking/upstream check.
+      manifest_branch = manifest.default_branch
     self.Apply(manifest.GetProjectPath(self.project, True),
-               manifest_branch, trivial=trivial)
+               manifest_branch, trivial, do_check=do_check)
 
   def GerritDependencies(self, git_repo, upstream):
     """Returns an ordered list of dependencies from Gerrit.
@@ -508,10 +473,6 @@ class GitRepoPatch(object):
     s = '%s:%s' % (self.project, self.ref)
     if self.sha1 is not None:
       s = '%s:%s' % (s, self.sha1[:8])
-    # TODO(ferringb,build): This gets a bit long in output; should likely
-    # do some form of truncation to it.
-    if self._subject_line:
-      s += ' "%s"' % (self._subject_line,)
     return s
 
 
@@ -613,12 +574,9 @@ class UploadedLocalPatch(GitRepoPatch):
 
   def __str__(self):
     """Returns custom string to identify this patch."""
+    # TODO(ferringb): fold subject line in here.
     s = '%s:%s:%s' % (self.project, self.original_branch,
                       self.original_sha1[:8])
-    # TODO(ferringb,build): This gets a bit long in output; should likely
-    # do some form of truncation to it.
-    if self._subject_line:
-      s += ':"%s"' % (self._subject_line,)
     return s
 
 
@@ -714,8 +672,6 @@ class GerritPatch(GitRepoPatch):
     s = '%s:%s' % (self.owner, self.gerrit_number)
     if self.sha1 is not None:
       s = '%s:%s' % (s, self.sha1[:8])
-    if self._subject_line:
-      s += ':"%s"' % (self._subject_line,)
     return s
 
   # Define methods to use patches in sets.  We uniquely identify patches
