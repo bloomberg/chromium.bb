@@ -95,7 +95,8 @@ void ShellMainDelegate::InitializeResourceBundle() {
   FilePath pak_dir;
 
 #if defined(OS_ANDROID)
-  DCHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &pak_dir));
+  bool got_path = PathService::Get(base::DIR_ANDROID_APP_DATA, &pak_dir);
+  DCHECK(got_path);
   pak_dir = pak_dir.Append(FILE_PATH_LITERAL("paks"));
 #else
   PathService::Get(base::DIR_MODULE, &pak_dir);
