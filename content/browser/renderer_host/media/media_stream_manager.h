@@ -30,14 +30,17 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
-#include "base/win/scoped_com_initializer.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/browser/renderer_host/media/media_stream_settings_requester.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 
-using base::win::ScopedCOMInitializer;
+namespace base {
+namespace win {
+class ScopedCOMInitializer;
+}
+}
 
 namespace media_stream {
 
@@ -49,12 +52,15 @@ class VideoCaptureManager;
 // Thread that enters MTA on windows, and is base::Thread on linux and mac.
 class DeviceThread : public base::Thread {
  public:
-  explicit DeviceThread(const char* name)
-      : base::Thread(name),
-        com_init_(ScopedCOMInitializer::kMTA) {}
+  explicit DeviceThread(const char* name);
+  virtual ~DeviceThread();
+
+ protected:
+  virtual void Init() OVERRIDE;
+  virtual void CleanUp() OVERRIDE;
 
  private:
-  ScopedCOMInitializer com_init_;
+  scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
   DISALLOW_COPY_AND_ASSIGN(DeviceThread);
 };
 

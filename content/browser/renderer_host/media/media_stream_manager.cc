@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/win/scoped_com_initializer.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/media_stream_device_settings.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
@@ -54,6 +55,23 @@ static bool Requested(const StreamOptions& options,
     return true;
   }
   return false;
+}
+
+DeviceThread::DeviceThread(const char* name)
+    : base::Thread(name) {
+}
+
+DeviceThread::~DeviceThread() {
+}
+
+void DeviceThread::Init() {
+  using base::win::ScopedCOMInitializer;
+  // Enter the multi-threaded apartment.
+  com_initializer_.reset(new ScopedCOMInitializer(ScopedCOMInitializer::kMTA));
+}
+
+void DeviceThread::CleanUp() {
+  com_initializer_.reset();
 }
 
 // TODO(xians): Merge DeviceRequest with MediaStreamRequest.
