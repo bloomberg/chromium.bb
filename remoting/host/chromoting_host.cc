@@ -106,32 +106,38 @@ void ChromotingHost::Shutdown(const base::Closure& shutdown_task) {
     return;
   }
 
-  // No-op if this object is not started yet.
-  if (state_ == kInitial || state_ == kStopped) {
+  switch (state_) {
+    case kInitial:
+    case kStopped:
       // Nothing to do if we are not started.
-    state_ = kStopped;
-    context_->network_task_runner()->PostTask(FROM_HERE, shutdown_task);
-    return;
-  }
-  if (!shutdown_task.is_null())
-    shutdown_tasks_.push_back(shutdown_task);
-  if (state_ == kStopping)
-    return;
-  state_ = kStopping;
+      state_ = kStopped;
+      if (!shutdown_task.is_null())
+        context_->network_task_runner()->PostTask(FROM_HERE, shutdown_task);
+      break;
 
-  // Disconnect all of the clients, implicitly stopping the ScreenRecorder.
-  while (!clients_.empty()) {
-    clients_.front()->Disconnect();
-  }
+    case kStopping:
+      // We are already stopping. Just save the task.
+      if (!shutdown_task.is_null())
+        shutdown_tasks_.push_back(shutdown_task);
+      break;
 
-  // Destroy session manager.
-  session_manager_.reset();
+    case kStarted:
+      if (!shutdown_task.is_null())
+        shutdown_tasks_.push_back(shutdown_task);
+      state_ = kStopping;
 
-  // Stop screen recorder
-  if (recorder_.get()) {
-    StopScreenRecorder();
-  } else if (!stopping_recorders_) {
-    ShutdownFinish();
+      // Disconnect all of the clients, implicitly stopping the ScreenRecorder.
+      while (!clients_.empty()) {
+        clients_.front()->Disconnect();
+      }
+      DCHECK(!recorder_.get());
+
+      // Destroy session manager.
+      session_manager_.reset();
+
+      if (!stopping_recorders_)
+        ShutdownFinish();
+      break;
   }
 }
 
