@@ -98,7 +98,8 @@ void MockIBusInputContextClient::ProcessKeyEvent(
     uint32 keyval,
     uint32 keycode,
     uint32 state,
-    const ProcessKeyEventCallback& callback) {
+    const ProcessKeyEventCallback& callback,
+    const ErrorCallback& error_callback) {
   process_key_event_call_count_++;
 }
 

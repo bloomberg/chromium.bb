@@ -85,6 +85,11 @@ class MockProcessKeyEventHandler {
   MOCK_METHOD1(Run, void(bool is_key_handled));
 };
 
+class MockProcessKeyEventErrorHandler {
+ public:
+  MOCK_METHOD0(Run, void());
+};
+
 MATCHER_P(IBusTextEq, expected_text, "The expected IBusText does not match") {
   // TODO(nona): Check attributes.
   return (arg.text() == expected_text->text());
@@ -155,7 +160,8 @@ class IBusInputContextClientTest : public testing::Test {
   // Handles FocusIn method call.
   void OnFocusIn(dbus::MethodCall* method_call,
                  int timeout_ms,
-                 const dbus::ObjectProxy::ResponseCallback& callback) {
+                 const dbus::ObjectProxy::ResponseCallback& callback,
+                 const dbus::ObjectProxy::ErrorCallback& error_callback) {
     EXPECT_EQ(kInputContextInterface, method_call->GetInterface());
     EXPECT_EQ(kFocusInMethod, method_call->GetMember());
     dbus::MessageReader reader(method_call);
@@ -167,7 +173,8 @@ class IBusInputContextClientTest : public testing::Test {
   // Handles FocusOut method call.
   void OnFocusOut(dbus::MethodCall* method_call,
                   int timeout_ms,
-                  const dbus::ObjectProxy::ResponseCallback& callback) {
+                  const dbus::ObjectProxy::ResponseCallback& callback,
+                  const dbus::ObjectProxy::ErrorCallback& error_callback) {
     EXPECT_EQ(kInputContextInterface, method_call->GetInterface());
     EXPECT_EQ(kFocusOutMethod, method_call->GetMember());
     dbus::MessageReader reader(method_call);
@@ -179,7 +186,8 @@ class IBusInputContextClientTest : public testing::Test {
   // Handles Reset method call.
   void OnReset(dbus::MethodCall* method_call,
                int timeout_ms,
-               const dbus::ObjectProxy::ResponseCallback& callback) {
+               const dbus::ObjectProxy::ResponseCallback& callback,
+               const dbus::ObjectProxy::ErrorCallback& error_callback) {
     EXPECT_EQ(kInputContextInterface, method_call->GetInterface());
     EXPECT_EQ(kResetMethod, method_call->GetMember());
     dbus::MessageReader reader(method_call);
@@ -192,7 +200,8 @@ class IBusInputContextClientTest : public testing::Test {
   void OnSetCursorLocation(
       dbus::MethodCall* method_call,
       int timeout_ms,
-      const dbus::ObjectProxy::ResponseCallback& callback) {
+      const dbus::ObjectProxy::ResponseCallback& callback,
+      const dbus::ObjectProxy::ErrorCallback& error_callback) {
     EXPECT_EQ(kInputContextInterface, method_call->GetInterface());
     EXPECT_EQ(kSetCursorLocationMethod, method_call->GetMember());
     dbus::MessageReader reader(method_call);
@@ -207,9 +216,11 @@ class IBusInputContextClientTest : public testing::Test {
   }
 
   // Handles SetCapabilities method call.
-  void OnSetCapabilities(dbus::MethodCall* method_call,
-                         int timeout_ms,
-                         const dbus::ObjectProxy::ResponseCallback& callback) {
+  void OnSetCapabilities(
+      dbus::MethodCall* method_call,
+      int timeout_ms,
+      const dbus::ObjectProxy::ResponseCallback& callback,
+      const dbus::ObjectProxy::ErrorCallback& error_callback) {
     EXPECT_EQ(kInputContextInterface, method_call->GetInterface());
     EXPECT_EQ(kSetCapabilitiesMethod, method_call->GetMember());
     uint32 capabilities;
@@ -222,9 +233,11 @@ class IBusInputContextClientTest : public testing::Test {
   }
 
   // Handles ProcessKeyEvent method call.
-  void OnProcessKeyEvent(dbus::MethodCall* method_call,
-                         int timeout_ms,
-                         const dbus::ObjectProxy::ResponseCallback& callback) {
+  void OnProcessKeyEvent(
+      dbus::MethodCall* method_call,
+      int timeout_ms,
+      const dbus::ObjectProxy::ResponseCallback& callback,
+      const dbus::ObjectProxy::ErrorCallback& error_callback) {
     EXPECT_EQ(kInputContextInterface, method_call->GetInterface());
     EXPECT_EQ(kProcessKeyEventMethod, method_call->GetMember());
     uint32 keyval, keycode, state;
@@ -237,6 +250,24 @@ class IBusInputContextClientTest : public testing::Test {
     message_loop_.PostTask(FROM_HERE, base::Bind(callback, response_));
   }
 
+  void OnProcessKeyEventFail(
+      dbus::MethodCall* method_call,
+      int timeout_ms,
+      const dbus::ObjectProxy::ResponseCallback& callback,
+      const dbus::ObjectProxy::ErrorCallback& error_callback) {
+    EXPECT_EQ(kInputContextInterface, method_call->GetInterface());
+    EXPECT_EQ(kProcessKeyEventMethod, method_call->GetMember());
+    uint32 keyval, keycode, state;
+    dbus::MessageReader reader(method_call);
+    EXPECT_TRUE(reader.PopUint32(&keyval));
+    EXPECT_TRUE(reader.PopUint32(&keycode));
+    EXPECT_TRUE(reader.PopUint32(&state));
+    EXPECT_FALSE(reader.HasMoreData());
+
+    message_loop_.PostTask(FROM_HERE, base::Bind(error_callback,
+                                                 error_response_));
+  }
+
  protected:
   // The client to be tested.
   scoped_ptr<IBusInputContextClient> client_;
@@ -246,6 +277,7 @@ class IBusInputContextClientTest : public testing::Test {
   scoped_refptr<dbus::MockObjectProxy> mock_proxy_;
   // Response returned by mock methods.
   dbus::Response* response_;
+  dbus::ErrorResponse* error_response_;
   // A message loop to emulate asynchronous behavior.
   MessageLoop message_loop_;
   // The map from signal to signal handler.
@@ -383,7 +415,7 @@ TEST_F(IBusInputContextClientTest, UpdatePreeditTextHandlerTest) {
 
 TEST_F(IBusInputContextClientTest, FocusInTest) {
   // Set expectations.
-  EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
+  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(this, &IBusInputContextClientTest::OnFocusIn));
   // Create response.
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
@@ -397,7 +429,7 @@ TEST_F(IBusInputContextClientTest, FocusInTest) {
 
 TEST_F(IBusInputContextClientTest, FocusOutTest) {
   // Set expectations.
-  EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
+  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(this, &IBusInputContextClientTest::OnFocusOut));
   // Create response.
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
@@ -411,7 +443,7 @@ TEST_F(IBusInputContextClientTest, FocusOutTest) {
 
 TEST_F(IBusInputContextClientTest, ResetTest) {
   // Set expectations.
-  EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
+  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(this, &IBusInputContextClientTest::OnReset));
   // Create response.
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
@@ -425,7 +457,7 @@ TEST_F(IBusInputContextClientTest, ResetTest) {
 
 TEST_F(IBusInputContextClientTest, SetCapabilitiesTest) {
   // Set expectations.
-  EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
+  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(this, &IBusInputContextClientTest::OnSetCapabilities));
   // Create response.
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
@@ -439,8 +471,9 @@ TEST_F(IBusInputContextClientTest, SetCapabilitiesTest) {
 
 TEST_F(IBusInputContextClientTest, SetCursorLocationTest) {
   // Set expectations.
-  EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
-      .WillOnce(Invoke(this, &IBusInputContextClientTest::OnSetCursorLocation));
+  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+      .WillOnce(Invoke(this,
+                       &IBusInputContextClientTest::OnSetCursorLocation));
   // Create response.
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   response_ = response.get();
@@ -453,10 +486,13 @@ TEST_F(IBusInputContextClientTest, SetCursorLocationTest) {
 
 TEST_F(IBusInputContextClientTest, OnProcessKeyEvent) {
   // Set expectations.
-  EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
+  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(this, &IBusInputContextClientTest::OnProcessKeyEvent));
   MockProcessKeyEventHandler callback;
+  MockProcessKeyEventErrorHandler error_callback;
+
   EXPECT_CALL(callback, Run(kIsKeyHandled));
+  EXPECT_CALL(error_callback, Run()).Times(0);
   // Create response.
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
@@ -468,7 +504,37 @@ TEST_F(IBusInputContextClientTest, OnProcessKeyEvent) {
                            kKeycode,
                            kState,
                            base::Bind(&MockProcessKeyEventHandler::Run,
-                                      base::Unretained(&callback)));
+                                      base::Unretained(&callback)),
+                           base::Bind(&MockProcessKeyEventErrorHandler::Run,
+                                      base::Unretained(&error_callback)));
+  // Run the message loop.
+  message_loop_.RunAllPending();
+}
+
+TEST_F(IBusInputContextClientTest, OnProcessKeyEventFail) {
+  // Set expectations.
+  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+      .WillOnce(Invoke(this,
+                       &IBusInputContextClientTest::OnProcessKeyEventFail));
+  MockProcessKeyEventHandler callback;
+  MockProcessKeyEventErrorHandler error_callback;
+
+  EXPECT_CALL(callback, Run(_)).Times(0);
+  EXPECT_CALL(error_callback, Run());
+  // Create response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  writer.AppendBool(kIsKeyHandled);
+  response_ = response.get();
+
+  // Call ProcessKeyEvent.
+  client_->ProcessKeyEvent(kKeyval,
+                           kKeycode,
+                           kState,
+                           base::Bind(&MockProcessKeyEventHandler::Run,
+                                      base::Unretained(&callback)),
+                           base::Bind(&MockProcessKeyEventErrorHandler::Run,
+                                      base::Unretained(&error_callback)));
   // Run the message loop.
   message_loop_.RunAllPending();
 }

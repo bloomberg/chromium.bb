@@ -137,37 +137,25 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
                                  kSetCapabilitiesMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendUint32(capabilities);
-    proxy_->CallMethod(&method_call,
-                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&IBusInputContextClientImpl::DefaultCallback,
-                                  kSetCapabilitiesMethod));
+    CallNoResponseMethod(&method_call, kSetCapabilitiesMethod);
   }
 
   // IBusInputContextClient override.
   virtual void FocusIn() OVERRIDE {
     dbus::MethodCall method_call(kIBusInputContextInterface, kFocusInMethod);
-    proxy_->CallMethod(&method_call,
-                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&IBusInputContextClientImpl::DefaultCallback,
-                                  kFocusInMethod));
+    CallNoResponseMethod(&method_call, kFocusInMethod);
   }
 
   // IBusInputContextClient override.
   virtual void FocusOut() OVERRIDE {
     dbus::MethodCall method_call(kIBusInputContextInterface, kFocusOutMethod);
-    proxy_->CallMethod(&method_call,
-                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&IBusInputContextClientImpl::DefaultCallback,
-                                  kFocusOutMethod));
+    CallNoResponseMethod(&method_call, kFocusOutMethod);
   }
 
   // IBusInputContextClient override.
   virtual void Reset() OVERRIDE {
     dbus::MethodCall method_call(kIBusInputContextInterface, kResetMethod);
-    proxy_->CallMethod(&method_call,
-                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&IBusInputContextClientImpl::DefaultCallback,
-                                  kResetMethod));
+    CallNoResponseMethod(&method_call, kResetMethod);
   }
 
   // IBusInputContextClient override.
@@ -180,10 +168,7 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
     writer.AppendInt32(y);
     writer.AppendInt32(width);
     writer.AppendInt32(height);
-    proxy_->CallMethod(&method_call,
-                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&IBusInputContextClientImpl::DefaultCallback,
-                                  kSetCursorLocationMethod));
+    CallNoResponseMethod(&method_call, kSetCursorLocationMethod);
   }
 
   // IBusInputContextClient override.
@@ -191,21 +176,36 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
       uint32 keyval,
       uint32 keycode,
       uint32 state,
-      const ProcessKeyEventCallback& callback) OVERRIDE {
+      const ProcessKeyEventCallback& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(kIBusInputContextInterface,
                                  kProcessKeyEventMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendUint32(keyval);
     writer.AppendUint32(keycode);
     writer.AppendUint32(state);
-    proxy_->CallMethod(
+    proxy_->CallMethodWithErrorCallback(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&IBusInputContextClientImpl::OnProcessKeyEvent,
-                   callback));
+                   callback,
+                   error_callback),
+        base::Bind(&IBusInputContextClientImpl::OnProecessKeyEventFail,
+                   error_callback));
   }
 
  private:
+  void CallNoResponseMethod(dbus::MethodCall* method_call,
+                            const std::string& method_name) {
+    proxy_->CallMethodWithErrorCallback(
+        method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&IBusInputContextClientImpl::DefaultCallback,
+                   method_name),
+        base::Bind(&IBusInputContextClientImpl::DefaultErrorCallback,
+                   method_name));
+  }
+
   // Handles no response method call reply.
   static void DefaultCallback(const std::string& method_name,
                               dbus::Response* response) {
@@ -215,11 +215,19 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
     }
   }
 
+  // Handles error response of default method call.
+  static void DefaultErrorCallback(const std::string& method_name,
+                                   dbus::ErrorResponse* response) {
+    LOG(ERROR) << "Failed to call method: " << method_name;
+  }
+
   // Handles ProcessKeyEvent method call reply.
   static void OnProcessKeyEvent(const ProcessKeyEventCallback& callback,
+                                const ErrorCallback& error_callback,
                                 dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Cannot get input context: " << response->ToString();
+      error_callback.Run();
       return;
     }
     dbus::MessageReader reader(response);
@@ -227,10 +235,17 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
     if (!reader.PopBool(&is_keyevent_used)) {
       // The IBus message structure may be changed.
       LOG(ERROR) << "Invalid response: " << response->ToString();
+      error_callback.Run();
       return;
     }
     DCHECK(!callback.is_null());
     callback.Run(is_keyevent_used);
+  }
+
+  // Handles error response of ProcessKeyEvent method call.
+  static void OnProecessKeyEventFail(const ErrorCallback& error_callback,
+                                     dbus::ErrorResponse* response) {
+    error_callback.Run();
   }
 
   // Handles CommitText signal.
@@ -402,7 +417,8 @@ class IBusInputContextClientStubImpl : public IBusInputContextClient {
       uint32 keyval,
       uint32 keycode,
       uint32 state,
-      const ProcessKeyEventCallback& callback) OVERRIDE {
+      const ProcessKeyEventCallback& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
     callback.Run(false);
   }
 

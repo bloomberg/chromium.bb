@@ -166,6 +166,7 @@ class UI_EXPORT InputMethodIBus : public InputMethodBase {
   void CreateInputContextFail(PendingCreateICRequest* ic_request);
   static void ProcessKeyEventDone(PendingKeyEvent* pending_key_event,
                                   bool is_handled);
+  static void ProcessKeyEventFail(PendingKeyEvent* pending_key_event);
 
   scoped_ptr<internal::IBusClient> ibus_client_;
 

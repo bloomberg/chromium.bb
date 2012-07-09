@@ -38,8 +38,11 @@ class MockIBusInputContextClient : public IBusInputContextClient {
   virtual void FocusOut() OVERRIDE;
   virtual void Reset() OVERRIDE;
   virtual void SetCursorLocation(int32 x, int32 y, int32 w, int32 h) OVERRIDE;
-  virtual void ProcessKeyEvent(uint32 keyval, uint32 keycode, uint32 state,
-                       const ProcessKeyEventCallback& callback) OVERRIDE;
+  virtual void ProcessKeyEvent(uint32 keyval,
+                               uint32 keycode,
+                               uint32 state,
+                               const ProcessKeyEventCallback& callback,
+                               const ErrorCallback& error_callback) OVERRIDE;
 
   // Call count of Initialize().
   int initialize_call_count() const { return initialize_call_count_; }

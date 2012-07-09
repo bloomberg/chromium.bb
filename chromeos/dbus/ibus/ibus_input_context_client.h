@@ -41,6 +41,7 @@ class CHROMEOS_EXPORT IBusInputContextClient {
   typedef base::Callback<void()> ShowPreeditTextHandler;
   typedef base::Callback<void()> HidePreeditTextHandler;
   typedef base::Callback<void(bool is_keyevent_used)> ProcessKeyEventCallback;
+  typedef base::Callback<void()> ErrorCallback;
 
   virtual ~IBusInputContextClient();
 
@@ -100,7 +101,8 @@ class CHROMEOS_EXPORT IBusInputContextClient {
   virtual void ProcessKeyEvent(uint32 keyval,
                                uint32 keycode,
                                uint32 state,
-                               const ProcessKeyEventCallback& callback) = 0;
+                               const ProcessKeyEventCallback& callback,
+                               const ErrorCallback& error_callback) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
