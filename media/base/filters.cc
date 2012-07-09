@@ -4,52 +4,10 @@
 
 #include "media/base/filters.h"
 
-#include "base/logging.h"
-
 namespace media {
 
-Filter::Filter() : host_(NULL) {}
+Filter::Filter() {}
 
 Filter::~Filter() {}
-
-void Filter::set_host(FilterHost* host) {
-  DCHECK(host);
-  DCHECK(!host_);
-  host_ = host;
-}
-
-FilterHost* Filter::host() {
-  return host_;
-}
-
-void Filter::Play(const base::Closure& callback) {
-  DCHECK(!callback.is_null());
-  callback.Run();
-}
-
-void Filter::Pause(const base::Closure& callback) {
-  DCHECK(!callback.is_null());
-  callback.Run();
-}
-
-void Filter::Flush(const base::Closure& callback) {
-  DCHECK(!callback.is_null());
-  callback.Run();
-}
-
-void Filter::Stop(const base::Closure& callback) {
-  DCHECK(!callback.is_null());
-  callback.Run();
-}
-
-void Filter::SetPlaybackRate(float playback_rate) {}
-
-void Filter::Seek(base::TimeDelta time, const PipelineStatusCB& callback) {
-  DCHECK(!callback.is_null());
-  callback.Run(PIPELINE_OK);
-}
-
-void Filter::OnAudioRendererDisabled() {
-}
 
 }  // namespace media

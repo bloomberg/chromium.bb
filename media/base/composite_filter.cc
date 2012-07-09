@@ -56,19 +56,15 @@ void CompositeFilter::AddFilter(scoped_refptr<Filter> filter) {
   CHECK(filter && state_ == kCreated && host());
 
   // Register ourselves as the filter's host.
-  filter->set_host(host_impl_.get());
+  filter->SetHost(host_impl_.get());
   filters_.push_back(make_scoped_refptr(filter.get()));
 }
 
-void CompositeFilter::set_host(FilterHost* host) {
+void CompositeFilter::SetHost(FilterHost* host) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(host);
   DCHECK(!host_impl_.get());
   host_impl_.reset(new FilterHostImpl(this, host));
-}
-
-FilterHost* CompositeFilter::host() {
-  return host_impl_.get() ? host_impl_->host() : NULL;
 }
 
 void CompositeFilter::Play(const base::Closure& play_cb) {
@@ -200,15 +196,6 @@ void CompositeFilter::Seek(base::TimeDelta time,
   status_cb_ = seek_cb;
   pending_seek_time_ = time;
   StartSerialCallSequence();
-}
-
-void CompositeFilter::OnAudioRendererDisabled() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  for (FilterVector::iterator iter = filters_.begin();
-       iter != filters_.end();
-       ++iter) {
-    (*iter)->OnAudioRendererDisabled();
-  }
 }
 
 void CompositeFilter::ChangeState(State new_state) {
@@ -423,6 +410,10 @@ void CompositeFilter::OnStatusCB(const base::Closure& callback,
     SetError(status);
 
   callback.Run();
+}
+
+FilterHost* CompositeFilter::host() {
+  return host_impl_.get()->host();
 }
 
 void CompositeFilter::SetError(PipelineStatus error) {

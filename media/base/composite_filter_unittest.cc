@@ -134,7 +134,7 @@ class CompositeFilterTest : public testing::Test {
   // Callback passed to |filter_2_| during last Seek() call.
   PipelineStatusCB filter_2_status_cb_;
 
-  // FilterHost implementation passed to |composite_| via set_host().
+  // FilterHost implementation passed to |composite_| via SetHost().
   scoped_ptr<StrictMock<MockFilterHost> > mock_filter_host_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositeFilterTest);
@@ -152,7 +152,7 @@ CompositeFilterTest::~CompositeFilterTest() {}
 void CompositeFilterTest::SetupAndAdd2Filters() {
   mock_filter_host_.reset(new StrictMock<MockFilterHost>());
   composite_ = new CompositeFilter(message_loop_.message_loop_proxy());
-  composite_->set_host(mock_filter_host_.get());
+  composite_->SetHost(mock_filter_host_.get());
 
   // Setup |filter_1_| and arrange for methods to set
   // |filter_1_cb_| when they are called.
@@ -370,7 +370,7 @@ void CompositeFilterTest::RunFilter2Callback() {
 
 // Test successful AddFilter() cases.
 TEST_F(CompositeFilterTest, TestAddFilter) {
-  composite_->set_host(mock_filter_host_.get());
+  composite_->SetHost(mock_filter_host_.get());
 
   // Add a filter.
   scoped_refptr<StrictMock<MockFilter> > filter = new StrictMock<MockFilter>();
@@ -396,7 +396,7 @@ TEST_F(CompositeFilterDeathTest, TestAddFilterFailCases) {
   scoped_refptr<StrictMock<MockFilter> > filter = new StrictMock<MockFilter>();
   EXPECT_EQ(NULL, filter->host());
 
-  // Test failing because set_host() hasn't been called yet.
+  // Test failing because SetHost() hasn't been called yet.
   EXPECT_DEATH_IF_SUPPORTED(composite_->AddFilter(filter), "");
 }
 
@@ -769,7 +769,7 @@ TEST_F(CompositeFilterTest, TestErrorWhilePlaying) {
 TEST_F(CompositeFilterTest, TestEmptyComposite) {
   InSequence sequence;
 
-  composite_->set_host(mock_filter_host_.get());
+  composite_->SetHost(mock_filter_host_.get());
 
   // Issue a Play() and expect no errors.
   composite_->Play(NewExpectedClosure());

@@ -23,14 +23,13 @@ class MEDIA_EXPORT CompositeFilter : public Filter {
   explicit CompositeFilter(
       const scoped_refptr<base::MessageLoopProxy>& message_loop);
 
-  // Adds a filter to the composite. This is only allowed after set_host()
+  // Adds a filter to the composite. This is only allowed after SetHost()
   // is called and before the first state changing operation such as Play(),
   // Flush(), Stop(), or Seek(). CHECK-fails if preconditions are not met.
   void AddFilter(scoped_refptr<Filter> filter);
 
   // media::Filter methods.
-  virtual void set_host(FilterHost* host) OVERRIDE;
-  virtual FilterHost* host() OVERRIDE;
+  virtual void SetHost(FilterHost* host) OVERRIDE;
   virtual void Play(const base::Closure& play_cb) OVERRIDE;
   virtual void Pause(const base::Closure& pause_cb) OVERRIDE;
   virtual void Flush(const base::Closure& flush_cb) OVERRIDE;
@@ -38,7 +37,6 @@ class MEDIA_EXPORT CompositeFilter : public Filter {
   virtual void SetPlaybackRate(float playback_rate) OVERRIDE;
   virtual void Seek(
       base::TimeDelta time, const PipelineStatusCB& seek_cb) OVERRIDE;
-  virtual void OnAudioRendererDisabled() OVERRIDE;
 
  protected:
   virtual ~CompositeFilter();
@@ -111,6 +109,9 @@ class MEDIA_EXPORT CompositeFilter : public Filter {
   // Called by operations that take a PipelineStatusCB instead of a Closure.
   // TODO: Remove when Closures are replaced by PipelineStatusCB.
   void OnStatusCB(const base::Closure& callback, PipelineStatus status);
+
+  // Convenience method for accessing the FilterHost object.
+  FilterHost* host();
 
   // Vector of the filters added to the composite.
   typedef std::vector<scoped_refptr<Filter> > FilterVector;

@@ -37,57 +37,41 @@ class MEDIA_EXPORT Filter : public base::RefCountedThreadSafe<Filter> {
  public:
   Filter();
 
-  // Sets the private member |host_|. This is the first method called by
-  // the FilterHost after a filter is created.  The host holds a strong
+  // Sets the host that owns this filter. The host holds a strong
   // reference to the filter.  The reference held by the host is guaranteed
   // to be released before the host object is destroyed by the pipeline.
-  virtual void set_host(FilterHost* host);
-
-  virtual FilterHost* host();
+  virtual void SetHost(FilterHost* host) = 0;
 
   // The pipeline has resumed playback.  Filters can continue requesting reads.
   // Filters may implement this method if they need to respond to this call.
-  // TODO(boliu): Check that callback is not NULL in subclasses.
-  virtual void Play(const base::Closure& callback);
+  virtual void Play(const base::Closure& callback) = 0;
 
   // The pipeline has paused playback.  Filters should stop buffer exchange.
   // Filters may implement this method if they need to respond to this call.
-  // TODO(boliu): Check that callback is not NULL in subclasses.
-  virtual void Pause(const base::Closure& callback);
+  virtual void Pause(const base::Closure& callback) = 0;
 
   // The pipeline has been flushed.  Filters should return buffer to owners.
   // Filters may implement this method if they need to respond to this call.
-  // TODO(boliu): Check that callback is not NULL in subclasses.
-  virtual void Flush(const base::Closure& callback);
+  virtual void Flush(const base::Closure& callback) = 0;
 
   // The pipeline is being stopped either as a result of an error or because
   // the client called Stop().
-  // TODO(boliu): Check that callback is not NULL in subclasses.
-  virtual void Stop(const base::Closure& callback);
+  virtual void Stop(const base::Closure& callback) = 0;
 
   // The pipeline playback rate has been changed.  Filters may implement this
   // method if they need to respond to this call.
-  virtual void SetPlaybackRate(float playback_rate);
+  virtual void SetPlaybackRate(float playback_rate) = 0;
 
   // Carry out any actions required to seek to the given time, executing the
   // callback upon completion.
-  virtual void Seek(base::TimeDelta time, const PipelineStatusCB& callback);
-
-  // This method is called from the pipeline when the audio renderer
-  // is disabled. Filters can ignore the notification if they do not
-  // need to react to this event.
-  virtual void OnAudioRendererDisabled();
+  virtual void Seek(base::TimeDelta time, const PipelineStatusCB& callback) = 0;
 
  protected:
   // Only allow scoped_refptr<> to delete filters.
   friend class base::RefCountedThreadSafe<Filter>;
   virtual ~Filter();
 
-  FilterHost* host() const { return host_; }
-
  private:
-  FilterHost* host_;
-
   DISALLOW_COPY_AND_ASSIGN(Filter);
 };
 

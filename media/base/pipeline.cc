@@ -549,7 +549,7 @@ void Pipeline::StartTask(scoped_ptr<FilterCollection> filter_collection,
   // Kick off initialization.
   pipeline_init_state_.reset(new PipelineInitState());
   pipeline_init_state_->composite = new CompositeFilter(message_loop_);
-  pipeline_init_state_->composite->set_host(this);
+  pipeline_init_state_->composite->SetHost(this);
 
   SetState(kInitDemuxer);
   InitializeDemuxer();
@@ -646,13 +646,6 @@ void Pipeline::InitializeTask(PipelineStatus last_stage_status) {
 
     // Clear init state since we're done initializing.
     pipeline_init_state_.reset();
-
-    if (audio_disabled_) {
-      // Audio was disabled at some point during initialization. Notify
-      // the pipeline filter now that it has been initialized.
-      demuxer_->OnAudioRendererDisabled();
-      pipeline_filter_->OnAudioRendererDisabled();
-    }
 
     // Initialization was successful, we are now considered paused, so it's safe
     // to set the initial playback rate and volume.
@@ -849,14 +842,8 @@ void Pipeline::DisableAudioRendererTask() {
   has_audio_ = false;
   audio_disabled_ = true;
 
-  // Notify all filters of disabled audio renderer. If the filter isn't
-  // initialized yet, OnAudioRendererDisabled() will be called when
-  // initialization is complete.
-  if (pipeline_filter_) {
-    DCHECK(demuxer_);
-    demuxer_->OnAudioRendererDisabled();
-    pipeline_filter_->OnAudioRendererDisabled();
-  }
+  // Notify our demuxer that we're no longer rendering audio.
+  demuxer_->OnAudioRendererDisabled();
 
   // Start clock since there is no more audio to
   // trigger clock updates.
