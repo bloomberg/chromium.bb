@@ -60,22 +60,6 @@ void CompositeFilter::AddFilter(scoped_refptr<Filter> filter) {
   filters_.push_back(make_scoped_refptr(filter.get()));
 }
 
-void CompositeFilter::RemoveFilter(scoped_refptr<Filter> filter) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  if (!filter.get() || state_ != kCreated || !host())
-    LOG(FATAL) << "Unknown filter, or in unexpected state.";
-
-  for (FilterVector::iterator it = filters_.begin();
-       it != filters_.end(); ++it) {
-    if (it->get() != filter.get())
-      continue;
-    filters_.erase(it);
-    filter->clear_host();
-    return;
-  }
-  LOG(FATAL) << "Filter missing.";
-}
-
 void CompositeFilter::set_host(FilterHost* host) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(host);

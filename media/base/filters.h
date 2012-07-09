@@ -43,10 +43,6 @@ class MEDIA_EXPORT Filter : public base::RefCountedThreadSafe<Filter> {
   // to be released before the host object is destroyed by the pipeline.
   virtual void set_host(FilterHost* host);
 
-  // Clear |host_| to signal abandonment.  Must be called after set_host() and
-  // before any state-changing method below.
-  virtual void clear_host();
-
   virtual FilterHost* host();
 
   // The pipeline has resumed playback.  Filters can continue requesting reads.

@@ -28,9 +28,6 @@ class MEDIA_EXPORT CompositeFilter : public Filter {
   // Flush(), Stop(), or Seek(). CHECK-fails if preconditions are not met.
   void AddFilter(scoped_refptr<Filter> filter);
 
-  // Undoes AddFilter's actions.  CHECK-fails if |filter| is unknown.
-  void RemoveFilter(scoped_refptr<Filter> filter);
-
   // media::Filter methods.
   virtual void set_host(FilterHost* host) OVERRIDE;
   virtual FilterHost* host() OVERRIDE;
