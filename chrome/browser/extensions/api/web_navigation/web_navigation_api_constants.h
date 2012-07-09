@@ -15,6 +15,7 @@ namespace web_navigation_api_constants {
 // Keys.
 extern const char kErrorKey[];
 extern const char kFrameIdKey[];
+extern const char kReplacedTabIdKey[];
 extern const char kSourceTabIdKey[];
 extern const char kSourceFrameIdKey[];
 extern const char kTabIdKey[];
@@ -31,6 +32,7 @@ extern const char kOnCreatedNavigationTarget[];
 extern const char kOnDOMContentLoaded[];
 extern const char kOnErrorOccurred[];
 extern const char kOnReferenceFragmentUpdated[];
+extern const char kOnTabReplaced[];
 
 }  // namespace web_navigation_api_constants
 

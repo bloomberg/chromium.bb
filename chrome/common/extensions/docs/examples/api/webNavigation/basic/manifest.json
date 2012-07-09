@@ -9,7 +9,6 @@
     "default_popup": "popup.html"
   },
   "permissions":    [
-    "extension",
     "webNavigation"
   ],
   "manifest_version": 2

@@ -15,6 +15,8 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -193,7 +195,9 @@ class WebNavigationTabObserver : public content::NotificationObserver,
 
 // Observes navigation notifications and routes them as events to the extension
 // system.
-class WebNavigationEventRouter : public content::NotificationObserver {
+class WebNavigationEventRouter : public TabStripModelObserver,
+                                 public BrowserList::Observer,
+                                 public content::NotificationObserver {
  public:
   explicit WebNavigationEventRouter(Profile* profile);
   virtual ~WebNavigationEventRouter();
@@ -219,6 +223,16 @@ class WebNavigationEventRouter : public content::NotificationObserver {
     content::WebContents* target_web_contents;
     GURL target_url;
   };
+
+  // TabStripModelObserver implementation.
+  virtual void TabReplacedAt(TabStripModel* tab_strip_model,
+                             TabContents* old_contents,
+                             TabContents* new_contents,
+                             int index) OVERRIDE;
+
+  // BrowserList::Observer implementation.
+  virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
+  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

@@ -246,6 +246,27 @@
             }
           }
         ]
+      },
+      {
+        "name": "onTabReplaced",
+        "type": "function",
+        "description": "Fired when the contents of the tab is replaced by a different (usually previously pre-rendered) tab.",
+        "options": {
+          "supportsFilters": false,
+          "supportsListeners": true,
+          "supportsRules": false
+        },
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "replacedTabId": {"type": "integer", "description": "The ID of the tab that was replaced."},
+              "tabId": {"type": "integer", "description": "The ID of the tab that replaced the old tab."},
+              "timeStamp": {"type": "number", "description": "The time when the replacement happened, in milliseconds since the epoch."}
+            }
+          }
+        ]
       }
     ]
   }

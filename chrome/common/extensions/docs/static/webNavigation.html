@@ -59,6 +59,14 @@ If the reference fragment of a frame is changed, a
 time after <code>onDOMContentLoaded</code>, even after
 <code>onCompleted</code>.
 </p>
+<p>
+If a navigation was triggered via <a
+href="https://support.google.com/chrome/bin/answer.py?answer=177873">Chrome
+Instant</a> or <a
+href="https://support.google.com/chrome/bin/answer.py?answer=1385029">Instant
+Pages</a>, a completely loaded page is swapped into the current tab. In that
+case, an <code>onTabReplaced</code> event is fired.
+</p>
 
 <h2>Relation to webRequest events</h2>
 <p>
@@ -72,6 +80,16 @@ proceeds after the network resources are already fully loaded.
 In general, the webNavigation events are closely related to the navigation
 state that is displayed in the UI, while the webRequest events correspond to
 the state of the network stack which is generally opaque to the user.
+</p>
+
+<h2>A note about tab IDs</h2>
+<p>
+Not all navigating tabs correspond to actual tabs in Chrome's UI, e.g., a tab
+that is being pre-rendered. Such tabs are not accessible via the
+<a href="tabs.html">tabs API</a> nor can you request information about them via
+<code>webNavigation.getFrame</code> or <code>webNavigation.getAllFrames</code>.
+Once such a tab is swapped in, an <code>onTabReplaced</code> event is fired and
+they become accessible via these APIs.
 </p>
 
 <h2>A note about timestamps</h2>

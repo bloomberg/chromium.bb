@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@ var nav = new NavigationCollector();
 
 var eventList = ['onBeforeNavigate', 'onCreatedNavigationTarget',
     'onCommitted', 'onCompleted', 'onDOMContentLoaded',
-    'onErrorOccurred', 'onReferenceFragmentUpdated'];
+    'onErrorOccurred', 'onReferenceFragmentUpdated', 'onTabReplaced'];
 
 eventList.forEach(function(e) {
   chrome.webNavigation[e].addListener(function(data) {

@@ -364,6 +364,7 @@
     "chrome.webNavigation.onDOMContentLoaded": "webNavigation.html#event-onDOMContentLoaded",
     "chrome.webNavigation.onErrorOccurred": "webNavigation.html#event-onErrorOccurred",
     "chrome.webNavigation.onReferenceFragmentUpdated": "webNavigation.html#event-onReferenceFragmentUpdated",
+    "chrome.webNavigation.onTabReplaced": "webNavigation.html#event-onTabReplaced",
     "chrome.webRequest.handlerBehaviorChanged": "webRequest.html#method-handlerBehaviorChanged",
     "chrome.webRequest.onAuthRequired": "webRequest.html#event-onAuthRequired",
     "chrome.webRequest.onBeforeRedirect": "webRequest.html#event-onBeforeRedirect",
@@ -2770,7 +2771,6 @@
       "features": [
         "background_page",
         "browser_action",
-        "extension",
         "webNavigation"
       ],
       "icon": null,
@@ -2779,7 +2779,7 @@
       "packaged_app": false,
       "path": "examples/api/webNavigation/basic/",
       "protocols": [],
-      "search_string": "WEBNAVIGATION TECH DEMO DEMONSTRATION OF THE WEBNAVIGATION EXTENSION API. BACKGROUND_PAGE BROWSER_ACTION EXTENSION WEBNAVIGATION CHROME.I18N.GETMESSAGE CHROME.WEBNAVIGATION.ONBEFORENAVIGATE CHROME.WEBNAVIGATION.ONCOMMITTED CHROME.WEBNAVIGATION.ONCOMPLETED CHROME.WEBNAVIGATION.ONCREATEDNAVIGATIONTARGET CHROME.WEBNAVIGATION.ONERROROCCURRED CHROME.WEBNAVIGATION.ONREFERENCEFRAGMENTUPDATED",
+      "search_string": "WEBNAVIGATION TECH DEMO DEMONSTRATION OF THE WEBNAVIGATION EXTENSION API. BACKGROUND_PAGE BROWSER_ACTION WEBNAVIGATION CHROME.I18N.GETMESSAGE CHROME.WEBNAVIGATION.ONBEFORENAVIGATE CHROME.WEBNAVIGATION.ONCOMMITTED CHROME.WEBNAVIGATION.ONCOMPLETED CHROME.WEBNAVIGATION.ONCREATEDNAVIGATIONTARGET CHROME.WEBNAVIGATION.ONERROROCCURRED CHROME.WEBNAVIGATION.ONREFERENCEFRAGMENTUPDATED",
       "source_files": [
         "_locales/en/messages.json",
         "background.js",
@@ -2789,7 +2789,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "d2b40d0496b107609dd8288cb52f15aa5d36c312",
+      "source_hash": "b3b6eb02fe573a1a3b4c8e05cc2908e74811e825",
       "zip_path": "examples/api/webNavigation/basic.zip"
     },
     {

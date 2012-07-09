@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/retargeting_details.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -229,6 +230,23 @@ void DispatchOnErrorOccurred(WebContents* web_contents,
                 args, url);
 }
 
+// Constructs and dispatches an onTabReplaced event.
+void DispatchOnTabReplaced(
+    WebContents* old_web_contents,
+    BrowserContext* browser_context,
+    WebContents* new_web_contents) {
+  ListValue args;
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetInteger(keys::kReplacedTabIdKey,
+                   ExtensionTabUtil::GetTabId(old_web_contents));
+  dict->SetInteger(keys::kTabIdKey,
+                   ExtensionTabUtil::GetTabId(new_web_contents));
+  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
+  args.Append(dict);
+
+  DispatchEvent(browser_context, keys::kOnTabReplaced, args, GURL());
+}
+
 }  // namespace
 
 
@@ -397,20 +415,69 @@ WebNavigationEventRouter::PendingWebContents::~PendingWebContents() {}
 WebNavigationEventRouter::WebNavigationEventRouter(Profile* profile)
     : profile_(profile) {}
 
-WebNavigationEventRouter::~WebNavigationEventRouter() {}
+WebNavigationEventRouter::~WebNavigationEventRouter() {
+  BrowserList::RemoveObserver(this);
+}
 
 void WebNavigationEventRouter::Init() {
-  if (registrar_.IsEmpty()) {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_RETARGETING,
-                   content::NotificationService::AllSources());
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_TAB_ADDED,
-                   content::NotificationService::AllSources());
-    registrar_.Add(this,
-                   content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                   content::NotificationService::AllSources());
+  if (!registrar_.IsEmpty())
+    return;
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_RETARGETING,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_TAB_ADDED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 content::NotificationService::AllSources());
+
+  BrowserList::AddObserver(this);
+  for (BrowserList::const_iterator iter = BrowserList::begin();
+       iter != BrowserList::end(); ++iter) {
+    OnBrowserAdded(*iter);
   }
+}
+
+void WebNavigationEventRouter::OnBrowserAdded(Browser* browser) {
+  if (!profile_->IsSameProfile(browser->profile()))
+    return;
+  browser->tab_strip_model()->AddObserver(this);
+}
+
+void WebNavigationEventRouter::OnBrowserRemoved(Browser* browser) {
+  if (!profile_->IsSameProfile(browser->profile()))
+    return;
+  browser->tab_strip_model()->RemoveObserver(this);
+}
+
+void WebNavigationEventRouter::TabReplacedAt(
+    TabStripModel* tab_strip_model,
+    TabContents* old_contents,
+    TabContents* new_contents,
+    int index) {
+  WebNavigationTabObserver* tab_observer =
+      WebNavigationTabObserver::Get(old_contents->web_contents());
+  if (!tab_observer) {
+    // If you hit this DCHECK(), please add reproduction steps to
+    // http://crbug.com/109464.
+    DCHECK(chrome::GetViewType(old_contents->web_contents()) !=
+           chrome::VIEW_TYPE_TAB_CONTENTS);
+    return;
+  }
+  const FrameNavigationState& frame_navigation_state =
+      tab_observer->frame_navigation_state();
+
+  if (!frame_navigation_state.IsValidUrl(
+          old_contents->web_contents()->GetURL()) ||
+      !frame_navigation_state.IsValidUrl(
+          new_contents->web_contents()->GetURL()))
+    return;
+
+  DispatchOnTabReplaced(
+      old_contents->web_contents(),
+      profile_,
+      new_contents->web_contents());
 }
 
 void WebNavigationEventRouter::Observe(

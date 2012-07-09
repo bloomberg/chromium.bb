@@ -10,6 +10,7 @@ namespace web_navigation_api_constants {
 
 const char kErrorKey[] = "error";
 const char kFrameIdKey[] = "frameId";
+const char kReplacedTabIdKey[] = "replacedTabId";
 const char kSourceTabIdKey[] = "sourceTabId";
 const char kSourceFrameIdKey[] = "sourceFrameId";
 const char kTabIdKey[] = "tabId";
@@ -28,6 +29,7 @@ const char kOnDOMContentLoaded[] =
 const char kOnErrorOccurred[] = "webNavigation.onErrorOccurred";
 const char kOnReferenceFragmentUpdated[] =
     "webNavigation.onReferenceFragmentUpdated";
+const char kOnTabReplaced[] = "webNavigation.onTabReplaced";
 
 }  // namespace web_navigation_api_constants
 
