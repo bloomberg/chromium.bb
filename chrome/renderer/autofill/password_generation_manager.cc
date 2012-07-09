@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/common/autofill_messages.h"
+#include "chrome/common/net/gaia/gaia_urls.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
@@ -100,6 +101,12 @@ void PasswordGenerationManager::DidFinishLoad(WebKit::WebFrame* frame) {
       DVLOG(2) << "Invalid action on form";
       continue;
     }
+
+    // Do not generate password for GAIA since it is used to retrieve the
+    // generated paswords.
+    GURL realm(password_form->signon_realm);
+    if (realm == GURL(GaiaUrls::GetInstance()->gaia_login_form_realm()))
+      continue;
 
     std::vector<WebKit::WebInputElement> passwords;
     if (GetAccountCreationPasswordFields(forms[i], &passwords)) {
