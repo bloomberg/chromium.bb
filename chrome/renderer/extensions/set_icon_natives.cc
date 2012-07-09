@@ -81,20 +81,15 @@ v8::Handle<v8::Value> SetIconNatives::SetIconCommon(
                      details->Get(v8::String::New("tabId"))->Int32Value());
   }
 
-  ListValue list_value;
-  list_value.Append(dict);
+  ListValue api_args;
+  api_args.Append(dict);
 
   std::string name = *v8::String::AsciiValue(args[0]);
-  int request_id = args[2]->Int32Value();
-  bool has_callback = args[3]->BooleanValue();
-  bool for_io_thread = args[4]->BooleanValue();
+  bool has_callback = args[2]->BooleanValue();
+  bool for_io_thread = args[3]->BooleanValue();
 
-  request_sender_->StartRequest(name,
-                                request_id,
-                                has_callback,
-                                for_io_thread,
-                                &list_value);
-  return v8::Undefined();
+  return v8::Integer::New(request_sender_->StartRequest(
+      name, has_callback, for_io_thread, &api_args));
 }
 
 }  // namespace extensions

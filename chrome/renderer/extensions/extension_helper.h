@@ -75,9 +75,6 @@ class ExtensionHelper
   virtual void DidCreateDataSource(WebKit::WebFrame* frame,
                                    WebKit::WebDataSource* ds) OVERRIDE;
 
-  void OnExtensionResponse(int request_id, bool success,
-                           const base::ListValue& response,
-                           const std::string& error);
   void OnExtensionMessageInvoke(const std::string& extension_id,
                                 const std::string& function_name,
                                 const base::ListValue& args,

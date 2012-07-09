@@ -51,13 +51,14 @@ ChromeRenderViewTest::~ChromeRenderViewTest() {
 }
 
 void ChromeRenderViewTest::SetUp() {
+  chrome_render_thread_ = new ChromeMockRenderThread();
+  render_thread_.reset(chrome_render_thread_);
+
   content::GetContentClient()->set_renderer_for_testing(
       &chrome_content_renderer_client_);
   extension_dispatcher_ = new ExtensionDispatcher();
   chrome_content_renderer_client_.SetExtensionDispatcher(extension_dispatcher_);
 
-  chrome_render_thread_ = new ChromeMockRenderThread();
-  render_thread_.reset(chrome_render_thread_);
   content::RenderViewTest::SetUp();
 
   // RenderView doesn't expose it's PasswordAutofillManager or

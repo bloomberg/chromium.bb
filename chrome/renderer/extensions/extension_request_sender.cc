@@ -9,6 +9,7 @@
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -38,10 +39,23 @@ ExtensionRequestSender::ExtensionRequestSender(
     ExtensionDispatcher* extension_dispatcher,
     ChromeV8ContextSet* context_set)
     : extension_dispatcher_(extension_dispatcher),
-      context_set_(context_set) {
+      context_set_(context_set),
+      scoped_observer_(this),
+      next_request_id_(0) {
+  scoped_observer_.Add(content::RenderThread::Get());
 }
 
 ExtensionRequestSender::~ExtensionRequestSender() {
+}
+
+bool ExtensionRequestSender::OnControlMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(ExtensionRequestSender, message)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_Response, OnExtensionResponse)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void ExtensionRequestSender::InsertRequest(int request_id,
@@ -60,33 +74,31 @@ linked_ptr<PendingRequest> ExtensionRequestSender::RemoveRequest(
   return result;
 }
 
-void ExtensionRequestSender::StartRequest(
-    const std::string& name,
-    int request_id,
-    bool has_callback,
-    bool for_io_thread,
-    base::ListValue* value_args) {
+int ExtensionRequestSender::StartRequest(const std::string& name,
+                                         bool has_callback,
+                                         bool for_io_thread,
+                                         base::ListValue* value_args) {
   ChromeV8Context* current_context = context_set_->GetCurrent();
   if (!current_context)
-    return;
+    return -1;
 
   // Get the current RenderView so that we can send a routed IPC message from
   // the correct source.
   content::RenderView* renderview = current_context->GetRenderView();
   if (!renderview)
-    return;
+    return -1;
 
   const std::set<std::string>& function_names =
       extension_dispatcher_->function_names();
   if (function_names.find(name) == function_names.end()) {
     NOTREACHED() << "Unexpected function " << name <<
         ". Did you remember to register it with ExtensionFunctionRegistry?";
-    return;
+    return -1;
   }
 
   // TODO(koz): See if we can make this a CHECK.
   if (!extension_dispatcher_->CheckCurrentContextAccessToExtensionAPI(name))
-    return;
+    return -1;
 
   GURL source_url;
   WebKit::WebSecurityOrigin source_origin;
@@ -100,9 +112,10 @@ void ExtensionRequestSender::StartRequest(
       v8::Persistent<v8::Context>::New(v8::Context::GetCurrent());
   DCHECK(!v8_context.IsEmpty());
 
+  int request_id = next_request_id_++;
+
   std::string extension_id = current_context->GetExtensionID();
-  InsertRequest(request_id, new PendingRequest(
-      v8_context, name, extension_id));
+  InsertRequest(request_id, new PendingRequest(v8_context, name, extension_id));
 
   ExtensionHostMsg_Request_Params params;
   params.name = name;
@@ -121,12 +134,15 @@ void ExtensionRequestSender::StartRequest(
     renderview->Send(new ExtensionHostMsg_Request(
         renderview->GetRoutingID(), params));
   }
+
+  return request_id;
 }
 
-void ExtensionRequestSender::HandleResponse(int request_id,
-                                            bool success,
-                                            const base::ListValue& response,
-                                            const std::string& error) {
+void ExtensionRequestSender::OnExtensionResponse(
+    int request_id,
+    bool success,
+    const base::ListValue& response,
+    const std::string& error) {
   linked_ptr<PendingRequest> request = RemoveRequest(request_id);
 
   if (!request.get()) {

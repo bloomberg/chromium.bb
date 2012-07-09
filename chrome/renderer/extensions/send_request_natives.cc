@@ -17,18 +17,9 @@ SendRequestNatives::SendRequestNatives(
     ExtensionRequestSender* request_sender)
     : ChromeV8Extension(extension_dispatcher),
       request_sender_(request_sender) {
-  RouteFunction("GetNextRequestId",
-                base::Bind(&SendRequestNatives::GetNextRequestId,
-                           base::Unretained(this)));
   RouteFunction("StartRequest",
                 base::Bind(&SendRequestNatives::StartRequest,
                            base::Unretained(this)));
-}
-
-v8::Handle<v8::Value> SendRequestNatives::GetNextRequestId(
-    const v8::Arguments& args) {
-  static int next_request_id = 0;
-  return v8::Integer::New(next_request_id++);
 }
 
 // Starts an API request to the browser, with an optional callback.  The
@@ -36,9 +27,9 @@ v8::Handle<v8::Value> SendRequestNatives::GetNextRequestId(
 v8::Handle<v8::Value> SendRequestNatives::StartRequest(
     const v8::Arguments& args) {
   std::string name = *v8::String::AsciiValue(args[0]);
-  int request_id = args[2]->Int32Value();
-  bool has_callback = args[3]->BooleanValue();
-  bool for_io_thread = args[4]->BooleanValue();
+  // args[1] is the request args object.
+  bool has_callback = args[2]->BooleanValue();
+  bool for_io_thread = args[3]->BooleanValue();
 
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
 
@@ -50,14 +41,12 @@ v8::Handle<v8::Value> SendRequestNatives::StartRequest(
 
   scoped_ptr<Value> value_args(
       converter->FromV8Value(args[1], v8::Context::GetCurrent()));
-  if (!value_args.get() || !value_args->IsType(Value::TYPE_LIST)) {
-    NOTREACHED() << "Unable to convert args passed to StartRequest";
-    return v8::Undefined();
-  }
+  CHECK(value_args.get());
+  ListValue* api_args = NULL;
+  CHECK(value_args->GetAsList(&api_args));
 
-  request_sender_->StartRequest(name, request_id, has_callback, for_io_thread,
-                                static_cast<ListValue*>(value_args.get()));
-  return v8::Undefined();
+  return v8::Integer::New(request_sender_->StartRequest(
+      name, has_callback, for_io_thread, api_args));
 }
 
 }  // namespace extensions

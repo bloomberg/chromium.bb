@@ -121,7 +121,6 @@ bool ExtensionFunction::HasOptionalArgument(size_t index) {
 
 void ExtensionFunction::SendResponseImpl(base::ProcessHandle process,
                                          IPC::Sender* ipc_sender,
-                                         int routing_id,
                                          bool success) {
   DCHECK(ipc_sender);
   if (bad_message_) {
@@ -136,7 +135,7 @@ void ExtensionFunction::SendResponseImpl(base::ProcessHandle process,
     result_wrapper.Append(result_.release());
 
   ipc_sender->Send(new ExtensionMsg_Response(
-      routing_id, request_id_, success, result_wrapper, GetError()));
+      request_id_, success, result_wrapper, GetError()));
 }
 
 void ExtensionFunction::HandleBadMessage(base::ProcessHandle process) {
@@ -248,13 +247,11 @@ void UIThreadExtensionFunction::SendResponse(bool success) {
 
     SendResponseImpl(render_view_host_->GetProcess()->GetHandle(),
                      render_view_host_,
-                     render_view_host_->GetRoutingID(),
                      success);
   }
 }
 
-IOThreadExtensionFunction::IOThreadExtensionFunction()
-    : routing_id_(-1) {
+IOThreadExtensionFunction::IOThreadExtensionFunction() {
 }
 
 IOThreadExtensionFunction::~IOThreadExtensionFunction() {
@@ -273,8 +270,7 @@ void IOThreadExtensionFunction::SendResponse(bool success) {
   if (!ipc_sender())
     return;
 
-  SendResponseImpl(ipc_sender()->peer_handle(),
-                   ipc_sender(), routing_id_, success);
+  SendResponseImpl(ipc_sender()->peer_handle(), ipc_sender(), success);
 }
 
 AsyncExtensionFunction::AsyncExtensionFunction() {

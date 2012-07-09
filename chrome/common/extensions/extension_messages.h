@@ -176,11 +176,11 @@ struct ParamTraits<ExtensionMsg_Loaded_Params> {
 // The browser sends this message in response to all extension api calls. The
 // response data (if any) is one of the base::Value subclasses, wrapped as the
 // first element in a ListValue.
-IPC_MESSAGE_ROUTED4(ExtensionMsg_Response,
-                    int /* request_id */,
-                    bool /* success */,
-                    ListValue /* response wrapper (see comment above) */,
-                    std::string /* error */)
+IPC_MESSAGE_CONTROL4(ExtensionMsg_Response,
+                     int /* request_id */,
+                     bool /* success */,
+                     ListValue /* response wrapper (see comment above) */,
+                     std::string /* error */)
 
 // This message is optionally routed.  If used as a control message, it
 // will call a javascript function in every registered context in the
