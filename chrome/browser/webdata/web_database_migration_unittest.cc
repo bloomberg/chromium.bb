@@ -2171,3 +2171,41 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion45InvalidToCurrent) {
     EXPECT_FALSE(connection.DoesTableExist("old_web_intents_defaults"));
   }
 }
+
+// Check that current version is forced to compatible version before migration,
+// if the former is smaller.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion45CompatibleToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(
+      LoadDatabase(FILE_PATH_LITERAL("version_45_compatible.sql")));
+
+  // Verify pre-conditions.  These are expectations for version 45 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    // Database is actually version 45 but the version field states 40.
+    ASSERT_TRUE(meta_table.Init(&connection, 40, 45));
+  }
+
+  // Load the database via the WebDatabase class and migrate the database to
+  // the current version.
+  {
+    WebDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+  }
+
+  // Verify post-conditions.  These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+    EXPECT_LE(45, VersionFromConnection(&connection));
+  }
+}

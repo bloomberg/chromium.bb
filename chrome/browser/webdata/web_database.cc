@@ -158,8 +158,15 @@ sql::InitStatus WebDatabase::Init(const FilePath& db_name) {
 }
 
 sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
+  // Some malware tries to force protector to re-sign things by lowering the
+  // version number, causing migration to fail. Ensure the version number is at
+  // least as high as the compatible version number.
+  int current_version = std::max(meta_table_.GetVersionNumber(),
+                                 meta_table_.GetCompatibleVersionNumber());
+  if (current_version < meta_table_.GetCompatibleVersionNumber())
+    ChangeVersion(&meta_table_, current_version, false);
+
   // Migrate if necessary.
-  int current_version = meta_table_.GetVersionNumber();
   switch (current_version) {
     // Versions 1 - 19 are unhandled.  Version numbers greater than
     // kCurrentVersionNumber should have already been weeded out by the caller.
