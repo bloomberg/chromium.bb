@@ -270,8 +270,24 @@ void UdpPacketSocket::OnSendCompleted(int result) {
     if (result != PP_ERROR_ABORTED) {
       LOG(ERROR) << "Send failed on a UDP socket: " << result;
     }
-    error_ = EINVAL;
-    return;
+
+    // OS (e.g. OSX) may return EHOSTUNREACH when the peer has the
+    // same subnet address as the local host but connected to a
+    // different network. That error must be ingored because the
+    // socket may still be useful for other ICE canidadates (e.g. for
+    // STUN candidates with a different address). Unfortunately pepper
+    // interface currently returns PP_ERROR_FAILED for any error (see
+    // crbug.com/136406). It's not possible to distinguish that case
+    // from other errors and so we have to ingore all of them. This
+    // behavior matchers the libjingle's AsyncUDPSocket used by the
+    // host.
+    //
+    // TODO(sergeyu): Once implementation of the Pepper UDP interface
+    // is fixed, uncomment the code below, but ignore
+    // host-unreacheable error.
+
+    // error_ = EINVAL;
+    // return;
   }
 
   send_queue_size_ -= send_queue_.front().data->size();
