@@ -86,8 +86,8 @@
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
+#include "chrome/browser/chromeos/system_settings_provider.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/webui/options2/chromeos/system_settings_provider2.h"
 #include "ui/gfx/image/image_skia.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -388,7 +388,7 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
   // TODO(pastarmovj): replace this with a call to the CrosSettings list
   // handling functionality to come.
   values->Set("timezoneList",
-      static_cast<chromeos::options2::SystemSettingsProvider*>(
+      static_cast<chromeos::SystemSettingsProvider*>(
           chromeos::CrosSettings::Get()->GetProvider(
               chromeos::kSystemTimezone))->GetTimezoneList());
 #endif

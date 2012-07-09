@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
-#include "chrome/browser/ui/webui/options2/chromeos/system_settings_provider2.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/device_settings_provider.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
 #include "chrome/browser/chromeos/stub_cros_settings_provider.h"
-#include "chrome/browser/ui/webui/options2/chromeos/system_settings_provider2.h"
+#include "chrome/browser/chromeos/system_settings_provider.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_auth_util.h"
@@ -304,7 +304,7 @@ CrosSettings::CrosSettings() {
         new DeviceSettingsProvider(notify_cb, SignedSettingsHelper::Get()));
   }
   // System settings are not mocked currently.
-  AddSettingsProvider(new options2::SystemSettingsProvider(notify_cb));
+  AddSettingsProvider(new SystemSettingsProvider(notify_cb));
 }
 
 CrosSettings::~CrosSettings() {

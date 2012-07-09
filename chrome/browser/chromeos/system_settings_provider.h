@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_SYSTEM_SETTINGS_PROVIDER2_H_
-#define CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_SYSTEM_SETTINGS_PROVIDER2_H_
+#ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_SETTINGS_PROVIDER_H_
+#define CHROME_BROWSER_CHROMEOS_SYSTEM_SETTINGS_PROVIDER_H_
 
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/chromeos/cros_settings_provider.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
@@ -20,7 +21,6 @@ class Value;
 }
 
 namespace chromeos {
-namespace options2 {
 
 class SystemSettingsProvider : public CrosSettingsProvider,
                                public system::TimezoneSettings::Observer {
@@ -72,7 +72,6 @@ class SystemSettingsProvider : public CrosSettingsProvider,
   DISALLOW_COPY_AND_ASSIGN(SystemSettingsProvider);
 };
 
-}  // namespace options2
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_SYSTEM_SETTINGS_PROVIDER2_H_
+#endif  // CHROME_BROWSER_CHROMEOS_SYSTEM_SETTINGS_PROVIDER_H_

@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/options2/chromeos/system_settings_provider2.h"
+#include "chrome/browser/chromeos/system_settings_provider.h"
 
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -179,7 +178,6 @@ string16 GetExemplarCity(const icu::TimeZone& zone) {
 }  // namespace anonymous
 
 namespace chromeos {
-namespace options2 {
 
 SystemSettingsProvider::SystemSettingsProvider(
     const NotifyObserversCallback& notify_cb)
@@ -328,5 +326,4 @@ string16 SystemSettingsProvider::GetKnownTimezoneID(
   return string16();
 }
 
-}  // namespace options2
 }  // namespace chromeos
