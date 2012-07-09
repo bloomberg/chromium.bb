@@ -174,11 +174,7 @@ public class ContentView extends FrameLayout {
         }
         mContentViewClient = client;
         if (mNativeContentView != 0) {
-
-            // TODO(jrg): upstream this chain.  nativeSetClient(),
-            // ContentView::SetClient(), add a content_view_client_,
-            // add web_contents_, pass web_contents into native ContentView ctor, ...
-            /* nativeSetClient(mNativeContentView, mContentViewClient); */
+            nativeSetClient(mNativeContentView, mContentViewClient);
         }
     }
 
@@ -596,6 +592,8 @@ public class ContentView extends FrameLayout {
     private native void nativeStopLoading(int nativeContentViewImpl);
 
     private native void nativeReload(int nativeContentViewImpl);
+
+    private native void nativeSetClient(int nativeContentViewImpl, ContentViewClient client);
 
     private native boolean nativeNeedsReload(int nativeContentViewImpl);
 

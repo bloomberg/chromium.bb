@@ -42,7 +42,8 @@ namespace content {
 ContentViewClient::ContentViewClient(JNIEnv* env, jobject obj)
     : weak_java_client_(env, obj),
       find_helper_(NULL),
-      javascript_dialog_creator_(NULL) {
+      javascript_dialog_creator_(NULL),
+      load_progress_(0) {
 }
 
 ContentViewClient::~ContentViewClient() {
@@ -316,11 +317,16 @@ void ContentViewClient::LoadingStateChanged(WebContents* source) {
 }
 
 void ContentViewClient::LoadProgressChanged(double progress) {
+  load_progress_ = progress;
   JNIEnv* env = AttachCurrentThread();
   Java_ContentViewClient_onLoadProgressChanged(
       env,
       weak_java_client_.get(env).obj(),
       progress);
+}
+
+double ContentViewClient::GetLoadProgress() const {
+  return load_progress_;
 }
 
 void ContentViewClient::CloseContents(WebContents* source) {

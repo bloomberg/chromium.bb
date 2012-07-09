@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "content/browser/android/content_view_client.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
@@ -99,10 +100,9 @@ ScopedJavaLocalRef<jstring> ContentViewImpl::GetTitle(
 jdouble ContentViewImpl::GetLoadProgress(JNIEnv* env, jobject obj) const {
   // An empty page never loads anything and always has a progress of 0.
   // We report 1 in that case so the UI does not assume the page is loading.
-  if (web_contents()->GetURL().is_empty())
+  if (web_contents()->GetURL().is_empty() || !content_view_client_.get())
     return static_cast<jdouble>(1.0);
-  // TODO(tedchoc): Add GetLoadProgress() to web_contents.
-  return static_cast<jdouble>(0.0);
+  return static_cast<jdouble>(content_view_client_->GetLoadProgress());
 }
 
 jboolean ContentViewImpl::IsIncognito(JNIEnv* env, jobject obj) {
@@ -153,6 +153,15 @@ void ContentViewImpl::ClearHistory(JNIEnv* env, jobject obj) {
 
 jboolean ContentViewImpl::NeedsReload(JNIEnv* env, jobject obj) {
   return web_contents_->GetController().NeedsReload();
+}
+
+void ContentViewImpl::SetClient(JNIEnv* env, jobject obj, jobject jclient) {
+  scoped_ptr<ContentViewClient> client(
+      ContentViewClient::CreateNativeContentViewClient(env, jclient));
+
+  web_contents_->SetDelegate(client.get());
+
+  content_view_client_.swap(client);
 }
 
 // --------------------------------------------------------------------------

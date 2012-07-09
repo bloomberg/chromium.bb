@@ -10,14 +10,15 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "content/public/browser/android/content_view.h"
 #include "content/public/browser/notification_observer.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
 
-class ContentViewClient;
 namespace content {
+class ContentViewClient;
 class RenderWidgetHostViewAndroid;
 
 // TODO(jrg): this is a shell.  Upstream the rest.
@@ -59,6 +60,7 @@ class ContentViewImpl : public ContentView,
   void Reload(JNIEnv* env, jobject obj);
   jboolean NeedsReload(JNIEnv* env, jobject obj);
   void ClearHistory(JNIEnv* env, jobject obj);
+  void SetClient(JNIEnv* env, jobject obj, jobject jclient);
 
   // --------------------------------------------------------------------------
   // Public methods that call to Java via JNI
@@ -91,7 +93,6 @@ class ContentViewImpl : public ContentView,
       int page_transition,
       const std::string& user_agent_override);
 
-  // --------------------------------------------------------------------------
  private:
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -112,6 +113,9 @@ class ContentViewImpl : public ContentView,
   // Reference to the current WebContents used to determine how and what to
   // display in the ContentView.
   WebContents* web_contents_;
+
+  // We only set this to be the delegate of the web_contents if we own it.
+  scoped_ptr<ContentViewClient> content_view_client_;
 
   // Whether the renderer backing this ContentView has crashed.
   bool tab_crashed_;

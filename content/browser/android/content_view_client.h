@@ -101,6 +101,10 @@ class ContentViewClient : public WebContentsDelegate {
                        const string16& message,
                        const string16& default_value);
 
+  // Returns the actual load progress, a value between 0 (nothing loaded) and
+  // 1 (page fully loaded).
+  virtual double GetLoadProgress() const;
+
   // Overridden from WebContentsDelegate:
   virtual WebContents* OpenURLFromTab(
       WebContents* source,
@@ -178,6 +182,10 @@ class ContentViewClient : public WebContentsDelegate {
 
   // The object responsible for creating JavaScript dialogs.
   JavaScriptDialogCreator* javascript_dialog_creator_;
+
+  // Indicates the load state of the page. 0.0 means nothing loaded, 1 means
+  // fully loaded.
+  double load_progress_;
 };
 
 bool RegisterContentViewClient(JNIEnv* env);
