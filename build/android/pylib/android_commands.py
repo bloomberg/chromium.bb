@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -23,9 +22,9 @@ import sys
 import tempfile
 import time
 
-# adb_interface.py is under ../../third_party/android_testrunner/
+# adb_interface.py is under ../../../third_party/android_testrunner/
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..',
-   '..', 'third_party', 'android_testrunner'))
+   '..', '..', 'third_party', 'android_testrunner'))
 import adb_interface
 import cmd_helper
 import errors  #  is under ../../third_party/android_testrunner/errors.py
@@ -755,26 +754,3 @@ class AndroidCommands(object):
     # If the screen wasn't locked the previous command will bring up the menu,
     # which this will dismiss. Otherwise this shouldn't change anything.
     self.SendKeyEvent(KEYCODE_BACK)
-
-
-def main(argv):
-  option_parser = optparse.OptionParser()
-  option_parser.add_option('-w', '--wait_for_pm', action='store_true',
-      default=False, dest='wait_for_pm',
-      help='Waits for Device Package Manager to become available')
-  option_parser.add_option('--enable_asserts', dest='set_asserts',
-      action='store_true', default=None,
-      help='Sets the dalvik.vm.enableassertions property to "all"')
-  option_parser.add_option('--disable_asserts', dest='set_asserts',
-      action='store_false', default=None,
-      help='Removes the dalvik.vm.enableassertions property')
-  options, args = option_parser.parse_args(argv)
-
-  commands = AndroidCommands(wait_for_pm=options.wait_for_pm)
-  if options.set_asserts != None:
-    if commands.SetJavaAssertsEnabled(options.set_asserts):
-      commands.Reboot(full_reboot=False)
-
-
-if __name__ == '__main__':
-  main(sys.argv)

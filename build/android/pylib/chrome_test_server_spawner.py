@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -17,12 +17,12 @@ import time
 import urlparse
 
 # Path that are needed to import testserver
-cr_src = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', '..')
+cr_src = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                      '..', '..', '..')
 sys.path.append(os.path.join(cr_src, 'third_party'))
 sys.path.append(os.path.join(cr_src, 'third_party', 'tlslite'))
 sys.path.append(os.path.join(cr_src, 'third_party', 'pyftpdlib', 'src'))
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..',
-   '..', 'net', 'tools', 'testserver'))
+sys.path.append(os.path.join(cr_src, 'net', 'tools', 'testserver'))
 import testserver
 
 _test_servers = []
