@@ -10,9 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/process.h"
-#include "base/synchronization/waitable_event_watcher.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/child_process_data.h"
@@ -28,8 +26,7 @@ class BrowserChildProcessHostIterator;
 class CONTENT_EXPORT BrowserChildProcessHostImpl :
     public content::BrowserChildProcessHost,
     public NON_EXPORTED_BASE(content::ChildProcessHostDelegate),
-    public ChildProcessLauncher::Client,
-    public base::WaitableEventWatcher::Delegate {
+    public ChildProcessLauncher::Client {
  public:
   BrowserChildProcessHostImpl(
       content::ProcessType type,
@@ -55,8 +52,6 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl :
   virtual base::TerminationStatus GetTerminationStatus(int* exit_code) OVERRIDE;
   virtual void SetName(const string16& name) OVERRIDE;
   virtual void SetHandle(base::ProcessHandle handle) OVERRIDE;
-
-  bool disconnect_was_alive() const { return disconnect_was_alive_; }
 
   // Returns the handle of the child process. This can be called only after
   // OnProcessLaunched is called or it will be invalid and may crash.
@@ -92,21 +87,11 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl :
   // ChildProcessLauncher::Client implementation.
   virtual void OnProcessLaunched() OVERRIDE;
 
-  // public base::WaitableEventWatcher::Delegate implementation:
-  virtual void OnWaitableEventSignaled(
-      base::WaitableEvent* waitable_event) OVERRIDE;
-
   content::ChildProcessData data_;
   content::BrowserChildProcessHostDelegate* delegate_;
   scoped_ptr<content::ChildProcessHost> child_process_host_;
 
   scoped_ptr<ChildProcessLauncher> child_process_;
-#if defined(OS_WIN)
-  base::WaitableEventWatcher child_watcher_;
-#else
-  base::WeakPtrFactory<BrowserChildProcessHostImpl> task_factory_;
-#endif
-  bool disconnect_was_alive_;
 };
 
 #endif  // CONTENT_BROWSER_BROWSER_CHILD_PROCESS_HOST_IMPL_H_

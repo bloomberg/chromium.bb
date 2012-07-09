@@ -71,11 +71,6 @@ ChildThread::~ChildThread() {
 
   channel_->RemoveFilter(sync_message_filter_.get());
 
-  // Close this channel before resetting the message loop attached to it so
-  // the message loop can call ChannelProxy::Context::OnChannelClosed(), which
-  // releases the reference count to this channel.
-  channel_->Close();
-
   // The ChannelProxy object caches a pointer to the IPC thread, so need to
   // reset it as it's not guaranteed to outlive this object.
   // NOTE: this also has the side-effect of not closing the main IPC channel to

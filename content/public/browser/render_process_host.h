@@ -42,17 +42,14 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   struct RendererClosedDetails {
     RendererClosedDetails(base::ProcessHandle handle,
                           base::TerminationStatus status,
-                          int exit_code,
-                          bool was_alive) {
+                          int exit_code) {
       this->handle = handle;
       this->status = status;
       this->exit_code = exit_code;
-      this->was_alive = was_alive;
     }
     base::ProcessHandle handle;
     base::TerminationStatus status;
     int exit_code;
-    bool was_alive;
   };
 
   virtual ~RenderProcessHost() {}

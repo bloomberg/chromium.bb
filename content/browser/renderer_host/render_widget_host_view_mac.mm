@@ -15,6 +15,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
 #import "base/memory/scoped_nsobject.h"
+#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"

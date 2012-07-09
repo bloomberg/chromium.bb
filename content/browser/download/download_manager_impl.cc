@@ -12,6 +12,7 @@
 #include "base/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/lock.h"

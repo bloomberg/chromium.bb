@@ -680,8 +680,7 @@ void MetricsService::Observe(int type,
         content::RenderProcessHost* host =
             content::Source<content::RenderProcessHost>(source).ptr();
         LogRendererCrash(
-            host, process_details->status, process_details->exit_code,
-            process_details->was_alive);
+            host, process_details->status, process_details->exit_code);
       }
       break;
 
@@ -1565,8 +1564,7 @@ void MetricsService::LogLoadStarted() {
 
 void MetricsService::LogRendererCrash(content::RenderProcessHost* host,
                                       base::TerminationStatus status,
-                                      int exit_code,
-                                      bool was_alive) {
+                                      int exit_code) {
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
   ExtensionService* service = profile->GetExtensionService();
   bool was_extension_process =
@@ -1589,19 +1587,14 @@ void MetricsService::LogRendererCrash(content::RenderProcessHost* host,
 
     UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildCrashes",
                              was_extension_process ? 2 : 1);
-    if (was_alive) {
-      UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildCrashesWasAlive",
-                               was_extension_process ? 2 : 1);
-    }
   } else if (status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
     UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildKills",
                              was_extension_process ? 2 : 1);
-    if (was_alive) {
-      UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildKillsWasAlive",
+  } else if (status == base::TERMINATION_STATUS_STILL_RUNNING) {
+    UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.DisconnectedAlive",
                                was_extension_process ? 2 : 1);
     }
   }
-}
 
 void MetricsService::LogRendererHang() {
   IncrementPrefValue(prefs::kStabilityRendererHangCount);

@@ -116,7 +116,6 @@
 #include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
-#include "base/synchronization/waitable_event.h"
 #include "content/common/font_cache_dispatcher_win.h"
 #endif
 
@@ -855,9 +854,7 @@ bool RenderProcessHostImpl::FastShutdownIfPossible() {
   if (!SuddenTerminationAllowed())
     return false;
 
-  // Store the handle before it gets changed.
-  base::ProcessHandle handle = GetHandle();
-  ProcessDied(handle, base::TERMINATION_STATUS_NORMAL_TERMINATION, 0, false);
+  ProcessDied();
   fast_shutdown_started_ = true;
   return true;
 }
@@ -1027,44 +1024,7 @@ void RenderProcessHostImpl::OnChannelConnected(int32 peer_pid) {
 }
 
 void RenderProcessHostImpl::OnChannelError() {
-  if (!channel_.get())
-    return;
-
-  // Store the handle before it gets changed.
-  base::ProcessHandle handle = GetHandle();
-
-  // child_process_launcher_ can be NULL in single process mode or if fast
-  // termination happened.
-  int exit_code = 0;
-  base::TerminationStatus status =
-      child_process_launcher_.get() ?
-      child_process_launcher_->GetChildTerminationStatus(&exit_code) :
-      base::TERMINATION_STATUS_NORMAL_TERMINATION;
-
-#if defined(OS_WIN)
-  if (!run_renderer_in_process()) {
-    if (status == base::TERMINATION_STATUS_STILL_RUNNING) {
-      HANDLE process = child_process_launcher_->GetHandle();
-      child_process_watcher_.StartWatching(
-          new base::WaitableEvent(process), this);
-      return;
-    }
-  }
-#endif
-  ProcessDied(handle, status, exit_code, false);
-}
-
-// Called when the renderer process handle has been signaled.
-void RenderProcessHostImpl::OnWaitableEventSignaled(
-    base::WaitableEvent* waitable_event) {
-#if defined (OS_WIN)
-  base::ProcessHandle handle = GetHandle();
-  int exit_code = 0;
-  base::TerminationStatus status =
-      base::GetTerminationStatus(waitable_event->Release(), &exit_code);
-  delete waitable_event;
-  ProcessDied(handle, status, exit_code, true);
-#endif
+  ProcessDied();
 }
 
 BrowserContext* RenderProcessHostImpl::GetBrowserContext() const {
@@ -1378,17 +1338,22 @@ void RenderProcessHostImpl::RegisterProcessHostForSite(
   map->RegisterProcess(site, process);
 }
 
-void RenderProcessHostImpl::ProcessDied(base::ProcessHandle handle,
-                                        base::TerminationStatus status,
-                                        int exit_code,
-                                        bool was_alive) {
+void RenderProcessHostImpl::ProcessDied() {
   // Our child process has died.  If we didn't expect it, it's a crash.
   // In any case, we need to let everyone know it's gone.
   // The OnChannelError notification can fire multiple times due to nested sync
   // calls to a renderer. If we don't have a valid channel here it means we
   // already handled the error.
 
-  RendererClosedDetails details(handle, status, exit_code, was_alive);
+  // child_process_launcher_ can be NULL in single process mode or if fast
+  // termination happened.
+  int exit_code = 0;
+  base::TerminationStatus status =
+      child_process_launcher_.get() ?
+      child_process_launcher_->GetChildTerminationStatus(&exit_code) :
+      base::TERMINATION_STATUS_NORMAL_TERMINATION;
+
+  RendererClosedDetails details(GetHandle(), status, exit_code);
   NotificationService::current()->Notify(
       NOTIFICATION_RENDERER_PROCESS_CLOSED,
       Source<RenderProcessHost>(this),

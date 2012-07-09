@@ -12,7 +12,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
-#include "base/synchronization/waitable_event_watcher.h"
 #include "base/timer.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/common/content_export.h"
@@ -23,10 +22,6 @@
 class CommandLine;
 class GpuMessageFilter;
 class RenderWidgetHelper;
-
-namespace base {
-class WaitableEvent;
-}
 
 namespace content {
 class RendererMainThread;
@@ -49,8 +44,7 @@ class RenderWidgetHostImpl;
 // communicate through the two process objects.
 class CONTENT_EXPORT RenderProcessHostImpl
     : public RenderProcessHost,
-      public ChildProcessLauncher::Client,
-      public base::WaitableEventWatcher::Delegate {
+      public ChildProcessLauncher::Client {
  public:
   RenderProcessHostImpl(BrowserContext* browser_context, bool is_guest);
   virtual ~RenderProcessHostImpl();
@@ -106,10 +100,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // ChildProcessLauncher::Client implementation.
   virtual void OnProcessLaunched() OVERRIDE;
-
-  // base::WaitableEventWatcher::Delegate implementation.
-  virtual void OnWaitableEventSignaled(
-      base::WaitableEvent* waitable_event) OVERRIDE;
 
   // Call this function when it is evident that the child process is actively
   // performing some operation, for example if we just received an IPC message.
@@ -210,12 +200,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Callers can reduce the RenderProcess' priority.
   void SetBackgrounded(bool backgrounded);
 
-  // Handle termination of our process. |was_alive| indicates that when we
-  // tried to retrieve the exit code the process had not finished yet.
-  void ProcessDied(base::ProcessHandle handle,
-                   base::TerminationStatus status,
-                   int exit_code,
-                   bool was_alive);
+  // Handle termination of our process.
+  void ProcessDied();
 
   // The count of currently visible widgets.  Since the host can be a container
   // for multiple widgets, it uses this count to determine when it should be
@@ -267,11 +253,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // messages that are sent once the process handle is available.  This is
   // because the queued messages may have dependencies on the init messages.
   std::queue<IPC::Message*> queued_messages_;
-
-#if defined(OS_WIN)
-  // Used to wait until the renderer dies to get an accurrate exit code.
-  base::WaitableEventWatcher child_process_watcher_;
-#endif
 
   // The globally-unique identifier for this RPH.
   int id_;
