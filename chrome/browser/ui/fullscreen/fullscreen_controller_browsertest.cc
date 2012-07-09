@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_view_host.h"
@@ -326,7 +327,7 @@ IN_PROC_BROWSER_TEST_F(
     // Test that tab fullscreen mode doesn't make presentation mode the default
     // on Lion.
     FullscreenNotificationObserver fullscreen_observer;
-    browser()->ToggleFullscreenMode();
+    chrome::ToggleFullscreenMode(browser());
     fullscreen_observer.Wait();
     ASSERT_TRUE(browser()->window()->IsFullscreen());
     ASSERT_FALSE(browser()->window()->InPresentationMode());

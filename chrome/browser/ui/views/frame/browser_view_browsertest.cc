@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/views/focus/focus_manager.h"
@@ -22,7 +23,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, DISABLED_FullscreenClearsFocus) {
   // Focus starts in the location bar or one of its children.
   EXPECT_TRUE(location_bar_view->Contains(focus_manager->GetFocusedView()));
 
-  browser()->ToggleFullscreenMode();
+  chrome::ToggleFullscreenMode(browser());
   EXPECT_TRUE(browser_view->IsFullscreen());
 
   // Focus is released from the location bar.

@@ -5883,7 +5883,7 @@ void TestingAutomationProvider::IsFullscreenForBrowser(Browser* browser,
     IPC::Message* reply_message) {
   DictionaryValue dict;
   dict.SetBoolean("result",
-                  browser->fullscreen_controller_->IsFullscreenForBrowser());
+                  browser->fullscreen_controller()->IsFullscreenForBrowser());
   AutomationJSONReply(this, reply_message).SendSuccess(&dict);
 }
 
@@ -5891,7 +5891,8 @@ void TestingAutomationProvider::IsFullscreenForTab(Browser* browser,
     base::DictionaryValue* args,
     IPC::Message* reply_message) {
   DictionaryValue dict;
-  dict.SetBoolean("result", browser->IsFullscreenForTabOrPending());
+  dict.SetBoolean("result",
+      browser->fullscreen_controller()->IsFullscreenForTabOrPending());
   AutomationJSONReply(this, reply_message).SendSuccess(&dict);
 }
 
@@ -5909,7 +5910,7 @@ void TestingAutomationProvider::IsMouseLockPermissionRequested(
     base::DictionaryValue* args,
     IPC::Message* reply_message) {
   FullscreenExitBubbleType type =
-      browser->fullscreen_controller_->GetFullscreenExitBubbleType();
+      browser->fullscreen_controller()->GetFullscreenExitBubbleType();
   bool mouse_lock = false;
   fullscreen_bubble::PermissionRequestedByType(type, NULL, &mouse_lock);
   DictionaryValue dict;
@@ -5922,7 +5923,7 @@ void TestingAutomationProvider::IsFullscreenPermissionRequested(
     base::DictionaryValue* args,
     IPC::Message* reply_message) {
   FullscreenExitBubbleType type =
-      browser->fullscreen_controller_->GetFullscreenExitBubbleType();
+      browser->fullscreen_controller()->GetFullscreenExitBubbleType();
   bool fullscreen = false;
   fullscreen_bubble::PermissionRequestedByType(type, &fullscreen, NULL);
   DictionaryValue dict;
@@ -5934,7 +5935,7 @@ void TestingAutomationProvider::IsFullscreenBubbleDisplayed(Browser* browser,
     base::DictionaryValue* args,
     IPC::Message* reply_message) {
   FullscreenExitBubbleType type =
-      browser->fullscreen_controller_->GetFullscreenExitBubbleType();
+      browser->fullscreen_controller()->GetFullscreenExitBubbleType();
   DictionaryValue dict;
   dict.SetBoolean("result",
                   type != FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION);
@@ -5946,7 +5947,7 @@ void TestingAutomationProvider::IsFullscreenBubbleDisplayingButtons(
     base::DictionaryValue* args,
     IPC::Message* reply_message) {
   FullscreenExitBubbleType type =
-      browser->fullscreen_controller_->GetFullscreenExitBubbleType();
+      browser->fullscreen_controller()->GetFullscreenExitBubbleType();
   DictionaryValue dict;
   dict.SetBoolean("result", fullscreen_bubble::ShowButtonsForType(type));
   AutomationJSONReply(this, reply_message).SendSuccess(&dict);
@@ -5958,8 +5959,9 @@ void TestingAutomationProvider::AcceptCurrentFullscreenOrMouseLockRequest(
     IPC::Message* reply_message) {
   WebContents* fullscreen_tab = chrome::GetActiveWebContents(browser);
   FullscreenExitBubbleType type =
-      browser->fullscreen_controller_->GetFullscreenExitBubbleType();
-  browser->OnAcceptFullscreenPermission(fullscreen_tab->GetURL(), type);
+      browser->fullscreen_controller()->GetFullscreenExitBubbleType();
+  browser->fullscreen_controller()->OnAcceptFullscreenPermission(
+      fullscreen_tab->GetURL(), type);
   AutomationJSONReply(this, reply_message).SendSuccess(NULL);
 }
 
@@ -5968,8 +5970,8 @@ void TestingAutomationProvider::DenyCurrentFullscreenOrMouseLockRequest(
     base::DictionaryValue* args,
     IPC::Message* reply_message) {
   FullscreenExitBubbleType type =
-      browser->fullscreen_controller_->GetFullscreenExitBubbleType();
-  browser->OnDenyFullscreenPermission(type);
+      browser->fullscreen_controller()->GetFullscreenExitBubbleType();
+  browser->fullscreen_controller()->OnDenyFullscreenPermission(type);
   AutomationJSONReply(this, reply_message).SendSuccess(NULL);
 }
 

@@ -45,7 +45,7 @@ void FullscreenControllerTest::ToggleBrowserFullscreen(bool enter_fullscreen) {
   ASSERT_EQ(browser()->window()->IsFullscreen(), !enter_fullscreen);
   FullscreenNotificationObserver fullscreen_observer;
 
-  browser()->ToggleFullscreenMode();
+  chrome::ToggleFullscreenMode(browser());
 
   fullscreen_observer.Wait();
   ASSERT_EQ(browser()->window()->IsFullscreen(), enter_fullscreen);
@@ -65,20 +65,20 @@ void FullscreenControllerTest::LostMouseLock() {
 }
 
 bool FullscreenControllerTest::SendEscapeToFullscreenController() {
-  return browser()->fullscreen_controller_->HandleUserPressedEscape();
+  return browser()->fullscreen_controller()->HandleUserPressedEscape();
 }
 
 bool FullscreenControllerTest::IsFullscreenForBrowser() {
-  return browser()->fullscreen_controller_->IsFullscreenForBrowser();
+  return browser()->fullscreen_controller()->IsFullscreenForBrowser();
 }
 
 bool FullscreenControllerTest::IsFullscreenForTabOrPending() {
-  return browser()->IsFullscreenForTabOrPending();
+  return browser()->fullscreen_controller()->IsFullscreenForTabOrPending();
 }
 
 bool FullscreenControllerTest::IsMouseLockPermissionRequested() {
   FullscreenExitBubbleType type =
-      browser()->fullscreen_controller_->GetFullscreenExitBubbleType();
+      browser()->fullscreen_controller()->GetFullscreenExitBubbleType();
   bool mouse_lock = false;
   fullscreen_bubble::PermissionRequestedByType(type, NULL, &mouse_lock);
   return mouse_lock;
@@ -86,7 +86,7 @@ bool FullscreenControllerTest::IsMouseLockPermissionRequested() {
 
 bool FullscreenControllerTest::IsFullscreenPermissionRequested() {
   FullscreenExitBubbleType type =
-      browser()->fullscreen_controller_->GetFullscreenExitBubbleType();
+      browser()->fullscreen_controller()->GetFullscreenExitBubbleType();
   bool fullscreen = false;
   fullscreen_bubble::PermissionRequestedByType(type, &fullscreen, NULL);
   return fullscreen;
@@ -94,32 +94,33 @@ bool FullscreenControllerTest::IsFullscreenPermissionRequested() {
 
 FullscreenExitBubbleType
     FullscreenControllerTest::GetFullscreenExitBubbleType() {
-  return browser()->fullscreen_controller_->GetFullscreenExitBubbleType();
+  return browser()->fullscreen_controller()->GetFullscreenExitBubbleType();
 }
 
 bool FullscreenControllerTest::IsFullscreenBubbleDisplayed() {
   FullscreenExitBubbleType type =
-      browser()->fullscreen_controller_->GetFullscreenExitBubbleType();
+      browser()->fullscreen_controller()->GetFullscreenExitBubbleType();
   return type != FEB_TYPE_NONE;
 }
 
 bool FullscreenControllerTest::IsFullscreenBubbleDisplayingButtons() {
   FullscreenExitBubbleType type =
-      browser()->fullscreen_controller_->GetFullscreenExitBubbleType();
+      browser()->fullscreen_controller()->GetFullscreenExitBubbleType();
   return fullscreen_bubble::ShowButtonsForType(type);
 }
 
 void FullscreenControllerTest::AcceptCurrentFullscreenOrMouseLockRequest() {
   WebContents* fullscreen_tab = chrome::GetActiveWebContents(browser());
   FullscreenExitBubbleType type =
-      browser()->fullscreen_controller_->GetFullscreenExitBubbleType();
-  browser()->OnAcceptFullscreenPermission(fullscreen_tab->GetURL(), type);
+      browser()->fullscreen_controller()->GetFullscreenExitBubbleType();
+  browser()->fullscreen_controller()->OnAcceptFullscreenPermission(
+      fullscreen_tab->GetURL(), type);
 }
 
 void FullscreenControllerTest::DenyCurrentFullscreenOrMouseLockRequest() {
   FullscreenExitBubbleType type =
-      browser()->fullscreen_controller_->GetFullscreenExitBubbleType();
-  browser()->OnDenyFullscreenPermission(type);
+      browser()->fullscreen_controller()->GetFullscreenExitBubbleType();
+  browser()->fullscreen_controller()->OnDenyFullscreenPermission(type);
 }
 
 void FullscreenControllerTest::AddTabAtIndexAndWait(int index, const GURL& url,

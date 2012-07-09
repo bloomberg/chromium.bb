@@ -745,10 +745,6 @@ void Browser::WindowFullscreenStateChanged() {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Assorted browser commands:
 
-void Browser::ToggleFullscreenMode() {
-  fullscreen_controller_->ToggleFullscreenMode();
-}
-
 void Browser::ToggleFullscreenModeWithExtension(const GURL& extension_url) {
   fullscreen_controller_->ToggleFullscreenModeWithExtension(extension_url);
 }
@@ -1370,16 +1366,6 @@ void Browser::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   window()->HandleKeyboardEvent(event);
 }
 
-void Browser::OnAcceptFullscreenPermission(
-    const GURL& url,
-    FullscreenExitBubbleType bubble_type) {
-  fullscreen_controller_->OnAcceptFullscreenPermission(url, bubble_type);
-}
-
-void Browser::OnDenyFullscreenPermission(FullscreenExitBubbleType bubble_type) {
-  fullscreen_controller_->OnDenyFullscreenPermission(bubble_type);
-}
-
 bool Browser::TabsNeedBeforeUnloadFired() {
   if (tabs_needing_before_unload_fired_.empty()) {
     for (int i = 0; i < tab_count(); ++i) {
@@ -1389,10 +1375,6 @@ bool Browser::TabsNeedBeforeUnloadFired() {
     }
   }
   return !tabs_needing_before_unload_fired_.empty();
-}
-
-bool Browser::IsFullscreenForTabOrPending() const {
-  return fullscreen_controller_->IsFullscreenForTabOrPending();
 }
 
 bool Browser::IsMouseLocked() const {

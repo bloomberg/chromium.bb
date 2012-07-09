@@ -18,6 +18,7 @@
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -95,13 +96,13 @@ const float kHideDuration = 0.7;
     [[self window] setIgnoresMouseEvents:YES];
 
   DCHECK(fullscreen_bubble::ShowButtonsForType(bubbleType_));
-  browser_->OnAcceptFullscreenPermission(
+  browser_->fullscreen_controller()->OnAcceptFullscreenPermission(
       url_, bubbleType_);
 }
 
 - (void)deny:(id)sender {
   DCHECK(fullscreen_bubble::ShowButtonsForType(bubbleType_));
-  browser_->OnDenyFullscreenPermission(bubbleType_);
+  browser_->fullscreen_controller()->OnDenyFullscreenPermission(bubbleType_);
 }
 
 - (void)showButtons:(BOOL)show {

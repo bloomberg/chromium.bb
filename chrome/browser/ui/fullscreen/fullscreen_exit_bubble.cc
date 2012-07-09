@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -113,11 +114,12 @@ void FullscreenExitBubble::ToggleFullscreen() {
 }
 
 void FullscreenExitBubble::Accept() {
-  browser_->OnAcceptFullscreenPermission(url_, bubble_type_);
+  browser_->fullscreen_controller()->OnAcceptFullscreenPermission(url_,
+                                                                  bubble_type_);
 }
 
 void FullscreenExitBubble::Cancel() {
-  browser_->OnDenyFullscreenPermission(bubble_type_);
+  browser_->fullscreen_controller()->OnDenyFullscreenPermission(bubble_type_);
 }
 
 string16 FullscreenExitBubble::GetCurrentMessageText() const {

@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
-#include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
@@ -352,8 +351,6 @@ class Browser : public TabStripModelDelegate,
   // NOTE: Within each of the following sections, the IDs are ordered roughly by
   // how they appear in the GUI/menus (left to right, top to bottom, etc.).
 
-  // In kiosk mode, the first toggle is valid, the rest is discarded.
-  void ToggleFullscreenMode();
   // See the description of
   // FullscreenController::ToggleFullscreenModeWithExtension.
   void ToggleFullscreenModeWithExtension(const GURL& extension_url);
@@ -493,12 +490,6 @@ class Browser : public TabStripModelDelegate,
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
 
-  // Fullscreen permission infobar callbacks.
-  // TODO(koz): Remove this and have callers call FullscreenController directly.
-  void OnAcceptFullscreenPermission(const GURL& url,
-                                    FullscreenExitBubbleType bubble_type);
-  void OnDenyFullscreenPermission(FullscreenExitBubbleType bubble_type);
-
   // Figure out if there are tabs that have beforeunload handlers.
   bool TabsNeedBeforeUnloadFired();
 
@@ -509,9 +500,6 @@ class Browser : public TabStripModelDelegate,
   bool is_app() const;
   bool is_devtools() const;
 
-  // See FullscreenController::IsFullscreenForTabOrPending.
-  bool IsFullscreenForTabOrPending() const;
-
   // True when the mouse cursor is locked.
   bool IsMouseLocked() const;
 
@@ -520,6 +508,10 @@ class Browser : public TabStripModelDelegate,
 
   // Show the first run search engine bubble on the location bar.
   void ShowFirstRunBubble();
+
+  FullscreenController* fullscreen_controller() {
+    return fullscreen_controller_.get();
+  }
 
   ExtensionWindowController* extension_window_controller() const {
     return extension_window_controller_.get();

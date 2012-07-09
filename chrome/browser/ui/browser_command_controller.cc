@@ -325,7 +325,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       ConvertPopupToTabbedBrowser(browser_);
       break;
     case IDC_FULLSCREEN:
-      browser_->ToggleFullscreenMode();
+      chrome::ToggleFullscreenMode(browser_);
       break;
 #if defined(OS_WIN)
     case IDC_METRO_SNAP_ENABLE:

@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_model.h"
@@ -842,6 +843,10 @@ void OpenUpdateChromeDialog(Browser* browser) {
 
 void ToggleSpeechInput(Browser* browser) {
   GetActiveWebContents(browser)->GetRenderViewHost()->ToggleSpeechInput();
+}
+
+void ToggleFullscreenMode(Browser* browser) {
+  browser->fullscreen_controller()->ToggleFullscreenMode();
 }
 
 void ViewSource(Browser* browser, TabContents* contents) {

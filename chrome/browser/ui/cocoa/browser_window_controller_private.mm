@@ -31,6 +31,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -635,7 +636,8 @@ willPositionSheet:(NSWindow*)sheet
     return;
 
   if (presentationMode) {
-    BOOL fullscreen_for_tab = browser_->IsFullscreenForTabOrPending();
+    BOOL fullscreen_for_tab =
+        browser_->fullscreen_controller()->IsFullscreenForTabOrPending();
     BOOL kiosk_mode =
         CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
     BOOL showDropdown = !fullscreen_for_tab &&
@@ -821,7 +823,8 @@ willPositionSheet:(NSWindow*)sheet
   NSWindow* window = [self window];
   savedRegularWindowFrame_ = [window frame];
   BOOL mode = [self shouldUsePresentationModeWhenEnteringFullscreen];
-  mode = mode || browser_->IsFullscreenForTabOrPending();
+  mode = mode ||
+         browser_->fullscreen_controller()->IsFullscreenForTabOrPending();
   enteringFullscreen_ = YES;
   [self setPresentationModeInternal:mode forceDropdown:NO];
 }
