@@ -30,7 +30,8 @@ class MultipartResponseTest : public InProcessBrowserTest,
   int update_history_count_;
 };
 
-IN_PROC_BROWSER_TEST_F(MultipartResponseTest, SingleVisit) {
+// Disabled:  http://crbug.com/136310
+IN_PROC_BROWSER_TEST_F(MultipartResponseTest, DISABLED_SingleVisit) {
   // Make sure that visiting a multipart/x-mixed-replace site only
   // creates one entry in the visits table.
   ASSERT_TRUE(test_server()->Start());
