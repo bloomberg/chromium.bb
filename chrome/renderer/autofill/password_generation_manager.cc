@@ -67,12 +67,16 @@ void PasswordGenerationManager::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
   // In every navigation, the IPC message sent by the password autofill manager
   // to query whether the current form is blacklisted or not happens when the
   // document load finishes, so we need to clear previous states here before we
-  // hear back from the browser. Note that we assume there is only one account
-  // creation form, but there could be multiple password forms in each frame.
-  not_blacklisted_password_form_origins_.clear();
-  // Initialize to an empty and invalid GURL.
-  account_creation_form_origin_ = GURL();
-  passwords_.clear();
+  // hear back from the browser. We only clear this state on main frame load
+  // as we don't want subframe loads to clear state that we have recieved from
+  // the main frame. Note that we assume there is only one account creation
+  // form, but there could be multiple password forms in each frame.
+  if (!frame->parent()) {
+    not_blacklisted_password_form_origins_.clear();
+    // Initialize to an empty and invalid GURL.
+    account_creation_form_origin_ = GURL();
+    passwords_.clear();
+  }
 }
 
 void PasswordGenerationManager::DidFinishLoad(WebKit::WebFrame* frame) {
