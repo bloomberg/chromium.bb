@@ -35,12 +35,12 @@ namespace {
 // base::Bind to run the StartChrome methods in many threads.
 class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
  public:
-  ChromeStarter(int timeout_ms, const FilePath& user_data_dir)
+  ChromeStarter(base::TimeDelta timeout, const FilePath& user_data_dir)
       : ready_event_(false /* manual */, false /* signaled */),
         done_event_(false /* manual */, false /* signaled */),
         process_handle_(base::kNullProcessHandle),
         process_terminated_(false),
-        timeout_ms_(timeout_ms),
+        timeout_(timeout),
         user_data_dir_(user_data_dir) {
   }
 
@@ -101,7 +101,7 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
     // one process. The test below will take care of killing that process
     // to unstuck us once it confirms there is only one.
     process_terminated_ = base::WaitForSingleProcess(process_handle_,
-                                                     timeout_ms_);
+                                                     timeout_);
     // Let the test know we are done.
     done_event_.Signal();
   }
@@ -120,7 +120,7 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
       base::CloseProcessHandle(process_handle_);
   }
 
-  int timeout_ms_;
+  base::TimeDelta timeout_;
   FilePath user_data_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeStarter);
@@ -144,7 +144,7 @@ class ProcessSingletonTest : public InProcessBrowserTest {
       chrome_starter_threads_[i].reset(new base::Thread("ChromeStarter"));
       ASSERT_TRUE(chrome_starter_threads_[i]->Start());
       chrome_starters_[i] = new ChromeStarter(
-          TestTimeouts::action_max_timeout_ms(), temp_profile_dir_.path());
+          TestTimeouts::action_max_timeout(), temp_profile_dir_.path());
     }
   }
 

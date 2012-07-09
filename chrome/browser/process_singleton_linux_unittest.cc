@@ -104,7 +104,7 @@ class ProcessSingletonLinuxTest : public testing::Test {
 
   ProcessSingleton::NotifyResult NotifyOtherProcess(
       bool override_kill,
-      int timeout_ms) {
+      base::TimeDelta timeout) {
     scoped_ptr<ProcessSingleton> process_singleton(CreateProcessSingleton());
     CommandLine command_line(CommandLine::ForCurrentProcess()->GetProgram());
     command_line.AppendArg("about:blank");
@@ -116,18 +116,18 @@ class ProcessSingletonLinuxTest : public testing::Test {
     }
 
     return process_singleton->NotifyOtherProcessWithTimeout(
-        command_line, timeout_ms / 1000, true);
+        command_line, timeout.InSeconds(), true);
   }
 
   // A helper method to call ProcessSingleton::NotifyOtherProcessOrCreate().
   ProcessSingleton::NotifyResult NotifyOtherProcessOrCreate(
       const std::string& url,
-      int timeout_ms) {
+      base::TimeDelta timeout) {
     scoped_ptr<ProcessSingleton> process_singleton(CreateProcessSingleton());
     CommandLine command_line(CommandLine::ForCurrentProcess()->GetProgram());
     command_line.AppendArg(url);
     return process_singleton->NotifyOtherProcessWithTimeoutOrCreate(
-        command_line, base::Bind(&NotificationCallback), timeout_ms / 1000);
+        command_line, base::Bind(&NotificationCallback), timeout.InSeconds());
   }
 
   void CheckNotified() {
@@ -241,7 +241,7 @@ TEST_F(ProcessSingletonLinuxTest, CheckSocketFile) {
 TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessSuccess) {
   CreateProcessSingletonOnThread();
   EXPECT_EQ(ProcessSingleton::PROCESS_NOTIFIED,
-            NotifyOtherProcess(true, TestTimeouts::action_timeout_ms()));
+            NotifyOtherProcess(true, TestTimeouts::action_timeout()));
   CheckNotified();
 }
 
@@ -251,7 +251,7 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessFailure) {
 
   BlockWorkerThread();
   EXPECT_EQ(ProcessSingleton::PROCESS_NONE,
-            NotifyOtherProcess(true, TestTimeouts::action_timeout_ms()));
+            NotifyOtherProcess(true, TestTimeouts::action_timeout()));
 
   ASSERT_EQ(1, kill_callbacks_);
   UnblockWorkerThread();
@@ -274,7 +274,7 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessNoSuicide) {
   EXPECT_EQ(0, unlink(socket_path_.value().c_str()));
 
   EXPECT_EQ(ProcessSingleton::PROCESS_NONE,
-            NotifyOtherProcess(false, TestTimeouts::action_timeout_ms()));
+            NotifyOtherProcess(false, TestTimeouts::action_timeout()));
   // If we've gotten to this point without killing ourself, the test succeeded.
 }
 
@@ -286,7 +286,7 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessHostChanged) {
   EXPECT_EQ(0, symlink("FAKEFOOHOST-1234", lock_path_.value().c_str()));
 
   EXPECT_EQ(ProcessSingleton::PROCESS_NOTIFIED,
-            NotifyOtherProcess(false, TestTimeouts::action_timeout_ms()));
+            NotifyOtherProcess(false, TestTimeouts::action_timeout()));
   CheckNotified();
 }
 
@@ -301,7 +301,7 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessDifferingHost) {
   EXPECT_EQ(0, symlink("FAKEFOOHOST-1234", lock_path_.value().c_str()));
 
   EXPECT_EQ(ProcessSingleton::PROFILE_IN_USE,
-            NotifyOtherProcess(false, TestTimeouts::action_timeout_ms()));
+            NotifyOtherProcess(false, TestTimeouts::action_timeout()));
 
   ASSERT_EQ(0, unlink(lock_path_.value().c_str()));
 
@@ -320,7 +320,7 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessOrCreate_DifferingHost) {
 
   std::string url("about:blank");
   EXPECT_EQ(ProcessSingleton::PROFILE_IN_USE,
-            NotifyOtherProcessOrCreate(url, TestTimeouts::action_timeout_ms()));
+            NotifyOtherProcessOrCreate(url, TestTimeouts::action_timeout()));
 
   ASSERT_EQ(0, unlink(lock_path_.value().c_str()));
 
@@ -371,6 +371,6 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessOrCreate_BadCookie) {
 
   std::string url("about:blank");
   EXPECT_EQ(ProcessSingleton::PROFILE_IN_USE,
-            NotifyOtherProcessOrCreate(url, TestTimeouts::action_timeout_ms()));
+            NotifyOtherProcessOrCreate(url, TestTimeouts::action_timeout()));
 }
 

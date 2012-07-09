@@ -194,7 +194,7 @@ TEST_F(ServiceProcessStateTest, MAYBE_ForceShutdown) {
   ASSERT_TRUE(ForceServiceProcessShutdown(version, pid));
   int exit_code = 0;
   ASSERT_TRUE(base::WaitForExitCodeWithTimeout(handle,
-      &exit_code, TestTimeouts::action_max_timeout_ms()));
+      &exit_code, TestTimeouts::action_max_timeout()));
   base::CloseProcessHandle(handle);
   ASSERT_EQ(exit_code, 0);
 }

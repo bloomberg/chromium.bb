@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,7 +107,7 @@ void CocoaTest::TearDown() {
     // Cover delayed actions by spinning the loop at least once after
     // this timeout.
     const NSTimeInterval kCloseTimeoutSeconds =
-        TestTimeouts::action_timeout_ms() / 1000.0;
+        TestTimeouts::action_timeout().InSecondsF();
 
     // Cover chains of delayed actions by spinning the loop at least
     // this many times.
