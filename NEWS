@@ -56,6 +56,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
    - Fixes to de-de-comp8.ctb thanks to Aliminator83@gmail.com
    - hu1.ctb renamed to hu-hu-g1.ctb
    - hu.ctb renamed to hu-hu-comp8.ctb
+   - eo.ctb renamed to eo-g1.ctb
+   - Fixes to eo-g1.ctb thanks to Aaron Cannon <cannona@fireantproductions.com>
 
 
 * Noteworthy changes in release 2.4.1 (2012-2-22)
