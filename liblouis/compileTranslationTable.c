@@ -1574,8 +1574,7 @@ parseChars (FileInfo * nested, CharsString * result, CharsString * token)
 	    break;
 	  if (token->chars[in] < 128 || (token->chars[in] & 0x0040))
 	    {
-	      compileWarning (nested,
-	      "invalid UTF-8. Assuming Latin-1.");
+	      compileWarning (nested, "invalid UTF-8. Assuming Latin-1.");
 	      result->chars[out++] = token->chars[lastIn];
 	      in = lastIn + 1;
 	      continue;
@@ -3644,8 +3643,18 @@ compileHyphenation (FileInfo * nested, CharsString * encoding)
   dict.states[0].trans.pointer = NULL;
   do
     {
-      if (!getToken (nested, &hyph, NULL))
-	continue;
+      if (encoding->chars[0] == 'I')
+	{
+	  if (!getToken (nested, &hyph, NULL))
+	    continue;
+	}
+      else
+	{
+	  /*UTF-8 */
+	  if (!getToken (nested, &word, NULL))
+	    continue;
+	  parseChars (nested, &hyph, &word);
+	}
       if (hyph.length == 0 || hyph.chars[0] == '#' || hyph.chars[0] ==
 	  '%' || hyph.chars[0] == '<')
 	continue;		/*comment */
@@ -3859,8 +3868,10 @@ doOpcode:
     return 1;			/*blank line */
   if (token.chars[0] == '#' || token.chars[0] == '<')
     return 1;			/*comment */
-  if (nested->lineNumber == 1 && token.chars[0] == 'I' && token.chars[1]
-      == 'S' && token.chars[2] == 'O')
+  if (nested->lineNumber == 1 && (eqasc2uni ((unsigned char *) "ISO",
+					     token.chars, 3) ||
+				  eqasc2uni ((unsigned char *) "UTF-8",
+					     token.chars, 5)))
     {
       compileHyphenation (nested, &token);
       return 1;
@@ -3882,55 +3893,54 @@ doOpcode:
     case CTO_Locale:
       break;
     case CTO_Undefined:
-      ok = compileBrailleIndicator (nested,
-				    "undefined character opcode",
-				    CTO_Undefined, &table->undefined);
+      ok =
+	compileBrailleIndicator (nested, "undefined character opcode",
+				 CTO_Undefined, &table->undefined);
       break;
     case CTO_CapitalSign:
-      ok = compileBrailleIndicator (nested,
-				    "capital sign", CTO_CapitalRule,
-				    &table->capitalSign);
+      ok =
+	compileBrailleIndicator (nested, "capital sign", CTO_CapitalRule,
+				 &table->capitalSign);
       break;
     case CTO_BeginCapitalSign:
-      ok = compileBrailleIndicator (nested,
-				    "begin capital sign",
-				    CTO_BeginCapitalRule,
-				    &table->beginCapitalSign);
+      ok =
+	compileBrailleIndicator (nested, "begin capital sign",
+				 CTO_BeginCapitalRule,
+				 &table->beginCapitalSign);
       break;
     case CTO_LenBegcaps:
       ok = table->lenBeginCaps = compileNumber (nested);
       break;
     case CTO_EndCapitalSign:
-      ok = compileBrailleIndicator (nested,
-				    "end capitals sign",
-				    CTO_EndCapitalRule,
-				    &table->endCapitalSign);
+      ok =
+	compileBrailleIndicator (nested, "end capitals sign",
+				 CTO_EndCapitalRule, &table->endCapitalSign);
       break;
     case CTO_FirstWordCaps:
-      ok = compileBrailleIndicator (nested,
-				    "first word capital sign",
-				    CTO_FirstWordCapsRule,
-				    &table->firstWordCaps);
+      ok =
+	compileBrailleIndicator (nested, "first word capital sign",
+				 CTO_FirstWordCapsRule,
+				 &table->firstWordCaps);
       break;
     case CTO_LastWordCapsBefore:
-      ok = compileBrailleIndicator (nested,
-				    "capital sign before last word",
-				    CTO_LastWordCapsBeforeRule,
-				    &table->lastWordCapsBefore);
+      ok =
+	compileBrailleIndicator (nested, "capital sign before last word",
+				 CTO_LastWordCapsBeforeRule,
+				 &table->lastWordCapsBefore);
       break;
     case CTO_LastWordCapsAfter:
-      ok = compileBrailleIndicator (nested,
-				    "capital sign after last word",
-				    CTO_LastWordCapsAfterRule,
-				    &table->lastWordCapsAfter);
+      ok =
+	compileBrailleIndicator (nested, "capital sign after last word",
+				 CTO_LastWordCapsAfterRule,
+				 &table->lastWordCapsAfter);
       break;
     case CTO_LenCapsPhrase:
       ok = table->lenCapsPhrase = compileNumber (nested);
       break;
     case CTO_LetterSign:
-      ok = compileBrailleIndicator (nested,
-				    "letter sign", CTO_LetterRule,
-				    &table->letterSign);
+      ok =
+	compileBrailleIndicator (nested, "letter sign", CTO_LetterRule,
+				 &table->letterSign);
       break;
     case CTO_NoLetsignBefore:
       if (getRuleCharsText (nested, &ruleChars))
@@ -3974,21 +3984,22 @@ doOpcode:
 	}
       break;
     case CTO_NumberSign:
-      ok = compileBrailleIndicator (nested,
-				    "number sign", CTO_NumberRule,
-				    &table->numberSign);
+      ok =
+	compileBrailleIndicator (nested, "number sign", CTO_NumberRule,
+				 &table->numberSign);
       break;
     case CTO_FirstWordItal:
-      ok = compileBrailleIndicator (nested,
-				    "first word italic",
-				    CTO_FirstWordItalRule,
-				    &table->firstWordItal);
+      ok =
+	compileBrailleIndicator (nested, "first word italic",
+				 CTO_FirstWordItalRule,
+				 &table->firstWordItal);
       break;
     case CTO_ItalSign:
     case CTO_LastWordItalBefore:
-      ok = compileBrailleIndicator
-	(nested, "first word italic before",
-	 CTO_LastWordItalBeforeRule, &table->lastWordItalBefore);
+      ok =
+	compileBrailleIndicator (nested, "first word italic before",
+				 CTO_LastWordItalBeforeRule,
+				 &table->lastWordItalBefore);
       break;
     case CTO_LastWordItalAfter:
       ok =
@@ -3998,55 +4009,57 @@ doOpcode:
       break;
     case CTO_BegItal:
     case CTO_FirstLetterItal:
-      ok = compileBrailleIndicator
-	(nested, "first letter italic", CTO_FirstLetterItalRule,
-	 &table->firstLetterItal);
+      ok =
+	compileBrailleIndicator (nested, "first letter italic",
+				 CTO_FirstLetterItalRule,
+				 &table->firstLetterItal);
       break;
     case CTO_EndItal:
     case CTO_LastLetterItal:
-      ok = compileBrailleIndicator (nested,
-				    "last letter italic",
-				    CTO_LastLetterItalRule,
-				    &table->lastLetterItal);
+      ok =
+	compileBrailleIndicator (nested, "last letter italic",
+				 CTO_LastLetterItalRule,
+				 &table->lastLetterItal);
       break;
     case CTO_SingleLetterItal:
-      ok = compileBrailleIndicator (nested,
-				    "single letter italic",
-				    CTO_SingleLetterItalRule,
-				    &table->singleLetterItal);
+      ok =
+	compileBrailleIndicator (nested, "single letter italic",
+				 CTO_SingleLetterItalRule,
+				 &table->singleLetterItal);
       break;
     case CTO_ItalWord:
-      ok = compileBrailleIndicator (nested,
-				    "italic word",
-				    CTO_ItalWordRule, &table->italWord);
+      ok =
+	compileBrailleIndicator (nested, "italic word", CTO_ItalWordRule,
+				 &table->italWord);
       break;
     case CTO_LenItalPhrase:
       ok = table->lenItalPhrase = compileNumber (nested);
       break;
     case CTO_FirstWordBold:
-      ok = compileBrailleIndicator
-	(nested, "first word bold", CTO_FirstWordBoldRule,
-	 &table->firstWordBold);
+      ok =
+	compileBrailleIndicator (nested, "first word bold",
+				 CTO_FirstWordBoldRule,
+				 &table->firstWordBold);
       break;
     case CTO_BoldSign:
     case CTO_LastWordBoldBefore:
-      ok = compileBrailleIndicator (nested,
-				    "last word bold before",
-				    CTO_LastWordBoldBeforeRule,
-				    &table->lastWordBoldBefore);
+      ok =
+	compileBrailleIndicator (nested, "last word bold before",
+				 CTO_LastWordBoldBeforeRule,
+				 &table->lastWordBoldBefore);
       break;
     case CTO_LastWordBoldAfter:
-      ok = compileBrailleIndicator (nested,
-				    "last word bold after",
-				    CTO_LastWordBoldAfterRule,
-				    &table->lastWordBoldAfter);
+      ok =
+	compileBrailleIndicator (nested, "last word bold after",
+				 CTO_LastWordBoldAfterRule,
+				 &table->lastWordBoldAfter);
       break;
     case CTO_BegBold:
     case CTO_FirstLetterBold:
-      ok = compileBrailleIndicator (nested,
-				    "first  letter bold",
-				    CTO_FirstLetterBoldRule,
-				    &table->firstLetterBold);
+      ok =
+	compileBrailleIndicator (nested, "first  letter bold",
+				 CTO_FirstLetterBoldRule,
+				 &table->firstLetterBold);
       break;
     case CTO_EndBold:
     case CTO_LastLetterBold:
@@ -4056,24 +4069,24 @@ doOpcode:
 				 &table->lastLetterBold);
       break;
     case CTO_SingleLetterBold:
-      ok = compileBrailleIndicator (nested,
-				    "single  letter bold",
-				    CTO_SingleLetterBoldRule,
-				    &table->singleLetterBold);
+      ok =
+	compileBrailleIndicator (nested, "single  letter bold",
+				 CTO_SingleLetterBoldRule,
+				 &table->singleLetterBold);
       break;
     case CTO_BoldWord:
-      ok = compileBrailleIndicator (nested,
-				    "bold word",
-				    CTO_BoldWordRule, &table->boldWord);
+      ok =
+	compileBrailleIndicator (nested, "bold word", CTO_BoldWordRule,
+				 &table->boldWord);
       break;
     case CTO_LenBoldPhrase:
       ok = table->lenBoldPhrase = compileNumber (nested);
       break;
     case CTO_FirstWordUnder:
-      ok = compileBrailleIndicator (nested,
-				    "first word  underline",
-				    CTO_FirstWordUnderRule,
-				    &table->firstWordUnder);
+      ok =
+	compileBrailleIndicator (nested, "first word  underline",
+				 CTO_FirstWordUnderRule,
+				 &table->firstWordUnder);
       break;
     case CTO_UnderSign:
     case CTO_LastWordUnderBefore:
@@ -4083,48 +4096,49 @@ doOpcode:
 				 &table->lastWordUnderBefore);
       break;
     case CTO_LastWordUnderAfter:
-      ok = compileBrailleIndicator (nested,
-				    "last  word underline after",
-				    CTO_LastWordUnderAfterRule,
-				    &table->lastWordUnderAfter);
+      ok =
+	compileBrailleIndicator (nested, "last  word underline after",
+				 CTO_LastWordUnderAfterRule,
+				 &table->lastWordUnderAfter);
       break;
     case CTO_BegUnder:
     case CTO_FirstLetterUnder:
-      ok = compileBrailleIndicator (nested,
-				    "first letter underline",
-				    CTO_FirstLetterUnderRule,
-				    &table->firstLetterUnder);
+      ok =
+	compileBrailleIndicator (nested, "first letter underline",
+				 CTO_FirstLetterUnderRule,
+				 &table->firstLetterUnder);
       break;
     case CTO_EndUnder:
     case CTO_LastLetterUnder:
-      ok = compileBrailleIndicator (nested, "last letter underline",
-				    CTO_LastLetterUnderRule,
-				    &table->lastLetterUnder);
+      ok =
+	compileBrailleIndicator (nested, "last letter underline",
+				 CTO_LastLetterUnderRule,
+				 &table->lastLetterUnder);
       break;
     case CTO_SingleLetterUnder:
-      ok = compileBrailleIndicator (nested,
-				    "single letter underline",
-				    CTO_SingleLetterUnderRule,
-				    &table->singleLetterUnder);
+      ok =
+	compileBrailleIndicator (nested, "single letter underline",
+				 CTO_SingleLetterUnderRule,
+				 &table->singleLetterUnder);
       break;
     case CTO_UnderWord:
-      ok = compileBrailleIndicator (nested,
-				    "underlined word",
-				    CTO_UnderWordRule, &table->underWord);
+      ok =
+	compileBrailleIndicator (nested, "underlined word", CTO_UnderWordRule,
+				 &table->underWord);
       break;
     case CTO_LenUnderPhrase:
       ok = table->lenUnderPhrase = compileNumber (nested);
       break;
     case CTO_BegComp:
-      ok = compileBrailleIndicator (nested, "begin computer braille",
-				    CTO_BegCompRule, &table->begComp);
+      ok =
+	compileBrailleIndicator (nested, "begin computer braille",
+				 CTO_BegCompRule, &table->begComp);
       break;
     case CTO_EndComp:
-      ok = compileBrailleIndicator (nested,
-				    "end computer braslle",
-				    CTO_EndCompRule, &table->endComp);
+      ok =
+	compileBrailleIndicator (nested, "end computer braslle",
+				 CTO_EndCompRule, &table->endComp);
       break;
-
     case CTO_Syllable:
       table->syllables = 1;
     case CTO_Always:
@@ -4154,7 +4168,6 @@ doOpcode:
 	  if (!addRule (nested, opcode, &ruleChars, &ruleDots, after, before))
 	    ok = 0;
       break;
-
     case CTO_CompDots:
     case CTO_Comp6:
       if (!getRuleCharsText (nested, &ruleChars))
@@ -4171,7 +4184,6 @@ doOpcode:
 	ok = 0;
       table->compdotsPattern[ruleChars.chars[0]] = newRuleOffset;
       break;
-
     case CTO_ExactDots:
       if (!getRuleCharsText (nested, &ruleChars))
 	return 0;
@@ -4191,12 +4203,11 @@ doOpcode:
     case CTO_CapsNoCont:
       ruleChars.length = 1;
       ruleChars.chars[0] = 'a';
-      if (!addRule (nested, CTO_CapsNoContRule, &ruleChars, NULL,
-		    after, before))
+      if (!addRule
+	  (nested, CTO_CapsNoContRule, &ruleChars, NULL, after, before))
 	ok = 0;
       table->capsNoCont = newRuleOffset;
       break;
-
     case CTO_Replace:
       if (getRuleCharsText (nested, &ruleChars))
 	{
@@ -4219,7 +4230,6 @@ doOpcode:
       if (!addRule (nested, opcode, &ruleChars, &ruleDots, after, before))
 	ok = 0;
       break;
-
     case CTO_Pass2:
       if (table->numPasses < 2)
 	table->numPasses = 2;
@@ -4249,7 +4259,6 @@ doOpcode:
 	if (!addRule (nested, opcode, &ruleChars, NULL, after, before))
 	  ok = 0;
       break;
-
     case CTO_MultInd:
       {
 	int lastToken;
@@ -4293,9 +4302,9 @@ doOpcode:
 	      {
 		compileError (nested, "character class already defined.");
 	      }
-	    else if ((class = addCharacterClass (nested,
-						 &token.chars[0],
-						 token.length)))
+	    else
+	      if ((class =
+		   addCharacterClass (nested, &token.chars[0], token.length)))
 	      {
 		if (getCharacters (nested, &characters))
 		  {
@@ -4326,7 +4335,6 @@ doOpcode:
       {
 	TranslationTableCharacterAttributes *attributes;
 	const struct CharacterClass *class;
-
     case CTO_After:
 	attributes = &after;
 	goto doClass;
@@ -4410,7 +4418,6 @@ doOpcode:
     case CTO_UpLow:
       ok = compileUplow (nested);
       break;
-
     case CTO_Display:
       if (getRuleCharsText (nested, &ruleChars))
 	if (getRuleDotsPattern (nested, &ruleDots))
@@ -4424,7 +4431,6 @@ doOpcode:
 	    putCharAndDots (nested, ruleChars.chars[0], ruleDots.chars[0]);
 	  }
       break;
-
     default:
       compileError (nested, "unimplemented opcode.");
       break;
@@ -4469,7 +4475,6 @@ lou_readCharFromFile (const char *fileName, int *mode)
 }
 
 static int fileCount = 0;
-
 static FILE *
 findTable (const char *tableName)
 {
