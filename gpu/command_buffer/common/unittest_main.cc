@@ -9,7 +9,12 @@
 #include "ui/gl/gl_implementation.h"
 
 int main(int argc, char** argv) {
+  // On Android, AtExitManager is created in
+  // testing/android/native_test_wrapper.cc before main() is called.
+  // The same thing is also done in base/test/test_suite.cc
+#if !defined(OS_ANDROID)
   base::AtExitManager exit_manager;
+#endif
   gfx::InitializeGLBindings(gfx::kGLImplementationMockGL);
   CommandLine::Init(argc, argv);
   testing::InitGoogleMock(&argc, argv);

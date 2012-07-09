@@ -1072,18 +1072,26 @@
         ],
         'conditions': [
           ['OS=="android"', {
-            'defines': [
-              'SK_BUILD_FOR_ANDROID_NDK',
+            'dependencies!': [
+              'skia_opts',
+              '../third_party/zlib/zlib.gyp:zlib',
             ],
             'conditions': [
-              [ '_toolset == "target"', {
+              ['use_system_skia==1', {
                 'defines': [
                   'SK_RELEASE',  # Assume platform has a release build.
                 ],
-                'dependencies!': [
-                  'skia_opts',
-                  '../third_party/zlib/zlib.gyp:zlib',
+                'include_dirs!': [
+                  'config',  # Avoid including Chromium skia config.
                 ],
+                'libraries': [
+                  '-lskia',
+                ],
+              }, {  # !use_system_skia
+                'defines': [
+                  # Don't use non-NDK available stuff.
+                  'SK_BUILD_FOR_ANDROID_NDK',
+                 ],
               }],
               [ '_toolset == "target" and android_build_type == 0', {
                 'defines': [
