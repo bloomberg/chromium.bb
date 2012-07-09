@@ -51,6 +51,7 @@ PowerButtonObserver::PowerButtonObserver() {
       content::NotificationService::AllSources());
 
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+  DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
 
   // Tell the controller about the initial state.
   ash::Shell::GetInstance()->OnLoginStateChanged(GetCurrentLoginStatus());
@@ -61,6 +62,7 @@ PowerButtonObserver::PowerButtonObserver() {
 }
 
 PowerButtonObserver::~PowerButtonObserver() {
+  DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
 }
 

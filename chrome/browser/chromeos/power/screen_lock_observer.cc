@@ -10,11 +10,11 @@
 namespace chromeos {
 
 ScreenLockObserver::ScreenLockObserver() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+  DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
 }
 
 ScreenLockObserver::~ScreenLockObserver() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+  DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
 }
 
 void ScreenLockObserver::UnlockScreen() {

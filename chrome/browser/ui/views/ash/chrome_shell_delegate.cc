@@ -47,6 +47,7 @@
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/session_manager_client.h"
 #endif
 
 namespace {
@@ -102,8 +103,8 @@ void ChromeShellDelegate::LockScreen() {
 #if defined(OS_CHROMEOS)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession) &&
       !chromeos::KioskModeSettings::Get()->IsKioskModeEnabled()) {
-    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-        NotifyScreenLockRequested();
+    chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
+        RequestLockScreen();
   }
 #endif
 }

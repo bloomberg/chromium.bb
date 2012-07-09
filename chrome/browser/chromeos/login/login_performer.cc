@@ -28,7 +28,7 @@
 #include "chrome/common/net/gaia/gaia_auth_util.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -386,16 +386,14 @@ void LoginPerformer::RequestScreenLock() {
     ResolveScreenLocked();
   } else {
     screen_lock_requested_ = true;
-    DBusThreadManager::Get()->GetPowerManagerClient()->
-        NotifyScreenLockRequested();
+    DBusThreadManager::Get()->GetSessionManagerClient()->RequestLockScreen();
   }
 }
 
 void LoginPerformer::RequestScreenUnlock() {
   DVLOG(1) << "Screen unlock requested";
   if (ScreenLocker::default_screen_locker()) {
-    DBusThreadManager::Get()->GetPowerManagerClient()->
-        NotifyScreenUnlockRequested();
+    DBusThreadManager::Get()->GetSessionManagerClient()->RequestUnlockScreen();
     // Will unsubscribe from notifications once unlock is successful.
   } else {
     LOG(ERROR) << "Screen is not locked";

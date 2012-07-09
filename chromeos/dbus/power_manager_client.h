@@ -74,12 +74,6 @@ class CHROMEOS_EXPORT PowerManagerClient {
     virtual void LockButtonStateChanged(bool down,
                                         const base::TimeTicks& timestamp) {}
 
-    // Called when the screen is locked.
-    virtual void LockScreen() {}
-
-    // Called when the screen is unlocked.
-    virtual void UnlockScreen() {}
-
     // Called when we go idle for threshold time.
     virtual void IdleNotify(int64 threshold_secs) {}
 
@@ -134,22 +128,11 @@ class CHROMEOS_EXPORT PowerManagerClient {
   // Requests shutdown of the system.
   virtual void RequestShutdown() = 0;
 
-  // Notifies PowerManager that a user requested to lock the screen.
-  virtual void NotifyScreenLockRequested() = 0;
-
   // Notifies PowerManager that screen lock has been completed.
   virtual void NotifyScreenLockCompleted() = 0;
 
-  // Notifies PowerManager that a user unlocked the screen.
-  virtual void NotifyScreenUnlockRequested() = 0;
-
   // Notifies PowerManager that screen is unlocked.
   virtual void NotifyScreenUnlockCompleted() = 0;
-
-  // Return whether or not the screen is locked. Implementation should cache
-  // this state so that it can return immediately. Useful for observers that
-  // need to know the current screen lock state when they are added.
-  virtual bool GetIsScreenLocked() = 0;
 
   // Idle management functions:
 

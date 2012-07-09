@@ -50,7 +50,7 @@ using content::UserMetricsAction;
 namespace {
 
 // Observer to start ScreenLocker when the screen lock
-class ScreenLockObserver : public chromeos::PowerManagerClient::Observer,
+class ScreenLockObserver : public chromeos::SessionManagerClient::Observer,
                            public content::NotificationObserver {
  public:
   ScreenLockObserver() : session_started_(false) {
@@ -69,10 +69,10 @@ class ScreenLockObserver : public chromeos::PowerManagerClient::Observer,
     switch (type) {
       case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
         // Register Screen Lock only after a user has logged in.
-        chromeos::PowerManagerClient* power_manager =
-            chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
-        if (!power_manager->HasObserver(this))
-          power_manager->AddObserver(this);
+        chromeos::SessionManagerClient* session_manager =
+            chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
+        if (!session_manager->HasObserver(this))
+          session_manager->AddObserver(this);
         break;
       }
 
@@ -200,8 +200,7 @@ void ScreenLocker::OnLoginSuccess(
         content::Source<Profile>(profile),
         content::Details<const GoogleServiceSigninSuccessDetails>(&details));
   }
-  DBusThreadManager::Get()->GetPowerManagerClient()->
-      NotifyScreenUnlockRequested();
+  DBusThreadManager::Get()->GetSessionManagerClient()->RequestUnlockScreen();
 
   if (login_status_consumer_)
     login_status_consumer_->OnLoginSuccess(username, password, pending_requests,
@@ -287,9 +286,6 @@ void ScreenLocker::Show() {
         new ScreenLocker(UserManager::Get()->GetLoggedInUser());
     locker->Init();
   } else {
-    // PowerManager re-sends lock screen signal if it doesn't
-    // receive the response within timeout. Just send complete
-    // signal.
     DVLOG(1) << "Show: locker already exists. Just sending completion event.";
     DBusThreadManager::Get()->GetPowerManagerClient()->
         NotifyScreenLockCompleted();

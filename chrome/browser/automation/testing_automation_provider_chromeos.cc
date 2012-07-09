@@ -47,6 +47,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/network_change_notifier.h"
@@ -515,8 +516,7 @@ void TestingAutomationProvider::GetOOBEScreenInfo(DictionaryValue* args,
 void TestingAutomationProvider::LockScreen(DictionaryValue* args,
                                            IPC::Message* reply_message) {
   new ScreenLockUnlockObserver(this, reply_message, true);
-  DBusThreadManager::Get()->GetPowerManagerClient()->
-      NotifyScreenLockRequested();
+  DBusThreadManager::Get()->GetSessionManagerClient()->RequestLockScreen();
 }
 
 void TestingAutomationProvider::UnlockScreen(DictionaryValue* args,

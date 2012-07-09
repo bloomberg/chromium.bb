@@ -16,7 +16,7 @@
 namespace chromeos {
 
 void SystemNotification::Init(int icon_resource_id) {
-  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+  DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
   collection_ = static_cast<BalloonCollectionImplAsh*>(
       g_browser_process->notification_ui_manager()->balloon_collection());
   std::string url = web_ui_util::GetImageDataUrlFromResource(icon_resource_id);
@@ -56,7 +56,7 @@ SystemNotification::SystemNotification(Profile* profile,
 }
 
 SystemNotification::~SystemNotification() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+  DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
 }
 
 void SystemNotification::UnlockScreen() {
@@ -84,7 +84,8 @@ void SystemNotification::Show(const string16& message,
   callback_ = callback;
   sticky_ = sticky;
 
-  if (DBusThreadManager::Get()->GetPowerManagerClient()->GetIsScreenLocked()) {
+  if (DBusThreadManager::Get()->GetSessionManagerClient()->
+          GetIsScreenLocked()) {
     if (visible_ && urgent && !urgent_) {
       // Hide the notification so that we show/update it on unlock.
       Hide();

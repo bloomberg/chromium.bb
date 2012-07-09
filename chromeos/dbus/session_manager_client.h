@@ -26,13 +26,22 @@ class CHROMEOS_EXPORT SessionManagerClient {
    public:
     // Called when the owner key is set.
     virtual void OwnerKeySet(bool success) {}
+
     // Called when the property change is complete.
     virtual void PropertyChangeComplete(bool success) {}
+
+    // Called when the screen is locked.
+    virtual void LockScreen() {}
+
+    // Called when the screen is unlocked.
+    virtual void UnlockScreen() {}
+
   };
 
   // Adds and removes the observer.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
+  virtual bool HasObserver(Observer* observer) = 0;
 
   // Kicks off an attempt to emit the "login-prompt-ready" upstart signal.
   virtual void EmitLoginPromptReady() = 0;
@@ -52,6 +61,17 @@ class CHROMEOS_EXPORT SessionManagerClient {
 
   // Stops the current session.
   virtual void StopSession() = 0;
+
+  // Locks the screen.
+  virtual void RequestLockScreen() = 0;
+
+  // Unlocks the screen.
+  virtual void RequestUnlockScreen() = 0;
+
+  // Returns whether or not the screen is locked. Implementation should cache
+  // this state so that it can return immediately. Useful for observers that
+  // need to know the current screen lock state when they are added.
+  virtual bool GetIsScreenLocked() = 0;
 
   // Used for RetrieveDevicePolicy and RetrieveUserPolicy. Takes a serialized
   // protocol buffer as string.  Upon success, we will pass a protobuf to the

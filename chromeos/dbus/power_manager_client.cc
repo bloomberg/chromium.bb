@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/histogram.h"
 #include "base/observer_list.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
@@ -28,25 +27,8 @@ namespace chromeos {
 // The PowerManagerClient implementation used in production.
 class PowerManagerClientImpl : public PowerManagerClient {
  public:
-  enum LockScreensState {
-    LOCK_SCREEN_REQUESTED,  // Lock screen is requested.
-    LOCK_SCREEN_REQUEST_SUCCEEDED,  // Method call succeeded.
-    LOCK_SCREEN_REQUEST_FAILED,  // Method call failed.
-    LOCK_SCREEN_FINISHED,  // Signal is received.
-    NUM_LOCK_SCREEN_STATES
-  };
-
-  enum UnlockScreensState {
-    UNLOCK_SCREEN_REQUESTED,  // Unlock screen is requested.
-    UNLOCK_SCREEN_REQUEST_SUCCEEDED,  // Method call succeeded.
-    UNLOCK_SCREEN_REQUEST_FAILED,  // Method call failed.
-    UNLOCK_SCREEN_FINISHED,  // Signal is received.
-    NUM_UNLOCK_SCREEN_STATES
-  };
-
   explicit PowerManagerClientImpl(dbus::Bus* bus)
       : power_manager_proxy_(NULL),
-        screen_locked_(false),
         weak_ptr_factory_(this) {
     power_manager_proxy_ = bus->GetObjectProxy(
         power_manager::kPowerManagerServiceName,
@@ -95,22 +77,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
         power_manager::kPowerManagerInterface,
         power_manager::kButtonEventSignal,
         base::Bind(&PowerManagerClientImpl::ButtonEventSignalReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&PowerManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    session_manager_proxy_->ConnectToSignal(
-        chromium::kChromiumInterface,
-        chromium::kLockScreenSignal,
-        base::Bind(&PowerManagerClientImpl::ScreenLockSignalReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&PowerManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    session_manager_proxy_->ConnectToSignal(
-        chromium::kChromiumInterface,
-        chromium::kUnlockScreenSignal,
-        base::Bind(&PowerManagerClientImpl::ScreenUnlockSignalReceived,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -299,46 +265,12 @@ class PowerManagerClientImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  virtual void NotifyScreenLockRequested() OVERRIDE {
-    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
-                                 power_manager::kRequestLockScreenMethod);
-    UMA_HISTOGRAM_ENUMERATION("LockScreen.LockScreenPath",
-                              LOCK_SCREEN_REQUESTED,
-                              NUM_LOCK_SCREEN_STATES);
-    power_manager_proxy_->CallMethodWithErrorCallback(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&PowerManagerClientImpl::OnScreenLockRequested,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&PowerManagerClientImpl::OnScreenLockRequestedError,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
   virtual void NotifyScreenLockCompleted() OVERRIDE {
     SimpleMethodCallToPowerManager(power_manager::kScreenIsLockedMethod);
   }
 
-  virtual void NotifyScreenUnlockRequested() OVERRIDE {
-    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
-                                 power_manager::kRequestUnlockScreenMethod);
-    UMA_HISTOGRAM_ENUMERATION("LockScreen.UnlockScreenPath",
-                              UNLOCK_SCREEN_REQUESTED,
-                              NUM_UNLOCK_SCREEN_STATES);
-    power_manager_proxy_->CallMethodWithErrorCallback(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&PowerManagerClientImpl::OnScreenUnlockRequested,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&PowerManagerClientImpl::OnScreenUnlockRequestedError,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
   virtual void NotifyScreenUnlockCompleted() OVERRIDE {
     SimpleMethodCallToPowerManager(power_manager::kScreenIsUnlockedMethod);
-  }
-
-  virtual bool GetIsScreenLocked() OVERRIDE {
-    return screen_locked_;
   }
 
  private:
@@ -503,47 +435,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
     callback.Run(request_id);
   }
 
-  void OnScreenLockRequested(dbus::Response* response) {
-    UMA_HISTOGRAM_ENUMERATION("LockScreen.LockScreenPath",
-                              LOCK_SCREEN_REQUEST_SUCCEEDED,
-                              NUM_LOCK_SCREEN_STATES);
-  }
-
-  void OnScreenLockRequestedError(dbus::ErrorResponse* error_response) {
-    if (error_response) {
-      dbus::MessageReader reader(error_response);
-      std::string error_message;
-      reader.PopString(&error_message);
-      LOG(ERROR) << "Failed to call ScreenLockRequested: "
-                 << error_response->GetErrorName()
-                 << ": " << error_message;
-    }
-    UMA_HISTOGRAM_ENUMERATION("LockScreen.LockScreenPath",
-                              LOCK_SCREEN_REQUEST_FAILED,
-                              NUM_LOCK_SCREEN_STATES);
-  }
-
-  void OnScreenUnlockRequested(dbus::Response* response) {
-    UMA_HISTOGRAM_ENUMERATION("LockScreen.UnlockScreenPath",
-                              UNLOCK_SCREEN_REQUEST_SUCCEEDED,
-                              NUM_UNLOCK_SCREEN_STATES);
-  }
-
-  void OnScreenUnlockRequestedError(dbus::ErrorResponse* error_response) {
-    if (error_response) {
-      dbus::MessageReader reader(error_response);
-      std::string error_message;
-      reader.PopString(&error_message);
-      LOG(ERROR) << "Failed to call ScreenUnlockRequested: "
-                 << error_response->GetErrorName()
-                 << ": " << error_message;
-    }
-    UMA_HISTOGRAM_ENUMERATION("LockScreen.UnlockScreenPath",
-                              UNLOCK_SCREEN_REQUEST_FAILED,
-                              NUM_UNLOCK_SCREEN_STATES);
-  }
-
-
   void OnGetScreenBrightnessPercent(
       const GetScreenBrightnessPercentCallback& callback,
       dbus::Response* response) {
@@ -558,26 +449,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
       LOG(ERROR) << "Error reading response from powerd: "
                  << response->ToString();
     callback.Run(percent);
-  }
-
-  void ScreenLockSignalReceived(dbus::Signal* signal) {
-    // TODO(flackr): This warning is actually a signal that things are working
-    // as expected. As per http://crbug.com/126217, this will help determine
-    // if the problem is with dbus or in chrome.
-    LOG(WARNING) << "LockScreen signal received from power manager.";
-    screen_locked_ = true;
-    UMA_HISTOGRAM_ENUMERATION("LockScreen.LockScreenPath",
-                              LOCK_SCREEN_FINISHED,
-                              NUM_LOCK_SCREEN_STATES);
-    FOR_EACH_OBSERVER(Observer, observers_, LockScreen());
-  }
-
-  void ScreenUnlockSignalReceived(dbus::Signal* signal) {
-    screen_locked_ = false;
-    UMA_HISTOGRAM_ENUMERATION("LockScreen.UnlockScreenPath",
-                              UNLOCK_SCREEN_FINISHED,
-                              NUM_UNLOCK_SCREEN_STATES);
-    FOR_EACH_OBSERVER(Observer, observers_, UnlockScreen());
   }
 
   void IdleNotifySignalReceived(dbus::Signal* signal) {
@@ -634,7 +505,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
   dbus::ObjectProxy* power_manager_proxy_;
   dbus::ObjectProxy* session_manager_proxy_;
   ObserverList<Observer> observers_;
-  bool screen_locked_;
   base::WeakPtrFactory<PowerManagerClientImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerManagerClientImpl);
@@ -648,8 +518,7 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
       : discharging_(true),
         battery_percentage_(40),
         brightness_(50.0),
-        pause_count_(2),
-        screen_locked_(false) {
+        pause_count_(2) {
   }
 
   virtual ~PowerManagerClientStubImpl() {}
@@ -726,19 +595,8 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
       int overrides,
       const PowerStateRequestIdCallback& callback) OVERRIDE {}
 
-  virtual void NotifyScreenLockRequested() OVERRIDE {
-    screen_locked_ = true;
-    FOR_EACH_OBSERVER(Observer, observers_, LockScreen());
-  }
   virtual void NotifyScreenLockCompleted() OVERRIDE {}
-  virtual void NotifyScreenUnlockRequested() OVERRIDE {
-    screen_locked_ = false;
-    FOR_EACH_OBSERVER(Observer, observers_, UnlockScreen());
-  }
   virtual void NotifyScreenUnlockCompleted() OVERRIDE {}
-  virtual bool GetIsScreenLocked() OVERRIDE {
-    return screen_locked_;
-  }
 
  private:
   void Update() {
@@ -786,7 +644,6 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
   ObserverList<Observer> observers_;
   base::RepeatingTimer<PowerManagerClientStubImpl> timer_;
   PowerSupplyStatus status_;
-  bool screen_locked_;
 };
 
 PowerManagerClient::PowerManagerClient() {

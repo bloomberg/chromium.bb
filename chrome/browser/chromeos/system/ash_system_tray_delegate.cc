@@ -66,6 +66,7 @@
 #include "chrome/common/url_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
@@ -152,6 +153,7 @@ void BluetoothDeviceConnectError() {
 class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public AudioHandler::VolumeObserver,
                            public PowerManagerClient::Observer,
+                           public SessionManagerClient::Observer,
                            public NetworkMenuIcon::Delegate,
                            public NetworkMenu::Delegate,
                            public NetworkLibrary::NetworkManagerObserver,
@@ -184,6 +186,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate(
         PowerManagerClient::UPDATE_INITIAL);
+    DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
 
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
     crosnet->AddNetworkManagerObserver(this);
@@ -226,6 +229,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     AudioHandler* audiohandler = AudioHandler::GetInstance();
     if (audiohandler)
       audiohandler->RemoveVolumeObserver(this);
+    DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
     if (crosnet) {
@@ -380,8 +384,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void RequestLockScreen() OVERRIDE {
-    DBusThreadManager::Get()->GetPowerManagerClient()->
-        NotifyScreenLockRequested();
+    DBusThreadManager::Get()->GetSessionManagerClient()->RequestLockScreen();
   }
 
   virtual void RequestRestart() OVERRIDE {
@@ -951,6 +954,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     NotifyRefreshClock();
   }
 
+  // Overridden from SessionManagerClient::Observer.
   virtual void LockScreen() OVERRIDE {
     screen_locked_ = true;
     ash::Shell::GetInstance()->status_area_widget()->

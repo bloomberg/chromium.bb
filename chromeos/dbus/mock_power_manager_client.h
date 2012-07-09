@@ -38,11 +38,8 @@ class MockPowerManagerClient : public PowerManagerClient {
                     uint32,
                     int,
                     const PowerStateRequestIdCallback&));
-  MOCK_METHOD0(NotifyScreenLockRequested, void(void));
   MOCK_METHOD0(NotifyScreenLockCompleted, void(void));
-  MOCK_METHOD0(NotifyScreenUnlockRequested, void(void));
   MOCK_METHOD0(NotifyScreenUnlockCompleted, void(void));
-  MOCK_METHOD0(GetIsScreenLocked, bool(void));
 };
 
 }  // namespace chromeos
