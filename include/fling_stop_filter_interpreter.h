@@ -32,21 +32,25 @@ class FlingStopFilterInterpreter : public Interpreter {
   virtual void SetHardwareProperties(const HardwareProperties& hwprops);
 
  private:
-   // May override an outgoing gesture with a fling stop gesture.
-  void EvaluateFlingStop(bool finger_added, stime_t now, Gesture* result);
+  // May override an outgoing gesture with a fling stop gesture.
+
+  void UpdateFlingStopDeadline(const HardwareState& hwstate);
+  stime_t SetNextDeadlineAndReturnTimeoutVal(stime_t now, stime_t next_timeout);
 
   scoped_ptr<Interpreter> next_;
 
-  // finger_cnt from previously input HardwareState.
-  short prev_finger_cnt_;
+  // touch_cnt from previously input HardwareState.
+  short prev_touch_cnt_;
   // timestamp from previous input HardwareState.
   stime_t prev_timestamp_;
 
   // Result to pass out.
   Gesture result_;
 
-  // If nonzero, when a new finger arrived that may want us to stop scroll.
-  stime_t finger_arrived_time_;
+  // When we should send fling-stop, or 0.0 if not set.
+  stime_t fling_stop_deadline_;
+  // When we need to call HandlerTimer on next_, or 0.0 if no outstanding timer.
+  stime_t next_timer_deadline_;
 
   // How long to wait when new fingers arrive (and possibly scroll), before
   // halting fling
