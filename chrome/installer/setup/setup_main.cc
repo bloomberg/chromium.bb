@@ -852,8 +852,9 @@ void UninstallGoogleUpdate(bool system_install) {
     if (base::LaunchProcess(uninstall_cmd, base::LaunchOptions(),
                             process.Receive())) {
       int exit_code = 0;
-      if (base::WaitForExitCodeWithTimeout(process, &exit_code,
-                                           kGoogleUpdateTimeoutMs)) {
+      if (base::WaitForExitCodeWithTimeout(
+              process, &exit_code,
+              base::TimeDelta::FromMilliseconds(kGoogleUpdateTimeoutMs))) {
         if (exit_code == 0) {
           LOG(INFO) << "  normal exit.";
         } else {
