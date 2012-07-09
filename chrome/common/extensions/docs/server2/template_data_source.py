@@ -12,6 +12,8 @@ class TemplateDataSource(object):
   """
   def __init__(self, branch, api_data_source, cache_builder, base_paths):
     self._branch_info = self._MakeBranchDict(branch)
+    self._static_resources = ((('/' + branch) if branch != 'local' else '') +
+                              '/static')
     self._api_data_source = api_data_source
     self._cache = cache_builder.build(self._LoadTemplate)
     self._base_paths = base_paths
@@ -44,6 +46,7 @@ class TemplateDataSource(object):
       'apis': self._api_data_source,
       'branchInfo': self._branch_info,
       'partials': self,
+      'static': self._static_resources
     }).text
 
   def __getitem__(self, key):
