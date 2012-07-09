@@ -5525,6 +5525,7 @@
    bug_65940_b
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN3IPC11SyncChannelC1ERKNS_13ChannelHandleENS_7Channel4ModeEPNS_8ListenerEPN4base22SingleThreadTaskRunnerEbPNS8_13WaitableEventE
    fun:_ZN11ChildThread4InitEv
    fun:_ZN11ChildThreadC2ERKSs
