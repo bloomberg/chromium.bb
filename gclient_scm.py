@@ -201,17 +201,21 @@ class GitWrapper(SCMWrapper):
                   'submodule.$name.ignore', 'all']
     cmd = ['git', 'submodule', '--quiet', 'foreach', ' '.join(submod_cmd)]
     cmd2 = ['git', 'config', 'diff.ignoreSubmodules', 'all']
+    cmd3 = ['git', 'config', 'branch.autosetupmerge']
+    kwargs = {'cwd': self.checkout_path,
+              'print_stdout': False,
+              'filter_fn': lambda x: None}
     try:
-      gclient_utils.CheckCallAndFilter(
-        cmd, cwd=self.checkout_path, print_stdout=False,
-        filter_fn=lambda x: None)
-      gclient_utils.CheckCallAndFilter(
-        cmd2, cwd=self.checkout_path, print_stdout=False,
-        filter_fn=lambda x: None)
+      gclient_utils.CheckCallAndFilter(cmd, **kwargs)
+      gclient_utils.CheckCallAndFilter(cmd2, **kwargs)
     except subprocess2.CalledProcessError:
       # Not a fatal error, or even very interesting in a non-git-submodule
       # world.  So just keep it quiet.
       pass
+    try:
+      gclient_utils.CheckCallAndFilter(cmd3, **kwargs)
+    except subprocess2.CalledProcessError:
+      gclient_utils.CheckCallAndFilter(cmd3 + ['always'], **kwargs)
 
   def update(self, options, args, file_list):
     """Runs git to update or transparently checkout the working copy.
