@@ -3338,11 +3338,6 @@ input_destroy(struct input *input)
 	input_remove_keyboard_focus(input);
 	input_remove_pointer_focus(input);
 
-	if (input->xkb.state)
-		xkb_state_unref(input->xkb.state);
-	if (input->xkb.keymap)
-		xkb_map_unref(input->xkb.keymap);
-
 	if (input->drag_offer)
 		data_offer_destroy(input->drag_offer);
 
