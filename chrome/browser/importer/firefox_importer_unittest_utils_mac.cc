@@ -152,7 +152,7 @@ FFUnitTestDecryptorProxy::~FFUnitTestDecryptorProxy() {
   channel_->Close();
 
   if (child_process_) {
-    base::WaitForSingleProcess(child_process_, 5000);
+    base::WaitForSingleProcess(child_process_, base::TimeDelta::FromSeconds(5));
     base::CloseProcessHandle(child_process_);
   }
 }
