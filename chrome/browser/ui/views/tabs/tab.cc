@@ -213,7 +213,7 @@ Tab::TabImage Tab::tab_active_search_ = {0};
 Tab::TabImage Tab::tab_inactive_ = {0};
 
 // static
-const char Tab::kViewClassName[] = "browser/tabs/Tab";
+const char Tab::kViewClassName[] = "BrowserTab";
 
 ////////////////////////////////////////////////////////////////////////////////
 // Tab, public:

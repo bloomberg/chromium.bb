@@ -7,24 +7,84 @@
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "ui/aura/event.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 
 namespace {
 
-std::string FindAppropriateHistogramNameFromTarget(aura::Window* window,
-                                                   const gfx::Point& location) {
-  std::string name = window ? window->name() : std::string();
-  views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
-  if (widget) {
-    views::View* view =
-        widget->GetRootView()->GetEventHandlerForPoint(location);
-    if (view)
-      name = view->GetClassName();
+enum GestureActionType {
+  GESTURE_UNKNOWN,
+  GESTURE_OMNIBOX_PINCH,
+  GESTURE_OMNIBOX_SCROLL,
+  GESTURE_TABSTRIP_PINCH,
+  GESTURE_TABSTRIP_SCROLL,
+  GESTURE_BEZEL_SCROLL,
+  GESTURE_DESKTOP_SCROLL,
+  GESTURE_DESKTOP_PINCH,
+  GESTURE_WEBPAGE_PINCH,
+// NOTE: Add new action types only immediately above this line. Also, make sure
+// the enum list in tools/histogram/histograms.xml is updated with any change in
+// here.
+  GESTURE_ACTION_COUNT
+};
+
+GestureActionType FindGestureActionType(aura::Window* window,
+                                        const aura::GestureEvent& event) {
+  if (!window || window->GetRootWindow() == window) {
+    if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
+      return GESTURE_BEZEL_SCROLL;
+    return GESTURE_UNKNOWN;
   }
 
-  if (name.empty())
-    name = "[unknown]";
-  return name;
+  std::string name = window ? window->name() : std::string();
+
+  const char kDesktopBackgroundView[] = "DesktopBackgroundView";
+  if (name == kDesktopBackgroundView) {
+    if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
+      return GESTURE_DESKTOP_SCROLL;
+    if (event.type() == ui::ET_GESTURE_PINCH_BEGIN)
+      return GESTURE_DESKTOP_PINCH;
+    return GESTURE_UNKNOWN;
+  }
+
+  const char kWebPage[] = "RenderWidgetHostViewAura";
+  if (name == kWebPage) {
+    if (event.type() == ui::ET_GESTURE_PINCH_BEGIN)
+      return GESTURE_WEBPAGE_PINCH;
+    return GESTURE_UNKNOWN;
+  }
+
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
+  if (!widget)
+    return GESTURE_UNKNOWN;
+
+  views::View* view = widget->GetRootView()->
+      GetEventHandlerForPoint(event.location());
+  if (!view)
+    return GESTURE_UNKNOWN;
+
+  name = view->GetClassName();
+
+  const char kTabStrip[] = "TabStrip";
+  const char kTab[] = "BrowserTab";
+  if (name == kTabStrip || name == kTab) {
+    if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
+      return GESTURE_TABSTRIP_SCROLL;
+    if (event.type() == ui::ET_GESTURE_PINCH_BEGIN)
+      return GESTURE_TABSTRIP_PINCH;
+    return GESTURE_UNKNOWN;
+  }
+
+  const char kOmnibox[] = "BrowserOmniboxViewViews";
+  if (name == kOmnibox) {
+    if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
+      return GESTURE_OMNIBOX_SCROLL;
+    if (event.type() == ui::ET_GESTURE_PINCH_BEGIN)
+      return GESTURE_OMNIBOX_PINCH;
+    return GESTURE_UNKNOWN;
+  }
+
+  return GESTURE_UNKNOWN;
 }
 
 std::vector<int> GetEventCodes() {
@@ -81,17 +141,15 @@ TouchUMA::~TouchUMA() {
 void TouchUMA::RecordGestureEvent(aura::Window* target,
                                   const aura::GestureEvent& event) {
   UMA_HISTOGRAM_ENUMERATION("Ash.GestureCreated",
-      ui_event_type_map_[event.type()],
-      ui_event_type_map_.size());
+                            ui_event_type_map_[event.type()],
+                            ui_event_type_map_.size());
 
-  // Try to record the component the gesture was created on.
-  std::string component = FindAppropriateHistogramNameFromTarget(target,
-      event.location());
-  base::Histogram* histogram = base::LinearHistogram::FactoryGet(
-      StringPrintf("Ash.GestureTarget.%s", component.c_str()),
-      1, ui_event_type_map_.size(), ui_event_type_map_.size() + 1,
-      base::Histogram::kUmaTargetedHistogramFlag);
-  histogram->Add(ui_event_type_map_[event.type()]);
+  GestureActionType action = FindGestureActionType(target, event);
+  if (action != GESTURE_UNKNOWN) {
+    UMA_HISTOGRAM_ENUMERATION("Ash.GestureTarget",
+                              action,
+                              GESTURE_ACTION_COUNT);
+  }
 }
 
 void TouchUMA::RecordTouchEvent(aura::Window* target,

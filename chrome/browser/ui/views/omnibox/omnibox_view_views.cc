@@ -216,8 +216,7 @@ int GetEditFontPixelSize(bool popup_window_mode) {
 }  // namespace
 
 // static
-const char OmniboxViewViews::kViewClassName[] =
-    "browser/ui/views/omnibox/OmniboxViewViews";
+const char OmniboxViewViews::kViewClassName[] = "BrowserOmniboxViewViews";
 
 OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
                                    ToolbarModel* toolbar_model,
