@@ -198,4 +198,63 @@ TEST(SandboxBpf, BasicBlacklistWithSigsys) {
   TryPolicyInProcess(BlacklistNanosleepPolicySigsys, NanosleepProcessSigsys);
 }
 
+// A more complex, but synthetic policy. This tests the correctness of the BPF
+// program by iterating through all syscalls and checking for an errno that
+// depends on the syscall number. Unlike the Verifier, this exercises the BPF
+// interpreter in the kernel.
+
+// We try to make sure we exercise optimizations in the BPF compiler. We make
+// sure that the compiler can have an opportunity to coalesce syscalls with
+// contiguous numbers and we also make sure that disjoint sets can return the
+// same errno.
+int SysnoToRandomErrno(int sysno) {
+  // Small contiguous sets of 3 system calls return an errno equal to the
+  // index of that set + 1 (so that we never return a NUL errno).
+  return ((sysno & ~3) >> 2) % 29 + 1;
+}
+
+Sandbox::ErrorCode SyntheticPolicy(int sysno) {
+  if (sysno < static_cast<int>(MIN_SYSCALL) ||
+      sysno > static_cast<int>(MAX_SYSCALL)) {
+    // FIXME: we should really not have to do that in a trivial policy.
+    return ENOSYS;
+  }
+  if (sysno == __NR_exit_group) {
+    // exit_group() is special, we really need it to work.
+    return Sandbox::SB_ALLOWED;
+  } else {
+    return SysnoToRandomErrno(sysno);
+  }
+}
+
+void SyntheticProcess(void) {
+  // Ensure that that kExpectedReturnValue + syscallnumber + 1 does not int
+  // overflow.
+  if (std::numeric_limits<int>::max() - kExpectedReturnValue - 1 <
+      static_cast<int>(MAX_SYSCALL)) {
+    ExitGroup(1);
+  }
+  for (int syscall_number =  static_cast<int>(MIN_SYSCALL);
+           syscall_number <= static_cast<int>(MAX_SYSCALL);
+         ++syscall_number) {
+    if (syscall_number == __NR_exit_group) {
+      // exit_group() is special
+      continue;
+    }
+    errno = 0;
+    if (syscall(syscall_number) != -1 ||
+        errno != SysnoToRandomErrno(syscall_number)) {
+      // Exit with a return value that is different than kExpectedReturnValue
+      // to signal an error. Make it easy to see what syscall_number failed in
+      // the test report.
+      ExitGroup(kExpectedReturnValue + syscall_number + 1);
+    }
+  }
+  ExitGroup(kExpectedReturnValue);
+}
+
+TEST(SandboxBpf, SyntheticPolicy) {
+  TryPolicyInProcess(SyntheticPolicy, SyntheticProcess);
+}
+
 } // namespace
