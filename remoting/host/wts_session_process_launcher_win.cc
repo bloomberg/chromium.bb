@@ -316,7 +316,8 @@ void WtsSessionProcessLauncher::OnObjectSignaled(HANDLE object) {
   // misconfiguration.
   int exit_code;
   bool stop_trying =
-      base::WaitForExitCodeWithTimeout(process_.handle(), &exit_code, 0) &&
+      base::WaitForExitCodeWithTimeout(
+          process_.handle(), &exit_code, base::TimeDelta()) &&
       kMinPermanentErrorExitCode <= exit_code &&
       exit_code <= kMaxPermanentErrorExitCode;
 

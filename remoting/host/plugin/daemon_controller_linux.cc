@@ -132,9 +132,9 @@ static bool RunScript(const std::vector<std::string>& args, int* exit_code) {
                                     &process_handle);
   if (result) {
     if (exit_code) {
-      result = base::WaitForExitCodeWithTimeout(process_handle,
-                                                exit_code,
-                                                kDaemonTimeoutMs);
+      result = base::WaitForExitCodeWithTimeout(
+          process_handle, exit_code,
+          base::TimeDelta::FromMilliseconds(kDaemonTimeoutMs));
     }
     base::CloseProcessHandle(process_handle);
   }
