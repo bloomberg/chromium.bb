@@ -423,7 +423,7 @@ void CloudPrintProxyPolicyStartupTest::ShutdownAndWaitForExitWithTimeout(
   int exit_code = -100;
   bool exited =
       base::WaitForExitCodeWithTimeout(handle, &exit_code,
-                                       TestTimeouts::action_timeout_ms());
+                                       TestTimeouts::action_timeout());
   EXPECT_TRUE(exited);
   EXPECT_EQ(exit_code, 0);
   base::CloseProcessHandle(handle);
