@@ -6,27 +6,19 @@
 #include "gpu/command_buffer/common/gl_mock.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
-#include "gpu/command_buffer/service/common_decoder.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
 using ::testing::InSequence;
+using ::testing::Return;
 using ::testing::SetArgumentPointee;
 
 namespace gpu {
 namespace gles2 {
-
-class MockDecoder : public CommonDecoder {
- public:
-  virtual ~MockDecoder() { }
-  MOCK_METHOD3(DoCommand, error::Error(
-     unsigned int command,
-     unsigned int arg_count,
-     const void* cmd_data));
-  MOCK_CONST_METHOD1(GetCommandName, const char* (unsigned int command_id));
-};
 
 class QueryManagerTest : public testing::Test {
  public:
@@ -48,7 +40,7 @@ class QueryManagerTest : public testing::Test {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
     ::gfx::GLInterface::SetGLInterface(gl_.get());
     engine_.reset(new MockCommandBufferEngine());
-    decoder_.reset(new MockDecoder());
+    decoder_.reset(new MockGLES2Decoder());
     decoder_->set_engine(engine_.get());
     TestHelper::SetupFeatureInfoInitExpectations(
         gl_.get(),
@@ -90,7 +82,7 @@ class QueryManagerTest : public testing::Test {
 
   // Use StrictMock to make 100% sure we know how GL will be called.
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
-  scoped_ptr<MockDecoder> decoder_;
+  scoped_ptr<MockGLES2Decoder> decoder_;
   scoped_ptr<QueryManager> manager_;
 
  private:
@@ -469,6 +461,8 @@ TEST_F(QueryManagerTest, ExitWithPendingQuery) {
   QueueQuery(query.get(), kService1Id, kSubmitCount);
 }
 
+// Test that when based on ARB_occlusion_query2 we use GL_ANY_SAMPLES_PASSED_ARB
+// for GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT
 TEST_F(QueryManagerTest, ARBOcclusionQuery2) {
   const GLuint kClient1Id = 1;
   const GLuint kService1Id = 11;
@@ -501,6 +495,8 @@ TEST_F(QueryManagerTest, ARBOcclusionQuery2) {
   manager->Destroy(false);
 }
 
+// Test that when based on ARB_occlusion_query we use GL_SAMPLES_PASSED_ARB
+// for GL_ANY_SAMPLES_PASSED_EXT
 TEST_F(QueryManagerTest, ARBOcclusionQuery) {
   const GLuint kClient1Id = 1;
   const GLuint kService1Id = 11;
@@ -530,6 +526,41 @@ TEST_F(QueryManagerTest, ARBOcclusionQuery) {
       .RetiresOnSaturation();
   EXPECT_TRUE(manager->BeginQuery(query));
   EXPECT_TRUE(manager->EndQuery(query, kSubmitCount));
+  manager->Destroy(false);
+}
+
+TEST_F(QueryManagerTest, GetErrorQuery) {
+  const GLuint kClient1Id = 1;
+  const GLenum kTarget = GL_GET_ERROR_QUERY_CHROMIUM;
+  const uint32 kSubmitCount = 123;
+
+  TestHelper::SetupFeatureInfoInitExpectations(gl_.get(), "");
+  FeatureInfo::Ref feature_info(new FeatureInfo());
+  feature_info->Initialize("*");
+  scoped_ptr<QueryManager> manager(
+      new QueryManager(decoder_.get(), feature_info.get()));
+
+  QueryManager::Query* query = manager->CreateQuery(
+      kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
+  ASSERT_TRUE(query != NULL);
+
+  // Setup shared memory like client would.
+  QuerySync* sync = decoder_->GetSharedMemoryAs<QuerySync*>(
+      kSharedMemoryId, kSharedMemoryOffset, sizeof(*sync));
+  ASSERT_TRUE(sync != NULL);
+  sync->Reset();
+
+  EXPECT_TRUE(manager->BeginQuery(query));
+
+  EXPECT_CALL(*decoder_.get(), GetGLError())
+      .WillOnce(Return(GL_INVALID_ENUM))
+      .RetiresOnSaturation();
+
+  EXPECT_TRUE(manager->EndQuery(query, kSubmitCount));
+  EXPECT_FALSE(query->pending());
+
+  EXPECT_EQ(static_cast<GLuint>(GL_INVALID_ENUM), sync->result);
+
   manager->Destroy(false);
 }
 

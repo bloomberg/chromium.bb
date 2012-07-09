@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+
 #include "../client/query_tracker.h"
 
 #include "../client/atomicops.h"
-#include "../client/cmd_buffer_helper.h"
+#include "../client/gles2_cmd_helper.h"
+#include "../client/gles2_implementation.h"
 #include "../client/mapped_memory.h"
 
 namespace gpu {
@@ -49,6 +53,44 @@ bool QuerySyncManager::Alloc(QuerySyncManager::QueryInfo* info) {
 
 void QuerySyncManager::Free(const QuerySyncManager::QueryInfo& info) {
   free_queries_.push(info);
+}
+
+void QueryTracker::Query::Begin(GLES2Implementation* gl) {
+  // init memory, inc count
+  MarkAsActive();
+
+  switch (target()) {
+    case GL_GET_ERROR_QUERY_CHROMIUM:
+      // To nothing on begin for error queries.
+      break;
+    default:
+      // tell service about id, shared memory and count
+      gl->helper()->BeginQueryEXT(target(), id(), shm_id(), shm_offset());
+      break;
+  }
+}
+
+void QueryTracker::Query::End(GLES2Implementation* gl) {
+  switch (target()) {
+    case GL_GET_ERROR_QUERY_CHROMIUM: {
+      GLenum error = gl->GetClientSideGLError();
+      if (error == GL_NO_ERROR) {
+        // There was no error so start the query on the serivce.
+        // it will end immediately.
+        gl->helper()->BeginQueryEXT(target(), id(), shm_id(), shm_offset());
+      } else {
+        // There's an error on the client, no need to bother the service. just
+        // set the query as completed and return the error.
+        if (error != GL_NO_ERROR) {
+          state_ = kComplete;
+          result_ = error;
+          return;
+        }
+      }
+    }
+  }
+  gl->helper()->EndQueryEXT(target(), submit_count());
+  MarkAsPending(gl->helper()->InsertToken());
 }
 
 bool QueryTracker::Query::CheckResultsAvailable(

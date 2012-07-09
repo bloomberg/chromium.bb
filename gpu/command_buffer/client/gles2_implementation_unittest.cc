@@ -2564,6 +2564,60 @@ TEST_F(GLES2ImplementationTest, BeginEndQueryEXT) {
   EXPECT_EQ(0u, available);
 }
 
+TEST_F(GLES2ImplementationTest, ErrorQuery) {
+  GLuint id = 0;
+  gl_->GenQueriesEXT(1, &id);
+  ClearCommands();
+
+  // Test BeginQueryEXT does NOT insert commands.
+  gl_->BeginQueryEXT(GL_GET_ERROR_QUERY_CHROMIUM, id);
+  EXPECT_TRUE(NoCommandsWritten());
+  QueryTracker::Query* query = GetQuery(id);
+  ASSERT_TRUE(query != NULL);
+
+  // Test EndQueryEXT sends both begin and end command
+  struct EndCmds {
+    BeginQueryEXT begin_query;
+    EndQueryEXT end_query;
+  };
+  EndCmds expected_end_cmds;
+  expected_end_cmds.begin_query.Init(
+      GL_GET_ERROR_QUERY_CHROMIUM, id, query->shm_id(), query->shm_offset());
+  expected_end_cmds.end_query.Init(
+      GL_GET_ERROR_QUERY_CHROMIUM, query->submit_count());
+  const void* commands = GetPut();
+  gl_->EndQueryEXT(GL_GET_ERROR_QUERY_CHROMIUM);
+  EXPECT_EQ(0, memcmp(
+      &expected_end_cmds, commands, sizeof(expected_end_cmds)));
+  ClearCommands();
+
+  // Check result is not yet available.
+  GLuint available = 0xBDu;
+  gl_->GetQueryObjectuivEXT(id, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(0u, available);
+
+  // Test no commands are sent if there is a client side error.
+
+  // Generate a client side error
+  gl_->ActiveTexture(GL_TEXTURE0 - 1);
+
+  gl_->BeginQueryEXT(GL_GET_ERROR_QUERY_CHROMIUM, id);
+  gl_->EndQueryEXT(GL_GET_ERROR_QUERY_CHROMIUM);
+  EXPECT_TRUE(NoCommandsWritten());
+
+  // Check result is available.
+  gl_->GetQueryObjectuivEXT(id, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_NE(0u, available);
+
+  // Check result.
+  GLuint result = 0xBDu;
+  gl_->GetQueryObjectuivEXT(id, GL_QUERY_RESULT_EXT, &result);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(static_cast<GLuint>(GL_INVALID_ENUM), result);
+}
+
 #include "gpu/command_buffer/client/gles2_implementation_unittest_autogen.h"
 
 }  // namespace gles2

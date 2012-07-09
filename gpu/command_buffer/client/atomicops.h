@@ -11,7 +11,7 @@
 
 namespace gpu {
 
-void MemoryBarrier();
+GPU_EXPORT void MemoryBarrier();
 
 class LockImpl;
 class GPU_EXPORT Lock {

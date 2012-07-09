@@ -514,6 +514,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual bool GetServiceTextureId(uint32 client_texture_id,
                                    uint32* service_texture_id);
 
+  virtual uint32 GetGLError() OVERRIDE;
+
   // Restores the current state to the user's settings.
   void RestoreCurrentFramebufferBindings();
   void RestoreCurrentRenderbufferBindings();
@@ -1175,9 +1177,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Gets the number of values that will be returned by glGetXXX. Returns
   // false if pname is unknown.
   bool GetNumValuesReturnedForGLGet(GLenum pname, GLsizei* num_values);
-
-  // Gets the GLError through our wrapper.
-  GLenum GetGLError();
 
   // Gets the GLError and stores it in our wrapper. Effectively
   // this lets us peek at the error without losing it.
@@ -5046,7 +5045,7 @@ void GLES2DecoderImpl::DoUseProgram(GLuint program) {
   }
 }
 
-GLenum GLES2DecoderImpl::GetGLError() {
+uint32 GLES2DecoderImpl::GetGLError() {
   // Check the GL error first, then our wrapped error.
   GLenum error = glGetError();
   if (error == GL_NO_ERROR && error_bits_ != 0) {

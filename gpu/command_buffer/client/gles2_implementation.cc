@@ -503,6 +503,10 @@ GLES2Implementation::~GLES2Implementation() {
   Finish();
 }
 
+GLES2CmdHelper* GLES2Implementation::helper() const {
+  return helper_;
+}
+
 GLuint GLES2Implementation::MakeTextureId() {
   GLuint id;
   GetIdHandler(id_namespaces::kTextures)->MakeIds(this, 0, 1, &id);
@@ -592,11 +596,28 @@ GLenum GLES2Implementation::GetError() {
   return err;
 }
 
+GLenum GLES2Implementation::GetClientSideGLError() {
+  if (error_bits_ == 0) {
+    return GL_NO_ERROR;
+  }
+
+  GLenum error = GL_NO_ERROR;
+  for (uint32 mask = 1; mask != 0; mask = mask << 1) {
+    if ((error_bits_ & mask) != 0) {
+      error = GLES2Util::GLErrorBitToGLError(mask);
+      break;
+    }
+  }
+  error_bits_ &= ~GLES2Util::GLErrorToErrorBit(error);
+  return error;
+}
+
 GLenum GLES2Implementation::GetGLError() {
   TRACE_EVENT0("gpu", "GLES2::GetGLError");
   // Check the GL error first, then our wrapped error.
   typedef gles2::GetError::Result Result;
   Result* result = GetResultAs<Result*>();
+  // If we couldn't allocate a result the context is lost.
   if (!result) {
     return GL_NO_ERROR;
   }
@@ -604,16 +625,9 @@ GLenum GLES2Implementation::GetGLError() {
   helper_->GetError(GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   GLenum error = *result;
-  if (error == GL_NO_ERROR && error_bits_ != 0) {
-    for (uint32 mask = 1; mask != 0; mask = mask << 1) {
-      if ((error_bits_ & mask) != 0) {
-        error = GLES2Util::GLErrorBitToGLError(mask);
-        break;
-      }
-    }
-  }
-
-  if (error != GL_NO_ERROR) {
+  if (error == GL_NO_ERROR) {
+    error = GetClientSideGLError();
+  } else {
     // There was an error, clear the corresponding wrapped error.
     error_bits_ &= ~GLES2Util::GLErrorToErrorBit(error);
   }
@@ -3085,11 +3099,7 @@ void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
 
   current_query_ = query;
 
-  // init memory, inc count
-  query->MarkAsActive();
-
-  // tell service about id, shared memory and count
-  helper_->BeginQueryEXT(target, id, query->shm_id(), query->shm_offset());
+  query->Begin(this);
 }
 
 void GLES2Implementation::EndQueryEXT(GLenum target) {
@@ -3108,8 +3118,7 @@ void GLES2Implementation::EndQueryEXT(GLenum target) {
     return;
   }
 
-  helper_->EndQueryEXT(target, current_query_->submit_count());
-  current_query_->MarkAsPending(helper_->InsertToken());
+  current_query_->End(this);
   current_query_ = NULL;
 }
 

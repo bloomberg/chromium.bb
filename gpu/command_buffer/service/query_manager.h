@@ -17,7 +17,7 @@
 
 namespace gpu {
 
-class CommonDecoder;
+class GLES2Decoder;
 
 namespace gles2 {
 
@@ -132,7 +132,7 @@ class GPU_EXPORT QueryManager {
   };
 
   QueryManager(
-      CommonDecoder* decoder,
+      GLES2Decoder* decoder,
       FeatureInfo* feature_info);
   ~QueryManager();
 
@@ -162,6 +162,10 @@ class GPU_EXPORT QueryManager {
   // True if there are pending queries.
   bool HavePendingQueries();
 
+  GLES2Decoder* decoder() const {
+    return decoder_;
+  }
+
  private:
   void StartTracking(Query* query);
   void StopTracking(Query* query);
@@ -183,8 +187,8 @@ class GPU_EXPORT QueryManager {
   // used to emulate a query.
   GLenum AdjustTargetForEmulation(GLenum target);
 
-  // Used to validate shared memory.
-  CommonDecoder* decoder_;
+  // Used to validate shared memory and get GL errors.
+  GLES2Decoder* decoder_;
 
   bool use_arb_occlusion_query2_for_occlusion_query_boolean_;
   bool use_arb_occlusion_query_for_occlusion_query_boolean_;

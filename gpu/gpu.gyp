@@ -25,6 +25,8 @@
       'command_buffer/client/gles2_implementation.h',
       'command_buffer/client/program_info_manager.cc',
       'command_buffer/client/program_info_manager.h',
+      'command_buffer/client/query_tracker.cc',
+      'command_buffer/client/query_tracker.h',
       'command_buffer/client/share_group.cc',
       'command_buffer/client/share_group.h',
     ]

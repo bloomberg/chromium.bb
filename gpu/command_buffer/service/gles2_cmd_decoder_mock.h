@@ -72,6 +72,7 @@ class MockGLES2Decoder : public GLES2Decoder {
       int width,
       int height,
       bool is_texture_immutable));
+  MOCK_METHOD0(GetGLError,  uint32());
   MOCK_METHOD1(SetMsgCallback, void(const MsgCallback& callback));
 
   DISALLOW_COPY_AND_ASSIGN(MockGLES2Decoder);
