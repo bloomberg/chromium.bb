@@ -10,15 +10,6 @@ cr.define('options', function() {
   /** @const */ var ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
 
   /**
-   * Dimensions for camera capture.
-   * @const
-   */
-  var CAPTURE_SIZE = {
-    height: 480,
-    width: 480
-  };
-
-  /**
    * Interval between consecutive camera presence checks in msec while camera is
    * not present.
    * @const
@@ -30,6 +21,27 @@ cr.define('options', function() {
    * @const
    */
   var CAMERA_LIVENESS_CHECK_MS = 1000;
+
+  /**
+   * Number of frames recorded by takeVideo().
+   * @const
+   */
+  var RECORD_FRAMES = 48;
+
+  /**
+   * FPS at which camera stream is recorded.
+   * @const
+   */
+  var RECORD_FPS = 16;
+
+   /**
+    * Dimensions for camera capture.
+    * @const
+    */
+  var CAPTURE_SIZE = {
+    height: 480,
+    width: 480
+  };
 
   /**
    * Creates a new user images grid item.
@@ -426,16 +438,44 @@ cr.define('options', function() {
      *     data URL.
      */
     takePhoto: function(opt_callback) {
-      var self = this;
-      var photoURL = this.captureFrame_(this.cameraVideo_, CAPTURE_SIZE);
+      var canvas = document.createElement('canvas');
+      canvas.width = CAPTURE_SIZE.width;
+      canvas.height = CAPTURE_SIZE.height;
+      this.captureFrame_(
+          this.cameraVideo_, canvas.getContext('2d'), CAPTURE_SIZE);
+      var photoURL = canvas.toDataURL('image/png');
       if (opt_callback && typeof opt_callback == 'function')
         opt_callback(photoURL);
       // Wait until image is loaded before displaying it.
+      var self = this;
       var previewImg = new Image();
       previewImg.addEventListener('load', function(e) {
         self.cameraImage = this.src;
       });
       previewImg.src = photoURL;
+    },
+
+    /**
+     * Performs video capture from the live camera stream.
+     * @param {function=} opt_callback Callback that receives taken video as
+     *     data URL of a vertically stacked PNG sprite.
+     */
+    takeVideo: function(opt_callback) {
+      var canvas = document.createElement('canvas');
+      canvas.width = CAPTURE_SIZE.width;
+      canvas.height = CAPTURE_SIZE.height * RECORD_FRAMES;
+      var ctx = canvas.getContext('2d');
+      // Force canvas initialization to prevent FPS lag on the first frame.
+      ctx.fillRect(0, 0, 1, 1);
+      var captureData = {
+        callback: opt_callback,
+        canvas: canvas,
+        ctx: ctx,
+        frameNo: 0,
+        lastTimestamp: new Date().getTime()
+      };
+      captureData.timer = setInterval(
+          this.captureVideoFrame_.bind(this, captureData), 1000 / RECORD_FPS);
     },
 
     /**
@@ -446,17 +486,14 @@ cr.define('options', function() {
     },
 
     /**
-     * Capture a single still frame from a <video> element.
+     * Capture a single still frame from a <video> element, placing it at the
+     * current drawing origin of a canvas context.
      * @param {HTMLVideoElement} video Video element to capture from.
+     * @param {CanvasRenderingContext2D} ctx Canvas context to draw onto.
      * @param {{width: number, height: number}} destSize Capture size.
-     * @return {string} Captured frame as a data URL.
      * @private
      */
-    captureFrame_: function(video, destSize) {
-      var canvas = document.createElement('canvas');
-      canvas.width = destSize.width;
-      canvas.height = destSize.height;
-      var ctx = canvas.getContext('2d');
+    captureFrame_: function(video, ctx, destSize) {
       var width = video.videoWidth;
       var height = video.videoHeight;
       if (width < destSize.width || height < destSize.height) {
@@ -476,12 +513,35 @@ cr.define('options', function() {
       src.x = (width - src.width) / 2;
       src.y = (height - src.height) / 2;
       if (this.flipPhoto) {
-        ctx.translate(canvas.width, 0);
+        ctx.save();
+        ctx.translate(destSize.width, 0);
         ctx.scale(-1.0, 1.0);
       }
       ctx.drawImage(video, src.x, src.y, src.width, src.height,
                     0, 0, destSize.width, destSize.height);
-      return canvas.toDataURL('image/png');
+      if (this.flipPhoto)
+        ctx.restore();
+    },
+
+    /**
+     * Capture next frame of the video being recorded after a takeVideo() call.
+     * @param {Object} data Property bag with the recorder details.
+     * @private
+     */
+    captureVideoFrame_: function(data) {
+      var lastTimestamp = new Date().getTime();
+      var delayMs = lastTimestamp - data.lastTimestamp;
+      console.error('Delay: ' + delayMs + ' (' + (1000 / delayMs + ' FPS)'));
+      data.lastTimestamp = lastTimestamp;
+
+      this.captureFrame_(this.cameraVideo_, data.ctx, CAPTURE_SIZE);
+      data.ctx.translate(0, CAPTURE_SIZE.height);
+
+      if (++data.frameNo == RECORD_FRAMES) {
+        clearTimeout(data.timer);
+        if (data.callback && typeof data.callback == 'function')
+          data.callback(data.canvas.toDataURL('image/png'));
+      }
     },
 
     /**
