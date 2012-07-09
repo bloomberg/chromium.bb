@@ -20,7 +20,6 @@ class RendererWebIDBCursorImpl : public WebKit::WebIDBCursor {
   RendererWebIDBCursorImpl(int32 idb_cursor_id);
   virtual ~RendererWebIDBCursorImpl();
 
-  virtual unsigned short direction() const;
   virtual WebKit::WebIDBKey key() const;
   virtual WebKit::WebIDBKey primaryKey() const;
   virtual WebKit::WebSerializedScriptValue value() const;

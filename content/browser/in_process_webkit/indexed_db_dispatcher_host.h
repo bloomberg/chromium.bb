@@ -237,7 +237,6 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
     bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
     void Send(IPC::Message* message);
 
-    void OnDirection(int32 idb_object_store_id, int32* direction);
     void OnKey(int32 idb_object_store_id, content::IndexedDBKey* key);
     void OnPrimaryKey(int32 idb_object_store_id,
                       content::IndexedDBKey* primary_key);

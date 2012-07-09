@@ -886,7 +886,6 @@ bool IndexedDBDispatcherHost::CursorDispatcherHost::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost::CursorDispatcherHost,
                            message, *msg_is_ok)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorDirection, OnDirection)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorUpdate, OnUpdate)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorAdvance, OnAdvance)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorContinue, OnContinue)
@@ -903,15 +902,6 @@ bool IndexedDBDispatcherHost::CursorDispatcherHost::OnMessageReceived(
 void IndexedDBDispatcherHost::CursorDispatcherHost::Send(
     IPC::Message* message) {
   parent_->Send(message);
-}
-
-void IndexedDBDispatcherHost::CursorDispatcherHost::OnDirection(
-    int32 object_id, int32* direction) {
-  WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(&map_, object_id);
-  if (!idb_cursor)
-    return;
-
-  *direction = idb_cursor->direction();
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnKey(

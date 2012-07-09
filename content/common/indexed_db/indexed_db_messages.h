@@ -255,11 +255,6 @@ IPC_MESSAGE_CONTROL3(IndexedDBMsg_DatabaseCallbacksVersionChange,
 
 // Indexed DB messages sent from the renderer to the browser.
 
-// WebIDBCursor::direction() message.
-IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_CursorDirection,
-                            int32, /* idb_cursor_id */
-                            int32 /* direction */)
-
 // WebIDBCursor::update() message.
 IPC_SYNC_MESSAGE_CONTROL4_1(IndexedDBHostMsg_CursorUpdate,
                      int32, /* idb_cursor_id */

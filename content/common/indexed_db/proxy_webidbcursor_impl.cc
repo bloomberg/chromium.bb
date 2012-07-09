@@ -35,13 +35,6 @@ RendererWebIDBCursorImpl::~RendererWebIDBCursorImpl() {
   dispatcher->CursorDestroyed(idb_cursor_id_);
 }
 
-unsigned short RendererWebIDBCursorImpl::direction() const {
-  int direction;
-  IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_CursorDirection(idb_cursor_id_, &direction));
-  return direction;
-}
-
 WebIDBKey RendererWebIDBCursorImpl::key() const {
   return key_;
 }
