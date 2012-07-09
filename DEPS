@@ -12,7 +12,7 @@ vars = {
   "chromium_git": "http://git.chromium.org/git",
   "chromiumos_git": "http://git.chromium.org/chromiumos",
   "swig_revision": "69281",
-  "nacl_revision": "9066",
+  "nacl_revision": "9100",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
   "nacl_tools_revision": "9016",  # native_client/DEPS: tools_rev
@@ -22,13 +22,13 @@ vars = {
   # After changing nacl_toolchain_revision, run 'gclient runhooks' to get the
   # new values.
   "nacl_toolchain_linux_x86_hash":
-      "114e0c2fbe33adc887377b4121c2e25c17404a9e",
+      "96afe9e4038482db59a8f231b13a59f7a7c0c38f",
   "nacl_toolchain_linux_x86_newlib_hash":
-      "4cbdc174e3d179eb354e52f5021595a8ee3ee5be",
+      "5778f4d048907ba1ed871463aac7b15c391b5753",
   "nacl_toolchain_mac_x86_hash":
-      "01088800f6e9b1655e937826d26260631141dd78",
+      "cbf2c42160780a97186fd6ec56b2c720f8117c7e",
   "nacl_toolchain_mac_x86_newlib_hash":
-      "bc203d116aefbbe38e547f344be6c5b0ab4ce650",
+      "1e94ee62258eacfe8c9c8cd562e93e65427e58e1",
   "nacl_toolchain_pnacl_linux_x86_32_hash":
       "e8cfbe1ec6e56594a705a8cbb85ba4f2e6a15cbd",
   "nacl_toolchain_pnacl_linux_x86_64_hash":
@@ -40,10 +40,10 @@ vars = {
   "nacl_toolchain_pnacl_win_x86_32_hash":
       "c0ba23e5a40c89cb1555eabbf9439840e208ea67",
   "nacl_toolchain_win_x86_hash":
-      "2dfdac268b8c32380483361e47399dcea8f0af0e",
+      "a65981a52a9e8efd06d45c7347e31acdfe2d8c92",
   "nacl_toolchain_win_x86_newlib_hash":
-      "fb74e29baef7185e302a86685a9e61a24cb4ac13",
-  "nacl_toolchain_revision": "8953",
+      "2a88bdecf2a53000bddc775ca632f732d3d9fe2b",
+  "nacl_toolchain_revision": "9093",
   "pnacl_toolchain_revision": "9044",
 
   "libjingle_revision": "157",
