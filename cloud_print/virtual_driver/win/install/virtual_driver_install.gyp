@@ -15,9 +15,14 @@
     {
       'target_name': 'virtual_driver_setup',
       'type': 'executable',
+      'include_dirs': [
+        # To allow including "version.h"
+        '<(SHARED_INTERMEDIATE_DIR)',
+      ],
       'dependencies': [
         '../virtual_driver.gyp:virtual_driver_lib',
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',
         'virtual_driver_setup_resources',
       ],
       'sources': [

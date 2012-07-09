@@ -49,6 +49,11 @@
       ],
       'dependencies': [
         'gcp_portmon_lib<(virtual_driver_suffix)',
+        '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',
+      ],
+      'include_dirs': [
+        # To allow including "version.h"
+        '<(SHARED_INTERMEDIATE_DIR)',
       ],
     },
   ],

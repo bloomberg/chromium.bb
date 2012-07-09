@@ -38,6 +38,10 @@
     {
       'target_name': 'cloud_print_service',
       'type': 'executable',
+      'include_dirs': [
+        # To allow including "version.h"
+        '<(SHARED_INTERMEDIATE_DIR)',
+      ],
       'sources': [
         'win/cloud_print_service.cc',
         'win/cloud_print_service.h',
@@ -46,6 +50,13 @@
       ],
       'dependencies': [
         'cloud_print_service_lib',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'dependencies': [
+            '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',
+          ],
+        }],
       ],
       'msvs_settings': {
         'VCLinkerTool': {

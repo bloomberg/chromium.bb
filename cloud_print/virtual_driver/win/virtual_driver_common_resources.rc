@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "version.h"
+
 #ifdef APSTUDIO_INVOKED
 # error Don't open this in the GUI, it'll be massacred on save.
 #endif // APSTUDIO_INVOKED
 
 1 VERSIONINFO
- FILEVERSION 0,1,0,4
- PRODUCTVERSION 0,1,0,4
+ FILEVERSION CHROME_VERSION
+ PRODUCTVERSION CHROME_VERSION
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -25,10 +27,10 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Google, Inc."
             VALUE "FileDescription", "Google Cloud Printer"
-            VALUE "FileVersion", "0.1.0.4"
+            VALUE "FileVersion", CHROME_VERSION_STRING
             VALUE "InternalName", "Google Cloud Printer"
             VALUE "ProductName", "Google Cloud Printer"
-            VALUE "ProductVersion", "0.1.0.4"
+            VALUE "ProductVersion", CHROME_VERSION_STRING
             VALUE "LegalCopyright", "Copyright (c) 2012 The Chromium Authors. All rights reserved."
         END
     END
