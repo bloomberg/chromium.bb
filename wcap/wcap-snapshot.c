@@ -80,4 +80,5 @@ int main(int argc, char *argv[])
 	       decoder->width, decoder->height, i);
 
 	wcap_decoder_destroy(decoder);
+	return EXIT_SUCCESS;
 }
