@@ -139,6 +139,7 @@ bool CrossSiteResourceHandler::OnResponseCompleted(
 
   // Return false to tell RDH not to notify the world or clean up the
   // pending request.  We will do so in ResumeResponse.
+  did_defer_ = true;
   return false;
 }
 

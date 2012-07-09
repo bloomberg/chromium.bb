@@ -417,6 +417,32 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
+                       CrossSiteNavigationErrorPage2) {
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL url(test_server()->GetURL("files/title2.html"));
+  CheckTitleTest(url, "Title Of Awesomeness", 1);
+
+  // Navigate to a new cross-site URL that results in an error page.
+  // TODO(creis): If this causes crashes or hangs, it might be for the same
+  // reason as ErrorPageTest::DNSError.  See bug 1199491 and
+  // http://crbug.com/22877.
+  GURL failed_url = URLRequestFailedJob::GetMockHttpUrl(
+      net::ERR_NAME_NOT_RESOLVED);
+
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), failed_url, 2);
+  EXPECT_NE(ASCIIToUTF16("Title Of Awesomeness"),
+            chrome::GetActiveWebContents(browser())->GetTitle());
+
+  // Repeat navigation.  We are testing that this completes.
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), failed_url, 2);
+  EXPECT_NE(ASCIIToUTF16("Title Of Awesomeness"),
+            chrome::GetActiveWebContents(browser())->GetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        CrossOriginRedirectBlocked) {
   // We expect the following URL requests from this test:
   // 1-  http://mock.http/cross-origin-redirect-blocked.html
