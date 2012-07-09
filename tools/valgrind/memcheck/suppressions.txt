@@ -5529,7 +5529,6 @@
    fun:_ZN11ChildThread4InitEv
    fun:_ZN11ChildThreadC2ERKSs
    fun:_ZN16RenderThreadImplC1ERKSs
-   fun:_ZN21WebRTCAudioDeviceTest5SetUpEv
 }
 
 

@@ -1478,3 +1478,19 @@
    fun:ui::InputMethodIBus::CreateContext
    fun:ui::InputMethodIBus::Init
 }
+{
+   bug_65940_a
+   Heapcheck:Leak
+   fun:ChildThread::Init
+   fun:ChildThread::ChildThread
+   fun:RenderThreadImpl::RenderThreadImpl
+}
+{
+   bug_65940_b
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::_Vector_base::_M_allocate
+   fun:std::vector::_M_insert_aux
+   fun:std::vector::push_back
+   fun:IPC::ChannelProxy::Context::OnAddFilter
+}
