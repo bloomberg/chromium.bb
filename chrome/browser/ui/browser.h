@@ -67,6 +67,7 @@ struct WebApplicationInfo;
 
 namespace chrome {
 class BrowserCommandController;
+class UnloadController;
 namespace search {
 class SearchDelegate;
 class SearchModel;
@@ -305,9 +306,7 @@ class Browser : public TabStripModelDelegate,
   // Gives beforeunload handlers the chance to cancel the close.
   bool ShouldCloseWindow();
 
-  bool IsAttemptingToCloseBrowser() const {
-    return is_attempting_to_close_browser_;
-  }
+  bool IsAttemptingToCloseBrowser() const;
 
   // Invoked when the window containing us is closing. Performs the necessary
   // cleanup.
@@ -788,37 +787,6 @@ class Browser : public TabStripModelDelegate,
   // >= index.
   void SyncHistoryWithTabs(int index);
 
-  // OnBeforeUnload handling //////////////////////////////////////////////////
-
-  typedef std::set<content::WebContents*> UnloadListenerSet;
-
-  // Processes the next tab that needs it's beforeunload/unload event fired.
-  void ProcessPendingTabs();
-
-  // Whether we've completed firing all the tabs' beforeunload/unload events.
-  bool HasCompletedUnloadProcessing() const;
-
-  // Clears all the state associated with processing tabs' beforeunload/unload
-  // events since the user cancelled closing the window.
-  void CancelWindowClose();
-
-  // Removes |web_contents| from the passed |set|.
-  // Returns whether the tab was in the set in the first place.
-  // TODO(beng): this method needs a better name!
-  bool RemoveFromSet(UnloadListenerSet* set,
-                     content::WebContents* web_contents);
-
-  // Cleans up state appropriately when we are trying to close the browser and
-  // the tab has finished firing its unload handler. We also use this in the
-  // cases where a tab crashes or hangs even if the beforeunload/unload haven't
-  // successfully fired. If |process_now| is true |ProcessPendingTabs| is
-  // invoked immediately, otherwise it is invoked after a delay (PostTask).
-  //
-  // Typically you'll want to pass in true for |process_now|. Passing in true
-  // may result in deleting |tab|. If you know that shouldn't happen (because of
-  // the state of the stack), pass in false.
-  void ClearUnloadState(content::WebContents* web_contents, bool process_now);
-
   // In-progress download termination handling /////////////////////////////////
 
   // Called when the window is closing to check if potential in-progress
@@ -927,20 +895,6 @@ class Browser : public TabStripModelDelegate,
   // The following factory is used for chrome update coalescing.
   base::WeakPtrFactory<Browser> chrome_updater_factory_;
 
-  // OnBeforeUnload handling //////////////////////////////////////////////////
-
-  // Tracks tabs that need there beforeunload event fired before we can
-  // close the browser. Only gets populated when we try to close the browser.
-  UnloadListenerSet tabs_needing_before_unload_fired_;
-
-  // Tracks tabs that need there unload event fired before we can
-  // close the browser. Only gets populated when we try to close the browser.
-  UnloadListenerSet tabs_needing_unload_fired_;
-
-  // Whether we are processing the beforeunload and unload events of each tab
-  // in preparation for closing the browser.
-  bool is_attempting_to_close_browser_;
-
   // In-progress download termination handling /////////////////////////////////
 
   enum CancelDownloadConfirmationState {
@@ -967,6 +921,8 @@ class Browser : public TabStripModelDelegate,
 
   // Tracks when this browser is being created by session restore.
   bool is_session_restore_;
+
+  scoped_ptr<chrome::UnloadController> unload_controller_;
 
   // The following factory is used to close the frame at a later time.
   base::WeakPtrFactory<Browser> weak_factory_;

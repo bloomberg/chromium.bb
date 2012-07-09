@@ -135,6 +135,7 @@
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/unload_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/ui/webui/feedback_ui.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
@@ -302,10 +303,11 @@ Browser::Browser(Type type, Profile* profile)
           tab_strip_model_(new TabStripModel(this, profile))),
       app_type_(APP_TYPE_HOST),
       chrome_updater_factory_(this),
-      is_attempting_to_close_browser_(false),
       cancel_download_confirmation_state_(NOT_PROMPTED),
       initial_show_state_(ui::SHOW_STATE_DEFAULT),
       is_session_restore_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          unload_controller_(new chrome::UnloadController(this))),
       weak_factory_(this),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           content_setting_bubble_model_delegate_(
@@ -575,16 +577,11 @@ bool Browser::ShouldCloseWindow() {
   if (!CanCloseWithInProgressDownloads())
     return false;
 
-  if (HasCompletedUnloadProcessing())
-    return true;
+  return unload_controller_->ShouldCloseWindow();
+}
 
-  is_attempting_to_close_browser_ = true;
-
-  if (!TabsNeedBeforeUnloadFired())
-    return true;
-
-  ProcessPendingTabs();
-  return false;
+bool Browser::IsAttemptingToCloseBrowser() const {
+  return unload_controller_->is_attempting_to_close_browser();
 }
 
 void Browser::OnWindowClosing() {
@@ -669,7 +666,7 @@ Browser::DownloadClosePreventionType Browser::OkToCloseWithInProgressDownloads(
   DCHECK(num_downloads_blocking);
   *num_downloads_blocking = 0;
 
-  if (is_attempting_to_close_browser_)
+  if (IsAttemptingToCloseBrowser())
     return DOWNLOAD_CLOSE_OK;
 
   // If we're not running a full browser process with a profile manager
@@ -689,10 +686,9 @@ Browser::DownloadClosePreventionType Browser::OkToCloseWithInProgressDownloads(
        iter != BrowserList::end(); ++iter) {
     // Don't count this browser window or any other in the process of closing.
     Browser* const browser = *iter;
-    // Check is_attempting_to_close_browser_ as window closing may be
-    // delayed, and windows that are in the process of closing don't
-    // count against our totals.
-    if (browser == this || browser->is_attempting_to_close_browser_)
+    // Window closing may be delayed, and windows that are in the process of
+    // closing don't count against our totals.
+    if (browser == this || browser->IsAttemptingToCloseBrowser())
       continue;
 
     if ((*iter)->profile() == profile())
@@ -1173,11 +1169,6 @@ void Browser::TabInsertedAt(TabContents* contents,
   // won't start if the page is loading.
   LoadingStateChanged(contents->web_contents());
 
-  // If the tab crashes in the beforeunload or unload handler, it won't be
-  // able to ack. But we know we can close it.
-  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-                 content::Source<WebContents>(contents->web_contents()));
-
   registrar_.Add(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
                  content::Source<WebContents>(contents->web_contents()));
 
@@ -1346,9 +1337,6 @@ void Browser::TabStripEmpty() {
   //       still present.
   MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&Browser::CloseFrame, weak_factory_.GetWeakPtr()));
-  // Set is_attempting_to_close_browser_ here, so that extensions, etc, do not
-  // attempt to add tabs to the browser before it closes.
-  is_attempting_to_close_browser_ = true;
 }
 
 bool Browser::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
@@ -1367,14 +1355,7 @@ void Browser::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 }
 
 bool Browser::TabsNeedBeforeUnloadFired() {
-  if (tabs_needing_before_unload_fired_.empty()) {
-    for (int i = 0; i < tab_count(); ++i) {
-      WebContents* contents = chrome::GetTabContentsAt(this, i)->web_contents();
-      if (contents->NeedToFireBeforeUnload())
-        tabs_needing_before_unload_fired_.insert(contents);
-    }
-  }
-  return !tabs_needing_before_unload_fired_.empty();
+  return unload_controller_->TabsNeedBeforeUnloadFired();
 }
 
 bool Browser::IsMouseLocked() const {
@@ -1494,16 +1475,8 @@ void Browser::LoadingStateChanged(WebContents* source) {
 }
 
 void Browser::CloseContents(WebContents* source) {
-  if (is_attempting_to_close_browser_) {
-    // If we're trying to close the browser, just clear the state related to
-    // waiting for unload to fire. Don't actually try to close the tab as it
-    // will go down the slow shutdown path instead of the fast path of killing
-    // all the renderer processes.
-    ClearUnloadState(source, true);
-    return;
-  }
-
-  chrome::CloseWebContents(this, source);
+  if (unload_controller_->CanCloseContents(source))
+    chrome::CloseWebContents(this, source);
 }
 
 void Browser::MoveContents(WebContents* source, const gfx::Rect& pos) {
@@ -1569,33 +1542,8 @@ gfx::Rect Browser::GetRootWindowResizerRect() const {
 void Browser::BeforeUnloadFired(WebContents* web_contents,
                                 bool proceed,
                                 bool* proceed_to_fire_unload) {
-  if (!is_attempting_to_close_browser_) {
-    *proceed_to_fire_unload = proceed;
-    if (!proceed)
-      web_contents->SetClosedByUserGesture(false);
-    return;
-  }
-
-  if (!proceed) {
-    CancelWindowClose();
-    *proceed_to_fire_unload = false;
-    web_contents->SetClosedByUserGesture(false);
-    return;
-  }
-
-  if (RemoveFromSet(&tabs_needing_before_unload_fired_, web_contents)) {
-    // Now that beforeunload has fired, put the tab on the queue to fire
-    // unload.
-    tabs_needing_unload_fired_.insert(web_contents);
-    ProcessPendingTabs();
-    // We want to handle firing the unload event ourselves since we want to
-    // fire all the beforeunload events before attempting to fire the unload
-    // events should the user cancel closing the browser.
-    *proceed_to_fire_unload = false;
-    return;
-  }
-
-  *proceed_to_fire_unload = true;
+  *proceed_to_fire_unload =
+      unload_controller_->BeforeUnloadFired(web_contents, proceed);
 }
 
 void Browser::SetFocusToLocationBar(bool select_all) {
@@ -2023,15 +1971,6 @@ void Browser::Observe(int type,
                       const content::NotificationSource& source,
                       const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED:
-      if (is_attempting_to_close_browser_) {
-        // Pass in false so that we delay processing. We need to delay the
-        // processing as it may close the tab, which is currently on the call
-        // stack above us.
-        ClearUnloadState(content::Source<WebContents>(source).ptr(), false);
-      }
-      break;
-
     case content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED:
       // When the current tab's SSL state changes, we need to update the URL
       // bar to reflect the new state. Note that it's possible for the selected
@@ -2378,102 +2317,6 @@ void Browser::SyncHistoryWithTabs(int index) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Browser, OnBeforeUnload handling (private):
-
-void Browser::ProcessPendingTabs() {
-  if (!is_attempting_to_close_browser_) {
-    // Because we might invoke this after a delay it's possible for the value of
-    // is_attempting_to_close_browser_ to have changed since we scheduled the
-    // task.
-    return;
-  }
-
-  if (HasCompletedUnloadProcessing()) {
-    // We've finished all the unload events and can proceed to close the
-    // browser.
-    OnWindowClosing();
-    return;
-  }
-
-  // Process beforeunload tabs first. When that queue is empty, process
-  // unload tabs.
-  if (!tabs_needing_before_unload_fired_.empty()) {
-    WebContents* web_contents = *(tabs_needing_before_unload_fired_.begin());
-    // Null check render_view_host here as this gets called on a PostTask and
-    // the tab's render_view_host may have been nulled out.
-    if (web_contents->GetRenderViewHost()) {
-      web_contents->GetRenderViewHost()->FirePageBeforeUnload(false);
-    } else {
-      ClearUnloadState(web_contents, true);
-    }
-  } else if (!tabs_needing_unload_fired_.empty()) {
-    // We've finished firing all beforeunload events and can proceed with unload
-    // events.
-    // TODO(ojan): We should add a call to browser_shutdown::OnShutdownStarting
-    // somewhere around here so that we have accurate measurements of shutdown
-    // time.
-    // TODO(ojan): We can probably fire all the unload events in parallel and
-    // get a perf benefit from that in the cases where the tab hangs in it's
-    // unload handler or takes a long time to page in.
-    WebContents* web_contents = *(tabs_needing_unload_fired_.begin());
-    // Null check render_view_host here as this gets called on a PostTask and
-    // the tab's render_view_host may have been nulled out.
-    if (web_contents->GetRenderViewHost()) {
-      web_contents->GetRenderViewHost()->ClosePage();
-    } else {
-      ClearUnloadState(web_contents, true);
-    }
-  } else {
-    NOTREACHED();
-  }
-}
-
-bool Browser::HasCompletedUnloadProcessing() const {
-  return is_attempting_to_close_browser_ &&
-      tabs_needing_before_unload_fired_.empty() &&
-      tabs_needing_unload_fired_.empty();
-}
-
-void Browser::CancelWindowClose() {
-  // Closing of window can be canceled from a beforeunload handler.
-  DCHECK(is_attempting_to_close_browser_);
-  tabs_needing_before_unload_fired_.clear();
-  tabs_needing_unload_fired_.clear();
-  is_attempting_to_close_browser_ = false;
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
-      content::Source<Browser>(this),
-      content::NotificationService::NoDetails());
-}
-
-bool Browser::RemoveFromSet(UnloadListenerSet* set, WebContents* web_contents) {
-  DCHECK(is_attempting_to_close_browser_);
-
-  UnloadListenerSet::iterator iter =
-      std::find(set->begin(), set->end(), web_contents);
-  if (iter != set->end()) {
-    set->erase(iter);
-    return true;
-  }
-  return false;
-}
-
-void Browser::ClearUnloadState(WebContents* web_contents, bool process_now) {
-  if (is_attempting_to_close_browser_) {
-    RemoveFromSet(&tabs_needing_before_unload_fired_, web_contents);
-    RemoveFromSet(&tabs_needing_unload_fired_, web_contents);
-    if (process_now) {
-      ProcessPendingTabs();
-    } else {
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&Browser::ProcessPendingTabs, weak_factory_.GetWeakPtr()));
-    }
-  }
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // Browser, In-progress download termination handling (private):
 
 bool Browser::CanCloseWithInProgressDownloads() {
@@ -2541,22 +2384,12 @@ void Browser::TabDetachedAtImpl(TabContents* contents, int index,
     find_bar_controller_->ChangeTabContents(NULL);
   }
 
-  if (is_attempting_to_close_browser_) {
-    // If this is the last tab with unload handlers, then ProcessPendingTabs
-    // would call back into the TabStripModel (which is invoking this method on
-    // us). Avoid that by passing in false so that the call to
-    // ProcessPendingTabs is delayed.
-    ClearUnloadState(contents->web_contents(), false);
-  }
-
   // Stop observing search model changes for this tab.
   search_delegate_->OnTabDetached(contents);
 
   registrar_.Remove(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
                     content::Source<WebContents>(contents->web_contents()));
   registrar_.Remove(this, content::NOTIFICATION_INTERSTITIAL_DETACHED,
-                    content::Source<WebContents>(contents->web_contents()));
-  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
                     content::Source<WebContents>(contents->web_contents()));
 }
 
