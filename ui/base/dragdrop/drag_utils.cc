@@ -67,7 +67,7 @@ void SetDragImageOnDataObject(const gfx::Canvas& canvas,
                               const gfx::Size& size,
                               const gfx::Point& cursor_offset,
                               ui::OSExchangeData* data_object) {
-  SetDragImageOnDataObject(canvas.ExtractBitmap(), size, cursor_offset,
+  SetDragImageOnDataObject(canvas.ExtractImageSkiaRep(), size, cursor_offset,
                            data_object);
 }
 

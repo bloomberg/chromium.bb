@@ -27,6 +27,10 @@ namespace content {
 class WebContents;
 }
 
+namespace gfx {
+class ImageSkia;
+}
+
 // Windows-specific drag-and-drop handling in WebContentsView.
 // If we are dragging a virtual file out of the browser, we use a background
 // thread to do the drag-and-drop because we do not want to run nested
@@ -45,7 +49,7 @@ class CONTENT_EXPORT WebContentsDragWin
   // Called on UI thread.
   void StartDragging(const WebDropData& drop_data,
                      WebKit::WebDragOperationsMask ops,
-                     const SkBitmap& image,
+                     const gfx::ImageSkia& image,
                      const gfx::Point& image_offset);
   void CancelDrag();
 
@@ -68,7 +72,7 @@ class CONTENT_EXPORT WebContentsDragWin
                   WebKit::WebDragOperationsMask ops,
                   const GURL& page_url,
                   const std::string& page_encoding,
-                  const SkBitmap& image,
+                  const gfx::ImageSkia& image,
                   const gfx::Point& image_offset);
 
   // Called on drag-and-drop thread.

@@ -424,7 +424,7 @@ void WebContentsViewAura::ShowPopupMenu(const gfx::Rect& bounds,
 void WebContentsViewAura::StartDragging(
     const WebDropData& drop_data,
     WebKit::WebDragOperationsMask operations,
-    const SkBitmap& image,
+    const gfx::ImageSkia& image,
     const gfx::Point& image_offset) {
   aura::RootWindow* root_window = GetNativeView()->GetRootWindow();
   if (!aura::client::GetDragDropClient(root_window))

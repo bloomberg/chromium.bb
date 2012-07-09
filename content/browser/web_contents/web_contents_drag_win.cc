@@ -122,7 +122,7 @@ WebContentsDragWin::~WebContentsDragWin() {
 
 void WebContentsDragWin::StartDragging(const WebDropData& drop_data,
                                        WebDragOperationsMask ops,
-                                       const SkBitmap& image,
+                                       const gfx::ImageSkia& image,
                                        const gfx::Point& image_offset) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -266,7 +266,7 @@ void WebContentsDragWin::DoDragging(const WebDropData& drop_data,
                                     WebDragOperationsMask ops,
                                     const GURL& page_url,
                                     const std::string& page_encoding,
-                                    const SkBitmap& image,
+                                    const gfx::ImageSkia& image,
                                     const gfx::Point& image_offset) {
   ui::OSExchangeData data;
 
@@ -300,7 +300,7 @@ void WebContentsDragWin::DoDragging(const WebDropData& drop_data,
 
   // Set drag image.
   if (!image.isNull()) {
-    drag_utils::SetDragImageOnDataObject(gfx::ImageSkia(image),
+    drag_utils::SetDragImageOnDataObject(image,
         gfx::Size(image.width(), image.height()), image_offset, &data);
   }
 

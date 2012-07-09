@@ -177,7 +177,7 @@ void WebContentsViewAndroid::ShowPopupMenu(
 void WebContentsViewAndroid::StartDragging(
     const WebDropData& drop_data,
     WebKit::WebDragOperationsMask allowed_ops,
-    const SkBitmap& image,
+    const gfx::ImageSkia& image,
     const gfx::Point& image_offset) {
   NOTIMPLEMENTED();
 }

@@ -26,6 +26,7 @@
 #include "ui/base/clipboard/custom_data_helper.h"
 #import "ui/base/cocoa/focus_tracker.h"
 #include "ui/base/dragdrop/cocoa_dnd_util.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
@@ -169,7 +170,7 @@ void WebContentsViewMac::GetContainerBounds(gfx::Rect* out) const {
 void WebContentsViewMac::StartDragging(
     const WebDropData& drop_data,
     WebDragOperationsMask allowed_operations,
-    const SkBitmap& image,
+    const gfx::ImageSkia& image,
     const gfx::Point& image_offset) {
   // By allowing nested tasks, the code below also allows Close(),
   // which would deallocate |this|.  The same problem can occur while
@@ -185,7 +186,7 @@ void WebContentsViewMac::StartDragging(
   NSPoint offset = NSPointFromCGPoint(image_offset.ToCGPoint());
   [cocoa_view_ startDragWithDropData:drop_data
                    dragOperationMask:mask
-                               image:gfx::SkBitmapToNSImage(image)
+                               image:gfx::NSImageFromImageSkia(image)
                               offset:offset];
 }
 

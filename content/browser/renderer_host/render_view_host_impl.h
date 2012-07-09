@@ -513,8 +513,8 @@ class CONTENT_EXPORT RenderViewHostImpl
                                    IPC::Message* reply_msg);
   void OnMsgStartDragging(const WebDropData& drop_data,
                           WebKit::WebDragOperationsMask operations_allowed,
-                          const SkBitmap& image,
-                          const gfx::Point& image_offset);
+                          const SkBitmap& bitmap,
+                          const gfx::Point& bitmap_offset_in_dip);
   void OnUpdateDragCursor(WebKit::WebDragOperation drag_operation);
   void OnTargetDropACK();
   void OnTakeFocus(bool reverse);

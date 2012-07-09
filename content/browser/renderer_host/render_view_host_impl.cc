@@ -25,6 +25,7 @@
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/power_save_blocker.h"
+#include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/common/accessibility_messages.h"
@@ -57,6 +58,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/dialogs/selected_file_info.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/glue/webdropdata.h"
@@ -1316,8 +1318,8 @@ void RenderViewHostImpl::OnMsgRunBeforeUnloadConfirm(const GURL& frame_url,
 void RenderViewHostImpl::OnMsgStartDragging(
     const WebDropData& drop_data,
     WebDragOperationsMask drag_operations_mask,
-    const SkBitmap& image,
-    const gfx::Point& image_offset) {
+    const SkBitmap& bitmap,
+    const gfx::Point& bitmap_offset_in_dip) {
   RenderViewHostDelegateView* view = delegate_->GetDelegateView();
   if (!view)
     return;
@@ -1346,7 +1348,11 @@ void RenderViewHostImpl::OnMsgStartDragging(
     if (policy->CanReadFile(GetProcess()->GetID(), path))
       filtered_data.filenames.push_back(*it);
   }
-  view->StartDragging(filtered_data, drag_operations_mask, image, image_offset);
+  ui::ScaleFactor scale_factor = ui::GetScaleFactorFromScale(
+      content::GetDIPScaleFactor(GetView()));
+  gfx::ImageSkia image(gfx::ImageSkiaRep(bitmap, scale_factor));
+  view->StartDragging(filtered_data, drag_operations_mask, image,
+      bitmap_offset_in_dip);
 }
 
 void RenderViewHostImpl::OnUpdateDragCursor(WebDragOperation current_op) {

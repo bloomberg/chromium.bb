@@ -95,7 +95,7 @@ class InterstitialPageImpl::InterstitialPageRVHDelegateView
                              bool allow_multiple_selection) OVERRIDE;
   virtual void StartDragging(const WebDropData& drop_data,
                              WebDragOperationsMask operations_allowed,
-                             const SkBitmap& image,
+                             const gfx::ImageSkia& image,
                              const gfx::Point& image_offset) OVERRIDE;
   virtual void UpdateDragCursor(WebDragOperation operation) OVERRIDE;
   virtual void GotFocus() OVERRIDE;
@@ -715,7 +715,7 @@ void InterstitialPageImpl::InterstitialPageRVHDelegateView::ShowPopupMenu(
 void InterstitialPageImpl::InterstitialPageRVHDelegateView::StartDragging(
     const WebDropData& drop_data,
     WebDragOperationsMask allowed_operations,
-    const SkBitmap& image,
+    const gfx::ImageSkia& image,
     const gfx::Point& image_offset) {
   NOTREACHED() << "InterstitialPage does not support dragging yet.";
 }

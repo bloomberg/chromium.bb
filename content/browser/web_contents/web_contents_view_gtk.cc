@@ -23,6 +23,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "ui/base/gtk/gtk_expanded_container.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -349,7 +350,7 @@ void WebContentsViewGtk::ShowPopupMenu(const gfx::Rect& bounds,
 
 void WebContentsViewGtk::StartDragging(const WebDropData& drop_data,
                                        WebDragOperationsMask ops,
-                                       const SkBitmap& image,
+                                       const gfx::ImageSkia& image,
                                        const gfx::Point& image_offset) {
   DCHECK(GetContentNativeView());
 
@@ -359,7 +360,7 @@ void WebContentsViewGtk::StartDragging(const WebDropData& drop_data,
     return;
 
   drag_source_->StartDragging(drop_data, ops, view_gtk->GetLastMouseDown(),
-                              image, image_offset);
+                              *image.bitmap(), image_offset);
 }
 
 // -----------------------------------------------------------------------------

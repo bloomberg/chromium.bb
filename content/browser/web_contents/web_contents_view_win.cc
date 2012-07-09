@@ -317,7 +317,7 @@ void WebContentsViewWin::ShowPopupMenu(const gfx::Rect& bounds,
 
 void WebContentsViewWin::StartDragging(const WebDropData& drop_data,
                                        WebKit::WebDragOperationsMask operations,
-                                       const SkBitmap& image,
+                                       const gfx::ImageSkia& image,
                                        const gfx::Point& image_offset) {
   drag_handler_ = new WebContentsDragWin(
       GetNativeView(),
