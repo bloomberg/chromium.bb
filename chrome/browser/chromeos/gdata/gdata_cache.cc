@@ -963,7 +963,7 @@ void GDataCache::Pin(const std::string& resource_id,
       //   because ModifyCacheState only moves files if source and destination
       //   are different
       // - don't create symlink since it already exists.
-      if (cache_entry->sub_dir_type == CACHE_TYPE_PINNED) {
+      if (!cache_entry->IsPresent()) {
         dest_path = source_path;
         create_symlink = false;
       } else {  // File exists, move it to persistent dir.
@@ -1041,7 +1041,7 @@ void GDataCache::Unpin(const std::string& resource_id,
     // don't need to move the file, so set |dest_path| to |source_path|, because
     // ModifyCacheState only moves files if source and destination are
     // different.
-    if (cache_entry->sub_dir_type == CACHE_TYPE_PINNED) {
+    if (!cache_entry->IsPresent()) {
       dest_path = source_path;
     } else {  // File exists, move it to tmp dir.
       dest_path = GetCacheFilePath(resource_id, md5,
@@ -1156,8 +1156,7 @@ void GDataCache::MarkDirty(const std::string& resource_id,
 
   // Marking a file dirty means its entry and actual file blob must exist in
   // cache.
-  if (!cache_entry.get() ||
-      cache_entry->sub_dir_type == CACHE_TYPE_PINNED) {
+  if (!cache_entry.get() || !cache_entry->IsPresent()) {
     LOG(WARNING) << "Can't mark dirty a file that wasn't cached: res_id="
                  << resource_id
                  << ", md5=" << md5;
@@ -1258,8 +1257,7 @@ void GDataCache::CommitDirty(const std::string& resource_id,
 
   // Committing a file dirty means its entry and actual file blob must exist in
   // cache.
-  if (!cache_entry.get() ||
-      cache_entry->sub_dir_type == CACHE_TYPE_PINNED) {
+  if (!cache_entry.get() || !cache_entry->IsPresent()) {
     LOG(WARNING) << "Can't commit dirty a file that wasn't cached: res_id="
                  << resource_id
                  << ", md5=" << md5;
@@ -1316,8 +1314,7 @@ void GDataCache::ClearDirty(const std::string& resource_id,
 
   // Clearing a dirty file means its entry and actual file blob must exist in
   // cache.
-  if (!cache_entry.get() ||
-      cache_entry->sub_dir_type == CACHE_TYPE_PINNED) {
+  if (!cache_entry.get() || !cache_entry->IsPresent()) {
     LOG(WARNING) << "Can't clear dirty state of a file that wasn't cached: "
                  << "res_id=" << resource_id
                  << ", md5=" << md5;
