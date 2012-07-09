@@ -461,6 +461,10 @@ void Canvas::DrawFadeTruncatingString(
       break;
   }
 
+  // Default to left alignment unless right alignment was chosen above.
+  if (!(flags & TEXT_ALIGN_RIGHT))
+    flags |= TEXT_ALIGN_LEFT;
+
   gfx::Rect rect = display_rect;
   UpdateRenderText(rect, clipped_text, font, flags, color, render_text.get());
 
