@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/string_split.h"
 #include "chrome/browser/metrics/proto/study.pb.h"
 #include "chrome/browser/metrics/variations_service.h"
 #include "chrome/common/chrome_version_info.h"
@@ -68,6 +69,37 @@ TEST(VariationsServiceTest, CheckStudyChannel) {
       filter.add_channel(study_channels[index]);
       channel_added[index] = true;
     }
+  }
+}
+
+TEST(VariationsServiceTest, CheckStudyLocale) {
+  struct {
+    const char* filter_locales;
+    bool en_us_result;
+    bool en_ca_result;
+    bool fr_result;
+  } test_cases[] = {
+    {"en-US", true, false, false},
+    {"en-US,en-CA,fr", true, true, true},
+    {"en-US,en-CA,en-GB", true, true, false},
+    {"en-GB,en-CA,en-US", true, true, false},
+    {"ja,kr,vi", false, false, false},
+    {"fr-CA", false, false, false},
+    {"", true, true, true},
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    std::vector<std::string> filter_locales;
+    Study_Filter filter;
+    base::SplitString(test_cases[i].filter_locales, ',', &filter_locales);
+    for (size_t j = 0; j < filter_locales.size(); ++j)
+      filter.add_locale(filter_locales[j]);
+    EXPECT_EQ(test_cases[i].en_us_result,
+              VariationsService::CheckStudyLocale(filter, "en-US"));
+    EXPECT_EQ(test_cases[i].en_ca_result,
+              VariationsService::CheckStudyLocale(filter, "en-CA"));
+    EXPECT_EQ(test_cases[i].fr_result,
+              VariationsService::CheckStudyLocale(filter, "fr"));
   }
 }
 

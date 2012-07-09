@@ -52,6 +52,7 @@ class VariationsService : public net::URLFetcherDelegate {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyChannel);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyLocale);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyPlatform);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyVersion);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyVersionWildcards);
@@ -77,6 +78,10 @@ class VariationsService : public net::URLFetcherDelegate {
   // Checks whether a study is applicable for the given |channel| per |filter|.
   static bool CheckStudyChannel(const Study_Filter& filter,
                                 chrome::VersionInfo::Channel channel);
+
+  // Checks whether a study is applicable for the given |locale| per |filter|.
+  static bool CheckStudyLocale(const chrome_variations::Study_Filter& filter,
+                               const std::string& locale);
 
   // Checks whether a study is applicable for the given |platform| per |filter|.
   static bool CheckStudyPlatform(const Study_Filter& filter,

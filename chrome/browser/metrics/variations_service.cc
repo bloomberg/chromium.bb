@@ -224,6 +224,12 @@ bool VariationsService::ShouldAddStudy(
       return false;
     }
 
+    if (!CheckStudyLocale(study.filter(),
+                          g_browser_process->GetApplicationLocale())) {
+      DVLOG(1) << "Filtered out study " << study.name() << " due to locale.";
+      return false;
+    }
+
     if (!CheckStudyPlatform(study.filter(), GetCurrentPlatform())) {
       DVLOG(1) << "Filtered out study " << study.name() << " due to platform.";
       return false;
@@ -255,6 +261,21 @@ bool VariationsService::CheckStudyChannel(
 
   for (int i = 0; i < filter.channel_size(); ++i) {
     if (ConvertStudyChannelToVersionChannel(filter.channel(i)) == channel)
+      return true;
+  }
+  return false;
+}
+
+// static
+bool VariationsService::CheckStudyLocale(
+    const chrome_variations::Study_Filter& filter,
+    const std::string& locale) {
+  // An empty locale list matches all locales.
+  if (filter.locale_size() == 0)
+    return true;
+
+  for (int i = 0; i < filter.locale_size(); ++i) {
+    if (filter.locale(i) == locale)
       return true;
   }
   return false;
