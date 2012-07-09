@@ -98,18 +98,18 @@ gfx::Display Screen::GetDisplayNearestWindow(gfx::NativeView view) {
 }
 
 // static
+gfx::Display Screen::GetDisplayMatching(const gfx::Rect& match_rect) {
+  NSScreen* match_screen = GetMatchingScreen(match_rect);
+  return GetDisplayForScreen(match_screen, false /* may not be primary */);
+}
+
+// static
 gfx::Display Screen::GetPrimaryDisplay() {
   // Primary display is defined as the display with the menubar,
   // which is always at index 0.
   NSScreen* primary = [[NSScreen screens] objectAtIndex:0];
   gfx::Display display = GetDisplayForScreen(primary, true /* primary */);
   return display;
-}
-
-// static
-gfx::Display Screen::GetDisplayMatching(const gfx::Rect& match_rect) {
-  NSScreen* match_screen = GetMatchingScreen(match_rect);
-  return GetDisplayForScreen(match_screen, false /* may not be primary */);
 }
 
 // static

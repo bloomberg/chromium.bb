@@ -73,6 +73,14 @@ gfx::Display Screen::GetDisplayNearestPoint(const gfx::Point& point) {
 }
 
 // static
+gfx::Display Screen::GetDisplayMatching(const gfx::Rect& match_rect) {
+  RECT other_bounds_rect = match_rect.ToRECT();
+  MONITORINFO monitor_info = GetMonitorInfoForMonitor(MonitorFromRect(
+      &other_bounds_rect, MONITOR_DEFAULTTONEAREST));
+  return GetDisplay(monitor_info);
+}
+
+// static
 gfx::Display Screen::GetPrimaryDisplay() {
   MONITORINFO mi = GetMonitorInfoForMonitor(
       MonitorFromWindow(NULL, MONITOR_DEFAULTTOPRIMARY));
@@ -80,14 +88,6 @@ gfx::Display Screen::GetPrimaryDisplay() {
   DCHECK_EQ(GetSystemMetrics(SM_CXSCREEN), display.size().width());
   DCHECK_EQ(GetSystemMetrics(SM_CYSCREEN), display.size().height());
   return display;
-}
-
-// static
-gfx::Display Screen::GetDisplayMatching(const gfx::Rect& match_rect) {
-  RECT other_bounds_rect = match_rect.ToRECT();
-  MONITORINFO monitor_info = GetMonitorInfoForMonitor(MonitorFromRect(
-      &other_bounds_rect, MONITOR_DEFAULTTONEAREST));
-  return GetDisplay(monitor_info);
 }
 
 }  // namespace gfx

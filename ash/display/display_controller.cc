@@ -72,6 +72,10 @@ aura::RootWindow* DisplayController::GetPrimaryRootWindow() {
   return root_windows_[0];
 }
 
+aura::RootWindow* DisplayController::GetRootWindowForDisplayId(int id) {
+  return root_windows_[id];
+}
+
 void DisplayController::CloseChildWindows() {
   for (std::map<int, aura::RootWindow*>::const_iterator it =
            root_windows_.begin(); it != root_windows_.end(); ++it) {

@@ -43,6 +43,8 @@ class DesktopScreenX11 : public gfx::ScreenImpl {
       gfx::NativeView window) const OVERRIDE;
   virtual gfx::Display GetDisplayNearestPoint(
       const gfx::Point& point) const OVERRIDE;
+  virtual gfx::Display GetDisplayMatching(
+      const gfx::Rect& match_rect) const OVERRIDE;
   virtual gfx::Display GetPrimaryDisplay() const OVERRIDE;
 
  private:
@@ -100,6 +102,12 @@ gfx::Display DesktopScreenX11::GetDisplayNearestWindow(
 
 gfx::Display DesktopScreenX11::GetDisplayNearestPoint(
     const gfx::Point& point) const {
+  // TODO(erg): Do the right thing once we know what that is.
+  return gfx::Display(0, gfx::Rect(GetPrimaryDisplaySize()));
+}
+
+gfx::Display DesktopScreenX11::GetDisplayMatching(
+    const gfx::Rect& match_rect) const {
   // TODO(erg): Do the right thing once we know what that is.
   return gfx::Display(0, gfx::Rect(GetPrimaryDisplaySize()));
 }

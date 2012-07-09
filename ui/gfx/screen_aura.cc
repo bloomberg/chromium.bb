@@ -23,9 +23,6 @@ void Screen::SetInstance(ScreenImpl* screen) {
   g_instance_ = screen;
 }
 
-// TODO(oshima): Implement ScreenImpl for Linux/aura and remove this
-// ifdef.
-
 // static
 bool Screen::IsDIPEnabled() {
   return true;
@@ -57,13 +54,13 @@ Display Screen::GetDisplayNearestPoint(const Point& point) {
 }
 
 // static
-Display Screen::GetPrimaryDisplay() {
-  return g_instance_->GetPrimaryDisplay();
+Display Screen::GetDisplayMatching(const gfx::Rect& match_rect) {
+  return g_instance_->GetDisplayMatching(match_rect);
 }
 
 // static
-Display Screen::GetDisplayMatching(const gfx::Rect& match_rect) {
-  return g_instance_->GetDisplayNearestPoint(match_rect.CenterPoint());
+Display Screen::GetPrimaryDisplay() {
+  return g_instance_->GetPrimaryDisplay();
 }
 
 }  // namespace gfx

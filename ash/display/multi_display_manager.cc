@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/display/display_controller.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/string_split.h"
@@ -58,10 +59,20 @@ void MultiDisplayManager::CycleDisplay() {
   manager->CycleDisplayImpl();
 }
 
-  void MultiDisplayManager::ToggleDisplayScale() {
+void MultiDisplayManager::ToggleDisplayScale() {
   MultiDisplayManager* manager = static_cast<MultiDisplayManager*>(
       aura::Env::GetInstance()->display_manager());
   manager->ScaleDisplayImpl();
+}
+
+bool MultiDisplayManager::UpdateWorkAreaOfDisplayNearestWindow(
+    const aura::Window* window,
+    const gfx::Insets& insets) {
+  const RootWindow* root = window->GetRootWindow();
+  gfx::Display& display = FindDisplayForRootWindow(root);
+  gfx::Rect old_work_area = display.work_area();
+  display.UpdateWorkAreaFromInsets(insets);
+  return old_work_area != display.work_area();
 }
 
 void MultiDisplayManager::OnNativeDisplaysChanged(
@@ -134,10 +145,8 @@ size_t MultiDisplayManager::GetNumDisplays() const {
 
 const gfx::Display& MultiDisplayManager::GetDisplayNearestWindow(
     const Window* window) const {
-  if (!window) {
-    MultiDisplayManager* manager = const_cast<MultiDisplayManager*>(this);
-    return *manager->GetDisplayAt(0);
-  }
+  if (!window)
+    return displays_[0];
   const RootWindow* root = window->GetRootWindow();
   MultiDisplayManager* manager = const_cast<MultiDisplayManager*>(this);
   return root ? manager->FindDisplayForRootWindow(root) : GetInvalidDisplay();
@@ -145,10 +154,41 @@ const gfx::Display& MultiDisplayManager::GetDisplayNearestWindow(
 
 const gfx::Display& MultiDisplayManager::GetDisplayNearestPoint(
     const gfx::Point& point) const {
-  // TODO(oshima): For m19, mouse is constrained within
-  // the primary window.
-  MultiDisplayManager* manager = const_cast<MultiDisplayManager*>(this);
-  return *manager->GetDisplayAt(0);
+  if (!internal::DisplayController::IsVirtualScreenCoordinatesEnabled())
+    return displays_[0];
+
+  for (std::vector<gfx::Display>::const_iterator iter = displays_.begin();
+       iter != displays_.end(); ++iter) {
+    const gfx::Display& display = *iter;
+    if (display.bounds().Contains(point))
+      return display;
+  }
+  // Fallback to the primary display if there is no root display containing
+  // the |point|.
+  return displays_[0];
+}
+
+const gfx::Display& MultiDisplayManager::GetDisplayMatching(
+    const gfx::Rect& rect) const {
+  if (!internal::DisplayController::IsVirtualScreenCoordinatesEnabled())
+    return displays_[0];
+  if (rect.IsEmpty())
+    return GetDisplayNearestPoint(rect.origin());
+
+  int max = 0;
+  const gfx::Display* matching = 0;
+  for (std::vector<gfx::Display>::const_iterator iter = displays_.begin();
+       iter != displays_.end(); ++iter) {
+    const gfx::Display& display = *iter;
+    gfx::Rect intersect = display.bounds().Intersect(rect);
+    int area = intersect.width() * intersect.height();
+    if (area > max) {
+      max = area;
+      matching = &(*iter);
+    }
+  }
+  // Fallback to the primary display if there is no matching display.
+  return matching ? *matching : displays_[0];
 }
 
 void MultiDisplayManager::OnRootWindowResized(const aura::RootWindow* root,
@@ -158,16 +198,6 @@ void MultiDisplayManager::OnRootWindowResized(const aura::RootWindow* root,
     display.SetSize(root->GetHostSize());
     NotifyBoundsChanged(display);
   }
-}
-
-bool MultiDisplayManager::UpdateWorkAreaOfDisplayNearestWindow(
-    const aura::Window* window,
-    const gfx::Insets& insets) {
-  const RootWindow* root = window->GetRootWindow();
-  gfx::Display& display = FindDisplayForRootWindow(root);
-  gfx::Rect old_work_area = display.work_area();
-  display.UpdateWorkAreaFromInsets(insets);
-  return old_work_area != display.work_area();
 }
 
 void MultiDisplayManager::Init() {

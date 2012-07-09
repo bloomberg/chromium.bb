@@ -85,6 +85,11 @@ gfx::Display DesktopScreenWin::GetDisplayNearestPoint(
   return gfx::Display();
 }
 
+gfx::Display DesktopScreenWin::GetDisplayMatching(
+    const gfx::Rect& match_rect) const {
+  return GetDisplayNearestPoint(match_rect.CenterPoint());
+}
+
 gfx::Display DesktopScreenWin::GetPrimaryDisplay() const {
   MONITORINFO mi = GetMonitorInfoForMonitor(
       MonitorFromWindow(NULL, MONITOR_DEFAULTTOPRIMARY));

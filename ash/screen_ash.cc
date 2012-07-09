@@ -66,6 +66,10 @@ gfx::Display ScreenAsh::GetDisplayNearestPoint(const gfx::Point& point) const {
   return GetDisplayManager()->GetDisplayNearestPoint(point);
 }
 
+gfx::Display ScreenAsh::GetDisplayMatching(const gfx::Rect& match_rect) const {
+  return GetDisplayManager()->GetDisplayMatching(match_rect);
+}
+
 gfx::Display ScreenAsh::GetPrimaryDisplay() const {
   return *GetDisplayManager()->GetDisplayAt(0);
 }

@@ -8,9 +8,11 @@
 
 #include "ui/gfx/display.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/point.h"
 
 namespace gfx {
+class Display;
+class Point;
+class Rect;
 
 // A class that provides |gfx::Screen|'s implementation on aura.
 class UI_EXPORT ScreenImpl {
@@ -25,6 +27,8 @@ class UI_EXPORT ScreenImpl {
       gfx::NativeView window) const = 0;
   virtual gfx::Display GetDisplayNearestPoint(
       const gfx::Point& point) const = 0;
+  virtual gfx::Display GetDisplayMatching(
+      const gfx::Rect& match_rect) const = 0;
   virtual gfx::Display GetPrimaryDisplay() const = 0;
 };
 

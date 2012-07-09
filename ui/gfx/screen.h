@@ -47,11 +47,11 @@ class UI_EXPORT Screen {
   // Returns the the display nearest the specified point.
   static gfx::Display GetDisplayNearestPoint(const gfx::Point& point);
 
-  // Returns the bounds of the work area of the primary display.
-  static gfx::Display GetPrimaryDisplay();
-
   // Returns the display that most closely intersects the provided bounds.
   static gfx::Display GetDisplayMatching(const gfx::Rect& match_rect);
+
+  // Returns the primary display.
+  static gfx::Display GetPrimaryDisplay();
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(Screen);

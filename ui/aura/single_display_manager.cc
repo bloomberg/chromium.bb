@@ -72,6 +72,11 @@ const gfx::Display& SingleDisplayManager::GetDisplayNearestPoint(
   return display_;
 }
 
+const gfx::Display& SingleDisplayManager::GetDisplayMatching(
+    const gfx::Rect& match_rect) const {
+  return display_;
+}
+
 void SingleDisplayManager::OnWindowBoundsChanged(
     Window* window, const gfx::Rect& old_bounds, const gfx::Rect& new_bounds) {
   if (!use_fullscreen_host_window()) {

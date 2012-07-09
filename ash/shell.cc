@@ -322,45 +322,16 @@ aura::RootWindow* Shell::GetActiveRootWindow() {
 
 // static
 aura::RootWindow* Shell::GetRootWindowAt(const gfx::Point& point) {
-  if (!internal::DisplayController::IsVirtualScreenCoordinatesEnabled())
-    return GetPrimaryRootWindow();
-  RootWindowList root_windows = GetAllRootWindows();
-  for (RootWindowList::const_iterator iter = root_windows.begin();
-       iter != root_windows.end(); ++iter) {
-    aura::RootWindow* root_window = *iter;
-    const gfx::Display& display =
-        gfx::Screen::GetDisplayNearestWindow(root_window);
-    if (display.bounds().Contains(point))
-      return root_window;
-  }
-  // Fallback to the primary window if there is no root window containing
-  // the |point|.
-  return GetPrimaryRootWindow();
+  const gfx::Display& display = gfx::Screen::GetDisplayNearestPoint(point);
+  return Shell::GetInstance()->display_controller()->
+      GetRootWindowForDisplayId(display.id());
 }
 
 // static
 aura::RootWindow* Shell::GetRootWindowMatching(const gfx::Rect& rect) {
-  if (!internal::DisplayController::IsVirtualScreenCoordinatesEnabled())
-    return GetPrimaryRootWindow();
-  if (rect.IsEmpty())
-    return GetRootWindowAt(rect.origin());
-  RootWindowList root_windows = GetAllRootWindows();
-  int max = 0;
-  aura::RootWindow* matching = NULL;
-  for (RootWindowList::const_iterator iter = root_windows.begin();
-       iter != root_windows.end(); ++iter) {
-    aura::RootWindow* root_window = *iter;
-    const gfx::Display& display =
-        gfx::Screen::GetDisplayNearestWindow(root_window);
-    gfx::Rect intersect = display.bounds().Intersect(rect);
-    int area = intersect.width() * intersect.height();
-    if (area > max) {
-      max = area;
-      matching = root_window;
-    }
-  }
-  // Fallback to the primary window if there is no matching root window.
-  return matching ? matching : GetPrimaryRootWindow();
+  const gfx::Display& display = gfx::Screen::GetDisplayMatching(rect);
+  return Shell::GetInstance()->display_controller()->
+      GetRootWindowForDisplayId(display.id());
 }
 
 // static

@@ -16,8 +16,9 @@
 #include "ui/aura/window.h"
 
 namespace gfx {
-class Insets;
 class Display;
+class Insets;
+class Rect;
 }
 
 namespace ash {
@@ -56,6 +57,8 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
       const gfx::Point& point) const OVERRIDE;
   virtual const gfx::Display& GetDisplayNearestWindow(
       const aura::Window* window) const OVERRIDE;
+  virtual const gfx::Display& GetDisplayMatching(
+      const gfx::Rect& match_rect)const OVERRIDE;
 
   // RootWindowObserver overrides:
   virtual void OnRootWindowResized(const aura::RootWindow* root,

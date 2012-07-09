@@ -24,6 +24,8 @@ public:
       gfx::NativeView window) const OVERRIDE;
   virtual gfx::Display GetDisplayNearestPoint(
       const gfx::Point& point) const OVERRIDE;
+  virtual gfx::Display GetDisplayMatching(
+      const gfx::Rect& match_rect) const OVERRIDE;
   virtual gfx::Display GetPrimaryDisplay() const OVERRIDE;
 
  private:

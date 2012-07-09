@@ -129,6 +129,12 @@ gfx::Display Screen::GetDisplayNearestPoint(const gfx::Point& point) {
 }
 
 // static
+gfx::Display Screen::GetDisplayMatching(const gfx::Rect& match_rect) {
+  // TODO(thestig) Implement multi-monitor support.
+  return GetPrimaryDisplay();
+}
+
+// static
 gfx::Display Screen::GetPrimaryDisplay() {
   gfx::Rect bounds = NativePrimaryMonitorBounds();
   // TODO(oshima): Implement ID and Observer.
@@ -141,12 +147,6 @@ gfx::Display Screen::GetPrimaryDisplay() {
     display.set_work_area(bounds);
   }
   return display;
-}
-
-// static
-gfx::Display Screen::GetDisplayMatching(const gfx::Rect& match_rect) {
-  // TODO(thestig) Implement multi-monitor support.
-  return GetPrimaryDisplay();
 }
 
 // static

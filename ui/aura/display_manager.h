@@ -16,6 +16,7 @@
 namespace gfx {
 class Display;
 class Point;
+class Rect;
 class Size;
 }
 
@@ -76,9 +77,13 @@ class AURA_EXPORT DisplayManager {
   virtual const gfx::Display& GetDisplayNearestWindow(
       const Window* window) const = 0;
 
-  // Returns the display object nearest given |pint|.
+  // Returns the display object nearest given |point|.
   virtual const gfx::Display& GetDisplayNearestPoint(
       const gfx::Point& point) const = 0;
+
+  // Returns the display that most closely intersects |match_rect|.
+  virtual const gfx::Display& GetDisplayMatching(
+      const gfx::Rect& match_rect) const = 0;
 
  protected:
   // Calls observers' OnDisplayBoundsChanged methods.

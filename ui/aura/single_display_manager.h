@@ -38,6 +38,8 @@ class AURA_EXPORT SingleDisplayManager : public DisplayManager,
       const Window* window) const OVERRIDE;
   virtual const gfx::Display& GetDisplayNearestPoint(
       const gfx::Point& point) const OVERRIDE;
+  virtual const gfx::Display& GetDisplayMatching(
+      const gfx::Rect& match_rect) const OVERRIDE;
 
   // WindowObserver overrides:
   virtual void OnWindowBoundsChanged(Window* window,

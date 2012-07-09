@@ -41,6 +41,10 @@ gfx::Display TestScreen::GetDisplayNearestPoint(const gfx::Point& point) const {
   return GetMonitor();
 }
 
+gfx::Display TestScreen::GetDisplayMatching(const gfx::Rect& match_rect) const {
+  return GetMonitor();
+}
+
 gfx::Display TestScreen::GetPrimaryDisplay() const {
   return GetMonitor();
 }
