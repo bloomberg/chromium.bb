@@ -92,19 +92,22 @@ SocketCreateFunction::SocketCreateFunction()
 SocketCreateFunction::~SocketCreateFunction() {}
 
 bool SocketCreateFunction::Prepare() {
-  std::string socket_type_string;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &socket_type_string));
-  if (socket_type_string == kTCPOption) {
+  params_ = api::experimental_socket::Create::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+
+  if (params_->type == kTCPOption) {
     socket_type_ = kSocketTypeTCP;
-  } else if (socket_type_string == kUDPOption) {
+  } else if (params_->type == kUDPOption) {
     socket_type_ = kSocketTypeUDP;
   } else {
     error_ = kSocketTypeInvalidError;
     return false;
   }
-
-  src_id_ = ExtractSrcId(1);
-  event_notifier_ = CreateEventNotifier(src_id_);
+  if (params_->options.get()) {
+    scoped_ptr<DictionaryValue> options = params_->options->ToValue();
+    src_id_ = ExtractSrcId(options.get());
+    event_notifier_ = CreateEventNotifier(src_id_);
+  }
 
   return true;
 }

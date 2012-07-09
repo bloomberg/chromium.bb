@@ -33,30 +33,23 @@ IN_PROC_BROWSER_TEST_F(SerialApiTest, SerialExtension) {
 #if 0
   // Enable this path only if all the following are true:
   //
-  // 1. You have an Adafruit Atmega32u4 Breakout Board attached to your machine
-  // and properly appearing as the first virtual serial port ("first" is very
-  // loosely defined as whichever port shows up in serial.getPorts). Other
-  // devices will work, but this is the only one tested.
+  // 1. You have an Arduino or compatible board attached to your machine and
+  // properly appearing as the first virtual serial port ("first" is very
+  // loosely defined as whichever port shows up in serial.getPorts). We've
+  // tested only the Atmega32u4 Breakout Board and Arduino Leonardo; note that
+  // both these boards are based on the Atmel ATmega32u4, rather than the more
+  // common Arduino '328p with either FTDI or '8/16u2 USB interfaces. TODO:
+  // test more widely.
   //
-  // 2. Your user has permission to read/write the port. For example, this might
-  // mean that your user is in the "tty" group on Ubuntu flavors of Linux, or
-  // else that /dev/ttyACM0 has global read/write permissions.
+  // 2. Your user has permission to read/write the port. For example, this
+  // might mean that your user is in the "tty" or "uucp" group on Ubuntu
+  // flavors of Linux, or else that the port's path (e.g., /dev/ttyACM0) has
+  // global read/write permissions.
   //
-  // 4. You have uploaded a program to the board that does a byte-for-byte echo
-  // on the virtual serial port at 57600 bps. Here is an example (built using
-  // the Arduino IDE):
+  // 3. You have uploaded a program to the board that does a byte-for-byte echo
+  // on the virtual serial port at 57600 bps. An example is at
+  // chrome/test/data/extensions/api_test/serial/api/serial_arduino_test.ino.
   //
-  // void setup() {
-  //   Serial.begin(57600);
-  // }
-  //
-  // void loop() {
-  //   while (true) {
-  //     while (Serial.available() > 0) {
-  //       Serial.print((char)Serial.read());
-  //     }
-  //   }
-  // }
   listener.Reply("echo_device_attached");
 #else
   listener.Reply("false");

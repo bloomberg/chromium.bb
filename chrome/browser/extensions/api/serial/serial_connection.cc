@@ -14,10 +14,13 @@ namespace extensions {
 const char kSerialConnectionNotFoundError[] = "Serial connection not found";
 
 SerialConnection::SerialConnection(const std::string& port,
+                                   int bitrate,
                                    APIResourceEventNotifier* event_notifier)
     : APIResource(APIResource::SerialConnectionResource, event_notifier),
       port_(port),
+      bitrate_(bitrate),
       file_(base::kInvalidPlatformFileValue) {
+  CHECK(bitrate >= 0);
 }
 
 SerialConnection::~SerialConnection() {

@@ -65,7 +65,7 @@ void AsyncAPIFunction::RespondOnUIThread() {
   SendResponse(Respond());
 }
 
-int AsyncAPIFunction::ExtractSrcId(size_t argument_position) {
+int AsyncAPIFunction::DeprecatedExtractSrcId(size_t argument_position) {
   scoped_ptr<DictionaryValue> options(new DictionaryValue());
   if (args_->GetSize() > argument_position) {
     DictionaryValue* temp_options = NULL;
@@ -74,12 +74,21 @@ int AsyncAPIFunction::ExtractSrcId(size_t argument_position) {
   }
 
   // If we tacked on a srcId to the options object, pull it out here to provide
-  // to the Socket.
+  // to the caller.
   int src_id = -1;
   if (options->HasKey(kSrcIdKey)) {
     EXTENSION_FUNCTION_VALIDATE(options->GetInteger(kSrcIdKey, &src_id));
   }
 
+  return src_id;
+}
+
+int AsyncAPIFunction::ExtractSrcId(const DictionaryValue* options) {
+  int src_id = -1;
+  if (options) {
+    if (options->HasKey(kSrcIdKey))
+      EXTENSION_FUNCTION_VALIDATE(options->GetInteger(kSrcIdKey, &src_id));
+  }
   return src_id;
 }
 

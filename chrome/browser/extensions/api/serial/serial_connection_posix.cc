@@ -14,9 +14,11 @@ bool SerialConnection::PostOpen() {
   // Start with existing options and modify.
   tcgetattr(file_, &options);
 
-  // Bitrate 57,600
-  cfsetispeed(&options, B57600);
-  cfsetospeed(&options, B57600);
+  // Bitrate (sometimes erroneously referred to as baud rate).
+  if (bitrate_ >= 0) {
+    options.c_ispeed = bitrate_;
+    options.c_ospeed = bitrate_;
+  }
 
   // 8N1
   options.c_cflag &= ~PARENB;

@@ -8,6 +8,16 @@ namespace experimental.serial {
 
   callback GetPortsCallback = void (DOMString[] ports);
 
+  dictionary OpenOptions {
+    // The requested bitrate of the connection to be opened. For compatibility
+    // with the widest range of hardware, this number should match one of
+    // commonly-available bitrates, such as 110, 300, 1200, 2400, 4800, 9600,
+    // 14400, 19200, 38400, 57600, 115200. There is no guarantee, of course,
+    // that the device connected to the serial port will support the requested
+    // bitrate, even if the port itself supports that bitrate.
+    long bitrate;
+  };
+
   dictionary OpenInfo {
     // The id of the opened connection.
     long connectionId;
@@ -48,8 +58,10 @@ namespace experimental.serial {
 
     // Opens a connection to the given serial port.
     // |port| : The name of the serial port to open.
+    // |options| : Connection options.
     // |callback| : Called when the connection has been opened.
     static void open(DOMString port,
+                     optional OpenOptions options,
                      OpenCallback callback);
 
     // Closes an open connection.

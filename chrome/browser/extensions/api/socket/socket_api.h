@@ -76,6 +76,7 @@ class SocketCreateFunction : public SocketExtensionFunction {
     kSocketTypeUDP
   };
 
+  scoped_ptr<api::experimental_socket::Create::Params> params_;
   SocketType socket_type_;
   int src_id_;
   APIResourceEventNotifier* event_notifier_;

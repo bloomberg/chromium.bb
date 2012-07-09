@@ -136,8 +136,11 @@ var testSerial = function() {
       }
       if (portNumber < ports.length) {
         serialPort = ports[portNumber];
-        console.log('Connecting to serial device at ' + serialPort);
-        chrome.experimental.serial.open(serialPort, onOpen);
+        var bitrate = 57600;
+        console.log('Connecting to serial device ' + serialPort + ' at ' +
+                    bitrate + ' bps.');
+        chrome.experimental.serial.open(serialPort, {bitrate: bitrate},
+                                        onOpen);
       } else {
         // We didn't find a port that we think we should try.
         chrome.test.succeed();

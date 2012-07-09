@@ -34,7 +34,7 @@ UsbFindDeviceFunction::~UsbFindDeviceFunction() {}
 bool UsbFindDeviceFunction::Prepare() {
   parameters_ = FindDevice::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters_.get());
-  event_notifier_ = CreateEventNotifier(ExtractSrcId(2));
+  event_notifier_ = CreateEventNotifier(DeprecatedExtractSrcId(2));
   return true;
 }
 

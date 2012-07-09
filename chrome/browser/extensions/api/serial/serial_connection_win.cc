@@ -22,8 +22,29 @@ bool SerialConnection::PostOpen() {
   if (!GetCommState(file_, &dcb))
     return false;
 
-  // TODO(miket): when we have a bit rate API, use it.
-  dcb.BaudRate = CBR_57600;
+  if (bitrate_ >= 0) {
+    bool speed_found = true;
+    DWORD speed = CBR_9600;
+    switch (bitrate_) {
+      case 110: speed = CBR_110; break;
+      case 300: speed = CBR_300; break;
+      case 600: speed = CBR_600; break;
+      case 1200: speed = CBR_1200; break;
+      case 2400: speed = CBR_2400; break;
+      case 4800: speed = CBR_4800; break;
+      case 9600: speed = CBR_9600; break;
+      case 14400: speed = CBR_14400; break;
+      case 19200: speed = CBR_19200; break;
+      case 38400: speed = CBR_38400; break;
+      case 57600: speed = CBR_57600; break;
+      case 115200: speed = CBR_115200; break;
+      case 128000: speed = CBR_128000; break;
+      case 256000: speed = CBR_256000; break;
+      default: speed_found = false; break;
+    }
+    if (speed_found)
+      dcb.BaudRate = speed;
+  }
   dcb.ByteSize = 8;
   dcb.StopBits = ONESTOPBIT;
   dcb.Parity = NOPARITY;

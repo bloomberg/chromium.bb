@@ -25,6 +25,7 @@ class APIResourceEventNotifier;
 class SerialConnection : public APIResource {
  public:
   SerialConnection(const std::string& port,
+                   int bitrate,
                    APIResourceEventNotifier* event_notifier);
   virtual ~SerialConnection();
 
@@ -41,6 +42,7 @@ class SerialConnection : public APIResource {
 
  private:
   std::string port_;
+  int bitrate_;
   base::PlatformFile file_;
 };
 

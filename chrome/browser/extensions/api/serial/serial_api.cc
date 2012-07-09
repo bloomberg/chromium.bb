@@ -19,6 +19,7 @@ const char kPortsKey[] = "ports";
 const char kDataKey[] = "data";
 const char kBytesReadKey[] = "bytesRead";
 const char kBytesWrittenKey[] = "bytesWritten";
+const char kBitrateKey[] = "bitrate";
 
 SerialGetPortsFunction::SerialGetPortsFunction() {}
 
@@ -45,17 +46,36 @@ bool SerialGetPortsFunction::Respond() {
   return true;
 }
 
+// It's a fool's errand to come up with a default bitrate, because we don't get
+// to control both sides of the communication. Unless the other side has
+// implemented auto-bitrate detection (rare), if we pick the wrong rate, then
+// you're gonna have a bad time. Close doesn't count.
+//
+// But we'd like to pick something that has a chance of working, and 9600 is a
+// good balance between popularity and speed. So 9600 it is.
 SerialOpenFunction::SerialOpenFunction()
     : src_id_(-1),
-      event_notifier_(NULL) {}
+      bitrate_(9600),
+      event_notifier_(NULL) {
+}
+
+SerialOpenFunction::~SerialOpenFunction() {
+}
 
 bool SerialOpenFunction::Prepare() {
   set_work_thread_id(BrowserThread::FILE);
 
-  size_t argument_position = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(argument_position++, &port_));
-  src_id_ = ExtractSrcId(argument_position);
-  event_notifier_ = CreateEventNotifier(src_id_);
+  params_ = api::experimental_serial::Open::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+
+  if (params_->options.get()) {
+    scoped_ptr<DictionaryValue> options = params_->options->ToValue();
+    if (options->HasKey(kBitrateKey))
+      EXTENSION_FUNCTION_VALIDATE(options->GetInteger(kBitrateKey, &bitrate_));
+
+    src_id_ = ExtractSrcId(options.get());
+    event_notifier_ = CreateEventNotifier(src_id_);
+  }
 
   return true;
 }
@@ -68,9 +88,10 @@ void SerialOpenFunction::Work() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   const SerialPortEnumerator::StringSet name_set(
     SerialPortEnumerator::GenerateValidSerialPortNames());
-  if (SerialPortEnumerator::DoesPortExist(name_set, port_)) {
+  if (SerialPortEnumerator::DoesPortExist(name_set, params_->port)) {
     SerialConnection* serial_connection = new SerialConnection(
-      port_,
+      params_->port,
+      bitrate_,
       event_notifier_);
     CHECK(serial_connection);
     int id = controller()->AddAPIResource(serial_connection);
@@ -99,20 +120,27 @@ bool SerialOpenFunction::Respond() {
   return true;
 }
 
+SerialCloseFunction::SerialCloseFunction() {
+}
+
+SerialCloseFunction::~SerialCloseFunction() {
+}
+
 bool SerialCloseFunction::Prepare() {
   set_work_thread_id(BrowserThread::FILE);
 
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &connection_id_));
+  params_ = api::experimental_serial::Close::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
 
 void SerialCloseFunction::Work() {
   bool close_result = false;
   SerialConnection* serial_connection =
-      controller()->GetSerialConnection(connection_id_);
+      controller()->GetSerialConnection(params_->connection_id);
   if (serial_connection) {
     serial_connection->Close();
-    controller()->RemoveSerialConnection(connection_id_);
+    controller()->RemoveSerialConnection(params_->connection_id);
     close_result = true;
   }
 
@@ -123,10 +151,17 @@ bool SerialCloseFunction::Respond() {
   return true;
 }
 
+SerialReadFunction::SerialReadFunction() {
+}
+
+SerialReadFunction::~SerialReadFunction() {
+}
+
 bool SerialReadFunction::Prepare() {
   set_work_thread_id(BrowserThread::FILE);
 
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &connection_id_));
+  params_ = api::experimental_serial::Read::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
 
@@ -134,7 +169,7 @@ void SerialReadFunction::Work() {
   uint8 byte = '\0';
   int bytes_read = -1;
   SerialConnection* serial_connection =
-      controller()->GetSerialConnection(connection_id_);
+      controller()->GetSerialConnection(params_->connection_id);
   if (serial_connection)
     bytes_read = serial_connection->Read(&byte);
 
@@ -155,20 +190,20 @@ bool SerialReadFunction::Respond() {
 }
 
 SerialWriteFunction::SerialWriteFunction()
-    : connection_id_(-1), io_buffer_(NULL), io_buffer_size_(0) {
+    : io_buffer_(NULL), io_buffer_size_(0) {
 }
 
-SerialWriteFunction::~SerialWriteFunction() {}
+SerialWriteFunction::~SerialWriteFunction() {
+}
 
 bool SerialWriteFunction::Prepare() {
   set_work_thread_id(BrowserThread::FILE);
 
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &connection_id_));
-  base::BinaryValue *data = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetBinary(1, &data));
+  params_ = api::experimental_serial::Write::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
 
-  io_buffer_size_ = data->GetSize();
-  io_buffer_ = new net::WrappedIOBuffer(data->GetBuffer());
+  io_buffer_size_ = params_->data->GetSize();
+  io_buffer_ = new net::WrappedIOBuffer(params_->data->GetBuffer());
 
   return true;
 }
@@ -176,7 +211,7 @@ bool SerialWriteFunction::Prepare() {
 void SerialWriteFunction::Work() {
   int bytes_written = -1;
   SerialConnection* serial_connection =
-      controller()->GetSerialConnection(connection_id_);
+      controller()->GetSerialConnection(params_->connection_id);
   if (serial_connection)
     bytes_written = serial_connection->Write(io_buffer_, io_buffer_size_);
   else
@@ -191,17 +226,24 @@ bool SerialWriteFunction::Respond() {
   return true;
 }
 
+SerialFlushFunction::SerialFlushFunction() {
+}
+
+SerialFlushFunction::~SerialFlushFunction() {
+}
+
 bool SerialFlushFunction::Prepare() {
   set_work_thread_id(BrowserThread::FILE);
 
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &connection_id_));
+  params_ = api::experimental_serial::Flush::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
 
 void SerialFlushFunction::Work() {
   bool flush_result = false;
   SerialConnection* serial_connection =
-      controller()->GetSerialConnection(connection_id_);
+      controller()->GetSerialConnection(params_->connection_id);
   if (serial_connection) {
     serial_connection->Flush();
     flush_result = true;

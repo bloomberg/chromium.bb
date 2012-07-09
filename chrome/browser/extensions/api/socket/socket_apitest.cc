@@ -44,13 +44,6 @@ class SocketApiTest : public PlatformAppApiTest {
     resolver_creator_->DeleteMockHostResolver();
   }
 
-  static std::string GenerateCreateFunctionArgs(const std::string& protocol,
-                                                const std::string& address,
-                                                int port) {
-    return base::StringPrintf("[\"%s\", \"%s\", %d]", protocol.c_str(),
-                              address.c_str(), port);
-  }
-
  private:
   base::WaitableEvent resolver_event_;
 
@@ -72,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPCreateGood) {
 
   scoped_ptr<base::Value> result(utils::RunFunctionAndReturnResult(
       socket_create_function,
-      GenerateCreateFunctionArgs("udp", kHostname, kPort),
+      "[\"udp\"]",
       browser(), utils::NONE));
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
   DictionaryValue *value = static_cast<DictionaryValue*>(result.get());
@@ -91,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPCreateGood) {
 
   scoped_ptr<base::Value> result(utils::RunFunctionAndReturnResult(
       socket_create_function,
-      GenerateCreateFunctionArgs("udp", kHostname, kPort),
+      "[\"tcp\"]",
       browser(), utils::NONE));
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
   DictionaryValue *value = static_cast<DictionaryValue*>(result.get());
@@ -112,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketCreateBad) {
   // that doesn't run in production. Fix this when we're able to.
   utils::RunFunctionAndReturnError(
       socket_create_function,
-      GenerateCreateFunctionArgs("xxxx", kHostname, kPort),
+      "[\"xxxx\"]",
       browser(), utils::NONE);
 }
 
