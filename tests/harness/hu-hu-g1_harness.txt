@@ -3000,6 +3000,10 @@
           "output": "vírusszerű"
         }, 
         {
+          "input": "⠧⠌⠗⠥⠎⠱⠾⠗⠡⠎", 
+          "output": "vírusszűrés"
+        }, 
+        {
           "input": "⠧⠊⠎⠑⠇⠅⠑⠙⠡⠎⠱⠑⠗⠾", 
           "output": "viselkedésszerű"
         }, 
@@ -6181,6 +6185,10 @@
         {
           "input": "vírusszerű", 
           "output": "⠧⠌⠗⠥⠎⠱⠑⠗⠾"
+        }, 
+        {
+          "input": "vírusszűrés", 
+          "output": "⠧⠌⠗⠥⠎⠱⠾⠗⠡⠎"
         }, 
         {
           "input": "viselkedésszerű", 

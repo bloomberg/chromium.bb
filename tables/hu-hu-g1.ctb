@@ -64,7 +64,7 @@ postpunc : 25
 always : 25
 always ! 235
 endnum . 3
-always \x2022 6-35
+always • 6-35
 # literary forms of the decimal digits
 litdigit 1 1
 litdigit 2 12
@@ -102,17 +102,17 @@ prepunc " 236
 postpunc " 356
 always ( 2346
 always ) 1356
-prepunc \x00ab 236
-postpunc \x00bb 356
-prepunc \x2018 236
-postpunc \x2019 356
-prepunc \x201a 236
-postpunc \x201a 356
-prepunc \x201c 236
-prepunc \x201d 236
-postpunc \x201d 356
-prepunc \x201e 236
-postpunc \x201e 356
+prepunc « 236
+postpunc » 356
+prepunc ‘ 236
+postpunc ’ 356
+prepunc ‚ 236
+postpunc ‚ 356
+prepunc “ 236
+prepunc ” 236
+postpunc ” 356
+prepunc „ 236
+postpunc „ 356
 prepunc < 5-13
 postpunc > 46-2
 
@@ -134,9 +134,9 @@ always { 12345
 always } 12456
 always [ 12356
 always ] 23456
-always \x005c 16
+always \\ 16
 always ^ 2346
 always ` 4
-always \x00c6 1
+always Æ 1
 undefined 26
 
