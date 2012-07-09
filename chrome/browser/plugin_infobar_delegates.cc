@@ -22,10 +22,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 
-#if defined(OS_WIN)
-#include "ui/base/win/shell.h"
-#endif
-
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 #include "chrome/browser/plugin_installer.h"
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
@@ -456,19 +452,8 @@ string16 PluginMetroModeInfoBarDelegate::GetButtonLabel(
 }
 
 bool PluginMetroModeInfoBarDelegate::Accept() {
-  content::WebContents* web_contents = owner()->web_contents();
-  if (!web_contents)
-    return false;
-  // Note that empty urls are not valid.
-  if (!web_contents->GetURL().is_valid())
-    return false;
-  std::string url(web_contents->GetURL().spec());
-  // This obscure use of the 'log usage' mask for windows 8 is documented
-  // here http://goo.gl/HBOe9.
-  ui::win::OpenAnyViaShell(UTF8ToUTF16(url),
-                           string16(),
-                           SEE_MASK_FLAG_LOG_USAGE);
-  return true;
+  // TODO(cpu) switch to desktop chrome here.
+  return false;
 }
 
 string16 PluginMetroModeInfoBarDelegate::GetLinkText() const {
@@ -479,7 +464,7 @@ bool PluginMetroModeInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   // TODO(cpu): replace with the final url.
   GURL url = google_util::AppendGoogleLocaleParam(GURL(
-      "https://support.google.com/chrome/?ib_display_in_desktop"));
+      "https://www.google.com/support/chrome/bin/answer.py?answer=142064"));
   OpenURLParams params(
       url, Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
