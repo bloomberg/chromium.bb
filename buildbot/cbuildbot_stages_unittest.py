@@ -903,12 +903,16 @@ class BuildTargetStageTest(AbstractStageTest):
     # Convenience variables.
     fake_autotest_dir = '/fake/autotest'
     autotest_tarball_name = 'autotest.tar'
+    autotest_zipped_tarball_name = 'autotest.tar.bz2'
     test_suites_tarball_name = 'test_suites.tar.bz2'
     autotest_tarball_path = os.path.join(fake_autotest_dir,
                                          autotest_tarball_name)
+    autotest_zipped_tarball_path = os.path.join(fake_autotest_dir,
+                                                autotest_zipped_tarball_name)
     test_suites_tarball_path = os.path.join(fake_autotest_dir,
                                             test_suites_tarball_name)
-    tarballs = autotest_tarball_path, test_suites_tarball_path
+    tarballs = [autotest_tarball_path, autotest_zipped_tarball_path,
+                test_suites_tarball_path]
 
     commands.Build(self.build_root,
                    self._current_board,
@@ -932,6 +936,9 @@ class BuildTargetStageTest(AbstractStageTest):
     shutil.copyfile(autotest_tarball_path,
                     os.path.join(self.images_root, 'latest-cbuildbot',
                                  autotest_tarball_name))
+    shutil.copyfile(autotest_zipped_tarball_path,
+                    os.path.join(self.images_root, 'latest-cbuildbot',
+                                 autotest_zipped_tarball_name))
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -1014,12 +1021,16 @@ class BuildTargetStageTest(AbstractStageTest):
     # Convenience variables.
     fake_autotest_dir = '/fake/autotest'
     autotest_tarball_name = 'autotest.tar'
+    autotest_zipped_tarball_name = 'autotest.tar.bz2'
     test_suites_tarball_name = 'test_suites.tar.bz2'
     autotest_tarball_path = os.path.join(fake_autotest_dir,
                                          autotest_tarball_name)
+    autotest_zipped_tarball_path = os.path.join(fake_autotest_dir,
+                                                autotest_zipped_tarball_name)
     test_suites_tarball_path = os.path.join(fake_autotest_dir,
                                             test_suites_tarball_name)
-    tarballs = autotest_tarball_path, test_suites_tarball_path
+    tarballs = [autotest_tarball_path, autotest_zipped_tarball_path,
+                test_suites_tarball_path]
 
     commands.Build(self.build_root,
                    self._current_board,
@@ -1044,6 +1055,9 @@ class BuildTargetStageTest(AbstractStageTest):
     shutil.copyfile(autotest_tarball_path,
                     os.path.join(self.images_root, 'latest-cbuildbot',
                                  autotest_tarball_name))
+    shutil.copyfile(autotest_zipped_tarball_path,
+                    os.path.join(self.images_root, 'latest-cbuildbot',
+                                 autotest_zipped_tarball_name))
 
     self.mox.ReplayAll()
     self.RunStage()
