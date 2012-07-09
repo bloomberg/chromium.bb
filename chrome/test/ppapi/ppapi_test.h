@@ -2,13 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_UI_PPAPI_UITEST_H_
-#define CHROME_TEST_UI_PPAPI_UITEST_H_
+#ifndef CHROME_TEST_PPAPI_PPAPI_TEST_H_
+#define CHROME_TEST_PPAPI_PPAPI_TEST_H_
 #pragma once
 
 #include <string>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "base/timer.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+
+namespace content {
+class RenderViewHost;
+}
 
 class PPAPITestBase : public InProcessBrowserTest {
  public:
@@ -33,6 +42,34 @@ class PPAPITestBase : public InProcessBrowserTest {
   std::string StripPrefixes(const std::string& test_name);
 
  protected:
+  class TestFinishObserver : public content::NotificationObserver {
+   public:
+    TestFinishObserver(content::RenderViewHost* render_view_host,
+                       int timeout_s);
+
+    bool WaitForFinish();
+
+    virtual void Observe(int type,
+                         const content::NotificationSource& source,
+                         const content::NotificationDetails& details) OVERRIDE;
+
+    std::string result() const { return result_; }
+
+    void Reset();
+
+   private:
+    void OnTimeout();
+
+    bool finished_;
+    bool waiting_;
+    int timeout_s_;
+    std::string result_;
+    content::NotificationRegistrar registrar_;
+    base::RepeatingTimer<TestFinishObserver> timer_;
+
+    DISALLOW_COPY_AND_ASSIGN(TestFinishObserver);
+  };
+
   // Runs the test for a tab given the tab that's already navigated to the
   // given URL.
   void RunTestURL(const GURL& test_url);
@@ -96,4 +133,4 @@ class PPAPINaClTestDisallowedSockets : public PPAPITestBase {
                                  const std::string& test_case) OVERRIDE;
 };
 
-#endif  // CHROME_TEST_UI_PPAPI_UITEST_H_
+#endif  // CHROME_TEST_PPAPI_PPAPI_TEST_H_

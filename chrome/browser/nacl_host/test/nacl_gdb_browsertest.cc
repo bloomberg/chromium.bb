@@ -8,7 +8,7 @@
 #include "base/path_service.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/ui/ppapi_uitest.h"
+#include "chrome/test/ppapi/ppapi_test.h"
 
 static const FilePath::CharType kMockNaClGdb[] =
 #if defined(OS_WIN)

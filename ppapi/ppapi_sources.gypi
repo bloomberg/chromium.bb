@@ -359,6 +359,8 @@
       'tests/test_memory.h',
       'tests/test_mouse_cursor.cc',
       'tests/test_mouse_cursor.h',
+      'tests/test_mouse_lock.cc',
+      'tests/test_mouse_lock.h',
       'tests/test_net_address_private_untrusted.cc',
       'tests/test_net_address_private_untrusted.h',
       'tests/test_paint_aggregator.cc',

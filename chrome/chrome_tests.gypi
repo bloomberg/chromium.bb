@@ -263,10 +263,14 @@
         'test/logging/win/mof_data_parser.h',
         'test/logging/win/test_log_collector.cc',
         'test/logging/win/test_log_collector.h',
+        'test/ppapi/ppapi_test.cc',
+        'test/ppapi/ppapi_test.h',
         # TODO:  these should live here but are currently used by
         # production code code in libbrowser (in chrome.gyp).
         #'../content/browser/net/url_request_mock_http_job.cc',
         #'../content/browser/net/url_request_mock_http_job.h',
+        '../content/test/gpu/test_switches.cc',
+        '../content/test/gpu/test_switches.h',
         '../ui/gfx/image/image_unittest_util.h',
         '../ui/gfx/image/image_unittest_util.cc',
         '../webkit/quota/mock_quota_manager.cc',
@@ -471,7 +475,8 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/npapi/npapi.gyp:npapi',
-        # run time dependency
+        # Runtime dependencies
+        '../ppapi/ppapi_internal.gyp:ppapi_tests',
         '../webkit/support/webkit_support.gyp:webkit_resources',
       ],
       'include_dirs': [
@@ -515,6 +520,7 @@
         'test/base/chrome_test_launcher.cc',
         'test/base/view_event_test_base.cc',
         'test/base/view_event_test_base.h',
+        'test/ppapi/ppapi_interactive_browsertest.cc',
         '../content/browser/mouseleave_browsertest.cc',
       ],
       'conditions': [
@@ -2582,24 +2588,6 @@
       'type': 'executable',
       'msvs_cygwin_shell': 0,
       'msvs_cygwin_dirs': ['<(DEPTH)/third_party/cygwin'],
-      'copies': [
-        {
-          'destination': '<(PRODUCT_DIR)',
-          'files': [
-            # Keep 'test_case.html.mock-http-headers' with 'test_case.html'.
-            '../ppapi/tests/test_case.html',
-            '../ppapi/tests/test_case.html.mock-http-headers',
-            '../ppapi/tests/test_page.css',
-            '../ppapi/native_client/tests/ppapi_tests/ppapi_nacl_tests_newlib.nmf',
-          ],
-        },
-        {
-          'destination': '<(PRODUCT_DIR)/test_url_loader_data',
-          'files': [
-            '../ppapi/tests/test_url_loader_data/hello.txt',
-          ],
-        },
-      ],
       'dependencies': [
         'browser',
         '../sync/protocol/sync_proto.gyp:sync_proto',
@@ -3034,8 +3022,8 @@
         'test/data/webui/print_preview.js',
         'test/data/webui/suidsandbox_browsertest.js',
         'test/gpu/gpu_feature_browsertest.cc',
+        'test/ppapi/ppapi_browsertest.cc',
         'test/security_tests/sandbox_browsertest.cc',
-        'test/ui/ppapi_uitest.cc',
         # TODO(craig): Rename this and run from base_unittests when the test
         # is safe to run there. See http://crbug.com/78722 for details.
         '../base/files/file_path_watcher_browsertest.cc',
@@ -3072,8 +3060,6 @@
         '../content/renderer/render_view_browsertest.cc',
         '../content/renderer/render_view_browsertest_mac.mm',
         '../content/renderer/renderer_accessibility_browsertest.cc',
-        '../content/test/gpu/test_switches.cc',
-        '../content/test/gpu/test_switches.h',
         '../content/test/layout_browsertest.cc',
         '../content/test/layout_browsertest.h',
         '../content/test/render_widget_browsertest.cc',

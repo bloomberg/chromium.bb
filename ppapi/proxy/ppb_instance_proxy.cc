@@ -645,15 +645,9 @@ void PPB_Instance_Proxy::OnHostMsgLockMouse(PP_Instance instance) {
   pp::CompletionCallback cb = callback_factory_.NewCallback(
       &PPB_Instance_Proxy::MouseLockCompleteInHost, instance);
 
-  EnterInstanceNoLock enter(instance);
-  if (enter.failed()) {
-    cb.Run(PP_ERROR_BADARGUMENT);
-    return;
-  }
-  int32_t result = enter.functions()->LockMouse(instance,
-                                                enter.callback());
-  if (result != PP_OK_COMPLETIONPENDING)
-    cb.Run(result);
+  EnterInstanceNoLock enter(instance, cb.pp_completion_callback());
+  if (enter.succeeded())
+    enter.SetResult(enter.functions()->LockMouse(instance, enter.callback()));
 }
 
 void PPB_Instance_Proxy::OnHostMsgUnlockMouse(PP_Instance instance) {
@@ -792,7 +786,7 @@ void PPB_Instance_Proxy::OnPluginMsgMouseLockComplete(PP_Instance instance,
       GetInstanceData(instance);
   if (!data)
     return;  // Instance was probably deleted.
-  if (TrackedCallback::IsPending(data->mouse_lock_callback)) {
+  if (!TrackedCallback::IsPending(data->mouse_lock_callback)) {
     NOTREACHED();
     return;
   }

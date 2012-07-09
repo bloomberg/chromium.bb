@@ -221,9 +221,9 @@ EnterInstance::EnterInstance(PP_Instance instance)
 EnterInstance::EnterInstance(PP_Instance instance,
                              const PP_CompletionCallback& callback)
     : EnterBase(0 /* resource */, callback),
-    // TODO(dmichael): This means that the callback_ we get is not associated
-    //                 even with the instance, but we should handle that for
-    //                 MouseLock (maybe others?).
+      // TODO(dmichael): This means that the callback_ we get is not associated
+      //                 even with the instance, but we should handle that for
+      //                 MouseLock (maybe others?).
       functions_(PpapiGlobals::Get()->GetInstanceAPI(instance)) {
   SetStateForFunctionError(instance, functions_, true);
 }
@@ -233,6 +233,17 @@ EnterInstance::~EnterInstance() {
 
 EnterInstanceNoLock::EnterInstanceNoLock(PP_Instance instance)
     : EnterBase(),
+      functions_(PpapiGlobals::Get()->GetInstanceAPI(instance)) {
+  SetStateForFunctionError(instance, functions_, true);
+}
+
+EnterInstanceNoLock::EnterInstanceNoLock(
+    PP_Instance instance,
+    const PP_CompletionCallback& callback)
+    : EnterBase(0 /* resource */, callback),
+      // TODO(dmichael): This means that the callback_ we get is not associated
+      //                 even with the instance, but we should handle that for
+      //                 MouseLock (maybe others?).
       functions_(PpapiGlobals::Get()->GetInstanceAPI(instance)) {
   SetStateForFunctionError(instance, functions_, true);
 }

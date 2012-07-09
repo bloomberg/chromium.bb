@@ -21,6 +21,24 @@
         'ppapi.gyp:ppapi_cpp',
         'ppapi_internal.gyp:ppapi_shared',
       ],
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)',
+          'files': [
+            # Keep 'test_case.html.mock-http-headers' with 'test_case.html'.
+            'tests/test_case.html',
+            'tests/test_case.html.mock-http-headers',
+            'tests/test_page.css',
+            'native_client/tests/ppapi_tests/ppapi_nacl_tests_newlib.nmf',
+          ],
+        },
+        {
+          'destination': '<(PRODUCT_DIR)/test_url_loader_data',
+          'files': [
+            'tests/test_url_loader_data/hello.txt',
+          ],
+        },
+      ],
       'run_as': {
         'action': [
           '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)chrome<(EXECUTABLE_SUFFIX)',

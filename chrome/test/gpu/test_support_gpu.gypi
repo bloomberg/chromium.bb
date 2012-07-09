@@ -34,8 +34,6 @@
   ],
   'sources': [
     '<(src_dir)/chrome/test/base/chrome_test_launcher.cc',
-    '<(src_dir)/content/test/gpu/test_switches.cc',
-    '<(src_dir)/content/test/gpu/test_switches.h',
   ],
   # hard_dependency is necessary for this target because it has actions
   # that generate a header file included by dependent targets. The header

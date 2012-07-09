@@ -1606,7 +1606,7 @@ bool PluginInstance::IsProcessingUserGesture() {
 }
 
 void PluginInstance::OnLockMouseACK(bool succeeded) {
-  if (TrackedCallback::IsPending(lock_mouse_callback_)) {
+  if (!TrackedCallback::IsPending(lock_mouse_callback_)) {
     NOTREACHED();
     return;
   }
