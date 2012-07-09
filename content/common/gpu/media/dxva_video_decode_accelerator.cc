@@ -499,7 +499,6 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       egl_config_(NULL),
       state_(kUninitialized),
       pictures_requested_(false),
-      last_input_buffer_id_(-1),
       inputs_before_decode_(0) {
   memset(&input_stream_info_, 0, sizeof(input_stream_info_));
   memset(&output_stream_info_, 0, sizeof(output_stream_info_));
@@ -567,6 +566,10 @@ void DXVAVideoDecodeAccelerator::Decode(
                                             input_stream_info_.cbAlignment));
   RETURN_AND_NOTIFY_ON_FAILURE(sample, "Failed to create input sample",
                                PLATFORM_FAILURE,);
+
+  RETURN_AND_NOTIFY_ON_HR_FAILURE(sample->SetSampleTime(bitstream_buffer.id()),
+      "Failed to associate input buffer id with sample", PLATFORM_FAILURE,);
+
   if (!inputs_before_decode_) {
     TRACE_EVENT_BEGIN_ETW("DXVAVideoDecodeAccelerator.Decoding", this, "");
   }
@@ -577,8 +580,6 @@ void DXVAVideoDecodeAccelerator::Decode(
       PLATFORM_FAILURE,);
 
   state_ = kEosDrain;
-
-  last_input_buffer_id_ = bitstream_buffer.id();
 
   DoDecode();
 
@@ -924,8 +925,13 @@ bool DXVAVideoDecodeAccelerator::ProcessOutputSample(IMFSample* sample) {
   hr = surface->GetDesc(&surface_desc);
   RETURN_ON_HR_FAILURE(hr, "Failed to get surface description", false);
 
+  LONGLONG input_buffer_id = 0;
+  RETURN_ON_HR_FAILURE(sample->GetSampleTime(&input_buffer_id),
+                       "Failed to get input buffer id associated with sample",
+                       false);
+
   pending_output_samples_.push_back(
-      PendingSampleInfo(last_input_buffer_id_, surface));
+      PendingSampleInfo(input_buffer_id, surface));
 
   // If we have available picture buffers to copy the output data then use the
   // first one and then flag it as not being available for use.
@@ -977,7 +983,6 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
 }
 
 void DXVAVideoDecodeAccelerator::ClearState() {
-  last_input_buffer_id_ = -1;
   output_picture_buffers_.clear();
   pending_output_samples_.clear();
 }
