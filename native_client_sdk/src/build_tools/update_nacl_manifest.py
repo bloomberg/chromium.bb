@@ -467,7 +467,6 @@ class Updater(object):
     for bundle_name, version, channel, archives in self.versions_to_update:
       self.delegate.Print('Updating %s to %s...' % (bundle_name, version))
       bundle = manifest.GetBundle(bundle_name)
-      bundle_recommended = bundle.recommended
       for archive in archives:
         platform_bundle = self._GetPlatformArchiveBundle(archive)
         # Normally the manifest snippet's bundle name matches our bundle name.
@@ -476,7 +475,11 @@ class Updater(object):
         platform_bundle.name = bundle_name
         bundle.MergeWithBundle(platform_bundle)
       bundle.stability = channel
-      bundle.recommended = bundle_recommended
+      # We always recommend the stable version.
+      if channel == 'stable':
+        bundle.recommended = 'yes'
+      else:
+        bundle.recommended = 'no'
       manifest.MergeBundle(bundle)
     self._UploadManifest(manifest)
     self.delegate.Print('Done.')
