@@ -42,9 +42,7 @@ bool TestService::StartService() {
 }
 
 bool TestService::WaitUntilServiceIsStarted() {
-  const base::TimeDelta timeout(
-      base::TimeDelta::FromMilliseconds(
-          TestTimeouts::action_max_timeout_ms()));
+  const base::TimeDelta timeout(TestTimeouts::action_max_timeout());
   // Wait until all methods are exported.
   return on_all_methods_exported_.TimedWait(timeout);
 }
