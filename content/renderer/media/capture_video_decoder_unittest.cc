@@ -204,3 +204,18 @@ TEST_F(CaptureVideoDecoderTest, OnDeviceInfoReceived) {
 
   Stop();
 }
+
+TEST_F(CaptureVideoDecoderTest, ReadAndShutdown) {
+  // Test all the Read requests can be fullfilled (which is needed in order to
+  // teardown the pipeline) even when there's no input frame.
+  Initialize();
+
+  EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk, _)).Times(2);
+  decoder_->Read(read_cb_);
+  decoder_->PrepareForShutdownHack();
+  decoder_->Read(read_cb_);
+  message_loop_->RunAllPending();
+
+  Stop();
+}
+

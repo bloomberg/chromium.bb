@@ -221,3 +221,19 @@ TEST_F(RTCVideoDecoderTest, DoSetSize) {
 
   message_loop_.RunAllPending();
 }
+
+TEST_F(RTCVideoDecoderTest, ReadAndShutdown) {
+  // Test all the Read requests can be fullfilled (which is needed in order to
+  // teardown the pipeline) even when there's no input frame.
+  InitializeDecoderSuccessfully();
+
+  EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk, _)).Times(2);
+  decoder_->Read(read_cb_);
+  EXPECT_FALSE(decoder_->shutting_down_);
+  decoder_->PrepareForShutdownHack();
+  EXPECT_TRUE(decoder_->shutting_down_);
+  decoder_->Read(read_cb_);
+
+  message_loop_.RunAllPending();
+}
+

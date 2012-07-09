@@ -51,6 +51,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, DoReset);
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, DoRenderFrame);
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, DoSetSize);
+  FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, ReadAndShutdown);
 
   enum DecoderState {
     kUnInitialized,

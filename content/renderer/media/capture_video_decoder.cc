@@ -26,6 +26,7 @@ CaptureVideoDecoder::CaptureVideoDecoder(
       natural_size_(capability.width, capability.height),
       state_(kUnInitialized),
       got_first_frame_(false),
+      shutting_down_(false),
       video_stream_id_(video_stream_id),
       capture_engine_(NULL) {
   DCHECK(vc_manager);
@@ -62,6 +63,13 @@ void CaptureVideoDecoder::Stop(const base::Closure& closure) {
 
 const gfx::Size& CaptureVideoDecoder::natural_size() {
   return natural_size_;
+}
+
+void CaptureVideoDecoder::PrepareForShutdownHack() {
+  message_loop_proxy_->PostTask(
+      FROM_HERE,
+      base::Bind(&CaptureVideoDecoder::PrepareForShutdownHackOnDecoderThread,
+                 this));
 }
 
 void CaptureVideoDecoder::OnStarted(media::VideoCapture* capture) {
@@ -134,7 +142,7 @@ void CaptureVideoDecoder::ReadOnDecoderThread(const ReadCB& read_cb) {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   CHECK(read_cb_.is_null());
   read_cb_ = read_cb;
-  if (state_ == kPaused) {
+  if (state_ == kPaused || shutting_down_) {
     DeliverFrame(media::VideoFrame::CreateEmptyFrame());
   }
 }
@@ -157,6 +165,15 @@ void CaptureVideoDecoder::StopOnDecoderThread(const base::Closure& closure) {
   pending_stop_cb_ = closure;
   state_ = kStopped;
   capture_engine_->StopCapture(this);
+}
+
+void CaptureVideoDecoder::PrepareForShutdownHackOnDecoderThread() {
+  DVLOG(1) << "PrepareForShutdownHackOnDecoderThread";
+  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
+  shutting_down_ = true;
+  if (!read_cb_.is_null()) {
+    DeliverFrame(media::VideoFrame::CreateEmptyFrame());
+  }
 }
 
 void CaptureVideoDecoder::OnStoppedOnDecoderThread(
