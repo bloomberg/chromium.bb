@@ -205,14 +205,16 @@ GURL GetOriginURLFromIdentifier(const std::string& origin_identifier) {
   WebKit::WebSecurityOrigin web_security_origin =
       WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
           UTF8ToUTF16(origin_identifier));
-  GURL origin_url(web_security_origin.toString());
 
   // We need this work-around for file:/// URIs as
-  // createFromDatabaseIdentifier returns empty origin_url for them.
-  if (origin_url.spec().empty() &&
-      origin_identifier.find("file__") == 0)
-    return GURL("file:///");
-  return origin_url;
+  // createFromDatabaseIdentifier returns null origin_url for them.
+  if (web_security_origin.isUnique()) {
+    if (origin_identifier.find("file__") == 0)
+      return GURL("file:///");
+    return GURL();
+  }
+
+  return GURL(web_security_origin.toString());
 }
 
 std::string GetFileSystemTypeString(FileSystemType type) {
