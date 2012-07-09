@@ -5528,7 +5528,16 @@
    fun:_ZN3IPC11SyncChannelC1ERKNS_13ChannelHandleENS_7Channel4ModeEPNS_8ListenerEPN4base22SingleThreadTaskRunnerEbPNS8_13WaitableEventE
    fun:_ZN11ChildThread4InitEv
    fun:_ZN11ChildThreadC2ERKSs
-   fun:_ZN16RenderThreadImplC1ERKSs
+}
+{
+   bug_65940_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorI13scoped_refptrIN3IPC12ChannelProxy13MessageFilterEEE8allocateEmPKv
+   fun:_ZNSt12_Vector_baseI13scoped_refptrIN3IPC12ChannelProxy13MessageFilterEESaIS4_EE11_M_allocateEm
+   fun:_ZNSt6vectorI13scoped_refptrIN3IPC12ChannelProxy13MessageFilterEESaIS4_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS4_S6_EERKS4_
+   fun:_ZNSt6vectorI13scoped_refptrIN3IPC12ChannelProxy13MessageFilterEESaIS4_EE9push_backERKS4_
+   fun:_ZN3IPC12ChannelProxy7Context11OnAddFilterEv
 }
 
 
