@@ -1093,7 +1093,7 @@ class RenderViewImpl : public RenderWidget,
   // selection handles in sync with the webpage.
   void SyncSelectionIfRequired();
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   void UpdateFontRenderingFromRendererPrefs();
 #else
   void UpdateFontRenderingFromRendererPrefs() {}

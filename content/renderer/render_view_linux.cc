@@ -5,10 +5,8 @@
 #include "content/renderer/render_view_impl.h"
 
 #include "content/public/common/renderer_preferences.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontRendering.h"
 
-using WebKit::WebFontInfo;
 using WebKit::WebFontRendering;
 
 static SkPaint::Hinting RendererPreferencesToSkiaHinting(
@@ -102,6 +100,8 @@ static bool RendererPreferencesToSubpixelRenderingFlag(
 void RenderViewImpl::UpdateFontRenderingFromRendererPrefs() {
   const content::RendererPreferences& prefs = renderer_preferences_;
   WebFontRendering::setHinting(RendererPreferencesToSkiaHinting(prefs));
+  WebFontRendering::setAutoHint(prefs.use_autohinter);
+  WebFontRendering::setUseBitmaps(prefs.use_bitmaps);
   WebFontRendering::setLCDOrder(
       RendererPreferencesToSkiaLCDOrder(prefs.subpixel_rendering));
   WebFontRendering::setLCDOrientation(
@@ -110,5 +110,4 @@ void RenderViewImpl::UpdateFontRenderingFromRendererPrefs() {
   WebFontRendering::setSubpixelRendering(
       RendererPreferencesToSubpixelRenderingFlag(prefs));
   WebFontRendering::setSubpixelPositioning(prefs.use_subpixel_positioning);
-  WebFontInfo::setSubpixelPositioning(prefs.use_subpixel_positioning);
 }

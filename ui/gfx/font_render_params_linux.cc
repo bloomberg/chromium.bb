@@ -23,7 +23,10 @@ void LoadDefaults(FontRenderParams* params) {
 #if defined(TOOLKIT_GTK)
   params->antialiasing = true;
   params->subpixel_positioning = false;
-  params->autohinter = false;
+  // TODO(wangxianzhu): autohinter is now true to keep original behavior
+  // of WebKit, but it might not be the best value.
+  params->autohinter = true;
+  params->use_bitmaps = true;
   params->hinting = FontRenderParams::HINTING_SLIGHT;
   params->subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_NONE;
 
@@ -73,6 +76,7 @@ void LoadDefaults(FontRenderParams* params) {
   // For non-GTK builds (read: Aura), just use reasonable hardcoded values.
   params->antialiasing = true;
   params->autohinter = true;
+  params->use_bitmaps = true;
 
   // Fetch default subpixel rendering settings from FontConfig.
   FcPattern* pattern = FcPatternCreate();

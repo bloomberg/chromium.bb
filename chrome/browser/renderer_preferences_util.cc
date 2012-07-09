@@ -9,7 +9,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/common/renderer_preferences.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
 #include "ui/gfx/font_render_params_linux.h"
 #endif
 
@@ -29,7 +29,7 @@ namespace {
 const double kGtkCursorBlinkCycleFactor = 2000.0;
 #endif  // defined(TOOLKIT_GTK)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
 content::RendererPreferencesHintingEnum GetRendererPreferencesHintingEnum(
     gfx::FontRenderParams::Hinting hinting) {
   switch (hinting) {
@@ -67,7 +67,7 @@ GetRendererPreferencesSubpixelRenderingEnum(
       return content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT;
   }
 }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 }  // namespace
 
@@ -105,11 +105,13 @@ void UpdateFromSystemSettings(
   prefs->inactive_selection_fg_color = SK_ColorBLACK;
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
   const gfx::FontRenderParams& params = gfx::GetDefaultFontRenderParams();
   prefs->should_antialias_text = params.antialiasing;
   prefs->use_subpixel_positioning = params.subpixel_positioning;
   prefs->hinting = GetRendererPreferencesHintingEnum(params.hinting);
+  prefs->use_autohinter = params.autohinter;
+  prefs->use_bitmaps = params.use_bitmaps;
   prefs->subpixel_rendering =
       GetRendererPreferencesSubpixelRenderingEnum(params.subpixel_rendering);
 #endif

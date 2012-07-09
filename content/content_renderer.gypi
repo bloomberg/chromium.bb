@@ -335,4 +335,11 @@
       ],
     }],
   ],
+  'target_conditions': [
+    ['OS=="android"', {
+      'sources/': [
+        ['include', '^renderer/render_view_linux\\.cc$'],
+      ],
+    }],
+  ],
 }

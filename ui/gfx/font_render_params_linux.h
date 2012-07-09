@@ -43,6 +43,9 @@ struct UI_EXPORT FontRenderParams {
   // interpreter, which uses fonts' own hinting instructions)?
   bool autohinter;
 
+  // Should embedded bitmaps in fonts should be used?
+  bool use_bitmaps;
+
   // Hinting level.
   Hinting hinting;
 

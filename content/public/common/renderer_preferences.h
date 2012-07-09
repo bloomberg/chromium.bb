@@ -52,6 +52,13 @@ struct CONTENT_EXPORT RendererPreferences {
   // Currently only used by Linux.
   RendererPreferencesHintingEnum hinting;
 
+  // Whether auto hinter should be used. Currently only used by Linux.
+  bool use_autohinter;
+
+  // Whether embedded bitmap strikes in fonts should be used.
+  // Current only used by Linux.
+  bool use_bitmaps;
+
   // The type of subpixel rendering to use for text.
   // Currently only used by Linux.
   RendererPreferencesSubpixelRenderingEnum subpixel_rendering;
