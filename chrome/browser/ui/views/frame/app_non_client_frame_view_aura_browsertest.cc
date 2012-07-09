@@ -23,7 +23,7 @@ class AppNonClientFrameViewAuraTest : public InProcessBrowserTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     Browser::CreateParams params = Browser::CreateParams::CreateForApp(
-        Browser::TYPE_PANEL,
+        Browser::TYPE_POPUP,
         std::string("Test"),
         gfx::Rect(),
         browser()->profile());

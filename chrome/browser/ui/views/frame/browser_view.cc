@@ -1605,8 +1605,9 @@ bool BrowserView::GetSavedWindowPlacement(
   }
 #endif
 
-  if ((browser_->is_type_popup() || browser_->is_type_panel())
-      && !browser_->is_devtools() && !browser_->is_app()) {
+  if ((browser_->is_type_popup() &&
+       !browser_->is_devtools() && !browser_->is_app()) ||
+      (browser_->is_type_panel())) {
     // We are a popup window. The value passed in |bounds| represents two
     // pieces of information:
     // - the position of the window, in screen coordinates (outer position).
