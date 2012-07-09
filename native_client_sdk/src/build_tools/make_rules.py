@@ -207,7 +207,7 @@ BUILD_RULES = {
     'DEFS': PNACL_DEFAULTS,
     'CC': NACL_CC_RULE,
     'CXX': NACL_CC_RULE,
-    'nmf' : NMF_RULE,
+    'NMF' : NMF_RULE,
     'MAIN': PEXE_LINK_RULE,
     'LIB': None,
     'SO': None,

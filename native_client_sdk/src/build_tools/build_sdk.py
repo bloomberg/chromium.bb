@@ -446,6 +446,12 @@ def main(args):
   if builder_name.find('pnacl') >= 0 and builder_name.find('sdk') >= 0:
     options.pnacl = True
 
+  # TODO(binji) There is currently a hack in download_nacl_toolchains.py that
+  # won't download pnacl toolchains unless the BUILDBOT_BUILDERNAME has "pnacl"
+  # and "sdk" in it. Set that here, if not already set...
+  if options.pnacl and not os.getenv('BUILDBOT_BUILDERNAME'):
+    os.environ['BUILDBOT_BUILDERNAME'] = 'pnacl-sdk'
+
   # TODO(binji) for now, only test examples on non-trybots. Trybots don't build
   # pyauto Chrome.
   if buildbot_common.IsSDKBuilder():
