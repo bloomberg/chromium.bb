@@ -437,11 +437,6 @@ func writeCertsOutput(out *bufio.Writer, pins []pin) {
 `)
 
 	for _, pin := range pins {
-		if pin.cert != nil {
-			out.WriteString("#if 0\n")
-			pem.Encode(out, &pem.Block{Type: "CERTIFICATE", Bytes: pin.cert.Raw})
-			out.WriteString("#endif\n")
-		}
 		fmt.Fprintf(out, "static const char kSPKIHash_%s[] =\n", pin.name)
 		fmt.Fprintf(out, "    \"%s/%s\";\n\n", pin.spkiHashFunc, base64.StdEncoding.EncodeToString(pin.spkiHash))
 	}
