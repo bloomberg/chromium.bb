@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -180,11 +180,17 @@ void P2PSocketHostUdp::OnSend(int result) {
   DCHECK_NE(result, net::ERR_IO_PENDING);
 
   send_pending_ = false;
-  if (result < 0) {
+
+  // We may get ERR_ADDRESS_UNREACHABLE here if the peer host has a
+  // local IP address with the same subnet address as the local
+  // host. This error is ingored so that this socket can still be used
+  // to try to connect to different candidates.
+  if (result < 0 && result != net::ERR_ADDRESS_UNREACHABLE) {
     OnError();
     return;
   }
 
+  // Send next packets if we have them waiting in the buffer.
   while (!send_queue_.empty() && !send_pending_) {
     DoSend(send_queue_.front());
     send_queue_bytes_ -= send_queue_.front().size;
