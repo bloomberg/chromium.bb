@@ -49,27 +49,29 @@ shm_pool_create(struct wl_shm *shm, int size)
 
 	pool->fd = mkstemp(filename);
 	if (pool->fd < 0)
-		return NULL;
+		goto err_free;
 
-	if (ftruncate(pool->fd, size) < 0) {
-		close(pool->fd);
-		return NULL;
-	}
+	if (ftruncate(pool->fd, size) < 0)
+		goto err_close;
 
 	pool->data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED,
 			  pool->fd, 0);
 	unlink(filename);
 
-	if (pool->data == MAP_FAILED) {
-		close(pool->fd);
-		return NULL;
-	}
+	if (pool->data == MAP_FAILED)
+		goto err_close;
 
 	pool->pool = wl_shm_create_pool(shm, pool->fd, size);
 	pool->size = size;
 	pool->used = 0;
 
 	return pool;
+
+err_close:
+	close(pool->fd);
+err_free:
+	free(pool);
+	return NULL;
 }
 
 static int
