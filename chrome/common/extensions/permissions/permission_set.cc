@@ -99,10 +99,8 @@ PermissionSet::PermissionSet() {}
 PermissionSet::PermissionSet(
     const extensions::Extension* extension,
     const APIPermissionSet& apis,
-    const URLPatternSet& explicit_hosts,
-    const OAuth2Scopes& scopes)
-    : apis_(apis),
-      scopes_(scopes) {
+    const URLPatternSet& explicit_hosts)
+    : apis_(apis) {
   DCHECK(extension);
   AddPatternsAndRemovePaths(explicit_hosts, &explicit_hosts_);
   InitImplicitExtensionPermissions(extension);
@@ -116,24 +114,6 @@ PermissionSet::PermissionSet(
     : apis_(apis),
       scriptable_hosts_(scriptable_hosts) {
   AddPatternsAndRemovePaths(explicit_hosts, &explicit_hosts_);
-  InitEffectiveHosts();
-}
-
-PermissionSet::PermissionSet(
-    const APIPermissionSet& apis,
-    const URLPatternSet& explicit_hosts,
-    const URLPatternSet& scriptable_hosts,
-    const OAuth2Scopes& scopes)
-    : apis_(apis),
-      scriptable_hosts_(scriptable_hosts),
-      scopes_(scopes) {
-  AddPatternsAndRemovePaths(explicit_hosts, &explicit_hosts_);
-  InitEffectiveHosts();
-}
-
-PermissionSet::PermissionSet(
-    const OAuth2Scopes& scopes)
-    : scopes_(scopes) {
   InitEffectiveHosts();
 }
 
@@ -161,14 +141,7 @@ PermissionSet* PermissionSet::CreateDifference(
                                   set2_safe->scriptable_hosts(),
                                   &scriptable_hosts);
 
-  OAuth2Scopes scopes;
-  std::set_difference(set1_safe->scopes().begin(), set1_safe->scopes().end(),
-                      set2_safe->scopes().begin(), set2_safe->scopes().end(),
-                      std::insert_iterator<OAuth2Scopes>(
-                          scopes, scopes.begin()));
-
-  return new PermissionSet(
-      apis, explicit_hosts, scriptable_hosts, scopes);
+  return new PermissionSet(apis, explicit_hosts, scriptable_hosts);
 }
 
 // static
@@ -194,14 +167,7 @@ PermissionSet* PermissionSet::CreateIntersection(
                                     set2_safe->scriptable_hosts(),
                                     &scriptable_hosts);
 
-  OAuth2Scopes scopes;
-  std::set_intersection(set1_safe->scopes().begin(), set1_safe->scopes().end(),
-                        set2_safe->scopes().begin(), set2_safe->scopes().end(),
-                        std::insert_iterator<OAuth2Scopes>(
-                            scopes, scopes.begin()));
-
-  return new PermissionSet(
-      apis, explicit_hosts, scriptable_hosts, scopes);
+  return new PermissionSet(apis, explicit_hosts, scriptable_hosts);
 }
 
 // static
@@ -228,22 +194,14 @@ PermissionSet* PermissionSet::CreateUnion(
                              set2_safe->scriptable_hosts(),
                              &scriptable_hosts);
 
-  OAuth2Scopes scopes;
-  std::set_union(set1_safe->scopes().begin(), set1_safe->scopes().end(),
-                 set2_safe->scopes().begin(), set2_safe->scopes().end(),
-                 std::insert_iterator<OAuth2Scopes>(
-                     scopes, scopes.begin()));
-
-  return new PermissionSet(
-      apis, explicit_hosts, scriptable_hosts, scopes);
+  return new PermissionSet(apis, explicit_hosts, scriptable_hosts);
 }
 
 bool PermissionSet::operator==(
     const PermissionSet& rhs) const {
   return apis_ == rhs.apis_ &&
       scriptable_hosts_ == rhs.scriptable_hosts_ &&
-      explicit_hosts_ == rhs.explicit_hosts_ &&
-      scopes_ == rhs.scopes_;
+      explicit_hosts_ == rhs.explicit_hosts_;
 }
 
 bool PermissionSet::Contains(const PermissionSet& set) const {
@@ -259,10 +217,6 @@ bool PermissionSet::Contains(const PermissionSet& set) const {
     return false;
 
   if (!scriptable_hosts().Contains(set.scriptable_hosts()))
-    return false;
-
-  if (!std::includes(scopes_.begin(), scopes_.end(),
-                     set.scopes().begin(), set.scopes().end()))
     return false;
 
   return true;
@@ -475,9 +429,6 @@ bool PermissionSet::HasLessPrivilegesThan(
   if (HasLessAPIPrivilegesThan(permissions))
     return true;
 
-  if (HasLessScopesThan(permissions))
-    return true;
-
   return false;
 }
 
@@ -631,22 +582,6 @@ bool PermissionSet::HasLessHostPrivilegesThan(
                       std::inserter(new_hosts_only, new_hosts_only.begin()));
 
   return !new_hosts_only.empty();
-}
-
-bool PermissionSet::HasLessScopesThan(
-    const PermissionSet* permissions) const {
-  if (permissions == NULL)
-    return false;
-
-  OAuth2Scopes current_scopes = scopes();
-  OAuth2Scopes new_scopes = permissions->scopes();
-  OAuth2Scopes delta_scopes;
-  std::set_difference(new_scopes.begin(), new_scopes.end(),
-                      current_scopes.begin(), current_scopes.end(),
-                      std::inserter(delta_scopes, delta_scopes.begin()));
-
-  // We have less privileges if there are additional scopes present.
-  return !delta_scopes.empty();
 }
 
 }  // namespace extensions

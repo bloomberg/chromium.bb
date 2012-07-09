@@ -29,7 +29,6 @@ using extensions::APIPermission;
 using extensions::APIPermissionSet;
 using extensions::Extension;
 using extensions::ExtensionInfo;
-using extensions::OAuth2Scopes;
 using extensions::PermissionsInfo;
 using extensions::PermissionSet;
 
@@ -141,7 +140,6 @@ const char kPrefGrantedPermissions[] = "granted_permissions";
 const char kPrefAPIs[] = "api";
 const char kPrefExplicitHosts[] = "explicit_host";
 const char kPrefScriptableHosts[] = "scriptable_host";
-const char kPrefScopes[] = "scopes";
 
 // The preference names for the old granted permissions scheme.
 const char kPrefOldGrantedFullAccess[] = "granted_permissions.full";
@@ -511,20 +509,7 @@ PermissionSet* ExtensionPrefs::ReadExtensionPrefPermissionSet(
       extension_id, JoinPrefs(pref_key, kPrefScriptableHosts),
       &scriptable_hosts, UserScript::kValidUserScriptSchemes);
 
-  // Retrieve the oauth2 scopes.
-  OAuth2Scopes scopes;
-  const ListValue* scope_values = NULL;
-  std::string scope_pref = JoinPrefs(pref_key, kPrefScopes);
-  if (ReadExtensionPrefList(extension_id, scope_pref, &scope_values)) {
-    for (size_t i = 0; i < scope_values->GetSize(); ++i) {
-      std::string scope;
-      if (scope_values->GetString(i, &scope))
-        scopes.insert(scope);
-    }
-  }
-
-  return new PermissionSet(
-      apis, explicit_hosts, scriptable_hosts, scopes);
+  return new PermissionSet(apis, explicit_hosts, scriptable_hosts);
 }
 
 void ExtensionPrefs::SetExtensionPrefPermissionSet(
@@ -556,18 +541,6 @@ void ExtensionPrefs::SetExtensionPrefPermissionSet(
     SetExtensionPrefURLPatternSet(extension_id,
                                   JoinPrefs(pref_key, kPrefScriptableHosts),
                                   new_value->scriptable_hosts());
-  }
-
-  // Set the oauth2 scopes.
-  OAuth2Scopes scopes = new_value->scopes();
-  if (!scopes.empty()) {
-    ListValue* scope_values = new ListValue();
-    for (OAuth2Scopes::iterator i = scopes.begin();
-         i != scopes.end(); ++i) {
-      scope_values->Append(Value::CreateStringValue(*i));
-    }
-    std::string scope_pref = JoinPrefs(pref_key, kPrefScopes);
-    UpdateExtensionPref(extension_id, scope_pref, scope_values);
   }
 }
 

@@ -282,13 +282,6 @@ Extension::TtsVoice::~TtsVoice() {}
 Extension::OAuth2Info::OAuth2Info() {}
 Extension::OAuth2Info::~OAuth2Info() {}
 
-OAuth2Scopes Extension::OAuth2Info::GetScopesAsSet() {
-  OAuth2Scopes result;
-  std::copy(scopes.begin(), scopes.end(),
-            std::inserter(result, result.begin()));
-  return result;
-}
-
 //
 // Extension
 //
@@ -3153,9 +3146,9 @@ bool Extension::InitFromValue(int flags, string16* error) {
   }
 
   runtime_data_.SetActivePermissions(new PermissionSet(
-      this, api_permissions, host_permissions, oauth2_info_.GetScopesAsSet()));
+      this, api_permissions, host_permissions));
   required_permission_set_ = new PermissionSet(
-      this, api_permissions, host_permissions, oauth2_info_.GetScopesAsSet());
+      this, api_permissions, host_permissions);
   optional_permission_set_ = new PermissionSet(
       optional_api_permissions, optional_host_permissions, URLPatternSet());
 

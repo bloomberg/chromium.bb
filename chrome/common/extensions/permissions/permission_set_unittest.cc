@@ -272,10 +272,6 @@ TEST(PermissionsTest, CreateUnion) {
   URLPatternSet scriptable_hosts2;
   URLPatternSet expected_scriptable_hosts;
 
-  OAuth2Scopes scopes1;
-  OAuth2Scopes scopes2;
-  OAuth2Scopes expected_scopes;
-
   URLPatternSet effective_hosts;
 
   scoped_refptr<PermissionSet> set1;
@@ -292,15 +288,8 @@ TEST(PermissionsTest, CreateUnion) {
   AddPattern(&expected_explicit_hosts, "http://*.google.com/*");
   AddPattern(&effective_hosts, "http://*.google.com/*");
 
-  scopes1.insert("first-scope");
-  scopes1.insert("second-scope");
-  expected_scopes.insert("first-scope");
-  expected_scopes.insert("second-scope");
-
-  set1 = new PermissionSet(
-      apis1, explicit_hosts1, scriptable_hosts1, scopes1);
-  set2 = new PermissionSet(
-      apis2, explicit_hosts2, scriptable_hosts2, scopes2);
+  set1 = new PermissionSet(apis1, explicit_hosts1, scriptable_hosts1);
+  set2 = new PermissionSet(apis2, explicit_hosts2, scriptable_hosts2);
   union_set = PermissionSet::CreateUnion(set1.get(), set2.get());
   EXPECT_TRUE(set1->Contains(*set2));
   EXPECT_TRUE(set1->Contains(*union_set));
@@ -314,7 +303,6 @@ TEST(PermissionsTest, CreateUnion) {
   EXPECT_EQ(expected_explicit_hosts, union_set->explicit_hosts());
   EXPECT_EQ(expected_scriptable_hosts, union_set->scriptable_hosts());
   EXPECT_EQ(expected_explicit_hosts, union_set->effective_hosts());
-  EXPECT_EQ(expected_scopes, union_set->scopes());
 
   // Now use a real second set.
   apis2.insert(APIPermission::kTab);
@@ -331,16 +319,10 @@ TEST(PermissionsTest, CreateUnion) {
   AddPattern(&expected_explicit_hosts, "http://*.example.com/*");
   AddPattern(&expected_scriptable_hosts, "http://*.google.com/*");
 
-  scopes2.insert("real-scope");
-  scopes2.insert("anotherscope");
-  expected_scopes.insert("real-scope");
-  expected_scopes.insert("anotherscope");
-
   URLPatternSet::CreateUnion(
       explicit_hosts2, scriptable_hosts2, &effective_hosts);
 
-  set2 = new PermissionSet(
-      apis2, explicit_hosts2, scriptable_hosts2, scopes2);
+  set2 = new PermissionSet(apis2, explicit_hosts2, scriptable_hosts2);
   union_set = PermissionSet::CreateUnion(set1.get(), set2.get());
 
   EXPECT_FALSE(set1->Contains(*set2));
@@ -355,7 +337,6 @@ TEST(PermissionsTest, CreateUnion) {
   EXPECT_EQ(expected_apis, union_set->apis());
   EXPECT_EQ(expected_explicit_hosts, union_set->explicit_hosts());
   EXPECT_EQ(expected_scriptable_hosts, union_set->scriptable_hosts());
-  EXPECT_EQ(expected_scopes, union_set->scopes());
   EXPECT_EQ(effective_hosts, union_set->effective_hosts());
 }
 
@@ -448,10 +429,6 @@ TEST(PermissionsTest, CreateDifference) {
   URLPatternSet scriptable_hosts2;
   URLPatternSet expected_scriptable_hosts;
 
-  OAuth2Scopes scopes1;
-  OAuth2Scopes scopes2;
-  OAuth2Scopes expected_scopes;
-
   URLPatternSet effective_hosts;
 
   scoped_refptr<PermissionSet> set1;
@@ -465,13 +442,8 @@ TEST(PermissionsTest, CreateDifference) {
   AddPattern(&explicit_hosts1, "http://*.google.com/*");
   AddPattern(&scriptable_hosts1, "http://www.reddit.com/*");
 
-  scopes1.insert("my-scope");
-  scopes1.insert("other-scope");
-
-  set1 = new PermissionSet(
-      apis1, explicit_hosts1, scriptable_hosts1, scopes1);
-  set2 = new PermissionSet(
-      apis2, explicit_hosts2, scriptable_hosts2, scopes2);
+  set1 = new PermissionSet(apis1, explicit_hosts1, scriptable_hosts1);
+  set2 = new PermissionSet(apis2, explicit_hosts2, scriptable_hosts2);
   new_set = PermissionSet::CreateDifference(set1.get(), set2.get());
   EXPECT_EQ(*set1, *new_set);
 
@@ -487,14 +459,10 @@ TEST(PermissionsTest, CreateDifference) {
   AddPattern(&scriptable_hosts2, "http://*.google.com/*");
   AddPattern(&expected_scriptable_hosts, "http://www.reddit.com/*");
 
-  scopes2.insert("other-scope");
-  expected_scopes.insert("my-scope");
-
   effective_hosts.ClearPatterns();
   AddPattern(&effective_hosts, "http://www.reddit.com/*");
 
-  set2 = new PermissionSet(
-      apis2, explicit_hosts2, scriptable_hosts2, scopes2);
+  set2 = new PermissionSet(apis2, explicit_hosts2, scriptable_hosts2);
   new_set = PermissionSet::CreateDifference(set1.get(), set2.get());
 
   EXPECT_TRUE(set1->Contains(*new_set));
@@ -505,7 +473,6 @@ TEST(PermissionsTest, CreateDifference) {
   EXPECT_EQ(expected_apis, new_set->apis());
   EXPECT_EQ(expected_explicit_hosts, new_set->explicit_hosts());
   EXPECT_EQ(expected_scriptable_hosts, new_set->scriptable_hosts());
-  EXPECT_EQ(expected_scopes, new_set->scopes());
   EXPECT_EQ(effective_hosts, new_set->effective_hosts());
 
   // |set3| = |set1| - |set2| --> |set3| intersect |set2| == empty_set
@@ -540,9 +507,6 @@ TEST(PermissionsTest, HasLessPrivilegesThan) {
 #endif
     { "storage", false },  // none -> storage
     { "notifications", false },  // none -> notifications
-    { "scopes1", true },  // scope1 -> scope1,scope2
-    { "scopes2", false },  // scope1,scope2 -> scope1
-    { "scopes3", true },  // none -> scope1
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {

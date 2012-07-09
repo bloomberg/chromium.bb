@@ -173,6 +173,7 @@ class CrxInstaller
 
  private:
   friend class extensions::ExtensionUpdaterTest;
+  friend class ExtensionCrxInstallerTest;
 
   CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
                ExtensionInstallPrompt* client,

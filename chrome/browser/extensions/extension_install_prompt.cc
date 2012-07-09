@@ -429,7 +429,7 @@ void ExtensionInstallPrompt::FetchOAuthIssueAdviceIfNeeded() {
   if (ShouldAutomaticallyApproveScopes() ||
       prompt_.GetOAuthIssueCount() != 0U ||
       oauth2_info.client_id.empty() ||
-      permissions_->scopes().empty() ||
+      oauth2_info.scopes.empty() ||
       prompt_type_ == BUNDLE_INSTALL_PROMPT ||
       prompt_type_ == INLINE_INSTALL_PROMPT) {
     ShowConfirmation();
@@ -438,8 +438,6 @@ void ExtensionInstallPrompt::FetchOAuthIssueAdviceIfNeeded() {
 
   Profile* profile = install_ui_->profile();
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile);
-  std::vector<std::string> scopes;
-  scopes.assign(permissions_->scopes().begin(), permissions_->scopes().end());
 
   token_flow_.reset(new OAuth2MintTokenFlow(
       profile->GetRequestContext(),
@@ -448,7 +446,7 @@ void ExtensionInstallPrompt::FetchOAuthIssueAdviceIfNeeded() {
           token_service->GetOAuth2LoginRefreshToken(),
           extension_->id(),
           oauth2_info.client_id,
-          scopes,
+          oauth2_info.scopes,
           OAuth2MintTokenFlow::MODE_ISSUE_ADVICE)));
   token_flow_->Start();
 }

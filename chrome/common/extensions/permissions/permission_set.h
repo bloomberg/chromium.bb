@@ -23,8 +23,6 @@ namespace extensions {
 
 class Extension;
 
-typedef std::set<std::string> OAuth2Scopes;
-
 // The PermissionSet is an immutable class that encapsulates an
 // extension's permissions. The class exposes set operations for combining and
 // manipulating the permissions.
@@ -39,23 +37,13 @@ class PermissionSet
   // of the newly created permission set will be inferred from the |extension|
   // manifest, |apis| and |hosts|.
   PermissionSet(const extensions::Extension* extension,
-                         const APIPermissionSet& apis,
-                         const URLPatternSet& explicit_hosts,
-                         const OAuth2Scopes& scopes);
+                const APIPermissionSet& apis,
+                const URLPatternSet& explicit_hosts);
 
   // Creates a new permission set based on the specified data.
   PermissionSet(const APIPermissionSet& apis,
-                         const URLPatternSet& explicit_hosts,
-                         const URLPatternSet& scriptable_hosts);
-
-  // Creates a new permission set that has oauth scopes in it.
-  PermissionSet(const APIPermissionSet& apis,
-                         const URLPatternSet& explicit_hosts,
-                         const URLPatternSet& scriptable_hosts,
-                         const OAuth2Scopes& scopes);
-
-  // Creates a new permission set containing only oauth scopes.
-  explicit PermissionSet(const OAuth2Scopes& scopes);
+                const URLPatternSet& explicit_hosts,
+                const URLPatternSet& scriptable_hosts);
 
   // Creates a new permission set equal to |set1| - |set2|, passing ownership of
   // the new set to the caller.
@@ -143,8 +131,6 @@ class PermissionSet
 
   const URLPatternSet& scriptable_hosts() const { return scriptable_hosts_; }
 
-  const OAuth2Scopes& scopes() const { return scopes_; }
-
  private:
   FRIEND_TEST_ALL_PREFIXES(PermissionsTest, HasLessHostPrivilegesThan);
   FRIEND_TEST_ALL_PREFIXES(PermissionsTest, GetWarningMessages_AudioVideo);
@@ -176,9 +162,6 @@ class PermissionSet
   bool HasLessHostPrivilegesThan(
       const PermissionSet* permissions) const;
 
-  // Returns true if |permissions| has more oauth2 scopes compared to this set.
-  bool HasLessScopesThan(const PermissionSet* permissions) const;
-
   // The api list is used when deciding if an extension can access certain
   // extension APIs and features.
   APIPermissionSet apis_;
@@ -193,10 +176,6 @@ class PermissionSet
 
   // The list of hosts this effectively grants access to.
   URLPatternSet effective_hosts_;
-
-  // A set of oauth2 scopes that are used by the identity API to create OAuth2
-  // tokens for accessing the Google Account of the signed-in sync account.
-  OAuth2Scopes scopes_;
 };
 
 }  // namespace extensions

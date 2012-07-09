@@ -53,6 +53,8 @@ namespace extensions {
 
 class Manifest;
 
+typedef std::set<std::string> OAuth2Scopes;
+
 // Represents a Chrome extension.
 class Extension : public base::RefCountedThreadSafe<Extension> {
  public:

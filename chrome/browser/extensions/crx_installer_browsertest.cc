@@ -132,7 +132,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
         service->extension_prefs()->GetGrantedPermissions(
             mock_prompt->extension()->id());
     ASSERT_TRUE(permissions.get());
-    EXPECT_NE(record_oauth2_grant, permissions->scopes().empty());
+    EXPECT_EQ(record_oauth2_grant, installer->record_oauth2_grant_);
   }
 };
 
