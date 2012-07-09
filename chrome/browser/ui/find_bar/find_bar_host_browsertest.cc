@@ -1185,7 +1185,13 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
 }
 
 // Tests that FindBar fits within a narrow browser window.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FitWindow) {
+// Flaky on Linux/GTK: http://crbug.com/136443.
+#if defined(TOOLKIT_GTK)
+#define MAYBE_FitWindow DISABLED_FitWindow
+#else
+#define MAYBE_FitWindow FitWindow
+#endif
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_FitWindow) {
   Browser::CreateParams params(Browser::TYPE_POPUP, browser()->profile());
   params.initial_bounds = gfx::Rect(0, 0, 250, 500);
   Browser* popup = Browser::CreateWithParams(params);
