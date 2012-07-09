@@ -759,7 +759,7 @@ wl_seat_set_touch(struct wl_seat *seat, struct wl_touch *touch)
 		return;
 
 	seat->touch = touch;
-	if (!touch)
+	if (touch)
 		touch->seat = seat;
 
 	seat_send_updated_caps(seat);
