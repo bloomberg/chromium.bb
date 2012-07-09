@@ -58,6 +58,8 @@ const char kHTTPNotAllowedText[] = "Not Allowed";
 const char kHTTPNotFoundText[] = "Not Found";
 const char kHTTPInternalErrorText[] = "Internal Error";
 
+const int64 kInvalidFileSize = -1;
+
 // Initial size of download buffer, same as kBufferSize used for URLFetcherCore.
 const int kInitialDownloadBufferSizeInBytes = 4096;
 
@@ -86,7 +88,7 @@ void EmptyCompletionCallback(int) {
 void GetFileSizeOnBlockingPool(const FilePath& file_path,
                                int64* file_size) {
   if (!file_util::GetFileSize(file_path, file_size))
-    *file_size = 0;
+    *file_size = kInvalidFileSize;
 }
 
 // Helper function that extracts and unescapes resource_id from drive urls
@@ -673,7 +675,7 @@ void GDataURLRequestJob::OnGetFileByResourceId(
   // Even though we're already on BrowserThread::IO thread,
   // file_util::GetFileSize can only be called on a thread with file
   // operations allowed, so post a task to blocking pool instead.
-  int64* file_size = new int64(0);
+  int64* file_size = new int64(kInvalidFileSize);
   BrowserThread::GetBlockingPool()->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GetFileSizeOnBlockingPool,
@@ -687,7 +689,7 @@ void GDataURLRequestJob::OnGetFileByResourceId(
 void GDataURLRequestJob::OnGetFileSize(int64 *file_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (*file_size == 0) {
+  if (*file_size == kInvalidFileSize) {
     LOG(WARNING) << "Failed to open " << local_file_path_.value();
     NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                            net::ERR_FILE_NOT_FOUND));
