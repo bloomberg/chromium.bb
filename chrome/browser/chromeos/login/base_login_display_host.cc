@@ -131,7 +131,8 @@ LoginDisplayHost* BaseLoginDisplayHost::default_host_ = NULL;
 BaseLoginDisplayHost::BaseLoginDisplayHost(const gfx::Rect& background_bounds)
     : background_bounds_(background_bounds),
       ALLOW_THIS_IN_INITIALIZER_LIST(pointer_factory_(this)),
-      shutting_down_(false) {
+      shutting_down_(false),
+      oobe_progress_bar_visible_(false) {
   // We need to listen to APP_EXITING but not APP_TERMINATING because
   // APP_TERMINATING will never be fired as long as this keeps ref-count.
   // APP_EXITING is safe here because there will be no browser instance that
@@ -195,8 +196,8 @@ void BaseLoginDisplayHost::StartWizard(
   wizard_controller_.reset();
   wizard_controller_.reset(CreateWizardController());
 
-  if (!WizardController::IsDeviceRegistered())
-    SetOobeProgressBarVisible(true);
+  oobe_progress_bar_visible_ = !WizardController::IsDeviceRegistered();
+  SetOobeProgressBarVisible(oobe_progress_bar_visible_);
   wizard_controller_->Init(first_screen_name, screen_parameters);
 }
 
@@ -215,9 +216,8 @@ void BaseLoginDisplayHost::StartSignInScreen() {
 
   sign_in_controller_.reset();  // Only one controller in a time.
   sign_in_controller_.reset(new chromeos::ExistingUserController(this));
-  if (!WizardController::IsDeviceRegistered()) {
-    SetOobeProgressBarVisible(true);
-  }
+  oobe_progress_bar_visible_ = !WizardController::IsDeviceRegistered();
+  SetOobeProgressBarVisible(oobe_progress_bar_visible_);
   SetShutdownButtonEnabled(true);
   sign_in_controller_->Init(users);
 
@@ -243,7 +243,7 @@ void BaseLoginDisplayHost::ResumeSignInScreen() {
   // auto-enrollment is complete we resume the normal login flow from here.
   DVLOG(1) << "Resuming sign in screen";
   CHECK(sign_in_controller_.get());
-  SetOobeProgressBarVisible(true);
+  SetOobeProgressBarVisible(oobe_progress_bar_visible_);
   SetShutdownButtonEnabled(true);
   sign_in_controller_->ResumeLogin();
 }

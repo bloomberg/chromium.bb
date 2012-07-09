@@ -109,6 +109,9 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
   // still in the process of cleaning up after login (http://crbug.com/134463).
   bool shutting_down_;
 
+  // Whether progress bar is shown on the OOBE page.
+  bool oobe_progress_bar_visible_;
+
   DISALLOW_COPY_AND_ASSIGN(BaseLoginDisplayHost);
 };
 
