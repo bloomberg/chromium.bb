@@ -1090,7 +1090,7 @@ def main(argv):
         'Running in LOCAL TRYBOT mode!  Use --remote to submit REMOTE '
         'tryjobs.  Use --local to suppress this message.')
     cros_build_lib.Warning(
-        'Starting April 30th, --local will be required to run the local '
+        'In the future, --local will be required to run the local '
         'trybot.')
     time.sleep(5)
 
