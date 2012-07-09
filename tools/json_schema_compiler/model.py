@@ -111,9 +111,8 @@ class Callback(object):
   def __init__(self, parent, json):
     params = json['parameters']
     self.parent = parent
-    self.optional = False
-    if 'optional' in json:
-      self.optional = json['optional'] == True
+    self.description = json.get('description')
+    self.optional = json.get('optional', False)
     self.params = []
     if len(params) == 0:
       return
@@ -184,6 +183,7 @@ class Property(object):
     self._unix_name = UnixName(self.name)
     self._unix_name_used = False
     self.optional = json.get('optional', False)
+    self.functions = []
     self.has_value = False
     self.description = json.get('description')
     self.parent = parent

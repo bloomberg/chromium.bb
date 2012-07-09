@@ -5,6 +5,10 @@
     <dt>{{+partials.type_name}}</dt>
     <dd>{{{description}}}</dd>
     <dd><dl>{{#properties}}{{+partials.property}}{{/}}</dl></dd>
-    <dd><dl>{{#functions}}{{+partials.function api:api}}{{/}}</dl></dd>
+    {{?functions}}
+    <a name={{type.name}}-methods></a>
+    <dd><h3>Methods of {{type.name}}</h3>
+      <dd><dl>{{#functions}}{{+partials.function api:api prefix:type.name}}{{/}}</dl></dd>
+    {{/functions}}
   </div>
 </div>

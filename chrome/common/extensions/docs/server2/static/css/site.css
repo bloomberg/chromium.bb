@@ -27,6 +27,14 @@ p.note {
   border-color: #36C;
 }
 
+p.caution {
+  border-color: #FC3;
+}
+
+p.warning {
+  border-color: #A03;
+}
+
 a, a:link {
   text-decoration: none;
   color: black;

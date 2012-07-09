@@ -13,6 +13,13 @@
   margin-top: 1em;
 }
 
+/* This style is used because types with functions prefix the function with the
+ * type name, using a lowercase first letter.
+ */
+.api_reference div.summary:first-letter {
+  text-transform: lowercase;
+}
+
 .api_reference div.description {
   margin-left: 2em;
 }

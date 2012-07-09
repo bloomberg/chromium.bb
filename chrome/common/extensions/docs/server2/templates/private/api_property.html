@@ -1,0 +1,13 @@
+<div>
+  <a name="property-{{name}}"></a>
+  <h4>{{name}}</h4>
+  <div class="summary">
+    <span>chrome.{{api.name}}.{{name}}</span>
+  </div>
+  <div>
+    <dt><span class="property">{{name}}</span> {{+partials.type_name}}</dt>
+    <dd>{{{description}}}</dd>
+    <dd><dl>{{#properties}}{{+partials.property}}{{/}}</dl></dd>
+    <dd><dl>{{#functions}}{{+partials.function}}{{/}}</dl></dd>
+  </div>
+</div>

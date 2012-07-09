@@ -2,12 +2,18 @@
   "functions": [
     {
       "callback": {
+        "simple_type": {
+          "type": "function"
+        },
+        "name": "callback",
         "parameters": [
           {
+            "functions": [],
             "name": "results",
             "optional": false,
             "last_parameter": true,
             "array": {
+              "functions": [],
               "name": "resultsElement",
               "optional": false,
               "link": {
@@ -23,20 +29,19 @@
             "description": null
           }
         ],
+        "last_item": true,
         "optional": false,
-        "name": "callback",
-        "simple_type": {
-          "type": "function"
-        },
-        "last_item": true
+        "description": null
       },
       "name": "get",
       "parameters": [
         {
+          "functions": [],
           "name": "a",
           "optional": false,
           "choices": [
             {
+              "functions": [],
               "name": "a",
               "simple_type": {
                 "type": "string"
@@ -48,9 +53,11 @@
             },
             {
               "last_choice": true,
+              "functions": [],
               "name": "a",
               "optional": true,
               "array": {
+                "functions": [],
                 "name": "aElement",
                 "simple_type": {
                   "type": "string"
@@ -70,12 +77,18 @@
           "description": "a param"
         },
         {
+          "simple_type": {
+            "type": "function"
+          },
+          "name": "callback",
           "parameters": [
             {
+              "functions": [],
               "name": "results",
               "optional": false,
               "last_parameter": true,
               "array": {
+                "functions": [],
                 "name": "resultsElement",
                 "optional": false,
                 "link": {
@@ -91,12 +104,9 @@
               "description": null
             }
           ],
+          "last_item": true,
           "optional": false,
-          "name": "callback",
-          "simple_type": {
-            "type": "function"
-          },
-          "last_item": true
+          "description": null
         }
       ],
       "description": "Gets stuff."
@@ -113,9 +123,11 @@
       "type": "object",
       "properties": [
         {
+          "functions": [],
           "name": "b",
           "optional": true,
           "array": {
+            "functions": [],
             "name": "bElement",
             "optional": false,
             "link": {
@@ -133,5 +145,6 @@
       ],
       "description": "A cool thing."
     }
-  ]
+  ],
+  "properties": []
 }

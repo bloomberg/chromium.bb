@@ -9,6 +9,7 @@ import unittest
 
 from handlebar_dict_generator import HandlebarDictGenerator
 from handlebar_dict_generator import _GetLinkToRefType
+from handlebar_dict_generator import _FormatValue
 import third_party.json_schema_compiler.json_comment_eater as comment_eater
 import third_party.json_schema_compiler.model as model
 
@@ -39,6 +40,11 @@ class DictGeneratorTest(unittest.TestCase):
     link = _GetLinkToRefType('nay', 'lies.chrome.bookmarks.Tab')
     self.assertEquals(link['href'], 'lies.html#type-chrome.bookmarks.Tab')
     self.assertEquals(link['text'], 'chrome.bookmarks.Tab')
+
+  def testFormatValue(self):
+    self.assertEquals('1,234,567', _FormatValue(1234567))
+    self.assertEquals('67', _FormatValue(67))
+    self.assertEquals('234,567', _FormatValue(234567))
 
 if __name__ == '__main__':
   unittest.main()

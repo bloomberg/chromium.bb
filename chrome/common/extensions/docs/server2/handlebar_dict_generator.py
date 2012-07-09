@@ -34,6 +34,12 @@ def _GetLinkToRefType(namespace_name, ref_type):
     "text": text
   })
 
+def _FormatValue(value):
+  """Inserts commas every three digits for integer values. It is magic.
+  """
+  s = str(value)
+  return ','.join([s[max(0, i - 3):i] for i in range(len(s), 0, -3)][::-1])
+
 class HandlebarDictGenerator(object):
   """Uses a Model from the JSON Schema Compiler and generates a dict that
   a Handlebar template can use for a data source.
@@ -51,7 +57,8 @@ class HandlebarDictGenerator(object):
       return {
         'name': self._namespace.name,
         'types': self._GenerateTypes(self._namespace.types),
-        'functions': self._GenerateFunctions(self._namespace.functions)
+        'functions': self._GenerateFunctions(self._namespace.functions),
+        'properties': self._GenerateProperties(self._namespace.properties)
       }
     except Exception as e:
       logging.info(e)
@@ -98,6 +105,7 @@ class HandlebarDictGenerator(object):
       return {}
     callback_dict = {
       'name': 'callback',
+      'description': callback.description,
       'simple_type': {'type': 'function'},
       'optional': callback.optional,
       'parameters': []
@@ -119,9 +127,16 @@ class HandlebarDictGenerator(object):
       'name': property_.name,
       'optional': property_.optional,
       'description': property_.description,
-      'properties': self._GenerateProperties(property_.properties)
+      'properties': self._GenerateProperties(property_.properties),
+      'functions': self._GenerateFunctions(property_.functions)
     }
-    self._RenderTypeInformation(property_, property_dict)
+    if property_.has_value:
+      if isinstance(property_.value, int):
+        property_dict['value'] = _FormatValue(property_.value)
+      else:
+        property_dict['value'] = property_.value
+    else:
+      self._RenderTypeInformation(property_, property_dict)
     return property_dict
 
   def _RenderTypeInformation(self, property_, dst_dict):
