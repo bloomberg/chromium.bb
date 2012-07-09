@@ -29,6 +29,20 @@ enum TouchState {
   TS_UNKNOWN,
 };
 
+// ui::TouchStatus is mapped to TouchStatusInternal to simply indicate whether a
+// processed touch-event should affect gesture-recognition or not.
+enum TouchStatusInternal {
+  TSI_NOT_PROCESSED,  // The touch-event should take-part into
+                      // gesture-recognition only if the touch-event has not
+                      // been processed.
+
+  TSI_PROCESSED,      // The touch-event should affect gesture-recognition only
+                      // if the touch-event has been processed.
+
+  TSI_ALWAYS          // The touch-event should always affect gesture
+                      // recognition.
+};
+
 // Get equivalent TouchState from EventType |type|.
 TouchState TouchEventTypeToTouchState(ui::EventType type) {
   switch (type) {
@@ -54,132 +68,180 @@ TouchState TouchEventTypeToTouchState(ui::EventType type) {
 // Note: New addition of types should be placed as per their Signature value.
 #define G(gesture_state, id, touch_state, handled) 1 + ( \
   (((touch_state) & 0x7) << 1) |                         \
-  ((handled) ? (1 << 4) : 0) |                           \
-  (((id) & 0xfff) << 5) |                                \
-  ((gesture_state) << 17))
+  ((handled & 0x3) << 4) |                               \
+  (((id) & 0xfff) << 6) |                                \
+  ((gesture_state) << 18))
 
 enum EdgeStateSignatureType {
+  GST_INVALID = -1,
+
   GST_NO_GESTURE_FIRST_PRESSED =
-      G(GS_NO_GESTURE, 0, TS_PRESSED, false),
+      G(GS_NO_GESTURE, 0, TS_PRESSED, TSI_NOT_PROCESSED),
 
   GST_PENDING_SYNTHETIC_CLICK_FIRST_RELEASED =
-      G(GS_PENDING_SYNTHETIC_CLICK, 0, TS_RELEASED, false),
+      G(GS_PENDING_SYNTHETIC_CLICK, 0, TS_RELEASED, TSI_NOT_PROCESSED),
 
+  // Ignore processed touch-move events until gesture-scroll starts.
   GST_PENDING_SYNTHETIC_CLICK_FIRST_MOVED =
-      G(GS_PENDING_SYNTHETIC_CLICK, 0, TS_MOVED, false),
+      G(GS_PENDING_SYNTHETIC_CLICK, 0, TS_MOVED, TSI_NOT_PROCESSED),
 
   GST_PENDING_SYNTHETIC_CLICK_FIRST_STATIONARY =
-      G(GS_PENDING_SYNTHETIC_CLICK, 0, TS_STATIONARY, false),
+      G(GS_PENDING_SYNTHETIC_CLICK, 0, TS_STATIONARY, TSI_NOT_PROCESSED),
 
   GST_PENDING_SYNTHETIC_CLICK_FIRST_CANCELLED =
-      G(GS_PENDING_SYNTHETIC_CLICK, 0, TS_CANCELLED, false),
+      G(GS_PENDING_SYNTHETIC_CLICK, 0, TS_CANCELLED, TSI_NOT_PROCESSED),
 
   GST_PENDING_SYNTHETIC_CLICK_SECOND_PRESSED =
-      G(GS_PENDING_SYNTHETIC_CLICK, 1, TS_PRESSED, false),
+      G(GS_PENDING_SYNTHETIC_CLICK, 1, TS_PRESSED, TSI_NOT_PROCESSED),
 
   GST_SCROLL_FIRST_RELEASED =
-      G(GS_SCROLL, 0, TS_RELEASED, false),
+      G(GS_SCROLL, 0, TS_RELEASED, TSI_NOT_PROCESSED),
 
+  // Once scroll has started, process all touch-move events.
   GST_SCROLL_FIRST_MOVED =
-      G(GS_SCROLL, 0, TS_MOVED, false),
+      G(GS_SCROLL, 0, TS_MOVED, TSI_ALWAYS),
 
   GST_SCROLL_FIRST_CANCELLED =
-      G(GS_SCROLL, 0, TS_CANCELLED, false),
+      G(GS_SCROLL, 0, TS_CANCELLED, TSI_NOT_PROCESSED),
 
   GST_SCROLL_SECOND_PRESSED =
-      G(GS_SCROLL, 1, TS_PRESSED, false),
+      G(GS_SCROLL, 1, TS_PRESSED, TSI_NOT_PROCESSED),
 
   GST_PENDING_TWO_FINGER_TAP_FIRST_RELEASED =
-      G(GS_PENDING_TWO_FINGER_TAP, 0, TS_RELEASED, false),
+      G(GS_PENDING_TWO_FINGER_TAP, 0, TS_RELEASED, TSI_NOT_PROCESSED),
 
   GST_PENDING_TWO_FINGER_TAP_SECOND_RELEASED =
-      G(GS_PENDING_TWO_FINGER_TAP, 1, TS_RELEASED, false),
+      G(GS_PENDING_TWO_FINGER_TAP, 1, TS_RELEASED, TSI_NOT_PROCESSED),
 
   GST_PENDING_TWO_FINGER_TAP_FIRST_MOVED =
-      G(GS_PENDING_TWO_FINGER_TAP, 0, TS_MOVED, false),
+      G(GS_PENDING_TWO_FINGER_TAP, 0, TS_MOVED, TSI_ALWAYS),
 
   GST_PENDING_TWO_FINGER_TAP_SECOND_MOVED =
-      G(GS_PENDING_TWO_FINGER_TAP, 1, TS_MOVED, false),
+      G(GS_PENDING_TWO_FINGER_TAP, 1, TS_MOVED, TSI_ALWAYS),
 
   GST_PENDING_TWO_FINGER_TAP_FIRST_CANCELLED =
-      G(GS_PENDING_TWO_FINGER_TAP, 0, TS_CANCELLED, false),
+      G(GS_PENDING_TWO_FINGER_TAP, 0, TS_CANCELLED, TSI_NOT_PROCESSED),
 
   GST_PENDING_TWO_FINGER_TAP_SECOND_CANCELLED =
-      G(GS_PENDING_TWO_FINGER_TAP, 1, TS_CANCELLED, false),
+      G(GS_PENDING_TWO_FINGER_TAP, 1, TS_CANCELLED, TSI_NOT_PROCESSED),
 
   GST_PENDING_TWO_FINGER_TAP_THIRD_PRESSED =
-      G(GS_PENDING_TWO_FINGER_TAP, 2, TS_PRESSED, false),
+      G(GS_PENDING_TWO_FINGER_TAP, 2, TS_PRESSED, TSI_NOT_PROCESSED),
 
   GST_PINCH_FIRST_MOVED =
-      G(GS_PINCH, 0, TS_MOVED, false),
+      G(GS_PINCH, 0, TS_MOVED, TSI_ALWAYS),
 
   GST_PINCH_SECOND_MOVED =
-      G(GS_PINCH, 1, TS_MOVED, false),
+      G(GS_PINCH, 1, TS_MOVED, TSI_ALWAYS),
 
   GST_PINCH_FIRST_RELEASED =
-      G(GS_PINCH, 0, TS_RELEASED, false),
+      G(GS_PINCH, 0, TS_RELEASED, TSI_NOT_PROCESSED),
 
   GST_PINCH_SECOND_RELEASED =
-      G(GS_PINCH, 1, TS_RELEASED, false),
+      G(GS_PINCH, 1, TS_RELEASED, TSI_NOT_PROCESSED),
 
   GST_PINCH_FIRST_CANCELLED =
-      G(GS_PINCH, 0, TS_CANCELLED, false),
+      G(GS_PINCH, 0, TS_CANCELLED, TSI_NOT_PROCESSED),
 
   GST_PINCH_SECOND_CANCELLED =
-      G(GS_PINCH, 1, TS_CANCELLED, false),
+      G(GS_PINCH, 1, TS_CANCELLED, TSI_NOT_PROCESSED),
 
   GST_PINCH_THIRD_PRESSED =
-      G(GS_PINCH, 2, TS_PRESSED, false),
+      G(GS_PINCH, 2, TS_PRESSED, TSI_NOT_PROCESSED),
 
   GST_PINCH_THIRD_MOVED =
-      G(GS_PINCH, 2, TS_MOVED, false),
+      G(GS_PINCH, 2, TS_MOVED, TSI_ALWAYS),
 
   GST_PINCH_THIRD_RELEASED =
-      G(GS_PINCH, 2, TS_RELEASED, false),
+      G(GS_PINCH, 2, TS_RELEASED, TSI_NOT_PROCESSED),
 
   GST_PINCH_THIRD_CANCELLED =
-      G(GS_PINCH, 2, TS_CANCELLED, false),
+      G(GS_PINCH, 2, TS_CANCELLED, TSI_NOT_PROCESSED),
 
   GST_PINCH_FOURTH_PRESSED =
-      G(GS_PINCH, 3, TS_PRESSED, false),
+      G(GS_PINCH, 3, TS_PRESSED, TSI_NOT_PROCESSED),
 
   GST_PINCH_FOURTH_MOVED =
-      G(GS_PINCH, 3, TS_MOVED, false),
+      G(GS_PINCH, 3, TS_MOVED, TSI_ALWAYS),
 
   GST_PINCH_FOURTH_RELEASED =
-      G(GS_PINCH, 3, TS_RELEASED, false),
+      G(GS_PINCH, 3, TS_RELEASED, TSI_NOT_PROCESSED),
 
   GST_PINCH_FOURTH_CANCELLED =
-      G(GS_PINCH, 3, TS_CANCELLED, false),
+      G(GS_PINCH, 3, TS_CANCELLED, TSI_NOT_PROCESSED),
 
   GST_PINCH_FIFTH_PRESSED =
-      G(GS_PINCH, 4, TS_PRESSED, false),
+      G(GS_PINCH, 4, TS_PRESSED, TSI_NOT_PROCESSED),
 
   GST_PINCH_FIFTH_MOVED =
-      G(GS_PINCH, 4, TS_MOVED, false),
+      G(GS_PINCH, 4, TS_MOVED, TSI_ALWAYS),
 
   GST_PINCH_FIFTH_RELEASED =
-      G(GS_PINCH, 4, TS_RELEASED, false),
+      G(GS_PINCH, 4, TS_RELEASED, TSI_NOT_PROCESSED),
 
   GST_PINCH_FIFTH_CANCELLED =
-      G(GS_PINCH, 4, TS_CANCELLED, false),
+      G(GS_PINCH, 4, TS_CANCELLED, TSI_NOT_PROCESSED),
 };
 
 // Builds a signature. Signatures are assembled by joining together
 // multiple bits.
 // 1 LSB bit so that the computed signature is always greater than 0
 // 3 bits for the |type|.
-// 1 bit for |touch_handled|
+// 2 bit for |touch_status|
 // 12 bits for |touch_id|
-// 15 bits for the |gesture_state|.
+// 14 bits for the |gesture_state|.
 EdgeStateSignatureType Signature(GestureState gesture_state,
                                  unsigned int touch_id,
                                  ui::EventType type,
-                                 bool touch_handled) {
+                                 TouchStatusInternal touch_status) {
   CHECK((touch_id & 0xfff) == touch_id);
   TouchState touch_state = TouchEventTypeToTouchState(type);
-  return static_cast<EdgeStateSignatureType>
-      (G(gesture_state, touch_id, touch_state, touch_handled));
+  EdgeStateSignatureType signature = static_cast<EdgeStateSignatureType>
+      (G(gesture_state, touch_id, touch_state, touch_status));
+
+  switch (signature) {
+    case GST_NO_GESTURE_FIRST_PRESSED:
+    case GST_PENDING_SYNTHETIC_CLICK_FIRST_RELEASED:
+    case GST_PENDING_SYNTHETIC_CLICK_FIRST_MOVED:
+    case GST_PENDING_SYNTHETIC_CLICK_FIRST_STATIONARY:
+    case GST_PENDING_SYNTHETIC_CLICK_FIRST_CANCELLED:
+    case GST_PENDING_SYNTHETIC_CLICK_SECOND_PRESSED:
+    case GST_SCROLL_FIRST_RELEASED:
+    case GST_SCROLL_FIRST_MOVED:
+    case GST_SCROLL_FIRST_CANCELLED:
+    case GST_SCROLL_SECOND_PRESSED:
+    case GST_PENDING_TWO_FINGER_TAP_FIRST_RELEASED:
+    case GST_PENDING_TWO_FINGER_TAP_SECOND_RELEASED:
+    case GST_PENDING_TWO_FINGER_TAP_FIRST_MOVED:
+    case GST_PENDING_TWO_FINGER_TAP_SECOND_MOVED:
+    case GST_PENDING_TWO_FINGER_TAP_FIRST_CANCELLED:
+    case GST_PENDING_TWO_FINGER_TAP_SECOND_CANCELLED:
+    case GST_PENDING_TWO_FINGER_TAP_THIRD_PRESSED:
+    case GST_PINCH_FIRST_MOVED:
+    case GST_PINCH_SECOND_MOVED:
+    case GST_PINCH_FIRST_RELEASED:
+    case GST_PINCH_SECOND_RELEASED:
+    case GST_PINCH_FIRST_CANCELLED:
+    case GST_PINCH_SECOND_CANCELLED:
+    case GST_PINCH_THIRD_PRESSED:
+    case GST_PINCH_THIRD_MOVED:
+    case GST_PINCH_THIRD_RELEASED:
+    case GST_PINCH_THIRD_CANCELLED:
+    case GST_PINCH_FOURTH_PRESSED:
+    case GST_PINCH_FOURTH_MOVED:
+    case GST_PINCH_FOURTH_RELEASED:
+    case GST_PINCH_FOURTH_CANCELLED:
+    case GST_PINCH_FIFTH_PRESSED:
+    case GST_PINCH_FIFTH_MOVED:
+    case GST_PINCH_FIFTH_RELEASED:
+    case GST_PINCH_FIFTH_CANCELLED:
+      break;
+    default:
+      signature = GST_INVALID;
+      break;
+  }
+
+  return signature;
 }
 #undef G
 
@@ -222,8 +284,9 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     ui::TouchStatus status) {
   StopLongPressTimerIfRequired(event);
   last_touch_location_ = event.GetLocation();
-  if (status != ui::TOUCH_STATUS_UNKNOWN)
-    return NULL;  // The event was consumed by a touch sequence.
+  if (status == ui::TOUCH_STATUS_QUEUED ||
+      status == ui::TOUCH_STATUS_QUEUED_END)
+    return NULL;
 
   // Set a limit on the number of simultaneous touches in a gesture.
   if (event.GetTouchId() >= kMaxGesturePoints)
@@ -256,7 +319,19 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
   if (event.GetEventType() == ui::ET_TOUCH_PRESSED)
     AppendBeginGestureEvent(point, gestures.get());
 
-  switch (Signature(state_, point_id, event.GetEventType(), false)) {
+  TouchStatusInternal status_internal = (status == ui::TOUCH_STATUS_UNKNOWN) ?
+      TSI_NOT_PROCESSED : TSI_PROCESSED;
+
+  EdgeStateSignatureType signature = Signature(state_, point_id,
+      event.GetEventType(), status_internal);
+
+  if (signature == GST_INVALID)
+    signature = Signature(state_, point_id, event.GetEventType(), TSI_ALWAYS);
+
+  switch (signature) {
+    case GST_INVALID:
+      break;
+
     case GST_NO_GESTURE_FIRST_PRESSED:
       TouchDown(event, point, gestures.get());
       set_state(GS_PENDING_SYNTHETIC_CLICK);
