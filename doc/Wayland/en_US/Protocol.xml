@@ -168,7 +168,7 @@
 	  <term>wl_display</term>
 	  <listitem>
 	    <para>
-	      provides global functionality like objecting binding and
+	      provides global functionality like object binding and
 	      fatal error events
 	    </para>
 	  </listitem>
@@ -442,7 +442,7 @@
       </listitem>
       <listitem>
 	<para>
-	  geometry needs position in compositor coordinate system\
+	  geometry needs position in compositor coordinate system
 	</para>
       </listitem>
       <listitem>

@@ -1008,9 +1008,9 @@
       <arg name="y" type="int"
 	   summary="y position within the global compositor space"/>
       <arg name="physical_width" type="int"
-	   summary="width in milimeters of the output"/>
+	   summary="width in millimeters of the output"/>
       <arg name="physical_height" type="int"
-	   summary="height in milimeters of the output"/>
+	   summary="height in millimeters of the output"/>
       <arg name="subpixel" type="int"
 	   summary="subpixel orientation of the output"/>
       <arg name="make" type="string"
