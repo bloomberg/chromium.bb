@@ -50,7 +50,8 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface,
   SMInterface* NewConnectionInterface();
   SMInterface* FindOrMakeNewSMConnectionInterface(std::string server_ip,
                                                   std::string server_port);
-  int SpdyHandleNewStream(const SpdySynStreamControlFrame* frame,
+  int SpdyHandleNewStream(SpdyStreamId stream_id,
+                          SpdyPriority priority,
                           const linked_ptr<SpdyHeaderBlock>& headers,
                           std::string& http_data,
                           bool* is_https_scheme);
@@ -59,29 +60,61 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface,
   virtual void OnError(SpdyFramer::SpdyError error_code) OVERRIDE {}
   virtual void OnStreamError(SpdyStreamId stream_id,
                              const std::string& description) OVERRIDE {}
-  virtual void OnRstStream(
-      const SpdyRstStreamControlFrame& frame) OVERRIDE;
-  virtual void OnGoAway(const SpdyGoAwayControlFrame& frame) OVERRIDE {}
-  virtual void OnPing(const SpdyPingControlFrame& frame) OVERRIDE {}
-  virtual void OnWindowUpdate(
-      const SpdyWindowUpdateControlFrame& frame) OVERRIDE {}
+  // Called after all the header data for SYN_STREAM control frame is received.
+  virtual void OnSynStream(SpdyStreamId stream_id,
+                           SpdyStreamId associated_stream_id,
+                           SpdyPriority priority,
+                           uint8 credential_slot,
+                           bool fin,
+                           bool unidirectional,
+                           const linked_ptr<SpdyHeaderBlock>& headers) OVERRIDE;
+
+  // Called after all the header data for SYN_REPLY control frame is received.
+  virtual void OnSynReply(SpdyStreamId stream_id,
+                          bool fin,
+                          const linked_ptr<SpdyHeaderBlock>& headers) OVERRIDE;
+
+  // Called after all the header data for HEADERS control frame is received.
+  virtual void OnHeaders(SpdyStreamId stream_id,
+                         bool fin,
+                         const linked_ptr<SpdyHeaderBlock>& headers) OVERRIDE;
+
+  // Called when data is received.
+  // |stream_id| The stream receiving data.
+  // |data| A buffer containing the data received.
+  // |len| The length of the data buffer.
+  // When the other side has finished sending data on this stream,
+  // this method will be called with a zero-length buffer.
   virtual void OnStreamFrameData(SpdyStreamId stream_id,
                                  const char* data,
                                  size_t len) OVERRIDE;
+
+  // Called when an individual setting within a SETTINGS frame has been parsed
+  // and validated.
+  virtual void OnSetting(SpdySettingsIds id,
+                         uint8 flags,
+                         uint32 value) OVERRIDE {};
+
+  // Called when a PING frame has been parsed.
+  virtual void OnPing(uint32 unique_id) OVERRIDE {};
+
+  // Called when a RST_STREAM frame has been parsed.
+  virtual void OnRstStream(SpdyStreamId stream_id,
+                           SpdyStatusCodes status) OVERRIDE;
+
+  // Called when a GOAWAY frame has been parsed.
+  virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
+                        SpdyGoAwayStatus status) OVERRIDE {};
+
+  // Called when a WINDOW_UPDATE frame has been parsed.
+  virtual void OnWindowUpdate(SpdyStreamId stream_id,
+                              int delta_window_size) OVERRIDE {};
+
+  // Called after a control frame has been compressed to allow the visitor
+  // to record compression statistics.
   virtual void OnControlFrameCompressed(
       const SpdyControlFrame& uncompressed_frame,
       const SpdyControlFrame& compressed_frame) OVERRIDE {};
-  virtual void OnSetting(
-      SpdySettingsIds id, uint8 flags, uint32 value)  OVERRIDE {}
-  virtual void OnSynStream(
-      const SpdySynStreamControlFrame& frame,
-      const linked_ptr<SpdyHeaderBlock>& headers) OVERRIDE;
-  virtual void OnSynReply(
-      const SpdySynReplyControlFrame& frame,
-      const linked_ptr<SpdyHeaderBlock>& headers) OVERRIDE;
-  virtual void OnHeaders(
-      const SpdyHeadersControlFrame& frame,
-      const linked_ptr<SpdyHeaderBlock>& headers) OVERRIDE;
 
  public:
   virtual size_t ProcessReadInput(const char* data, size_t len) OVERRIDE;
