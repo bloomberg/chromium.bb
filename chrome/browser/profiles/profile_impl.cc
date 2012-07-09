@@ -71,7 +71,6 @@
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/browser/visitedlink/visitedlink_event_listener.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
-#include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -93,6 +92,10 @@
 #else
 #include "chrome/browser/policy/policy_service_stub.h"
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
+
+#if defined(ENABLE_PROMO_RESOURCE_SERVICE)
+#include "chrome/browser/web_resource/promo_resource_service.h"
+#endif  // ENABLE_PROMO_RESOURCE_SERVICE
 
 #if defined(OS_WIN)
 #include "chrome/installer/util/install_util.h"

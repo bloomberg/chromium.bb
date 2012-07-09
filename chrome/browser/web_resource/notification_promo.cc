@@ -37,6 +37,8 @@ double GetTimeFromPrefs(PrefService* prefs, const char* pref) {
 const char* PlatformString() {
 #if defined(OS_WIN)
   return "win";
+#elif defined(OS_IOS)
+  return "ios";
 #elif defined(OS_MACOSX)
   return "mac";
 #elif defined(OS_CHROMEOS)

@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/web_resource/json_asynchronous_unpacker.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -28,8 +29,9 @@ class URLFetcher;
 // A WebResourceService fetches JSON data from a web server and periodically
 // refreshes it.
 class WebResourceService
-    : public base::RefCountedThreadSafe<WebResourceService>,
-      public net::URLFetcherDelegate {
+    : public net::URLFetcherDelegate,
+      public JSONAsynchronousUnpackerDelegate,
+      public base::RefCountedThreadSafe<WebResourceService> {
  public:
   WebResourceService(PrefService* prefs,
                      const GURL& web_resource_server,
@@ -43,9 +45,14 @@ class WebResourceService
   // Then begin updating resources.
   void StartAfterDelay();
 
+  // JSONAsynchronousUnpackerDelegate methods.
+  virtual void OnUnpackFinished(const DictionaryValue& parsed_json) OVERRIDE;
+  virtual void OnUnpackError(const std::string& error_message) OVERRIDE;
+
  protected:
   virtual ~WebResourceService();
 
+  // For the subclasses to process the result of a fetch.
   virtual void Unpack(const base::DictionaryValue& parsed_json) = 0;
 
   PrefService* prefs_;
@@ -72,6 +79,10 @@ class WebResourceService
 
   // The tool that fetches the url data from the server.
   scoped_ptr<net::URLFetcher> url_fetcher_;
+
+  // The tool that parses and transform the json data. Weak reference as it
+  // deletes itself once the unpack is done.
+  JSONAsynchronousUnpacker* json_unpacker_;
 
   // True if we are currently fetching or unpacking data. If we are asked to
   // start a fetch when we are still fetching resource data, schedule another

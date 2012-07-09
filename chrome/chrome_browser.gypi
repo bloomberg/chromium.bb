@@ -4221,6 +4221,8 @@
         'browser/web_applications/web_app_mac.h',
         'browser/web_applications/web_app_mac.mm',
         'browser/web_applications/web_app_win.cc',
+        'browser/web_resource/json_asynchronous_unpacker.cc',
+        'browser/web_resource/json_asynchronous_unpacker.h',
         'browser/web_resource/notification_promo.cc',
         'browser/web_resource/notification_promo.h',
         'browser/web_resource/promo_resource_service.cc',

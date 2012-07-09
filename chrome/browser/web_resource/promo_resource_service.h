@@ -61,7 +61,7 @@ class PromoResourceService : public WebResourceService {
   // Notify listeners that the state of a web resource has changed.
   void PromoResourceStateChange();
 
-  // WebResourceService override.
+  // WebResourceService override to process the parsed information.
   virtual void Unpack(const base::DictionaryValue& parsed_json) OVERRIDE;
 
   // The profile this service belongs to.
