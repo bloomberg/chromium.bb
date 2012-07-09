@@ -180,7 +180,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PlatformAppCrx) {
       test_data_dir_.AppendASCII("minimal_platform_app.crx"), 1));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PackAndInstallExtension) {
+// http://crbug.com/136397
+#if defined(OS_CHROMEOS)
+#define MAYBE_PackAndInstallExtension DISABLED_PackAndInstallExtension
+#else
+#define MAYBE_PackAndInstallExtension PackAndInstallExtension
+#endif
+IN_PROC_BROWSER_TEST_F(
+    ExtensionCrxInstallerTest, MAYBE_PackAndInstallExtension) {
   if (!extensions::switch_utils::IsEasyOffStoreInstallEnabled())
     return;
 
