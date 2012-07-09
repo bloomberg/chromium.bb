@@ -298,8 +298,7 @@ TEST_F(WebRTCAudioDeviceTest, StartPlayout) {
 
   EXPECT_EQ(0, base->StartPlayout(ch));
 
-  EXPECT_TRUE(event.TimedWait(
-      base::TimeDelta::FromMilliseconds(TestTimeouts::action_timeout_ms())));
+  EXPECT_TRUE(event.TimedWait(TestTimeouts::action_timeout()));
   WaitForIOThreadCompletion();
 
   EXPECT_TRUE(webrtc_audio_device->playing());
@@ -374,8 +373,7 @@ TEST_F(WebRTCAudioDeviceTest, StartRecording) {
   EXPECT_EQ(0, network->RegisterExternalTransport(ch, *transport.get()));
   EXPECT_EQ(0, base->StartSend(ch));
 
-  EXPECT_TRUE(event.TimedWait(
-      base::TimeDelta::FromMilliseconds(TestTimeouts::action_timeout_ms())));
+  EXPECT_TRUE(event.TimedWait(TestTimeouts::action_timeout()));
   WaitForIOThreadCompletion();
 
   EXPECT_FALSE(webrtc_audio_device->playing());
