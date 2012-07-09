@@ -145,7 +145,7 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NORTH_SOUTH_RESIZE" file="aura/sb_v_double_arrow.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_EAST_WEST_RESIZE" file="aura/sb_h_double_arrow.png" />
         <!-- uber-tray -->
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VOLUME_LEVELS" file="ash/status_volume_all.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VOLUME_LEVELS" file="ash/status_volume_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VOLUME_MUTE" file="ash/status_volume_mute.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BRIGHTNESS" file="ash/status_brightness.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SETTINGS" file="ash/status_settings.png" />

@@ -317,7 +317,7 @@
         <include name="IDR_STATUSBAR_NETWORK_1X_UNKNOWN" file="default_100_percent/statusbar_network_1x_unknown.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_ARCS" file="default_100_percent/statusbar_network_arcs.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS" file="default_100_percent/statusbar_network_bars.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_DISCONNECTED" file="default_100_percent/statusbar_network_disconnected.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_DISCONNECTED" file="default_100_percent/statusbar_network_no_connection.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_HSPA" file="default_100_percent/statusbar_network_hspa.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_HSPA_PLUS" file="default_100_percent/statusbar_network_hspa_plus.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_LTE" file="default_100_percent/statusbar_network_lte.png" type="BINDATA" />
