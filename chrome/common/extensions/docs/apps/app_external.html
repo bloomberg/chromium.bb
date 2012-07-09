@@ -173,12 +173,12 @@
                 </li>
               </ol>
             </li><li>
-              <a href="#objecttag">Embed external web pages</a>
+              <a href="#browsertag">Embed external web pages</a>
               <ol>
                 <li>
-                  <a href="#H3-4">Add object element</a>
+                  <a href="#H3-4">Add browser element</a>
                 </li><li>
-                  <a href="#H3-5">Change URL</a>
+                  <a href="#H3-5">Update properties</a>
                 </li>
               </ol>
             </li><li>
@@ -267,33 +267,40 @@ xhr.send();
 </pre>
 <p>You may want to <a href="offline_apps.html#saving-locally">save</a>
 these resources locally, so that they are available offline.</p>
-<h2 id="objecttag">Embed external web pages</h2>
+<h2 id="browsertag">Embed external web pages</h2>
+<p class="note">
+<b>API Sample: </b>
+Want to play with the code? Check out the
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/browser-tag">browser-tag</a>
+sample.
+</p>
 <p>
-The <code>object</code> tag allows you to embed content in your app,
-for example, a web page.
-You need to disable remote iframes
-and instead provide an <code>object</code> tag,
-which is an out-of-process top-level frame.
-Since the tag will run in a separate process from the app,
-an exploit inside of that will still be isolated
-and won't be able to gain elevated privileges.
-Further, since storage is isolated from the app,
+The <code>browser</code> tag allows you to embed external web content in your
+app, for example, a web page. It replaces iframes that point to remote URLs,
+which are disabled inside packaged apps. Unlike iframes, the
+<code>browser</code> tag runs in a separate process. This means that an exploit
+inside of it will still be isolated and won't be able to gain elevated
+privileges. Further, since its storage (cookies, etc.) is isolated from the app,
 there is no way for the web content to access any of the app's data.
 </p>
-<a name="H3-4"></a><h3>Add object element</h3>
+<a name="H3-4"></a><h3>Add browser element</h3>
 <p>
-Your <code>object</code> element must include the URL to the source content
-and have a type="application/browser-plugin".
+Your <code>browser</code> element must include the URL to the source content
+and specify its dimensions.
 </p>
-<pre>&lt;object id="mybrowser" src="http://news.google.com/"
-	type="application/browser-plugin" width="640" height="480"&gt;&lt;/object&gt;</pre>
-<a name="H3-5"></a><h3>Change URL</h3>
+<pre>&lt;browser src="http://news.google.com/" width="640" height="480"&gt;&lt;/browser&gt;</pre>
+<a name="H3-5"></a><h3>Update properties</h3>
 <p>
-The app cannot dynamically change the src
-and have this work as expected.
-Instead, you need to use <code>postMessage</code>:
+To dynamically change the <code>src</code>, <code>width</code> and
+<code>height</code> properties of a <code>browser</code> tag, you can either
+set those properties directly on the JavaScript object, or use the
+<code>setAttribute</code> DOM function.
 </p>
-<pre>document.querySelector('#mybrowser').postMessage('http://blog.chromium.org/');
+<pre>document.querySelector('#mybrowser').src =
+    'http://blog.chromium.org/';
+// or
+document.querySelector('#mybrowser').setAttribute(
+    'src', 'http://blog.chromium.org/');
 </pre>
 <h2 id="sandboxing">Sandbox local content</h2>
 <p>
