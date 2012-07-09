@@ -31,8 +31,7 @@ const char kClearBrowsingDataLearnMoreUrl[] =
 namespace options2 {
 
 ClearBrowserDataHandler::ClearBrowserDataHandler()
-    : remover_(NULL),
-      remove_hosted_app_data_pending_(false) {
+    : remover_(NULL) {
 }
 
 ClearBrowserDataHandler::~ClearBrowserDataHandler() {
@@ -115,7 +114,13 @@ void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
   Profile* profile = Profile::FromWebUI(web_ui());
   PrefService* prefs = profile->GetPrefs();
 
+  int site_data_mask = BrowsingDataRemover::REMOVE_SITE_DATA;
+  // Don't try to clear LSO data if it's not supported.
+  if (!*clear_plugin_lso_data_enabled_)
+    site_data_mask &= ~BrowsingDataRemover::REMOVE_PLUGIN_DATA;
+
   int remove_mask = 0;
+  int origin_mask = 0;
   if (prefs->GetBoolean(prefs::kDeleteBrowsingHistory))
     remove_mask |= BrowsingDataRemover::REMOVE_HISTORY;
   if (prefs->GetBoolean(prefs::kDeleteDownloadHistory))
@@ -123,11 +128,8 @@ void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
   if (prefs->GetBoolean(prefs::kDeleteCache))
     remove_mask |= BrowsingDataRemover::REMOVE_CACHE;
   if (prefs->GetBoolean(prefs::kDeleteCookies)) {
-    int site_data_mask = BrowsingDataRemover::REMOVE_SITE_DATA;
-    // Don't try to clear LSO data if it's not supported.
-    if (!*clear_plugin_lso_data_enabled_)
-      site_data_mask &= ~BrowsingDataRemover::REMOVE_PLUGIN_DATA;
     remove_mask |= site_data_mask;
+    origin_mask |= BrowsingDataHelper::UNPROTECTED_WEB;
   }
   if (prefs->GetBoolean(prefs::kDeletePasswords))
     remove_mask |= BrowsingDataRemover::REMOVE_PASSWORDS;
@@ -135,60 +137,24 @@ void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
     remove_mask |= BrowsingDataRemover::REMOVE_FORM_DATA;
   if (prefs->GetBoolean(prefs::kDeauthorizeContentLicenses))
     remove_mask |= BrowsingDataRemover::REMOVE_CONTENT_LICENSES;
-
-  remove_hosted_app_data_pending_ =
-      prefs->GetBoolean(prefs::kDeleteHostedAppsData);
-
-  if (!remove_mask) {
-    // If no unprotected data should be removed, skip straight to removing
-    // hosted app data. If nothing should be removed (which would mean that the
-    // JS-side is buggy), skip straight to cleaning up.
-    if (remove_hosted_app_data_pending_)
-      ClearHostedAppData();
-    else
-      OnAllDataRemoved();
-  } else {
-    // BrowsingDataRemover deletes itself when done.
-    int period_selected = prefs->GetInteger(prefs::kDeleteTimePeriod);
-    remover_ = new BrowsingDataRemover(profile,
-        static_cast<BrowsingDataRemover::TimePeriod>(period_selected),
-        base::Time());
-    remover_->AddObserver(this);
-    remover_->Remove(remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
+  if (prefs->GetBoolean(prefs::kDeleteHostedAppsData)) {
+    remove_mask |= site_data_mask;
+    origin_mask |= BrowsingDataHelper::PROTECTED_WEB;
   }
-}
 
-void ClearBrowserDataHandler::ClearHostedAppData() {
-  DCHECK(!remover_);
-  DCHECK(remove_hosted_app_data_pending_);
-
-  remove_hosted_app_data_pending_ = false;
-  Profile* profile = Profile::FromWebUI(web_ui());
-  PrefService* prefs = profile->GetPrefs();
-
-  int period_selected = prefs->GetInteger(prefs::kDeleteTimePeriod);
   // BrowsingDataRemover deletes itself when done.
-  remover_ = new BrowsingDataRemover(
-      profile,
+  int period_selected = prefs->GetInteger(prefs::kDeleteTimePeriod);
+  remover_ = new BrowsingDataRemover(profile,
       static_cast<BrowsingDataRemover::TimePeriod>(period_selected),
       base::Time());
   remover_->AddObserver(this);
-  remover_->Remove(BrowsingDataRemover::REMOVE_SITE_DATA,
-                   BrowsingDataHelper::PROTECTED_WEB);
+  remover_->Remove(remove_mask, origin_mask);
 }
 
 void ClearBrowserDataHandler::OnBrowsingDataRemoverDone() {
   // No need to remove ourselves as an observer as BrowsingDataRemover deletes
   // itself after we return.
   remover_ = NULL;
-
-  if (remove_hosted_app_data_pending_)
-    ClearHostedAppData();
-  else
-    OnAllDataRemoved();
-}
-
-void ClearBrowserDataHandler::OnAllDataRemoved() {
   web_ui()->CallJavascriptFunction("ClearBrowserDataOverlay.doneClearing");
 }
 
