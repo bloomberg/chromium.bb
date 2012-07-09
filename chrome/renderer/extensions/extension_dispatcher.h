@@ -109,6 +109,11 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
     return webrequest_other_;
   }
 
+  void OnExtensionResponse(int request_id,
+                           bool success,
+                           const base::ListValue& response,
+                           const std::string& error);
+
   // Checks that the current context contains an extension that has permission
   // to execute the specified function. If it does not, a v8 exception is thrown
   // and the method returns false. Otherwise returns true.

@@ -85,6 +85,7 @@ class ExtensionFunctionDispatcher
       void* profile,
       int render_process_id,
       base::WeakPtr<ChromeRenderMessageFilter> ipc_sender,
+      int routing_id,
       const ExtensionHostMsg_Request_Params& params);
 
   // Public constructor. Callers must ensure that:
@@ -119,11 +120,14 @@ class ExtensionFunctionDispatcher
       const extensions::ProcessMap& process_map,
       extensions::ExtensionAPI* api,
       void* profile,
-      IPC::Sender* ipc_sender);
+      IPC::Sender* ipc_sender,
+      int routing_id);
 
   // Helper to send an access denied error to the requesting renderer. Can be
   // called on any thread.
-  static void SendAccessDenied(IPC::Sender* ipc_sender, int request_id);
+  static void SendAccessDenied(IPC::Sender* ipc_sender,
+                               int routing_id,
+                               int request_id);
 
   Profile* profile_;
 

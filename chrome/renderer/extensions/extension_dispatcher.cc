@@ -990,6 +990,13 @@ Feature::Context ExtensionDispatcher::ClassifyJavaScriptContext(
   return Feature::UNSPECIFIED_CONTEXT;
 }
 
+void ExtensionDispatcher::OnExtensionResponse(int request_id,
+                                              bool success,
+                                              const base::ListValue& response,
+                                              const std::string& error) {
+  request_sender_->HandleResponse(request_id, success, response, error);
+}
+
 bool ExtensionDispatcher::CheckCurrentContextAccessToExtensionAPI(
     const std::string& function_name) const {
   ChromeV8Context* context = v8_context_set().GetCurrent();

@@ -202,6 +202,7 @@ bool ExtensionHelper::InstallWebApplicationUsingDefinitionFile(
 bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionHelper, message)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_Response, OnExtensionResponse)
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
     IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnConnect,
                         OnExtensionDispatchOnConnect)
@@ -277,6 +278,16 @@ void ExtensionHelper::DidCreateDataSource(WebFrame* frame, WebDataSource* ds) {
 
   g_schedulers.Get()[frame] = new UserScriptScheduler(
       frame, extension_dispatcher_);
+}
+
+void ExtensionHelper::OnExtensionResponse(int request_id,
+                                          bool success,
+                                          const base::ListValue& response,
+                                          const std::string& error) {
+  extension_dispatcher_->OnExtensionResponse(request_id,
+                                             success,
+                                             response,
+                                             error);
 }
 
 void ExtensionHelper::OnExtensionMessageInvoke(const std::string& extension_id,

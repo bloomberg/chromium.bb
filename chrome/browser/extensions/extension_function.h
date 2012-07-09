@@ -163,6 +163,7 @@ class ExtensionFunction
   // Common implementation for SendResponse.
   void SendResponseImpl(base::ProcessHandle process,
                         IPC::Sender* ipc_sender,
+                        int routing_id,
                         bool success);
 
   // Called when we receive an extension api request that is invalid in a way
@@ -356,10 +357,13 @@ class IOThreadExtensionFunction : public ExtensionFunction {
 
   virtual IOThreadExtensionFunction* AsIOThreadExtensionFunction() OVERRIDE;
 
-  void set_ipc_sender(base::WeakPtr<ChromeRenderMessageFilter> ipc_sender) {
+  void set_ipc_sender(base::WeakPtr<ChromeRenderMessageFilter> ipc_sender,
+                      int routing_id) {
     ipc_sender_ = ipc_sender;
+    routing_id_ = routing_id;
   }
   ChromeRenderMessageFilter* ipc_sender() const { return ipc_sender_.get(); }
+  int routing_id() const { return routing_id_; }
 
   base::WeakPtr<ChromeRenderMessageFilter> ipc_sender_weak() const {
     return ipc_sender_;
@@ -385,6 +389,7 @@ class IOThreadExtensionFunction : public ExtensionFunction {
 
  private:
   base::WeakPtr<ChromeRenderMessageFilter> ipc_sender_;
+  int routing_id_;
 
   scoped_refptr<const ExtensionInfoMap> extension_info_map_;
 };

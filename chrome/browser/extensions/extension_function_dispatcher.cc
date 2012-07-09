@@ -126,6 +126,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
     void* profile,
     int render_process_id,
     base::WeakPtr<ChromeRenderMessageFilter> ipc_sender,
+    int routing_id,
     const ExtensionHostMsg_Request_Params& params) {
   const Extension* extension =
       extension_info_map->extensions().GetByID(params.extension_id);
@@ -135,7 +136,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
                               extension_info_map->process_map(),
                               g_global_io_data.Get().api.get(),
                               profile,
-                              ipc_sender));
+                              ipc_sender, routing_id));
   if (!function) {
     LogFailure(extension, params.name, kAccessDenied);
     return;
@@ -147,7 +148,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
     NOTREACHED();
     return;
   }
-  function_io->set_ipc_sender(ipc_sender);
+  function_io->set_ipc_sender(ipc_sender, routing_id);
   function_io->set_extension_info_map(extension_info_map);
   function->set_include_incognito(
       extension_info_map->IsIncognitoEnabled(extension->id()));
@@ -188,13 +189,12 @@ void ExtensionFunctionDispatcher::Dispatch(
         params.source_url));
 
   scoped_refptr<ExtensionFunction> function(
-      CreateExtensionFunction(params,
-                              extension,
+      CreateExtensionFunction(params, extension,
                               render_view_host->GetProcess()->GetID(),
                               *(service->process_map()),
                               extensions::ExtensionAPI::GetSharedInstance(),
-                              profile(),
-                              render_view_host));
+                              profile(), render_view_host,
+                              render_view_host->GetRoutingID()));
   if (!function) {
     LogFailure(extension, params.name, kAccessDenied);
     return;
@@ -250,10 +250,11 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
     const extensions::ProcessMap& process_map,
     extensions::ExtensionAPI* api,
     void* profile,
-    IPC::Sender* ipc_sender) {
+    IPC::Sender* ipc_sender,
+    int routing_id) {
   if (!extension) {
     LOG(ERROR) << "Specified extension does not exist.";
-    SendAccessDenied(ipc_sender, params.request_id);
+    SendAccessDenied(ipc_sender, routing_id, params.request_id);
     return NULL;
   }
 
@@ -262,14 +263,14 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
     LOG(ERROR) << "Extension API called from incorrect process "
                << requesting_process_id
                << " from URL " << params.source_url.spec();
-    SendAccessDenied(ipc_sender, params.request_id);
+    SendAccessDenied(ipc_sender, routing_id, params.request_id);
     return NULL;
   }
 
   if (!extension->HasAPIPermission(params.name)) {
     LOG(ERROR) << "Extension " << extension->id() << " does not have "
                << "permission to function: " << params.name;
-    SendAccessDenied(ipc_sender, params.request_id);
+    SendAccessDenied(ipc_sender, routing_id, params.request_id);
     return NULL;
   }
 
@@ -287,9 +288,9 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
 
 // static
 void ExtensionFunctionDispatcher::SendAccessDenied(
-    IPC::Sender* ipc_sender, int request_id) {
+    IPC::Sender* ipc_sender, int routing_id, int request_id) {
   ListValue empty_list;
   ipc_sender->Send(new ExtensionMsg_Response(
-      request_id, false, empty_list,
+      routing_id, request_id, false, empty_list,
       "Access to extension API denied."));
 }

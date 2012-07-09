@@ -114,15 +114,13 @@ function sendRequest(functionName, args, argSchemas, opt_args) {
       chromeHidden.JSON.stringify(request.args) : request.args;
   var nativeFunction = opt_args.nativeFunction || natives.StartRequest;
 
-  var hasCallback = !!(request.callback || opt_args.customCallback);
-  var requestId = nativeFunction(functionName,
-                                 requestArgs,
-                                 hasCallback,
-                                 opt_args.forIOThread);
-  if (typeof(requestId) == 'number' && requestId >= 0) {
-    request.id = requestId;
-    requests[requestId] = request;
-  }
+  var requestId = natives.GetNextRequestId();
+  request.id = requestId;
+  requests[requestId] = request;
+  var hasCallback =
+      (request.callback || opt_args.customCallback) ? true : false;
+  return nativeFunction(functionName, requestArgs, requestId, hasCallback,
+                        opt_args.forIOThread);
 }
 
 exports.sendRequest = sendRequest;

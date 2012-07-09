@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 #include "chrome/renderer/autofill/autofill_agent.h"
 #include "chrome/renderer/chrome_mock_render_thread.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
-#include "content/public/test/mock_render_thread.h"
 #include "content/public/test/render_view_test.h"
 
 class ExtensionDispatcher;

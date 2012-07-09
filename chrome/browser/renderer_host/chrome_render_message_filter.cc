@@ -434,7 +434,7 @@ void ChromeRenderMessageFilter::OnExtensionRequestForIOThread(
 
   ExtensionFunctionDispatcher::DispatchOnIOThread(
       extension_info_map_, profile_, render_process_id_,
-      weak_ptr_factory_.GetWeakPtr(), params);
+      weak_ptr_factory_.GetWeakPtr(), routing_id, params);
 }
 
 void ChromeRenderMessageFilter::OnExtensionShouldUnloadAck(

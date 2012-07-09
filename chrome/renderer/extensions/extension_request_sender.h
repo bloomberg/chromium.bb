@@ -9,10 +9,7 @@
 #include <string>
 #include <map>
 
-#include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
-#include "base/scoped_observer.h"
-#include "content/public/renderer/render_process_observer.h"
 #include "v8/include/v8.h"
 
 class ChromeV8ContextSet;
@@ -22,56 +19,42 @@ namespace base {
 class ListValue;
 }
 
-namespace content {
-class RenderThread;
-}
-
 struct PendingRequest;
 
 // Responsible for sending requests for named extension API functions to the
 // extension host and routing the responses back to the caller.
-class ExtensionRequestSender : content::RenderProcessObserver {
+class ExtensionRequestSender {
  public:
   explicit ExtensionRequestSender(ExtensionDispatcher* extension_dispatcher,
                                   ChromeV8ContextSet* context_set);
-  virtual ~ExtensionRequestSender();
+  ~ExtensionRequestSender();
 
   // Makes a call to the API function |name| that is to be handled by the
-  // extension host.
-  // Returns the request ID of the request, or -1 if no request was made.
-  int StartRequest(const std::string& name,
-                   bool has_callback,
-                   bool for_io_thread,
-                   base::ListValue* value_args);
+  // extension host. The response to this request will be received in
+  // HandleResponse().
+  // TODO(koz): Remove |request_id| and generate that internally.
+  void StartRequest(const std::string& name,
+                    int request_id,
+                    bool has_callback,
+                    bool for_io_thread,
+                    base::ListValue* value_args);
+
+  // Handles responses from the extension host to calls made by StartRequest().
+  void HandleResponse(int request_id,
+                      bool success,
+                      const base::ListValue& response,
+                      const std::string& error);
+
 
  private:
-  // content::RenderProcessObserver implementation.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
-
-  void OnExtensionResponse(int request_id,
-                           bool success,
-                           const base::ListValue& response,
-                           const std::string& error);
+  typedef std::map<int, linked_ptr<PendingRequest> > PendingRequestMap;
 
   void InsertRequest(int request_id, PendingRequest* pending_request);
   linked_ptr<PendingRequest> RemoveRequest(int request_id);
 
-  // Owner (weak reference).
   ExtensionDispatcher* extension_dispatcher_;
-
-  // V8 contexts (weak reference).
-  ChromeV8ContextSet* context_set_;
-
-  // Scoped observer to RenderProcessHost.
-  ScopedObserver<content::RenderThread, content::RenderProcessObserver>
-      scoped_observer_;
-
-  // The next request ID.
-  int next_request_id_;
-
-  // Pending requests.
-  typedef std::map<int, linked_ptr<PendingRequest> > PendingRequestMap;
   PendingRequestMap pending_requests_;
+  ChromeV8ContextSet* context_set_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionRequestSender);
 };
