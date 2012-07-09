@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/path_service.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -37,6 +39,44 @@ namespace file_system = extensions::api::file_system;
 namespace ChooseFile = file_system::ChooseFile;
 
 namespace {
+
+struct RewritePair {
+  int path_key;
+  const char* output;
+};
+
+const RewritePair g_rewrite_pairs[] = {
+#if defined(OS_WIN)
+  {base::DIR_PROFILE, "~"},
+#endif
+};
+
+FilePath PrettifyPath(const FilePath& file_path) {
+  // Note that when g_rewrite_pairs includes at least one value on all
+  // platforms, this code can be cleaned up.
+#if defined(OS_WIN)
+  size_t size = arraysize(g_rewrite_pairs);
+#else
+  size_t size = 0;
+#endif
+
+  for (size_t i = 0; i < size; ++i) {
+    FilePath candidate_path;
+    if (!PathService::Get(g_rewrite_pairs[i].path_key, &candidate_path))
+      continue;  // We don't DCHECK this value, as Get will return false even
+                 // if the path_key gives a blank string as a result.
+
+    FilePath output = FilePath::FromUTF8Unsafe(g_rewrite_pairs[i].output);
+    if (candidate_path.AppendRelativePath(file_path, &output)) {
+      // The output path must not be absolute, as it might collide with the
+      // real filesystem.
+      DCHECK(!output.IsAbsolute());
+      return output;
+    }
+  }
+
+  return file_path;
+}
 
 bool g_skip_picker_for_test = false;
 FilePath* g_path_to_be_picked_for_test;
@@ -107,6 +147,7 @@ bool FileSystemGetDisplayPathFunction::RunImpl() {
                               render_view_host_, &file_path, &error_))
     return false;
 
+  file_path = PrettifyPath(file_path);
   result_.reset(base::Value::CreateStringValue(file_path.value()));
   return true;
 }

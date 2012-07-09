@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/path_service.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 
@@ -46,6 +47,19 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetDisplayPath) {
   ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/get_display_path"))
       << message_;
 }
+
+#if defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetDisplayPathPrettify) {
+  ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(base::DIR_PROFILE,
+      test_root_folder_, false));
+
+  FilePath test_file = test_root_folder_.AppendASCII("gold.txt");
+  FileSystemChooseFileFunction::SkipPickerAndAlwaysSelectPathForTest(
+      &test_file);
+  ASSERT_TRUE(RunPlatformAppTest(
+      "api_test/file_system/get_display_path_prettify")) << message_;
+}
+#endif
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenExistingFileTest) {
   FilePath test_file = TempFilePath("open_existing.txt", true);
@@ -174,4 +188,3 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   ASSERT_TRUE(RunPlatformAppTest(
       "api_test/file_system/get_writable_file_entry_with_write")) << message_;
 }
-
