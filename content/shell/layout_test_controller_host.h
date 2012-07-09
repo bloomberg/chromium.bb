@@ -51,6 +51,9 @@ class LayoutTestControllerHost : public RenderViewHostObserver {
   void OnSetShouldStayOnPageAfterHandlingBeforeUnload(bool should_stay_on_page);
   void OnWaitUntilDone();
 
+  void OnNotImplemented(const std::string& object_name,
+                        const std::string& method_name);
+
   static std::map<RenderViewHost*, LayoutTestControllerHost*> controllers_;
   static std::string expected_pixel_hash_;
 

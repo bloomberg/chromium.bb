@@ -36,11 +36,7 @@
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/ui.gyp:ui',
         '../v8/tools/gyp/v8.gyp:v8',
-        '../webkit/support/webkit_support.gyp:appcache',
-        '../webkit/support/webkit_support.gyp:database',
-        '../webkit/support/webkit_support.gyp:fileapi',
-        '../webkit/support/webkit_support.gyp:glue',
-        '../webkit/support/webkit_support.gyp:quota',
+        '../webkit/support/webkit_support.gyp:webkit_support',
       ],
       'include_dirs': [
         '..',

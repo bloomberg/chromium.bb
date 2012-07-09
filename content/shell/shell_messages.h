@@ -44,3 +44,7 @@ IPC_MESSAGE_ROUTED1(
     ShellViewHostMsg_SetShouldStayOnPageAfterHandlingBeforeUnload,
     bool /* should_stay_on_page */)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_WaitUntilDone)
+
+IPC_MESSAGE_ROUTED2(ShellViewHostMsg_NotImplemented,
+                    std::string /* object_name */,
+                    std::string /* property_name */)

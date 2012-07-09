@@ -82,7 +82,7 @@ v8::Handle<v8::Value> SetShouldStayOnPageAfterHandlingBeforeUnload(
   if (!view)
     return v8::Undefined();
 
-  if (args.Length() != 1 || args[0]->IsBoolean())
+  if (args.Length() != 1 || !args[0]->IsBoolean())
     return v8::Undefined();
 
   view->Send(new ShellViewHostMsg_SetShouldStayOnPageAfterHandlingBeforeUnload(
@@ -96,6 +96,21 @@ v8::Handle<v8::Value> SetWaitUntilDone(const v8::Arguments& args) {
     return v8::Undefined();
 
   view->Send(new ShellViewHostMsg_WaitUntilDone(view->GetRoutingID()));
+  return v8::Undefined();
+}
+
+v8::Handle<v8::Value> NotImplemented(const v8::Arguments& args) {
+  RenderView* view = GetCurrentRenderView();
+  if (!view)
+    return v8::Undefined();
+
+  if (args.Length() != 2 || !args[0]->IsString() || !args[1]->IsString())
+    return v8::Undefined();
+
+  view->Send(new ShellViewHostMsg_NotImplemented(
+      view->GetRoutingID(),
+      *v8::String::AsciiValue(args[0]),
+      *v8::String::AsciiValue(args[1])));
   return v8::Undefined();
 }
 
@@ -131,6 +146,8 @@ LayoutTestControllerBindings::GetNativeFunction(v8::Handle<v8::String> name) {
   }
   if (name->Equals(v8::String::New("SetWaitUntilDone")))
     return v8::FunctionTemplate::New(SetWaitUntilDone);
+  if (name->Equals(v8::String::New("NotImplemented")))
+    return v8::FunctionTemplate::New(NotImplemented);
 
   NOTREACHED();
   return v8::FunctionTemplate::New();

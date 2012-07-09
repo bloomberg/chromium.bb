@@ -4,6 +4,10 @@
 
 var layoutTestController = layoutTestController || {};
 var testRunner = testRunner || {};
+var accessibilityController = accessibilityController || {};
+var gamepadController = gamepadController || {};
+var eventSender = eventSender || {};
+var textInputController = textInputController || {};
 
 (function() {
   native function NotifyDone();
@@ -13,16 +17,49 @@ var testRunner = testRunner || {};
   native function SetShouldStayOnPageAfterHandlingBeforeUnload();
   native function SetWaitUntilDone();
 
-  layoutTestController = new function() {
-    this.notifyDone = NotifyDone;
-    this.dumpAsText = SetDumpAsText;
-    this.dumpChildFramesAsText = SetDumpChildFramesAsText;
-    this.setPrinting = SetPrinting;
-    this.setShouldStayOnPageAfterHandlingBeforeUnload =
-        SetShouldStayOnPageAfterHandlingBeforeUnload;
-    this.waitUntilDone = SetWaitUntilDone;
-  }();
+  native function NotImplemented();
 
-  testRunner = layoutTestController;
+  var DefaultHandler = function(name) {
+    var handler = {
+      get: function(receiver, property) {
+        return function() {
+          return NotImplemented(name, property);
+        }
+      }
+    }
+    return Proxy.create(handler);
+  }
 
+  var LayoutTestController = function() {
+    Object.defineProperty(this, "notifyDone", {value: NotifyDone});
+    Object.defineProperty(this, "dumpAsText", {value: SetDumpAsText});
+    Object.defineProperty(this,
+                          "dumpChildFramesAsText",
+                          {value: SetDumpChildFramesAsText});
+    Object.defineProperty(this, "setPrinting", {value: SetPrinting});
+    Object.defineProperty(
+        this,
+        "setShouldStayOnPageAfterHandlingBeforeUnload",
+        {value: SetShouldStayOnPageAfterHandlingBeforeUnload});
+    Object.defineProperty(this, "waitUntilDone", {value: SetWaitUntilDone});
+  }
+  LayoutTestController.prototype = DefaultHandler("layoutTestController");
+  layoutTestController = new LayoutTestController();
+  testRunner = new LayoutTestController();
+
+  var AccessibilityController = function() {}
+  AccessibilityController.prototype = DefaultHandler("accessibilityController");
+  accessibilityController = new AccessibilityController();
+
+  var GamepadController = function() {}
+  GamepadController.prototype = DefaultHandler("gamepadController");
+  gamepadController = new GamepadController();
+
+  var EventSender = function() {}
+  EventSender.prototype = DefaultHandler("eventSender");
+  eventSender = new EventSender();
+
+  var TextInputController = function() {}
+  TextInputController.prototype = DefaultHandler("textInputController");
+  textInputController = new TextInputController();
 })();

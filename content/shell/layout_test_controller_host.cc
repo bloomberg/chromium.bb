@@ -91,6 +91,7 @@ bool LayoutTestControllerHost::OnMessageReceived(
         ShellViewHostMsg_SetShouldStayOnPageAfterHandlingBeforeUnload,
         OnSetShouldStayOnPageAfterHandlingBeforeUnload)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_WaitUntilDone, OnWaitUntilDone)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_NotImplemented, OnNotImplemented)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -190,6 +191,19 @@ void LayoutTestControllerHost::OnWaitUntilDone() {
       watchdog_.callback(),
       base::TimeDelta::FromMilliseconds(kTestTimeoutMilliseconds));
   wait_until_done_ = true;
+}
+
+void LayoutTestControllerHost::OnNotImplemented(
+    const std::string& object_name,
+    const std::string& property_name) {
+  if (captured_dump_)
+    return;
+  printf("FAIL: NOT IMPLEMENTED: %s.%s\n",
+         object_name.c_str(), property_name.c_str());
+  fprintf(stderr, "FAIL: NOT IMPLEMENTED: %s.%s\n",
+          object_name.c_str(), property_name.c_str());
+  watchdog_.Cancel();
+  CaptureDump();
 }
 
 }  // namespace content

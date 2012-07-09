@@ -8,6 +8,8 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/shell/layout_test_controller_bindings.h"
 #include "content/shell/shell_switches.h"
+#include "webkit/glue/webkit_glue.h"
+#include "webkit/support/gc_extension.h"
 
 namespace content {
 
@@ -19,8 +21,16 @@ ShellRenderProcessObserver::~ShellRenderProcessObserver() {
 }
 
 void ShellRenderProcessObserver::WebKitInitialized() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
-    RenderThread::Get()->RegisterExtension(new LayoutTestControllerBindings());
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return;
+
+  // To implement a catch-all for not yet implemented controller properties.
+  webkit_glue::SetJavaScriptFlags(" --harmony_proxies");
+  RenderThread::Get()->RegisterExtension(new LayoutTestControllerBindings());
+
+  // We always expose GC to layout tests.
+  webkit_glue::SetJavaScriptFlags(" --expose-gc");
+  RenderThread::Get()->RegisterExtension(extensions_v8::GCExtension::Get());
 }
 
 }  // namespace content
