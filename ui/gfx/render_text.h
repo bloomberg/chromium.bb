@@ -117,7 +117,7 @@ class UI_EXPORT RenderText {
   virtual ~RenderText();
 
   // Creates a platform-specific RenderText instance.
-  static RenderText* CreateRenderText();
+  static RenderText* CreateInstance();
 
   const string16& text() const { return text_; }
   void SetText(const string16& text);

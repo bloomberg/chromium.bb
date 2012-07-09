@@ -427,7 +427,7 @@ void PrintHeaderFooterByRenderText(
     double offset_to_baseline) {
   // TODO(arthurhsu): Following code works on Windows only so far.
   // See crbug.com/108599 and its blockers for more information.
-  scoped_ptr<gfx::RenderText> render_text(gfx::RenderText::CreateRenderText());
+  scoped_ptr<gfx::RenderText> render_text(gfx::RenderText::CreateInstance());
   // TODO(asvitkine): The below line is to workaround http://crbug.com/133548.
   // Remove it when the underlying Skia bug has been fixed.
   render_text->set_clip_to_display_rect(false);

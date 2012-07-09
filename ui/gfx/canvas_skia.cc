@@ -223,7 +223,7 @@ void Canvas::SizeStringInt(const string16& text,
     std::vector<string16> strings;
     ui::ElideRectangleText(adjusted_text, font, rect.width(), rect.height(),
                            wrap_behavior, &strings);
-    scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
+    scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
     UpdateRenderText(rect, string16(), font, flags, 0, render_text.get());
 
     int h = 0;
@@ -245,7 +245,7 @@ void Canvas::SizeStringInt(const string16& text,
       *width = adjusted_text.length() * font.GetAverageCharacterWidth();
       *height = font.GetHeight();
     } else {
-      scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
+      scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
       gfx::Rect rect(*width, *height);
       StripAcceleratorChars(flags, &adjusted_text);
       UpdateRenderText(rect, adjusted_text, font, flags, 0, render_text.get());
@@ -289,7 +289,7 @@ void Canvas::DrawStringWithShadows(const string16& text,
   AdjustStringDirection(flags, &adjusted_text);
 #endif
 
-  scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetTextShadows(shadows);
 
   if (flags & MULTI_LINE) {
@@ -424,7 +424,7 @@ void Canvas::DrawFadeTruncatingString(
     return;
   }
 
-  scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   string16 clipped_text = text;
   const bool is_rtl = AdjustStringDirection(flags, &clipped_text);
 

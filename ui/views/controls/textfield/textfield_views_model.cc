@@ -282,7 +282,7 @@ TextfieldViewsModel::Delegate::~Delegate() {
 
 TextfieldViewsModel::TextfieldViewsModel(Delegate* delegate)
     : delegate_(delegate),
-      render_text_(gfx::RenderText::CreateRenderText()),
+      render_text_(gfx::RenderText::CreateInstance()),
       current_edit_(edit_history_.end()) {
   const ui::NativeTheme* theme = ui::NativeTheme::instance();
   render_text_->set_selection_color(

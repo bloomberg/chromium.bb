@@ -918,7 +918,7 @@ SelectionModel RenderTextWin::LastSelectionModelInsideRun(
   return SelectionModel(caret, CURSOR_FORWARD);
 }
 
-RenderText* RenderText::CreateRenderText() {
+RenderText* RenderText::CreateInstance() {
   return new RenderTextWin;
 }
 

@@ -46,11 +46,11 @@ class IconView : public views::ImageView {
   DISALLOW_COPY_AND_ASSIGN(IconView);
 };
 
-// Creates a RenderText of given |text| and |styles|. Callers takes ownership
+// Creates a RenderText of given |text| and |styles|. Caller takes ownership
 // of returned RenderText.
 gfx::RenderText* CreateRenderText(const string16& text,
                                   const app_list::SearchResult::Tags& tags) {
-  gfx::RenderText* render_text = gfx::RenderText::CreateRenderText();
+  gfx::RenderText* render_text = gfx::RenderText::CreateInstance();
   render_text->SetText(text);
 
   gfx::StyleRange default_style;

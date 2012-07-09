@@ -80,10 +80,6 @@ RenderTextLinux::~RenderTextLinux() {
   ResetLayout();
 }
 
-RenderText* RenderText::CreateRenderText() {
-  return new RenderTextLinux;
-}
-
 base::i18n::TextDirection RenderTextLinux::GetTextDirection() {
   EnsureLayout();
 
@@ -553,6 +549,10 @@ std::vector<Rect> RenderTextLinux::GetSelectionBounds() {
   if (selection_visual_bounds_.empty())
     selection_visual_bounds_ = CalculateSubstringBounds(selection());
   return selection_visual_bounds_;
+}
+
+RenderText* RenderText::CreateInstance() {
+  return new RenderTextLinux;
 }
 
 }  // namespace gfx
