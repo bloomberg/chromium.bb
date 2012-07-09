@@ -5540,6 +5540,16 @@
    fun:_ZNSt6vectorI13scoped_refptrIN3IPC12ChannelProxy13MessageFilterEESaIS4_EE9push_backERKS4_
    fun:_ZN3IPC12ChannelProxy7Context11OnAddFilterEv
 }
+{
+   bug_65940_d
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11ChildThread4InitEv
+   fun:_ZN11ChildThreadC2ERKSs
+   fun:_ZN16RenderThreadImplC2ERKSs
+   fun:_ZN16RenderThreadImplC1ERKSs
+   fun:_ZN21WebRTCAudioDeviceTest5SetUpEv
+}
 
 
 #-----------------------------------------------------------------------
