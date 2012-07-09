@@ -2990,6 +2990,7 @@
         'test/automation/dom_automation_browsertest.cc',
         'test/base/layout_test_http_server.cc',
         'test/base/layout_test_http_server.h',
+        'test/base/empty_browser_test.cc',
         'test/base/in_process_browser_test_browsertest.cc',
         'test/base/chrome_render_view_test.cc',
         'test/base/chrome_render_view_test.h',
