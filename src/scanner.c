@@ -462,7 +462,7 @@ end_element(void *data, const XML_Char *name)
 		char *text = strndup(ctx->character_data,
 				     ctx->character_data_length);
 		if (text)
-			ctx->description->text = strdup(text);
+			ctx->description->text = text;
 		ctx->description = NULL;
 	} else if (strcmp(name, "request") == 0 ||
 		   strcmp(name, "event") == 0) {
