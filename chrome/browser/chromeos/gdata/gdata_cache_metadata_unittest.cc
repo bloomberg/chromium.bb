@@ -226,7 +226,7 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   // Add another one.
   test_resource_id = "test_resource_id_2";
   test_file_md5 = "test_file_md5_4";
-  test_sub_dir_type = GDataCache::CACHE_TYPE_TMP_DOWNLOADS;
+  test_sub_dir_type = GDataCache::CACHE_TYPE_TMP;
   test_cache_state = GDataCache::CACHE_STATE_PRESENT;
   metadata_->UpdateCache(test_resource_id, test_file_md5, test_sub_dir_type,
                          test_cache_state);
@@ -241,7 +241,7 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
 
   // Update with CACHE_STATE_NONE should evict the entry.
   test_file_md5 = "test_file_md5_5";
-  test_sub_dir_type = GDataCache::CACHE_TYPE_TMP_DOCUMENTS;
+  test_sub_dir_type = GDataCache::CACHE_TYPE_TMP;
   test_cache_state = GDataCache::CACHE_STATE_NONE;
   metadata_->UpdateCache(test_resource_id, test_file_md5, test_sub_dir_type,
                          test_cache_state);
