@@ -19,7 +19,7 @@ Core wayland protocol
    bigger atomic change.  To be researched a bit.
 
  - Maybe try to make remote wayland actually happen, to see if there
-   is something in the protocol/architecute that makes it harder than
+   is something in the protocol/architecture that makes it harder than
    it should be.
 
  - Add timestamp to touch_cancel, add touch id to touch_cancel (?)

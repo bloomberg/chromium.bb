@@ -77,7 +77,7 @@ struct wl_object {
  * empty in O(1), use wl_list_empty().
  *
  * Let's call the list reference "struct wl_list foo_list", the item type as
- * "item_t", and the item member as "struct wl_list link". The following code
+ * "item_t", and the item member as "struct wl_list link".
  *
  * The following code will initialize a list:
  *
@@ -92,7 +92,7 @@ struct wl_object {
  *	wl_list_init(&foo_list);
  *	wl_list_insert(&foo_list, &item1.link);	Pushes item1 at the head
  *	wl_list_insert(&foo_list, &item2.link);	Pushes item2 at the head
- *	wl_list_insert(&item2.link, &item3.link);Pushes item3 after item2
+ *	wl_list_insert(&item2.link, &item3.link); Pushes item3 after item2
  *
  * The list now looks like [item2, item3, item1]
  *
