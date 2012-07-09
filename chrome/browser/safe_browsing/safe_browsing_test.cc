@@ -173,7 +173,7 @@ class SafeBrowsingTestServer {
       return true;
 
     // First check if the process has already terminated.
-    if (!base::WaitForSingleProcess(server_handle_, 0) &&
+    if (!base::WaitForSingleProcess(server_handle_, base::TimeDelta()) &&
         !base::KillProcess(server_handle_, 1, true)) {
       VLOG(1) << "Kill failed?";
       return false;
@@ -445,13 +445,13 @@ class SafeBrowsingServiceTestHelper
   }
 
   // Wait for a given period to get safebrowsing status updated.
-  void WaitForStatusUpdate(int64 wait_time_msec) {
+  void WaitForStatusUpdate(base::TimeDelta wait_time) {
     BrowserThread::PostDelayedTask(
         BrowserThread::IO,
         FROM_HERE,
         base::Bind(&SafeBrowsingServiceTestHelper::CheckStatusOnIOThread,
                    this),
-        base::TimeDelta::FromMilliseconds(wait_time_msec));
+        wait_time);
     // Will continue after OnWaitForStatusUpdateDone().
     ui_test_utils::RunMessageLoop();
   }
@@ -570,7 +570,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
   // The wait will stop once OnWaitForStatusUpdateDone in
   // safe_browsing_helper is called and status from safe_browsing_service_
   // is checked.
-  safe_browsing_helper->WaitForStatusUpdate(0);
+  safe_browsing_helper->WaitForStatusUpdate(base::TimeDelta());
   EXPECT_TRUE(is_database_ready());
   EXPECT_FALSE(is_update_scheduled());
   EXPECT_TRUE(last_update().is_null());
@@ -595,7 +595,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
     do {
       // Periodically pull the status.
       safe_browsing_helper->WaitForStatusUpdate(
-          TestTimeouts::tiny_timeout_ms());
+          TestTimeouts::tiny_timeout());
     } while (is_update_scheduled() || !is_database_ready());
 
 
