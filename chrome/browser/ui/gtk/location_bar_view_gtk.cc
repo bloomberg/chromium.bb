@@ -324,16 +324,10 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   // doesn't work, someone is probably calling show_all on our parent box.
   gtk_box_pack_end(GTK_BOX(entry_box_), tab_to_search_hint_, FALSE, FALSE, 0);
 
-  // Hide the zoom, star and Chrome To Mobile icons in popups, app windows, etc.
+  // Hide the star and Chrome To Mobile icons in popups, app windows, etc.
   if (browser_defaults::bookmarks_enabled && !ShouldOnlyShowLocation()) {
     CreateStarButton();
     gtk_box_pack_end(GTK_BOX(hbox_.get()), star_.get(), FALSE, FALSE, 0);
-
-    // Zoom code is commented out for now because it is not complete for all
-    // platforms, so it should not be present in M21.
-    // TODO(khorimoto): Uncomment the code below once it is ready.
-    // CreateZoomButton();
-    // gtk_box_pack_end(GTK_BOX(hbox_.get()), zoom_.get(), FALSE, FALSE, 0);
 
     // Also disable Chrome To Mobile for off-the-record and non-synced profiles,
     // or if the feature is disabled by a command line flag or chrome://flags.
@@ -347,6 +341,12 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
           RequestMobileListUpdate();
     }
   }
+
+  // Zoom code is commented out for now because it is not complete for all
+  // platforms, so it should not be present in M21.
+  // TODO(khorimoto): Uncomment the code below once it is ready.
+  // CreateZoomButton();
+  // gtk_box_pack_end(GTK_BOX(hbox_.get()), zoom_.get(), FALSE, FALSE, 0);
 
   content_setting_hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding + 1));
   gtk_widget_set_name(content_setting_hbox_.get(),
