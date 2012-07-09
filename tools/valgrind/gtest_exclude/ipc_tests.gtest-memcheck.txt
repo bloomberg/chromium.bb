@@ -2,3 +2,4 @@
 # TODO(bruening): would be nice to have a ChromeOS platform to have
 # ChromeOS-specific exclude files.
 IPCSyncChannelTest.SendAfterClose
+IPCSyncChannelTest.RestrictedDispatch
