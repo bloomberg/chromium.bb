@@ -8,6 +8,10 @@
 
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
 
+namespace base {
+class StringValue;
+}
+
 namespace options2 {
 
 // Chrome personal stuff profiles manage overlay UI handler.
@@ -63,7 +67,9 @@ class ManageProfileHandler : public OptionsPageUIHandler {
   void ProfileIconSelectionChanged(const base::ListValue* args);
 
   // Send all profile icons to the overlay.
-  void SendProfileIcons();
+  // |iconGrid| is the string representation of which grid the icons will
+  // populate (i.e. "create-profile-icon-grid" or "manage-profile-icon-grid").
+  void SendProfileIcons(base::StringValue* icon_grid);
 
   // URL for the current profile's GAIA picture.
   std::string gaia_picture_url_;

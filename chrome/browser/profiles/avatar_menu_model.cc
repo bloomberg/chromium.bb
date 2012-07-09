@@ -82,7 +82,8 @@ void AvatarMenuModel::SwitchToProfile(size_t index, bool always_create) {
   const Item& item = GetItemAt(index);
   FilePath path = profile_info_->GetPathOfProfileAtIndex(item.model_index);
   g_browser_process->profile_manager()->CreateProfileAsync(
-      path, base::Bind(&OnProfileCreated, always_create));
+      path, base::Bind(&OnProfileCreated, always_create), string16(),
+      string16());
 
   ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::SWITCH_PROFILE_ICON);
 }
@@ -101,7 +102,7 @@ void AvatarMenuModel::EditProfile(size_t index) {
 }
 
 void AvatarMenuModel::AddNewProfile() {
-  ProfileManager::CreateMultiProfileAsync();
+  ProfileManager::CreateMultiProfileAsync(string16(), string16());
   ProfileMetrics::LogProfileAddNewUser(ProfileMetrics::ADD_NEW_USER_ICON);
 }
 

@@ -449,6 +449,10 @@ void BrowserOptionsHandler::RegisterMessages() {
       base::Bind(&BrowserOptionsHandler::CreateProfile,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "createProfileInfo",
+      base::Bind(&BrowserOptionsHandler::CreateProfileInfo,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "themesReset",
       base::Bind(&BrowserOptionsHandler::ThemesReset,
                  base::Unretained(this)));
@@ -949,7 +953,26 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
   // the user fiddled with the web inspector. Silently return in this case.
   if (!ProfileManager::IsMultipleProfilesEnabled())
     return;
-  ProfileManager::CreateMultiProfileAsync();
+  string16 name, icon;
+  if (args->GetString(0, &name) && args->GetString(1, &icon))
+    ProfileManager::CreateMultiProfileAsync(name, icon);
+  else
+    ProfileManager::CreateMultiProfileAsync(string16(), string16());
+}
+
+void BrowserOptionsHandler::CreateProfileInfo(const ListValue* args) {
+  DictionaryValue* profile_info = new DictionaryValue();
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+
+  size_t icon_index = cache.ChooseAvatarIconIndexForNewProfile();
+
+  profile_info->SetString("name", cache.ChooseNameForNewProfile(icon_index));
+  profile_info->SetString("iconURL", cache.GetDefaultAvatarIconUrl(
+      icon_index));
+
+  web_ui()->CallJavascriptFunction("ManageProfileOverlay.showCreateDialog",
+                                   *profile_info);
 }
 
 void BrowserOptionsHandler::ObserveThemeChanged() {

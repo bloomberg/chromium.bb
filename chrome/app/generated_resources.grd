@@ -16522,8 +16522,8 @@ Battery full
     <message name="IDS_PROFILES_MANAGE_NAME_LABEL" desc="Label next to the profile name text field.">
       Name:
     </message>
-    <message name="IDS_PROFILES_MANAGE_ICON_LABEL" desc="Label next to the profile avatar icon chooser.">
-      Icon:
+    <message name="IDS_PROFILES_MANAGE_ICON_LABEL" desc="Label above the profile avatar icon chooser.">
+      Choose a picture and a name for your Chrome profile.
     </message>
     <message name="IDS_PROFILES_MANAGE_DUPLICATE_NAME_ERROR" desc="error bubble displayed when the user is attempting to rename a profile to a name that is used.">
       Whoops, this name is already in use!
@@ -16551,6 +16551,20 @@ Battery full
     </message>
     <message name="IDS_PROFILES_SINGLE_USER_MESSAGE" desc="Text to display in the multi-profiles section when there is only one user">
       You are currently the only <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> user.
+    </message>
+    
+    <!-- Create Profile Dialog -->
+    <message name="IDS_PROFILES_CREATE_TITLE" desc="Title of the create profile dialog">
+      Create profile
+    </message>
+    <message name="IDS_PROFILES_CREATE_INSTRUCTIONS" desc="Instructions for the create profile dialog">
+      Choose a picture and name for your new Chrome profile.
+    </message>
+    <message name="IDS_PROFILES_CREATE_CONFIRM" desc="Create button confirmation">
+      Create 
+    </message>
+    <message name="IDS_PROFILES_CREATE_SHORTCUT_CHKBOX" desc="Create Shortcut Checkbox">
+      Create desktop shortcut for this profile
     </message>
 
     <!-- Tracing about page strings -->

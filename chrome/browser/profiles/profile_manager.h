@@ -77,7 +77,9 @@ class ProfileManager : public base::NonThreadSafe,
   // If the profile has already been created then callback is called
   // immediately. Should be called on the UI thread.
   void CreateProfileAsync(const FilePath& profile_path,
-                          const CreateCallback& callback);
+                          const CreateCallback& callback,
+                          const string16& name,
+                          const string16& icon_url);
 
   // Initiates default profile creation. If default profile has already been
   // created then the callback is called immediately. Should be called on the
@@ -165,7 +167,8 @@ class ProfileManager : public base::NonThreadSafe,
   // Directories are named "profile_1", "profile_2", etc., in sequence of
   // creation. (Because directories can be removed, however, it may be the case
   // that at some point the list of numbered profiles is not continuous.)
-  static void CreateMultiProfileAsync();
+  static void CreateMultiProfileAsync(const string16& name,
+                                     const string16& icon_url);
 
   // Register multi-profile related preferences in Local State.
   static void RegisterPrefs(PrefService* prefs);

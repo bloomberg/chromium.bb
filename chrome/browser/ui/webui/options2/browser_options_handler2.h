@@ -136,8 +136,12 @@ class BrowserOptionsHandler
   void SendProfilesInfo();
 
   // Asynchronously opens a new browser window to create a new profile.
-  // |args| is not used.
   void CreateProfile(const base::ListValue* args);
+
+  // Generates a DictionaryValue object that represents a new profile's
+  // name and icon.
+  // |args| is not used.
+  void CreateProfileInfo(const base::ListValue* args);
 
   void ObserveThemeChanged();
   void ThemesReset(const base::ListValue* args);

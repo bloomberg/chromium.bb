@@ -544,7 +544,7 @@ void StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
     path = profile_manager->user_data_dir().Append(path);
     profile_manager->CreateProfileAsync(path,
         base::Bind(&StartupBrowserCreator::ProcessCommandLineOnProfileCreated,
-                   cmd_line, cur_dir));
+                   cmd_line, cur_dir), string16(), string16());
     return;
   }
 

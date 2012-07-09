@@ -254,7 +254,7 @@ TEST_F(ProfileManagerTest, DISABLED_CreateProfileAsync) {
 
   g_browser_process->profile_manager()->CreateProfileAsync(dest_path,
       base::Bind(&MockObserver::OnProfileCreated,
-                 base::Unretained(&mock_observer)));
+                 base::Unretained(&mock_observer)), string16(), string16());
 
   message_loop_.RunAllPending();
 }
@@ -285,13 +285,13 @@ TEST_F(ProfileManagerTest, CreateProfileAsyncMultipleRequests) {
 
   profile_manager->CreateProfileAsync(dest_path,
       base::Bind(&MockObserver::OnProfileCreated,
-                 base::Unretained(&mock_observer1)));
+                 base::Unretained(&mock_observer1)), string16(), string16());
   profile_manager->CreateProfileAsync(dest_path,
       base::Bind(&MockObserver::OnProfileCreated,
-                 base::Unretained(&mock_observer2)));
+                 base::Unretained(&mock_observer2)), string16(), string16());
   profile_manager->CreateProfileAsync(dest_path,
       base::Bind(&MockObserver::OnProfileCreated,
-                 base::Unretained(&mock_observer3)));
+                 base::Unretained(&mock_observer3)), string16(), string16());
 
   message_loop_.RunAllPending();
 }
@@ -310,10 +310,10 @@ TEST_F(ProfileManagerTest, CreateProfilesAsync) {
 
   profile_manager->CreateProfileAsync(dest_path1,
       base::Bind(&MockObserver::OnProfileCreated,
-                 base::Unretained(&mock_observer)));
+                 base::Unretained(&mock_observer)), string16(), string16());
   profile_manager->CreateProfileAsync(dest_path2,
       base::Bind(&MockObserver::OnProfileCreated,
-                 base::Unretained(&mock_observer)));
+                 base::Unretained(&mock_observer)), string16(), string16());
 
   message_loop_.RunAllPending();
 }

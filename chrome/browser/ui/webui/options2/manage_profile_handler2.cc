@@ -45,6 +45,10 @@ void ManageProfileHandler::GetLocalizedValues(
     { "deleteProfileTitle", IDS_PROFILES_DELETE_TITLE },
     { "deleteProfileOK", IDS_PROFILES_DELETE_OK_BUTTON_LABEL },
     { "deleteProfileMessage", IDS_PROFILES_DELETE_MESSAGE },
+    { "createProfileTitle", IDS_PROFILES_CREATE_TITLE },
+    { "createProfileInstructions", IDS_PROFILES_CREATE_INSTRUCTIONS },
+    { "createProfileConfirm", IDS_PROFILES_CREATE_CONFIRM },
+    { "createProfileShortcut", IDS_PROFILES_CREATE_SHORTCUT_CHKBOX },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -82,17 +86,18 @@ void ManageProfileHandler::Observe(
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED) {
     SendProfileNames();
-    SendProfileIcons();
+    SendProfileIcons(Value::CreateStringValue("manage-profile-icon-grid"));
   } else {
     OptionsPageUIHandler::Observe(type, source, details);
   }
 }
 
 void ManageProfileHandler::RequestDefaultProfileIcons(const ListValue* args) {
-  SendProfileIcons();
+  SendProfileIcons(Value::CreateStringValue("manage-profile-icon-grid"));
+  SendProfileIcons(Value::CreateStringValue("create-profile-icon-grid"));
 }
 
-void ManageProfileHandler::SendProfileIcons() {
+void ManageProfileHandler::SendProfileIcons(base::StringValue* icon_grid) {
   ListValue image_url_list;
 
   // First add the GAIA picture if it's available.
@@ -117,7 +122,7 @@ void ManageProfileHandler::SendProfileIcons() {
   }
 
   web_ui()->CallJavascriptFunction(
-      "ManageProfileOverlay.receiveDefaultProfileIcons",
+      "ManageProfileOverlay.receiveDefaultProfileIcons", *icon_grid,
       image_url_list);
 }
 

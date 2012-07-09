@@ -402,7 +402,9 @@ Profile* ProfileManager::GetProfile(const FilePath& profile_dir) {
 }
 
 void ProfileManager::CreateProfileAsync(const FilePath& profile_path,
-                                        const CreateCallback& callback) {
+                                        const CreateCallback& callback,
+                                        const string16& name,
+                                        const string16& icon_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Make sure that this profile is not pending deletion.
@@ -426,6 +428,14 @@ void ProfileManager::CreateProfileAsync(const FilePath& profile_path,
     // Initiate asynchronous creation process.
     ProfileInfo* info =
         RegisterProfile(CreateProfileAsyncHelper(profile_path, this), false);
+    ProfileInfoCache& cache = GetProfileInfoCache();
+    // Get the icon index from the user's icon url
+    size_t icon_index;
+    std::string icon_url_std = UTF16ToASCII(icon_url);
+    if (cache.IsDefaultAvatarIconUrl(icon_url_std, &icon_index)) {
+      // add profile to cache with user selected name and avatar
+      cache.AddProfileToCache(profile_path, name, string16(), icon_index);
+    }
     info->callbacks.push_back(callback);
   }
 }
@@ -440,7 +450,8 @@ void ProfileManager::CreateDefaultProfileAsync(const CreateCallback& callback) {
   default_profile_dir = default_profile_dir.Append(
       profile_manager->GetInitialProfileDir());
 
-  profile_manager->CreateProfileAsync(default_profile_dir, callback);
+  profile_manager->CreateProfileAsync(default_profile_dir, callback,
+                                      string16(), string16());
 }
 
 bool ProfileManager::AddProfile(Profile* profile) {
@@ -749,7 +760,8 @@ FilePath ProfileManager::GenerateNextProfileDirectoryPath() {
 }
 
 // static
-void ProfileManager::CreateMultiProfileAsync() {
+void ProfileManager::CreateMultiProfileAsync(const string16& name,
+                                             const string16& icon_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -757,7 +769,8 @@ void ProfileManager::CreateMultiProfileAsync() {
   FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
 
   profile_manager->CreateProfileAsync(new_path,
-                                      base::Bind(&OnOpenWindowForNewProfile));
+                                      base::Bind(&OnOpenWindowForNewProfile),
+                                      name, icon_url);
 }
 
 // static
@@ -903,7 +916,8 @@ void ProfileManager::ScheduleProfileForDeletion(const FilePath& profile_dir) {
   if (cache.GetNumberOfProfiles() == 1) {
     FilePath new_path = GenerateNextProfileDirectoryPath();
 
-    CreateProfileAsync(new_path, base::Bind(&OnOpenWindowForNewProfile));
+    CreateProfileAsync(new_path, base::Bind(&OnOpenWindowForNewProfile),
+                       string16(), string16());
   }
 
   // Update the last used profile pref before closing browser windows. This way
