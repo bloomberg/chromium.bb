@@ -356,30 +356,6 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   TargetMap* clipboard_data_;
   GtkClipboard* clipboard_;
   GtkClipboard* primary_selection_;
-#elif defined(OS_ANDROID)
-  // Returns whether some text is available from the Android Clipboard.
-  bool IsTextAvailableFromAndroid() const;
-
-  // Make sure that the Android Clipboard contents matches what we think it
-  // should contain. If it changed, a copy occured from another application and
-  // all internal data is dropped.
-  void ValidateInternalClipboard() const;
-
-  // Clear the Clipboard for all types. Both for Android and internal.
-  void Clear();
-
-  // Clear the internal clipboard.
-  void ClearInternalClipboard() const;
-
-  // This private method is used to set non text key/value.
-  void Set(const std::string& key, const std::string& value);
-
-  // Java class and methods for the Android ClipboardManager.
-  base::android::ScopedJavaGlobalRef<jobject> clipboard_manager_;
-  jmethodID set_text_;
-  jmethodID has_text_;
-  jmethodID get_text_;
-  jmethodID to_string_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(Clipboard);

@@ -23,6 +23,10 @@
 #include "ui/base/clipboard/clipboard_util_win.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#endif
+
 namespace ui {
 
 #if defined(OS_WIN)
@@ -334,7 +338,7 @@ TEST_F(ClipboardTest, URLTest) {
   clipboard.ReadAsciiText(Clipboard::BUFFER_STANDARD, &ascii_text);
   EXPECT_EQ(UTF16ToUTF8(url), ascii_text);
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   ascii_text.clear();
   clipboard.ReadAsciiText(Clipboard::BUFFER_SELECTION, &ascii_text);
   EXPECT_EQ(UTF16ToUTF8(url), ascii_text);
@@ -387,7 +391,7 @@ TEST_F(ClipboardTest, SharedBitmapTest) {
 // The following test somehow fails on GTK. The image when read back from the
 // clipboard has the alpha channel set to 0xFF for some reason. The other
 // channels stay intact. So I am turning this on only for aura.
-#if defined(USE_AURA) && !defined(OS_WIN)
+#if (defined(USE_AURA) && !defined(OS_WIN)) || defined(OS_ANDROID)
 TEST_F(ClipboardTest, MultipleBitmapReadWriteTest) {
   Clipboard clipboard;
 
@@ -649,4 +653,72 @@ TEST_F(ClipboardTest, WriteEverything) {
   // Passes if we don't crash.
 }
 
+#if defined(OS_ANDROID)
+
+// Test that if another application writes some text to the pasteboard the
+// clipboard properly invalidates other types.
+TEST_F(ClipboardTest, InternalClipboardInvalidation) {
+  const unsigned int kFakeBitmap[] = {
+    0x46155189, 0xF6A55C8D, 0x79845674, 0xFA57BD89,
+    0x78FD46AE, 0x87C64F5A, 0x36EDC5AF, 0x4378F568,
+    0x91E9F63A, 0xC31EA14F, 0x69AB32DF, 0x643A3FD1,
+  };
+
+  // Write a bitmap in our clipboard.
+  Clipboard clipboard;
+  {
+    ScopedClipboardWriter clipboard_writer(&clipboard,
+                                           Clipboard::BUFFER_STANDARD);
+    clipboard_writer.WriteBitmapFromPixels(kFakeBitmap, gfx::Size(3, 4));
+  }
+
+  //
+  // Simulate that another application copied something in the Clipboard
+  //
+  std::string new_value("Some text copied by some other app");
+  using base::android::ScopedJavaLocalRef;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ASSERT_TRUE(env);
+
+  jobject context = base::android::GetApplicationContext();
+  ASSERT_TRUE(context);
+
+  ScopedJavaLocalRef<jclass> context_class =
+      base::android::GetClass(env, "android/content/Context");
+
+  jmethodID get_system_service = base::android::GetMethodID(env, context_class,
+      "getSystemService",  "(Ljava/lang/String;)Ljava/lang/Object;");
+
+  // Retrieve the system service.
+  ScopedJavaLocalRef<jstring> service_name(env, env->NewStringUTF("clipboard"));
+  ScopedJavaLocalRef<jobject> clipboard_manager(
+      env, env->CallObjectMethod(
+        context, get_system_service, service_name.obj()));
+  ASSERT_TRUE(clipboard_manager.obj() && !base::android::ClearException(env));
+
+  ScopedJavaLocalRef<jclass> clipboard_class =
+      base::android::GetClass(env, "android/text/ClipboardManager");
+  jmethodID set_text = base::android::GetMethodID(env, clipboard_class,
+                          "setText", "(Ljava/lang/CharSequence;)V");
+
+  // Will need to call toString as CharSequence is not always a String.
+  env->CallVoidMethod(clipboard_manager.obj(),
+                      set_text,
+                      env->NewStringUTF(new_value.c_str()));
+
+  // The bitmap that should have been available should be gone.
+  EXPECT_FALSE(clipboard.IsFormatAvailable(Clipboard::GetBitmapFormatType(),
+                                           Clipboard::BUFFER_STANDARD));
+
+  // Make sure some text is available
+  EXPECT_TRUE(clipboard.IsFormatAvailable(
+      Clipboard::GetPlainTextWFormatType(), Clipboard::BUFFER_STANDARD));
+
+  // Make sure the text is what we inserted while simulating the other app
+  std::string contents;
+  clipboard.ReadAsciiText(Clipboard::BUFFER_STANDARD, &contents);
+  EXPECT_EQ(contents, new_value);
+}
+#endif
 }  // namespace ui
