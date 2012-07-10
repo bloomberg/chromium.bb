@@ -437,7 +437,7 @@ void RenderWidgetFullscreenPepper::CreateContext() {
   context_ = WebGraphicsContext3DCommandBufferImpl::CreateViewContext(
       RenderThreadImpl::current(),
       surface_id(),
-      "GL_OES_packed_depth_stencil GL_OES_depth24",
+      NULL,
       attributes,
       true /* bind generates resources */,
       active_url_,
