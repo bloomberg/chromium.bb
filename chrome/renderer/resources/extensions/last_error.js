@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+requireNative('runtime');
+
 function set(message) {
-  var errorObject = { "message": message };
+  var errorObject = { 'message': message };
   if (chrome.extension)
     chrome.extension.lastError = errorObject;
   chrome.runtime.lastError = errorObject;
