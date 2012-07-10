@@ -24,7 +24,6 @@ class Transform;
 
 namespace gfx {
 
-class Brush;
 class Rect;
 class Font;
 class Point;
@@ -411,17 +410,6 @@ class UI_EXPORT Canvas {
       const gfx::ImageSkia& image,
       float user_defined_scale_factor_x,
       float user_defined_scale_factor_y)  const;
-
-#if defined(OS_WIN)
-  // Draws text with the specified color, font and location. The text is
-  // aligned to the left, vertically centered, clipped to the region. If the
-  // text is too big, it is truncated and '...' is added to the end.
-  void DrawStringInt(const string16& text,
-                     HFONT font,
-                     SkColor color,
-                     const gfx::Rect& text_bounds,
-                     int flags);
-#endif
 
   scoped_ptr<skia::PlatformCanvas> owned_canvas_;
   SkCanvas* canvas_;
