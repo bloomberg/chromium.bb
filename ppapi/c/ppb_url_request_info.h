@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_url_request_info.idl modified Mon Nov 14 10:36:01 2011. */
+/* From ppb_url_request_info.idl modified Tue Jul 10 09:05:59 2012. */
 
 #ifndef PPAPI_C_PPB_URL_REQUEST_INFO_H_
 #define PPAPI_C_PPB_URL_REQUEST_INFO_H_
@@ -145,7 +145,18 @@ typedef enum {
    * <code>PP_URLREQUESTPROPERTY_PREFETCHBUFFERUPPERTHRESHOLD</code> must also
    * be set. Behavior is undefined if the former is >= the latter.
    */
-  PP_URLREQUESTPROPERTY_PREFETCHBUFFERLOWERTHRESHOLD = 12
+  PP_URLREQUESTPROPERTY_PREFETCHBUFFERLOWERTHRESHOLD = 12,
+  /**
+   * This corresponds to a string (<code>PP_VARTYPE_STRING</code>) or may be
+   * undefined (<code>PP_VARTYPE_UNDEFINED</code>; default). Set it to a string
+   * to set a custom user-agent header (if empty, that header will be omitted),
+   * or to undefined to use the default. Only loaders with universal access
+   * (only available on trusted implementations) will accept
+   * <code>URLRequestInfo</code> objects that try to set a custom user agent; if
+   * given to a loader without universal access, <code>PP_ERROR_NOACCESS</code>
+   * will result.
+   */
+  PP_URLREQUESTPROPERTY_CUSTOMUSERAGENT = 13
 } PP_URLRequestProperty;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_URLRequestProperty, 4);
 /**

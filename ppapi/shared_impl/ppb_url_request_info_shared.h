@@ -73,9 +73,11 @@ struct PPAPI_SHARED_EXPORT PPB_URLRequestInfo_Data {
   bool allow_credentials;
 
   // Similar to the custom referrer (above), but for custom content transfer
-  // encoding.
+  // encoding and custom user agent, respectively.
   bool has_custom_content_transfer_encoding;
   std::string custom_content_transfer_encoding;
+  bool has_custom_user_agent;
+  std::string custom_user_agent;
 
   int32_t prefetch_buffer_upper_threshold;
   int32_t prefetch_buffer_lower_threshold;

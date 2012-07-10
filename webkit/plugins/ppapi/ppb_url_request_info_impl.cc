@@ -113,12 +113,11 @@ bool PPB_URLRequestInfo_Impl::ToWebURLRequest(WebFrame* frame,
     frame->setReferrerForRequest(*dest, GURL(data().custom_referrer_url));
   }
 
-  if (data().has_custom_content_transfer_encoding) {
-    if (!data().custom_content_transfer_encoding.empty()) {
-      dest->addHTTPHeaderField(
-          WebString::fromUTF8("Content-Transfer-Encoding"),
-          WebString::fromUTF8(data().custom_content_transfer_encoding));
-    }
+  if (data().has_custom_content_transfer_encoding &&
+      !data().custom_content_transfer_encoding.empty()) {
+    dest->addHTTPHeaderField(
+        WebString::fromUTF8("Content-Transfer-Encoding"),
+        WebString::fromUTF8(data().custom_content_transfer_encoding));
   }
 
   return true;
@@ -128,6 +127,7 @@ bool PPB_URLRequestInfo_Impl::RequiresUniversalAccess() const {
   return
       data().has_custom_referrer_url ||
       data().has_custom_content_transfer_encoding ||
+      data().has_custom_user_agent ||
       url_util::FindAndCompareScheme(data().url, "javascript", NULL);
 }
 

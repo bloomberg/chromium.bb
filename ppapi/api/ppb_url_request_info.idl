@@ -140,7 +140,19 @@ enum PP_URLRequestProperty {
    * <code>PP_URLREQUESTPROPERTY_PREFETCHBUFFERUPPERTHRESHOLD</code> must also
    * be set. Behavior is undefined if the former is >= the latter.
    */
-  PP_URLREQUESTPROPERTY_PREFETCHBUFFERLOWERTHRESHOLD = 12
+  PP_URLREQUESTPROPERTY_PREFETCHBUFFERLOWERTHRESHOLD = 12,
+
+  /**
+   * This corresponds to a string (<code>PP_VARTYPE_STRING</code>) or may be
+   * undefined (<code>PP_VARTYPE_UNDEFINED</code>; default). Set it to a string
+   * to set a custom user-agent header (if empty, that header will be omitted),
+   * or to undefined to use the default. Only loaders with universal access
+   * (only available on trusted implementations) will accept
+   * <code>URLRequestInfo</code> objects that try to set a custom user agent; if
+   * given to a loader without universal access, <code>PP_ERROR_NOACCESS</code>
+   * will result.
+   */
+  PP_URLREQUESTPROPERTY_CUSTOMUSERAGENT = 13
 };
 
 /**

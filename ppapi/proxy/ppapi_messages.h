@@ -213,6 +213,8 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::PPB_URLRequestInfo_Data)
   IPC_STRUCT_TRAITS_MEMBER(custom_content_transfer_encoding)
   IPC_STRUCT_TRAITS_MEMBER(prefetch_buffer_upper_threshold)
   IPC_STRUCT_TRAITS_MEMBER(prefetch_buffer_lower_threshold)
+  IPC_STRUCT_TRAITS_MEMBER(has_custom_user_agent)
+  IPC_STRUCT_TRAITS_MEMBER(custom_user_agent)
   IPC_STRUCT_TRAITS_MEMBER(body)
 IPC_STRUCT_TRAITS_END()
 

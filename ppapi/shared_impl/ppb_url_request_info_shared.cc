@@ -62,6 +62,8 @@ PPB_URLRequestInfo_Data::PPB_URLRequestInfo_Data()
       allow_credentials(false),
       has_custom_content_transfer_encoding(false),
       custom_content_transfer_encoding(),
+      has_custom_user_agent(false),
+      custom_user_agent(),
       prefetch_buffer_upper_threshold(kDefaultPrefetchBufferUpperThreshold),
       prefetch_buffer_lower_threshold(kDefaultPrefetchBufferLowerThreshold),
       body() {
@@ -181,6 +183,10 @@ bool PPB_URLRequestInfo_Shared::SetUndefinedProperty(
       data_.has_custom_content_transfer_encoding = false;
       data_.custom_content_transfer_encoding = std::string();
       return true;
+    case PP_URLREQUESTPROPERTY_CUSTOMUSERAGENT:
+      data_.has_custom_user_agent = false;
+      data_.custom_user_agent = std::string();
+      return true;
     default:
       return false;
   }
@@ -257,6 +263,10 @@ bool PPB_URLRequestInfo_Shared::SetStringProperty(
     case PP_URLREQUESTPROPERTY_CUSTOMCONTENTTRANSFERENCODING:
       data_.has_custom_content_transfer_encoding = true;
       data_.custom_content_transfer_encoding = value;
+      return true;
+    case PP_URLREQUESTPROPERTY_CUSTOMUSERAGENT:
+      data_.has_custom_user_agent = true;
+      data_.custom_user_agent = value;
       return true;
     default:
       return false;
