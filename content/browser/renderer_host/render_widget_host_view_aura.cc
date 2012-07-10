@@ -344,6 +344,8 @@ gfx::Rect RenderWidgetHostViewAura::GetViewBounds() const {
 
 void RenderWidgetHostViewAura::UpdateCursor(const WebCursor& cursor) {
   current_cursor_ = cursor;
+  const gfx::Display display = gfx::Screen::GetDisplayNearestWindow(window_);
+  current_cursor_.SetScaleFactor(display.device_scale_factor());
   UpdateCursorIfOverSelf();
 }
 
@@ -1183,6 +1185,7 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
     backing_store->ScaleFactorChanged(device_scale_factor);
 
   host_->SetDeviceScaleFactor(device_scale_factor);
+  current_cursor_.SetScaleFactor(device_scale_factor);
 }
 
 void RenderWidgetHostViewAura::OnWindowDestroying() {

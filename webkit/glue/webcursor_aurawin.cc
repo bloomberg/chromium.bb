@@ -9,8 +9,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 
 const ui::PlatformCursor WebCursor::GetPlatformCursor() {
-  // TODO(winguru):
+  // TODO(winguru): Return an appropriate platform-cursor.
   return LoadCursor(NULL, IDC_ARROW);
+}
+
+void WebCursor::SetScaleFactor(float scale_factor) {
+  // TODO(winguru): Scale the cursor.
 }
 
 void WebCursor::InitPlatformData() {

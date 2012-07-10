@@ -73,6 +73,8 @@ class WEBKIT_GLUE_EXPORT WebCursor {
 
 #if defined(USE_AURA)
   const ui::PlatformCursor GetPlatformCursor();
+
+  void SetScaleFactor(float scale_factor);
 #elif defined(OS_WIN)
   // Returns a HCURSOR representing the current WebCursor instance.
   // The ownership of the HCURSOR (does not apply to external cursors) remains
@@ -148,6 +150,7 @@ class WEBKIT_GLUE_EXPORT WebCursor {
 #if defined(USE_AURA) && defined(USE_X11)
   // Only used for custom cursors.
   ui::PlatformCursor platform_cursor_;
+  float scale_factor_;
 #elif defined(OS_WIN)
   // An externally generated HCURSOR. We assume that it remains valid, i.e we
   // don't attempt to copy the HCURSOR.
