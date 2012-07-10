@@ -587,7 +587,6 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       tooltip_hwnd_(NULL),
       tooltip_showing_(false),
       weak_factory_(this),
-      parent_hwnd_(NULL),
       is_loading_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       is_fullscreen_(false),
@@ -640,7 +639,6 @@ void RenderWidgetHostViewWin::CreateWnd(HWND parent) {
 
 void RenderWidgetHostViewWin::InitAsChild(
     gfx::NativeView parent_view) {
-  parent_hwnd_ = parent_view;
   CreateWnd(parent_view);
 }
 
@@ -939,33 +937,20 @@ bool RenderWidgetHostViewWin::IsSurfaceAvailableForCopy() const {
 }
 
 void RenderWidgetHostViewWin::Show() {
-  if (!is_fullscreen_) {
-    DCHECK(parent_hwnd_);
-    DCHECK(parent_hwnd_ != ui::GetWindowToParentTo(true));
-    SetParent(parent_hwnd_);
-  }
   ShowWindow(SW_SHOW);
-
   WasRestored();
 }
 
 void RenderWidgetHostViewWin::Hide() {
   if (!is_fullscreen_ && GetParent() == ui::GetWindowToParentTo(true)) {
-    LOG(WARNING) << "Hide() called twice in a row: " << this << ":" <<
-        parent_hwnd_ << ":" << GetParent();
+    LOG(WARNING) << "Hide() called twice in a row: " << this << ":"
+        << GetParent();
     return;
   }
 
   if (::GetFocus() == m_hWnd)
     ::SetFocus(NULL);
   ShowWindow(SW_HIDE);
-
-  if (!is_fullscreen_) {
-    // Cache the old parent, then orphan the window so we stop receiving
-    // messages.
-    parent_hwnd_ = GetParent();
-    SetParent(NULL);
-  }
 
   WasHidden();
 }
@@ -1953,11 +1938,10 @@ LRESULT RenderWidgetHostViewWin::OnKeyEvent(UINT message, WPARAM wparam,
   if (close_on_deactivate_ &&
       (((message == WM_KEYDOWN || message == WM_KEYUP) && (wparam == VK_TAB)) ||
         (message == WM_CHAR && wparam == L'\t'))) {
-    DCHECK(parent_hwnd_);
     // First close the pop-up.
     SendMessage(WM_CANCELMODE);
     // Then move the focus by forwarding the tab key to the parent.
-    return ::SendMessage(parent_hwnd_, message, wparam, lparam);
+    return ::SendMessage(GetParent(), message, wparam, lparam);
   }
 
   if (!render_widget_host_)
@@ -2970,8 +2954,7 @@ void RenderWidgetHostViewWin::ShutdownHost() {
 void RenderWidgetHostViewWin::DoPopupOrFullscreenInit(HWND parent_hwnd,
                                                       const gfx::Rect& pos,
                                                       DWORD ex_style) {
-  parent_hwnd_ = parent_hwnd;
-  Create(parent_hwnd_, NULL, NULL, WS_POPUP, ex_style);
+  Create(parent_hwnd, NULL, NULL, WS_POPUP, ex_style);
   MoveWindow(pos.x(), pos.y(), pos.width(), pos.height(), TRUE);
   ShowWindow(IsActivatable() ? SW_SHOW : SW_SHOWNA);
 }

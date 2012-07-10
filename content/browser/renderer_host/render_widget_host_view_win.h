@@ -476,11 +476,6 @@ class RenderWidgetHostViewWin
   // Factory used to safely scope delayed calls to ShutdownHost().
   base::WeakPtrFactory<RenderWidgetHostViewWin> weak_factory_;
 
-  // Our parent HWND.  We keep a reference to it as we SetParent(NULL) when
-  // hidden to prevent getting messages (Paint, Resize...), and we reattach
-  // when shown again.
-  HWND parent_hwnd_;
-
   // The time at which this view started displaying white pixels as a result of
   // not having anything to paint (empty backing store from renderer). This
   // value returns true for is_null() if we are not recording whiteout times.
