@@ -45,7 +45,11 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
       ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)),
       current_tab_id_(-1),
       preview_enabled_(false),
-      popup_(NULL) {
+      popup_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_icon_animation_observer_(
+          page_action->GetIconAnimation(
+              owner->GetTabContents()->extension_tab_helper()->tab_id()),
+          this)) {
   const Extension* extension = owner_->profile()->GetExtensionService()->
       GetExtensionById(page_action->extension_id(), false);
   DCHECK(extension);
@@ -202,11 +206,10 @@ void PageActionImageView::OnImageLoaded(const gfx::Image& image,
       page_action_icons_[page_action_->default_icon_path()] = *bitmap;
   }
 
-  // During object construction (before the parent has been set) we are already
-  // in a UpdatePageActions call, so we don't need to start another one (and
-  // doing so causes crash described in http://crbug.com/57333).
-  if (parent())
-    owner_->UpdatePageActions();
+  // During object construction owner_ will be NULL.
+  TabContents* tab_contents = owner_ ? owner_->GetTabContents() : NULL;
+  if (tab_contents)
+    UpdateVisibility(tab_contents->web_contents(), current_url_);
 }
 
 bool PageActionImageView::AcceleratorPressed(
@@ -262,8 +265,14 @@ void PageActionImageView::UpdateVisibility(WebContents* contents,
         icon = iter->second;
     }
   }
-  if (!icon.isNull())
+
+  if (!icon.isNull()) {
+    const ExtensionAction::IconAnimation* icon_animation =
+        scoped_icon_animation_observer_.icon_animation();
+    if (icon_animation)
+      icon = icon_animation->Apply(icon);
     SetImage(icon);
+  }
 
   SetVisible(true);
 }
@@ -282,6 +291,13 @@ void PageActionImageView::Observe(int type,
       content::Details<extensions::UnloadedExtensionInfo>(details)->extension;
   if (page_action_ == unloaded_extension ->page_action())
     owner_->UpdatePageActions();
+}
+
+void PageActionImageView::OnIconChanged(
+    const ExtensionAction::IconAnimation& animation) {
+  TabContents* tab_contents = owner_->GetTabContents();
+  if (tab_contents)
+    UpdateVisibility(tab_contents->web_contents(), current_url_);
 }
 
 void PageActionImageView::ShowPopupWithURL(const GURL& popup_url) {

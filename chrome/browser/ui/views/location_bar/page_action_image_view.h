@@ -12,10 +12,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "ui/views/controls/image_view.h"
 
 class Browser;
-class ExtensionAction;
 class LocationBarView;
 
 namespace content {
@@ -30,7 +30,8 @@ class MenuRunner;
 class PageActionImageView : public views::ImageView,
                             public ImageLoadingTracker::Observer,
                             public views::Widget::Observer,
-                            public content::NotificationObserver {
+                            public content::NotificationObserver,
+                            public ExtensionAction::IconAnimation::Observer {
  public:
   PageActionImageView(LocationBarView* owner,
                       ExtensionAction* page_action,
@@ -79,6 +80,10 @@ class PageActionImageView : public views::ImageView,
   void ExecuteAction(int button);
 
  private:
+  // Overridden from ExtensionAction::IconAnimation::Observer.
+  virtual void OnIconChanged(
+      const ExtensionAction::IconAnimation& animation) OVERRIDE;
+
   // Shows the popup, with the given URL.
   void ShowPopupWithURL(const GURL& popup_url);
 
@@ -126,6 +131,10 @@ class PageActionImageView : public views::ImageView,
   scoped_ptr<ui::Accelerator> keybinding_;
 
   scoped_ptr<views::MenuRunner> menu_runner_;
+
+  // Fade-in animation for the icon with observer scoped to this.
+  ExtensionAction::IconAnimation::ScopedObserver
+      scoped_icon_animation_observer_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PageActionImageView);
 };
