@@ -1049,13 +1049,28 @@ def BuildAutotestTarballs(buildroot, board, tarball_dir):
   input_list = control_files + ['autotest/packages']
   BuildTarball(buildroot, input_list, autotest_tarball,
                cwd=cwd, compressed=False)
-
-  # TODO(yjhong): Remove autotest.tar.bz2 when crosbug.com/32207 is closed
-  autotest_zipped_tarball = os.path.join(tarball_dir, 'autotest.tar.bz2')
-  BuildTarball(buildroot, ['autotest'], autotest_zipped_tarball, cwd=cwd)
   BuildTarball(buildroot, ['autotest/test_suites'], test_suites_tarball,
                cwd=cwd)
-  return [autotest_tarball, autotest_zipped_tarball, test_suites_tarball]
+
+  return [autotest_tarball, test_suites_tarball]
+
+
+def BuildFullAutotestTarball(buildroot, board, tarball_dir):
+  """Tar up the full autotest directory into image_dir.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    board: Board type that was built on this machine.
+    tarball_dir: Location for storing autotest tarballs.
+
+  Returns a tuple the path of the full autotest tarball.
+  """
+
+  tarball = os.path.join(tarball_dir, 'autotest.tar.bz2')
+  cwd = os.path.join(buildroot, 'chroot', 'build', board, 'usr', 'local')
+  BuildTarball(buildroot, ['autotest'], tarball, cwd=cwd)
+
+  return tarball
 
 
 def BuildImageZip(archive_dir, image_dir):
