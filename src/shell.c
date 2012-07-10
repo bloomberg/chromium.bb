@@ -1261,6 +1261,7 @@ set_surface_type(struct shell_surface *shsurf)
 		shsurf->saved_x = surface->geometry.x;
 		shsurf->saved_y = surface->geometry.y;
 		shsurf->saved_position_valid = true;
+		center_on_output(surface, shsurf->fullscreen_output);
 
 		if (!wl_list_empty(&shsurf->rotation.transform.link)) {
 			wl_list_remove(&shsurf->rotation.transform.link);
@@ -1400,8 +1401,6 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 	struct weston_surface *surface = shsurf->surface;
 	struct weston_matrix *matrix;
 	float scale;
-
-	center_on_output(surface, output);
 
 	if (!shsurf->fullscreen.black_surface)
 		shsurf->fullscreen.black_surface =
@@ -2543,6 +2542,7 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 					    10 + random() % 400);
 		break;
 	case SHELL_SURFACE_FULLSCREEN:
+		center_on_output(surface, shsurf->fullscreen_output);
 		shell_map_fullscreen(shsurf);
 		break;
 	case SHELL_SURFACE_MAXIMIZED:
