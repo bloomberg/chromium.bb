@@ -3968,8 +3968,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
    This is equivalent to picking a profile from the multi-profile menu.
 
    Multi-profile should be enabled and the requested profile should already
-   exist. If a window for the given profile already exists, it'll merely get
-   activated. Use OpenNewBrowserWindowWithNewProfile() to create a new profile.
+   exist. Creates a new window for the given profile. Use
+   OpenNewBrowserWindowWithNewProfile() to create a new profile.
 
    Args:
      path: profile path of the profile to be opened.

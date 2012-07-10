@@ -1220,16 +1220,6 @@ void TestingAutomationProvider::OpenProfileWindow(
         "Invalid or missing arg: 'num_loads'");
     return;
   }
-  Browser* browser = browser::FindTabbedBrowser(profile, false);
-  if (browser) {
-    // Already have browser.  Need to just activate.
-    ProfileManager::FindOrCreateNewWindowForProfile(
-        profile,
-        chrome::startup::IS_NOT_PROCESS_STARTUP,
-        chrome::startup::IS_NOT_FIRST_RUN,
-        0);
-    AutomationJSONReply(this, reply_message).SendSuccess(NULL);
-  } else {
     new BrowserOpenedWithExistingProfileNotificationObserver(
         this, reply_message, num_loads);
     ProfileManager::FindOrCreateNewWindowForProfile(
@@ -1238,7 +1228,6 @@ void TestingAutomationProvider::OpenProfileWindow(
         chrome::startup::IS_NOT_FIRST_RUN,
         0);
   }
-}
 
 void TestingAutomationProvider::GetWindowForBrowser(int browser_handle,
                                                     bool* success,
