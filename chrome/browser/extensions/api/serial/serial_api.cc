@@ -88,8 +88,8 @@ void SerialOpenFunction::Work() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   const SerialPortEnumerator::StringSet name_set(
     SerialPortEnumerator::GenerateValidSerialPortNames());
-  if (SerialPortEnumerator::DoesPortExist(name_set, params_->port)) {
-    SerialConnection* serial_connection = new SerialConnection(
+  if (DoesPortExist(params_->port)) {
+    SerialConnection* serial_connection = CreateSerialConnection(
       params_->port,
       bitrate_,
       event_notifier_);
@@ -114,6 +114,19 @@ void SerialOpenFunction::Work() {
     result_.reset(result);
     AsyncWorkCompleted();
   }
+}
+
+SerialConnection* SerialOpenFunction::CreateSerialConnection(
+    const std::string& port,
+    int bitrate,
+    APIResourceEventNotifier* event_notifier) {
+  return new SerialConnection(port, bitrate, event_notifier);
+}
+
+bool SerialOpenFunction::DoesPortExist(const std::string& port) {
+  const SerialPortEnumerator::StringSet name_set(
+    SerialPortEnumerator::GenerateValidSerialPortNames());
+  return SerialPortEnumerator::DoesPortExist(name_set, params_->port);
 }
 
 bool SerialOpenFunction::Respond() {

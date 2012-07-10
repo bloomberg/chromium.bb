@@ -29,12 +29,12 @@ class SerialConnection : public APIResource {
                    APIResourceEventNotifier* event_notifier);
   virtual ~SerialConnection();
 
-  bool Open();
-  void Close();
-  void Flush();
+  virtual bool Open();
+  virtual void Close();
+  virtual void Flush();
 
-  int Read(uint8* byte);
-  int Write(scoped_refptr<net::IOBuffer> io_buffer, int byte_count);
+  virtual int Read(uint8* byte);
+  virtual int Write(scoped_refptr<net::IOBuffer> io_buffer, int byte_count);
 
  protected:
   // Do platform-specific work after a successful Open().

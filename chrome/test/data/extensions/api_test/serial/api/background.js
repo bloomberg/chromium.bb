@@ -137,7 +137,7 @@ var testSerial = function() {
       if (portNumber < ports.length) {
         serialPort = ports[portNumber];
         var bitrate = 57600;
-        console.log('Connecting to serial device ' + serialPort + ' at ' +
+        console.log('Opening serial device ' + serialPort + ' at ' +
                     bitrate + ' bps.');
         chrome.experimental.serial.open(serialPort, {bitrate: bitrate},
                                         onOpen);
@@ -155,19 +155,5 @@ var testSerial = function() {
   chrome.experimental.serial.getPorts(onGetPorts);
 };
 
-var onMessageReply = function(message) {
-  var tests = [testGetPorts, testMaybeOpenPort];
-
-  // Another way to force the test to run.
-  var runTest = false;
-
-  if (runTest || message == 'echo_device_attached') {
-    // We have a specific serial port set up to respond to test traffic. This
-    // is a rare situation. TODO(miket): mock to make it testable under any
-    // hardware conditions.
-    tests.push(testSerial);
-  }
-  chrome.test.runTests(tests);
-};
-
-chrome.test.sendMessage('serial_port', onMessageReply);
+var tests = [testGetPorts, testMaybeOpenPort, testSerial];
+chrome.test.runTests(tests);

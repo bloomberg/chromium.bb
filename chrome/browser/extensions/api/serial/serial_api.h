@@ -16,6 +16,7 @@
 namespace extensions {
 
 class APIResourceEventNotifier;
+class SerialConnection;
 
 extern const char kConnectionIdKey[];
 
@@ -48,6 +49,13 @@ class SerialOpenFunction : public AsyncAPIFunction {
   virtual void AsyncWorkStart() OVERRIDE;
   virtual void Work() OVERRIDE;
   virtual bool Respond() OVERRIDE;
+
+  // Overrideable for testing.
+  virtual SerialConnection* CreateSerialConnection(
+      const std::string& port,
+      int bitrate,
+      APIResourceEventNotifier* event_notifier);
+  virtual bool DoesPortExist(const std::string& port);
 
  private:
   scoped_ptr<api::experimental_serial::Open::Params> params_;
