@@ -4954,11 +4954,15 @@ lou_getTable (const char *tableList)
     {
       /* See if table in current directory or on a path in 
        * the table name*/
+      if (!(errorCount == 1 && fileCount == 1))
+        return NULL;
       table = getTable (tableList);
     }
   if (!table)
     {
 /* See if table on dataPath. */
+      if (!(errorCount == 1 && fileCount == 1))
+        return NULL;
       pathList = lou_getDataPath ();
       if (pathList)
 	{
@@ -4976,6 +4980,8 @@ lou_getTable (const char *tableList)
   if (!table)
     {
       /* See if table on installed or program path. */
+      if (!(errorCount == 1 && fileCount == 1))
+        return NULL;
 #ifdef _WIN32
       strcpy (trialPath, lou_getProgramPath ());
       strcat (trialPath, "\\share\\liblouss\\tables\\");
@@ -4987,8 +4993,8 @@ lou_getTable (const char *tableList)
       table = getTable (trialPath);
     }
   if (!table)
-    lou_logPrint ("%s could not be found or contains errors", tableList);
-  return table;
+    lou_logPrint ("%s could not be found", tableList);
+  return NULL;
 }
 
 static unsigned char *destSpacing = NULL;
