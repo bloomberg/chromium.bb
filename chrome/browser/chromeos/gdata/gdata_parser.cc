@@ -312,8 +312,8 @@ bool Link::GetAppID(const base::StringPiece& rel, std::string* app_id) {
 
   const std::string kOpenWithPrefixStr(kOpenWithPrefix);
   if (StartsWithASCII(rel.as_string(), kOpenWithPrefixStr, false)) {
-   *app_id = rel.as_string().substr(kOpenWithPrefixStr.size());
-   return true;
+    *app_id = rel.as_string().substr(kOpenWithPrefixStr.size());
+    return true;
   }
 
   app_id->clear();

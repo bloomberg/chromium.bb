@@ -2433,7 +2433,7 @@ void GDataFileSystem::OnGetAvailableSpace(
 
   scoped_ptr<AccountMetadataFeed> feed;
   if (data.get())
-      feed = AccountMetadataFeed::CreateFrom(*data);
+    feed = AccountMetadataFeed::CreateFrom(*data);
   if (!feed.get()) {
     callback.Run(base::PLATFORM_FILE_ERROR_FAILED, -1, -1);
     return;

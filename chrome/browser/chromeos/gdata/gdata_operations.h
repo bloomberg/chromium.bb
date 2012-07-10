@@ -168,8 +168,7 @@ class EntryActionOperation : public UrlFetchOperationBase {
  protected:
   // Overridden from UrlFetchOperationBase.
   virtual GURL GetURL() const OVERRIDE;
-  virtual bool ProcessURLFetchResults(const net::URLFetcher* source)
-      OVERRIDE;
+  virtual bool ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
   const GURL& document_url() const { return document_url_; }
@@ -196,8 +195,7 @@ class GetDataOperation : public UrlFetchOperationBase {
 
  protected:
   // Overridden from UrlFetchOperationBase.
-  virtual bool ProcessURLFetchResults(const net::URLFetcher* source)
-      OVERRIDE;
+  virtual bool ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
  private:
@@ -293,8 +291,7 @@ class DownloadFileOperation : public UrlFetchOperationBase {
  protected:
   // Overridden from UrlFetchOperationBase.
   virtual GURL GetURL() const OVERRIDE;
-  virtual bool ProcessURLFetchResults(const net::URLFetcher* source)
-      OVERRIDE;
+  virtual bool ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
   // Overridden from net::URLFetcherDelegate.
@@ -522,8 +519,7 @@ class InitiateUploadOperation : public UrlFetchOperationBase {
  protected:
   // Overridden from UrlFetchOperationBase.
   virtual GURL GetURL() const OVERRIDE;
-  virtual bool ProcessURLFetchResults(const net::URLFetcher* source)
-      OVERRIDE;
+  virtual bool ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
   virtual void NotifySuccessToOperationRegistry() OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
@@ -555,8 +551,7 @@ class ResumeUploadOperation : public UrlFetchOperationBase {
  protected:
   // Overridden from UrlFetchOperationBase.
   virtual GURL GetURL() const OVERRIDE;
-  virtual bool ProcessURLFetchResults(const net::URLFetcher* source)
-      OVERRIDE;
+  virtual bool ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
   virtual void NotifyStartToOperationRegistry() OVERRIDE;
   virtual void NotifySuccessToOperationRegistry() OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
