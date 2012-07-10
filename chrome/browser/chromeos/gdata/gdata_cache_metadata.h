@@ -40,6 +40,7 @@ class GDataCacheMetadata {
   // Creates new entry if it doesn't exist, otherwise update the entry.
   virtual void UpdateCache(const std::string& resource_id,
                            const std::string& md5,
+                           GDataCache::CacheSubDirectoryType subdir,
                            int cache_state) = 0;
 
   // Removes entry corresponding to |resource_id| from cache map.
@@ -87,6 +88,7 @@ class GDataCacheMetadataMap : public GDataCacheMetadata {
   // GDataCacheMetadata overrides:
   virtual void UpdateCache(const std::string& resource_id,
                            const std::string& md5,
+                           GDataCache::CacheSubDirectoryType subdir,
                            int cache_state) OVERRIDE;
   virtual void RemoveFromCache(const std::string& resource_id) OVERRIDE;
   virtual scoped_ptr<GDataCache::CacheEntry> GetCacheEntry(

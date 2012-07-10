@@ -116,9 +116,10 @@ class GDataCacheMetadataMapTest : public testing::Test {
   void InsertIntoMap(GDataCacheMetadataMap::CacheMap* cache_map,
                      const std::string& resource_id,
                      const std::string& md5,
+                     GDataCache::CacheSubDirectoryType sub_dir_type,
                      int cache_state) {
     cache_map->insert(std::make_pair(
-        resource_id, GDataCache::CacheEntry(md5, cache_state)));
+        resource_id, GDataCache::CacheEntry(md5, sub_dir_type, cache_state)));
   }
 
   ScopedTempDir temp_dir_;
@@ -138,18 +139,18 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   // Save an initial entry.
   std::string test_resource_id("test_resource_id");
   std::string test_file_md5("test_file_md5");
-  GDataCache::CacheSubDirectoryType test_sub_dir_type =
-      GDataCache::CACHE_TYPE_PERSISTENT;
-  int test_cache_state = (GDataCache::CACHE_STATE_PRESENT |
-                          GDataCache::CACHE_STATE_PERSISTENT);
-  metadata_->UpdateCache(test_resource_id, test_file_md5, test_cache_state);
+  GDataCache::CacheSubDirectoryType test_sub_dir_type(
+      GDataCache::CACHE_TYPE_PERSISTENT);
+  int test_cache_state(GDataCache::CACHE_STATE_PRESENT);
+  metadata_->UpdateCache(test_resource_id, test_file_md5,
+                         test_sub_dir_type, test_cache_state);
 
   // Test that the entry can be retrieved.
   scoped_ptr<GDataCache::CacheEntry> cache_entry =
       metadata_->GetCacheEntry(test_resource_id, test_file_md5);
   ASSERT_TRUE(cache_entry.get());
   EXPECT_EQ(test_file_md5, cache_entry->md5);
-  EXPECT_EQ(test_sub_dir_type, cache_entry->GetSubDirectoryType());
+  EXPECT_EQ(test_sub_dir_type, cache_entry->sub_dir_type);
   EXPECT_EQ(test_cache_state, cache_entry->cache_state);
 
   // Empty md5 should also work.
@@ -170,16 +171,17 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
 
   // Update all attributes.
   test_file_md5 = "test_file_md5_2";
-  test_sub_dir_type = GDataCache::CACHE_TYPE_TMP;
+  test_sub_dir_type = GDataCache::CACHE_TYPE_PINNED;
   test_cache_state = GDataCache::CACHE_STATE_PINNED;
-  metadata_->UpdateCache(test_resource_id, test_file_md5, test_cache_state);
+  metadata_->UpdateCache(test_resource_id, test_file_md5, test_sub_dir_type,
+                         test_cache_state);
 
   // Make sure the values took.
   cache_entry =
       metadata_->GetCacheEntry(test_resource_id, test_file_md5).Pass();
   ASSERT_TRUE(cache_entry.get());
   EXPECT_EQ(test_file_md5, cache_entry->md5);
-  EXPECT_EQ(test_sub_dir_type, cache_entry->GetSubDirectoryType());
+  EXPECT_EQ(test_sub_dir_type, cache_entry->sub_dir_type);
   EXPECT_EQ(test_cache_state, cache_entry->cache_state);
 
   // Empty m5 should work.
@@ -192,14 +194,15 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   test_file_md5 = "test_file_md5_3";
   test_sub_dir_type = GDataCache::CACHE_TYPE_TMP;
   test_cache_state = GDataCache::CACHE_STATE_DIRTY;
-  metadata_->UpdateCache(test_resource_id, test_file_md5, test_cache_state);
+  metadata_->UpdateCache(test_resource_id, test_file_md5, test_sub_dir_type,
+                         test_cache_state);
 
   // Make sure the values took.
   cache_entry =
       metadata_->GetCacheEntry(test_resource_id, test_file_md5).Pass();
   ASSERT_TRUE(cache_entry.get());
   EXPECT_EQ(test_file_md5, cache_entry->md5);
-  EXPECT_EQ(test_sub_dir_type, cache_entry->GetSubDirectoryType());
+  EXPECT_EQ(test_sub_dir_type, cache_entry->sub_dir_type);
   EXPECT_EQ(test_cache_state, cache_entry->cache_state);
 
   // Empty md5 should work.
@@ -225,21 +228,23 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   test_file_md5 = "test_file_md5_4";
   test_sub_dir_type = GDataCache::CACHE_TYPE_TMP;
   test_cache_state = GDataCache::CACHE_STATE_PRESENT;
-  metadata_->UpdateCache(test_resource_id, test_file_md5, test_cache_state);
+  metadata_->UpdateCache(test_resource_id, test_file_md5, test_sub_dir_type,
+                         test_cache_state);
 
   // Make sure the values took.
   cache_entry =
       metadata_->GetCacheEntry(test_resource_id, test_file_md5).Pass();
   ASSERT_TRUE(cache_entry.get());
   EXPECT_EQ(test_file_md5, cache_entry->md5);
-  EXPECT_EQ(test_sub_dir_type, cache_entry->GetSubDirectoryType());
+  EXPECT_EQ(test_sub_dir_type, cache_entry->sub_dir_type);
   EXPECT_EQ(test_cache_state, cache_entry->cache_state);
 
   // Update with CACHE_STATE_NONE should evict the entry.
   test_file_md5 = "test_file_md5_5";
   test_sub_dir_type = GDataCache::CACHE_TYPE_TMP;
   test_cache_state = GDataCache::CACHE_STATE_NONE;
-  metadata_->UpdateCache(test_resource_id, test_file_md5, test_cache_state);
+  metadata_->UpdateCache(test_resource_id, test_file_md5, test_sub_dir_type,
+                         test_cache_state);
 
   cache_entry =
       metadata_->GetCacheEntry(test_resource_id, std::string()).Pass();
@@ -272,10 +277,8 @@ TEST_F(GDataCacheMetadataMapTest, Initialization) {
   cache_entry = metadata_->GetCacheEntry("id_foo", "md5foo");
   ASSERT_TRUE(cache_entry.get());
   EXPECT_EQ("md5foo", cache_entry->md5);
-  EXPECT_EQ(GDataCache::CACHE_TYPE_PERSISTENT,
-            cache_entry->GetSubDirectoryType());
-  EXPECT_EQ(GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_PINNED |
-            GDataCache::CACHE_STATE_PERSISTENT,
+  EXPECT_EQ(GDataCache::CACHE_TYPE_PERSISTENT, cache_entry->sub_dir_type);
+  EXPECT_EQ(GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_PINNED,
             cache_entry->cache_state);
   EXPECT_TRUE(PathExists(persistent_directory_.AppendASCII("id_foo.md5foo")));
   EXPECT_TRUE(PathExists(pinned_directory_.AppendASCII("id_foo")));
@@ -286,10 +289,8 @@ TEST_F(GDataCacheMetadataMapTest, Initialization) {
   cache_entry = metadata_->GetCacheEntry("id_bar", "");
   ASSERT_TRUE(cache_entry.get());
   EXPECT_EQ("local", cache_entry->md5);
-  EXPECT_EQ(GDataCache::CACHE_TYPE_PERSISTENT,
-            cache_entry->GetSubDirectoryType());
-  EXPECT_EQ(GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_DIRTY |
-            GDataCache::CACHE_STATE_PERSISTENT,
+  EXPECT_EQ(GDataCache::CACHE_TYPE_PERSISTENT, cache_entry->sub_dir_type);
+  EXPECT_EQ(GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_DIRTY,
             cache_entry->cache_state);
   EXPECT_TRUE(PathExists(persistent_directory_.AppendASCII("id_bar.local")));
   EXPECT_TRUE(PathExists(outgoing_directory_.AppendASCII("id_bar")));
@@ -315,7 +316,7 @@ TEST_F(GDataCacheMetadataMapTest, Initialization) {
   cache_entry = metadata_->GetCacheEntry("id_qux", "md5qux");
   ASSERT_TRUE(cache_entry.get());
   EXPECT_EQ("md5qux", cache_entry->md5);
-  EXPECT_EQ(GDataCache::CACHE_TYPE_TMP, cache_entry->GetSubDirectoryType());
+  EXPECT_EQ(GDataCache::CACHE_TYPE_TMP, cache_entry->sub_dir_type);
   EXPECT_EQ(GDataCache::CACHE_STATE_PRESENT, cache_entry->cache_state);
   EXPECT_TRUE(PathExists(tmp_directory_.AppendASCII("id_qux.md5qux")));
 
@@ -335,6 +336,7 @@ TEST_F(GDataCacheMetadataMapTest, Initialization) {
   cache_entry = metadata_->GetCacheEntry("id_corge", "");
   ASSERT_TRUE(cache_entry.get());
   EXPECT_EQ("", cache_entry->md5);
+  EXPECT_EQ(GDataCache::CACHE_TYPE_TMP, cache_entry->sub_dir_type);
   EXPECT_EQ(GDataCache::CACHE_STATE_PINNED, cache_entry->cache_state);
   EXPECT_TRUE(IsLink(pinned_directory_.AppendASCII("id_corge")));
 
@@ -362,25 +364,27 @@ TEST_F(GDataCacheMetadataMapTest, RemoveTemporaryFilesTest) {
   InsertIntoMap(&cache_map,
                 "<resource_id_1>",
                 "<md5>",
+                GDataCache::CACHE_TYPE_TMP,
                 GDataCache::CACHE_STATE_PRESENT);
   InsertIntoMap(&cache_map,
                 "<resource_id_2>",
                 "<md5>",
-                GDataCache::CACHE_STATE_PRESENT |
-                GDataCache::CACHE_STATE_PERSISTENT);
+                GDataCache::CACHE_TYPE_PERSISTENT,
+                GDataCache::CACHE_STATE_PRESENT);
   InsertIntoMap(&cache_map,
                 "<resource_id_3>",
                 "<md5>",
-                GDataCache::CACHE_STATE_PRESENT |
-                GDataCache::CACHE_STATE_PERSISTENT);
+                GDataCache::CACHE_TYPE_PERSISTENT,
+                GDataCache::CACHE_STATE_PRESENT);
   InsertIntoMap(&cache_map,
                 "<resource_id_4>",
                 "<md5>",
+                GDataCache::CACHE_TYPE_TMP,
                 GDataCache::CACHE_STATE_PRESENT);
 
   metadata_->cache_map_ = cache_map;
   metadata_->RemoveTemporaryFiles();
-  // resource 1 and 4 should be gone, as these are temporary.
+  // resource 1 and 4 should be gone, as these are CACHE_TYPE_TMP.
   EXPECT_FALSE(metadata_->GetCacheEntry("<resource_id_1>", "").get());
   EXPECT_TRUE(metadata_->GetCacheEntry("<resource_id_2>", "").get());
   EXPECT_TRUE(metadata_->GetCacheEntry("<resource_id_3>", "").get());

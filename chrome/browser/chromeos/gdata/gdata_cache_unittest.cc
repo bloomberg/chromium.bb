@@ -52,8 +52,7 @@ struct InitialCacheResource {
   // with a symlink in pinned dir referencing it.
   { "directory_entry_atom.json", "pinned:existing", "md5_pinned_existing",
     GDataCache::CACHE_STATE_PRESENT |
-    GDataCache::CACHE_STATE_PINNED |
-    GDataCache::CACHE_STATE_PERSISTENT,
+    GDataCache::CACHE_STATE_PINNED,
     "md5_pinned_existing", GDataCache::CACHE_TYPE_PERSISTENT },
   // Cache resource with a non-existent source file that is pinned, to test that
   // a pinned file can reference a non-existent file.
@@ -64,8 +63,7 @@ struct InitialCacheResource {
   // with a symlink in outgoing dir referencing it.
   { "account_metadata.json", "dirty:existing", "md5_dirty_existing",
     GDataCache::CACHE_STATE_PRESENT |
-    GDataCache::CACHE_STATE_DIRTY |
-    GDataCache::CACHE_STATE_PERSISTENT,
+    GDataCache::CACHE_STATE_DIRTY,
      "local", GDataCache::CACHE_TYPE_PERSISTENT },
   // Cache resource that is pinned and dirty, to test a dirty pinned file is in
   // persistent dir with symlink in pinned and outgoing dirs referencing it.
@@ -73,8 +71,7 @@ struct InitialCacheResource {
     "md5_dirty_and_pinned_existing",
     GDataCache::CACHE_STATE_PRESENT |
     GDataCache::CACHE_STATE_PINNED |
-    GDataCache::CACHE_STATE_DIRTY |
-    GDataCache::CACHE_STATE_PERSISTENT,
+    GDataCache::CACHE_STATE_DIRTY,
      "local", GDataCache::CACHE_TYPE_PERSISTENT },
 };
 
@@ -335,8 +332,7 @@ class GDataCacheTest : public testing::Test {
           GetCacheEntryFromOriginThread(resource.resource_id, md5);
       ASSERT_TRUE(cache_entry.get());
       EXPECT_EQ(resource.cache_state, cache_entry->cache_state);
-      EXPECT_EQ(resource.expected_sub_dir_type,
-                cache_entry->GetSubDirectoryType());
+      EXPECT_EQ(resource.expected_sub_dir_type, cache_entry->sub_dir_type);
     }
   }
 
@@ -692,7 +688,7 @@ class GDataCacheTest : public testing::Test {
         GDataCache::IsCachePinned(expected_cache_state_)) {
       ASSERT_TRUE(cache_entry.get());
       EXPECT_EQ(expected_cache_state_, cache_entry->cache_state);
-      EXPECT_EQ(expected_sub_dir_type_, cache_entry->GetSubDirectoryType());
+      EXPECT_EQ(expected_sub_dir_type_, cache_entry->sub_dir_type);
     } else {
       EXPECT_FALSE(cache_entry.get());
     }
@@ -874,6 +870,7 @@ TEST_F(GDataCacheTest, InitializeCache) {
 
 TEST_F(GDataCacheTest, CacheStateBitmasks) {
   GDataCache::CacheEntry cache_entry("md5_cache_state_bitmasks",
+                                     GDataCache::CACHE_TYPE_TMP,
                                      GDataCache::CACHE_STATE_NONE);
   EXPECT_FALSE(cache_entry.IsPresent());
   EXPECT_FALSE(cache_entry.IsPinned());
@@ -1082,8 +1079,7 @@ TEST_F(GDataCacheTest, PinAndUnpin) {
   // Pin the existing file in cache.
   num_callback_invocations_ = 0;
   TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
-          GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_PINNED |
-          GDataCache::CACHE_STATE_PERSISTENT,
+          GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_PINNED,
           GDataCache::CACHE_TYPE_PERSISTENT);
   EXPECT_EQ(1, num_callback_invocations_);
 
@@ -1097,8 +1093,7 @@ TEST_F(GDataCacheTest, PinAndUnpin) {
   // Pin back the same existing file in cache.
   num_callback_invocations_ = 0;
   TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
-          GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_PINNED |
-          GDataCache::CACHE_STATE_PERSISTENT,
+          GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_PINNED,
           GDataCache::CACHE_TYPE_PERSISTENT);
   EXPECT_EQ(1, num_callback_invocations_);
 
@@ -1148,8 +1143,7 @@ TEST_F(GDataCacheTest, StoreToCachePinned) {
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
                    base::PLATFORM_FILE_OK,
                    GDataCache::CACHE_STATE_PRESENT |
-                   GDataCache::CACHE_STATE_PINNED |
-                   GDataCache::CACHE_STATE_PERSISTENT,
+                   GDataCache::CACHE_STATE_PINNED,
                    GDataCache::CACHE_TYPE_PERSISTENT);
   EXPECT_EQ(1, num_callback_invocations_);
 
@@ -1158,8 +1152,7 @@ TEST_F(GDataCacheTest, StoreToCachePinned) {
   TestStoreToCache(resource_id, md5, FilePath("./non_existent.json"),
                    base::PLATFORM_FILE_ERROR_NOT_FOUND,
                    GDataCache::CACHE_STATE_PRESENT |
-                   GDataCache::CACHE_STATE_PINNED |
-                   GDataCache::CACHE_STATE_PERSISTENT,
+                   GDataCache::CACHE_STATE_PINNED,
                    GDataCache::CACHE_TYPE_PERSISTENT);
   EXPECT_EQ(1, num_callback_invocations_);
 }
@@ -1184,8 +1177,7 @@ TEST_F(GDataCacheTest, GetFromCachePinned) {
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
                    base::PLATFORM_FILE_OK,
                    GDataCache::CACHE_STATE_PRESENT |
-                   GDataCache::CACHE_STATE_PINNED |
-                   GDataCache::CACHE_STATE_PERSISTENT,
+                   GDataCache::CACHE_STATE_PINNED,
                    GDataCache::CACHE_TYPE_PERSISTENT);
 
   // Get the previously pinned and stored file from cache.
@@ -1206,8 +1198,7 @@ TEST_F(GDataCacheTest, RemoveFromCachePinned) {
                    base::PLATFORM_FILE_OK, GDataCache::CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
   TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
-          GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_PINNED |
-          GDataCache::CACHE_STATE_PERSISTENT,
+          GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_PINNED,
           GDataCache::CACHE_TYPE_PERSISTENT);
 
   // Remove |resource_id| from cache.
@@ -1224,8 +1215,7 @@ TEST_F(GDataCacheTest, RemoveFromCachePinned) {
                    base::PLATFORM_FILE_OK, GDataCache::CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
   TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
-          GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_PINNED |
-          GDataCache::CACHE_STATE_PERSISTENT,
+          GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_PINNED,
           GDataCache::CACHE_TYPE_PERSISTENT);
 
   num_callback_invocations_ = 0;
@@ -1246,19 +1236,16 @@ TEST_F(GDataCacheTest, DirtyCacheSimple) {
   // Mark the file dirty.
   num_callback_invocations_ = 0;
   TestMarkDirty(resource_id, md5, base::PLATFORM_FILE_OK,
-                GDataCache::CACHE_STATE_PRESENT |
-                GDataCache::CACHE_STATE_DIRTY |
-                GDataCache::CACHE_STATE_PERSISTENT,
+                GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_DIRTY,
                 GDataCache::CACHE_TYPE_PERSISTENT);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Commit the file dirty.
   num_callback_invocations_ = 0;
   TestCommitDirty(resource_id, md5, base::PLATFORM_FILE_OK,
-                  GDataCache::CACHE_STATE_PRESENT |
-                  GDataCache::CACHE_STATE_DIRTY |
-                  GDataCache::CACHE_STATE_PERSISTENT,
-                  GDataCache::CACHE_TYPE_PERSISTENT);
+                 GDataCache::CACHE_STATE_PRESENT |
+                 GDataCache::CACHE_STATE_DIRTY,
+                GDataCache::CACHE_TYPE_PERSISTENT);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Clear dirty state of the file.
@@ -1280,8 +1267,7 @@ TEST_F(GDataCacheTest, DirtyCachePinned) {
                    base::PLATFORM_FILE_OK, GDataCache::CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
   TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
-          GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_PINNED |
-          GDataCache::CACHE_STATE_PERSISTENT,
+          GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_PINNED,
           GDataCache::CACHE_TYPE_PERSISTENT);
 
   // Mark the file dirty.
@@ -1289,27 +1275,24 @@ TEST_F(GDataCacheTest, DirtyCachePinned) {
   TestMarkDirty(resource_id, md5, base::PLATFORM_FILE_OK,
                 GDataCache::CACHE_STATE_PRESENT |
                 GDataCache::CACHE_STATE_DIRTY |
-                GDataCache::CACHE_STATE_PINNED |
-                GDataCache::CACHE_STATE_PERSISTENT,
+                GDataCache::CACHE_STATE_PINNED,
                 GDataCache::CACHE_TYPE_PERSISTENT);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Commit the file dirty.
   num_callback_invocations_ = 0;
   TestCommitDirty(resource_id, md5, base::PLATFORM_FILE_OK,
-                  GDataCache::CACHE_STATE_PRESENT |
-                  GDataCache::CACHE_STATE_DIRTY |
-                  GDataCache::CACHE_STATE_PINNED |
-                  GDataCache::CACHE_STATE_PERSISTENT,
-                  GDataCache::CACHE_TYPE_PERSISTENT);
+                 GDataCache::CACHE_STATE_PRESENT |
+                 GDataCache::CACHE_STATE_DIRTY |
+                 GDataCache::CACHE_STATE_PINNED,
+                 GDataCache::CACHE_TYPE_PERSISTENT);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Clear dirty state of the file.
   num_callback_invocations_ = 0;
   TestClearDirty(resource_id, md5, base::PLATFORM_FILE_OK,
                  GDataCache::CACHE_STATE_PRESENT |
-                 GDataCache::CACHE_STATE_PINNED |
-                 GDataCache::CACHE_STATE_PERSISTENT,
+                 GDataCache::CACHE_STATE_PINNED,
                  GDataCache::CACHE_TYPE_PERSISTENT);
   EXPECT_EQ(1, num_callback_invocations_);
 }
@@ -1329,9 +1312,7 @@ TEST_F(GDataCacheTest, PinAndUnpinDirtyCache) {
                    base::PLATFORM_FILE_OK, GDataCache::CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
   TestMarkDirty(resource_id, md5, base::PLATFORM_FILE_OK,
-                GDataCache::CACHE_STATE_PRESENT |
-                GDataCache::CACHE_STATE_DIRTY |
-                GDataCache::CACHE_STATE_PERSISTENT,
+                GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_DIRTY,
                 GDataCache::CACHE_TYPE_PERSISTENT);
 
   // Verifies dirty file exists.
@@ -1345,7 +1326,7 @@ TEST_F(GDataCacheTest, PinAndUnpinDirtyCache) {
   // Pin the dirty file.
   TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
           GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_DIRTY |
-          GDataCache::CACHE_STATE_PINNED | GDataCache::CACHE_STATE_PERSISTENT,
+          GDataCache::CACHE_STATE_PINNED,
           GDataCache::CACHE_TYPE_PERSISTENT);
 
   // Verify dirty file still exist at the same pathname.
@@ -1353,8 +1334,7 @@ TEST_F(GDataCacheTest, PinAndUnpinDirtyCache) {
 
   // Unpin the dirty file.
   TestUnpin(resource_id, md5, base::PLATFORM_FILE_OK,
-            GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_DIRTY |
-            GDataCache::CACHE_STATE_PERSISTENT,
+            GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_DIRTY,
             GDataCache::CACHE_TYPE_PERSISTENT);
 
   // Verify dirty file still exist at the same pathname.
@@ -1374,37 +1354,31 @@ TEST_F(GDataCacheTest, DirtyCacheRepetitive) {
   // Mark the file dirty.
   num_callback_invocations_ = 0;
   TestMarkDirty(resource_id, md5, base::PLATFORM_FILE_OK,
-                GDataCache::CACHE_STATE_PRESENT |
-                GDataCache::CACHE_STATE_DIRTY |
-                GDataCache::CACHE_STATE_PERSISTENT,
+                GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_DIRTY,
                 GDataCache::CACHE_TYPE_PERSISTENT);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Again, mark the file dirty.  Nothing should change.
   num_callback_invocations_ = 0;
   TestMarkDirty(resource_id, md5, base::PLATFORM_FILE_OK,
-                GDataCache::CACHE_STATE_PRESENT |
-                GDataCache::CACHE_STATE_DIRTY |
-                GDataCache::CACHE_STATE_PERSISTENT,
+                GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_DIRTY,
                 GDataCache::CACHE_TYPE_PERSISTENT);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Commit the file dirty.  Outgoing symlink should be created.
   num_callback_invocations_ = 0;
   TestCommitDirty(resource_id, md5, base::PLATFORM_FILE_OK,
-                  GDataCache::CACHE_STATE_PRESENT |
-                  GDataCache::CACHE_STATE_DIRTY |
-                  GDataCache::CACHE_STATE_PERSISTENT,
-                  GDataCache::CACHE_TYPE_PERSISTENT);
+                 GDataCache::CACHE_STATE_PRESENT |
+                 GDataCache::CACHE_STATE_DIRTY,
+                GDataCache::CACHE_TYPE_PERSISTENT);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Again, commit the file dirty.  Nothing should change.
   num_callback_invocations_ = 0;
   TestCommitDirty(resource_id, md5, base::PLATFORM_FILE_OK,
-                  GDataCache::CACHE_STATE_PRESENT |
-                  GDataCache::CACHE_STATE_DIRTY |
-                  GDataCache::CACHE_STATE_PERSISTENT,
-                  GDataCache::CACHE_TYPE_PERSISTENT);
+                 GDataCache::CACHE_STATE_PRESENT |
+                 GDataCache::CACHE_STATE_DIRTY,
+                GDataCache::CACHE_TYPE_PERSISTENT);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Mark the file dirty agian after it's being committed.  Outgoing symlink
@@ -1412,18 +1386,16 @@ TEST_F(GDataCacheTest, DirtyCacheRepetitive) {
   num_callback_invocations_ = 0;
   TestMarkDirty(resource_id, md5, base::PLATFORM_FILE_OK,
                 GDataCache::CACHE_STATE_PRESENT |
-                GDataCache::CACHE_STATE_DIRTY |
-                GDataCache::CACHE_STATE_PERSISTENT,
+                GDataCache::CACHE_STATE_DIRTY,
                 GDataCache::CACHE_TYPE_PERSISTENT);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Commit the file dirty.  Outgoing symlink should be created again.
   num_callback_invocations_ = 0;
   TestCommitDirty(resource_id, md5, base::PLATFORM_FILE_OK,
-                  GDataCache::CACHE_STATE_PRESENT |
-                  GDataCache::CACHE_STATE_DIRTY |
-                  GDataCache::CACHE_STATE_PERSISTENT,
-                  GDataCache::CACHE_TYPE_PERSISTENT);
+                 GDataCache::CACHE_STATE_PRESENT |
+                 GDataCache::CACHE_STATE_DIRTY,
+                GDataCache::CACHE_TYPE_PERSISTENT);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Clear dirty state of the file.
@@ -1488,17 +1460,14 @@ TEST_F(GDataCacheTest, DirtyCacheInvalid) {
   // Mark an existing file dirty, then store a new file to the same resource id
   // but different md5, which should fail.
   TestMarkDirty(resource_id, md5, base::PLATFORM_FILE_OK,
-                GDataCache::CACHE_STATE_PRESENT |
-                GDataCache::CACHE_STATE_DIRTY |
-                GDataCache::CACHE_STATE_PERSISTENT,
+                GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_DIRTY,
                 GDataCache::CACHE_TYPE_PERSISTENT);
   num_callback_invocations_ = 0;
   md5 = "new_md5";
   TestStoreToCache(resource_id, md5, GetTestFilePath("subdir_feed.json"),
                    base::PLATFORM_FILE_ERROR_IN_USE,
                    GDataCache::CACHE_STATE_PRESENT |
-                   GDataCache::CACHE_STATE_DIRTY |
-                   GDataCache::CACHE_STATE_PERSISTENT,
+                   GDataCache::CACHE_STATE_DIRTY,
                    GDataCache::CACHE_TYPE_PERSISTENT);
   EXPECT_EQ(1, num_callback_invocations_);
 }
@@ -1514,21 +1483,18 @@ TEST_F(GDataCacheTest, RemoveFromDirtyCache) {
                    base::PLATFORM_FILE_OK, GDataCache::CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
   TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
-          GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_PINNED |
-          GDataCache::CACHE_STATE_PERSISTENT,
+          GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_PINNED,
           GDataCache::CACHE_TYPE_PERSISTENT);
   TestMarkDirty(resource_id, md5, base::PLATFORM_FILE_OK,
                 GDataCache::CACHE_STATE_PRESENT |
                 GDataCache::CACHE_STATE_PINNED |
-                GDataCache::CACHE_STATE_DIRTY |
-                GDataCache::CACHE_STATE_PERSISTENT,
+                GDataCache::CACHE_STATE_DIRTY,
                 GDataCache::CACHE_TYPE_PERSISTENT);
   TestCommitDirty(resource_id, md5, base::PLATFORM_FILE_OK,
-                  GDataCache::CACHE_STATE_PRESENT |
-                  GDataCache::CACHE_STATE_PINNED |
-                  GDataCache::CACHE_STATE_DIRTY |
-                  GDataCache::CACHE_STATE_PERSISTENT,
-                  GDataCache::CACHE_TYPE_PERSISTENT);
+                 GDataCache::CACHE_STATE_PRESENT |
+                 GDataCache::CACHE_STATE_PINNED |
+                 GDataCache::CACHE_STATE_DIRTY,
+                 GDataCache::CACHE_TYPE_PERSISTENT);
 
   // Try to remove the file.  Since file is dirty, it and the corresponding
   // pinned and outgoing symlinks should not be removed.
@@ -1578,9 +1544,8 @@ TEST_F(GDataCacheTest, GetCacheState) {
 
     // Store a file corresponding to |resource_id| and |md5| to cache, and pin
     // it.
-    int expected_cache_state = (GDataCache::CACHE_STATE_PRESENT |
-                                GDataCache::CACHE_STATE_PINNED |
-                                GDataCache::CACHE_STATE_PERSISTENT);
+    int expected_cache_state = GDataCache::CACHE_STATE_PRESENT |
+                               GDataCache::CACHE_STATE_PINNED;
     TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
                      base::PLATFORM_FILE_OK, GDataCache::CACHE_STATE_PRESENT,
                      GDataCache::CACHE_TYPE_TMP);
@@ -1620,8 +1585,7 @@ TEST_F(GDataCacheTest, MountUnmount) {
   TestSetMountedState(resource_id, md5, file_path, true,
                       base::PLATFORM_FILE_OK,
                       GDataCache::CACHE_STATE_PRESENT |
-                      GDataCache::CACHE_STATE_MOUNTED |
-                      GDataCache::CACHE_STATE_PERSISTENT,
+                      GDataCache::CACHE_STATE_MOUNTED,
                       GDataCache::CACHE_TYPE_PERSISTENT);
   EXPECT_EQ(1, num_callback_invocations_);
   EXPECT_TRUE(CacheEntryExists(resource_id, md5));

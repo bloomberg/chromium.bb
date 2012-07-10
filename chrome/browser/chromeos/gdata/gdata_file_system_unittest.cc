@@ -666,9 +666,8 @@ class GDataFileSystemTest : public testing::Test {
                                      const std::string& md5,
                                      const FilePath& cache_file_path) {
     expected_error_ = base::PLATFORM_FILE_OK;
-    expected_cache_state_ = (GDataCache::CACHE_STATE_PRESENT |
-                             GDataCache::CACHE_STATE_DIRTY |
-                             GDataCache::CACHE_STATE_PERSISTENT);
+    expected_cache_state_ =
+        GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_DIRTY;
     expected_sub_dir_type_ = GDataCache::CACHE_TYPE_PERSISTENT;
     expect_outgoing_symlink_ = false;
     VerifyMarkDirty(error, resource_id, md5, cache_file_path);
@@ -681,9 +680,8 @@ class GDataFileSystemTest : public testing::Test {
                                       const std::string& resource_id,
                                       const std::string& md5) {
     expected_error_ = base::PLATFORM_FILE_OK;
-    expected_cache_state_ = (GDataCache::CACHE_STATE_PRESENT |
-                             GDataCache::CACHE_STATE_DIRTY |
-                             GDataCache::CACHE_STATE_PERSISTENT);
+    expected_cache_state_ =
+        GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_DIRTY;
     expected_sub_dir_type_ = GDataCache::CACHE_TYPE_PERSISTENT;
     expect_outgoing_symlink_ = true;
     VerifyCacheFileState(error, resource_id, md5);
@@ -703,7 +701,7 @@ class GDataFileSystemTest : public testing::Test {
         GDataCache::IsCachePinned(expected_cache_state_)) {
       ASSERT_TRUE(cache_entry.get());
       EXPECT_EQ(expected_cache_state_, cache_entry->cache_state);
-      EXPECT_EQ(expected_sub_dir_type_, cache_entry->GetSubDirectoryType());
+      EXPECT_EQ(expected_sub_dir_type_, cache_entry->sub_dir_type);
     } else {
       EXPECT_FALSE(cache_entry.get());
     }
@@ -2378,8 +2376,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
                    GetTestFilePath("root_feed.json"),  // Anything works.
                    base::PLATFORM_FILE_OK,
                    GDataCache::CACHE_STATE_PRESENT |
-                   GDataCache::CACHE_STATE_PINNED |
-                   GDataCache::CACHE_STATE_PERSISTENT,
+                   GDataCache::CACHE_STATE_PINNED,
                    GDataCache::CACHE_TYPE_PERSISTENT);
   ASSERT_TRUE(file_util::PathExists(original_cache_file_path));
 
@@ -2390,8 +2387,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
                 base::PLATFORM_FILE_OK,
                 GDataCache::CACHE_STATE_PRESENT |
                 GDataCache::CACHE_STATE_PINNED |
-                GDataCache::CACHE_STATE_DIRTY |
-                GDataCache::CACHE_STATE_PERSISTENT,
+                GDataCache::CACHE_STATE_DIRTY,
                 GDataCache::CACHE_TYPE_PERSISTENT);
   const FilePath dirty_cache_file_path =
       GDataCache::GetCacheRootPath(profile_.get())
@@ -2409,8 +2405,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
                   base::PLATFORM_FILE_OK,
                   GDataCache::CACHE_STATE_PRESENT |
                   GDataCache::CACHE_STATE_PINNED |
-                  GDataCache::CACHE_STATE_DIRTY |
-                  GDataCache::CACHE_STATE_PERSISTENT,
+                  GDataCache::CACHE_STATE_DIRTY,
                   GDataCache::CACHE_TYPE_PERSISTENT);
   const FilePath outgoing_symlink_path =
       GDataCache::GetCacheRootPath(profile_.get())

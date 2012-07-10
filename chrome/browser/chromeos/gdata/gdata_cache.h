@@ -80,12 +80,11 @@ class GDataCache {
 
   // This is used as a bitmask for the cache state.
   enum CacheState {
-    CACHE_STATE_NONE       = 0x0,
-    CACHE_STATE_PINNED     = 0x1 << 0,
-    CACHE_STATE_PRESENT    = 0x1 << 1,
-    CACHE_STATE_DIRTY      = 0x1 << 2,
-    CACHE_STATE_MOUNTED    = 0x1 << 3,
-    CACHE_STATE_PERSISTENT = 0x1 << 4,
+    CACHE_STATE_NONE    = 0x0,
+    CACHE_STATE_PINNED  = 0x1 << 0,
+    CACHE_STATE_PRESENT = 0x1 << 1,
+    CACHE_STATE_DIRTY   = 0x1 << 2,
+    CACHE_STATE_MOUNTED = 0x1 << 3,
   };
 
   // Enum defining origin of a cached file.
@@ -121,29 +120,27 @@ class GDataCache {
 
   // Structure to store information of an existing cache file.
   struct CacheEntry {
-    CacheEntry() : cache_state(0) {}
+    CacheEntry() : sub_dir_type(CACHE_TYPE_META),
+                   cache_state(0) {}
 
     CacheEntry(const std::string& md5,
+               CacheSubDirectoryType sub_dir_type,
                int cache_state)
         : md5(md5),
+          sub_dir_type(sub_dir_type),
           cache_state(cache_state) {
     }
 
     bool IsPresent() const { return IsCachePresent(cache_state); }
     bool IsPinned() const { return IsCachePinned(cache_state); }
     bool IsDirty() const { return IsCacheDirty(cache_state); }
-    bool IsMounted() const { return IsCacheMounted(cache_state); }
-    bool IsPersistent() const { return IsCachePersistent(cache_state); }
-
-    // Returns the type of the sub directory where the cache file is stored.
-    CacheSubDirectoryType GetSubDirectoryType() const {
-      return IsPersistent() ? CACHE_TYPE_PERSISTENT : CACHE_TYPE_TMP;
-    }
+    bool IsMounted() const  { return IsCacheMounted(cache_state); }
 
     // For debugging purposes.
     std::string ToString() const;
 
     std::string md5;
+    CacheSubDirectoryType sub_dir_type;
     int cache_state;
   };
 
@@ -169,9 +166,6 @@ class GDataCache {
   static bool IsCacheMounted(int cache_state) {
     return cache_state & CACHE_STATE_MOUNTED;
   }
-  static bool IsCachePersistent(int cache_state) {
-    return cache_state & CACHE_STATE_PERSISTENT;
-  }
   static int SetCachePresent(int cache_state) {
     return cache_state |= CACHE_STATE_PRESENT;
   }
@@ -184,9 +178,6 @@ class GDataCache {
   static int SetCacheMounted(int cache_state) {
     return cache_state |= CACHE_STATE_MOUNTED;
   }
-  static int SetCachePersistent(int cache_state) {
-    return cache_state |= CACHE_STATE_PERSISTENT;
-  }
   static int ClearCachePresent(int cache_state) {
     return cache_state &= ~CACHE_STATE_PRESENT;
   }
@@ -198,9 +189,6 @@ class GDataCache {
   }
   static int ClearCacheMounted(int cache_state) {
     return cache_state &= ~CACHE_STATE_MOUNTED;
-  }
-  static int ClearCachePersistent(int cache_state) {
-    return cache_state &= ~CACHE_STATE_PERSISTENT;
   }
 
   // Returns the sub-directory under gdata cache directory for the given sub
@@ -479,13 +467,6 @@ class GDataCache {
                            const std::string& md5,
                            bool* success,
                            GDataCache::CacheEntry* cache_entry);
-
-  // Wrapper around GDataCacheMetadata::UpdateCache(). This function takes
-  // |sub_dir_type| and modifies |cache_state| per the sub directory type.
-  void UpdateCacheWithSubDirectoryType(const std::string& resource_id,
-                                       const std::string& md5,
-                                       CacheSubDirectoryType sub_dir_type,
-                                       int cache_state);
 
   // The root directory of the cache (i.e. <user_profile_dir>/GCache/v1).
   const FilePath cache_root_path_;
