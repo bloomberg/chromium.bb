@@ -545,7 +545,7 @@ wl_display_iterate(struct wl_display *display, uint32_t mask)
 	mask &= display->mask;
 	if (mask == 0) {
 		fprintf(stderr,
-			"wl_display_iterate called with unsolicited flags");
+			"wl_display_iterate called with unsolicited flags\n");
 		return;
 	}
 
