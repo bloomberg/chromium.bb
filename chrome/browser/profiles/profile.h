@@ -147,6 +147,12 @@ class Profile : public content::BrowserContext {
   // Returns the profile corresponding to the given WebUI.
   static Profile* FromWebUI(content::WebUI* web_ui);
 
+  // TODO(rlp): Please do not use this function. It is a temporary fix
+  // for M19 stable. See crbug.com/125292.
+  static net::URLRequestContextGetter* GetDefaultRequestContextDeprecated() {
+    return Profile::GetDefaultRequestContext();
+  }
+
   // content::BrowserContext implementation ------------------------------------
 
   // Typesafe upcast.
@@ -259,9 +265,6 @@ class Profile : public content::BrowserContext {
   // for OffTheRecord Profiles.  This PrefService is lazily created the first
   // time that this method is called.
   virtual PrefService* GetOffTheRecordPrefs() = 0;
-
-  // Returns the main request context.
-  virtual net::URLRequestContextGetter* GetRequestContext() = 0;
 
   // Returns the request context used for extension-related requests.  This
   // is only used for a separate cookie store currently.
@@ -408,7 +411,18 @@ class Profile : public content::BrowserContext {
   virtual base::Callback<ChromeURLDataManagerBackend*(void)>
       GetChromeURLDataManagerBackendGetter() const = 0;
 
+  static net::URLRequestContextGetter* default_request_context_;
+
  private:
+  // ***DEPRECATED**: You should be passing in the specific profile's
+  // URLRequestContextGetter or using the system URLRequestContextGetter.
+  //
+  // Returns the request context for the "default" profile.  This may be called
+  // from any thread.  This CAN return NULL if a first request context has not
+  // yet been created.  If necessary, listen on the UI thread for
+  // NOTIFY_DEFAULT_REQUEST_CONTEXT_AVAILABLE.
+  static net::URLRequestContextGetter* GetDefaultRequestContext();
+
   bool restored_last_session_;
 
   // Accessibility events will only be propagated when the pause

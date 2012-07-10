@@ -513,6 +513,11 @@ ProfileImpl::~ProfileImpl() {
   ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
       io_data_.GetResourceContextNoInit());
 
+  if (io_data_.HasMainRequestContext() &&
+      default_request_context_ == GetRequestContext()) {
+    default_request_context_ = NULL;
+  }
+
   // Destroy OTR profile and its profile services first.
   if (off_the_record_profile_.get()) {
     ProfileDestroyer::DestroyOffTheRecordProfileNow(
@@ -698,7 +703,15 @@ FilePath ProfileImpl::GetPrefFilePath() {
 }
 
 net::URLRequestContextGetter* ProfileImpl::GetRequestContext() {
-  return io_data_.GetMainRequestContextGetter();
+  net::URLRequestContextGetter* request_context =
+      io_data_.GetMainRequestContextGetter();
+  // The first request context is always a normal (non-OTR) request context.
+  // Even when Chromium is started in OTR mode, a normal profile is always
+  // created first.
+  if (!default_request_context_)
+    default_request_context_ = request_context;
+
+  return request_context;
 }
 
 net::URLRequestContextGetter* ProfileImpl::GetRequestContextForRenderProcess(
