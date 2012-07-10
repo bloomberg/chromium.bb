@@ -221,6 +221,8 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 
 	wl_client_add_resource(client, &pool->resource);
 
+	return;
+
 err_close:
 	close(fd);
 err_free:
