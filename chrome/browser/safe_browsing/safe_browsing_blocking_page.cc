@@ -437,7 +437,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
   if (command.length() > 1 && command[0] == '"') {
     command = command.substr(1, command.length() - 2);
   }
-  RecordUserReactionTime(cmd);
+  RecordUserReactionTime(command);
   if (command == kDoReportCommand) {
     SetReportingPreference(true);
     return;
