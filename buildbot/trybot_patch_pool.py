@@ -7,10 +7,10 @@
 
 class TrybotPatchPool(object):
   """Represents patches specified by the user to test."""
-  def __init__(self, gerrit_patches=(), local_patches=(), remote_patches=()):
-    self.gerrit_patches = tuple(gerrit_patches)
-    self.local_patches = tuple(local_patches)
-    self.remote_patches = tuple(remote_patches)
+  def __init__(self, gerrit_patches, local_patches, remote_patches):
+    self.gerrit_patches = gerrit_patches
+    self.local_patches = local_patches
+    self.remote_patches = remote_patches
 
   def __nonzero__(self):
     """Returns True if the pool has no patches."""
@@ -37,8 +37,7 @@ class TrybotPatchPool(object):
 
     return TrybotPatchPool(*filtered)
 
-  def __iter__(self):
-    for source in [self.local_patches, self.remote_patches,
-                   self.gerrit_patches]:
-      for patch in source:
-        yield patch
+
+def GetEmptyPool():
+  """Return a pool with no patches."""
+  return TrybotPatchPool([], [], [])

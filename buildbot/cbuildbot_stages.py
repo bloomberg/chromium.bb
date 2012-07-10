@@ -23,7 +23,6 @@ from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
-from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import portage_utilities
 from chromite.buildbot import repository
 from chromite.buildbot import validation_pool
@@ -156,63 +155,29 @@ class PatchChangesStage(bs.BuilderStage):
     bs.BuilderStage.__init__(self, options, build_config)
     self.patch_pool = patch_pool
 
-  def _CheckForDuplicatePatches(self, _series, changes):
-    conflicts = {}
-    duplicates = []
-    for change in changes:
-      if change.id is None:
-        cros_build_lib.Warning(
-            "Change %s lacks a usable ChangeId; duplicate checking cannot "
-            "be done for this change.  If cherry-picking fails, this is a "
-            "potential cause.", change)
-        continue
-      conflicts.setdefault(change.id, []).append(change)
+  def _ApplyPatches(self, apply_func):
+    """Apply patches using apply_func.
 
-    duplicates = [x for x in conflicts.itervalues() if len(x) > 1]
-    if not duplicates:
-      return
+    Args:
+      apply_func: Called for every patch to apply it.  Takes in one argument,
+                  which is the patch object to apply.
+    """
+    for patch in self.patch_pool.local_patches:
+      apply_func(patch)
 
-    for conflict in duplicates:
-      cros_build_lib.Error(
-          "Changes %s conflict with each other- they have same id %s."
-          ', '.join(map(str, conflict)), conflict[0].id)
+    for patch in self.patch_pool.remote_patches:
+      cros_build_lib.PrintBuildbotStepText(str(patch))
+      apply_func(patch)
 
-    cros_build_lib.Die("Duplicate patches were encountered: %s", duplicates)
-
-  def _ApplyPatchSeries(self, series, **kwargs):
-    kwargs.setdefault('frozen', False)
-    # Honor the given ordering, so that if a gerrit/remote patch
-    # conflicts w/ a local patch, the gerrit/remote patch are
-    # blamed rather than local (patch ordering is typically
-    # local, gerrit, then remote).
-    kwargs.setdefault('honor_ordering', True)
-    kwargs['changes_checker'] = self._CheckForDuplicatePatches
-
-    _applied, failed_tot, failed_inflight = series.Apply(
-        list(self.patch_pool), **kwargs)
-
-    failures = failed_tot + failed_inflight
-    if failures:
-      cros_build_lib.Die("Failed applying patches: %s",
-                         "\n".join(map(str, failures)))
+    for patch in self.patch_pool.gerrit_patches:
+      cros_build_lib.PrintBuildbotLink(str(patch), patch.url)
+      apply_func(patch)
 
   def _PerformStage(self):
+    def apply_func(patch):
+      patch.Apply(self._build_root)
 
-    class NoisyPatchSeries(validation_pool.PatchSeries):
-      """Custom PatchSeries that adds links to buildbot logs for remote trys."""
-
-      def ApplyChange(self, change, dryrun=False):
-        if isinstance(change, cros_patch.GerritPatch):
-          cros_build_lib.PrintBuildbotLink(str(change), change.url)
-        elif isinstance(change, cros_patch.UploadedLocalPatch):
-          cros_build_lib.PrintBuildbotStepText(str(change))
-
-        return validation_pool.PatchSeries.ApplyChange(self, change,
-                                                       dryrun=dryrun)
-
-    self._ApplyPatchSeries(
-        NoisyPatchSeries(self._build_root,
-                         force_content_merging=True))
+    self._ApplyPatches(apply_func)
 
 
 class BootstrapStage(PatchChangesStage):
@@ -224,14 +189,15 @@ class BootstrapStage(PatchChangesStage):
   """
   option_name = 'bootstrap'
 
-  def __init__(self, options, build_config, patch_pool):
-    super(BootstrapStage, self).__init__(
-        options, build_config, patch_pool)
+  def __init__(self, *args, **kwargs):
+    super(BootstrapStage, self).__init__(*args, **kwargs)
     self.returncode = None
 
   #pylint: disable=E1101
   @osutils.TempDirDecorator
   def _PerformStage(self):
+    def apply_func(patch):
+      patch.ApplyIntoGitRepo(chromite_dir, self._target_manifest_branch)
 
     # The plan for the builders is to use master branch to bootstrap other
     # branches. Now, if we wanted to test patches for both the bootstrap code
@@ -247,16 +213,9 @@ class BootstrapStage(PatchChangesStage):
     reference_repo = os.path.join(constants.SOURCE_ROOT, 'chromite', '.git')
     repository.CloneGitRepo(chromite_dir, constants.CHROMITE_URL,
                             reference=reference_repo)
-    cros_build_lib.RunGitCommand(chromite_dir, ['checkout', filter_branch])
-
-    class FilteringSeries(validation_pool.RawPatchSeries):
-      def _LookupAndFilterChanges(self, *args, **kwargs):
-        changes = validation_pool.RawPatchSeries._LookupAndFilterChanges(
-            self, *args, **kwargs)
-        return [x for x in changes if x.project == constants.CHROMITE_PROJECT
-                and x.tracking_branch == filter_branch]
-
-    self._ApplyPatchSeries(FilteringSeries(chromite_dir))
+    cros_build_lib.RunCommand(['git', 'checkout', filter_branch],
+                              cwd=chromite_dir)
+    self._ApplyPatches(apply_func)
 
     extra_params = ['--sourceroot=%s' % self._options.sourceroot]
     extra_params.extend(self._options.bootstrap_args)
@@ -559,9 +518,9 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
     """Sets validation pool based on manifest path passed in."""
     CommitQueueSyncStage.pool = \
         validation_pool.ValidationPool.AcquirePoolFromManifest(
-            manifest, self._build_config['overlays'],
-            self._build_root, self._options.buildnumber,  self.builder_name,
-            self._build_config['master'], self._options.debug)
+            manifest, self._build_config['overlays'], self._options.buildnumber,
+            self.builder_name, self._build_config['master'],
+            self._options.debug)
 
   def GetNextManifest(self):
     """Gets the next manifest using LKGM logic."""
@@ -604,7 +563,7 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
       manifest = self.manifest_manager.GetLatestCandidate()
       if manifest:
         self.SetPoolFromManifest(manifest)
-        self.pool.ApplyPoolIntoRepo()
+        self.pool.ApplyPoolIntoRepo(self._build_root)
 
       return manifest
 

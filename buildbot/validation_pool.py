@@ -171,20 +171,18 @@ def _PatchWrapException(functor):
   return f
 
 
-class RawPatchSeries(object):
+class PatchSeries(object):
   """Class representing a set of patches applied to a repository."""
 
-  def __init__(self, path, helper_pool=None):
-
-    if helper_pool is None:
-      helper_pool = HelperPool.SimpleCreate(internal=True, external=True)
-    self._helper_pool = helper_pool
-    self._path = path
-
+  def __init__(self, helper_pool=None, force_content_merging=False):
     self.applied = []
     self.failed = []
     self.failed_tot = {}
-
+    self.force_content_merging = force_content_merging
+    self._content_merging = {}
+    if helper_pool is None:
+      helper_pool = HelperPool.SimpleCreate(internal=True, external=True)
+    self._helper_pool = helper_pool
     # A mapping of ChangeId to exceptions if the patch failed against
     # ToT.  Primarily used to keep the resolution/applying from going
     # down known bad paths.
@@ -192,17 +190,34 @@ class RawPatchSeries(object):
     self._lookup_cache = {}
     self._change_deps_cache = {}
 
-  def _GetTrackingBranchForChange(self, change):
-    return change.tracking_branch
+  def IsContentMerging(self, change, manifest):
+    """Discern if the given change has Content Merging enabled in gerrit.
 
-  def _GetGitRepoForChange(self, _change):
-    return self._path
+    Note if the instance was created w/ force_content_merging=True,
+    then this function will lie and always return True to avoid the
+    admin-level access required of <=gerrit-2.1.
 
-  def ApplyChange(self, change, dryrun=False):
-    # Always allow 3way for any patch application against a standalone
-    # repository.
-    # pylint: disable=W0613
-    return change.Apply(self._path, change.tracking_branch, trivial=False)
+    Raises:
+      AssertionError: If the gerrit helper requested is disallowed.
+      GerritException: If there is a failure in querying gerrit.
+    Returns:
+      True if the change's project has content merging enabled, False if not.
+    """
+    if self.force_content_merging:
+      return True
+    helper = self._helper_pool.ForChange(change)
+
+    if not helper.version.startswith('2.1'):
+      return manifest.ProjectIsContentMerging(change.project)
+
+    # Fallback to doing gsql trickery to get it; note this requires admin
+    # access.
+    projects = self._content_merging.get(helper)
+    if projects is None:
+      projects = helper.FindContentMergingProjects()
+      self._content_merging[helper] = projects
+
+    return change.project in projects
 
   def _GetGerritPatch(self, change, query):
     """Query the configured helpers looking for a given change.
@@ -258,7 +273,7 @@ class RawPatchSeries(object):
       unsatisfied.append(dep_change)
     return unsatisfied
 
-  def CreateTransaction(self, change, frozen=False):
+  def CreateTransaction(self, change, buildroot, frozen=False):
     """Given a change, resolve it into a transaction.
 
     In this case, a transaction is defined as a group of commits that
@@ -278,10 +293,10 @@ class RawPatchSeries(object):
       this transaction.
     """
     plan, stack = [], []
-    self._ResolveChange(change, plan, stack, frozen=frozen)
+    self._ResolveChange(change, buildroot,  plan, stack, frozen=frozen)
     return plan
 
-  def _ResolveChange(self, change, plan, stack, frozen=False):
+  def _ResolveChange(self, change, buildroot, plan, stack, frozen=False):
     """Helper for resolving a node and its dependencies into the plan.
 
     No external code should call this; all internal code should invoke this
@@ -305,13 +320,13 @@ class RawPatchSeries(object):
       return
     stack.append(change)
     try:
-      self._PerformResolveChange(change, plan,
+      self._PerformResolveChange(buildroot, change, plan,
                                  stack, frozen=frozen)
     finally:
       stack.pop(-1)
 
   @_PatchWrapException
-  def _GetDepsForChange(self, change):
+  def _GetDepsForChange(self, change, buildroot):
     """Look up the gerrit/paladin deps for a change
 
     Raises:
@@ -325,18 +340,16 @@ class RawPatchSeries(object):
     # across different gerrit instances.
     val = self._change_deps_cache.get(change)
     if val is None:
-      git_repo = self._GetGitRepoForChange(change)
       val = self._change_deps_cache[change] = (
-          change.GerritDependencies(
-              git_repo, self._GetTrackingBranchForChange(change)),
-          change.PaladinDependencies(git_repo))
+          change.GerritDependencies(buildroot),
+          change.PaladinDependencies(buildroot))
     return val
 
-  def _PerformResolveChange(self, change, plan, stack, frozen=False):
+  def _PerformResolveChange(self, buildroot, change, plan, stack, frozen=False):
     """Resolve and ultimately add a change into the plan."""
     # Pull all deps up front, then process them.  Simplifies flow, and
     # localizes the error closer to the cause.
-    gdeps, pdeps = self._GetDepsForChange(change)
+    gdeps, pdeps = self._GetDepsForChange(change, buildroot)
     gdeps = self._LookupAndFilterChanges(change, plan, gdeps, frozen=frozen)
     pdeps = self._LookupAndFilterChanges(change, plan, pdeps, frozen=frozen)
 
@@ -345,7 +358,7 @@ class RawPatchSeries(object):
         if dep in plan:
           continue
         try:
-          self._ResolveChange(dep, plan, stack, frozen=frozen)
+          self._ResolveChange(dep, buildroot, plan, stack, frozen=frozen)
         except cros_patch.PatchException, e:
           raise cros_patch.DependencyError, \
                 cros_patch.DependencyError(change, e), \
@@ -371,12 +384,7 @@ class RawPatchSeries(object):
     for change in changes:
       self._lookup_cache[change.id] = change
 
-  def FetchChanges(self, changes):
-    for change in changes:
-      change.Fetch(self._GetGitRepoForChange(change))
-
-  def Apply(self, changes, dryrun=False, frozen=True, honor_ordering=False,
-            changes_checker=None):
+  def Apply(self, buildroot, changes, dryrun=False, frozen=True, manifest=None):
     """Applies changes from pool into the directory specified by the buildroot.
 
     This method resolves each given change down into a set of transactions-
@@ -389,43 +397,23 @@ class RawPatchSeries(object):
     transaction if the failure wasn't caused by the patch being incompatible
     to ToT.
 
-    Args:
-      changes: A sequence of cros_patch.GitRepoPatch instances to resolve
-        and apply.
-      dryrun: If True, then content-merging is explicitly forced,
-        and no modifications to gerrit will occur.
-      frozen: If True, then resolving of the given changes is explicitly
-        limited to just the passed in changes, or known committed changes.
-        This is basically CQ/Paladin mode, used to limit the changes being
-        pulled in/committed to just what we allow.
-      honor_ordering: Apply normally will reorder the transactions it
-        computes, trying the largest first, then degrading through smaller
-        transactions if the larger of the two fails.  If honor_ordering
-        is False, then the ordering given via changes is preserved-
-        this is mainly of use for cbuildbot induced patching, and shouldn't
-        be used for CQ patching.
-      changes_checker: If not None, must be a functor taking two arguments:
-        series, changes.  This is invoked after the changes have been fetched,
-        thus this is a way for consumers to do last minute checking of the
-        changes being inspected.  Primarily of use for cbuildbot patching.
     Returns:
       A tuple of changes-applied, Exceptions for the changes that failed
       against ToT, and Exceptions that failed inflight;  These exceptions
       are cros_patch.PatchException instances.
     """
 
-    # Prefetch the changes; we need accurate change_id/id's, which is
-    # guaranteed via Fetch.
-    self.FetchChanges(changes)
-    if changes_checker:
-      changes_checker(self, changes)
+    # Used by content merging checks when we're operating against
+    # >=gerrit-2.2.
+    if manifest is None:
+      manifest = cros_build_lib.ManifestCheckout.Cached(buildroot)
 
     self.InjectLookupCache(changes)
     resolved, applied, failed = [], [], []
     for change in changes:
       try:
-        resolved.append((change,
-                         self.CreateTransaction(change, frozen=frozen)))
+        resolved.append((change, self.CreateTransaction(change, buildroot,
+                                                        frozen=frozen)))
       except cros_patch.PatchException, e:
         logging.info("Failed creating transaction for %s: %s", change, e)
         failed.append(e)
@@ -435,23 +423,22 @@ class RawPatchSeries(object):
       # to be resolved.
       return [], failed, []
 
-    if not honor_ordering:
-      # Sort by length, falling back to the order the changes were given to us.
-      # This is done to prefer longer transactions (more painful to rebase)
-      # over shorter transactions.
-      position = dict((change, idx) for idx, change in enumerate(changes))
-      def mk_key(data):
-        ids = [x.id for x in data[1]]
-        return -len(ids), position[data[0]]
-      resolved.sort(key=mk_key)
+    # Sort by length, falling back to the order the changes were given to us.
+    # This is done to prefer longer transactions (more painful to rebase) over
+    # shorter transactions.
+    position = dict((change, idx) for idx, change in enumerate(changes))
+    def mk_key(data):
+      ids = [x.id for x in data[1]]
+      return -len(ids), position[data[0]]
+    resolved.sort(key=mk_key)
 
     for inducing_change, transaction_changes in resolved:
       try:
-        with self._Transaction(transaction_changes):
+        with self._Transaction(buildroot, transaction_changes):
           logging.debug("Attempting transaction for %s: changes: %s",
                         inducing_change,
                         ', '.join(map(str, transaction_changes)))
-          self._ApplyChanges(inducing_change, transaction_changes,
+          self._ApplyChanges(inducing_change, manifest, transaction_changes,
                              dryrun=dryrun)
       except cros_patch.PatchException, e:
         logging.info("Failed applying transaction for %s: %s",
@@ -477,7 +464,7 @@ class RawPatchSeries(object):
     return applied, failed_tot, failed_inflight
 
   @contextlib.contextmanager
-  def _Transaction(self, commits):
+  def _Transaction(self, buildroot, commits):
     """ContextManager used to rollback changes to a buildroot if necessary.
 
     Specifically, if an unhandled non system exception occurs, this context
@@ -496,7 +483,7 @@ class RawPatchSeries(object):
     # what was checked out for each involved repo, and if it was a branch,
     # the sha1 of the branch; that information is enough to rewind us back
     # to the original repo state.
-    project_state = set(map(self._GetGitRepoForChange, commits))
+    project_state = set(commit.ProjectDir(buildroot) for commit in commits)
     resets, checkouts = [], []
     for project_dir in project_state:
       current_sha1 = cros_build_lib.RunGitCommand(
@@ -541,7 +528,7 @@ class RawPatchSeries(object):
       raise
 
   @_PatchWrapException
-  def _ApplyChanges(self, _inducing_change, changes, dryrun=False):
+  def _ApplyChanges(self, _inducing_change, manifest, changes, dryrun=False):
     """Apply a given ordered sequence of changes.
 
     Args:
@@ -564,8 +551,15 @@ class RawPatchSeries(object):
       if change.id in self._committed_cache:
         continue
 
+      # If we're in dryrun mode, than force content-merging; else, ask
+      # gerrit (or the underlying git configuration) if content-merging
+      # is allowed for this specific project.
+      if dryrun:
+        force_trivial = False
+      else:
+        force_trivial = not self.IsContentMerging(change, manifest)
       try:
-        self.ApplyChange(change, dryrun=dryrun)
+        change.Apply(manifest.root, trivial=force_trivial)
       except cros_patch.PatchException, e:
         if not e.inflight:
           self.failed_tot[change.id] = e
@@ -576,80 +570,6 @@ class RawPatchSeries(object):
 
     logging.debug('Done investigating changes.  Applied %s',
                   ' '.join([c.id for c in applied]))
-
-
-class PatchSeries(RawPatchSeries):
-  """Class representing a set of patches applied to a repository."""
-
-  def __init__(self, path, helper_pool=None, force_content_merging=False):
-    RawPatchSeries.__init__(self, path, helper_pool=helper_pool)
-
-    self.manifest = None
-    self._content_merging_projects = {}
-    self.force_content_merging = force_content_merging
-
-  def _GetTrackingBranchForChange(self, change):
-    ref = self.manifest.GetProjectsLocalRevision(change.project)
-    if ref.startswith("refs/"):
-      return ref
-    # Revlocked manifests return sha1s; use the repo defined branch
-    # so tracking is supported.
-    return self.manifest.default_branch
-
-  #pylint: disable=W0221
-  def Apply(self, changes, **kwargs):
-    """Apply the given changes against a manifest checkout.
-
-    See RawPatchSeries.Apply for the argument details; this adds a single
-    optional argument:
-    Args:
-      manifest: If given, the manifest object to use.  Else one is created
-        for the configured buildroot.
-    """
-    manifest = kwargs.pop('manifest', None)
-    if manifest is None:
-      manifest = cros_build_lib.ManifestCheckout(self._path)
-    self.manifest = manifest
-    return RawPatchSeries.Apply(self, changes, **kwargs)
-
-  def _IsContentMerging(self, change, dryrun=False):
-    """Discern if the given change has Content Merging enabled in gerrit.
-
-    Note if the instance was created w/ force_content_merging=True,
-    then this function will lie and always return True to avoid the
-    admin-level access required of <=gerrit-2.1.
-
-    Raises:
-      AssertionError: If the gerrit helper requested is disallowed.
-      GerritException: If there is a failure in querying gerrit.
-    Returns:
-      True if the change's project has content merging enabled, False if not.
-    """
-    if self.force_content_merging or dryrun:
-      return True
-    helper = self._helper_pool.ForChange(change)
-
-    if not helper.version.startswith('2.1'):
-      return self.manifest.ProjectIsContentMerging(change.project)
-
-    # Fallback to doing gsql trickery to get it; note this requires admin
-    # access.
-    projects = self._content_merging_projects.get(helper)
-    if projects is None:
-      projects = helper.FindContentMergingProjects()
-      self._content_merging_projects[helper] = projects
-
-    return change.project in projects
-
-  def _GetGitRepoForChange(self, change):
-    return self.manifest.GetProjectPath(change.project, True)
-
-  def ApplyChange(self, change, dryrun=False):
-    # If we're in dryrun mode, then 3way is always allowed.
-    # Otherwise, allow 3way only if the gerrit project allows it.
-    trivial = False if dryrun else not self._IsContentMerging(change)
-
-    return change.ApplyAgainstManifest(self.manifest, trivial=trivial)
 
 
 class ValidationPool(object):
@@ -664,8 +584,8 @@ class ValidationPool(object):
 
   GLOBAL_DRYRUN = False
 
-  def __init__(self, overlays, build_root, build_number, builder_name,
-               is_master, dryrun, changes=None, non_os_changes=None,
+  def __init__(self, overlays, build_number, builder_name, is_master, dryrun,
+               changes=None, non_os_changes=None,
                conflicting_changes=None, helper_pool=None):
     """Initializes an instance by setting default valuables to instance vars.
 
@@ -693,7 +613,6 @@ class ValidationPool(object):
     if helper_pool is None:
       helper_pool = self.GetGerritHelpersForOverlays(overlays)
 
-    self.build_root = build_root
     self._helper_pool = helper_pool
 
     # These instances can be instantiated via both older, or newer pickle
@@ -746,7 +665,7 @@ class ValidationPool(object):
     self._overlays = overlays
     self._build_number = build_number
     self._builder_name = builder_name
-    self._patch_series = PatchSeries(self.build_root, helper_pool=helper_pool)
+    self._patch_series = PatchSeries(helper_pool=helper_pool)
 
   @staticmethod
   def GetBuildDashboardForOverlays(overlays):
@@ -773,8 +692,7 @@ class ValidationPool(object):
     return (
         self.__class__,
         (
-            self._overlays,
-            self.build_root, self._build_number, self._builder_name,
+            self._overlays, self._build_number, self._builder_name,
             self.is_master, self.dryrun, self.changes,
             self.non_manifest_changes,
             self.changes_that_failed_to_apply_earlier))
@@ -842,16 +760,14 @@ class ValidationPool(object):
     return False
 
   @classmethod
-  def AcquirePool(cls, overlays, build_root, build_number, builder_name,
-                  dryrun=False):
+  def AcquirePool(cls, overlays, buildroot, build_number, builder_name, dryrun):
     """Acquires the current pool from Gerrit.
 
     Polls Gerrit and checks for which change's are ready to be committed.
 
     Args:
       overlays:  One of constants.VALID_OVERLAYS.
-      build_root: The location of the build root used to filter projects, and
-        to apply patches against.
+      buildroot: The location of the buildroot used to filter projects.
       build_number: Corresponding build number for the build.
       builder_name:  Builder name on buildbot dashboard.
       dryrun: Don't submit anything to gerrit.
@@ -864,13 +780,12 @@ class ValidationPool(object):
     # doing this here we can reduce the number of builder cycles.
     if dryrun or cls._IsTreeOpen(max_timeout=3600):
       # Only master configurations should call this method.
-      pool = ValidationPool(overlays, build_root, build_number, builder_name,
-                            True, dryrun)
+      pool = ValidationPool(overlays, build_number, builder_name, True, dryrun)
       # Iterate through changes from all gerrit instances we care about.
       for helper in cls.GetGerritHelpersForOverlays(overlays):
         raw_changes = helper.GrabChangesReadyForCommit()
         changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(
-            raw_changes, build_root)
+            raw_changes, buildroot)
         pool.changes.extend(changes)
         pool.non_manifest_changes.extend(non_manifest_changes)
 
@@ -879,7 +794,7 @@ class ValidationPool(object):
       raise TreeIsClosedException()
 
   @classmethod
-  def AcquirePoolFromManifest(cls, manifest, overlays, build_root, build_number,
+  def AcquirePoolFromManifest(cls, manifest, overlays, build_number,
                               builder_name, is_master, dryrun):
     """Acquires the current pool from a given manifest.
 
@@ -894,8 +809,8 @@ class ValidationPool(object):
     Returns:
       ValidationPool object.
     """
-    pool = ValidationPool(overlays, build_root, build_number, builder_name,
-                          is_master, dryrun)
+    pool = ValidationPool(overlays, build_number, builder_name, is_master,
+                          dryrun)
     manifest_dom = minidom.parse(manifest)
     pending_commits = manifest_dom.getElementsByTagName(
         lkgm_manager.PALADIN_COMMIT_ELEMENT)
@@ -964,7 +879,7 @@ class ValidationPool(object):
 
     return changes_in_manifest, changes_not_in_manifest
 
-  def ApplyPoolIntoRepo(self, manifest=None):
+  def ApplyPoolIntoRepo(self, buildroot, manifest=None):
     """Applies changes from pool into the directory specified by the buildroot.
 
     This method applies changes in the order specified.  It also respects
@@ -975,7 +890,7 @@ class ValidationPool(object):
     """
     try:
       applied, failed_tot, failed_inflight = self._patch_series.Apply(
-          self.changes, dryrun=self.dryrun, manifest=manifest)
+          buildroot, self.changes, self.dryrun, manifest=manifest)
     except (KeyboardInterrupt, RuntimeError, SystemExit):
       raise
     except Exception, e:
