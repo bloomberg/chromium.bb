@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base64.h"
 #include "base/string_split.h"
 #include "chrome/browser/metrics/proto/study.pb.h"
 #include "chrome/browser/metrics/variations_service.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_variations {
@@ -15,6 +18,21 @@ namespace {
 // Converts |time| to Study proto format.
 int64 TimeToProtoTime(const base::Time& time) {
   return (time - base::Time::UnixEpoch()).InSeconds();
+}
+
+// Populates |seed| with simple test data. The resulting seed will contain one
+// study called "test", which contains one experiment called "abc" with
+// probability weight 100. |seed|'s study field will be cleared before adding
+// the new study.
+chrome_variations::TrialsSeed CreateTestSeed() {
+  chrome_variations::TrialsSeed seed;
+  chrome_variations::Study* study = seed.add_study();
+  study->set_name("test");
+  study->set_default_experiment_name("abc");
+  chrome_variations::Study_Experiment* experiment = study->add_experiment();
+  experiment->set_name("abc");
+  experiment->set_probability_weight(100);
+  return seed;
 }
 
 }  // namespace
@@ -288,6 +306,79 @@ TEST(VariationsServiceTest, IsStudyExpired) {
     EXPECT_EQ(expiry_test_cases[i].expected_result, result)
         << "Case " << i << " failed!";
   }
+}
+
+TEST(VariationsServiceTest, LoadSeed) {
+  TestingPrefService pref_service;
+
+  VariationsService::RegisterPrefs(&pref_service);
+
+  // Store good seed data to test if loading from prefs works.
+  chrome_variations::TrialsSeed seed = CreateTestSeed();
+
+  std::string serialized_seed;
+  seed.SerializeToString(&serialized_seed);
+  std::string base64_serialized_seed;
+  ASSERT_TRUE(base::Base64Encode(serialized_seed, &base64_serialized_seed));
+  pref_service.SetString(prefs::kVariationsSeed, base64_serialized_seed);
+
+  VariationsService variations_service;
+  chrome_variations::TrialsSeed loaded_seed;
+  EXPECT_TRUE(
+      variations_service.LoadTrialsSeedFromPref(&pref_service, &loaded_seed));
+
+  std::string serialized_loaded_seed;
+  loaded_seed.SerializeToString(&serialized_loaded_seed);
+  // Check that the loaded data is the same as the original.
+  EXPECT_EQ(serialized_seed, serialized_loaded_seed);
+  // Make sure the pref hasn't been changed.
+  EXPECT_FALSE(
+      pref_service.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
+  EXPECT_EQ(base64_serialized_seed,
+            pref_service.GetString(prefs::kVariationsSeed));
+
+  // Check that loading a bad seed returns false and clears the pref.
+  pref_service.ClearPref(prefs::kVariationsSeed);
+  pref_service.SetString(prefs::kVariationsSeed, "this should fail");
+  EXPECT_FALSE(
+      pref_service.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
+  EXPECT_FALSE(
+      variations_service.LoadTrialsSeedFromPref(&pref_service, &loaded_seed));
+  EXPECT_TRUE(
+      pref_service.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
+}
+
+TEST(VariationsServiceTest, StoreSeed) {
+  TestingPrefService pref_service;
+
+  VariationsService::RegisterPrefs(&pref_service);
+  const base::Time now = base::Time::Now();
+
+  chrome_variations::TrialsSeed seed = CreateTestSeed();
+
+  VariationsService variations_service;
+  std::string serialized_seed;
+  seed.SerializeToString(&serialized_seed);
+  EXPECT_TRUE(
+      variations_service.StoreSeedData(serialized_seed, now, &pref_service));
+  // Make sure the pref was actually set.
+  EXPECT_FALSE(
+      pref_service.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
+
+  std::string loaded_serialized_seed =
+      pref_service.GetString(prefs::kVariationsSeed);
+  std::string decoded_serialized_seed;
+  ASSERT_TRUE(base::Base64Decode(loaded_serialized_seed,
+                                 &decoded_serialized_seed));
+  // Make sure the stored seed from pref is the same as the seed we created.
+  EXPECT_EQ(serialized_seed, decoded_serialized_seed);
+
+  // Check if trying to store a bad seed leaves the pref unchanged.
+  pref_service.ClearPref(prefs::kVariationsSeed);
+  EXPECT_FALSE(
+      variations_service.StoreSeedData("this should fail", now, &pref_service));
+  EXPECT_TRUE(
+      pref_service.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
 }
 
 TEST(VariationsServiceTest, ValidateStudy) {

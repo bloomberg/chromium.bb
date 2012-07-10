@@ -190,7 +190,7 @@ void VariationsService::RegisterPrefs(PrefService* prefs) {
                            base::Time().ToInternalValue());
 }
 
-void VariationsService::StoreSeedData(const std::string& seed_data,
+bool VariationsService::StoreSeedData(const std::string& seed_data,
                                       const base::Time& seed_date,
                                       PrefService* local_prefs) {
   // Only store the seed data if it parses correctly.
@@ -198,19 +198,20 @@ void VariationsService::StoreSeedData(const std::string& seed_data,
   if (!seed.ParseFromString(seed_data)) {
     VLOG(1) << "Variations Seed data from server is not in valid proto format, "
             << "rejecting the seed.";
-    return;
+    return false;
   }
 
   std::string base64_seed_data;
   if (!base::Base64Encode(seed_data, &base64_seed_data)) {
     VLOG(1) << "Variations Seed data from server fails Base64Encode, rejecting "
             << "the seed.";
-    return;
+    return false;
   }
 
   local_prefs->SetString(prefs::kVariationsSeed, base64_seed_data);
   local_prefs->SetInt64(prefs::kVariationsSeedDate,
                         seed_date.ToInternalValue());
+  return true;
 }
 
 // static
