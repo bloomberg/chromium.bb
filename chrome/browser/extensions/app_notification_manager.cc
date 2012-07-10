@@ -338,7 +338,9 @@ syncer::SyncError AppNotificationManager::MergeDataAndStartSyncing(
   for (SyncDataMap::const_iterator iter = local_data_map.begin();
       iter != local_data_map.end(); ++iter) {
     new_changes.push_back(
-        syncer::SyncChange(syncer::SyncChange::ACTION_ADD, iter->second));
+        syncer::SyncChange(FROM_HERE,
+                           syncer::SyncChange::ACTION_ADD,
+                           iter->second));
   }
 
   syncer::SyncError error;
@@ -494,7 +496,9 @@ void AppNotificationManager::SyncAddChange(const AppNotification& notif) {
   syncer::SyncChangeList changes;
   syncer::SyncData sync_data = CreateSyncDataFromNotification(notif);
   changes.push_back(
-      syncer::SyncChange(syncer::SyncChange::ACTION_ADD, sync_data));
+      syncer::SyncChange(FROM_HERE,
+                         syncer::SyncChange::ACTION_ADD,
+                         sync_data));
   sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
 }
 
@@ -509,7 +513,9 @@ void AppNotificationManager::SyncRemoveChange(const AppNotification& notif) {
   syncer::SyncChangeList changes;
   syncer::SyncData sync_data = CreateSyncDataFromNotification(notif);
   changes.push_back(
-      syncer::SyncChange(syncer::SyncChange::ACTION_DELETE, sync_data));
+      syncer::SyncChange(FROM_HERE,
+                         syncer::SyncChange::ACTION_DELETE,
+                         sync_data));
   sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
 }
 
@@ -529,6 +535,7 @@ void AppNotificationManager::SyncClearAllChange(
     if (notif.is_local())
       continue;
     changes.push_back(syncer::SyncChange(
+        FROM_HERE,
         syncer::SyncChange::ACTION_DELETE,
         CreateSyncDataFromNotification(notif)));
   }

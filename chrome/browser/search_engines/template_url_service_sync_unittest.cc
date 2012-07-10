@@ -331,7 +331,9 @@ syncer::SyncChange TemplateURLServiceSyncTest::CreateTestSyncChange(
   // We take control of the TemplateURL so make sure it's cleaned up after
   // we create data out of it.
   scoped_ptr<TemplateURL> scoped_turl(turl);
-  return syncer::SyncChange(type,
+  return syncer::SyncChange(
+      FROM_HERE,
+      type,
       TemplateURLService::CreateSyncDataFromTemplateURL(*scoped_turl));
 }
 

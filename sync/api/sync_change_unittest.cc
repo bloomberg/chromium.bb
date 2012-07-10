@@ -25,7 +25,8 @@ typedef testing::Test SyncChangeTest;
 TEST_F(SyncChangeTest, LocalDelete) {
   SyncChange::SyncChangeType change_type = SyncChange::ACTION_DELETE;
   std::string tag = "client_tag";
-  SyncChange e(change_type,
+  SyncChange e(FROM_HERE,
+               change_type,
                SyncData::CreateLocalDelete(tag, syncer::PREFERENCES));
   EXPECT_EQ(change_type, e.change_type());
   EXPECT_EQ(tag, e.sync_data().GetTag());
@@ -39,7 +40,8 @@ TEST_F(SyncChangeTest, LocalUpdate) {
   pref_specifics->set_name("test");
   std::string tag = "client_tag";
   std::string title = "client_title";
-  SyncChange e(change_type,
+  SyncChange e(FROM_HERE,
+               change_type,
                SyncData::CreateLocalData(tag, title, specifics));
   EXPECT_EQ(change_type, e.change_type());
   EXPECT_EQ(tag, e.sync_data().GetTag());
@@ -58,7 +60,8 @@ TEST_F(SyncChangeTest, LocalAdd) {
   pref_specifics->set_name("test");
   std::string tag = "client_tag";
   std::string title = "client_title";
-  SyncChange e(change_type,
+  SyncChange e(FROM_HERE,
+               change_type,
                SyncData::CreateLocalData(tag, title, specifics));
   EXPECT_EQ(change_type, e.change_type());
   EXPECT_EQ(tag, e.sync_data().GetTag());
@@ -79,6 +82,7 @@ TEST_F(SyncChangeTest, SyncerChanges) {
       update_specifics.mutable_preference();
   pref_specifics->set_name("update");
   change_list.push_back(SyncChange(
+      FROM_HERE,
       SyncChange::ACTION_UPDATE,
       SyncData::CreateRemoteData(1, update_specifics)));
 
@@ -87,6 +91,7 @@ TEST_F(SyncChangeTest, SyncerChanges) {
   pref_specifics = add_specifics.mutable_preference();
   pref_specifics->set_name("add");
   change_list.push_back(SyncChange(
+      FROM_HERE,
       SyncChange::ACTION_ADD,
       SyncData::CreateRemoteData(2, add_specifics)));
 
@@ -95,6 +100,7 @@ TEST_F(SyncChangeTest, SyncerChanges) {
   pref_specifics = delete_specifics.mutable_preference();
   pref_specifics->set_name("add");
   change_list.push_back(SyncChange(
+      FROM_HERE,
       SyncChange::ACTION_DELETE,
       SyncData::CreateRemoteData(3, delete_specifics)));
 

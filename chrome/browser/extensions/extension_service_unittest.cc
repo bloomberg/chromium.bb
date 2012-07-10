@@ -4360,7 +4360,9 @@ TEST_F(ExtensionServiceTest, SyncForUninstalledExternalExtension) {
 
   syncer::SyncData sync_data =
       syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
-  syncer::SyncChange sync_change(syncer::SyncChange::ACTION_UPDATE, sync_data);
+  syncer::SyncChange sync_change(FROM_HERE,
+                                 syncer::SyncChange::ACTION_UPDATE,
+                                 sync_data);
   syncer::SyncChangeList list(1);
   list[0] = sync_change;
 
@@ -4493,7 +4495,9 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataUninstall) {
   ext_specifics->set_version("1.0");
   syncer::SyncData sync_data =
       syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
-  syncer::SyncChange sync_change(syncer::SyncChange::ACTION_DELETE, sync_data);
+  syncer::SyncChange sync_change(FROM_HERE,
+                                 syncer::SyncChange::ACTION_DELETE,
+                                 sync_data);
   syncer::SyncChangeList list(1);
   list[0] = sync_change;
 
@@ -4535,8 +4539,9 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataWrongType) {
     extension_specifics->set_enabled(true);
     syncer::SyncData sync_data =
         syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
-    syncer::SyncChange sync_change(
-        syncer::SyncChange::ACTION_DELETE, sync_data);
+    syncer::SyncChange sync_change(FROM_HERE,
+                                   syncer::SyncChange::ACTION_DELETE,
+                                   sync_data);
     syncer::SyncChangeList list(1);
     list[0] = sync_change;
 
@@ -4549,8 +4554,9 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataWrongType) {
     extension_specifics->set_enabled(false);
     syncer::SyncData sync_data =
         syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
-    syncer::SyncChange sync_change(
-        syncer::SyncChange::ACTION_UPDATE, sync_data);
+    syncer::SyncChange sync_change(FROM_HERE,
+                                   syncer::SyncChange::ACTION_UPDATE,
+                                   sync_data);
     syncer::SyncChangeList list(1);
     list[0] = sync_change;
 
@@ -4583,8 +4589,9 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
   {
     syncer::SyncData sync_data =
         syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
-    syncer::SyncChange sync_change(
-        syncer::SyncChange::ACTION_UPDATE, sync_data);
+    syncer::SyncChange sync_change(FROM_HERE,
+                                   syncer::SyncChange::ACTION_UPDATE,
+                                   sync_data);
     syncer::SyncChangeList list(1);
     list[0] = sync_change;
     service_->ProcessSyncChanges(FROM_HERE, list);
@@ -4597,8 +4604,9 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
     ext_specifics->set_incognito_enabled(true);
     syncer::SyncData sync_data =
         syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
-    syncer::SyncChange sync_change(
-        syncer::SyncChange::ACTION_UPDATE, sync_data);
+    syncer::SyncChange sync_change(FROM_HERE,
+                                   syncer::SyncChange::ACTION_UPDATE,
+                                   sync_data);
     syncer::SyncChangeList list(1);
     list[0] = sync_change;
     service_->ProcessSyncChanges(FROM_HERE, list);
@@ -4611,8 +4619,9 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
     ext_specifics->set_incognito_enabled(true);
     syncer::SyncData sync_data =
         syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
-    syncer::SyncChange sync_change(
-        syncer::SyncChange::ACTION_UPDATE, sync_data);
+    syncer::SyncChange sync_change(FROM_HERE,
+                                   syncer::SyncChange::ACTION_UPDATE,
+                                   sync_data);
     syncer::SyncChangeList list(1);
     list[0] = sync_change;
     service_->ProcessSyncChanges(FROM_HERE, list);
@@ -4645,7 +4654,9 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataTerminatedExtension) {
   ext_specifics->set_incognito_enabled(true);
   syncer::SyncData sync_data =
       syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
-  syncer::SyncChange sync_change(syncer::SyncChange::ACTION_UPDATE, sync_data);
+  syncer::SyncChange sync_change(FROM_HERE,
+                                 syncer::SyncChange::ACTION_UPDATE,
+                                 sync_data);
   syncer::SyncChangeList list(1);
   list[0] = sync_change;
 
@@ -4679,8 +4690,9 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataVersionCheck) {
         service_->GetInstalledExtension(good_crx)->version()->GetString());
     syncer::SyncData sync_data =
         syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
-    syncer::SyncChange sync_change(
-        syncer::SyncChange::ACTION_UPDATE, sync_data);
+    syncer::SyncChange sync_change(FROM_HERE,
+                                   syncer::SyncChange::ACTION_UPDATE,
+                                   sync_data);
     syncer::SyncChangeList list(1);
     list[0] = sync_change;
 
@@ -4695,8 +4707,9 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataVersionCheck) {
     ext_specifics->set_version("0.0.0.0");
     syncer::SyncData sync_data =
         syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
-    syncer::SyncChange sync_change(
-        syncer::SyncChange::ACTION_UPDATE, sync_data);
+    syncer::SyncChange sync_change(FROM_HERE,
+                                   syncer::SyncChange::ACTION_UPDATE,
+                                   sync_data);
     syncer::SyncChangeList list(1);
     list[0] = sync_change;
 
@@ -4709,8 +4722,9 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataVersionCheck) {
     ext_specifics->set_version("9.9.9.9");
     syncer::SyncData sync_data =
         syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
-    syncer::SyncChange sync_change(
-        syncer::SyncChange::ACTION_UPDATE, sync_data);
+    syncer::SyncChange sync_change(FROM_HERE,
+                                   syncer::SyncChange::ACTION_UPDATE,
+                                   sync_data);
     syncer::SyncChangeList list(1);
     list[0] = sync_change;
 
@@ -4739,7 +4753,9 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
   ext_specifics->set_version("1.2.3.4");
   syncer::SyncData sync_data =
       syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
-  syncer::SyncChange sync_change(syncer::SyncChange::ACTION_UPDATE, sync_data);
+  syncer::SyncChange sync_change(FROM_HERE,
+                                 syncer::SyncChange::ACTION_UPDATE,
+                                 sync_data);
   syncer::SyncChangeList list(1);
   list[0] = sync_change;
 

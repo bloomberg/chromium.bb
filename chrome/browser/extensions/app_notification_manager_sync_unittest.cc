@@ -206,7 +206,9 @@ class AppNotificationManagerSyncTest : public testing::Test {
     // Take control of notif to clean it up after we create data out of it.
     scoped_ptr<AppNotification> scoped_notif(notif);
     return syncer::SyncChange(
-        type, AppNotificationManager::CreateSyncDataFromNotification(*notif));
+        FROM_HERE,
+        type,
+        AppNotificationManager::CreateSyncDataFromNotification(*notif));
   }
 
   void AssertSyncChange(const syncer::SyncChange& change,
