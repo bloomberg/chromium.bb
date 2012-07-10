@@ -732,8 +732,7 @@ base::WeakPtr<WebGraphicsContext3DCommandBufferImpl>
 RenderThreadImpl::GetGpuVDAContext3D() {
   // If we already handed out a pointer to a context and it's been lost, create
   // a new one.
-  if (gpu_vda_context3d_.get() &&
-      gpu_vda_context3d_->IsCommandBufferContextLost()) {
+  if (gpu_vda_context3d_.get() && gpu_vda_context3d_->isContextLost()) {
     if (compositor_thread()) {
       compositor_thread()->GetWebThread()->message_loop()->DeleteSoon(
           FROM_HERE, gpu_vda_context3d_.release());
