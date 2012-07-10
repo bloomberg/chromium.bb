@@ -123,6 +123,11 @@ def AppendToXML(final_xml, generic_path, shard):
 
   testcases = shard_node.getElementsByTagName('testcase')
   final_testcases = final_node.getElementsByTagName('testcase')
+
+  final_testsuites = final_node.getElementsByTagName('testsuite')
+  final_testsuites_by_name = dict(
+      (suite.getAttribute('name'), suite) for suite in final_testsuites)
+
   for testcase in testcases:
     name = testcase.getAttribute('name')
     classname = testcase.getAttribute('classname')
@@ -136,6 +141,7 @@ def AppendToXML(final_xml, generic_path, shard):
 
     # Look in our final xml to see if it's there.
     # There has to be a better way...
+    merged_into_final_testcase = False
     for final_testcase in final_testcases:
       final_name = final_testcase.getAttribute('name')
       final_classname = final_testcase.getAttribute('classname')
@@ -145,6 +151,14 @@ def AppendToXML(final_xml, generic_path, shard):
         final_testcase.setAttribute('time', elapsed)
         for failure in failures:
           final_testcase.appendChild(failure)
+        merged_into_final_testcase = True
+
+    # We couldn't find an existing testcase to merge the results into, so we
+    # copy the node into the existing test suite.
+    if not merged_into_final_testcase:
+      testsuite = testcase.parentNode
+      final_testsuite = final_testsuites_by_name[testsuite.getAttribute('name')]
+      final_testsuite.appendChild(testcase)
 
   return final_xml
 
@@ -288,7 +302,7 @@ class ShardingSupervisor(object):
   case the number of shards to execute will be the same, but they will be
   smaller, as the total number of shards in the test suite will be multiplied
   by 'total_slaves'.
- 
+
   For example, if you are on a quad core machine, the sharding supervisor by
   default will use 20 shards for the whole suite. However, if you set
   total_slaves to 2, it will split the suite in 40 shards and will only run
