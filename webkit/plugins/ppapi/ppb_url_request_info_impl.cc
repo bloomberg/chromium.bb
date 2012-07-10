@@ -120,6 +120,13 @@ bool PPB_URLRequestInfo_Impl::ToWebURLRequest(WebFrame* frame,
         WebString::fromUTF8(data().custom_content_transfer_encoding));
   }
 
+  if (data().has_custom_user_agent) {
+    // TODO(viettrungluu): If |custom_user_agent| is empty, we're supposed to
+    // arrange for User-Agent to be omitted; this probably won't do that.
+    dest->addHTTPHeaderField(WebString::fromUTF8("User-Agent"),
+                             WebString::fromUTF8(data().custom_user_agent));
+  }
+
   return true;
 }
 
