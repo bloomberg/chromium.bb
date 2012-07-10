@@ -202,7 +202,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 
 // Times out sometimes on Linux. http://crbug.com/135115
 #if defined(OS_LINUX)
-#define MAYBE_MouseLockAndFullscreen FLAKY_MouseLockAndFullscreen
+#define MAYBE_MouseLockAndFullscreen DISABLED_MouseLockAndFullscreen
 #else
 #define MAYBE_MouseLockAndFullscreen MouseLockAndFullscreen
 #endif
