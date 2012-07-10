@@ -438,6 +438,10 @@ class OmniboxViewGtk : public OmniboxView,
   // clipboard is not empty.
   bool paste_clipboard_requested_;
 
+  // Text to "Paste and go"; set by HandlePopulatePopup() and consumed by
+  // HandlePasteAndGo().
+  string16 sanitized_text_for_paste_and_go_;
+
   // Indicates if an Enter key press is inserted as text.
   // It's used in the key press handler to determine if an Enter key event is
   // handled by IME or not.

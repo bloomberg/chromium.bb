@@ -1027,18 +1027,15 @@ int OmniboxViewWin::OnPerformDropImpl(const views::DropTargetEvent& event,
         else
           InsertText(string_drop_position, text);
       } else {
-        PasteAndGo(CollapseWhitespace(text, true));
+        string16 collapsed_text(CollapseWhitespace(text, true));
+        if (model_->CanPasteAndGo(collapsed_text))
+          model_->PasteAndGo(collapsed_text);
       }
       return CopyOrLinkDragOperation(event.source_operations());
     }
   }
 
   return ui::DragDropTypes::DRAG_NONE;
-}
-
-void OmniboxViewWin::PasteAndGo(const string16& text) {
-  if (CanPasteAndGo(text))
-    model_->PasteAndGo();
 }
 
 bool OmniboxViewWin::SkipDefaultKeyEventProcessing(
@@ -1112,7 +1109,7 @@ bool OmniboxViewWin::IsCommandIdEnabled(int command_id) const {
     case IDC_CUT:          return !!CanCut();
     case IDC_COPY:         return !!CanCopy();
     case IDC_PASTE:        return !!CanPaste();
-    case IDS_PASTE_AND_GO: return CanPasteAndGo(GetClipboardText());
+    case IDS_PASTE_AND_GO: return model_->CanPasteAndGo(GetClipboardText());
     case IDS_SELECT_ALL:   return !!CanSelectAll();
     case IDS_EDIT_SEARCH_ENGINES:
       return command_updater_->IsCommandEnabled(IDC_EDIT_SEARCH_ENGINES);
@@ -1136,7 +1133,8 @@ bool OmniboxViewWin::IsItemForCommandIdDynamic(int command_id) const {
 
 string16 OmniboxViewWin::GetLabelForCommandId(int command_id) const {
   DCHECK_EQ(IDS_PASTE_AND_GO, command_id);
-  return l10n_util::GetStringUTF16(model_->is_paste_and_search() ?
+  return l10n_util::GetStringUTF16(
+      model_->IsPasteAndSearch(GetClipboardText()) ?
       IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO);
 }
 
@@ -1145,7 +1143,7 @@ void OmniboxViewWin::ExecuteCommand(int command_id) {
   if (command_id == IDS_PASTE_AND_GO) {
     // This case is separate from the switch() below since we don't want to wrap
     // it in OnBefore/AfterPossibleChange() calls.
-    model_->PasteAndGo();
+    model_->PasteAndGo(GetClipboardText());
     return;
   }
 
@@ -2461,10 +2459,6 @@ void OmniboxViewWin::TextChanged() {
   ScopedFreeze freeze(this, GetTextObjectModel());
   EmphasizeURLComponents();
   model_->OnChanged();
-}
-
-bool OmniboxViewWin::CanPasteAndGo(const string16& text) const {
-  return !popup_window_mode_ && model_->CanPasteAndGo(text);
 }
 
 ITextDocument* OmniboxViewWin::GetTextObjectModel() const {

@@ -943,19 +943,16 @@ bool OmniboxViewMac::CanPasteAndGo() {
 }
 
 int OmniboxViewMac::GetPasteActionStringId() {
-  DCHECK(CanPasteAndGo());
-
-  // Use PASTE_AND_SEARCH as the default fallback (although the DCHECK above
-  // should never trigger).
-  if (!model_->is_paste_and_search())
-    return IDS_PASTE_AND_GO;
-  else
-    return IDS_PASTE_AND_SEARCH;
+  string16 text(GetClipboardText());
+  DCHECK(model_->CanPasteAndGo(text));
+  return model_->IsPasteAndSearch(GetClipboardText()) ?
+      IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO;
 }
 
 void OmniboxViewMac::OnPasteAndGo() {
-  if (CanPasteAndGo())
-    model_->PasteAndGo();
+  string16 text(GetClipboardText());
+  if (model_->CanPasteAndGo(text))
+    model_->PasteAndGo(text);
 }
 
 void OmniboxViewMac::OnFrameChanged() {

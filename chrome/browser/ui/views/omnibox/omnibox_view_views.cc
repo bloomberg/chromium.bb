@@ -863,15 +863,14 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
 }
 
 bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
-  if (command_id == IDS_PASTE_AND_GO)
-    return !popup_window_mode_ && model_->CanPasteAndGo(GetClipboardText());
-
-  return command_updater_->IsCommandEnabled(command_id);
+  return (command_id == IDS_PASTE_AND_GO) ?
+      model_->CanPasteAndGo(GetClipboardText()) :
+      command_updater_->IsCommandEnabled(command_id);
 }
 
 void OmniboxViewViews::ExecuteCommand(int command_id) {
   if (command_id == IDS_PASTE_AND_GO) {
-    model_->PasteAndGo();
+    model_->PasteAndGo(GetClipboardText());
     return;
   }
 

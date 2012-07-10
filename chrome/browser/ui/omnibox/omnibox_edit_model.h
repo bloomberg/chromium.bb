@@ -168,19 +168,14 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   void StopAutocomplete();
 
   // Determines whether the user can "paste and go", given the specified text.
-  // This also updates the internal paste-and-go-related state variables as
-  // appropriate so that the controller doesn't need to be repeatedly queried
-  // for the same text in every clipboard-related function.
   bool CanPasteAndGo(const string16& text) const;
 
   // Navigates to the destination last supplied to CanPasteAndGo.
-  void PasteAndGo();
+  void PasteAndGo(const string16& text);
 
   // Returns true if this is a paste-and-search rather than paste-and-go (or
   // nothing).
-  bool is_paste_and_search() const {
-    return (paste_and_go_match_.transition != content::PAGE_TRANSITION_TYPED);
-  }
+  bool IsPasteAndSearch(const string16& text) const;
 
   // Asks the browser to load the popup's currently selected item, using the
   // supplied disposition.  This may close the popup. If |for_drop| is true,
@@ -400,6 +395,12 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   metrics::OmniboxEventProto::PageClassification ClassifyPage(
       const GURL& gurl) const;
 
+  // Sets |match| and |alternate_nav_url| based on classifying |text|.
+  // |alternate_nav_url| may be NULL.
+  void ClassifyStringForPasteAndGo(const string16& text,
+                                   AutocompleteMatch* match,
+                                   GURL* alternate_nav_url) const;
+
   scoped_ptr<AutocompleteController> autocomplete_controller_;
 
   OmniboxView* view_;
@@ -493,10 +494,6 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   // user hasn't actually selected a keyword yet.  When this is true, we can use
   // keyword_ to show a "Press <tab> to search" sort of hint.
   bool is_keyword_hint_;
-
-  // Paste And Go-related state.  See CanPasteAndGo().
-  mutable AutocompleteMatch paste_and_go_match_;
-  mutable GURL paste_and_go_alternate_nav_url_;
 
   Profile* profile_;
 

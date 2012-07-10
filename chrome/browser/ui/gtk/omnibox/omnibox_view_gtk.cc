@@ -1320,25 +1320,6 @@ void OmniboxViewGtk::HandlePopulatePopup(GtkWidget* sender, GtkMenu* menu) {
       command_updater_->IsCommandEnabled(IDC_EDIT_SEARCH_ENGINES));
   gtk_widget_show(search_engine_menuitem);
 
-  // We need to update the paste and go controller before we know what text
-  // to show. We could do this all asynchronously, but it would be elaborate
-  // because we'd have to account for multiple menus showing, getting called
-  // back after shutdown, and similar issues.
-  GtkClipboard* x_clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
-  gchar* text = gtk_clipboard_wait_for_text(x_clipboard);
-  string16 sanitized_text(text ?
-      StripJavascriptSchemas(CollapseWhitespace(UTF8ToUTF16(text), true)) :
-      string16());
-  g_free(text);
-
-  // Paste and Go menu item. Note that CanPasteAndGo() needs to be called
-  // before is_paste_and_search() in order to set up the paste-and-go state.
-  bool can_paste_and_go = model_->CanPasteAndGo(sanitized_text);
-  GtkWidget* paste_go_menuitem = gtk_menu_item_new_with_mnemonic(
-      ui::ConvertAcceleratorsFromWindowsStyle(
-          l10n_util::GetStringUTF8(model_->is_paste_and_search() ?
-              IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO)).c_str());
-
   // Detect the Paste menu item by searching for the one that
   // uses the stock Paste label (i.e. gtk-paste).
   string16 stock_paste_label(UTF8ToUTF16(GTK_STOCK_PASTE));
@@ -1361,10 +1342,21 @@ void OmniboxViewGtk::HandlePopulatePopup(GtkWidget* sender, GtkMenu* menu) {
 
   // If we don't find the stock Paste menu item,
   // the Paste and Go item will be appended at the end of the popup menu.
+  GtkClipboard* x_clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+  gchar* text = gtk_clipboard_wait_for_text(x_clipboard);
+  sanitized_text_for_paste_and_go_ = text ?
+      StripJavascriptSchemas(CollapseWhitespace(UTF8ToUTF16(text), true)) :
+      string16();
+  g_free(text);
+  GtkWidget* paste_go_menuitem = gtk_menu_item_new_with_mnemonic(
+      ui::ConvertAcceleratorsFromWindowsStyle(l10n_util::GetStringUTF8(
+          model_->IsPasteAndSearch(sanitized_text_for_paste_and_go_) ?
+              IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO)).c_str());
   gtk_menu_shell_insert(GTK_MENU_SHELL(menu), paste_go_menuitem, index);
   g_signal_connect(paste_go_menuitem, "activate",
                    G_CALLBACK(HandlePasteAndGoThunk), this);
-  gtk_widget_set_sensitive(paste_go_menuitem, can_paste_and_go);
+  gtk_widget_set_sensitive(paste_go_menuitem,
+      model_->CanPasteAndGo(sanitized_text_for_paste_and_go_));
   gtk_widget_show(paste_go_menuitem);
 
   g_signal_connect(menu, "deactivate",
@@ -1376,7 +1368,7 @@ void OmniboxViewGtk::HandleEditSearchEngines(GtkWidget* sender) {
 }
 
 void OmniboxViewGtk::HandlePasteAndGo(GtkWidget* sender) {
-  model_->PasteAndGo();
+  model_->PasteAndGo(sanitized_text_for_paste_and_go_);
 }
 
 void OmniboxViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
@@ -1696,9 +1688,10 @@ void OmniboxViewGtk::HandleCopyOrCutClipboard(bool copy) {
 }
 
 bool OmniboxViewGtk::OnPerformDropImpl(const string16& text) {
-  if (model_->CanPasteAndGo(StripJavascriptSchemas(
-      CollapseWhitespace(text, true)))) {
-    model_->PasteAndGo();
+  string16 sanitized_string(StripJavascriptSchemas(
+      CollapseWhitespace(text, true)));
+  if (model_->CanPasteAndGo(sanitized_string)) {
+    model_->PasteAndGo(sanitized_string);
     return true;
   }
 

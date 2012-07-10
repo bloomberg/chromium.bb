@@ -450,16 +450,25 @@ bool OmniboxEditModel::CanPasteAndGo(const string16& text) const {
   if (!view_->GetCommandUpdater()->IsCommandEnabled(IDC_OPEN_CURRENT_URL))
     return false;
 
-  AutocompleteClassifierFactory::GetForProfile(profile_)->Classify(text,
-      string16(), false, false, &paste_and_go_match_,
-      &paste_and_go_alternate_nav_url_);
-  return paste_and_go_match_.destination_url.is_valid();
+  AutocompleteMatch match;
+  ClassifyStringForPasteAndGo(text, &match, NULL);
+  return match.destination_url.is_valid();
 }
 
-void OmniboxEditModel::PasteAndGo() {
+void OmniboxEditModel::PasteAndGo(const string16& text) {
+  DCHECK(CanPasteAndGo(text));
   view_->RevertAll();
-  view_->OpenMatch(paste_and_go_match_, CURRENT_TAB,
-      paste_and_go_alternate_nav_url_, OmniboxPopupModel::kNoMatch);
+  AutocompleteMatch match;
+  GURL alternate_nav_url;
+  ClassifyStringForPasteAndGo(text, &match, &alternate_nav_url);
+  view_->OpenMatch(match, CURRENT_TAB, alternate_nav_url,
+                   OmniboxPopupModel::kNoMatch);
+}
+
+bool OmniboxEditModel::IsPasteAndSearch(const string16& text) const {
+  AutocompleteMatch match;
+  ClassifyStringForPasteAndGo(text, &match, NULL);
+  return (match.transition != content::PAGE_TRANSITION_TYPED);
 }
 
 void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
@@ -1157,4 +1166,13 @@ metrics::OmniboxEventProto::PageClassification
   if (url == profile()->GetPrefs()->GetString(prefs::kHomePage))
     return metrics::OmniboxEventProto_PageClassification_HOMEPAGE;
   return metrics::OmniboxEventProto_PageClassification_OTHER;
+}
+
+void OmniboxEditModel::ClassifyStringForPasteAndGo(
+    const string16& text,
+    AutocompleteMatch* match,
+    GURL* alternate_nav_url) const {
+  DCHECK(match);
+  AutocompleteClassifierFactory::GetForProfile(profile_)->Classify(text,
+      string16(), false, false, match, alternate_nav_url);
 }

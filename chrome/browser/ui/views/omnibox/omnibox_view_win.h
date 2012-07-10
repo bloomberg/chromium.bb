@@ -144,11 +144,6 @@ class OmniboxViewWin
   // Inserts the text at the specified position.
   void InsertText(int position, const string16& text);
 
-  // Invokes CanPasteAndGo with the specified text, and if successful navigates
-  // to the appropriate URL. The behavior of this is the same as if the user
-  // typed in the specified text and pressed enter.
-  void PasteAndGo(const string16& text);
-
   void set_force_hidden(bool force_hidden) { force_hidden_ = force_hidden; }
 
   // Called before an accelerator is processed to give us a chance to override
@@ -364,9 +359,6 @@ class OmniboxViewWin
 
   // Internally invoked whenever the text changes in some way.
   void TextChanged();
-
-  // Determines whether the user can "paste and go", given the specified text.
-  bool CanPasteAndGo(const string16& text) const;
 
   // Getter for the text_object_model_.  Note that the pointer returned here is
   // only valid as long as the AutocompleteEdit is still alive.  Also, if the
