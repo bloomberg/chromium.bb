@@ -18,7 +18,9 @@
 // See bug for history.
 #if !defined(ADDRESS_SANITIZER)
 
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MouseLock_SucceedWhenAllowed) {
+// Disabled due to timeouts: http://crbug.com/136548
+IN_PROC_BROWSER_TEST_F(
+    OutOfProcessPPAPITest, DISABLED_MouseLock_SucceedWhenAllowed) {
   HostContentSettingsMap* settings_map =
       browser()->profile()->GetHostContentSettingsMap();
 

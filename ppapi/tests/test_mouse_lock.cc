@@ -24,8 +24,7 @@ bool TestMouseLock::Init() {
 }
 
 void TestMouseLock::RunTests(const std::string& filter) {
-  // Disabled due to timeouts: http://crbug.com/136548
-  // RUN_TEST(SucceedWhenAllowed, filter);
+  RUN_TEST(SucceedWhenAllowed, filter);
   RUN_TEST(FailWhenBlocked, filter);
 }
 
