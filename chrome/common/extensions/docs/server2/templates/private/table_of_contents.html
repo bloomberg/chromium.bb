@@ -1,6 +1,16 @@
 <div id="toc">
   <h2>Contents</h2>
   <ol>
+    {{#toc}}
+    <li>
+      <a href=#{{link}}>{{title}}</a>
+      {{?subheadings}}
+      <ol>
+        {{#subheadings}}<li><a href=#{{link}}>{{title}}</a></li>{{/}}
+      </ol>
+      {{/}}
+    </li>
+    {{/toc}}
     <li>
       <a href="#apiReference">API reference: chrome.{{api.name}}</a>
       <ol>

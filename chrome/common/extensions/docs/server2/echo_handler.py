@@ -20,6 +20,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 from api_data_source import APIDataSource
 from fetcher_cache import FetcherCache
+from intro_data_source import IntroDataSource
 from local_fetcher import LocalFetcher
 from server_instance import ServerInstance
 from subversion_fetcher import SubversionFetcher
@@ -28,6 +29,7 @@ from template_data_source import TemplateDataSource
 EXTENSIONS_PATH = 'chrome/common/extensions'
 DOCS_PATH = 'docs'
 API_PATH = 'api'
+INTRO_PATH = DOCS_PATH + '/server2/templates/intros'
 PUBLIC_TEMPLATE_PATH = DOCS_PATH + '/server2/templates/public'
 PRIVATE_TEMPLATE_PATH = DOCS_PATH + '/server2/templates/private'
 
@@ -52,9 +54,11 @@ class Server(webapp.RequestHandler):
       cache_timeout_seconds = 300
     cache_builder = FetcherCache.Builder(fetcher, cache_timeout_seconds)
     api_data_source = APIDataSource(cache_builder, API_PATH)
+    intro_data_source = IntroDataSource(cache_builder, INTRO_PATH)
     template_data_source = TemplateDataSource(
         branch,
         api_data_source,
+        intro_data_source,
         cache_builder,
         [PUBLIC_TEMPLATE_PATH, PRIVATE_TEMPLATE_PATH])
     SERVER_INSTANCES[branch] = ServerInstance(

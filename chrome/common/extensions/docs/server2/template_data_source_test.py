@@ -16,6 +16,7 @@ class TemplateDataSourceTest(unittest.TestCase):
   def setUp(self):
     self._base_path = os.path.join('test_data', 'template_data_source')
     self._fake_api_data_source = {}
+    self._fake_intro_data_source = {}
 
   def _ReadLocalFile(self, filename):
     with open(os.path.join(self._base_path, filename), 'r') as f:
@@ -28,14 +29,19 @@ class TemplateDataSourceTest(unittest.TestCase):
         self._ReadLocalFile(name + '_expected.html'),
         data_source.Render(template_name))
 
+  def _CreateTemplateDataSource(self, input_dict, cache_builder):
+    return TemplateDataSource('fake_branch',
+                              input_dict,
+                              self._fake_intro_data_source,
+                              cache_builder,
+                              ['./'])
+
   def testSimple(self):
     self._base_path = os.path.join(self._base_path, 'simple')
     fetcher = LocalFetcher(self._base_path)
     cache_builder = FetcherCache.Builder(fetcher, 0)
-    t_data_source = TemplateDataSource('fake_branch',
-                                       self._fake_api_data_source,
-                                       cache_builder,
-                                       ['./'])
+    t_data_source = self._CreateTemplateDataSource(self._fake_api_data_source,
+                                                    cache_builder)
     template_a1 = Handlebar(self._ReadLocalFile('test1.html'))
     self.assertEqual(template_a1.render({}, {'templates': {}}).text,
         t_data_source['test1'].render({}, {'templates': {}}).text)
@@ -50,10 +56,8 @@ class TemplateDataSourceTest(unittest.TestCase):
     self._base_path = os.path.join(self._base_path, 'partials')
     fetcher = LocalFetcher(self._base_path)
     cache_builder = FetcherCache.Builder(fetcher, 0)
-    t_data_source = TemplateDataSource('fake_branch',
-                                       self._fake_api_data_source,
-                                       cache_builder,
-                                       ['./'])
+    t_data_source = self._CreateTemplateDataSource(self._fake_api_data_source,
+                                                    cache_builder)
     self.assertEqual(self._ReadLocalFile('test_expected.html'),
         t_data_source['test_tmpl'].render(
             json.loads(self._ReadLocalFile('input.json')), t_data_source).text)
@@ -65,16 +69,14 @@ class TemplateDataSourceTest(unittest.TestCase):
     cache_builder = FetcherCache.Builder(fetcher, 0)
     self._RenderTest(
         'test1',
-        TemplateDataSource('fake_branch',
-                           json.loads(self._ReadLocalFile('test1.json')),
-                           cache_builder,
-                           ['./']))
+        self._CreateTemplateDataSource(
+            json.loads(self._ReadLocalFile('test1.json')),
+                           cache_builder))
     self._RenderTest(
         'test2',
-        TemplateDataSource('fake_branch',
-                           json.loads(self._ReadLocalFile('test2.json')),
-                           cache_builder,
-                           ['./']))
+        self._CreateTemplateDataSource(
+            json.loads(self._ReadLocalFile('test2.json')),
+                           cache_builder))
 
 if __name__ == '__main__':
   unittest.main()

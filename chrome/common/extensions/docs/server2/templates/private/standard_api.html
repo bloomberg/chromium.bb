@@ -11,9 +11,9 @@
       {{+partials.sidenav}}
       <div id="gc-pagecontent">
         <h1 class="page_title">chrome.{{api.name}}</h1>
-        {{+partials.table_of_contents}}
+        {{+partials.table_of_contents toc:intro.toc}}
 {{- This is unindented because it contains <pre> tags -}}
-{{+intro}}
+{{+intro.intro}}
         {{+partials.api_reference}}
       </div>
     </div>
