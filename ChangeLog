@@ -2,6 +2,9 @@
 
 	* doc/liblouis.texi (How to Write Translation Tables): Document
 	the fact that translation tables can now be in UTF-8.
+	(Top): Document the doctests.
+	(How to Write Translation Tables): Add some minimal documentation
+	about the doctests
 
 2012-06-28  Christian Egli  <christian.egli@sbs.ch>
 
