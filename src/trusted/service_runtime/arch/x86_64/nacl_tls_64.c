@@ -95,6 +95,43 @@ static void NaClThreadIdxFree(uint32_t i) {
   NaClXMutexUnlock(&gNaClTlsMu);
 }
 
+/*
+ * The API, defined for x86-32, requires that we return
+ * NACL_TLS_INDEX_INVALID (0) for error.  This was because 0 is an
+ * illegal segment selector value.
+ *
+ * Allocation does not mean we can set the TSD variable, since we are
+ * not that thread.  The setting of the TSD must wait until the thread
+ * actually launches.
+ */
+uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
+                         void                 *base_addr) {
+  UNREFERENCED_PARAMETER(natp);
+  UNREFERENCED_PARAMETER(base_addr);
+
+  return NaClThreadIdxAllocate();
+}
+
+void NaClTlsFree(struct NaClAppThread *natp) {
+  NaClThreadIdxFree(NaClGetThreadIdx(natp));
+  /*
+   * don't do
+   *
+   * pthread_setspecific(nacl_thread_info_key, (void *) 0);
+   *
+   * since this is invoked from the NaClAppThread's dtor, not by the
+   * dying thread.  The thread is already dead and gone, so the TSD is
+   * no longer available.
+   */
+}
+
+uint32_t NaClTlsChange(struct NaClAppThread   *natp,
+                       void                   *base_addr) {
+  UNREFERENCED_PARAMETER(base_addr);
+
+  return NaClGetThreadIdx(natp);
+}
+
 uint32_t NaClGetThreadIdx(struct NaClAppThread *natp) {
   return natp->user.tls_idx;
 }
@@ -160,7 +197,6 @@ int NaClTlsInit() {
   return 1;
 }
 
-
 void NaClTlsFini() {
   int errnum = pthread_key_delete(nacl_thread_info_key);
   if (0 != errnum) {
@@ -171,21 +207,6 @@ void NaClTlsFini() {
   NaClThreadIdxFini();
   return;
 }
-
-
-/*
- * Allocation does not mean we can set the TSD variable, since we are
- * not that thread.  The setting of the TSD must wait until the thread
- * actually launches.
- */
-uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
-                         void                 *base_addr) {
-  UNREFERENCED_PARAMETER(natp);
-  UNREFERENCED_PARAMETER(base_addr);
-
-  return NaClThreadIdxAllocate();
-}
-
 
 void NaClTlsSetIdx(uint32_t tls_idx) {
   uint32_t tls_idx_check;
@@ -212,7 +233,6 @@ void NaClTlsSetIdx(uint32_t tls_idx) {
   }
 }
 
-
 /*
  * May be called from asm (or have compiler-generated code copied into
  * asm)!  We assume that register state is amenable to the use of
@@ -226,34 +246,7 @@ uint32_t NaClTlsGetIdx(void) {
   return (intptr_t) pthread_getspecific(nacl_thread_info_key);
 }
 
-
-void NaClTlsFree(struct NaClAppThread *natp) {
-  int tls_idx;
-
-  tls_idx = NaClGetThreadIdx(natp);
-  NaClThreadIdxFree(tls_idx);
-  /*
-   * don't do
-   *
-   * pthread_setspecific(nacl_thread_info_key, (void *) 0);
-   *
-   * since this is invoked from the NaClAppThread's dtor, not by the
-   * dying thread.  The thread is already dead and gone, so the TSD is
-   * no longer available.
-   */
-}
-
-
-uint32_t NaClTlsChange(struct NaClAppThread *natp,
-                       void                 *base_addr) {
-  UNREFERENCED_PARAMETER(base_addr);
-
-  return NaClGetThreadIdx(natp);
-}
-
-
 #elif NACL_LINUX || NACL_WINDOWS
-
 
 THREAD uint32_t nacl_thread_index;
 /* encoded index; 0 is used to indicate error */
@@ -268,25 +261,9 @@ int NaClTlsInit() {
   return 1;
 }
 
-
 void NaClTlsFini() {
   NaClThreadIdxFini();
 }
-
-
-/*
- * The API, defined for x86-32, requires that we return
- * NACL_TLS_INDEX_INVALID (0) for error.  This was because 0 is an
- * illegal segment selector value.
- */
-uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
-                         void                 *base_addr) {
-  UNREFERENCED_PARAMETER(natp);
-  UNREFERENCED_PARAMETER(base_addr);
-
-  return NaClThreadIdxAllocate();
-}
-
 
 /*
  * On x86-64, we must avoid using segment registers since Windows
@@ -306,21 +283,6 @@ void NaClTlsSetIdx(uint32_t tls_idx) {
 uint32_t NaClTlsGetIdx(void) {
   return nacl_thread_index;
 }
-
-void NaClTlsFree(struct NaClAppThread *natp) {
-                 uint32_t             tls_idx;
-
-  tls_idx = NaClGetThreadIdx(natp);
-  NaClThreadIdxFree(tls_idx);
-}
-
-uint32_t NaClTlsChange(struct NaClAppThread   *natp,
-                       void                   *base_addr) {
-  UNREFERENCED_PARAMETER(base_addr);
-
-  return NaClGetThreadIdx(natp);
-}
-
 
 #else
 # error "Woe to the service runtime.  What OS is it being compiled for?!?"
