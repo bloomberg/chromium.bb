@@ -955,22 +955,38 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
         LOG(ERROR) << "Trying to delete a non-existent TemplateURL.";
         continue;
       }
-      bool delete_default = (existing_turl == GetDefaultSearchProvider());
+      if (existing_turl == GetDefaultSearchProvider()) {
+        // The only way Sync can attempt to delete the default search provider
+        // is if we had changed the kSyncedDefaultSearchProviderGUID
+        // preference, but perhaps it has not yet been received. To avoid
+        // situations where this has come in erroneously, we will un-delete
+        // the current default search from the Sync data. If the pref really
+        // does arrive later, then default search will change to the correct
+        // entry, but we'll have this extra entry sitting around. The result is
+        // not ideal, but it prevents a far more severe bug where the default is
+        // unexpectedly swapped to something else. The user can safely delete
+        // the extra entry again later, if they choose. Most users who do not
+        // look at the search engines UI will not notice this.
+        // Note that we append a special character to the end of the keyword in
+        // an attempt to avoid a ping-poinging situation where receiving clients
+        // may try to continually delete the resurrected entry.
+        string16 updated_keyword = UniquifyKeyword(*existing_turl, true);
+        TemplateURLData data(existing_turl->data());
+        data.SetKeyword(updated_keyword);
+        TemplateURL new_turl(existing_turl->profile(), data);
+        UIThreadSearchTermsData search_terms_data(existing_turl->profile());
+        if (UpdateNoNotify(existing_turl, new_turl, search_terms_data))
+          NotifyObservers();
 
-      if (delete_default && is_default_search_managed_) {
-        NOTREACHED() << "Tried to delete managed default search provider";
-      } else {
-        if (delete_default)
-          default_search_provider_ = NULL;
-
-        Remove(existing_turl);
-
-        if (delete_default) {
-          AutoReset<DefaultSearchChangeOrigin> change_origin(
-              &dsp_change_origin_, DSP_CHANGE_SYNC_DELETE);
-          SetDefaultSearchProvider(FindNewDefaultSearchProvider());
-        }
+        syncer::SyncData sync_data = CreateSyncDataFromTemplateURL(new_turl);
+        new_changes.push_back(
+            syncer::SyncChange(syncer::SyncChange::ACTION_ADD, sync_data));
+        // Ignore the delete attempt. This means we never end up reseting the
+        // default search provider due to an ACTION_DELETE from sync.
+        continue;
       }
+
+      Remove(existing_turl);
     } else if (iter->change_type() == syncer::SyncChange::ACTION_ADD) {
       if (existing_turl) {
         NOTREACHED() << "Unexpected sync change state.";
@@ -2111,7 +2127,7 @@ bool TemplateURLService::AddNoNotify(TemplateURL* template_url,
         delete template_url;
         return false;
       } else {
-        string16 new_keyword = UniquifyKeyword(*existing_keyword_turl);
+        string16 new_keyword = UniquifyKeyword(*existing_keyword_turl, false);
         ResetTemplateURL(existing_keyword_turl,
                          existing_keyword_turl->short_name(), new_keyword,
                          existing_keyword_turl->url());
@@ -2246,17 +2262,20 @@ void TemplateURLService::ResetTemplateURLGUID(TemplateURL* url,
   UpdateNoNotify(url, new_url, search_terms_data);
 }
 
-string16 TemplateURLService::UniquifyKeyword(const TemplateURL& turl) {
-  // Already unique.
-  if (!GetTemplateURLForKeyword(turl.keyword()))
-    return turl.keyword();
+string16 TemplateURLService::UniquifyKeyword(const TemplateURL& turl,
+                                             bool force) {
+  if (!force) {
+    // Already unique.
+    if (!GetTemplateURLForKeyword(turl.keyword()))
+      return turl.keyword();
 
-  // First, try to return the generated keyword for the TemplateURL.
-  GURL gurl(turl.url());
-  if (gurl.is_valid()) {
-    string16 keyword_candidate = GenerateKeyword(gurl);
-    if (!GetTemplateURLForKeyword(keyword_candidate))
-      return keyword_candidate;
+    // First, try to return the generated keyword for the TemplateURL.
+    GURL gurl(turl.url());
+    if (gurl.is_valid()) {
+      string16 keyword_candidate = GenerateKeyword(gurl);
+      if (!GetTemplateURLForKeyword(keyword_candidate))
+        return keyword_candidate;
+    }
   }
 
   // We try to uniquify the keyword by appending a special character to the end.
@@ -2305,7 +2324,7 @@ bool TemplateURLService::ResolveSyncKeywordConflict(
         syncer::SyncChange(syncer::SyncChange::ACTION_DELETE, sync_data));
     Remove(local_turl);
   } else if (local_is_better) {
-    string16 new_keyword = UniquifyKeyword(*sync_turl);
+    string16 new_keyword = UniquifyKeyword(*sync_turl, false);
     DCHECK(!GetTemplateURLForKeyword(new_keyword));
     sync_turl->data_.SetKeyword(new_keyword);
     // If we update the cloud TURL, we need to push an update back to sync
@@ -2314,7 +2333,7 @@ bool TemplateURLService::ResolveSyncKeywordConflict(
     change_list->push_back(
         syncer::SyncChange(syncer::SyncChange::ACTION_UPDATE, sync_data));
   } else {
-    string16 new_keyword = UniquifyKeyword(*local_turl);
+    string16 new_keyword = UniquifyKeyword(*local_turl, false);
     TemplateURLData data(local_turl->data());
     data.SetKeyword(new_keyword);
     TemplateURL new_turl(local_turl->profile(), data);
