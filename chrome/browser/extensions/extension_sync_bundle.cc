@@ -59,14 +59,10 @@ void ExtensionSyncBundle::ProcessDeletion(
 syncer::SyncChange ExtensionSyncBundle::CreateSyncChange(
     const syncer::SyncData& sync_data) {
   if (HasExtensionId(sync_data.GetTag())) {
-    return syncer::SyncChange(FROM_HERE,
-                              syncer::SyncChange::ACTION_UPDATE,
-                              sync_data);
+    return syncer::SyncChange(syncer::SyncChange::ACTION_UPDATE, sync_data);
   } else {
     AddExtension(sync_data.GetTag());
-    return syncer::SyncChange(FROM_HERE,
-                              syncer::SyncChange::ACTION_ADD,
-                              sync_data);
+    return syncer::SyncChange(syncer::SyncChange::ACTION_ADD, sync_data);
   }
 }
 

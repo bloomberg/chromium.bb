@@ -11,12 +11,8 @@ namespace syncer {
 SyncChange::SyncChange() : change_type_(ACTION_INVALID) {
 }
 
-SyncChange::SyncChange(
-    const tracked_objects::Location& from_here,
-    SyncChangeType change_type,
-    const SyncData& sync_data)
-    : location_(from_here),
-      change_type_(change_type),
+SyncChange::SyncChange(SyncChangeType change_type, const SyncData& sync_data)
+    : change_type_(change_type),
       sync_data_(sync_data) {
   DCHECK(IsValid());
 }
@@ -70,9 +66,8 @@ std::string SyncChange::ChangeTypeToString(SyncChangeType change_type) {
 }
 
 std::string SyncChange::ToString() const {
-  return "{ " + location_.ToString() + ", changeType: " +
-      ChangeTypeToString(change_type_) + ", syncData: " +
-      sync_data_.ToString() + "}";
+  return "{ changeType: " + ChangeTypeToString(change_type_) +
+      ", syncData: " + sync_data_.ToString() + "}";
 }
 
 void PrintTo(const SyncChange& sync_change, std::ostream* os) {

@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/location.h"
 #include "sync/api/sync_data.h"
 
 namespace syncer {
@@ -32,10 +31,7 @@ class SyncChange {
   // Default constructor creates an invalid change.
   SyncChange();
   // Create a new change with the specified sync data.
-  SyncChange(
-      const tracked_objects::Location& from_here,
-      SyncChangeType change_type,
-      const SyncData& sync_data);
+  SyncChange(SyncChangeType change_type, const SyncData& sync_data);
   ~SyncChange();
 
   // Copy constructor and assignment operator welcome.
@@ -60,8 +56,6 @@ class SyncChange {
   std::string ToString() const;
 
  private:
-  tracked_objects::Location location_;
-
   SyncChangeType change_type_;
 
   // An immutable container for the data of this SyncChange. Whenever

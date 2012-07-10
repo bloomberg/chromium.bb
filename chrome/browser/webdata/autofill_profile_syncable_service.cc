@@ -140,17 +140,15 @@ syncer::SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
   for (GUIDToProfileMap::iterator i = remaining_profiles.begin();
        i != remaining_profiles.end(); ++i) {
     new_changes.push_back(
-        syncer::SyncChange(FROM_HERE,
-                           syncer::SyncChange::ACTION_ADD,
-                           CreateData(*(i->second))));
+        syncer::SyncChange(
+            syncer::SyncChange::ACTION_ADD, CreateData(*(i->second))));
     profiles_map_[i->first] = i->second;
   }
 
   for (size_t i = 0; i < bundle.profiles_to_sync_back.size(); ++i) {
     new_changes.push_back(
-        syncer::SyncChange(FROM_HERE,
-                           syncer::SyncChange::ACTION_UPDATE,
-                           CreateData(*(bundle.profiles_to_sync_back[i]))));
+        syncer::SyncChange(syncer::SyncChange::ACTION_UPDATE,
+                   CreateData(*(bundle.profiles_to_sync_back[i]))));
   }
 
   syncer::SyncError error;
@@ -436,9 +434,8 @@ void AutofillProfileSyncableService::ActOnChange(
   switch (change.type()) {
     case AutofillProfileChange::ADD:
       new_changes.push_back(
-          syncer::SyncChange(FROM_HERE,
-                             syncer::SyncChange::ACTION_ADD,
-                             CreateData(*(change.profile()))));
+          syncer::SyncChange(
+              syncer::SyncChange::ACTION_ADD, CreateData(*(change.profile()))));
       DCHECK(profiles_map_.find(change.profile()->guid()) ==
              profiles_map_.end());
       profiles_.push_back(new AutofillProfile(*(change.profile())));
@@ -450,16 +447,14 @@ void AutofillProfileSyncableService::ActOnChange(
       DCHECK(it != profiles_map_.end());
       *(it->second) = *(change.profile());
       new_changes.push_back(
-          syncer::SyncChange(FROM_HERE,
-                             syncer::SyncChange::ACTION_UPDATE,
-                             CreateData(*(change.profile()))));
+          syncer::SyncChange(syncer::SyncChange::ACTION_UPDATE,
+                     CreateData(*(change.profile()))));
       break;
     }
     case AutofillProfileChange::REMOVE: {
       AutofillProfile empty_profile(change.key());
       new_changes.push_back(
-          syncer::SyncChange(FROM_HERE,
-                             syncer::SyncChange::ACTION_DELETE,
+          syncer::SyncChange(syncer::SyncChange::ACTION_DELETE,
                              CreateData(empty_profile)));
       profiles_map_.erase(change.key());
       break;

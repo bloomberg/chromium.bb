@@ -292,8 +292,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // This may send a new SyncChange to the cloud. If our model has not yet been
   // associated with Sync, or if this is triggered by a Sync change, then this
   // does nothing.
-  void ProcessTemplateURLChange(const tracked_objects::Location& from_here,
-                                const TemplateURL* turl,
+  void ProcessTemplateURLChange(const TemplateURL* turl,
                                 syncer::SyncChange::SyncChangeType type);
 
   Profile* profile() const { return profile_; }

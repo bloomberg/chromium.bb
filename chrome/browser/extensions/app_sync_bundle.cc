@@ -60,14 +60,10 @@ void AppSyncBundle::ProcessDeletion(std::string extension_id,
 syncer::SyncChange AppSyncBundle::CreateSyncChange(
     const syncer::SyncData& sync_data) {
   if (HasExtensionId(sync_data.GetTag())) {
-    return syncer::SyncChange(FROM_HERE,
-                              syncer::SyncChange::ACTION_UPDATE,
-                              sync_data);
+    return syncer::SyncChange(syncer::SyncChange::ACTION_UPDATE, sync_data);
   } else {
     AddApp(sync_data.GetTag());
-    return syncer::SyncChange(FROM_HERE,
-                              syncer::SyncChange::ACTION_ADD,
-                              sync_data);
+    return syncer::SyncChange(syncer::SyncChange::ACTION_ADD, sync_data);
   }
 }
 
