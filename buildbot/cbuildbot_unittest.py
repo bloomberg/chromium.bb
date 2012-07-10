@@ -381,6 +381,28 @@ class InterfaceTest(mox.MoxTestBase):
     (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
     self.assertEquals(options.pass_through_args, ['--lkgm', '-g', '1234'])
 
+  def testGerritChromeOptionSet(self):
+    """Test --gerrit-chrome works as expected."""
+    args = ['--gerrit-chrome',  self._X86_PREFLIGHT]
+    (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
+    self.assertEquals(options.gerrit_chrome, True)
+    self.assertEquals(options.chrome_rev, 'tot')
+
+  def testGerritChromeOptionError(self):
+    """Test --gerrit-chrome error case."""
+    args = ['--gerrit-chrome', '--remote-trybot', self._X86_PREFLIGHT]
+    cros_build_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
+    self.mox.ReplayAll()
+    self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
+
+  def testGerritChromeOptionError2(self):
+    """Test --gerrit-chrome error case 2."""
+    args = ['--gerrit-chrome', '--chrome_rev=latest_release',
+            self._X86_PREFLIGHT]
+    cros_build_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
+    self.mox.ReplayAll()
+    self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
+
 
 class FullInterfaceTest(cros_test_lib.TempDirMixin, unittest.TestCase):
   """Tests that run the cbuildbot.main() function directly.
