@@ -129,6 +129,9 @@ void UnregisterAllMockedURLs();
 // returns all the pending requests have been processed.
 void ServeAsynchronousMockedRequests();
 
+// Returns the last request that handled by |ServeAsynchronousMockedRequests()|.
+WebKit::WebURLRequest GetLastHandledAsynchronousMockedRequest();
+
 // Wrappers to minimize dependecy.
 
 // -------- Debugging

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,6 +52,9 @@ class WebURLLoaderMockFactory {
   // Serves all the pending asynchronous requests.
   void ServeAsynchronousRequests();
 
+  // Returns the last request handled by |ServeAsynchronousRequests()|.
+  WebKit::WebURLRequest GetLastHandledAsynchronousRequest();
+
   // Returns true if |url| was registered for being mocked.
   bool IsMockedURL(const WebKit::WebURL& url);
 
@@ -90,6 +93,8 @@ class WebURLLoaderMockFactory {
   // Table of the registered URLs and the responses that they should receive.
   typedef std::map<WebKit::WebURL, ResponseInfo> URLToResponseMap;
   URLToResponseMap url_to_reponse_info_;
+
+  WebKit::WebURLRequest last_handled_asynchronous_request_;
 
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderMockFactory);
 };

@@ -487,6 +487,11 @@ void ServeAsynchronousMockedRequests() {
       ServeAsynchronousRequests();
 }
 
+WebKit::WebURLRequest GetLastHandledAsynchronousMockedRequest() {
+  return test_environment->webkit_platform_support()->url_loader_factory()->
+      GetLastHandledAsynchronousRequest();
+}
+
 // Wrapper for debug_util
 bool BeingDebugged() {
   return base::debug::BeingDebugged();
