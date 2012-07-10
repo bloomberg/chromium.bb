@@ -15,7 +15,11 @@ class Orientation {
   // for that variable.
 
   Orientation()
-      : can_provide_alpha_(false),
+      : alpha_(0),
+        beta_(0),
+        gamma_(0),
+        absolute_(false),
+        can_provide_alpha_(false),
         can_provide_beta_(false),
         can_provide_gamma_(false),
         can_provide_absolute_(false) {

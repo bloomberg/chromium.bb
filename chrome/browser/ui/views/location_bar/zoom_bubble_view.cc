@@ -64,9 +64,21 @@ bool ZoomBubbleView::IsShowing() {
   return zoom_bubble_ != NULL;
 }
 
-void ZoomBubbleView::WindowClosing() {
-  DCHECK(zoom_bubble_ == this);
-  zoom_bubble_ = NULL;
+ZoomBubbleView::ZoomBubbleView(views::View* anchor_view,
+                               int zoom_percent,
+                               bool auto_close)
+    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
+      label_(NULL),
+      zoom_percent_(zoom_percent),
+      auto_close_(auto_close) {
+  set_use_focusless(auto_close);
+}
+
+ZoomBubbleView::~ZoomBubbleView() {
+}
+
+void ZoomBubbleView::Close() {
+  GetWidget()->Close();
 }
 
 void ZoomBubbleView::Init() {
@@ -84,18 +96,7 @@ void ZoomBubbleView::Init() {
   }
 }
 
-ZoomBubbleView::ZoomBubbleView(views::View* anchor_view,
-                               int zoom_percent,
-                               bool auto_close)
-    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
-      zoom_percent_(zoom_percent),
-      auto_close_(auto_close) {
-  set_use_focusless(auto_close);
-}
-
-ZoomBubbleView::~ZoomBubbleView() {
-}
-
-void ZoomBubbleView::Close() {
-  GetWidget()->Close();
+void ZoomBubbleView::WindowClosing() {
+  DCHECK(zoom_bubble_ == this);
+  zoom_bubble_ = NULL;
 }

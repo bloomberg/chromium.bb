@@ -58,7 +58,7 @@ DictionaryValue* CreateGalleryDictionary(const MediaGallery& gallery) {
 
 }  // namespace
 
-MediaGallery::MediaGallery() {}
+MediaGallery::MediaGallery() : id(0) {}
 MediaGallery::~MediaGallery() {}
 
 MediaGalleryRegistry::MediaGalleryRegistry(Profile* profile)

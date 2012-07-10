@@ -73,7 +73,12 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
 
   typedef std::deque<IPC::Message*> MessageQueue;
   struct PendingRequestInfo {
-    PendingRequestInfo() { }
+    PendingRequestInfo()
+        : peer(NULL),
+          resource_type(ResourceType::SUB_RESOURCE),
+          is_deferred(false) {
+    }
+
     PendingRequestInfo(webkit_glue::ResourceLoaderBridge::Peer* peer,
                        ResourceType::Type resource_type,
                        const GURL& request_url)
@@ -83,7 +88,9 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
           url(request_url),
           request_start(base::TimeTicks::Now()) {
     }
-    ~PendingRequestInfo() { }
+
+    ~PendingRequestInfo() {}
+
     webkit_glue::ResourceLoaderBridge::Peer* peer;
     ResourceType::Type resource_type;
     MessageQueue deferred_message_queue;
