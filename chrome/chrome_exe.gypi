@@ -464,9 +464,6 @@
           ],
           'msvs_settings': {
             'VCLinkerTool': {
-              'AdditionalDependencies': [
-                'userenv.lib',
-              ],
               'ImportLibrary': '$(OutDir)\\lib\\chrome_exe.lib',
               'ProgramDatabaseFile': '$(OutDir)\\chrome_exe.pdb',
               'DelayLoadDLLs': [
