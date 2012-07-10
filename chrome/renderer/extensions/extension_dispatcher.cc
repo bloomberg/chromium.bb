@@ -694,7 +694,8 @@ void ExtensionDispatcher::DidCreateScriptContext(
     v8::HandleScope handle_scope;
     v8::Handle<v8::String> chrome_string(v8::String::New("chrome"));
     v8::Handle<v8::Object> global(v8::Context::GetCurrent()->Global());
-    if (global->Get(chrome_string)->IsUndefined())
+    v8::Handle<v8::Value> chrome(global->Get(chrome_string));
+    if (chrome.IsEmpty() || chrome->IsUndefined())
       global->Set(chrome_string, v8::Object::New());
   }
 
