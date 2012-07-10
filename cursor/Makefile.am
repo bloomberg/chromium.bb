@@ -4,6 +4,8 @@ include_HEADERS = wayland-cursor.h
 
 libwayland_cursor_la_SOURCES =			\
 	wayland-cursor.c			\
+	os-compatibility.c			\
+	os-compatibility.h			\
 	xcursor.c				\
 	xcursor.h
 libwayland_cursor_la_LIBADD = $(top_builddir)/src/libwayland-client.la

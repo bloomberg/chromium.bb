@@ -39,7 +39,7 @@ if test "x$GCC" = "xyes"; then
 fi
 AC_SUBST(GCC_CFLAGS)
 
-AC_CHECK_FUNCS([accept4])
+AC_CHECK_FUNCS([accept4 mkostemp])
 
 AC_ARG_ENABLE([scanner],
               [AC_HELP_STRING([--disable-scanner],

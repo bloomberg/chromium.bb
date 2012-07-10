@@ -29,6 +29,8 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
+#include "os-compatibility.h"
+
 struct shm_pool {
 	struct wl_shm_pool *pool;
 	int fd;
@@ -41,22 +43,17 @@ static struct shm_pool *
 shm_pool_create(struct wl_shm *shm, int size)
 {
 	struct shm_pool *pool;
-	char filename[] = "/tmp/wayland-shm-XXXXXX";
 
 	pool = malloc(sizeof *pool);
 	if (!pool)
 		return NULL;
 
-	pool->fd = mkstemp(filename);
+	pool->fd = os_create_anonymous_file(size);
 	if (pool->fd < 0)
 		goto err_free;
 
-	if (ftruncate(pool->fd, size) < 0)
-		goto err_close;
-
 	pool->data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED,
 			  pool->fd, 0);
-	unlink(filename);
 
 	if (pool->data == MAP_FAILED)
 		goto err_close;
