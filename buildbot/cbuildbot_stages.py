@@ -868,6 +868,14 @@ class BuildTargetStage(BoardSpecificBuilderStage):
                                               self._tarball_dir)
     self._archive_stage.AutotestTarballsReady(tarballs)
 
+  def _BuildFullAutotestTarball(self):
+    # Build a full autotest tarball for hwqual image. This tarball is to be
+    # archived locally.
+    tarball = commands.BuildFullAutotestTarball(self._build_root,
+                                                 self._current_board,
+                                                 self._tarball_dir)
+    self._archive_stage.FullAutotestTarballReady(tarball)
+
   def _PerformStage(self):
     build_autotest = (self._build_config['build_tests'] and
                       self._options.tests)
@@ -890,21 +898,14 @@ class BuildTargetStage(BoardSpecificBuilderStage):
                            self._build_config['archive_build_debug']):
       self._tarball_dir = tempfile.mkdtemp(prefix='autotest')
       steps.append(self._BuildAutotestTarballs)
+      # Build a full autotest tarball only for chromeos_offical builds
+      if self._build_config['chromeos_official']:
+        steps.append(self._BuildFullAutotestTarball)
     else:
       self._archive_stage.AutotestTarballsReady(None)
 
     steps.append(self._BuildImages)
     background.RunParallelSteps(steps)
-
-    # TODO(sosa): Remove copy once crosbug.com/23690 is closed.
-    if self._tarball_dir:
-      shutil.copyfile(os.path.join(self._tarball_dir, 'autotest.tar'),
-                      os.path.join(self.GetImageDirSymlink(),
-                                   'autotest.tar'))
-      # TODO(yjhong): Remove autotest.tar.bz2 when crosbug.com/32207 is closed
-      shutil.copyfile(os.path.join(self._tarball_dir, 'autotest.tar.bz2'),
-                      os.path.join(self.GetImageDirSymlink(),
-                                   'autotest.tar.bz2'))
 
   def _HandleStageException(self, exception):
     # In case of an exception, this prevents any consumer from starving.
@@ -1135,6 +1136,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     # Queues that are populated by other stages.
     self._version_queue = multiprocessing.Queue()
     self._autotest_tarballs_queue = multiprocessing.Queue()
+    self._full_autotest_tarball_queue = multiprocessing.Queue()
     self._test_results_queue = multiprocessing.Queue()
 
   def SetVersion(self, path_to_image):
@@ -1156,6 +1158,18 @@ class ArchiveStage(BoardSpecificBuilderStage):
       autotest_tarballs: The paths of the autotest tarballs.
     """
     self._autotest_tarballs_queue.put(autotest_tarballs)
+
+  def FullAutotestTarballReady(self, full_autotest_tarball):
+    """Tell Archive Stage that full autotest tarball is ready.
+
+    This must be called in order for archive stage to finish when
+    chromeos_offcial is true.
+
+    Args:
+      full_autotest_tarball: The paths of the full autotest tarball.
+    """
+    self._full_autotest_tarball_queue.put(full_autotest_tarball)
+
 
   def TestResultsReady(self, test_results):
     """Tell Archive Stage that test results are ready.
@@ -1269,6 +1283,20 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
     return autotest_tarballs
 
+  def _GetFullAutotestTarball(self):
+    """Get the paths of the full autotest tarball."""
+    full_autotest_tarball = None
+    if self._options.build:
+      cros_build_lib.Info('Waiting for the full autotest tarball ...')
+      autotest_full_tarball = self._full_autotest_tarball_queue.get()
+      if full_autotest_tarball:
+        cros_build_lib.Info('Found autotest tarballs %s ...'
+                            % full_autotest_tarball)
+      else:
+        cros_build_lib.Info('No full autotest tarball found.')
+
+    return full_autotest_tarball
+
   def _GetTestResults(self):
     """Get the path to the test results tarball."""
     for _ in range(2):
@@ -1340,6 +1368,11 @@ class ArchiveStage(BoardSpecificBuilderStage):
         for tarball in autotest_tarballs:
           hw_test_upload_queue.put([commands.ArchiveFile(tarball,
                                                          archive_path)])
+      # The full autotest tarball does not need to be uploaded
+      if config['chromeos_official']:
+        full_autotest_tarball = self._GetFullAutotestTarbll()
+        commands.ArchiveFile(full_autotest_tarball, archive_path)
+
 
     def ArchivePayloads():
       """Archives update payloads when they are ready."""
