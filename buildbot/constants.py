@@ -8,7 +8,7 @@ import os
 
 SOURCE_ROOT = os.path.dirname(os.path.abspath(__file__))
 SOURCE_ROOT = os.path.realpath(os.path.join(SOURCE_ROOT, '..', '..'))
-CROSUTILS_LIB_DIR = os.path.join(SOURCE_ROOT, 'src/scripts/lib')
+CROSUTILS_DIR = os.path.join(SOURCE_ROOT, 'src/scripts')
 CHROMITE_BIN_SUBDIR = 'chromite/bin'
 CHROMITE_BIN_DIR = os.path.join(SOURCE_ROOT, CHROMITE_BIN_SUBDIR)
 PATH_TO_CBUILDBOT = os.path.join(CHROMITE_BIN_SUBDIR, 'cbuildbot')

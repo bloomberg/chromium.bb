@@ -122,7 +122,7 @@ def ListWorkonPackages(board, host):
     board: The board to look at. If host is True, this should be set to None.
     host: Whether to look at workon packages for the host.
   """
-  cmd = ['cros_workon', 'list']
+  cmd = [os.path.join(constants.CROSUTILS_DIR, 'cros_workon'), 'list']
   cmd.extend(['--host'] if host else ['--board', board])
   result = cros_build_lib.RunCommandCaptureOutput(cmd, print_cmd=False)
   return result.output.split()
