@@ -116,6 +116,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebHelperPlugin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -1804,6 +1805,11 @@ bool RenderViewImpl::enumerateChosenDirectory(
       routing_id_,
       id,
       webkit_glue::WebStringToFilePath(path)));
+}
+
+void RenderViewImpl::initializeHelperPluginWebFrame(
+    WebKit::WebHelperPlugin* plugin) {
+  plugin->initializeFrame(this);
 }
 
 void RenderViewImpl::didStartLoading() {

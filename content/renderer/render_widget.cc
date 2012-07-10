@@ -23,6 +23,7 @@
 #include "ipc/ipc_sync_message.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebHelperPlugin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPagePopup.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupMenu.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupMenuInfo.h"
@@ -157,6 +158,8 @@ WebWidget* RenderWidget::CreateWebWidget(RenderWidget* render_widget) {
       return WebPopupMenu::create(render_widget);
     case WebKit::WebPopupTypePage:
       return WebPagePopup::create(render_widget);
+    case WebKit::WebPopupTypeHelperPlugin:
+      return WebKit::WebHelperPlugin::create(render_widget);
     default:
       NOTREACHED();
   }

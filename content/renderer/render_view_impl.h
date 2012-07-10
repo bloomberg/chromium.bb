@@ -437,6 +437,7 @@ class RenderViewImpl : public RenderWidget,
   virtual bool enumerateChosenDirectory(
       const WebKit::WebString& path,
       WebKit::WebFileChooserCompletion* chooser_completion);
+  virtual void initializeHelperPluginWebFrame(WebKit::WebHelperPlugin*);
   virtual void didStartLoading();
   virtual void didStopLoading();
   virtual void didChangeLoadProgress(WebKit::WebFrame* frame,
