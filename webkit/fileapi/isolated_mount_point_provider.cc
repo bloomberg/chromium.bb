@@ -69,10 +69,11 @@ FilePath IsolatedMountPointProvider::GetFileSystemRootPathOnFileThread(
   if (create || type != kFileSystemTypeIsolated)
     return FilePath();
   std::string fsid;
-  FilePath root, path;
+  FilePath path;
+  IsolatedContext::FileInfo root;
   if (!isolated_context()->CrackIsolatedPath(virtual_path, &fsid, &root, &path))
     return FilePath();
-  return root;
+  return root.path;
 }
 
 bool IsolatedMountPointProvider::IsAccessAllowed(
@@ -81,9 +82,9 @@ bool IsolatedMountPointProvider::IsAccessAllowed(
     return false;
 
   std::string filesystem_id;
-  FilePath root, path;
+  FilePath path;
   return isolated_context()->CrackIsolatedPath(
-      virtual_path, &filesystem_id, &root, &path);
+      virtual_path, &filesystem_id, NULL, &path);
 }
 
 bool IsolatedMountPointProvider::IsRestrictedFileName(
@@ -98,8 +99,8 @@ FileSystemFileUtil* IsolatedMountPointProvider::GetFileUtil() {
 FilePath IsolatedMountPointProvider::GetPathForPermissionsCheck(
     const FilePath& virtual_path) const {
   std::string fsid;
-  FilePath root, path;
-  if (!isolated_context()->CrackIsolatedPath(virtual_path, &fsid, &root, &path))
+  FilePath path;
+  if (!isolated_context()->CrackIsolatedPath(virtual_path, &fsid, NULL, &path))
     return FilePath();
   return path;
 }

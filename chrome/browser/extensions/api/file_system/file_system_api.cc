@@ -22,6 +22,8 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_context.h"
 
+using fileapi::IsolatedContext;
+
 const char kInvalidParameters[] = "Invalid parameters";
 const char kSecurityError[] = "Security error";
 const char kInvalidCallingPage[] = "Invalid calling page";
@@ -102,10 +104,10 @@ bool GetFilePathOfFileEntry(const std::string& filesystem_name,
     return false;
   }
 
-  fileapi::IsolatedContext* context = fileapi::IsolatedContext::GetInstance();
+  IsolatedContext* context = IsolatedContext::GetInstance();
   FilePath relative_path = FilePath::FromUTF8Unsafe(filesystem_path);
-  FilePath virtual_path = context->CreateVirtualPath(filesystem_id,
-                                                     relative_path);
+  FilePath virtual_path = context->CreateVirtualRootPath(filesystem_id)
+      .Append(relative_path);
   if (!context->CrackIsolatedPath(virtual_path,
                                   &filesystem_id,
                                   NULL,
@@ -176,14 +178,14 @@ void FileSystemEntryFunction::CheckWritableFile(const FilePath& path) {
 void FileSystemEntryFunction::RegisterFileSystemAndSendResponse(
     const FilePath& path, EntryType entry_type) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  std::set<FilePath> filesets;
-  filesets.insert(path);
 
   fileapi::IsolatedContext* isolated_context =
       fileapi::IsolatedContext::GetInstance();
   DCHECK(isolated_context);
-  std::string filesystem_id = isolated_context->RegisterIsolatedFileSystem(
-      filesets);
+
+  std::string registered_name;
+  std::string filesystem_id = isolated_context->RegisterFileSystemForFile(
+      path, &registered_name);
 
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
@@ -202,7 +204,7 @@ void FileSystemEntryFunction::RegisterFileSystemAndSendResponse(
   DictionaryValue* dict = new DictionaryValue();
   result_.reset(dict);
   dict->SetString("fileSystemId", filesystem_id);
-  dict->SetString("baseName", path.BaseName().AsUTF8Unsafe());
+  dict->SetString("baseName", registered_name);
   SendResponse(true);
 }
 

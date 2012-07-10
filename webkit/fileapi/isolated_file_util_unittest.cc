@@ -76,7 +76,7 @@ class IsolatedFileUtilTest : public testing::Test {
   }
 
   void TearDown() {
-    isolated_context()->RevokeIsolatedFileSystem(filesystem_id_);
+    isolated_context()->RevokeFileSystem(filesystem_id_);
     other_file_util_helper_.TearDown();
   }
 
@@ -100,8 +100,8 @@ class IsolatedFileUtilTest : public testing::Test {
   }
 
   FileSystemURL GetFileSystemURL(const FilePath& path) const {
-    FilePath virtual_path = isolated_context()->CreateVirtualPath(
-        filesystem_id(), path);
+    FilePath virtual_path = isolated_context()->CreateVirtualRootPath(
+        filesystem_id()).Append(path);
     return FileSystemURL(GURL("http://example.com"),
                          kFileSystemTypeIsolated,
                          virtual_path);
@@ -194,7 +194,7 @@ class IsolatedFileUtilTest : public testing::Test {
   void SimulateDropFiles() {
     size_t root_path_index = 0;
 
-    std::set<FilePath> toplevels;
+    IsolatedContext::FileInfoSet toplevels;
     for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
       const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
       FilePath path(test_case.path);
@@ -206,14 +206,14 @@ class IsolatedFileUtilTest : public testing::Test {
         FilePath root = root_path().Append(
             kRootPaths[(root_path_index++) % arraysize(kRootPaths)]);
         toplevel_root_map_[toplevel] = root;
-        toplevels.insert(root.Append(path));
+        toplevels.AddPath(root.Append(path));
       }
 
       test::SetUpOneTestCase(toplevel_root_map_[toplevel], test_case);
     }
 
     // Register the toplevel entries.
-    filesystem_id_ = isolated_context()->RegisterIsolatedFileSystem(toplevels);
+    filesystem_id_ = isolated_context()->RegisterFileSystem(toplevels);
   }
 
   ScopedTempDir data_dir_;
@@ -354,7 +354,8 @@ TEST_F(IsolatedFileUtilTest, GetLocalFilePathTest) {
     FilePath local_file_path;
     EXPECT_EQ(base::PLATFORM_FILE_OK,
               file_util()->GetLocalFilePath(&context, url, &local_file_path));
-    EXPECT_EQ(GetTestCasePlatformPath(test_case.path), local_file_path);
+    EXPECT_EQ(GetTestCasePlatformPath(test_case.path).value(),
+              local_file_path.value());
   }
 }
 

@@ -4,42 +4,102 @@
 
 #include "webkit/fileapi/isolated_context.h"
 
+#include "base/file_path.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 
 namespace fileapi {
 
+namespace {
+
+FilePath::StringType GetRegisterNameForPath(const FilePath& path) {
+  // If it's not a root path simply return a base name.
+  if (path.DirName() != path)
+    return path.BaseName().value();
+
+#if defined(FILE_PATH_USES_DRIVE_LETTERS)
+  FilePath::StringType name;
+  for (size_t i = 0;
+        i < path.value().size() && !FilePath::IsSeparator(path.value()[i]);
+        ++i) {
+    if (path.value()[i] == L':') {
+      name.append(L"_drive");
+      break;
+    }
+    name.append(1, path.value()[i]);
+  }
+  return name;
+#else
+  return FILE_PATH_LITERAL("<root>");
+#endif
+}
+
+}
+
 static base::LazyInstance<IsolatedContext>::Leaky g_isolated_context =
     LAZY_INSTANCE_INITIALIZER;
+
+IsolatedContext::FileInfo::FileInfo() {}
+IsolatedContext::FileInfo::FileInfo(
+    const std::string& name, const FilePath& path)
+    : name(name), path(path) {}
+
+IsolatedContext::FileInfoSet::FileInfoSet() {}
+IsolatedContext::FileInfoSet::~FileInfoSet() {}
+
+std::string IsolatedContext::FileInfoSet::AddPath(
+    const FilePath& path) {
+  FilePath::StringType name = GetRegisterNameForPath(path);
+  std::string utf8name = FilePath(name).AsUTF8Unsafe();
+  bool inserted = fileset_.insert(FileInfo(utf8name, path)).second;
+  if (!inserted) {
+    int suffix = 1;
+    std::string basepart = FilePath(name).RemoveExtension().AsUTF8Unsafe();
+    std::string ext = FilePath(FilePath(name).Extension()).AsUTF8Unsafe();
+    while (!inserted) {
+      utf8name = base::StringPrintf("%s (%d)", basepart.c_str(), suffix++);
+      if (!ext.empty())
+        utf8name.append(ext);
+      inserted = fileset_.insert(FileInfo(utf8name, path)).second;
+    }
+  }
+  return utf8name;
+}
+
+bool IsolatedContext::FileInfoSet::AddPathWithName(
+    const FilePath& path, const std::string& name) {
+  return fileset_.insert(FileInfo(name, path)).second;
+}
 
 // static
 IsolatedContext* IsolatedContext::GetInstance() {
   return g_isolated_context.Pointer();
 }
 
-std::string IsolatedContext::RegisterIsolatedFileSystem(
-    const std::set<FilePath>& files) {
+std::string IsolatedContext::RegisterFileSystem(const FileInfoSet& files) {
   base::AutoLock locker(lock_);
   std::string filesystem_id = GetNewFileSystemId();
-  // Stores basename to fullpath map, as we store the basenames as
+  // Stores name to fullpath map, as we store the name as a key in
   // the filesystem's toplevel entries.
-  PathMap toplevels;
-  for (std::set<FilePath>::const_iterator iter = files.begin();
-       iter != files.end(); ++iter) {
+  FileSet toplevels;
+  for (std::set<FileInfo>::const_iterator iter = files.fileset().begin();
+       iter != files.fileset().end();
+       ++iter) {
+    const FileInfo& info = *iter;
     // The given path should not contain any '..' and should be absolute.
-    if (iter->ReferencesParent() || !iter->IsAbsolute())
+    if (info.path.ReferencesParent() || !info.path.IsAbsolute())
       continue;
 
     // Register the basename -> fullpath map. (We only expose the basename
     // part to the user scripts)
-    FilePath fullpath = iter->NormalizePathSeparators();
-    FilePath basename = iter->BaseName();
-    // TODO(kinuko): Append a suffix or something if we have multiple pathnames
-    // with the same basename. For now we only register the first one.
-    toplevels.insert(std::make_pair(basename, fullpath));
+    FilePath fullpath = info.path.NormalizePathSeparators();
+    const bool inserted = toplevels.insert(
+        FileInfo(info.name, fullpath)).second;
+    DCHECK(inserted);
   }
 
   // TODO(kinuko): we may not want to register the file system if there're
@@ -53,8 +113,22 @@ std::string IsolatedContext::RegisterIsolatedFileSystem(
   return filesystem_id;
 }
 
-void IsolatedContext::RevokeIsolatedFileSystem(
-    const std::string& filesystem_id) {
+std::string IsolatedContext::RegisterFileSystemForFile(
+    const FilePath& path,
+    std::string* register_name) {
+  FileInfoSet files;
+  if (register_name && !register_name->empty()) {
+    const bool added = files.AddPathWithName(path, *register_name);
+    DCHECK(added);
+  } else {
+    std::string name = files.AddPath(path);
+    if (register_name)
+      register_name->assign(name);
+  }
+  return RegisterFileSystem(files);
+}
+
+void IsolatedContext::RevokeFileSystem(const std::string& filesystem_id) {
   base::AutoLock locker(lock_);
   RevokeWithoutLocking(filesystem_id);
 }
@@ -68,7 +142,7 @@ void IsolatedContext::AddReference(const std::string& filesystem_id) {
 void IsolatedContext::RemoveReference(const std::string& filesystem_id) {
   base::AutoLock locker(lock_);
   // This could get called for non-existent filesystem if it has been
-  // already deleted by RevokeIsolatedFileSystem.
+  // already deleted by RevokeFileSystem.
   if (ref_counts_.find(filesystem_id) == ref_counts_.end())
     return;
   DCHECK(ref_counts_[filesystem_id] > 0);
@@ -78,7 +152,7 @@ void IsolatedContext::RemoveReference(const std::string& filesystem_id) {
 
 bool IsolatedContext::CrackIsolatedPath(const FilePath& virtual_path,
                                         std::string* filesystem_id,
-                                        FilePath* root_path,
+                                        FileInfo* root_info,
                                         FilePath* platform_path) const {
   DCHECK(filesystem_id);
   DCHECK(platform_path);
@@ -97,7 +171,7 @@ bool IsolatedContext::CrackIsolatedPath(const FilePath& virtual_path,
   std::string fsid = FilePath(components[0]).MaybeAsASCII();
   if (fsid.empty())
     return false;
-  IDToPathMap::const_iterator found_toplevels = toplevel_map_.find(fsid);
+  IDToFileSet::const_iterator found_toplevels = toplevel_map_.find(fsid);
   if (found_toplevels == toplevel_map_.end())
     return false;
   *filesystem_id = fsid;
@@ -105,45 +179,34 @@ bool IsolatedContext::CrackIsolatedPath(const FilePath& virtual_path,
     platform_path->clear();
     return true;
   }
-  // components[1] should be a toplevel path of the dropped paths.
-  PathMap::const_iterator found = found_toplevels->second.find(
-      FilePath(components[1]));
+  // components[1] should be a name of the dropped paths.
+  FileSet::const_iterator found = found_toplevels->second.find(
+      FileInfo(FilePath(components[1]).AsUTF8Unsafe(), FilePath()));
   if (found == found_toplevels->second.end())
     return false;
-  FilePath path = found->second;
-  if (root_path)
-    *root_path = path;
-  for (size_t i = 2; i < components.size(); ++i) {
+  if (root_info)
+    *root_info = *found;
+  FilePath path = found->path;
+  for (size_t i = 2; i < components.size(); ++i)
     path = path.Append(components[i]);
-  }
   *platform_path = path;
   return true;
 }
 
-bool IsolatedContext::GetTopLevelPaths(const std::string& filesystem_id,
-                                       std::vector<FilePath>* paths) const {
-  DCHECK(paths);
+bool IsolatedContext::GetRegisteredFileInfo(
+    const std::string& filesystem_id, std::vector<FileInfo>* files) const {
+  DCHECK(files);
   base::AutoLock locker(lock_);
-  IDToPathMap::const_iterator found = toplevel_map_.find(filesystem_id);
+  IDToFileSet::const_iterator found = toplevel_map_.find(filesystem_id);
   if (found == toplevel_map_.end())
     return false;
-  paths->clear();
-  PathMap toplevels = found->second;
-  for (PathMap::const_iterator iter = toplevels.begin();
-       iter != toplevels.end(); ++iter) {
-    // Each path map entry holds a map of a toplevel name to its full path.
-    paths->push_back(iter->second);
-  }
+  files->assign(found->second.begin(), found->second.end());
   return true;
 }
 
-FilePath IsolatedContext::CreateVirtualPath(
-    const std::string& filesystem_id, const FilePath& relative_path) const {
-  FilePath full_path;
-  full_path = full_path.AppendASCII(filesystem_id);
-  if (relative_path.value() != FILE_PATH_LITERAL("/"))
-    full_path = full_path.Append(relative_path);
-  return full_path;
+FilePath IsolatedContext::CreateVirtualRootPath(
+    const std::string& filesystem_id) const {
+  return FilePath().AppendASCII(filesystem_id);
 }
 
 IsolatedContext::IsolatedContext() {

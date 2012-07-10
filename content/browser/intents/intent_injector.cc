@@ -18,6 +18,7 @@
 #include "content/common/intents_messages.h"
 #include "content/public/common/content_switches.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/isolated_context.h"
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
@@ -91,10 +92,16 @@ void IntentInjector::RenderViewCreated(RenderViewHost* render_view_host) {
   } else if (source_intent_->data_type ==
              webkit_glue::WebIntentData::FILESYSTEM) {
     const int child_id = render_view_host->GetProcess()->GetID();
+    std::vector<fileapi::IsolatedContext::FileInfo> files;
+    const bool valid =
+        fileapi::IsolatedContext::GetInstance()->GetRegisteredFileInfo(
+            source_intent_->filesystem_id, &files);
+    DCHECK(valid);
+    DCHECK_EQ(1U, files.size());
     ChildProcessSecurityPolicy* policy =
          ChildProcessSecurityPolicy::GetInstance();
-    if (!policy->CanReadFile(child_id, source_intent_->root_path))
-      policy->GrantReadFile(child_id, source_intent_->root_path);
+    if (!policy->CanReadFile(child_id, files[0].path))
+      policy->GrantReadFile(child_id, files[0].path);
     policy->GrantReadFileSystem(child_id, source_intent_->filesystem_id);
   }
 

@@ -38,22 +38,22 @@ void DeviceAttachedIntentSource::OnMediaDeviceAttached(
     return;
 
   // Sanity checks for |device_path|.
-  if (!device_path.IsAbsolute() || device_path.ReferencesParent() ||
-      device_path.BaseName().IsAbsolute() || device_path.BaseName().empty()) {
+  if (!device_path.IsAbsolute() || device_path.ReferencesParent()) {
     return;
   }
 
+  std::string device_name;
+
   // Register device path as an isolated file system.
-  std::set<FilePath> fileset;
-  fileset.insert(device_path);
   const std::string filesystem_id =
-      fileapi::IsolatedContext::GetInstance()->
-          RegisterIsolatedFileSystem(fileset);
+      fileapi::IsolatedContext::GetInstance()->RegisterFileSystemForFile(
+          device_path, &device_name);
+
   CHECK(!filesystem_id.empty());
   webkit_glue::WebIntentData intent(
       ASCIIToUTF16("chrome-extension://attach"),
       ASCIIToUTF16("chrome-extension://filesystem"),
-      device_path,
+      device_name,
       filesystem_id);
 
   content::WebIntentsDispatcher* dispatcher =

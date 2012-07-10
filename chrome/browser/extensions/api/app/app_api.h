@@ -64,7 +64,7 @@ class AppEventRouter {
       const Extension* extension,
       const string16& action,
       const std::string& file_system_id,
-      const FilePath& base_name);
+      const std::string& base_name);
 
   // Dispatches the onLaunched event to the app implemented by |extension|
   // running in |profile|. The event parameter launchData will have a field

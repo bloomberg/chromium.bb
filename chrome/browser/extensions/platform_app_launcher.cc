@@ -168,21 +168,19 @@ class PlatformAppCommandLineLauncher
     if (!policy->CanReadFile(renderer_id, file_path))
       policy->GrantReadFile(renderer_id, file_path);
 
-    std::set<FilePath> filesets;
-    filesets.insert(file_path);
-
+    std::string registered_name;
     fileapi::IsolatedContext* isolated_context =
         fileapi::IsolatedContext::GetInstance();
     DCHECK(isolated_context);
-    std::string filesystem_id = isolated_context->RegisterIsolatedFileSystem(
-        filesets);
+    std::string filesystem_id = isolated_context->RegisterFileSystemForFile(
+        file_path, &registered_name);
     // Granting read file system permission as well to allow file-system
     // read operations.
     policy->GrantReadFileSystem(renderer_id, filesystem_id);
 
     extensions::AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
         profile_, extension_, ASCIIToUTF16(kViewIntent), filesystem_id,
-        file_path.BaseName());
+        registered_name);
   }
 
   // The profile the app should be run in.

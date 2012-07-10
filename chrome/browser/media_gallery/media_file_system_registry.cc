@@ -140,15 +140,13 @@ std::string MediaFileSystemRegistry::RegisterPathAsFileSystem(
   // Sanity checks for |path|.
   CHECK(path.IsAbsolute());
   CHECK(!path.ReferencesParent());
-  // Make sure |path| does not refer to '/' on Unix.
-  // TODO(thestig) Check how BaseName() works for say, 'C:\' on Windows.
-  CHECK(!path.BaseName().IsAbsolute());
-  CHECK(!path.BaseName().empty());
 
-  std::set<FilePath> fileset;
-  fileset.insert(path);
+  // The directory name is not exposed to the js layer and we simply use
+  // a fixed name (as we only register a single directory per file system).
+  std::string register_name("_");
   const std::string fsid =
-      IsolatedContext::GetInstance()->RegisterIsolatedFileSystem(fileset);
+      IsolatedContext::GetInstance()->RegisterFileSystemForFile(
+          path, &register_name);
   CHECK(!fsid.empty());
   return fsid;
 }
@@ -164,7 +162,7 @@ void MediaFileSystemRegistry::RevokeMediaFileSystem(const FilePath& path) {
     MediaPathToFSIDMap::iterator media_path_it = child_map.find(path);
     if (media_path_it == child_map.end())
       continue;
-    isolated_context->RevokeIsolatedFileSystem(media_path_it->second);
+    isolated_context->RevokeFileSystem(media_path_it->second);
     child_map.erase(media_path_it);
   }
 }

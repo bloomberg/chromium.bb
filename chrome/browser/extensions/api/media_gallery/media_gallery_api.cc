@@ -43,13 +43,13 @@ bool GetMediaFileSystemsFunction::RunImpl() {
         filesystems[i];
     const std::string& fsid = fsid_and_path.first;
     const FilePath& path = fsid_and_path.second;
-    const std::string basepath_utf8(path.BaseName().AsUTF8Unsafe());
 
     base::DictionaryValue* dict_value = new base::DictionaryValue();
     dict_value->SetWithoutPathExpansion(
         "fsid", Value::CreateStringValue(fsid));
+    // The directory name is not exposed to the js layer.
     dict_value->SetWithoutPathExpansion(
-        "dirname", Value::CreateStringValue(basepath_utf8));
+        "dirname", Value::CreateStringValue("_"));
     list->Append(dict_value);
 
     content::ChildProcessSecurityPolicy* policy =

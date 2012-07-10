@@ -180,7 +180,7 @@ void WebIntentsHost::DidClearWindowObject(WebFrame* frame) {
         "%s%s/%s/",
         root_url.spec().c_str(),
         intent_->filesystem_id.c_str(),
-        intent_->root_path.BaseName().AsUTF8Unsafe().c_str());
+        intent_->root_name.c_str());
     // TODO(kmadhusu): This is a temporary hack to create a serializable file
     // system. Once we have a better way to create a serializable file system,
     // remove this hack.

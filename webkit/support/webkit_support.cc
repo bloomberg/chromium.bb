@@ -778,12 +778,13 @@ void OpenFileSystem(WebFrame* frame, WebFileSystem::Type type,
 
 WebKit::WebString RegisterIsolatedFileSystem(
     const WebKit::WebVector<WebKit::WebString>& filenames) {
-  std::set<FilePath> files;
-  for (size_t i = 0; i < filenames.size(); ++i)
-    files.insert(webkit_glue::WebStringToFilePath(filenames[i]));
+  fileapi::IsolatedContext::FileInfoSet files;
+  for (size_t i = 0; i < filenames.size(); ++i) {
+    FilePath path = webkit_glue::WebStringToFilePath(filenames[i]);
+    files.AddPath(path);
+  }
   std::string filesystemId =
-      fileapi::IsolatedContext::GetInstance()->RegisterIsolatedFileSystem(
-          files);
+      fileapi::IsolatedContext::GetInstance()->RegisterFileSystem(files);
   return UTF8ToUTF16(filesystemId);
 }
 

@@ -62,6 +62,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/glue/webdropdata.h"
+#include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -520,8 +521,8 @@ void RenderViewHostImpl::DragTargetDragEnter(
 
   // The filenames vector, on the other hand, does represent a capability to
   // access the given files.
-  std::set<FilePath> filesets;
-  for (std::vector<WebDropData::FileInfo>::const_iterator iter(
+  fileapi::IsolatedContext::FileInfoSet files;
+  for (std::vector<WebDropData::FileInfo>::iterator iter(
            filtered_data.filenames.begin());
        iter != filtered_data.filenames.end(); ++iter) {
     // A dragged file may wind up as the value of an input element, or it
@@ -530,6 +531,11 @@ void RenderViewHostImpl::DragTargetDragEnter(
     // and request permissions to the specific file to cover both cases.
     // We do not give it the permission to request all file:// URLs.
     FilePath path = FilePath::FromUTF8Unsafe(UTF16ToUTF8(iter->path));
+
+    // Make sure we have the same display_name as the one we register.
+    std::string name = files.AddPath(path);
+    iter->display_name = UTF8ToUTF16(name);
+
     policy->GrantRequestSpecificFileURL(renderer_id,
                                         net::FilePathToFileURL(path));
 
@@ -545,15 +551,12 @@ void RenderViewHostImpl::DragTargetDragEnter(
       // Note that we can't tell a file from a directory at this point.
       policy->GrantReadDirectory(renderer_id, path);
     }
-
-    filesets.insert(path);
   }
 
   fileapi::IsolatedContext* isolated_context =
       fileapi::IsolatedContext::GetInstance();
   DCHECK(isolated_context);
-  std::string filesystem_id = isolated_context->RegisterIsolatedFileSystem(
-      filesets);
+  std::string filesystem_id = isolated_context->RegisterFileSystem(files);
   if (!filesystem_id.empty()) {
     // Grant the permission iff the ID is valid.
     policy->GrantReadFileSystem(renderer_id, filesystem_id);

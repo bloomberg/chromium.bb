@@ -64,12 +64,12 @@ WebIntentData::WebIntentData(const string16& action_in,
 
 WebIntentData::WebIntentData(const string16& action_in,
                              const string16& type_in,
-                             const FilePath& root_path_in,
+                             const std::string& root_name_in,
                              const std::string& filesystem_id_in)
     : action(action_in),
       type(type_in),
       blob_length(0),
-      root_path(root_path_in),
+      root_name(root_name_in),
       filesystem_id(filesystem_id_in),
       data_type(FILESYSTEM) {
 }

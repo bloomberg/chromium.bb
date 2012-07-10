@@ -51,7 +51,7 @@ struct WEBKIT_GLUE_EXPORT WebIntentData {
   int64 blob_length;
 
   // Store the file system parameters to create a new file system.
-  FilePath root_path;
+  std::string root_name;
   std::string filesystem_id;
 
   // These enum values indicate which payload data type should be used.
@@ -78,7 +78,7 @@ struct WEBKIT_GLUE_EXPORT WebIntentData {
                 int64 blob_length_in);
   WebIntentData(const string16& action_in,
                 const string16& type_in,
-                const FilePath& root_path_in,
+                const std::string& root_name_in,
                 const std::string& filesystem_id_in);
   ~WebIntentData();
 };

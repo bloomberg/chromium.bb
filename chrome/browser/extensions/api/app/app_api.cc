@@ -128,7 +128,7 @@ void AppEventRouter::DispatchOnLaunchedEvent(
 // static.
 void AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
     Profile* profile, const Extension* extension, const string16& action,
-    const std::string& file_system_id, const FilePath& base_name) {
+    const std::string& file_system_id, const std::string& base_name) {
   ListValue args;
   DictionaryValue* launch_data = new DictionaryValue();
   DictionaryValue* intent = new DictionaryValue();
@@ -139,7 +139,7 @@ void AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
   DictionaryValue* intent_data = new DictionaryValue();
   intent_data->SetString("format", "fileEntry");
   intent_data->SetString("fileSystemId", file_system_id);
-  intent_data->SetString("baseName", base_name.value());
+  intent_data->SetString("baseName", base_name);
   args.Append(intent_data);
   std::string json_args;
   base::JSONWriter::Write(&args, &json_args);

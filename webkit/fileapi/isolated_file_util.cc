@@ -19,27 +19,29 @@ using base::PlatformFileInfo;
 
 namespace fileapi {
 
+typedef IsolatedContext::FileInfo FileInfo;
+
 namespace {
 
-// Simply enumerate each path from a given paths set.
+// Simply enumerate each path from a given fileinfo set.
 // Used to enumerate top-level paths of an isolated filesystem.
 class SetFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
  public:
-  SetFileEnumerator(const std::vector<FilePath>& paths,
+  SetFileEnumerator(const std::vector<FileInfo>& files,
                     const FilePath& root)
-      : paths_(paths),
+      : files_(files),
         root_(root) {
-    path_iter_ = paths_.begin();
+    file_iter_ = files_.begin();
   }
   virtual ~SetFileEnumerator() {}
 
   // AbstractFileEnumerator overrides.
   virtual FilePath Next() OVERRIDE {
-    if (path_iter_ == paths_.end())
+    if (file_iter_ == files_.end())
       return FilePath();
-    FilePath platform_path = *path_iter_++;
-    NativeFileUtil::GetFileInfo(platform_path, &file_info_);
-    return root_.Append(platform_path.BaseName());
+    FilePath platform_file = (file_iter_++)->path;
+    NativeFileUtil::GetFileInfo(platform_file, &file_info_);
+    return root_.Append(platform_file.BaseName());
   }
   virtual int64 Size() OVERRIDE { return file_info_.size; }
   virtual bool IsDirectory() OVERRIDE { return file_info_.is_directory; }
@@ -48,8 +50,8 @@ class SetFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
   }
 
  private:
-  std::vector<FilePath> paths_;
-  std::vector<FilePath>::const_iterator path_iter_;
+  std::vector<FileInfo> files_;
+  std::vector<FileInfo>::const_iterator file_iter_;
   FilePath root_;
   base::PlatformFileInfo file_info_;
 };
@@ -64,10 +66,10 @@ class SetFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
 // that looks like: '/<filesystem_id>'.
 //
 // Example:
-//    Suppose virtual_base_path is: '/CAFEBABE',
-//           platform_base_path is: '/full/path/to/example/dir', and
-//   a path returned by wrapped_is: '/full/path/to/example/dir/a/b/c',
-//             Next() would return: '/CAFEBABE/dir/a/b/c'.
+//     Suppose virtual_base_path is: '/CAFEBABE/dir',
+//            platform_base_path is: '/full/path/to/example/dir', and
+//   a path returned by wrapped_ is: '/full/path/to/example/dir/a/b/c',
+//              Next() would return: '/CAFEBABE/dir/a/b/c'.
 //
 class PathConverterEnumerator
     : public FileSystemFileUtil::AbstractFileEnumerator {
@@ -91,7 +93,7 @@ class PathConverterEnumerator
     if (path.empty())
       return path;
     FilePath virtual_path = virtual_base_path_;
-    platform_base_path_.DirName().AppendRelativePath(path, &virtual_path);
+    platform_base_path_.AppendRelativePath(path, &virtual_path);
     return virtual_path;
   }
   virtual int64 Size() OVERRIDE { return wrapped_->Size(); }
@@ -111,14 +113,13 @@ class RecursiveSetFileEnumerator
     : public FileSystemFileUtil::AbstractFileEnumerator {
  public:
   RecursiveSetFileEnumerator(const FilePath& virtual_base_path,
-                             const std::vector<FilePath>& paths,
+                             const std::vector<FileInfo>& files,
                              const FilePath& root)
       : virtual_base_path_(virtual_base_path),
-        paths_(paths),
+        files_(files),
         root_(root) {
-    path_iter_ = paths_.begin();
-    current_enumerator_.reset(
-        new SetFileEnumerator(paths, root));
+    file_iter_ = files_.begin();
+    current_enumerator_.reset(new SetFileEnumerator(files, root));
   }
   virtual ~RecursiveSetFileEnumerator() {}
 
@@ -139,8 +140,8 @@ class RecursiveSetFileEnumerator
 
  private:
   FilePath virtual_base_path_;
-  std::vector<FilePath> paths_;
-  std::vector<FilePath>::iterator path_iter_;
+  std::vector<FileInfo> files_;
+  std::vector<FileInfo>::iterator file_iter_;
   base::PlatformFileInfo file_info_;
   FilePath root_;
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> current_enumerator_;
@@ -154,16 +155,16 @@ FilePath RecursiveSetFileEnumerator::Next() {
   }
 
   // We reached the end.
-  if (path_iter_ == paths_.end())
+  if (file_iter_ == files_.end())
     return FilePath();
 
   // Enumerates subdirectories of the next path.
-  FilePath next_path = *path_iter_++;
+  FileInfo& next_file = *file_iter_++;
   current_enumerator_.reset(
       new PathConverterEnumerator(
           NativeFileUtil::CreateFileEnumerator(
-              next_path, true /* recursive */),
-          virtual_base_path_, next_path));
+              next_file.path, true /* recursive */),
+          virtual_base_path_.AppendASCII(next_file.name), next_file.path));
   DCHECK(current_enumerator_.get());
   return current_enumerator_->Next();
 }
@@ -209,9 +210,9 @@ PlatformFileError IsolatedFileUtil::GetFileInfo(
     FilePath* platform_path) {
   DCHECK(file_info);
   std::string filesystem_id;
-  FilePath root_unused, cracked_path;
+  FilePath cracked_path;
   if (!IsolatedContext::GetInstance()->CrackIsolatedPath(
-          url.path(), &filesystem_id, &root_unused, &cracked_path))
+          url.path(), &filesystem_id, NULL, &cracked_path))
     return base::PLATFORM_FILE_ERROR_SECURITY;
   if (cracked_path.empty()) {
     // The root directory case.
@@ -241,24 +242,25 @@ IsolatedFileUtil::CreateFileEnumerator(
     const FileSystemURL& root,
     bool recursive) {
   std::string filesystem_id;
-  FilePath root_path, cracked_path;
+  FileInfo root_info;
+  FilePath cracked_path;
   if (!IsolatedContext::GetInstance()->CrackIsolatedPath(
-          root.path(), &filesystem_id, &root_path, &cracked_path))
+          root.path(), &filesystem_id, &root_info, &cracked_path))
     return NULL;
 
   FilePath virtual_base_path =
-      IsolatedContext::GetInstance()->CreateVirtualPath(filesystem_id,
-                                                        FilePath());
+      IsolatedContext::GetInstance()->CreateVirtualRootPath(filesystem_id);
 
   if (!cracked_path.empty()) {
     return new PathConverterEnumerator(
         NativeFileUtil::CreateFileEnumerator(cracked_path, recursive),
-        virtual_base_path, root_path);
+        virtual_base_path.AppendASCII(root_info.name), root_info.path);
   }
 
   // Root path case.
-  std::vector<FilePath> toplevels;
-  IsolatedContext::GetInstance()->GetTopLevelPaths(filesystem_id, &toplevels);
+  std::vector<FileInfo> toplevels;
+  IsolatedContext::GetInstance()->GetRegisteredFileInfo(
+      filesystem_id, &toplevels);
   if (!recursive)
     return new SetFileEnumerator(toplevels, root.path());
   return new RecursiveSetFileEnumerator(
@@ -333,8 +335,8 @@ bool IsolatedFileUtil::IsDirectoryEmpty(
     return false;
   if (platform_path.empty()) {
     // The root directory case.
-    std::vector<FilePath> toplevels;
-    bool success = IsolatedContext::GetInstance()->GetTopLevelPaths(
+    std::vector<FileInfo> toplevels;
+    bool success = IsolatedContext::GetInstance()->GetRegisteredFileInfo(
         filesystem_id, &toplevels);
     DCHECK(success);
     return toplevels.empty();
@@ -373,9 +375,8 @@ bool IsolatedFileUtil::GetPlatformPath(const FileSystemURL& url,
                                        FilePath* platform_path) const {
   DCHECK(platform_path);
   std::string filesystem_id;
-  FilePath root_path;
   if (!IsolatedContext::GetInstance()->CrackIsolatedPath(
-          url.path(), &filesystem_id, &root_path, platform_path))
+          url.path(), &filesystem_id, NULL, platform_path))
     return false;
   return true;
 }
