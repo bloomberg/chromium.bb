@@ -20,6 +20,7 @@
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -117,6 +118,8 @@ void ImportDataHandler::ImportData(const ListValue* args) {
     importer_host_ = new ImporterHost;
 #endif
     importer_host_->SetObserver(this);
+    importer_host_->set_browser(
+        browser::FindBrowserWithWebContents(web_ui()->GetWebContents()));
     Profile* profile = Profile::FromWebUI(web_ui());
     importer_host_->StartImportSettings(source_profile, profile,
                                         import_services,

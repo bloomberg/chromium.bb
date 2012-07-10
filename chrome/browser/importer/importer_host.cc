@@ -20,7 +20,6 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -40,7 +39,9 @@ ImporterHost::ImporterHost()
       importer_(NULL),
       headless_(false),
       parent_window_(NULL),
+      browser_(NULL),
       observer_(NULL) {
+  BrowserList::AddObserver(this);
 }
 
 void ImporterHost::ShowWarningDialog() {
@@ -163,10 +164,8 @@ void ImporterHost::OnGoogleGAIACookieChecked(bool result) {
         chrome::MESSAGE_BOX_TYPE_INFORMATION);
 
     GURL url("https://accounts.google.com/ServiceLogin");
-    DCHECK(profile_);
-    Browser* browser = browser::FindLastActiveWithProfile(profile_);
-    if (browser)
-      chrome::AddSelectedTabWithURL(browser, url,
+    if (browser_)
+      chrome::AddSelectedTabWithURL(browser_, url,
                                     content::PAGE_TRANSITION_TYPED);
 
     MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
@@ -184,6 +183,7 @@ void ImporterHost::Cancel() {
 }
 
 ImporterHost::~ImporterHost() {
+  BrowserList::RemoveObserver(this);
   if (NULL != importer_)
     importer_->Release();
 
@@ -265,4 +265,9 @@ void ImporterHost::Observe(int type,
   DCHECK(type == chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED);
   registrar_.RemoveAll();
   InvokeTaskIfDone();
+}
+
+void ImporterHost::OnBrowserRemoved(Browser* browser) {
+  if (browser_ == browser)
+    browser_ = NULL;
 }
