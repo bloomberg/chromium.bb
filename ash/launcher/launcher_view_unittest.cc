@@ -176,7 +176,8 @@ class LauncherViewTest : public aura::test::AuraTestBase {
 
     model_.reset(new LauncherModel);
 
-    launcher_view_.reset(new internal::LauncherView(model_.get(), &delegate_));
+    launcher_view_.reset(new internal::LauncherView(
+        model_.get(), &delegate_, NULL));
     launcher_view_->Init();
     // The bounds should be big enough for 4 buttons + overflow chevron.
     launcher_view_->SetBounds(0, 0, 500, 50);

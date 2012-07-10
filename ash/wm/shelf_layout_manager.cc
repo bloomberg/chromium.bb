@@ -136,6 +136,7 @@ ShelfLayoutManager::ShelfLayoutManager(views::Widget* status)
 }
 
 ShelfLayoutManager::~ShelfLayoutManager() {
+  FOR_EACH_OBSERVER(Observer, observers_, WillDeleteShelf());
   Shell::GetInstance()->RemoveShellObserver(this);
   aura::client::GetActivationClient(root_window_)->RemoveObserver(this);
 }
@@ -145,6 +146,8 @@ void ShelfLayoutManager::SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {
     return;
   auto_hide_behavior_ = behavior;
   UpdateVisibilityState();
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnAutoHideStateChanged(state_.auto_hide_state));
 }
 
 bool ShelfLayoutManager::IsVisible() const {
@@ -279,12 +282,16 @@ void ShelfLayoutManager::UpdateAutoHideState() {
     if (auto_hide_state == AUTO_HIDE_HIDDEN) {
       // Hides happen immediately.
       SetState(state_.visibility_state);
+      FOR_EACH_OBSERVER(Observer, observers_,
+                        OnAutoHideStateChanged(auto_hide_state));
     } else {
       auto_hide_timer_.Stop();
       auto_hide_timer_.Start(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kAutoHideDelayMS),
           this, &ShelfLayoutManager::UpdateAutoHideStateNow);
+      FOR_EACH_OBSERVER(Observer, observers_, OnAutoHideStateChanged(
+          CalculateAutoHideState(state_.visibility_state)));
     }
   } else {
     auto_hide_timer_.Stop();
@@ -294,6 +301,14 @@ void ShelfLayoutManager::UpdateAutoHideState() {
 void ShelfLayoutManager::SetWindowOverlapsShelf(bool value) {
   window_overlaps_shelf_ = value;
   UpdateShelfBackground(internal::BackgroundAnimator::CHANGE_ANIMATE);
+}
+
+void ShelfLayoutManager::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ShelfLayoutManager::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -344,6 +359,9 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
 
   if (state_.Equals(state))
     return;  // Nothing changed.
+
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    WillChangeVisibilityState(visibility_state));
 
   if (state.visibility_state == AUTO_HIDE) {
     // When state is AUTO_HIDE we need to track when the mouse is over the

@@ -393,6 +393,7 @@
         'launcher/launcher_context_menu_unittest.cc',
         'launcher/launcher_model_unittest.cc',
         'launcher/launcher_navigator_unittest.cc',
+	'launcher/launcher_tooltip_manager_unittest.cc',
         'launcher/launcher_unittest.cc',
         'launcher/launcher_view_unittest.cc',
         'root_window_controller_unittest.cc',
