@@ -37,6 +37,9 @@
 #include "chrome/installer/util/install_util.h"
 #include "policy/policy_constants.h"
 
+// userenv.dll is required for GetProfileType().
+#pragma comment(lib, "userenv.lib")
+
 namespace breakpad_win {
 
 std::vector<google_breakpad::CustomInfoEntry>* g_custom_entries = NULL;

@@ -464,9 +464,6 @@
           ],
           'msvs_settings': {
             'VCLinkerTool': {
-              'AdditionalDependencies': [
-                'userenv.lib',
-              ],
               'ImportLibrary': '$(OutDir)\\lib\\chrome_exe.lib',
               'ProgramDatabaseFile': '$(OutDir)\\chrome_exe.pdb',
               'DelayLoadDLLs': [
@@ -565,9 +562,6 @@
               ],
               'msvs_settings': {
                 'VCLinkerTool': {
-                  'AdditionalDependencies': [
-                    'userenv.lib',
-                  ],
                   'ImportLibrary': '$(OutDir)\\lib\\nacl64_exe.lib',
                   'ProgramDatabaseFile': '$(OutDir)\\nacl64_exe.pdb',
                   'SubSystem': '2',         # Set /SUBSYSTEM:WINDOWS
