@@ -141,7 +141,7 @@ EXTRA_ENV = {
   'LIBC'      : '-lc',
   'LIBNACL'   : '${LIBMODE_NEWLIB ? -lnacl}',
   # Enabled/disabled by -pthreads
-  'LIBPTHREAD': '${PTHREAD? -lpthread}',
+  'LIBPTHREAD': '${PTHREAD ? -lpthread}',
   'PNACL_ABI' : '-l:pnacl_abi.bc',
 
 

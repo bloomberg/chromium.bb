@@ -245,11 +245,11 @@ SBTC_PRODUCTION=${SBTC_PRODUCTION:-false}
 SBTC_BUILD_WITH_PNACL="armv7 i686 x86_64"
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-0b098ca44de7}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-d74b12fa224c}
 
 readonly NEWLIB_REV=346ea38d142f
 readonly BINUTILS_REV=5ccab9d0bb73
-readonly GOLD_REV=0eca3559e64e
+readonly GOLD_REV=c136b51e9dcb
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 
 readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-158408}
@@ -794,6 +794,11 @@ translator-all() {
   # Build the SDK if it not already present.
   if ! [ -d "$(GetInstallDir ${libmode})/sdk/lib" ]; then
     sdk newlib
+    # Also build private libs to allow building nexes without the IRT
+    # segment gap.  Specifically, only the sandboxed translator nexes
+    # are built without IRT support to gain address space and reduce
+    # swap file usage.
+    sdk-private-libs newlib
   fi
 
   binutils-liberty
@@ -843,9 +848,9 @@ translator() {
   fi
 
   llvm-sb
-# Note: for the two binutils cases below we need to force
-# the "setup" which is done by passing through "$@"
-# TODO(robertm): investigate less complicated solutions
+  # Note: for the binutils case below we need to force
+  # the "setup" which is done by passing through "$@"
+  # TODO(robertm): investigate less complicated solutions
   binutils-gold-sb "$@"
 
   if ${PNACL_PRUNE}; then
@@ -2333,7 +2338,9 @@ translate-sb-tool() {
     StepBanner "TRANSLATE" \
                "Translating ${toolname}.pexe to ${tarch} (background)"
     # TODO(pdox): Get the SDK location based on libmode.
-    "${PNACL_TRANSLATE}" -arch ${tarch} "${pexe}" -o "${nexe}" &
+    # NOTE: we are using --noirt to build without a segment gap
+    # since we aren't loading the IRT for the translator nexes.
+    "${PNACL_TRANSLATE}" --noirt -arch ${tarch} "${pexe}" -o "${nexe}" &
     QueueLastProcess
   done
   StepBanner "TRANSLATE" "Waiting for translation processes to finish"
@@ -3049,6 +3056,31 @@ sdk-irt-shim() {
   local outdir="${out_dir_prefix}"/obj/src/untrusted/pnacl_irt_shim
   mkdir -p "${INSTALL_LIB_X8664}"
   cp "${outdir}"/libpnacl_irt_shim.a "${INSTALL_LIB_X8664}"
+  spopd
+}
+
+# This builds lib*_private.a, to allow building the llc and ld nexes without
+# the IRT and without the segment gap.
+sdk-private-libs() {
+  sdk-setup "$@"
+  StepBanner "SDK" "Private (non-IRT) libs"
+  spushd "${NACL_ROOT}"
+
+  local neutral_platform="x86-32"
+  RunWithLog "sdk.libs_private.bitcode" \
+    ./scons \
+    -j${PNACL_CONCURRENCY} \
+    bitcode=1 \
+    platform=${neutral_platform} \
+    --verbose \
+    libnacl_sys_private \
+    libpthread_private \
+    libnacl_dyncode_private
+
+  local out_dir_prefix="${SCONS_OUT}"/nacl-x86-32-pnacl-pexe-clang
+  local outdir="${out_dir_prefix}"/lib
+  mkdir -p "${SDK_INSTALL_LIB}"
+  cp "${outdir}"/lib*_private.a "${SDK_INSTALL_LIB}"
   spopd
 }
 

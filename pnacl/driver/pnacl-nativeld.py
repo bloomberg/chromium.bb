@@ -22,6 +22,7 @@ import subprocess
 EXTRA_ENV = {
   'INPUTS'   : '',
   'OUTPUT'   : '',
+
   # the INPUTS file coming from the llc translation step
   'LLC_TRANSLATED_FILE' : '',
 
@@ -40,6 +41,9 @@ EXTRA_ENV = {
   'BASE_TEXT': '0x20000',
   'BASE_RODATA': '0x10020000',
 
+  # Determine if we should build nexes compatible with the IRT.
+  'USE_IRT' : '1',
+
   # We consider 4 different gold modes.
   # NOTE: "shared" implies PIC
   #       "dynamic" should probbably imply nonPIC to avoid
@@ -50,7 +54,7 @@ EXTRA_ENV = {
   #       gold has been adjusted accordingly
   'LD_FLAGS_static': '--rosegment --native-client ' +
                      '--keep-headers-out-of-load-segment ' +
-                     '-Tdata=${BASE_RODATA} -Ttext=${BASE_TEXT}',
+                     '${USE_IRT ? -Tdata=${BASE_RODATA}} -Ttext=${BASE_TEXT}',
 
   'LD_FLAGS_shared': '--rosegment --bsssegment --native-client ' +
                      '--keep-headers-out-of-load-segment ' +
@@ -112,6 +116,7 @@ LDPatterns = [
 
   ( ('(--add-extra-dt-needed=.*)'), "env.append('NEEDED_LIBRARIES', $0)"),
   ( ('--metadata', '(.+)'),         "env.set('METADATA_FILE', $0)"),
+  ( '--noirt',                      "env.set('USE_IRT', '0')"),
 
   ( '-shared',         "env.set('SHARED', '1')"),
   ( '-static',         "env.set('STATIC', '1')"),
@@ -318,4 +323,3 @@ def LinkerFiles(args):
         Log.Fatal("Unable to open '%s'", pathtools.touser(f))
       ret.append(f)
   return ret
-

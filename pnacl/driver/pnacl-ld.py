@@ -18,6 +18,9 @@ EXTRA_ENV = {
   'ALLOW_NATIVE': '0', # Allow LD args which will change the behavior
                        # of native linking. This must be accompanied by
                        # -arch to produce a .nexe.
+  'USE_IRT': '1',  # Use stable IRT interfaces.
+
+
   'INPUTS'   : '',
   'OUTPUT'   : '',
 
@@ -113,6 +116,7 @@ def AddToBothFlags(*args):
 
 LDPatterns = [
   ( '--pnacl-allow-native', "env.set('ALLOW_NATIVE', '1')"),
+  ( '--noirt',              "env.set('USE_IRT', '0')"),
 
   ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
   ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
@@ -271,6 +275,9 @@ def main(argv):
 
   regular_inputs, native_objects = SplitLinkLine(inputs)
 
+  if not env.getbool('USE_IRT'):
+    inputs = UsePrivateLibraries(inputs)
+
   # Filter out object files which are currently used in the bitcode link.
   # These don't actually need to be treated separately, since the
   # translator includes them automatically. Eventually, these will
@@ -332,6 +339,31 @@ def RemoveNativeStdLibs(objs):
                  'libc.a', 'libstdc++.a', 'libgcc.a', 'libgcc_eh.a',
                  'libm.a']
   return [f for f in objs if pathtools.split(f)[1] not in defaultlibs]
+
+def UsePrivateLibraries(libs):
+  """ Place libnacl_sys_private.a before libnacl.a
+  Replace libpthread.a with libpthread_private.a
+  Replace libnacl_dyncode.a with libnacl_dyncode_private.a
+  This assumes that the private libs can be found at the same directory
+  as the public libs.
+  """
+  result_libs = []
+  for l in libs:
+    base = pathtools.basename(l)
+    dname = pathtools.dirname(l)
+    if base == 'libnacl.a':
+      Log.Info('Not using IRT -- injecting libnacl_sys_private.a to link line')
+      result_libs.append(pathtools.join(dname, 'libnacl_sys_private.a'))
+      result_libs.append(l)
+    elif base == 'libpthread.a':
+      Log.Info('Not using IRT -- swapping private lib for libpthread')
+      result_libs.append(pathtools.join(dname, 'libpthread_private.a'))
+    elif base == 'libnacl_dyncode.a':
+      Log.Info('Not using IRT -- swapping private lib for libnacl_dyncode')
+      result_libs.append(pathtools.join(dname, 'libnacl_dyncode_private.a'))
+    else:
+      result_libs.append(l)
+  return result_libs
 
 def SplitLinkLine(inputs):
   """ Pull native objects (.o, .a) out of the input list.

@@ -21,6 +21,9 @@ import subprocess
 EXTRA_ENV = {
   'PIC'           : '0',
 
+  # Determine if we should build nexes compatible with the IRT
+  'USE_IRT' : '1',
+
   # Use the IRT shim by default on x86-64. This can be disabled with an
   # explicit flag (--noirtshim) or via -nostdlib.
   'USE_IRT_SHIM'  : '${ARCH==X8664 && !SHARED ? 1 : 0}',
@@ -204,7 +207,9 @@ TranslatorPatterns = [
   # This flag is needed for building libgcc_s.so.
   ( '-nodefaultlibs',  "env.set('USE_DEFAULTLIBS', '0')"),
 
-  ( '--noirtshim',      "env.set('USE_IRT_SHIM', '0')"),
+  ( '--noirt',         "env.set('USE_IRT', '0')\n"
+                       "env.append('LD_FLAGS', '--noirt')"),
+  ( '--noirtshim',     "env.set('USE_IRT_SHIM', '0')"),
 
   ( '--newlib-shared-experiment',  "env.set('NEWLIB_SHARED_EXPERIMENT', '1')"),
 
@@ -430,6 +435,8 @@ def RequiresNonStandardLDCommandline(inputs, infile):
     return ('No bitcode input: %s' % str(infile), True)
   if not env.getbool('STDLIB'):
     return ('NOSTDLIB', True)
+  if not env.getbool('USE_IRT'):
+    return ('USE_IRT false when normally true', True)
   if (driver_tools.GetArch(required=True) == 'X8664' and
       not env.getbool('SHARED') and
       not env.getbool('USE_IRT_SHIM')):

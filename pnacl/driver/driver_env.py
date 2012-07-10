@@ -122,17 +122,11 @@ INITIAL_ENV = {
   'SEL_UNIVERSAL_PREFIX': '${USE_EMULATOR ? ${EMULATOR}}',
   'SEL_UNIVERSAL'       : '${SCONS_STAGING}/sel_universal${EXEC_EXT}',
   # NOTE: -Q skips sel_ldr qualification tests, -c -c skips validation
-  'SEL_UNIVERSAL_FLAGS' : '--abort_on_error -B ${IRT_BLOB} ' +
+  # NOTE: We are not using -B to load the IRT, since the translators do not
+  # use the IRT.
+  'SEL_UNIVERSAL_FLAGS' : '--abort_on_error ' +
                           '--uses_reverse_service ' +
                           '${USE_EMULATOR ? -Q -c -c --command_prefix ${EMULATOR}}',
-
-  'IRT_STAGING'         : '${IRT_STAGING_%ARCH%}',
-  'IRT_STAGING_X8632'   : '${SCONS_OUT}/nacl_irt-x86-32/staging',
-  'IRT_STAGING_X8664'   : '${SCONS_OUT}/nacl_irt-x86-64/staging',
-  'IRT_STAGING_ARM'     : '${SCONS_OUT}/nacl_irt-arm/staging',
-  # The irt_core.nexe should suffice for the sandboxed translators, since
-  # they do not use PPAPI.
-  'IRT_BLOB'            : '${IRT_STAGING}/irt_core.nexe',
 
   'EMULATOR'            : '${EMULATOR_%ARCH%}',
   'EMULATOR_X8632'      : '',
