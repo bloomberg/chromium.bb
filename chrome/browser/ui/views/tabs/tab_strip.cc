@@ -39,10 +39,11 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
-#include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/mouse_watcher_view_host.h"
 #include "ui/views/view_model_utils.h"
@@ -302,9 +303,11 @@ class NewTabButton : public views::ImageButton {
 
  private:
   bool ShouldUseNativeFrame() const;
-  SkBitmap GetBackgroundBitmap(views::CustomButton::ButtonState state) const;
-  SkBitmap GetBitmapForState(views::CustomButton::ButtonState state) const;
-  SkBitmap GetBitmap() const;
+  gfx::ImageSkia GetBackgroundImage(views::CustomButton::ButtonState state,
+                                    ui::ScaleFactor scale_factor) const;
+  gfx::ImageSkia GetImageForState(views::CustomButton::ButtonState state,
+                                  ui::ScaleFactor scale_factor) const;
+  gfx::ImageSkia GetImage(ui::ScaleFactor scale_factor) const;
 
   // Tab strip that contains this button.
   TabStrip* tab_strip_;
@@ -372,7 +375,7 @@ ui::GestureStatus NewTabButton::OnGestureEvent(
 }
 
 void NewTabButton::OnPaint(gfx::Canvas* canvas) {
-  SkBitmap image = GetBitmap();
+  gfx::ImageSkia image = GetImage(canvas->scale_factor());
   canvas->DrawImageInt(image, 0, height() - image.height());
 }
 
@@ -381,8 +384,9 @@ bool NewTabButton::ShouldUseNativeFrame() const {
     GetWidget()->GetTopLevelWidget()->ShouldUseNativeFrame();
 }
 
-SkBitmap NewTabButton::GetBackgroundBitmap(
-    views::CustomButton::ButtonState state) const {
+gfx::ImageSkia NewTabButton::GetBackgroundImage(
+    views::CustomButton::ButtonState state,
+    ui::ScaleFactor scale_factor) const {
   int background_id = 0;
   if (ShouldUseNativeFrame()) {
     background_id = IDR_THEME_TAB_BACKGROUND_V;
@@ -409,7 +413,7 @@ SkBitmap NewTabButton::GetBackgroundBitmap(
       GetThemeProvider()->GetImageSkiaNamed(IDR_NEWTAB_BUTTON_MASK);
   int height = mask->height();
   int width = mask->width();
-  gfx::Canvas canvas(gfx::Size(width, height), false);
+  gfx::Canvas canvas(gfx::Size(width, height), scale_factor, false);
 
   // For custom images the background starts at the top of the tab strip.
   // Otherwise the background starts at the top of the frame.
@@ -432,11 +436,13 @@ SkBitmap NewTabButton::GetBackgroundBitmap(
   if (state == views::CustomButton::BS_HOT)
     canvas.FillRect(gfx::Rect(size()), SkColorSetARGB(64, 255, 255, 255));
 
-  return SkBitmapOperations::CreateMaskedBitmap(canvas.ExtractBitmap(), *mask);
+  return gfx::ImageSkiaOperations::CreateMaskedImage(
+      gfx::ImageSkia(canvas.ExtractImageSkiaRep()), *mask);
 }
 
-SkBitmap NewTabButton::GetBitmapForState(
-    views::CustomButton::ButtonState state) const {
+gfx::ImageSkia NewTabButton::GetImageForState(
+    views::CustomButton::ButtonState state,
+    ui::ScaleFactor scale_factor) const {
   int overlay_id = 0;
   // The new tab button field trial will get created in variations_service.cc
   // through the variations server.
@@ -450,8 +456,9 @@ SkBitmap NewTabButton::GetBitmapForState(
   }
   gfx::ImageSkia* overlay = GetThemeProvider()->GetImageSkiaNamed(overlay_id);
 
-  gfx::Canvas canvas(gfx::Size(overlay->width(), overlay->height()), false);
-  canvas.DrawImageInt(GetBackgroundBitmap(state), 0, 0);
+  gfx::Canvas canvas(
+      gfx::Size(overlay->width(), overlay->height()), scale_factor, false);
+  canvas.DrawImageInt(GetBackgroundImage(state, scale_factor), 0, 0);
 
   // Draw the button border with a slight alpha.
   const int kNativeFrameOverlayAlpha = 178;
@@ -461,15 +468,15 @@ SkBitmap NewTabButton::GetBitmapForState(
   canvas.DrawImageInt(*overlay, 0, 0);
   canvas.Restore();
 
-  return canvas.ExtractBitmap();
+  return gfx::ImageSkia(canvas.ExtractImageSkiaRep());
 }
 
-SkBitmap NewTabButton::GetBitmap() const {
+gfx::ImageSkia NewTabButton::GetImage(ui::ScaleFactor scale_factor) const {
   if (!hover_animation_->is_animating())
-    return GetBitmapForState(state());
-  return SkBitmapOperations::CreateBlendedBitmap(
-      GetBitmapForState(views::CustomButton::BS_NORMAL),
-      GetBitmapForState(views::CustomButton::BS_HOT),
+    return GetImageForState(state(), scale_factor);
+  return gfx::ImageSkiaOperations::CreateBlendedImage(
+      GetImageForState(views::CustomButton::BS_NORMAL, scale_factor),
+      GetImageForState(views::CustomButton::BS_HOT, scale_factor),
       hover_animation_->GetCurrentValue());
 }
 

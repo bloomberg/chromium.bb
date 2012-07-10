@@ -23,8 +23,8 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/path.h"
-#include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
@@ -563,13 +563,13 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas) {
 
 void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
   // Render the inactive tab background. We'll use this for clipping.
-  gfx::Canvas background_canvas(size(), false);
+  gfx::Canvas background_canvas(size(), canvas->scale_factor(), false);
   PaintInactiveTabBackground(&background_canvas);
 
-  gfx::ImageSkia background_image = background_canvas.ExtractBitmap();
+  gfx::ImageSkia background_image(background_canvas.ExtractImageSkiaRep());
 
   // Draw a radial gradient to hover_canvas.
-  gfx::Canvas hover_canvas(size(), false);
+  gfx::Canvas hover_canvas(size(), canvas->scale_factor(), false);
   int radius = kMiniTitleChangeGradientRadius;
   int x0 = width() + radius - kMiniTitleChangeInitialXOffset;
   int x1 = radius;
@@ -595,8 +595,8 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
                         paint);
 
   // Draw the radial gradient clipped to the background into hover_image.
-  gfx::ImageSkia hover_image = SkBitmapOperations::CreateMaskedBitmap(
-      hover_canvas.ExtractBitmap(), background_image);
+  gfx::ImageSkia hover_image = gfx::ImageSkiaOperations::CreateMaskedImage(
+      gfx::ImageSkia(hover_canvas.ExtractImageSkiaRep()), background_image);
 
   // Draw the tab background to the canvas.
   canvas->DrawImageInt(background_image, 0, 0);
@@ -642,25 +642,25 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   // We need a gfx::Canvas object to be able to extract the image from.
   // We draw everything to this canvas and then output it to the canvas
   // parameter in addition to using it to mask the hover glow if needed.
-  gfx::Canvas background_canvas(size(), false);
+  gfx::Canvas background_canvas(size(), canvas->scale_factor(), false);
 
   // Draw left edge.  Don't draw over the toolbar, as we're not the foreground
   // tab.
-  gfx::ImageSkia tab_l = SkBitmapOperations::CreateTiledBitmap(
+  gfx::ImageSkia tab_l = gfx::ImageSkiaOperations::CreateTiledImage(
       *tab_bg, offset, bg_offset_y, tab_image->l_width, height());
   gfx::ImageSkia theme_l =
-      SkBitmapOperations::CreateMaskedBitmap(tab_l, *alpha->image_l);
+      gfx::ImageSkiaOperations::CreateMaskedImage(tab_l, *alpha->image_l);
   background_canvas.DrawImageInt(theme_l,
       0, 0, theme_l.width(), theme_l.height() - kToolbarOverlap,
       0, 0, theme_l.width(), theme_l.height() - kToolbarOverlap,
       false);
 
   // Draw right edge.  Again, don't draw over the toolbar.
-  gfx::ImageSkia tab_r = SkBitmapOperations::CreateTiledBitmap(*tab_bg,
+  gfx::ImageSkia tab_r = gfx::ImageSkiaOperations::CreateTiledImage(*tab_bg,
       offset + width() - tab_image->r_width, bg_offset_y,
       tab_image->r_width, height());
   gfx::ImageSkia theme_r =
-      SkBitmapOperations::CreateMaskedBitmap(tab_r, *alpha->image_r);
+      gfx::ImageSkiaOperations::CreateMaskedImage(tab_r, *alpha->image_r);
   background_canvas.DrawImageInt(theme_r,
       0, 0, theme_r.width(), theme_r.height() - kToolbarOverlap,
       width() - theme_r.width(), 0, theme_r.width(),
@@ -677,11 +677,12 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
      width() - tab_image->l_width - tab_image->r_width,
      height() - drop_shadow_height() - kToolbarOverlap - tab_image->y_offset);
 
-  canvas->DrawImageInt(background_canvas.ExtractBitmap(), 0, 0);
+  canvas->DrawImageInt(
+      gfx::ImageSkia(background_canvas.ExtractImageSkiaRep()), 0, 0);
 
   if (!GetThemeProvider()->HasCustomImage(tab_id) &&
       hover_controller().ShouldDraw()) {
-    hover_controller().Draw(canvas, background_canvas.ExtractBitmap());
+    hover_controller().Draw(canvas, background_canvas.ExtractImageSkiaRep());
   }
 
   // Now draw the highlights/shadows around the tab edge.
@@ -707,17 +708,18 @@ void Tab::PaintActiveTabBackground(gfx::Canvas* canvas,
   TabImage* alpha = &tab_alpha_;
 
   // Draw left edge.
-  gfx::ImageSkia tab_l = SkBitmapOperations::CreateTiledBitmap(
+  gfx::ImageSkia tab_l = gfx::ImageSkiaOperations::CreateTiledImage(
       *tab_background, offset, 0, tab_image->l_width, height());
   gfx::ImageSkia theme_l =
-      SkBitmapOperations::CreateMaskedBitmap(tab_l, *alpha->image_l);
+      gfx::ImageSkiaOperations::CreateMaskedImage(tab_l, *alpha->image_l);
   canvas->DrawImageInt(theme_l, 0, 0);
 
   // Draw right edge.
-  gfx::ImageSkia tab_r = SkBitmapOperations::CreateTiledBitmap(*tab_background,
+  gfx::ImageSkia tab_r = gfx::ImageSkiaOperations::CreateTiledImage(
+      *tab_background,
       offset + width() - tab_image->r_width, 0, tab_image->r_width, height());
   gfx::ImageSkia theme_r =
-      SkBitmapOperations::CreateMaskedBitmap(tab_r, *alpha->image_r);
+      gfx::ImageSkiaOperations::CreateMaskedImage(tab_r, *alpha->image_r);
   canvas->DrawImageInt(theme_r, width() - tab_image->r_width, 0);
 
   // Draw center.  Instead of masking out the top portion we simply skip over it

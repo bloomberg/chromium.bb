@@ -7,7 +7,7 @@
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/skbitmap_operations.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -70,6 +70,7 @@ void GlowHoverController::Draw(gfx::Canvas* canvas,
 
   // Draw a radial gradient to hover_canvas.
   gfx::Canvas hover_canvas(gfx::Size(mask_image.width(), mask_image.height()),
+                           canvas->scale_factor(),
                            false);
 
   // Draw a radial gradient to hover_canvas.
@@ -96,8 +97,8 @@ void GlowHoverController::Draw(gfx::Canvas* canvas,
                                     location_.y() - radius,
                                     radius * 2, radius * 2), paint);
   }
-  gfx::ImageSkia result = SkBitmapOperations::CreateMaskedBitmap(
-      hover_canvas.ExtractBitmap(), mask_image);
+  gfx::ImageSkia result = gfx::ImageSkiaOperations::CreateMaskedImage(
+      gfx::ImageSkia(hover_canvas.ExtractImageSkiaRep()), mask_image);
   canvas->DrawImageInt(result, (view_->width() - mask_image.width()) / 2,
                        (view_->height() - mask_image.height()) / 2);
 }

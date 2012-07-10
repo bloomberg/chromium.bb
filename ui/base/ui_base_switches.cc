@@ -6,6 +6,11 @@
 
 namespace switches {
 
+// Whether or not ImageSkiaOperations methods can scale one of images
+// if they don't have the same scale factor.
+const char kDisableScalingInImageSkiaOperations[] =
+    "disable-scaling-in-image-skia-operations";
+
 // Let text glyphs have X-positions that aren't snapped to the pixel grid.
 const char kEnableTextSubpixelPositioning[] =
     "enable-text-subpixel-positioning";
