@@ -947,6 +947,36 @@ void Browser::FindReplyHelper(WebContents* web_contents,
                                                    final_update);
 }
 
+// static
+void Browser::RequestMediaAccessPermissionHelper(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest* request,
+    const content::MediaResponseCallback& callback) {
+  TabContents* tab = TabContents::FromWebContents(web_contents);
+
+  scoped_ptr<MediaStreamDevicesController>
+      controller(new MediaStreamDevicesController(tab->profile(),
+                                                  request,
+                                                  callback));
+  if (!controller->DismissInfoBarAndTakeActionOnSettings()) {
+    InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
+    InfoBarDelegate* old_infobar = NULL;
+    for (size_t i = 0; i < infobar_helper->infobar_count(); ++i) {
+      old_infobar = infobar_helper->GetInfoBarDelegateAt(i)->
+          AsMediaStreamInfoBarDelegate();
+      if (old_infobar)
+        break;
+    }
+
+    InfoBarDelegate* infobar =
+        new MediaStreamInfoBarDelegate(infobar_helper, controller.release());
+    if (old_infobar)
+      infobar_helper->ReplaceInfoBar(old_infobar, infobar);
+    else
+      infobar_helper->AddInfoBar(infobar);
+  }
+}
+
 void Browser::UpdateUIForNavigationInTab(TabContents* contents,
                                          content::PageTransition transition,
                                          bool user_initiated) {
@@ -1842,30 +1872,7 @@ void Browser::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest* request,
     const content::MediaResponseCallback& callback) {
-  TabContents* tab = TabContents::FromWebContents(web_contents);
-  DCHECK(tab);
-
-  scoped_ptr<MediaStreamDevicesController>
-      controller(new MediaStreamDevicesController(tab->profile(),
-                                                  request,
-                                                  callback));
-  if (!controller->DismissInfoBarAndTakeActionOnSettings()) {
-    InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
-    InfoBarDelegate* old_infobar = NULL;
-    for (size_t i = 0; i < infobar_helper->infobar_count(); ++i) {
-      old_infobar = infobar_helper->GetInfoBarDelegateAt(i)->
-          AsMediaStreamInfoBarDelegate();
-      if (old_infobar)
-        break;
-    }
-
-    InfoBarDelegate* infobar =
-        new MediaStreamInfoBarDelegate(infobar_helper, controller.release());
-    if (old_infobar)
-      infobar_helper->ReplaceInfoBar(old_infobar, infobar);
-    else
-      infobar_helper->AddInfoBar(infobar);
-  }
+  RequestMediaAccessPermissionHelper(web_contents, request, callback);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

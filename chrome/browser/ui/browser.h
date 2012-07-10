@@ -417,6 +417,12 @@ class Browser : public TabStripModelDelegate,
                               int active_match_ordinal,
                               bool final_update);
 
+  // Helper function to handle media access requests.
+  static void RequestMediaAccessPermissionHelper(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest* request,
+      const content::MediaResponseCallback& callback);
+
   // Called by chrome::Navigate() when a navigation has occurred in a tab in
   // this Browser. Updates the UI for the start of this navigation.
   void UpdateUIForNavigationInTab(TabContents* contents,

@@ -175,6 +175,10 @@ class ExternalTabContainerWin : public ExternalTabContainer,
                          const gfx::Rect& selection_rect,
                          int active_match_ordinal,
                          bool final_update) OVERRIDE;
+  virtual void RequestMediaAccessPermission(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest* request,
+      const content::MediaResponseCallback& callback) OVERRIDE;
 
   void RegisterRenderViewHost(content::RenderViewHost* render_view_host);
   void UnregisterRenderViewHost(content::RenderViewHost* render_view_host);
