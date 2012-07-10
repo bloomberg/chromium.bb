@@ -122,8 +122,9 @@ I am the first commit.
     cros_test_lib.TempDirMixin.tearDown(self)
 
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwds):
+    internal = kwds.pop('internal', False)
     return self.patch_kls(source, 'chromiumos/chromite', ref,
-                    'origin/master', sha1=sha1, **kwds)
+                          'origin/master', internal, sha1=sha1, **kwds)
 
   def _run(self, cmd, cwd=None):
     # Note that cwd is intentionally set to a location the user can't write
@@ -226,7 +227,7 @@ I am the first commit.
 
   def CommitChangeIdFile(self, repo, changeid=None, extra=None,
                          filename='monkeys', content='flinging',
-                         raw_changeid_text=None):
+                         raw_changeid_text=None, **kwargs):
     template = self.COMMIT_TEMPLATE
     if changeid is None:
       changeid = self.MakeChangeId()
@@ -237,31 +238,43 @@ I am the first commit.
     commit = template % {'change-id':raw_changeid_text, 'extra':extra}
 
     return self.CommitFile(repo, filename, content, commit=commit,
-                           ChangeId=changeid)
+                           ChangeId=changeid, **kwargs)
 
-  def testGerritDependencies(self):
+  def _assertGerritDependencies(self, internal=False):
+    convert = str
+    if internal:
+      convert = lambda val: '*%s' % (val,)
     git1 = self._MakeRepo('git1', self.source)
     # Check that we handle the edge case of the first commit in a
     # repo...
-    patch = self._MkPatch(git1, self._GetSha1(git1, 'HEAD'))
+    patch = self._MkPatch(git1, self._GetSha1(git1, 'HEAD'), internal=internal)
     self.assertEqual(patch.GerritDependencies(git1), [])
     cid1, cid2, cid3 = self.MakeChangeId(3)
-    patch = self.CommitChangeIdFile(git1, cid1)
+    patch = self.CommitChangeIdFile(git1, cid1, internal=internal)
     # Since it's parent is ToT, there are no deps.
     self.assertEqual(patch.GerritDependencies(git1), [])
-    patch = self.CommitChangeIdFile(git1, cid2, content='poo')
-    self.assertEqual(patch.GerritDependencies(git1), [cid1])
+    patch = self.CommitChangeIdFile(git1, cid2, content='poo',
+                                    internal=internal)
+    self.assertEqual(patch.GerritDependencies(git1),
+                     [convert(cid1)])
 
     # Check the behaviour for missing ChangeId in a parent next.
     patch = self.CommitChangeIdFile(git1, cid1, content='thus',
-                                    raw_changeid_text='')
+                                    raw_changeid_text='', internal=internal)
 
     # Note the ordering; leftmost needs to be the nearest child of the commit.
-    self.assertEqual(patch.GerritDependencies(git1), [cid2, cid1])
+    self.assertEqual(patch.GerritDependencies(git1),
+                     map(convert, [cid2, cid1]))
 
     patch = self.CommitChangeIdFile(git1, cid3, content='the glass walls.')
     self.assertRaises(cros_patch.BrokenChangeID,
                       patch.GerritDependencies, git1)
+
+  def testExternalGerritDependencies(self):
+    self._assertGerritDependencies()
+
+  def testInternalGerritDependencies(self):
+    self._assertGerritDependencies(True)
 
   def _CheckPaladin(self, repo, master_id, ids, extra):
     patch = self.CommitChangeIdFile(
@@ -319,8 +332,8 @@ class TestLocalPatchGit(TestGitRepoPatch):
 
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwds):
     return self.patch_kls(source, 'chromiumos/chromite', ref,
-                          'origin/master', sha1,
-                          **kwds)
+                          'origin/master', kwds.pop('internal', False),
+                          sha1, **kwds)
 
   def testUpload(self):
     def ProjectDirMock(sourceroot):
@@ -374,7 +387,8 @@ class TestUploadedLocalPatch(TestGitRepoPatch):
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwds):
     return self.patch_kls(source, self.PROJECT, ref,
                           'origin/master', self.ORIGINAL_BRANCH,
-                          self.ORIGINAL_SHA1, carbon_copy_sha1=sha1, **kwds)
+                          self.ORIGINAL_SHA1, kwds.pop('internal', False),
+                          carbon_copy_sha1=sha1, **kwds)
 
   def testStringRepresentation(self):
     git1, git2, patch = self._CommonGitSetup()
@@ -433,7 +447,9 @@ class TestGerritPatch(TestGitRepoPatch):
     self.assertEqual(obj.internal, internal)
     self.assertEqual(obj.project, json['project'])
     self.assertEqual(obj.ref, refspec)
-    self.assertEqual(obj.id, change_id)
+    self.assertEqual(obj.change_id, change_id)
+    self.assertEqual(
+        obj.id, cros_patch.FormatChangeId(change_id, force_internal=internal))
     # Now make the fetching actually work, if desired.
     if not suppress_branch:
       # Note that a push is needed here, rather than a branch; branch
@@ -462,6 +478,51 @@ class TestGerritPatch(TestGitRepoPatch):
     return copy.deepcopy(FAKE_PATCH_JSON)
 
 
+class PrepareRemotePatchesTest(unittest.TestCase):
+
+  def MkRemote(self,
+               project='my/project', original_branch='my-local',
+               ref='refs/tryjobs/elmer/patches', tracking_branch='master',
+               internal=False):
+
+    l = [project, original_branch, ref, tracking_branch,
+         getattr(constants, '%s_PATCH_TAG' % (
+            'INTERNAL' if internal else 'EXTERNAL'))]
+    return ':'.join(l)
+
+  def assertRemote(self, patch, project='my/project',
+                   original_branch='my-local',
+                   ref='refs/tryjobs/elmer/patches', tracking_branch='master',
+                   internal=False):
+    self.assertEqual(patch.project, project)
+    self.assertEqual(patch.original_branch, original_branch)
+    self.assertEqual(patch.ref, ref)
+    self.assertEqual(patch.tracking_branch, tracking_branch)
+    self.assertEqual(patch.internal, internal)
+
+  def test(self):
+    # Check handling of a single patch...
+    patches = cros_patch.PrepareRemotePatches([self.MkRemote()])
+    self.assertEqual(len(patches), 1)
+    self.assertRemote(patches[0])
+
+    # Check handling of a multiple...
+    patches = cros_patch.PrepareRemotePatches(
+        [self.MkRemote(), self.MkRemote(project='foon')])
+    self.assertEqual(len(patches), 2)
+    self.assertRemote(patches[0])
+    self.assertRemote(patches[1], project='foon')
+
+    # Ensure basic validation occurs:
+    chunks = self.MkRemote().split(':')
+    self.assertRaises(ValueError, cros_patch.PrepareRemotePatches,
+                      ':'.join(chunks[:-1]))
+    self.assertRaises(ValueError, cros_patch.PrepareRemotePatches,
+                      ':'.join(chunks[:-1] + ['monkeys']))
+    self.assertRaises(ValueError, cros_patch.PrepareRemotePatches,
+                      ':'.join(chunks + [':']))
+
+
 class PrepareLocalPatchesTests(mox.MoxTestBase):
 
   def setUp(self):
@@ -483,9 +544,10 @@ class PrepareLocalPatchesTests(mox.MoxTestBase):
   def testBranchSpecifiedSuccessRun(self):
     """Test success with branch specified by user."""
     output_obj = self.mox.CreateMock(cros_build_lib.CommandResult)
-    output_obj.output= '12345'
+    output_obj.output = '12345'
     self.manifest.GetProjectPath('my/project', True).AndReturn('mydir')
     self.manifest.GetProjectsLocalRevision('my/project').AndReturn('m/kernel')
+    self.manifest.ProjectIsInternal('my/project').AndReturn(False)
     cros_build_lib.RunCommand(mox.In('m/kernel..mybranch'),
                               redirect_stdout=mox.IgnoreArg(),
                               cwd='mydir').AndReturn(output_obj)
@@ -498,7 +560,7 @@ class PrepareLocalPatchesTests(mox.MoxTestBase):
   def testBranchSpecifiedNoChanges(self):
     """Test when no changes on the branch specified by user."""
     output_obj = self.mox.CreateMock(cros_build_lib.CommandResult)
-    output_obj.output=''
+    output_obj.output = ''
     self.manifest.GetProjectPath('my/project', True).AndReturn('mydir')
     self.manifest.GetProjectsLocalRevision('my/project').AndReturn('m/master')
     cros_build_lib.RunCommand(mox.In('m/master..mybranch'),
@@ -517,9 +579,10 @@ class ApplyLocalPatchesTests(mox.MoxTestBase):
   def testWrongTrackingBranch(self):
     """When the original patch branch does not track buildroot's branch."""
 
+    # Use external patches for this test (thus the False).
     patch = cros_patch.GitRepoPatch('/path/to/my/project.git',
                                     'my/project', 'mybranch',
-                                    'master')
+                                    'master', False)
     self.assertRaises(cros_patch.PatchException, patch.ApplyIntoGitRepo,
                       '/tmp/notadirectory', 'origin/R19')
 

@@ -717,6 +717,10 @@ class Manifest(object):
       KeyError if the project isn't known."""
     return self.projects[os.path.normpath(project)]['path']
 
+  def ProjectIsInternal(self, project):
+    """Returns True if the given project is internal."""
+    return self.projects[project]['internal']
+
   def _FinalizeProjectData(self, attrs):
     for key in ('remote', 'revision'):
       attrs.setdefault(key, self.default.get(key))

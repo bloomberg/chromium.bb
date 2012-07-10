@@ -63,11 +63,12 @@ class base_mixin(object):
     # Supress all gerrit access; having this occur is generally a sign
     # the code is either misbehaving, or the tests are bad.
     self.mox.StubOutWithMock(gerrit_helper.GerritHelper, 'Query')
+    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, '_SqlQuery')
     self._patch_counter = (itertools.count(1)).next
     self.build_root = 'fakebuildroot'
 
   def MockPatch(self, change_id=None, patch_number=None, is_merged=False,
-                project='chromiumos/chromite'):
+                project='chromiumos/chromite', internal=False):
     # pylint: disable=W0201
     # We have to use a custom mock class to fix some brain behaviour of
     # pymox where multiple separate mocks can easily equal each other
@@ -75,14 +76,16 @@ class base_mixin(object):
     patch = MockPatch(cros_patch.GerritPatch)
     self.mox._mock_objects.append(patch)
 
-    patch.internal = False
+    patch.internal = internal
     if change_id is None:
       change_id = self._patch_counter()
-    patch.change_id = patch.id = 'ChangeId%i' % (change_id,)
     patch.gerrit_number = change_id
+    # Strip off the leading 0x, trailing 'l'
+    change_id = hex(change_id)[2:].rstrip('L').lower()
+    patch.change_id = patch.id = 'I%s' % change_id.rjust(40, '0')
     patch.patch_number = (patch_number if patch_number is not None else
                           _GetNumber())
-    patch.url = 'fake_url/%i' % (change_id,)
+    patch.url = 'fake_url/%s' % (change_id,)
     patch.apply_error_message = None
     patch.project = project
     patch.sha1 = 'sha1-%s' % (patch.change_id,)
@@ -199,6 +202,32 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
 
     self.mox.ReplayAll()
     self.assertResults(series, patches, [patch2, patch1])
+    self.mox.VerifyAll()
+
+  def testCrosGerritDeps(self):
+    """Test that we can apply changes correctly and respect deps.
+
+    This tests a simple out-of-order change where change1 depends on change2
+    but tries to get applied before change2.  What should happen is that
+    we should notice change2 is a dep of change1 and apply it first.
+    """
+    series = self.GetPatchSeries()
+
+    patch1 = self.MockPatch(internal=False)
+    patch2 = self.MockPatch(internal=True)
+    patch3 = self.MockPatch(internal=False)
+    patches = [patch3, patch2, patch1]
+
+    self.SetPatchDeps(patch1)
+    self.SetPatchDeps(patch2, cq=[patch1.id])
+    self.SetPatchDeps(patch3, cq=[patch2.id])
+
+    patch1.Apply(self.build_root, trivial=True)
+    patch2.Apply(self.build_root, trivial=True)
+    patch3.Apply(self.build_root, trivial=True)
+
+    self.mox.ReplayAll()
+    self.assertResults(series, patches, patches)
     self.mox.VerifyAll()
 
   @staticmethod
@@ -340,7 +369,6 @@ class TestCoreLogic(base_mixin, mox.MoxTestBase):
 
   def setUp(self):
     base_mixin.setUp(self)
-    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, '_SqlQuery')
     self.mox.StubOutWithMock(gerrit_helper.GerritHelper,
                              'FindContentMergingProjects')
 

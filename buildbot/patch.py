@@ -106,29 +106,81 @@ def MakeChangeId(unusable=False):
   return 'I%s' % s
 
 
-def FormatChangeId(text):
-  """Format a Change-ID into a standardized form.  Use this anywhere
-  we're accepting user input of Change-IDs."""
+def FormatChangeId(text, force_internal=False, force_external=False,
+                   strict=False):
+  """Format a Change-Id into a standardized form.
+
+  Use this anywhere we're accepting user input of Change-IDs.
+
+  Args:
+    text: The given Change-Id to inspect and reformat.
+    force_internal: If True, force the resultant Change-Id to be an internally
+      formatted one.
+    force_external: If True, force the resultant Change-Id to be an externally
+      formatted one; this form is the gerrit standard, thus if you need to
+      convert a ChangeId for passing directly to gerrit, this should be set to
+      True.  Note that force_internal force_external are mutually exclusive.
+    strict: If True, then it's an error if the text holds an internally
+      formatted ChangeId.  Generally this is only useful if you're working w/
+      a direct git commit message and are trying to ensure the message is
+      gerrit compatible.
+  """
+  if force_internal and force_external:
+    raise TypeError("FormatChangeId: either force_internal or force_external "
+                    "can be set to True, but not both.")
+
   if not text:
     raise ValueError("FormatChangeId invoked w/ an empty value: %r" % (text,))
-  elif not text[0] in 'iI':
+
+  original_text = text
+  prefix = '*' if force_internal else ''
+  if text[0].startswith('*'):
+    if strict:
+      raise ValueError("FormatChangeId invoked w/ an internally formatted "
+                       "Change-Id while in strict mode: %r" % (original_text,))
+    if not force_external:
+      prefix = '*'
+    text = text[1:]
+
+  if text[0] not in 'iI' or len(text) > 41:
     raise ValueError("FormatChangeId invoked w/ a malformed Change-Id: %r" %
-                     (text,))
-  return 'I%s' % text[1:].lower()
+                     (original_text,))
+  elif strict:
+    if text[0] == 'i':
+      raise ValueError("FormatChangeId invoked w/ a malformed Change-Id, "
+                       "leading 'i' char needs to be I: %r" % (original_text,))
+    elif len(text) != 41:
+      raise ValueError("FormatChangeId invoked w/ a malformed Change-Id, "
+                       "value isn't 41 characters: %r" % (original_text,))
+
+  # Drop the leading I.
+  text = text[1:].lower()
+  try:
+    _ = int(text, 16)
+  except ValueError:
+    raise ValueError("FormatChangeId invoked w/ a non hex ChangeId value: %s"
+                     % original_text)
+
+  return '%sI%s' % (prefix, text)
 
 
 class GitRepoPatch(object):
   """Representing a patch from a branch of a local or remote git repository."""
 
   # Note the selective case insensitivity; gerrit allows only this.
-  _VALID_CHANGE_ID_RE = re.compile(r'^I[0-9a-fA-F]{40}$')
+  # TOOD(ferringb): back VALID_CHANGE_ID_RE down to {8,40}, requires
+  # ensuring CQ's internals can do the translation (almost can now,
+  # but will fail in the case of a CQ-DEPEND on a change w/in the
+  # same pool).
+  _VALID_CHANGE_ID_RE = re.compile(r'^\*?I[0-9a-fA-F]{40}$')
+  _STRICT_VALID_CHANGE_ID_RE = re.compile(r'^I[0-9a-fA-F]{40}$')
   _GIT_CHANGE_ID_RE = re.compile(r'^Change-Id:[\t ]*(\w+)\s*$',
                                  re.I|re.MULTILINE)
   _PALADIN_DEPENDENCY_RE = re.compile(r'^CQ-DEPEND=(.*)$', re.MULTILINE)
   _PALADIN_BUG_RE = re.compile(r'(\w+)')
 
-  def __init__(self, project_url, project, ref, tracking_branch, sha1=None,
-               change_id=None):
+  def __init__(self, project_url, project, ref, tracking_branch, internal,
+               sha1=None, change_id=None):
     """Initialization of abstract Patch class.
 
     Args:
@@ -139,15 +191,15 @@ class GitRepoPatch(object):
       tracking_branch:  The remote branch of the project the patch applies to.
       sha1: The sha1 of the commit, if known.  This *must* be accurate.  Can
         be None if not yet known- in which case Fetch will update it.
-      change_id: The Change-Id of the commit, if known.  This *must* be
-        accurate.  Can be None if not yet known- in which case Fetch will
-        parse it.
+      change_id: If given, this must be a strict gerrit format (external format)
+        Change-Id representing this change.
     """
     self._commit_message = None
     self.project_url = project_url
     self.project = project
     self.ref = ref
     self.tracking_branch = os.path.basename(tracking_branch)
+    self.internal = internal
     self.sha1 = sha1
     # TODO(ferringb): remove this attribute.
     # apply_error_message is currently used by ValidationPool as a way to
@@ -155,12 +207,16 @@ class GitRepoPatch(object):
     # attribute, instead leaving it purely for validation_pool and friends
     # to mutate.
     self.apply_error_message = None
-    # change_id must always be a valid Change-Id (local or gerrit), or None.
-    # id is an internal value- if change-id exists, we use that.  If not,
-    # we make up a fake change-id to keep internal apis happy/simple.
-    self.change_id = self.id = change_id
+    # change_id must always be a valid Change-Id (local or gerrit), or None,
+    # and be in strict gerrit form (aka, external).
+    # id can be in our form; internal or external.
+    self.change_id = self.id = None
     self._is_fetched = set()
     self._projectdir_cache = {}
+
+    # Do the ChangeId setting now that we have a fully setup instance.
+    if change_id:
+      self._SetChangeId(change_id)
 
   def ProjectDir(self, checkout_root):
     """Returns the local directory where this patch will be applied."""
@@ -412,8 +468,22 @@ class GitRepoPatch(object):
     if dependencies:
       logging.info('Found %s Gerrit dependencies for change %s', dependencies,
                    self)
+      # Ensure that our parent's ChangeId's are internal if we are.
+      if self.internal:
+        dependencies = [FormatChangeId(x, force_internal=True)
+                        for x in dependencies]
 
     return dependencies
+
+  def _SetChangeId(self, change_id):
+    """Set this instances change_id, and id from the given ChangeId.
+
+    Args:
+      change_id: A strict gerrit changeId to set this instance to.  The id
+        attribute is computed from this, and formatting/validation is done.
+    """
+    self.change_id = FormatChangeId(change_id, strict=True)
+    self.id = FormatChangeId(self.change_id, force_internal=self.internal)
 
   def _EnsureId(self, commit_message):
     """Ensure we have a usable Change-Id.  This will parse the Change-Id out
@@ -428,7 +498,7 @@ class GitRepoPatch(object):
     if self.id is not None:
       return self.id
     try:
-      self.change_id = self.id = self._ParseChangeId(commit_message)
+      self._SetChangeId(self._ParseChangeId(commit_message))
     except BrokenChangeID:
       logging.warning(
           'Change %s, sha1 %s lacks a change-id in its commit '
@@ -455,11 +525,11 @@ class GitRepoPatch(object):
     # but for local patches the validation is useful for general sanity
     # enforcement.
     change_id_match = change_id_match[-1]
-    if not self._VALID_CHANGE_ID_RE.match(change_id_match):
+    # Note that since we're parsing it from basically a commit message,
+    # the gerrit standard format is required- no internal markings.
+    if not self._STRICT_VALID_CHANGE_ID_RE.match(change_id_match):
       raise BrokenChangeID(self, change_id_match)
 
-    # Force a standard for the formatting; I must be caps, force the rest
-    # of the hex to lower case.
     return FormatChangeId(change_id_match)
 
   def PaladinDependencies(self, buildroot):
@@ -507,9 +577,10 @@ class GitRepoPatch(object):
 class LocalPatch(GitRepoPatch):
   """Represents patch coming from an on-disk git repo."""
 
-  def __init__(self, project_url, project, ref, tracking_branch, sha1):
+  def __init__(self, project_url, project, ref, tracking_branch, internal,
+               sha1):
     GitRepoPatch.__init__(self, project_url, project, ref, tracking_branch,
-                          sha1=sha1)
+                          internal, sha1=sha1)
 
   def Sha1Hash(self):
     """Get the Sha1 of the branch."""
@@ -591,9 +662,10 @@ class LocalPatch(GitRepoPatch):
 class UploadedLocalPatch(GitRepoPatch):
   """Represents an uploaded local patch passed in using --remote-patch."""
   def __init__(self, project_url, project, ref, tracking_branch,
-               original_branch, original_sha1, carbon_copy_sha1=None):
+               original_branch, original_sha1, internal,
+               carbon_copy_sha1=None):
     GitRepoPatch.__init__(self, project_url, project, ref, tracking_branch,
-                          sha1=carbon_copy_sha1)
+                          internal, sha1=carbon_copy_sha1)
     self.original_branch = original_branch
     self.original_sha1 = original_sha1
 
@@ -625,10 +697,10 @@ class GerritPatch(GitRepoPatch):
         patch_dict['project'],
         patch_dict['currentPatchSet']['ref'],
         patch_dict['branch'],
+        internal,
         sha1=patch_dict['currentPatchSet']['revision'],
-        change_id=FormatChangeId(patch_dict['id']))
+        change_id=patch_dict['id'])
 
-    self.internal = internal
     # id - The CL's ChangeId
     # revision - The CL's SHA1 hash.
     self.revision = patch_dict['currentPatchSet']['revision']
@@ -731,8 +803,8 @@ def PrepareLocalPatches(manifest, patches):
       cros_build_lib.Die('No changes found in %s:%s' % (project, branch))
 
     patch_info.append(LocalPatch(os.path.join(project_dir, '.git'),
-                                        project, branch, tracking_branch,
-                                        sha1))
+                                 project, branch, tracking_branch,
+                                 manifest.ProjectIsInternal(project), sha1))
 
   return patch_info
 
@@ -759,22 +831,24 @@ def PrepareRemotePatches(patches):
   for patch in patches:
     try:
       project, original_branch, ref, tracking_branch, tag = patch.split(':')
-    except ValueError:
-      cros_build_lib.Die(
+    except ValueError, e:
+      raise ValueError(
           "Unexpected tryjob format.  You may be running an "
           "older version of chromite.  Run 'repo sync "
-          "chromiumos/chromite'.")
+          "chromiumos/chromite'.  Error was %s" % e)
 
+    internal = False
     if tag == constants.EXTERNAL_PATCH_TAG:
       push_url = constants.GERRIT_SSH_URL
     elif tag == constants.INTERNAL_PATCH_TAG:
       push_url = constants.GERRIT_INT_SSH_URL
+      internal = True
     else:
       raise ValueError('Bad remote patch format.  Unknown tag %s' % tag)
 
     patch_info.append(UploadedLocalPatch(os.path.join(push_url, project),
                                          project, ref, tracking_branch,
                                          original_branch,
-                                         os.path.basename(ref)))
+                                         os.path.basename(ref), internal))
 
   return patch_info

@@ -87,6 +87,22 @@ def _RunCommand(cmd, dryrun):
     cros_build_lib.RunCommand(cmd, error_ok=True)
 
 
+class GerritHelperNotAvailable(gerrit_helper.GerritException):
+  """Exception thrown when a specific helper is requested but unavailable."""
+
+  def __init__(self, internal=False):
+    gerrit_helper.GerritException.__init__()
+    # Stringify the pool so that serialization doesn't try serializing
+    # the actual HelperPool.
+    self.internal = internal
+    self.args = (internal,)
+
+  def __str__(self):
+    return (
+        "Needed a internal=%s gerrit_helper, but one isn't allowed by this"
+        "HelperPool instance.") % (self.internal,)
+
+
 class HelperPool(object):
   """Pool of allowed GerritHelpers to be used by CQ/PatchSeries."""
 
@@ -100,8 +116,8 @@ class HelperPool(object):
     object is used.
 
     """
-    self._external = external
-    self._internal = internal
+    self.external = external
+    self.internal = internal
 
   @classmethod
   def SimpleCreate(cls, internal=True, external=True):
@@ -131,19 +147,15 @@ class HelperPool(object):
     If no helper is configured, an Exception is raised.
     """
     if internal:
-      if self._internal:
-        return self._internal
-    elif self._external:
-      return self._external
+      if self.internal:
+        return self.internal
+    elif self.external:
+      return self.external
 
-    raise AssertionError(
-        'Asked for an internal=%r helper, but none are allowed in this '
-        'configuration.  This strongly points at the possibility of an '
-        'internal bug.'
-        % (internal,))
+    raise GerritHelperNotAvailable(internal)
 
   def __iter__(self):
-    for helper in (self._external, self._internal):
+    for helper in (self.external, self.internal):
       if helper:
         yield helper
 
@@ -225,10 +237,18 @@ class PatchSeries(object):
     Args:
       change: A cros_patch.GitRepoPatch derivative that we're querying
         on behalf of.
-      query: The ChangeId or Change Number we're searching for.
+      query: The ChangeId we're searching for.
     """
-    helper = self._helper_pool.ForChange(change)
-    change = helper.QuerySingleRecord(query, must_match=True)
+    is_internal = query.startswith('*')
+    helper = self._helper_pool.GetHelper(is_internal)
+
+    # TODO(ferringb, sosa): Update this for gerrit number support.
+    # Note this forces FormatChangeId to 1) ensure that the query
+    # is a valid one, 2) to force our internal ChangeId format into
+    # gerrit's format (ie, no leading * for internal changes).
+    change = helper.QuerySingleRecord(
+        cros_patch.FormatChangeId(query, force_external=True),
+        must_match=True)
     self.InjectLookupCache([change])
     return change
 
@@ -606,12 +626,13 @@ class ValidationPool(object):
         we're keeping around because they conflict with other changes in
         flight.
       helper_pool: A HelperPool instance.  If not specified, a HelperPool
-        instance is created with it's access limit discerned via looking at
-        overlays.
+        instance is created with full access to external and internal gerrit
+        instances; full access is used to allow cross gerrit dependencies
+        to be supported.
     """
 
     if helper_pool is None:
-      helper_pool = self.GetGerritHelpersForOverlays(overlays)
+      helper_pool = HelperPool.SimpleCreate()
 
     self._helper_pool = helper_pool
 
