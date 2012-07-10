@@ -294,6 +294,8 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
       util::kWildCard);
   for (FilePath current = enumerator.Next(); !current.empty();
        current = enumerator.Next()) {
+    GDataCache::CacheSubDirectoryType real_sub_dir_type =
+        sub_dir_type;
     // Extract resource_id and md5 from filename.
     std::string resource_id;
     std::string md5;
@@ -325,6 +327,9 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
       // /dev/null; follow through to create an entry with the PINNED but not
       // PRESENT state.
       cache_state = GDataCache::SetCachePinned(cache_state);
+      // Change the real sub directory type to TMP, as the downloaded file
+      // will be stored in 'tmp' directory first.
+      real_sub_dir_type = GDataCache::CACHE_TYPE_TMP;
     } else if (sub_dir_type == GDataCache::CACHE_TYPE_OUTGOING) {
       std::string reason;
       if (!IsValidSymbolicLink(current, sub_dir_type, cache_paths, &reason)) {
@@ -384,7 +389,8 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
 
     // Create and insert new entry into cache map.
     cache_map->insert(std::make_pair(
-        resource_id, GDataCache::CacheEntry(md5, sub_dir_type, cache_state)));
+        resource_id, GDataCache::CacheEntry(
+            md5, real_sub_dir_type, cache_state)));
     processed_file_map->insert(std::make_pair(resource_id, current));
   }
 }

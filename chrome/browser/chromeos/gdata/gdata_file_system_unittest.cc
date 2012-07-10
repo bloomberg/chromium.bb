@@ -2363,7 +2363,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
           kMd5,
           base::PLATFORM_FILE_OK,
           GDataCache::CACHE_STATE_PINNED,
-          GDataCache::CACHE_TYPE_PINNED);
+          GDataCache::CACHE_TYPE_TMP);
 
   // First store a file to cache. A cache file will be created at:
   // GCache/v1/persistent/<kResourceId>.<kMd5>

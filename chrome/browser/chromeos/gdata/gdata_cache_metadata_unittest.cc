@@ -336,7 +336,7 @@ TEST_F(GDataCacheMetadataMapTest, Initialization) {
   cache_entry = metadata_->GetCacheEntry("id_corge", "");
   ASSERT_TRUE(cache_entry.get());
   EXPECT_EQ("", cache_entry->md5);
-  EXPECT_EQ(GDataCache::CACHE_TYPE_PINNED, cache_entry->sub_dir_type);
+  EXPECT_EQ(GDataCache::CACHE_TYPE_TMP, cache_entry->sub_dir_type);
   EXPECT_EQ(GDataCache::CACHE_STATE_PINNED, cache_entry->cache_state);
   EXPECT_TRUE(IsLink(pinned_directory_.AppendASCII("id_corge")));
 
@@ -369,12 +369,12 @@ TEST_F(GDataCacheMetadataMapTest, RemoveTemporaryFilesTest) {
   InsertIntoMap(&cache_map,
                 "<resource_id_2>",
                 "<md5>",
-                GDataCache::CACHE_TYPE_PINNED,
+                GDataCache::CACHE_TYPE_PERSISTENT,
                 GDataCache::CACHE_STATE_PRESENT);
   InsertIntoMap(&cache_map,
                 "<resource_id_3>",
                 "<md5>",
-                GDataCache::CACHE_TYPE_OUTGOING,
+                GDataCache::CACHE_TYPE_PERSISTENT,
                 GDataCache::CACHE_STATE_PRESENT);
   InsertIntoMap(&cache_map,
                 "<resource_id_4>",

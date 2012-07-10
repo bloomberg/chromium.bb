@@ -932,10 +932,9 @@ void GDataCache::Pin(const std::string& resource_id,
     dest_path = FilePath::FromUTF8Unsafe(util::kSymLinkToDevNull);
     source_path = dest_path;
 
-    // Set sub_dir_type to PINNED to indicate that the file doesn't exist.
-    // When the file is finally downloaded and StoreToCache called, it will be
-    // moved to persistent directory.
-    sub_dir_type = CACHE_TYPE_PINNED;
+    // Set sub_dir_type to TMP. The file will be first downloaded in 'tmp',
+    // then moved to 'persistent'.
+    sub_dir_type = CACHE_TYPE_TMP;
   } else {  // File exists in cache, determines destination path.
     cache_state |= cache_entry->cache_state;
 

@@ -58,7 +58,7 @@ struct InitialCacheResource {
   // a pinned file can reference a non-existent file.
   { "", "pinned:non-existent", "md5_pinned_non_existent",
     GDataCache::CACHE_STATE_PINNED,
-    "md5_pinned_non_existent", GDataCache::CACHE_TYPE_PINNED },
+    "md5_pinned_non_existent", GDataCache::CACHE_TYPE_TMP },
   // Cache resource that is dirty, to test a dirty file is in persistent dir
   // with a symlink in outgoing dir referencing it.
   { "account_metadata.json", "dirty:existing", "md5_dirty_existing",
@@ -431,7 +431,7 @@ class GDataCacheTest : public testing::Test {
         PathToVerify(cache_->GetCacheFilePath(resource_id, "*",
                      GDataCache::CACHE_TYPE_PERSISTENT,
                      GDataCache::CACHED_FILE_FROM_SERVER), FilePath()));
-    paths_to_verify.push_back(  // Index 2: CACHE_TYPE_PINNED.
+    paths_to_verify.push_back(  // Index 2: CACHE_TYPE_TMP, but STATE_PINNED.
         PathToVerify(cache_->GetCacheFilePath(resource_id, "",
                      GDataCache::CACHE_TYPE_PINNED,
                      GDataCache::CACHED_FILE_FROM_SERVER), FilePath()));
@@ -471,7 +471,8 @@ class GDataCacheTest : public testing::Test {
                            GDataCache::CACHED_FILE_FROM_SERVER);
 
       if (cache_entry->IsPinned()) {
-         // Change expected_existing_path of CACHE_TYPE_PINNED (index 2).
+         // Change expected_existing_path of CACHE_TYPE_TMP but STATE_PINNED
+         // (index 2).
          paths_to_verify[2].expected_existing_path =
              GetCacheFilePath(resource_id,
                               std::string(),
@@ -1104,14 +1105,14 @@ TEST_F(GDataCacheTest, PinAndUnpin) {
   num_callback_invocations_ = 0;
   TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
           GDataCache::CACHE_STATE_PINNED,
-          GDataCache::CACHE_TYPE_PINNED);
+          GDataCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Unpin the previously pinned non-existent file in cache.
   num_callback_invocations_ = 0;
   TestUnpin(resource_id, md5, base::PLATFORM_FILE_OK,
             GDataCache::CACHE_STATE_NONE,
-            GDataCache::CACHE_TYPE_PINNED);
+            GDataCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Unpin a file that doesn't exist in cache and is not pinned, i.e. cache
@@ -1123,7 +1124,7 @@ TEST_F(GDataCacheTest, PinAndUnpin) {
   num_callback_invocations_ = 0;
   TestUnpin(resource_id, md5, base::PLATFORM_FILE_ERROR_NOT_FOUND,
             GDataCache::CACHE_STATE_NONE,
-            GDataCache::CACHE_TYPE_PINNED /* non-applicable */);
+            GDataCache::CACHE_TYPE_TMP /* non-applicable */);
   EXPECT_EQ(1, num_callback_invocations_);
 }
 
@@ -1135,7 +1136,7 @@ TEST_F(GDataCacheTest, StoreToCachePinned) {
   // Pin a non-existent file.
   TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
           GDataCache::CACHE_STATE_PINNED,
-          GDataCache::CACHE_TYPE_PINNED);
+          GDataCache::CACHE_TYPE_TMP);
 
   // Store an existing file to a previously pinned file.
   num_callback_invocations_ = 0;
@@ -1164,7 +1165,7 @@ TEST_F(GDataCacheTest, GetFromCachePinned) {
   // Pin a non-existent file.
   TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
           GDataCache::CACHE_STATE_PINNED,
-          GDataCache::CACHE_TYPE_PINNED);
+          GDataCache::CACHE_TYPE_TMP);
 
   // Get the non-existent pinned file from cache.
   num_callback_invocations_ = 0;
