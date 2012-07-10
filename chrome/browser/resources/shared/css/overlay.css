@@ -109,6 +109,7 @@ html[dir='rtl'] .overlay .page > .close-button {
   -webkit-box-flex: 1;
   overflow: auto;
   padding: 6px 17px 6px;
+  position: relative;
 }
 
 .overlay .page .action-area {
