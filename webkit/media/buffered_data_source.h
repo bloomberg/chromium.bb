@@ -139,11 +139,13 @@ class BufferedDataSource : public media::DataSource {
   // BufferedResourceLoader lives, i.e. render thread.
   void PartialReadStartCallback(BufferedResourceLoader::Status status);
 
-  // Callback method for making a read request to BufferedResourceLoader.
+  // Read callback for BufferedResourceLoader.
   void ReadCallback(BufferedResourceLoader::Status status, int bytes_read);
 
-  // Callback method when a network event is received.
-  void NetworkEventCallback();
+  // Loading and progress callbacks for HTTP resources.
+  void HttpLoadingStateChangedCallback(
+      BufferedResourceLoader::LoadingState state);
+  void HttpProgressCallback(int64 position);
 
   void UpdateHostState_Locked();
 
@@ -168,9 +170,6 @@ class BufferedDataSource : public media::DataSource {
 
   // A resource loader for the media resource.
   scoped_ptr<BufferedResourceLoader> loader_;
-
-  // True if |loader| is downloading data.
-  bool is_downloading_data_;
 
   // Callback method from the pipeline for initialization.
   media::PipelineStatusCB initialize_cb_;

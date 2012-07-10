@@ -26,6 +26,13 @@ const int kNumCacheMissRetries = 3;
 
 namespace webkit_media {
 
+// Non-HTTP resources are assumed to be fully loaded so we ignore any
+// loading/progress related callbacks.
+static void NonHttpLoadingStateChangedCallback(
+    BufferedResourceLoader::LoadingState) {
+}
+static void NonHttpProgressCallback(int64) {}
+
 BufferedDataSource::BufferedDataSource(
     MessageLoop* render_loop,
     WebFrame* frame,
@@ -36,7 +43,6 @@ BufferedDataSource::BufferedDataSource(
       buffered_bytes_(0),
       streaming_(false),
       frame_(frame),
-      is_downloading_data_(false),
       read_size_(0),
       read_buffer_(NULL),
       last_read_start_(0),
@@ -105,7 +111,8 @@ void BufferedDataSource::Initialize(
     loader_.reset(CreateResourceLoader(0, kPositionNotSpecified));
     loader_->Start(
         base::Bind(&BufferedDataSource::HttpInitialStartCallback, this),
-        base::Bind(&BufferedDataSource::NetworkEventCallback, this),
+        base::Bind(&BufferedDataSource::HttpLoadingStateChangedCallback, this),
+        base::Bind(&BufferedDataSource::HttpProgressCallback, this),
         frame_);
     return;
   }
@@ -117,7 +124,8 @@ void BufferedDataSource::Initialize(
                                      kPositionNotSpecified));
   loader_->Start(
       base::Bind(&BufferedDataSource::NonHttpInitialStartCallback, this),
-      base::Bind(&BufferedDataSource::NetworkEventCallback, this),
+      base::Bind(&NonHttpLoadingStateChangedCallback),
+      base::Bind(&NonHttpProgressCallback),
       frame_);
 }
 
@@ -269,12 +277,22 @@ void BufferedDataSource::RestartLoadingTask() {
       return;
   }
 
+  // Start reading from where we last left off until the end of the resource.
   loader_.reset(
       CreateResourceLoader(last_read_start_, kPositionNotSpecified));
-  loader_->Start(
-      base::Bind(&BufferedDataSource::PartialReadStartCallback, this),
-      base::Bind(&BufferedDataSource::NetworkEventCallback, this),
-      frame_);
+  if (url_.SchemeIs(kHttpScheme) || url_.SchemeIs(kHttpsScheme)) {
+    loader_->Start(
+        base::Bind(&BufferedDataSource::PartialReadStartCallback, this),
+        base::Bind(&BufferedDataSource::HttpLoadingStateChangedCallback, this),
+        base::Bind(&BufferedDataSource::HttpProgressCallback, this),
+        frame_);
+  } else {
+    loader_->Start(
+        base::Bind(&BufferedDataSource::NonHttpInitialStartCallback, this),
+        base::Bind(&NonHttpLoadingStateChangedCallback),
+        base::Bind(&NonHttpProgressCallback),
+        frame_);
+  }
 }
 
 void BufferedDataSource::SetPlaybackRateTask(float playback_rate) {
@@ -518,14 +536,8 @@ void BufferedDataSource::ReadCallback(
     bytes_read = kReadError;
   }
 
-  // We need to prevent calling to filter host and running the callback if
-  // we have received the stop signal. We need to lock down the whole callback
-  // method to prevent bad things from happening. The reason behind this is
-  // that we cannot guarantee tasks on render thread have completely stopped
-  // when we receive the Stop() method call. So only way to solve this is to
-  // let tasks on render thread to run but make sure they don't call outside
-  // this object when Stop() method is ever called. Locking this method is safe
-  // because |lock_| is only acquired in tasks on render thread.
+  // TODO(scherkus): we shouldn't have to lock to signal host(), see
+  // http://crbug.com/113712 for details.
   base::AutoLock auto_lock(lock_);
   if (stop_signal_received_)
     return;
@@ -547,42 +559,49 @@ void BufferedDataSource::ReadCallback(
   DoneRead_Locked(bytes_read);
 }
 
-void BufferedDataSource::NetworkEventCallback() {
+void BufferedDataSource::HttpLoadingStateChangedCallback(
+    BufferedResourceLoader::LoadingState state) {
   DCHECK(MessageLoop::current() == render_loop_);
-  DCHECK(loader_.get());
+  DCHECK(url_.SchemeIs(kHttpScheme) || url_.SchemeIs(kHttpsScheme));
 
-  // In case of non-HTTP request we don't need to report network events,
-  // so return immediately.
-  if (!url_.SchemeIs(kHttpScheme) && !url_.SchemeIs(kHttpsScheme))
-    return;
+  bool is_downloading_data;
+  switch (state) {
+    case BufferedResourceLoader::kLoading:
+      is_downloading_data = true;
+      break;
+    case BufferedResourceLoader::kLoadingDeferred:
+      is_downloading_data = false;
+      break;
 
-  downloading_cb_.Run(loader_->is_downloading_data());
+    // TODO(scherkus): we don't signal network activity changes when loads
+    // complete or fail to preserve existing behaviour when deferring is
+    // toggled, however we considering changing DownloadingCB to also
+    // propagate loading state. For example there isn't any signal today
+    // to notify the client that loading has failed/finished (we only get
+    // errors on subsequent reads).
+    case BufferedResourceLoader::kLoadingFailed:
+    case BufferedResourceLoader::kLoadingFinished:
+      return;
+  }
 
-  int64 current_buffered_position = loader_->GetBufferedPosition();
+  downloading_cb_.Run(is_downloading_data);
+}
 
-  // If we get an unspecified value, return immediately.
-  if (current_buffered_position == kPositionNotSpecified)
-    return;
+void BufferedDataSource::HttpProgressCallback(int64 position) {
+  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(url_.SchemeIs(kHttpScheme) || url_.SchemeIs(kHttpsScheme));
 
-  // We need to prevent calling to filter host and running the callback if
-  // we have received the stop signal. We need to lock down the whole callback
-  // method to prevent bad things from happening. The reason behind this is
-  // that we cannot guarantee tasks on render thread have completely stopped
-  // when we receive the Stop() method call. So only way to solve this is to
-  // let tasks on render thread to run but make sure they don't call outside
-  // this object when Stop() method is ever called. Locking this method is safe
-  // because |lock_| is only acquired in tasks on render thread.
+  // TODO(scherkus): we shouldn't have to lock to signal host(), see
+  // http://crbug.com/113712 for details.
   base::AutoLock auto_lock(lock_);
   if (stop_signal_received_)
     return;
 
-  int64 start = loader_->first_byte_position();
-  if (host() && current_buffered_position > start)
-    host()->AddBufferedByteRange(start, current_buffered_position);
+  if (host() && position > last_read_start_)
+    host()->AddBufferedByteRange(last_read_start_, position);
 }
 
 void BufferedDataSource::UpdateHostState_Locked() {
-  // Called from various threads, under lock.
   lock_.AssertAcquired();
 
   if (!host())

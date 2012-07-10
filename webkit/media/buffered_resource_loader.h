@@ -68,6 +68,13 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   // Keep in sync with WebMediaPlayer::CORSMode.
   enum CORSMode { kUnspecified, kAnonymous, kUseCredentials };
 
+  enum LoadingState {
+    kLoading,  // Actively attempting to download data.
+    kLoadingDeferred,  // Loading intentionally deferred.
+    kLoadingFinished,  // Loading finished normally; no more data will arrive.
+    kLoadingFailed,  // Loading finished abnormally; no more data will arrive.
+  };
+
   // |url| - URL for the resource to be loaded.
   // |cors_mode| - HTML media element's crossorigin attribute.
   // |first_byte_position| - First byte to start loading from,
@@ -90,15 +97,14 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
 
   // Start the resource loading with the specified URL and range.
   //
-  // |event_cb| is called to notify the client of network activity in the
-  // following situations:
-  //   - Data was received
-  //   - Reading was suspended/resumed
-  //   - Loading completed
-  //   - Loading failed
+  // |loading_cb| is executed when the loading state has changed.
+  // |progress_cb| is executed when additional data has arrived.
   typedef base::Callback<void(Status)> StartCB;
+  typedef base::Callback<void(LoadingState)> LoadingStateChangedCB;
+  typedef base::Callback<void(int64)> ProgressCB;
   void Start(const StartCB& start_cb,
-             const base::Closure& event_cb,
+             const LoadingStateChangedCB& loading_cb,
+             const ProgressCB& progress_cb,
              WebKit::WebFrame* frame);
 
   // Stops everything associated with this loader, including active URL loads
@@ -119,10 +125,6 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   void Read(int64 position, int read_size,
             uint8* buffer, const ReadCB& read_cb);
 
-  // Returns the position of the last byte buffered. Returns
-  // |kPositionNotSpecified| if such value is not available.
-  int64 GetBufferedPosition();
-
   // Gets the content length in bytes of the instance after this loader has been
   // started. If this value is |kPositionNotSpecified|, then content length is
   // unknown.
@@ -134,9 +136,6 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
 
   // Returns true if the server supports byte range requests.
   bool range_supported();
-
-  // Returns true if the resource loader is currently downloading data.
-  bool is_downloading_data();
 
   // Returns resulting URL.
   const GURL& url();
@@ -259,9 +258,6 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   // Done with start. Invokes the start callback and reset it.
   void DoneStart(Status status);
 
-  // Calls |event_cb_| in terms of a network event.
-  void NotifyNetworkEvent();
-
   bool HasPendingRead() { return !read_cb_.is_null(); }
 
   // Helper function that returns true if a range request was specified.
@@ -299,8 +295,12 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   const int64 last_byte_position_;
   bool single_origin_;
 
-  // Closure that listens to network events.
-  base::Closure event_cb_;
+  // Executed whenever the state of resource loading has changed.
+  LoadingStateChangedCB loading_cb_;
+
+  // Executed whenever additional data has been downloaded and reports the
+  // zero-indexed file offset of the furthest buffered byte.
+  ProgressCB progress_cb_;
 
   // Members used during request start.
   StartCB start_cb_;

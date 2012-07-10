@@ -18,8 +18,8 @@
 using ::testing::_;
 using ::testing::Assign;
 using ::testing::Invoke;
-using ::testing::StrictMock;
 using ::testing::NiceMock;
+using ::testing::StrictMock;
 
 using WebKit::WebFrame;
 using WebKit::WebString;
@@ -104,10 +104,13 @@ class BufferedDataSourceTest : public testing::Test {
 
   void Initialize(media::PipelineStatus expected) {
     ExpectCreateResourceLoader();
+
+    EXPECT_FALSE(data_source_->downloading());
     data_source_->Initialize(response_generator_.gurl(),
                              BufferedResourceLoader::kUnspecified,
                              media::NewExpectedStatusCB(expected));
     message_loop_.RunAllPending();
+    EXPECT_TRUE(data_source_->downloading());
   }
 
   // Helper to initialize tests with a valid 206 response.
@@ -144,8 +147,11 @@ class BufferedDataSourceTest : public testing::Test {
     message_loop_.RunAllPending();
   }
 
-  void FinishRead() {
-    loader()->didReceiveData(url_loader(), data_, kDataSize, kDataSize);
+  void ReceiveData(int size) {
+    scoped_array<char> data(new char[size]);
+    memset(data.get(), 0xA5, size);  // Arbitrary non-zero value.
+
+    loader()->didReceiveData(url_loader(), data.get(), size, size);
     message_loop_.RunAllPending();
   }
 
@@ -193,9 +199,6 @@ class BufferedDataSourceTest : public testing::Test {
  private:
   // Used for calling BufferedDataSource::Read().
   uint8 buffer_[kDataSize];
-
-  // Used for calling BufferedResourceLoader::didReceiveData().
-  char data_[kDataSize];
 
   DISALLOW_COPY_AND_ASSIGN(BufferedDataSourceTest);
 };
@@ -437,18 +440,20 @@ TEST_F(BufferedDataSourceTest, Read) {
 
   ReadAt(0);
 
-  // When the read completes we'll update our network status.
-  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize - 1));
-  EXPECT_CALL(*this, ReadCallback(kDataSize));
-  FinishRead();
-  EXPECT_TRUE(data_source_->downloading());
+  // Receive first half of the read.
+  EXPECT_CALL(host_, AddBufferedByteRange(0, (kDataSize / 2) - 1));
+  ReceiveData(kDataSize / 2);
 
-  // During teardown we'll also report our final network status.
+  // Receive last half of the read.
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize - 1));
+  ReceiveData(kDataSize / 2);
 
   EXPECT_TRUE(data_source_->downloading());
   Stop();
-  EXPECT_FALSE(data_source_->downloading());
+  // XXXXXXXXXXXX Should we report something on didFail? The idea here is that
+  // by calling Stop() on the object no more CBs should execute
+  EXPECT_TRUE(data_source_->downloading());
 }
 
 }  // namespace webkit_media

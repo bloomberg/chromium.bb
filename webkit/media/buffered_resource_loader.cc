@@ -144,17 +144,21 @@ BufferedResourceLoader::~BufferedResourceLoader() {}
 
 void BufferedResourceLoader::Start(
     const StartCB& start_cb,
-    const base::Closure& event_cb,
+    const LoadingStateChangedCB& loading_cb,
+    const ProgressCB& progress_cb,
     WebFrame* frame) {
   // Make sure we have not started.
   DCHECK(start_cb_.is_null());
-  DCHECK(event_cb_.is_null());
+  DCHECK(loading_cb_.is_null());
+  DCHECK(progress_cb_.is_null());
   DCHECK(!start_cb.is_null());
-  DCHECK(!event_cb.is_null());
+  DCHECK(!loading_cb.is_null());
+  DCHECK(!progress_cb.is_null());
   CHECK(frame);
 
   start_cb_ = start_cb;
-  event_cb_ = event_cb;
+  loading_cb_ = loading_cb;
+  progress_cb_ = progress_cb;
 
   if (first_byte_position_ != kPositionNotSpecified) {
     // TODO(hclam): server may not support range request so |offset_| may not
@@ -203,12 +207,14 @@ void BufferedResourceLoader::Start(
   // Start the resource loading.
   loader->loadAsynchronously(request, this);
   active_loader_.reset(new ActiveLoader(loader.Pass()));
+  loading_cb_.Run(kLoading);
 }
 
 void BufferedResourceLoader::Stop() {
   // Reset callbacks.
   start_cb_.Reset();
-  event_cb_.Reset();
+  loading_cb_.Reset();
+  progress_cb_.Reset();
   read_cb_.Reset();
 
   // Cancel and reset any active loaders.
@@ -313,10 +319,6 @@ void BufferedResourceLoader::Read(
   DoneRead(kCacheMiss, 0);
 }
 
-int64 BufferedResourceLoader::GetBufferedPosition() {
-  return offset_ + buffer_.forward_bytes() - 1;
-}
-
 int64 BufferedResourceLoader::content_length() {
   return content_length_;
 }
@@ -327,10 +329,6 @@ int64 BufferedResourceLoader::instance_size() {
 
 bool BufferedResourceLoader::range_supported() {
   return range_supported_;
-}
-
-bool BufferedResourceLoader::is_downloading_data() {
-  return active_loader_.get() && !active_loader_->deferred();
 }
 
 const GURL& BufferedResourceLoader::url() {
@@ -477,8 +475,8 @@ void BufferedResourceLoader::didReceiveData(
     offset_ += first_offset_ + excess;
   }
 
-  // Notify that we have received some data.
-  NotifyNetworkEvent();
+  // Notify latest progress and buffered offset.
+  progress_cb_.Run(offset_ + buffer_.forward_bytes() - 1);
   Log();
 }
 
@@ -503,7 +501,7 @@ void BufferedResourceLoader::didFinishLoading(
 
   // We're done with the loader.
   active_loader_.reset();
-  NotifyNetworkEvent();
+  loading_cb_.Run(kLoadingFinished);
 
   // If we didn't know the |instance_size_| we do now.
   if (instance_size_ == kPositionNotSpecified) {
@@ -547,7 +545,7 @@ void BufferedResourceLoader::didFail(
   // Keep it alive until we exit this method so that |error| remains valid.
   scoped_ptr<ActiveLoader> active_loader = active_loader_.Pass();
   loader_failed_ = true;
-  NotifyNetworkEvent();
+  loading_cb_.Run(kLoadingFailed);
 
   // Don't leave start callbacks hanging around.
   if (!start_cb_.is_null()) {
@@ -627,7 +625,7 @@ void BufferedResourceLoader::UpdateDeferBehavior() {
 
 void BufferedResourceLoader::SetDeferred(bool deferred) {
   active_loader_->SetDeferred(deferred);
-  NotifyNetworkEvent();
+  loading_cb_.Run(deferred ? kLoadingDeferred : kLoading);
 }
 
 bool BufferedResourceLoader::ShouldEnableDefer() const {
@@ -842,11 +840,6 @@ void BufferedResourceLoader::DoneRead(Status status, int bytes_read) {
 
 void BufferedResourceLoader::DoneStart(Status status) {
   base::ResetAndReturn(&start_cb_).Run(status);
-}
-
-void BufferedResourceLoader::NotifyNetworkEvent() {
-  if (!event_cb_.is_null())
-    event_cb_.Run();
 }
 
 bool BufferedResourceLoader::IsRangeRequest() const {
