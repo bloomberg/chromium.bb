@@ -181,7 +181,6 @@
       <include name="IDR_THEME_WINDOW_CONTROL_BACKGROUND" file="default_100_percent/notused.png" type="BINDATA" />
       <include name="IDR_THROBBER_LIGHT" file="default_100_percent/throbber_light.png" type="BINDATA" />
       <include name="IDR_THROBBER_WAITING_LIGHT" file="default_100_percent/throbber_waiting_light.png" type="BINDATA" />
-      <include name="IDR_UPDATE_UPTODATE" file="default_100_percent/update_uptodate.png" type="BINDATA" />
       <include name="IDR_MANAGED" file="default_100_percent/managed_small.png" type="BINDATA" />
       <if expr="not is_macosx">
         <include name="IDR_MANAGED_MODE_AVATAR" file="default_100_percent/managed_mode_avatar.png" type="BINDATA" />
