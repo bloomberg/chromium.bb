@@ -19,6 +19,10 @@
 
 namespace IPC {
 
+// Contains the results from one call to imc_recvmsg (data and file
+// descriptors).
+struct MessageContents;
+
 // Similar to the Posix version of ChannelImpl but for Native Client code.
 // This is somewhat different because sendmsg/recvmsg here do not follow POSIX
 // semantics. Instead, they are implemented by a custom embedding of
@@ -42,7 +46,7 @@ class Channel::ChannelImpl : public internal::ChannelReader {
   bool Send(Message* message);
 
   // Posted to the main thread by ReaderThreadRunner.
-  void DidRecvMsg(scoped_ptr<std::vector<char> > buffer);
+  void DidRecvMsg(scoped_ptr<MessageContents> contents);
   void ReadDidFail();
 
  private:
@@ -84,15 +88,22 @@ class Channel::ChannelImpl : public internal::ChannelReader {
   // IPC::ChannelReader expects to be able to call ReadData on us to
   // synchronously read data waiting in the pipe's buffer without blocking.
   // Since we can't do that (see 1 and 2 above), the reader thread does blocking
-  // reads and posts the data over to the main thread in byte vectors. Each byte
-  // vector is the result of one call to "recvmsg". When ReadData is called, it
-  // pulls the bytes out of these vectors in order.
+  // reads and posts the data over to the main thread in MessageContents. Each
+  // MessageContents object is the result of one call to "imc_recvmsg".
+  // DidRecvMsg breaks the MessageContents out in to the data and the file
+  // descriptors, and puts them on these two queues.
   // TODO(dmichael): There's probably a more efficient way to emulate this with
   //                 a circular buffer or something, so we don't have to do so
   //                 many heap allocations. But it maybe isn't worth
   //                 the trouble given that we probably want to implement 1 and
   //                 2 above in NaCl eventually.
+  // When ReadData is called, it pulls the bytes out of this queue in order.
   std::deque<linked_ptr<std::vector<char> > > read_queue_;
+  // Queue of file descriptors extracted from imc_recvmsg messages.
+  // NOTE: The implementation assumes underlying storage here is contiguous, so
+  // don't change to something like std::deque<> without changing the
+  // implementation!
+  std::vector<int> input_fds_;
 
   // This queue is used when a message is sent prior to Connect having been
   // called. Normally after we're connected, the queue is empty.

@@ -24,31 +24,39 @@
 #include "ipc/ipc_logging.h"
 
 namespace IPC {
+
+struct MessageContents {
+  std::vector<char> data;
+  std::vector<int> fds;
+};
+
 namespace {
 
-scoped_ptr<std::vector<char> > ReadDataOnReaderThread(int pipe) {
+bool ReadDataOnReaderThread(int pipe, MessageContents* contents) {
   DCHECK(pipe >= 0);
-
   if (pipe < 0)
-    return scoped_ptr<std::vector<char> >();
+    return false;
 
-  scoped_ptr<std::vector<char> > buffer(
-      new std::vector<char>(Channel::kReadBufferSize));
-  struct NaClImcMsgHdr msg = {0};
-  struct NaClImcMsgIoVec iov = {&buffer->at(0), buffer->size()};
-  msg.iov = &iov;
-  msg.iov_length = 1;
+  contents->data.resize(Channel::kReadBufferSize);
+  contents->fds.resize(FileDescriptorSet::kMaxDescriptorsPerMessage);
+
+  NaClImcMsgIoVec iov = { &contents->data[0], contents->data.size() };
+  NaClImcMsgHdr msg = { &iov, 1, &contents->fds[0], contents->fds.size() };
 
   int bytes_read = imc_recvmsg(pipe, &msg, 0);
 
   if (bytes_read <= 0) {
     // NaClIPCAdapter::BlockingReceive returns -1 when the pipe closes (either
     // due to error or for regular shutdown).
-    return scoped_ptr<std::vector<char> >();
+    contents->data.clear();
+    contents->fds.clear();
+    return false;
   }
   DCHECK(bytes_read);
-  buffer->resize(bytes_read);
-  return buffer.Pass();
+  // Resize the buffers down to the number of bytes and fds we actually read.
+  contents->data.resize(bytes_read);
+  contents->fds.resize(msg.desc_length);
+  return true;
 }
 
 }  // namespace
@@ -58,17 +66,16 @@ class Channel::ChannelImpl::ReaderThreadRunner
  public:
   // |pipe|: A file descriptor from which we will read using imc_recvmsg.
   // |data_read_callback|: A callback we invoke (on the main thread) when we
-  //                       have read data. The callback is passed a buffer of
-  //                       data that was read.
+  //                       have read data.
   // |failure_callback|: A callback we invoke when we have a failure reading
   //                     from |pipe|.
   // |main_message_loop|: A proxy for the main thread, where we will invoke the
   //                      above callbacks.
   ReaderThreadRunner(
       int pipe,
-      base::Callback<void (scoped_ptr<std::vector<char> >)> data_read_callback,
+      base::Callback<void (scoped_ptr<MessageContents>)> data_read_callback,
       base::Callback<void ()> failure_callback,
-      base::MessageLoopProxy* main_message_loop);
+      scoped_refptr<base::MessageLoopProxy> main_message_loop);
 
   // DelegateSimpleThread implementation. Reads data from the pipe in a loop
   // until either we are told to quit or a read fails.
@@ -76,7 +83,7 @@ class Channel::ChannelImpl::ReaderThreadRunner
 
  private:
   int pipe_;
-  base::Callback<void (scoped_ptr<std::vector<char> >)> data_read_callback_;
+  base::Callback<void (scoped_ptr<MessageContents>)> data_read_callback_;
   base::Callback<void ()> failure_callback_;
   scoped_refptr<base::MessageLoopProxy> main_message_loop_;
 
@@ -85,9 +92,9 @@ class Channel::ChannelImpl::ReaderThreadRunner
 
 Channel::ChannelImpl::ReaderThreadRunner::ReaderThreadRunner(
     int pipe,
-    base::Callback<void (scoped_ptr<std::vector<char> >)> data_read_callback,
+    base::Callback<void (scoped_ptr<MessageContents>)> data_read_callback,
     base::Callback<void ()> failure_callback,
-    base::MessageLoopProxy* main_message_loop)
+    scoped_refptr<base::MessageLoopProxy> main_message_loop)
     : pipe_(pipe),
       data_read_callback_(data_read_callback),
       failure_callback_(failure_callback),
@@ -96,10 +103,11 @@ Channel::ChannelImpl::ReaderThreadRunner::ReaderThreadRunner(
 
 void Channel::ChannelImpl::ReaderThreadRunner::Run() {
   while (true) {
-    scoped_ptr<std::vector<char> > buffer(ReadDataOnReaderThread(pipe_));
-    if (buffer.get()) {
+    scoped_ptr<MessageContents> msg_contents(new MessageContents);
+    bool success = ReadDataOnReaderThread(pipe_, msg_contents.get());
+    if (success) {
       main_message_loop_->PostTask(FROM_HERE,
-          base::Bind(data_read_callback_, base::Passed(buffer.Pass())));
+          base::Bind(data_read_callback_, base::Passed(msg_contents.Pass())));
     } else {
       main_message_loop_->PostTask(FROM_HERE, failure_callback_);
       // Because the read failed, we know we're going to quit. Don't bother
@@ -187,13 +195,19 @@ bool Channel::ChannelImpl::Send(Message* message) {
   return true;
 }
 
-void Channel::ChannelImpl::DidRecvMsg(scoped_ptr<std::vector<char> > buffer) {
+void Channel::ChannelImpl::DidRecvMsg(scoped_ptr<MessageContents> contents) {
   // Close sets the pipe to -1. It's possible we'll get a buffer sent to us from
   // the reader thread after Close is called. If so, we ignore it.
   if (pipe_ == -1)
     return;
 
-  read_queue_.push_back(linked_ptr<std::vector<char> >(buffer.release()));
+  linked_ptr<std::vector<char> > data(new std::vector<char>);
+  data->swap(contents->data);
+  read_queue_.push_back(data);
+
+  input_fds_.insert(input_fds_.end(),
+                    contents->fds.begin(), contents->fds.end());
+  contents->fds.clear();
 
   // In POSIX, we would be told when there are bytes to read by implementing
   // OnFileCanReadWithoutBlocking in MessageLoopForIO::Watcher. In NaCl, we
@@ -240,12 +254,16 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
     linked_ptr<Message> msg = output_queue_.front();
     output_queue_.pop_front();
 
-    struct NaClImcMsgHdr msgh = {0};
-    struct NaClImcMsgIoVec iov = {const_cast<void*>(msg->data()), msg->size()};
-    msgh.iov = &iov;
-    msgh.iov_length = 1;
+    int fds[FileDescriptorSet::kMaxDescriptorsPerMessage];
+    const int num_fds = msg->file_descriptor_set()->size();
+    DCHECK(num_fds <= FileDescriptorSet::kMaxDescriptorsPerMessage);
+    msg->file_descriptor_set()->GetDescriptors(fds);
+
+    NaClImcMsgIoVec iov = { const_cast<void*>(msg->data()), msg->size() };
+    NaClImcMsgHdr msgh = { &iov, 1, fds, num_fds };
     ssize_t bytes_written = imc_sendmsg(pipe_, &msgh, 0);
 
+    DCHECK(bytes_written);  // The trusted side shouldn't return 0.
     if (bytes_written < 0) {
       // The trusted side should only ever give us an error of EPIPE. We
       // should never be interrupted, nor should we get EAGAIN.
@@ -256,6 +274,8 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
                   << " Currently writing message of size: "
                   << msg->size();
       return false;
+    } else {
+      msg->file_descriptor_set()->CommitAll();
     }
 
     // Message sent OK!
@@ -297,11 +317,23 @@ Channel::ChannelImpl::ReadState Channel::ChannelImpl::ReadData(
 }
 
 bool Channel::ChannelImpl::WillDispatchInputMessage(Message* msg) {
+  uint16 header_fds = msg->header()->num_fds;
+  CHECK(header_fds == input_fds_.size());
+  if (header_fds == 0)
+    return true;  // Nothing to do.
+
+  // The shenaniganery below with &foo.front() requires input_fds_ to have
+  // contiguous underlying storage (such as a simple array or a std::vector).
+  // This is why the header warns not to make input_fds_ a deque<>.
+  msg->file_descriptor_set()->SetDescriptors(&input_fds_.front(),
+                                             header_fds);
+  input_fds_.clear();
   return true;
 }
 
 bool Channel::ChannelImpl::DidEmptyInputBuffers() {
-  return true;
+  // When the input data buffer is empty, the fds should be too.
+  return input_fds_.empty();
 }
 
 void Channel::ChannelImpl::HandleHelloMessage(const Message& msg) {
