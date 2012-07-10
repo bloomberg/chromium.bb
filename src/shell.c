@@ -1331,7 +1331,7 @@ get_output_panel_height(struct desktop_shell *shell,
 	if (!output)
 		return 0;
 
-	wl_list_for_each(surface, &shell->panel_layer.surface_list, link) {
+	wl_list_for_each(surface, &shell->panel_layer.surface_list, layer_link) {
 		if (surface->output == output) {
 			panel_height = surface->geometry.height;
 			break;
