@@ -11,7 +11,6 @@ webkit_media::StreamTextureProxy* TestStreamTextureFactory::CreateProxy() {
 }
 
 unsigned TestStreamTextureFactory::CreateStreamTexture(unsigned* texture_id) {
-  texture_id = 0;
   return 0;
 }
 
