@@ -257,15 +257,15 @@ base::BinaryValue* V8ValueConverterImpl::FromV8Buffer(
   char* data = NULL;
   size_t length = 0;
 
-  WebKit::WebArrayBuffer* array_buffer =
-      WebKit::WebArrayBuffer::createFromV8Value(val);
-  if (array_buffer) {
+  scoped_ptr<WebKit::WebArrayBuffer> array_buffer(
+      WebKit::WebArrayBuffer::createFromV8Value(val));
+  scoped_ptr<WebKit::WebArrayBufferView> view;
+  if (array_buffer.get()) {
     data = reinterpret_cast<char*>(array_buffer->data());
     length = array_buffer->byteLength();
   } else {
-    WebKit::WebArrayBufferView* view =
-        WebKit::WebArrayBufferView::createFromV8Value(val);
-    if (view) {
+    view.reset(WebKit::WebArrayBufferView::createFromV8Value(val));
+    if (view.get()) {
       data = reinterpret_cast<char*>(view->baseAddress()) + view->byteOffset();
       length = view->byteLength();
     }
