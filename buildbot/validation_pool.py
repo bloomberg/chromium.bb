@@ -589,7 +589,12 @@ class PatchSeries(RawPatchSeries):
     self.force_content_merging = force_content_merging
 
   def _GetTrackingBranchForChange(self, change):
-    return self.manifest.GetProjectsLocalRevision(change.project)
+    ref = self.manifest.GetProjectsLocalRevision(change.project)
+    if ref.startswith("refs/"):
+      return ref
+    # Revlocked manifests return sha1s; use the repo defined branch
+    # so tracking is supported.
+    return self.manifest.default_branch
 
   #pylint: disable=W0221
   def Apply(self, changes, **kwargs):

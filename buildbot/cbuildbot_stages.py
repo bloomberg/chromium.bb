@@ -157,7 +157,7 @@ class PatchChangesStage(bs.BuilderStage):
     self.patch_pool = patch_pool
 
   def _CheckForDuplicatePatches(self, _series, changes):
-    seen = {}
+    conflicts = {}
     duplicates = []
     for change in changes:
       if change.id is None:
@@ -166,7 +166,7 @@ class PatchChangesStage(bs.BuilderStage):
             "be done for this change.  If cherry-picking fails, this is a "
             "potential cause.", change)
         continue
-      conflicts = seen.setdefault(change.id, []).append(change)
+      conflicts.setdefault(change.id, []).append(change)
 
     duplicates = [x for x in conflicts.itervalues() if len(x) > 1]
     if not duplicates:
