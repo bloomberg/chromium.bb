@@ -1184,10 +1184,7 @@ void LocationBarViewGtk::OnIconDragData(GtkWidget* sender,
                                         GdkDragContext* context,
                                         GtkSelectionData* data,
                                         guint info, guint time) {
-  WebContents* tab = GetWebContents();
-  if (!tab)
-    return;
-  ui::WriteURLWithName(data, tab->GetURL(), tab->GetTitle(), info);
+  ui::WriteURLWithName(data, drag_url_, drag_title_, info);
 }
 
 void LocationBarViewGtk::OnIconDragBegin(GtkWidget* sender,
@@ -1200,6 +1197,12 @@ void LocationBarViewGtk::OnIconDragBegin(GtkWidget* sender,
       GetTitle(), theme_service_);
   g_object_unref(pixbuf);
   gtk_drag_set_icon_widget(context, drag_icon_, 0, 0);
+
+  WebContents* tab = GetWebContents();
+  if (!tab)
+    return;
+  drag_url_ = tab->GetURL();
+  drag_title_ = tab->GetTitle();
 }
 
 void LocationBarViewGtk::OnIconDragEnd(GtkWidget* sender,
@@ -1207,6 +1210,8 @@ void LocationBarViewGtk::OnIconDragEnd(GtkWidget* sender,
   DCHECK(drag_icon_);
   gtk_widget_destroy(drag_icon_);
   drag_icon_ = NULL;
+  drag_url_ = GURL::EmptyGURL();
+  drag_title_.clear();
 }
 
 void LocationBarViewGtk::OnHboxSizeAllocate(GtkWidget* sender,

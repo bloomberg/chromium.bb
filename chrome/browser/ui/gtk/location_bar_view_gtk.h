@@ -539,6 +539,10 @@ class LocationBarViewGtk : public OmniboxEditController,
   // Used to change the visibility of the star decoration.
   BooleanPrefMember edit_bookmarks_enabled_;
 
+  // Used to remember the URL and title text when drag&drop has begun.
+  GURL drag_url_;
+  string16 drag_title_;
+
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewGtk);
 };
 
