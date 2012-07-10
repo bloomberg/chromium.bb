@@ -64,7 +64,7 @@ const char kExperiment[] = "LowMemoryMargin";
 
 }  // namespace
 
-SadTabView::SadTabView(WebContents* web_contents, Kind kind)
+SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
     : web_contents_(web_contents),
       kind_(kind),
       painted_(false),
@@ -87,14 +87,14 @@ SadTabView::SadTabView(WebContents* web_contents, Kind kind)
   // directly compared.
   // TODO(jamescook): Maybe track time between sad tabs?
   switch (kind_) {
-    case CRASHED: {
+    case chrome::SAD_TAB_KIND_CRASHED: {
       static int crashed = 0;
       crashed++;
       EXPERIMENT_CUSTOM_COUNTS(
           "Tabs.SadTab.CrashCreated", crashed, 1, 1000, 50);
       break;
     }
-    case KILLED: {
+    case chrome::SAD_TAB_KIND_KILLED: {
       static int killed = 0;
       killed++;
       EXPERIMENT_CUSTOM_COUNTS(
@@ -107,7 +107,7 @@ SadTabView::SadTabView(WebContents* web_contents, Kind kind)
 
   // Set the background color.
   set_background(views::Background::CreateSolidBackground(
-      (kind_ == CRASHED) ? kCrashColor : kKillColor));
+      (kind_ == chrome::SAD_TAB_KIND_CRASHED) ? kCrashColor : kKillColor));
 }
 
 SadTabView::~SadTabView() {}
@@ -115,8 +115,8 @@ SadTabView::~SadTabView() {}
 void SadTabView::LinkClicked(views::Link* source, int event_flags) {
   DCHECK(web_contents_);
   if (source == help_link_) {
-    GURL help_url(
-        kind_ == CRASHED ? chrome::kCrashReasonURL : chrome::kKillReasonURL);
+    GURL help_url((kind_ == chrome::SAD_TAB_KIND_CRASHED) ?
+        chrome::kCrashReasonURL : chrome::kKillReasonURL);
     OpenURLParams params(
         help_url, content::Referrer(), CURRENT_TAB,
         content::PAGE_TRANSITION_LINK, false);
@@ -160,18 +160,20 @@ void SadTabView::ViewHierarchyChanged(bool is_add,
 
   views::ImageView* image = new views::ImageView();
   image->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      (kind_ == CRASHED) ? IDR_SAD_TAB : IDR_KILLED_TAB));
+      (kind_ == chrome::SAD_TAB_KIND_CRASHED) ? IDR_SAD_TAB : IDR_KILLED_TAB));
   layout->StartRowWithPadding(0, column_set_id, 1, kPadding);
   layout->AddView(image);
 
   views::Label* title = CreateLabel(l10n_util::GetStringUTF16(
-      (kind_ == CRASHED) ? IDS_SAD_TAB_TITLE : IDS_KILLED_TAB_TITLE));
+      (kind_ == chrome::SAD_TAB_KIND_CRASHED) ?
+          IDS_SAD_TAB_TITLE : IDS_KILLED_TAB_TITLE));
   title->SetFont(base_font_.DeriveFont(kTitleFontSizeDelta, gfx::Font::BOLD));
   layout->StartRowWithPadding(0, column_set_id, 0, kPadding);
   layout->AddView(title);
 
   message_ = CreateLabel(l10n_util::GetStringUTF16(
-      (kind_ == CRASHED) ? IDS_SAD_TAB_MESSAGE : IDS_KILLED_TAB_MESSAGE));
+      (kind_ == chrome::SAD_TAB_KIND_CRASHED) ?
+          IDS_SAD_TAB_MESSAGE : IDS_KILLED_TAB_MESSAGE));
   message_->SetMultiLine(true);
   layout->StartRowWithPadding(0, column_set_id, 0, kPadding);
   layout->AddView(message_);
@@ -186,9 +188,10 @@ void SadTabView::ViewHierarchyChanged(bool is_add,
     layout->AddView(reload_button_);
 
     help_link_ = CreateLink(l10n_util::GetStringUTF16(
-        (kind_ == CRASHED) ? IDS_SAD_TAB_HELP_LINK : IDS_LEARN_MORE));
+        (kind_ == chrome::SAD_TAB_KIND_CRASHED) ?
+            IDS_SAD_TAB_HELP_LINK : IDS_LEARN_MORE));
 
-    if (kind_ == CRASHED) {
+    if (kind_ == chrome::SAD_TAB_KIND_CRASHED) {
       size_t offset = 0;
       string16 help_text(l10n_util::GetStringFUTF16(IDS_SAD_TAB_HELP_MESSAGE,
                                                     string16(), &offset));
@@ -232,13 +235,13 @@ void SadTabView::OnPaint(gfx::Canvas* canvas) {
     // for tab discard events in chrome/browser/oom_priority_manager.cc so they
     // can be directly compared.
     switch (kind_) {
-      case CRASHED: {
+      case chrome::SAD_TAB_KIND_CRASHED: {
         static int crashed = 0;
         UMA_HISTOGRAM_CUSTOM_COUNTS(
             "Tabs.SadTab.CrashDisplayed", ++crashed, 1, 1000, 50);
         break;
       }
-      case KILLED: {
+      case chrome::SAD_TAB_KIND_KILLED: {
         static int killed = 0;
         UMA_HISTOGRAM_CUSTOM_COUNTS(
             "Tabs.SadTab.KillDisplayed", ++killed, 1, 1000, 50);

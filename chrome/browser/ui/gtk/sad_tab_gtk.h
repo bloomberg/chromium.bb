@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,12 @@
 #define CHROME_BROWSER_UI_GTK_SAD_TAB_GTK_H_
 #pragma once
 
-typedef struct _GtkWidget GtkWidget;
-
+#include "base/basictypes.h"
+#include "chrome/browser/ui/sad_tab_types.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
+
+typedef struct _GtkWidget GtkWidget;
 
 namespace content {
 class WebContents;
@@ -17,12 +19,7 @@ class WebContents;
 
 class SadTabGtk {
  public:
-  enum Kind {
-    CRASHED,  // The tab crashed.  Display the "Aw, Snap!" page.
-    KILLED    // The tab was killed.  Display the killed tab page.
-  };
-
-  SadTabGtk(content::WebContents* web_contents, Kind kind);
+  SadTabGtk(content::WebContents* web_contents, chrome::SadTabKind kind);
   ~SadTabGtk();
 
   GtkWidget* widget() const { return event_box_.get(); }
@@ -34,7 +31,7 @@ class SadTabGtk {
 
   content::WebContents* web_contents_;
   ui::OwnedWidgetGtk event_box_;
-  Kind kind_;
+  chrome::SadTabKind kind_;
 
   DISALLOW_COPY_AND_ASSIGN(SadTabGtk);
 };

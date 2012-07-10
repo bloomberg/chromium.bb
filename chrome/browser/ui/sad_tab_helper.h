@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,12 @@
 #define CHROME_BROWSER_UI_SAD_TAB_HELPER_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
@@ -34,7 +35,7 @@ class SadTabHelper : public content::WebContentsObserver,
   virtual ~SadTabHelper();
 
   // Platform specific function to determine if there is a current sad tab page.
-  bool HasSadTab();
+  bool HasSadTab() const;
 
 #if defined(TOOLKIT_VIEWS)
   views::Widget* sad_tab() { return sad_tab_.get(); }

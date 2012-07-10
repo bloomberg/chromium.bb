@@ -3302,6 +3302,7 @@
         'browser/ui/profile_error_dialog.h',
         'browser/ui/sad_tab_helper.cc',
         'browser/ui/sad_tab_helper.h',
+        'browser/ui/sad_tab_types.h',
         'browser/ui/search/search.cc',
         'browser/ui/search/search.h',
         'browser/ui/search/search_delegate.cc',
