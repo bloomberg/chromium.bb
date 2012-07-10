@@ -450,16 +450,17 @@ Fixes errors at the boundaries of math and text
 
 The names used for files containing translation tables are completely
 arbitrary. They are not interpreted in any way by the translator.
-Contraction tables may be 8-bit ASCII files, 16-bit big-endian Unicode
-files or 16-bit little-endian Unicode files. Blank lines are ignored.
-Any leading and trailing whitespace (any number of blanks and/or tabs)
-is ignored. Lines which begin with a number sign or hatch mark
-(@samp{#}) are ignored, i.e. they are comments. If the number sign is
-not the first non-blank character in the line, it is treated as an
-ordinary character. If the first non-blank character is less-than
-(@samp{<}) the line is also treated as a comment. This makes it possible
-to mark up tables as xhtml documents. Lines which are not blank or
-comments define table entries. The general format of a table entry is:
+Contraction tables may be 8-bit ASCII files, UTF-8, 16-bit big-endian
+Unicode files or 16-bit little-endian Unicode files. Blank lines are
+ignored. Any leading and trailing whitespace (any number of blanks
+and/or tabs) is ignored. Lines which begin with a number sign or hatch
+mark (@samp{#}) are ignored, i.e. they are comments. If the number
+sign is not the first non-blank character in the line, it is treated
+as an ordinary character. If the first non-blank character is
+less-than (@samp{<}) the line is also treated as a comment. This makes
+it possible to mark up tables as xhtml documents. Lines which are not
+blank or comments define table entries. The general format of a table
+entry is:
 
 @example
 opcode operands comments
