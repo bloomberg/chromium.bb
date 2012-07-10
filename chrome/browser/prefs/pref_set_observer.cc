@@ -68,7 +68,7 @@ PrefSetObserver* PrefSetObserver::CreateProtectedPrefSetObserver(
   // Pinned tabs.
   pref_set->AddPref(prefs::kPinnedTabs);
   // Extensions.
-  pref_set->AddPref(ExtensionPrefs::kExtensionsPref);
+  pref_set->AddPref(extensions::ExtensionPrefs::kExtensionsPref);
 
   return pref_set;
 }

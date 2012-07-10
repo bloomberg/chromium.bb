@@ -157,7 +157,8 @@ bool RequestPermissionsFunction::RunImpl() {
     return false;
 
   PermissionsInfo* info = PermissionsInfo::GetInstance();
-  ExtensionPrefs* prefs = profile()->GetExtensionService()->extension_prefs();
+  extensions::ExtensionPrefs* prefs =
+      profile()->GetExtensionService()->extension_prefs();
 
   // Make sure they're only requesting permissions supported by this API.
   APIPermissionSet apis = requested_permissions_->apis();

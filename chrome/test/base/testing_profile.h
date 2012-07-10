@@ -18,6 +18,10 @@ namespace content {
 class MockResourceContext;
 }
 
+namespace extensions {
+class ExtensionPrefs;
+}
+
 namespace history {
 class TopSites;
 }
@@ -32,7 +36,6 @@ class SpecialStoragePolicy;
 }
 
 class CommandLine;
-class ExtensionPrefs;
 class ExtensionSpecialStoragePolicy;
 class FaviconService;
 class HostContentSettingsMap;

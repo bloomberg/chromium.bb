@@ -94,16 +94,17 @@ class ExtensionUninstaller : public ExtensionUninstallDialog::Delegate {
   DISALLOW_COPY_AND_ASSIGN(ExtensionUninstaller);
 };
 
-ExtensionPrefs::LaunchType GetExtensionLaunchType(
+extensions::ExtensionPrefs::LaunchType GetExtensionLaunchType(
     Profile* profile,
     const std::string& extension_id) {
   return profile->GetExtensionService()->extension_prefs()->GetLaunchType(
-      extension_id, ExtensionPrefs::LAUNCH_DEFAULT);
+      extension_id, extensions::ExtensionPrefs::LAUNCH_DEFAULT);
 }
 
-void SetExtensionLaunchType(Profile* profile,
-                            const std::string& extension_id,
-                            ExtensionPrefs::LaunchType launch_type) {
+void SetExtensionLaunchType(
+    Profile* profile,
+    const std::string& extension_id,
+    extensions::ExtensionPrefs::LaunchType launch_type) {
   profile->GetExtensionService()->extension_prefs()->SetLaunchType(
       extension_id, launch_type);
 }
@@ -251,7 +252,7 @@ void ExtensionAppItem::ExecuteCommand(int command_id) {
              command_id < LAUNCH_TYPE_LAST) {
     SetExtensionLaunchType(profile_,
                            extension_id_,
-                           static_cast<ExtensionPrefs::LaunchType>(
+                           static_cast<extensions::ExtensionPrefs::LaunchType>(
                                command_id - LAUNCH_TYPE_START));
   } else if (command_id == OPTIONS) {
     ShowExtensionOptions();

@@ -5737,7 +5737,7 @@ void TestingAutomationProvider::LaunchApp(
   // is set, launch as a regular tab.
   extension_misc::LaunchContainer launch_container =
       service->extension_prefs()->GetLaunchContainer(
-          extension, ExtensionPrefs::LAUNCH_REGULAR);
+          extension, extensions::ExtensionPrefs::LAUNCH_REGULAR);
 
   WebContents* old_contents = chrome::GetActiveWebContents(browser);
   if (!old_contents) {
@@ -5789,15 +5789,15 @@ void TestingAutomationProvider::SetAppLaunchType(
     return;
   }
 
-  ExtensionPrefs::LaunchType launch_type;
+  extensions::ExtensionPrefs::LaunchType launch_type;
   if (launch_type_str == "pinned") {
-    launch_type = ExtensionPrefs::LAUNCH_PINNED;
+    launch_type = extensions::ExtensionPrefs::LAUNCH_PINNED;
   } else if (launch_type_str == "regular") {
-    launch_type = ExtensionPrefs::LAUNCH_REGULAR;
+    launch_type = extensions::ExtensionPrefs::LAUNCH_REGULAR;
   } else if (launch_type_str == "fullscreen") {
-    launch_type = ExtensionPrefs::LAUNCH_FULLSCREEN;
+    launch_type = extensions::ExtensionPrefs::LAUNCH_FULLSCREEN;
   } else if (launch_type_str == "window") {
-    launch_type = ExtensionPrefs::LAUNCH_WINDOW;
+    launch_type = extensions::ExtensionPrefs::LAUNCH_WINDOW;
   } else {
     reply.SendError(
         StringPrintf("Unexpected launch type '%s'.", launch_type_str.c_str()));

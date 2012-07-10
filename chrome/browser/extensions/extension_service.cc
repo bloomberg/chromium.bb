@@ -322,7 +322,7 @@ bool ExtensionService::UninstallExtensionHelper(
 ExtensionService::ExtensionService(Profile* profile,
                                    const CommandLine* command_line,
                                    const FilePath& install_directory,
-                                   ExtensionPrefs* extension_prefs,
+                                   extensions::ExtensionPrefs* extension_prefs,
                                    bool autoupdate_enabled,
                                    bool extensions_enabled)
     : profile_(profile),
@@ -1139,7 +1139,7 @@ Profile* ExtensionService::profile() {
   return profile_;
 }
 
-ExtensionPrefs* ExtensionService::extension_prefs() {
+extensions::ExtensionPrefs* ExtensionService::extension_prefs() {
   return extension_prefs_;
 }
 
@@ -1686,7 +1686,7 @@ void ExtensionService::OnAllExternalProvidersReady() {
   }
 
   // Uninstall all the unclaimed extensions.
-  scoped_ptr<ExtensionPrefs::ExtensionsInfo> extensions_info(
+  scoped_ptr<extensions::ExtensionPrefs::ExtensionsInfo> extensions_info(
       extension_prefs_->GetInstalledExtensionsInfo());
   for (size_t i = 0; i < extensions_info->size(); ++i) {
     ExtensionInfo* info = extensions_info->at(i).get();
@@ -1858,7 +1858,7 @@ void ExtensionService::GarbageCollectExtensions() {
   if (extension_prefs_->pref_service()->ReadOnly())
     return;
 
-  scoped_ptr<ExtensionPrefs::ExtensionsInfo> info(
+  scoped_ptr<extensions::ExtensionPrefs::ExtensionsInfo> info(
       extension_prefs_->GetInstalledExtensionsInfo());
 
   std::map<std::string, FilePath> extension_paths;

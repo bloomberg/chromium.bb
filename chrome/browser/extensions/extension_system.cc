@@ -79,7 +79,7 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
   bool extensions_disabled =
       profile_->GetPrefs()->GetBoolean(prefs::kDisableExtensions) ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableExtensions);
-  extension_prefs_.reset(new ExtensionPrefs(
+  extension_prefs_.reset(new extensions::ExtensionPrefs(
       profile_->GetPrefs(),
       profile_->GetPath().AppendASCII(ExtensionService::kInstallDirectoryName),
       ExtensionPrefValueMapFactory::GetForProfile(profile_)));

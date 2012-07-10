@@ -1954,13 +1954,13 @@ std::vector<DictionaryValue*>* GetAppInfoFromExtensions(
         NOTREACHED() << "Can't get integer from key " << kLaunchType;
         continue;
       }
-      if (launch_type == ExtensionPrefs::LAUNCH_PINNED) {
+      if (launch_type == extensions::ExtensionPrefs::LAUNCH_PINNED) {
         app_info->SetString(kLaunchType, "pinned");
-      } else if (launch_type == ExtensionPrefs::LAUNCH_REGULAR) {
+      } else if (launch_type == extensions::ExtensionPrefs::LAUNCH_REGULAR) {
         app_info->SetString(kLaunchType, "regular");
-      } else if (launch_type == ExtensionPrefs::LAUNCH_FULLSCREEN) {
+      } else if (launch_type == extensions::ExtensionPrefs::LAUNCH_FULLSCREEN) {
         app_info->SetString(kLaunchType, "fullscreen");
-      } else if (launch_type == ExtensionPrefs::LAUNCH_WINDOW) {
+      } else if (launch_type == extensions::ExtensionPrefs::LAUNCH_WINDOW) {
         app_info->SetString(kLaunchType, "window");
       } else {
         app_info->SetString(kLaunchType, "unknown");

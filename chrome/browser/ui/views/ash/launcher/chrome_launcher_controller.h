@@ -144,7 +144,7 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   bool IsOpen(ash::LauncherID id);
 
   // Returns the launch type of app for the specified id.
-  ExtensionPrefs::LaunchType GetLaunchType(ash::LauncherID id);
+  extensions::ExtensionPrefs::LaunchType GetLaunchType(ash::LauncherID id);
 
   // Returns the id of the app for the specified tab.
   std::string GetAppID(TabContents* tab);
@@ -165,7 +165,7 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   // Updates the launche type of the app for the specified id to |launch_type|.
   void SetLaunchType(ash::LauncherID id,
-                     ExtensionPrefs::LaunchType launch_type);
+                     extensions::ExtensionPrefs::LaunchType launch_type);
 
   // Unpins any app items whose id is |app_id|.
   void UnpinAppsWithID(const std::string& app_id);

@@ -58,7 +58,7 @@ void ExtensionAppProvider::LaunchAppFromOmnibox(
   // preference is set, launch as a regular tab.
   extension_misc::LaunchContainer launch_container =
       service->extension_prefs()->GetLaunchContainer(
-          extension, ExtensionPrefs::LAUNCH_REGULAR);
+          extension, extensions::ExtensionPrefs::LAUNCH_REGULAR);
 
   application_launch::OpenApplication(profile, extension, launch_container,
                                       GURL(), disposition, NULL);

@@ -43,7 +43,7 @@ void OpenExtension(Profile* profile,
     // is set, launch as a regular tab.
     extension_misc::LaunchContainer launch_container =
         profile->GetExtensionService()->extension_prefs()->GetLaunchContainer(
-            extension, ExtensionPrefs::LAUNCH_DEFAULT);
+            extension, extensions::ExtensionPrefs::LAUNCH_DEFAULT);
 
     application_launch::OpenApplication(
         profile, extension, launch_container, GURL(url),

@@ -322,12 +322,12 @@ bool ChromeLauncherController::IsOpen(ash::LauncherID id) {
       id_to_item_map_[id].controller != NULL;
 }
 
-ExtensionPrefs::LaunchType ChromeLauncherController::GetLaunchType(
+extensions::ExtensionPrefs::LaunchType ChromeLauncherController::GetLaunchType(
     ash::LauncherID id) {
   DCHECK(id_to_item_map_.find(id) != id_to_item_map_.end());
 
   return profile_->GetExtensionService()->extension_prefs()->GetLaunchType(
-      id_to_item_map_[id].app_id, ExtensionPrefs::LAUNCH_DEFAULT);
+      id_to_item_map_[id].app_id, extensions::ExtensionPrefs::LAUNCH_DEFAULT);
 }
 
 std::string ChromeLauncherController::GetAppID(TabContents* tab) {
@@ -389,7 +389,7 @@ void ChromeLauncherController::PinAppWithID(const std::string& app_id) {
 
 void ChromeLauncherController::SetLaunchType(
     ash::LauncherID id,
-    ExtensionPrefs::LaunchType launch_type) {
+    extensions::ExtensionPrefs::LaunchType launch_type) {
   if (id_to_item_map_.find(id) == id_to_item_map_.end())
     return;
 

@@ -30,15 +30,16 @@ const char kControlledByThisExtension[] = "controlled_by_this_extension";
 
 namespace extension_preference_helpers {
 
-bool StringToScope(const std::string& s, ExtensionPrefsScope* scope) {
+bool StringToScope(const std::string& s,
+                   extensions::ExtensionPrefsScope* scope) {
   if (s == kRegular)
-    *scope = kExtensionPrefsScopeRegular;
+    *scope = extensions::kExtensionPrefsScopeRegular;
   else if (s == kRegularOnly)
-    *scope = kExtensionPrefsScopeRegularOnly;
+    *scope = extensions::kExtensionPrefsScopeRegularOnly;
   else if (s == kIncognitoPersistent)
-    *scope = kExtensionPrefsScopeIncognitoPersistent;
+    *scope = extensions::kExtensionPrefsScopeIncognitoPersistent;
   else if (s == kIncognitoSessionOnly)
-    *scope = kExtensionPrefsScopeIncognitoSessionOnly;
+    *scope = extensions::kExtensionPrefsScopeIncognitoSessionOnly;
   else
     return false;
   return true;
@@ -56,7 +57,8 @@ const char* GetLevelOfControl(
   const PrefService::Preference* pref =
       prefs->FindPreference(browser_pref.c_str());
   CHECK(pref);
-  ExtensionPrefs* ep = profile->GetExtensionService()->extension_prefs();
+  extensions::ExtensionPrefs* ep =
+      profile->GetExtensionService()->extension_prefs();
 
   if (!pref->IsExtensionModifiable())
     return kNotControllable;
@@ -85,7 +87,8 @@ void DispatchEventToExtensions(
     return;
   ExtensionService* extension_service = profile->GetExtensionService();
   const ExtensionSet* extensions = extension_service->extensions();
-  ExtensionPrefs* extension_prefs = extension_service->extension_prefs();
+  extensions::ExtensionPrefs* extension_prefs =
+      extension_service->extension_prefs();
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
     std::string extension_id = (*it)->id();

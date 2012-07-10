@@ -258,10 +258,11 @@ bool ClearFontFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(
       profile_->GetPrefs()->FindPreference(pref_path.c_str()));
 
-  ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
+  extensions::ExtensionPrefs* prefs =
+      profile_->GetExtensionService()->extension_prefs();
   prefs->RemoveExtensionControlledPref(extension_id(),
                                        pref_path.c_str(),
-                                       kExtensionPrefsScopeRegular);
+                                       extensions::kExtensionPrefsScopeRegular);
   return true;
 }
 
@@ -313,11 +314,12 @@ bool SetFontFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(
       profile_->GetPrefs()->FindPreference(pref_path.c_str()));
 
-  ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
+  extensions::ExtensionPrefs* prefs =
+      profile_->GetExtensionService()->extension_prefs();
   prefs->SetExtensionControlledPref(
       extension_id(),
       pref_path.c_str(),
-      kExtensionPrefsScopeRegular,
+      extensions::kExtensionPrefsScopeRegular,
       Value::CreateStringValue(params->details.font_name));
   return true;
 }
@@ -370,10 +372,11 @@ bool ClearFontPrefExtensionFunction::RunImpl() {
     return false;
   }
 
-  ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
+  extensions::ExtensionPrefs* prefs =
+      profile_->GetExtensionService()->extension_prefs();
   prefs->RemoveExtensionControlledPref(extension_id(),
                                        GetPrefName(),
-                                       kExtensionPrefsScopeRegular);
+                                       extensions::kExtensionPrefsScopeRegular);
   return true;
 }
 
@@ -411,10 +414,11 @@ bool SetFontPrefExtensionFunction::RunImpl() {
   Value* value;
   EXTENSION_FUNCTION_VALIDATE(details->Get(GetKey(), &value));
 
-  ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
+  extensions::ExtensionPrefs* prefs =
+      profile_->GetExtensionService()->extension_prefs();
   prefs->SetExtensionControlledPref(extension_id(),
                                     GetPrefName(),
-                                    kExtensionPrefsScopeRegular,
+                                    extensions::kExtensionPrefsScopeRegular,
                                     value->DeepCopy());
   return true;
 }

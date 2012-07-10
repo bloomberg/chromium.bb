@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,13 +12,15 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/common/extensions/extension.h"
 
-class ExtensionPrefs;
 class ExtensionPrefValueMap;
 class PrefService;
 
 namespace base {
 class DictionaryValue;
 }
+
+namespace extensions {
+class ExtensionPrefs;
 
 // This is a test class intended to make it easier to work with ExtensionPrefs
 // in tests.
@@ -28,7 +30,9 @@ class TestExtensionPrefs {
   virtual ~TestExtensionPrefs();
 
   ExtensionPrefs* prefs() { return prefs_.get(); }
-  const ExtensionPrefs& const_prefs() const { return *prefs_.get(); }
+  const ExtensionPrefs& const_prefs() const {
+      return *prefs_.get();
+  }
   PrefService* pref_service() { return pref_service_.get(); }
   const FilePath& temp_dir() const { return temp_dir_.path(); }
 
@@ -38,21 +42,21 @@ class TestExtensionPrefs {
 
   // Creates a new Extension with the given name in our temp dir, adds it to
   // our ExtensionPrefs, and returns it.
-  scoped_refptr<extensions::Extension> AddExtension(std::string name);
+  scoped_refptr<Extension> AddExtension(std::string name);
 
   // As above, but the extension is an app.
-  scoped_refptr<extensions::Extension> AddApp(std::string name);
+  scoped_refptr<Extension> AddApp(std::string name);
 
   // Similar to AddExtension, but takes a dictionary with manifest values.
-  scoped_refptr<extensions::Extension> AddExtensionWithManifest(
+  scoped_refptr<Extension> AddExtensionWithManifest(
       const base::DictionaryValue& manifest,
-      extensions::Extension::Location location);
+      Extension::Location location);
 
   // Similar to AddExtension, but takes a dictionary with manifest values
   // and extension flags.
-  scoped_refptr<extensions::Extension> AddExtensionWithManifestAndFlags(
+  scoped_refptr<Extension> AddExtensionWithManifestAndFlags(
       const base::DictionaryValue& manifest,
-      extensions::Extension::Location location,
+      Extension::Location location,
       int extra_flags);
 
   // Similar to AddExtension, this adds a new test Extension. This is useful for
@@ -78,5 +82,7 @@ class TestExtensionPrefs {
   bool extensions_disabled_;
   DISALLOW_COPY_AND_ASSIGN(TestExtensionPrefs);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_PREFS_H_

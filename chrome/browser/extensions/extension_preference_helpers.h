@@ -19,7 +19,8 @@ class ListValue;
 
 namespace extension_preference_helpers {
 
-bool StringToScope(const std::string& s, ExtensionPrefsScope* scope);
+bool StringToScope(const std::string& s,
+                   extensions::ExtensionPrefsScope* scope);
 
 // Returns a string constant (defined in the API) indicating the level of
 // control this extension has over the specified preference.

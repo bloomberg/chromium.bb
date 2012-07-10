@@ -614,7 +614,7 @@ void ExtensionSettingsHandler::HandleEnableMessage(const ListValue* args) {
   }
 
   if (enable_str == "true") {
-    ExtensionPrefs* prefs = extension_service_->extension_prefs();
+    extensions::ExtensionPrefs* prefs = extension_service_->extension_prefs();
     if (prefs->DidExtensionEscalatePermissions(extension_id)) {
       Browser* browser = browser::FindBrowserWithWebContents(
           web_ui()->GetWebContents());
@@ -792,8 +792,8 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
   registrar_.Add(
       this,
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
-      content::Source<ExtensionPrefs>(profile->GetExtensionService()->
-                             extension_prefs()));
+      content::Source<extensions::ExtensionPrefs>(
+          profile->GetExtensionService()->extension_prefs()));
 
   pref_registrar_.Init(profile->GetPrefs());
   pref_registrar_.Add(prefs::kExtensionInstallDenyList, this);

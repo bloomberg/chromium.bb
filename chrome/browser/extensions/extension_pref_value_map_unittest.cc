@@ -33,14 +33,14 @@ static base::Time CreateTime(int64 t) {
 template <typename BASECLASS>
 class ExtensionPrefValueMapTestBase : public BASECLASS {
  public:
-  static const ExtensionPrefsScope kRegular =
-      kExtensionPrefsScopeRegular;
-  static const ExtensionPrefsScope kRegularOnly =
-      kExtensionPrefsScopeRegularOnly;
-  static const ExtensionPrefsScope kIncognitoPersistent =
-      kExtensionPrefsScopeIncognitoPersistent;
-  static const ExtensionPrefsScope kIncognitoSessionOnly =
-      kExtensionPrefsScopeIncognitoSessionOnly;
+  static const extensions::ExtensionPrefsScope kRegular =
+      extensions::kExtensionPrefsScopeRegular;
+  static const extensions::ExtensionPrefsScope kRegularOnly =
+      extensions::kExtensionPrefsScopeRegularOnly;
+  static const extensions::ExtensionPrefsScope kIncognitoPersistent =
+      extensions::kExtensionPrefsScopeIncognitoPersistent;
+  static const extensions::ExtensionPrefsScope kIncognitoSessionOnly =
+      extensions::kExtensionPrefsScopeIncognitoSessionOnly;
 
   // Returns an empty string if the key is not set.
   std::string GetValue(const char * key, bool incognito) const {

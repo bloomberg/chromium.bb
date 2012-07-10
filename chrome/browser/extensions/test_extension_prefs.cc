@@ -25,7 +25,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
-using extensions::Extension;
+
+namespace extensions {
 
 namespace {
 
@@ -162,3 +163,5 @@ PrefService* TestExtensionPrefs::CreateIncognitoPrefService() const {
 void TestExtensionPrefs::set_extensions_disabled(bool extensions_disabled) {
   extensions_disabled_ = extensions_disabled;
 }
+
+}  // namespace extensions

@@ -187,7 +187,8 @@ void ExtensionEventRouter::AddLazyEventListener(
   bool is_new = listeners_.AddListener(listener.Pass());
 
   if (is_new) {
-    ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
+    extensions::ExtensionPrefs* prefs =
+        profile_->GetExtensionService()->extension_prefs();
     std::set<std::string> events = prefs->GetRegisteredEvents(extension_id);
     bool prefs_is_new = events.insert(event_name).second;
     if (prefs_is_new)
@@ -203,7 +204,8 @@ void ExtensionEventRouter::RemoveLazyEventListener(
   bool did_exist = listeners_.RemoveListener(&listener);
 
   if (did_exist) {
-    ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
+    extensions::ExtensionPrefs* prefs =
+        profile_->GetExtensionService()->extension_prefs();
     std::set<std::string> events = prefs->GetRegisteredEvents(extension_id);
     bool prefs_did_exist = events.erase(event_name) > 0;
     DCHECK(prefs_did_exist);
@@ -227,7 +229,7 @@ void ExtensionEventRouter::AddFilteredEventListener(
         scoped_ptr<DictionaryValue>(filter.DeepCopy()))));
 
     if (added) {
-      ExtensionPrefs* prefs =
+      extensions::ExtensionPrefs* prefs =
           profile_->GetExtensionService()->extension_prefs();
       prefs->AddFilterToEvent(event_name, extension_id, &filter);
     }
@@ -250,7 +252,7 @@ void ExtensionEventRouter::RemoveFilteredEventListener(
     bool removed = listeners_.RemoveListener(&listener);
 
     if (removed) {
-      ExtensionPrefs* prefs =
+      extensions::ExtensionPrefs* prefs =
           profile_->GetExtensionService()->extension_prefs();
       prefs->RemoveFilterFromEvent(event_name, extension_id, &filter);
     }
@@ -537,7 +539,7 @@ void ExtensionEventRouter::Observe(
       // Add all registered lazy listeners to our cache.
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
-      ExtensionPrefs* prefs =
+      extensions::ExtensionPrefs* prefs =
           profile_->GetExtensionService()->extension_prefs();
       std::set<std::string> registered_events =
           prefs->GetRegisteredEvents(extension->id());

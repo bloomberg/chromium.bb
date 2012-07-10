@@ -8,6 +8,8 @@
 
 #include "base/basictypes.h"
 
+namespace extensions {
+
 // Scope for a preference.
 enum ExtensionPrefsScope {
   // Regular profile and incognito.
@@ -21,5 +23,7 @@ enum ExtensionPrefsScope {
   // incognito session is terminated.
   kExtensionPrefsScopeIncognitoSessionOnly
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFS_SCOPE_H_

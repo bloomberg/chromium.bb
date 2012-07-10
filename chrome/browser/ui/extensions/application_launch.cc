@@ -43,6 +43,7 @@
 
 using content::WebContents;
 using extensions::Extension;
+using extensions::ExtensionPrefs;
 
 namespace {
 

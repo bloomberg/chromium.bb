@@ -238,7 +238,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   AppsPromo::RegisterUserPrefs(user_prefs);
   extensions::CommandService::RegisterUserPrefs(user_prefs);
   extensions::ComponentLoader::RegisterUserPrefs(user_prefs);
-  ExtensionPrefs::RegisterUserPrefs(user_prefs);
+  extensions::ExtensionPrefs::RegisterUserPrefs(user_prefs);
   ExtensionWebUI::RegisterUserPrefs(user_prefs);
   RegisterBrowserUserPrefs(user_prefs);
   RegisterAutolaunchPrefs(user_prefs);

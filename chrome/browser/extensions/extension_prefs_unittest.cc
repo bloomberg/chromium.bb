@@ -25,11 +25,6 @@
 using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
-using extensions::APIPermission;
-using extensions::APIPermissionSet;
-using extensions::Extension;
-using extensions::ExtensionList;
-using extensions::PermissionSet;
 
 namespace {
 
@@ -45,6 +40,8 @@ const char kDefaultPref3[] = "default pref 3";
 const char kDefaultPref4[] = "default pref 4";
 
 }  // namespace
+
+namespace extensions {
 
 static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
   int schemes = URLPattern::SCHEME_ALL;
@@ -413,7 +410,7 @@ class ExtensionPrefsBlacklist : public ExtensionPrefsTest {
     EXPECT_EQ(4u, info->size());
     ExtensionPrefs::ExtensionsInfo::iterator info_iter;
     for (info_iter = info->begin(); info_iter != info->end(); ++info_iter) {
-      extensions::ExtensionInfo* extension_info = info_iter->get();
+      ExtensionInfo* extension_info = info_iter->get();
       EXPECT_NE(extensions_[0]->id(), extension_info->extension_id);
     }
   }
@@ -899,7 +896,7 @@ class ExtensionPrefsUninstallExtension : public ExtensionPrefsPrepopulatedTest {
   virtual void Initialize() {
     InstallExtControlledPref(ext1_, kPref1, Value::CreateStringValue("val1"));
     InstallExtControlledPref(ext1_, kPref2, Value::CreateStringValue("val2"));
-    extensions::ContentSettingsStore* store = prefs()->content_settings_store();
+    ContentSettingsStore* store = prefs()->content_settings_store();
     ContentSettingsPattern pattern =
         ContentSettingsPattern::FromString("http://[*.]example.com");
     store->SetExtensionContentSetting(ext1_->id(),
@@ -1169,3 +1166,5 @@ class ExtensionPrefsNotRequiredExtension
   }
 };
 TEST_F(ExtensionPrefsNotRequiredExtension, NotRequiredExtension) {}
+
+}  // namespace extensions

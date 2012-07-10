@@ -17,7 +17,6 @@ class Value;
 
 namespace extensions {
 class Extension;
-}
 
 // Base class for extension preference-related unit tests.
 class ExtensionPrefsTest : public testing::Test {
@@ -61,42 +60,43 @@ class ExtensionPrefsPrepopulatedTest : public ExtensionPrefsTest {
 
   virtual void RegisterPreferences() OVERRIDE;
 
-  void InstallExtControlledPref(extensions::Extension* ext,
+  void InstallExtControlledPref(Extension* ext,
                                 const std::string& key,
                                 base::Value* val);
 
-  void InstallExtControlledPrefIncognito(extensions::Extension* ext,
+  void InstallExtControlledPrefIncognito(Extension* ext,
                                          const std::string& key,
                                          base::Value* val);
 
   void InstallExtControlledPrefIncognitoSessionOnly(
-      extensions::Extension* ext,
+      Extension* ext,
       const std::string& key,
       base::Value* val);
 
-  void InstallExtension(extensions::Extension* ext);
+  void InstallExtension(Extension* ext);
 
   void UninstallExtension(const std::string& extension_id);
 
   // Weak references, for convenience.
-  extensions::Extension* ext1_;
-  extensions::Extension* ext2_;
-  extensions::Extension* ext3_;
-  extensions::Extension* ext4_;
+  Extension* ext1_;
+  Extension* ext2_;
+  Extension* ext3_;
+  Extension* ext4_;
 
   // Flags indicating whether each of the extensions has been installed, yet.
   bool installed[4];
 
  private:
-  void EnsureExtensionInstalled(extensions::Extension *ext);
+  void EnsureExtensionInstalled(Extension *ext);
 
   void EnsureExtensionUninstalled(const std::string& extension_id);
 
-  scoped_refptr<extensions::Extension> ext1_scoped_;
-  scoped_refptr<extensions::Extension> ext2_scoped_;
-  scoped_refptr<extensions::Extension> ext3_scoped_;
-  scoped_refptr<extensions::Extension> ext4_scoped_;
+  scoped_refptr<Extension> ext1_scoped_;
+  scoped_refptr<Extension> ext2_scoped_;
+  scoped_refptr<Extension> ext3_scoped_;
+  scoped_refptr<Extension> ext4_scoped_;
 };
 
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFS_UNITTEST_H_

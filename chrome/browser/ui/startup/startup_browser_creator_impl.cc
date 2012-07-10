@@ -194,7 +194,7 @@ bool GetAppLaunchContainer(
   // preference is set, launch as a window.
   extension_misc::LaunchContainer launch_container =
       extensions_service->extension_prefs()->GetLaunchContainer(
-          extension, ExtensionPrefs::LAUNCH_WINDOW);
+          extension, extensions::ExtensionPrefs::LAUNCH_WINDOW);
 
   *out_extension = extension;
   *out_launch_container = launch_container;

@@ -25,12 +25,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using extensions::APIPermission;
-using extensions::APIPermissionSet;
-using extensions::Extension;
-using extensions::ExtensionInfo;
-using extensions::PermissionsInfo;
-using extensions::PermissionSet;
+namespace extensions {
 
 namespace {
 
@@ -277,7 +272,7 @@ ExtensionPrefs::ExtensionPrefs(
       extension_pref_value_map_(extension_pref_value_map),
       ALLOW_THIS_IN_INITIALIZER_LIST(extension_sorting_(
           new ExtensionSorting(this, prefs))),
-      content_settings_store_(new extensions::ContentSettingsStore()) {
+      content_settings_store_(new ContentSettingsStore()) {
 }
 
 ExtensionPrefs::~ExtensionPrefs() {
@@ -644,29 +639,29 @@ std::string ExtensionPrefs::GetDebugPolicyProviderName() const {
 #endif
 }
 
-bool ExtensionPrefs::UserMayLoad(const extensions::Extension* extension,
+bool ExtensionPrefs::UserMayLoad(const Extension* extension,
                                  string16* error) const {
 
   const base::ListValue* blacklist =
       prefs_->GetList(prefs::kExtensionInstallDenyList);
   const base::ListValue* whitelist =
       prefs_->GetList(prefs::kExtensionInstallAllowList);
-  return extensions::admin_policy::UserMayLoad(blacklist, whitelist, extension,
+  return admin_policy::UserMayLoad(blacklist, whitelist, extension,
                                                error);
 }
 
 bool ExtensionPrefs::UserMayModifySettings(const Extension* extension,
                                            string16* error) const {
-  return extensions::admin_policy::UserMayModifySettings(extension, error);
+  return admin_policy::UserMayModifySettings(extension, error);
 }
 
 bool ExtensionPrefs::MustRemainEnabled(const Extension* extension,
                                        string16* error) const {
-  return extensions::admin_policy::MustRemainEnabled(extension, error);
+  return admin_policy::MustRemainEnabled(extension, error);
 }
 
 bool ExtensionPrefs::ExtensionsBlacklistedByDefault() const {
-  return extensions::admin_policy::BlacklistedByDefault(
+  return admin_policy::BlacklistedByDefault(
       prefs_->GetList(prefs::kExtensionInstallDenyList));
 }
 
@@ -1025,9 +1020,9 @@ void ExtensionPrefs::SetRegisteredEvents(
   UpdateExtensionPref(extension_id, kRegisteredEvents, value);
 }
 
-extensions::ExtensionOmniboxSuggestion
+ExtensionOmniboxSuggestion
 ExtensionPrefs::GetOmniboxDefaultSuggestion(const std::string& extension_id) {
-  extensions::ExtensionOmniboxSuggestion suggestion;
+  ExtensionOmniboxSuggestion suggestion;
 
   const base::DictionaryValue* extension = GetExtensionPref(extension_id);
   base::DictionaryValue* dict = NULL;
@@ -1039,7 +1034,7 @@ ExtensionPrefs::GetOmniboxDefaultSuggestion(const std::string& extension_id) {
 
 void ExtensionPrefs::SetOmniboxDefaultSuggestion(
     const std::string& extension_id,
-    const extensions::ExtensionOmniboxSuggestion& suggestion) {
+    const ExtensionOmniboxSuggestion& suggestion) {
   scoped_ptr<base::DictionaryValue> dict = suggestion.ToValue().Pass();
   UpdateExtensionPref(extension_id, kOmniboxDefaultSuggestion, dict.release());
 }
@@ -1289,7 +1284,7 @@ void ExtensionPrefs::SetExtensionState(const std::string& extension_id,
 }
 
 bool ExtensionPrefs::GetBrowserActionVisibility(const Extension* extension) {
-  bool action_box_enabled = extensions::switch_utils::IsActionBoxEnabled();
+  bool action_box_enabled = switch_utils::IsActionBoxEnabled();
   bool default_value = !action_box_enabled;
 
   const DictionaryValue* extension_prefs = GetExtensionPref(extension->id());
@@ -1311,7 +1306,7 @@ void ExtensionPrefs::SetBrowserActionVisibility(const Extension* extension,
   if (GetBrowserActionVisibility(extension) == visible)
     return;
 
-  bool action_box_enabled = extensions::switch_utils::IsActionBoxEnabled();
+  bool action_box_enabled = switch_utils::IsActionBoxEnabled();
   const char* browser_action_pref = action_box_enabled ? kBrowserActionPinned :
                                                          kBrowserActionVisible;
   UpdateExtensionPref(extension->id(), browser_action_pref,
@@ -1944,3 +1939,5 @@ void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterListPref(prefs::kExtensionAllowedInstallSites,
                           PrefService::UNSYNCABLE_PREF);
 }
+
+}  // namespace extensions

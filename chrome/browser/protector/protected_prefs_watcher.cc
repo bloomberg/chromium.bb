@@ -20,6 +20,8 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 
+using extensions::ExtensionPrefs;
+
 namespace protector {
 
 namespace {

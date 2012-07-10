@@ -10,6 +10,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 
+using extensions::ExtensionPrefs;
+
 namespace {
 
 // The number of apps per page. This isn't a hard limit, but new apps installed

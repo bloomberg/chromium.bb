@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(AppNotificationTest, SaveClientId) {
   EXPECT_TRUE(interceptor.was_called());
 
   ExtensionService* service = browser()->profile()->GetExtensionService();
-  ExtensionPrefs* prefs = service->extension_prefs();
+  extensions::ExtensionPrefs* prefs = service->extension_prefs();
   std::string saved_id = prefs->GetAppNotificationClientId(app->id());
   EXPECT_EQ(kExpectedClientId, saved_id);
 }

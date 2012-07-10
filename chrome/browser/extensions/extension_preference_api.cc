@@ -287,7 +287,7 @@ void ExtensionPreferenceEventRouter::OnPrefChanged(
   dict->Set(keys::kValue,
             transformer->BrowserToExtensionPref(pref->GetValue()));
   if (incognito) {
-    ExtensionPrefs* ep = extension_service->extension_prefs();
+    extensions::ExtensionPrefs* ep = extension_service->extension_prefs();
     dict->SetBoolean(keys::kIncognitoSpecific,
                      ep->HasIncognitoPrefValue(browser_pref));
   }
@@ -362,7 +362,8 @@ bool GetPreferenceFunction::RunImpl() {
 
   // Retrieve incognito status.
   if (incognito) {
-    ExtensionPrefs* ep = profile_->GetExtensionService()->extension_prefs();
+    extensions::ExtensionPrefs* ep =
+        profile_->GetExtensionService()->extension_prefs();
     result->SetBoolean(keys::kIncognitoSpecific,
                        ep->HasIncognitoPrefValue(browser_pref));
   }
@@ -382,7 +383,8 @@ bool SetPreferenceFunction::RunImpl() {
   Value* value = NULL;
   EXTENSION_FUNCTION_VALIDATE(details->Get(keys::kValue, &value));
 
-  ExtensionPrefsScope scope = kExtensionPrefsScopeRegular;
+  extensions::ExtensionPrefsScope scope =
+      extensions::kExtensionPrefsScopeRegular;
   if (details->HasKey(keys::kScopeKey)) {
     std::string scope_str;
     EXTENSION_FUNCTION_VALIDATE(
@@ -392,8 +394,9 @@ bool SetPreferenceFunction::RunImpl() {
   }
 
   // Check incognito scope.
-  bool incognito = (scope == kExtensionPrefsScopeIncognitoPersistent ||
-                    scope == kExtensionPrefsScopeIncognitoSessionOnly);
+  bool incognito =
+      (scope == extensions::kExtensionPrefsScopeIncognitoPersistent ||
+       scope == extensions::kExtensionPrefsScopeIncognitoSessionOnly);
   if (incognito) {
     // Regular profiles can't access incognito unless include_incognito is true.
     if (!profile()->IsOffTheRecord() && !include_incognito()) {
@@ -409,7 +412,7 @@ bool SetPreferenceFunction::RunImpl() {
     }
   }
 
-  if (scope == kExtensionPrefsScopeIncognitoSessionOnly &&
+  if (scope == extensions::kExtensionPrefsScopeIncognitoSessionOnly &&
       !profile_->HasOffTheRecordProfile()) {
     error_ = keys::kIncognitoSessionOnlyErrorMessage;
     return false;
@@ -419,7 +422,8 @@ bool SetPreferenceFunction::RunImpl() {
   std::string browser_pref;
   if (!ValidateBrowserPref(pref_key, &browser_pref))
     return false;
-  ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
+  extensions::ExtensionPrefs* prefs =
+      profile_->GetExtensionService()->extension_prefs();
   const PrefService::Preference* pref =
       prefs->pref_service()->FindPreference(browser_pref.c_str());
   CHECK(pref);
@@ -453,7 +457,8 @@ bool ClearPreferenceFunction::RunImpl() {
   DictionaryValue* details = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &details));
 
-  ExtensionPrefsScope scope = kExtensionPrefsScopeRegular;
+  extensions::ExtensionPrefsScope scope =
+      extensions::kExtensionPrefsScopeRegular;
   if (details->HasKey(keys::kScopeKey)) {
     std::string scope_str;
     EXTENSION_FUNCTION_VALIDATE(
@@ -463,8 +468,9 @@ bool ClearPreferenceFunction::RunImpl() {
   }
 
   // Check incognito scope.
-  bool incognito = (scope == kExtensionPrefsScopeIncognitoPersistent ||
-                    scope == kExtensionPrefsScopeIncognitoSessionOnly);
+  bool incognito =
+      (scope == extensions::kExtensionPrefsScopeIncognitoPersistent ||
+       scope == extensions::kExtensionPrefsScopeIncognitoSessionOnly);
   if (incognito) {
     // We don't check incognito permissions here, as an extension should be
     // always allowed to clear its own settings.
@@ -481,7 +487,8 @@ bool ClearPreferenceFunction::RunImpl() {
   if (!ValidateBrowserPref(pref_key, &browser_pref))
     return false;
 
-  ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
+  extensions::ExtensionPrefs* prefs =
+      profile_->GetExtensionService()->extension_prefs();
   prefs->RemoveExtensionControlledPref(extension_id(), browser_pref, scope);
   return true;
 }

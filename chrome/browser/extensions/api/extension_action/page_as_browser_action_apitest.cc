@@ -57,7 +57,7 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, Basic) {
   ASSERT_FALSE(extension->page_action());
 
   // With the "action box" there won't be browser actions unless they're pinned.
-  ExtensionPrefs* prefs =
+  extensions::ExtensionPrefs* prefs =
       browser()->profile()->GetExtensionService()->extension_prefs();
   prefs->SetBrowserActionVisibility(extension, true);
 

@@ -18,7 +18,6 @@ class ExtensionEventRouter;
 class ExtensionInfoMap;
 class ExtensionMessageService;
 class ExtensionNavigationObserver;
-class ExtensionPrefs;
 class ExtensionProcessManager;
 class ExtensionService;
 class Profile;
@@ -27,6 +26,7 @@ class UserScriptMaster;
 namespace extensions {
 class AlarmManager;
 class Extension;
+class ExtensionPrefs;
 class LazyBackgroundTaskQueue;
 class ManagementPolicy;
 class RulesRegistryService;
@@ -180,7 +180,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     // The services that are shared between normal and incognito profiles.
 
     scoped_ptr<extensions::StateStore> state_store_;
-    scoped_ptr<ExtensionPrefs> extension_prefs_;
+    scoped_ptr<extensions::ExtensionPrefs> extension_prefs_;
     // ExtensionService depends on the 2 above.
     scoped_ptr<ExtensionService> extension_service_;
     scoped_ptr<extensions::ManagementPolicy> management_policy_;

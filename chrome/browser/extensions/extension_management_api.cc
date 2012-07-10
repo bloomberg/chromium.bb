@@ -83,7 +83,7 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
   info->SetBoolean(keys::kIsAppKey, extension.is_app());
 
   if (!enabled) {
-    ExtensionPrefs* prefs = service->extension_prefs();
+    extensions::ExtensionPrefs* prefs = service->extension_prefs();
     bool permissions_escalated =
         prefs->DidExtensionEscalatePermissions(extension.id());
     const char* reason = permissions_escalated ?
@@ -361,7 +361,7 @@ bool LaunchAppFunction::RunImpl() {
   // the user has not set a preference, we open the app in a tab.
   extension_misc::LaunchContainer launch_container =
       service()->extension_prefs()->GetLaunchContainer(
-          extension, ExtensionPrefs::LAUNCH_DEFAULT);
+          extension, extensions::ExtensionPrefs::LAUNCH_DEFAULT);
   application_launch::OpenApplication(profile(), extension, launch_container,
                                       GURL(), NEW_FOREGROUND_TAB, NULL);
 #if !defined(OS_ANDROID)
@@ -401,7 +401,7 @@ bool SetEnabledFunction::RunImpl() {
   bool currently_enabled = service()->IsExtensionEnabled(extension_id_);
 
   if (!currently_enabled && enable) {
-    ExtensionPrefs* prefs = service()->extension_prefs();
+    extensions::ExtensionPrefs* prefs = service()->extension_prefs();
     if (prefs->DidExtensionEscalatePermissions(extension_id_)) {
       if (!user_gesture()) {
         error_ = keys::kGestureNeededForEscalationError;

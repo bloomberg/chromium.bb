@@ -83,16 +83,16 @@ bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
   switch (command_id) {
     case LAUNCH_TYPE_PINNED_TAB:
       return controller_->GetLaunchType(item_.id) ==
-          ExtensionPrefs::LAUNCH_PINNED;
+          extensions::ExtensionPrefs::LAUNCH_PINNED;
     case LAUNCH_TYPE_REGULAR_TAB:
       return controller_->GetLaunchType(item_.id) ==
-          ExtensionPrefs::LAUNCH_REGULAR;
+          extensions::ExtensionPrefs::LAUNCH_REGULAR;
     case LAUNCH_TYPE_WINDOW:
       return controller_->GetLaunchType(item_.id) ==
-          ExtensionPrefs::LAUNCH_WINDOW;
+          extensions::ExtensionPrefs::LAUNCH_WINDOW;
     case LAUNCH_TYPE_FULLSCREEN:
       return controller_->GetLaunchType(item_.id) ==
-          ExtensionPrefs::LAUNCH_FULLSCREEN;
+          extensions::ExtensionPrefs::LAUNCH_FULLSCREEN;
     case MENU_AUTO_HIDE:
       return ash::LauncherContextMenu::IsAutoHideMenuHideChecked();
     default:
@@ -128,16 +128,20 @@ void LauncherContextMenu::ExecuteCommand(int command_id) {
       controller_->TogglePinned(item_.id);
       break;
     case LAUNCH_TYPE_PINNED_TAB:
-      controller_->SetLaunchType(item_.id, ExtensionPrefs::LAUNCH_PINNED);
+      controller_->SetLaunchType(item_.id,
+                                 extensions::ExtensionPrefs::LAUNCH_PINNED);
       break;
     case LAUNCH_TYPE_REGULAR_TAB:
-      controller_->SetLaunchType(item_.id, ExtensionPrefs::LAUNCH_REGULAR);
+      controller_->SetLaunchType(item_.id,
+                                 extensions::ExtensionPrefs::LAUNCH_REGULAR);
       break;
     case LAUNCH_TYPE_WINDOW:
-      controller_->SetLaunchType(item_.id, ExtensionPrefs::LAUNCH_WINDOW);
+      controller_->SetLaunchType(item_.id,
+                                 extensions::ExtensionPrefs::LAUNCH_WINDOW);
       break;
     case LAUNCH_TYPE_FULLSCREEN:
-      controller_->SetLaunchType(item_.id, ExtensionPrefs::LAUNCH_FULLSCREEN);
+      controller_->SetLaunchType(item_.id,
+                                 extensions::ExtensionPrefs::LAUNCH_FULLSCREEN);
       break;
     case MENU_AUTO_HIDE:
       controller_->SetAutoHideBehavior(

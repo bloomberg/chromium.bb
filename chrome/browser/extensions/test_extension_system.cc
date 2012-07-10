@@ -54,7 +54,7 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
   // are not reflected in the pref service. One would need to
   // inject a new ExtensionPrefStore(extension_pref_value_map, false).
 
-  extension_prefs_.reset(new ExtensionPrefs(
+  extension_prefs_.reset(new extensions::ExtensionPrefs(
       profile_->GetPrefs(),
       install_directory,
       ExtensionPrefValueMapFactory::GetForProfile(profile_)));

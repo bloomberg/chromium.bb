@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 
-ExtensionPrefs* SetUpdateUrlDataFunction::extension_prefs() {
+extensions::ExtensionPrefs* SetUpdateUrlDataFunction::extension_prefs() {
   return profile()->GetExtensionService()->extension_prefs();
 }
 

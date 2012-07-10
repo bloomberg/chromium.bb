@@ -86,14 +86,14 @@ class ExtensionPrefValueMap : public ProfileKeyedService {
   // Precondition: the extension must be registered.
   void SetExtensionPref(const std::string& ext_id,
                         const std::string& key,
-                        ExtensionPrefsScope scope,
+                        extensions::ExtensionPrefsScope scope,
                         base::Value* value);
 
   // Remove the extension preference value for |key| of extension |ext_id|.
   // Precondition: the extension must be registered.
   void RemoveExtensionPref(const std::string& ext_id,
                            const std::string& key,
-                           ExtensionPrefsScope scope);
+                           extensions::ExtensionPrefsScope scope);
 
   // Returns true if currently no extension with higher precedence controls the
   // preference.
@@ -151,11 +151,11 @@ class ExtensionPrefValueMap : public ProfileKeyedService {
 
   const PrefValueMap* GetExtensionPrefValueMap(
       const std::string& ext_id,
-      ExtensionPrefsScope scope) const;
+      extensions::ExtensionPrefsScope scope) const;
 
   PrefValueMap* GetExtensionPrefValueMap(
       const std::string& ext_id,
-      ExtensionPrefsScope scope);
+      extensions::ExtensionPrefsScope scope);
 
   // Returns all keys of pref values that are set by the extension of |entry|,
   // regardless whether they are set for incognito or regular pref values.

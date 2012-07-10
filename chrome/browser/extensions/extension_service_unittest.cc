@@ -99,6 +99,7 @@ using content::PluginService;
 using extensions::APIPermission;
 using extensions::APIPermissionSet;
 using extensions::Extension;
+using extensions::ExtensionPrefs;
 using extensions::PermissionSet;
 
 namespace keys = extension_manifest_keys;

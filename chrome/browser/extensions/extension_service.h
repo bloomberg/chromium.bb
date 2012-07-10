@@ -198,7 +198,7 @@ class ExtensionService
   ExtensionService(Profile* profile,
                    const CommandLine* command_line,
                    const FilePath& install_directory,
-                   ExtensionPrefs* extension_prefs,
+                   extensions::ExtensionPrefs* extension_prefs,
                    bool autoupdate_enabled,
                    bool extensions_enabled);
 
@@ -473,7 +473,7 @@ class ExtensionService
 
   // TODO(skerner): Change to const ExtensionPrefs& extension_prefs() const,
   // ExtensionPrefs* mutable_extension_prefs().
-  ExtensionPrefs* extension_prefs();
+  extensions::ExtensionPrefs* extension_prefs();
 
   extensions::SettingsFrontend* settings_frontend();
 
@@ -712,7 +712,7 @@ class ExtensionService
   ExtensionSystem* system_;
 
   // Preferences for the owning profile (weak reference).
-  ExtensionPrefs* extension_prefs_;
+  extensions::ExtensionPrefs* extension_prefs_;
 
   // Settings for the owning profile.
   scoped_ptr<extensions::SettingsFrontend> settings_frontend_;

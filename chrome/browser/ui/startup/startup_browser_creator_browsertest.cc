@@ -67,7 +67,7 @@ class StartupBrowserCreatorTest : public ExtensionBrowserTest {
   }
 
   void SetAppLaunchPref(const std::string& app_id,
-                        ExtensionPrefs::LaunchType launch_type) {
+                        extensions::ExtensionPrefs::LaunchType launch_type) {
     ExtensionService* service = browser()->profile()->GetExtensionService();
     service->extension_prefs()->SetLaunchType(app_id, launch_type);
   }
@@ -260,7 +260,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutWindowPref) {
   ASSERT_NO_FATAL_FAILURE(LoadApp("app_with_tab_container", &extension_app));
 
   // Set a pref indicating that the user wants to open this app in a window.
-  SetAppLaunchPref(extension_app->id(), ExtensionPrefs::LAUNCH_WINDOW);
+  SetAppLaunchPref(extension_app->id(),
+                   extensions::ExtensionPrefs::LAUNCH_WINDOW);
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
@@ -290,7 +291,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutTabPref) {
   ASSERT_NO_FATAL_FAILURE(LoadApp("app_with_tab_container", &extension_app));
 
   // Set a pref indicating that the user wants to open this app in a window.
-  SetAppLaunchPref(extension_app->id(), ExtensionPrefs::LAUNCH_REGULAR);
+  SetAppLaunchPref(extension_app->id(),
+                   extensions::ExtensionPrefs::LAUNCH_REGULAR);
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());

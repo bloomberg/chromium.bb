@@ -11,7 +11,7 @@ using extensions::Extension;
 
 namespace keys = extension_manifest_keys;
 
-class ExtensionSortingTest : public ExtensionPrefsTest {
+class ExtensionSortingTest : public extensions::ExtensionPrefsTest {
  protected:
   ExtensionSorting* extension_sorting() {
     return prefs()->extension_sorting();
@@ -134,7 +134,7 @@ TEST_F(ExtensionSortingPageOrdinal, ExtensionSortingPageOrdinal) {}
 // Ensure that ExtensionSorting is able to properly initialize off a set
 // of old page and app launch indices and properly convert them.
 class ExtensionSortingInitialize
-    : public ExtensionPrefsPrepopulatedTest {
+    : public extensions::ExtensionPrefsPrepopulatedTest {
  public:
   ExtensionSortingInitialize() {}
   virtual ~ExtensionSortingInitialize() {}
@@ -171,7 +171,7 @@ class ExtensionSortingInitialize
 
     // We insert the ids in reserve order so that we have to deal with the
     // element on the 2nd page before the 1st page is seen.
-    ExtensionPrefs::ExtensionIdSet ids;
+    extensions::ExtensionPrefs::ExtensionIdSet ids;
     ids.push_back(ext3_->id());
     ids.push_back(ext2_->id());
     ids.push_back(ext1_->id());
@@ -202,7 +202,7 @@ TEST_F(ExtensionSortingInitialize, ExtensionSortingInitialize) {}
 // Make sure that initialization still works when no extensions are present
 // (i.e. make sure that the web store icon is still loaded into the map).
 class ExtensionSortingInitializeWithNoApps
-    : public ExtensionPrefsPrepopulatedTest {
+    : public extensions::ExtensionPrefsPrepopulatedTest {
  public:
   ExtensionSortingInitializeWithNoApps() {}
   virtual ~ExtensionSortingInitializeWithNoApps() {}
@@ -217,7 +217,7 @@ class ExtensionSortingInitializeWithNoApps
     extension_sorting->SetAppLaunchOrdinal(extension_misc::kWebStoreAppId,
                                            initial_ordinal);
 
-    ExtensionPrefs::ExtensionIdSet ids;
+    extensions::ExtensionPrefs::ExtensionIdSet ids;
     extension_sorting->Initialize(ids);
   }
   virtual void Verify() OVERRIDE {
@@ -248,7 +248,7 @@ TEST_F(ExtensionSortingInitializeWithNoApps,
 // is taken out.
 // http://crbug.com/107376
 class ExtensionSortingMigrateAppIndexInvalid
- : public ExtensionPrefsPrepopulatedTest {
+ : public extensions::ExtensionPrefsPrepopulatedTest {
  public:
   ExtensionSortingMigrateAppIndexInvalid() {}
   virtual ~ExtensionSortingMigrateAppIndexInvalid() {}
@@ -269,7 +269,7 @@ class ExtensionSortingMigrateAppIndexInvalid
                                       kPrefPageIndexDeprecated,
                                       Value::CreateIntegerValue(-1));
 
-    ExtensionPrefs::ExtensionIdSet ids;
+    extensions::ExtensionPrefs::ExtensionIdSet ids;
     ids.push_back(ext1_->id());
 
     prefs()->extension_sorting()->Initialize(ids);
@@ -284,7 +284,7 @@ TEST_F(ExtensionSortingMigrateAppIndexInvalid,
        ExtensionSortingMigrateAppIndexInvalid) {}
 
 class ExtensionSortingFixNTPCollisionsAllCollide
-    : public ExtensionPrefsPrepopulatedTest {
+    : public extensions::ExtensionPrefsPrepopulatedTest {
  public:
   ExtensionSortingFixNTPCollisionsAllCollide() {}
   virtual ~ExtensionSortingFixNTPCollisionsAllCollide() {}
@@ -339,7 +339,7 @@ TEST_F(ExtensionSortingFixNTPCollisionsAllCollide,
        ExtensionSortingFixNTPCollisionsAllCollide) {}
 
 class ExtensionSortingFixNTPCollisionsSomeCollideAtStart
-    : public ExtensionPrefsPrepopulatedTest {
+    : public extensions::ExtensionPrefsPrepopulatedTest {
  public:
   ExtensionSortingFixNTPCollisionsSomeCollideAtStart() {}
   virtual ~ExtensionSortingFixNTPCollisionsSomeCollideAtStart() {}
@@ -397,7 +397,7 @@ TEST_F(ExtensionSortingFixNTPCollisionsSomeCollideAtStart,
        ExtensionSortingFixNTPCollisionsSomeCollideAtStart) {}
 
 class ExtensionSortingFixNTPCollisionsSomeCollideAtEnd
-    : public ExtensionPrefsPrepopulatedTest {
+    : public extensions::ExtensionPrefsPrepopulatedTest {
  public:
   ExtensionSortingFixNTPCollisionsSomeCollideAtEnd() {}
   virtual ~ExtensionSortingFixNTPCollisionsSomeCollideAtEnd() {}
@@ -455,7 +455,7 @@ TEST_F(ExtensionSortingFixNTPCollisionsSomeCollideAtEnd,
        ExtensionSortingFixNTPCollisionsSomeCollideAtEnd) {}
 
 class ExtensionSortingFixNTPCollisionsTwoCollisions
-    : public ExtensionPrefsPrepopulatedTest {
+    : public extensions::ExtensionPrefsPrepopulatedTest {
  public:
   ExtensionSortingFixNTPCollisionsTwoCollisions() {}
   virtual ~ExtensionSortingFixNTPCollisionsTwoCollisions() {}
@@ -523,7 +523,7 @@ TEST_F(ExtensionSortingFixNTPCollisionsTwoCollisions,
        ExtensionSortingFixNTPCollisionsTwoCollisions) {}
 
 class ExtensionSortingEnsureValidOrdinals :
-    public ExtensionPrefsPrepopulatedTest {
+    public extensions::ExtensionPrefsPrepopulatedTest {
  public :
   ExtensionSortingEnsureValidOrdinals() {}
   ~ExtensionSortingEnsureValidOrdinals() {}
@@ -547,7 +547,7 @@ TEST_F(ExtensionSortingEnsureValidOrdinals,
        ExtensionSortingEnsureValidOrdinals) {}
 
 class ExtensionSortingPageOrdinalMapping :
-    public ExtensionPrefsPrepopulatedTest {
+    public extensions::ExtensionPrefsPrepopulatedTest {
  public:
   ExtensionSortingPageOrdinalMapping() {}
   virtual ~ExtensionSortingPageOrdinalMapping() {}
@@ -606,7 +606,7 @@ TEST_F(ExtensionSortingPageOrdinalMapping,
        ExtensionSortingPageOrdinalMapping) {}
 
 class ExtensionSortingPreinstalledAppsBase :
-    public ExtensionPrefsPrepopulatedTest {
+    public extensions::ExtensionPrefsPrepopulatedTest {
  public:
   ExtensionSortingPreinstalledAppsBase() {
     DictionaryValue simple_dict;

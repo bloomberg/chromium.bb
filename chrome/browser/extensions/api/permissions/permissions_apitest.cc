@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsGranted) {
   scoped_refptr<PermissionSet> granted_permissions =
       new PermissionSet(apis, explicit_hosts, URLPatternSet());
 
-  ExtensionPrefs* prefs =
+  extensions::ExtensionPrefs* prefs =
       browser()->profile()->GetExtensionService()->extension_prefs();
   prefs->AddGrantedPermissions("kjmkgkdkpedkejedfhmfcenooemhbpbo",
                                granted_permissions);

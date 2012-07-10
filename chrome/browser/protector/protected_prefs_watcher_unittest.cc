@@ -106,8 +106,8 @@ TEST_F(ProtectedPrefsWatcherTest, ExtensionPrefChange) {
 
   FilePath extensions_install_dir =
       profile_.GetPath().AppendASCII(ExtensionService::kInstallDirectoryName);
-  scoped_ptr<ExtensionPrefs> extension_prefs(
-      new ExtensionPrefs(profile_.GetPrefs(),
+  scoped_ptr<extensions::ExtensionPrefs> extension_prefs(
+      new extensions::ExtensionPrefs(profile_.GetPrefs(),
                          extensions_install_dir,
                          ExtensionPrefValueMapFactory::GetForProfile(
                              &profile_)));

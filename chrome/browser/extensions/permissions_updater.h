@@ -10,7 +10,6 @@
 
 #include "base/memory/ref_counted.h"
 
-class ExtensionPrefs;
 class Profile;
 
 namespace base {
@@ -20,6 +19,7 @@ class DictionaryValue;
 namespace extensions {
 
 class Extension;
+class ExtensionPrefs;
 class PermissionSet;
 
 // Updates an Extension's active and granted permissions in persistent storage
