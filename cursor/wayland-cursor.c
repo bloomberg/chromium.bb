@@ -108,6 +108,7 @@ shm_pool_destroy(struct shm_pool *pool)
 {
 	munmap(pool->data, pool->size);
 	wl_shm_pool_destroy(pool->pool);
+	close(pool->fd);
 	free(pool);
 }
 
@@ -281,6 +282,11 @@ wl_cursor_theme_load(const char *name, int size, struct wl_shm *shm)
 
 	theme->pool =
 		shm_pool_create(shm, size * size * 4);
+	if (!theme->pool) {
+		free(theme->name);
+		free(theme);
+		return NULL;
+	}
 
 	xcursor_load_theme(name, size, load_callback, theme);
 
