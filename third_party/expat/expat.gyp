@@ -3,6 +3,17 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'conditions': [
+      # On Linux, we implicitly already depend on expat via fontconfig;
+      # let's not pull it in twice.
+      ['os_posix == 1 and OS != "mac" and OS != "android"', {
+        'use_system_expat%': 1,
+      }, {
+        'use_system_expat%': 0,
+      }],
+    ],
+  },
   'target_defaults': {
     'defines': [
       '_LIB',
@@ -11,13 +22,9 @@
     'include_dirs': [
       'files/lib',
     ],
-    'dependencies': [
-    ]
   },
   'conditions': [
-    ['os_posix == 1 and OS != "mac" and OS != "android"', {
-      # On Linux, we implicitly already depend on expat via fontconfig;
-      # let's not pull it in twice.
+    ['use_system_expat == 1', {
       'targets': [
         {
           'target_name': 'expat',
@@ -27,9 +34,18 @@
               '-lexpat',
             ],
           },
+          'conditions': [
+            ['OS=="android"', {
+              'direct_dependent_settings': {
+                'include_dirs': [
+                  '<(android_src)/external/expat/lib',
+                ],
+              },
+            }],
+          ],
         },
       ],
-    }, {  # OS != linux
+    }, {  # else: use_system_expat != 1
       'targets': [
         {
           'target_name': 'expat',
