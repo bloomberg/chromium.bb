@@ -144,6 +144,14 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 {
 }
 
+static void
+keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
+			  uint32_t serial, uint32_t mods_depressed,
+			  uint32_t mods_latched, uint32_t mods_locked,
+			  uint32_t group)
+{
+}
+
 static const struct wl_pointer_listener pointer_listener = {
 	pointer_handle_enter,
 	pointer_handle_leave,
@@ -157,6 +165,7 @@ static const struct wl_keyboard_listener keyboard_listener = {
 	keyboard_handle_enter,
 	keyboard_handle_leave,
 	keyboard_handle_key,
+	keyboard_handle_modifiers,
 };
 
 static void
