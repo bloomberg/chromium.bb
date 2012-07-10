@@ -73,6 +73,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_observer.h"
 #include "googleurl/src/gurl.h"
 #include "media/base/media_switches.h"
 #include "net/base/network_change_notifier.h"
@@ -226,6 +227,7 @@ class LoginUtilsImpl
       public OAuth1TokenFetcher::Delegate,
       public OAuthLoginVerifier::Delegate,
       public net::NetworkChangeNotifier::ConnectionTypeObserver,
+      public content::NotificationObserver,
       public base::SupportsWeakPtr<LoginUtilsImpl> {
  public:
   LoginUtilsImpl()
@@ -234,8 +236,13 @@ class LoginUtilsImpl
         has_cookies_(false),
         delegate_(NULL),
         job_restart_request_(NULL),
-        should_restore_auth_session_(false) {
+        should_restore_auth_session_(false),
+        url_request_context_getter_(NULL) {
     net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+    registrar_.Add(
+        this,
+        chrome::NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
+        content::Source<Profile>(ProfileManager::GetDefaultProfile()));
   }
 
   virtual ~LoginUtilsImpl() {
@@ -285,6 +292,11 @@ class LoginUtilsImpl
   // net::NetworkChangeNotifier::ConnectionTypeObserver overrides.
   virtual void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+
+  // content::NotificationObserver overrides.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  protected:
   virtual std::string GetOffTheRecordCommandLine(
@@ -353,6 +365,12 @@ class LoginUtilsImpl
   // True if should restore authentication session when notified about
   // online state change.
   bool should_restore_auth_session_;
+
+  content::NotificationRegistrar registrar_;
+
+  // This is set via a notification after the profile has initialized the
+  // getter.
+  net::URLRequestContextGetter* url_request_context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsImpl);
 };
@@ -862,9 +880,11 @@ scoped_refptr<Authenticator> LoginUtilsImpl::CreateAuthenticator(
 // We use a special class for this so that it can be safely leaked if we
 // never connect. At shutdown the order is not well defined, and it's possible
 // for the infrastructure needed to unregister might be unstable and crash.
-class WarmingObserver : public NetworkLibrary::NetworkManagerObserver {
+class WarmingObserver : public NetworkLibrary::NetworkManagerObserver,
+                        public content::NotificationObserver {
  public:
-  WarmingObserver() {
+  WarmingObserver()
+      : url_request_context_getter_(NULL) {
     NetworkLibrary *netlib = CrosLibrary::Get()->GetNetworkLibrary();
     netlib->AddNetworkManagerObserver(this);
   }
@@ -879,11 +899,28 @@ class WarmingObserver : public NetworkLibrary::NetworkManagerObserver {
           GURL(GaiaUrls::GetInstance()->client_login_url()),
           chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED,
           kConnectionsNeeded,
-          make_scoped_refptr(Profile::GetDefaultRequestContextDeprecated()));
+          url_request_context_getter_);
       netlib->RemoveNetworkManagerObserver(this);
       delete this;
     }
   }
+
+  // content::NotificationObserver overrides.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED: {
+      Profile* profile = content::Source<Profile>(source).ptr();
+      url_request_context_getter_ = profile->GetRequestContext();
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+}
+ private:
+  net::URLRequestContextGetter* url_request_context_getter_;
 };
 
 void LoginUtilsImpl::PrewarmAuthentication() {
@@ -894,7 +931,7 @@ void LoginUtilsImpl::PrewarmAuthentication() {
         GURL(GaiaUrls::GetInstance()->client_login_url()),
         chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED,
         kConnectionsNeeded,
-        make_scoped_refptr(Profile::GetDefaultRequestContextDeprecated()));
+        url_request_context_getter_);
   } else {
     new WarmingObserver();
   }
@@ -1105,6 +1142,20 @@ void LoginUtilsImpl::OnConnectionTypeChanged(
       Profile* user_profile = ProfileManager::GetDefaultProfile();
       KickStartAuthentication(user_profile);
     }
+  }
+}
+
+void LoginUtilsImpl::Observe(int type,
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED: {
+      Profile* profile = content::Source<Profile>(source).ptr();
+      url_request_context_getter_ = profile->GetRequestContext();
+      break;
+    }
+    default:
+      NOTREACHED();
   }
 }
 

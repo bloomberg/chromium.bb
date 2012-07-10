@@ -22,10 +22,12 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
 #include "net/base/server_bound_cert_service.h"
 #include "net/ftp/ftp_network_layer.h"
@@ -154,6 +156,11 @@ ProfileImplIOData::Handle::GetMainRequestContextGetter() const {
     main_request_context_getter_ =
         ChromeURLRequestContextGetter::CreateOriginal(
             profile_, io_data_);
+
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
+        content::Source<Profile>(profile_),
+        content::NotificationService::NoDetails());
   }
   return main_request_context_getter_;
 }

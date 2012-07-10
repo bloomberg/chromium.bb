@@ -286,6 +286,8 @@ enum NotificationType {
   // updated.
   NOTIFICATION_FAVICON_UPDATED,
 
+  // Profiles -----------------------------------------------------------------
+
   // Sent after a Profile has been created. This notification is sent both for
   // normal and OTR profiles.
   // The details are none and the source is the new profile.
@@ -299,6 +301,10 @@ enum NotificationType {
   // normal and OTR profiles.
   // The details are none and the source is a Profile*.
   NOTIFICATION_PROFILE_DESTROYED,
+
+  // Sent after the URLRequestContextGetter for a Profile has been initialized.
+  // The details are none and the source is a Profile*.
+  NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
 
   // TopSites ----------------------------------------------------------------
 
