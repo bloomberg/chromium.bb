@@ -96,6 +96,13 @@ int GpuMain(const content::MainFunctionParams& parameters) {
       command_line.GetSwitchValueASCII(switches::kGpuDriverVersion);
   content::GetContentClient()->SetGpuInfo(gpu_info);
 
+#if defined(OS_CHROMEOS)
+  // On Chrome OS, we can now sandbox the GPU process using seccomp filter.
+  // This restricts calls to open(), so set the config line in /etc/drirc as
+  // an environment variable.
+  base::Environment::Create()->SetVar("force_s3tc_enable", "true");
+#endif
+
   // Load and initialize the GL implementation and locate the GL entry points.
   if (gfx::GLSurface::InitializeOneOff()) {
 #if defined(OS_LINUX)
