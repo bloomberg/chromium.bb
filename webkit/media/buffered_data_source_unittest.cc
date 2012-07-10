@@ -451,9 +451,6 @@ TEST_F(BufferedDataSourceTest, Read) {
 
   EXPECT_TRUE(data_source_->downloading());
   Stop();
-  // XXXXXXXXXXXX Should we report something on didFail? The idea here is that
-  // by calling Stop() on the object no more CBs should execute
-  EXPECT_TRUE(data_source_->downloading());
 }
 
 }  // namespace webkit_media
