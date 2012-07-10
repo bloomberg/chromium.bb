@@ -230,6 +230,11 @@ bool FileSystemDispatcher::OpenFile(
   return true;
 }
 
+bool FileSystemDispatcher::NotifyCloseFile(const GURL& file_path) {
+  return ChildThread::current()->Send(
+      new FileSystemHostMsg_NotifyCloseFile(file_path));
+}
+
 bool FileSystemDispatcher::CreateSnapshotFile(
     const GURL& blob_url,
     const GURL& file_path,

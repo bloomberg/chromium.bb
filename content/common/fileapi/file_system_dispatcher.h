@@ -82,6 +82,9 @@ class FileSystemDispatcher : public IPC::Listener {
   bool OpenFile(const GURL& file_path,
                 int file_flags,  // passed to FileUtilProxy::CreateOrOpen
                 fileapi::FileSystemCallbackDispatcher* dispatcher);
+  // This must be paired with OpenFile, and called after finished using the
+  // raw PlatformFile returned from OpenFile.
+  bool NotifyCloseFile(const GURL& file_path);
 
   bool CreateSnapshotFile(const GURL& blod_url,
                           const GURL& file_path,

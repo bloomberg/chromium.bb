@@ -422,16 +422,29 @@ class PluginDelegate {
       const WebKit::WebFileChooserParams& params,
       WebKit::WebFileChooserCompletion* chooser_completion) = 0;
 
-  // Sends an async IPC to open a file.
+  // Sends an async IPC to open a local file.
   typedef base::Callback<void (base::PlatformFileError, base::PassPlatformFile)>
       AsyncOpenFileCallback;
   virtual bool AsyncOpenFile(const FilePath& path,
                              int flags,
                              const AsyncOpenFileCallback& callback) = 0;
+
+  // Sends an async IPC to open a file through filesystem API.
+  // When a file is successfully opened, |callback| is invoked with
+  // PLATFORM_FILE_OK, the opened file handle, and a callback function for
+  // notifying that the file is closed. When the users of this function
+  // finished using the file, they must close the file handle and then must call
+  // the supplied callback function.
+  typedef base::Callback<void (base::PlatformFileError)>
+      NotifyCloseFileCallback;
+  typedef base::Callback<
+      void (base::PlatformFileError,
+            base::PassPlatformFile,
+            const NotifyCloseFileCallback&)> AsyncOpenFileSystemURLCallback;
   virtual bool AsyncOpenFileSystemURL(
       const GURL& path,
       int flags,
-      const AsyncOpenFileCallback& callback) = 0;
+      const AsyncOpenFileSystemURLCallback& callback) = 0;
 
   virtual bool OpenFileSystem(
       const GURL& url,

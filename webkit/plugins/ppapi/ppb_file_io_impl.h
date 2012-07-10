@@ -74,6 +74,10 @@ class PPB_FileIO_Impl : public ::ppapi::PPB_FileIO_Shared {
   void ExecutePlatformGeneralCallback(base::PlatformFileError error_code);
   void ExecutePlatformOpenFileCallback(base::PlatformFileError error_code,
                                        base::PassPlatformFile file);
+  void ExecutePlatformOpenFileSystemURLCallback(
+      base::PlatformFileError error_code,
+      base::PassPlatformFile file,
+      const PluginDelegate::NotifyCloseFileCallback& callback);
   void ExecutePlatformQueryCallback(base::PlatformFileError error_code,
                                     const base::PlatformFileInfo& file_info);
   void ExecutePlatformReadCallback(base::PlatformFileError error_code,
@@ -87,6 +91,9 @@ class PPB_FileIO_Impl : public ::ppapi::PPB_FileIO_Shared {
 
   // Valid only for PP_FILESYSTEMTYPE_LOCAL{PERSISTENT,TEMPORARY}.
   GURL file_system_url_;
+
+  // Callback function for notifying when the file handle is closed.
+  PluginDelegate::NotifyCloseFileCallback notify_close_file_callback_;
 
   // Pointer to a QuotaFileIO instance, which is valid only while a file
   // of type PP_FILESYSTEMTYPE_LOCAL{PERSISTENT,TEMPORARY} is opened.

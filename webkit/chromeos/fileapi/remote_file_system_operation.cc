@@ -176,6 +176,15 @@ void RemoteFileSystemOperation::OpenFile(const FileSystemURL& url,
                  base::Owned(this), callback));
 }
 
+void RemoteFileSystemOperation::NotifyCloseFile(
+    const fileapi::FileSystemURL& url) {
+  DCHECK(SetPendingOperationType(kOperationCloseFile));
+  remote_proxy_->NotifyCloseFile(url);
+  // Unlike other operations, NotifyCloseFile does not require callback.
+  // So it must be deleted here right now.
+  delete this;
+}
+
 fileapi::FileSystemOperation*
 RemoteFileSystemOperation::AsFileSystemOperation() {
   NOTIMPLEMENTED();

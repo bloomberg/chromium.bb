@@ -219,7 +219,7 @@ class PepperPluginDelegateImpl
   virtual bool AsyncOpenFileSystemURL(
       const GURL& path,
       int flags,
-      const AsyncOpenFileCallback& callback) OVERRIDE;
+      const AsyncOpenFileSystemURLCallback& callback) OVERRIDE;
   virtual bool OpenFileSystem(
       const GURL& url,
       fileapi::FileSystemType type,

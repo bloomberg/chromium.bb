@@ -383,6 +383,12 @@ void FileSystemOperation::OpenFile(const FileSystemURL& url,
                  base::kNullProcessHandle));
 }
 
+void FileSystemOperation::NotifyCloseFile(const FileSystemURL& url) {
+  // No particular task to do. This method is for remote file systems that
+  // need synchronization with remote server.
+  delete this;
+}
+
 // We can only get here on a write or truncate that's not yet completed.
 // We don't support cancelling any other operation at this time.
 void FileSystemOperation::Cancel(const StatusCallback& cancel_callback) {

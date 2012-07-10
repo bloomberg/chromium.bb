@@ -226,6 +226,13 @@ class FileSystemOperationInterface {
                         base::ProcessHandle peer_handle,
                         const OpenFileCallback& callback) = 0;
 
+  // Notifies a file at |path| opened by OpenFile is closed in plugin process.
+  // File system will run some cleanup task such as uploading the modified file
+  // content to a remote storage.
+  //
+  // This function is used only by Pepper as of writing.
+  virtual void NotifyCloseFile(const FileSystemURL& path) = 0;
+
   // For downcasting to FileSystemOperation.
   // TODO(kinuko): this hack should go away once appropriate upload-stream
   // handling based on element types is supported.
@@ -260,6 +267,7 @@ class FileSystemOperationInterface {
     kOperationTruncate,
     kOperationTouchFile,
     kOperationOpenFile,
+    kOperationCloseFile,
     kOperationGetLocalPath,
     kOperationCancel,
   };

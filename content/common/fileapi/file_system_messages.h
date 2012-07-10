@@ -133,6 +133,10 @@ IPC_MESSAGE_CONTROL3(FileSystemHostMsg_OpenFile,
                      GURL /* file path */,
                      int /* file flags */)
 
+// Pepper's NotifyCloseFile message.
+IPC_MESSAGE_CONTROL1(FileSystemHostMsg_NotifyCloseFile,
+                     GURL /* file path */)
+
 // WebFileSystem::createSnapshotFileAndReadMetadata() message.
 IPC_MESSAGE_CONTROL3(FileSystemHostMsg_CreateSnapshotFile,
                      int /* request_id */,

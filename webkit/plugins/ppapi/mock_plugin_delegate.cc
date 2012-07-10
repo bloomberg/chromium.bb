@@ -143,7 +143,9 @@ bool MockPluginDelegate::AsyncOpenFile(const FilePath& path,
 }
 
 bool MockPluginDelegate::AsyncOpenFileSystemURL(
-    const GURL& path, int flags, const AsyncOpenFileCallback& callback) {
+    const GURL& path,
+    int flags,
+    const AsyncOpenFileSystemURLCallback& callback) {
   return false;
 }
 

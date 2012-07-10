@@ -87,6 +87,7 @@ class FILEAPI_EXPORT FileSystemOperation
                         int file_flags,
                         base::ProcessHandle peer_handle,
                         const OpenFileCallback& callback) OVERRIDE;
+  virtual void NotifyCloseFile(const FileSystemURL& url) OVERRIDE;
   virtual void Cancel(const StatusCallback& cancel_callback) OVERRIDE;
   virtual FileSystemOperation* AsFileSystemOperation() OVERRIDE;
   virtual void CreateSnapshotFile(

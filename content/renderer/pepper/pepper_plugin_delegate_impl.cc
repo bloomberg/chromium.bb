@@ -194,6 +194,70 @@ class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
   webkit::ppapi::PluginInstance* plugin_;
 };
 
+class AsyncOpenFileSystemURLCallbackTranslator
+    : public fileapi::FileSystemCallbackDispatcher {
+ public:
+  AsyncOpenFileSystemURLCallbackTranslator(
+      const webkit::ppapi::PluginDelegate::AsyncOpenFileSystemURLCallback&
+          callback,
+      const webkit::ppapi::PluginDelegate::NotifyCloseFileCallback&
+          close_file_callback)
+    : callback_(callback),
+      close_file_callback_(close_file_callback) {
+  }
+
+  virtual ~AsyncOpenFileSystemURLCallbackTranslator() {}
+
+  virtual void DidSucceed() {
+    NOTREACHED();
+  }
+  virtual void DidReadMetadata(
+      const base::PlatformFileInfo& file_info,
+      const FilePath& platform_path) {
+    NOTREACHED();
+  }
+  virtual void DidReadDirectory(
+      const std::vector<base::FileUtilProxy::Entry>& entries,
+      bool has_more) {
+    NOTREACHED();
+  }
+  virtual void DidOpenFileSystem(const std::string& name,
+                                 const GURL& root) {
+    NOTREACHED();
+  }
+
+  virtual void DidFail(base::PlatformFileError error_code) {
+    base::PlatformFile invalid_file = base::kInvalidPlatformFileValue;
+    callback_.Run(error_code,
+                  base::PassPlatformFile(&invalid_file),
+                  webkit::ppapi::PluginDelegate::NotifyCloseFileCallback());
+  }
+
+  virtual void DidWrite(int64 bytes, bool complete) {
+    NOTREACHED();
+  }
+
+  virtual void DidOpenFile(base::PlatformFile file) {
+    callback_.Run(base::PLATFORM_FILE_OK,
+                  base::PassPlatformFile(&file),
+                  close_file_callback_);
+    // Make sure we won't leak file handle if the requester has died.
+    if (file != base::kInvalidPlatformFileValue) {
+      base::FileUtilProxy::Close(
+          RenderThreadImpl::current()->GetFileThreadMessageLoopProxy(), file,
+          close_file_callback_);
+    }
+  }
+
+ private:
+  webkit::ppapi::PluginDelegate::AsyncOpenFileSystemURLCallback callback_;
+  webkit::ppapi::PluginDelegate::NotifyCloseFileCallback close_file_callback_;
+};
+
+void DoNotifyCloseFile(const GURL& path, base::PlatformFileError /* unused */) {
+  ChildThread::current()->file_system_dispatcher()->NotifyCloseFile(path);
+}
+
 }  // namespace
 
 PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderViewImpl* render_view)
@@ -859,65 +923,17 @@ void PepperPluginDelegateImpl::DidUpdateFile(const GURL& path, int64_t delta) {
   ChildThread::current()->Send(new FileSystemHostMsg_DidUpdate(path, delta));
 }
 
-class AsyncOpenFileSystemURLCallbackTranslator
-    : public fileapi::FileSystemCallbackDispatcher {
- public:
-  AsyncOpenFileSystemURLCallbackTranslator(
-      const webkit::ppapi::PluginDelegate::AsyncOpenFileCallback& callback)
-    : callback_(callback) {
-  }
-
-  virtual ~AsyncOpenFileSystemURLCallbackTranslator() {}
-
-  virtual void DidSucceed() {
-    NOTREACHED();
-  }
-  virtual void DidReadMetadata(
-      const base::PlatformFileInfo& file_info,
-      const FilePath& platform_path) {
-    NOTREACHED();
-  }
-  virtual void DidReadDirectory(
-      const std::vector<base::FileUtilProxy::Entry>& entries,
-      bool has_more) {
-    NOTREACHED();
-  }
-  virtual void DidOpenFileSystem(const std::string& name,
-                                 const GURL& root) {
-    NOTREACHED();
-  }
-
-  virtual void DidFail(base::PlatformFileError error_code) {
-    base::PlatformFile invalid_file = base::kInvalidPlatformFileValue;
-    callback_.Run(error_code, base::PassPlatformFile(&invalid_file));
-  }
-
-  virtual void DidWrite(int64 bytes, bool complete) {
-    NOTREACHED();
-  }
-
-  virtual void DidOpenFile(
-      base::PlatformFile file) {
-    callback_.Run(base::PLATFORM_FILE_OK, base::PassPlatformFile(&file));
-    // Make sure we won't leak file handle if the requester has died.
-    if (file != base::kInvalidPlatformFileValue) {
-      base::FileUtilProxy::Close(
-          RenderThreadImpl::current()->GetFileThreadMessageLoopProxy(), file,
-          base::FileUtilProxy::StatusCallback());
-    }
-  }
-
-private:  // TODO(ericu): Delete this?
-  webkit::ppapi::PluginDelegate::AsyncOpenFileCallback callback_;
-};
-
 bool PepperPluginDelegateImpl::AsyncOpenFileSystemURL(
-    const GURL& path, int flags, const AsyncOpenFileCallback& callback) {
+    const GURL& path,
+    int flags,
+    const AsyncOpenFileSystemURLCallback& callback) {
 
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
   return file_system_dispatcher->OpenFile(path, flags,
-      new AsyncOpenFileSystemURLCallbackTranslator(callback));
+      new AsyncOpenFileSystemURLCallbackTranslator(
+          callback,
+          base::Bind(&DoNotifyCloseFile, path)));
 }
 
 base::PlatformFileError PepperPluginDelegateImpl::OpenFile(

@@ -120,6 +120,21 @@ void FileAPIMessageFilter::OnChannelClosing() {
        iter != blob_urls_.end(); ++iter) {
     blob_storage_context_->controller()->RemoveBlob(GURL(*iter));
   }
+
+  // Close all files that are previously OpenFile()'ed in this process.
+  if (!open_filesystem_urls_.empty()) {
+    DLOG(INFO)
+        << "File API: Renderer process shut down before NotifyCloseFile"
+        << " for " << open_filesystem_urls_.size() << " files opened in PPAPI";
+  }
+  for (std::multiset<GURL>::const_iterator iter =
+       open_filesystem_urls_.begin();
+       iter != open_filesystem_urls_.end(); ++iter) {
+    FileSystemURL url(*iter);
+    FileSystemOperationInterface* operation =
+        context_->CreateFileSystemOperation(url);
+    operation->NotifyCloseFile(url);
+  }
 }
 
 void FileAPIMessageFilter::OverrideThreadForMessage(
@@ -147,6 +162,7 @@ bool FileAPIMessageFilter::OnMessageReceived(
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_TouchFile, OnTouchFile)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_CancelWrite, OnCancel)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_OpenFile, OnOpenFile)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_NotifyCloseFile, OnNotifyCloseFile)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_CreateSnapshotFile,
                         OnCreateSnapshotFile)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_WillUpdate, OnWillUpdate)
@@ -404,7 +420,26 @@ void FileAPIMessageFilter::OnOpenFile(
 
   GetNewOperation(url, request_id)->OpenFile(
       url, file_flags, peer_handle(),
-      base::Bind(&FileAPIMessageFilter::DidOpenFile, this, request_id));
+      base::Bind(&FileAPIMessageFilter::DidOpenFile, this, request_id, path));
+}
+
+void FileAPIMessageFilter::OnNotifyCloseFile(const GURL& path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // Remove |path| from the set of opened urls. It must only be called for a URL
+  // that is successfully opened and enrolled in DidOpenFile.
+  std::multiset<GURL>::iterator iter = open_filesystem_urls_.find(path);
+  DCHECK(iter != open_filesystem_urls_.end());
+  open_filesystem_urls_.erase(iter);
+
+  FileSystemURL url(path);
+
+  // Do not use GetNewOperation() here, because NotifyCloseFile is a one-way
+  // operation that does not have request_id by which we respond back.
+  FileSystemOperationInterface* operation =
+      context_->CreateFileSystemOperation(url);
+  if (operation)
+    operation->NotifyCloseFile(url);
 }
 
 void FileAPIMessageFilter::OnWillUpdate(const GURL& path) {
@@ -569,6 +604,7 @@ void FileAPIMessageFilter::DidReadDirectory(
 }
 
 void FileAPIMessageFilter::DidOpenFile(int request_id,
+                                       const GURL& path,
                                        base::PlatformFileError result,
                                        base::PlatformFile file,
                                        base::ProcessHandle peer_handle) {
@@ -577,6 +613,7 @@ void FileAPIMessageFilter::DidOpenFile(int request_id,
         file != base::kInvalidPlatformFileValue ?
             IPC::GetFileHandleForProcess(file, peer_handle, true) :
             IPC::InvalidPlatformFileForTransit();
+    open_filesystem_urls_.insert(path);
     Send(new FileSystemMsg_DidOpenFile(request_id, file_for_transit));
   } else {
     Send(new FileSystemMsg_DidFail(request_id, result));

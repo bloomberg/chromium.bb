@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
 #include "base/message_loop_proxy.h"
@@ -64,8 +65,9 @@ int32_t PPB_FileIO_Impl::OpenValidated(
     file_system_url_ = file_ref->GetFileSystemURL();
     if (!plugin_delegate->AsyncOpenFileSystemURL(
             file_system_url_, flags,
-            base::Bind(&PPB_FileIO_Impl::ExecutePlatformOpenFileCallback,
-                       weak_factory_.GetWeakPtr())))
+            base::Bind(
+                &PPB_FileIO_Impl::ExecutePlatformOpenFileSystemURLCallback,
+                weak_factory_.GetWeakPtr())))
       return PP_ERROR_FAILED;
   } else {
     if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL)
@@ -211,8 +213,9 @@ void PPB_FileIO_Impl::Close() {
   PluginDelegate* plugin_delegate = GetPluginDelegate();
   if (file_ != base::kInvalidPlatformFileValue && plugin_delegate) {
     base::FileUtilProxy::Close(
-        plugin_delegate->GetFileThreadMessageLoopProxy(), file_,
-        base::FileUtilProxy::StatusCallback());
+        plugin_delegate->GetFileThreadMessageLoopProxy(),
+        file_,
+        base::ResetAndReturn(&notify_close_file_callback_));
     file_ = base::kInvalidPlatformFileValue;
     quota_file_io_.reset();
   }
@@ -292,6 +295,15 @@ void PPB_FileIO_Impl::ExecutePlatformOpenFileCallback(
   }
 
   ExecuteOpenFileCallback(::ppapi::PlatformFileErrorToPepperError(error_code));
+}
+
+void PPB_FileIO_Impl::ExecutePlatformOpenFileSystemURLCallback(
+    base::PlatformFileError error_code,
+    base::PassPlatformFile file,
+    const PluginDelegate::NotifyCloseFileCallback& callback) {
+  if (error_code == base::PLATFORM_FILE_OK)
+    notify_close_file_callback_ = callback;
+  ExecutePlatformOpenFileCallback(error_code, file);
 }
 
 void PPB_FileIO_Impl::ExecutePlatformQueryCallback(

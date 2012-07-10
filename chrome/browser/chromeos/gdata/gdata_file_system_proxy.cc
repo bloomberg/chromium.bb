@@ -403,6 +403,12 @@ void GDataFileSystemProxy::OpenFile(
                               GetDownloadDataCallback());
 }
 
+void GDataFileSystemProxy::NotifyCloseFile(const FileSystemURL& url) {
+  // TODO(kinaba,zelidrag): crbug.com/132236.
+  // Once OpenFile() for writing is implemented, we also need to implement the
+  // corresponding NotifyCloseFile for committing dirty cache.
+}
+
 void GDataFileSystemProxy::CreateSnapshotFile(
     const FileSystemURL& file_url,
     const FileSystemOperationInterface::SnapshotFileCallback& callback) {

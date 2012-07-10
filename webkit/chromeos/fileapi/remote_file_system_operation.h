@@ -65,6 +65,7 @@ class RemoteFileSystemOperation : public fileapi::FileSystemOperationInterface {
       int file_flags,
       base::ProcessHandle peer_handle,
       const OpenFileCallback& callback) OVERRIDE;
+  virtual void NotifyCloseFile(const fileapi::FileSystemURL& url) OVERRIDE;
   virtual fileapi::FileSystemOperation* AsFileSystemOperation() OVERRIDE;
   virtual void CreateSnapshotFile(
       const fileapi::FileSystemURL& url,

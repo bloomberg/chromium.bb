@@ -78,6 +78,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       base::ProcessHandle peer_handle,
       const fileapi::FileSystemOperationInterface::OpenFileCallback&
           callback) OVERRIDE;
+  virtual void NotifyCloseFile(const fileapi::FileSystemURL& url) OVERRIDE;
   // TODO(zelidrag): More methods to follow as we implement other parts of FSO.
 
  protected:

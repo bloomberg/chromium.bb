@@ -101,6 +101,10 @@ class RemoteFileSystemProxyInterface :
       int flags,
       base::ProcessHandle peer_handle,
       const FileSystemOperationInterface::OpenFileCallback& callback) = 0;
+
+  // Notifies that a file opened by OpenFile (at |path|) is closed.
+  virtual void NotifyCloseFile(const FileSystemURL& url) = 0;
+
   // TODO(zelidrag): More methods to follow as we implement other parts of FSO.
 
  protected:
