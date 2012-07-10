@@ -1007,7 +1007,7 @@ solutions = [
     revision_overrides = {}
     # It's unnecessary to check for revision overrides for 'recurse'.
     # Save a few seconds by not calling _EnforceRevisions() in that case.
-    if command is not 'recurse':
+    if command not in ('diff', 'recurse', 'runhooks', 'status'):
       revision_overrides = self._EnforceRevisions()
     pm = None
     # Disable progress for non-tty stdout.

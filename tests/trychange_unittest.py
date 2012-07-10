@@ -108,6 +108,7 @@ class SVNUnittest(TryChangeTestsBase):
     self.compareMembers(trychange.SVN, members)
 
   def testBasic(self):
+    # pylint: disable=E1103
     trychange.os.path.abspath(self.fake_root).AndReturn(self.fake_root)
     trychange.scm.SVN.GetCheckoutRoot(self.fake_root).AndReturn(self.fake_root)
     trychange.scm.SVN.GenerateDiff(['foo.txt', 'bar.txt'],
