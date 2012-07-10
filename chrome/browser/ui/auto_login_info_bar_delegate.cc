@@ -222,5 +222,8 @@ void AutoLoginInfoBarDelegate::Observe(int type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_GOOGLE_SIGNED_OUT, type);
-  owner()->RemoveInfoBar(this);
+  // owner() can be NULL when InfoBarTabHelper removes us. See
+  // |InfoBarDelegate::clear_owner|.
+  if (owner())
+    owner()->RemoveInfoBar(this);
 }
