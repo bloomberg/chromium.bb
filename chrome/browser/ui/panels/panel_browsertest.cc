@@ -972,11 +972,11 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhileMinimized) {
   PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
   PanelManager::GetInstance()->SetMouseWatcherForTesting(mouse_watcher);
 
-  // Create 2 panels so we end up with an inactive panel that can
+  // Create 3 panels so we end up with an inactive panel that can
   // be made to draw attention.
   Panel* panel = CreatePanel("test panel1");
   Panel* panel2 = CreatePanel("test panel2");
-  Panel* panel3 = CreatePanel("test panel2");
+  Panel* panel3 = CreatePanel("test panel3");
 
   scoped_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));

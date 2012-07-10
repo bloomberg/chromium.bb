@@ -41,9 +41,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/screen.h"
 
-// Panel tests are flaking on linux CQ. http://crbug.com/135377
-#if !defined(OS_LINUX)
-
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadItem;
@@ -259,14 +256,7 @@ class OldPanelBrowserTest : public OldBasePanelBrowserTest {
   }
 };
 
-// http://crbug.com/135377
-#if defined(OS_LINUX)
-#define MAYBE_CheckDockedPanelProperties DISABLED_CheckDockedPanelProperties
-#else
-#define MAYBE_CheckDockedPanelProperties CheckDockedPanelProperties
-#endif
-
-IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MAYBE_CheckDockedPanelProperties) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, CheckDockedPanelProperties) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
 
@@ -327,14 +317,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MAYBE_CheckDockedPanelProperties) {
   panel_manager->CloseAll();
 }
 
-// http://crbug.com/135377
-#if defined(OS_LINUX)
-#define MAYBE_CreatePanel DISABLED_CreatePanel
-#else
-#define MAYBE_CreatePanel CreatePanel
-#endif
-
-IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MAYBE_CreatePanel) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, CreatePanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   EXPECT_EQ(0, panel_manager->num_panels()); // No panels initially.
 
@@ -355,14 +338,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MAYBE_CreatePanel) {
   EXPECT_EQ(0, panel_manager->num_panels());
 }
 
-// http://crbug.com/135377
-#if defined(OS_LINUX)
-#define MAYBE_CreateBigPanel DISABLED_CreateBigPanel
-#else
-#define MAYBE_CreateBigPanel CreateBigPanel
-#endif
-
-IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MAYBE_CreateBigPanel) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, CreateBigPanel) {
   gfx::Rect work_area = PanelManager::GetInstance()->
       display_settings_provider()->GetDisplayArea();
   Panel* panel = CreatePanelWithBounds("BigPanel", work_area);
@@ -475,14 +451,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, ResizePanel) {
   panel->Close();
 }
 
-// http://crbug.com/135377
-#if defined(OS_LINUX)
-#define MAYBE_AnimateBounds DISABLED_AnimateBounds
-#else
-#define MAYBE_AnimateBounds AnimateBounds
-#endif
-
-IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MAYBE_AnimateBounds) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, AnimateBounds) {
   Panel* panel = CreatePanelWithBounds("PanelTest", gfx::Rect(0, 0, 100, 100));
   scoped_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
@@ -996,11 +965,11 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, DrawAttentionWhileMinimized) {
   PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
   PanelManager::GetInstance()->SetMouseWatcherForTesting(mouse_watcher);
 
-  // Create 2 panels so we end up with an inactive panel that can
+  // Create 3 panels so we end up with an inactive panel that can
   // be made to draw attention.
   Panel* panel = CreatePanel("test panel1");
   Panel* panel2 = CreatePanel("test panel2");
-  Panel* panel3 = CreatePanel("test panel2");
+  Panel* panel3 = CreatePanel("test panel3");
 
   scoped_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));
@@ -1111,14 +1080,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest,
   panel2->Close();
 }
 
-// http://crbug.com/135377
-#if defined(OS_LINUX)
-#define MAYBE_DrawAttentionWhenActive DISABLED_DrawAttentionWhenActive
-#else
-#define MAYBE_DrawAttentionWhenActive DrawAttentionWhenActive
-#endif
-
-IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MAYBE_DrawAttentionWhenActive) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, DrawAttentionWhenActive) {
   CreatePanelParams params("Initially Active", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel = CreatePanelWithParams(params);
   scoped_ptr<NativePanelTesting> native_panel_testing(
@@ -1224,16 +1186,8 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, DrawAttentionResetOnClick) {
 }
 
 
-// http://crbug.com/135377
-#if defined(OS_LINUX)
-#define MAYBE_MinimizeImmediatelyAfterRestore \
-        DISABLED_MinimizeImmediatelyAfterRestore
-#else
-#define MAYBE_MinimizeImmediatelyAfterRestore MinimizeImmediatelyAfterRestore
-#endif
-
 IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest,
-                       MAYBE_MinimizeImmediatelyAfterRestore) {
+                       MinimizeImmediatelyAfterRestore) {
   CreatePanelParams params("Panel Test", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel = CreatePanelWithParams(params);
   scoped_ptr<NativePanelTesting> native_panel_testing(
@@ -1805,5 +1759,3 @@ IN_PROC_BROWSER_TEST_F(OldPanelDownloadTest, MAYBE_DownloadNoTabbedBrowser) {
 
   chrome::CloseWindow(panel_browser);
 }
-
-#endif  // !OS_LINUX

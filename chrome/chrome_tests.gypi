@@ -173,6 +173,8 @@
         'browser/ui/panels/base_panel_browser_test.h',
         'browser/ui/panels/old_base_panel_browser_test.cc',
         'browser/ui/panels/old_base_panel_browser_test.h',
+        'browser/ui/panels/test_panel_active_state_observer.cc',
+        'browser/ui/panels/test_panel_active_state_observer.h',
         'browser/ui/panels/test_panel_mouse_watcher.cc',
         'browser/ui/panels/test_panel_mouse_watcher.h',
         'browser/ui/tab_contents/test_tab_contents.cc',

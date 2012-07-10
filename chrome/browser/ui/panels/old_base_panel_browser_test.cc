@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/panels/panel_browser_window.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
+#include "chrome/browser/ui/panels/test_panel_active_state_observer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -248,14 +249,8 @@ void OldBasePanelBrowserTest::WaitForPanelActiveState(
     Panel* panel, ActiveState expected_state) {
   DCHECK(expected_state == SHOW_AS_ACTIVE ||
          expected_state == SHOW_AS_INACTIVE);
-  ui_test_utils::WindowedNotificationObserver signal(
-      chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
-      content::Source<Panel>(panel));
-  if (panel->IsActive() == (expected_state == SHOW_AS_ACTIVE))
-    return;  // Already in required state.
+  PanelActiveStateObserver signal(panel, expected_state == SHOW_AS_ACTIVE);
   signal.Wait();
-  // Verify that transition happened in the desired direction.
-  EXPECT_TRUE(panel->IsActive() == (expected_state == SHOW_AS_ACTIVE));
 }
 
 void OldBasePanelBrowserTest::WaitForWindowSizeAvailable(Panel* panel) {
@@ -346,6 +341,10 @@ Panel* OldBasePanelBrowserTest::CreatePanelWithParams(
     // browser to "deactivate" the newly created panel.
     if (params.expected_active_state == SHOW_AS_INACTIVE &&
         ui::GuessWindowManager() == ui::WM_ICE_WM) {
+      // Wait for new panel to become active before deactivating to ensure
+      // the activated notification is consumed before we wait for the panel
+      // to become inactive.
+      WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);
       browser()->window()->Activate();
     }
 #endif

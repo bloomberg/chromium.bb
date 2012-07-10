@@ -8,9 +8,6 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_resize_controller.h"
 
-// Panel tests are flaking on linux CQ. http://crbug.com/135377
-#if !defined(OS_LINUX)
-
 class OldPanelResizeBrowserTest : public OldBasePanelBrowserTest {
  public:
   OldPanelResizeBrowserTest() : OldBasePanelBrowserTest() {
@@ -415,5 +412,3 @@ IN_PROC_BROWSER_TEST_F(OldPanelResizeBrowserTest, ResizeDetachedPanelToTop) {
 
   panel_manager->CloseAll();
 }
-
-#endif  // !OS_LINUX

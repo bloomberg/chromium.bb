@@ -135,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, ClickTitlebar) {
 
   // Create a second panel to cause the first to become inactive.
   CreateDetachedPanel("2", gfx::Rect(100, 200, 230, 345));
-  EXPECT_FALSE(panel->IsActive());
+  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
 
   // Clicking on an inactive detached panel's titlebar activates it.
   test_panel->PressLeftMouseButtonTitlebar(panel->GetBounds().origin());

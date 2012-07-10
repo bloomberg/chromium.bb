@@ -12,9 +12,6 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/test_panel_mouse_watcher.h"
 
-// Panel tests are flaking on linux CQ. http://crbug.com/135377
-#if !defined(OS_LINUX)
-
 class OldPanelDragBrowserTest : public OldBasePanelBrowserTest {
  public:
   OldPanelDragBrowserTest() : OldBasePanelBrowserTest() {
@@ -1350,5 +1347,3 @@ IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DragDetachedPanelToTop) {
 
   panel_manager->CloseAll();
 }
-
-#endif  // !OS_LINUX

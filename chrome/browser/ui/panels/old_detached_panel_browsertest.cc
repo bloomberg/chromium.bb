@@ -9,9 +9,6 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 
-// Panel tests are flaking on linux CQ. http://crbug.com/135377
-#if !defined(OS_LINUX)
-
 class OldDetachedPanelBrowserTest : public OldBasePanelBrowserTest {
 };
 
@@ -61,15 +58,8 @@ IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, DrawAttentionOnActive) {
   panel->Close();
 }
 
-// http://crbug.com/135377
-#if defined(OS_LINUX)
-#define MAYBE_DrawAttentionOnInactive DISABLED_DrawAttentionOnInactive
-#else
-#define MAYBE_DrawAttentionOnInactive DrawAttentionOnInactive
-#endif
-
 IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest,
-                       MAYBE_DrawAttentionOnInactive) {
+                       DrawAttentionOnInactive) {
   // Create an inactive detached panel.
   Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
   panel->Deactivate();
@@ -128,14 +118,7 @@ IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest,
   panel2->Close();
 }
 
-// http://crbug.com/135377
-#if defined(OS_LINUX)
-#define MAYBE_ClickTitlebar DISABLED_ClickTitlebar
-#else
-#define MAYBE_ClickTitlebar ClickTitlebar
-#endif
-
-IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, MAYBE_ClickTitlebar) {
+IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, ClickTitlebar) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
@@ -159,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, MAYBE_ClickTitlebar) {
 
   // Create a second panel to cause the first to become inactive.
   CreateDetachedPanel("2", gfx::Rect(100, 200, 230, 345));
-  EXPECT_FALSE(panel->IsActive());
+  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
 
   // Clicking on an inactive detached panel's titlebar activates it.
   test_panel->PressLeftMouseButtonTitlebar(panel->GetBounds().origin());
@@ -169,5 +152,3 @@ IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, MAYBE_ClickTitlebar) {
 
   panel_manager->CloseAll();
 }
-
-#endif  // !OS_LINUX
