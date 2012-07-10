@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_VERIFY_CONFIG_WINDOW_WIN_H
-#define REMOTING_HOST_VERIFY_CONFIG_WINDOW_WIN_H
+#ifndef REMOTING_HOST_VERIFY_CONFIG_WINDOW_WIN_H_
+#define REMOTING_HOST_VERIFY_CONFIG_WINDOW_WIN_H_
 
 // altbase.h must be included before atlapp.h
 #include <atlbase.h>
@@ -52,6 +52,6 @@ class VerifyConfigWindowWin : public ATL::CDialogImpl<VerifyConfigWindowWin> {
   DISALLOW_COPY_AND_ASSIGN(VerifyConfigWindowWin);
 };
 
-}
+}  // namespace remoting
 
-#endif  // REMOTING_HOST_VERIFY_CONFIG_WINDOW_WIN_H
+#endif  // REMOTING_HOST_VERIFY_CONFIG_WINDOW_WIN_H_

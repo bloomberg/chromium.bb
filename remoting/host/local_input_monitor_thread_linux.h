@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LOCAL_INPUT_MONITOR_THREAD_LINUX_H_
-#define LOCAL_INPUT_MONITOR_THREAD_LINUX_H_
+#ifndef REMOTING_HOST_LOCAL_INPUT_MONITOR_THREAD_LINUX_H_
+#define REMOTING_HOST_LOCAL_INPUT_MONITOR_THREAD_LINUX_H_
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -21,9 +21,8 @@ class MouseMoveObserver;
 
 class LocalInputMonitorThread : public base::SimpleThread {
  public:
-  LocalInputMonitorThread(
-      MouseMoveObserver* mouse_move_observer,
-      const base::Closure& disconnect_callback);
+  LocalInputMonitorThread(MouseMoveObserver* mouse_move_observer,
+                          const base::Closure& disconnect_callback);
   virtual ~LocalInputMonitorThread();
 
   void Stop();
@@ -45,4 +44,4 @@ class LocalInputMonitorThread : public base::SimpleThread {
 
 }  // namespace remoting
 
-#endif
+#endif  // REMOTING_HOST_LOCAL_INPUT_MONITOR_THREAD_LINUX_H_

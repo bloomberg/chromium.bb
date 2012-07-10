@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_DISCONNECT_WINDOW_H
-#define REMOTING_HOST_DISCONNECT_WINDOW_H
+#ifndef REMOTING_HOST_DISCONNECT_WINDOW_H_
+#define REMOTING_HOST_DISCONNECT_WINDOW_H_
 
 #include <string>
 
@@ -16,7 +16,6 @@ class ChromotingHost;
 
 class DisconnectWindow {
  public:
-
   enum {
     kMaximumConnectedNameWidthInPixels = 400
   };
@@ -39,6 +38,6 @@ class DisconnectWindow {
   static scoped_ptr<DisconnectWindow> Create();
 };
 
-}
+}  // namespace remoting
 
-#endif  // REMOTING_HOST_DISCONNECT_WINDOW_H
+#endif  // REMOTING_HOST_DISCONNECT_WINDOW_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_SIGNALING_CONNECTOR_H
-#define REMOTING_HOST_SIGNALING_CONNECTOR_H
+#ifndef REMOTING_HOST_SIGNALING_CONNECTOR_H_
+#define REMOTING_HOST_SIGNALING_CONNECTOR_H_
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
@@ -104,4 +104,4 @@ class SignalingConnector
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_SIGNALING_CONNECTOR_H
+#endif  // REMOTING_HOST_SIGNALING_CONNECTOR_H_

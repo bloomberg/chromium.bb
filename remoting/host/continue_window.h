@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_CONTINUE_WINDOW_H
-#define REMOTING_HOST_CONTINUE_WINDOW_H
+#ifndef REMOTING_HOST_CONTINUE_WINDOW_H_
+#define REMOTING_HOST_CONTINUE_WINDOW_H_
 
 #include "base/callback.h"
 
@@ -32,6 +32,6 @@ class ContinueWindow {
   static scoped_ptr<ContinueWindow> Create();
 };
 
-}
+}  // namespace remoting
 
-#endif  // REMOTING_HOST_CONTINUE_WINDOW_H
+#endif  // REMOTING_HOST_CONTINUE_WINDOW_H_

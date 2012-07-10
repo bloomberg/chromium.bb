@@ -20,7 +20,7 @@ class ClipboardStub;
 // can get change notifications.
 class Clipboard {
  public:
-  virtual ~Clipboard() {};
+  virtual ~Clipboard() {}
 
   // Initialises any objects needed to read from or write to the clipboard.
   virtual void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) = 0;

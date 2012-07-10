@@ -6,8 +6,8 @@
 // and trigger the specified callback. It is currently used on Mac in order to
 // reload the me2me host configuration, but would need minimal changes on Linux.
 
-#ifndef REMOTING_SIGHUP_LISTENER_MAC_H_
-#define REMOTING_SIGHUP_LISTENER_MAC_H_
+#ifndef REMOTING_HOST_SIGHUP_LISTENER_MAC_H_
+#define REMOTING_HOST_SIGHUP_LISTENER_MAC_H_
 
 #include "base/callback_forward.h"
 
@@ -19,4 +19,4 @@ bool RegisterHupSignalHandler(const base::Closure& callback);
 
 }  // namespace remoting
 
-#endif  // REMOTING_SIGHUP_LISTENER_MAC_H_
+#endif  // REMOTING_HOST_SIGHUP_LISTENER_MAC_H_

@@ -59,7 +59,7 @@ class Capturer {
   typedef base::Callback<void(scoped_ptr<protocol::CursorShapeInfo>)>
       CursorShapeChangedCallback;
 
-  virtual ~Capturer() {};
+  virtual ~Capturer() {}
 
   // Create platform-specific capturer.
   static Capturer* Create();

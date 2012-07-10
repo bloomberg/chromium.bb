@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_LOCAL_INPUT_MONITOR_H_
-#define REMOTING_LOCAL_INPUT_MONITOR_H_
+#ifndef REMOTING_HOST_LOCAL_INPUT_MONITOR_H_
+#define REMOTING_HOST_LOCAL_INPUT_MONITOR_H_
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
@@ -31,4 +31,4 @@ class LocalInputMonitor {
 
 }  // namespace remoting
 
-#endif
+#endif  // REMOTING_HOST_LOCAL_INPUT_MONITOR_H_

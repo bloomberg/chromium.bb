@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LOCAL_INPUT_MONITOR_THREAD_WIN_H_
-#define LOCAL_INPUT_MONITOR_THREAD_WIN_H_
+#ifndef REMOTING_HOST_LOCAL_INPUT_MONITOR_THREAD_WIN_H_
+#define REMOTING_HOST_LOCAL_INPUT_MONITOR_THREAD_WIN_H_
 
 #include <set>
 
@@ -31,7 +31,9 @@ class LocalInputMonitorThread : public base::SimpleThread {
   bool RemoveObserver(MouseMoveObserver* mouse_move_observer);
 
   void Stop();
-  virtual void Run() OVERRIDE;  // Overridden from SimpleThread.
+
+  // Overridden from base::SimpleThread:
+  virtual void Run() OVERRIDE;
 
   void LocalMouseMoved(const SkIPoint& mouse_position);
   static LRESULT WINAPI HandleLowLevelMouseEvent(int code,
@@ -47,4 +49,4 @@ class LocalInputMonitorThread : public base::SimpleThread {
 
 }  // namespace remoting
 
-#endif
+#endif  // REMOTING_HOST_LOCAL_INPUT_MONITOR_THREAD_WIN_H_
