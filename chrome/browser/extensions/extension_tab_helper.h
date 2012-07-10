@@ -111,9 +111,13 @@ class ExtensionTabHelper
     return content::WebContentsObserver::web_contents();
   }
 
-  extensions::ScriptExecutor* script_executor();
+  extensions::ScriptExecutor* script_executor() {
+    return script_executor_.get();
+  }
 
-  extensions::LocationBarController* location_bar_controller();
+  extensions::LocationBarController* location_bar_controller() {
+    return location_bar_controller_.get();
+  }
 
   extensions::ActiveTabPermissionManager* active_tab_permission_manager() {
     return &active_tab_permission_manager_;
@@ -221,12 +225,9 @@ class ExtensionTabHelper
 
   TabContents* tab_contents_;
 
-  // Either script_executor/location_bar_controller will have values, or
-  // script_badge_controller will have a value, depending on whether the action
-  // box is turned on.
   scoped_ptr<extensions::ScriptExecutor> script_executor_;
+
   scoped_ptr<extensions::LocationBarController> location_bar_controller_;
-  scoped_refptr<extensions::ScriptBadgeController> script_badge_controller_;
 
   extensions::ActiveTabPermissionManager active_tab_permission_manager_;
 

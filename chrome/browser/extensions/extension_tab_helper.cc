@@ -8,7 +8,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/page_action_controller.h"
 #include "chrome/browser/extensions/script_badge_controller.h"
-#include "chrome/browser/extensions/script_executor_impl.h"
+#include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
@@ -46,7 +46,7 @@ using content::WebContents;
 using extensions::Extension;
 using extensions::PageActionController;
 using extensions::ScriptBadgeController;
-using extensions::ScriptExecutorImpl;
+using extensions::ScriptExecutor;
 
 namespace {
 
@@ -61,12 +61,13 @@ ExtensionTabHelper::ExtensionTabHelper(TabContents* tab_contents)
           extension_function_dispatcher_(tab_contents->profile(), this)),
       pending_web_app_action_(NONE),
       tab_contents_(tab_contents),
+      script_executor_(new extensions::ScriptExecutor(
+          tab_contents->web_contents())),
       active_tab_permission_manager_(tab_contents) {
   if (extensions::switch_utils::AreScriptBadgesEnabled()) {
-    script_badge_controller_ = new ScriptBadgeController(tab_contents);
+    location_bar_controller_.reset(new ScriptBadgeController(
+        tab_contents, script_executor_.get()));
   } else {
-    script_executor_.reset(
-        new ScriptExecutorImpl(tab_contents->web_contents()));
     location_bar_controller_.reset(new PageActionController(tab_contents));
   }
   registrar_.Add(this,
@@ -145,19 +146,6 @@ SkBitmap* ExtensionTabHelper::GetExtensionAppIcon() {
     return NULL;
 
   return &extension_app_icon_;
-}
-
-extensions::ScriptExecutor* ExtensionTabHelper::script_executor() {
-  if (script_badge_controller_.get())
-    return script_badge_controller_.get();
-  return script_executor_.get();
-}
-
-extensions::LocationBarController*
-    ExtensionTabHelper::location_bar_controller() {
-  if (script_badge_controller_.get())
-    return script_badge_controller_.get();
-  return location_bar_controller_.get();
 }
 
 void ExtensionTabHelper::RenderViewCreated(RenderViewHost* render_view_host) {

@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/script_executor.h"
-#include "chrome/browser/extensions/script_executor_impl.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -38,22 +37,21 @@ class Extension;
 // - For content_script declarations, this receives IPCs from the renderer
 //   notifying that a content script is running (either on this tab or one of
 //   its frames), which is recorded.
-// - The ScriptExecutor interface is exposed for programmatically executing
-//   scripts. Successfully executed scripts are recorded.
+// - Observes a ScriptExecutor so that successfully-executed scripts
+//   can cause a script badge to appear.
 //
 // When extension IDs are recorded a NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED
 // is sent, and those extensions will be returned from GetCurrentActions until
 // the next page navigation.
-//
-// Ref-counted so that it can be safely bound in a base::Bind.
 class ScriptBadgeController
-    : public base::RefCountedThreadSafe<ScriptBadgeController>,
-      public LocationBarController,
-      public ScriptExecutor,
+    : public LocationBarController,
+      public ScriptExecutor::Observer,
       public content::WebContentsObserver,
       public content::NotificationObserver {
  public:
-  explicit ScriptBadgeController(TabContents* tab_contents);
+  explicit ScriptBadgeController(TabContents* tab_contents,
+                                 ScriptExecutor* script_executor);
+  virtual ~ScriptBadgeController();
 
   // LocationBarController implementation.
   virtual std::vector<ExtensionAction*> GetCurrentActions() const OVERRIDE;
@@ -61,27 +59,13 @@ class ScriptBadgeController
                            int mouse_button) OVERRIDE;
   virtual void NotifyChange() OVERRIDE;
 
-  // ScriptExecutor implementation.
-  virtual void ExecuteScript(const std::string& extension_id,
-                             ScriptType script_type,
-                             const std::string& code,
-                             FrameScope frame_scope,
-                             UserScript::RunLocation run_at,
-                             WorldType world_type,
-                             const ExecuteScriptCallback& callback) OVERRIDE;
+  // ScriptExecutor::Observer implementation.
+  virtual void OnExecuteScriptFinished(const std::string& extension_id,
+                                       bool success,
+                                       int32 page_id,
+                                       const std::string& error) OVERRIDE;
 
  private:
-  friend class base::RefCountedThreadSafe<ScriptBadgeController>;
-  virtual ~ScriptBadgeController();
-
-  // Callback for ExecuteScript which if successful and for the current URL
-  // records that the script is running, then calls the original callback.
-  void OnExecuteScriptFinished(const std::string& extension_id,
-                               const ExecuteScriptCallback& callback,
-                               bool success,
-                               int32 page_id,
-                               const std::string& error);
-
   // Gets the ExtensionService for |tab_contents_|.
   ExtensionService* GetExtensionService();
 
@@ -110,9 +94,6 @@ class ScriptBadgeController
   // Tries to erase an extension from the relevant collections, and returns
   // whether any change was made.
   bool EraseExtension(const Extension* extension);
-
-  // Delegate ScriptExecutorImpl for running ExecuteScript.
-  ScriptExecutorImpl script_executor_;
 
   // Our parent TabContents.
   TabContents* tab_contents_;

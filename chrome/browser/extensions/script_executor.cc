@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/script_executor_impl.h"
+#include "chrome/browser/extensions/script_executor.h"
 
 #include "base/callback.h"
 #include "base/logging.h"
@@ -25,10 +25,13 @@ const char* kRendererDestroyed = "The tab was closed.";
 // corresponding response comes from the renderer, or the renderer is destroyed.
 class Handler : public content::WebContentsObserver {
  public:
-  Handler(content::WebContents* web_contents,
+  Handler(ObserverList<ScriptExecutor::Observer>* observer_list,
+          content::WebContents* web_contents,
           const ExtensionMsg_ExecuteCode_Params& params,
           const ScriptExecutor::ExecuteScriptCallback& callback)
           : content::WebContentsObserver(web_contents),
+            observer_list_(AsWeakPtr(observer_list)),
+            extension_id_(params.extension_id),
             request_id_(params.request_id),
             callback_(callback) {
     content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
@@ -67,24 +70,40 @@ class Handler : public content::WebContentsObserver {
                              bool success,
                              int32 page_id,
                              const std::string& error) {
+    if (observer_list_) {
+      FOR_EACH_OBSERVER(ScriptExecutor::Observer, *observer_list_,
+                        OnExecuteScriptFinished(extension_id_, success,
+                                                page_id, error));
+    }
+
     callback_.Run(success, page_id, error);
     delete this;
   }
 
+  base::WeakPtr<ObserverList<ScriptExecutor::Observer> > observer_list_;
+  std::string extension_id_;
   int request_id_;
   ScriptExecutor::ExecuteScriptCallback callback_;
 };
 
 }  // namespace
 
-ScriptExecutorImpl::ScriptExecutorImpl(
-    content::WebContents* web_contents)
+ScriptExecutor::Observer::Observer(ScriptExecutor* script_executor)
+    : script_executor_(*script_executor){
+  script_executor_.AddObserver(this);
+}
+
+ScriptExecutor::Observer::~Observer() {
+  script_executor_.RemoveObserver(this);
+}
+
+ScriptExecutor::ScriptExecutor(content::WebContents* web_contents)
     : next_request_id_(0),
       web_contents_(web_contents) {}
 
-ScriptExecutorImpl::~ScriptExecutorImpl() {}
+ScriptExecutor::~ScriptExecutor() {}
 
-void ScriptExecutorImpl::ExecuteScript(
+void ScriptExecutor::ExecuteScript(
     const std::string& extension_id,
     ScriptExecutor::ScriptType script_type,
     const std::string& code,
@@ -102,7 +121,7 @@ void ScriptExecutorImpl::ExecuteScript(
   params.in_main_world = (world_type == MAIN_WORLD);
 
   // Handler handles IPCs and deletes itself on completion.
-  new Handler(web_contents_, params, callback);
+  new Handler(&observer_list_, web_contents_, params, callback);
 }
 
 }  // namespace extensions

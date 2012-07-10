@@ -1265,6 +1265,7 @@
         'browser/extensions/management_policy_unittest.cc',
         'browser/extensions/process_map_unittest.cc',
         'browser/extensions/sandboxed_unpacker_unittest.cc',
+        'browser/extensions/script_badge_controller_unittest.cc',
         'browser/extensions/settings/settings_frontend_unittest.cc',
         'browser/extensions/settings/settings_quota_unittest.cc',
         'browser/extensions/settings/settings_sync_unittest.cc',

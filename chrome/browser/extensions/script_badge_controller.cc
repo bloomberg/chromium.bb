@@ -23,9 +23,10 @@
 
 namespace extensions {
 
-ScriptBadgeController::ScriptBadgeController(TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents->web_contents()),
-      script_executor_(tab_contents->web_contents()),
+ScriptBadgeController::ScriptBadgeController(TabContents* tab_contents,
+                                             ScriptExecutor* script_executor)
+    : ScriptExecutor::Observer(script_executor),
+      content::WebContentsObserver(tab_contents->web_contents()),
       tab_contents_(tab_contents) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -69,32 +70,8 @@ LocationBarController::Action ScriptBadgeController::OnClicked(
   return ACTION_NONE;
 }
 
-void ScriptBadgeController::ExecuteScript(
-    const std::string& extension_id,
-    ScriptExecutor::ScriptType script_type,
-    const std::string& code,
-    ScriptExecutor::FrameScope frame_scope,
-    UserScript::RunLocation run_at,
-    ScriptExecutor::WorldType world_type,
-    const ExecuteScriptCallback& callback) {
-  ExecuteScriptCallback this_callback = base::Bind(
-      &ScriptBadgeController::OnExecuteScriptFinished,
-      this,
-      extension_id,
-      callback);
-
-  script_executor_.ExecuteScript(extension_id,
-                                 script_type,
-                                 code,
-                                 frame_scope,
-                                 run_at,
-                                 world_type,
-                                 this_callback);
-}
-
 void ScriptBadgeController::OnExecuteScriptFinished(
     const std::string& extension_id,
-    const ExecuteScriptCallback& callback,
     bool success,
     int32 page_id,
     const std::string& error) {
@@ -102,8 +79,6 @@ void ScriptBadgeController::OnExecuteScriptFinished(
     if (InsertExtension(extension_id))
       NotifyChange();
   }
-
-  callback.Run(success, page_id, error);
 }
 
 ExtensionService* ScriptBadgeController::GetExtensionService() {
