@@ -98,8 +98,8 @@ class RenderTextWin : public RenderText {
   // Helper function to update the font on a text run after font substitution.
   void ApplySubstituteFont(internal::TextRun* run, const Font& font);
 
-  // Returns whether |run| contains missing glyphs.
-  bool HasMissingGlyphs(internal::TextRun* run) const;
+  // Returns the number of characters in |run| that have missing glyphs.
+  int CountCharsWithMissingGlyphs(internal::TextRun* run) const;
 
   // Returns a vector of linked fonts corresponding to |font|.
   const std::vector<Font>* GetLinkedFonts(const Font& font) const;

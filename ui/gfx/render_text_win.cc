@@ -679,6 +679,12 @@ void RenderTextWin::LayoutVisualText() {
     size_t linked_font_index = 0;
     const std::vector<Font>* linked_fonts = NULL;
     Font original_font = run->font;
+    // Keep track of the font that is able to display the greatest number of
+    // characters for which ScriptShape() returned S_OK. This font will be used
+    // in the case where no font is able to display the entire run.
+    int best_partial_font_missing_char_count = INT_MAX;
+    Font best_partial_font = run->font;
+    bool using_best_partial_font = false;
 
     // Select the font desired for glyph generation.
     SelectObject(cached_hdc_, run->font.GetNativeFont());
@@ -711,13 +717,20 @@ void RenderTextWin::LayoutVisualText() {
       } else if (hr == S_OK) {
         // If |hr| is S_OK, there could still be missing glyphs in the output,
         // see: http://msdn.microsoft.com/en-us/library/windows/desktop/dd368564.aspx
-        glyphs_missing = HasMissingGlyphs(run);
+        const int missing_count = CountCharsWithMissingGlyphs(run);
+        // Track the font that produced the least missing glyphs.
+        if (missing_count < best_partial_font_missing_char_count) {
+          best_partial_font_missing_char_count = missing_count;
+          best_partial_font = run->font;
+        }
+        glyphs_missing = (missing_count != 0);
       }
 
-      // Skip font substitution if there are no missing glyphs.
-      if (!glyphs_missing) {
+      // Skip font substitution if there are no missing glyphs or if the font
+      // with the least missing glyphs is being used as a last resort.
+      if (!glyphs_missing || using_best_partial_font) {
         // Save the successful fallback font that was chosen.
-        if (tried_fallback)
+        if (tried_fallback && !using_best_partial_font)
           successful_substitute_fonts_[original_font.GetFontName()] = run->font;
         break;
       }
@@ -765,8 +778,24 @@ void RenderTextWin::LayoutVisualText() {
           linked_fonts = GetLinkedFonts(run->font);
       }
 
-      // None of the linked fonts worked, break out of the loop.
+      // None of the fallback fonts were able to display the entire run.
       if (linked_font_index == linked_fonts->size()) {
+        // If a font was able to partially display the run, use that now.
+        if (best_partial_font_missing_char_count != INT_MAX) {
+          ApplySubstituteFont(run, best_partial_font);
+          using_best_partial_font = true;
+          continue;
+        }
+
+        // If no font was able to partially display the run, replace all glyphs
+        // with |wgDefault| to ensure they don't hold garbage values.
+        SCRIPT_FONTPROPERTIES properties;
+        memset(&properties, 0, sizeof(properties));
+        properties.cBytes = sizeof(properties);
+        ScriptGetFontProperties(cached_hdc_, &run->script_cache, &properties);
+        for (int i = 0; i < run->glyph_count; ++i)
+          run->glyphs[i] = properties.wgDefault;
+
         // TODO(msw): Don't use SCRIPT_UNDEFINED. Apparently Uniscribe can
         //            crash on certain surrogate pairs with SCRIPT_UNDEFINED.
         //            See https://bugzilla.mozilla.org/show_bug.cgi?id=341500
@@ -841,7 +870,8 @@ void RenderTextWin::ApplySubstituteFont(internal::TextRun* run,
   SelectObject(cached_hdc_, run->font.GetNativeFont());
 }
 
-bool RenderTextWin::HasMissingGlyphs(internal::TextRun* run) const {
+int RenderTextWin::CountCharsWithMissingGlyphs(internal::TextRun* run) const {
+  int chars_not_missing_glyphs = 0;
   SCRIPT_FONTPROPERTIES properties;
   memset(&properties, 0, sizeof(properties));
   properties.cBytes = sizeof(properties);
@@ -854,7 +884,7 @@ bool RenderTextWin::HasMissingGlyphs(internal::TextRun* run) const {
     DCHECK_LT(glyph_index, run->glyph_count);
 
     if (run->glyphs[glyph_index] == properties.wgDefault)
-      return true;
+      continue;
 
     // Windows Vista sometimes returns glyphs equal to wgBlank (instead of
     // wgDefault), with fZeroWidth set. Treat such cases as having missing
@@ -864,11 +894,14 @@ bool RenderTextWin::HasMissingGlyphs(internal::TextRun* run) const {
         run->visible_attributes[glyph_index].fZeroWidth &&
         !IsWhitespace(run_text[char_index]) &&
         !IsUnicodeBidiControlCharacter(run_text[char_index])) {
-      return true;
+      continue;
     }
+
+    ++chars_not_missing_glyphs;
   }
 
-  return false;
+  DCHECK_LE(chars_not_missing_glyphs, static_cast<int>(run->range.length()));
+  return run->range.length() - chars_not_missing_glyphs;
 }
 
 const std::vector<Font>* RenderTextWin::GetLinkedFonts(const Font& font) const {
