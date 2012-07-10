@@ -63,7 +63,9 @@ void SetShowWelcomePagePrefIfNeeded(
 
 void SetDefaultBrowser(installer::MasterPreferences* install_prefs);
 
-// Returns true if the first-run-ui process should be skipped.
+// Returns true if first run ui should be skipped, which is the case that
+// skip_first_run_ui setting is set to true. In the case the setting is
+// not found or specified, it returns false by default.
 bool SkipFirstRunUI(installer::MasterPreferences* install_prefs);
 
 // Sets ping_delay.

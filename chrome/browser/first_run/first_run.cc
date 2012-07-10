@@ -267,14 +267,10 @@ void SetShowWelcomePagePrefIfNeeded(
 }
 
 bool SkipFirstRunUI(installer::MasterPreferences* install_prefs) {
-  // TODO(mirandac): Refactor skip-first-run-ui process into regular first run
-  // import process.  http://crbug.com/49647
-  // Note we are skipping all other master preferences if skip-first-run-ui
-  // is *not* specified. (That is, we continue only if skipping first run ui.)
   bool value = false;
-  return (install_prefs->GetBool(
-          installer::master_preferences::kDistroSkipFirstRunPref,
-          &value) || !value);
+  install_prefs->GetBool(installer::master_preferences::kDistroSkipFirstRunPref,
+                         &value);
+  return value;
 }
 
 void SetRLZPref(first_run::MasterPrefs* out_prefs,
