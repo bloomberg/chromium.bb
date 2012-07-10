@@ -316,6 +316,10 @@ cr.define('options.network', function() {
       return null;
     },
 
+    canUpdateMenu: function() {
+      return false;
+    },
+
     /**
      * Displays a popup menu.
      */
@@ -329,8 +333,11 @@ cr.define('options.network', function() {
       if (!this.menu_) {
         rebuild = true;
         var existing = $(this.getMenuName_());
-        if (existing)
+        if (existing) {
+          if (this.updateMenu())
+            return;
           closeMenu_();
+        }
         this.menu_ = this.createMenu();
         this.menu_.addEventListener('mousedown', function(e) {
           // Prevent blurring of list, which would close the menu.
@@ -570,6 +577,80 @@ cr.define('options.network', function() {
     },
 
     /**
+     * Determines if a menu can be updated on the fly. Menus that cannot be
+     * updated are fully regenerated using createMenu. The advantage of
+     * updating a menu is that it can preserve ordering of networks avoiding
+     * entries from jumping around after an update.
+     */
+    canUpdateMenu: function() {
+      return this.data_.key == 'wifi' && activeMenu_ == this.getMenuName_();
+    },
+
+    /**
+     * Updates an existing menu.  Updated menus preserve ordering of prior
+     * entries.  During the update process, the ordering may differ from the
+     * preferred ordering as determined by the network library.  If the
+     * ordering becomes potentially out of sync, then the updated menu is
+     * marked for disposal on close.  Reopening the menu will force a
+     * regeneration, which will in turn fix the ordering.
+     * @return {boolean} True if successfully updated.
+     */
+    updateMenu: function() {
+      if (!this.canUpdateMenu())
+        return false;
+      var oldMenu = $(this.getMenuName_());
+      var group = oldMenu.getElementsByClassName('network-menu-group')[0];
+      if (!group)
+        return false;
+      var newMenu = this.createMenu();
+      var discardOnClose = false;
+      var oldNetworkButtons = this.extractNetworkConnectButtons_(oldMenu);
+      var newNetworkButtons = this.extractNetworkConnectButtons_(newMenu);
+      for (var key in oldNetworkButtons) {
+        if (newNetworkButtons[key]) {
+          group.replaceChild(newNetworkButtons[key].button,
+                             oldNetworkButtons[key].button);
+          if (newNetworkButtons[key].index != oldNetworkButtons[key].index)
+            discardOnClose = true;
+          newNetworkButtons[key] = null;
+        } else {
+          // Leave item in list to prevent network items from jumping due to
+          // deletions.
+          oldNetworkButtons[key].disabled = true;
+          discardOnClose = true;
+        }
+      }
+      for (var key in newNetworkButtons) {
+        var entry = newNetworkButtons[key];
+        if (entry) {
+          group.appendChild(entry.button);
+          discardOnClose = true;
+        }
+      }
+      oldMenu.data = {discardOnClose: discardOnClose};
+      return true;
+    },
+
+    /**
+     * Extracts a mapping of network names to menu element and position.
+     * @param {!Element} menu The menu to process.
+     * @return {Object.<string, Element>} Network mapping.
+     * @private
+     */
+    extractNetworkConnectButtons_: function(menu) {
+      var group = menu.getElementsByClassName('network-menu-group')[0];
+      var networkButtons = {};
+      if (!group)
+        return networkButtons;
+      var buttons = group.getElementsByClassName('network-menu-item');
+      for (var i = 0; i < buttons.length; i++) {
+        var label = buttons[i].data.label;
+        networkButtons[label] = {index: i, button: buttons[i]};
+      }
+      return networkButtons;
+    },
+
+    /**
      * Adds a command to a menu for modifying network settings.
      * @param {!Element} menu Parent menu.
      * @param {Object} data Description of the network.
@@ -605,6 +686,8 @@ cr.define('options.network', function() {
         button.addEventListener('click', callback);
       else
         buttonLabel.classList.add('network-disabled-control');
+
+      button.data = {label: label};
       MenuItem.decorate(button);
       menu.appendChild(button);
       return button;
@@ -998,7 +1081,10 @@ cr.define('options.network', function() {
    */
   function closeMenu_() {
     if (activeMenu_) {
-      $(activeMenu_).hidden = true;
+      var menu = $(activeMenu_);
+      menu.hidden = true;
+      if (menu.data && menu.data.discardOnClose)
+        menu.parentNode.removeChild(menu);
       activeMenu_ = null;
     }
   }
