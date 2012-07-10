@@ -527,28 +527,6 @@ def IsInsideChroot():
   return os.path.exists('/etc/debian_chroot')
 
 
-def GetSrcRoot():
-  """Get absolute path to src/scripts/ directory.
-
-  Assuming test script will always be run from descendant of src/scripts.
-
-  Returns:
-    A string, absolute path to src/scripts directory. None if not found.
-  """
-  src_root = None
-  match_str = '/src/scripts/'
-  test_script_path = os.path.abspath('.')
-
-  path_list = re.split(match_str, test_script_path)
-  if path_list:
-    src_root = os.path.join(path_list[0], match_str.strip('/'))
-    Info ('src_root = %r' % src_root)
-  else:
-    Info ('No %r found in %r' % (match_str, test_script_path))
-
-  return src_root
-
-
 def GetChromeosVersion(str_obj):
   """Helper method to parse output for CHROMEOS_VERSION_STRING.
 
@@ -567,25 +545,6 @@ def GetChromeosVersion(str_obj):
 
   Info ('CHROMEOS_VERSION_STRING NOT found')
   return None
-
-
-def GetOutputImageDir(board, cros_version):
-  """Construct absolute path to output image directory.
-
-  Args:
-    board: a string.
-    cros_version: a string, Chrome OS version.
-
-  Returns:
-    a string: absolute path to output directory.
-  """
-  src_root = GetSrcRoot()
-  rel_path = 'build/images/%s' % board
-  # ASSUME: --build_attempt always sets to 1
-  version_str = '-'.join([cros_version, 'a1'])
-  output_dir = os.path.join(os.path.dirname(src_root), rel_path, version_str)
-  Info ('output_dir = %s' % output_dir)
-  return output_dir
 
 
 def FindRepoDir(path=None):
@@ -612,20 +571,6 @@ def FindRepoCheckoutRoot(path=None):
     return os.path.dirname(repo_dir)
   else:
     return None
-
-
-def IsProjectInternal(cwd, project):
-  """Checks if project is internal."""
-  handler = ManifestCheckout.Cached(cwd)
-  remote = handler.GetAttributeForProject(project, 'remote')
-  if not remote:
-    raise Exception('Project %s has no remotes specified in manifest!'
-                    % project)
-  elif remote not in ('cros', 'cros-internal'):
-    raise Exception("Project %s remote is neither 'cros' nor 'cros-internal'"
-                     % project)
-
-  return remote == 'cros-internal'
 
 
 def GetProjectDir(cwd, project):

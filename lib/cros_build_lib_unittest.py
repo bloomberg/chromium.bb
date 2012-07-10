@@ -526,33 +526,6 @@ class TestListFiles(unittest.TestCase):
     except OSError, err:
       self.assertEqual(err.errno, errno.ENOENT)
 
-class HelperMethodMoxTests(unittest.TestCase):
-  """Tests for various helper methods using mox."""
-
-  def setUp(self):
-    self.mox = mox.Mox()
-    self.mox.StubOutWithMock(os.path, 'abspath')
-
-  def tearDown(self):
-    self.mox.UnsetStubs()
-    self.mox.VerifyAll()
-
-  def testGetSrcRoot(self):
-    test_path = '/tmp/foo/src/scripts/bar/more'
-    expected = '/tmp/foo/src/scripts'
-    os.path.abspath('.').AndReturn(test_path)
-    self.mox.ReplayAll()
-    actual = cros_build_lib.GetSrcRoot()
-    self.assertEqual(expected, actual)
-
-  def testGetOutputImageDir(self):
-    expected = '/tmp/foo/src/build/images/x86-generic/0.0.1-a1'
-    self.mox.StubOutWithMock(cros_build_lib, 'GetSrcRoot')
-    cros_build_lib.GetSrcRoot().AndReturn('/tmp/foo/src/scripts')
-    self.mox.ReplayAll()
-    actual = cros_build_lib.GetOutputImageDir('x86-generic', '0.0.1')
-    self.assertEqual(expected, actual)
-
 
 class HelperMethodSimpleTests(unittest.TestCase):
   """Tests for various helper methods without using mox."""
