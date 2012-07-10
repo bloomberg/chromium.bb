@@ -6,6 +6,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 *** New Braille tables
     - Estonian grade 0, thanks to Jürgen Dengo.
     - Portuguese 8 dot Computer braille, Thanks to Rui Fontes
+*** UTF-8 support in tables
+    Braille tables can now contain UTF-8 in the opcode arguments.
 *** Improvements to the python bindings
     All constants defined in liblouis.h are now exposed in the bindings.
 *** Add a doctest infrastructure
