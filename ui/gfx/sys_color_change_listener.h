@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #ifndef UI_GFX_SYS_COLOR_CHANGE_LISTENER_H_
-#define UI_GFX_SYS_COLOR_SCHEME_LISTENER_H_
+#define UI_GFX_SYS_COLOR_CHANGE_LISTENER_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -42,4 +42,4 @@ class UI_EXPORT ScopedSysColorChangeListener {
 
 }  // namespace gfx;
 
-#endif  // UI_GFX_SYS_COLOR_CHANGE_LISTENER_
+#endif  // UI_GFX_SYS_COLOR_CHANGE_LISTENER_H_
