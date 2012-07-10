@@ -77,7 +77,8 @@ enum {
 // auto-login.  It holds context information needed while re-issuing service
 // tokens using the TokenService, gets the browser cookies with the TokenAuth
 // API, and finally redirects the user to the correct page.
-class AutoLoginRedirector : public UbertokenConsumer {
+class AutoLoginRedirector : public UbertokenConsumer,
+                            public content::NotificationObserver {
  public:
   AutoLoginRedirector(NavigationController* navigation_controller,
                       const std::string& args);
@@ -88,6 +89,11 @@ class AutoLoginRedirector : public UbertokenConsumer {
   virtual void OnUbertokenSuccess(const std::string& token) OVERRIDE;
   virtual void OnUbertokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
 
+  // Implementation of content::NotificationObserver
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   // Redirect tab to MergeSession URL, logging the user in and navigating
   // to the desired page.
   void RedirectToMergeSession(const std::string& token);
@@ -95,6 +101,9 @@ class AutoLoginRedirector : public UbertokenConsumer {
   NavigationController* navigation_controller_;
   const std::string args_;
   scoped_ptr<UbertokenFetcher> ubertoken_fetcher_;
+
+  // For listening to NavigationController destruction.
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoLoginRedirector);
 };
@@ -107,10 +116,24 @@ AutoLoginRedirector::AutoLoginRedirector(
   ubertoken_fetcher_.reset(new UbertokenFetcher(
       Profile::FromBrowserContext(navigation_controller_->GetBrowserContext()),
       this));
+  registrar_.Add(this,
+                 content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 content::Source<content::WebContents>(
+                     navigation_controller_->GetWebContents()));
   ubertoken_fetcher_->StartFetchingToken();
 }
 
 AutoLoginRedirector::~AutoLoginRedirector() {
+}
+
+void AutoLoginRedirector::Observe(int type,
+                                  const NotificationSource& source,
+                                  const NotificationDetails& details) {
+  DCHECK(type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED);
+  // The WebContents that started this has been destroyed. The request must be
+  // cancelled and this object must be deleted.
+  ubertoken_fetcher_.reset();
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void AutoLoginRedirector::OnUbertokenSuccess(const std::string& token) {
