@@ -796,6 +796,7 @@ void CALLBACK CrashGenerationServer::OnDumpRequest(void* context, BOOLEAN) {
   assert(context);
   ClientInfo* client_info = reinterpret_cast<ClientInfo*>(context);
   client_info->PopulateCustomInfo();
+  client_info->PopulateCustomDataStream();
 
   CrashGenerationServer* crash_server = client_info->crash_server();
   assert(crash_server);
@@ -892,6 +893,7 @@ bool CrashGenerationServer::GenerateDump(const ClientInfo& client,
                                         GetCurrentThreadId(),
                                         client_ex_info,
                                         client.assert_info(),
+                                        client.custom_data_stream(),
                                         client.dump_type(),
                                         true,
                                         dump_path);

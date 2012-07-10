@@ -331,7 +331,8 @@ typedef enum {
 
   /* Breakpad extension types.  0x4767 = "Gg" */
   MD_BREAKPAD_INFO_STREAM        = 0x47670001,  /* MDRawBreakpadInfo */
-  MD_ASSERTION_INFO_STREAM       = 0x47670002   /* MDRawAssertionInfo */
+  MD_ASSERTION_INFO_STREAM       = 0x47670002,  /* MDRawAssertionInfo */
+  MD_CUSTOM_DATA_STREAM          = 0x47670003   /* MDRawCustomDataStream */
 } MDStreamType;  /* MINIDUMP_STREAM_TYPE */
 
 
@@ -724,6 +725,9 @@ typedef enum {
  * Breakpad extension types
  */
 
+typedef struct {
+  u_int8_t stream[1];
+} MDRawCustomDataStream;
 
 typedef struct {
   /* validity is a bitmask with values from MDBreakpadInfoValidity, indicating
