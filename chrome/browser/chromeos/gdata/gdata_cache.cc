@@ -37,30 +37,6 @@ const FilePath::CharType kGDataCacheTmpDownloadsDir[] =
 const FilePath::CharType kGDataCacheTmpDocumentsDir[] =
     FILE_PATH_LITERAL("tmp/documents");
 
-std::string CacheSubDirectoryTypeToString(
-    GDataCache::CacheSubDirectoryType subdir) {
-  switch (subdir) {
-    case GDataCache::CACHE_TYPE_META:
-      return "meta";
-    case GDataCache::CACHE_TYPE_PINNED:
-      return "pinned";
-    case GDataCache::CACHE_TYPE_OUTGOING:
-      return "outgoing";
-    case GDataCache::CACHE_TYPE_PERSISTENT:
-      return "persistent";
-    case GDataCache::CACHE_TYPE_TMP:
-      return "tmp";
-    case GDataCache::CACHE_TYPE_TMP_DOWNLOADS:
-      return "tmp_downloads";
-    case GDataCache::CACHE_TYPE_TMP_DOCUMENTS:
-      return "tmp_documents";
-    case GDataCache::NUM_CACHE_TYPES:
-      NOTREACHED();
-  }
-  NOTREACHED();
-  return "unknown subdir";
-}
-
 // Returns the home directory path, or an empty string if the home directory
 // is not found.
 // Copied from webkit/chromeos/cros_mount_point_provider.h.
@@ -367,10 +343,11 @@ std::string GDataCache::CacheEntry::ToString() const {
     cache_states.push_back("pinned");
   if (GDataCache::IsCacheDirty(cache_state))
     cache_states.push_back("dirty");
+  if (GDataCache::IsCachePersistent(cache_state))
+    cache_states.push_back("persistent");
 
-  return base::StringPrintf("md5=%s, subdir=%s, cache_state=%s",
+  return base::StringPrintf("md5=%s, cache_state=%s",
                             md5.c_str(),
-                            CacheSubDirectoryTypeToString(sub_dir_type).c_str(),
                             JoinString(cache_states, ',').c_str());
 }
 
@@ -817,7 +794,7 @@ void GDataCache::GetFile(const std::string& resource_id,
     *cache_file_path = GetCacheFilePath(
         resource_id,
         md5,
-        cache_entry->sub_dir_type,
+        cache_entry->GetSubDirectoryType(),
         file_origin);
     *error = base::PLATFORM_FILE_OK;
   } else {
@@ -903,7 +880,10 @@ void GDataCache::Store(const std::string& resource_id,
 
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
-    metadata_->UpdateCache(resource_id, md5, sub_dir_type, cache_state);
+    UpdateCacheWithSubDirectoryType(resource_id,
+                                    md5,
+                                    sub_dir_type,
+                                    cache_state);
   }
 }
 
@@ -944,17 +924,17 @@ void GDataCache::Pin(const std::string& resource_id,
     // set |source_path| the same, because ModifyCacheState only moves files if
     // source and destination are different.
     if (cache_entry->IsDirty() || cache_entry->IsMounted()) {
-      DCHECK_EQ(CACHE_TYPE_PERSISTENT, cache_entry->sub_dir_type);
+      DCHECK(cache_entry->IsPersistent());
       dest_path = GetCacheFilePath(resource_id,
                                    md5,
-                                   cache_entry->sub_dir_type,
+                                   cache_entry->GetSubDirectoryType(),
                                    CACHED_FILE_LOCALLY_MODIFIED);
       source_path = dest_path;
     } else {
       // Gets the current path of the file in cache.
       source_path = GetCacheFilePath(resource_id,
                                      md5,
-                                     cache_entry->sub_dir_type,
+                                     cache_entry->GetSubDirectoryType(),
                                      CACHED_FILE_FROM_SERVER);
 
       // If file was pinned before but actual file blob doesn't exist in cache:
@@ -990,7 +970,10 @@ void GDataCache::Pin(const std::string& resource_id,
 
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
-    metadata_->UpdateCache(resource_id, md5, sub_dir_type, cache_state);
+    UpdateCacheWithSubDirectoryType(resource_id,
+                                    md5,
+                                    sub_dir_type,
+                                    cache_state);
   }
 }
 
@@ -1023,17 +1006,17 @@ void GDataCache::Unpin(const std::string& resource_id,
   // and destination are different.
   if (cache_entry->IsDirty() || cache_entry->IsMounted()) {
     sub_dir_type = CACHE_TYPE_PERSISTENT;
-    DCHECK_EQ(sub_dir_type, cache_entry->sub_dir_type);
+    DCHECK(cache_entry->IsPersistent());
     dest_path = GetCacheFilePath(resource_id,
                                  md5,
-                                 cache_entry->sub_dir_type,
+                                 cache_entry->GetSubDirectoryType(),
                                  CACHED_FILE_LOCALLY_MODIFIED);
     source_path = dest_path;
   } else {
     // Gets the current path of the file in cache.
     source_path = GetCacheFilePath(resource_id,
                                    md5,
-                                   cache_entry->sub_dir_type,
+                                   cache_entry->GetSubDirectoryType(),
                                    CACHED_FILE_FROM_SERVER);
 
     // If file was pinned but actual file blob still doesn't exist in cache,
@@ -1069,7 +1052,10 @@ void GDataCache::Unpin(const std::string& resource_id,
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
     int cache_state = ClearCachePinned(cache_entry->cache_state);
-    metadata_->UpdateCache(resource_id, md5, sub_dir_type, cache_state);
+    UpdateCacheWithSubDirectoryType(resource_id,
+                                    md5,
+                                    sub_dir_type,
+                                    cache_state);
   }
 }
 
@@ -1133,7 +1119,10 @@ void GDataCache::SetMountedState(const FilePath& file_path,
                             FILE_OPERATION_MOVE, FilePath(), false);
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that cache operation is complete, update cache map
-    metadata_->UpdateCache(resource_id, md5, dest_subdir, cache_state);
+    UpdateCacheWithSubDirectoryType(resource_id,
+                                    md5,
+                                    dest_subdir,
+                                    cache_state);
   }
 }
 
@@ -1171,7 +1160,7 @@ void GDataCache::MarkDirty(const std::string& resource_id,
   // MarkDirtyInCache is called again.
   if (cache_entry->IsDirty()) {
     // The file must be in persistent dir.
-    DCHECK_EQ(CACHE_TYPE_PERSISTENT, cache_entry->sub_dir_type);
+    DCHECK(cache_entry->IsPersistent());
 
     // Determine symlink path in outgoing dir, so as to remove it.
     FilePath symlink_path = GetCacheFilePath(
@@ -1207,7 +1196,7 @@ void GDataCache::MarkDirty(const std::string& resource_id,
   FilePath source_path = GetCacheFilePath(
       resource_id,
       md5,
-      cache_entry->sub_dir_type,
+      cache_entry->GetSubDirectoryType(),
       CACHED_FILE_FROM_SERVER);
 
   // Determine destination path.
@@ -1236,7 +1225,10 @@ void GDataCache::MarkDirty(const std::string& resource_id,
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
     int cache_state = SetCacheDirty(cache_entry->cache_state);
-    metadata_->UpdateCache(resource_id, md5, sub_dir_type, cache_state);
+    UpdateCacheWithSubDirectoryType(resource_id,
+                                    md5,
+                                    sub_dir_type,
+                                    cache_state);
   }
 }
 
@@ -1275,7 +1267,7 @@ void GDataCache::CommitDirty(const std::string& resource_id,
   }
 
   // Dirty files must be in persistent dir.
-  DCHECK_EQ(CACHE_TYPE_PERSISTENT, cache_entry->sub_dir_type);
+  DCHECK(cache_entry->IsPersistent());
 
   // Create symlink in outgoing dir.
   FilePath symlink_path = GetCacheFilePath(resource_id,
@@ -1286,7 +1278,7 @@ void GDataCache::CommitDirty(const std::string& resource_id,
   // Get target path of symlink i.e. current path of the file in cache.
   FilePath target_path = GetCacheFilePath(resource_id,
                                           md5,
-                                          cache_entry->sub_dir_type,
+                                          cache_entry->GetSubDirectoryType(),
                                           CACHED_FILE_LOCALLY_MODIFIED);
 
   // Since there's no need to move files, use |target_path| for both
@@ -1332,12 +1324,12 @@ void GDataCache::ClearDirty(const std::string& resource_id,
   }
 
   // File must be dirty and hence in persistent dir.
-  DCHECK_EQ(CACHE_TYPE_PERSISTENT, cache_entry->sub_dir_type);
+  DCHECK(cache_entry->IsPersistent());
 
   // Get the current path of the file in cache.
   FilePath source_path = GetCacheFilePath(resource_id,
                                           md5,
-                                          cache_entry->sub_dir_type,
+                                          cache_entry->GetSubDirectoryType(),
                                           CACHED_FILE_LOCALLY_MODIFIED);
 
   // Determine destination path.
@@ -1382,7 +1374,10 @@ void GDataCache::ClearDirty(const std::string& resource_id,
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
     int cache_state = ClearCacheDirty(cache_entry->cache_state);
-    metadata_->UpdateCache(resource_id, md5, sub_dir_type, cache_state);
+    UpdateCacheWithSubDirectoryType(resource_id,
+                                    md5,
+                                    sub_dir_type,
+                                    cache_state);
   }
 }
 
@@ -1515,6 +1510,22 @@ void GDataCache::GetCacheEntryHelper(const std::string& resource_id,
   *success = value.get();
   if (*success)
     *cache_entry = *value;
+}
+
+void GDataCache::UpdateCacheWithSubDirectoryType(
+    const std::string& resource_id,
+    const std::string& md5,
+    CacheSubDirectoryType sub_dir_type,
+    int cache_state) {
+  DCHECK(sub_dir_type == CACHE_TYPE_PERSISTENT ||
+         sub_dir_type == CACHE_TYPE_TMP);
+
+  if (sub_dir_type == CACHE_TYPE_PERSISTENT)
+    cache_state = SetCachePersistent(cache_state);
+  else
+    cache_state = ClearCachePersistent(cache_state);
+
+  metadata_->UpdateCache(resource_id, md5, cache_state);
 }
 
 // static

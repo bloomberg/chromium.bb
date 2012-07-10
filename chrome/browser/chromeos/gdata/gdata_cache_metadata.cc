@@ -184,9 +184,8 @@ void GDataCacheMetadataMap::Initialize(
 }
 
 void GDataCacheMetadataMap::UpdateCache(const std::string& resource_id,
-                                    const std::string& md5,
-                                    GDataCache::CacheSubDirectoryType subdir,
-                                    int cache_state) {
+                                        const std::string& md5,
+                                        int cache_state) {
   AssertOnSequencedWorkerPool();
 
   CacheMap::iterator iter = cache_map_.find(resource_id);
@@ -194,7 +193,7 @@ void GDataCacheMetadataMap::UpdateCache(const std::string& resource_id,
     // Makes no sense to create new entry if cache state is NONE.
     DCHECK(cache_state != GDataCache::CACHE_STATE_NONE);
     if (cache_state != GDataCache::CACHE_STATE_NONE) {
-      GDataCache::CacheEntry cache_entry(md5, subdir, cache_state);
+      GDataCache::CacheEntry cache_entry(md5, cache_state);
       cache_map_.insert(std::make_pair(resource_id, cache_entry));
       DVLOG(1) << "Added res_id=" << resource_id
                << ", " << cache_entry.ToString();
@@ -207,7 +206,6 @@ void GDataCacheMetadataMap::UpdateCache(const std::string& resource_id,
       cache_map_.erase(iter);
     } else {  // Otherwise, update entry in cache map.
       iter->second.md5 = md5;
-      iter->second.sub_dir_type = subdir;
       iter->second.cache_state = cache_state;
       DVLOG(1) << "Updated res_id=" << resource_id
                << ", " << iter->second.ToString();
@@ -258,7 +256,7 @@ void GDataCacheMetadataMap::RemoveTemporaryFiles() {
 
   CacheMap::iterator iter = cache_map_.begin();
   while (iter != cache_map_.end()) {
-    if (iter->second.sub_dir_type == GDataCache::CACHE_TYPE_TMP) {
+    if (!iter->second.IsPersistent()) {
       // Post-increment the iterator to avoid iterator invalidation.
       cache_map_.erase(iter++);
     } else {
@@ -294,8 +292,6 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
       util::kWildCard);
   for (FilePath current = enumerator.Next(); !current.empty();
        current = enumerator.Next()) {
-    GDataCache::CacheSubDirectoryType real_sub_dir_type =
-        sub_dir_type;
     // Extract resource_id and md5 from filename.
     std::string resource_id;
     std::string md5;
@@ -327,9 +323,6 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
       // /dev/null; follow through to create an entry with the PINNED but not
       // PRESENT state.
       cache_state = GDataCache::SetCachePinned(cache_state);
-      // Change the real sub directory type to TMP, as the downloaded file
-      // will be stored in 'tmp' directory first.
-      real_sub_dir_type = GDataCache::CACHE_TYPE_TMP;
     } else if (sub_dir_type == GDataCache::CACHE_TYPE_OUTGOING) {
       std::string reason;
       if (!IsValidSymbolicLink(current, sub_dir_type, cache_paths, &reason)) {
@@ -354,6 +347,9 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
       continue;
     } else if (sub_dir_type == GDataCache::CACHE_TYPE_PERSISTENT ||
                sub_dir_type == GDataCache::CACHE_TYPE_TMP) {
+      if (sub_dir_type == GDataCache::CACHE_TYPE_PERSISTENT)
+        cache_state = GDataCache::SetCachePersistent(cache_state);
+
       if (file_util::IsLink(current)) {
         LOG(WARNING) << "Removing a symlink in persistent/tmp directory"
                      << current.value();
@@ -374,7 +370,7 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
         // the file is in the persistent directory.
         if (md5 == util::kLocallyModifiedFileExtension) {
           if (sub_dir_type == GDataCache::CACHE_TYPE_PERSISTENT) {
-            cache_state |= GDataCache::SetCacheDirty(cache_state);
+            cache_state = GDataCache::SetCacheDirty(cache_state);
           } else {
             LOG(WARNING) << "Removing a dirty file in tmp directory: "
                          << current.value();
@@ -389,8 +385,7 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
 
     // Create and insert new entry into cache map.
     cache_map->insert(std::make_pair(
-        resource_id, GDataCache::CacheEntry(
-            md5, real_sub_dir_type, cache_state)));
+        resource_id, GDataCache::CacheEntry(md5, cache_state)));
     processed_file_map->insert(std::make_pair(resource_id, current));
   }
 }
