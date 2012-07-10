@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -44,6 +45,25 @@ content::WebContents* GetWebContentsAt(const Browser* browser, int index) {
 
 void ActivateTabAt(Browser* browser, int index, bool user_gesture) {
   browser->tab_strip_model()->ActivateTabAt(index, user_gesture);
+}
+
+TabContents* AddBlankTab(Browser* browser, bool foreground) {
+  return AddBlankTabAt(browser, -1, foreground);
+}
+
+TabContents* AddBlankTabAt(Browser* browser, int index, bool foreground) {
+  // Time new tab page creation time.  We keep track of the timing data in
+  // WebContents, but we want to include the time it takes to create the
+  // WebContents object too.
+  base::TimeTicks new_tab_start_time = base::TimeTicks::Now();
+  chrome::NavigateParams params(browser, GURL(chrome::kChromeUINewTabURL),
+                                content::PAGE_TRANSITION_TYPED);
+  params.disposition = foreground ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
+  params.tabstrip_index = index;
+  chrome::Navigate(&params);
+  params.target_contents->web_contents()->SetNewTabStartTime(
+      new_tab_start_time);
+  return params.target_contents;
 }
 
 bool IsTabStripEditable(Browser* browser) {

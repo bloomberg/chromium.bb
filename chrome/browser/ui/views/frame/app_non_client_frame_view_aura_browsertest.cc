@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/app_non_client_frame_view_aura.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -30,7 +31,7 @@ class AppNonClientFrameViewAuraTest : public InProcessBrowserTest {
     params.initial_show_state = ui::SHOW_STATE_MAXIMIZED;
     params.app_type = Browser::APP_TYPE_HOST;
     app_browser_ = Browser::CreateWithParams(params);
-    app_browser_->AddBlankTab(true);
+    chrome::AddBlankTab(app_browser_, true);
     app_browser_->window()->Show();
   }
 

@@ -1375,7 +1375,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
   // Open a popup browser with a single blank foreground tab.
   Browser* popup_browser = browser()->CreateWithParams(
       Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
-  popup_browser->AddBlankTab(true);
+  chrome::AddBlankTab(popup_browser, true);
   EXPECT_EQ(1, popup_browser->tab_count());
 
   // Now try opening another tab in the popup browser.
@@ -1393,7 +1393,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
   Browser* app_browser = browser()->CreateWithParams(
       Browser::CreateParams::CreateForApp(
           L"Test", browser()->profile(), false));
-  app_browser->AddBlankTab(true);
+  chrome::AddBlankTab(app_browser, true);
   EXPECT_EQ(1, app_browser->tab_count());
 
   // Now try opening another tab in the app browser.
@@ -1412,7 +1412,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
   Browser* app_popup_browser = browser()->CreateWithParams(
       Browser::CreateParams::CreateForApp(
           L"Test", browser()->profile(), false));
-  app_popup_browser->AddBlankTab(true);
+  chrome::AddBlankTab(app_popup_browser, true);
   EXPECT_EQ(1, app_popup_browser->tab_count());
 
   // Now try opening another tab in the app popup browser.

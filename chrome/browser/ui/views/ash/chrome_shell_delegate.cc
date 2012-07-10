@@ -214,7 +214,7 @@ void ChromeShellDelegate::RestoreTab() {
   if (!service)
     return;
   if (service->IsLoaded()) {
-    browser->RestoreTab();
+    chrome::RestoreTab(browser);
   } else {
     service->LoadTabsFromLastSession();
     // LoadTabsFromLastSession is asynchronous, so TabRestoreService has not

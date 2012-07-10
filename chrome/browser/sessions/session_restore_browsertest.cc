@@ -176,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NoSessionRestoreNewWindowChromeOS) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   Browser* incognito_browser = CreateIncognitoBrowser();
-  incognito_browser->AddBlankTab(true);
+  chrome::AddBlankTab(incognito_browser, true);
   incognito_browser->window()->Show();
 
   // Close the normal browser. After this we only have the incognito window
@@ -356,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, IncognitotoNonIncognito) {
 
   // Create a new incognito window.
   Browser* incognito_browser = CreateIncognitoBrowser();
-  incognito_browser->AddBlankTab(true);
+  chrome::AddBlankTab(incognito_browser, true);
   incognito_browser->window()->Show();
 
   // Close the normal browser. After this we only have the incognito window

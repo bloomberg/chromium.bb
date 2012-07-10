@@ -102,6 +102,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
+#include "chrome/browser/ui/browser_tab_strip_model_delegate.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_toolbar_model_delegate.h"
 #include "chrome/browser/ui/browser_ui_prefs.h"
@@ -300,7 +301,11 @@ Browser::Browser(Type type, Profile* profile)
       profile_(profile),
       window_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          tab_strip_model_(new TabStripModel(this, profile))),
+          tab_strip_model_delegate_(
+            new chrome::BrowserTabStripModelDelegate(this))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          tab_strip_model_(new TabStripModel(tab_strip_model_delegate_.get(),
+                           profile))),
       app_type_(APP_TYPE_HOST),
       chrome_updater_factory_(this),
       cancel_download_confirmation_state_(NOT_PROMPTED),
@@ -1010,178 +1015,6 @@ void Browser::UpdateUIForNavigationInTab(TabContents* contents,
 
 WebContents* Browser::OpenURL(const OpenURLParams& params) {
   return OpenURLFromTab(NULL, params);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Browser, TabStripModelDelegate implementation:
-
-TabContents* Browser::AddBlankTab(bool foreground) {
-  return AddBlankTabAt(-1, foreground);
-}
-
-TabContents* Browser::AddBlankTabAt(int index, bool foreground) {
-  // Time new tab page creation time.  We keep track of the timing data in
-  // WebContents, but we want to include the time it takes to create the
-  // WebContents object too.
-  base::TimeTicks new_tab_start_time = base::TimeTicks::Now();
-  chrome::NavigateParams params(this, GURL(chrome::kChromeUINewTabURL),
-                                content::PAGE_TRANSITION_TYPED);
-  params.disposition = foreground ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
-  params.tabstrip_index = index;
-  chrome::Navigate(&params);
-  params.target_contents->web_contents()->SetNewTabStartTime(
-      new_tab_start_time);
-  return params.target_contents;
-}
-
-Browser* Browser::CreateNewStripWithContents(
-    TabContents* detached_contents,
-    const gfx::Rect& window_bounds,
-    const DockInfo& dock_info,
-    bool maximize) {
-  DCHECK(CanSupportWindowFeature(FEATURE_TABSTRIP));
-
-  gfx::Rect new_window_bounds = window_bounds;
-  if (dock_info.GetNewWindowBounds(&new_window_bounds, &maximize))
-    dock_info.AdjustOtherWindowBounds();
-
-  // Create an empty new browser window the same size as the old one.
-  Browser* browser = new Browser(TYPE_TABBED, profile_);
-  browser->set_override_bounds(new_window_bounds);
-  browser->set_initial_show_state(
-      maximize ? ui::SHOW_STATE_MAXIMIZED : ui::SHOW_STATE_NORMAL);
-  browser->InitBrowserWindow();
-  browser->tab_strip_model()->AppendTabContents(detached_contents, true);
-  // Make sure the loading state is updated correctly, otherwise the throbber
-  // won't start if the page is loading.
-  browser->LoadingStateChanged(detached_contents->web_contents());
-  return browser;
-}
-
-int Browser::GetDragActions() const {
-  return TabStripModelDelegate::TAB_TEAROFF_ACTION | (tab_count() > 1 ?
-      TabStripModelDelegate::TAB_MOVE_ACTION : 0);
-}
-
-TabContents* Browser::CreateTabContentsForURL(
-    const GURL& url, const content::Referrer& referrer, Profile* profile,
-    content::PageTransition transition, bool defer_load,
-    SiteInstance* instance) const {
-  TabContents* contents = chrome::TabContentsFactory(profile, instance,
-      MSG_ROUTING_NONE, chrome::GetActiveWebContents(this), NULL);
-  if (!defer_load) {
-    // Load the initial URL before adding the new tab contents to the tab strip
-    // so that the tab contents has navigation state.
-    contents->web_contents()->GetController().LoadURL(
-        url, referrer, transition, std::string());
-  }
-
-  return contents;
-}
-
-bool Browser::CanDuplicateContentsAt(int index) {
-  NavigationController& nc =
-      chrome::GetWebContentsAt(this, index)->GetController();
-  return nc.GetWebContents() && nc.GetLastCommittedEntry();
-}
-
-void Browser::DuplicateContentsAt(int index) {
-  TabContents* contents = chrome::GetTabContentsAt(this, index);
-  CHECK(contents);
-  TabContents* contents_dupe = contents->Clone();
-
-  bool pinned = false;
-  if (CanSupportWindowFeature(FEATURE_TABSTRIP)) {
-    // If this is a tabbed browser, just create a duplicate tab inside the same
-    // window next to the tab being duplicated.
-    int index = tab_strip_model_->GetIndexOfTabContents(contents);
-    pinned = tab_strip_model_->IsTabPinned(index);
-    int add_types = TabStripModel::ADD_ACTIVE |
-        TabStripModel::ADD_INHERIT_GROUP |
-        (pinned ? TabStripModel::ADD_PINNED : 0);
-    tab_strip_model_->InsertTabContentsAt(index + 1, contents_dupe, add_types);
-  } else {
-    Browser* browser = NULL;
-    if (is_app()) {
-      CHECK(!is_type_popup());
-      CHECK(!is_type_panel());
-      browser = Browser::CreateWithParams(
-          Browser::CreateParams::CreateForApp(
-              TYPE_POPUP, app_name_, gfx::Rect(),profile_));
-    } else if (is_type_popup()) {
-      browser = Browser::CreateWithParams(
-          Browser::CreateParams(TYPE_POPUP, profile_));
-    }
-
-    // Preserve the size of the original window. The new window has already
-    // been given an offset by the OS, so we shouldn't copy the old bounds.
-    BrowserWindow* new_window = browser->window();
-    new_window->SetBounds(gfx::Rect(new_window->GetRestoredBounds().origin(),
-                          window()->GetRestoredBounds().size()));
-
-    // We need to show the browser now.  Otherwise ContainerWin assumes the
-    // WebContents is invisible and won't size it.
-    browser->window()->Show();
-
-    // The page transition below is only for the purpose of inserting the tab.
-    chrome::AddTab(browser, contents_dupe, content::PAGE_TRANSITION_LINK);
-  }
-
-  SessionService* session_service =
-      SessionServiceFactory::GetForProfileIfExisting(profile_);
-  if (session_service)
-    session_service->TabRestored(contents_dupe, pinned);
-}
-
-void Browser::CloseFrameAfterDragSession() {
-#if !defined(OS_MACOSX)
-  // This is scheduled to run after we return to the message loop because
-  // otherwise the frame will think the drag session is still active and ignore
-  // the request.
-  // TODO(port): figure out what is required here in a cross-platform world
-  MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&Browser::CloseFrame, weak_factory_.GetWeakPtr()));
-#endif
-}
-
-void Browser::CreateHistoricalTab(TabContents* contents) {
-  // We don't create historical tabs for incognito windows or windows without
-  // profiles.
-  if (!profile() || profile()->IsOffTheRecord())
-    return;
-
-  // We don't create historical tabs for print preview tabs.
-  if (contents->web_contents()->GetURL() == GURL(chrome::kChromeUIPrintURL))
-    return;
-
-  TabRestoreService* service =
-      TabRestoreServiceFactory::GetForProfile(profile());
-
-  // We only create historical tab entries for tabbed browser windows.
-  if (service && CanSupportWindowFeature(FEATURE_TABSTRIP)) {
-    service->CreateHistoricalTab(contents->web_contents(),
-        tab_strip_model_->GetIndexOfTabContents(contents));
-  }
-}
-
-bool Browser::RunUnloadListenerBeforeClosing(TabContents* contents) {
-  return Browser::RunUnloadEventsHelper(contents->web_contents());
-}
-
-bool Browser::CanBookmarkAllTabs() const {
-  return chrome::CanBookmarkAllTabs(this);
-}
-
-void Browser::BookmarkAllTabs() {
-  chrome::BookmarkAllTabs(this);
-}
-
-bool Browser::CanRestoreTab() {
-  return chrome::CanRestoreTab(this);
-}
-
-void Browser::RestoreTab() {
-  chrome::RestoreTab(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

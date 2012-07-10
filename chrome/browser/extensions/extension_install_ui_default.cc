@@ -124,7 +124,7 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
   Profile* current_profile = profile_->GetOriginalProfile();
   Browser* browser = browser::FindOrCreateTabbedBrowser(current_profile);
   if (browser->tab_count() == 0)
-    browser->AddBlankTab(true);
+    chrome::AddBlankTab(browser, true);
   browser->window()->Show();
 
   bool use_bubble_for_apps = false;

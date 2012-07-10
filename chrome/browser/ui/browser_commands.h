@@ -83,6 +83,8 @@ void SelectNumberedTab(Browser* browser, int index);
 void SelectLastTab(Browser* browser);
 void DuplicateTab(Browser* browser);
 bool CanDuplicateTab(const Browser* browser);
+void DuplicateTabAt(Browser* browser, int index);
+bool CanDuplicateTabAt(Browser* browser, int index);
 void ConvertPopupToTabbedBrowser(Browser* browser);
 void Exit();
 void BookmarkCurrentPage(Browser* browser);

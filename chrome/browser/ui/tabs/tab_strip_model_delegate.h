@@ -42,6 +42,8 @@ class TabStripModelDelegate {
     TAB_TEAROFF_ACTION = 2
   };
 
+  virtual ~TabStripModelDelegate() {}
+
   // Adds what the delegate considers to be a blank tab to the model.
   virtual TabContents* AddBlankTab(bool foreground) = 0;
   virtual TabContents* AddBlankTabAt(int index, bool foreground) = 0;
@@ -107,9 +109,6 @@ class TabStripModelDelegate {
 
   // Creates a bookmark folder containing a bookmark for all open tabs.
   virtual void BookmarkAllTabs() = 0;
-
- protected:
-  virtual ~TabStripModelDelegate() {}
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_DELEGATE_H_

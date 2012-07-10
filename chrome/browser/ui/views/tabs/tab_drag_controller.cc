@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_creator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/base_tab.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"

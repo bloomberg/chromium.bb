@@ -83,7 +83,7 @@ namespace {
 
 WebContents* GetOrCloneTabForDisposition(Browser* browser,
                                          WindowOpenDisposition disposition) {
-  TabContents* current_tab = chrome::GetActiveTabContents(browser);
+  TabContents* current_tab = GetActiveTabContents(browser);
   switch (disposition) {
     case NEW_FOREGROUND_TAB:
     case NEW_BACKGROUND_TAB: {
@@ -113,7 +113,7 @@ void ReloadInternal(Browser* browser,
                     WindowOpenDisposition disposition,
                     bool ignore_cache) {
   // If we are showing an interstitial, treat this as an OpenURL.
-  WebContents* current_tab = chrome::GetActiveWebContents(browser);
+  WebContents* current_tab = GetActiveWebContents(browser);
   if (current_tab && current_tab->ShowingInterstitialPage()) {
     NavigationEntry* entry = current_tab->GetController().GetActiveEntry();
     DCHECK(entry);  // Should exist if interstitial is showing.
@@ -153,8 +153,8 @@ bool PrintPreviewShowing(const Browser* browser) {
 
 bool IsNTPModeForInstantExtendedAPI(const Browser* browser) {
   return browser->search_model() &&
-      chrome::search::IsInstantExtendedAPIEnabled(browser->profile()) &&
-      browser->search_model()->mode().is_ntp();
+      search::IsInstantExtendedAPIEnabled(browser->profile()) &&
+          browser->search_model()->mode().is_ntp();
 }
 
 }  // namespace
@@ -250,7 +250,7 @@ void NewEmptyWindow(Profile* profile) {
 
 Browser* OpenEmptyWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
-  browser->AddBlankTab(true);
+  AddBlankTab(browser, true);
   browser->window()->Show();
   return browser;
 }
@@ -347,8 +347,7 @@ void OpenCurrentURL(Browser* browser) {
 
   GURL url(location_bar->GetInputString());
 
-  chrome::NavigateParams params(browser, url,
-                                location_bar->GetPageTransition());
+  NavigateParams params(browser, url, location_bar->GetPageTransition());
   params.disposition = open_disposition;
   // Use ADD_INHERIT_OPENER so that all pages opened by the omnibox at least
   // inherit the opener. In some cases the tabstrip will determine the group
@@ -356,7 +355,7 @@ void OpenCurrentURL(Browser* browser) {
   // opener.
   params.tabstrip_add_types =
       TabStripModel::ADD_FORCE_INDEX | TabStripModel::ADD_INHERIT_OPENER;
-  chrome::Navigate(&params);
+  Navigate(&params);
 
   DCHECK(browser->profile()->GetExtensionService());
   if (browser->profile()->GetExtensionService()->IsInstalledApp(url)) {
@@ -394,16 +393,16 @@ void NewTab(Browser* browser) {
                             TabStripModel::NEW_TAB_ENUM_COUNT);
 
   if (browser->is_type_tabbed()) {
-    browser->AddBlankTab(true);
+    AddBlankTab(browser, true);
     GetActiveWebContents(browser)->GetView()->RestoreFocus();
   } else {
     Browser* b = browser::FindOrCreateTabbedBrowser(browser->profile());
-    b->AddBlankTab(true);
+    AddBlankTab(b, true);
     b->window()->Show();
     // The call to AddBlankTab above did not set the focus to the tab as its
     // window was not active, so we have to do it explicitly.
     // See http://crbug.com/6380.
-    chrome::GetActiveWebContents(b)->GetView()->RestoreFocus();
+    GetActiveWebContents(b)->GetView()->RestoreFocus();
   }
 }
 
@@ -474,12 +473,69 @@ void SelectLastTab(Browser* browser) {
 
 void DuplicateTab(Browser* browser) {
   content::RecordAction(UserMetricsAction("Duplicate"));
-  browser->DuplicateContentsAt(browser->active_index());
+  DuplicateTabAt(browser, browser->active_index());
 }
 
 bool CanDuplicateTab(const Browser* browser) {
   WebContents* contents = GetActiveWebContents(browser);
   return contents && contents->GetController().GetLastCommittedEntry();
+}
+
+void DuplicateTabAt(Browser* browser, int index) {
+  TabContents* contents = GetTabContentsAt(browser, index);
+  CHECK(contents);
+  TabContents* contents_dupe = contents->Clone();
+
+  bool pinned = false;
+  if (browser->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP)) {
+    // If this is a tabbed browser, just create a duplicate tab inside the same
+    // window next to the tab being duplicated.
+    int index = browser->tab_strip_model()->GetIndexOfTabContents(contents);
+    pinned = browser->tab_strip_model()->IsTabPinned(index);
+    int add_types = TabStripModel::ADD_ACTIVE |
+        TabStripModel::ADD_INHERIT_GROUP |
+        (pinned ? TabStripModel::ADD_PINNED : 0);
+    browser->tab_strip_model()->InsertTabContentsAt(
+        index + 1, contents_dupe, add_types);
+  } else {
+    Browser* browser = NULL;
+    if (browser->is_app()) {
+      CHECK(!browser->is_type_popup());
+      CHECK(!browser->is_type_panel());
+      browser = Browser::CreateWithParams(
+          Browser::CreateParams::CreateForApp(Browser::TYPE_POPUP,
+                                              browser->app_name(),
+                                              gfx::Rect(),
+                                              browser->profile()));
+    } else if (browser->is_type_popup()) {
+      browser = Browser::CreateWithParams(
+          Browser::CreateParams(Browser::TYPE_POPUP, browser->profile()));
+    }
+
+    // Preserve the size of the original window. The new window has already
+    // been given an offset by the OS, so we shouldn't copy the old bounds.
+    BrowserWindow* new_window = browser->window();
+    new_window->SetBounds(gfx::Rect(new_window->GetRestoredBounds().origin(),
+                          browser->window()->GetRestoredBounds().size()));
+
+    // We need to show the browser now.  Otherwise ContainerWin assumes the
+    // WebContents is invisible and won't size it.
+    browser->window()->Show();
+
+    // The page transition below is only for the purpose of inserting the tab.
+    AddTab(browser, contents_dupe, content::PAGE_TRANSITION_LINK);
+  }
+
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfileIfExisting(browser->profile());
+  if (session_service)
+    session_service->TabRestored(contents_dupe, pinned);
+}
+
+bool CanDuplicateTabAt(Browser* browser, int index) {
+  content::NavigationController& nc =
+      GetWebContentsAt(browser, index)->GetController();
+  return nc.GetWebContents() && nc.GetLastCommittedEntry();
 }
 
 void ConvertPopupToTabbedBrowser(Browser* browser) {
@@ -911,7 +967,7 @@ void ViewSource(Browser* browser,
     b->window()->Show();
 
     // The page transition below is only for the purpose of inserting the tab.
-    chrome::AddTab(b, view_source_contents, content::PAGE_TRANSITION_LINK);
+    AddTab(b, view_source_contents, content::PAGE_TRANSITION_LINK);
   }
 
   SessionService* session_service =
@@ -921,21 +977,21 @@ void ViewSource(Browser* browser,
 }
 
 void ViewSelectedSource(Browser* browser) {
-  ViewSource(browser, chrome::GetActiveTabContents(browser));
+  ViewSource(browser, GetActiveTabContents(browser));
 }
 
 bool CanViewSource(const Browser* browser) {
-  return chrome::GetActiveWebContents(browser)->GetController().CanViewSource();
+  return GetActiveWebContents(browser)->GetController().CanViewSource();
 }
 
 void CreateApplicationShortcuts(Browser* browser) {
   content::RecordAction(UserMetricsAction("CreateShortcut"));
-  chrome::GetActiveTabContents(browser)->extension_tab_helper()->
+  GetActiveTabContents(browser)->extension_tab_helper()->
       CreateApplicationShortcuts();
 }
 
 bool CanCreateApplicationShortcuts(const Browser* browser) {
-  return chrome::GetActiveTabContents(browser)->extension_tab_helper()->
+  return GetActiveTabContents(browser)->extension_tab_helper()->
       CanCreateApplicationShortcuts();
 }
 

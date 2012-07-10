@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
-#include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/zoom/zoom_observer.h"
@@ -63,6 +62,7 @@ class SkBitmap;
 class StatusBubble;
 class TabNavigation;
 class TabStripModel;
+class TabStripModelDelegate;
 struct WebApplicationInfo;
 
 namespace chrome {
@@ -95,8 +95,7 @@ namespace webkit_glue {
 struct WebIntentServiceData;
 }
 
-class Browser : public TabStripModelDelegate,
-                public TabStripModelObserver,
+class Browser : public TabStripModelObserver,
                 public content::WebContentsDelegate,
                 public CoreTabHelperDelegate,
                 public SearchEngineTabHelperDelegate,
@@ -434,35 +433,6 @@ class Browser : public TabStripModelDelegate,
   // Overridden from content::PageNavigator:
   virtual content::WebContents* OpenURL(
       const content::OpenURLParams& params) OVERRIDE;
-
-  // Overridden from TabStripModelDelegate:
-  virtual TabContents* AddBlankTab(bool foreground) OVERRIDE;
-  virtual TabContents* AddBlankTabAt(int index,
-                                     bool foreground) OVERRIDE;
-  virtual Browser* CreateNewStripWithContents(
-      TabContents* detached_contents,
-      const gfx::Rect& window_bounds,
-      const DockInfo& dock_info,
-      bool maximize) OVERRIDE;
-  virtual int GetDragActions() const OVERRIDE;
-  // Construct a TabContents for a given URL, profile and transition type. If
-  // instance is not null, its process will be used to render the tab.
-  virtual TabContents* CreateTabContentsForURL(
-      const GURL& url,
-      const content::Referrer& referrer,
-      Profile* profile,
-      content::PageTransition transition,
-      bool defer_load,
-      content::SiteInstance* instance) const OVERRIDE;
-  virtual bool CanDuplicateContentsAt(int index) OVERRIDE;
-  virtual void DuplicateContentsAt(int index) OVERRIDE;
-  virtual void CloseFrameAfterDragSession() OVERRIDE;
-  virtual void CreateHistoricalTab(TabContents* contents) OVERRIDE;
-  virtual bool RunUnloadListenerBeforeClosing(TabContents* contents) OVERRIDE;
-  virtual bool CanBookmarkAllTabs() const OVERRIDE;
-  virtual void BookmarkAllTabs() OVERRIDE;
-  virtual bool CanRestoreTab() OVERRIDE;
-  virtual void RestoreTab() OVERRIDE;
 
   // Overridden from TabStripModelObserver:
   virtual void TabInsertedAt(TabContents* contents,
@@ -862,6 +832,7 @@ class Browser : public TabStripModelDelegate,
   // This Browser's window.
   BrowserWindow* window_;
 
+  scoped_ptr<TabStripModelDelegate> tab_strip_model_delegate_;
   scoped_ptr<TabStripModel> tab_strip_model_;
 
   // The application name that is also the name of the window to the shell.

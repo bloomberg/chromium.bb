@@ -2422,6 +2422,8 @@
         'browser/ui/browser_ui_prefs.h',
         'browser/ui/browser_tab_restore_service_delegate.cc',
         'browser/ui/browser_tab_restore_service_delegate.h',
+        'browser/ui/browser_tab_strip_model_delegate.cc',
+        'browser/ui/browser_tab_strip_model_delegate.h',
         'browser/ui/browser_tabrestore.cc',
         'browser/ui/browser_tabrestore.h',
         'browser/ui/browser_tabstrip.cc',

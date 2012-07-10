@@ -101,7 +101,7 @@ class TabRestoreTest : public InProcessBrowserTest {
     ui_test_utils::WindowedNotificationObserver tab_loaded_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-    browser->RestoreTab();
+    chrome::RestoreTab(browser);
     tab_added_observer.Wait();
     tab_loaded_observer.Wait();
 
@@ -473,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindow) {
   ui_test_utils::WindowedNotificationObserver load_stop_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  (*BrowserList::begin())->RestoreTab();
+  chrome::RestoreTab(*BrowserList::begin());
   open_window_observer.Wait();
   EXPECT_EQ(window_count, BrowserList::size());
 

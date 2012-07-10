@@ -70,7 +70,7 @@ Browser* BrowserNavigatorTest::CreateEmptyBrowserForType(Browser::Type type,
                                                          Profile* profile) {
   Browser* browser = Browser::CreateWithParams(
       Browser::CreateParams(type, profile));
-  browser->AddBlankTab(true);
+  chrome::AddBlankTab(browser, true);
   return browser;
 }
 
@@ -79,7 +79,7 @@ Browser* BrowserNavigatorTest::CreateEmptyBrowserForApp(Browser::Type type,
   Browser* browser = Browser::CreateWithParams(
       Browser::CreateParams::CreateForApp(
           Browser::TYPE_POPUP, "Test", gfx::Rect(), profile));
-  browser->AddBlankTab(true);
+  chrome::AddBlankTab(browser, true);
   return browser;
 }
 

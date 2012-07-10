@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"

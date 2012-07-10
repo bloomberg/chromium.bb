@@ -1203,7 +1203,7 @@ void TestingAutomationProvider::OpenNewBrowserWindowOfType(
   // asking an existing browser to execute the IDC_NEWWINDOW command
   Browser* browser = new Browser(static_cast<Browser::Type>(type), profile_);
   browser->InitBrowserWindow();
-  browser->AddBlankTab(true);
+  chrome::AddBlankTab(browser, true);
   if (show)
     browser->window()->Show();
 }
