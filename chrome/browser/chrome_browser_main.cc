@@ -115,6 +115,7 @@
 #include "grit/platform_locale_settings.h"
 #include "net/base/net_module.h"
 #include "net/base/sdch_manager.h"
+#include "net/base/ssl_config_service.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_basic_stream.h"
 #include "net/http/http_network_layer.h"
@@ -1099,6 +1100,25 @@ void ChromeBrowserMainParts::DisableNewTabFieldTrialIfNecesssary() {
   }
 }
 
+void ChromeBrowserMainParts::ChannelIDFieldTrial() {
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
+    net::SSLConfigService::EnableChannelIDTrial();
+  } else if (channel == chrome::VersionInfo::CHANNEL_DEV &&
+             base::FieldTrialList::IsOneTimeRandomizationEnabled()) {
+    const base::FieldTrial::Probability kDivisor = 100;
+    // 10% probability of being in the enabled group.
+    const base::FieldTrial::Probability kEnableProbability = 10;
+    scoped_refptr<base::FieldTrial> trial =
+        base::FieldTrialList::FactoryGetFieldTrial(
+            "ChannelID", kDivisor, "disable", 2012, 8, 23, NULL);
+    trial->UseOneTimeRandomization();
+    int enable_group = trial->AppendGroup("enable", kEnableProbability);
+    if (trial->group() == enable_group)
+      net::SSLConfigService::EnableChannelIDTrial();
+  }
+}
+
 // ChromeBrowserMainParts: |SetupMetricsAndFieldTrials()| related --------------
 
 void ChromeBrowserMainParts::SetupFieldTrials(bool proxy_policy_is_set) {
@@ -1121,6 +1141,7 @@ void ChromeBrowserMainParts::SetupFieldTrials(bool proxy_policy_is_set) {
   SetupUniformityFieldTrials();
   AutocompleteFieldTrial::Activate();
   DisableNewTabFieldTrialIfNecesssary();
+  ChannelIDFieldTrial();
 }
 
 void ChromeBrowserMainParts::StartMetricsRecording() {

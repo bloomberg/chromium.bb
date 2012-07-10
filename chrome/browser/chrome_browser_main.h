@@ -140,6 +140,9 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Disables the new tab field trial if not running in desktop mode.
   void DisableNewTabFieldTrialIfNecesssary();
 
+  // Field trial for testing TLS channel id.
+  void ChannelIDFieldTrial();
+
   // Methods for |SetupMetricsAndFieldTrials()| --------------------------------
 
   // Constructs metrics service and does related initialization, including
