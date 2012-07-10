@@ -36,6 +36,11 @@
 <translation id="5469825884154817306">Bu sitelerdeki resimleri engelle</translation>
 <translation id="8412312801707973447">Çevrimiçi OCSP/CRL denetimlerinin yapılıp yapılmayacağı</translation>
 <translation id="2908277604670530363">Proxy sunucusuyla yapılabilecek maksimum eşzamanlı bağlantı sayısı</translation>
+<translation id="4838572175671839397"><ph name="PRODUCT_NAME"/> uygulamasında hangi kullanıcıların oturum açabileceğini belirlemek için kullanılan normal bir ifade içerir.
+
+      Bir kullanıcı bu kalıba uymayan bir kullanıcı adıyla giriş yapmaya çalışırsa ilgili bir hata görüntülenir.
+
+      Bu politika ayarlanmamış olarak veya boş bırakılırsa, <ph name="PRODUCT_NAME"/> uygulamasında herkes oturum açabilir.</translation>
 <translation id="7298195798382681320">Önerilenler</translation>
 <translation id="1438955478865681012">Uzantılarla ilgili politikaları yapılandırır. Kullanıcının kara listeye alınmış uzantıları, beyaz listeye alınmadığı sürece yüklemesine izin verilmez. Uzantıları <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/> içinde belirterek, bu uzantıların <ph name="PRODUCT_NAME"/> tarafından otomatik olarak yüklenmesini de zorlayabilirsiniz. Kara liste, zorlanan yüklemeler listesinden önceliklidir.</translation>
 <translation id="3478024346823118645">Çıkışta kullanıcı verilerini sil</translation>
@@ -200,7 +205,6 @@
       Bu ayarı etkinleştirir veya devre dışı bırakırsanız, kullanıcılar <ph name="PRODUCT_NAME"/> ürününde bu ayarı değiştiremez veya geçersiz kılamaz.
 
       Bu politika ayarlanmadan bırakılırsa, bu özellik etkinleştirilir ancak kullanıcı ayarı değiştirebilir.</translation>
-<translation id="2711603272213076156">Dosya seçme iletişim kutularının çağrılmasına izin ver.</translation>
 <translation id="1426410128494586442">Evet</translation>
 <translation id="1692788808502061374">Kullanıcı müdahalesi olmadan yüklenecek uzantıların listesini belirtmenize olanak verir.
 
@@ -241,6 +245,7 @@
 <translation id="6368011194414932347">Ana sayfa URL'sini yapılandır</translation>
 <translation id="2877225735001246144">Kerberos kimlik doğrulaması anlaşmasını yaparken CNAME aramasını devre dışı bırak</translation>
 <translation id="6378014222084506939">Gizli modun kullanılabilirliği.</translation>
+<translation id="3706027163744097186"><ph name="PRODUCT_NAME"/> uygulamasında oturum açabilecek kullanıcıları kısıtlayın.</translation>
 <translation id="3528000905991875314">Alternatif hata sayfalarını etkinleştir</translation>
 <translation id="1283072268083088623"><ph name="PRODUCT_NAME"/> tarafından desteklenen HTTP Kimlik Doğrulaması şemalarını belirtir.
 
@@ -276,6 +281,7 @@
       Bu ayarı etkinleştirirseniz ve standart dışı bir bağlantı noktası (yani, 80 veya 443 dışında bir bağlantı noktası) girilirse, bu nokta, oluşturulan Kerberos SPN'sine dahil edilir.
 
       Bu ayarı devre dışı bırakırsanız oluşturulan Kerberos SPN'sine hiçbir durumda bağlantı noktası dahil edilmez.</translation>
+<translation id="3236046242843493070">Uzantı, uygulama ve kullanıcı komut dosyası yüklemelerine izin veren URL kalıpları</translation>
 <translation id="8992176907758534924">Hiçbir sitenin resimleri görüntülemesine izin verme</translation>
 <translation id="262740370354162807">Dokümanların <ph name="CLOUD_PRINT_NAME"/> için gönderilmesini etkinleştir</translation>
 <translation id="8704831857353097849">Devre dışı bırakılmış eklentilerin listesi</translation>
@@ -292,15 +298,6 @@
 
           Bu politikanın ayarlanmadan bırakılması, HomepageIsNewTabPage politikası da ayarlanmamışsa kullanıcının ana sayfasını kendi başına seçmesine olanak tanır.</translation>
 <translation id="8955719471735800169">Başa dön</translation>
-<translation id="7948377189987658754">Bu politika, &quot;Tarayıcımı kapattığımda çerezleri ve diğer site verilerini temizle&quot; içerik ayarları seçeneğini yok sayar.
-
-      Etkinleştirildiğinde, tarayıcıyı kapattığınız zaman <ph name="PRODUCT_NAME"/> yerel olarak depolanan tüm verileri tarayıcıdan siler.
-
-      Devre dışı bırakılırsa, tarayıcıdan çıkılırken site verileri silinmez.
-
-      Bu politika ayarlanmadan bırakılırsa, <ph name="PRODUCT_NAME"/> tarayıcı kapatıldığında site verilerini koruyan varsayılan ayarı kullanır ve kullanıcı isterse bunu değiştirebilir.
-
-      &quot;RestoreOnStartup&quot; politikası önceki oturumlara ait URL'leri geri yükleyecek şekilde ayarlanırsa bu politika çerezleri veya önceki göz atma oturumuyla ilgili diğer verileri tamamen silmez.</translation>
 <translation id="8170882486743832400">GData seçeneklerini yapılandır</translation>
 <translation id="2322733497952278056">URL kara listesine istisna olarak, listelenen URL'lere erişime izin verir.
 
@@ -507,7 +504,6 @@
           Bu politika isteğe bağlıdır. Ayarlanmazsa, varsayılan değer olan UTF-8 kullanılır.
 
           Bu politika, yalnızca 'DefaultSearchProviderEnabled' politikası etkinleştirilirse dikkate alınır.</translation>
-<translation id="2745445908503591390">Tarayıcı kapatıldığında site verilerini temizle</translation>
 <translation id="1454846751303307294">JavaScript'i çalıştırmasına izin verilmeyen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultJavaScriptSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
@@ -567,11 +563,13 @@
 
           Bu politikayı ayarlanmadan bırakırsanız, entegre kimlik doğrulaması için herhangi bir sunucu kabul edilir.</translation>
 <translation id="350797926066071931">Google Çeviri'yi etkinleştir</translation>
+<translation id="4010738624545340900">Dosya seçimi iletişim kutularının çağrılmasına izin ver</translation>
 <translation id="4518251772179446575">Bir site, kullanıcının fiziksel konumunu izlemek istediğinde sor</translation>
 <translation id="402759845255257575">Hiçbir sitenin JavaScript çalıştırmasına izin verme</translation>
 <translation id="5457924070961220141"><ph name="PRODUCT_FRAME_NAME"/> yüklendiğinde varsayılan HTML oluşturucusunu yapılandırabilmenizi sağlar.
           Bu politika ayarlanmadan bırakılırsa kullanılan varsayılan ayar, oluşturma işlemini ana makine tarayıcısının yapmasına izin vermektir, ancak isteğe bağlı olarak bu ayarı geçersiz kılabilir ve HTML sayfalarını oluşturma işleminin varsayılan olarak <ph name="PRODUCT_FRAME_NAME"/> tarafından yapılmasını sağlayabilirsiniz.</translation>
 <translation id="706669471845501145">Sitelerin masaüstü bildirimi göstermesine izin ver</translation>
+<translation id="7529144158022474049">Dağılım faktörünü otomatik güncelle</translation>
 <translation id="2188979373208322108"><ph name="PRODUCT_NAME"/> ürünündeki yer işareti çubuğunu etkinleştirir.
 
       Bu ayarı etkinleştirirseniz, <ph name="PRODUCT_NAME"/> ürününde bir yer işareti çubuğu gösterilir.
@@ -581,6 +579,13 @@
       Bu ayarı etkinleştirir veya devre dışı bırakırsanız, kullanıcılar bu işlevi <ph name="PRODUCT_NAME"/> ürününde değiştiremez veya geçersiz kılamaz.
 
       Bu ayar ayarlanmadan bırakılırsa, kullanıcı bu işlevin kullanılıp kullanılmayacağına karar verebilir.</translation>
+<translation id="869575100785642004">Uzantı, uygulama ve tema yüklemek için hangi URL'lere izin verileceğini belirtmenize olanak verir.
+
+          Chrome 21'den başlayarak, Chrome Web Mağazası dışından uzantı, uygulama ve kullanıcı komut dosyalarının yüklenmesi zorlaşmıştır. Daha önce kullanıcılar bir *.crx dosyasının bağlantısını tıklıyor, Chrome da birkaç uyarıdan sonra dosyanın yüklenmesine izin veriyordu. Chrome 21'den sonra ise bu tür dosyalar indirildikten sonra Chrome ayarları sayfasına sürüklenmelidir. Bu ayar belirli URL'lerde, daha kolay olan eski yükleme akışına izin vermektedir.
+
+          Bu listedeki her öğe uzantı tarzı bir eşleşme kalıbıdır (bkz. http://code.google.com/chrome/extensions/match_patterns.html). Kullanıcılar bu listedeki bir öğe ile eşleşen tüm URL'lerden kolayca öğe yükleyebilirler.
+
+          ExtensionInstallBlacklist bu politikaya göre önceliklidir. Yani kara listedeki bir uzantı, bu listedeki bir siteden dahi yüklenemez.</translation>
 <translation id="5475361623548884387">Yazdırmayı etkinleştir</translation>
 <translation id="3653237928288822292">Varsayılan arama sağlayıcı simgesi</translation>
 <translation id="4445684791305970001">Geliştirici Araçları'nı ve JavaScript konsolunu devre dışı bırakır.
@@ -720,7 +725,6 @@
       Bu politika için 0 değeri belirlenirse, varsayılan önbellek boyutu kullanılır, ancak kullanıcı ayarı değiştiremez.
 
       Bu politika ayarlanmazsa, varsayılan boyut kullanılır ve kullanıcı, --disk-cache-size işaretiyle bunu geçersiz kılabilir.</translation>
-<translation id="308285197738484705">Ağ tahminini etkinleştir.</translation>
 <translation id="5765780083710877561">Açıklama:</translation>
 <translation id="7796141075993499320">Eklentileri çalıştırmalarına izin verilen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
@@ -764,6 +768,7 @@
 <translation id="2299220924812062390">Etkinleştirilmiş eklentilerin listesini belirt</translation>
 <translation id="924557436754151212">İlk çalıştırmada kayıtlı şifreleri varsayılan tarayıcıdan içe aktar</translation>
 <translation id="1897365952389968758">Tüm sitelerin JavaScript çalıştırmasına izin ver</translation>
+<translation id="922540222991413931">Uzantı, uygulama ve kullanıcı komut dosyası yükleme kaynaklarını yapılandır</translation>
 <translation id="7323896582714668701"><ph name="PRODUCT_NAME"/> için ek komut satırı parametreleri</translation>
 <translation id="6931242315485576290">Google ile veri senkronizasyonunu devre dışı bırak</translation>
 <translation id="36674322972891584"><ph name="PRODUCT_NAME"/> ürünündeki ağ tahminini etkinleştirir ve kullanıcıların bu ayarı değiştirmesini önler.
@@ -797,6 +802,7 @@
 <translation id="7421483919690710988">Medya disk önbelleği boyutunu bayt olarak ayarla</translation>
 <translation id="5226033722357981948">Eklenti bulucunun devre dışı bırakılıp bırakılmayacağını belirt</translation>
 <translation id="584083164257867276">Cihaza giriş izni olacak kullanıcıların listesini tanımlar. Girişler <ph name="USER_WHITELIST_ENTRY_FORMAT"/> formundadır (örneğin, <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>). Bir etki alanı üzerinde keyfi kullanıcılara izin vermek için <ph name="USER_WHITELIST_ENTRY_WILDCARD"/> formunda girişler kullanın. Bu politika yapılandırılmazsa, kullanıcıların nerelerde oturum açabileceğine dair herhangi bir kısıtlama olmaz. Ancak yeni kullanıcı oluşturmak için yine de <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME"/> politikasının uygun şekilde yapılandırılması gerekeceğini unutmayın.</translation>
+<translation id="3428247105888806363">Ağ tahminini etkinleştir</translation>
 <translation id="6145799962557135888">JavaScript'i çalıştırmasına izin verilen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultJavaScriptSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
@@ -855,6 +861,10 @@
       Bu ayar devre dışı bırakılırsa, kullanıcılar <ph name="PRODUCT_NAME"/> içinden yazdırma işlemi yapamazlar. İngiliz anahtarı menüsünde, uzantılarda, JavaScript uygulamalarında vb. yazdırma devre dışıdır. Yazdırma sırasında <ph name="PRODUCT_NAME"/> kullanmayan bazı eklentiler üzerinden yazdırmak yine de olanaklıdır.Örneğin bazı Flash uygulamalarının içerik menülerinde yazdırma seçeneği bulunur ve bu seçenek devre dışı bırakılmaz.
 
       Bu ayar yapılmazsa, etkinleştirilir ancak kullanıcı bu ayarı değiştirebilir.</translation>
+<translation id="210513196702568522"> OS güncellemeleri için izin verilen bağlantı türleri. OS güncellemeleri boyutları açısından bağlantı için ağır bir yük olabilir ve aynı zamanda bu bağlantılarda ek ücret alınabilir. Bundan dolayı, WiMax, Bluetooth ve Hücresel gibi şu anda pahalı olan bağlantı türleri için varsayılan olarak etkinleştirilmez.
+
+      Tanınan bağlantı türü tanımlayıcıları ethernet, kablosuz, wimax, bluetooth ve hücreseldir.
+      </translation>
 <translation id="4121350739760194865">Uygulama tanıtımlarının yeni sekme sayfasında görünmesini önle</translation>
 <translation id="2127599828444728326">Bu sitelerde bildirimlere izin ver</translation>
 <translation id="7635471475589566552"><ph name="PRODUCT_NAME"/> içindeki uygulama yerel ayarını yapılandırır ve kullanıcıların yerel ayarı değiştirmelerini önler.
@@ -865,6 +875,7 @@
 <translation id="7271483295221961083">Web sitelerinin eklentileri otomatik olarak çalıştırmalarına izin verilip verilmeyeceğini ayarlamanıza olanak tanır. Eklentilerin otomatik olarak çalıştırılmasına tüm web siteleri için izin verilebilir veya bu işlem tüm web siteleri için reddedilebilir.
 
           Bu politika ayarlanmadan bırakılırsa, 'AllowPlugins' kullanılır ve kullanıcı ayarı değiştirebilir.</translation>
+<translation id="718956142899066210">Güncellemeler için izin verilen bağlantı türleri</translation>
 <translation id="6985168562472482191">Yeni sekme sayfasında uygulama simgesinin altında görünecek olan kurumsal web mağazasının adı. EnterpriseWebStoreURL ayarlanmazsa, bu ayarın herhangi bir etkisi olmaz.
 
       Bu ayar devre dışı bırakılırsa, kurumsal web mağazası uygulaması (varsa) URL'si ile etiketlenir.</translation>
@@ -939,6 +950,7 @@
 
           Daha ayrıntılı örnekler için şu adresi ziyaret edin:
           <ph name="PROXY_HELP_URL"/></translation>
+<translation id="6658245400435704251">Bir güncelleme sunucuya ilk gönderildiği andan itibaren bir cihazın rastgele şekilde güncelleme yüklemesini geciktirebileceği süreyi saniye olarak belirtir. Cihaz bu sürenin bir kısmında gerçek zaman olarak, geri kalan kısmında ise güncelleme denetlemelerinin sayısınca bekleyebilir. Cihazın bir güncellemeyi sürekli bekler durumda kalmaması için, dağılım her durumda üst sınır olarak sabit bir süre ile kısıtlıdır.</translation>
 <translation id="6630106909870121131">Bir <ph name="PRODUCT_OS_NAME"/> cihazının tüm kullanıcıları için uygulanacak ağ yapılandırmasını iletmeye olanak verir. Ağ yapılandırması, Açık Ağ Yapılandırma biçimi tarafından <ph name="ONC_SPEC_URL"/> adresinde tanımlandığı gibi, JSON biçimli bir dizedir.</translation>
 <translation id="1948757837129151165">HTTP Kimlik Doğrulaması için politikalar</translation>
 <translation id="5946082169633555022">Beta kanalı</translation>

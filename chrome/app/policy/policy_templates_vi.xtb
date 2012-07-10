@@ -36,6 +36,11 @@
 <translation id="5469825884154817306">Chặn hình ảnh trên các trang web này</translation>
 <translation id="8412312801707973447">Liệu các kiểm tra OCSP/CRL trực tuyến có được thực hiện hay không</translation>
 <translation id="2908277604670530363">Số lượng tối đa kết nối đồng thời tới máy chủ proxy</translation>
+<translation id="4838572175671839397">Có chứa biểu thức chính quy được sử dụng để xác định người dùng nào có thể đăng nhập vào <ph name="PRODUCT_NAME"/>.
+
+      Lỗi thích hợp sẽ được hiển thị nếu người dùng cố đăng nhập bằng tên người dùng không khớp với mẫu này.
+
+      Nếu chính sách này không được thiết lập hoặc để trống, thì bất kỳ người dùng nào cũng có thể đăng nhập vào <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="7298195798382681320">Được đề xuất</translation>
 <translation id="1438955478865681012">Định cấu hình các chính sách liên quan đến tiện ích mở rộng. Người dùng không được phép cài đặt các tiện ích mở rộng được đưa vào danh sách đen trừ khi chúng được đưa vào danh sách trắng. Bạn cũng có thể buộc <ph name="PRODUCT_NAME"/> tự động cài đặt tiện ích mở rộng bằng cách chỉ định chúng trong <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Danh sách đen được ưu tiên hơn danh sách các tiện ích mở rộng bắt buộc.</translation>
 <translation id="3478024346823118645">Xóa dữ liệu người dùng khi đăng xuất</translation>
@@ -200,7 +205,6 @@
       Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME"/>.
 
       Nếu không thiết lập chính sách này, cài đặt này sẽ được bật nhưng người dùng có thể thay đổi cài đặt này.</translation>
-<translation id="2711603272213076156">Cho phép kích hoạt các hộp thoại chọn tệp.</translation>
 <translation id="1426410128494586442">Có</translation>
 <translation id="1692788808502061374">Cho phép bạn chỉ định danh sách các tiện ích mở rộng sẽ được cài đặt tự động mà không có sự tương tác của người dùng.
 
@@ -241,6 +245,7 @@
 <translation id="6368011194414932347">Định cấu hình URL trang chủ</translation>
 <translation id="2877225735001246144">Tắt tra cứu CNAME khi thỏa thuận xác thực Kerberos</translation>
 <translation id="6378014222084506939">Tính khả dụng của chế độ ẩn danh.</translation>
+<translation id="3706027163744097186">Hạn chế người dùng được phép đăng nhập vào <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="3528000905991875314">Bật các trang lỗi thay thế</translation>
 <translation id="1283072268083088623">Chỉ định các giao thức Xác thực HTTP mà <ph name="PRODUCT_NAME"/> hỗ trợ.
 
@@ -276,6 +281,7 @@
           Nếu bạn bật cài đặt này và nhập một cổng không chuẩn (tức là một cổng không phải là 80 hoặc 443), cổng này sẽ được bao gồm trong Kerberos SPN được tạo.
 
           Nếu bạn tắt cài đặt này, Kerberos SPN được tạo sẽ không bao gồm cổng trong bất kỳ trường hợp nào.</translation>
+<translation id="3236046242843493070">Mẫu URL để cho phép cài đặt tiện ích mở rộng, ứng dụng và tập lệnh người dùng từ</translation>
 <translation id="8992176907758534924">Không cho phép bất kỳ trang web nào hiển thị hình ảnh</translation>
 <translation id="262740370354162807">Cho phép gửi tài liệu tới <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="8704831857353097849">Danh sách trình cắm bị tắt</translation>
@@ -286,15 +292,6 @@
 <translation id="5883015257301027298">Cài đặt cookie mặc định</translation>
 <translation id="3413139738214204027">Định cấu hình URL trang chủ mặc định trong <ph name="PRODUCT_NAME"/> và ngăn người dùng thay đổi cài đặt này. Loại trang chủ có thể được đặt là URL mà bạn chỉ định tại đây hoặc Trang tab mới. Nếu bạn chọn Trang tab mới, chính sách này sẽ được bỏ qua. Nếu bạn bật cài đặt này, người dùng không thể thay đổi URL trang chủ của họ trong <ph name="PRODUCT_NAME"/> nhưng họ vẫn có thể chọn Trang tab mới làm trang chủ. Không thiết lập chính sách này sẽ cho phép người dùng tự chọn trang chủ nếu HomepageIsNewTabPage cũng không được đặt.</translation>
 <translation id="8955719471735800169">Quay lại đầu trang</translation>
-<translation id="7948377189987658754">Chính sách này sẽ ghi đè tùy chọn cài đặt nội dung &quot;Xóa cookie và các dữ liệu trang web khác khi tôi đóng trình duyệt của tôi&quot;.
-
-      Khi được đặt thành bật, <ph name="PRODUCT_NAME"/> sẽ xóa tất cả các dữ liệu được lưu trữ cục bộ khỏi trình duyệt khi trình duyệt tắt.
-
-      Nếu được đặt thành tắt, dữ liệu trang web sẽ không bị xóa khi thoát.
-
-      Nếu chính sách này không được đặt, <ph name="PRODUCT_NAME"/> sẽ sử dụng cài đặt mặc định lưu lại dữ liệu trang web khi tắt và người dùng có thể thay đổi cài đặt này.
-
-      Nếu chính sách &quot;RestoreOnStartup&quot; được đặt thành khôi phục URL từ các phiên trước đó, chính sách này sẽ không xóa cookie hoặc các dữ liệu khác có liên quan để khôi phục hoàn toàn phiên duyệt trước đó.</translation>
 <translation id="8170882486743832400">Định cấu hình các tùy chọn GData</translation>
 <translation id="2322733497952278056">Cho phép truy cập các URL được liệt kê, dưới dạng ngoại lệ đối với danh sách đen URL. Xem phần mô tả chính sách danh sách đen URL cho định dạng của các mục nhập trong danh sách này. Bạn có thể sử dụng chính sách này để mở các ngoại lệ đối với danh sách đen hạn chế. Ví dụ: '*' có thể bị liệt vào danh sách đen để chặn tất cả các yêu cầu và chính sách này có thể được sử dụng để cho phép truy cập danh sách các URL hạn chế. Có thể sử dụng chính sách này để mở các ngoại lệ đối với các giao thức truy cập nhất định, tên miền phụ của các tên miền khác, cổng hoặc các đường dẫn cụ thể. Bộ lọc cụ thể nhất sẽ xác định xem URL bị chặn hay được cho phép. Danh sách trắng được ưu tiên hơn so với danh sách đen. Chính sách này bị giới hạn ở 100 mục nhập; các mục nhập tiếp theo sẽ bị bỏ qua. Nếu chính sách này không được đặt, sẽ không có ngoại lệ đối với danh sách đen từ chính sách 'URLBlacklist'.</translation>
 <translation id="5316405756476735914">Cho phép bạn đặt liệu các trang web có được phép đặt dữ liệu cục bộ hay không. Bạn có thể cho phép hoặc từ chối đặt dữ liệu cục bộ đối với tất cả các trang web. Nếu không thiết lập chính sách này, 'AllowCookies' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
@@ -477,7 +474,6 @@
           Chính sách này là tùy chọn. Nếu không thiết lập, mặc định được sử dụng sẽ là UTF-8.
 
           Chính sách này chỉ được áp dụng nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
-<translation id="2745445908503591390">Xóa dữ liệu trang web khi tắt trình duyệt</translation>
 <translation id="1454846751303307294">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định những trang web không được phép chạy JavaScript.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultJavaScriptSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
@@ -539,11 +535,13 @@
 
           Nếu không thiết lập chính sách này, mọi máy chủ sẽ được chấp nhận để xác thực tích hợp.</translation>
 <translation id="350797926066071931">Bật tính năng Dịch</translation>
+<translation id="4010738624545340900">Cho phép kích hoạt các hộp thoại chọn tệp</translation>
 <translation id="4518251772179446575">Hỏi bất cứ khi nào trang web muốn theo dõi vị trí thực của người dùng.</translation>
 <translation id="402759845255257575">Không cho phép bất kỳ trang web nào chạy JavaScript</translation>
 <translation id="5457924070961220141">Cho phép bạn định cấu hình trình kết xuất HTML mặc định khi  <ph name="PRODUCT_FRAME_NAME"/> được cài đặt.
           Cài đặt mặc định, được sử dụng khi không thiết lập chính sách này, cho phép trình duyệt chính thực hiện chức năng hiển thị nhưng bạn có thể tùy chọn ghi đè cài đặt này và yêu cầu  <ph name="PRODUCT_FRAME_NAME"/> hiển thị các trang HTML theo mặc định.</translation>
 <translation id="706669471845501145">Cho phép các trang web hiển thị thông báo trên màn hình</translation>
+<translation id="7529144158022474049">Yếu tố phân tán tự động cập nhật</translation>
 <translation id="2188979373208322108">Bật thanh dấu trang trên <ph name="PRODUCT_NAME"/>.
 
       Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME"/> sẽ hiển thị thanh dấu trang.
@@ -553,6 +551,13 @@
       Nếu bạn bật hoặc tắt cài đặt này, người dùng sẽ không thể thay đổi hoặc ghi đè cài đặt trong  <ph name="PRODUCT_NAME"/>.
 
       Nếu không thiết lập cài đặt này, người dùng có thể quyết định có sử dụng chức năng này hay không.</translation>
+<translation id="869575100785642004">Cho phép bạn chỉ định URL nào được phép cài đặt tiện ích mở rộng, ứng dụng và chủ đề.
+
+          Bắt đầu từ Chrome 21, việc cài đặt tiện ích mở rộng, ứng dụng và tập lệnh người dùng từ bên ngoài Cửa hàng Chrome trực tuyến trở nên khó khăn hơn. Trước đó, người dùng có thể nhấp vào liên kết tới tệp *.crx và Chrome sẽ yêu cầu cài đặt tệp sau một vài cảnh báo. Sau Chrome 21, các tệp đó phải được tải xuống và thả vào trang cài đặt Chrome. Cài đặt này cho phép các URL cụ thể có luồng cài đặt cũ, dễ dàng hơn.
+
+          Mỗi mục trong danh sách này là một mẫu khớp với kiểu tiện ích mở rộng (xem http://code.google.com/chrome/extensions/match_patterns.html). Người dùng có thể dễ dàng cài đặt các mục từ bất kỳ URL nào khớp với mục trong danh sách này.
+
+          ExtensionInstallBlacklist được ưu tiên hơn chính sách này. Nghĩa là tiện ích mở rộng trong danh sách cấm sẽ không được cài đặt, ngay cả khi tiện ích đó có từ trang web trên danh sách này.</translation>
 <translation id="5475361623548884387">Bật tính năng in</translation>
 <translation id="3653237928288822292">Biểu tượng nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="4445684791305970001">Tắt các Công cụ dành cho nhà phát triển và bảng điều khiển JavaScript.
@@ -692,7 +697,6 @@
       Nếu giá trị của chính sách này bằng 0, kích thước bộ nhớ cache mặc định sẽ được sử dụng nhưng người dùng không thể thay đổi cài đặt này.
 
       Nếu không thiết lập chính sách này, kích thước mặc định sẽ được sử dụng và người dùng sẽ không thể ghi đè bằng cờ --disk-cache-size.</translation>
-<translation id="308285197738484705">Bật dự báo mạng.</translation>
 <translation id="5765780083710877561">Mô tả:</translation>
 <translation id="7796141075993499320">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web được phép chạy trình cắm.
 
@@ -732,6 +736,7 @@
 <translation id="2299220924812062390">Chỉ định danh sách plugin được phép</translation>
 <translation id="924557436754151212">Nhập mật khẩu đã lưu từ trình duyệt mặc định trong lần chạy đầu tiên</translation>
 <translation id="1897365952389968758">Cho phép tất cả các trang web chạy JavaScript</translation>
+<translation id="922540222991413931">Định cấu hình nguồn cài đặt tiện ích mở rộng, ứng dụng và tập lệnh người dùng</translation>
 <translation id="7323896582714668701">Tham số dòng lệnh bổ sung cho <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Tắt đồng bộ hóa dữ liệu với Google</translation>
 <translation id="36674322972891584">Bật dự báo mạng trong <ph name="PRODUCT_NAME"/> và ngăn người dùng thay đổi cài đặt này.
@@ -761,6 +766,7 @@
 <translation id="584083164257867276">Xác định danh sách những người dùng được phép đăng nhập vào thiết bị. Các mục nhập sẽ có dạng <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, chẳng hạn như <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. Để cho phép người dùng tùy ý trên miền, hãy sử dụng các mục nhập có dạng <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
 
       Nếu chính sách này không được định cấu hình, sẽ không có hạn chế về nội dung mà người dùng được phép đăng nhập. Lưu ý rằng việc tạo người dùng mới sẽ vẫn yêu cầu chính sách <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME"/> phải được định cấu hình chính xác.</translation>
+<translation id="3428247105888806363">Bật dự báo mạng</translation>
 <translation id="6145799962557135888">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web được phép chạy JavaScript.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultImagesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
@@ -819,12 +825,17 @@
       Nếu tắt cài đặt này, người dùng không thể in từ <ph name="PRODUCT_NAME"/>. Chế độ in bị tắt trong trình đơn cờ lê, tiện ích mở rộng, các ứng dụng JavaScript, v.v.. Vẫn có thể in từ các trình cắm bỏ qua  <ph name="PRODUCT_NAME"/> khi in. Ví dụ: một số ứng dụng Flash nhất định có tùy chọn in trong trình đơn ngữ cảnh và tùy chọn này sẽ không bị tắt.
 
      Nếu không thiết lập chính sách này, cài đặt này sẽ được bật nhưng người dùng có thể thay đổi cài đặt này.</translation>
+<translation id="210513196702568522"> Các loại kết nối có thể sử dụng để cập nhật OS. Việc cập nhật có thể gây áp lực lên kết nối do kích thước của bản cập nhật và có thể mất thêm chi phí. Do đó, theo mặc định, các cập nhật này không được bật cho các loại kết nối bị coi là đắt tiền, bao gồm WiMax, Bluetooth và Cellular tại thời điểm này.
+
+      Các ký hiệu nhận dạng loại kết nối được công nhận là ethernet, wifi, wimax, bluetooth, cellular.
+      </translation>
 <translation id="4121350739760194865">Chặn các quảng cáo ứng dụng xuất hiện trên trang tab mới</translation>
 <translation id="2127599828444728326">Cho phép thông báo trên các trang web này</translation>
 <translation id="7635471475589566552">Định cấu hình ngôn ngữ ứng dụng trong <ph name="PRODUCT_NAME"/> và ngăn người dùng thay đổi ngôn ngữ này. Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME"/> sẽ sử dụng ngôn ngữ được chỉ định. Nếu ngôn ngữ được định cấu hình không được hỗ trợ, 'en-US' sẽ được sử dụng thay thế. Nếu bạn tắt hoặc không thiết lập cài đặt này, <ph name="PRODUCT_NAME"/> sẽ sử dụng ngôn ngữ ưa thích do người dùng chỉ định (nếu được định cấu hình), ngôn ngữ hệ thống hoặc ngôn ngữ dự phòng 'en-US'.</translation>
 <translation id="7271483295221961083">Cho phép bạn đặt liệu các trang web có được phép tự động chạy trình cắm hay không. Có thể cho phép hoặc từ chối tự động chạy trình cắm cho tất cả các trang web.
 
           Nếu không thiết lập chính sách này, 'AllowPlugins' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
+<translation id="718956142899066210">Các loại kết nối được cho phép để cập nhật</translation>
 <translation id="6985168562472482191">Tên của cửa hàng trực tuyến dành cho doanh nghiệp sẽ xuất hiện bên dưới biểu tượng ứng dụng trên trang tab mới. Cài đặt này không có hiệu lực nếu không đặt EnterpriseWebStoreURL.
 
       Nếu tắt cài đặt này, ứng dụng cửa hành trực tuyến dành cho doanh nghiệp (nếu tồn tại) sẽ được gắn nhãn bằng URL của cửa hàng đó.</translation>
@@ -909,6 +920,7 @@
 
           Để biết thêm ví dụ cụ thể, truy cập:
           <ph name="PROXY_HELP_URL"/></translation>
+<translation id="6658245400435704251">Chỉ định số giây tối đa mà thiết bị có thể ngẫu nhiên trì hoãn việc tải xuống bản cập nhật từ thời điểm bản cập nhật được đưa lên máy chủ lần đầu tiên. Thiết bị có thể đợi một phần số thời gian này là thời gian thực và phần thời gian còn lại là thời gian kiểm tra bản cập nhật. Trong bất kỳ trường hợp nào, việc phân tán bị chặn trên ở lượng thời gian cố định để thiết bị không bao giờ phải chờ mãi để tải xuống bản cập nhật.</translation>
 <translation id="6630106909870121131">Cho phép áp dụng cấu hình mạng cho tất cả người dùng thiết bị <ph name="PRODUCT_OS_NAME"/>. Cấu hình mạng là chuỗi có định dạng JSON như được định nghĩa theo định dạng Cấu hình mạng mở được mô tả tại <ph name="ONC_SPEC_URL"/></translation>
 <translation id="1948757837129151165">Chính sách xác thực HTTP</translation>
 <translation id="5946082169633555022">Kênh beta</translation>

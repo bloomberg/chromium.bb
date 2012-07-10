@@ -3,6 +3,7 @@
 <translationbundle lang="iw">
 <translation id="3595596368722241419">סוללה מלאה</translation>
 <translation id="5250713215130379958">הסתר אוטומטית את המפעיל</translation>
+<translation id="8328777765163860529">סגור הכל</translation>
 <translation id="30155388420722288">לחצן גלישה</translation>
 <translation id="5571066253365925590">Bluetooth מופעל</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
@@ -25,27 +26,36 @@
 <translation id="1525975890706558596">CAPS LOCK מופעל.
 הקש על Shift + מקש החיפוש כדי לבטל.</translation>
 <translation id="8190698733819146287">התאם אישית שפה וקלט...</translation>
+<translation id="3845909655305837528">שיטת הקלט שלך השתנתה.
+        הקש Shift + Alt כדי להחליף.</translation>
+<translation id="5182671122927417841">השבת את התוסף</translation>
 <translation id="598295083618286569">Bluetooth מחובר</translation>
 <translation id="5222676887888702881">יציאה</translation>
 <translation id="2091132388437059185">הסתר אוטומטית את המפעיל בעת הגדלה</translation>
-<translation id="425878420164891689">מחשב זמן עד שמתמלא</translation>
 <translation id="2964193600955408481">השבת Wi-Fi</translation>
 <translation id="811680302244032017">הוסף את המכשיר...</translation>
 <translation id="2509468283778169019">CAPS LOCK מופעל</translation>
+<translation id="7823564328645135659">שפת Chrome השתנתה מ&quot;<ph name="FROM_LOCALE"/>&quot; ל&quot;<ph name="TO_LOCALE"/>&quot; לאחר סנכרון ההגדרות.</translation>
+<translation id="1128184993858208824"><ph name="HOUR"/>שעות<ph name="MINUTE"/>דקות</translation>
 <translation id="6426039856985689743">השבת נתונים לנייד</translation>
+<translation id="3087734570205094154">תחתית</translation>
 <translation id="3232695630852378748">הגדרות Bluetooth...</translation>
 <translation id="1480041086352807611">מצב הדגמה</translation>
 <translation id="4186384497305035875">מסך זה נשאר ריק במכוון</translation>
 <translation id="9089416786594320554">שיטות קלט</translation>
+<translation id="6247708409970142803">%<ph name="PERCENTAGE"/></translation>
+<translation id="2570059561924004903">בטל משוב מילולי</translation>
 <translation id="4430019312045809116">עוצמת קול</translation>
 <translation id="1383876407941801731">חיפוש</translation>
 <translation id="3557139239102318020">משוך כלפי מטה כדי למזער, שמאלה או ימינה כדי לפרוס</translation>
 <translation id="5980301590375426705">צא מהפעלת אורח</translation>
 <translation id="8308637677604853869">התפריט הקודם</translation>
+<translation id="1346748346194534595">ימינה</translation>
 <translation id="8528322925433439945">נייד ...</translation>
-<translation id="3595065677684516080">הגדרות ועזרה</translation>
+<translation id="8428213095426709021">הגדרות</translation>
 <translation id="4479639480957787382">אתרנט</translation>
-<translation id="7573721444069009535">Wi-Fi...</translation>
+<translation id="1467432559032391204">שמאלה</translation>
+<translation id="5543001071567407895">SMS</translation>
 <translation id="6223565363550976998">סוללה: <ph name="PERCENTAGE"/>%</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="3784455785234192852">נעילה</translation>
@@ -58,11 +68,17 @@
 <translation id="2983818520079887040">הגדרות...</translation>
 <translation id="8660803626959853127">מסנכרן <ph name="COUNT"/> קבצים</translation>
 <translation id="639644700271529076">CAPS LOCK כבוי</translation>
+<translation id="4864165860509564259">מיקום המפעיל</translation>
+<translation id="397105322502079400">מחשב...</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
+<translation id="7871882211137875558">הצטרף לרשת אחרת ...</translation>
+<translation id="3573179567135747900">שנה בחזרה ל&quot;<ph name="FROM_LOCALE"/>&quot; (דורש הפעלה מחדש)</translation>
+<translation id="8103386449138765447">הודעות SMS‏: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">הגדרות כונן Google...</translation>
 <translation id="48607902311828362">מצב טיסה</translation>
-<translation id="5361734574074701223">מחשב זמן שנותר</translation>
 <translation id="9169585155162064169">CAPS LOCK מופעל. 
 הקש על מקש החיפוש כדי לבטל.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/> שעות ו-<ph name="MINUTE"/> דקות עד לטעינה מלאה</translation>
+<translation id="4469842253116033348">השבת הודעות מ-<ph name="SITE"/></translation>
+<translation id="6359806961507272919">SMS מאת <ph name="PHONE_NUMBER"/> </translation>
 </translationbundle>

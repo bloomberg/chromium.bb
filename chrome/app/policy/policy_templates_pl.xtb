@@ -19,6 +19,11 @@
 <translation id="5469825884154817306">Blokuj grafiki w tych witrynach</translation>
 <translation id="8412312801707973447">Czy wykonywane jest sprawdzanie OCSP/CRL online</translation>
 <translation id="2908277604670530363">Maksymalna liczba jednoczesnych połączeń z serwerem proxy</translation>
+<translation id="4838572175671839397">Zawiera wyrażenie regularne służące do określania, którzy użytkownicy mogą logować się w <ph name="PRODUCT_NAME"/>.
+
+      Jeśli użytkownik o nazwie niepasującej do tego wzorca spróbuje się zalogować, zostanie wyświetlony odpowiedni komunikat o błędzie.
+
+      Jeśli ta zasada pozostanie nieustawiona lub pusta, każdy użytkownik będzie mógł zalogować się w <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="7298195798382681320">Zalecane</translation>
 <translation id="1438955478865681012">Pozwala skonfigurować zasady dotyczące rozszerzeń. Użytkownikowi nie wolno instalować rozszerzeń dodanych do czarnej listy, jeśli nie wymieniono ich na białej liście. Możesz ponadto wymusić automatyczne instalowanie rozszerzeń w przeglądarce <ph name="PRODUCT_NAME"/>, wskazując je za pomocą zasady <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Czarna lista ma priorytet nad listą wymuszonych rozszerzeń.</translation>
 <translation id="3478024346823118645">Wyczyść dane użytkownika przy wylogowaniu</translation>
@@ -105,7 +110,6 @@
 <translation id="8044493735196713914">Zgłoś tryb uruchomienia urządzenia</translation>
 <translation id="1942957375738056236">W tym miejscu możesz podać URL serwera proxy. Ta zasada obowiązuje tylko wówczas, gdy zdecydujesz się ręcznie wprowadzić ustawienia serwera proxy za pomocą opcji „Wybierz sposób określenia ustawień serwera proxy”. Nie ustawiaj tej zasady w przypadku wybrania innego trybu ustawiania zasad proxy. Więcej opcji i szczegółowych przykładów znajdziesz na <ph name="PROXY_HELP_URL"/></translation>
 <translation id="8642088216849640113">Włącza w <ph name="PRODUCT_NAME"/> funkcję Bezpieczne przeglądanie i uniemożliwia użytkownikom zmianę tego ustawienia. Jeśli włączysz to ustawienie, Bezpieczne przeglądanie będzie zawsze aktywne. Po wyłączeniu tej opcji Bezpieczne przeglądanie nigdy nie będzie aktywne. Jeśli ją skonfigurujesz, użytkownicy nie będą mogli jej zmienić ani zastąpić w <ph name="PRODUCT_NAME"/>. W przypadku nieskonfigurowania tej zasady ustawienie będzie włączone, ale użytkownicy będą mogli to zmienić.</translation>
-<translation id="2711603272213076156">Zezwalaj na wywoływanie okien dialogowych wyboru pliku</translation>
 <translation id="1426410128494586442">Tak</translation>
 <translation id="1692788808502061374">Pozwala użytkownikowi na określenie listy rozszerzeń, które będą instalowane dyskretnie bez udziału użytkownika.
 
@@ -132,6 +136,7 @@
 <translation id="6368011194414932347">Konfiguruj adres URL strony startowej</translation>
 <translation id="2877225735001246144">Wyłącz wyszukiwanie rekordu CNAME podczas negocjowania uwierzytelniania Kerberos</translation>
 <translation id="6378014222084506939">Dostępność trybu incognito</translation>
+<translation id="3706027163744097186">Określ użytkowników, którzy mogą logować się w <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="3528000905991875314">Włącz alternatywne strony błędów</translation>
 <translation id="1283072268083088623">Pozwala określić schematy uwierzytelniania HTTP obsługiwane w <ph name="PRODUCT_NAME"/>. Możliwe wartości to „podstawowe”, „podsumowanie”, „NTLM” i „negocjacja”. Poszczególne wartości rozdziel przecinkami. Jeśli ta zasada nie zostanie skonfigurowana, będą używane wszystkie cztery schematy.</translation>
 <translation id="6114416803310251055">przestarzała</translation>
@@ -147,6 +152,7 @@
 <translation id="6899705656741990703">Automatycznie wykrywaj ustawienia serwera proxy</translation>
 <translation id="7003334574344702284">Po włączeniu tej zasady wymuszany jest import zapisanych haseł z poprzedniej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia zapisane hasła nie są importowane. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zaimportować hasła lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="6258193603492867656">Pozwala określić, czy generowana nazwa SPN w protokole Kerberos ma zawierać port niestandardowy. Po włączeniu tego ustawienia i wprowadzeniu portu niestandardowego (tzn. innego niż 80 i 443) jest on umieszczany w generowanej nazwie SPN w protokole Kerberos. Jeśli wyłączysz ustawienie, generowana nazwa SPN w protokole Kerberos nie będzie w żadnym przypadku zawierać portu.</translation>
+<translation id="3236046242843493070">Wzorce URL-ów, z których dozwolone jest instalowanie rozszerzeń, aplikacji i skryptów użytkownika</translation>
 <translation id="8992176907758534924">Nie zezwalaj na pokazywanie grafik w żadnej witrynie</translation>
 <translation id="262740370354162807">Włącz wysyłanie dokumentów do <ph name="CLOUD_PRINT_NAME"/>.</translation>
 <translation id="8704831857353097849">Lista wyłączonych wtyczek</translation>
@@ -155,15 +161,6 @@
 <translation id="5883015257301027298">Domyślne ustawienie plików cookie</translation>
 <translation id="3413139738214204027">Pozwala skonfigurować domyślny URL strony startowej w <ph name="PRODUCT_NAME"/> i uniemożliwia użytkownikom jego zmianę. Jako typ strony startowej możesz wybrać podany w tym ustawieniu URL albo stronę Nowa karta. Po wybraniu strony Nowa karta ta zasada jest ignorowana. Jeśli ustawienie jest włączone, użytkownicy nie mogą zmienić URL-a strony startowej w <ph name="PRODUCT_NAME"/>, ale nadal mogą wybrać stronę Nowa karta jako stronę startową. W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać stronę startową, jeśli nie zostanie też ustawiona zasada HomepageIsNewTabPage.</translation>
 <translation id="8955719471735800169">Powrót do góry</translation>
-<translation id="7948377189987658754">Ta zasada zastępuje ustawienia opcji „Usuń pliki cookie i inne dane witryn w momencie zamknięcia przeglądarki”.
-
-      W przypadku jej włączenia <ph name="PRODUCT_NAME"/> w momencie zamykania usunie wszystkie dane przechowywane lokalnie.
-
-      W przypadku wyłączenia dane nie będą usuwane przy zamykaniu.
-
-      Jeśli ta zasada nie zostanie skonfigurowana, <ph name="PRODUCT_NAME"/> użyje ustawienia domyślnego, czyli zachowa dane przy zamykaniu, pozostawiając użytkownikowi możliwość zmiany tego ustawienia.
-
-      Jeśli zasada „RestoreOnStartup” jest ustawiona na przywracanie URL-i z poprzednich sesji, ta zasada nie będzie usuwać plików cookie i innych danych potrzebnych do pełnego przywrócenia poprzedniej sesji przeglądania.</translation>
 <translation id="8170882486743832400">Konfiguruj opcje GData</translation>
 <translation id="2322733497952278056">Zezwala na dostęp do wymienionych URL-i jako wyjątków od czarnej listy. Format wpisów używanych na liście znajdziesz w opisie zasady dotyczącej czarnej listy URL-i. Ta zasada może służyć do tworzenia wyjątków od restrykcyjnych czarnych list. Na przykład do czarnej listy można dodać wpis „*”, aby blokować wszystkie żądania, a za pomocą tej zasady zezwolić na dostęp do ograniczonej listy URL-i. Pozwala ona również tworzyć wyjątki dla konkretnych schematów, subdomen, portów lub ścieżek. O zablokowaniu lub udostępnieniu URL-a decyduje najbardziej szczegółowy filtr. Biała lista ma pierwszeństwo przed czarną. Maksymalna liczba wpisów w tej zasadzie wynosi 100. Kolejne wpisy są ignorowane. W przypadku nieskonfigurowania tej zasady nie będą występować wyjątki od czarnej listy z zasady „URLBlacklist”.</translation>
 <translation id="5316405756476735914">Pozwala określić, czy witryny mogą tworzyć dane lokalne. Tworzenie danych lokalnych może być dozwolone lub zabronione w przypadku wszystkich witryn. Jeśli ta zasada nie zostanie skonfigurowana, zostanie zastosowane ustawienie „AllowCookies”, a użytkownik będzie mógł je zmienić.</translation>
@@ -272,7 +269,6 @@
 
       Jeśli ta zasada będzie mieć wartość true lub nie zostanie skonfigurowana, tworzenie nowych kont użytkowników będzie dozwolone pod warunkiem, że zasada <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> nie będzie zakazywać użytkownikom logowania się.</translation>
 <translation id="267596348720209223">Pozwala określić kodowania znaków obsługiwane przez dostawcę wyszukiwania. Kodowania są określane za pomocą nazw stron kodowych, np. UTF-8, GB2312 czy ISO-8859-1. Są stosowane w podanej kolejności. Ta zasada jest opcjonalna. Jeśli nie zostanie skonfigurowana, będzie używana wartość domyślna, czyli UTF-8. Zasada ta jest stosowana tylko przy włączonej zasadzie „DefaultSearchProviderEnabled”.</translation>
-<translation id="2745445908503591390">Wyczyść dane witryn w momencie zamknięcia przeglądarki</translation>
 <translation id="1454846751303307294">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których nie może być wykonywany kod JavaScript. W przypadku nieskonfigurowania tej zasady dla wszystkich witryn będzie używana globalna wartość domyślna pobierana z zasady „DefaultJavaScriptSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="538108065117008131">Zezwalaj wtyczce <ph name="PRODUCT_FRAME_NAME"/> na obsługę następujących typów treści</translation>
 <translation id="717221064259627503">Pozwala skonfigurować katalog używany w <ph name="PRODUCT_NAME"/> do przechowywania plików w dyskowej pamięci podręcznej. Jeśli włączysz tę zasadę, podany katalog będzie używany w <ph name="PRODUCT_NAME"/> niezależnie od tego, czy użytkownik określi parametr „--disk-cache-dir”. W przypadku nieskonfigurowania tej zasady będzie używany domyślny katalog pamięci podręcznej, a użytkownik będzie mógł zmienić to ustawienie za pomocą parametru wiersza polecenia „--disk-cache-dir”.</translation>
@@ -302,11 +298,20 @@
 <translation id="7393895128271703858">Ta zasada jest przestarzała. Zamiast niej użyj DefaultJavaScriptSetting. Włącza ona obsługę JavaScriptu w <ph name="PRODUCT_NAME"/> i uniemożliwia użytkownikom zmianę tego ustawienia. Jeśli ustawienie jest włączone lub nieskonfigurowane, strony internetowe mogą korzystać z języka JavaScript. W przypadku wyłączenia ustawienia język JavaScript jest na stronach internetowych niedostępny. Jeśli zasada nie zostanie skonfigurowana, będzie używana wartość domyślna, czyli włączenie, którą użytkownik będzie mógł zmienić. Jeśli ta zasada nie zostanie skonfigurowana, opcja będzie włączona, ale użytkownik będzie mógł to zmienić.</translation>
 <translation id="8079569179819932120">Pozwala określić białą listę serwerów na potrzeby zintegrowanego uwierzytelniania. Zintegrowane uwierzytelnianie jest stosowane tylko wówczas, gdy <ph name="PRODUCT_NAME"/> otrzyma wezwanie do uwierzytelnienia od serwera proxy lub serwera wymienionego na tej liście dozwolonych serwerów. Poszczególne nazwy serwerów rozdziel przecinkami. Możesz używać symboli wieloznacznych (*). Jeśli nie skonfigurujesz tej zasady, zintegrowane uwierzytelnianie będzie dozwolone dla wszystkich serwerów.</translation>
 <translation id="350797926066071931">Włącz Tłumacza</translation>
+<translation id="4010738624545340900">Zezwolenie na wywoływanie okien dialogowych wyboru plików</translation>
 <translation id="4518251772179446575">Pytaj, gdy witryna chce śledzić fizyczną lokalizację użytkownika</translation>
 <translation id="402759845255257575">Nie zezwalaj na wykonywanie kodu JavaScript w żadnej witrynie</translation>
 <translation id="5457924070961220141">Umożliwia skonfigurowanie domyślnego mechanizmu renderowania HTML po zainstalowaniu wtyczki <ph name="PRODUCT_FRAME_NAME"/>. Ustawieniem domyślnym, stosowanym w przypadku nieskonfigurowania tej zasady, jest zezwolenie przeglądarce hosta na wykonywanie renderowania, jednak możesz opcjonalnie zastąpić to ustawienie, tak aby strony HTML były domyślnie renderowane przez wtyczkę <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="706669471845501145">Zezwalaj witrynom na pokazywanie powiadomień na pulpicie</translation>
+<translation id="7529144158022474049">Współczynnik rozkładania automatycznych aktualizacji w czasie</translation>
 <translation id="2188979373208322108">Włącza pasek zakładek w przeglądarce <ph name="PRODUCT_NAME"/>. Jeśli włączysz to ustawienie, w <ph name="PRODUCT_NAME"/> będzie pokazywany pasek zakładek. W przypadku wyłączenia ustawienia pasek nie będzie wyświetlany. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w <ph name="PRODUCT_NAME"/>. W przypadku nieskonfigurowania tego ustawienia użytkownik może zdecydować, czy chce używać tej funkcji.</translation>
+<translation id="869575100785642004">Pozwala określić, z jakich URL-ów można instalować rozszerzenia, aplikacje i motywy.
+
+          Począwszy od Chrome 21 trudniej jest instalować rozszerzenia, aplikacje i skrypty użytkownika spoza Chrome Web Store. Wcześniej użytkownik mógł kliknąć link do pliku *.crx, a Chrome po wyświetleniu kilku ostrzeżeń zaoferowałby jego zainstalowanie. Po udostępnieniu Chrome 21 takie pliki trzeba pobrać i przeciągnąć na stronę ustawień Chrome. To ustawienie pozwala określonym URL-om na używanie starszej, prostszej metody instalacji.
+
+          Każda pozycja tej listy jest wzorcem dopasowania rozszerzeń (zobacz http://code.google.com/chrome/extensions/match_patterns.html). Użytkownicy będą mogli łatwo instalować elementy z każdego URL-a pasującego do pozycji na liście.
+
+          Zasada ExtensionInstallBlacklist ma pierwszeństwo. Oznacza to, że rozszerzenie znajdujące się na czarnej liście nie zostanie zainstalowane, nawet jeśli pochodzi z witryny odpowiadającej pozycji na tej liście.</translation>
 <translation id="5475361623548884387">Włącz drukowanie</translation>
 <translation id="3653237928288822292">Ikona domyślnego dostawcy wyszukiwania</translation>
 <translation id="4445684791305970001">Wyłącza narzędzia dla programistów i konsolę JavaScript. Jeśli włączysz to ustawienie, niemożliwe będzie uzyskanie dostępu do narzędzi dla programistów i dokonanie przeglądu elementów witryny. Wszelkie skróty klawiaturowe oraz pozycje w menu aplikacji i menu kontekstowym umożliwiające otwarcie narzędzi dla programistów lub konsoli JavaScript będą nieaktywne. Wyłączenie lub nieskonfigurowanie tej opcji umożliwi korzystanie z narzędzi dla programistów i konsoli JavaScript.</translation>
@@ -375,7 +380,6 @@
 <translation id="930930237275114205">Ustaw katalog danych użytkownika <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="5208240613060747912">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których nie mogą być wyświetlane powiadomienia. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultNotificationsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="8592105098257899882">Konfiguruje rozmiar pamięci podręcznej używanej przez <ph name="PRODUCT_NAME"/> do przechowywania plików buforowanych na dysku. W przypadku ustawienia tej zasady <ph name="PRODUCT_NAME"/> będzie używać określonego rozmiaru pamięci podręcznej, niezależnie od tego, czy użytkownik poda parametr „--disk-cache-size”. Jeśli dla tej zasady zostanie ustawiona wartość 0, będzie używany domyślny rozmiar pamięci podręcznej, ale użytkownik nie będzie mógł go zmienić. W przypadku nieskonfigurowania zasady będzie używany rozmiar domyślny, ale użytkownik będzie mógł go zmienić za pomocą parametru --disk-cache-size.</translation>
-<translation id="308285197738484705">Włącz przewidywanie działań sieciowych</translation>
 <translation id="5765780083710877561">Opis:</translation>
 <translation id="7796141075993499320">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być uruchamiane wtyczki. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultPluginsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="3809527282695568696">Umożliwia określenie listy otwieranych URL-i, jeśli jako działanie po uruchomieniu wybrano opcję „Otwórz adresy URL z listy”. W przypadku nieskonfigurowania zasady po uruchomieniu nie będzie otwierany żaden URL. Ta zasada jest stosowana tylko wówczas, gdy zasada „RestoreOnStartup” jest skonfigurowana jako „RestoreOnStartupIsURLs”.</translation>
@@ -403,6 +407,7 @@
 <translation id="2299220924812062390">Określ listę włączonych wtyczek</translation>
 <translation id="924557436754151212">Importuj zapisane hasła z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="1897365952389968758">Zezwalaj na wykonywanie kodu JavaScript we wszystkich witrynach</translation>
+<translation id="922540222991413931">Konfiguruj źródła instalacji rozszerzeń, aplikacji i skryptów użytkownika</translation>
 <translation id="7323896582714668701">Dodatkowe parametry wiersza poleceń dla <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Wyłącz synchronizację danych z Google</translation>
 <translation id="36674322972891584">Włącza w <ph name="PRODUCT_NAME"/> funkcję przewidywania działań sieciowych i uniemożliwia użytkownikom zmianę tego ustawienia. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w <ph name="PRODUCT_NAME"/>. W przypadku nieskonfigurowania tej zasady ustawienie zostanie włączone, ale użytkownik będzie mógł je zmienić.</translation>
@@ -424,6 +429,7 @@
 <translation id="584083164257867276">Określa listę użytkowników, którzy mogą logować się do urządzenia. Pozycje mają postać <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, np. <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. Aby zezwolić dowolnym użytkownikom z domeny, użyj wpisów w postaci <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
 
       Jeśli ta zasada nie zostanie skonfigurowana, nie będą obowiązywały żadne ograniczenia dotyczące użytkowników, którzy mogą się logować. Pamiętaj, że tworzenie użytkowników nadal wymaga właściwego skonfigurowania zasady <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME"/>.</translation>
+<translation id="3428247105888806363">Włącz przewidywanie działań sieciowych</translation>
 <translation id="6145799962557135888">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których może być wykonywany kod JavaScript. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultJavaScriptSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="7053678646221257043">Po włączeniu tej zasady wymuszany jest import zakładek z bieżącej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia zakładki nie są importowane. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zakładki mają zostać zaimportowane lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="5067143124345820993">Biała lista loginów użytkowników</translation>
@@ -451,10 +457,15 @@
 <translation id="7736666549200541892">Włącz rozszerzenie certyfikatów TLS powiązanych z domeną (TLS-OBC)</translation>
 <translation id="7848840259379156480">Umożliwia skonfigurowanie domyślnego mechanizmu renderowania HTML po zainstalowaniu wtyczki <ph name="PRODUCT_FRAME_NAME"/>. Ustawieniem domyślnym jest zezwolenie przeglądarce hosta na wykonywanie renderowania, jednak możesz opcjonalnie zastąpić to ustawienie, tak aby strony HTML były domyślnie renderowane przez wtyczkę <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="9142678351429467783">Włącza drukowanie w <ph name="PRODUCT_NAME"/> i uniemożliwia użytkownikom zmianę tego ustawienia. Jeśli ustawienie jest włączone lub nieskonfigurowane, użytkownicy mogą drukować. W przypadku wyłączenia ustawienia użytkownicy nie będą mogli drukować z <ph name="PRODUCT_NAME"/>. Drukowanie jest wyłączane w menu klucza, rozszerzeniach, aplikacjach języka JavaScript itd. Nadal będzie możliwe drukowanie z wtyczek pomijających <ph name="PRODUCT_NAME"/> podczas drukowania. Na przykład w menu kontekstowym niektórych aplikacji Flash znajduje się opcja drukowania i nie zostanie ona wyłączona. W przypadku nieskonfigurowania tej zasady ustawienie zostanie włączone, ale użytkownik będzie mógł to zmienić.</translation>
+<translation id="210513196702568522"> Typy połączeń, które mogą być używane do pobierania aktualizacji systemu operacyjnego. Takie aktualizacje mogą ze względu na swój rozmiar znacznie obciążać połączenie i wiązać się z naliczeniem dodatkowych opłat. Dlatego domyślnie nie są pobierane przy użyciu połączeń uznawanych za drogie, czyli obecnie WiMax, Bluetooth oraz połączeń komórkowej transmisji danych.
+
+      Rozpoznawane identyfikatory typów połączeń: ethernet, wifi, wimax, bluetooth, cellular.
+      </translation>
 <translation id="4121350739760194865">Zablokuj wyświetlanie promocji aplikacji na stronie Nowa karta</translation>
 <translation id="2127599828444728326">Zezwalaj na powiadomienia w tych witrynach.</translation>
 <translation id="7635471475589566552">Pozwala skonfigurować język w przeglądarce <ph name="PRODUCT_NAME"/> i uniemożliwia użytkownikom jego zmianę. Jeśli włączysz to ustawienie, w <ph name="PRODUCT_NAME"/> będzie używany określony język. W przypadku, gdy skonfigurowany język nie jest obsługiwany, wybierana jest opcja „en-US”. Jeśli ustawienie jest wyłączone lub nieskonfigurowane, w <ph name="PRODUCT_NAME"/> używany jest preferowany język określony przez użytkownika (jeśli został skonfigurowany), język ustawiony w systemie lub zastępcza opcja „en-US”.</translation>
 <translation id="7271483295221961083">Pozwala określić, czy wtyczki w witrynach mogą być uruchamiane automatycznie. Automatyczne uruchamianie wtyczek może być dozwolone lub zabronione we wszystkich witrynach. W przypadku nieskonfigurowania tej zasady będzie używane ustawienie „AllowPlugins”, które może być zmienione przez użytkownika.</translation>
+<translation id="718956142899066210">Typy połączeń dozwolone dla aktualizacji</translation>
 <translation id="6985168562472482191">Nazwa firmowego sklepu Chrome Web Store, która pojawi się pod ikoną aplikacji na stronie Nowa karta. To ustawienie nie jest stosowane w przypadku nieskonfigurowania ustawienia EnterpriseWebStoreURL. Jeśli to ustawienie zostanie wyłączone, jako nazwa aplikacji firmowego sklepu Chrome Web Store (jeśli aplikacja jest zainstalowana) będzie wyświetlany jej URL.</translation>
 <translation id="1734716591049455502">Skonfiguruj opcje dostępu zdalnego</translation>
 <translation id="8777120694819070607">Zezwala na uruchamianie nieaktualnych wtyczek w przeglądarce <ph name="PRODUCT_NAME"/>. Jeśli włączysz to ustawienie, nieaktualne wtyczki będą używane w normalny sposób. W przypadku jego wyłączenia nieaktualne wtyczki nie są używane, a użytkownikom nie są wyświetlane monity o udzielenie pozwolenia na ich uruchomienie. Jeśli ustawienie jest nieskonfigurowane, użytkownikom są wyświetlane monity o udzielenie pozwolenia na uruchomienie nieaktualnych wtyczek.</translation>
@@ -482,6 +493,7 @@
 <translation id="1435659902881071157">Konfiguracja sieci na poziomie urządzenia</translation>
 <translation id="5512418063782665071">Adres URL strony startowej</translation>
 <translation id="2948381198510798695">W przypadku hostów wymienionych na tej liście przeglądarka <ph name="PRODUCT_NAME"/> omija serwer proxy. Ta zasada obowiązuje tylko wówczas, gdy ręcznie wprowadzisz ustawienia serwera proxy za pomocą opcji „Wybierz sposób określenia ustawień serwera proxy”. Szczegółowe przykłady można znaleźć na <ph name="PROXY_HELP_URL"/></translation>
+<translation id="6658245400435704251">Określa, o ile sekund urządzenie może losowo opóźnić pobranie aktualizacji w stosunku do czasu jej opublikowania na serwerze. Urządzenie może odczekać część tego okresu, licząc w sekundach zegara, a pozostałą część, licząc w testach dostępności aktualizacji. Tak czy inaczej okres opóźnienia jest ograniczony z góry, by urządzenie nigdy nie utknęło w stanie oczekiwania na pobranie aktualizacji.</translation>
 <translation id="6630106909870121131">Pozwala na przesyłanie konfiguracji sieciowej w trybie push do urządzeń z <ph name="PRODUCT_OS_NAME"/> dla wszystkich użytkowników. Konfiguracja sieci to łańcuch w formacie JSON zgodny z formatem Open Network Configuration opisanym na <ph name="ONC_SPEC_URL"/></translation>
 <translation id="1948757837129151165">Zasady uwierzytelniania HTTP</translation>
 <translation id="5946082169633555022">Wersja beta</translation>

@@ -1,15 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
-<translation id="6779164083355903755">&amp;Elimina</translation>
 <translation id="6879617193011158416">Commuta la barra de marcadors</translation>
 <translation id="4590324241397107707">Emmagatzematge de la base de dades</translation>
 <translation id="335581015389089642">Veu</translation>
+<translation id="5144628875164157732">Activa les visualitzacions de Textfield.</translation>
+<translation id="269716007619243967">Error en transferir. <ph name="ERROR_MESSAGE"/></translation>
 <translation id="8206745257863499010">Música</translation>
 <translation id="2345460471437425338">Certificat incorrecte per a l'amfitrió.</translation>
 <translation id="3595596368722241419">Bateria carregada.</translation>
 <translation id="8130276680150879341">Desconnecta la xarxa privada</translation>
 <translation id="5557508793098063329">PB</translation>
+<translation id="5028012205542821824">La instal·lació no està activada.</translation>
 <translation id="1058418043520174283"><ph name="INDEX"/> de <ph name="COUNT"/></translation>
 <translation id="4480627574828695486">Desconnecta aquest compte...</translation>
 <translation id="7040807039050164757">&amp;Revisa l'ortografia d'aquest camp</translation>
@@ -17,6 +19,7 @@
 <translation id="32279126412636473">Torna a carregar (⌘R)</translation>
 <translation id="1852799913675865625">S'ha produït un error en intentar llegir el fitxer: <ph name="ERROR_TEXT"/>.</translation>
 <translation id="3828924085048779000">No es permeten les paraules de pas buides.</translation>
+<translation id="1844692022597038441">Aquest fitxer no està disponible fora de línia.</translation>
 <translation id="2709516037105925701">Emplenament automàtic</translation>
 <translation id="3916445069167113093">Aquest tipus de fitxer pot malmetre el vostre equip. Voleu mantenir <ph name="FILE_NAME"/> igualment?</translation>
 <translation id="3162291187491210183">Activeu l'historial de l'omnibox a la configuració de sincronització. Això permet sincronitzar el vostre historial d'URL escrits amb altres clients per assistir l'emplenament automàtic de l'omnibox.</translation>
@@ -35,27 +38,20 @@
 <translation id="2010799328026760191">Tecles de modificació...</translation>
 <translation id="6610610633807698299">Introduïu l'URL...</translation>
 <translation id="5037435837196003000">Configuració de la busca...</translation>
-<translation id="6993406027274804611">És possible que el servidor on s'allotja la pàgina web s'hagi sobrecarregat o que s'hi hagi produït un error.
-	Per evitar que les extensions provoquin un excés de trànsit que podria empitjorar la situació,
-        <ph name="PRODUCT_NAME"/>
-	ha aturat temporalment l'admissió de sol·licituds per extensions a aquest URL.
-        <ph name="LINE_BREAK"/>
-        Si creieu que aquest comportament no és correcte, per exemple, perquè esteu depurant el vostre propi lloc web,
-        visiteu <ph name="URL_FOR_MORE_INFO"/>,
-        on podreu trobar més informació, inclosa la manera de desactivar la funció.</translation>
 <translation id="5172758083709347301">Automàtica</translation>
 <translation id="5412117152358827401">Esteu segur que voleu suprimir aquestes pàgines de l'historial?
 
 El mode d'incògnit <ph name="SHORTCUT_KEY"/> us pot ser útil la propera vegada.</translation>
 <translation id="3300394989536077382">Signat per</translation>
 <translation id="654233263479157500">Utilitza un servei web per solucionar els errors del navegador</translation>
+<translation id="8719282907381795632">Accediu a les dades a <ph name="WEBSITE_1"/></translation>
 <translation id="3792890930871100565">Desconnecta impressores</translation>
-<translation id="7234539422479817884">Aleatori</translation>
+<translation id="8395254168074583923"><ph name="PRODUCT_NAME"/> està utilitzant el micròfon.</translation>
 <translation id="4940047036413029306">Comet.</translation>
-<translation id="1526811905352917883">S'ha hagut de tornar a intentar la connexió mitjançant SSL 3.0. Generalment, això vol dir que el servidor utilitza un programari molt antic i és possible que tingui altres problemes de seguretat.</translation>
 <translation id="1497897566809397301">Permet l'establiment de dades locals (opció recomanada)</translation>
 <translation id="3275778913554317645">Obre com a finestra</translation>
 <translation id="4553117311324416101">Google ha determinat que pot ser que s'instal·li programari maliciós al vostre equip si continueu. Si ja heu visitat aquest lloc anteriorment o hi confieu, és possible que un pirata l'hagi posat en perill recentment. Us recomanem que no continueu i que ho torneu a provar demà, o bé que aneu a un altre lloc.</translation>
+<translation id="5085514918439894988">No hi ha instal·lat cap servei per a aquesta acció i tampoc no hi ha cap recomanació de servei per a aquesta acció a Chrome Web Store.</translation>
 <translation id="8867568208303837180">S'està enviant...</translation>
 <translation id="509988127256758334">Ce&amp;rca:</translation>
 <translation id="1420684932347524586">Error. No s'ha pogut generar la clau privada RSA aleatòria.</translation>
@@ -88,7 +84,6 @@ El mode d'incògnit <ph name="SHORTCUT_KEY"/> us pot ser útil la propera vegada
 <translation id="6156863943908443225">Memòria cau d'scripts</translation>
 <translation id="4274187853770964845">Error de sincronització: atureu i reinicieu la sincronització.</translation>
 <translation id="4610656722473172270">Barra Google</translation>
-<translation id="7845201717638045845">Les dades que copieu i enganxeu</translation>
 <translation id="656293578423618167">El camí o el nom del fitxer és massa llarg. Deseu-ho amb un nom més curt o en una altra ubicació.</translation>
 <translation id="3484869148456018791">Obtén el certificat nou</translation>
 <translation id="151501797353681931">Importat de Safari</translation>
@@ -100,6 +95,7 @@ El mode d'incògnit <ph name="SHORTCUT_KEY"/> us pot ser útil la propera vegada
 <translation id="1467071896935429871">S'està baixant l'actualització del sistema: <ph name="PERCENT"/>% completat.</translation>
 <translation id="7881267037441701396">Les credencials que s'han utilitzat per compartir les impressores a <ph name="CLOUD_PRINT_NAME"/> han caducat. Feu clic aquí per tornar a introduir el nom d'usuari i la contrasenya.</translation>
 <translation id="816055135686411707">Error en configurar la confiança del certificat</translation>
+<translation id="6714124459731960436">https:////mail.google.com//mail//?extsrc=mailto&amp;url=%s</translation>
 <translation id="4714531393479055912">Ara <ph name="PRODUCT_NAME"/> pot sincronitzar les contrasenyes.</translation>
 <translation id="5704565838965461712">Trieu el certificat que es presentarà com a identificació:</translation>
 <translation id="2025632980034333559"><ph name="APP_NAME"/> ha deixat de funcionar. Feu clic en aquest globus per tornar a carregar l'extensió.</translation>
@@ -115,6 +111,7 @@ El mode d'incògnit <ph name="SHORTCUT_KEY"/> us pot ser útil la propera vegada
 <translation id="5895138241574237353">Reinicia</translation>
 <translation id="3726463242007121105">Aquest dispositiu no es pot obrir perquè el seu sistema de fitxers no és compatible.</translation>
 <translation id="1858072074757584559">La connexió no està comprimida.</translation>
+<translation id="9008201768610948239">Ignora</translation>
 <translation id="528468243742722775">Fi</translation>
 <translation id="1723824996674794290">&amp;Finestra nova</translation>
 <translation id="1313405956111467313">Configuració automàtica del servidor intermediari</translation>
@@ -135,16 +132,19 @@ El mode d'incògnit <ph name="SHORTCUT_KEY"/> us pot ser útil la propera vegada
 <translation id="8325686877472580346">Activa el corrector ortogràfic asíncron</translation>
 <translation id="3208703785962634733">No confirmat</translation>
 <translation id="620329680124578183">No carreguis (recomanat)</translation>
+<translation id="6300924177400055566">No teniu prou espai a Google Drive per desar &quot;<ph name="FILE_NAME"/>&quot;. Elimineu-ne fitxers o <ph name="BEGIN_LINK"/>compreu més espai d'emmagatzematge<ph name="END_LINK"/>.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2653266418988778031">Si suprimiu una entitat emissora de certificats, el vostre navegador ja no confiarà en cap certificat emès per aquella entitat.</translation>
 <translation id="5341849548509163798">Fa <ph name="NUMBER_MANY"/> hores</translation>
 <translation id="4422428420715047158">Domini:</translation>
 <translation id="7788444488075094252">Idiomes i entrada</translation>
+<translation id="6723354935081862304">Imprimeix a Google Docs i a altres destinacions al núvol. <ph name="BEGIN_LINK"/>Inicia la sessió<ph name="END_LINK"/> per imprimir a Google Cloud Print.</translation>
 <translation id="3602290021589620013">Previsualitza</translation>
 <translation id="800602641363855389"><ph name="TITLE"/> està utilitzant el micròfon.</translation>
 <translation id="7082055294850503883">Ignora l'estat de Bloq Maj i estableix les minúscules de manera predeterminada</translation>
 <translation id="4744603770635761495">Camí executable</translation>
 <translation id="1800124151523561876">No s'ha sentit cap discurs.</translation>
+<translation id="7066461714067630865">Activa un menú que permet canviar el costat amb què s'alinea la barra d'execució ràpida.</translation>
 <translation id="5376169624176189338">Feu clic per tornar enrere, o bé espereu per veure l'historial</translation>
 <translation id="6310545596129886942"><ph name="NUMBER_FEW"/> segons restants</translation>
 <translation id="9181716872983600413">Unicode</translation>
@@ -163,6 +163,7 @@ El mode d'incògnit <ph name="SHORTCUT_KEY"/> us pot ser útil la propera vegada
 <translation id="2861301611394761800">Actualització del sistema completada. Reinicieu el sistema.</translation>
 <translation id="4858913220355269194">Pilota</translation>
 <translation id="2231238007119540260">Si suprimiu un certificat de servidor, restaurareu les comprovacions de seguretat normals per a aquell servidor i es necessitarà que utilitzi un certificat vàlid.</translation>
+<translation id="4969072929772884570">Desactiva les notificacions d'Ash.</translation>
 <translation id="8186609076106987817">El servidor no ha pogut trobar el fitxer.</translation>
 <translation id="9134410174832249455"><ph name="PRODUCT_NAME"/> no ha pogut carregar la pàgina web perquè <ph name="HOST_NAME"/> ha trigat massa a respondre. Pot ser que el lloc web estigui fora de servei o que tingueu problemes amb la connexió a Internet.</translation>
 <translation id="7624154074265342755">Xarxes sense fils</translation>
@@ -172,6 +173,7 @@ El mode d'incògnit <ph name="SHORTCUT_KEY"/> us pot ser útil la propera vegada
 <translation id="3496213124478423963">Redueix</translation>
 <translation id="2296019197782308739">Mètode EAP:</translation>
 <translation id="42981349822642051">Amplia</translation>
+<translation id="1005274289863221750">Utilitzeu el micròfon i la càmera</translation>
 <translation id="4013794286379809233">Inici de sessió</translation>
 <translation id="1587966997152302992">Canvia la configuració de cerca</translation>
 <translation id="8479177330099037753">S'ha produït un error mentre Chrome baixava el fitxer.</translation>
@@ -189,7 +191,6 @@ El mode d'incògnit <ph name="SHORTCUT_KEY"/> us pot ser útil la propera vegada
 <translation id="3011284594919057757">Quant a Flash</translation>
 <translation id="7377169924702866686">Bloq Maj està activat.</translation>
 <translation id="2565670301826831948">Velocitat del touchpad:</translation>
-<translation id="7348093485538360975">Teclat en pantalla</translation>
 <translation id="4969785127455456148">Àlbum</translation>
 <translation id="8178665534778830238">Contingut:</translation>
 <translation id="2610260699262139870">Mi&amp;da real</translation>
@@ -206,7 +207,6 @@ El mode d'incògnit <ph name="SHORTCUT_KEY"/> us pot ser útil la propera vegada
 <translation id="8528962588711550376">S'està iniciant la sessió.</translation>
 <translation id="1339601241726513588">Domini d'inscripció:</translation>
 <translation id="2336228925368920074">Marca totes les pestanyes...</translation>
-<translation id="1497227658952346590">El contingut de les pàgines que visiteu</translation>
 <translation id="3870305359001645186">Esborra les galetes i altres dades i connectors dels llocs quan tanqui la sessió</translation>
 <translation id="8774934320277480003">Marge superior</translation>
 <translation id="1390548061267426325">Obre com a pestanya normal</translation>
@@ -277,34 +277,38 @@ El mode d'incògnit <ph name="SHORTCUT_KEY"/> us pot ser útil la propera vegada
 <translation id="5234764350956374838">Omet</translation>
 <translation id="40027638859996362">Desplaçament de paraules</translation>
 <translation id="5082608977692436443">Consell d'instal·lació de l'aplicació NTP</translation>
-<translation id="5682375462877085696">Configuració relacionada amb la privadesa</translation>
+<translation id="8476818071215313526">Vaja.</translation>
 <translation id="5463275305984126951">Índex de <ph name="LOCATION"/></translation>
 <translation id="5154917547274118687">Memòria</translation>
 <translation id="1493492096534259649">Aquest idioma no es pot utilitzar per a la revisió de l'ortografia</translation>
 <translation id="6628463337424475685">Cerca de <ph name="ENGINE"/></translation>
 <translation id="182729337634291014">Error de sincronització...</translation>
 <translation id="4465830120256509958">Teclat brasiler</translation>
+<translation id="4633499889715684285">Activa la descodificació de vídeo accelerada mitjançant maquinari quan està disponible.</translation>
 <translation id="2436707352762155834">Mínim</translation>
+<translation id="5556206011531515970">Feu clic a &quot;Següent&quot; per triar el navegador predeterminat.</translation>
 <translation id="4792711294155034829">&amp;Informa d'un problema...</translation>
 <translation id="5819484510464120153">Crea &amp;dreceres d'aplicacions...</translation>
 <translation id="6845180713465955339">L'emissió del certificat &quot;<ph name="CERTIFICATE_NAME"/>&quot; ha anat a càrrec de:</translation>
 <translation id="5364525511170219879">Activa la IU d'activitat d'extensions</translation>
 <translation id="3088325635286126843">&amp;Canvia el nom...</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6853700448789925482">Activa l'element <ph name="TRACK_HTML"/></translation>
 <translation id="7531238562312180404">Com que <ph name="PRODUCT_NAME"/> no controla la manera com les extensions gestionen les dades personals, s'han desactivat totes les extensions per a les finestres d'incògnit. Podeu tornar a activar-les individualment a
         l'<ph name="BEGIN_LINK"/>administrador d'extensions<ph name="END_LINK"/>.</translation>
 <translation id="5667293444945855280">Programari maliciós</translation>
-<translation id="8927781249247589497">Benvingut a <ph name="PRODUCT_NAME"/></translation>
 <translation id="8707481173455612936">Pàgina web oficial de la font d'àudio</translation>
 <translation id="6831043979455480757">Tradueix</translation>
 <translation id="2856203831666278378">La resposta del servidor contenia capçaleres duplicades. Normalment aquest problema és degut a la mala configuració d'un lloc o d'un servidor intermediari. Només l'administrador del lloc web o del servidor intermediari pot solucionar aquest problema.</translation>
 <translation id="3587482841069643663">Tot</translation>
 <translation id="6698381487523150993">Creat:</translation>
 <translation id="4684748086689879921">Salta la importació</translation>
+<translation id="8191230140820435481">Gestioneu les aplicacions, les extensions i els temes</translation>
 <translation id="9130015405878219958">Heu introduït un mode no vàlid.</translation>
 <translation id="6615807189585243369"><ph name="BURNT_AMOUNT"/> de <ph name="TOTAL_SIZE"/> copiats</translation>
 <translation id="4950138595962845479">Opcions...</translation>
 <translation id="4653235815000740718">S'ha produït un problema en crear els fitxers multimèdia de recuperació del SO. No s'ha trobat el dispositiu d'emmagatzematge que s'ha fet servir.</translation>
+<translation id="1407489512183974736">Centre retallat</translation>
 <translation id="6943836128787782965">La sol·licitud HTTP ha fallat</translation>
 <translation id="5516565854418269276">Mostra &amp;sempre la barra de marcadors</translation>
 <translation id="6426222199977479699">Error de SSL</translation>
@@ -315,6 +319,7 @@ El mode d'incògnit <ph name="SHORTCUT_KEY"/> us pot ser útil la propera vegada
 <translation id="8589311641140863898">API d'extensions experimentals</translation>
 <translation id="6990295747880223380">Suggeriments HistoryQuickProvider en línia</translation>
 <translation id="869891660844655955">Data de caducitat</translation>
+<translation id="8336153091935557858">Ahir a les <ph name="YESTERDAY_DAYTIME"/></translation>
 <translation id="2178614541317717477">Compromís de CA</translation>
 <translation id="4449935293120761385">Quant a l'Emplenament automàtic</translation>
 <translation id="4194570336751258953">Activa la funció de tocar per fer clic</translation>
@@ -340,13 +345,14 @@ El mode d'incògnit <ph name="SHORTCUT_KEY"/> us pot ser útil la propera vegada
 <translation id="1751752860232137596">Activa la implementació experimental de desplaçament suau.</translation>
 <translation id="8534801226027872331">En aquest cas, el certificat presentat al teu navegador té errors i no es pot comprendre. Això pot significar que no podem comprendre la informació d'identitat del certificat o alguna informació utilitzada per assegurar la connexió. No hauries de continuar.</translation>
 <translation id="3608527593787258723">Activa la pestanya 1</translation>
+<translation id="4130750466177569591">Accepto</translation>
 <translation id="6993929801679678186">Mostra les prediccions d'emplenament automàtic</translation>
 <translation id="1630086885871290594">Lletrista</translation>
-<translation id="1476822615785139447">Gestiona les impressores...</translation>
 <translation id="7264275118036872269">No s'ha pogut iniciar la detecció de dispositius Bluetooth.</translation>
 <translation id="3855676282923585394">Importa els marcadors i la configuració...</translation>
 <translation id="1116694919640316211">Quant a</translation>
 <translation id="8195796306739579529">Encripta les contrasenyes</translation>
+<translation id="8194465509832052438">Configura les ordres</translation>
 <translation id="4422347585044846479">Editeu el marcador d'aquesta pàgina</translation>
 <translation id="2452539774207938933">Canvia a l'usuari: <ph name="PROFILE_NAME"/></translation>
 <translation id="4700157086864140907">Google Chrome pot proporcionar correccions ortogràfiques més útils mitjançant l'enviament del que escriviu al navegador als servidors de Google, fet que us permet utilitzar la mateixa tecnologia de correcció ortogràfica utilitzada per a la cerca de Google.</translation>
@@ -356,8 +362,8 @@ El mode d'incògnit <ph name="SHORTCUT_KEY"/> us pot ser útil la propera vegada
 <translation id="5904093760909470684">Configuració del servidor intermediari</translation>
 <translation id="5271696982761495740">Tauleta (<ph name="ADDRESS"/>)</translation>
 <translation id="3348643303702027858">S'ha cancel·lat la creació de fitxers multimèdia de recuperació del SO.</translation>
-<translation id="3391060940042023865">S'ha produït un error al connector següent: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4237016987259239829">Error de connexió a la xarxa</translation>
+<translation id="3245321423178950146">Artista desconegut</translation>
 <translation id="9050666287014529139">Contrasenya</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="8787254343425541995">Permet servidors intermediaris per a xarxes compartides</translation>
@@ -365,20 +371,21 @@ El mode d'incògnit <ph name="SHORTCUT_KEY"/> us pot ser útil la propera vegada
 <translation id="8879284080359814990">&amp;Mostra com a pestanya</translation>
 <translation id="7537536606612762813">Obligatòria</translation>
 <translation id="4520722934040288962">Selecciona per mètode d'obertura</translation>
+<translation id="515466457039582167">Mostra l'extensió &quot;insígnies de script&quot; a la barra d'ubicacions en comptes d'accions de pàgina.</translation>
 <translation id="3873139305050062481">I&amp;nspecciona l'element</translation>
 <translation id="7445762425076701745">La identitat del servidor al qual esteu connectat no es pot acabar de validar. Esteu connectat a un servidor que utilitza un nom que només és vàlid dins la vostra xarxa, de manera que una autoritat de certificació externa no en pot validar la propietat. Com que de tota manera algunes autoritats de certificació emetran certificats per a aquests noms, no es pot assegurar que estigueu connectat al lloc web previst i no a un atacant.</translation>
 <translation id="1556537182262721003">No s'ha pogut desplaçar el directori d'extensions al perfil.</translation>
 <translation id="5866557323934807206">Esborra aquesta configuració per a visites futures</translation>
 <translation id="5355351445385646029">Premeu Espai per seleccionar el candidat</translation>
-<translation id="6978622699095559061">Els vostres marcadors</translation>
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
 <translation id="5453029940327926427">Tanca les pestanyes</translation>
+<translation id="7871330753113208777">S'estan transferint $1 elements</translation>
 <translation id="406070391919917862">Aplicacions de fons</translation>
 <translation id="8820817407110198400">Marcadors</translation>
 <translation id="2580170710466019930">Espereu-vos mentre <ph name="PRODUCT_NAME"/> instal·la les últimes actualitzacions del sistema.</translation>
 <translation id="7428061718435085649">Utilitzeu les tecles Majús dreta i esquerra per seleccionar el 2n i el 3r candidats.</translation>
+<translation id="2103050821726968278">Tecles de drecera: extensions i aplicacions</translation>
 <translation id="1070066693520972135">WEP</translation>
-<translation id="2850297146577954246">Qualsevol text pronunciat amb un sintetitzador de veu</translation>
 <translation id="8694146932926629530">És possible que es faci el seguiment de l'ús del dispositiu.</translation>
 <translation id="640711995843785138"><ph name="PRODUCT_NAME"/> ha detectat que un producte d'ESET intercepta connexions segures. Això no sol ser un problema de seguretat, ja que el programari d'ESET normalment s'executa al mateix equip. No obstant això, a causa d'una intolerància a aspectes concrets de les connexions segures de <ph name="PRODUCT_NAME"/>, cal configurar els productes d'ESET perquè no facin aquesta intercepció. Feu clic a l'enllaç &quot;Més informació&quot; per obtenir-ne les instruccions.</translation>
 <translation id="206683469794463668">Mode de zhuyin sense format. La selecció automàtica de candidats i les opcions que s'hi relacionen estan desactivades o s'ignoren.</translation>
@@ -420,6 +427,7 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="1297175357211070620">Destí</translation>
 <translation id="479280082949089240">Aquesta pàgina defineix les galetes</translation>
 <translation id="4198861010405014042">Accés compartit</translation>
+<translation id="1984642098429648350">Redueix la finestra cap a la dreta</translation>
 <translation id="6204930791202015665">Mostra...</translation>
 <translation id="2996517907915747146"><ph name="PRODUCT_NAME"/> no pot mostrar la pàgina web perquè el dispositiu mòbil no està connectat a Internet.</translation>
 <translation id="5941343993301164315">Inicieu la sessió a <ph name="TOKEN_NAME"/>.</translation>
@@ -429,6 +437,7 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="4497097279402334319">No s'ha pogut connectar a la xarxa.</translation>
 <translation id="7342729285348293164">Inicieu la sessió a <ph name="PRODUCT_NAME"/> amb el vostre compte de Google per desar al web les funcions personalitzades del navegador i per accedir-hi des de qualsevol equip mitjançant <ph name="PRODUCT_NAME"/>. També podeu iniciar la sessió automàticament als vostres serveis de Google preferits.</translation>
 <translation id="2542049655219295786">Taula de Google</translation>
+<translation id="3899879303189199559">Fora de línia des de fa més d'un any</translation>
 <translation id="5303618139271450299">No s'ha trobat aquesta pàgina web</translation>
 <translation id="4256316378292851214">De&amp;sa el vídeo com a...</translation>
 <translation id="3528171143076753409">El certificat del servidor no és de confiança.</translation>
@@ -459,6 +468,7 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="7331786426925973633">Un navegador ràpid, còmode i segur</translation>
 <translation id="5584537427775243893">Important</translation>
 <translation id="9128870381267983090">Connecta a la xarxa</translation>
+<translation id="4779735050989188948">Manipuleu la configuració que controla l'accés dels llocs web a galetes, a JavaScript i a connectors</translation>
 <translation id="168841957122794586">El certificat de servidor conté una clau criptogràfica dèbil.</translation>
 <translation id="4181841719683918333">Idiomes</translation>
 <translation id="6535131196824081346">Aquest error es pot produir quan es connecta amb un servidor segur (HTTPS). Això vol
@@ -516,6 +526,7 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="1491151370853475546">Torna a carregar aquesta pàgina</translation>
 <translation id="5374359983950678924">Canvia la imatge</translation>
 <translation id="2859738163554174612">No m'ofereixis mai iniciar la sessió</translation>
+<translation id="1378727793141957596">Us donem la benvinguda a Google Drive.</translation>
 <translation id="5158548125608505876">No sincronitzis les meves contrasenyes</translation>
 <translation id="3717485073527618485">Pregunta'm quan un lloc intenti desactivar el cursor del ratolí (recomanat)</translation>
 <translation id="3273410961255278341">Envia a:</translation>
@@ -526,6 +537,7 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="5210365745912300556">Tanca la pestanya</translation>
 <translation id="8628085465172583869">Nom d'amfitrió:</translation>
 <translation id="7694379099184430148"><ph name="FILENAME"/>: tipus de fitxer desconegut.</translation>
+<translation id="1992397118740194946">No establerta</translation>
 <translation id="8556732995053816225">&amp;Fes coincidir les majúscules i minúscules</translation>
 <translation id="8679063045091038652">Error en carregar el fitxer de configuració de xarxa: <ph name="ERROR"/></translation>
 <translation id="3504135463003295723">Nom del grup:</translation>
@@ -580,10 +592,10 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="2154710561487035718">Copia l'URL</translation>
 <translation id="6019169947004469866">Retalla</translation>
 <translation id="6455348477571378046">Tipus de certificat:</translation>
+<translation id="4092067639640979396">Activa la compatibilitat experimental amb l'escala mitjançant pessigada.</translation>
 <translation id="3241680850019875542">Seleccioneu el directori arrel de l'extensió que voleu empaquetar. Per actualitzar una extensió, cal que també seleccioneu el fitxer de clau privada que voleu reutilitzar.</translation>
 <translation id="6921397030881236880">Activeu SPDY/3 experimental.</translation>
 <translation id="9189669987942139609">TB</translation>
-<translation id="1957645559900501730">Configuració del teclat en pantalla</translation>
 <translation id="3610527301719027775">Global predeterminat</translation>
 <translation id="2149850907588596975">Contrasenyes i formularis</translation>
 <translation id="1445572445564823378">Aquesta extensió està alentint <ph name="PRODUCT_NAME"/>. L'heu de desactivar per restaurar el rendiment de: <ph name="PRODUCT_NAME"/>.</translation>
@@ -591,6 +603,7 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="657402800789773160">&amp;Torna a carregar aquesta pàgina</translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="2399147786307302860">Configuració de sincronització avançada...</translation>
+<translation id="6559527882610462427">Desactiva el bloqueig del ratolí (bloqueig de cursor) quan una aplicació o una pàgina ja no es troba en pantalla completa.</translation>
 <translation id="490074449735753175">Utilitza un servei web per solucionar els errors d'ortografia</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 amb encriptació RSA</translation>
 <translation id="3020990233660977256">Número de sèrie: <ph name="SERIAL_NUMBER"/></translation>
@@ -600,16 +613,17 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="9106577689055281370">Bateria restant: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="5524517123096967210">El fitxer no s'ha pogut llegir.</translation>
 <translation id="8426519927982004547">HTTPS/SSL</translation>
-<translation id="8216781342946147825">Totes les dades de l'equip i dels llocs web que visiteu</translation>
 <translation id="5548207786079516019">Aquesta és una instal·lació secundària de <ph name="PRODUCT_NAME"/> i no pot definir-se com a navegador predeterminat.</translation>
 <translation id="8142041167538903585">Vaja, s'han produït alguns errors mentre es formatava...</translation>
 <translation id="3984413272403535372">S'ha produït un error en signar l'extensió.</translation>
 <translation id="8280852879315961642">No es pot expulsar: $1</translation>
 <translation id="9208886416788010685">Adobe Reader no actualitzat</translation>
+<translation id="2945028952025978099">Desactiva l'ajornament de la representació de llenços 2D, que fa que les accions es completin immediatament, abans d'executar l'ordre de JavaScript següent.</translation>
 <translation id="6443857951014634280">Error de baixada</translation>
 <translation id="5611028511275186941">Falta el tipus de certificat</translation>
 <translation id="318408932946428277">Esborra les galetes i altres dades de llocs i de connectors quan surti del navegador</translation>
 <translation id="8725178340343806893">Preferits/Marcadors</translation>
+<translation id="5177526793333269655">Visualització de miniatura</translation>
 <translation id="655384502888039633"><ph name="USER_COUNT"/> usuaris</translation>
 <translation id="8926389886865778422">No m'ho tornis a preguntar</translation>
 <translation id="6985235333261347343">Agent de recuperació de claus de Microsoft</translation>
@@ -656,6 +670,7 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="5723508132121499792">No hi cap aplicació en execució en segon pla</translation>
 <translation id="7392915005464253525">T&amp;orna a obrir la finestra tancada</translation>
 <translation id="7376443945512294291">Activació de la sincronització de les pestanyes obertes</translation>
+<translation id="6677037229676347494">L'ID esperat era &quot;<ph name="EXPECTED_ID"/>&quot;, però el real era &quot;<ph name="NEW_ID"/>&quot;.</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="1541725072327856736">Katakana de mitja amplada</translation>
 <translation id="7456847797759667638">Obre la ubicació...</translation>
@@ -694,13 +709,14 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="6353618411602605519">Teclat croat</translation>
 <translation id="7986039047000333986">S'ha aplicat una actualització de seguretat especial per a <ph name="PRODUCT_NAME"/>; reinicieu ara perquè es faci efectiva (restaurarem les pestanyes).</translation>
 <translation id="5515810278159179124">No permetis que cap lloc faci el seguiment de la meva ubicació física</translation>
-<translation id="5426933462917464707">Activa les accions del navegador per a totes les extensions. Això genera accions del navegador per a totes les extensions que no en declarin.</translation>
+<translation id="4911714727432509308">No hi ha cap extensió que tingui tecles de drecera assignades.</translation>
 <translation id="5999606216064768721">Utilitza la barra del títol i els límits del sistema</translation>
+<translation id="954888418274735665">Utilitza el valor predeterminat general (<ph name="PERMISSION_VALUE"/>)</translation>
 <translation id="904752364881701675">Inferior esquerre</translation>
 <translation id="3398951731874728419">Informació de l'error:</translation>
-<translation id="5701636028491571982">Activació de l'inici de sessió sincronitzat</translation>
 <translation id="8943805475239098364">Voleu cercar amb <ph name="NEW_GOOGLE_HOST"/> en lloc de <ph name="CURRENT_GOOGLE_HOST"/>?</translation>
 <translation id="3813510441224209252">Format pendent</translation>
+<translation id="8912793549644936705">Amplia</translation>
 <translation id="8026684114486203427">Per utilitzar Chrome Web Store, inicieu la sessió amb un Compte de Google.</translation>
 <translation id="1486096554574027028">Cerca a les contrasenyes</translation>
 <translation id="4631887759990505102">Artista</translation>
@@ -720,7 +736,6 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="7782102568078991263">Cap suggeriment més de Google</translation>
 <translation id="8038111231936746805">(predeterminada)</translation>
 <translation id="5120247199412907247">Configuració avançada</translation>
-<translation id="4807405039827563763">Poden accedir a:</translation>
 <translation id="567881659373499783">Versió <ph name="PRODUCT_VERSION"/></translation>
 <translation id="1368352873613152012">Polítiques de privadesa de la navegació segura</translation>
 <translation id="5105859138906591953">Per tal d'importar els marcadors de la barra Google a Google Chrome, cal que tingueu la sessió iniciada al vostre compte de Google. Inicieu la sessió i torneu a provar d'importar-los.</translation>
@@ -731,6 +746,7 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="1031362278801463162">S'està carregant la visualització prèvia</translation>
 <translation id="4409697491990005945">Marges</translation>
 <translation id="4138267921960073861">Mostra els noms d'usuari i les fotos a la pantalla d'inici de sessió</translation>
+<translation id="5155370885479622649">La compatibilitat amb la versió del fitxer de manifest 1 s'està retirant progressivament. <ph name="LINK_START"/>Actualitzeu a la versió 2<ph name="LINK_END"/>.</translation>
 <translation id="7465778193084373987">URL de revocació de certificats de Netscape</translation>
 <translation id="5976690834266782200">Afegeix elements al menú contextual de les pestanyes per agrupar pestanyes.</translation>
 <translation id="3441653493275994384">Pantalla</translation>
@@ -738,7 +754,6 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="7421925624202799674">&amp;Visualitza l'origen de la pàgina</translation>
 <translation id="3940082421246752453">El servidor no és compatible amb la versió d'HTTP que s'ha utilitzat en la sol·licitud.</translation>
 <translation id="5481220874745676347">Personalitza l'usuari: <ph name="PROFILE_NAME"/></translation>
-<translation id="3461088057595228531">Aplicacions de cerca i més</translation>
 <translation id="168929553803686581">En aquest cas, el certificat no ha estat verificat per un tercer en què confiï el dispositiu mòbil. Tothom pot crear un certificat fent-se passar pel lloc web que vulgui i, en conseqüència, cal que un tercer de confiança verifiqui el certificat. Sense aquesta verificació, la informació d'identitat del certificat no té cap significat. Per tant, no es pot verificar que us comuniqueu amb <ph name="DOMAIN"/> en lloc d'un atacant que hagi generat el seu propi certificat fent-se passar per <ph name="DOMAIN2"/>. No hauríeu de continuar.</translation>
 <translation id="661719348160586794">Les vostres contrasenyes desades apareixeran aquí.</translation>
 <translation id="8289391556078545517">Les pàgines web poden capturar el punter del ratolí i eliminar-lo del control de l'usuari. Les dades de moviment del ratolí es dirigeixen ​​únicament a l'aplicació web. Els usuaris poden sortir-ne si premen la tecla d'escapada.</translation>
@@ -749,6 +764,7 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="8366694425498033255">Tecles de selecció</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> hores</translation>
 <translation id="2624449429763181457">Manteniu premudes les tecles Control, Alt o Maj per veure les tecles de drecera per a aquests modificadors.</translation>
+<translation id="420665587194630159">(Aquesta extensió s'està gestionant i no es pot eliminar ni desactivar.)</translation>
 <translation id="6535758682390046055">S'ha cancel·lat la baixada de: <ph name="PLUGIN_NAME"/>.</translation>
 <translation id="7267955541478798371">Activa la sincronització de les icones preferents de la pestanya.</translation>
 <translation id="2738771556149464852">No després</translation>
@@ -783,6 +799,7 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="3380365263193509176">Error desconegut</translation>
 <translation id="1273135602584709125">Cancel·la la inscripció d'empresa</translation>
 <translation id="2686759344028411998">No es detecten mòduls carregats.</translation>
+<translation id="2050665672573854520">Només mostra les aplicacions de la cerca de llista d'aplicacions.</translation>
 <translation id="572525680133754531">Representa una vora al voltant de les capes renderitzades per ajudar a depurar i a estudiar la composició de les capes.</translation>
 <translation id="2778346081696727092">No s'ha pogut autenticar amb el nom d'usuari o amb la contrasenya que heu proporcionat</translation>
 <translation id="37613671848467444">Obre en una &amp;finestra d'incògnit</translation>
@@ -803,13 +820,13 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="646727171725540434">Servidor intermediari HTTP</translation>
 <translation id="7576690715254076113">Intercala</translation>
 <translation id="4594569381978438382">Voleu instal·lar aquestes aplicacions?</translation>
-<translation id="2528717896136935886">Activa les API MediaStream i GetUserMedia per a la funcionalitat WebRTC. Més informació a webrtc.org.</translation>
 <translation id="4256417349781072758">Quin servei s'ha d'utilitzar per compartir?</translation>
 <translation id="5894596978268630370">Continua fent servir la pestanya nova</translation>
 <translation id="1006316751839332762">Contrasenya d'encriptació</translation>
 <translation id="409504436206021213">No la tornis a carregar</translation>
 <translation id="8795916974678578410">Finestra nova</translation>
 <translation id="2733275712367076659">Teniu certificats d'aquestes organitzacions que us identifiquen:</translation>
+<translation id="230927227160767054">Aquesta pàgina vol instal·lar un gestor de serveis.</translation>
 <translation id="5334142896108694079">Memòria cau d'scripts</translation>
 <translation id="4801512016965057443">Permet la itinerància de dades de telefonia mòbil</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -831,6 +848,7 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="2164938406766990399">Més informació sobre la inscripció d'empreses</translation>
 <translation id="5746169159649715125">Desa com a PDF</translation>
 <translation id="939736085109172342">Carpeta nova</translation>
+<translation id="8165208966034452696"><ph name="PLUGIN_NAME"/></translation>
 <translation id="4933484234309072027">incrustada a <ph name="URL"/></translation>
 <translation id="5554720593229208774">Correu electrònic de l'entitat emissora de certificats</translation>
 <translation id="862750493060684461">Memòria cau CSS</translation>
@@ -838,9 +856,11 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="7690853182226561458">Afegeix una &amp;carpeta...</translation>
 <translation id="7968982339740310781">Mostra els detalls</translation>
 <translation id="2832519330402637498">Superior esquerre</translation>
+<translation id="2726934403674109201">(<ph name="COUNT"/> en total)</translation>
 <translation id="6204994989617056362">Falta l'extensió de la renegociació SSL al protocol d'enllaç segur. Per a alguns llocs, els que són compatibles amb l'extensió de renegociació, Chrome necessita un protocol d'enllaç més segur per evitar una classe determinada d'atacs. L'omissió d'aquesta extensió suggereix que la vostra connexió ha estat interceptada i manipulada en trànsit.</translation>
 <translation id="1238150413700645698">Contingut protegit</translation>
 <translation id="6679492495854441399">Vaja. S'ha produït un problema de comunicació de la xarxa en provar d'inscriure aquest dispositiu. Comproveu la connexió de xarxa i torneu-ho a provar.</translation>
+<translation id="5270547718570958938">Google Calendar</translation>
 <translation id="5823933238730612365">PPAPI (fora de la zona de proves)</translation>
 <translation id="2879755071890315043">Espereu mentre configurem la xarxa de telefonia mòbil.</translation>
 <translation id="5301751748813680278">S'està entrant com a Convidat.</translation>
@@ -861,14 +881,12 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="6513615899227776181">Connector: <ph name="PLUGIN_NAME"/></translation>
 <translation id="6198252989419008588">Canvia el PIN</translation>
 <translation id="5749483996735055937">S'ha produït un problema en copiar la imatge de recuperació al dispositiu.</translation>
-<translation id="1618462107699370293">Desplaça la finestra cap a la dreta</translation>
 <translation id="3520476450377425184"><ph name="NUMBER_MANY"/> dies restants</translation>
 <translation id="7643817847124207232">S'ha perdut la connexió a Internet.</translation>
 <translation id="932327136139879170">Inici</translation>
 <translation id="3561204836318837461">BSSID:</translation>
 <translation id="2560794850818211873">C&amp;opia l'URL del vídeo</translation>
 <translation id="412730574613779332">Superheroi</translation>
-<translation id="6042708169578999844">Les vostres dades a <ph name="WEBSITE_1"/> i a <ph name="WEBSITE_2"/></translation>
 <translation id="5302048478445481009">Idioma</translation>
 <translation id="4191334393248735295">Llargada</translation>
 <translation id="3619051884944784882">&amp;Finalitza el procés</translation>
@@ -881,6 +899,7 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="702455272205692181"><ph name="EXTENSION_NAME"/></translation>
 <translation id="7170041865419449892">Fora de l'interval</translation>
 <translation id="908263542783690259">Elimina dades de navegació</translation>
+<translation id="8562720436766170629">Accediu a les pestanyes i a l'activitat de navegació</translation>
 <translation id="7518003948725431193">No s'ha trobat cap pàgina web per a l'adreça: <ph name="URL"/></translation>
 <translation id="7484645889979462775">Mai per a aquest lloc</translation>
 <translation id="8666066831007952346"><ph name="NUMBER_TWO"/> dies restants</translation>
@@ -916,7 +935,10 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="1645228020260124617"><ph name="PRECENTAGE"/>%</translation>
 <translation id="2585300050980572691">Configuració de cerca predeterminada</translation>
 <translation id="2617919205928008385">No hi ha prou espai</translation>
+<translation id="4044952744588575851">Activa la detecció i la relació de dispositius Bluetooth que poden no ser compatibles amb Chrome OS.</translation>
 <translation id="1608306110678187802">Im&amp;primir marc...</translation>
+<translation id="1448134673289510212">Activa la detecció de portal captiu.</translation>
+<translation id="385361712974797956"><ph name="DATA_SOURCE"/> (<ph name="ALLOWED_COUNT"/> permesos / <ph name="BLOCKED_COUNT"/> bloquejats)</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="3719388386220274270">Envia comentaris d'emplenament automàtic addicionals</translation>
 <translation id="6622980291894852883">Continua bloquejant les imatges</translation>
@@ -932,6 +954,7 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="5222676887888702881">Tanca la sessió</translation>
 <translation id="1412802024419177173">Mòdem (<ph name="ADDRESS"/>)</translation>
 <translation id="662720828712108508">Voleu permetre que <ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) obri tots els enllaços del <ph name="PROTOCOL"/> en comptes de <ph name="REPLACED_HANDLER_TITLE"/>?</translation>
+<translation id="8965697826696209160">No hi ha prou espai.</translation>
 <translation id="6839225236531462745">Error de supressió del certificat</translation>
 <translation id="6745994589677103306">No facis res</translation>
 <translation id="1637259088766071440">El lloc web de <ph name="HOST_NAME"/> conté elements de llocs que semblen allotjar programari maliciós, és a dir, programari que pot malmetre el dispositiu mòbil o operar sense el vostre consentiment. Només el fet de visitar un lloc que contingui aquest tipus de programari pot infectar el vostre dispositiu mòbil. El lloc web també té contingut de llocs web que s'han notificat com a llocs de &quot;pesca&quot;. Els llocs de pesca enganyen els usuaris perquè proporcionin informació personal o financera i sovint fingeixen que són institucions de confiança, com ara entitats bancàries.</translation>
@@ -944,11 +967,13 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="1722567105086139392">Enllaç</translation>
 <translation id="2620436844016719705">Sistema</translation>
 <translation id="5362741141255528695">Seleccioneu el fitxer de clau privada.</translation>
+<translation id="2835864563082597869">Activa l'aspecte nou i el comportament de mida per a les caselles de selecció i per als botons d'opcions.</translation>
 <translation id="8831623914872394308">Configuració de la busca</translation>
 <translation id="4580526846085481512">Esteu segur que voleu suprimir $1 elements?</translation>
 <translation id="5292890015345653304">Inseriu una targeta SD o un llapis de memòria USB</translation>
 <translation id="5583370583559395927">Temps restant: <ph name="TIME_REMAINING"/></translation>
 <translation id="6219717821796422795">Hanyu</translation>
+<translation id="8833830540209768201">Insígnies de script</translation>
 <translation id="3725367690636977613">pàgines</translation>
 <translation id="2688477613306174402">Configuració</translation>
 <translation id="1914436586714907696">Chrome s'ha quedat sense memòria.</translation>
@@ -967,6 +992,7 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="3353284378027041011">Fa <ph name="NUMBER_FEW"/> dies</translation>
 <translation id="3052216479134065394">Crida a l'API</translation>
 <translation id="6368046945223687609">Retard de la llista de reproducció</translation>
+<translation id="2617653079636271958">Zoom: <ph name="VALUE"/>%</translation>
 <translation id="8811462119186190367">L'idioma de Chrome ha canviat de &quot;<ph name="FROM_LOCALE"/>&quot; a &quot;<ph name="TO_LOCALE"/>&quot; després de sincronitzar la vostra sincronització.</translation>
 <translation id="1087119889335281750">&amp;Sense suggeriments d'escriptura</translation>
 <translation id="7252348743704726645">Inicia la sessió ara</translation>
@@ -974,7 +1000,6 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="8216170236829567922">Mètode d'entrada de tailandès (teclat pattachote)</translation>
 <translation id="8464132254133862871">Aquest compte d'usuari no és apte per al servei.</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME"/> no pot executar-se com a arrel.</translation>
-<translation id="5076340679995252485">Engan&amp;xa</translation>
 <translation id="1055216403268280980">Mida de la imatge</translation>
 <translation id="14171126816530869">La identitat de <ph name="ORGANIZATION"/> a <ph name="LOCALITY"/> ha estat verificada per <ph name="ISSUER"/>.</translation>
 <translation id="824902718516184009">Falten les dades del certificat</translation>
@@ -984,7 +1009,6 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="3105917916468784889">Captura Pantalla</translation>
 <translation id="8952558712545617651">Ratolí (<ph name="ADDRESS"/>)</translation>
 <translation id="1741763547273950878">La pàgina de <ph name="SITE"/></translation>
-<translation id="3270450410717929853">Podria accedir a:</translation>
 <translation id="1587275751631642843">&amp;Consola de JavaScript</translation>
 <translation id="8460696843433742627">S'ha rebut una resposta no vàlida mentre s'intentava carregar <ph name="URL"/>.
         És possible que el servidor no estigui disponible a causa de tasques de manteniment o bé que s'hagi configurat de manera incorrecta.</translation>
@@ -1018,11 +1042,10 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="3473105180351527598">Habilita la protecció contra pesca i programari maliciós</translation>
 <translation id="6151323131516309312">Prem <ph name="SEARCH_KEY"/> per cercar <ph name="SITE_NAME"/></translation>
 <translation id="7541121857749629630">Excepcions d'imatge</translation>
-<translation id="8844703966364420804">No hi ha màgia.</translation>
+<translation id="9033857511263905942">&amp;Enganxa</translation>
 <translation id="5456397824015721611">Nombre màxim de caràcters xinesos a la memòria intermèdia, inclosos els caràcters zhuyin d'entrada</translation>
 <translation id="2342959293776168129">Neteja l'historial de descàrrega</translation>
 <translation id="7201354769043018523">Parènt. dret</translation>
-<translation id="6745789064498140868">Imprimeix - <ph name="PREVIEW_TAB_TITLE"/></translation>
 <translation id="4079302484614802869">La configuració del servidor intermediari s'ha definit perquè utilitzi un URL d'script .pac, en lloc de servidors intermedis fixos.</translation>
 <translation id="508794495705880051">Afegeix una targeta de crèdit nova...</translation>
 <translation id="1425975335069981043">Itinerància:</translation>
@@ -1035,7 +1058,7 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="3944384147860595744">Imprimiu des de qualsevol lloc</translation>
 <translation id="2570648609346224037">S'ha produït un problema en baixar la imatge de recuperació.</translation>
 <translation id="9053965862400494292">S'ha produït un error en intentar configurar la sincronització.</translation>
-<translation id="34060758480627194">(aquesta extensió s'està gestionant i no es pot eliminar ni desactivar)</translation>
+<translation id="2147332609360373907">Introduïu el codi de verificació:</translation>
 <translation id="8596540852772265699">Fitxers personalitzats</translation>
 <translation id="7017354871202642555">No es pot configurar el mode després d'haver configurat la finestra.</translation>
 <translation id="3101709781009526431">Data i hora</translation>
@@ -1055,6 +1078,7 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="495170559598752135">Accions</translation>
 <translation id="1661245713600520330">En aquesta pàgina s'enumeren tots els mòduls carregats al procés principal i els mòduls registrats per carregar-se més endavant.</translation>
 <translation id="2760297631986865803">Personalitza l'usuari...</translation>
+<translation id="2229161054156947610">Queda més d'una hora</translation>
 <translation id="5451646087589576080">V&amp;isualitza la informació del marc</translation>
 <translation id="7952408061263786094">Tanca la sessió i torna-la a iniciar...</translation>
 <translation id="664271268954513498">Valor de la política</translation>
@@ -1081,6 +1105,7 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="8569764466147087991">Seleccioneu un fitxer per obrir</translation>
 <translation id="5086589117546410981">Afegeix el cognom</translation>
 <translation id="5449451542704866098">No hi ha cap pla de dades</translation>
+<translation id="3093853184108622112">Accediu a les dades a <ph name="WEBSITE_1"/> i a <ph name="WEBSITE_2"/></translation>
 <translation id="2391593830069336007">Instant: <ph name="INSTANT_PREVIEW_NAME"/></translation>
 <translation id="5649768706273821470">Escolta</translation>
 <translation id="2053553514270667976">Codi postal</translation>
@@ -1109,6 +1134,7 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="4240069395079660403"><ph name="PRODUCT_NAME"/> no es pot visualitzar en aquest idioma</translation>
 <translation id="747114903913869239">Error: no s'ha pogut descodificar l'extensió</translation>
 <translation id="5412637665001827670">Teclat búlgar</translation>
+<translation id="4722136152509070740">Accediu a les dades a <ph name="WEBSITE_1"/>, a <ph name="WEBSITE_2"/> i a <ph name="NUMBER_OF_OTHER_WEBSITES"/> llocs web més</translation>
 <translation id="8806240026292811588">Activa PeerConnection.</translation>
 <translation id="3574210789297084292">inicia la sessió</translation>
 <translation id="1146204723345436916">Importa els marcadors des d'un fitxer HTML...</translation>
@@ -1130,6 +1156,7 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="6830600606572693159">En aquests moments, la pàgina web de <ph name="URL"/> no està disponible. Pot ser que estigui sobrecarregada o bé que s'hi estiguin realitzant tasques de manteniment.</translation>
 <translation id="4421932782753506458">Gatet</translation>
 <translation id="8417944620073548444">Queden <ph name="MEGABYTES"/> MB</translation>
+<translation id="4498419978438799658">Accediu a tot el text pronunciat amb un sintetitzador de veu</translation>
 <translation id="7339898014177206373">Finestra nova</translation>
 <translation id="3026202950002788510">Aneu a
           <ph name="BEGIN_BOLD"/>
@@ -1150,7 +1177,9 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="5039804452771397117">Permet</translation>
 <translation id="5435964418642993308">Premeu Retorn per retrocedir i menú contextual per veure l'historial</translation>
 <translation id="81686154743329117">ZRM</translation>
+<translation id="2150139952286079145">Cerqueu destinacions</translation>
 <translation id="4713309396072794887">Voleu instal·lar aquestes extensions?</translation>
+<translation id="5637940320504994319">Us heu quedat sense espai a Google Drive</translation>
 <translation id="6458467102616083041">S'ha ignorat perquè la política ha desactivat la cerca predeterminada.</translation>
 <translation id="2266011376676382776">Pàgines sense resposta</translation>
 <translation id="3100609564180505575">Mòduls (<ph name="TOTAL_COUNT"/>) - Conflictes coneguts: <ph name="BAD_COUNT"/>, sospitats: <ph name="SUSPICIOUS_COUNT"/></translation>
@@ -1162,7 +1191,6 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="5204967432542742771">Introduïu la contrasenya</translation>
 <translation id="4388712255200933062"><ph name="CLOUD_PRINT_NAME"/> està dissenyat al voltant de la idea que la impressió pot ser més intuïtiva, accessible i útil. Si utilitzeu <ph name="CLOUD_PRINT_NAME"/>, podreu disposar de les vostres impressores des de qualsevol aplicació web o mòbil activada per a <ph name="CLOUD_PRINT_NAME"/>.</translation>
 <translation id="5485754497697573575">Restaura totes les pestanyes</translation>
-<translation id="3371861036502301517">Error en instal·lar l'extensió</translation>
 <translation id="644038709730536388">Més informació sobre com protegir-te de programari maliciós en línia.</translation>
 <translation id="3782775017491325070">Si enteneu que la visita a aquest lloc pot malmetre el vostre dispositiu mòbil, <ph name="PROCEED_LINK"/>.</translation>
 <translation id="6677380263041696420">Canvia la imatge...</translation>
@@ -1171,25 +1199,31 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="5650551054760837876">No s'han trobat resultats de cerca.</translation>
 <translation id="8567537321327514838">Activeu la compatibilitat amb la gestió d'excepcions de maquinari de Native Client.</translation>
 <translation id="5494362494988149300">Obre quan &amp;acabi</translation>
+<translation id="5671752906355098457">Desactiva el bloqueig del ratolí amb pantalles que no siguin completes.</translation>
 <translation id="2956763290572484660"><ph name="COOKIES"/> galetes</translation>
 <translation id="6780332117328899148">Mostra també les polítiques que no ha enviat el servidor</translation>
 <translation id="6989836856146457314">Mètode d'entrada de japonès (per a teclat nord-americà)</translation>
+<translation id="6453670653705748381">Sempre <ph name="PERMISSION_VALUE"/></translation>
 <translation id="9187787570099877815">Continua bloquejant els connectors</translation>
 <translation id="8425492902634685834">Ancla a la barra de tasques</translation>
 <translation id="6710464349423168835"><ph name="PRODUCT_NAME"/> no ha pogut sincronitzar les vostres dades perquè la sincronització no està disponible per al vostre domini.</translation>
 <translation id="8464051696557824297">Activa Shadow DOM.</translation>
 <translation id="825608351287166772">Els certificats tenen un període de validesa, com qualsevol altre document d'identitat (com ara, un passaport). El certificat que s'ha presentat al teu navegador encara no és vàlid. Quan un certificat està fora del període de validesa, no és necessari mantenir algunes de les dades sobre l'estat del certificat (si s'ha revocat i ja no és de confiança). Per tant, no és possible verificar que aquest certificat sigui fiable. No hauries de continuar.</translation>
 <translation id="601858197474825353">Historial de l'omnibox</translation>
+<translation id="5016824159147231225">S'ha produït un error en la instal·lació perquè els connectors NPAPI no són compatibles amb aquest entorn.</translation>
 <translation id="6957887021205513506">Sembla que el certificat del servidor és una falsificació.</translation>
 <translation id="7309459761865060639">Reviseu els vostres treballs d'impressió i l'estat de les impressores en línia.</translation>
 <translation id="1227224963052638717">Política desconeguda.</translation>
 <translation id="4803909571878637176">Desinstal·lació</translation>
 <translation id="5209518306177824490">Empremta SHA-1</translation>
+<translation id="7094523404360563043">Activa el disseny nou d'OOBE/inici de sessió en fluxos.</translation>
 <translation id="2546283357679194313">Galetes i dades de llocs</translation>
+<translation id="2451654314610525119">Accediu al contingut de les pàgines que visiteu</translation>
 <translation id="7447657194129453603">Estat de la xarxa:</translation>
 <translation id="1279578457864817142">Desactiva la possibilitat de descartar pestanyes, una funció que descarta les pestanyes que es fan servir poc quan queda poca memòria.</translation>
 <translation id="4958444002117714549">Amplia la llista</translation>
 <translation id="8375667793438132385">Voleu permetre que <ph name="INTENT_HANDLE_TITLE"/> (<ph name="INTENT_HANDLE_HOSTNAME"/>) gestioni intents?</translation>
+<translation id="3316517466696211152">Accediu als vostres perifèrics USB</translation>
 <translation id="1553538517812678578">il·limitat</translation>
 <translation id="7947315300197525319">(Trieu una altra captura de pantalla)</translation>
 <translation id="3612070600336666959">Desactivació</translation>
@@ -1203,10 +1237,12 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="689050928053557380">Compra un pla de dades...</translation>
 <translation id="4235618124995926194">Inclou aquest correu electrònic:</translation>
 <translation id="4874539263382920044">El títol ha de contenir com a mínim un caràcter</translation>
+<translation id="9214520840402538427">La inicialització dels atributs en temps d'instal·lació ha esgotat el temps d'espera. Contacteu amb el representant d'assistència.</translation>
 <translation id="798525203920325731">Espais de nom de xarxa</translation>
 <translation id="7092106376816104">Excepcions de finestres emergents</translation>
 <translation id="4830475881783902092">Identificador de client:</translation>
 <translation id="4600958291864306415">s'està generant...</translation>
+<translation id="8594787581355215556">Heu iniciat la sessió com a <ph name="USER_EMAIL_ADDRESS"/>. Gestioneu les dades sincronitzades al <ph name="BEGIN_LINK"/>Tauler de Google<ph name="END_LINK"/>.</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME"/> no ha pogut completar la instal·lació, però es continuarà executant des de la imatge de disc.</translation>
 <translation id="6186893483313227582">Icona <ph name="VALUE"/></translation>
 <translation id="4726710629007580002">S'han produït advertiments en provar d'instal·lar aquesta extensió:</translation>
@@ -1223,6 +1259,7 @@ id de la prova: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="5109044022078737958">Laura</translation>
 <translation id="6291953229176937411">&amp;Mostra a Finder</translation>
 <translation id="8598687241883907630">Desconnecta el compte de Google...</translation>
+<translation id="6410894982725961573">Disponible fora de línia</translation>
 <translation id="2556718757702023317">Per desar &quot;<ph name="FILE_NAME"/>&quot; fora de línia, cal que allibereu <ph name="TOTAL_FILE_SIZE"/> més d'espai:<ph name="MARKUP_1"/>
         <ph name="MARKUP_2"/>desenganxeu els fitxers als quals ja no necessiteu accedir fora de línia<ph name="MARKUP_3"/>
         <ph name="MARKUP_4"/>suprimiu els fitxers de la carpeta Baixades<ph name="MARKUP_5"/></translation>
@@ -1292,31 +1329,26 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="2529133382850673012">Teclat nord-americà</translation>
 <translation id="4411578466613447185">Signant del codi</translation>
 <translation id="1354868058853714482">Adobe Reader no està actualitzat i pot ser insegur.</translation>
-<translation id="9215730847590481862">Amb Instant activat, si és compatible amb el vostre motor de cerca predeterminat, els resultats de la cerca apareixeran a l'instant a mesura que escriviu les consultes a la barra d'adreces i les prediccions en línia us ajudaran a guiar la vostra cerca. Com que se sol·liciten els resultats de la cerca fins i tot mentre esteu escrivint la consulta, és possible que el vostre motor de cerca predeterminat els registri com a consultes de cerca.</translation>
 <translation id="8943392635470173207">Utilitza <ph name="INTENT_HANDLER_TITLE"/></translation>
 <translation id="6252594924928912846">Personalitzeu la configuració de sincronització...</translation>
 <translation id="8425755597197517046">En&amp;ganxa i cerca</translation>
+<translation id="6341850831632289108">Detecteu la vostra ubicació física</translation>
 <translation id="1093148655619282731">Detalls del certificat seleccionat:</translation>
 <translation id="3003623123441819449">Memòria cau CSS</translation>
-<translation id="5260830961180197290"><ph name="MARKUP_1"/>Accediu als fitxers des de qualsevol lloc, fins i tot fora de línia.<ph name="MARKUP_2"/>
-        Els fitxers a <ph name="PRODUCT_NAME"/> s'actualitzen a tots els dispositius, i podeu accedir-hi des de qualsevol d'ells.<ph name="MARKUP_3"/>
-        <ph name="MARKUP_4"/>Manteniu els fitxers segurs.<ph name="MARKUP_5"/>
-        Passi el que li passi al vostre dispositiu, els fitxers estaran emmagatzemats de manera segura a <ph name="PRODUCT_NAME"/>.<ph name="MARKUP_6"/>
-        <ph name="MARKUP_7"/>Compartiu, creeu i col·laboreu<ph name="MARKUP_8"/>
-        en fitxers amb altres persones, tot des d'un mateix lloc.<ph name="MARKUP_9"/></translation>
 <translation id="2743322561779022895">Activació:</translation>
 <translation id="4181898366589410653">No s'ha trobat cap mecanisme de revocació al certificat del servidor.</translation>
 <translation id="6914291514448387591"><ph name="PLUGIN_NAME"/> necessita el vostre permís per executar-se.</translation>
 <translation id="8705331520020532516">Número de sèrie</translation>
 <translation id="1665770420914915777">Utilitza la pàgina Pestanya nova</translation>
+<translation id="5456409301717116725">Aquesta extensió inclou el fitxer de clau &quot;<ph name="KEY_PATH"/>&quot;. És probable que això no sigui convenient.</translation>
 <translation id="1874251478914494964">El fitxer és massa gran</translation>
 <translation id="2629089419211541119">Fa <ph name="NUMBER_ONE"/> hora</translation>
 <translation id="1691063574428301566">El vostre equip es reiniciarà quan s'hagi completat l'actualització.</translation>
+<translation id="4697551882387947560">Quan finalitza la sessió de navegació</translation>
 <translation id="5900302528761731119">Foto del perfil de Google</translation>
 <translation id="131364520783682672">Bloq Maj</translation>
 <translation id="2066999550761485762"><ph name="BEGIN_BOLD"/>Us heu posat en mode d'incògnit.<ph name="END_BOLD"/> <ph name="LINE_BREAK"/> Les pàgines que visualitzeu en aquesta pestanya no apareixeran a l'historial de navegació o a l'historial de cerca, i no deixaran cap altre rastre, com ara galetes, al dispositiu mòbil després de tancar <ph name="BEGIN_BOLD"/>totes<ph name="END_BOLD"/> les pestanyes en mode d'incògnit. Es conservaran tots els fitxers que baixeu o els marcadors que creeu, però. <ph name="LINE_BREAK"/> <ph name="BEGIN_BOLD"/>Utilitzar el mode d'incògnit no afecta el comportament d'altres persones, servidors o programaris.<ph name="END_BOLD"/> Aneu amb compte amb la vigilància dels agents secrets o de les persones que siguin al darrere. <ph name="LINE_BREAK"/> <ph name="BEGIN_LINK"/>Obteniu més informació<ph name="END_LINK"/> sobre la navegació en mode d'incògnit.</translation>
 <translation id="2335122562899522968">Aquesta pàgina ha definit galetes.</translation>
-<translation id="4628757576491864469">Dispositius</translation>
 <translation id="8461914792118322307">Servidor intermediari</translation>
 <translation id="4089521618207933045">Té un submenú</translation>
 <translation id="1936157145127842922">Mostra a la carpeta</translation>
@@ -1324,14 +1356,13 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="6982279413068714821">Fa <ph name="NUMBER_DEFAULT"/> minuts</translation>
 <translation id="3952119550285200690">Per afegir un usuari, connecteu-vos primer a una xarxa.</translation>
 <translation id="7977590112176369853">&lt;introdueix la consulta&gt;</translation>
+<translation id="6991665348624301627">Selecció d'una destinació</translation>
 <translation id="3449839693241009168">Premeu <ph name="SEARCH_KEY"/> per enviar ordres a <ph name="EXTENSION_NAME"/></translation>
 <translation id="968174221497644223">Memòria cau de l'aplicació</translation>
 <translation id="1478897831827830200">Seguiment</translation>
 <translation id="5714678912774000384">Activa l'última pestanya</translation>
-<translation id="9017608379655359501">S'ha cancel·lat l'acció d'enganxar.</translation>
 <translation id="8466234950814670489">Arxiu tar</translation>
 <translation id="5902572236435740554">Introduïu primer la contrasenya del compte de Google, <ph name="LINE_BREAK"/> no la contrasenya específica d'una aplicació.</translation>
-<translation id="3799598397265899467">Quan tanqui el navegador</translation>
 <translation id="8813811964357448561">full de paper</translation>
 <translation id="2125314715136825419">Continua sense actualitzar Adobe Reader (no recomanat)</translation>
 <translation id="5034510593013625357">Patró del nom d'amfitrió</translation>
@@ -1344,6 +1375,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="2251809247798634662">Finestra d'incògnit nova</translation>
 <translation id="7610193165460212391">El valor es troba fora de l'interval <ph name="VALUE"/> .</translation>
 <translation id="4540154706690252107">No ho fixis a la barra d'execució ràpida</translation>
+<translation id="6968649314782363508">Accediu a les dades a <ph name="WEBSITE_1"/>, a <ph name="WEBSITE_2"/> i a <ph name="WEBSITE_3"/></translation>
 <translation id="1883255238294161206">Redueix la llista</translation>
 <translation id="3100472813537288234">Amaga l'ortografia i la gramàtica</translation>
 <translation id="358344266898797651">Cèltic</translation>
@@ -1357,9 +1389,9 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="2870560284913253234">Lloc</translation>
 <translation id="6945221475159498467">Selecciona</translation>
 <translation id="4776917500594043016">Contrasenya per a <ph name="USER_EMAIL_ADDRESS"/></translation>
+<translation id="8889883017054825362">Llegiu i modifiqueu l'historial de navegació</translation>
 <translation id="7724603315864178912">Retalla</translation>
 <translation id="8456681095658380701">El nom no és vàlid</translation>
-<translation id="5869015858594559197">Configuració que determina si els llocs web poden utilitzar funcions com ara galetes, JavaScript i connectors</translation>
 <translation id="917051065831856788">Utilitza les pestanyes laterals</translation>
 <translation id="1976150099241323601">Inici de sessió al dispositiu de seguretat</translation>
 <translation id="6620110761915583480">Desa el fitxer</translation>
@@ -1368,11 +1400,11 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="2175607476662778685">Barra d'inici ràpid</translation>
 <translation id="9085376357433234031">Per desar aquests fitxers per utilitzar-los fora de línia, torneu a connectar-vos i&lt;br&gt;marqueu la casella de selecció <ph name="OFFLINE_CHECKBOX_NAME"/> per a aquests fitxers.</translation>
 <translation id="6434309073475700221">Descarta</translation>
+<translation id="1844535038303092965">IU de fons de pantalla experimental.</translation>
 <translation id="1367951781824006909">Trieu un fitxer</translation>
 <translation id="3589825953300272289">Cerqueu els marcadors al menú d'eines o a la barra de marcadors.</translation>
 <translation id="8311778656528046050">Esteu segur que voleu tornar a carregar aquesta pàgina?</translation>
 <translation id="1425127764082410430">&amp;Cerca <ph name="SEARCH_ENGINE"/> de &quot;<ph name="SEARCH_TERMS"/>&quot;</translation>
-<translation id="8567311750903559503">Activeu la implementació d'HTML experimental del quadre de diàleg del gestor de tasques.</translation>
 <translation id="684265517037058883">(encara no és vàlid)</translation>
 <translation id="2027538664690697700">Actualitza el connector...</translation>
 <translation id="1815083418640426271">Enganxa com a text sense format</translation>
@@ -1380,6 +1412,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="7447215573579476012">No es pot accedir a l'aplicació de <ph name="HOST_NAME"/> perquè la vostra connexió de xarxa no funciona. La pàgina es carregarà quan la connexió de xarxa es restableixi. <ph name="LINE_BREAK"/></translation>
 <translation id="1483151333977672176">S'ha enviat</translation>
 <translation id="4284105660453474798">Esteu segur que voleu suprimir &quot;$1&quot;?</translation>
+<translation id="1600857548979126453">Accediu al rerefons del depurador de pàgines</translation>
 <translation id="1652926366973818672">L'inici de sessió s'ha restringit a només el compte de propietari. Reinicieu l'equip  i inicieu la sessió amb el compte de propietari. L'equip es reiniciarà automàticament d'aquí a 30 segons.</translation>
 <translation id="4378551569595875038">Connectant...</translation>
 <translation id="7029809446516969842">Contrasenyes</translation>
@@ -1389,6 +1422,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="1476949146811612304">Definiu el motor de cerca que s'ha de fer servir en cercar des de l'<ph name="BEGIN_LINK"/>omnibox<ph name="END_LINK"/>.</translation>
 <translation id="4114360727879906392">Finestra anterior</translation>
 <translation id="8238649969398088015">Consell d'ajuda</translation>
+<translation id="2174623898343235642">Cap fitxer coincideix amb &lt;b&gt;&quot;<ph name="SEARCH_STRING"/>&quot;&lt;/b&gt;</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> fitxers</translation>
 <translation id="2350172092385603347">S'ha utilitzat localització, però no s'ha especificat default_locale al manifest.</translation>
 <translation id="3273951168350045122">Teclat (<ph name="ADDRESS"/>)</translation>
@@ -1440,6 +1474,9 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="4932733599132424254">Data</translation>
 <translation id="5098707413665413492">Aquest tipus de fitxer pot malmetre el dispositiu mòbil. Voleu conservar <ph name="FILE_NAME"/> de totes maneres?</translation>
 <translation id="6267166720438879315">Seleccioneu un certificat per autenticar-vos a <ph name="HOST_NAME"/></translation>
+<translation id="1974159311422864474">https:////www.google.com//calendar//render?cid=%s</translation>
+<translation id="5192145662954225689">Activa els dispositiu Bluetooth no compatibles</translation>
+<translation id="5834581999798853053">Queda cosa de <ph name="TIME"/> minuts</translation>
 <translation id="7839809549045544450">El servidor té una clau pública Diffie-Hellman dèbil i efímera</translation>
 <translation id="5515806255487262353">Busca-ho al diccionari</translation>
 <translation id="2790805296069989825">Teclat rus</translation>
@@ -1464,6 +1501,8 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="6810193446027958860">Sensibilitat de la busca:</translation>
 <translation id="5015344424288992913">Resolent el servidor intermediari...</translation>
 <translation id="4389091756366370506">Usuari <ph name="VALUE"/></translation>
+<translation id="3850634422834903942">Error en instal·lar</translation>
+<translation id="2398703750948514961">Cancel·lat</translation>
 <translation id="4724168406730866204">Eten 26</translation>
 <translation id="308268297242056490">URI</translation>
 <translation id="4479812471636796472">Teclat Dvorak nord-americà</translation>
@@ -1520,6 +1559,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="2090876986345970080">Configuració de seguretat del sistema</translation>
 <translation id="3728067901555601989">Ordre de pagament:</translation>
 <translation id="3475447146579922140">Full de càlcul de Google</translation>
+<translation id="6856526171412069413">Activa l'escala per pessigada.</translation>
 <translation id="9219103736887031265">Imatges</translation>
 <translation id="7415834062450491574">Envia comentaris a Google.</translation>
 <translation id="4480995875255084924">Activa el lector Oak d'ash. Permet la inspecció de les jerarquies de finestres, de capes i de visualitzacions i les seves propietats. Premeu Ctrl+Maj+F1 per accedir-hi.</translation>
@@ -1531,12 +1571,14 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="5350480486488078311">API NaCl Socket.</translation>
 <translation id="5329858601952122676">&amp;Suprimeix</translation>
 <translation id="6100736666660498114">Menú &quot;Inici&quot;</translation>
+<translation id="4402766404187539019">Correu de Google.com</translation>
 <translation id="6275297011664564181">En aquests moments no hi ha polítiques actives.</translation>
 <translation id="3994878504415702912">&amp;Zoom</translation>
 <translation id="9009369504041480176">S'està carregant (<ph name="PROGRESS_PERCENT"/>%)...</translation>
 <translation id="8995603266996330174">Gestionat per <ph name="DOMAIN"/></translation>
 <translation id="5602600725402519729">&amp;Torna a carregar</translation>
 <translation id="172612876728038702">S'està instal·lant TPM. Tingueu paciència; el procés pot trigar uns minuts.</translation>
+<translation id="2836635946302913370">L'administrador ha desactivat l'inici de sessió amb aquest nom d'usuari.</translation>
 <translation id="1362165759943288856">Heu comprat dades il·limitades el <ph name="DATE"/></translation>
 <translation id="2078019350989722914">Avisa abans de sortir (<ph name="KEY_EQUIVALENT"/>)</translation>
 <translation id="7965010376480416255">Memòria compartida</translation>
@@ -1567,6 +1609,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="1956050014111002555">El fitxer conté certificats múltiples, però cap d'ells no s'ha importat:</translation>
 <translation id="302620147503052030">Mostra el botó</translation>
 <translation id="1895658205118569222">Aturada</translation>
+<translation id="8708000541097332489">Esborra en tancar</translation>
 <translation id="5512074755152723588">Si escriviu l'URL d'una pestanya que ja existeixi a la barra d'adreces, es mostra la pestanya que ja estigui oberta en lloc de tornar-la a carregar a la pestanya actual.</translation>
 <translation id="9157595877708044936">S'està configurant...</translation>
 <translation id="4475552974751346499">Cerca baixades</translation>
@@ -1590,17 +1633,17 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
         d'obtenir un certificat vàlid d'un altre lloc.</translation>
 <translation id="6295228342562451544">Quan et connectes a un lloc web segur, el servidor que allotja el lloc presenta al teu navegador una cosa anomenada &quot;certificat&quot; per verificar la seva identitat. Aquest certificat conté informació d'identitat, com ara l'adreça del lloc web, que la verifica un tercer de confiança per al teu equip. En comprovar que l'adreça del certificat coincideix amb l'adreça del lloc web, és possible verificar que et comuniques amb seguretat amb el lloc web que vols i no amb un tercer , com ara un atacant de la xarxa.</translation>
 <translation id="6342069812937806050">Ara mateix</translation>
+<translation id="4510744228507474176">La compatibilitat amb la versió del fitxer de manifest 1 s'està <ph name="LINK_START_1"/>retirant progressivament<ph name="LINK_END_1"/>. <ph name="LINK_START_2"/>Actualitzeu a la versió 2<ph name="LINK_END_2"/>.</translation>
 <translation id="5605716740717446121">La vostra targeta SIM es desactivarà de manera permanent si no podeu introduir la clau de desbloqueig del PIN (PUK) correcta. Nombre d'intents restants: <ph name="TRIES_COUNT"/></translation>
-<translation id="6960978892882306894">Activa un flux d'inici de sessió sincronitzat nou, on totes les interfícies d'usuari d'inici de sessió es reenvien a chrome:signin.</translation>
 <translation id="8836712291807476944"><ph name="SAVED_BYTES"/> / <ph name="TOTAL_BYTES"/> bytes, interromput</translation>
 <translation id="6773455881569219915">Envia aquesta pàgina a <ph name="DEVICE_NAME"/>.</translation>
 <translation id="5502500733115278303">Importat de Firefox</translation>
 <translation id="569109051430110155">Detecció automàtica</translation>
 <translation id="4408599188496843485">A&amp;juda</translation>
-<translation id="600038297188708848">Activeu el gestor de tasques experimental.</translation>
 <translation id="5399158067281117682">Els PIN no coincideixen.</translation>
 <translation id="8494234776635784157">Contingut web</translation>
 <translation id="2681441671465314329">Buida la memòria cau</translation>
+<translation id="7885253890047913815">Destinacions recents</translation>
 <translation id="3646789916214779970">Restableix al tema per defecte</translation>
 <translation id="7816949580378764503">Identitat verificada</translation>
 <translation id="1679068421605151609">Eines per a desenvolupadors</translation>
@@ -1622,7 +1665,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
         &lt;p&gt;Encara podeu configurar-lo mitjançant la línia d'ordres. Consulteu &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME"/>&lt;/code&gt; per obtenir més informació sobre indicadors i sobre variables d'entorn.&lt;/p&gt;</translation>
 <translation id="7205869271332034173">SSID:</translation>
 <translation id="7084579131203911145">Nom del pla:</translation>
-<translation id="6667842906641929946">Motor desconegut</translation>
 <translation id="5815645614496570556">Adreça X.400</translation>
 <translation id="1223853788495130632">L'administrador us recomana un valor específic per a aquesta configuració.</translation>
 <translation id="3551320343578183772">Tanca la pestanya</translation>
@@ -1630,6 +1672,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="74354239584446316">El vostre compte de botiga web és <ph name="EMAIL_ADDRESS"/>. Si inicieu la sessió per sincronitzar amb un altre compte es produiran incompatibilitats.</translation>
 <translation id="3712897371525859903">Desa la pàgina &amp;com a...</translation>
 <translation id="1321877377111404845">S'ha provat de modificar la pàgina d'inici</translation>
+<translation id="5701381305118179107">Centre</translation>
 <translation id="7926251226597967072">En aquests moments, <ph name="PRODUCT_NAME"/> està important els elements següents de <ph name="IMPORT_BROWSER_NAME"/>:</translation>
 <translation id="4442424173763614572">La cerca de DNS ha fallat</translation>
 <translation id="4315903906955301944">Pàgina web oficial del fitxer d'àudio</translation>
@@ -1637,7 +1680,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="2398753653077538650">Activa l'acció de pàgina de De Chrome a mòbils, que us permet enviar URL de pàgines i còpies fora de línia a Chrome al dispositiu mòbil.</translation>
 <translation id="2767649238005085901">Premeu Retorn per retrocedir i menú contextual per veure l'historial</translation>
 <translation id="8580634710208701824">Torna a carregar el marc</translation>
-<translation id="1018656279737460067">S'ha cancel·lat</translation>
 <translation id="7606992457248886637">Entitats emissores</translation>
 <translation id="707392107419594760">Seleccioneu el vostre teclat:</translation>
 <translation id="8605503133013456784">No s'ha pogut desconnectar i dessincronitzar de: &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
@@ -1654,7 +1696,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="1603914832182249871">(Incògnit)</translation>
 <translation id="701632062700541306">Voleu començar a mostrar tota la pantalla en aquesta reunió?</translation>
 <translation id="7910768399700579500">Carpeta &amp;nova</translation>
-<translation id="200961599838446317">S'està enganxant $1 elements</translation>
 <translation id="7472639616520044048">Tipus MIME:</translation>
 <translation id="2307164895203900614">Mostra les pàgines de fons (<ph name="NUM_BACKGROUND_APPS"/>)</translation>
 <translation id="3192947282887913208">Fitxers d'àudio</translation>
@@ -1665,10 +1706,10 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="4833609837088121721">Activeu els experiments d'Eines per a desenvolupadors.</translation>
 <translation id="7469894403370665791">Connecta automàticament a aquesta xarxa</translation>
 <translation id="4807098396393229769">Nom a la targeta</translation>
-<translation id="4094130554533891764">Ara pot accedir a:</translation>
 <translation id="4131410914670010031">Blanc i negre</translation>
 <translation id="3800503346337426623">Omet l'inici de sessió i navega com a convidat</translation>
 <translation id="2615413226240911668">De totes maneres, aquesta pàgina conté altres recursos que no són segurs. Altres usuaris poden visualitzar-los mentre són en trànsit, i algun atacant podria modificar-los per canviar l'aspecte de la pàgina.</translation>
+<translation id="4731581344917727586">Activeu la compatibilitat amb el connector del navegador.</translation>
 <translation id="197288927597451399">Conserva</translation>
 <translation id="5880867612172997051">Accés a la xarxa suspès</translation>
 <translation id="7842346819602959665">La versió més recent de l'extensió &quot;<ph name="EXTENSION_NAME"/>&quot; requereix més permisos i, per tant, s'ha desactivat.</translation>
@@ -1687,6 +1728,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="1567993339577891801">Consola de JavaScript</translation>
 <translation id="895944840846194039">Memòria de JavaScript</translation>
 <translation id="4546420444519867841">Instal·la el connector que falta</translation>
+<translation id="6462080265650314920">Les aplicacions s'han de distribuir amb el tipus de contingut &quot;<ph name="CONTENT_TYPE"/>&quot;.</translation>
 <translation id="1559235587769913376">Entrada de caràcters Unicode</translation>
 <translation id="3297788108165652516">Aquesta xarxa està compartida amb altres usuaris.</translation>
 <translation id="1548132948283577726">Els llocs que mai desen les contrasenyes apareixeran aquí.</translation>
@@ -1695,7 +1737,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="9115675100829699941">&amp;Marcadors</translation>
 <translation id="1731589410171062430">Total: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/> (<ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/>)</translation>
 <translation id="7461924472993315131">Fixa</translation>
-<translation id="7668371797822494537">Error en enganxar. <ph name="ERROR_MESSAGE"/></translation>
 <translation id="7279701417129455881">Gestiona el bloqueig de galetes...</translation>
 <translation id="665061930738760572">Obre en una &amp;finestra nova</translation>
 <translation id="6561519562679424969">Gestiona les contrasenyes desades</translation>
@@ -1726,8 +1767,9 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="5170568018924773124">Mostra a la carpeta</translation>
 <translation id="883848425547221593">Altres marcadors</translation>
 <translation id="6054173164583630569">Teclat francès</translation>
-<translation id="3596315483920932980">Permet definir les dades locals només per a la sessió actual</translation>
+<translation id="5364817490037405422">Connector del navegador</translation>
 <translation id="5268606875983318825">PPAPI (fora de procés)</translation>
+<translation id="8614236384372926204">Aquest vídeo no està disponible fora de línia.</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> no pot determinar ni definir el navegador predeterminat.</translation>
 <translation id="8898786835233784856">Selecciona la pestanya següent</translation>
 <translation id="9111102763498581341">Desbloqueja</translation>
@@ -1749,7 +1791,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="9114223350847410618">Afegiu un altre idioma abans d'eliminar aquest.</translation>
 <translation id="4408427661507229495">nom de la xarxa</translation>
 <translation id="5258266922137542658">PPAPI (en procés)</translation>
-<translation id="1093369689648505397">Activa l'inici de sessió ClientOAuth</translation>
 <translation id="8028993641010258682">Mida</translation>
 <translation id="7942403573416827914">Inicia <ph name="PRODUCT_NAME"/> automàticament en engegar l'equip</translation>
 <translation id="8329978297633540474">Text sense format</translation>
@@ -1775,7 +1816,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="1493263392339817010">Personalitza els tipus de lletra...</translation>
 <translation id="5352033265844765294">Indicació de data i hora</translation>
 <translation id="1493892686965953381">S'està esperant <ph name="LOAD_STATE_PARAMETER"/>...</translation>
-<translation id="6449085810994685586">&amp;Revisa l'ortografia d'aquest camp</translation>
 <translation id="3901991538546252627">S'està connectant amb <ph name="NAME"/></translation>
 <translation id="3621320549246006887">Es tracta d'un esquema experimental on el certificat HTTPS pot ser autenticat o refusat pels registres de DNS (DNSSEC segur). Si veieu aquest missatge vol dir que heu activat les funcions experimentals amb les opcions de línia d'ordres. Podeu eliminar aquestes opcions per ignorar aquest error.</translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> minuts restants</translation>
@@ -1794,13 +1834,15 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="1965328510789761112">Memòria privada</translation>
 <translation id="7312441861087971374"><ph name="PLUGIN_NAME"/> no està actualitzat.</translation>
 <translation id="255654065756093884">Addició d'un dispositiu Bluetooth</translation>
-<translation id="3999371263745402715">Totes les dades del dispositiu mòbil i dels llocs web que visiteu</translation>
 <translation id="2461687051570989462">Accediu a les impressores des de qualsevol equip o telèfon intel·ligent. <ph name="BEGIN_LINK"/>Més informació<ph name="END_LINK"/></translation>
 <translation id="7194430665029924274">Recorda-m'ho més &amp;tard</translation>
 <translation id="5790085346892983794">Correcte</translation>
 <translation id="1901769927849168791">S'ha detectat una targeta SD</translation>
 <translation id="818454486170715660">Propietari: <ph name="NAME"/></translation>
+<translation id="7014974617945269585">Activa el disseny nou d'OOBE/inici de sessió.</translation>
+<translation id="4763830802490665879">Les galetes de diversos llocs s'esborraran en sortir-ne.</translation>
 <translation id="1358032944105037487">Teclat japonès</translation>
+<translation id="292638579420016866">Consulta'm quan un lloc vulgui fer servir la càmera o el micròfon (recomanat)</translation>
 <translation id="6231782223312638214">Suggerida</translation>
 <translation id="8302838426652833913">Aneu a
           <ph name="BEGIN_BOLD"/>
@@ -1809,7 +1851,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
           per comprovar la vostra connexió.</translation>
 <translation id="8664389313780386848">&amp;Visualitza l'origen de la pàgina</translation>
 <translation id="8970407809569722516">Microprogramari:</translation>
-<translation id="2828701613241603541">Heu iniciat la sessió com a <ph name="USER_EMAIL_ADDRESS"/>. Gestioneu les dades sincronitzades al <ph name="BEGIN_LINK"/>Tauler de Google<ph name="END_LINK"/></translation>
 <translation id="13649080186077898">Gestiona la configuració de l'emplenament automàtic</translation>
 <translation id="57646104491463491">Data modificada</translation>
 <translation id="7266345500930177944">Feu clic per executar <ph name="PLUGIN_NAME"/>.</translation>
@@ -1836,7 +1877,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="5895187275912066135">Emès el</translation>
 <translation id="9100825730060086615">Tipus de teclat</translation>
 <translation id="5197680270886368025">Sincronització completa.</translation>
-<translation id="1190844492833803334">Quan tanqui el navegador</translation>
 <translation id="5646376287012673985">Ubicació</translation>
 <translation id="3337069537196930048"><ph name="PLUGIN_NAME"/> s'ha bloquejat perquè no està actualitzat.</translation>
 <translation id="539755880180803351">Anota formularis web amb prediccions de tipus d'emplenament automàtic dels camps com a text de marcadors de posició.</translation>
@@ -1851,6 +1891,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="2615569600992945508">No permetis que cap lloc desactivi el cursor del ratolí</translation>
 <translation id="7424526482660971538">Vull triar la meva pròpia frase de contrasenya</translation>
 <translation id="380271916710942399">Certificat de servidor no mostrat</translation>
+<translation id="7334866548633321642">Excepcions de la càmera Flash i del micròfon</translation>
 <translation id="6459488832681039634">Utilitza la selecció per a la cerca</translation>
 <translation id="7006844981395428048">Àudio en $1</translation>
 <translation id="2392369802118427583">Activa</translation>
@@ -1884,6 +1925,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="5261073535210137151">Aquesta carpeta conté <ph name="COUNT"/> marcadors. Esteu segur que voleu suprimir-la?</translation>
 <translation id="59174027418879706">Activada</translation>
 <translation id="4194415033234465088">Dachen 26</translation>
+<translation id="8800004011501252845">S'estan mostrant les destinacions de:</translation>
 <translation id="4977565600485911823">Desactiveu les extensions i <ph name="BEGIN_LINK"/>torneu a carregar<ph name="END_LINK"/> aquesta pàgina web.</translation>
 <translation id="6639554308659482635">Memòria SQLite</translation>
 <translation id="8438847303189512861">Activació del bloqueig del punter</translation>
@@ -1892,6 +1934,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="7650701856438921772"><ph name="PRODUCT_NAME"/> es mostra en aquest idioma</translation>
 <translation id="740624631517654988">Finestra emergent bloquejada</translation>
 <translation id="3738924763801731196"><ph name="OID"/>:</translation>
+<translation id="533433379391851622">La versió esperada era &quot;<ph name="EXPECTED_VERSION"/>&quot;, però la real era &quot;<ph name="NEW_ID"/>&quot;.</translation>
 <translation id="1847961471583915783">Esborra les galetes i altres dades de llocs i de connectors quan tanqui el navegador</translation>
 <translation id="8870318296973696995">Pàgina d'inici</translation>
 <translation id="6659594942844771486">Pestanya</translation>
@@ -1899,6 +1942,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="6575134580692778371">No configurat</translation>
 <translation id="4624768044135598934">Correcte.</translation>
 <translation id="5582768900447355629">Encripta totes les meves dades</translation>
+<translation id="4408018461045940491">Activa la compatibilitat d'escriptori ampliat.</translation>
 <translation id="1974043046396539880">Punts de distribució de CRL</translation>
 <translation id="6088825445911044104">Les pestanyes no es redueixen mai, sinó que s'apilen les unes sobre les altres quan no hi ha prou espai.</translation>
 <translation id="7049357003967926684">Associació</translation>
@@ -1912,6 +1956,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="18139523105317219">Nom de la part EDI</translation>
 <translation id="6657193944556309583">Ja teniu dades encriptades amb una paraula de pas. Introduïu-la a continuació.</translation>
 <translation id="733186066867378544">Excepcions d'ubicació geogràfica</translation>
+<translation id="3497848188937862226">Definiu la ruta a l'script amb ordres gdb que nacl-gdb executarà a l'inici.</translation>
 <translation id="3328801116991980348">Informació del lloc</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME"/>
           té problemes per accedir a la xarxa.
@@ -1929,7 +1974,9 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="7175353351958621980">Carregat des de:</translation>
 <translation id="7186367841673660872">Aquesta pàgina s'ha traduït de:<ph name="ORIGINAL_LANGUAGE"/>a:<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Només una persona que tingui la vostra contrasenya pot llegir les dades encriptades: la contrasenya no s'envia ni s'emmagatzema a Google. Si oblideu la contrasenya, haureu de</translation>
+<translation id="8248050856337841185">&amp;Enganxa</translation>
 <translation id="6052976518993719690">Entitat emissora de certificats SSL</translation>
+<translation id="2925935892230812200">Utilitzeu la GPU per accelerar la representació dels filtres SVG.</translation>
 <translation id="1636959874332483835"><ph name="HOST_NAME"/> conté programari maliciós. Si visiteu aquest lloc, el vostre equip es pot veure infectat per un virus.</translation>
 <translation id="8050783156231782848">No hi ha dades disponibles</translation>
 <translation id="1175364870820465910">&amp;Imprimeix...</translation>
@@ -1949,13 +1996,16 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="4375848860086443985">Redactor</translation>
 <translation id="4988273303304146523">Fa <ph name="NUMBER_DEFAULT"/> dies</translation>
 <translation id="2527591341887670429">Ús de la bateria: <ph name="PRECENTAGE"/>%</translation>
+<translation id="960987915827980018">Queda cosa d'una hora</translation>
 <translation id="3112378005171663295">Redueix</translation>
 <translation id="8428213095426709021">Configuració</translation>
 <translation id="1588343679702972132">Aquest lloc ha sol·licitat que us identifiqueu amb un certificat:</translation>
 <translation id="7211994749225247711">Suprimeix...</translation>
 <translation id="2819994928625218237">&amp;Sense suggeriments d'escriptura</translation>
+<translation id="1403008701842173542">A tot arreu</translation>
 <translation id="1065449928621190041">Teclat francès del Canadà</translation>
 <translation id="8327626790128680264">Teclat nord-americà ampliat</translation>
+<translation id="6432458268957186486">Imprimeix amb el quadre de diàleg de: <ph name="CLOUD_PRINT_NAME"/>...</translation>
 <translation id="2950186680359523359">El servidor ha tancat la connexió sense enviar cap dada.</translation>
 <translation id="9142623379911037913">Voleu permetre que <ph name="SITE"/> mostri notificacions d'escriptori?</translation>
 <translation id="9118804773997839291">A continuació trobareu una llista de tots els elements no segurs de la pàgina. Feu clic a l'enllaç &quot;Diagnòstic&quot; per obtenir més informació sobre el perill que suposa un element determinat.</translation>
@@ -1980,7 +2030,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="6833901631330113163">Europa meridional</translation>
 <translation id="6065289257230303064">Atributs del directori del subjecte del certificat</translation>
 <translation id="2423017480076849397">Accediu a les impressores en línia i compartiu-les amb <ph name="CLOUD_PRINT_NAME"/></translation>
-<translation id="569520194956422927">&amp;Afegeix...</translation>
 <translation id="4018133169783460046">Mostra <ph name="PRODUCT_NAME"/> en aquest idioma</translation>
 <translation id="5110450810124758964">Fa <ph name="NUMBER_ONE"/> dia</translation>
 <translation id="6224995341905622854">Si ho veieu sovint, proveu <ph name="HELP_LINK"/>.</translation>
@@ -2004,7 +2053,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="2894654529758326923">Informació</translation>
 <translation id="4135450933899346655">Els vostres certificats</translation>
 <translation id="2127166530420714525">No s'ha pogut canviar l'estat d'alimentació de l'adaptador Bluetooth.</translation>
-<translation id="4731578803613910821">Les vostres dades a <ph name="WEBSITE_1"/>, a <ph name="WEBSITE_2"/> i a <ph name="WEBSITE_3"/></translation>
 <translation id="7716781361494605745">URL de norma d'entitat emissora de certificats de Netscape</translation>
 <translation id="9148058034647219655">Surt</translation>
 <translation id="2881966438216424900">Darrer accés:</translation>
@@ -2012,7 +2060,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="4647090755847581616">&amp;Tanca la pestanya</translation>
 <translation id="2649204054376361687"><ph name="CITY"/>, <ph name="COUNTRY"/></translation>
 <translation id="7886758531743562066">El lloc web de <ph name="HOST_NAME"/> conté elements de llocs que semblen allotjar programari maliciós, és a dir, programari que pot malmetre l'equip o operar sense el vostre consentiment. El sol fet de visitar un lloc que contingui aquest tipus de programari pot infectar el vostre equip.</translation>
-<translation id="7538227655922918841">Les galetes de diversos llocs només s'admeten per a la sessió.</translation>
 <translation id="2385700042425247848">Nom del servei:</translation>
 <translation id="2787047795752739979">Sobreescriu l'original</translation>
 <translation id="3128628928070793746">Aneu al <ph name="BEGIN_BOLD"/>menú d'eines &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="ADVANCED_TITLE"/> &gt; <ph name="PROXIES_TITLE"/><ph name="END_BOLD"/> i assegureu-vos que la configuració estigui definida com a &quot;sense servidor intermediari&quot; o &quot;directa&quot;.</translation>
@@ -2052,6 +2099,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 </translation>
 <translation id="2633084400146331575">Activa els comentaris per veu</translation>
 <translation id="6312403991423642364">Error de xarxa desconegut</translation>
+<translation id="1541724327541608484">Comprova l'ortografia dels camps de text</translation>
 <translation id="751377616343077236">Nom del certificat</translation>
 <translation id="7154108546743862496">Més informació</translation>
 <translation id="8637688295594795546">Actualització del sistema disponible. S'està preparant la baixada…</translation>
@@ -2101,17 +2149,16 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="8800420788467349919">Volum: <ph name="PRECENTAGE"/> %</translation>
 <translation id="1697068104427956555">Seleccioneu una regió quadrada de la imatge.</translation>
 <translation id="29232676912973978">Gestiona les connexions...</translation>
+<translation id="8584609207524193247">Esborra les dades de les aplicacions allotjades</translation>
 <translation id="8739145690729256497">Permet les notificacions</translation>
 <translation id="1628736721748648976">Codificació</translation>
 <translation id="1198271701881992799">Comencem</translation>
 <translation id="2025186561304664664">El servidor intermediari està definit perquè es configuri automàticament.</translation>
 <translation id="782590969421016895">Utilitza les pàgines actuals</translation>
 <translation id="7846924223038347452">No teniu autorització per fer servir aquest dispositiu. Per obtenir el permís d'inici de sessió, contacteu amb el propietari del dispositiu.</translation>
-<translation id="8485586426668436450">Aquesta pàgina s'ha deixat en blanc intencionadament.</translation>
 <translation id="6521850982405273806">Informa d'un error</translation>
 <translation id="736515969993332243">S'estan cercant xarxes.</translation>
 <translation id="7806513705704909664">Activa Emplenament automàtic per emplenar formularis web amb un sol clic.</translation>
-<translation id="7846634333498149051">Teclat</translation>
 <translation id="8026334261755873520">Esborra les dades de navegació</translation>
 <translation id="605011065011551813">Un connector (<ph name="PLUGIN_NAME"/>) no respon.</translation>
 <translation id="1467432559032391204">A l'esquerra</translation>
@@ -2125,18 +2172,22 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="5434065355175441495">PKCS #1 amb encriptació RSA</translation>
 <translation id="7073704676847768330">Probablement no és el lloc que buscaves.</translation>
 <translation id="8477384620836102176">&amp;General</translation>
+<translation id="7928158674818143168">Càmera Flash i micròfon</translation>
 <translation id="3391392691301057522">PIN anterior:</translation>
 <translation id="96421021576709873">Xarxa Wi-Fi</translation>
 <translation id="1344519653668879001">Desactivació d'auditories d'enllaços</translation>
 <translation id="6463795194797719782">E&amp;dita</translation>
 <translation id="4262113024799883061">Xinès</translation>
 <translation id="5575473780076478375">Extensió d'incògnit: <ph name="EXTENSION_NAME"/></translation>
+<translation id="4704095676704327546">Puntuació nova</translation>
+<translation id="2111843886872897694">Les aplicacions s'han de distribuir des de l'amfitrió que afecten.</translation>
 <translation id="4188026131102273494">Paraula clau:</translation>
 <translation id="8004512796067398576">Incrementa</translation>
 <translation id="2930644991850369934">S'ha produït un problema en baixar la imatge de recuperació. S'ha perdut la connexió a la xarxa.</translation>
 <translation id="8150722005171944719">El fitxer de <ph name="URL"/> no es pot llegir. Pot ser que s'hagi eliminat, que s'hagi traslladat o que els permisos del fitxer n'impedeixin l'accés.</translation>
 <translation id="5750053751252005701">Dades fora de <ph name="NETWORK"/></translation>
 <translation id="1720318856472900922">Autenticació de servidor WWW de TLS</translation>
+<translation id="1752977958630076881">Conserva les dates locals fins que surti del navegador</translation>
 <translation id="7853202427316060426">Activitat</translation>
 <translation id="8550022383519221471">El servei de sincronització no està disponible per al vostre domini.</translation>
 <translation id="1436238710092600782">Creeu un compte de Google</translation>
@@ -2187,6 +2238,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="3377251335797762771">Mode de finestra</translation>
 <translation id="3858678421048828670">Teclat italià</translation>
 <translation id="1436784010935106834">Eliminat</translation>
+<translation id="3730639321086573427">Destinacions locals</translation>
 <translation id="4103674824110719308">S'està entrant a la demostració.</translation>
 <translation id="2384957700754631501">http://support.google.com/chrome/bin/answer.py?answer=185277&amp;hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="4938277090904056629">No es pot establir una connexió segura a causa de l'antivirus ESET</translation>
@@ -2211,17 +2263,18 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="8053390638574070785">Torna a carregar aquesta pàgina</translation>
 <translation id="5507756662695126555">No repudiació</translation>
 <translation id="3678156199662914018">Extensió: <ph name="EXTENSION_NAME"/></translation>
+<translation id="2620090360073999360">No es pot contactar amb Google Drive en aquest moment.</translation>
 <translation id="3531250013160506608">Quadre de text de la contrasenya</translation>
 <translation id="506228266759207354">Desactiveu el menú de pàgina nova per accedir a les pestanyes en altres dispositius.</translation>
-<translation id="4421660074164639811">L'extensió &quot;<ph name="EXTENSION_NAME"/>&quot; de <ph name="PRODUCT_NAME"/> ha començat l'enregistrament d'àudio per al reconeixement de veu. Cerqueu la icona de notificació del micròfon per saber quan això torni a passar.</translation>
 <translation id="1781502536226964113">Obre la pestanya nova</translation>
 <translation id="8314066201485587418">Esborra les galetes i altres dades dels llocs quan tanqui el navegador</translation>
 <translation id="4094105377635924481">Afegeix l'agrupació al menú contextual de les pestanyes</translation>
 <translation id="765676359832457558">Amaga la configuració avançada...</translation>
+<translation id="7626032353295482388">Benvinguts a Chrome</translation>
 <translation id="8655295600908251630">Canal</translation>
 <translation id="8250690786522693009">Llatí</translation>
 <translation id="2119721408814495896">El connector <ph name="CLOUD_PRINT_NAME"/> requereix que Microsoft XML Paper Specification Essentials Pack estigui instal·lat.</translation>
-<translation id="8923749287865336189">Error en enganxar, error inesperat: $1</translation>
+<translation id="5829401023154985950">Gestiona...</translation>
 <translation id="7624267205732106503">Esborra les galetes i altres dades dels llocs quan tanqui el navegador</translation>
 <translation id="8401363965527883709">Casella de selecció desactivada</translation>
 <translation id="7771452384635174008">Disseny</translation>
@@ -2233,6 +2286,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="7374461526650987610">Gestors de protocol</translation>
 <translation id="2192505247865591433">De:</translation>
 <translation id="4634771451598206121">Torna a iniciar la sessió...</translation>
+<translation id="3475110616773907981">Accediu a totes les dades de l'equip i dels llocs web que visiteu</translation>
 <translation id="7143207342074048698">S'està connectant</translation>
 <translation id="4212084985543581100">Un servidor intermediari és un servidor que funciona com a intermediari entre el dispositiu mòbil i altres servidors. Actualment, el sistema està configurat per fer servir un servidor intermediari, però <ph name="PRODUCT_NAME"/> no s'hi pot connectar.</translation>
 <translation id="671928215901716392">Bloqueja la pantalla</translation>
@@ -2242,8 +2296,10 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="3981760180856053153">Heu introduït un tipus de desament no vàlid.</translation>
 <translation id="4508345242223896011">Desplaçament suau</translation>
 <translation id="8464591670878858520">Les dades de <ph name="NETWORK"/> han caducat</translation>
+<translation id="5622158329259661758">Desactiva l'ús de la GPU per representar llenços 2D i, en el seu lloc, utilitza representació de programari.</translation>
 <translation id="8639033665604704195">S'ha produït un error en autenticar amb la clau compartida prèviament que heu proporcionat</translation>
 <translation id="3654092442379740616">Error de sincronització: <ph name="PRODUCT_NAME"/> no està actualitzat i necessita una actualització.</translation>
+<translation id="790040513076446191">Manipuleu la configuració relacionada amb la privadesa</translation>
 <translation id="3116361045094675131">Teclat anglès</translation>
 <translation id="1715941336038158809">El nom d'usuari o la contrasenya no són vàlids.</translation>
 <translation id="1901303067676059328">Selecciona-ho &amp;tot</translation>
@@ -2253,6 +2309,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="2168039046890040389">Re Pàg</translation>
 <translation id="1767519210550978135">Hsu</translation>
 <translation id="2498539833203011245">Minimitza</translation>
+<translation id="3480892288821151001">Redueix la finestra cap a l'esquerra</translation>
 <translation id="3031417829280473749">Agent X</translation>
 <translation id="2893168226686371498">Navegador predeterminat</translation>
 <translation id="7255513090217522383">S'està enviant</translation>
@@ -2271,7 +2328,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="6983783921975806247">OID registrat</translation>
 <translation id="394984172568887996">Importat d'IE</translation>
 <translation id="5311260548612583999">Fitxer clau privat (opc.): </translation>
-<translation id="2430043402233747791">Admet només per a la sessió </translation>
 <translation id="8256319818471787266">Gosset</translation>
 <translation id="7363290921156020669"><ph name="NUMBER_ZERO"/> mins</translation>
 <translation id="7568790562536448087">Actualització</translation>
@@ -2294,11 +2350,12 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="872451400847464257">Edita el motor de cerca</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> minuts</translation>
 <translation id="5512653252560939721">El certificat d'usuari ha de ser al maquinari.</translation>
+<translation id="5372529912055771682">El mode d'inscripció proporcionat no és compatible amb aquesta versió del sistema operatiu. Assegureu-vos que estigueu executant la darrera versió i torneu-ho a provar.</translation>
 <translation id="3881435075661337013"><ph name="NETWORK"/> caducarà aviat</translation>
 <translation id="5681833099441553262">Activa la pestanya anterior</translation>
-<translation id="4842203649457204927">No teniu prou espai a <ph name="PRODUCT_NAME"/> per desar &quot;<ph name="FILE_NAME"/>&quot;. Elimineu fitxers o <ph name="BEGIN_LINK"/>compreu més espai d'emmagatzematge<ph name="END_LINK"/>.</translation>
 <translation id="1681614449735360921">Mostra les incompatibilitats</translation>
 <translation id="6227235786875481728">No s'ha pogut reproduir aquest fitxer.</translation>
+<translation id="192465552172364263">Si s'activa aquesta opció, els elements de posició fixa creen contexts d'apilament CSS.</translation>
 <translation id="3121147067826817533"><ph name="BEGIN_BOLD"/>Us heu posat en mode d'incògnit<ph name="END_BOLD"/>. Les pàgines que visualitzeu en aquesta finestra no apareixeran a l'historial del navegador o a l'historial de cerca, i no deixaran cap altre rastre, com ara galetes, al vostre equip després que tanqueu &lt;strong&gt;totes&lt;/strong&gt; les finestres obertes en mode d'incògnit. Es conservaran tots els fitxers que baixeu o els marcadors que creeu, però.
           <ph name="LINE_BREAK"/>
           <ph name="BEGIN_BOLD"/>Utilitzar el mode d'incògnit no afecta al comportament d'altres persones, servidors o programari. Aneu amb compte amb:<ph name="END_BOLD"/>
@@ -2320,7 +2377,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="2989786307324390836">Binari codificat amb DER, certificat únic</translation>
 <translation id="3827774300009121996">&amp;Pantalla completa</translation>
 <translation id="3771294271822695279">Fitxers de vídeo</translation>
-<translation id="3388026114049080752">Les pestanyes i l'activitat de navegació</translation>
 <translation id="7525067979554623046">Crea</translation>
 <translation id="4853020600495124913">Obre en una &amp;finestra nova</translation>
 <translation id="6847758263950452722">Desa la pàgina com a MHTML</translation>
@@ -2338,19 +2394,18 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="430326050669417502">Palanca de control (<ph name="ADDRESS"/>)</translation>
 <translation id="1241100329754769291"><ph name="CLOUD_PRINT_NAME"/> us permet accedir a les impressores d'aquest equip des de qualsevol lloc. Feu clic per activar-lo.</translation>
 <translation id="16620462294541761">No s'ha pogut verificar la vostra contrasenya. Torneu-ho a provar.</translation>
-<translation id="7912438424092011072">No es pot accedir a <ph name="PRODUCT_NAME"/> en aquest moment.</translation>
 <translation id="3058072209957292419">Configuració d'IP estàtica experimental</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="1394630846966197578">La connexió amb els servidors de veu ha fallat.</translation>
 <translation id="2498765460639677199">Enorme</translation>
 <translation id="2378982052244864789">Seleccioneu el directori de l'extensió.</translation>
 <translation id="7861215335140947162">&amp;Baixades</translation>
-<translation id="5046082698497143371">Desplaça la finestra cap a l'esquerra</translation>
 <translation id="3144135466825225871">No s'ha pogut substituir el fitxer crx. Comproveu si el fitxer s'està utilitzant.</translation>
 <translation id="2744221223678373668">Compartides</translation>
 <translation id="9064142312330104323">Foto del perfil de Google (s'està carregant)</translation>
 <translation id="4708849949179781599">Surt de <ph name="PRODUCT_NAME"/></translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT"/> de <ph name="TOTAL_SIZE"/></translation>
+<translation id="6937559152970966646">Fixa a la pantalla d'inici</translation>
 <translation id="6644512095122093795">Ofereix desar contrasenyes</translation>
 <translation id="4724450788351008910">Ha canviat l'afiliació</translation>
 <translation id="2249605167705922988">p. ex. 1-5, 8, 11-13</translation>
@@ -2377,6 +2432,9 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="4610637590575890427">Volies anar a <ph name="SITE"/>?</translation>
 <translation id="7723779034587221017">S'ha perdut la connexió amb el servei de política. Reinicialitzeu el dispositiu o poseu-vos en contacte amb el vostre representant d'assistència.</translation>
 <translation id="5097002363526479830">S'ha produït un error en connectar amb la xarxa &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
+<translation id="6906142274982384363">Amb Instant activat, si és compatible amb el vostre motor de cerca predeterminat, els resultats de la cerca apareixeran a l'instant a mesura que escriviu les consultes a la barra d'adreces i les prediccions en línia us ajudaran a guiar la vostra cerca.
+
+        Com que se sol·liciten els resultats de la cerca fins i tot mentre esteu escrivint la consulta, és possible que el vostre motor de cerca predeterminat els registri com a consultes de cerca.</translation>
 <translation id="3437994698969764647">Exporta-ho tot...</translation>
 <translation id="4958202758642732872">Excepcions de pantalla completa</translation>
 <translation id="6990778048354947307">Tema fosc</translation>
@@ -2410,9 +2468,10 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="8874184842967597500">No connectada</translation>
 <translation id="926145120297878023">Recorda els resultats d'emplenament automàtic més comuns en funció del terme de cerca de l'omnibox i ofereix aquells URL la propera vegada que s'escriu el mateix terme de cerca.</translation>
 <translation id="7313804056609272439">Mètode d'entrada de vietnamita (VNI)</translation>
+<translation id="6533142938328261946">Impedeix que tots els llocs utilitzin la càmera i el micròfon</translation>
+<translation id="2982602358918858335">Error en transferir, l'element existeix: &quot;$1&quot;</translation>
 <translation id="8793043992023823866">S'està important...</translation>
 <translation id="8106211421800660735">Número de targeta de crèdit</translation>
-<translation id="1043108108082168436">Us heu quedat sense espai a <ph name="PRODUCT_NAME"/></translation>
 <translation id="5089810972385038852">Estat</translation>
 <translation id="2872961005593481000">Apaga</translation>
 <translation id="8986267729801483565">Ubicació de baixada:</translation>
@@ -2454,6 +2513,15 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="7026338066939101231">Disminueix</translation>
 <translation id="5411472733320185105">No utilitzeu la configuració del servidor intermediari per a aquests amfitrions i dominis:</translation>
 <translation id="3616935895206721546">Cancel·la la inscripció d'empresa en aquest dispositiu.</translation>
+<translation id="3685121001045880436">És possible que el servidor on s'allotja la pàgina web s'hagi sobrecarregat o que s'hi hagi produït un error.
+        Per evitar que les extensions provoquin un excés de trànsit que podria empitjorar la situació,
+        <ph name="PRODUCT_NAME"/>
+        ha aturat temporalment l'admissió de sol·licituds per extensions a aquest URL.
+        <ph name="LINE_BREAK"/>
+        Si creieu que aquest comportament no és correcte, per exemple, perquè esteu depurant el vostre propi lloc web,
+        visiteu <ph name="URL_FOR_MORE_INFO"/>,
+        on podreu trobar més informació, inclosa la manera de desactivar la funció.</translation>
+<translation id="8218008331535230597">Desautoritza les llicències de contingut</translation>
 <translation id="4744728308552504807">Activa un servei en segon pla que connecta el servei Google Cloud Print per a totes les impressores instal·lades en aquest dispositiu mòbil. Un cop activat aquest experiment, inicieu la sessió al compte de Google a la secció Avançat de Configuració per activar el connector de Google Cloud Print.</translation>
 <translation id="6691936601825168937">&amp;Reenvia</translation>
 <translation id="6566142449942033617">No s'ha pogut carregar &quot;<ph name="PLUGIN_PATH"/>&quot; per al connector.</translation>
@@ -2463,7 +2531,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="368789413795732264">S'ha produït un error quan s'intentava escriure el fitxer: <ph name="ERROR_TEXT"/></translation>
 <translation id="1173894706177603556">Canvia el nom</translation>
 <translation id="2128691215891724419">Error de sincronització: actualitzeu la contrasenya de sincronització...</translation>
-<translation id="2260927788860977899">Tria'n un a l'atzar</translation>
 <translation id="2148716181193084225">Avui</translation>
 <translation id="1002064594444093641">Imp&amp;rimeix el marc...</translation>
 <translation id="7234674978021619913">Ja hem notificat a <ph name="HOST_NAME"/> que hem trobat programari maliciós al lloc. Per obtenir més informació sobre els problemes que hem trobat a <ph name="HOST_NAME2"/>, visiteu la <ph name="DIAGNOSTIC_PAGE"/> de Google.</translation>
@@ -2474,6 +2541,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="8724859055372736596">&amp;Mostra a la carpeta</translation>
 <translation id="6723099650957480714">Activa la pintura accelerada per GPU dels continguts de la pàgina quan la composició està activada.</translation>
 <translation id="2367657048471519165">Defineix <ph name="PRODUCT_NAME"/> com a navegador predeterminat</translation>
+<translation id="3751427583866408985"><ph name="PRODUCT_NAME"/> està utilitzant la càmera i el micròfon.</translation>
 <translation id="4605399136610325267">No està connectat a Internet</translation>
 <translation id="978407797571588532">Aneu a
           <ph name="BEGIN_BOLD"/>
@@ -2483,6 +2551,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="5554489410841842733">Aquesta icona serà visible quan les extensions puguin actuar a la pàgina actual.</translation>
 <translation id="579702532610384533">Torna a connectar</translation>
 <translation id="4862642413395066333">Signatura de respostes OCSP</translation>
+<translation id="3056670889236890135">Només podeu editar la configuració de l'usuari actual. Canvieu a aquest usuari per editar-ne la configuració.</translation>
 <translation id="5266113311903163739">Error d'importació de l'entitat emissora de certificats</translation>
 <translation id="4240511609794012987">Memòria compartida</translation>
 <translation id="4756388243121344051">&amp;Historial</translation>
@@ -2534,7 +2603,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="4182252350869425879">Advertència: Lloc sospitós de pesca!</translation>
 <translation id="1040146523235761440">Aquest compte ja s'utilitza en aquest dispositiu mòbil.</translation>
 <translation id="2453021845418314664">Configuració de sincronització avançada</translation>
-<translation id="2192782719025820983">Cerca impressores addicionals</translation>
 <translation id="5458214261780477893">Dvorak</translation>
 <translation id="1164369517022005061"><ph name="NUMBER_DEFAULT"/> hores restants</translation>
 <translation id="2214283295778284209"><ph name="SITE"/> no està disponible</translation>
@@ -2542,6 +2610,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="8132793192354020517">Connectat a <ph name="NAME"/></translation>
 <translation id="8187473050234053012">El certificat de seguretat del servidor està revocat.</translation>
 <translation id="7052914147756339792">Defineix l'empaperat...</translation>
+<translation id="5865597920301323962">Les galetes de: <ph name="DOMAIN"/> s'esborraran en sortir-ne.</translation>
 <translation id="2702540957532124911">Teclat:</translation>
 <translation id="7444983668544353857">Desactiva <ph name="NETWORKDEVICE"/></translation>
 <translation id="6003177993629630467">És possible que <ph name="PRODUCT_NAME"/> no pugui actualitzar-se tot sol.</translation>
@@ -2565,6 +2634,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="7014174261166285193">La instal·lació ha fallat.</translation>
 <translation id="1970746430676306437">Visualitza la &amp;informació de la pàgina</translation>
 <translation id="1252877623172913312">Polítiques de dispositius</translation>
+<translation id="4384652540891215547">Activa l'extensió</translation>
 <translation id="3199127022143353223">Servidors</translation>
 <translation id="408898940369358887">Activa JavaScript experimental</translation>
 <translation id="2805646850212350655">Sistema de xifratge de fitxers de Microsoft</translation>
@@ -2575,7 +2645,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="3541661933757219855">Escriviu Ctrl + Alt + / o Esc per amagar-lo</translation>
 <translation id="8891727572606052622">El mode de servidor intermediari no és vàlid.</translation>
 <translation id="8813873272012220470">Activa una comprovació en processament de fons que us avisa si detecta incompatibilitats de programari (p. ex., mòduls de tercers que bloquegen el navegador).</translation>
-<translation id="4758054180608678944">Mode gestionat</translation>
 <translation id="2327273619514674103">S'ha detectat un virus</translation>
 <translation id="3660234220361471169">No és de confiança</translation>
 <translation id="5020734739305654865">Inicieu la sessió amb el vostre</translation>
@@ -2586,6 +2655,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="121632099317611328">Error en inicialitzar la càmera.</translation>
 <translation id="399179161741278232">Importats</translation>
 <translation id="810066391692572978">El fitxer utilitza funcions no compatibles.</translation>
+<translation id="453274835033990015">Error en transferir, error inesperat: $1</translation>
 <translation id="3829932584934971895">Tipus de proveïdor:</translation>
 <translation id="8644696358262037621">Aquesta API permet que les aplicacions web facin servir components web.</translation>
 <translation id="462288279674432182">IP restringida:</translation>
@@ -2596,7 +2666,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="351152300840026870">Tipus de lletra amb amplada fixa</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="778881183694837592">Un camp obligatori no es pot deixar en blanc</translation>
-<translation id="5788784787182153474">Rerefons del depurador de pàgines</translation>
 <translation id="2371076942591664043">Obre quan &amp;acabi</translation>
 <translation id="3920504717067627103">Normes de certificats</translation>
 <translation id="155865706765934889">Touchpad</translation>
@@ -2611,21 +2680,21 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="7450732239874446337">E/S de xarxa suspeses.</translation>
 <translation id="5178667623289523808">Cerca l'anterior</translation>
 <translation id="2815448242176260024">No desis mai les contrasenyes</translation>
+<translation id="962164396585295371">Aquest equip aviat deixarà de rebre actualitzacions de: <ph name="PRODUCT_NAME"/> perquè té Mac OS X 10.5 en execució.</translation>
 <translation id="8687485617085920635">Finestra següent</translation>
 <translation id="4122118036811378575">&amp;Cerca el següent</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="2610780100389066815">Signatura de llista de confiança de Microsoft</translation>
-<translation id="7283839718720486367">Filtres SCC i SVG accelerats per GPU</translation>
 <translation id="2788575669734834343">Seleccioneu l'arxiu del certificat</translation>
 <translation id="8404409224170843728">Fabricant:</translation>
 <translation id="8267453826113867474">Bloqueja les paraules ofensives</translation>
 <translation id="7959074893852789871">El fitxer contenia certificats múltiples, però alguns no s'han importat:</translation>
-<translation id="6837672309715589209">Canvia la configuració del teclat en pantalla...</translation>
 <translation id="87377425248837826">Activació de taulers</translation>
 <translation id="6736243959894955139">Adreça</translation>
 <translation id="2805707493867224476">Permet que tots els llocs mostrin finestres emergents</translation>
 <translation id="3561217442734750519">El valor d'entrada per a la clau privada ha de ser un camí vàlid.</translation>
 <translation id="2444609190341826949">Sense una paraula de pas, les contrasenyes i altres dades encriptades no se sincronitzaran en aquest equip.</translation>
+<translation id="2984337792991268709">Avui a les <ph name="TODAY_DAYTIME"/></translation>
 <translation id="5227808808023563348">Cerca el text anterior</translation>
 <translation id="6650142020817594541">Aquest lloc recomana Google Chrome Frame (ja instal·lat).</translation>
 <translation id="3862763658360970896">Activeu De Chrome a mòbils.</translation>
@@ -2649,10 +2718,10 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="1064912851688322329">Desconnexió del vostre compte de Google</translation>
 <translation id="1294298200424241932">Edita la configuració de confiança:</translation>
 <translation id="1407135791313364759">Obre-les totes</translation>
+<translation id="1434928358870966081">Desactivació de llenç 2D accelerat</translation>
 <translation id="331915893283195714">Permet que tots els llocs puguin desactivar el cursor del ratolí</translation>
 <translation id="5959471481388474538">Xarxa no disponible</translation>
 <translation id="637665833966686027">Certificat vinculat al domini</translation>
-<translation id="1384617406392001144">El vostre historial de navegació</translation>
 <translation id="1119447706177454957">Error intern</translation>
 <translation id="3831099738707437457">&amp;Oculta el tauler d'ortografia</translation>
 <translation id="4243835228168841140"><ph name="FULLSCREEN_ORIGIN"/> vol desactivar el cursor del ratolí.</translation>
@@ -2668,8 +2737,13 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="4010065515774514159">Acció del navegador</translation>
 <translation id="267285457822962309">Canvieu la configuració específica del dispositiu i dels dispositius perifèrics.</translation>
 <translation id="1154228249304313899">Obre aquesta pàgina:</translation>
+<translation id="6084074203170335305"><ph name="MARKUP_1"/>Accediu a fitxers des de qualsevol lloc, fins i tot fora de línia.<ph name="MARKUP_2"/>
+        Els fitxers que són a Google Drive estan actualitzats i disponibles des de qualsevol dispositiu.<ph name="MARKUP_3"/>
+        <ph name="MARKUP_4"/>Manteniu els fitxers segurs.<ph name="MARKUP_5"/>
+        Passi el que passi amb el vostre dispositiu, els fitxers s'emmagatzemen amb tota seguretat a Google Drive.<ph name="MARKUP_6"/>
+        <ph name="MARKUP_7"/>Compartiu, creeu fitxers i col·laboreu-hi<ph name="MARKUP_8"/>
+        amb altres persones; tot en un sol lloc.<ph name="MARKUP_9"/></translation>
 <translation id="9074348188580488499">Esteu segur que voleu eliminar totes les contrasenyes?</translation>
-<translation id="4563703643501244594">La llista de les aplicacions, de les extensions i dels temes</translation>
 <translation id="6635491740861629599">Selecciona per domini</translation>
 <translation id="3627588569887975815">Obre l'enllaç en una finestra d'inco&amp;gnito</translation>
 <translation id="2632696434734017602"><ph name="CLOUD_PRINT_NAME"/> ha registrat les impressores en aquest equip amb &lt;b&gt;<ph name="EMAIL_ADDRESSES"/>&lt;/b&gt;. Ja podeu imprimir-hi des de qualsevol aplicació web o mòbil activada per a <ph name="CLOUD_PRINT_NAME"/>!</translation>
@@ -2677,11 +2751,12 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="4926049483395192435">S'ha d'especificar.</translation>
 <translation id="1470719357688513792">La nova configuració de galetes es farà efectiva quan torneu a carregar la pàgina.</translation>
 <translation id="5578327870501192725">La teva connexió a <ph name="DOMAIN"/> està xifrada amb encriptació de <ph name="BIT_COUNT"/> bits.</translation>
+<translation id="5269977353971873915">Error d'impressió</translation>
 <translation id="3193734264051635522">Velocitat:</translation>
-<translation id="393609399744771795">Activa les capacitats avançades de l'aplicació.</translation>
 <translation id="869884720829132584">Menú d'aplicacions</translation>
 <translation id="8240697550402899963">Utilitza el tema Clàssic</translation>
 <translation id="7764209408768029281">Ein&amp;es</translation>
+<translation id="8045414326336167827">S'ha cancel·lat el reconeixement de parla.</translation>
 <translation id="2890624088306605051">Recupera només la configuració i les dades sincronitzades</translation>
 <translation id="4779083564647765204">Zoom</translation>
 <translation id="6397363302884558537">Deixa de parlar</translation>
@@ -2700,6 +2775,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="7496327459896094472">Interfície d'usuari optimitzada per al tacte</translation>
 <translation id="2356070529366658676">Pregunta-ho</translation>
 <translation id="5731247495086897348">En&amp;ganxa i vés-hi</translation>
+<translation id="8353683614194668312">Pot:</translation>
 <translation id="5435695951839423913">Problema del servidor</translation>
 <translation id="7635741716790924709">Línia d'adreça 1</translation>
 <translation id="5135533361271311778">No s'ha pogut crear l'element de marcador.</translation>
@@ -2716,6 +2792,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="6472893788822429178">Mostra el botó de la pàgina d'inici</translation>
 <translation id="4270393598798225102">Versió <ph name="NUMBER"/></translation>
 <translation id="479536056609751218">Pàgina web, només HTML</translation>
+<translation id="6720128533780026608">Activa el desplaçament senzill. <ph name="BEGIN_LINK"/>Més informació<ph name="END_LINK"/></translation>
 <translation id="534916491091036097">Parènt. esquerre</translation>
 <translation id="4157869833395312646">Xifratge activat per servidor de Microsoft</translation>
 <translation id="6660445291081843757">IU de baixades noves</translation>
@@ -2724,6 +2801,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="6820687829547641339">Arxiu tar comprimit Gzip</translation>
 <translation id="2195729137168608510">Protecció del correu electrònic</translation>
 <translation id="1425734930786274278">S'han bloquejat les galetes següents (es bloquegen sempre totes les galetes de tercers):</translation>
+<translation id="5265562206369321422">Fora de línia des de fa més d'una setmana</translation>
 <translation id="6805647936811177813">Inicieu la sessió a <ph name="TOKEN_NAME"/> per importar el certificat de client de <ph name="HOST_NAME"/>.</translation>
 <translation id="6412931879992742813">Finestra d'incògnit nova</translation>
 <translation id="1673103856845176271">No s'ha pogut accedir al fitxer per qüestions de seguretat.</translation>
@@ -2752,6 +2830,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="385120052649200804">Teclat nord-americà internacional</translation>
 <translation id="9012607008263791152">Entenc que visitar aquest lloc pot malmetre el meu equip.</translation>
 <translation id="6640442327198413730">Falta a la memòria cau</translation>
+<translation id="3788401245189148511">Podria:</translation>
 <translation id="5793220536715630615">C&amp;opia l'URL del vídeo</translation>
 <translation id="468249400587767128">Inicia la sessió i sincronitza</translation>
 <translation id="523397668577733901">Que potser volíeu <ph name="BEGIN_LINK"/>navegar per la galeria<ph name="END_LINK"/>?</translation>
@@ -2765,10 +2844,10 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="3076909148546628648"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/></translation>
 <translation id="1810107444790159527">Quadre de llista</translation>
 <translation id="3338239663705455570">Teclat eslovè</translation>
+<translation id="3675435456268670041">Mostra el menú d'alineació de la barra d'execució ràpida.</translation>
 <translation id="1859234291848436338">Direcció de l'escriptura</translation>
 <translation id="5045550434625856497">Contrasenya incorrecta</translation>
 <translation id="6397592254427394018">Obre tots els marcadors en una &amp;finestra d'incògnit</translation>
-<translation id="4567836003335927027">Les vostres dades a <ph name="WEBSITE_1"/></translation>
 <translation id="27822970480436970">Aquesta extensió no ha pogut modificar una sol·licitud de xarxa perquè la modificació està en conflicte amb una altra extensió.</translation>
 <translation id="756445078718366910">Obre una finestra del navegador</translation>
 <translation id="6132383530370527946">La imatge petita</translation>
@@ -2778,6 +2857,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="7887334752153342268">Duplica</translation>
 <translation id="3624005168026397829">Les extensions, les aplicacions i els temes poden malmetre el dispositiu mòbil. Esteu segur que voleu continuar?</translation>
 <translation id="9207194316435230304">ATOK</translation>
+<translation id="778330624322499012">No s'ha pogut carregar <ph name="PLUGIN_NAME"/></translation>
 <translation id="9026731007018893674">baixa</translation>
 <translation id="7646591409235458998">Correu electrònic:</translation>
 <translation id="3096595804210155701">Suggeriments d'aplicacions de Chrome Web Store:</translation>
@@ -2789,7 +2869,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="8725066075913043281">Torna-ho a provar</translation>
 <translation id="1887908730460853602">Diàlegs de l'estil de Google</translation>
 <translation id="8502249598105294518">Personalitza i controla <ph name="PRODUCT_NAME"/></translation>
-<translation id="4163521619127344201">La vostra ubicació física</translation>
 <translation id="3797008485206955964">Mostra les pàgines de fons (<ph name="NUM_BACKGROUND_APPS"/>)</translation>
 <translation id="8590375307970699841">Configurar actualitzacions automàtiques</translation>
 <translation id="2797524280730715045">Fa <ph name="NUMBER_DEFAULT"/> hores</translation>
@@ -2799,6 +2878,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="769312636793844336">Per desar aquest fitxer per utilitzar-lo fora de línia, torneu a connectar-vos i&lt;br&gt;marqueu la casella de selecció <ph name="OFFLINE_CHECKBOX_NAME"/> per a aquest fitxer.</translation>
 <translation id="419181525480488567">Envieu aquesta pàgina al dispositiu mòbil</translation>
 <translation id="7877451762676714207">Error de servidor desconegut. Torneu-ho a provar o contacteu amb l'administrador del servidor.</translation>
+<translation id="5085162214018721575">S'està comprovant si hi ha actualitzacions</translation>
 <translation id="5737306429639033676">Prediu accions de xarxa per millorar el rendiment de càrrega de la pàgina</translation>
 <translation id="5376363957846771741">Dispositiu desconegut o no compatible (<ph name="ADDRESS"/>)</translation>
 <translation id="8123426182923614874">Dades restants:</translation>
@@ -2824,6 +2904,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="5230516054153933099">Finestra</translation>
 <translation id="1799497982892676838">Gestiona les dades sincronitzades al Tauler de Google</translation>
 <translation id="7554791636758816595">Pestanya nova</translation>
+<translation id="3026557130425686673">S'ha cancel·lat l'inici de sessió perquè s'han malmès algunes opcions de configuració del dispositiu.</translation>
 <translation id="6928853950228839340">Compost a textura</translation>
 <translation id="8446084853024828633">Entreu com a convidat</translation>
 <translation id="48399750961678818">Canvia a <ph name="URL"/></translation>
@@ -2834,13 +2915,14 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="1103966635949043187">Aneu a la pàgina d'inici del lloc:</translation>
 <translation id="4762295713053835808">Coses personals</translation>
 <translation id="7477347901712410606">Si heu oblidat la contrasenya, atureu i restabliu la sincronització mitjançant <ph name="BEGIN_LINK"/>Google Dashboard<ph name="END_LINK"/>.</translation>
+<translation id="6139474630617772623">Activa l'escriptori ampliat, que us permet obrir un navegador en visualitzacions secundàries.</translation>
 <translation id="2645575947416143543">Tot i això, si treballeu en una organització que genera els seus propis certificats i proveu de connectar-vos a un lloc web intern d'aquesta organització mitjançant un certificat, és possible que pugueu resoldre aquest problema de forma segura. Podeu importar el certificat arrel de la vostra organització com a tal perquè es pugui confiar en els certificats emesos o verificats per la vostra organització. Així, no tornareu a veure aquest error la propera vegada que us proveu de connectar a un lloc web intern. Poseu-vos en contacte amb el personal d'ajuda de la vostra organització per obtenir ajuda per afegir un certificat arrel nou a l'equip.</translation>
 <translation id="1056898198331236512">Advertiment</translation>
 <translation id="8432745813735585631">Teclat Colemak nord-americà</translation>
+<translation id="3190968772390556821">En aquest moment, &quot;<ph name="EXTENSION_NAME"/>&quot; està capturant àudio per al reconeixement de parla.</translation>
 <translation id="8151639108075998630">Activa la navegació de convidats</translation>
 <translation id="2608770217409477136">Fes servir la configuració predeterminada</translation>
 <translation id="3157931365184549694">Restaura</translation>
-<translation id="3717920555848846520">Accions del navegador per a totes les extensions</translation>
 <translation id="2318625572303095424">Activa Bluetooth</translation>
 <translation id="996250603853062861">S'està establint una connexió segura...</translation>
 <translation id="6059232451013891645">Carpeta:</translation>
@@ -2858,6 +2940,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="271907111803265074">Se us han acabat les dades mòbils. Compreu un altre pla per utilitzar <ph name="NETWORK"/>.</translation>
 <translation id="3031557471081358569">Selecciona elements per importar:</translation>
 <translation id="1368832886055348810">D'esquerra a dreta</translation>
+<translation id="3627320433825461852">Queda menys d'un minut</translation>
 <translation id="2246796647895323322">Activa Instant per cercar més ràpidament (és possible que es <ph name="BEGIN_LINK"/>registri<ph name="END_LINK"/> el que escriviu a l'omnibox)</translation>
 <translation id="3031433885594348982">La teva connexió a <ph name="DOMAIN"/> està xifrada amb encriptació dèbil.</translation>
 <translation id="4047345532928475040">N/D</translation>
@@ -2868,7 +2951,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="8898139864468905752">Informació general de pestanya</translation>
 <translation id="2799223571221894425">Torna a iniciar</translation>
 <translation id="5771816112378578655">Configuració en curs...</translation>
-<translation id="4981175823895517727">Fons de pantalla aleatori</translation>
 <translation id="1197979282329025000">S'ha produït un error en recuperar la capacitat de la impressora <ph name="PRINTER_NAME"/>. Aquesta impressora no s'ha pogut registrar a <ph name="CLOUD_PRINT_NAME"/>.</translation>
 <translation id="285480231336205327">Activa el mode de contrast elevat</translation>
 <translation id="6744468237221042970">Equip (<ph name="ADDRESS"/>)</translation>
@@ -2884,6 +2966,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="2354001756790975382">Altres marcadors</translation>
 <translation id="5234325087306733083">Mode fora de línia</translation>
 <translation id="1779392088388639487">Error d'importació PKCS #12</translation>
+<translation id="1951772424946366890">Els elements de posició fixa creen contexts d'apilament.</translation>
 <translation id="5120421890733714118">Confia en aquest certificat per identificar llocs web.</translation>
 <translation id="166278006618318542">Algoritme de clau pública del subjecte</translation>
 <translation id="5759272020525228995">El lloc web ha trobat un error mentre intentava recuperar <ph name="URL"/>.
@@ -2908,6 +2991,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="4267171000817377500">Connectors</translation>
 <translation id="3613583336903733241">Finestres translúcides</translation>
 <translation id="8584134039559266300">Activa la pestanya 8</translation>
+<translation id="3140978158653201367">Confirma el tema nou</translation>
 <translation id="5189060859917252173">El certificat &quot;<ph name="CERTIFICATE_NAME"/>&quot; representa una entitat emissora de certificats.</translation>
 <translation id="3785852283863272759">Envia la ubicació de la pàgina per correu electrònic</translation>
 <translation id="2255317897038918278">Marques horàries de Microsoft</translation>
@@ -2915,7 +2999,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="8205932077017940719"><ph name="URL"/> vol emmagatzemar les dades permanentment al dispositiu mòbil.</translation>
 <translation id="5979421442488174909">&amp;Tradueix a: <ph name="LANGUAGE"/></translation>
 <translation id="2662876636500006917">Chrome Web Store</translation>
-<translation id="1233795125351481151">No hi ha cap fitxer que coincideixi amb &quot;<ph name="SEARCH_STRING"/>&quot;</translation>
 <translation id="6069671174561668781">Definició del fons de pantalla</translation>
 <translation id="952992212772159698">No activat</translation>
 <translation id="8299269255470343364">Japonès</translation>
@@ -2931,6 +3014,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="2359808026110333948">Continua</translation>
 <translation id="4946853241059750718">Revisa els permisos...</translation>
 <translation id="5951823343679007761">No hi ha bateria</translation>
+<translation id="8569682776816196752">No s'ha trobat cap destinació</translation>
 <translation id="1618661679583408047">El certificat de seguretat del servidor encara no és vàlid!</translation>
 <translation id="4880261670356410858">Error local</translation>
 <translation id="7039912931802252762">Inici de sessió de targeta intel·ligent de Microsoft</translation>
@@ -2948,6 +3032,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="2954705784594331199"><ph name="BEGIN_LINK"/>Torna a carregar<ph name="END_LINK"/> aquesta pàgina web més endavant.</translation>
 <translation id="338583716107319301">Separador</translation>
 <translation id="2079053412993822885">Si suprimiu un dels vostres certificats, ja no el podreu utilitzar per identificar-vos.</translation>
+<translation id="1955426225006191788">Gairebé heu acabat.</translation>
 <translation id="7221869452894271364">Torna a carregar aquesta pàgina</translation>
 <translation id="8446884382197647889">Més informació</translation>
 <translation id="3805982836721883262">Alguna cosa ha provat d'apropiar-se de la vostra pàgina d'inici.</translation>
@@ -2963,11 +3048,10 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="7800518121066352902">Gira en el sentit con&amp;trari a les agulles del rellotge</translation>
 <translation id="345693547134384690">Obre la &amp;imatge en una pestanya nova</translation>
 <translation id="7422192691352527311">Preferències...</translation>
-<translation id="3264704006769917751">Activa la direcció de desplaçament senzilla <ph name="BEGIN_LINK"/>Més informació<ph name="END_LINK"/></translation>
 <translation id="3911824782900911339">Pestanya nova</translation>
 <translation id="4545759655004063573">No es pot desar perquè no hi ha prou permisos. Deseu-ho en un altre lloc.</translation>
-<translation id="1799205928600649930">El mode d'inscripció proporcionat no és compatible amb aquesta versió del sistema operatiu. Assegureu-vos que esteu executant la darrera versió i torneu-ho a provar.</translation>
 <translation id="354211537509721945">L'administrador ha desactivat les actualitzacions</translation>
+<translation id="953033207417984266">Activa la generació de contrasenyes automàtica</translation>
 <translation id="1375198122581997741">Quan a la versió</translation>
 <translation id="642282551015776456">Aquest nom no es pot utilitzar com a nom de fitxer o de carpeta</translation>
 <translation id="6080500266398037342">Dades de servei</translation>
@@ -2989,9 +3073,9 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="2635276683026132559">Signatura</translation>
 <translation id="4835836146030131423">S'ha produït un error en iniciar la sessió.</translation>
 <translation id="7489517910697905073">Desactiva les notificacions</translation>
-<translation id="7715454002193035316">Només durant la sessió</translation>
 <translation id="1306606229401759371">Canvia la configuració</translation>
 <translation id="2475982808118771221">S'ha produït un error</translation>
+<translation id="7367593937563373729">A la compleció automàtica d'omnibox, feu servir la funció de puntuació nova per classificar les coincidències que provenen de HistoryQuickProvider.</translation>
 <translation id="3324684065575061611">(Desactivat per una política d'empresa)</translation>
 <translation id="7385854874724088939">S'ha produït un problema en intentar imprimir. Comproveu la impressora i torneu-ho a provar.</translation>
 <translation id="770015031906360009">Grec</translation>
@@ -3012,6 +3096,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="4726672564094551039">Torna a carregar les polítiques</translation>
 <translation id="4647697156028544508">Introduïu el PIN per a &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="7369847606959702983">Targeta de crèdit (altres)</translation>
+<translation id="5604961908909363516">Accediu a qualsevol cosa que escriviu.</translation>
 <translation id="7671130400130574146">Utilitza la barra del títol i els límits del sistema</translation>
 <translation id="9170848237812810038">&amp;Desfés</translation>
 <translation id="284970761985428403"><ph name="ASCII_NAME"/> (<ph name="UNICODE_NAME"/>)</translation>
@@ -3031,7 +3116,9 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="2765217105034171413">Petit</translation>
 <translation id="1285266685456062655">Fa <ph name="NUMBER_FEW"/> hores</translation>
 <translation id="9154176715500758432">Roman en aquesta pàgina</translation>
+<translation id="7938594894617528435">Fora de línia en aquest moment</translation>
 <translation id="6988771638657196063">Inclou aquest URL:</translation>
+<translation id="9150045010208374699">Utilitzeu la càmera</translation>
 <translation id="3842552989725514455">Tipus de lletra Serif</translation>
 <translation id="9070966745251964488">El camí és massa llarg</translation>
 <translation id="1813278315230285598">Serveis</translation>
@@ -3065,11 +3152,10 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="8175186925287705914"><ph name="PRODUCT_NAME"/> ha detectat que NetNanny intercepta connexions segures. Això no sol ser un problema de seguretat, ja que el programari de NetNanny normalment s'executa al mateix dispositiu mòbil. No obstant això, a causa d'una intolerància a aspectes concrets de les connexions segures de Chrome, cal configurar NetNanny perquè no faci aquesta intercepció. Feu clic a l'enllaç &quot;Més informació&quot; per obtenir-ne les instruccions.</translation>
 <translation id="6831820634148551662">El recompte de repeticions de la contrasenya és massa gran.</translation>
 <translation id="1472675084647422956">Mostra'n més</translation>
-<translation id="3009731429620355204">Sessions</translation>
-<translation id="8018281414848451770">Imprimeix amb <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="1400709102841174216">Falta el GUID del certificat</translation>
 <translation id="5689774203269256801">Per fer servir <ph name="NETWORK_ID"/>, és possible que abans calgui <ph name="LINK_START"/>visitar la pàgina d'inici de sessió de la xarxa<ph name="LINK_END"/>, que s'obrirà automàticament d'aquí a pocs segons. Si no s'obre, vol dir que no es pot fer servir la xarxa per a la connexió a Internet.</translation>
 <translation id="1122988962988799712">Desactiva WebGL</translation>
+<translation id="2443676578044213244">Activa la IU de fons de pantalla experimental.</translation>
 <translation id="5190835502935405962">Barra de marcadors</translation>
 <translation id="7828272290962178636">El servidor té les funcionalitats necessàries per completar la sol·licitud.</translation>
 <translation id="5438430601586617544">(En desenvolupament)</translation>
@@ -3090,7 +3176,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="5642953011762033339">Desconnecta el compte</translation>
 <translation id="7564847347806291057">Finalitza el procés</translation>
 <translation id="1607220950420093847">Pot ser que el compte s'hagi suprimit o desactivat. Tanqueu la sessió.</translation>
-<translation id="5660872996699900541">No hi ha sessions.</translation>
 <translation id="5613695965848159202">Identitat anònima:</translation>
 <translation id="560108005804229228">Error de sincronització: tanqueu la sessió i torneu-la a iniciar...</translation>
 <translation id="7063412606254013905">Més informació sobre les pràctiques fraudulentes de pesca.</translation>
@@ -3144,6 +3229,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="1368265273904755308">Informa d'un problema</translation>
 <translation id="780301667611848630">No, gràcies</translation>
 <translation id="2812989263793994277">No mostris cap imatge</translation>
+<translation id="1240555551339293975">Les extensions, les aplicacions i els scripts d'usuari només es poden afegir des de Chrome Web Store.</translation>
 <translation id="722363467515709460">Activa l'ampliador de pantalla</translation>
 <translation id="7190251665563814471">Permet sempre aquests connectors a <ph name="HOST"/></translation>
 <translation id="2043684166640445160"><ph name="PRODUCT_NAME"/>
@@ -3217,6 +3303,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="7003339318920871147">Bases de dades web</translation>
 <translation id="5034259512732355072">Selecciona un altre directori...</translation>
 <translation id="8885905466771744233">Ja existeix una clau privada per a l'extensió especificada. Torneu a utilitzar-la o suprimiu-la primer.</translation>
+<translation id="1196944142850240972">Accediu a les dades de tots els llocs web</translation>
 <translation id="7369056754288047856">L'usuari no pot modificar algunes configuracions.</translation>
 <translation id="4100843820583867709">Sol·licitud per compartir la pantalla a Google Talk</translation>
 <translation id="8109246889182548008">Botiga certificada</translation>
@@ -3226,20 +3313,24 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="6193618946302416945">Permet traduir pàgines en una llengua diferent en la qual llegeixo</translation>
 <translation id="129553762522093515">Tancats recentment</translation>
 <translation id="1588870296199743671">Obre l'enllaç amb...</translation>
+<translation id="4761104368405085019">Utilitzeu el micròfon</translation>
 <translation id="4287167099933143704">Introdueix la clau de desbloqueig del PIN (PUK)</translation>
 <translation id="8355915647418390920"><ph name="NUMBER_FEW"/> dies</translation>
 <translation id="3129140854689651517">Cerca el text</translation>
 <translation id="5558129378926964177">&amp;Amplia</translation>
+<translation id="7217838517480956708">L'administrador d'aquest equip necessita que s'instal·li <ph name="EXTENSION_NAME"/>. No es pot eliminar o modificar.</translation>
 <translation id="7108668606237948702">retorn</translation>
 <translation id="6451458296329894277">Confirma el reenviament del formulari</translation>
 <translation id="2576842806987913196">Ja hi ha un fitxer CRX amb aquest nom.</translation>
 <translation id="7015226785571892184">S'iniciarà l'aplicació següent si accepteu aquesta sol·licitud: <ph name="APPLICATION"/></translation>
 <translation id="6804671422566312077">Obre tots els marcadors en una &amp;finestra nova</translation>
 <translation id="5116333507878097773"><ph name="NUMBER_ONE"/> hora</translation>
+<translation id="5655905266649484266">Comprova si hi ha portals captius i obre una pestanya nova en la pàgina d'inici de sessió si se'n troba un.</translation>
 <translation id="1851266746056575977">Actualitza ara</translation>
 <translation id="7017219178341817193">Afegeix una pàgina nova</translation>
 <translation id="1038168778161626396">Només encriptar</translation>
 <translation id="3924129493187796992">Afegeix un patró de nom d'amfitrió nou</translation>
+<translation id="408205643560606197">&quot;<ph name="EXTENSION_NAME"/>&quot; ha començat a capturar àudio per al reconeixement de parla. Cerqueu la icona de notificació de micròfon per saber quan torna a ocórrer.</translation>
 <translation id="1377406721062459125">Definiu el camí del depurador nacl-gdb. S'adjuntarà a les aplicacions NaCl a l'inici.</translation>
 <translation id="8765985713192161328">Gestiona els gestors...</translation>
 <translation id="7179921470347911571">Torna'l a iniciar ara</translation>
@@ -3265,6 +3356,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="8631032106121706562">Pètals</translation>
 <translation id="5457599981699367932">Navega com a convidat</translation>
 <translation id="1812514023095547458">Selecció de color</translation>
+<translation id="6768400412721262602">Utilitza l'inici de sessió de ClientLogin</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="7047998246166230966">Busca</translation>
 <translation id="2665717534925640469">Aquesta pàgina es visualitza a pantalla completa i ha desactivat el cursor del ratolí.</translation>
@@ -3287,11 +3379,11 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="6680028776254050810">Canvia els usuaris</translation>
 <translation id="212464871579942993">El lloc web de <ph name="HOST_NAME"/> conté elements de llocs que semblen allotjar programari maliciós, és a dir, programari que pot malmetre l'equip o operar sense el vostre consentiment. El sol fet de visitar un lloc que allotgi aquest tipus de programari pot infectar el vostre equip. El lloc web en qüestió també allotja contingut de llocs que han estat detectats com a llocs de &quot;pesca&quot; (suplantació d'identitat). Els llocs de pesca enganyen els usuaris perquè proporcionin informació personal o financera i sovint fingeixen que són institucions de confiança, com ara entitats bancàries.</translation>
 <translation id="9027307872616253016">Cerca serveis a Chrome Web Store</translation>
+<translation id="8156020606310233796">Visualització de llista</translation>
 <translation id="957120528631539888">Desactiva la visualització de missatges de validació i impedeix l'enviament de formularis.</translation>
 <translation id="8002980609684534974">Número de la pista</translation>
 <translation id="146000042969587795">S'ha bloquejat aquest marc perquè inclou contingut no segur.</translation>
 <translation id="3258924582848461629">Mètode d'entrada d'escriptura manual per al japonès</translation>
-<translation id="6338268303901873939">Error en enganxar, l'element existeix: $1</translation>
 <translation id="8112223930265703044">Tot</translation>
 <translation id="3968739731834770921">Kana</translation>
 <translation id="3729920814805072072">Gestiona les contrasenyes desades...</translation>
@@ -3312,9 +3404,9 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="3140353188828248647">Passa la barra d'adreces a primer pla</translation>
 <translation id="4860787810836767172">Fa <ph name="NUMBER_FEW"/> segons</translation>
 <translation id="6462082050341971451">Encara hi ets?</translation>
-<translation id="1185611560928829188">Llista màgica (<ph name="MAGIC_COUNT"/>)</translation>
 <translation id="1391582464782791898">Visiteu Chrome Web Store per cercar més serveis.</translation>
 <translation id="5565871407246142825">Targetes de crèdit</translation>
+<translation id="8077684978029746467">Em sento afortunat</translation>
 <translation id="4111534450840609205">aquests suggeriments</translation>
 <translation id="2587203970400270934">Codi d'operador:</translation>
 <translation id="3355936511340229503">Error de connexió</translation>
@@ -3331,7 +3423,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="1633226303025864103">Confiança dels certificats no vàlida</translation>
 <translation id="4813512666221746211">Error de xarxa</translation>
 <translation id="8711402221661888347">Hamburguesa</translation>
-<translation id="8170399998441334161">Activa les aplicacions de la plataforma</translation>
 <translation id="2168725742002792683">Extensions de fitxer</translation>
 <translation id="3974195870082915331">Feu clic per mostrar la contrasenya</translation>
 <translation id="7861805612256278846">sessió no iniciada</translation>
@@ -3340,6 +3431,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="8116972784401310538">&amp;Gestor d'adreces d'interès</translation>
 <translation id="3591607774768458617">Actualment, s'utilitza aquest idioma per mostrar <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="621638399744152264"><ph name="VALUE"/>%</translation>
+<translation id="3082520371031013475">Configuració del touchpad i del ratolí</translation>
 <translation id="4927301649992043040">Empaqueta l'extensió</translation>
 <translation id="8679658258416378906">Activa la pestanya 5</translation>
 <translation id="9049835026521739061">Mode hangul</translation>
@@ -3367,7 +3459,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="2324001595651213578">Teclat Mystery nord-americà</translation>
 <translation id="2749881179542288782">Comprova la gramàtica amb l'ortografia</translation>
 <translation id="5105855035535475848">Fixa les pestanyes</translation>
-<translation id="3228708416890095647">Fes servir GPU per accelerar la representació dels filtres SVG i CSS.</translation>
 <translation id="5707604204219538797">Paraula següent</translation>
 <translation id="5896465938181668686">Atura el connector</translation>
 <translation id="6892450194319317066">Selecciona per mètode d'obertura</translation>
@@ -3402,6 +3493,8 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="858637041960032120">Afegeix un número de telèfon</translation>
 <translation id="3210492393564338011">Supressió de l'usuari</translation>
+<translation id="1810226750196157312">El codi de verificació no és vàlid.</translation>
+<translation id="3242118113727675434">Mostra HUD per a punts tàctils</translation>
 <translation id="3095995014811312755">versió</translation>
 <translation id="7052500709156631672">La passarel·la o el servidor intermediari ha rebut una resposta no vàlida d'un servidor superior.</translation>
 <translation id="281133045296806353">S'ha creat una finestra nova a la sessió del navegador existent.</translation>
@@ -3417,6 +3510,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="9086302186042011942">Sincronització</translation>
 <translation id="6869402422344886127">Casella de selecció activada</translation>
 <translation id="5637380810526272785">Mètode d'entrada</translation>
+<translation id="2837049386027881519">S'ha hagut de tornar a intentar la connexió mitjançant una versió anterior del protocol TLS o SSL. Generalment, això vol dir que el servidor utilitza un programari molt antic i és possible que tingui altres problemes de seguretat.</translation>
 <translation id="404928562651467259">ADVERTIMENT</translation>
 <translation id="7172053773111046550">Teclat estonià</translation>
 <translation id="4289300219472526559">Comença a parlar</translation>
@@ -3453,6 +3547,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="8601206103050338563">Autenticació de client WWW de TLS</translation>
 <translation id="1692799361700686467">S'admeten les galetes de diversos llocs.</translation>
 <translation id="5187295959347858724">Ara teniu la sessió iniciada a <ph name="SHORT_PRODUCT_NAME"/>. Els vostres marcadors, l'historial i altres opcions de configuració s'estan sincronitzant amb el vostre compte de Google.</translation>
+<translation id="2717190143245689317">Activa un element textfield per a la IU d'aplicacions; no afecta el contingut web.</translation>
 <translation id="529232389703829405">Heu comprat <ph name="DATA_AMOUNT"/> de dades el <ph name="DATE"/></translation>
 <translation id="7419106976560586862">Camí del perfil</translation>
 <translation id="5271549068863921519">Desa la contrasenya</translation>
@@ -3483,6 +3578,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="862542460444371744">&amp;Extensions</translation>
 <translation id="6807906590218483700">Heu provat d'accedir a <ph name="DOMAIN"/>, però en lloc d'això heu accedit a un servidor que s'identifica com a <ph name="DOMAIN2"/>. Això pot ser a causa d'un error de configuració del servidor o per un altre motiu més greu. És possible que un atacant que es troba a la vostra xarxa estigui intentant que visiteu una versió falsa i possiblement perillosa de <ph name="DOMAIN3"/>.</translation>
 <translation id="2383066183457571563">Confirmeu que aquest dispositiu no pertany a l'empresa. Es cancel·larà la inscripció d'empresa.</translation>
+<translation id="1950071026108733092">Activa la descodificació de vídeo accelerada mitjançant maquinari.</translation>
 <translation id="8045462269890919536">Romanès</translation>
 <translation id="4973307593867026061">Afegeix impressores</translation>
 <translation id="6320286250305104236">Configuració de la xarxa...</translation>
@@ -3522,7 +3618,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="822618367988303761">Fa <ph name="NUMBER_TWO"/> dies</translation>
 <translation id="7568593326407688803">Aquesta pàgina està en<ph name="ORIGINAL_LANGUAGE"/>Voleu traduir-la?</translation>
 <translation id="563969276220951735">Emplenament automàtic del formulari</translation>
-<translation id="1913382186391762486">Els vostres perifèrics USB</translation>
 <translation id="6870130893560916279">Teclat ucraïnès</translation>
 <translation id="766592070029747268">El fitxer ONC encriptat no es pot desencriptar.</translation>
 <translation id="1543766961885680449">S'ha iniciat un enregistrament d'àudio.</translation>
@@ -3540,8 +3635,10 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="9046895021617826162">S'ha produït un error en la connexió</translation>
 <translation id="4061733942661196912">Si la funció està activada, en visitar una pàgina d'inici de sessió del compte de Google apareix una barra d'informació que permet iniciar la sessió fàcilment amb el compte de Google connectat al perfil. L'inici de sessió automàtic està sempre desactivat si el perfil no està connectat a cap compte, independentment d'aquesta marca.</translation>
 <translation id="1492188167929010410">ID del bloqueig: <ph name="CRASH_ID"/></translation>
+<translation id="2938151660784672220">Només aplicacions de la plataforma</translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> dies restants</translation>
 <translation id="4470270245053809099">Emès per: <ph name="NAME"/></translation>
+<translation id="193971656137910869">Llegiu i modifiqueu els marcadors</translation>
 <translation id="6268747994388690914">Importa els marcadors des d'un fitxer HTML...</translation>
 <translation id="6096047740730590436">Obre-la maximitzada</translation>
 <translation id="5365539031341696497">Mètode d'entrada de tailandès (teclat kesmanee)</translation>
@@ -3552,10 +3649,10 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="2049639323467105390"><ph name="DOMAIN"/> gestiona aquest dispositiu.</translation>
 <translation id="1932098463447129402">No abans</translation>
 <translation id="7845920762538502375"><ph name="PRODUCT_NAME"/> no pot sincronitzar les dades perquè no s'ha pogut connectar al servidor de sincronització. S'està tornant a provar...</translation>
-<translation id="6137946187038918690">Configuració del touchpad/ratolí</translation>
 <translation id="7325437708553334317">Extensió d'alt contrast</translation>
 <translation id="2192664328428693215">Pregunta'm quan un lloc vulgui mostrar notificacions d'escriptori (opció recomanada)</translation>
 <translation id="6708242697268981054">Origen:</translation>
+<translation id="1986281090560408715">Activa una visualització d'informació a l'extrem superior esquerre de la pantalla on s'enumera la informació sobre els punts tàctils de la pantalla.</translation>
 <translation id="4786993863723020412">Error de lectura de la memòria cau</translation>
 <translation id="6630452975878488444">Drecera de selecció</translation>
 <translation id="8709969075297564489">Comprova la revocació del certificat del servidor</translation>
@@ -3563,6 +3660,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="8698171900303917290">Teniu problemes amb la instal·lació?</translation>
 <translation id="2440443888409942524">Mètode d'entrada de pinyin (per a teclat Dvorak nord-americà)</translation>
 <translation id="830868413617744215">Beta</translation>
+<translation id="2501797496290880632">Escriviu una drecera</translation>
 <translation id="2679392804024228530">Encripta totes les dades sincronitzades</translation>
 <translation id="5925147183566400388">Punter de declaració de pràctiques de certificació</translation>
 <translation id="8119381715954636144">Identitat sense verificar</translation>
@@ -3574,6 +3672,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="1947424002851288782">Teclat alemany</translation>
 <translation id="2799046819183570437">Activa la concreció del disseny experimental per millorar l'experiència de l'usuari mitjançant pantalles tàctils.</translation>
 <translation id="932508678520956232">No s'ha pogut començar a imprimir.</translation>
+<translation id="3154429428035006212">Fora de línia des de fa més d'un mes</translation>
 <translation id="4861833787540810454">Repro&amp;dueix</translation>
 <translation id="2552545117464357659">Més nova</translation>
 <translation id="7269802741830436641">Aquesta pàgina web té un bucle de redirecció</translation>
@@ -3591,7 +3690,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="6898699227549475383">Organització (O)</translation>
 <translation id="4333854382783149454">PKCS #1 SHA-1 amb encriptació RSA</translation>
 <translation id="762904068808419792">Escriviu la consulta de cerca aquí</translation>
-<translation id="5679399270800798467">L'extensió &quot;<ph name="EXTENSION_NAME"/>&quot; de <ph name="PRODUCT_NAME"/> actualment està enregistrant àudio per a reconeixement de veu.</translation>
 <translation id="8615618338313291042">Aplicació d'incògnit: <ph name="APP_NAME"/></translation>
 <translation id="978146274692397928">L'amplada inicial de la puntuació és completa</translation>
 <translation id="106701514854093668">Marcadors d'escriptori</translation>
@@ -3609,7 +3707,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="7493310265090961755">Banda</translation>
 <translation id="3695919544155087829">Introduïu la contrasenya que es va utilitzar per encriptar aquest fitxer de certificat.</translation>
 <translation id="2230051135190148440">CHAP</translation>
-<translation id="809599680914869814"><ph name="PRODUCT_NAME"/> està utilitzant la càmera o el micròfon.</translation>
 <translation id="2509857212037838238">Instal·lació de: <ph name="PLUGIN_NAME"/></translation>
 <translation id="6308937455967653460">Desa l'en&amp;llaç com a...</translation>
 <translation id="5828633471261496623">S'està imprimint...</translation>
@@ -3626,10 +3723,13 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="713122686776214250">Afegeix la pà&amp;gina...</translation>
 <translation id="4816492930507672669">Ajusta a la mida de la pàgina</translation>
 <translation id="8286036467436129157">Inicia la sessió</translation>
+<translation id="1485015260175968628">Ara pot:</translation>
 <translation id="594713537555167317">Ajusta la configuració...</translation>
 <translation id="1255964530203229794">S'ha sincronitzat com a <ph name="USER_EMAIL_ADDRESS"/>. Darrera sincronització: <ph name="LAST_SYNC_TIME"/></translation>
 <translation id="6697308399043041614">De Chrome a mòbils</translation>
 <translation id="1122198203221319518">&amp;Eines</translation>
+<translation id="5143151113947480436">Accediu a les dades que copieu i enganxeu</translation>
+<translation id="6051028581720248124">En imprimir a FedEx Office, accepteu les seves <ph name="START_LINK"/>condicions d'ús<ph name="END_LINK"/>.</translation>
 <translation id="5957357845649266893">Executa contingut protegit</translation>
 <translation id="2760009672169282879">Teclat fonètic búlgar</translation>
 <translation id="6608140561353073361">Totes les galetes i dades del lloc...</translation>
@@ -3646,7 +3746,6 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="431076611119798497">&amp;Detalls</translation>
 <translation id="5653140146600257126">Ja existeix una carpeta anomenada &quot;$1&quot;. Trieu un nom diferent.</translation>
 <translation id="737801893573836157">Amaga la barra de títol del sistema i utilitza límits compactes</translation>
-<translation id="5352235189388345738">No pot accedir:</translation>
 <translation id="5040262127954254034">Privadesa</translation>
 <translation id="7666868073052500132">Finalitats: <ph name="USAGES"/></translation>
 <translation id="7148311641502571842">S'ha desactivat <ph name="PLUGIN_NAME"/>. Per tornar a activar-lo, aneu a <ph name="CHROME_PLUGINS_LINK"/>.</translation>
@@ -3705,6 +3804,7 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="6198102561359457428">Tanca la sessió i torna-la a iniciar...</translation>
 <translation id="4799797264838369263">Aquesta opció està controlada per una política d'empresa. Contacteu amb l'administrador per obtenir més informació.</translation>
 <translation id="4492190037599258964">Resultats de la cerca per a &quot;<ph name="SEARCH_STRING"/>&quot;</translation>
+<translation id="9154418932169119429">Aquesta imatge no està disponible fora de línia.</translation>
 <translation id="3573179567135747900">Torna a canviar a &quot;<ph name="FROM_LOCALE"/>&quot; (requereix reiniciar)</translation>
 <translation id="8235333616059839358">Comproveu la connexió a Internet. Reinicieu l'encaminador, el mòdem o qualsevol altre dispositiu de xarxa que utilitzeu.</translation>
 <translation id="8940081510938872932">L'equip està fent massa coses en aquests moments. Torneu-ho a provar més tard.</translation>
@@ -3717,11 +3817,12 @@ Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="1097658378307015415">Abans d'iniciar la sessió amb el vostre usuari, entreu com a convidat per activar la xarxa <ph name="NETWORK_ID"/></translation>
 <translation id="4114470632216071239">Bloqueja la targeta SIM (requereix el PIN per utilitzar dades de telefonia mòbil)</translation>
 <translation id="5184584788669813359">No s'han pogut mostrar algunes parts d'aquest document PDF. Voleu obrir-lo a Adobe Reader?</translation>
+<translation id="6581162200855843583">Enllaç de Google Drive</translation>
 <translation id="3303260552072730022">Una extensió ha activat la pantalla completa.</translation>
 <translation id="2183426022964444701">Seleccioneu el directori arrel de l'extensió.</translation>
-<translation id="2517143724531502372">Les galetes de <ph name="DOMAIN"/> només s'admeten per a la sessió.</translation>
 <translation id="5212108862377457573">Ajusta la conversió en base a l'entrada anterior</translation>
 <translation id="8675377193764357545">S'ha sincronitzat com a <ph name="USER_EMAIL_ADDRESS"/></translation>
+<translation id="466816546394172504">Desactivació de llenç 2D ajornat</translation>
 <translation id="5811533512835101223">(Torneu a la captura de pantalla original)</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="7005848115657603926">L'interval de pàgines no és vàlid; utilitzeu <ph name="EXAMPLE_PAGE_RANGE"/></translation>
@@ -3758,7 +3859,6 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="4636388769812446016">El micròfon ja està en ús.</translation>
 <translation id="5830720307094128296">Anomena i desa la pà&amp;gina...</translation>
 <translation id="2448312741937722512">Tipus</translation>
-<translation id="8114439576766120195">Les vostres dades a tots els llocs web</translation>
 <translation id="5209320130288484488">No s'han trobat dispositius</translation>
 <translation id="8364627913115013041">No s'ha definit.</translation>
 <translation id="7759743828338447136">S'ha produït un error (codi: <ph name="ERROR_CODE"/>).</translation>
@@ -3796,6 +3896,7 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="2785530881066938471">No s'ha pogut carregar el fitxer &quot;<ph name="RELATIVE_PATH"/>&quot; per a l'script de contingut. No està codificat com a UTF-8.</translation>
 <translation id="3807747707162121253">&amp;Cancel·la</translation>
 <translation id="202352106777823113">La baixada trigava massa i la xarxa l'ha aturat.</translation>
+<translation id="8232673301827450447">Filtres SVG accelerats amb GPU</translation>
 <translation id="6155817405098385604">No es recorre a un renderitzador de programari 3D quan el GPU no es pugui fer servir.</translation>
 <translation id="1857773308960574102">Aquest fitxer sembla maliciós.</translation>
 <translation id="3306897190788753224">Desactiva temporalment la personalització de la conversió, els suggeriments basats en l'historial i el diccionari de l'usuari</translation>
@@ -3805,6 +3906,7 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="2773948261276885771">Estableix pàgines</translation>
 <translation id="8279030405537691301">Quan la composició per subprocessos  està activada, les animacions CSS accelerades s'executen al subprocés de composició. No obstant això, poden haver millores al rendiment que s'executin amb les animacions CSS accelerades, fins i tot sense el subprocés de composició.
 </translation>
+<translation id="3837710722285941580">Activa només les aplicacions de la cerca de llista d'aplicacions.</translation>
 <translation id="5321358819363475476">O seleccioneu una altra xarxa:</translation>
 <translation id="2157875535253991059">Ara aquesta pàgina es mostra a pantalla completa.</translation>
 <translation id="20817612488360358">S'ha definit la configuració del servidor intermediari del sistema perquè es pugui utilitzar, però també s'ha especificat una configuració del servidor intermediari explícita.</translation>
@@ -3816,7 +3918,6 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="8467473010914675605">Mètode d'entrada de coreà</translation>
 <translation id="8102535138653976669"><ph name="PRODUCT_NAME"/> sincronitza les vostres dades de manera segura amb el vostre compte de Google. Manteniu-ho tot sincronitzat o personalitzeu els tipus de dades sincronitzades i les opcions d'encriptació.</translation>
 <translation id="2639739919103226564">Estat:</translation>
-<translation id="6538242311007136163">Sessions (<ph name="SESSION_COUNT"/>)</translation>
 <translation id="6923900367903210484">Drets d'autor</translation>
 <translation id="3819800052061700452">&amp;Pantalla completa</translation>
 <translation id="1653672595398823009">Dispositiu mòbil</translation>
@@ -3859,6 +3960,7 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="8639963783467694461">Configuració de l'Emplenament automàtic</translation>
 <translation id="2951247061394563839">Finestra central</translation>
 <translation id="3435738964857648380">Seguretat</translation>
+<translation id="2000012663519449321">Utilitza la puntuació nova a HistoryQuickProvider</translation>
 <translation id="9112987648460918699">Cerca...</translation>
 <translation id="2231233239095101917">La seqüència d'ordres de la pàgina ha fet servir massa memòria. Torneu a carregar-la per habilitar de nou les seqüències d'ordres.</translation>
 <translation id="870805141700401153">Signatura de codi individual de Microsoft</translation>
@@ -3873,6 +3975,7 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="7839804798877833423">Per obtenir aquests fitxers s'utilitzaran aproximadament <ph name="FILE_SIZE"/> de dades mòbils.</translation>
 <translation id="3268451620468152448">Pestanyes obertes</translation>
 <translation id="4918086044614829423">Accepta</translation>
+<translation id="6811824796237962267">Desactiva les notificacions de la safata d'estat d'ash i activa les notificacions del sistema d'escriptori.</translation>
 <translation id="5095208057601539847">Província</translation>
 <translation id="4085298594534903246">S'ha bloquejat JavaScript en aquesta pàgina.</translation>
 <translation id="4341977339441987045">Impedeix que els llocs estableixin dades</translation>
@@ -3905,10 +4008,13 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="6845038076637626672">Obre-la maximitzada</translation>
 <translation id="4443989740666919835">S'ha intentat un canvi de la cerca predeterminada</translation>
 <translation id="3184560914950696195">No es pot desar a $1. Les imatges modificades es desaran a la carpeta Baixades.</translation>
+<translation id="7374780750951876710">Puntuació anterior</translation>
 <translation id="4664482161435122549">Error d'exportació PKCS #12</translation>
 <translation id="2445081178310039857">El directori arrel de l'extensió és obligatori.</translation>
 <translation id="8251578425305135684">S'ha eliminat la miniatura.</translation>
 <translation id="6163522313638838258">Amplia-ho tot...</translation>
+<translation id="6929248774488657193">S'ha cancel·lat la transferència.</translation>
+<translation id="3555315965614687097">Configura...</translation>
 <translation id="8042809739168319366"><ph name="TITLE"/></translation>
 <translation id="3037605927509011580">Oh, no!</translation>
 <translation id="5803531701633845775">Tria frases de darrere sense moure el cursor</translation>
@@ -3922,6 +4028,7 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="8000066093800657092">No hi ha xarxa</translation>
 <translation id="4481249487722541506">Carrega l'extensió en desenvolupament...</translation>
 <translation id="8180239481735238521">pàgina</translation>
+<translation id="7532099961752278950">Defineix per aplicació:</translation>
 <translation id="1665611772925418501">El fitxer no s'ha pogut modificar.</translation>
 <translation id="2963783323012015985">Teclat turc</translation>
 <translation id="2843806747483486897">Canvia els valors predeterminats...</translation>
@@ -3936,7 +4043,7 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/>: <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
-<translation id="8612060185862193661">Activa MediaStream.</translation>
+<translation id="8261490674758214762">Poden:</translation>
 <translation id="5112577000029535889">&amp;Eines per a desenvolupadors</translation>
 <translation id="2301382460326681002">El directori arrel de l'extensió no és vàlid.</translation>
 <translation id="7839192898639727867">Identificador de clau del subjecte del certificat</translation>
@@ -3944,14 +4051,15 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="2879560882721503072">S'ha emmagatzemant correctament el certificat del client emès per <ph name="ISSUER"/>.</translation>
 <translation id="1275718070701477396">Seleccionat</translation>
 <translation id="1178581264944972037">Pausa</translation>
-<translation id="932089513367755776">Canvia la llista d'aplicacions</translation>
 <translation id="6492313032770352219">Espai ocupat al disc:</translation>
+<translation id="5258115500946525790">Activa l'estil de casella de selecció nou.</translation>
 <translation id="3225919329040284222">El servidor ha presentat un certificat que no coincideix amb les expectatives integrades. Les expectatives s'inclouen perquè determinats llocs web d'alta seguretat us protegeixin.</translation>
 <translation id="5233231016133573565">ID de procés</translation>
 <translation id="5941711191222866238">Minimitza</translation>
 <translation id="8512476990829870887">Finalitza el procés</translation>
 <translation id="4121428309786185360">Caduca el</translation>
 <translation id="3406605057700382950">&amp;Mostra la barra de marcadors</translation>
+<translation id="6807889908376551050">Mostra-les totes...</translation>
 <translation id="2049137146490122801">El vostre administrador ha desactivat l'accés als fitxers locals del vostre equip.</translation>
 <translation id="1146498888431277930">Error de connexió SSL</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT"/>)</translation>
@@ -3995,6 +4103,7 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="2669198762040460457">El nom d'usuari o la contrasenya que heu introduït no són correctes.</translation>
 <translation id="1161575384898972166">Inicieu la sessió a <ph name="TOKEN_NAME"/> per exportar el certificat de client.</translation>
 <translation id="1718559768876751602">Creeu un Compte de Google ara</translation>
+<translation id="5503480894407718969">Accediu a totes les dades del dispositiu mòbil i dels llocs web que visiteu</translation>
 <translation id="1884319566525838835">Estat del sandbox</translation>
 <translation id="2770465223704140727">Elimina de la llista</translation>
 <translation id="8314013494437618358">Composició per subprocessos</translation>
@@ -4017,6 +4126,8 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="3349155901412833452">Utilitza les tecles , i . per mostrar una llista de candidats</translation>
 <translation id="3981681824736556685">Si utilitzeu un servidor intermediari, comproveu-ne la configuració o contacteu amb l'administrador de la xarxa per assegurar-vos que funcioni. Si creieu que no n'utilitzeu cap, ajusteu la configuració del vostre servidor intermediari: <ph name="PLATFORM_TEXT"/></translation>
 <translation id="5394671634302672639">Selecciona la configuració de cerca...</translation>
+<translation id="700457781960720035">Activa aquesta opció perquè faci servir ClientLogin per connectar un perfil a un compte de Google en comptes de ClientOAuth.
+      ClientLogin utilitza ASP durant l'autenticació. ClientOAuth hi utilitza codis de verificació (per exemple, OTP).</translation>
 <translation id="8487700953926739672">Disponible fora de línia</translation>
 <translation id="6098975396189420741">En activar aquesta opció, s'evita que les aplicacions web accedeixin a l'API de WebGL.</translation>
 <translation id="6872947427305732831">Purga la memòria</translation>
@@ -4049,7 +4160,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="6059652578941944813">Jerarquia del certificat</translation>
 <translation id="4886690096315032939">Centra la pestanya actual en obrir-la</translation>
 <translation id="5729712731028706266">&amp;Lector</translation>
-<translation id="774576312655125744">Les vostres dades a <ph name="WEBSITE_1"/>, a <ph name="WEBSITE_2"/> i a <ph name="NUMBER_OF_OTHER_WEBSITES"/> llocs web més</translation>
 <translation id="9023317578768157226">Permet que <ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) obri tots els enllaços del <ph name="PROTOCOL"/>?</translation>
 <translation id="6359806961507272919">SMS de <ph name="PHONE_NUMBER"/></translation>
 <translation id="4508765956121923607">Visualitza l'&amp;origen</translation>
@@ -4062,26 +4172,26 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="4517433557782069986">Inici de sessió a <ph name="SHORT_PRODUCT_NAME"/></translation>
 <translation id="5849869942539715694">Empaqueta l'extensió...</translation>
 <translation id="7339785458027436441">Comprova l'ortografia mentre escric</translation>
+<translation id="5233736638227740678">&amp;Enganxa</translation>
 <translation id="8308427013383895095">No s'ha pogut executar la traducció a causa d'un problema amb la connexió de xarxa.</translation>
 <translation id="1828901632669367785">Imprimeix amb el diàleg del sistema...</translation>
 <translation id="1801298019027379214">PIN incorrecte, torneu-ho a provar. Nombre d'intents restants: <ph name="TRIES_COUNT"/></translation>
-<translation id="3529020546926570314">Inicia la sessió per accedir a les impressores del núvol...</translation>
 <translation id="1384721974622518101">Sabíeu que podeu cercar directament des del quadre anterior?</translation>
 <translation id="992543612453727859">Afegeix frases al davant</translation>
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="4998873842614926205">Confirma els canvis</translation>
+<translation id="7900877224946181357"><ph name="PRODUCT_NAME"/> està utilitzant la càmera.</translation>
 <translation id="5720705177508910913">Usuari actual</translation>
 <translation id="622718162866842437">El diccionari EAP de xarxa no està ben format</translation>
 <translation id="1559528461873125649">No existeix el fitxer o el directori</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="1244147615850840081">Operador</translation>
 <translation id="2650446666397867134">S'ha denegat l'accés al fitxer</translation>
-<translation id="8041157312638268894">Quan aquesta opció està activada, s'utilitza ClientOAuth per connectar un perfil a un compte de Google. Sinó, s'utilitza ClientLogin.
-      ClientOAuth permet utilitzar una OTP enlloc d'una ASP durant l'autenticació.</translation>
 <translation id="5780498354378986900">No es pot suprimir &quot;<ph name="FILE_NAME"/>&quot;. <ph name="ERROR_MESSAGE"/></translation>
 <translation id="5832830184511718549">Utilitza un subprocés secundari per crear pàgines web. Això permet un desplaçament suau, fins i tot quan el subprocés principal no respon.
 </translation>
 <translation id="3346457130337124365"><ph name="HOST_NAME"/> conté programari maliciós. Si visiteu aquest lloc, el dispositiu mòbil pot agafar un virus.</translation>
 <translation id="8203365863660628138">Confirma la instal·lació</translation>
 <translation id="406259880812417922">(Paraula clau: <ph name="KEYWORD"/>)</translation>
+<translation id="4778399030184051458">Script que nacl-gdb executarà a l'inici.</translation>
 </translationbundle>

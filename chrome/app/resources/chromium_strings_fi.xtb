@@ -36,6 +36,7 @@
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium ei sisällä PDF-katseluohjelmaa, joka tarvitaan tulostuksen esikatseluun.</translation>
 <translation id="7138853919861947730">Chromium voi käyttää verkkopalveluita parantaakseen selauskokemusta.</translation>
+<translation id="466053073629175099">Olet kirjautunut Chromiumiin. Kirjanmerkkisi, historiasi ja muut asetuksesi synkronoidaan Google-tiliisi.</translation>
 <translation id="4179848566211676653">Sulje Chromium</translation>
 <translation id="3849925841547750267">Mozilla Firefoxin asetukset eivät ole käytettävissä selaimen ollessa käynnissä. Jos haluat tuoda ne Chromiumiin, tallenna työsi ja sulje Firefoxin kaikki ikkunat. Valitse sitten Jatka.</translation>
 <translation id="7771626876550251690">Tässä tapauksessa varmenteessa annettu osoite ei vastannut sivustoa, johon selaimesi yritti siirtyä. On mahdollista, että hyökkääjä on kaapannut yhteyden ja esittää nyt selaimellesi eri sivuston varmenteen, mikä aiheuttaa ristiriidan. Saattaa myös olla, että palvelin on määritetty palauttamaan sama varmenne useilla sivustoilla, vaikka se ei ole voimassa kaikilla kyseisillä sivustoilla. Chromium voi vahvistaa, että saavuit sivustoon &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, mutta se ei voi taata, että se on sama sivusto kuin &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, johon yritit siirtyä. Jos jatkat, Chromium ei tarkista muita nimiristiriitoja.</translation>

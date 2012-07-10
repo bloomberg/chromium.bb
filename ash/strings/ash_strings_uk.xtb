@@ -3,6 +3,7 @@
 <translationbundle lang="uk">
 <translation id="3595596368722241419">Повний заряд акумулятора</translation>
 <translation id="5250713215130379958">Автоматично ховати панель запуску</translation>
+<translation id="8328777765163860529">Закрити всі</translation>
 <translation id="30155388420722288">Кнопка переповнення</translation>
 <translation id="5571066253365925590">Bluetooth увімкнено</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
@@ -25,27 +26,36 @@
 <translation id="1525975890706558596">CAPS LOCK увімкнено.
 Натисніть Shift + клавішу пошуку, щоб скасувати.</translation>
 <translation id="8190698733819146287">Налаштувати мови та введення тексту...</translation>
+<translation id="3845909655305837528">Метод введення змінено.
+        Натисніть Shift + Alt, щоб переключитися.</translation>
+<translation id="5182671122927417841">Вимкнути розширення</translation>
 <translation id="598295083618286569">Bluetooth під’єднано</translation>
 <translation id="5222676887888702881">Вийти</translation>
 <translation id="2091132388437059185">Автоматично ховати панель запуску після розгортання</translation>
-<translation id="425878420164891689">Підрахунок часу до повного зарядження</translation>
 <translation id="2964193600955408481">Вимкнути Wi-Fi</translation>
 <translation id="811680302244032017">Додати пристрій...</translation>
 <translation id="2509468283778169019">Режим CAPS LOCK увімкнено</translation>
+<translation id="7823564328645135659">Після синхронізації налаштувань мову змінено. Попередня: <ph name="FROM_LOCALE"/>, нова: <ph name="TO_LOCALE"/>.</translation>
+<translation id="1128184993858208824"><ph name="HOUR"/> год. <ph name="MINUTE"/> хв.</translation>
 <translation id="6426039856985689743">Вимкнути передавання мобільних даних</translation>
+<translation id="3087734570205094154">Низ</translation>
 <translation id="3232695630852378748">Налаштування Bluetooth...</translation>
 <translation id="1480041086352807611">Демонстраційний режим</translation>
 <translation id="4186384497305035875">Цей екран навмисно залишили порожнім</translation>
 <translation id="9089416786594320554">Методи введення</translation>
+<translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="2570059561924004903">Вимкнути голосові підказки</translation>
 <translation id="4430019312045809116">Гучність</translation>
 <translation id="1383876407941801731">Пошук</translation>
 <translation id="3557139239102318020">Потягніть униз, щоб згорнути, ліворуч чи праворуч, щоб фрагментувати</translation>
 <translation id="5980301590375426705">Завершити сеанс у режимі гостя</translation>
 <translation id="8308637677604853869">Попереднє меню</translation>
+<translation id="1346748346194534595">Праворуч</translation>
 <translation id="8528322925433439945">Мобільні ...</translation>
-<translation id="3595065677684516080">Налаштування й довідка</translation>
+<translation id="8428213095426709021">Налаштування</translation>
 <translation id="4479639480957787382">Ethernet</translation>
-<translation id="7573721444069009535">Wi-Fi ...</translation>
+<translation id="1467432559032391204">Ліворуч</translation>
+<translation id="5543001071567407895">SMS</translation>
 <translation id="6223565363550976998">Акумулятор: <ph name="PERCENTAGE"/>%</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="3784455785234192852">Заблокувати</translation>
@@ -58,11 +68,17 @@
 <translation id="2983818520079887040">Налаштування...</translation>
 <translation id="8660803626959853127">Синхронізація файлів (<ph name="COUNT"/>)</translation>
 <translation id="639644700271529076">Режим CAPS LOCK вимкнено</translation>
+<translation id="4864165860509564259">Положення панелі запуску</translation>
+<translation id="397105322502079400">Обчислення...</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
+<translation id="7871882211137875558">Під’єднатися до іншої...</translation>
+<translation id="3573179567135747900">Повернутися до мови &quot;<ph name="FROM_LOCALE"/>&quot; (потрібно перезавантажитися)</translation>
+<translation id="8103386449138765447">SMS повідомлень: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">Налаштування Диска Google...</translation>
 <translation id="48607902311828362">Режим польоту</translation>
-<translation id="5361734574074701223">Підрахунок часу, що залишився</translation>
 <translation id="9169585155162064169">CAPS LOCK увімкнено.
 Натисніть клавішу пошуку, щоб скасувати.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/> год. <ph name="MINUTE"/> хв. до повного зарядження</translation>
+<translation id="4469842253116033348">Вимкнути сповіщення від <ph name="SITE"/></translation>
+<translation id="6359806961507272919">SMS-повідомлення від <ph name="PHONE_NUMBER"/></translation>
 </translationbundle>

@@ -36,6 +36,11 @@
 <translation id="5469825884154817306">이 사이트의 이미지 차단</translation>
 <translation id="8412312801707973447">온라인 OCSP/CRL 확인 수행 여부</translation>
 <translation id="2908277604670530363">프록시 서버에 대한 최대 동시 연결 수</translation>
+<translation id="4838572175671839397">어떤 사용자가 <ph name="PRODUCT_NAME"/>에 로그인할 수 있는지 결정하는 데 사용되는 정규식을 포함합니다.
+
+      사용자가 이 패턴에 일치하지 않는 사용자 이름으로 로그인하려 하면 적절한 오류가 표시됩니다.
+
+      이 정책이 설정되지 않고 공백으로 남아 있다면 모든 사용자가 <ph name="PRODUCT_NAME"/>에 로그인할 수 있습니다.</translation>
 <translation id="7298195798382681320">권장</translation>
 <translation id="1438955478865681012">확장 프로그램 관련 정책을 설정합니다. 사용자는 차단목록의 확장 프로그램이 허용목록에 포함되지 않는 한 해당 프로그램을 설치할 수 없습니다. 또한 <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>에 확장 프로그램을 지정하여 <ph name="PRODUCT_NAME"/>이(가) 강제로 자동 설치하도록 할 수 있습니다. 차단목록은 강제 확장 프로그램 목록보다 우선합니다.</translation>
 <translation id="3478024346823118645">로그아웃 시 사용자 데이터 삭제</translation>
@@ -200,7 +205,6 @@
       이 설정을 사용하거나 사용 중지하면 사용자가 <ph name="PRODUCT_NAME"/>에서 이 설정을 변경하거나 무시할 수 없습니다.
 
       이 정책을 설정하지 않은 경우 사용하도록 설정되지만 사용자가 설정을 변경할 수 있습니다.</translation>
-<translation id="2711603272213076156">파일 선택 대화 상자의 호출 허용</translation>
 <translation id="1426410128494586442">예</translation>
 <translation id="1692788808502061374">사용자가 개입하지 않아도 자동 설치되도록 확장 프로그램 목록을 지정할 수 있습니다.
 
@@ -241,6 +245,7 @@
 <translation id="6368011194414932347">홈페이지 URL 설정</translation>
 <translation id="2877225735001246144">Kerberos 인증을 협상할 때 CNAME 조회 사용 중지</translation>
 <translation id="6378014222084506939">시크릿 모드 사용 가능 여부</translation>
+<translation id="3706027163744097186"><ph name="PRODUCT_NAME"/>에 로그인할 수 있는 사용자를 제한합니다.</translation>
 <translation id="3528000905991875314">대체 오류 페이지 사용</translation>
 <translation id="1283072268083088623"><ph name="PRODUCT_NAME"/>에서 지원하는 HTTP 인증 스키마를 지정합니다.
 
@@ -276,6 +281,7 @@
           이 설정을 사용하고 비표준 포트(예: 80 또는 443 이외의 포트)를 입력하면 생성된 Kerberos SPN에 포트가 포함됩니다.
 
           이 설정을 사용 중지하거나 설정하지 않으면 생성된 Kerberos SPN이 어떤 경우에도 포트를 포함하지 않습니다.</translation>
+<translation id="3236046242843493070">확장 프로그램, 앱, 사용자 스크립트 설치 등을 허용하는 URL 패턴</translation>
 <translation id="8992176907758534924">모든 사이트에서 이미지 표시 허용 안함</translation>
 <translation id="262740370354162807"><ph name="CLOUD_PRINT_NAME"/>(으)로 문서 제출 사용</translation>
 <translation id="8704831857353097849">사용할 수 없는 플러그인 목록</translation>
@@ -294,15 +300,6 @@
 
           이 정책을 설정하지 않은 경우 HomepageIsNewTabPage가 설정되어 있지 않으면 사용자가 직접 홈페이지를 선택할 수 있습니다.</translation>
 <translation id="8955719471735800169">맨위로</translation>
-<translation id="7948377189987658754">이 정책은 '브라우저를 닫을 때 쿠키 및 기타 사이트 데이터 삭제' 콘텐츠 설정 옵션보다 우선합니다.
-
-      정책을 사용 설정하면 <ph name="PRODUCT_NAME"/>이 종료될 때 로컬에 저장된 모든 데이터를 브라우저에서 삭제합니다.
-
-      정책을 사용 안함으로 설정하면 종료할 때 사이트 데이터가 삭제되지 않습니다.
-
-      이 정책을 설정하지 않으면 <ph name="PRODUCT_NAME"/>은 종료 시 사이트 데이터를 삭제하지 않는 기본 설정을 사용하게 되고, 사용자는 나중에 이 설정을 변경할 수 있습니다. 
-
-      'RestoreOnStartup' 정책이 이전 세션에서 URL을 복원하도록 설정된 경우에는 이전 탐색 세션 복원과 관련된 쿠키나 다른 데이터를 삭제하지 않습니다.</translation>
 <translation id="8170882486743832400">GData 옵션 구성</translation>
 <translation id="2322733497952278056">목록에 있는 URL을 URL 차단 목록에 대한 예외로 취급해 액세스를 허용합니다.
 
@@ -511,7 +508,6 @@
           이 정책은 선택사항입니다. 설정하지 않으면 기본값인 UTF-8이 사용됩니다.
 
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
-<translation id="2745445908503591390">브라우저 종료 시 사이트 데이터 지우기</translation>
 <translation id="1454846751303307294">자바스크립트 실행이 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'DefaultJavaScriptSetting' 정책이 설정되면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
@@ -573,11 +569,13 @@
 
           이 정책을 설정하지 않으면 모든 서버가 통합 인증을 사용할 수 있습니다.</translation>
 <translation id="350797926066071931">Google 번역 사용</translation>
+<translation id="4010738624545340900">파일 선택 대화상자의 호출 허용</translation>
 <translation id="4518251772179446575">사이트에서 사용자의 실제 위치를 추적할 때마다 확인</translation>
 <translation id="402759845255257575">모든 사이트에서 자바스크립트 실행 허용 안함</translation>
 <translation id="5457924070961220141"><ph name="PRODUCT_FRAME_NAME"/>이(가) 설치되면 기본 HTML 렌더러를 설정할 수 있습니다.
           이 정책을 설정하지 않으면 기본 설정에 따라 호스트 브라우저가 렌더링을 수행하지만, 이 설정을 무시하고 기본적으로 <ph name="PRODUCT_FRAME_NAME"/>에서 HTML 페이지를 렌더링하도록 할 수 있습니다.</translation>
 <translation id="706669471845501145">사이트에서 데스크톱 알림을 표시하도록 허용</translation>
+<translation id="7529144158022474049">분산 요소 자동 업데이트</translation>
 <translation id="2188979373208322108"><ph name="PRODUCT_NAME"/>에서 북마크바를 사용하도록 설정합니다.
 
       이 설정을 사용하면 <ph name="PRODUCT_NAME"/>에서 북마크바를 표시합니다.
@@ -587,6 +585,13 @@
       이 설정을 사용하거나 사용 중지하면 사용자가 <ph name="PRODUCT_NAME"/>에서 이 설정을 변경하거나 무시할 수 없습니다.
 
       이 정책을 설정하지 않은 경우 사용자가 이 기능을 사용할지 여부를 결정할 수 있습니다.</translation>
+<translation id="869575100785642004">어떤 URL이 확장 프로그램, 앱, 테마 등을 설치하도록 허용되는지 지정할 수 있습니다.
+
+          Chrome 21부터는 Chrome 웹 스토어 외부로부터 확장 프로그램, 앱, 사용자 스크립트 등을 설치하기 더욱 어려워집니다. 이전에는 사용자가 *.crx 파일 링크를 클릭하면 Chrome이 몇 가지 경고를 거쳐 파일을 설치하도록 했습니다. Chrome 21부터는 이런 파일을 다운로드하여 Chrome 설정 페이지로 드래그해야 합니다. 이 설정을 통해 특정 URL에서의 설치 흐름이 이전처럼 쉬워집니다.
+
+          이 목록의 각 프로그램은 확장 프로그램 유형의 일치 패턴(http://code.google.com/chrome/extensions/match_patterns.html 페이지 참조)을 보입니다. 사용자는 이 목록의 프로그램과 일치하는 URL에서 프로그램을 쉽게 설치할 수 있습니다.
+
+          ExtensionInstallBlacklist가 이 정책보다 우선 적용됩니다. 다시 말해, 이 목록의 사이트에서 발생하더라도 차단목록에 있는 확장 프로그램은 설치되지 않습니다.</translation>
 <translation id="5475361623548884387">인쇄 사용</translation>
 <translation id="3653237928288822292">기본 검색 공급자 아이콘</translation>
 <translation id="4445684791305970001">개발자 도구 및 자바스크립트 콘솔의 사용을 중지합니다.
@@ -730,7 +735,6 @@
       이 정책의 값이 0이면 기본 캐시 크기가 사용되며 사용자가 설정을 변경할 수 없습니다.
 
       이 정책을 설정하지 않은 경우 기본 크기가 사용되며 사용자가 --disk-cache-size 플래그를 사용하여 설정을 재정의할 수 있습니다.</translation>
-<translation id="308285197738484705">네트워크 예측 사용</translation>
 <translation id="5765780083710877561">설명:</translation>
 <translation id="7796141075993499320">플러그인 실행이 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
@@ -774,6 +778,7 @@
 <translation id="2299220924812062390">사용 설정한 플러그인 목록 지정</translation>
 <translation id="924557436754151212">처음 실행 시 기본 브라우저에서 저장된 비밀번호 가져오기</translation>
 <translation id="1897365952389968758">모든 사이트에서 자바스크립트 실행 허용</translation>
+<translation id="922540222991413931">확장 프로그램, 앱, 사용자 스크립트 설치 소스 등 설정</translation>
 <translation id="7323896582714668701"><ph name="PRODUCT_NAME"/>의 추가 명령줄 매개변수</translation>
 <translation id="6931242315485576290">Google과 데이터 동기화 사용 중지</translation>
 <translation id="36674322972891584"><ph name="PRODUCT_NAME"/>에서 네트워크 예측을 사용하도록 설정하고 사용자가 이 설정을 변경하지 못하게 합니다.
@@ -809,6 +814,7 @@
 <translation id="584083164257867276">기기에 로그인할 수 있는 사용자 목록을 정의합니다. 항목은 <ph name="USER_WHITELIST_ENTRY_FORMAT"/> 형식(예: <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>)입니다. 도메인에 임의의 사용자를 허용하려면 <ph name="USER_WHITELIST_ENTRY_WILDCARD"/> 형식의 항목을 사용합니다.
 
       이 정책이 구성되지 않으면 어떤 사용자가 로그인할 수 있는지에 대한 제한이 없습니다. 새 사용자를 만들기 위해서는 <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME"/> 정책이 적절히 구성되어야 합니다.</translation>
+<translation id="3428247105888806363">네트워크 예측 사용</translation>
 <translation id="6145799962557135888">자바스크립트 실행이 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'DefaultJavaScriptSetting' 정책이 설정되면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
@@ -867,6 +873,10 @@
       이 설정을 사용 중지하면 사용자가 <ph name="PRODUCT_NAME"/>에서 인쇄할 수 없습니다. 공구모양 메뉴, 확장 프로그램, 자바스크립트 애플리케이션 등에서 인쇄가 사용 중지됩니다. 인쇄하는 동안 <ph name="PRODUCT_NAME"/>을(를) 우회하는 플러그인에서 계속 인쇄할 수 있습니다. 예를 들어 특정 Flash 애플리케이션은 컨텍스트 메뉴에 인쇄 옵션이 있으며 이런 옵션은 사용 중지되지 않습니다.
 
       이 정책을 설정하지 않은 경우 사용하도록 설정되지만 사용자가 설정을 변경할 수 있습니다.</translation>
+<translation id="210513196702568522"> OS 업데이트에 사용하도록 확인된 연결 유형입니다. OS 업데이트는 그 규모로 인해 연결에 과부하가 걸리고 추가 비용이 발생할 수 있습니다. 따라서 현재 WiMax, 블루투스, Cellular 등 고가로 간주되는 연결 유형은 기본적으로 사용하지 않습니다.
+
+      인증된 연결 유형 식별자는 ethernet, wifi, wimax, bluetooth, cellular 등입니다.
+      </translation>
 <translation id="4121350739760194865">앱 프로모션이 새 탭 페이지에 표시되지 않도록 합니다.</translation>
 <translation id="2127599828444728326">이 사이트에서 알림 허용</translation>
 <translation id="7635471475589566552"><ph name="PRODUCT_NAME"/>에서 애플리케이션 언어를 설정하고 사용자가 언어를 변경할 수 없게 합니다.
@@ -877,6 +887,7 @@
 <translation id="7271483295221961083">웹사이트에서 자동으로 플러그인을 실행하도록 허용할지 여부를 설정할 수 있습니다. 플러그인의 자동 실행은 모든 웹사이트에서 허용 또는 거부하도록 할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'AllowPlugins'가 사용되며 사용자가 설정을 변경할 수 있습니다.</translation>
+<translation id="718956142899066210">업데이트에 허용되어 있는 연결 유형</translation>
 <translation id="6985168562472482191">엔터프라이즈 웹 스토어 이름으로, 새 탭 페이지의 앱 아이콘 아래에 표시됩니다. EnterpriseWebStoreURL이 설정되지 않은 경우 이 설정은 아무 효과가 없습니다.
 
       이 설정을 사용 중지하면 엔터프라이즈 웹 스토어 앱(있는 경우)의 라벨이 해당 URL로 지정됩니다.</translation>
@@ -959,6 +970,7 @@
 
           자세한 예를 보려면 다음 페이지를 참조하세요.
           <ph name="PROXY_HELP_URL"/></translation>
+<translation id="6658245400435704251">업데이트를 처음 서버로 푸시한 시점부터 기기가 몇 초까지 임의로 업데이트의 다운로드를 지연시킬 수 있는지 지정합니다. 기기가 이 시간의 일부를 일반 시계 시간 기준으로, 그리고 나머지 시간을 업데이트 확인 횟수 기준으로 지연시킵니다. 모든 경우, 기기가 고착되어 업데이트 다운로드를 계속 기다리지 않도록 분산의 상한이 일정 시간으로 제한되어 있습니다.</translation>
 <translation id="6630106909870121131"><ph name="PRODUCT_OS_NAME"/> 기기에 모든 사용자에게 적용되는 네트워크 구성을 사용하도록 허용합니다. 네트워크 구성은 <ph name="ONC_SPEC_URL"/>에서 설명한 개방형 네트워크 구성에서 정의한 대로 JSON 형식의 문자열입니다. </translation>
 <translation id="1948757837129151165">HTTP 인증에 대한 정책</translation>
 <translation id="5946082169633555022">베타 채널</translation>

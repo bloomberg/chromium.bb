@@ -3,6 +3,7 @@
 <translationbundle lang="lt">
 <translation id="3595596368722241419">Akumuliatorius įkrautas</translation>
 <translation id="5250713215130379958">Automatiškai slėpti paleidimo priemonę</translation>
+<translation id="8328777765163860529">Uždaryti viską</translation>
 <translation id="30155388420722288">Perpildymo mygtukas</translation>
 <translation id="5571066253365925590">„Bluetooth“ įgalinta</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
@@ -25,27 +26,36 @@
 <translation id="1525975890706558596">DIDŽIŲJŲ RAIDŽIŲ RAŠYMAS įjungtas.
 Jei norite atšaukti, paspauskite „Shift“ ir paieškos klavišą.</translation>
 <translation id="8190698733819146287">Tinkinti kalbas ir įvestį...</translation>
+<translation id="3845909655305837528">Įvesties būdas pakeistas.
+        Spauskite „Shift“ + „Alt“, jei norite perjungti.</translation>
+<translation id="5182671122927417841">Neleisti plėtinio</translation>
 <translation id="598295083618286569">„Bluetooth“ prijungta</translation>
 <translation id="5222676887888702881">Atsijungti</translation>
 <translation id="2091132388437059185">Automatiškai slėpti padidintą paleidimo priemonę</translation>
-<translation id="425878420164891689">Skaičiuojamas laikas iki visiško įkrovimo</translation>
 <translation id="2964193600955408481">Neleisti „Wi-Fi“</translation>
 <translation id="811680302244032017">Pridėti įrenginį...</translation>
 <translation id="2509468283778169019">DIDŽIŲJŲ RAIDŽIŲ RAŠYMAS įjungtas</translation>
+<translation id="7823564328645135659">Po nustatymų sinchronizavimo kalba pakeista iš <ph name="FROM_LOCALE"/> į <ph name="TO_LOCALE"/>.</translation>
+<translation id="1128184993858208824"><ph name="HOUR"/> val. <ph name="MINUTE"/> min.</translation>
 <translation id="6426039856985689743">Neleisti duomenų mobiliesiems</translation>
+<translation id="3087734570205094154">Apačia</translation>
 <translation id="3232695630852378748">„Bluetooth“ nustatymai...</translation>
 <translation id="1480041086352807611">Demonstracinės versijos režimas</translation>
 <translation id="4186384497305035875">Šis ekranas tyčia paliktas tuščias</translation>
 <translation id="9089416786594320554">Įvesties metodai</translation>
+<translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
+<translation id="2570059561924004903">Neleisti žodinių atsiliepimų</translation>
 <translation id="4430019312045809116">Apimtis</translation>
 <translation id="1383876407941801731">Ieškoti</translation>
 <translation id="3557139239102318020">Jei norite sumažinti, nutempkite žemyn; jei norite iškloti – kairėn ar dešinėn</translation>
 <translation id="5980301590375426705">Išeiti iš svečio režimo</translation>
 <translation id="8308637677604853869">Ankstesnis meniu</translation>
+<translation id="1346748346194534595">Dešinė</translation>
 <translation id="8528322925433439945">Mobilusis...</translation>
-<translation id="3595065677684516080">Nustatymai ir pagalba</translation>
+<translation id="8428213095426709021">Nustatymai</translation>
 <translation id="4479639480957787382">Eternetas</translation>
-<translation id="7573721444069009535">„Wi-Fi“...</translation>
+<translation id="1467432559032391204">Kairė</translation>
+<translation id="5543001071567407895">SMS</translation>
 <translation id="6223565363550976998">Akumuliatorius: <ph name="PERCENTAGE"/> %</translation>
 <translation id="8814190375133053267">WI-Fi</translation>
 <translation id="3784455785234192852">Užrakinti</translation>
@@ -58,11 +68,17 @@ Jei norite atšaukti, paspauskite „Shift“ ir paieškos klavišą.</translati
 <translation id="2983818520079887040">Nustatymai...</translation>
 <translation id="8660803626959853127">Sinchronizuojamas (-i) <ph name="COUNT"/> failas (-ai)</translation>
 <translation id="639644700271529076">DIDŽIŲJŲ RAIDŽIŲ RAŠYMAS išjungtas</translation>
+<translation id="4864165860509564259">Paleidiklio pozicija</translation>
+<translation id="397105322502079400">Skaičiuojama...</translation>
 <translation id="6362354186508391853">„Ctrl“ +</translation>
+<translation id="7871882211137875558">Prisijungti prie kito...</translation>
+<translation id="3573179567135747900">Pakeisti atgal į „<ph name="FROM_LOCALE"/>“ (reikia paleisti iš naujo)</translation>
+<translation id="8103386449138765447">SMS pranešimų: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">„Google“ disko nustatymai...</translation>
 <translation id="48607902311828362">Lėktuvo režimas</translation>
-<translation id="5361734574074701223">Skaičiuojamas likęs laikas</translation>
 <translation id="9169585155162064169">DIDŽIŲJŲ RAIDŽIŲ RAŠYMAS įjungtas.
 Jei norite atšaukti, paspauskite paieškos klavišą.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/> val. <ph name="MINUTE"/> min. iki visiško įkrovimo</translation>
+<translation id="4469842253116033348">Neleisti <ph name="SITE"/> plėtinių</translation>
+<translation id="6359806961507272919">SMS iš <ph name="PHONE_NUMBER"/></translation>
 </translationbundle>

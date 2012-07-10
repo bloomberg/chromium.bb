@@ -36,6 +36,7 @@
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium ei sisalda PDF-vaaturit, mida on printimise eelvaate jaoks vaja.</translation>
 <translation id="7138853919861947730">Chromium võib kasutada veebiteenuseid sirvimiskogemuse täiustamiseks.</translation>
+<translation id="466053073629175099">Olete nüüd Chromiumi sisse logitud. Teie järjehoidjad, ajalugu ja muud seaded sünkroonitakse teie Google'i kontoga.</translation>
 <translation id="4179848566211676653">Välju Chromiumist</translation>
 <translation id="3849925841547750267">Kahjuks ei ole Mozilla Firefoxi seaded saadaval, kui brauser töötab. Seadete Chromiumi importimiseks salvestage töö ja sulgege kõik Firefoxi aknad. Seejärel klõpsake käsul Jätka.</translation>
 <translation id="7771626876550251690">Sel juhul ei kattu sertifikaadis olev aadress veebisaidi aadressiga, mida brauser avada üritas. Üks võimalik põhjus on see, et teie sidet häirib ründaja, kes esitab muu veebisaidi sertifikaadi ja põhjustab seega vastuolu. Põhjus võib olla ka selles, et server on seadistatud esitama sama sertifikaadi mitme veebisaidi, sealhulgas praegu külastatava saidi kohta, kuigi sertifikaat ei kehti kõikidele saitidele. Chromium võib väita, et jõudsite domeenile &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, kuid ei saa kinnitada, et tegemist on sama saidiga kui &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuhu üritasite jõuda. Jätkamisel ei kontrolli Chromium enam nimede vastuolusid.</translation>

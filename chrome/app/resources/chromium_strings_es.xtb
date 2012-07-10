@@ -38,6 +38,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="985602178874221306">Los creadores de Chromium</translation>
 <translation id="8628626585870903697">Chromium no incluye el visor de PDF que se necesita para que la vista previa de impresión funcione.</translation>
 <translation id="7138853919861947730">Chromium puede utilizar servicios web para mejorar la experiencia de navegación de los usuarios.</translation>
+<translation id="466053073629175099">Has iniciado sesión en Chromium. Tus marcadores, tu historial y otras opciones de configuración se sincronizarán con tu cuenta de Google.</translation>
 <translation id="4179848566211676653">Salir de Chromium</translation>
 <translation id="3849925841547750267">Lamentablemente, tu configuración de Mozilla Firefox no está disponible mientras el navegador se está ejecutando. Para importar la configuración a Chromium, guarda tu trabajo y cierra todas las ventanas de Firefox. A continuación, haz clic en Continuar.</translation>
 <translation id="7771626876550251690">En este caso, la dirección que aparece en el certificado no coincide con la del sitio web al que intenta acceder tu navegador. Una de las razones por las que puede ocurrir esto es que un hacker haya interceptado tus comunicaciones y esté presentando un certificado de un sitio web diferente, lo que explicaría el conflicto. Otra posibilidad es que el servidor esté configurado para devolver el mismo certificado para varios sitios web, incluido el sitio al que intentas acceder, aunque dicho certificado no sea válido para todos los sitios web. Chromium te puede asegurar que has accedido a &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, pero no puede verificar que sea el mismo sitio &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; al que intentabas acceder. Si continúas, Chromium ya no comprobará ningún conflicto entre nombres.</translation>
@@ -55,7 +56,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="9119843944749246249">Copyright © 2006-2012 Los creadores de Chromium. Todos los derechos reservados.</translation>
 <translation id="6944967875980567883">Módulos cargados en Chromium 
 </translation>
-<translation id="118298050220780080">Has intentado acceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero el servidor presentó un certificado emitido por una entidad que el sistema operativo del ordenador no tiene registrada como entidad de confianza. Esta incidencia se puede deber a que el servidor haya generado sus propias credenciales de seguridad (en las que Chromium no puede confiar para confirmar la autenticidad del sitio) o a que un hacker esté intentando interceptar tus comunicaciones.</translation>
+<translation id="118298050220780080">Has intentado acceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero el servidor presentó un certificado emitido por una entidad que el sistema operativo del ordenador no tiene registrada como entidad de confianza. Este problema se puede deber a que el servidor haya generado sus propias credenciales de seguridad (en las que Chromium no puede confiar para confirmar la autenticidad del sitio) o a que un hacker esté intentando interceptar tus comunicaciones.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">Seguir ejecutando aplicaciones en segundo plano al cerrar Chromium</translation>
 <translation id="6055895534982063517">Hay una nueva versión de Chromium disponible que funciona a una velocidad sin precedentes.</translation>
@@ -73,7 +74,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="263863604136125912">Iniciar Chromium</translation>
 <translation id="2881203820889150661">Chromium no puede crear un acceso directo a la aplicación porque no puede identificar el entorno de escritorio actual.</translation>
 <translation id="4886158514168859177">Este ordenador ya cuenta con una versión más reciente de Chromium Frame. Si el software no funciona, desinstala Chromium Frame y vuelve a intentarlo.</translation>
-<translation id="911206726377975832">¿Quieres eliminar también los datos de navegación?</translation>
+<translation id="911206726377975832">¿Quieres borrar también los datos de navegación?</translation>
 <translation id="6734080038664603509">Actualizar &amp;Chromium</translation>
 <translation id="8862326446509486874">No dispones de los derechos necesarios para la instalación en el sistema. Intenta ejecutar de nuevo el programa de instalación como administrador.</translation>
 <translation id="1774152462503052664">Permitir que Chromium se ejecute en segundo plano</translation>
@@ -143,7 +144,7 @@ Es posible que algunas funciones no estén disponibles. Especifica un directorio
 
 Chromium no puede recuperar tu configuración.</translation>
 <translation id="7123348595797445166">Probarlo (ya instalado)</translation>
-<translation id="6403826409255603130">Chromium es un navegador web que ejecuta páginas web y aplicaciones a gran velocidad. Es rápido, estable y fácil de utilizar. Chromium te permite navegar en la Web de forma más segura, ya que incluye protección contra software malintencionado y phishing.</translation>
+<translation id="6403826409255603130">Chromium es un navegador web que ejecuta páginas web y aplicaciones a gran velocidad. Es rápido, estable y fácil de utilizar. Chromium te permite navegar en la Web de forma más segura, ya que incluye protección contra software malicioso y phishing.</translation>
 <translation id="2927042866129133279">Los argumentos no son válidos. Chromium Frame no se puede instalar en modo listo sin instalar también Chromium.</translation>
 <translation id="546394857889685352">El dispositivo se ha actualizado a la versión <ph name="VERSION"/>.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>

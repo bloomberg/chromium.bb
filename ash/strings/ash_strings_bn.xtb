@@ -3,6 +3,7 @@
 <translationbundle lang="bn">
 <translation id="3595596368722241419">ব্যাটারি পূর্ণ</translation>
 <translation id="5250713215130379958">লঞ্চার স্বয়ংক্রিয়ভাবে লুকান</translation>
+<translation id="8328777765163860529">সমস্ত বন্ধ করুন</translation>
 <translation id="30155388420722288">ওভারফ্লো বোতাম</translation>
 <translation id="5571066253365925590">ব্লুটুথ সক্ষমিত</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
@@ -25,27 +26,36 @@
 <translation id="1525975890706558596">CAPS LOCK চালু আছে৷
 বাতিল করতে Shift + অনুসন্ধান কী টিপুন৷</translation>
 <translation id="8190698733819146287">ভাষা এবং ইনপুট কাস্টমাইজ করুন...</translation>
+<translation id="3845909655305837528">আপনার ইনপুট পদ্ধতি পরিবর্তন করা হয়েছে 
+পরিবর্তন করতে Shift + Alt চাপুন৷</translation>
+<translation id="5182671122927417841">এক্সটেনশান অক্ষম করুন</translation>
 <translation id="598295083618286569">ব্লুটুথ সংযুক্ত</translation>
 <translation id="5222676887888702881">সাইন আউট</translation>
 <translation id="2091132388437059185">লঞ্চার বৃহদায়ন হলে স্বয়ংক্রিয়ভাবে লুকান</translation>
-<translation id="425878420164891689">পূরণ হওয়া পর্যন্ত সময় গণনা</translation>
 <translation id="2964193600955408481">Wi-Fi অক্ষম করুন</translation>
 <translation id="811680302244032017">ডিভাইস জুড়ুন...</translation>
 <translation id="2509468283778169019">CAPS LOCK চালু</translation>
+<translation id="7823564328645135659">আপনার সেটিংস সিঙ্ক করার পরে ভাষা &quot;<ph name="FROM_LOCALE"/>&quot; থেকে &quot;<ph name="TO_LOCALE"/>&quot; এ পরিবর্তন করা হয়েছে৷</translation>
+<translation id="1128184993858208824"><ph name="HOUR"/>ঘ<ph name="MINUTE"/>মি</translation>
 <translation id="6426039856985689743">মোবাইল ডেটা নিষ্ক্রিয় করুন</translation>
+<translation id="3087734570205094154">নীচে</translation>
 <translation id="3232695630852378748">ব্লুটুথ সেটিংস...</translation>
 <translation id="1480041086352807611">নমুনা মোড</translation>
 <translation id="4186384497305035875">এই স্ক্রীনটি ইচ্ছাকৃতভাবে ফাঁকা রাখা হয়েছে</translation>
 <translation id="9089416786594320554">ইনপুট পদ্ধতিসমূহ</translation>
+<translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="2570059561924004903">কথিত প্রতিক্রিয়া অক্ষম করুন</translation>
 <translation id="4430019312045809116">ভলিউম</translation>
 <translation id="1383876407941801731">অনুসন্ধান</translation>
 <translation id="3557139239102318020">ছোট করতে, বাম বা ডান টাইল করতে নিচে টানুন</translation>
 <translation id="5980301590375426705">অতিথি থেকে প্রস্থান</translation>
 <translation id="8308637677604853869">পূর্ববর্তী মেনু</translation>
+<translation id="1346748346194534595">ডান</translation>
 <translation id="8528322925433439945">মোবাইল ...</translation>
-<translation id="3595065677684516080">সেটিংস এবং সহায়তা</translation>
+<translation id="8428213095426709021">সেটিংস</translation>
 <translation id="4479639480957787382">ইথারনেট</translation>
-<translation id="7573721444069009535">Wi-Fi ...</translation>
+<translation id="1467432559032391204">বাম</translation>
+<translation id="5543001071567407895">SMS</translation>
 <translation id="6223565363550976998">ব্যাটারি: <ph name="PERCENTAGE"/> %</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="3784455785234192852">লক করুন</translation>
@@ -58,11 +68,17 @@
 <translation id="2983818520079887040">সেটিংস...</translation>
 <translation id="8660803626959853127"><ph name="COUNT"/>টি ফাইল (গুলি) সিঙ্ক হচ্ছে</translation>
 <translation id="639644700271529076">CAPS LOCK বন্ধ আছে</translation>
+<translation id="4864165860509564259">লঞ্চার অবস্থান</translation>
+<translation id="397105322502079400">গণনা করা হচ্ছে...</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
+<translation id="7871882211137875558">অন্যতে যোগ দিন ...</translation>
+<translation id="3573179567135747900">&quot;<ph name="FROM_LOCALE"/>&quot; তে ফেরান (পুনর্সূচনা প্রয়োজন)</translation>
+<translation id="8103386449138765447">SMS বার্তা: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">Google ড্রাইভ সেটিংস ...</translation>
 <translation id="48607902311828362">বিমান মোড</translation>
-<translation id="5361734574074701223">অবশিষ্ট সময় গণনা করা হচ্ছে</translation>
 <translation id="9169585155162064169">CAPS LOCK চালু আছে৷
 বাতিল করতে অনুসন্ধান কী টিপুন৷</translation>
 <translation id="412065659894267608"><ph name="HOUR"/>ঘন্টা <ph name="MINUTE"/> মিনিট পর্যন্ত পূর্ণ</translation>
+<translation id="4469842253116033348"><ph name="SITE"/>-এর থেকে বিজ্ঞপ্তি অক্ষম করুন</translation>
+<translation id="6359806961507272919"><ph name="PHONE_NUMBER"/>-এর থেকে SMS...</translation>
 </translationbundle>

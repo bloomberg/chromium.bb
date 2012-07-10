@@ -3,6 +3,7 @@
 <translationbundle lang="id">
 <translation id="3595596368722241419">Baterai penuh</translation>
 <translation id="5250713215130379958">Sembunyikan peluncur secara otomatis</translation>
+<translation id="8328777765163860529">Tutup Semua</translation>
 <translation id="30155388420722288">Tombol Luapan</translation>
 <translation id="5571066253365925590">Bluetooth diaktifkan</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
@@ -25,27 +26,36 @@
 <translation id="1525975890706558596">CAPS LOCK aktif.
 Tekan tombol Shift + Search untuk membatalkan.</translation>
 <translation id="8190698733819146287">Ubahsuaikan bahasa dan masukan...</translation>
+<translation id="3845909655305837528">Metode masukan Anda telah berubah.
+        Tekan Shift + Alt untuk beralih.</translation>
+<translation id="5182671122927417841">Nonaktifkan ekstensi</translation>
 <translation id="598295083618286569">Bluetooth tersambung</translation>
 <translation id="5222676887888702881">Keluar</translation>
 <translation id="2091132388437059185">Sembunyikan peluncur secara otomatis saat dimaksimalkan</translation>
-<translation id="425878420164891689">Menghitung waktu hingga penuh</translation>
 <translation id="2964193600955408481">Nonaktifkan Wi-Fi</translation>
 <translation id="811680302244032017">Tambahkan perangkat...</translation>
 <translation id="2509468283778169019">CAPS LOCK aktif</translation>
+<translation id="7823564328645135659">Bahasa telah diubah dari &quot;<ph name="FROM_LOCALE"/>&quot; menjadi &quot;<ph name="TO_LOCALE"/>&quot; setelah menyinkronkan setelan Anda.</translation>
+<translation id="1128184993858208824"><ph name="HOUR"/>j<ph name="MINUTE"/>m</translation>
 <translation id="6426039856985689743">Nonaktifkan data seluler</translation>
+<translation id="3087734570205094154">Bawah</translation>
 <translation id="3232695630852378748">Setelan Bluetooth...</translation>
 <translation id="1480041086352807611">Mode demo</translation>
 <translation id="4186384497305035875">Layar ini sengaja dibiarkan kosong</translation>
 <translation id="9089416786594320554">Metode masukan</translation>
+<translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="2570059561924004903">Nonaktifkan masukan lisan</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="1383876407941801731">Penelusuran</translation>
 <translation id="3557139239102318020">Tarik ke bawah untuk menciutkan, ke kiri atau kanan untuk menutupinya</translation>
 <translation id="5980301590375426705">Keluar dari sesi tamu</translation>
 <translation id="8308637677604853869">Menu sebelumnya</translation>
+<translation id="1346748346194534595">Kanan</translation>
 <translation id="8528322925433439945">Seluler ...</translation>
-<translation id="3595065677684516080">Setelan dan Bantuan</translation>
+<translation id="8428213095426709021">Setelan</translation>
 <translation id="4479639480957787382">Ethernet</translation>
-<translation id="7573721444069009535">Wi-Fi ...</translation>
+<translation id="1467432559032391204">Kiri</translation>
+<translation id="5543001071567407895">SMS</translation>
 <translation id="6223565363550976998">Baterai: <ph name="PERCENTAGE"/>%</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="3784455785234192852">Kunci</translation>
@@ -58,11 +68,17 @@ Tekan tombol Shift + Search untuk membatalkan.</translation>
 <translation id="2983818520079887040">Setelan...</translation>
 <translation id="8660803626959853127">Menyinkronkan <ph name="COUNT"/> file</translation>
 <translation id="639644700271529076">CAPS LOCK tidak aktif</translation>
+<translation id="4864165860509564259">Posisi peluncur</translation>
+<translation id="397105322502079400">Menghitung...</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
+<translation id="7871882211137875558">Bergabung dengan ... lainnya</translation>
+<translation id="3573179567135747900">Ubah kembali ke &quot;<ph name="FROM_LOCALE"/>&quot; (harus dinyalakan ulang)</translation>
+<translation id="8103386449138765447">Pesan SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">Setelan Google Drive...</translation>
 <translation id="48607902311828362">Mode pesawat</translation>
-<translation id="5361734574074701223">Menghitung sisa waktu</translation>
 <translation id="9169585155162064169">CAPS LOCK aktif.
 Tekan tombol Search untuk membatalkan.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/>j <ph name="MINUTE"/>m sampai penuh</translation>
+<translation id="4469842253116033348">Nonaktifkan pemberitahuan dari <ph name="SITE"/></translation>
+<translation id="6359806961507272919">SMS dari <ph name="PHONE_NUMBER"/></translation>
 </translationbundle>

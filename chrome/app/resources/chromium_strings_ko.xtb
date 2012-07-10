@@ -38,6 +38,7 @@
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium은 인쇄 미리보기에 필요한 PDF 뷰어가 포함되어 있지 않습니다.</translation>
 <translation id="7138853919861947730">Chromium은 사용자의 탐색 환경을 개선하기 위해 웹 서비스를 사용할 수 있습니다.</translation>
+<translation id="466053073629175099">Chromium에 로그인되었습니다. 사용자의 북마크, 인터넷 사용기록, 기타 설정이 Google 계정에 동기화됩니다.</translation>
 <translation id="4179848566211676653">Chromium 종료</translation>
 <translation id="3849925841547750267">Mozilla Firefox 브라우저가 실행 중일 때는 설정 기능을 사용할 수 없습니다. 이 설정을 Chromium으로 가져오려면 현재 작업을 저장하고 Firefox 창을 모두 닫습니다. 그런 다음 '계속'을 클릭합니다.</translation>
 <translation id="7771626876550251690">이러한 경우 인증서에 표시된 주소는 브라우저가 이동하려고 하는 웹사이트 주소와 일치하지 않습니다. 이것은 누군가가 다른 웹사이트의 인증서로 사용자의 서버 통신을 가로채고 있기 때문일 수 있습니다. 또는 인증서가 모든 웹사이트에 유효하지 않음에도 서버가 여러 웹사이트에 동일한 인증서를 사용하도록 설정되어 있기 때문일 수도 있습니다. Chromium을 사용하면 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;에 접속할 수 있지만 이것이 사용자가 의도한 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;와(과) 동일한 사이트인지는 확인할 수 없습니다. 이후에도 Chromium은 이름 불일치를 확인하지 않습니다.</translation>

@@ -3,6 +3,7 @@
 <translationbundle lang="pt-BR">
 <translation id="3595596368722241419">Bateria carregada</translation>
 <translation id="5250713215130379958">Ocultar automaticamente o iniciador</translation>
+<translation id="8328777765163860529">Fechar todos</translation>
 <translation id="30155388420722288">Botão de estouro</translation>
 <translation id="5571066253365925590">Bluetooth ativado</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
@@ -24,27 +25,36 @@
 <translation id="3126069444801937830">Reiniciar para atualizar</translation>
 <translation id="1525975890706558596">CAPS LOCK ativado. Pressione Shift + a tecla de pesquisa para cancelar.</translation>
 <translation id="8190698733819146287">Personalizar idiomas e entrada...</translation>
+<translation id="3845909655305837528">Seu método de entrada mudou. 
+        Pressione Shift + Alt para alternar.</translation>
+<translation id="5182671122927417841">Desativar extensão</translation>
 <translation id="598295083618286569">Bluetooth conectado</translation>
 <translation id="5222676887888702881">Sair</translation>
 <translation id="2091132388437059185">Ocultar automaticamente o iniciador quando estiver maximizado</translation>
-<translation id="425878420164891689">Calculando o tempo até completar a carga</translation>
 <translation id="2964193600955408481">Desativar Wi-Fi</translation>
 <translation id="811680302244032017">Adicionar dispositivo...</translation>
 <translation id="2509468283778169019">CAPS LOCK está ativado</translation>
+<translation id="7823564328645135659">O idioma foi alterado de &quot;<ph name="FROM_LOCALE"/>&quot; para &quot;<ph name="TO_LOCALE"/>&quot; após a sincronização de suas configurações.</translation>
+<translation id="1128184993858208824"><ph name="HOUR"/>h<ph name="MINUTE"/>m</translation>
 <translation id="6426039856985689743">Desativar dados móveis</translation>
+<translation id="3087734570205094154">Parte inferior</translation>
 <translation id="3232695630852378748">Configurações de bluetooth...</translation>
 <translation id="1480041086352807611">Modo de demonstração</translation>
 <translation id="4186384497305035875">Esta tela foi intencionalmente deixada em branco</translation>
 <translation id="9089416786594320554">Métodos de entrada</translation>
+<translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="2570059561924004903">Desativar feedback falado</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="1383876407941801731">Pesquisa</translation>
 <translation id="3557139239102318020">Puxe para baixo para minimizar, para a esquerda ou direita para agrupar</translation>
 <translation id="5980301590375426705">Sair da sessão de visitante</translation>
 <translation id="8308637677604853869">Menu anterior</translation>
+<translation id="1346748346194534595">Para a direita</translation>
 <translation id="8528322925433439945">Celular...</translation>
-<translation id="3595065677684516080">Configurações e Ajuda</translation>
+<translation id="8428213095426709021">Configurações</translation>
 <translation id="4479639480957787382">Ethernet</translation>
-<translation id="7573721444069009535">Wi-Fi...</translation>
+<translation id="1467432559032391204">Para a esquerda</translation>
+<translation id="5543001071567407895">SMS</translation>
 <translation id="6223565363550976998">Bateria: <ph name="PERCENTAGE"/>%</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="3784455785234192852">Bloquear</translation>
@@ -57,10 +67,16 @@
 <translation id="2983818520079887040">Configurações...</translation>
 <translation id="8660803626959853127">Sincronizando <ph name="COUNT"/> arquivos</translation>
 <translation id="639644700271529076">CAPS LOCK está desativado</translation>
+<translation id="4864165860509564259">Posição do iniciador</translation>
+<translation id="397105322502079400">Calculando...</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
+<translation id="7871882211137875558">Conectar-se a outra...</translation>
+<translation id="3573179567135747900">Voltar a &quot;<ph name="FROM_LOCALE"/>&quot; (exige reinicialização)</translation>
+<translation id="8103386449138765447">Mensagens SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">Configurações do Google Drive...</translation>
 <translation id="48607902311828362">Modo avião</translation>
-<translation id="5361734574074701223">Calculando tempo restante</translation>
 <translation id="9169585155162064169">CAPS LOCK ativado. Pressione a tecla de pesquisa para cancelar.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/>h<ph name="MINUTE"/>m até a carga total</translation>
+<translation id="4469842253116033348">Desativar notificações de <ph name="SITE"/></translation>
+<translation id="6359806961507272919">SMS de <ph name="PHONE_NUMBER"/></translation>
 </translationbundle>

@@ -19,6 +19,11 @@
 <translation id="5469825884154817306">Bloqueja les imatges en aquests llocs</translation>
 <translation id="8412312801707973447">Si es realitzen comprovacions OCSP/CRL en línia</translation>
 <translation id="2908277604670530363">Nombre màxim de connexions paral·leles al servidor intermediari</translation>
+<translation id="4838572175671839397">Conté una expressió regular que es fa servir per determinar quins usuaris poden iniciar la sessió a <ph name="PRODUCT_NAME"/>.
+
+      Si un usuari prova d'iniciar la sessió amb un nom d'usuari que no coincideix amb aquest patró, es mostra un error adient.
+
+      Si aquesta política es deixa sense definir o en blanc, qualsevol usuari pot iniciar la sessió a <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="7298195798382681320">Recomanada</translation>
 <translation id="1438955478865681012">Configura les polítiques relacionades amb les extensions. L'usuari no pot instal·lar les extensions que s'enumeren a la llista negra tret que també apareguin a la llista blanca. També podeu forçar <ph name="PRODUCT_NAME"/> perquè instal·li automàticament extensions si les especifiqueu a <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. La llista negra té prioritat davant la llista d'extensions forçades.</translation>
 <translation id="3478024346823118645">Esborra les dades de l'usuari en tancar la sessió</translation>
@@ -111,7 +116,6 @@
 <translation id="8044493735196713914">Informa del mode d'inici del dispositiu</translation>
 <translation id="1942957375738056236">Podeu especificar l'URL del servidor intermediari. Aquesta política només té efecte si s'ha seleccionat la configuració manual del servidor intermediari a &quot;Tria la manera d'especificar la configuració del servidor intermediari&quot;. No heu de definir aquesta política si s'ha seleccionat cap altra manera de definir les polítiques del servidor intermediari. Per obtenir més opcions i exemples detallats, visiteu: <ph name="PROXY_HELP_URL"/></translation>
 <translation id="8642088216849640113">Activa la funció de Navegació segura <ph name="PRODUCT_NAME"/> i impedeix que els usuaris puguin canviar aquesta configuració. Si activeu aquest paràmetre, la Navegació segura estarà sempre activa. Si desactiveu aquest paràmetre, la Navegació segura no estarà mai activa. Si activeu o desactiveu aquesta opció, els usuaris no podran canviar ni substituir aquesta configuració a <ph name="PRODUCT_NAME"/> . Si no es defineix aquesta política, aquest paràmetre s'activarà però l'usuari podrà canviar-lo.</translation>
-<translation id="2711603272213076156">Permet la invocació de diàlegs de selecció de fitxers.</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1692788808502061374">Us permet especificar una llista de les extensions que es poden instal·lar en silenci, sense cap interacció de l'usuari.
 
@@ -138,6 +142,7 @@
 <translation id="6368011194414932347">Configura l'URL de la pàgina d'inici</translation>
 <translation id="2877225735001246144">Desactiva la cerca de CNAME en negociar l'autenticació de Kerberos</translation>
 <translation id="6378014222084506939">Disponibilitat del mode d'incògnit.</translation>
+<translation id="3706027163744097186">Restringiu quins usuaris poden iniciar la sessió a <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="3528000905991875314">Activa les pàgines d'error alternatives</translation>
 <translation id="1283072268083088623">Especifica quins esquemes d'autenticació HTTP són compatibles amb <ph name="PRODUCT_NAME"/>. Els valors possibles són &quot;basic&quot;, &quot;digest&quot;, &quot;ntlm&quot; i &quot;negotiate&quot;. Separeu els diversos valors amb comes. Si no es defineix aquesta política, s'utilitzaran els quatre esquemes.</translation>
 <translation id="6114416803310251055">obsolet</translation>
@@ -153,6 +158,7 @@
 <translation id="6899705656741990703">Configuració de la detecció automàtica de servidors intermediaris</translation>
 <translation id="7003334574344702284">Si està activada, aquesta política fa que les contrasenyes desades s'importin des del navegador predeterminat anterior. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, les contrasenyes desades no s'importaran. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
 <translation id="6258193603492867656">Especifica si l'SPN de Kerberos que es genera ha d'incloure un port no estàndard. Si activeu aquest paràmetre i introduïu un port no estàndard (p. ex. un port diferent de 80 o de 443), s'inclourà a l'SPN de Kerberos que es generi. Si desactiveu aquest paràmetre o no el definiu, l'SPN del Kerberos que es generi no inclourà cap port en cap cas.</translation>
+<translation id="3236046242843493070">Patrons d'URL per permetre la instal·lació d'extensions, d'aplicacions i de scripts d'usuari des de</translation>
 <translation id="8992176907758534924">No permetis que cap lloc mostri imatges</translation>
 <translation id="262740370354162807">Activa l'enviament de documents a <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="8704831857353097849">Llista de connectors desactivats</translation>
@@ -163,15 +169,6 @@
 <translation id="5883015257301027298">Configuració predeterminada de les galetes</translation>
 <translation id="3413139738214204027">Configura l'URL de la pàgina d'inici predeterminada a <ph name="PRODUCT_NAME"/> i impedeix que els usuaris el canviïn. El tipus de pàgina d'inici es pot definir per un URL que especifiqueu o per la pàgina de pestanya nova. Si seleccioneu la pàgina de pestanya nova, aquesta política s'ignorarà. Si activeu aquest paràmetre, els usuaris no podran canviar l'URL de la pàgina d'inici a <ph name="PRODUCT_NAME"/>, però tot i així podran triar la pàgina de la pestanya nova com a pàgina d'inici. Si no es defineix aquesta política, l'usuari podrà triar la pàgina d'inici si HomepageIsNewTabPage tampoc no s'ha definit.</translation>
 <translation id="8955719471735800169">Torna a dalt</translation>
-<translation id="7948377189987658754">Aquesta política substitueix l'opció de configuració de contingut &quot;Esborra galetes i altres dades dels llocs quan tanqui el navegador&quot;.
-
-      Si s'activa, <ph name="PRODUCT_NAME"/> suprimirà totes les dades emmagatzemades localment al navegador quan es tanqui.
-
-      Si es desactiva, les dades dels llocs no s'esborraran en sortir.
-
-      Si aquesta política no es defineix, <ph name="PRODUCT_NAME"/> utilitzarà el valor predeterminat que consisteix a preservar les dades dels llocs en tancar-se, i l'usuari podrà canviar aquesta situació.
-
-      Si la política &quot;RestoreOnStartup&quot; està definida per restaurar els URL de sessions anteriors, aquesta política no esborrarà galetes o altres dades rellevants per restaurar completament la sessió de navegació anterior.</translation>
 <translation id="8170882486743832400">Configura les opcions de GData</translation>
 <translation id="2322733497952278056">Activa l'accés als URL que apareixen com a excepcions a la llista negra d'URL. Consulteu la descripció de la política de la llista negra dels URL per al format de les entrades d'aquesta llista. Es pot utilitzar aquesta política per obrir les excepcions a les llistes negres restrictives. Per exemple, &quot;*&quot; es pot incloure a la llista negra per bloquejar totes les sol·licituds i aquesta política es pot utilitzar per permetre l'accés a una llista limitada d'URL. Es pot utilitzar per obrir les excepcions a determinats esquemes, els subdominis d'altres dominis, els ports o els camins específics. El filtre més específic determinarà si un URL està bloquejat o està permès. La llista blanca té prioritat sobre la llista negra. Aquesta política està limitada a 100 entrades, les entrades posteriors s'ignoraran. Si no es defineix aquesta política, no hi haurà excepcions a la llista negra de la política &quot;URLBlacklist&quot;.</translation>
 <translation id="5316405756476735914">Us permet definir si els llocs web estan autoritzats per definir les dades locals. L'ajust de les dades locals es pot autoritzar o denegar per a tots els llocs web. Si no es defineix aquesta política, s'utilitzarà el paràmetre &quot;AllowCookies&quot; i l'usuari podrà canviar-lo.</translation>
@@ -294,7 +291,6 @@
 
       Si aquesta política es defineix a «true» (cert) o no es configura, es podran crear comptes d'usuari sempre que <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> no impedeixi que l'usuari iniciï la sessió.</translation>
 <translation id="267596348720209223">Especifica les codificacions de caràcters que admet el proveïdor de cerca. Les codificacions són noms de pàgines de codi com ara UTF-8, GB2312 i ISO-8859-1. Es proven per ordre. Aquesta política és opcional. Si no es defineix, s'utilitzarà el valor predeterminat, que és UTF-8. Aquesta política només es respecta si la política &quot;DefaultSearchProviderEnabled&quot; està activada.</translation>
-<translation id="2745445908503591390">Esborra les dades dels llocs en tancar el navegador</translation>
 <translation id="1454846751303307294">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què no està permès executar JavaScript. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política &quot;DefaultJavaScriptSetting&quot;, si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="538108065117008131">Permet que <ph name="PRODUCT_FRAME_NAME"/> gestioni els tipus de contingut següents.</translation>
 <translation id="717221064259627503">Configura el directori que <ph name="PRODUCT_NAME"/> utilitzarà per a l'emmagatzematge de fitxers emmagatzemats a la memòria cau al disc. Si es defineix aquesta política, <ph name="PRODUCT_NAME"/> utilitzarà el directori proporcionat, independentment de si l'usuari ha especificat la marca &quot;--disk-cache-dir&quot; o no. Si no es defineix aquesta política, s'utilitzarà el directori de memòria cau predeterminat i l'usuari podrà substituir-lo per la marca de la línia d'ordres &quot;--disk-cache-dir&quot;.</translation>
@@ -326,11 +322,20 @@
 <translation id="7393895128271703858">Aquesta política és obsoleta, utilitzeu DefaultJavaScriptSetting en lloc seu. Activa JavaScript a <ph name="PRODUCT_NAME"/> i impedeix que els usuaris puguin canviar aquesta configuració. Si s'ha activat o no s'ha configurat aquest paràmetre, les pàgines web podran utilitzar JavaScript. Si s'ha desactivat aquest paràmetre, les pàgines web no podran utilitzar JavaScript. Si no es defineix aquesta política, s'utilitzarà el valor predeterminat que estigui activat i l'usuari podrà canviar-lo. Si no es defineix aquesta política, s'activarà aquest paràmetre però l'usuari podrà canviar-lo.</translation>
 <translation id="8079569179819932120">Especifica els servidors que han d'aparèixer a la llista blanca per a l'autenticació integrada. L'autenticació integrada només s'activa quan <ph name="PRODUCT_NAME"/> rep un desafiament d'autenticació d'un servidor intermediari o d'un servidor que està a la llista permesa. Separeu els noms dels diversos servidors amb comes. Els comodins (*) estan permesos. Si no definiu aquesta política, s'acceptarà qualsevol servidor per a l'autenticació integrada.</translation>
 <translation id="350797926066071931">Activa Google Traductor</translation>
+<translation id="4010738624545340900">Permet la invocació de diàlegs de selecció de fitxers</translation>
 <translation id="4518251772179446575">Demana permís cada vegada que un lloc vulgui fer un seguiment de la ubicació física dels usuaris</translation>
 <translation id="402759845255257575">No permetis que cap lloc web executi JavaScript</translation>
 <translation id="5457924070961220141">Us permet configurar el processador HTML predeterminat quan <ph name="PRODUCT_FRAME_NAME"/> està instal·lat. La configuració predeterminada que s'utilitza quan no es defineix aquesta política és permetre que el navegador amfitrió dugui a terme la renderització, però si ho desitgeu podeu modificar-ho i fer que <ph name="PRODUCT_FRAME_NAME"/> renderitzi de manera predeterminada les pàgines HTML.</translation>
 <translation id="706669471845501145">Permet que els llocs mostrin les notificacions d'escriptori</translation>
+<translation id="7529144158022474049">Actualitza automàticament el factor de dispersió</translation>
 <translation id="2188979373208322108">Activa la barra de marcadors a <ph name="PRODUCT_NAME"/>. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME"/> mostrarà una barra de marcadors. Si el desactiveu, els usuaris no veuran mai la barra de marcadors. Si l'activeu o el desactiveu, els usuaris no podran canviar-lo ni substituir-lo a <ph name="PRODUCT_NAME"/>. Si no es defineix aquest paràmetre, l'usuari podrà decidir si vol utilitzar aquesta funció o no.</translation>
+<translation id="869575100785642004">Us permet especificar quins URL poden instal·lar extensions, aplicacions i temes.
+
+          A partir de Chrome 21, és més difícil instal·lar extensions, aplicacions i scripts d'usuari de fora de Chrome Web Store. Abans, els usuaris podien fer clic en un enllaç a un fitxer *.crx perquè Chrome els oferís instal·lar el fitxer després d'uns pocs advertiments. Després de Chrome 21, cal baixar aquests fitxers i arrossegar-los a la pàgina de configuració de Chrome. Aquesta opció permet que alguns URL concrets tinguin el flux d'instal·lació anterior més senzill.
+
+          Cada element d'aquesta llista és un patró de coincidència amb estil d'extensió (consulteu http://code.google.com/chrome/extensions/match_patterns.html). Els usuaris podran instal·lar elements fàcilment des de qualsevol URL que coincideixi amb un element de la llista.
+
+          ExtensionInstallBlacklist té prioritat per davant d'aquesta política. És a dir, les extensions de la llista negra no s'instal·laran encara que es provi de fer des d'un lloc d'aquesta llista.</translation>
 <translation id="5475361623548884387">Activa la impressió</translation>
 <translation id="3653237928288822292">Icona del proveïdor de cerca predeterminat</translation>
 <translation id="4445684791305970001">Desactiva les eines per a desenvolupador i la consola de JavaScript. Si activeu aquest paràmetre, no es podrà accedir a les eines per a desenvolupadors i no es podran inspeccionar més els elements del lloc web. Les tecles de drecera i les entrades dels menús o dels menús contextuals per obrir les eines per a desenvolupadors es desactivaran. Si es desactiva o no es defineix aquesta opció, es podran utilitzar les eines per a desenvolupadors i la consola de JavaScript.</translation>
@@ -403,7 +408,6 @@
 <translation id="930930237275114205">Defineix el directori de dades de l'usuari del producte <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="5208240613060747912">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què no està permès mostrar notificacions. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política &quot;DefaultNotificationsSetting&quot;, si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="8592105098257899882">Configura la mida de la memòria cau que <ph name="PRODUCT_NAME"/> utilitzarà per a l'emmagatzematge de fitxers emmagatzemats a la memòria cau al disc. Si definiu aquesta política, <ph name="PRODUCT_NAME"/> utilitzarà la mida de la memòria cau proporcionada, independentment de si l'usuari ha especificat la marca &quot;--disk-cache-size&quot; o no. Si el valor d'aquesta política és 0, s'utilitzarà la mida de la memòria cau predeterminada, però l'usuari no podrà canviar-la. Si no es defineix aquesta política, s'utilitzarà la mida predeterminada i l'usuari podrà reemplaçar-la per la marca &quot;--disk-cache-size&quot;.</translation>
-<translation id="308285197738484705">Activa la predicció de xarxa.</translation>
 <translation id="5765780083710877561">Descripció:</translation>
 <translation id="7796141075993499320">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què està permès executar connectors. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política &quot;DefaultPluginsSetting&quot;, si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="3809527282695568696">Si se selecciona &quot;Obrir una llista d'URL&quot; com a acció d'inici, això us permetrà especificar la llista d'URL que s'obren. Si no es defineix, no s'obrirà cap URL a l'inici. Aquesta política només funciona si la política &quot;RestoreOnStartup&quot; es defineix com a &quot;RestoreOnStartupIsURLs&quot;.</translation>
@@ -431,6 +435,7 @@
 <translation id="2299220924812062390">Especifica una llista de connectors activats</translation>
 <translation id="924557436754151212">Importació de les contrasenyes desades des del navegador predeterminat en la primera execució</translation>
 <translation id="1897365952389968758">Permet que tots els llocs executin JavaScript</translation>
+<translation id="922540222991413931">Configura fonts d'instal·lació d'extensions, d'aplicacions i de scripts d'usuari</translation>
 <translation id="7323896582714668701">Paràmetres de línia d'ordres de <ph name="PRODUCT_NAME"/> addicionals</translation>
 <translation id="6931242315485576290">Desactiva la sincronització de dades amb Google</translation>
 <translation id="36674322972891584">Activa la predicció de la xarxa a <ph name="PRODUCT_NAME"/> i impedeix que els usuaris puguin canviar aquesta configuració. Si activeu o desactiveu aquest paràmetre, els usuaris no podran canviar ni suprimir aquesta configuració a <ph name="PRODUCT_NAME"/>. Si no es defineix aquesta política, aquest paràmetre s'activarà però l'usuari podrà canviar-lo.</translation>
@@ -452,6 +457,7 @@
 <translation id="584083164257867276">Defineix la llista d'usuaris que poden iniciar la sessió al dispositiu. El text introduït té el format <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, com ara <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. Perquè els usuaris arbitraris puguin accedir a un domini, utilitzeu text que tingui el format <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
 
       Si no es configura aquesta política, no hi ha cap restricció sobre on poden iniciar la sessió els usuaris. Tingueu en compte que la creació d'usuaris també necessita que la política <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME"/> estigui configurada adequadament.</translation>
+<translation id="3428247105888806363">Activa la predicció de xarxa</translation>
 <translation id="6145799962557135888">Us permet definir una llista de patrons d'URL que especifiquen els llocs que no poden executar JavaScript. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política &quot;DefaultJavaScriptSetting&quot;, si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="7053678646221257043">Si està activada, aquesta política fa que s'importin els marcadors des del navegador predeterminat actual. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, no s'importaran els marcadors. Si no s'ha definit, es demanarà a l'usuari si vol importar o la importació es pot produir de forma automàtica.</translation>
 <translation id="5067143124345820993">Llista blanca de l'usuari d'inici de sessió</translation>
@@ -479,10 +485,15 @@
 <translation id="7736666549200541892">Activa l'extensió de certificats vinculada al domini de TLS</translation>
 <translation id="7848840259379156480">Us permet configurar el renderitzador HTML predeterminat quan <ph name="PRODUCT_FRAME_NAME"/> estigui instal·lat. De manera predeterminada, la configuració permet que el navegador amfitrió dugui a terme la renderització, però podeu substituir aquesta configuració de manera opcional i fer que <ph name="PRODUCT_FRAME_NAME"/> renderitzi les pàgines HTML de manera predeterminada.</translation>
 <translation id="9142678351429467783">Permet la impressió a <ph name="PRODUCT_NAME"/> i impedeix que els usuaris puguin canviar aquesta configuració. Si aquest paràmetre està activat o no està configurat, els usuaris podran imprimir. Si aquest paràmetre està desactivat, els usuaris no podran imprimir des de <ph name="PRODUCT_NAME"/>. La impressió es desactiva al menú d'eines, a les extensions, a les aplicacions de JavaScript, etc. Encara és possible imprimir des de connectors que eviten <ph name="PRODUCT_NAME"/> durant la impressió. Per exemple, certes aplicacions de Flash disposen de l'opció d'impressió en el seu menú contextual, i no es desactivaran. Si no es defineix aquesta política, s'activarà aquest paràmetre però l'usuari podrà canviar-lo.</translation>
+<translation id="210513196702568522"> Els tipus de connexions que es poden fer servir per a actualitzacions del sistema operatiu. Aquestes actualitzacions poden exercir molta pressió en les connexions a causa de la seva mida i poden tenir costos addicionals. Per tant, de manera predeterminada, no estan activades per als tipus de connexions que es consideren cars, que, hores d'ara, inclouen WiMAX, Bluetooth i mòbils.
+
+      Els identificadors del tipus de connexió reconeguts són Ethernet, Wi-Fi, WiMAX, Bluetooth i mòbil.
+      </translation>
 <translation id="4121350739760194865">Impedeix que les promocions d'aplicacions apareguin a la pestanya nova</translation>
 <translation id="2127599828444728326">Permet les notificacions en aquests llocs</translation>
 <translation id="7635471475589566552">Defineix la configuració regional de les aplicacions a <ph name="PRODUCT_NAME"/> i impedeix que els usuaris la modifiquin. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME"/> fa servir la configuració regional especificada. Si aquesta configuració regional no és compatible, es fa servir &quot;en-US&quot; en lloc seu. Si aquest paràmetre està desactivat o bé si no està configurat, <ph name="PRODUCT_NAME"/> fa servir la configuració regional preferida que hagi especificat l'usuari (en cas que n'hagi configurat cap), la configuració regional del sistema o bé la configuració regional alternativa &quot;en-US&quot;.</translation>
 <translation id="7271483295221961083">Us permet definir si els llocs web poden executar connectors automàticament. L'execució automàtica de connectors es pot autoritzar o denegar per a tots els llocs web. Si no es defineix aquesta política, s'utilitzarà el paràmetre &quot;AllowPlugins&quot; i l'usuari podrà canviar-lo.</translation>
+<translation id="718956142899066210">Tipus de connexions permesos per a actualitzacions</translation>
 <translation id="6985168562472482191">El nom de la botiga web de l'empresa, que apareixerà a sota de la icona de l'aplicació a la pàgina de pestanya nova. Aquesta configuració no té cap efecte si no es defineix EnterpriseWebStoreURL. Si es desactiva aquest paràmetre, l'aplicació de la botiga web de l'empresa (si existeix) s'etiquetarà amb el seu URL.</translation>
 <translation id="1734716591049455502">Configura les opcions d'accés remot</translation>
 <translation id="8777120694819070607">Permet que <ph name="PRODUCT_NAME"/> executi connectors obsolets. Si activeu aquest paràmetre, els connectors obsolets es faran servir com a connectors normals. Si el desactiveu, els connectors obsolets no es faran servir i se sol·licitarà als usuaris permís per executar-los. Si no definiu aquest paràmetre, se sol·licitarà permís als usuaris per executar els connectors obsolets.</translation>
@@ -516,6 +527,7 @@
 <translation id="1435659902881071157">Configuració de la xarxa a nivell del dispositiu</translation>
 <translation id="5512418063782665071">URL de la pàgina d'inici</translation>
 <translation id="2948381198510798695"><ph name="PRODUCT_NAME"/> evitarà qualsevol servidor intermediari de la llista d'amfitrions proporcionada. Aquesta política només té efecte si s'ha seleccionat la configuració manual del servidor intermediari a &quot;Triar la manera d'especificar la configuració del servidor intermediari&quot;. No heu de definir aquesta política si heu seleccionat cap altra manera de definir les polítiques del servidor intermediari. Per obtenir exemples més detallats, visiteu: <ph name="PROXY_HELP_URL"/></translation>
+<translation id="6658245400435704251">Especifica el nombre de segons fins a què un dispositiu pot retardar aleatòriament la baixada d'una actualització des del moment en què l'actualització es transmet per primera vegada des del servidor. El dispositiu pot esperar una part d'aquest temps en termes de rellotge i la part restant en termes de nombre de comprovacions d'actualitzacions. En qualsevol cas, la dispersió tendeix cap amunt a una quantitat constant de temps, de manera que un dispositiu mai no es quedi encallat mentre espera que es baixi una actualització.</translation>
 <translation id="6630106909870121131">Permet aplicar la configuració de la xarxa per a tots els usuaris d'un dispositiu <ph name="PRODUCT_OS_NAME"/>. La configuració de la xarxa és una cadena en format JSON, segons la definició del format de la configuració de xarxa oberta que apareix a <ph name="ONC_SPEC_URL"/></translation>
 <translation id="1948757837129151165">Polítiques per a l'autenticació d'HTTP</translation>
 <translation id="5946082169633555022">Canal beta</translation>

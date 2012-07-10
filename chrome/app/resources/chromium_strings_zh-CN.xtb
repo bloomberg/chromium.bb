@@ -36,6 +36,7 @@
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium 未包含运行打印预览所需的 PDF 查看器。</translation>
 <translation id="7138853919861947730">Chromium 可能会使用网络服务改善您的浏览体验。</translation>
+<translation id="466053073629175099">您现已登录 Chromium！您的书签、历史记录和其他设置都会同步到您的 Google 帐户。</translation>
 <translation id="4179848566211676653">退出 Chromium</translation>
 <translation id="3849925841547750267">抱歉，无法在 Mozilla Firefox 浏览器运行时获取其设置。要将其设置导入 Chromium，请保存您手头的工作并关闭所有 Firefox 窗口，然后点击“继续”。</translation>
 <translation id="7771626876550251690">在此例中，证书中所列的地址与浏览器尝试访问的网站网址不一致。一种可能的原因是某个攻击者拦截了您的通信内容，并向其他网站出示某个证书，这就会导致出现不一致的情况。另一种可能的原因是服务器已设置为对多个网站（包括您尝试访问的网站）返回同一证书，即使该证书并非对所有网站都有效。Chromium 可以确定您已转到 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，但无法确认这与您要访问的 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; 是不是同一网站。如果您继续操作，Chromium 就不会再检查其他任何名称不一致的情况了。</translation>

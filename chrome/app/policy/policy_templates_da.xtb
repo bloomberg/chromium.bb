@@ -19,6 +19,11 @@
 <translation id="5469825884154817306">Bloker billeder på disse websites</translation>
 <translation id="8412312801707973447">Om der udføres online kontrol af OCSP/CRL</translation>
 <translation id="2908277604670530363">Maksimalt antal samtidige forbindelser til proxyserveren</translation>
+<translation id="4838572175671839397">Indeholder et regulært udtryk, som bruges til at afgøre, hvilke brugere der kan logge ind på <ph name="PRODUCT_NAME"/>.
+
+      Der vises en fejl, hvis en bruger forsøger at logge ind med et brugernavn, som ikke svarer til dette mønster.
+
+      Hvis denne politik ikke angives eller ikke udfyldes, kan alle brugere logge ind på <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="7298195798382681320">Anbefalet</translation>
 <translation id="1438955478865681012">Konfigurerer udvidelsesrelaterede politikker. Det er ikke tilladt for brugeren at installere sortlistede udvidelser, medmindre de bliver hvidlistet. Du kan også tvinge <ph name="PRODUCT_NAME"/> til automatisk at installere udvidelser ved at angive dem i <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Sortlisten har forrang over listen over tvungne udvidelser.</translation>
 <translation id="3478024346823118645">Slet alle brugerdata, når der logges ud</translation>
@@ -156,7 +161,6 @@
 <translation id="8044493735196713914">Rapportér genstart på enheden</translation>
 <translation id="1942957375738056236">Du kan angive webadressen på proxyserveren her. Denne politik træder kun i kraft, hvis du har valgt indstillinger for manuel proxy i &quot;Vælg, hvordan du angiver indstillinger for proxyserveren&quot;. Du bør ikke angive denne politik, hvis du har valgt en anden tilstand til indstilling af proxypolitikker. Du kan finde flere valgmuligheder og detaljerede eksempler på: <ph name="PROXY_HELP_URL"/></translation>
 <translation id="8642088216849640113">Aktiverer <ph name="PRODUCT_NAME"/>s funktion til Beskyttet browsing og forhindrer brugerne i at ændre denne indstilling. Hvis du aktiverer denne indstilling, vil Beskyttet browsing altid være aktiv. Hvis du deaktiverer denne indstilling, vil Beskyttet browsing aldrig være aktiv. Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte denne indstilling i <ph name="PRODUCT_NAME"/>. Hvis denne politik ikke angives, vil den blive aktiveret, men brugeren vil kunne ændre den.</translation>
-<translation id="2711603272213076156">Tillad påkaldelse af dialoger om filvalg.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1692788808502061374">Giver dig mulighed for at angive en række udvidelser, der installeres ubemærket uden brugerinteraktion.
 
@@ -183,6 +187,7 @@
 <translation id="6368011194414932347">Konfigurer webadressen for startsiden</translation>
 <translation id="2877225735001246144">Deaktiver CNAME-opslag, når godkendelsen af Kerberos forhandles</translation>
 <translation id="6378014222084506939">Inkognitotilstandens tilgængelighed.</translation>
+<translation id="3706027163744097186">Begræns, hvilke brugere der har tilladelse til at logge ind på <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="3528000905991875314">Aktiver alternative fejlsider</translation>
 <translation id="1283072268083088623">Angiver, hvilke ordninger for HTTP Authentication, der understøttes af <ph name="PRODUCT_NAME"/>. Mulige værdier er &quot;grundlæggende&quot;, &quot;fordøje&quot;, &quot;NTLM&quot; og &quot;forhandle&quot;. Adskil flere værdier med kommaer. Hvis denne politik ikke er angivet, anvendes alle fire ordninger.</translation>
 <translation id="6114416803310251055">frarådet</translation>
@@ -198,6 +203,7 @@
 <translation id="6899705656741990703">Registrer proxyindstillinger automatisk</translation>
 <translation id="7003334574344702284">Denne politik tvinger import af gemte adgangskoder fra den tidligere standardbrowser, hvis den er aktiveret. Hvis denne politik er aktiveret, påvirker den også dialogboksen for import. Hvis den er deaktiveret, importeres de gemte adgangskoder ikke. Hvis den ikke er angivet, kan brugeren blive spurgt, om der skal importeres, ellers sker importen automatisk.</translation>
 <translation id="6258193603492867656">Angiver, om den genererede Kerberos-SPN skal omfatte en port, der ikke er standard. Hvis du aktiverer denne indstilling, og en port, der ikke er standard (dvs. en anden port end 80 eller 443), angives, vil den indgå i den genererede Kerberos-SPN. Hvis du deaktiverer denne indstilling, vil den genererede Kerberos-SPN aldrig omfatte en port.</translation>
+<translation id="3236046242843493070">Webadressemønstre, der tillader installation af udvidelser, apps og brugerscripts fra</translation>
 <translation id="8992176907758534924">Tillad ikke, at websites viser billeder</translation>
 <translation id="262740370354162807">Aktiver indsendelse af dokumenter til <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="8704831857353097849">Liste over deaktiverede plugins</translation>
@@ -206,15 +212,6 @@
 <translation id="5883015257301027298">Standardindstilling for cookies</translation>
 <translation id="3413139738214204027">Konfigurerer webadressen for standardstartsiden i <ph name="PRODUCT_NAME"/> og forhindrer brugerne i at ændre den. Startsiden kan enten angives som en bestemt webadresse eller som siden Ny fane. Hvis du vælger siden Ny fane, ignoreres denne politik. Hvis du aktiverer denne indstilling, kan brugerne ikke ændre webadressen for deres startside i <ph name="PRODUCT_NAME"/>, men siden Ny fane kan stadig vælges som deres startside. Hvis denne politik ikke angives, kan brugeren selv vælge sin startside, medmindre HomepageIsNewTabPage også er angivet.</translation>
 <translation id="8955719471735800169">Tilbage til toppen</translation>
-<translation id="7948377189987658754">Denne politik tilsidesætter indholdsindstillingen &quot;Ryd cookies og andre websitedata, når jeg lukker browseren&quot;.
-
-      Hvis <ph name="PRODUCT_NAME"/> er aktiveret, slettes alle data, der er gemt lokalt, fra browseren, når den lukker ned.
-
-      Hvis den er deaktiveret, slettes websitedata ikke ved nedlukning.
-
-      Hvis denne politik ikke er indstillet, anvender <ph name="PRODUCT_NAME"/> standardindstillingen, som er at bevare websitedata ved nedlukning, og brugeren kan ændre dette.
-
-      Hvis politikken &quot;RestoreOnStartup&quot; er indstillet til at gendanne webadresser fra tidligere sessioner, sletter denne politik ikke cookies eller andre data, der er relevante for gendannelsen af den forrige browsersession.</translation>
 <translation id="8170882486743832400">Konfigurer GData-muligheder</translation>
 <translation id="2322733497952278056">Giver adgang til de angivne webadresser som undtagelser til sortlisten for webadresser. Se beskrivelsen af ​politikken for sortlistede webadresser for adgangsformen på denne liste. Denne politik kan bruges til at åbne undtagelser til de restriktive sortlister. For eksempel kan &quot;*&quot; blive sortlistet til at blokere alle anmodninger, og denne politik kan bruges til at give adgang til en begrænset liste over webadresser. Den kan bruges til at åbne undtagelser til visse ordninger, underdomæner af andre domæner, porte eller specifikke stier. Det mest konkrete filter vil fastslå, om en webadresse er blokeret eller tilladt. Hvidlisten har forrang frem for sortlisten. Denne politik er begrænset til 100 adgange, og efterfølgende adgange ignoreres. Hvis denne politik ikke angives, vil der ikke være nogen undtagelser til sortlisten fra politikken &quot;URLBlacklist&quot;.</translation>
 <translation id="5316405756476735914">Giver dig mulighed for at angive, om websites skal have tilladelse til at angive lokale data. Angivelse af lokale data kan enten være tilladt for alle websites eller nægtet for alle websites. Hvis denne politik ikke angives, anvendes &quot;AllowCookies&quot;, og brugeren vil kunne ændre den.</translation>
@@ -323,7 +320,6 @@
 
       Hvis denne politik er angivet til sand eller ikke er konfigureret, vil det være muligt at oprette nye brugerkonti, såfremt <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> ikke forhindrer brugeren i at logge ind.</translation>
 <translation id="267596348720209223">Angiver tegnkodninger, der understøttes af søgemaskinen. Kodninger er tegntabelnavne såsom UTF-8, GB2312, og ISO-8859-1. De afprøves i den angivne rækkefølge. Denne politik er valgfri. Hvis den ikke er angivet, anvendes standarden, UTF-8. Denne politik respekteres kun, hvis politikken &quot;DefaultSearchProviderEnabled&quot; er aktiveret.</translation>
-<translation id="2745445908503591390">Ryd websitedata, når browseren lukkes ned</translation>
 <translation id="1454846751303307294">Gør det muligt at oprette en liste over webadressemønstre for at angive websites, som ikke må køre JavaScript. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken &quot;DefaultJavaScriptSetting&quot;, hvis den er angivet, eller brugerens personlige konfiguration.</translation>
 <translation id="538108065117008131">Tillad, at <ph name="PRODUCT_FRAME_NAME"/> håndterer følgende indholdstyper.</translation>
 <translation id="717221064259627503">Konfigurerer det bibliotek, som <ph name="PRODUCT_NAME"/> bruger til lagring af cachelagrede filer på disken. Hvis du angiver denne politik, vil <ph name="PRODUCT_NAME"/> bruge det medfølgende bibliotek, uanset om brugeren har angivet flaget &quot;--disk-cache-dir&quot; eller ej. Hvis denne politik ikke angives, anvendes standardcachemappen, og brugeren vil kunne tilsidesætte det med kommandolinjeflaget &quot;--disk-cache-dir&quot;.</translation>
@@ -353,11 +349,20 @@
 <translation id="7393895128271703858">Denne politik er forældet. Brug DefaultJavaScriptSetting i stedet. Aktiverer JavaScript i <ph name="PRODUCT_NAME"/> og forhindrer brugerne i at ændre denne indstilling. Hvis denne indstilling er aktiveret eller ikke er konfigureret, kan websider bruge JavaScript. Hvis denne indstilling er deaktiveret, kan websider ikke anvende JavaScript. Hvis denne politik ikke angives, anvendes standardværdien, som er aktiveret, og brugeren vil kunne ændre den. Hvis denne politik ikke angives, vil dette blive aktiveret, men brugeren vil kunne ændre det.</translation>
 <translation id="8079569179819932120">Angiver, hvilke servere der skal hvidlistes til integreret godkendelse. Integreret godkendelse aktiveres kun, når <ph name="PRODUCT_NAME"/> modtager en godkendelsesudfordring fra en proxy eller fra en server, der findes på denne godkendte liste. Adskil flere servernavne med kommaer. Jokertegn (*) er tilladt. Hvis denne politik ikke angives, accepteres alle servere til integreret godkendelse.</translation>
 <translation id="350797926066071931">Aktiver Oversæt</translation>
+<translation id="4010738624545340900">Tillad aktivering af dialogbokse for filvalg</translation>
 <translation id="4518251772179446575">Spørg, hver gang et website ønsker at spore brugerens fysiske placering</translation>
 <translation id="402759845255257575">Tillad ikke, at websites kører JavaScript</translation>
 <translation id="5457924070961220141">Giver dig mulighed for at konfigurere standard-HTML-gengivelse, når <ph name="PRODUCT_FRAME_NAME"/> er installeret. Den standardindstilling, der anvendes, når denne politik ikke er angivet, er at lade værtsbrowseren foretage gengivelsen, men du kan vælge at tilsidesætte dette og få <ph name="PRODUCT_FRAME_NAME"/> til at gengive HTML-sider som standard.</translation>
 <translation id="706669471845501145">Tillad, at websites viser skrivebordsmeddelelser</translation>
+<translation id="7529144158022474049">Automatisk opdatering af spredningsfaktor</translation>
 <translation id="2188979373208322108">Aktiverer bogmærkelinjen i <ph name="PRODUCT_NAME"/>. Hvis du aktiverer denne indstilling, viser <ph name="PRODUCT_NAME"/> en bogmærkelinje. Hvis du deaktiverer denne indstilling, vil brugerne aldrig se bogmærkelinjen. Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte det i <ph name="PRODUCT_NAME"/>. Hvis denne indstilling ikke angives, kan brugeren vælge at bruge denne funktion eller ej.</translation>
+<translation id="869575100785642004">Gør det muligt for dig at angive, hvilke webadresser der har tilladelse til at installere udgivelser, apps og temaer.
+
+          Fra og med Chrome 21 bliver det sværere at installere udvidelser, apps og brugerscripts uden for Chrome Webshop. Da brugerne tidligere kunne klikke på en *.crx-fil, ville Chrome tilbyde at installere filen efter et par advarsler. Efter Chrome 21 skal sådanne filer downloades og trækkes til siden med indstillinger i Chrome. Med denne indstilling kan bestemte webadresser beholde den gamle, nemme installationsproces.
+
+          Hvert element på listen har et matchmønster, der minder om en udvidelse (se http://code.google.com/chrome/extensions/match_patterns.html). Brugere vil nemt kunne installere emner fra alle webadresser, der svarer til et emne på denne liste.
+
+          ExtensionInstallBlacklist har forrang over denne politik. Det vil sige, at en udvidelse på sortlisten ikke bliver installeret, også selvom det sker fra et website på denne liste.</translation>
 <translation id="5475361623548884387">Aktiver udskrivning</translation>
 <translation id="3653237928288822292">Ikon for standardsøgemaskine</translation>
 <translation id="4445684791305970001">Deaktiverer udviklerværktøjerne og JavaScript-konsollen. Hvis du aktiverer denne indstilling, kan man ikke få adgang til udviklerværktøjerne, og webstedselementer kan ikke inspiceres. Alle tastaturgenveje og menuer eller genvejsmenuer, der åbner udviklerværktøjerne eller JavaScript-konsollen, vil blive deaktiveret. Hvis du deaktiverer denne indstilling eller ikke angiver den, tillades brugen af udviklerværktøjer og JavaScript-konsollen.</translation>
@@ -426,7 +431,6 @@
 <translation id="930930237275114205">Angiv brugerdatamappe for <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="5208240613060747912">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, hvor det ikke er tilladt at vise underretninger. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken &quot;DefaultNotificationsSetting&quot;, hvis den er indstillet, eller brugerens personlige konfiguration.</translation>
 <translation id="8592105098257899882">Konfigurerer den cachestørrelse, som <ph name="PRODUCT_NAME"/> skal bruge til lagring af cachelagrede filer på disken. Hvis du angiver denne politik, anvender <ph name="PRODUCT_NAME"/> den angivne cachestørrelse, uanset om brugeren har angivet flaget &quot;--disk-cache-size&quot; eller ej. Hvis værdien af ​​denne politik er 0, anvendes standardcachestørrelsen, men brugeren vil ikke kunne ændre det. Hvis denne politik ikke angives, anvendes standardstørrelsen, og brugeren vil kunne tilsidesætte den med flaget --disk-cache-size.</translation>
-<translation id="308285197738484705">Aktiver forudsigelse af netværk.</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>
 <translation id="7796141075993499320">Giver dig mulighed for at oprette en liste over webadressemønstre, der angiver websites, som må køre plugins. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken &quot;DefaultPluginsSetting&quot;, hvis den er angivet, eller brugerens personlige konfiguration.</translation>
 <translation id="3809527282695568696">Hvis &quot;Åbn en liste over webadresser&quot; er valgt som starthandling, kan du angive listen over webadresser, der skal åbnes. Hvis dette ikke angives, åbnes der ingen webadresser ved opstart. Denne politik fungerer kun, hvis politikken &quot;RestoreOnStartup&quot; er angivet som &quot;RestoreOnStartupIsURLs&quot;.</translation>
@@ -454,6 +458,7 @@
 <translation id="2299220924812062390">Angiv en liste over aktiverede plugins</translation>
 <translation id="924557436754151212">Importer gemte adgangskoder fra standardbrowser på første visning</translation>
 <translation id="1897365952389968758">Tillad, at alle websites kører JavaScript</translation>
+<translation id="922540222991413931">Konfigurer udvidelser, apps og installationskilder til brugerscripts</translation>
 <translation id="7323896582714668701">Yderligere kommandolinjeparametre for <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Deaktiver synkronisering af data med Google</translation>
 <translation id="36674322972891584">Aktiverer netværksforudsigelse i <ph name="PRODUCT_NAME"/> og forhindrer brugerne i at ændre denne indstilling. Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte denne indstilling i <ph name="PRODUCT_NAME"/>. Hvis denne politik ikke angives, aktiveres dette, men brugeren vil kunne ændre det.</translation>
@@ -475,6 +480,7 @@
 <translation id="584083164257867276">Definerer listen over brugere, der har tilladelse til at logge ind på denne enhed <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, f.eks. <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. Hvis du vil tillade vilkårlige brugere på et domæne, skal du bruge poster med formen <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
 
       Hvis denne politik ikke konfigureres, er der ingen restriktioner for, hvad brugere har tilladelse til logge ind på. Bemærk, at oprettelsen af nye brugere stadig kræver, at politikken <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME"/> konfigureres korrekt.</translation>
+<translation id="3428247105888806363">Aktivér forudsigelse af netværk</translation>
 <translation id="6145799962557135888">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, der får lov til at køre JavaScript. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken &quot;DefaultJavaScriptSetting&quot;, hvis den er indstillet, eller brugerens personlige konfiguration.</translation>
 <translation id="7053678646221257043">Denne politik påtvinger import af bogmærker fra den nuværende standardbrowser, hvis det er aktiveret. Hvis det er aktiveret, påvirker denne politik også importdialogboksen. Hvis det er deaktiveret, importeres der ingen bogmærker. Hvis den ikke er angivet, kan brugeren blive bedt om at importere, eller importen kan ske automatisk.</translation>
 <translation id="5067143124345820993">Login til brugerens hvidliste</translation>
@@ -502,10 +508,15 @@
 <translation id="7736666549200541892">Aktivér udvidelse af TLS-domænenbundne certifikater</translation>
 <translation id="7848840259379156480">Giver dig mulighed for at konfigurere din standardgengivelse af HTML, når <ph name="PRODUCT_FRAME_NAME"/> er installeret. Standardindstillingen er, at værtsbrowseren foretager gengivelsen, men du har mulighed for at tilsidesætte denne og få <ph name="PRODUCT_FRAME_NAME"/> til at gengive HTML-sider som standard.</translation>
 <translation id="9142678351429467783">Aktiverer udskrivning i <ph name="PRODUCT_NAME"/> og forhindrer, at brugerne kan ændre denne indstilling. Hvis denne indstilling er aktiveret eller ikke er konfigureret, kan brugerne udskrive. Hvis denne indstilling er deaktiveret, kan brugerne ikke udskrive fra <ph name="PRODUCT_NAME"/>. Udskrivning deaktiveres i skruenøglemenuen, udvidelser, JavaScript-applikationer osv. Det er stadig muligt at udskrive fra plugins, der omgår <ph name="PRODUCT_NAME"/> under udskrivning. For eksempel har visse Flash-applikationer mulighed for udskrivning i deres genvejsmenu, og denne deaktiveres ikke. Hvis denne politik ikke angives, aktiveres dette, men brugeren vil kunne ændre det.</translation>
+<translation id="210513196702568522"> De forbindelsestyper, som kan bruges til OS-opdateringer. OS-opdateringer kan i høj grad belaste forbindelsen på grund af deres størrelse og kan medføre yderligere omkostninger. De er derfor som standard ikke aktiveret til forbindelsestyper, der anses som dyre, hvilket i øjeblikket inkluderer WiMax, Bluetooth og Cellular.
+
+      De anerkendte forbindelsestyper er Ethernet, Wi-Fi, WiMAX, Bluetooth, Cellular.
+      </translation>
 <translation id="4121350739760194865">Undgå, at appkampagner vises på ny fane-siden</translation>
 <translation id="2127599828444728326">Tillad meddelelser på disse websites</translation>
 <translation id="7635471475589566552">Konfigurerer applikationens landestandard i <ph name="PRODUCT_NAME"/> og forhindrer brugerne i at ændre landestandarden. Hvis du aktiverer denne indstilling, anvender <ph name="PRODUCT_NAME"/> den angivne landestandard. Hvis den konfigurerede landestandard ikke understøttes, bruges &quot;en-US&quot; i stedet. Hvis denne indstilling er deaktiveret eller ikke konfigureret, bruger <ph name="PRODUCT_NAME"/> enten den brugerdefinerede landestandard (hvis denne er konfigureret), systemets landestandard eller reservelandestandarden &quot;en-US&quot;.</translation>
 <translation id="7271483295221961083">Giver dig mulighed for at angive, om websites må køre plugins automatisk. Automatisk kørsel af plugins kan enten være tilladt for alle websites eller nægtet for alle websites. Hvis denne politik ikke angives, anvendes politikken &quot;AllowPlugins&quot;, og brugeren vil kunne ændre det.</translation>
+<translation id="718956142899066210">Forbindelsestyper, der tillades til opdateringer</translation>
 <translation id="6985168562472482191">Navnet på virksomhedens netbutik, som vises under appikonet på siden Ny fane. Denne indstilling har ingen virkning, hvis EnterpriseWebStoreURL ikke er angivet. Hvis denne indstilling deaktiveres, vil appen for virksomhedens netbutik (hvis den findes) være mærket med dens webadresse.</translation>
 <translation id="1734716591049455502">Konfigurer indstillinger for fjernadgang</translation>
 <translation id="8777120694819070607">Tillader, at <ph name="PRODUCT_NAME"/> kører plugins, der er forældede. Hvis du aktiverer denne indstilling, bruges forældede plugins som almindelige plugins. Hvis du deaktiverer denne indstilling, bruges forældede plugins ikke, og brugerne bliver ikke bedt om tilladelse til at køre dem. Hvis denne indstilling ikke angives, bliver brugerne bedt om tilladelse til at køre forældede plugins.</translation>
@@ -533,6 +544,7 @@
 <translation id="1435659902881071157">Netværkskonfiguration på enhedsniveau</translation>
 <translation id="5512418063782665071">Startsidens webadresse</translation>
 <translation id="2948381198510798695"><ph name="PRODUCT_NAME"/> vil omgå alle proxyer for den værtsliste, der vises her. Denne politik træder kun i kraft, hvis du har valgt indstillinger for manuel proxy i &quot;Vælg, hvordan du vil angive indstillinger for proxyserver&quot;. Denne politik bør ikke angives, hvis du har valgt en anden form for angivelse af proxypolitikker. Få flere detaljerede eksempler på: <ph name="PROXY_HELP_URL"/></translation>
+<translation id="6658245400435704251">Angiver det antal sekunder, som en enhed på en tilfældig måde maksimalt kan forsinke en download af en opdatering fra det tidspunkt, hvor opdateringen først blev sendt ud til serveren. Enheden kan afsætte en del af denne tid i form af faktisk ventetid og den igangværende tid i form af det antal af opdateringer, der skal kontrolleres. Uanset hvad, er spredningen bundet af en øvre grænse til en konstant mængde af tid, således at en enhed aldrig kommer til at sidde fast og til evig tid vente på, at en opdatering downloades.</translation>
 <translation id="6630106909870121131">Tillader, at netværkskonfigurationen gøres gældende for alle brugere af en <ph name="PRODUCT_OS_NAME"/>-enhed. Netværkskonfigurationen er en JSON-formateret streng, sådan som den er defineret af formatet Open Network Configuration som beskrevet på <ph name="ONC_SPEC_URL"/></translation>
 <translation id="1948757837129151165">Politikker for HTTP-godkendelse</translation>
 <translation id="5946082169633555022">Betakanal</translation>

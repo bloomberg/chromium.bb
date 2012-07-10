@@ -121,10 +121,12 @@
 <translation id="7196020411877309443">Miksi minulle näytetään tämä ilmoitus?</translation>
 <translation id="2769762047821873045">Google Chrome ei ole oletusselain.</translation>
 <translation id="7825851276765848807">Asennus epäonnistui tuntemattoman virheen vuoksi. Lataa Google Chrome uudelleen.</translation>
+<translation id="1061257178446858647">Olet kirjautunut Chromeen! Kirjanmerkkisi, historiasi ja muut asetuksesi synkronoidaan Google-tiliisi.</translation>
 <translation id="3335672657969596251">Google Chrome ei tue <ph name="OS_NAME"/>-käyttöjärjestelmää</translation>
 <translation id="4458285410772214805">Kirjaudu ulos ja kirjaudu uudelleen sisään, jotta muutos tulee voimaan.</translation>
 <translation id="2666187591945638709">Google Chrome on päivitetty versioon <ph name="VERSION"/></translation>
 <translation id="5334545119300433702">Tämän moduulin tiedetään aiheuttavan ristiriitoja Google Chromen kanssa.</translation>
+<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome on ajan tasalla.</translation>
 <translation id="2084710999043359739">Lisää Chromeen</translation>
 <translation id="4084877369264707540">Google Chrome -kehys on jo asennettu ja käytettävissä kaikille tämän tietokoneen käyttäjille. Jos haluat asentaa Google Chrome -kehyksen käyttäjän tasolla, sinun tulee ensin poistaa järjestelmänvalvojan asentama järjestelmän tason versio.</translation>
