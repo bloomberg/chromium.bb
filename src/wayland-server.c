@@ -750,7 +750,7 @@ wl_seat_set_keyboard(struct wl_seat *seat, struct wl_keyboard *keyboard)
 {
 	if (keyboard && (seat->keyboard || keyboard->seat))
 		return; /* XXX: error? */
-	if (!keyboard && seat->keyboard)
+	if (!keyboard && !seat->keyboard)
 		return;
 
 	seat->keyboard = keyboard;
