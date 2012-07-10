@@ -5,10 +5,11 @@
 #include "chrome/browser/chromeos/gdata/gdata_db.h"
 
 #include "base/string_number_conversions.h"
+#include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_db_factory.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "chrome/test/base/testing_profile.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace gdata {
 namespace {
@@ -32,6 +33,10 @@ class GDataDBTest : public testing::Test {
   // Tests GDataDB::GetPath and GDataDB::ResourceId, ensuring that an entry
   // matching |source| exists.
   void TestGetFound(const GDataEntry& source);
+
+  // Tests GDataDB::GetPath and GDataDB::ResourceId, ensuring that an entry
+  // matching |source| is corrupt.
+  void TestGetCorrupt(const GDataEntry& source);
 
   // Initialize the database with the following entries:
   // drive/dir1
@@ -96,6 +101,17 @@ void GDataDBTest::TestGetFound(const GDataEntry& source) {
   EXPECT_EQ(source.title(), entry->title());
   EXPECT_EQ(source.resource_id(), entry->resource_id());
   EXPECT_EQ(source.content_url(), entry->content_url());
+}
+
+void GDataDBTest::TestGetCorrupt(const GDataEntry& source) {
+  scoped_ptr<GDataEntry> entry;
+  GDataDB::Status status = gdata_db_->GetByPath(source.GetFilePath(), &entry);
+  EXPECT_EQ(GDataDB::DB_CORRUPTION, status);
+  EXPECT_FALSE(entry.get());
+
+  status = gdata_db_->GetByResourceId(source.resource_id(), &entry);
+  EXPECT_EQ(GDataDB::DB_CORRUPTION, status);
+  EXPECT_FALSE(entry.get());
 }
 
 void GDataDBTest::InitDB() {
@@ -186,17 +202,18 @@ TEST_F(GDataDBTest, PutTest) {
   TestGetNotFound(dir);
 
   GDataDB::Status status = gdata_db_->Put(dir);
-  EXPECT_EQ(GDataDB::DB_OK, status);
+  ASSERT_EQ(GDataDB::DB_OK, status);
 
   TestGetFound(dir);
 
   scoped_ptr<GDataEntry> entry;
-  gdata_db_->GetByPath(dir.GetFilePath(), &entry);
+  status = gdata_db_->GetByPath(dir.GetFilePath(), &entry);
+  ASSERT_EQ(GDataDB::DB_OK, status);
   EXPECT_EQ(dir.upload_url(), entry->AsGDataDirectory()->upload_url());
   EXPECT_TRUE(entry->AsGDataDirectory()->file_info().is_directory);
 
   status = gdata_db_->DeleteByPath(dir.GetFilePath());
-  EXPECT_EQ(GDataDB::DB_OK, status);
+  ASSERT_EQ(GDataDB::DB_OK, status);
 
   TestGetNotFound(dir);
 
@@ -210,16 +227,17 @@ TEST_F(GDataDBTest, PutTest) {
   TestGetNotFound(file);
 
   status = gdata_db_->Put(file);
-  EXPECT_EQ(GDataDB::DB_OK, status);
+  ASSERT_EQ(GDataDB::DB_OK, status);
 
   TestGetFound(file);
 
-  gdata_db_->GetByPath(file.GetFilePath(), &entry);
+  status = gdata_db_->GetByPath(file.GetFilePath(), &entry);
+  ASSERT_EQ(GDataDB::DB_OK, status);
   EXPECT_EQ(file.file_md5(), entry->AsGDataFile()->file_md5());
   EXPECT_FALSE(entry->AsGDataFile()->file_info().is_directory);
 
   status = gdata_db_->DeleteByPath(file.GetFilePath());
-  EXPECT_EQ(GDataDB::DB_OK, status);
+  ASSERT_EQ(GDataDB::DB_OK, status);
 
   TestGetNotFound(file);
 }
@@ -272,6 +290,39 @@ TEST_F(GDataDBTest, IterTest) {
   TestIter("", all_entries, arraysize(all_entries));
 
   TestIter("dir4", NULL, 0);
+}
+
+TEST_F(GDataDBTest, IncompatibleProtoTest) {
+  GDataRootDirectory root;
+  GDataFile file(&root, &root);
+  file.set_title("file");
+  file.set_file_name("file");
+  file.set_resource_id("file_resource_id");
+  file.set_content_url(GURL("http://content/dir/file"));
+  file.set_file_md5("file_md5");
+
+  // Add a file and check if it's found.
+  GDataDB::Status status = gdata_db_->Put(file);
+  ASSERT_EQ(GDataDB::DB_OK, status);
+  TestGetFound(file);
+  // Check if the iterator works too.
+  const char* all_entries[] = {
+    "drive/file",
+  };
+  TestIter("", all_entries, arraysize(all_entries));
+
+  // Tweak the file proto to simulate an incompatible proto in the DB.
+  GDataFileProto file_proto;
+  file.ToProto(&file_proto);
+  file_proto.clear_upload_url();  // This will make FromProto() fail.
+  std::string serialized_proto;
+  file_proto.SerializeToString(&serialized_proto);
+  gdata_db_->PutRawForTesting("file_resource_id", serialized_proto);
+
+  // Check if the corruption is detected.
+  TestGetCorrupt(file);
+  // We should no longer be able to find the file by iteration.
+  TestIter("", NULL, 0);
 }
 
 }  // namespace gdata

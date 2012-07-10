@@ -139,8 +139,7 @@ GDataDB::Status GDataLevelDB::GetByResourceId(const std::string& resource_id,
   if (db_status.ok()) {
     DCHECK(!serialized_proto.empty());
     *entry = GDataEntry::FromProtoString(serialized_proto);
-    DCHECK(entry->get());
-    return DB_OK;
+    return entry->get() ? DB_OK : DB_CORRUPTION;
   }
   return GetStatus(db_status);
 }
@@ -174,6 +173,18 @@ scoped_ptr<GDataDBIter> GDataLevelDB::CreateIterator(const FilePath& path) {
           level_db_->NewIterator(leveldb::ReadOptions())),
       this,
       path));
+}
+
+GDataDB::Status GDataLevelDB::PutRawForTesting(
+    const std::string& resource_id,
+    const std::string& raw_value) {
+  const std::string resource_id_key = ResourceIdToKey(resource_id);
+  leveldb::Status db_status = level_db_->Put(
+      leveldb::WriteOptions(),
+      leveldb::Slice(resource_id_key),
+      leveldb::Slice(raw_value));
+
+  return GetStatus(db_status);
 }
 
 GDataLevelDBIter::GDataLevelDBIter(scoped_ptr<leveldb::Iterator> level_db_iter,
@@ -211,7 +222,8 @@ bool GDataLevelDBIter::GetNext(std::string* path,
 
   GDataDB::Status status =
       db_->GetByResourceId(level_db_iter_->value().ToString(), entry);
-  DCHECK_EQ(GDataDB::DB_OK, status);
+  if (status != GDataDB::DB_OK)
+    return false;
 
   key_slice.remove_prefix(sizeof(kPathPrefix) - 1);
   path->assign(key_slice.ToString());

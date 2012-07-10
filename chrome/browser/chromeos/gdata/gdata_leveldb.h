@@ -32,6 +32,8 @@ class GDataLevelDB : public GDataDB {
   virtual Status GetByPath(const FilePath& path,
                            scoped_ptr<GDataEntry>* file) OVERRIDE;
   virtual scoped_ptr<GDataDBIter> CreateIterator(const FilePath& path) OVERRIDE;
+  virtual Status PutRawForTesting(const std::string& resource_id,
+                                  const std::string& raw_value) OVERRIDE;
 
   // Returns |resource_id| for |path| by looking up path_db_.
   Status ResourceIdForPath(const FilePath& path, std::string* resource_id);

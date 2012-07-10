@@ -47,6 +47,11 @@ class GDataDB {
   // Will not return NULL.
   virtual scoped_ptr<GDataDBIter> CreateIterator(const FilePath& path) = 0;
 
+  // Puts |raw_value| keyed with |resource_id| to the database.
+  // Used for testing (ex. injecting incompatible proto).
+  virtual Status PutRawForTesting(const std::string& resource_id,
+                                  const std::string& raw_value) = 0;
+
  protected:
   GDataDB() {}
 };
