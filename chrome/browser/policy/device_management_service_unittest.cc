@@ -249,12 +249,6 @@ INSTANTIATE_TEST_CASE_P(
             net::URLRequestStatus::SUCCESS,
             410,
             PROTO_STRING(kResponseEmpty)),
-        // TODO(pastarmovj): Remove once DM server is deployed.
-        FailedRequestParams(
-            DM_STATUS_SERVICE_DEVICE_NOT_FOUND,
-            net::URLRequestStatus::SUCCESS,
-            901,
-            PROTO_STRING(kResponseEmpty)),
         FailedRequestParams(
             DM_STATUS_SERVICE_MANAGEMENT_TOKEN_INVALID,
             net::URLRequestStatus::SUCCESS,
@@ -279,12 +273,6 @@ INSTANTIATE_TEST_CASE_P(
             DM_STATUS_MISSING_LICENSES,
             net::URLRequestStatus::SUCCESS,
             402,
-            PROTO_STRING(kResponseEmpty)),
-        // TODO(pastarmovj): Remove once DM server is deployed.
-        FailedRequestParams(
-            DM_STATUS_SERVICE_ACTIVATION_PENDING,
-            net::URLRequestStatus::SUCCESS,
-            491,
             PROTO_STRING(kResponseEmpty))));
 
 // Simple query parameter parser for testing.

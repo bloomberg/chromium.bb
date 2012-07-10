@@ -68,11 +68,6 @@ const int kInternalServerError = 500;
 const int kServiceUnavailable = 503;
 const int kPolicyNotFound = 902; // This error is not sent as HTTP status code.
 
-// TODO(pastarmovj): Legacy error codes are here for compatibility only. They
-// should be removed once the DM Server has been updated.
-const int kPendingApprovalLegacy = 491;
-const int kDeviceNotFoundLegacy = 901;
-
 #if defined(OS_CHROMEOS)
 // Machine info keys.
 const char kMachineInfoHWClass[] = "hardware_class";
@@ -345,7 +340,6 @@ void DeviceManagementRequestJobImpl::HandleResponse(
     case kDeviceManagementNotAllowed:
       ReportError(DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED);
       return;
-    case kPendingApprovalLegacy:
     case kPendingApproval:
       ReportError(DM_STATUS_SERVICE_ACTIVATION_PENDING);
       return;
@@ -354,7 +348,6 @@ void DeviceManagementRequestJobImpl::HandleResponse(
     case kServiceUnavailable:
       ReportError(DM_STATUS_TEMPORARY_UNAVAILABLE);
       return;
-    case kDeviceNotFoundLegacy:
     case kDeviceNotFound:
       ReportError(DM_STATUS_SERVICE_DEVICE_NOT_FOUND);
       return;
