@@ -812,12 +812,14 @@ int32 FileBrowserFunction::GetTabId() const {
 void FileBrowserFunction::GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
     const UrlList& file_urls,
     GetLocalPathsCallback callback) {
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetFileSystemContext(profile_);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(
           &FileBrowserFunction::GetLocalPathsOnFileThread,
           this,
-          file_urls, callback));
+          file_system_context, file_urls, callback));
 }
 
 // GetFileSystemRootPathOnFileThread can only be called from the file thread,
@@ -825,6 +827,7 @@ void FileBrowserFunction::GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
 // them to local paths and calls |callback| with the result vector, on the UI
 // thread.
 void FileBrowserFunction::GetLocalPathsOnFileThread(
+    scoped_refptr<fileapi::FileSystemContext> file_system_context,
     const UrlList& file_urls,
     GetLocalPathsCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -832,7 +835,7 @@ void FileBrowserFunction::GetLocalPathsOnFileThread(
 
   // FilePath(virtual_path) doesn't work on win, so limit this to ChromeOS.
   fileapi::ExternalFileSystemMountPointProvider* provider =
-      BrowserContext::GetFileSystemContext(profile_)->external_provider();
+      file_system_context->external_provider();
   if (!provider) {
     LOG(WARNING) << "External provider is not available";
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,

@@ -11,6 +11,7 @@
 #include <queue>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
@@ -20,6 +21,10 @@
 #include "googleurl/src/url_util.h"
 
 class GURL;
+
+namespace fileapi {
+class FileSystemContext;
+}
 
 namespace ui {
 struct SelectedFileInfo;
@@ -174,8 +179,10 @@ class FileBrowserFunction
   // Converts virtual paths to local paths and call |callback| (on the UI
   // thread) with the results.
   // This method must be called from the file thread.
-  void GetLocalPathsOnFileThread(const UrlList& file_urls,
-                                 GetLocalPathsCallback callback);
+  void GetLocalPathsOnFileThread(
+      scoped_refptr<fileapi::FileSystemContext> file_system_context,
+      const UrlList& file_urls,
+      GetLocalPathsCallback callback);
 };
 
 // Select a single file.  Closes the dialog window.
