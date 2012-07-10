@@ -24,8 +24,6 @@ function VolumeManager() {
   this.mountedVolumes_ = {};
 
   this.initMountPoints_();
-  chrome.fileBrowserPrivate.onMountCompleted.addListener(
-        this.onMountCompleted_.bind(this));
   this.gDataStatus_ = VolumeManager.GDataStatus.UNMOUNTED;
 }
 
@@ -134,6 +132,11 @@ VolumeManager.prototype.initMountPoints_ = function() {
         var volume = mountedVolumes[i];
         self.mountedVolumes_[volume.mountPath] = volume;
       }
+
+      // Subscribe to the mount completed event when mount points initialized.
+      chrome.fileBrowserPrivate.onMountCompleted.addListener(
+          self.onMountCompleted_.bind(self));
+
       if (mountedVolumes.length > 0)
         cr.dispatchSimpleEvent(self, 'change');
     }
