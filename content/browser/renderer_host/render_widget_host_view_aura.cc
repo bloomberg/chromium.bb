@@ -218,7 +218,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       current_surface_(0),
       paint_canvas_(NULL),
       synthetic_move_sent_(false),
-      needs_update_texture_(false) {
+      accelerated_compositing_state_changed_(false) {
   host_->SetView(this);
   window_observer_.reset(new WindowObserver(this));
   window_->AddObserver(window_observer_.get());
@@ -379,7 +379,7 @@ void RenderWidgetHostViewAura::DidUpdateBackingStore(
   if (!window_->IsVisible())
     return;
 
-  if (needs_update_texture_)
+  if (accelerated_compositing_state_changed_)
     UpdateExternalTexture();
 
   gfx::Rect clip_rect;
@@ -477,22 +477,30 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
 }
 
 void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {
-  // Delay UpdateExternalTexture until we actually got a software frame.
+  // Delay processing the state change until we either get a software frame if
+  // switching to software mode or receive a buffers swapped notification
+  // if switching to accelerated mode.
   // Sometimes (e.g. on a page load) the renderer will spuriously disable then
   // re-enable accelerated compositing, causing us to flash.
   // TODO(piman): factor the enable/disable accelerated compositing message into
   // the UpdateRect/AcceleratedSurfaceBuffersSwapped messages so that we have
   // fewer inconsistent temporary states.
-  needs_update_texture_ = true;
-
-  // Don't scale the contents in accelerated mode because the renderer takes
-  // care of it.
-  window_->layer()->set_scale_content(
-      !host_->is_accelerated_compositing_active());
+  accelerated_compositing_state_changed_ = true;
 }
 
 void RenderWidgetHostViewAura::UpdateExternalTexture() {
-  needs_update_texture_ = false;
+  // Delay processing accelerated compositing state change till here where we
+  // act upon the state change. (Clear the external texture if switching to
+  // software mode or set the external texture if going to accelerated mode).
+  if (accelerated_compositing_state_changed_) {
+    // Don't scale the contents in accelerated mode because the renderer takes
+    // care of it.
+    window_->layer()->set_scale_content(
+        !host_->is_accelerated_compositing_active());
+
+    accelerated_compositing_state_changed_ = false;
+  }
+
   if (current_surface_ != 0 &&
       host_->is_accelerated_compositing_active()) {
     ImageTransportClient* container =

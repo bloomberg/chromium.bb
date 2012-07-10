@@ -323,9 +323,10 @@ class RenderWidgetHostViewAura
   // events vs. normal mouse move events.
   bool synthetic_move_sent_;
 
-  // Signals we need to switch off the external texture as soon as the software
-  // backing store is updated.
-  bool needs_update_texture_;
+  // Signals that the accelerated compositing has been turned on or off.
+  // This is used to signal to turn off the external texture as soon as the
+  // software backing store is updated.
+  bool accelerated_compositing_state_changed_;
 
   // Used to prevent further resizes while a resize is pending.
   class ResizeLock;
