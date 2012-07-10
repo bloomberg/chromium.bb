@@ -986,19 +986,27 @@ def BuildTarball(buildroot, input_list, tarball_output, cwd=None,
   cros_build_lib.RunCommandCaptureOutput(cmd, cwd=cwd)
 
 
-def FindFilesWithPattern(pattern, root=os.curdir):
+def FindFilesWithPattern(pattern, target='./', cwd=os.curdir):
   """Search the root directory recursively for matching filenames.
 
   Args:
-    pattern: the pattern used to match the filenames
-    root: the root directory to search.
+    pattern: the pattern used to match the filenames.
+    target: the target directory to search.
+    cwd: current working directory.
 
   Returns a list of paths of the matched files.
   """
+  # Backup the current working directory before changing it
+  old_cwd = os.getcwd()
+  os.chdir(cwd)
+
   matches = []
-  for root, _, filenames in os.walk(root):
+  for target, _, filenames in os.walk(target):
     for filename in fnmatch.filter(filenames, pattern):
-      matches.append(os.path.join(root, filename))
+      matches.append(os.path.join(target, filename))
+
+  # Restore the working directory
+  os.chdir(old_cwd)
 
   return matches
 
@@ -1017,7 +1025,7 @@ def BuildAutotestTarballs(buildroot, board, tarball_dir):
   cwd = os.path.join(buildroot, 'chroot', 'build', board, 'usr', 'local')
 
   # Find the control files in autotest/
-  control_files = FindFilesWithPattern('control*', root='autotest')
+  control_files = FindFilesWithPattern('control*', target='autotest', cwd=cwd)
 
   # Tar the control files and the packages
   input_list = control_files + ['autotest/packages']
