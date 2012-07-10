@@ -4,7 +4,14 @@
 # found in the LICENSE file.
 
 """
-   This script packages the PNaCl translator files as a Chrome Extension.
+   This script packages the PNaCl translator files as a Chrome Extension (crx),
+   which can be used as a straight-forward CRX, or used with the Chrome
+   incremental installer (component updater).
+
+   This script depends on and pulls in the translator nexes and libraries
+   from the toolchain directory (so that must be downloaded first), fills
+   in the CRX manifest files, and zips and signs the CRXes using
+   chrome (which must also be downloaded first), etc.
 """
 
 import glob
@@ -215,9 +222,12 @@ class PnaclDirs(object):
   output_dir = J(toolchain_dir, 'pnacl-package')
 
   @staticmethod
+  def TranslatorRoot():
+    return J(PnaclDirs.toolchain_dir, 'pnacl_translator')
+
+  @staticmethod
   def LibDir(target_arch):
-    return J(PnaclDirs.toolchain_dir,
-             'pnacl_translator', 'lib-%s' % target_arch)
+    return J(PnaclDirs.TranslatorRoot(), 'lib-%s' % target_arch)
 
   @staticmethod
   def SandboxedCompilerDir(target_arch):
@@ -266,12 +276,10 @@ def Clean():
 def ZipDirectory(base_dir, zipfile):
   """ Zip all the files in base_dir into the given opened zipfile object.
   """
-  def visit(zipfile, dirname, names):
-    for name in names:
-      full_name = J(dirname, name)
+  for (root, dirs, files) in os.walk(base_dir, followlinks=True):
+    for f in files:
+      full_name = J(root, f)
       zipfile.write(full_name, os.path.relpath(full_name, base_dir))
-
-  os.path.walk(base_dir, visit, zipfile)
 
 
 def ListDirectoryRecursivelyAsURLs(base_dir):
@@ -279,16 +287,15 @@ def ListDirectoryRecursivelyAsURLs(base_dir):
   URLs relative to the base_dir.
   """
   file_list = []
-  def visit(accum, dirname, names):
-    for name in names:
-      full_name = J(dirname, name)
+  for (root, dirs, files) in os.walk(base_dir, followlinks=True):
+    for f in files:
+      full_name = J(root, f)
       if os.path.isfile(full_name):
         rel_name = os.path.relpath(full_name, base_dir)
         url = '/'.join(rel_name.split(os.path.sep))
-        accum.append(url)
-
-  os.path.walk(base_dir, visit, file_list)
+        file_list.append(url)
   return file_list
+
 
 def GetWebAccessibleResources(base_dir):
   ''' Return the default list of web_accessible_resources to allow us

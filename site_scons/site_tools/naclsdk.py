@@ -334,7 +334,6 @@ def _SetEnvForPnacl(env, root):
     env.Prepend(LIBPATH=pnacl_extra_lib)
 
   env.Replace(# Replace header and lib paths.
-              PNACL_ROOT=root,
               NACL_SDK_INCLUDE=pnacl_include,
               NACL_SDK_LIB=pnacl_lib,
               # Replace the normal unix tools with the PNaCl ones.
