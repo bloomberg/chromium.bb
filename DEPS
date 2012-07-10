@@ -64,7 +64,7 @@ vars = {
   "v8_revision": "12029",
   "webrtc_revision": "2486",
   "jsoncpp_revision": "248",
-  "nss_revision": "144018",
+  "nss_revision": "145873",
 }
 
 deps = {
@@ -404,6 +404,9 @@ deps_os = {
     "src/third_party/GTM":
       (Var("googlecode_url") % "google-toolbox-for-mac") + "/trunk@" +
       Var("gtm_revision"),
+
+    "src/third_party/nss":
+      "/trunk/deps/third_party/nss@" + Var("nss_revision"),
   },
   "mac": {
     "src/chrome/tools/test/reference_build/chrome_mac":
