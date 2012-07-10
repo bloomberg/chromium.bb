@@ -314,7 +314,9 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiTabTest,
   EXPECT_CALL(*auth_requestor_, CertificateSelected(NULL));
 }
 
-IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiTabTest, SelectSecond) {
+// http://crbug.com/121007
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiTabTest,
+                       DISABLED_SelectSecond) {
   // auth_requestor_1_ should get selected automatically by the
   // SSLClientAuthObserver when selector_2_ is accepted, since both 1 & 2 have
   // the same host:port.
