@@ -90,6 +90,7 @@ class ResourceCreationProxy : public InterfaceProxy,
                                   PP_Resource config_id,
                                   PPB_Audio_Callback audio_callback,
                                   void* user_data) OVERRIDE;
+  virtual PP_Resource CreateAudioTrusted(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateAudioConfig(PP_Instance instance,
                                         PP_AudioSampleRate sample_rate,
                                         uint32_t sample_frame_count) OVERRIDE;
@@ -101,7 +102,6 @@ class ResourceCreationProxy : public InterfaceProxy,
                                        const PP_Size& size,
                                        PP_Bool is_always_opaque) OVERRIDE;
 #if !defined(OS_NACL)
-  virtual PP_Resource CreateAudioTrusted(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateAudioInput0_1(
       PP_Instance instance,
       PP_Resource config_id,

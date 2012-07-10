@@ -168,6 +168,11 @@ PP_Resource ResourceCreationProxy::CreateAudio(
                                               audio_callback, user_data);
 }
 
+PP_Resource ResourceCreationProxy::CreateAudioTrusted(PP_Instance instance) {
+  // Proxied plugins can't create trusted audio devices.
+  return 0;
+}
+
 PP_Resource ResourceCreationProxy::CreateAudioConfig(
     PP_Instance instance,
     PP_AudioSampleRate sample_rate,
@@ -192,11 +197,6 @@ PP_Resource ResourceCreationProxy::CreateGraphics2D(PP_Instance instance,
 }
 
 #if !defined(OS_NACL)
-PP_Resource ResourceCreationProxy::CreateAudioTrusted(PP_Instance instance) {
-  // Proxied plugins can't create trusted audio devices.
-  return 0;
-}
-
 PP_Resource ResourceCreationProxy::CreateAudioInput0_1(
     PP_Instance instance,
     PP_Resource config_id,
