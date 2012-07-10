@@ -22,8 +22,9 @@ public:
   TaskObserverAdapter(WebThread::TaskObserver* observer)
       : observer_(observer) { }
 
-  // WebThread::TaskObserver does not have a willProcessTask method.
-  virtual void WillProcessTask(base::TimeTicks) OVERRIDE { }
+  virtual void WillProcessTask(base::TimeTicks) OVERRIDE {
+    observer_->willProcessTask();
+  }
 
   virtual void DidProcessTask(base::TimeTicks) OVERRIDE {
     observer_->didProcessTask();
