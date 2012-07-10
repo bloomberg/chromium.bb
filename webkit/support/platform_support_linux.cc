@@ -29,7 +29,7 @@ void AfterInitialize(bool unit_test_mode) {
   FilePath data_path;
   PathService::Get(base::DIR_EXE, &data_path);
   data_path = data_path.Append("DumpRenderTree.pak");
-  ResourceBundle::InitSharedInstanceWithPakFile(data_path);
+  ResourceBundle::InitSharedInstanceWithPakPath(data_path);
 }
 
 void BeforeShutdown() {

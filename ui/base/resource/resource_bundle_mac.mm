@@ -49,26 +49,27 @@ FilePath GetResourcesPakFilePath(NSString* name, NSString* mac_locale) {
 }  // namespace
 
 void ResourceBundle::LoadCommonResources() {
-  AddDataPack(GetResourcesPakFilePath(@"chrome", nil),
-              SCALE_FACTOR_100P);
-  AddDataPack(GetResourcesPakFilePath(@"theme_resources_standard", nil),
-              SCALE_FACTOR_100P);
-  AddDataPack(GetResourcesPakFilePath(@"ui_resources_standard", nil),
-              SCALE_FACTOR_100P);
+  AddDataPackFromPath(GetResourcesPakFilePath(@"chrome", nil),
+                      SCALE_FACTOR_100P);
+  AddDataPackFromPath(GetResourcesPakFilePath(@"theme_resources_standard", nil),
+                      SCALE_FACTOR_100P);
+  AddDataPackFromPath(GetResourcesPakFilePath(@"ui_resources_standard", nil),
+                      SCALE_FACTOR_100P);
 
   // On Windows and ChromeOS we load either the 1x resource or the 2x resource.
   // On Mac we load both and let the UI framework decide which one to use.
 #if defined(ENABLE_HIDPI)
   if (base::mac::IsOSLionOrLater()) {
-    AddDataPack(GetResourcesPakFilePath(@"theme_resources_2x", nil),
-                SCALE_FACTOR_200P);
-    AddDataPack(GetResourcesPakFilePath(@"ui_resources_2x", nil),
-                SCALE_FACTOR_200P);
+    AddDataPackFromPath(GetResourcesPakFilePath(@"theme_resources_2x", nil),
+                        SCALE_FACTOR_200P);
+    AddDataPackFromPath(GetResourcesPakFilePath(@"ui_resources_2x", nil),
+                        SCALE_FACTOR_200P);
   }
 #endif
 }
 
-FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
+FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
+                                           bool test_file_exists) {
   NSString* mac_locale = base::SysUTF8ToNSString(app_locale);
 
   // Mac OS X uses "_" instead of "-", so swap to get a Mac-style value.
@@ -90,7 +91,7 @@ FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
   if (locale_file_path.empty() || !locale_file_path.IsAbsolute())
     return FilePath();
 
-  if (!file_util::PathExists(locale_file_path))
+  if (test_file_exists && !file_util::PathExists(locale_file_path))
     return FilePath();
 
   return locale_file_path;

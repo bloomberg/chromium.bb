@@ -54,7 +54,7 @@ void UITestSuite::Initialize() {
   ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 
 #if !defined(OS_MACOSX) && defined(OS_POSIX)
-  ui::ResourceBundle::GetSharedInstance().AddDataPack(
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       pak_dir.AppendASCII("ui_resources.pak"),
       ui::SCALE_FACTOR_100P);
 #endif

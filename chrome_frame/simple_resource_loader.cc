@@ -207,7 +207,7 @@ bool SimpleResourceLoader::LoadLocalePack(
         file_util::PathExists(dll_path)) {
       scoped_ptr<ui::DataPack> cur_data_pack(
           new ui::DataPack(ui::SCALE_FACTOR_100P));
-      if (!cur_data_pack->Load(resource_pack_path))
+      if (!cur_data_pack->LoadFromPath(resource_pack_path))
         continue;
 
       HMODULE locale_dll_handle = LoadLibraryEx(dll_path.value().c_str(), NULL,

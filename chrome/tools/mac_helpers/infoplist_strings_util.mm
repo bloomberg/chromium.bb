@@ -61,7 +61,7 @@ ui::DataPack* LoadResourceDataPack(const char* dir_path,
   if (resource_path) {
     FilePath resources_pak_path([resource_path fileSystemRepresentation]);
     resource_pack = new ui::DataPack(ui::SCALE_FACTOR_100P);
-    bool success = resource_pack->Load(resources_pak_path);
+    bool success = resource_pack->LoadFromPath(resources_pak_path);
     if (!success) {
       delete resource_pack;
       resource_pack = NULL;

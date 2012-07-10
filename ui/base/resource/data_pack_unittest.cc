@@ -21,7 +21,7 @@ class DataPackTest
 extern const char kSamplePakContents[];
 extern const size_t kSamplePakSize;
 
-TEST(DataPackTest, Load) {
+TEST(DataPackTest, LoadFromPath) {
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
@@ -32,7 +32,7 @@ TEST(DataPackTest, Load) {
 
   // Load the file through the data pack API.
   DataPack pack(SCALE_FACTOR_100P);
-  ASSERT_TRUE(pack.Load(data_path));
+  ASSERT_TRUE(pack.LoadFromPath(data_path));
 
   base::StringPiece data;
   ASSERT_TRUE(pack.HasResource(4));
@@ -53,6 +53,46 @@ TEST(DataPackTest, Load) {
   ASSERT_FALSE(pack.GetStringPiece(140, &data));
 }
 
+TEST(DataPackTest, LoadFromFile) {
+  ScopedTempDir dir;
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
+
+  // Dump contents into the pak file.
+  ASSERT_EQ(file_util::WriteFile(data_path, kSamplePakContents, kSamplePakSize),
+            static_cast<int>(kSamplePakSize));
+
+  bool created = false;
+  base::PlatformFileError error_code = base::PLATFORM_FILE_OK;
+  base::PlatformFile file = base::CreatePlatformFile(
+      data_path, base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
+      &created, &error_code);
+
+  // Load the file through the data pack API.
+  DataPack pack(SCALE_FACTOR_100P);
+  ASSERT_TRUE(pack.LoadFromFile(file));
+
+  base::StringPiece data;
+  ASSERT_TRUE(pack.HasResource(4));
+  ASSERT_TRUE(pack.GetStringPiece(4, &data));
+  EXPECT_EQ("this is id 4", data);
+  ASSERT_TRUE(pack.HasResource(6));
+  ASSERT_TRUE(pack.GetStringPiece(6, &data));
+  EXPECT_EQ("this is id 6", data);
+
+  // Try reading zero-length data blobs, just in case.
+  ASSERT_TRUE(pack.GetStringPiece(1, &data));
+  EXPECT_EQ(0U, data.length());
+  ASSERT_TRUE(pack.GetStringPiece(10, &data));
+  EXPECT_EQ(0U, data.length());
+
+  // Try looking up an invalid key.
+  ASSERT_FALSE(pack.HasResource(140));
+  ASSERT_FALSE(pack.GetStringPiece(140, &data));
+
+  base::ClosePlatformFile(file);
+}
+
 INSTANTIATE_TEST_CASE_P(WriteBINARY, DataPackTest, ::testing::Values(
     DataPack::BINARY));
 INSTANTIATE_TEST_CASE_P(WriteUTF8, DataPackTest, ::testing::Values(
@@ -67,7 +107,7 @@ TEST(DataPackTest, LoadFileWithTruncatedHeader) {
       "ui/base/test/data/data_pack_unittest/truncated-header.pak"));
 
   DataPack pack(SCALE_FACTOR_100P);
-  ASSERT_FALSE(pack.Load(data_path));
+  ASSERT_FALSE(pack.LoadFromPath(data_path));
 }
 
 TEST_P(DataPackTest, Write) {
@@ -91,7 +131,7 @@ TEST_P(DataPackTest, Write) {
 
   // Now try to read the data back in.
   DataPack pack(SCALE_FACTOR_100P);
-  ASSERT_TRUE(pack.Load(file));
+  ASSERT_TRUE(pack.LoadFromPath(file));
   EXPECT_EQ(pack.GetTextEncodingType(), GetParam());
 
   base::StringPiece data;

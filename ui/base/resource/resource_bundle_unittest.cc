@@ -89,7 +89,7 @@ TEST(ResourceBundle, DelegateGetPathForResourcePack) {
       .Times(1)
       .WillOnce(Return(pack_path));
 
-  resource_bundle.AddDataPack(pack_path, pack_scale_factor);
+  resource_bundle.AddDataPackFromPath(pack_path, pack_scale_factor);
 }
 
 TEST(ResourceBundle, DelegateGetPathForLocalePack) {
@@ -251,7 +251,7 @@ TEST(ResourceBundle, LoadDataResourceBytes) {
         kUnfoundResourceId, ui::SCALE_FACTOR_NONE));
 
     // Give a .pak file that doesn't exist so we will fail to load it.
-    resource_bundle.AddDataPack(
+    resource_bundle.AddDataPackFromPath(
         FilePath(FILE_PATH_LITERAL("non-existant-file.pak")),
         ui::SCALE_FACTOR_NONE);
     EXPECT_EQ(NULL, resource_bundle.LoadDataResourceBytes(
@@ -281,7 +281,7 @@ TEST(ResourceBundle, GetRawDataResource) {
 
     // Load the regular and 2x pak files.
     resource_bundle.LoadTestResources(data_path, locale_path);
-    resource_bundle.AddDataPack(data_2x_path, SCALE_FACTOR_200P);
+    resource_bundle.AddDataPackFromPath(data_2x_path, SCALE_FACTOR_200P);
 
     // Resource ID 4 exists in both 1x and 2x paks, so we expect a different
     // result when requesting the 2x scale.

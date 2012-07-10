@@ -53,6 +53,7 @@ enum LoadErrors {
   ENTRY_NOT_FOUND,
   HEADER_TRUNCATED,
   WRONG_ENCODING,
+  INIT_FAILED_FROM_FILE,
 
   LOAD_ERRORS_COUNT,
 };
@@ -70,7 +71,7 @@ DataPack::DataPack(ui::ScaleFactor scale_factor)
 DataPack::~DataPack() {
 }
 
-bool DataPack::Load(const FilePath& path) {
+bool DataPack::LoadFromPath(const FilePath& path) {
   mmap_.reset(new file_util::MemoryMappedFile);
   if (!mmap_->Initialize(path)) {
     DLOG(ERROR) << "Failed to mmap datapack";
@@ -79,7 +80,22 @@ bool DataPack::Load(const FilePath& path) {
     mmap_.reset();
     return false;
   }
+  return LoadImpl();
+}
 
+bool DataPack::LoadFromFile(base::PlatformFile file) {
+  mmap_.reset(new file_util::MemoryMappedFile);
+  if (!mmap_->Initialize(file)) {
+    DLOG(ERROR) << "Failed to mmap datapack";
+    UMA_HISTOGRAM_ENUMERATION("DataPack.Load", INIT_FAILED_FROM_FILE,
+                              LOAD_ERRORS_COUNT);
+    mmap_.reset();
+    return false;
+  }
+  return LoadImpl();
+}
+
+bool DataPack::LoadImpl() {
   // Sanity check the header of the file.
   if (kHeaderLength > mmap_->length()) {
     DLOG(ERROR) << "Data pack file corruption: incomplete file header.";

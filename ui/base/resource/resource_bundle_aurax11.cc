@@ -39,34 +39,35 @@ void ResourceBundle::LoadCommonResources() {
   // 2x images. The 1x data pack only has 1x images, thus passes in an accurate
   // scale factor to gfx::ImageSkia::AddRepresentation.
 
-  AddDataPack(GetResourcesPakFilePath("chrome.pak"),
-              SCALE_FACTOR_100P);
+  AddDataPackFromPath(GetResourcesPakFilePath("chrome.pak"),
+                      SCALE_FACTOR_100P);
 
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
     // 1x touch
-    AddDataPack(GetResourcesPakFilePath("theme_resources_touch_1x.pak"),
-                SCALE_FACTOR_100P);
-    AddDataPack(GetResourcesPakFilePath("ui_resources_touch.pak"),
-                SCALE_FACTOR_100P);
+    AddDataPackFromPath(GetResourcesPakFilePath("theme_resources_touch_1x.pak"),
+                        SCALE_FACTOR_100P);
+    AddDataPackFromPath(GetResourcesPakFilePath("ui_resources_touch.pak"),
+                        SCALE_FACTOR_100P);
     if (ShouldLoad2xResources()) {
       // 2x touch
-      AddDataPack(GetResourcesPakFilePath("theme_resources_touch_2x.pak"),
-                  SCALE_FACTOR_200P);
-      AddDataPack(GetResourcesPakFilePath("ui_resources_touch_2x.pak"),
-                  SCALE_FACTOR_200P);
+      AddDataPackFromPath(
+          GetResourcesPakFilePath("theme_resources_touch_2x.pak"),
+          SCALE_FACTOR_200P);
+      AddDataPackFromPath(GetResourcesPakFilePath("ui_resources_touch_2x.pak"),
+                          SCALE_FACTOR_200P);
     }
   } else {
     // 1x non touch
-    AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"),
-                SCALE_FACTOR_100P);
-    AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"),
-                SCALE_FACTOR_100P);
+    AddDataPackFromPath(GetResourcesPakFilePath("theme_resources_standard.pak"),
+                        SCALE_FACTOR_100P);
+    AddDataPackFromPath(GetResourcesPakFilePath("ui_resources_standard.pak"),
+                        SCALE_FACTOR_100P);
     if (ShouldLoad2xResources()) {
       // 2x non touch
-      AddDataPack(GetResourcesPakFilePath("theme_resources_2x.pak"),
-                  SCALE_FACTOR_200P);
-      AddDataPack(GetResourcesPakFilePath("ui_resources_2x.pak"),
-                  SCALE_FACTOR_200P);
+      AddDataPackFromPath(GetResourcesPakFilePath("theme_resources_2x.pak"),
+                          SCALE_FACTOR_200P);
+      AddDataPackFromPath(GetResourcesPakFilePath("ui_resources_2x.pak"),
+                          SCALE_FACTOR_200P);
     }
   }
 }

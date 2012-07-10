@@ -17,7 +17,7 @@ TestAuraInitializer::TestAuraInitializer() {
   PathService::Get(base::DIR_MODULE, &pak_file);
   pak_file = pak_file.Append(FILE_PATH_LITERAL(
       "test_support_aura_resources.pak"));
-  ui::ResourceBundle::InitSharedInstanceWithPakFile(pak_file);
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
 #endif
 }
 

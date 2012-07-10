@@ -108,7 +108,25 @@ std::string ResourceBundle::InitSharedInstanceWithLocale(
 }
 
 // static
-void ResourceBundle::InitSharedInstanceWithPakFile(const FilePath& path) {
+void ResourceBundle::InitSharedInstanceWithPakFile(
+    base::PlatformFile pak_file, bool should_load_common_resources) {
+  DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";
+  g_shared_instance_ = new ResourceBundle(NULL);
+
+  if (should_load_common_resources)
+    g_shared_instance_->LoadCommonResources();
+
+  scoped_ptr<DataPack> data_pack(
+      new DataPack(SCALE_FACTOR_100P));
+  if (!data_pack->LoadFromFile(pak_file)) {
+    NOTREACHED() << "failed to load pak file";
+    return;
+  }
+  g_shared_instance_->locale_resources_data_.reset(data_pack.release());
+}
+
+// static
+void ResourceBundle::InitSharedInstanceWithPakPath(const FilePath& path) {
   DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";
   g_shared_instance_ = new ResourceBundle(NULL);
 
@@ -136,11 +154,11 @@ ResourceBundle& ResourceBundle::GetSharedInstance() {
 }
 
 bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
-  return !GetLocaleFilePath(locale).empty();
+  return !GetLocaleFilePath(locale, true).empty();
 }
 
-void ResourceBundle::AddDataPack(const FilePath& path,
-                                 ScaleFactor scale_factor) {
+void ResourceBundle::AddDataPackFromPath(const FilePath& path,
+                                         ScaleFactor scale_factor) {
   // Do not pass an empty |path| value to this method. If the absolute path is
   // unknown pass just the pack file name.
   DCHECK(!path.empty());
@@ -155,7 +173,7 @@ void ResourceBundle::AddDataPack(const FilePath& path,
 
   scoped_ptr<DataPack> data_pack(
       new DataPack(scale_factor));
-  if (data_pack->Load(pack_path)) {
+  if (data_pack->LoadFromPath(pack_path)) {
     data_packs_.push_back(data_pack.release());
   } else {
     LOG(ERROR) << "Failed to load " << pack_path.value()
@@ -163,8 +181,21 @@ void ResourceBundle::AddDataPack(const FilePath& path,
   }
 }
 
+void ResourceBundle::AddDataPackFromFile(base::PlatformFile file,
+                                         ScaleFactor scale_factor) {
+  scoped_ptr<DataPack> data_pack(
+      new DataPack(scale_factor));
+  if (data_pack->LoadFromFile(file)) {
+    data_packs_.push_back(data_pack.release());
+  } else {
+    LOG(ERROR) << "Failed to load data pack from file."
+               << "\nSome features may not be available.";
+  }
+}
+
 #if !defined(OS_MACOSX)
-FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
+FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
+                                           bool test_file_exists) {
   if (app_locale.empty())
     return FilePath();
 
@@ -189,7 +220,7 @@ FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
   if (locale_file_path.empty() || !locale_file_path.IsAbsolute())
     return FilePath();
 
-  if (!file_util::PathExists(locale_file_path))
+  if (test_file_exists && !file_util::PathExists(locale_file_path))
     return FilePath();
 
   return locale_file_path;
@@ -207,7 +238,7 @@ std::string ResourceBundle::LoadLocaleResources(
       locale_file_path =
           command_line->GetSwitchValuePath(switches::kLocalePak);
     } else {
-      locale_file_path = GetLocaleFilePath(app_locale);
+      locale_file_path = GetLocaleFilePath(app_locale, true);
     }
   }
 
@@ -219,7 +250,7 @@ std::string ResourceBundle::LoadLocaleResources(
 
   scoped_ptr<DataPack> data_pack(
       new DataPack(SCALE_FACTOR_100P));
-  if (!data_pack->Load(locale_file_path)) {
+  if (!data_pack->LoadFromPath(locale_file_path)) {
     UMA_HISTOGRAM_ENUMERATION("ResourceBundle.LoadLocaleResourcesError",
                               logging::GetLastSystemErrorCode(), 16000);
     LOG(ERROR) << "failed to load locale.pak";
@@ -236,11 +267,11 @@ void ResourceBundle::LoadTestResources(const FilePath& path,
   // Use the given resource pak for both common and localized resources.
   scoped_ptr<DataPack> data_pack(
       new DataPack(SCALE_FACTOR_100P));
-  if (!path.empty() && data_pack->Load(path))
+  if (!path.empty() && data_pack->LoadFromPath(path))
     data_packs_.push_back(data_pack.release());
 
   data_pack.reset(new DataPack(ui::SCALE_FACTOR_NONE));
-  if (!locale_path.empty() && data_pack->Load(locale_path)) {
+  if (!locale_path.empty() && data_pack->LoadFromPath(locale_path)) {
     locale_resources_data_.reset(data_pack.release());
   } else {
     locale_resources_data_.reset(

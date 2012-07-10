@@ -104,7 +104,7 @@ void ShellMainDelegate::InitializeResourceBundle() {
 
   pak_file = pak_dir.Append(FILE_PATH_LITERAL("content_shell.pak"));
 #endif
-  ui::ResourceBundle::InitSharedInstanceWithPakFile(pak_file);
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
 }
 
 content::ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {

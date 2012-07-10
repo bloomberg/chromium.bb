@@ -48,22 +48,26 @@ void ResourceBundle::LoadCommonResources() {
 
   switch (ui::GetDisplayLayout()) {
     case ui::LAYOUT_TOUCH:
-      AddDataPack(GetResourcesPakFilePath("theme_resources_touch_1x.pak"),
-                  SCALE_FACTOR_100P);
-      AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"),
-                  SCALE_FACTOR_100P);
+      AddDataPackFromPath(
+          GetResourcesPakFilePath("theme_resources_touch_1x.pak"),
+          SCALE_FACTOR_100P);
+      AddDataPackFromPath(
+          GetResourcesPakFilePath("ui_resources_standard.pak"),
+          SCALE_FACTOR_100P);
       break;
     default:
       if (use_hidpi) {
-        AddDataPack(GetResourcesPakFilePath("theme_resources_2x.pak"),
-                    SCALE_FACTOR_200P);
-        AddDataPack(GetResourcesPakFilePath("ui_resources_2x.pak"),
-                    SCALE_FACTOR_200P);
+        AddDataPackFromPath(GetResourcesPakFilePath("theme_resources_2x.pak"),
+                            SCALE_FACTOR_200P);
+        AddDataPackFromPath(GetResourcesPakFilePath("ui_resources_2x.pak"),
+                            SCALE_FACTOR_200P);
       } else {
-        AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"),
-                    SCALE_FACTOR_100P);
-        AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"),
-                    SCALE_FACTOR_100P);
+        AddDataPackFromPath(
+            GetResourcesPakFilePath("theme_resources_standard.pak"),
+            SCALE_FACTOR_100P);
+        AddDataPackFromPath(
+            GetResourcesPakFilePath("ui_resources_standard.pak"),
+            SCALE_FACTOR_100P);
       }
       break;
   }

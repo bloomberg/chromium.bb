@@ -53,7 +53,7 @@ void AfterInitialize(bool unit_test_mode) {
 
   FilePath data_path(kDumpRenderTreeDir);
   data_path = data_path.Append("DumpRenderTree.pak");
-  ResourceBundle::InitSharedInstanceWithPakFile(data_path);
+  ResourceBundle::InitSharedInstanceWithPakPath(data_path);
 
   // We enable file-over-http to bridge the file protocol to http protocol
   // in here, which can

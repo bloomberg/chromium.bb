@@ -108,7 +108,7 @@ void AfterInitialize(bool unit_test_mode) {
       [base::mac::FrameworkBundle() pathForResource:@"DumpRenderTree"
                                              ofType:@"pak"];
   FilePath resources_pak_path([resource_path fileSystemRepresentation]);
-  if (!g_resource_data_pack->Load(resources_pak_path)) {
+  if (!g_resource_data_pack->LoadFromPath(resources_pak_path)) {
     LOG(FATAL) << "failed to load DumpRenderTree.pak";
   }
 

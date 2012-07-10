@@ -190,7 +190,7 @@ void ChromeTestSuite::Initialize() {
   PathService::Get(base::DIR_MODULE, &resources_pack_path);
   resources_pack_path =
       resources_pack_path.Append(FILE_PATH_LITERAL("resources.pak"));
-  ResourceBundle::GetSharedInstance().AddDataPack(
+  ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       resources_pack_path, ui::SCALE_FACTOR_100P);
 
   stats_filename_ = base::StringPrintf("unit_tests-%d",

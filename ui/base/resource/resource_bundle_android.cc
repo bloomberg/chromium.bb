@@ -29,12 +29,12 @@ FilePath GetResourcesPakFilePath(const std::string& pak_name) {
 namespace ui {
 
 void ResourceBundle::LoadCommonResources() {
-  AddDataPack(GetResourcesPakFilePath("chrome.pak"),
-              SCALE_FACTOR_100P);
-  AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"),
-              SCALE_FACTOR_100P);
-  AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"),
-              SCALE_FACTOR_100P);
+  AddDataPackFromPath(GetResourcesPakFilePath("chrome.pak"),
+                      SCALE_FACTOR_100P);
+  AddDataPackFromPath(GetResourcesPakFilePath("theme_resources_standard.pak"),
+                      SCALE_FACTOR_100P);
+  AddDataPackFromPath(GetResourcesPakFilePath("ui_resources_standard.pak"),
+                      SCALE_FACTOR_100P);
 }
 
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {

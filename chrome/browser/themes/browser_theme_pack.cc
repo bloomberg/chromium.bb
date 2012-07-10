@@ -388,7 +388,7 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
   pack->data_pack_.reset(
       new ui::DataPack(ui::SCALE_FACTOR_100P));
 
-  if (!pack->data_pack_->Load(path)) {
+  if (!pack->data_pack_->LoadFromPath(path)) {
     LOG(ERROR) << "Failed to load theme data pack.";
     return NULL;
   }
