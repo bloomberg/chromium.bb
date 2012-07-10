@@ -70,7 +70,7 @@ table_files = \
 	en-us-g2.ctb \
 	en-us-interline.ctb \
 	en-us-mathtext.ctb \
-	eo.ctb \
+	eo-g1.ctb \
 	es-chardefs.cti \
 	Es-Es-G0.utb \
 	Es-Es-g1.utb \
