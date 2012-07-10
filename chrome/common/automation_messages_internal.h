@@ -578,7 +578,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_TabIndex,
 // This message requests the handle (int64 app-unique identifier) of
 // a valid tabbed browser window, i.e. normal type and non-incognito mode.
 // On error, the returned handle value is 0.
-IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_FindTabbedBrowserWindow,
+IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_DEPRECATED_FindTabbedBrowserWindow,
                             int)
 
 // This message requests the number of normal browser windows, i.e. normal

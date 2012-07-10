@@ -70,13 +70,17 @@ bool AutomatedUITestBase::CloseActiveWindow() {
     LogErrorMessage("Application closed unexpectedly.");
     return false;
   }
-  scoped_refptr<BrowserProxy> browser(automation()->FindTabbedBrowserWindow());
-  if (!browser.get()) {
-    LogErrorMessage("Can't find browser window.");
-    return false;
+  for (int i = 0; i < browser_windows_count - 1; ++i) {
+    scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(i));
+    Browser::Type type;
+    if (browser->GetType(&type) && type == Browser::TYPE_TABBED) {
+      set_active_browser(browser);
+      return true;
+    }
   }
-  set_active_browser(browser);
-  return true;
+
+  LogErrorMessage("Can't find browser window.");
+  return false;
 }
 
 bool AutomatedUITestBase::DuplicateTab() {

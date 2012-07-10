@@ -72,7 +72,7 @@ TEST_F(MachPortsTest, GetCounts) {
   RecordPortCount();
 
   // Create a browser and open a few tabs.
-  scoped_refptr<BrowserProxy> browser(automation()->FindTabbedBrowserWindow());
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
   EXPECT_TRUE(AddTab(browser, "www.google.com"));

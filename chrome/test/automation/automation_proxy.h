@@ -133,12 +133,6 @@ class AutomationProxy : public IPC::Listener, public AutomationMessageSender {
   // Window numbers are 0-based.
   scoped_refptr<BrowserProxy> GetBrowserWindow(int window_index);
 
-  // Finds the first browser window that is not incognito mode and of type
-  // TYPE_TABBED, and returns its corresponding BrowserProxy, transferring
-  // ownership of the pointer to the caller.
-  // On failure, returns NULL.
-  scoped_refptr<BrowserProxy> FindTabbedBrowserWindow();
-
   // Sends the browser a new proxy configuration to start using. Returns true
   // if the proxy config was successfully sent, false otherwise.
   bool SendProxyConfig(const std::string& new_proxy_config) WARN_UNUSED_RESULT;

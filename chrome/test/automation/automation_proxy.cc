@@ -331,14 +331,6 @@ scoped_refptr<BrowserProxy> AutomationProxy::GetBrowserWindow(
   return ProxyObjectFromHandle<BrowserProxy>(handle);
 }
 
-scoped_refptr<BrowserProxy> AutomationProxy::FindTabbedBrowserWindow() {
-  int handle = 0;
-  if (!Send(new AutomationMsg_FindTabbedBrowserWindow(&handle)))
-    return NULL;
-
-  return ProxyObjectFromHandle<BrowserProxy>(handle);
-}
-
 IPC::SyncChannel* AutomationProxy::channel() {
   return channel_.get();
 }

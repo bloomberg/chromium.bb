@@ -118,7 +118,6 @@ class TestingAutomationProvider : public AutomationProvider,
   // Be aware that the browser window returned might be of non TYPE_TABBED
   // or in incognito mode.
   void GetBrowserWindow(int index, int* handle);
-  void FindTabbedBrowserWindow(int* handle);
   void ExecuteBrowserCommandAsync(int handle, int command, bool* success);
   void ExecuteBrowserCommand(int handle, int command,
                              IPC::Message* reply_message);
