@@ -777,19 +777,15 @@ def _CreateParser():
   parser.add_option('--remote', default=False, action='store_true',
                     help=('Specifies that this tryjob should be run remotely.'))
 
+  #
   # Advanced options
+  #
+
   group = CustomGroup(
       parser,
       'Advanced Options',
       'Caution: use these options at your own risk.')
 
-  # The base GS URL (gs://<bucket_name>/<path>) to archive artifacts to.
-  group.add_remote_option('--archive-base', type='gs_path',
-                          help=optparse.SUPPRESS_HELP)
-  # bootstrap-args are not verified by the bootstrap code.  It gets passed
-  # direcly to the bootstrap re-execution.
-  group.add_remote_option('--bootstrap-args', action='append',
-                          default=[], help=optparse.SUPPRESS_HELP)
   group.add_remote_option('--buildbot', dest='buildbot', action='store_true',
                           default=False, help='This is running on a buildbot')
   group.add_remote_option('--buildnumber', help='build number', type='int',
@@ -844,8 +840,6 @@ def _CreateParser():
                           default=True,
                           help='Override values from buildconfig and never '
                                'uprev.')
-  group.add_option('--pass-through', dest='pass_through_args', action='append',
-                   type='string', default=[], help=optparse.SUPPRESS_HELP)
   group.add_option('--reference-repo', action='store', default=None,
                    dest='reference_repo',
                    help='Reuse git data stored in an existing repo '
@@ -854,17 +848,6 @@ def _CreateParser():
                         "default, if this option isn't given but cbuildbot "
                         'is invoked from a repo checkout, cbuildbot will '
                         'use the repo root.')
-  # Used for handling forwards/backwards compatibility for --resume and
-  # --bootstrap.
-  group.add_option('--reexec-api-version', dest='output_api_version',
-                   action='store_true', default=False,
-                   help=optparse.SUPPRESS_HELP)
-  # Indicates this is running on a remote trybot machine.
-  group.add_option('--remote-trybot', dest='remote_trybot', action='store_true',
-                   default=False, help=optparse.SUPPRESS_HELP)
-  # Patches uploaded by trybot client when run using the -p option.
-  group.add_remote_option('--remote-patches', action='extend', default=[],
-                          help=optparse.SUPPRESS_HELP)
   group.add_option('--resume', action='store_true', default=False,
                    help='Skip stages already successfully completed.')
   group.add_remote_option('--timeout', action='store', type='int', default=0,
@@ -872,15 +855,6 @@ def _CreateParser():
                                'can run for, at which point the build will be '
                                'aborted.  If set to zero, then there is no '
                                'timeout.')
-  # Specify specific remote tryslaves to run on.
-  group.add_option('--slaves', action='extend', default=[],
-                   help=optparse.SUPPRESS_HELP)
-  group.add_option('--sourceroot', type='path', default=constants.SOURCE_ROOT,
-                   help=optparse.SUPPRESS_HELP)
-  # Causes cbuildbot to bootstrap itself twice, in the sequence A->B->C.
-  # A(unpatched) patches and bootstraps B.  B patches and bootstraps C.
-  group.add_remote_option('--test-bootstrap', action='store_true',
-                          default=False, help=optparse.SUPPRESS_HELP)
   group.add_option('--test-tryjob', action='store_true',
                    default=False,
                    help='Submit a tryjob to the test repository.  Will not '
@@ -894,7 +868,44 @@ def _CreateParser():
 
   parser.add_option_group(group)
 
+  #
+  # Hidden options.
+  #
+
+  # The base GS URL (gs://<bucket_name>/<path>) to archive artifacts to.
+  parser.add_remote_option('--archive-base', type='gs_path',
+                          help=optparse.SUPPRESS_HELP)
+  # bootstrap-args are not verified by the bootstrap code.  It gets passed
+  # direcly to the bootstrap re-execution.
+  parser.add_remote_option('--bootstrap-args', action='append',
+                          default=[], help=optparse.SUPPRESS_HELP)
+  parser.add_option('--pass-through', dest='pass_through_args', action='append',
+                   type='string', default=[], help=optparse.SUPPRESS_HELP)
+  # Used for handling forwards/backwards compatibility for --resume and
+  # --bootstrap.
+  parser.add_option('--reexec-api-version', dest='output_api_version',
+                   action='store_true', default=False,
+                   help=optparse.SUPPRESS_HELP)
+  # Indicates this is running on a remote trybot machine.
+  parser.add_option('--remote-trybot', dest='remote_trybot',
+                    action='store_true', default=False,
+                    help=optparse.SUPPRESS_HELP)
+  # Patches uploaded by trybot client when run using the -p option.
+  parser.add_remote_option('--remote-patches', action='extend', default=[],
+                          help=optparse.SUPPRESS_HELP)
+  # Specify specific remote tryslaves to run on.
+  parser.add_option('--slaves', action='extend', default=[],
+                   help=optparse.SUPPRESS_HELP)
+  parser.add_option('--sourceroot', type='path', default=constants.SOURCE_ROOT,
+                   help=optparse.SUPPRESS_HELP)
+  # Causes cbuildbot to bootstrap itself twice, in the sequence A->B->C.
+  # A(unpatched) patches and bootstraps B.  B patches and bootstraps C.
+  parser.add_remote_option('--test-bootstrap', action='store_true',
+                          default=False, help=optparse.SUPPRESS_HELP)
+
+  #
   # Debug options
+  #
   group = CustomGroup(parser, "Debug Options")
 
   group.add_remote_option('--debug', action='store_true', default=None,
