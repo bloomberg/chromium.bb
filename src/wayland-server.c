@@ -498,6 +498,15 @@ lose_keyboard_focus(struct wl_listener *listener, void *data)
 }
 
 static void
+lose_touch_focus(struct wl_listener *listener, void *data)
+{
+	struct wl_touch *touch =
+		container_of(listener, struct wl_touch, focus_listener);
+
+	touch->focus_resource = NULL;
+}
+
+static void
 default_grab_focus(struct wl_pointer_grab *grab,
 		   struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y)
 {
@@ -666,6 +675,7 @@ wl_touch_init(struct wl_touch *touch)
 {
 	memset(touch, 0, sizeof *touch);
 	wl_list_init(&touch->resource_list);
+	touch->focus_listener.notify = lose_touch_focus;
 }
 
 WL_EXPORT void
