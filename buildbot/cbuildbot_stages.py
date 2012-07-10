@@ -1,4 +1,4 @@
-# Copyright (c) 2011-2012 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -1084,7 +1084,7 @@ class SDKTestStage(bs.BuilderStage):
 
     new_chroot_cmd = ['cros_sdk', '--chroot', 'new-sdk-chroot']
     # Build a new SDK using the tarball.
-    cmd = new_chroot_cmd + ['--download', '--replace',
+    cmd = new_chroot_cmd + ['--download', '--replace', '--nousepkg',
         '--url', 'file://' + tarball_location]
     cros_build_lib.RunCommand(cmd, cwd=self._build_root)
 

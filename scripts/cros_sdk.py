@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011-2012 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -211,7 +211,7 @@ def BootstrapChroot(chroot_path, stage_url, replace):
     raise SystemExit('Running %r failed!' % cmd)
 
 
-def CreateChroot(sdk_url, sdk_version, chroot_path, replace):
+def CreateChroot(sdk_url, sdk_version, chroot_path, replace, nousepkg):
   """Creates a new chroot from a given SDK"""
   if not os.path.exists(SDK_DIR):
     cros_build_lib.RunCommand(['mkdir', '-p', SDK_DIR], print_cmd=False)
@@ -232,7 +232,8 @@ def CreateChroot(sdk_url, sdk_version, chroot_path, replace):
   # this to just unpacking the sdk.
   cmd = MAKE_CHROOT + ['--stage3_path', sdk,
                        '--chroot', chroot_path]
-
+  if nousepkg:
+    cmd.append('--nousepkg')
   if replace:
     cmd.append('--replace')
 
@@ -327,6 +328,9 @@ Action taken is the following:
   parser.add_option('-r', '--replace',
                     action='store_true', dest='replace', default=False,
                     help=('Replace an existing SDK chroot'))
+  parser.add_option('--nousepkg',
+                    action='store_true', dest='nousepkg', default=False,
+                    help=('Do not use binary packages when creating a chroot'))
   parser.add_option('-u', '--url',
                     dest='sdk_url', default='',
                     help=('''Use sdk tarball located at this url.
@@ -423,7 +427,7 @@ Action taken is the following:
                             options.replace)
           else:
             CreateChroot(options.sdk_url, sdk_version,
-                         chroot_path, options.replace)
+                         chroot_path, options.replace, options.nousepkg)
         if options.enter:
           lock.read_lock()
           EnterChroot(chroot_path, options.chrome_root,
