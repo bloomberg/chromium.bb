@@ -44,7 +44,8 @@ class ResourceContext;
 class SpeechRecognitionPreferences;
 
 // This class holds the context needed for a browsing session.
-// It lives on the UI thread.
+// It lives on the UI thread. All these methods must only be called on the UI
+// thread.
 class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
  public:
   static DownloadManager* GetDownloadManager(BrowserContext* browser_context);

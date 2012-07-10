@@ -44,6 +44,10 @@ namespace content {
 namespace {
 
 void CreateQuotaManagerAndClients(BrowserContext* context) {
+  // Ensure that these methods are called on the UI thread, except for unittests
+  // where a UI thread might not have been created.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         !BrowserThread::IsMessageLoopValid(BrowserThread::UI));
   if (context->GetUserData(kQuotaManagerKeyName)) {
     DCHECK(context->GetUserData(kDatabaseTrackerKeyName));
     DCHECK(context->GetUserData(kDOMStorageContextKeyName));
@@ -143,6 +147,7 @@ DOMStorageContextImpl* GetDOMStorageContextImpl(BrowserContext* context) {
 
 DownloadManager* BrowserContext::GetDownloadManager(
     BrowserContext* context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!context->GetUserData(kDownloadManagerKeyName)) {
     ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
     DCHECK(rdh);

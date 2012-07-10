@@ -70,6 +70,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
         io_thread_(BrowserThread::IO, &message_loop_) {
     profile_.reset(new TestingProfile());
     helper_ = BrowsingDataFileSystemHelper::Create(profile_.get());
+    message_loop_.RunAllPending();
     canned_helper_ = new CannedBrowsingDataFileSystemHelper(profile_.get());
   }
   virtual ~BrowsingDataFileSystemHelperTest() {

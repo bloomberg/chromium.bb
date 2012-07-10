@@ -175,6 +175,7 @@ void InitializeRequestContext(
 }  // namespace
 
 AppCacheService* ResourceContext::GetAppCacheService(ResourceContext* context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return UserDataAdapter<ChromeAppCacheService>::Get(
       context, kAppCacheServicKeyName);
 }
@@ -194,35 +195,41 @@ ResourceContext::~ResourceContext() {
 
 BlobStorageController* GetBlobStorageControllerForResourceContext(
     ResourceContext* resource_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return GetChromeBlobStorageContextForResourceContext(resource_context)->
       controller();
 }
 
 DatabaseTracker* GetDatabaseTrackerForResourceContext(
     ResourceContext* resource_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return UserDataAdapter<DatabaseTracker>::Get(
       resource_context, kDatabaseTrackerKeyName);
 }
 
 FileSystemContext* GetFileSystemContextForResourceContext(
     ResourceContext* resource_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return UserDataAdapter<FileSystemContext>::Get(
       resource_context, kFileSystemContextKeyName);
 }
 
 IndexedDBContextImpl* GetIndexedDBContextForResourceContext(
     ResourceContext* resource_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return UserDataAdapter<IndexedDBContextImpl>::Get(
       resource_context, kIndexedDBContextKeyName);
 }
 
 ChromeBlobStorageContext* GetChromeBlobStorageContextForResourceContext(
     ResourceContext* resource_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return UserDataAdapter<ChromeBlobStorageContext>::Get(
       resource_context, kBlobStorageContextKeyName);
 }
 
 HostZoomMap* GetHostZoomMapForResourceContext(ResourceContext* context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return static_cast<NonOwningZoomData*>(
       context->GetUserData(kHostZoomMapKeyName))->host_zoom_map();
 }
