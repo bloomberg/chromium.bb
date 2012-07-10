@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/ppb_var_shared.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedUserGesture.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"
@@ -269,15 +270,11 @@ void DeletePropertyDeprecated(PP_Var var,
     accessor.SetException(kUnableToRemovePropertyException);
 }
 
-PP_Var CallDeprecated(PP_Var var,
-                      PP_Var method_name,
-                      uint32_t argc,
-                      PP_Var* argv,
-                      PP_Var* exception) {
-  ObjectAccessorTryCatch accessor(var, exception);
-  if (accessor.has_exception())
-    return PP_MakeUndefined();
-
+PP_Var InternalCallDeprecated(ObjectAccessorTryCatch* accessor,
+                              PP_Var method_name,
+                              uint32_t argc,
+                              PP_Var* argv,
+                              PP_Var* exception) {
   NPIdentifier identifier;
   if (method_name.type == PP_VARTYPE_UNDEFINED) {
     identifier = NULL;
@@ -285,11 +282,11 @@ PP_Var CallDeprecated(PP_Var var,
     // Specifically allow only string functions to be called.
     identifier = PPVarToNPIdentifier(method_name);
     if (!identifier) {
-      accessor.SetException(kInvalidPropertyException);
+      accessor->SetException(kInvalidPropertyException);
       return PP_MakeUndefined();
     }
   } else {
-    accessor.SetException(kInvalidPropertyException);
+    accessor->SetException(kInvalidPropertyException);
     return PP_MakeUndefined();
   }
 
@@ -299,7 +296,7 @@ PP_Var CallDeprecated(PP_Var var,
     for (uint32_t i = 0; i < argc; ++i) {
       if (!PPVarToNPVariantNoCopy(argv[i], &args[i])) {
         // This argument was invalid, throw an exception & give up.
-        accessor.SetException(kInvalidValueException);
+        accessor->SetException(kInvalidValueException);
         return PP_MakeUndefined();
       }
     }
@@ -309,22 +306,39 @@ PP_Var CallDeprecated(PP_Var var,
 
   NPVariant result;
   if (identifier) {
-    ok = WebBindings::invoke(NULL, accessor.object()->np_object(),
+    ok = WebBindings::invoke(NULL, accessor->object()->np_object(),
                              identifier, args.get(), argc, &result);
   } else {
-    ok = WebBindings::invokeDefault(NULL, accessor.object()->np_object(),
+    ok = WebBindings::invokeDefault(NULL, accessor->object()->np_object(),
                                     args.get(), argc, &result);
   }
 
   if (!ok) {
     // An exception may have been raised.
-    accessor.SetException(kUnableToCallMethodException);
+    accessor->SetException(kUnableToCallMethodException);
     return PP_MakeUndefined();
   }
 
-  PP_Var ret = NPVariantToPPVar(accessor.GetPluginInstance(), &result);
+  PP_Var ret = NPVariantToPPVar(accessor->GetPluginInstance(), &result);
   WebBindings::releaseVariantValue(&result);
   return ret;
+}
+
+PP_Var CallDeprecated(PP_Var var,
+                      PP_Var method_name,
+                      uint32_t argc,
+                      PP_Var* argv,
+                      PP_Var* exception) {
+  ObjectAccessorTryCatch accessor(var, exception);
+  if (accessor.has_exception())
+    return PP_MakeUndefined();
+  PluginInstance* plugin = accessor.GetPluginInstance();
+  if (plugin && plugin->IsProcessingUserGesture()) {
+    WebKit::WebScopedUserGesture user_gesture;
+    return InternalCallDeprecated(&accessor, method_name, argc, argv,
+                                  exception);
+  }
+  return InternalCallDeprecated(&accessor, method_name, argc, argv, exception);
 }
 
 PP_Var Construct(PP_Var var,
