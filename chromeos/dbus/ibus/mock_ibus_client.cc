@@ -21,4 +21,13 @@ void MockIBusClient::CreateInputContext(
     create_input_context_handler_.Run(client_name, callback, error_callback);
 }
 
+void MockIBusClient::RegisterComponent(
+    const ibus::IBusComponent& ibus_component,
+    const RegisterComponentCallback& callback,
+    const ErrorCallback& error_callback) {
+  register_component_call_count_ ++;
+  if (!register_component_handler_.is_null())
+    register_component_handler_.Run(ibus_component, callback, error_callback);
+}
+
 }  // namespace chromeos

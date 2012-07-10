@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chromeos/dbus/ibus/ibus_constants.h"
+#include "chromeos/dbus/ibus/ibus_component.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -15,6 +16,7 @@
 namespace chromeos {
 
 namespace {
+const char kIBusBusRegisterComponentMethod[] = "RegisterComponent";
 
 // The IBusClient implementation.
 class IBusClientImpl : public IBusClient {
@@ -50,6 +52,29 @@ class IBusClientImpl : public IBusClient {
                    error_callback));
   }
 
+  // IBusClient override.
+  virtual void RegisterComponent(
+      const ibus::IBusComponent& ibus_component,
+      const RegisterComponentCallback& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
+    DCHECK(!callback.is_null());
+    DCHECK(!error_callback.is_null());
+    dbus::MethodCall method_call(kIBusServiceInterface,
+                                 kIBusBusRegisterComponentMethod);
+    dbus::MessageWriter writer(&method_call);
+    ibus::AppendIBusComponent(ibus_component, &writer);
+    proxy_->CallMethodWithErrorCallback(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&IBusClientImpl::OnRegisterComponent,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback,
+                   error_callback),
+        base::Bind(&IBusClientImpl::OnRegisterComponentFail,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   error_callback));
+  }
+
  private:
   // Handles responses of CreateInputContext method calls.
   void OnCreateInputContext(const CreateInputContextCallback& callback,
@@ -77,6 +102,24 @@ class IBusClientImpl : public IBusClient {
     error_callback.Run();
   }
 
+  // Handles responses of RegisterComponent method calls.
+  void OnRegisterComponent(const RegisterComponentCallback& callback,
+                           const ErrorCallback& error_callback,
+                           dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Response is NULL.";
+      error_callback.Run();
+      return;
+    }
+    callback.Run();
+  }
+
+  // Handles error response of RegisterComponent method call.
+  void OnRegisterComponentFail(const ErrorCallback& error_callback,
+                               dbus::ErrorResponse* response) {
+    error_callback.Run();
+  }
+
   dbus::ObjectProxy* proxy_;
   base::WeakPtrFactory<IBusClientImpl> weak_ptr_factory_;
 
@@ -92,6 +135,11 @@ class IBusClientStubImpl : public IBusClient {
   virtual void CreateInputContext(
       const std::string& client_name,
       const CreateInputContextCallback & callback,
+      const ErrorCallback& error_callback) OVERRIDE {}
+
+  virtual void RegisterComponent(
+      const ibus::IBusComponent& ibus_component,
+      const RegisterComponentCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {}
 
  private:
