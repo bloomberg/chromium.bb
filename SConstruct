@@ -2561,6 +2561,10 @@ def MakeGTestEnv(env):
   # Create an environment to run unit tests using Gtest.
   gtest_env = env.Clone()
 
+  # This became necessary for the arm cross TC v4.6
+  # but probable applies to all new gcc TCs
+  gtest_env.Append(LINKFLAGS=['-pthread'])
+
   # Define compile-time flag that communicates that we are compiling in the test
   # environment (rather than for the TCB).
   if gtest_env['NACL_BUILD_FAMILY'] == 'TRUSTED':
@@ -2965,6 +2969,57 @@ def MakeMacEnv():
 (mac_debug_env, mac_optimized_env) = GenerateOptimizationLevels(MakeMacEnv())
 
 
+def which(cmd, paths=os.environ.get('PATH', '').split(os.pathsep)):
+  for p in paths:
+     if os.access(os.path.join(p, cmd), os.X_OK):
+       return True
+  return False
+
+
+def SetupLinuxEnvArm(env):
+  jail = '${SCONSTRUCT_DIR}/toolchain/linux_arm-trusted'
+  if env.Bit('built_elsewhere'):
+    def FakeInstall(dest, source, env):
+      print 'Not installing', dest
+      # Replace build commands with no-ops
+    env.Replace(CC='true', CXX='true', LD='true',
+                AR='true', RANLIB='true', INSTALL=FakeInstall)
+    # Allow emulation on x86 hosts for testing built_elsewhere flag
+    if not platform.machine().startswith('arm'):
+      linux_env.Replace(EMULATOR=jail + '/run_under_qemu_arm')
+  else:
+    if not which('arm-linux-gnueabi-g++-4.5'):
+      print ("\nERRROR: arm trusted TC is not installed - try running:\n"
+             "tools/llvm/trusted-toolchain-creator2.sh help")
+      sys.exit(-1)
+
+    env.Replace(CC='arm-linux-gnueabi-gcc-4.5',
+                CXX='arm-linux-gnueabi-g++-4.5',
+                LD='arm-linux-gnueabi-ld-4.5',
+                EMULATOR=jail + '/run_under_qemu_arm',
+                ASFLAGS=[],
+                LIBPATH=['${LIB_DIR}',
+                         jail + '/usr/lib',
+                         jail + '/lib',
+                         jail + '/usr/lib/arm-linux-gnueabi',
+                         jail + '/lib/arm-linux-gnueabi',
+                         ],
+                LINKFLAGS=['-Wl,-rpath-link=' + jail +
+                           '/lib/arm-linux-gnueabi']
+                )
+    env.Prepend(CCFLAGS=['-march=armv7-a',
+                         '-marm',   # force arm32
+                         '-isystem', jail + '/usr/include',
+                         ])
+    # /usr/lib makes sense for most configuration except this one
+    # No ARM compatible libs can be found there.
+    # So this just makes the command lines longer and sometimes results
+    # in linker warnings referring to this directory.
+    env.FilterOut(LIBPATH=['/usr/lib'])
+
+  # get_plugin_dirname.cc has a dependency on dladdr
+  env.Append(LIBS=['dl'])
+
 def MakeLinuxEnv():
   linux_env = MakeUnixLikeEnv().Clone(
       BUILD_TYPE = '${OPTIMIZATION_LEVEL}-linux',
@@ -3006,43 +3061,7 @@ def MakeLinuxEnv():
         LINKFLAGS = ['-m64', '-L/usr/lib64', ],
         )
   elif linux_env.Bit('build_arm'):
-    if linux_env.Bit('built_elsewhere'):
-      def FakeInstall(dest, source, env):
-        print 'Not installing', dest
-      # Replace build commands with no-ops
-      linux_env.Replace(CC='true', CXX='true', LD='true',
-                        AR='true', RANLIB='true', INSTALL=FakeInstall)
-      # Allow emulation on x86 hosts for testing built_elsewhere flag
-      if not platform.machine().startswith('arm'):
-        jail = '${SCONSTRUCT_DIR}/toolchain/linux_arm-trusted'
-        linux_env.Replace(EMULATOR=jail + '/run_under_qemu_arm')
-    else:
-      jail = '${SCONSTRUCT_DIR}/toolchain/linux_arm-trusted'
-      linux_env.Replace(CC='arm-linux-gnueabi-gcc-4.5',
-                        CXX='arm-linux-gnueabi-g++-4.5',
-                        LD='arm-linux-gnueabi-ld',
-                        EMULATOR=jail + '/run_under_qemu_arm',
-                        ASFLAGS=[],
-                        LIBPATH=['${LIB_DIR}',
-                                 jail + '/usr/lib',
-                                 jail + '/lib',
-                                 jail + '/usr/lib/arm-linux-gnueabi',
-                                 jail + '/lib/arm-linux-gnueabi',
-                                 ],
-                        LINKFLAGS=['-Wl,-rpath-link=' + jail +
-                                   '/lib/arm-linux-gnueabi']
-                        )
-      linux_env.Prepend(CCFLAGS=['-march=armv7-a',
-                                 '-isystem',
-                                 jail + '/usr/include',
-                                ])
-      # /usr/lib makes sense for most configuration except this one
-      # No ARM compatible libs can be found there.
-      # So this just makes the command lines longer and sometimes results
-      # in linker warnings referring to this directory.
-      linux_env.FilterOut(LIBPATH=['/usr/lib'])
-     # This appears to be needed for sel_universal
-    linux_env.Append(LIBS=['dl'])
+    SetupLinuxEnvArm(linux_env)
   elif linux_env.Bit('build_mips32'):
     # TODO(petarj): Add support for MIPS.
     pass
