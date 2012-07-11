@@ -98,6 +98,9 @@
       'filepath': 'net/cookies/.*|'\
         'chrome/browser/net/sqlite_persistent_cookie_store.*',
     },
+    'disk_cache': {
+      'filepath': 'net/disk_cache/|http_cache',
+    },
     'dns': {
       'filepath': 'net/base/host_resolver.*|' \
         'net/base/host_cache.*|' \
@@ -410,6 +413,7 @@
                 'darin-cc@chromium.org'],
     'cookie_monster': ['erikwright@chromium.org', 'rkn@chromium.org',
                        'wtc@chromium.org'],
+    'disk_cache': ['gavinp+disk@chromium.org'],
     'dns': ['mmenke@chromium.org'],
     'download': ['rdsmith+dwatch@chromium.org'],
     'downloads_ui': ['asanka@chromium.org', 'rdsmith@chromium.org'],
