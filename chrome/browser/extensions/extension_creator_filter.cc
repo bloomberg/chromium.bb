@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,8 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
+
+namespace extensions {
 
 bool ExtensionCreatorFilter::ShouldPackageFile(const FilePath& file_path) {
   const FilePath& base_name = file_path.BaseName();
@@ -51,3 +53,5 @@ bool ExtensionCreatorFilter::ShouldPackageFile(const FilePath& file_path) {
 
   return true;
 }
+
+}  // namespace extensions

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ class ExtensionCreatorFilterTest : public PlatformTest {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     test_dir_ = temp_dir_.path();
 
-    filter_ = new ExtensionCreatorFilter();
+    filter_ = new extensions::ExtensionCreatorFilter();
   }
 
   FilePath CreateEmptyTestFile(const FilePath& file_path) {
@@ -30,7 +30,7 @@ class ExtensionCreatorFilterTest : public PlatformTest {
     return test_file;
   }
 
-  scoped_refptr<ExtensionCreatorFilter> filter_;
+  scoped_refptr<extensions::ExtensionCreatorFilter> filter_;
 
   ScopedTempDir temp_dir_;
 

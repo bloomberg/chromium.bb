@@ -24,8 +24,9 @@ void ExtensionsStartupUtil::OnPackSuccess(
       chrome::MESSAGE_BOX_TYPE_INFORMATION);
 }
 
-void ExtensionsStartupUtil::OnPackFailure(const std::string& error_message,
-                                          ExtensionCreator::ErrorType type) {
+void ExtensionsStartupUtil::OnPackFailure(
+    const std::string& error_message,
+    extensions::ExtensionCreator::ErrorType type) {
   chrome::ShowMessageBox(NULL, ASCIIToUTF16("Extension Packaging Error"),
       UTF8ToUTF16(error_message), chrome::MESSAGE_BOX_TYPE_WARNING);
 }
@@ -44,7 +45,7 @@ bool ExtensionsStartupUtil::PackExtension(const CommandLine& cmd_line) {
   // Launch a job to perform the packing on the file thread.  Ignore warnings
   // from the packing process. (e.g. Overwrite any existing crx file.)
   pack_job_ = new PackExtensionJob(this, src_dir, private_key_path,
-                                   ExtensionCreator::kOverwriteCRX);
+                                   extensions::ExtensionCreator::kOverwriteCRX);
   pack_job_->set_asynchronous(false);
   pack_job_->Start();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,7 +51,7 @@ void PackExtensionJob::Run() {
 
   // TODO(aa): Need to internationalize the errors that ExtensionCreator
   // returns. See bug 20734.
-  ExtensionCreator creator;
+  extensions::ExtensionCreator creator;
   if (creator.Run(root_directory_, crx_file_out_, key_file_, key_file_out_,
                   run_flags_)) {
     if (asynchronous_) {
@@ -82,7 +82,7 @@ void PackExtensionJob::ReportSuccessOnClientThread() {
 
 void PackExtensionJob::ReportFailureOnClientThread(
     const std::string& error,
-    ExtensionCreator::ErrorType error_type) {
+    extensions::ExtensionCreator::ErrorType error_type) {
   if (client_)
     client_->OnPackFailure(error, error_type);
 }

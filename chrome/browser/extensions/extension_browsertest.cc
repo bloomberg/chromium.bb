@@ -37,6 +37,7 @@
 #include "content/public/browser/render_view_host.h"
 
 using extensions::Extension;
+using extensions::ExtensionCreator;
 
 ExtensionBrowserTest::ExtensionBrowserTest()
     : loaded_(false),

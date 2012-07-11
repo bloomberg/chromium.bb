@@ -20,8 +20,9 @@ class ExtensionsStartupUtil : public PackExtensionJob::Client {
 
   virtual void OnPackSuccess(const FilePath& crx_path,
                              const FilePath& output_private_key_path) OVERRIDE;
-  virtual void OnPackFailure(const std::string& error_message,
-                             ExtensionCreator::ErrorType type) OVERRIDE;
+  virtual void OnPackFailure(
+      const std::string& error_message,
+      extensions::ExtensionCreator::ErrorType type) OVERRIDE;
 
   // Handle --pack-extension flag from the |cmd_line| by packing the specified
   // extension. Returns false if the pack job failed.

@@ -23,11 +23,11 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using extensions::Extension;
-
 namespace {
   const int kRSAKeySize = 1024;
 };
+
+namespace extensions {
 
 ExtensionCreator::ExtensionCreator() : error_type_(kOtherError) {
 }
@@ -317,3 +317,5 @@ bool ExtensionCreator::Run(const FilePath& extension_dir,
   file_util::Delete(zip_path, false);
   return result;
 }
+
+}  // namespace extensions

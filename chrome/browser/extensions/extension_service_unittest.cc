@@ -99,6 +99,7 @@ using content::PluginService;
 using extensions::APIPermission;
 using extensions::APIPermissionSet;
 using extensions::Extension;
+using extensions::ExtensionCreator;
 using extensions::ExtensionPrefs;
 using extensions::PermissionSet;
 

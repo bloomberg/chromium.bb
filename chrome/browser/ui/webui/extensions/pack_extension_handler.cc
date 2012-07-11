@@ -75,13 +75,15 @@ void PackExtensionHandler::OnPackSuccess(const FilePath& crx_file,
       "PackExtensionOverlay.showSuccessMessage", arguments);
 }
 
-void PackExtensionHandler::OnPackFailure(const std::string& error,
-                                         ExtensionCreator::ErrorType type) {
-  if (type == ExtensionCreator::kCRXExists) {
+void PackExtensionHandler::OnPackFailure(
+    const std::string& error,
+    extensions::ExtensionCreator::ErrorType type) {
+  if (type == extensions::ExtensionCreator::kCRXExists) {
     base::StringValue error_str(error);
     base::StringValue extension_path_str(extension_path_);
     base::StringValue key_path_str(private_key_path_);
-    base::FundamentalValue overwrite_flag(ExtensionCreator::kOverwriteCRX);
+    base::FundamentalValue overwrite_flag(
+        extensions::ExtensionCreator::kOverwriteCRX);
 
     web_ui()->CallJavascriptFunction(
         "ExtensionSettings.askToOverrideWarning", error_str, extension_path_str,

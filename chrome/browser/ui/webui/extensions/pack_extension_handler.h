@@ -32,7 +32,7 @@ class PackExtensionHandler : public content::WebUIMessageHandler,
                              const FilePath& key_file) OVERRIDE;
 
   virtual void OnPackFailure(const std::string& error,
-                             ExtensionCreator::ErrorType) OVERRIDE;
+                             extensions::ExtensionCreator::ErrorType) OVERRIDE;
 
  private:
   // SelectFileDialog::Listener implementation.
