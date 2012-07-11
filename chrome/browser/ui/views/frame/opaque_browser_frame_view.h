@@ -119,6 +119,9 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // there was one).
   gfx::Rect IconBounds() const;
 
+  // Returns the combined bounds for the tab strip and avatar area.
+  gfx::Rect GetBoundsForTabStripAndAvatarArea(views::View* tabstrip) const;
+
   // Paint various sub-components of this view.  The *FrameBorder() functions
   // also paint the background of the titlebar area, since the top frame border
   // and titlebar background are a contiguous component.

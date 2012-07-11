@@ -221,17 +221,12 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
   if (!tabstrip)
     return gfx::Rect();
 
-  int tabstrip_x = browser_view()->ShouldShowAvatar() ?
-      (avatar_bounds_.right() + kAvatarRightSpacing) :
-      NonClientBorderThickness() + kTabStripIndent;
-
-  int maximized_spacing = kNewTabCaptionMaximizedSpacing;
-  int tabstrip_width =
-      (minimize_button_ ? minimize_button_->x() : width()) - tabstrip_x -
-          (frame()->IsMaximized() ?
-              maximized_spacing : kNewTabCaptionRestoredSpacing);
-  return gfx::Rect(tabstrip_x, GetHorizontalTabStripVerticalOffset(false),
-      std::max(0, tabstrip_width), tabstrip->GetPreferredSize().height());
+  gfx::Rect bounds = GetBoundsForTabStripAndAvatarArea(tabstrip);
+  const int space_left_of_tabstrip = browser_view()->ShouldShowAvatar() ?
+      (kAvatarLeftSpacing + avatar_bounds_.width() + kAvatarRightSpacing) :
+      kTabStripIndent;
+  bounds.Inset(space_left_of_tabstrip, 0, 0, 0);
+  return bounds;
 }
 
 int OpaqueBrowserFrameView::GetHorizontalTabStripVerticalOffset(
@@ -267,6 +262,19 @@ gfx::Size OpaqueBrowserFrameView::GetMinimumSize() {
   }
 #endif
   min_size.set_width(std::max(min_size.width(), min_titlebar_width));
+
+  // Ensure that the minimum width is enough to hold a minimum width tab strip
+  // and avatar icon at their usual insets.
+  if (browser_view()->IsTabStripVisible()) {
+    TabStrip* tabstrip = browser_view()->tabstrip();
+    const int min_tabstrip_width = tabstrip->GetMinimumSize().width();
+    const int min_tabstrip_area_width =
+        width() - GetBoundsForTabStripAndAvatarArea(tabstrip).width() +
+        min_tabstrip_width + browser_view()->GetOTRAvatarIcon().width() +
+        kAvatarLeftSpacing + kAvatarRightSpacing;
+    min_size.set_width(std::max(min_size.width(), min_tabstrip_area_width));
+  }
+
   return min_size;
 }
 
@@ -565,6 +573,19 @@ gfx::Rect OpaqueBrowserFrameView::IconBounds() const {
     y = frame_thickness;
   }
   return gfx::Rect(frame_thickness + kIconLeftSpacing, y, size, size);
+}
+
+gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStripAndAvatarArea(
+    views::View* tabstrip) const {
+  const int available_width =
+      minimize_button_ ? minimize_button_->x() : width();
+  const int caption_spacing = frame()->IsMaximized() ?
+      kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing;
+  const int tabstrip_x = NonClientBorderThickness();
+  const int tabstrip_width = available_width - tabstrip_x - caption_spacing;
+  return gfx::Rect(tabstrip_x, GetHorizontalTabStripVerticalOffset(false),
+                   std::max(0, tabstrip_width),
+                   tabstrip->GetPreferredSize().height());
 }
 
 void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
