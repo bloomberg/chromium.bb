@@ -2928,9 +2928,6 @@ window_create_internal(struct display *display,
 		window->shell_surface =
 			wl_shell_get_shell_surface(display->shell,
 						   window->surface);
-		if (window->title)
-			wl_shell_surface_set_title(window->shell_surface,
-						   window->title);
 	}
 	window->allocation.x = 0;
 	window->allocation.y = 0;
