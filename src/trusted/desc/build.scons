@@ -49,19 +49,18 @@ nrd_lib_inputs = [
     wrapper_obj,
 ]
 
-# TODO(bsy): this file is dead code.  remove it.
 if env.Bit('windows'):
   nrd_lib_inputs += [
       'win/nacl_desc.c',
   ]
 elif env.Bit('mac'):
   nrd_lib_inputs += [
-      'linux/nacl_desc.c',
+      'posix/nacl_desc.c',
   ]
 else:
   nrd_lib_inputs += [
-      'linux/nacl_desc.c',
       'linux/nacl_desc_sysv_shm.c',
+      'posix/nacl_desc.c',
   ]
 
 if env.Bit('windows'):

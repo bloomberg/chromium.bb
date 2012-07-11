@@ -93,14 +93,16 @@
           ]
         },
         'conditions': [
-          ['OS=="linux"', { 'sources': [
-              'linux/nacl_desc.c',
+          ['OS=="linux"', {
+            'sources': [
               'linux/nacl_desc_sysv_shm.c',
               'linux/nacl_desc_sysv_shm.h',
-          ]}],
+              'posix/nacl_desc.c',
+            ],
+          }],
           ['OS=="mac"', {
             'sources': [
-              'linux/nacl_desc.c',
+              'posix/nacl_desc.c',
             ],
             # Turning -pedantic off is a hack.  Without it, clang
             # complains that macro arguments are empty, which is
