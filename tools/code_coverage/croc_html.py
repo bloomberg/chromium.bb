@@ -194,18 +194,18 @@ class CrocHtml(object):
     """
 
     if caption is not None:
-      table.E('tr').E('td', e_class='secdesc', colspan=8).Text(caption)
+      table.E('tr').E('th', e_class='secdesc', colspan=8).Text(caption)
 
     sec_hdr = table.E('tr')
 
     if itemtype is not None:
-      sec_hdr.E('td', e_class='section').Text(itemtype)
+      sec_hdr.E('th', e_class='section').Text(itemtype)
 
-    sec_hdr.E('td', e_class='section').Text('Coverage')
-    sec_hdr.E('td', e_class='section', colspan=3).Text(
+    sec_hdr.E('th', e_class='section').Text('Coverage')
+    sec_hdr.E('th', e_class='section', colspan=3).Text(
         'Lines executed / instrumented / missing')
 
-    graph = sec_hdr.E('td', e_class='section')
+    graph = sec_hdr.E('th', e_class='section')
     graph.E('span', style='color:#00FF00').Text('exe')
     graph.Text(' / ')
     graph.E('span', style='color:#FFFF00').Text('inst')
@@ -213,10 +213,10 @@ class CrocHtml(object):
     graph.E('span', style='color:#FF0000').Text('miss')
 
     if is_file:
-      sec_hdr.E('td', e_class='section').Text('Language')
-      sec_hdr.E('td', e_class='section').Text('Group')
+      sec_hdr.E('th', e_class='section').Text('Language')
+      sec_hdr.E('th', e_class='section').Text('Group')
     else:
-      sec_hdr.E('td', e_class='section', colspan=2)
+      sec_hdr.E('th', e_class='section', colspan=2)
 
   def AddItem(self, table, itemname, stats, attrs, link=None):
     """Adds a bar graph to the element.  This is a series of <td> elements.
@@ -358,31 +358,41 @@ class CrocHtml(object):
 
     body = f.body
 
+    dirs = [''] + cov_dir.dirpath.split('/')
+    num_dirs = len(dirs)
+    sort_jsfile = '../' * (num_dirs - 1) + 'sorttable.js'
+    script = body.E('script', src=sort_jsfile)
+    body.E('/script')
+
     # Write header section
     if cov_dir.dirpath:
       self.AddCaptionForSubdir(body, cov_dir.dirpath)
     else:
       body.E('h2').Text(title)
 
-    table = body.E('table')
-
+    table = body.E('table', e_class='sortable')
+    table.E('h3').Text('Coverage by Group')
     # Coverage by group
-    self.AddSectionHeader(table, 'Coverage by Group', 'Group')
+    self.AddSectionHeader(table, None, 'Group')
 
     for group in sorted(cov_dir.stats_by_group):
       self.AddItem(table, group, cov_dir.stats_by_group[group], None)
 
+    table = body.E('table', e_class='sortable')
+    table.E('h3').Text('Subdirectories')
     # List subdirs
     if cov_dir.subdirs:
-      self.AddSectionHeader(table, 'Subdirectories', 'Subdirectory')
+      self.AddSectionHeader(table, None, 'Subdirectory')
 
       for d in sorted(cov_dir.subdirs):
         self.AddItem(table, d + '/', cov_dir.subdirs[d].stats_by_group['all'],
                      None, link=d + '/index.html')
 
+    table = body.E('table', e_class='sortable')
+    table.E('h3').Text('Files in This Directory')
     # List files
     if cov_dir.files:
-      self.AddSectionHeader(table, 'Files in This Directory', 'Filename',
+      self.AddSectionHeader(table, None, 'Filename',
                             is_file=True)
 
       for filename in sorted(cov_dir.files):
@@ -399,15 +409,22 @@ class CrocHtml(object):
     src_dir = os.path.split(self.WriteRoot.func_code.co_filename)[0]
 
     # Files to copy into output root
-    copy_files = [
-        'croc.css',
-    ]
+    copy_files = ['croc.css']
+    # Third_party files to copy into output root
+    third_party_files = ['sorttable.js']
 
     # Copy files from our directory into the output directory
     for copy_file in copy_files:
       print '  Copying %s' % copy_file
       shutil.copyfile(os.path.join(src_dir, copy_file),
                       os.path.join(self.output_root, copy_file))
+    # Copy third party files from third_party directory into
+    # the output directory
+    src_dir = os.path.join(src_dir, 'third_party')
+    for third_party_file in third_party_files:
+      print '  Copying %s' % third_party_file
+      shutil.copyfile(os.path.join(src_dir, third_party_file),
+                      os.path.join(self.output_root, third_party_file))
 
   def Write(self):
     """Writes HTML output."""
