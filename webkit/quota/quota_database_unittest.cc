@@ -226,37 +226,44 @@ class QuotaDatabaseTest : public testing::Test {
 
     // Report last mod time for the test origins.
     EXPECT_TRUE(db.SetOriginLastModifiedTime(
-        kOrigin1, kStorageTypeTemporary, base::Time::FromInternalValue(10)));
+        kOrigin1, kStorageTypeTemporary, base::Time::FromInternalValue(0)));
     EXPECT_TRUE(db.SetOriginLastModifiedTime(
-        kOrigin2, kStorageTypeTemporary, base::Time::FromInternalValue(20)));
+        kOrigin2, kStorageTypeTemporary, base::Time::FromInternalValue(10)));
     EXPECT_TRUE(db.SetOriginLastModifiedTime(
-        kOrigin3, kStorageTypeTemporary, base::Time::FromInternalValue(30)));
+        kOrigin3, kStorageTypeTemporary, base::Time::FromInternalValue(20)));
 
     EXPECT_TRUE(db.GetOriginsModifiedSince(
-        kStorageTypeTemporary, &origins, base::Time::FromInternalValue(15)));
+        kStorageTypeTemporary, &origins, base::Time()));
+    EXPECT_EQ(3U, origins.size());
+    EXPECT_EQ(1U, origins.count(kOrigin1));
+    EXPECT_EQ(1U, origins.count(kOrigin2));
+    EXPECT_EQ(1U, origins.count(kOrigin3));
+
+    EXPECT_TRUE(db.GetOriginsModifiedSince(
+        kStorageTypeTemporary, &origins, base::Time::FromInternalValue(5)));
     EXPECT_EQ(2U, origins.size());
     EXPECT_EQ(0U, origins.count(kOrigin1));
     EXPECT_EQ(1U, origins.count(kOrigin2));
     EXPECT_EQ(1U, origins.count(kOrigin3));
 
     EXPECT_TRUE(db.GetOriginsModifiedSince(
-        kStorageTypeTemporary, &origins, base::Time::FromInternalValue(25)));
+        kStorageTypeTemporary, &origins, base::Time::FromInternalValue(15)));
     EXPECT_EQ(1U, origins.size());
     EXPECT_EQ(0U, origins.count(kOrigin1));
     EXPECT_EQ(0U, origins.count(kOrigin2));
     EXPECT_EQ(1U, origins.count(kOrigin3));
 
     EXPECT_TRUE(db.GetOriginsModifiedSince(
-        kStorageTypeTemporary, &origins, base::Time::FromInternalValue(35)));
+        kStorageTypeTemporary, &origins, base::Time::FromInternalValue(25)));
     EXPECT_TRUE(origins.empty());
 
     // Update origin1's mod time but for persistent storage.
     EXPECT_TRUE(db.SetOriginLastModifiedTime(
-        kOrigin1, kStorageTypePersistent, base::Time::FromInternalValue(40)));
+        kOrigin1, kStorageTypePersistent, base::Time::FromInternalValue(30)));
 
     // Must have no effects on temporary origins info.
     EXPECT_TRUE(db.GetOriginsModifiedSince(
-        kStorageTypeTemporary, &origins, base::Time::FromInternalValue(15)));
+        kStorageTypeTemporary, &origins, base::Time::FromInternalValue(5)));
     EXPECT_EQ(2U, origins.size());
     EXPECT_EQ(0U, origins.count(kOrigin1));
     EXPECT_EQ(1U, origins.count(kOrigin2));
@@ -264,17 +271,17 @@ class QuotaDatabaseTest : public testing::Test {
 
     // One more update for persistent origin2.
     EXPECT_TRUE(db.SetOriginLastModifiedTime(
-        kOrigin2, kStorageTypePersistent, base::Time::FromInternalValue(50)));
+        kOrigin2, kStorageTypePersistent, base::Time::FromInternalValue(40)));
 
     EXPECT_TRUE(db.GetOriginsModifiedSince(
-        kStorageTypePersistent, &origins, base::Time::FromInternalValue(35)));
+        kStorageTypePersistent, &origins, base::Time::FromInternalValue(25)));
     EXPECT_EQ(2U, origins.size());
     EXPECT_EQ(1U, origins.count(kOrigin1));
     EXPECT_EQ(1U, origins.count(kOrigin2));
     EXPECT_EQ(0U, origins.count(kOrigin3));
 
     EXPECT_TRUE(db.GetOriginsModifiedSince(
-        kStorageTypePersistent, &origins, base::Time::FromInternalValue(45)));
+        kStorageTypePersistent, &origins, base::Time::FromInternalValue(35)));
     EXPECT_EQ(1U, origins.size());
     EXPECT_EQ(0U, origins.count(kOrigin1));
     EXPECT_EQ(1U, origins.count(kOrigin2));

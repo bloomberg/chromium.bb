@@ -372,7 +372,7 @@ bool QuotaDatabase::GetOriginsModifiedSince(
     return false;
 
   const char* kSql = "SELECT origin FROM OriginInfoTable"
-                     " WHERE type = ? AND last_modified_time > ?";
+                     " WHERE type = ? AND last_modified_time >= ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(0, static_cast<int>(type));
