@@ -871,11 +871,14 @@ class ApiBase(object):
             render_to_string_and_fix_case(self.initial_cwd),
             children)
 
-      def add_file(self, filepath):
+      def add_file(self, filepath, touch_only):
         if self.root().blacklist(unicode(filepath)):
           return
-        logging.debug('add_file(%d, %s)' % (self.pid, filepath))
-        self.files.add(filepath)
+        logging.debug('add_file(%d, %s, %s)' % (self.pid, filepath, touch_only))
+        if touch_only:
+          self.only_touched.add(filepath)
+        else:
+          self.files.add(filepath)
 
     def __init__(self, blacklist):
       self.blacklist = blacklist
@@ -1013,11 +1016,14 @@ class Strace(ApiBase):
       UNNAMED_FUNCTION = '????'
 
       # Arguments parsing.
+      RE_ACCESS = re.compile(r'^\"(.+?)\", R_[A-Z]+$')
       RE_CHDIR = re.compile(r'^\"(.+?)\"$')
       RE_EXECVE = re.compile(r'^\"(.+?)\", \[(.+)\], \[\/\* \d+ vars? \*\/\]$')
       RE_OPEN2 = re.compile(r'^\"(.*?)\", ([A-Z\_\|]+)$')
       RE_OPEN3 = re.compile(r'^\"(.*?)\", ([A-Z\_\|]+), (\d+)$')
+      RE_READLINK = re.compile(r'^\"(.+?)\", \".+?\"(\.\.\.)?, \d+$')
       RE_RENAME = re.compile(r'^\"(.+?)\", \"(.+?)\"$')
+      RE_STAT = re.compile(r'\"(.+?)\", \{.+?, \.\.\.\}')
 
       class RelativePath(object):
         """A late-bound relative path."""
@@ -1143,6 +1149,12 @@ class Strace(ApiBase):
               line,
               e)
 
+      def handle_access(self, args, result):
+        if result.startswith('-1'):
+          return
+        match = self.RE_ACCESS.match(args)
+        self._handle_file(match.group(1), True)
+
       def handle_chdir(self, args, result):
         """Updates cwd."""
         if not result.startswith('0'):
@@ -1183,7 +1195,7 @@ class Strace(ApiBase):
               'Failed to process execve(%s)' % args,
               None, None, None)
         filepath = match.group(1)
-        self._handle_file(filepath)
+        self._handle_file(filepath, False)
         self.executable = self.RelativePath(self.get_cwd(), filepath)
         self.command = process_quoted_arguments(match.group(2))
 
@@ -1195,20 +1207,47 @@ class Strace(ApiBase):
       def handle_fork(_args, _result):
         raise NotImplementedError('Unexpected/unimplemented trace fork()')
 
+      def handle_getcwd(self, _args, _result):
+        pass
+
+      def handle_lstat(self, args, result):
+        if result.startswith('-1'):
+          return
+        match = self.RE_STAT.match(args)
+        self._handle_file(match.group(1), True)
+
       def handle_open(self, args, result):
         if result.startswith('-1'):
           return
         args = (self.RE_OPEN3.match(args) or self.RE_OPEN2.match(args)).groups()
         if 'O_DIRECTORY' in args[1]:
           return
-        self._handle_file(args[0])
+        self._handle_file(args[0], False)
+
+      def handle_readlink(self, args, result):
+        if result.startswith('-1'):
+          return
+        match = self.RE_READLINK.match(args)
+        if not match:
+          raise TracingFailure(
+              'Failed to parse: readlink(%s) = %s' % (args, result),
+              None,
+              None,
+              None)
+        self._handle_file(match.group(1), False)
 
       def handle_rename(self, args, result):
         if result.startswith('-1'):
           return
         args = self.RE_RENAME.match(args).groups()
-        self._handle_file(args[0])
-        self._handle_file(args[1])
+        self._handle_file(args[0], False)
+        self._handle_file(args[1], False)
+
+      def handle_stat(self, args, result):
+        if result.startswith('-1'):
+          return
+        match = self.RE_STAT.match(args)
+        self._handle_file(match.group(1), True)
 
       @staticmethod
       def handle_stat64(_args, _result):
@@ -1218,9 +1257,10 @@ class Strace(ApiBase):
       def handle_vfork(_args, _result):
         raise NotImplementedError('Unexpected/unimplemented trace vfork()')
 
-      def _handle_file(self, filepath):
+      def _handle_file(self, filepath, touch_only):
         filepath = self.RelativePath(self.get_cwd(), filepath)
-        self.add_file(filepath)
+        #assert not touch_only, unicode(filepath)
+        self.add_file(filepath, touch_only)
 
     def __init__(self, blacklist, initial_cwd):
       super(Strace.Context, self).__init__(blacklist)
@@ -1284,6 +1324,8 @@ class Strace(ApiBase):
       return [i[len(prefix):] for i in dir(cls.Process) if i.startswith(prefix)]
 
   class Tracer(ApiBase.Tracer):
+    MAX_LEN = 256
+
     def trace(self, cmd, cwd, tracename, output):
       """Runs strace on an executable."""
       logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, tracename, output))
@@ -1300,11 +1342,12 @@ class Strace(ApiBase):
       if output:
         stdout = subprocess.PIPE
         stderr = subprocess.STDOUT
-      traces = ','.join(Strace.Context.traces())
+      # Ensure all file related APIs are hooked.
+      traces = ','.join(Strace.Context.traces() + ['file'])
       trace_cmd = [
         'strace',
         '-ff',
-        '-s', '256',
+        '-s', '%d' % self.MAX_LEN,
         '-e', 'trace=%s' % traces,
         '-o', self._logname + '.' + tracename,
       ]
@@ -1583,7 +1626,7 @@ class Dtrace(ApiBase):
       # saw open_nocancel(".", 0, 0) = 0 lines.
       if os.path.isdir(filepath):
         return
-      self.processes[pid].add_file(filepath)
+      self.processes[pid].add_file(filepath, False)
 
     def handle_ftruncate(self, pid, args):
       """Just used as a signal to kill dtrace, ignoring."""
@@ -2304,7 +2347,7 @@ class LogmanTrace(ApiBase):
         return
       file_object = line[FILE_OBJECT]
       if file_object in proc.file_objects:
-        proc.add_file(proc.file_objects.pop(file_object))
+        proc.add_file(proc.file_objects.pop(file_object), False)
 
     def handle_FileIo_Create(self, line):
       """Handles a file open.

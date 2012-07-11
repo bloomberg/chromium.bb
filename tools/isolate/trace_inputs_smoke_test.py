@@ -574,6 +574,10 @@ class TraceInputsImport(TraceInputsBase):
         'executable': self.real_executable,
         'files': [
           {
+            'path': os.path.join(u'data', 'trace_inputs', 'test_file.txt'),
+            'size': 0,
+          },
+          {
             'path': os.path.join(u'data', 'trace_inputs', 'touch_only.py'),
             'size': self._size('data', 'trace_inputs', 'touch_only.py'),
           },
@@ -581,6 +585,10 @@ class TraceInputsImport(TraceInputsBase):
         'initial_cwd': self.initial_cwd,
       },
     }
+    if sys.platform != 'linux2':
+      # TODO(maruel): Remove once properly implemented.
+      expected['root']['files'].pop(0)
+
     actual = results.flatten()
     self.assertTrue(actual['root'].pop('pid'))
     self.assertEquals(expected, actual)
