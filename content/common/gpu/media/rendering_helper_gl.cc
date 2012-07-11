@@ -15,10 +15,14 @@
 #include "base/message_loop.h"
 #include "base/stringize_macros.h"
 #include "base/synchronization/waitable_event.h"
+#if !defined(ARCH_CPU_ARMEL)
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
+#else
+#include "third_party/angle/include/GLES2/gl2.h"
+#endif
 
 #if !defined(OS_WIN) && defined(ARCH_CPU_X86_FAMILY)
 #define GL_VARIANT_GLX 1
@@ -181,6 +185,7 @@ void RenderingHelperGL::Initialize(bool suppress_swap_to_display,
 
 #if GL_VARIANT_GLX
   x_display_ = base::MessagePumpForUI::GetDefaultXDisplay();
+  CHECK(x_display_);
   gfx::InitializeGLBindings(gfx::kGLImplementationDesktopGL);
   CHECK(glXQueryVersion(x_display_, NULL, NULL));
   const int fbconfig_attr[] = {
@@ -210,10 +215,13 @@ void RenderingHelperGL::Initialize(bool suppress_swap_to_display,
 #else // EGL
 #if defined(OS_WIN)
   gl_display_ = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+  CHECK(gl_display_);
   CHECK(eglInitialize(gl_display_, NULL, NULL)) << glGetError();
 #else
   x_display_ = base::MessagePumpForUI::GetDefaultXDisplay();
+  CHECK(x_display_);
   gl_display_ = eglGetDisplay(x_display_);
+  CHECK(gl_display_);
   CHECK(eglInitialize(gl_display_, NULL, NULL)) << glGetError();
 #endif
   static EGLint rgba8888[] = {

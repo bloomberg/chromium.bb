@@ -589,7 +589,6 @@
               '../base/base.gyp:base',
               '../testing/gtest.gyp:gtest',
               '../media/media.gyp:media',
-              '../ui/gl/gl.gyp:gl',
               '../ui/ui.gyp:ui',
             ],
             'include_dirs': [
@@ -625,6 +624,11 @@
                 'dependencies': [
                   '../base/allocator/allocator.gyp:allocator',
                 ],
+              }],
+              ['target_arch != "arm"', {
+                 'dependencies': [
+                   '../ui/gl/gl.gyp:gl',
+                 ],
               }],
               ['target_arch != "arm" and (OS=="linux" or chromeos == 1)', {
                 'include_dirs': [
