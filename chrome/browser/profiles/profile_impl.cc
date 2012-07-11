@@ -219,9 +219,6 @@ void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kProfileName,
                             "",
                             PrefService::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kRestoreSessionStateDialogShown,
-                             false,
-                             PrefService::SYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kHomePage,
                             std::string(),
                             PrefService::SYNCABLE_PREF);

@@ -32,29 +32,11 @@ cr.define('options', function() {
     instantConfirmDialogShown_: false,
 
     /**
-     * True if the default cookie settings is session only. Used for deciding
-     * whether to show the session restore info dialog. The value is undefined
-     * until the preference has been read.
-     * @type {bool}
-     * @private
-     */
-    sessionOnlyCookies_: undefined,
-
-    /**
      * The cached value of the spellcheck.confirm_dialog_shown preference.
      * @type {bool}
      * @private
      */
     spellcheckConfirmDialogShown_: false,
-
-    /**
-     * True if the "clear cookies and other site data on exit" setting is
-     * selected. Used for deciding whether to show the session restore info
-     * dialog. The value is undefined until the preference has been read.
-     * @type {bool}
-     * @private
-     */
-    clearCookiesOnExit_: undefined,
 
     /**
      * Keeps track of whether |onShowHomeButtonChanged_| has been called. See
@@ -143,26 +125,6 @@ cr.define('options', function() {
         OptionsPage.navigateToPage('startup');
       };
 
-      // Session restore.
-      // TODO(marja): clean up the options UI after the decision on the session
-      // restore changes has stabilized. For now, only the startup option is
-      // renamed to "continue where I left off", but the session related content
-      // settings are not disabled or overridden (because
-      // 'enable_restore_session_state' is forced to false).
-      this.sessionRestoreEnabled_ =
-          loadTimeData.getBoolean('enable_restore_session_state');
-      if (this.sessionRestoreEnabled_) {
-        $('startup-restore-session').onclick = function(event) {
-          if (!event.currentTarget.checked)
-            return;
-
-          if (!BrowserOptions.getInstance().maybeShowSessionRestoreDialog_()) {
-            // The dialog is not shown; handle the event normally.
-            event.currentTarget.savePrefState();
-          }
-        };
-      }
-
       // Appearance section.
       Preferences.getInstance().addEventListener('browser.show_home_button',
           this.onShowHomeButtonChanged_.bind(this));
@@ -220,17 +182,6 @@ cr.define('options', function() {
       };
       Preferences.getInstance().addEventListener('instant.confirm_dialog_shown',
           this.onInstantConfirmDialogShownChanged_.bind(this));
-      Preferences.getInstance().addEventListener(
-          'restore_session_state.dialog_shown',
-          this.onSessionRestoreDialogShownChanged_.bind(this));
-      var self = this;
-      Preferences.getInstance().addEventListener(
-          'profile.clear_site_data_on_exit',
-          function(event) {
-            if (event.value && typeof event.value['value'] != 'undefined') {
-              self.clearCookiesOnExit_ = event.value['value'] == true;
-            }
-          });
 
       // Users section.
       if (loadTimeData.valueExists('profilesInfo')) {
@@ -794,16 +745,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Called when the value of the restore_session_state.dialog_shown
-     * preference changes.
-     * @param {Event} event Change event.
-     * @private
-     */
-    onSessionRestoreDialogShownChanged_: function(event) {
-      this.sessionRestoreDialogShown_ = event.value['value'];
-    },
-
-    /**
      * Called when the value of the spellcheck.confirm_dialog_shown preference
      * changes. Cache this value.
      * @param {Event} event Change event.
@@ -827,61 +768,6 @@ cr.define('options', function() {
         $('downloadLocationPath').value = $('downloadLocationPath').value.
             replace(/^\/(special|home\/chronos\/user)/, '');
       }
-    },
-
-    /**
-     * Displays the session restore info dialog if options depending on sessions
-     * (session only cookies or clearning data on exit) are selected, and the
-     * dialog has never been shown.
-     * @private
-     * @return {boolean} True if the dialog is shown, false otherwise.
-     */
-    maybeShowSessionRestoreDialog_: function() {
-      // Don't show this dialog in Guest mode.
-      if (cr.isChromeOS && UIAccountTweaks.loggedInAsGuest())
-        return false;
-      // If some of the needed preferences haven't been read yet, the
-      // corresponding member variable will be undefined and we won't display
-      // the dialog yet.
-      if (this.userHasSelectedSessionContentSettings_() &&
-          this.sessionRestoreDialogShown_ === false) {
-        OptionsPage.showPageByName('sessionRestoreOverlay', false);
-        return true;
-      }
-      return false;
-    },
-
-    /**
-     * Called when the user clicks the "ok" button in the session restore
-     * dialog.
-     */
-    sessionRestoreDialogOk: function() {
-      // Set the preference.
-      $('startup-restore-session').savePrefState();
-      this.sessionRestoreDialogShown_ = true;
-      Preferences.setBooleanPref('restore_session_state.dialog_shown', true);
-    },
-
-    /**
-     * Called when the user clicks the "cancel" button in the session restore
-     * dialog.
-     */
-    sessionRestoreDialogCancel: function() {
-      // The preference was never set to "continue where I left off". Update the
-      // UI to reflect the preference.
-      $('startup-newtab').resetPrefState();
-      $('startup-restore-session').resetPrefState();
-      $('startup-show-pages').resetPrefState();
-    },
-
-    /**
-     * Returns true if the user has selected content settings which rely on
-     * sessions: clearning the browsing data on exit or defaulting the cookie
-     * content setting to session only.
-     * @private
-     */
-    userHasSelectedSessionContentSettings_: function() {
-      return this.clearCookiesOnExit_ || this.sessionOnlyCookies_;
     },
 
     /**
@@ -1402,17 +1288,6 @@ cr.define('options', function() {
         if (index != undefined)
           $('bluetooth-paired-devices-list').deleteItemAtIndex(index);
       }
-    },
-
-    /**
-     * Called when the default content setting value for a content type changes.
-     * @param {Object} dict A mapping content setting types to the default
-     * value.
-     * @private
-     */
-    setContentFilterSettingsValue_: function(dict) {
-      if ('cookies' in dict && 'value' in dict['cookies'])
-        this.sessionOnlyCookies_ = dict['cookies']['value'] == 'session';
     }
 
   };
@@ -1429,7 +1304,6 @@ cr.define('options', function() {
     'setBackgroundModeCheckboxState',
     'setBluetoothState',
     'setCheckRevocationCheckboxState',
-    'setContentFilterSettingsValue',
     'setFontSize',
     'setGtkThemeButtonEnabled',
     'setHighContrastCheckboxState',

@@ -476,10 +476,6 @@ void ContentSettingsHandler::GetLocalizedValues(
   localized_strings->SetBoolean(
       "enable_web_intents",
       web_intents::IsWebIntentsEnabledForProfile(profile));
-  // TODO(marja): clean up the options UI after the decision on the session
-  // restore changes has stabilized.
-  localized_strings->SetBoolean(
-      "enable_restore_session_state", false);
 }
 
 void ContentSettingsHandler::InitializeHandler() {
@@ -620,8 +616,6 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
 
   web_ui()->CallJavascriptFunction(
       "ContentSettings.setContentFilterSettingsValue", filter_settings);
-  web_ui()->CallJavascriptFunction(
-      "BrowserOptions.setContentFilterSettingsValue", filter_settings);
 }
 
 std::string ContentSettingsHandler::GetSettingDefaultFromModel(

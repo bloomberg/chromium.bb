@@ -705,8 +705,6 @@ extern const char kUserPolicyRefreshRate[];
 extern const char kRecoveryComponentVersion[];
 extern const char kComponentUpdaterState[];
 
-extern const char kRestoreSessionStateDialogShown[];
-
 extern const char kWebIntentsEnabled[];
 
 extern const char kMediaGalleryUniqueId[];

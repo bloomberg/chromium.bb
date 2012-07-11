@@ -14,26 +14,9 @@ cr.define('options', function() {
    */
   function ContentSettings() {
     this.activeNavTab = null;
-    this.sessionRestoreEnabled = false;
-    this.sessionRestoreSelected = false;
     OptionsPage.call(this, 'content',
                      loadTimeData.getString('contentSettingsPageTabTitle'),
                      'content-settings-page');
-
-    // Keep track of the real value of the "clear on exit" preference. (The UI
-    // might override it if the "continue where I left off" setting is
-    // selected.)
-    var self = this;
-    Preferences.getInstance().addEventListener(
-        'profile.clear_site_data_on_exit',
-        function(event) {
-          if (event.value && typeof event.value['value'] != 'undefined') {
-            self.clearCookiesOnExit = event.value['value'] == true;
-          }
-        });
-    Preferences.getInstance().addEventListener(
-        'session.restore_on_startup',
-        this.onSessionRestoreSelectedChanged.bind(this));
   }
 
   cr.addSingletonGetter(ContentSettings);
@@ -94,62 +77,12 @@ cr.define('options', function() {
       if (!loadTimeData.getBoolean('enable_web_intents') && intentsSection)
         intentsSection.parentNode.removeChild(intentsSection);
 
-      if (loadTimeData.getBoolean('enable_restore_session_state')) {
-        this.sessionRestoreEnabled = true;
-        this.updateSessionRestoreContentSettings();
-      }
-
       $('content-settings-overlay-confirm').onclick =
           OptionsPage.closeOverlay.bind(OptionsPage);
 
       $('pepper-flash-cameramic-section').style.display = 'none';
       $('pepper-flash-cameramic-exceptions-div').style.display = 'none';
     },
-
-    /**
-     * Called when the value of the "On startup" setting changes.
-     * @param {Event} event Change event.
-     * @private
-     */
-    onSessionRestoreSelectedChanged: function(event) {
-      if (!event.value || typeof event.value['value'] == 'undefined')
-        return;
-
-      this.sessionRestoreSelected = event.value['value'] == 1;
-
-      if (this.sessionRestoreSelected)
-        this.updateSessionRestoreContentSettings();
-      else
-        this.restoreContentSettings();
-    },
-
-    // If the "continue where I left off" setting is selected, disable the
-    // "clear on exit" checkbox, and the "session only" setting for cookies.
-    updateSessionRestoreContentSettings: function() {
-      // This feature is behind a command line flag.
-      if (this.sessionRestoreEnabled && this.sessionRestoreSelected) {
-        $('clear-cookies-on-exit').checked = false;
-        $('clear-cookies-on-exit').setDisabled('sessionrestore', true);
-
-        if ($('cookies-session').checked) {
-          $('cookies-allow').checked = true;
-        }
-        $('cookies-session').disabled = true;
-      }
-    },
-
-    // Restore the values of the UI elements based on the real values of the
-    // preferences.
-    restoreContentSettings: function() {
-      $('clear-cookies-on-exit').checked = this.clearCookiesOnExit;
-      $('clear-cookies-on-exit').setDisabled('sessionrestore', false);
-
-      if (this.cookiesSession && $('cookies-allow').checked) {
-        $('cookies-session').checked = true;
-      }
-      $('cookies-session').disabled = false;
-    },
-
   };
 
   ContentSettings.updateHandlersEnabledRadios = function(enabled) {
@@ -175,13 +108,6 @@ cr.define('options', function() {
         radios[i].controlledBy = managedBy;
       }
     }
-    // Keep track of the real cookie content setting. (The UI might override it
-    // if the reopen last pages setting is selected.)
-    if ('cookies' in dict && 'value' in dict['cookies']) {
-      ContentSettings.getInstance().cookiesSession =
-          dict['cookies']['value'] == 'session';
-    }
-    ContentSettings.getInstance().updateSessionRestoreContentSettings();
     OptionsPage.updateManagedBannerVisibility();
   };
 

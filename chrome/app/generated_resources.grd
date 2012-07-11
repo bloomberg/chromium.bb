@@ -5946,11 +5946,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Because search results are requested even while you're typing your query, your default search engine may be logging these as search queries.
       </message>
 
-      <!-- Session restore & conflicting content settings -->
-      <message name="IDS_SESSION_RESTORE_OVERLAY_TITLE" desc="Title of the session restore conflicts with content settings dialog">
-        Continue where I left off
-      </message>
-
       <message name="IDS_SEARCH_PREF_EXPLANATION" desc="Description of the search engine preference">
         Set which search engine is used when searching from the
         <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>omnibox<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.

@@ -239,8 +239,6 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
     { "sectionTitleSearch", IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME },
     { "sectionTitleStartup", IDS_OPTIONS_STARTUP_GROUP_NAME },
     { "sectionTitleSync", IDS_SYNC_OPTIONS_GROUP_NAME },
-    { "sessionRestoreOverlayMessage", IDS_SESSION_RESTORE_OVERLAY_MESSAGE },
-    { "sessionRestoreOverlayTitle", IDS_SESSION_RESTORE_OVERLAY_TITLE },
     { "spellingConfirmMessage", IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TEXT },
     { "spellingConfirmTitle", IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE },
     { "spellingConfirmEnable", IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE },
