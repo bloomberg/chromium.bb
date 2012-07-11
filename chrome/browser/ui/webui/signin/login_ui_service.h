@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/observer_list.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 
 class Browser;
@@ -29,6 +30,21 @@ class LoginUIService : public ProfileKeyedService {
     virtual ~LoginUI() {}
   };
 
+  // Interface for obervers of LoginUIService.
+  class Observer {
+   public:
+    // Called when a new login UI is shown.
+    // |ui| The login UI that was just shown. Will never be null.
+    virtual void OnLoginUIShown(LoginUI* ui) = 0;
+
+    // Called when a login UI is closed.
+    // |ui| The login UI that was just closed; will never be null.
+    virtual void OnLoginUIClosed(LoginUI* ui) = 0;
+
+   protected:
+    virtual ~Observer() {}
+  };
+
   LoginUIService();
   virtual ~LoginUIService();
 
@@ -36,6 +52,10 @@ class LoginUIService : public ProfileKeyedService {
   LoginUI* current_login_ui() const {
     return ui_;
   }
+
+  // |observer| The observer to add or remove; cannot be NULL.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Sets the currently active login UI. It is illegal to call this if there is
   // already login UI visible.
@@ -53,6 +73,9 @@ class LoginUIService : public ProfileKeyedService {
  private:
   // Weak pointer to the currently active login UI, or null if none.
   LoginUI* ui_;
+
+  // List of observers.
+  ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginUIService);
 };

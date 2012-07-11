@@ -1852,6 +1852,7 @@
         'browser/ui/webui/policy_ui_unittest.cc',
         'browser/ui/webui/print_preview/print_preview_handler_unittest.cc',
         'browser/ui/webui/print_preview/print_preview_ui_unittest.cc',
+        'browser/ui/webui/signin/login_ui_service_unittest.cc',
         'browser/ui/webui/sync_internals_ui_unittest.cc',
         'browser/ui/webui/sync_setup_handler_unittest.cc',
         'browser/ui/webui/theme_source_unittest.cc',
