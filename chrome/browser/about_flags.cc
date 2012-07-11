@@ -781,6 +781,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kExperimentalWallpaperUI)
   },
   {
+    "enable-drive-v2-api",
+    IDS_FLAGS_ENABLE_DRIVE_V2_API,
+    IDS_FLAGS_ENABLE_DRIVE_V2_API_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableDriveV2Api),
+  },
+  {
     "enable-html5-camera",
     IDS_FLAGS_ENABLE_HTML5_CAMERA,
     IDS_FLAGS_ENABLE_HTML5_CAMERA_DESCRIPTION,

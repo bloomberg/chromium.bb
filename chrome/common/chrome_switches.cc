@@ -1332,6 +1332,9 @@ const char kSkipOAuthLogin[]                = "skip-oauth-login";
 // Enables device policy support on ChromeOS.
 const char kEnableDevicePolicy[]            = "enable-device-policy";
 
+// Enables Drive v2 API instead of Google Documents List API.
+const char kEnableDriveV2Api[]              = "enable-drive-v2-api";
+
 // Enables the redirection of viewable document requests to the Google Document
 // Viewer.
 const char kEnableGView[]                   = "enable-gview";
