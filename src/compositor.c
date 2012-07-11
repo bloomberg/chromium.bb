@@ -1975,7 +1975,8 @@ notify_pointer_focus(struct wl_seat *seat, struct weston_output *output,
 		weston_compositor_repick(compositor);
 	} else {
 		compositor->focus = 0;
-		weston_compositor_repick(compositor);
+		/* FIXME: We should call wl_pointer_set_focus(seat,
+		 * NULL) here, but somehow that breaks re-entry... */
 	}
 }
 
