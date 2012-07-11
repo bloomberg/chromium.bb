@@ -118,7 +118,7 @@ class ShutdownTest : public UIPerfTest {
   }
 };
 
-TEST_F(ShutdownTest, SimpleWindowClose) {
+TEST_F(ShutdownTest, DISABLED_SimpleWindowClose) {
   RunShutdownTest("shutdown", "simple-window-close",
                   true, /* important */ SIMPLE, ProxyLauncher::WINDOW_CLOSE);
 }
