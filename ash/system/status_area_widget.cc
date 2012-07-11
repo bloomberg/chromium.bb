@@ -335,11 +335,11 @@ void StatusAreaWidget::AddWebNotificationTray(
 
 void StatusAreaWidget::SetShelfAlignment(ShelfAlignment alignment) {
   widget_delegate_->set_alignment(alignment);
-  widget_delegate_->UpdateLayout();
   if (system_tray_)
     system_tray_->SetShelfAlignment(alignment);
   if (web_notification_tray_)
     web_notification_tray_->SetShelfAlignment(alignment);
+  widget_delegate_->UpdateLayout();
 }
 
 void StatusAreaWidget::SetPaintsBackground(

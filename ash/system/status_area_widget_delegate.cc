@@ -110,10 +110,15 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
     }
   }
   Layout();
+  UpdateWidgetSize();
 }
 
 void StatusAreaWidgetDelegate::ChildPreferredSizeChanged(View* child) {
   // Need to resize the window when trays or items are added/removed.
+  UpdateWidgetSize();
+}
+
+void StatusAreaWidgetDelegate::UpdateWidgetSize() {
   if (GetWidget())
     GetWidget()->SetSize(GetPreferredSize());
 }

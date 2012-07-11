@@ -51,6 +51,8 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
 
  private:
+  void UpdateWidgetSize();
+
   const FocusCycler* focus_cycler_for_testing_;
   ShelfAlignment alignment_;
 

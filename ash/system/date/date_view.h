@@ -82,12 +82,14 @@ class DateView : public BaseDateTimeView {
 // Tray view used to display the current time.
 class TimeView : public BaseDateTimeView {
  public:
-  TimeView();
+  TimeView(TrayDate::ClockLayout clock_layout);
   virtual ~TimeView();
 
   views::Label* label() const { return label_.get(); }
-  views::Label* label_hour() const { return label_hour_.get(); }
-  views::Label* label_minute() const { return label_minute_.get(); }
+  views::Label* label_hour_left() const { return label_hour_left_.get(); }
+  views::Label* label_hour_right() const { return label_hour_right_.get(); }
+  views::Label* label_minute_left() const { return label_minute_left_.get(); }
+  views::Label* label_minute_right() const { return label_minute_right_.get(); }
 
   // Updates the format of the displayed time.
   void UpdateTimeFormat();
@@ -106,10 +108,14 @@ class TimeView : public BaseDateTimeView {
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
 
   void SetBorder(TrayDate::ClockLayout clock_layout);
+  void SetupLabels();
+  void SetupLabel(views::Label* label);
 
   scoped_ptr<views::Label> label_;
-  scoped_ptr<views::Label> label_hour_;
-  scoped_ptr<views::Label> label_minute_;
+  scoped_ptr<views::Label> label_hour_left_;
+  scoped_ptr<views::Label> label_hour_right_;
+  scoped_ptr<views::Label> label_minute_left_;
+  scoped_ptr<views::Label> label_minute_right_;
 
   base::HourClockType hour_type_;
 

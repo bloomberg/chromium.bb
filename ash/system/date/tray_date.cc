@@ -130,16 +130,11 @@ TrayDate::~TrayDate() {
 
 views::View* TrayDate::CreateTrayView(user::LoginStatus status) {
   CHECK(time_tray_ == NULL);
-  time_tray_ = new tray::TimeView();
   ClockLayout clock_layout =
       ash::Shell::GetInstance()->system_tray()->shelf_alignment() ==
          SHELF_ALIGNMENT_BOTTOM ?
       HORIZONTAL_CLOCK : VERTICAL_CLOCK;
-  time_tray_->UpdateClockLayout(clock_layout);
-  SetupLabelForTimeTray(time_tray_->label());
-  SetupLabelForTimeTray(time_tray_->label_hour());
-  SetupLabelForTimeTray(time_tray_->label_minute());
-
+  time_tray_ = new tray::TimeView(clock_layout);
   views::View* view = new TrayItemView;
   view->AddChildView(time_tray_);
   return view;
@@ -182,12 +177,6 @@ void TrayDate::OnDateFormatChanged() {
 void TrayDate::Refresh() {
   if (time_tray_)
     time_tray_->UpdateText();
-}
-
-void TrayDate::SetupLabelForTimeTray(views::Label* label) {
-  SetupLabelForTray(label);
-  gfx::Font font = label->font();
-  label->SetFont(font.DeriveFont(0, font.GetStyle() & ~gfx::Font::BOLD));
 }
 
 }  // namespace internal

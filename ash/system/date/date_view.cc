@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 #include "unicode/datefmt.h"
 
@@ -24,6 +25,9 @@ namespace {
 // Amount of slop to add into the timer to make sure we're into the next minute
 // when the timer goes off.
 const int kTimerSlopSeconds = 1;
+
+// Top number text color of vertical clock.
+const SkColor kVerticalClockHourColor = SkColorSetRGB(0xBA, 0xBA, 0xBA);
 
 string16 FormatDate(const base::Time& time) {
   icu::UnicodeString date_string;
@@ -154,19 +158,12 @@ void DateView::OnMouseExited(const views::MouseEvent& event) {
   SchedulePaint();
 }
 
-TimeView::TimeView()
+TimeView::TimeView(TrayDate::ClockLayout clock_layout)
     : hour_type_(
           ash::Shell::GetInstance()->tray_delegate()->GetHourClockType()) {
-  SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-  label_.reset(CreateLabel());
-  label_hour_.reset(CreateLabel());
-  label_minute_.reset(CreateLabel());
-  label_->set_owned_by_client();
-  label_hour_->set_owned_by_client();
-  label_minute_->set_owned_by_client();
+  SetupLabels();
   UpdateTextInternal(base::Time::Now());
-  AddChildView(label_.get());
+  UpdateClockLayout(clock_layout);
 }
 
 TimeView::~TimeView() {
@@ -187,13 +184,13 @@ void TimeView::UpdateTextInternal(const base::Time& now) {
   size_t colon_pos = current_time.find(ASCIIToUTF16(":"));
   string16 hour = current_time.substr(0, colon_pos);
   string16 minute = current_time.substr(colon_pos + 1);
-  if (hour.length() == 2) {
-    label_hour_->SetText(hour);
-  } else {
-    label_hour_->SetText(hour_type_ == base::k24HourClock ?
-        ASCIIToUTF16("0") + hour : hour + ASCIIToUTF16(":"));
-  }
-  label_minute_->SetText(minute);
+  label_hour_left_->SetText(hour.substr(0, 1));
+  label_hour_right_->SetText(hour.length() == 2 ?
+      hour.substr(1,1) : ASCIIToUTF16(":"));
+  label_minute_left_->SetText(minute.substr(0, 1));
+  label_minute_right_->SetText(minute.substr(1, 1));
+
+  Layout();
 }
 
 bool TimeView::PerformAction(const views::Event& event) {
@@ -208,18 +205,33 @@ bool TimeView::OnMousePressed(const views::MouseEvent& event) {
 void TimeView::UpdateClockLayout(TrayDate::ClockLayout clock_layout){
   SetBorder(clock_layout);
   if (clock_layout == TrayDate::HORIZONTAL_CLOCK) {
-    RemoveChildView(label_hour_.get());
-    RemoveChildView(label_minute_.get());
+    RemoveChildView(label_hour_left_.get());
+    RemoveChildView(label_hour_right_.get());
+    RemoveChildView(label_minute_left_.get());
+    RemoveChildView(label_minute_right_.get());
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
     AddChildView(label_.get());
   } else {
     RemoveChildView(label_.get());
-    SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
-    AddChildView(label_hour_.get());
-    AddChildView(label_minute_.get());
+    views::GridLayout* layout = new views::GridLayout(this);
+    SetLayoutManager(layout);
+    views::ColumnSet* columns = layout->AddColumnSet(0);
+    columns->AddPaddingColumn(0, 6);
+    columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
+                       0, views::GridLayout::USE_PREF, 0, 0);
+    columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
+                       0, views::GridLayout::USE_PREF, 0, 0);
+    layout->AddPaddingRow(0, 4);
+    layout->StartRow(0, 0);
+    layout->AddView(label_hour_left_.get());
+    layout->AddView(label_hour_right_.get());
+    layout->StartRow(0, 0);
+    layout->AddView(label_minute_left_.get());
+    layout->AddView(label_minute_right_.get());
+    layout->AddPaddingRow(0, 4);
   }
+  Layout();
   set_focusable(true);
 }
 
@@ -227,7 +239,29 @@ void TimeView::SetBorder(TrayDate::ClockLayout clock_layout) {
   if (clock_layout == TrayDate::HORIZONTAL_CLOCK)
     set_border(views::Border::CreateEmptyBorder(0, 10, 0, 7));
   else
-    set_border(views::Border::CreateEmptyBorder(2, 12, 2, 2));
+    set_border(NULL);
+}
+
+void TimeView::SetupLabels() {
+  label_.reset(CreateLabel());
+  SetupLabel(label_.get());
+  label_hour_left_.reset(CreateLabel());
+  SetupLabel(label_hour_left_.get());
+  label_hour_right_.reset(CreateLabel());
+  SetupLabel(label_hour_right_.get());
+  label_minute_left_.reset(CreateLabel());
+  SetupLabel(label_minute_left_.get());
+  label_minute_right_.reset(CreateLabel());
+  SetupLabel(label_minute_right_.get());
+  label_hour_left_->SetEnabledColor(kVerticalClockHourColor);
+  label_hour_right_->SetEnabledColor(kVerticalClockHourColor);
+}
+
+void TimeView::SetupLabel(views::Label* label) {
+  label->set_owned_by_client();
+  SetupLabelForTray(label);
+  gfx::Font font = label->font();
+  label->SetFont(font.DeriveFont(0, font.GetStyle() & ~gfx::Font::BOLD));
 }
 
 }  // namespace tray

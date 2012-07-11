@@ -10,8 +10,8 @@ namespace ash {
 
 const int kPaddingFromRightEdgeOfScreenBottomAlignment = 15;
 const int kPaddingFromBottomOfScreenBottomAlignment = 10;
-const int kPaddingFromEdgeOfScreenVerticalAlignment = 4;
-const int kPaddingFromEdgeOfLauncherVerticalAlignment = 4;
+const int kPaddingFromOuterEdgeOfLauncherVerticalAlignment = 8;
+const int kPaddingFromInnerEdgeOfLauncherVerticalAlignment = 7;
 const int kPaddingFromBottomOfScreenVerticalAlignment = 10;
 
 const int kTrayPopupAutoCloseDelayInSeconds = 2;

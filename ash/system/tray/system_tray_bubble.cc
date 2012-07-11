@@ -355,10 +355,10 @@ gfx::Rect SystemTrayBubble::GetAnchorRect() const {
                 0 : kPaddingFromRightEdgeOfScreenBottomAlignment,
             kPaddingFromBottomOfScreenBottomAlignment);
       } else if (tray_->shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
-        rect.Inset(0, 0, kPaddingFromEdgeOfLauncherVerticalAlignment,
+        rect.Inset(0, 0, kPaddingFromInnerEdgeOfLauncherVerticalAlignment,
                    kPaddingFromBottomOfScreenVerticalAlignment);
       } else {
-        rect.Inset(kPaddingFromEdgeOfLauncherVerticalAlignment + 4,
+        rect.Inset(kPaddingFromInnerEdgeOfLauncherVerticalAlignment,
                    0, 0, kPaddingFromBottomOfScreenVerticalAlignment);
       }
     } else if (anchor_type_ == ANCHOR_TYPE_BUBBLE) {

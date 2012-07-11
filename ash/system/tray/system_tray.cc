@@ -48,6 +48,16 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 
+namespace {
+
+// Adjust the size of SystemTrayContainer with additional padding.
+const int kTrayContainerVerticalPaddingBottomAlignment  = 1;
+const int kTrayContainerHorizontalPaddingBottomAlignment  = 1;
+const int kTrayContainerVerticalPaddingVerticalAlignment  = 1;
+const int kTrayContainerHorizontalPaddingVerticalAlignment = 2;
+
+}  // namespace
+
 namespace ash {
 
 namespace internal {
@@ -59,8 +69,26 @@ class SystemTrayContainer : public views::View {
   SystemTrayContainer() {}
   virtual ~SystemTrayContainer() {}
 
-  void SetLayoutManager(views::LayoutManager* layout_manager) {
-    views::View::SetLayoutManager(layout_manager);
+  void UpdateLayout(ShelfAlignment alignment) {
+    // Adjust the size of status tray dark background by adding additional
+    // empty border.
+    if (alignment == SHELF_ALIGNMENT_BOTTOM) {
+      set_border(views::Border::CreateEmptyBorder(
+          kTrayContainerVerticalPaddingBottomAlignment,
+          kTrayContainerHorizontalPaddingBottomAlignment,
+          kTrayContainerVerticalPaddingBottomAlignment,
+          kTrayContainerHorizontalPaddingBottomAlignment));
+      views::View::SetLayoutManager(new views::BoxLayout(
+          views::BoxLayout::kHorizontal, 0, 0, 0));
+    } else {
+      set_border(views::Border::CreateEmptyBorder(
+          kTrayContainerVerticalPaddingVerticalAlignment,
+          kTrayContainerHorizontalPaddingVerticalAlignment,
+          kTrayContainerVerticalPaddingVerticalAlignment,
+          kTrayContainerHorizontalPaddingVerticalAlignment));
+      views::View::SetLayoutManager(new views::BoxLayout(
+          views::BoxLayout::kVertical, 0, 0, 0));
+    }
     PreferredSizeChanged();
   }
 
@@ -134,10 +162,7 @@ SystemTray::SystemTray()
       default_bubble_height_(0),
       hide_notifications_(false) {
   tray_container_ = new internal::SystemTrayContainer;
-  tray_container_->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 0, 0, 0));
-  tray_container_->set_border(
-      views::Border::CreateEmptyBorder(1, 1, 1, 1));
+  tray_container_->UpdateLayout(shelf_alignment());
   SetContents(tray_container_);
   SetBorder();
 }
@@ -487,14 +512,14 @@ void SystemTray::SetBorder() {
         kPaddingFromRightEdgeOfScreenBottomAlignment));
   } else if (shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
     set_border(views::Border::CreateEmptyBorder(0,
-        kPaddingFromEdgeOfScreenVerticalAlignment,
+        kPaddingFromOuterEdgeOfLauncherVerticalAlignment,
         kPaddingFromBottomOfScreenVerticalAlignment,
-        kPaddingFromEdgeOfLauncherVerticalAlignment));
+        kPaddingFromInnerEdgeOfLauncherVerticalAlignment));
   } else {
     set_border(views::Border::CreateEmptyBorder(0,
-        kPaddingFromEdgeOfLauncherVerticalAlignment,
+        kPaddingFromInnerEdgeOfLauncherVerticalAlignment,
         kPaddingFromBottomOfScreenVerticalAlignment,
-        kPaddingFromEdgeOfScreenVerticalAlignment));
+        kPaddingFromOuterEdgeOfLauncherVerticalAlignment));
   }
 }
 
@@ -504,10 +529,7 @@ void SystemTray::SetShelfAlignment(ShelfAlignment alignment) {
   internal::TrayBackgroundView::SetShelfAlignment(alignment);
   UpdateAfterShelfAlignmentChange(alignment);
   SetBorder();
-  tray_container_->SetLayoutManager(new views::BoxLayout(
-      alignment == SHELF_ALIGNMENT_BOTTOM ?
-          views::BoxLayout::kHorizontal : views::BoxLayout::kVertical,
-      0, 0, 0));
+  tray_container_->UpdateLayout(alignment);
 }
 
 bool SystemTray::PerformAction(const views::Event& event) {

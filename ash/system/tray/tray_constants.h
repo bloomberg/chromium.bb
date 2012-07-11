@@ -12,9 +12,8 @@ namespace ash {
 
 extern const int kPaddingFromRightEdgeOfScreenBottomAlignment;
 extern const int kPaddingFromBottomOfScreenBottomAlignment;
-extern const int kPaddingFromEdgeOfScreenVerticalAlignment;
-extern const int kPaddingFromEdgeOfLauncherVerticalAlignment;
-extern const int kPaddingFromRightEdgeOfScreenRightAlignment;
+extern const int kPaddingFromOuterEdgeOfLauncherVerticalAlignment;
+extern const int kPaddingFromInnerEdgeOfLauncherVerticalAlignment;
 extern const int kPaddingFromBottomOfScreenVerticalAlignment;
 
 extern const int kTrayPopupAutoCloseDelayInSeconds;

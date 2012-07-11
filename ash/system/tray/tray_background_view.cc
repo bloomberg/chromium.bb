@@ -39,7 +39,7 @@ class TrayBackground : public views::Background {
     paint.setStyle(SkPaint::kFill_Style);
     paint.setColor(SkColorSetARGB(alpha_, 0, 0, 0));
     SkPath path;
-    gfx::Rect bounds(view->bounds());
+    gfx::Rect bounds(view->GetLocalBounds());
     SkScalar radius = SkIntToScalar(kTrayRoundedBorderRadius);
     path.addRoundRect(gfx::RectToSkRect(bounds), radius, radius);
     canvas->DrawPath(path, paint);
@@ -60,9 +60,6 @@ TrayBackgroundView::TrayBackgroundView()
           this, 0, kTrayBackgroundAlpha)),
       ALLOW_THIS_IN_INITIALIZER_LIST(hover_background_animator_(
           this, 0, kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha)) {
-  set_border(views::Border::CreateEmptyBorder(0, 0,
-        kPaddingFromBottomOfScreenBottomAlignment,
-        kPaddingFromRightEdgeOfScreenBottomAlignment));
   set_notify_enter_exit_on_child(true);
 
   // Initially we want to paint the background, but without the hover effect.
