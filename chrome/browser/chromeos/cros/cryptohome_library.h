@@ -54,9 +54,6 @@ class CryptohomeLibrary {
   virtual bool InstallAttributesIsInvalid() = 0;
   virtual bool InstallAttributesIsFirstInstall() = 0;
 
-  // Returns hash of |password|, salted with the system salt.
-  virtual std::string HashPassword(const std::string& password) = 0;
-
   // Returns system hash in hex encoded ascii format.
   virtual std::string GetSystemSalt() = 0;
 

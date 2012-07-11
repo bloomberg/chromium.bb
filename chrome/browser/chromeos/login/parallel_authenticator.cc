@@ -9,6 +9,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cert_library.h"
@@ -27,6 +28,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "crypto/sha2.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using content::BrowserThread;
@@ -37,6 +39,9 @@ namespace {
 
 // Milliseconds until we timeout our attempt to hit ClientLogin.
 const int kClientLoginTimeoutMs = 10000;
+
+// Length of password hashed with SHA-256.
+const int kPasswordHashLength = 32;
 
 // Records status and calls resolver->Resolve().
 void TriggerResolve(AuthAttemptState* attempt,
@@ -162,6 +167,26 @@ bool WasConnectionIssue(const LoginFailure& online_outcome) {
            GoogleServiceAuthError::REQUEST_CANCELED));
 }
 
+// Returns hash of |password|, salted with the system salt.
+std::string HashPassword(const std::string& password) {
+  // Get salt, ascii encode, update sha with that, then update with ascii
+  // of password, then end.
+  std::string ascii_salt =
+      CrosLibrary::Get()->GetCryptohomeLibrary()->GetSystemSalt();
+  char passhash_buf[kPasswordHashLength];
+
+  // Hash salt and password
+  crypto::SHA256HashString(ascii_salt + password,
+                           &passhash_buf, sizeof(passhash_buf));
+
+  // Only want the top half for 'weak' hashing so that the passphrase is not
+  // immediately exposed even if the output is reversed.
+  const int encoded_length = sizeof(passhash_buf) / 2;
+
+  return StringToLowerASCII(base::HexEncode(
+      reinterpret_cast<const void*>(passhash_buf), encoded_length));
+}
+
 }  // namespace
 
 ParallelAuthenticator::ParallelAuthenticator(LoginStatusConsumer* consumer)
@@ -193,7 +218,7 @@ void ParallelAuthenticator::AuthenticateToLogin(
       new AuthAttemptState(
           canonicalized,
           password,
-          CrosLibrary::Get()->GetCryptohomeLibrary()->HashPassword(password),
+          HashPassword(password),
           login_token,
           login_captcha,
           !UserManager::Get()->IsKnownUser(canonicalized)));
@@ -230,7 +255,7 @@ void ParallelAuthenticator::CompleteLogin(Profile* profile,
       new AuthAttemptState(
           canonicalized,
           password,
-          CrosLibrary::Get()->GetCryptohomeLibrary()->HashPassword(password),
+          HashPassword(password),
           !UserManager::Get()->IsKnownUser(canonicalized)));
   {
     // Reset the verified flag.
@@ -270,7 +295,7 @@ void ParallelAuthenticator::AuthenticateToUnlock(const std::string& username,
   current_state_.reset(
       new AuthAttemptState(
           gaia::CanonicalizeEmail(username),
-          CrosLibrary::Get()->GetCryptohomeLibrary()->HashPassword(password)));
+          HashPassword(password)));
   check_key_attempted_ = true;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -367,8 +392,7 @@ void ParallelAuthenticator::RecordOAuthCheckFailure(
 
 void ParallelAuthenticator::RecoverEncryptedData(
     const std::string& old_password) {
-  std::string old_hash =
-      CrosLibrary::Get()->GetCryptohomeLibrary()->HashPassword(old_password);
+  std::string old_hash = HashPassword(old_password);
   migrate_attempted_ = true;
   current_state_->ResetCryptohomeStatus();
   BrowserThread::PostTask(
@@ -432,7 +456,7 @@ void ParallelAuthenticator::RetryAuth(Profile* profile,
       new AuthAttemptState(
           gaia::CanonicalizeEmail(username),
           password,
-          CrosLibrary::Get()->GetCryptohomeLibrary()->HashPassword(password),
+          HashPassword(password),
           login_token,
           login_captcha,
           false /* not a new user */));

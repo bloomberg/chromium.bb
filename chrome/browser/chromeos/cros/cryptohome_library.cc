@@ -11,12 +11,10 @@
 #include "base/string_util.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "crypto/sha2.h"
 
 namespace {
 
 const char kStubSystemSalt[] = "stub_system_salt";
-const int kPassHashLen = 32;
 
 }
 
@@ -127,21 +125,6 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
     return result;
   }
 
-  virtual std::string HashPassword(const std::string& password) OVERRIDE {
-    // Get salt, ascii encode, update sha with that, then update with ascii
-    // of password, then end.
-    std::string ascii_salt = GetSystemSalt();
-    char passhash_buf[kPassHashLen];
-
-    // Hash salt and password
-    crypto::SHA256HashString(ascii_salt + password,
-                             &passhash_buf, sizeof(passhash_buf));
-
-    return StringToLowerASCII(base::HexEncode(
-        reinterpret_cast<const void*>(passhash_buf),
-        sizeof(passhash_buf) / 2));
-  }
-
   virtual std::string GetSystemSalt() OVERRIDE {
     LoadSystemSalt();  // no-op if it's already loaded.
     return StringToLowerASCII(base::HexEncode(
@@ -232,12 +215,6 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
 
   virtual bool InstallAttributesIsFirstInstall() OVERRIDE {
     return !locked_;
-  }
-
-  virtual std::string HashPassword(const std::string& password) OVERRIDE {
-    return StringToLowerASCII(base::HexEncode(
-            reinterpret_cast<const void*>(password.data()),
-            password.length()));
   }
 
   virtual std::string GetSystemSalt() OVERRIDE {

@@ -490,7 +490,7 @@ TEST_F(ParallelAuthenticatorTest, DriveDataRecover) {
   EXPECT_CALL(*mock_caller_, AsyncMount(username_, hash_ascii_, false, _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_cryptohome_library_, HashPassword(_))
+  EXPECT_CALL(*mock_cryptohome_library_, GetSystemSalt())
       .WillOnce(Return(std::string()))
       .RetiresOnSaturation();
 
@@ -511,7 +511,7 @@ TEST_F(ParallelAuthenticatorTest, DriveDataRecoverButFail) {
   EXPECT_CALL(*mock_caller_, AsyncMigrateKey(username_, _, hash_ascii_, _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_cryptohome_library_, HashPassword(_))
+  EXPECT_CALL(*mock_cryptohome_library_, GetSystemSalt())
       .WillOnce(Return(std::string()))
       .RetiresOnSaturation();
 
@@ -628,7 +628,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetNewPassword) {
                                               _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_cryptohome_library_, HashPassword(_))
+  EXPECT_CALL(*mock_cryptohome_library_, GetSystemSalt())
       .WillOnce(Return(std::string()))
       .RetiresOnSaturation();
 
@@ -666,7 +666,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetNewPassword) {
 TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetCaptchad) {
   ExpectLoginSuccess(username_, password_, true);
   FailOnLoginFailure();
-  EXPECT_CALL(*mock_cryptohome_library_, HashPassword(_))
+  EXPECT_CALL(*mock_cryptohome_library_, GetSystemSalt())
       .WillOnce(Return(std::string()))
       .RetiresOnSaturation();
 
@@ -748,7 +748,7 @@ TEST_F(ParallelAuthenticatorTest, DriveUnlock) {
   EXPECT_CALL(*mock_caller_, AsyncCheckKey(username_, _, _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_cryptohome_library_, HashPassword(_))
+  EXPECT_CALL(*mock_cryptohome_library_, GetSystemSalt())
       .WillOnce(Return(std::string()))
       .RetiresOnSaturation();
 
