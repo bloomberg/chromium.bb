@@ -421,6 +421,8 @@ void IndexedDBDispatcher::RequestIDBObjectStorePut(
     WebIDBCallbacks* callbacks_ptr,
     int32 idb_object_store_id,
     const WebIDBTransaction& transaction,
+    const WebKit::WebVector<WebKit::WebString>& index_names,
+    const WebKit::WebVector<WebKit::WebVector<WebKit::WebIDBKey> >& index_keys,
     WebExceptionCode* ec) {
   ResetCursorPrefetchCaches();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
@@ -437,6 +439,18 @@ void IndexedDBDispatcher::RequestIDBObjectStorePut(
   params.key = key;
   params.put_mode = put_mode;
   params.transaction_id = TransactionId(transaction);
+  params.index_names.resize(index_names.size());
+  for (size_t i = 0; i < index_names.size(); ++i) {
+      params.index_names[i] = index_names[i];
+  }
+
+  params.index_keys.resize(index_keys.size());
+  for (size_t i = 0; i < index_keys.size(); ++i) {
+      params.index_keys[i].resize(index_keys[i].size());
+      for (size_t j = 0; j < index_keys[i].size(); ++j) {
+          params.index_keys[i][j] = content::IndexedDBKey(index_keys[i][j]);
+      }
+  }
   Send(new IndexedDBHostMsg_ObjectStorePut(params, ec));
   if (*ec)
     pending_callbacks_.Remove(params.response_id);

@@ -711,6 +711,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnPut(
   scoped_ptr<WebIDBCallbacks> callbacks(
       new IndexedDBCallbacks<WebIDBKey>(parent_, params.thread_id,
                                         params.response_id));
+  // TODO(alecflett): switch to putWithIndexKeys when available.
   idb_object_store->put(params.serialized_value, params.key, params.put_mode,
                         callbacks.release(), *idb_transaction, *ec);
   if (*ec)

@@ -14,6 +14,8 @@
 
 using content::IndexedDBKey;
 using content::SerializedScriptValue;
+using WebKit::WebVector;
+using WebKit::WebString;
 
 class FakeWebIDBTransaction : public WebKit::WebIDBTransaction {
  public:
@@ -40,6 +42,8 @@ TEST(IndexedDBDispatcherTest, ValueSizeTest) {
         static_cast<WebKit::WebIDBCallbacks*>(NULL),
         dummy_id,
         FakeWebIDBTransaction(),
+        WebVector<WebString>(),
+        WebVector<WebVector<WebKit::WebIDBKey> >(),
         &ec);
     EXPECT_NE(ec, 0);
   }

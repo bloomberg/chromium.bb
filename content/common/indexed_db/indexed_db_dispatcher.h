@@ -169,13 +169,16 @@ class CONTENT_EXPORT IndexedDBDispatcher
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode* ec);
 
-  void RequestIDBObjectStorePut(const content::SerializedScriptValue& value,
-                                const content::IndexedDBKey& key,
-                                WebKit::WebIDBObjectStore::PutMode putMode,
-                                WebKit::WebIDBCallbacks* callbacks,
-                                int32 idb_object_store_id,
-                                const WebKit::WebIDBTransaction& transaction,
-                                WebKit::WebExceptionCode* ec);
+  void RequestIDBObjectStorePut(
+      const content::SerializedScriptValue& value,
+      const content::IndexedDBKey& key,
+      WebKit::WebIDBObjectStore::PutMode putMode,
+      WebKit::WebIDBCallbacks* callbacks,
+      int32 idb_object_store_id,
+      const WebKit::WebIDBTransaction& transaction,
+      const WebKit::WebVector<WebKit::WebString>& indexNames,
+      const WebKit::WebVector<WebKit::WebVector<WebKit::WebIDBKey> >& indexKeys,
+      WebKit::WebExceptionCode* ec);
 
   void RequestIDBObjectStoreDelete(
       const content::IndexedDBKeyRange& key_range,

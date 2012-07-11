@@ -110,6 +110,12 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_ObjectStorePut_Params)
   IPC_STRUCT_MEMBER(content::IndexedDBKey, key)
   // Whether this is an add or a put.
   IPC_STRUCT_MEMBER(WebKit::WebIDBObjectStore::PutMode, put_mode)
+  // The names of the indexes used below.
+  IPC_STRUCT_MEMBER(std::vector<string16>, index_names)
+  // The keys for each index, such that each inner vector corresponds
+  // to each index named in index_names, respectively.
+  IPC_STRUCT_MEMBER(std::vector<std::vector<content::IndexedDBKey> >,
+                    index_keys)
   // The transaction it's associated with.
   IPC_STRUCT_MEMBER(int, transaction_id)
 IPC_STRUCT_END()

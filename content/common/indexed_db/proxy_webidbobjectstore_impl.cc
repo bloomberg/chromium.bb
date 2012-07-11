@@ -18,7 +18,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
+using content::IndexedDBKey;
 using content::IndexedDBKeyPath;
+using content::IndexedDBKeyRange;
 using content::SerializedScriptValue;
 using WebKit::WebDOMStringList;
 using WebKit::WebExceptionCode;
@@ -31,6 +33,7 @@ using WebKit::WebIDBKey;
 using WebKit::WebIDBTransaction;
 using WebKit::WebSerializedScriptValue;
 using WebKit::WebString;
+using WebKit::WebVector;
 
 RendererWebIDBObjectStoreImpl::RendererWebIDBObjectStoreImpl(
     int32 idb_object_store_id)
@@ -54,7 +57,7 @@ void RendererWebIDBObjectStoreImpl::get(
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBObjectStoreGet(
-      content::IndexedDBKeyRange(key_range), callbacks,
+      IndexedDBKeyRange(key_range), callbacks,
       idb_object_store_id_, transaction, &ec);
 }
 
@@ -67,9 +70,29 @@ void RendererWebIDBObjectStoreImpl::put(
     WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
+  WebVector<WebString> emptyIndexNames;
+  WebVector<WebVector<WebIDBKey> > emptyIndexKeys;
   dispatcher->RequestIDBObjectStorePut(
-      SerializedScriptValue(value), content::IndexedDBKey(key),
-      put_mode, callbacks, idb_object_store_id_, transaction, &ec);
+      SerializedScriptValue(value), IndexedDBKey(key),
+      put_mode, callbacks, idb_object_store_id_, transaction,
+      emptyIndexNames, emptyIndexKeys, &ec);
+}
+
+void RendererWebIDBObjectStoreImpl::putWithIndexKeys(
+    const WebSerializedScriptValue& value,
+    const WebIDBKey& key,
+    PutMode put_mode,
+    WebIDBCallbacks* callbacks,
+    const WebIDBTransaction& transaction,
+    const WebVector<WebString>& indexNames,
+    const WebVector<WebVector<WebIDBKey> >& indexKeys,
+    WebExceptionCode& ec) {
+  IndexedDBDispatcher* dispatcher =
+      IndexedDBDispatcher::ThreadSpecificInstance();
+  dispatcher->RequestIDBObjectStorePut(
+      SerializedScriptValue(value), IndexedDBKey(key),
+      put_mode, callbacks, idb_object_store_id_, transaction,
+      indexNames, indexKeys, &ec);
 }
 
 void RendererWebIDBObjectStoreImpl::deleteFunction(
@@ -80,7 +103,7 @@ void RendererWebIDBObjectStoreImpl::deleteFunction(
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBObjectStoreDelete(
-      content::IndexedDBKeyRange(key_range), callbacks, idb_object_store_id_,
+      IndexedDBKeyRange(key_range), callbacks, idb_object_store_id_,
       transaction, &ec);
 }
 
