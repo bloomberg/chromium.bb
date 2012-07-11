@@ -7,10 +7,9 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/views/web_dialog_view.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/url_constants.h"
-#include "ui/views/view.h"
-#include "ui/views/widget/widget.h"
+#include "ui/gfx/size.h"
 
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -45,10 +44,9 @@ namespace chromeos {
 // static
 void SimDialogDelegate::ShowDialog(gfx::NativeWindow owning_window,
                                    SimDialogMode mode) {
-  views::Widget::CreateWindowWithParent(
-      new WebDialogView(ProfileManager::GetDefaultProfileOrOffTheRecord(),
-                        new SimDialogDelegate(mode)),
-      owning_window)->Show();
+  chrome::ShowWebDialog(owning_window,
+                        ProfileManager::GetDefaultProfileOrOffTheRecord(),
+                        new SimDialogDelegate(mode));
 }
 
 SimDialogDelegate::SimDialogDelegate(SimDialogMode dialog_mode)
