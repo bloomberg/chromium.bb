@@ -36,12 +36,14 @@
     <event name="locale"/>      
   </interface>
 
-  <interface name="input_method" version="1">
+  <interface name="text_model_manager" version="1">
     <request name="create_text_model">
       <arg name="id" type="new_id" interface="text_model"/>
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
+  </interface>
 
+  <interface name="input_method" version="1">
     <request name="commit_string">
       <arg name="text" type="string"/>
       <arg name="index" type="uint"/>

@@ -36,12 +36,13 @@ struct text_model {
 };
 
 struct input_method {
-	struct wl_object base;
-	struct weston_compositor *ec;
-	struct wl_global *global;
+	struct wl_resource *input_method_binding;
+	struct wl_global *input_method_global;
+	struct wl_global *text_model_manager_global;
 	struct wl_listener destroy_listener;
-	struct wl_list models;
 
+	struct weston_compositor *ec;
+	struct wl_list models;
 	struct text_model *active_model;
 };
 
@@ -144,10 +145,10 @@ struct text_model_interface text_model_implementation = {
 	text_model_set_content_type
 };
 
-static void input_method_create_text_model(struct wl_client *client,
-					   struct wl_resource *resource,
-					   uint32_t id,
-					   struct wl_resource *surface)
+static void text_model_manager_create_text_model(struct wl_client *client,
+						 struct wl_resource *resource,
+						 uint32_t id,
+						 struct wl_resource *surface)
 {
 	struct input_method *input_method = resource->data;
 	struct text_model *text_model;
@@ -169,6 +170,25 @@ static void input_method_create_text_model(struct wl_client *client,
 	wl_list_insert(&input_method->models, &text_model->link);
 };
 
+static const struct text_model_manager_interface text_model_manager_implementation = {
+	text_model_manager_create_text_model
+};
+
+static void
+bind_text_model_manager(struct wl_client *client,
+			void *data,
+			uint32_t version,
+			uint32_t id)
+{
+	struct input_method *input_method = data;
+
+	/* No checking for duplicate binding necessary.
+	 * No events have to be sent, so we don't need the return value. */
+	wl_client_add_object(client, &text_model_manager_interface,
+			     &text_model_manager_implementation,
+			     id, input_method);
+}
+
 static void
 input_method_commit_string(struct wl_client *client,
 			   struct wl_resource *resource,
@@ -182,10 +202,18 @@ input_method_commit_string(struct wl_client *client,
 	}
 }
 
-struct input_method_interface input_method_implementation = {
-	input_method_create_text_model,
+static const struct input_method_interface input_method_implementation = {
 	input_method_commit_string
 };
+
+static void
+unbind_input_method(struct wl_resource *resource)
+{
+	struct input_method *input_method = resource->data;
+
+	input_method->input_method_binding = NULL;
+	free(resource);
+}
 
 static void
 bind_input_method(struct wl_client *client,
@@ -193,8 +221,22 @@ bind_input_method(struct wl_client *client,
 		  uint32_t version,
 		  uint32_t id)
 {
-	wl_client_add_object(client, &input_method_interface,
-			     &input_method_implementation, id, data);
+	struct input_method *input_method = data;
+	struct wl_resource *resource;
+
+	resource = wl_client_add_object(client, &input_method_interface,
+					&input_method_implementation,
+					id, input_method);
+
+	if (input_method->input_method_binding == NULL) {
+		resource->destroy = unbind_input_method;
+		input_method->input_method_binding = resource;
+		return;
+	}
+
+	wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
+			       "interface object already bound");
+	wl_resource_destroy(resource);
 }
 
 static void
@@ -204,7 +246,9 @@ input_method_notifier_destroy(struct wl_listener *listener, void *data)
 		container_of(listener, struct input_method, destroy_listener);
 
 	wl_display_remove_global(input_method->ec->wl_display,
-				 input_method->global);
+				 input_method->input_method_global);
+	wl_display_remove_global(input_method->ec->wl_display,
+				 input_method->text_model_manager_global);
 	free(input_method);
 }
 
@@ -215,18 +259,20 @@ input_method_create(struct weston_compositor *ec)
 
 	input_method = calloc(1, sizeof *input_method);
 
-	input_method->base.interface = &input_method_interface;
-	input_method->base.implementation =
-		(void(**)(void)) &input_method_implementation;
 	input_method->ec = ec;
 	input_method->active_model = NULL;
 
 	wl_list_init(&input_method->models);
 
-	input_method->global = wl_display_add_global(ec->wl_display,
-						     &input_method_interface,
-						     input_method,
-						     bind_input_method);
+	input_method->input_method_global =
+		wl_display_add_global(ec->wl_display,
+				      &input_method_interface,
+				      input_method, bind_input_method);
+
+	input_method->text_model_manager_global =
+		wl_display_add_global(ec->wl_display,
+				      &text_model_manager_interface,
+				      input_method, bind_text_model_manager);
 
 	input_method->destroy_listener.notify = input_method_notifier_destroy;
 	wl_signal_add(&ec->destroy_signal, &input_method->destroy_listener);

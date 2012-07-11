@@ -40,7 +40,7 @@ struct text_entry {
 };
 
 struct editor {
-	struct input_method *input_method;
+	struct text_model_manager *text_model_manager;
 	struct display *display;
 	struct window *window;
 	struct widget *widget;
@@ -86,7 +86,7 @@ text_entry_create(struct editor *editor, const char *text)
 	entry->widget = editor->widget;
 	entry->text = strdup(text);
 	entry->active = 0;
-	entry->model = input_method_create_text_model(editor->input_method, surface);
+	entry->model = text_model_manager_create_text_model(editor->text_model_manager, surface);
 	text_model_add_listener(entry->model, &text_model_listener, entry);
 
 	return entry;
@@ -267,8 +267,9 @@ global_handler(struct wl_display *display, uint32_t id,
 {
 	struct editor *editor = data;
 
-	if (!strcmp(interface, "input_method")) {
-		editor->input_method = wl_display_bind(display, id, &input_method_interface);
+	if (!strcmp(interface, "text_model_manager")) {
+		editor->text_model_manager = wl_display_bind(display, id,
+							     &text_model_manager_interface);
 	}
 }
 
