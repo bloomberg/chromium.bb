@@ -31,6 +31,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request_status.h"
 #include "skia/ext/image_operations.h"
 
 using content::BrowserThread;
@@ -279,10 +280,13 @@ void ProfileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::string data;
   source->GetResponseAsString(&data);
-  if (source->GetResponseCode() != 200) {
-    DVLOG(1) << "Response code is " << source->GetResponseCode();
-    DVLOG(1) << "Url is " << source->GetURL().spec();
-    DVLOG(1) << "Data is " << data;
+  if (source->GetStatus().status() != net::URLRequestStatus::SUCCESS ||
+      source->GetResponseCode() != 200) {
+    LOG(WARNING) << "Fetching profile data failed";
+    DVLOG(1) << "  Status: " << source->GetStatus().status();
+    DVLOG(1) << "  Error: " << source->GetStatus().error();
+    DVLOG(1) << "  Response code: " << source->GetResponseCode();
+    DVLOG(1) << "  Url: " << source->GetURL().spec();
     delegate_->OnProfileDownloadFailure(this);
     return;
   }
