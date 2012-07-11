@@ -11,16 +11,6 @@ namespace gdata {
 
 namespace {
 
-// Changes the permissions of |file_path| to |permissions|.
-bool ChangeFilePermissions(const FilePath& file_path, mode_t permissions) {
-  if (HANDLE_EINTR(chmod(file_path.value().c_str(), permissions)) != 0) {
-    PLOG(ERROR) << "Error changing permissions of " << file_path.value();
-    return false;
-  }
-  DVLOG(1) << "Changed permissions of " << file_path.value();
-  return true;
-}
-
 // Returns true if |file_path| is a valid symbolic link as |sub_dir_type|.
 // Otherwise, returns false with the reason.
 bool IsValidSymbolicLink(const FilePath& file_path,
@@ -139,8 +129,9 @@ void GDataCacheMetadataMap::Initialize(
 
   // Change permissions of cache persistent directory to u+rwx,og+x in order to
   // allow archive files in that directory to be mounted by cros-disks.
-  if (!ChangeFilePermissions(cache_paths[GDataCache::CACHE_TYPE_PERSISTENT],
-                             S_IRWXU | S_IXGRP | S_IXOTH))
+  if (!file_util::SetPosixFilePermissions(
+        cache_paths[GDataCache::CACHE_TYPE_PERSISTENT],
+        S_IRWXU | S_IXGRP | S_IXOTH))
     return;
 
   DVLOG(1) << "Scanning directories";
