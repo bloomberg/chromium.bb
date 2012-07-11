@@ -49,6 +49,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
+#include "content/browser/download/download_file.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -61,7 +62,6 @@ class FilePath;
 
 namespace content {
 class ByteStreamReader;
-class DownloadFile;
 class DownloadId;
 class DownloadManager;
 }
@@ -82,7 +82,8 @@ class CONTENT_EXPORT DownloadFileManager
       CreateDownloadFileCallback;
 
   // Callback used with RenameDownloadFile().
-  typedef base::Callback<void(const FilePath&)> RenameCompletionCallback;
+  typedef content::DownloadFile::RenameCompletionCallback
+      RenameCompletionCallback;
 
   class DownloadFileFactory {
    public:

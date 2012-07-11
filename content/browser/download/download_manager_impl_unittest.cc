@@ -513,15 +513,11 @@ TEST_F(DownloadManagerTest, OnDownloadInterrupted) {
   content::MockDownloadItem& item(AddItemToManager());
   int download_id = item.GetId();
 
-  int64 size = 0xdeadbeef;
-  const std::string hash_state("Undead beef");
   content::DownloadInterruptReason reason(
       content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
 
-  EXPECT_CALL(item, UpdateProgress(size, 0, hash_state));
   EXPECT_CALL(item, Interrupt(reason));
-  download_manager_->OnDownloadInterrupted(
-      download_id, size, hash_state, reason);
+  download_manager_->OnDownloadInterrupted(download_id, reason);
   EXPECT_EQ(&item, GetActiveDownloadItem(download_id));
 }
 
