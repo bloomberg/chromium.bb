@@ -50,7 +50,6 @@ include_rules = [
   "+chrome/browser/ui/views/reload_button.h",
   "+chrome/browser/ui/views/select_file_dialog_extension.h",
   "+chrome/browser/ui/views/unhandled_keyboard_event_handler.h",
-  "+chrome/browser/ui/views/web_dialog_view.h",
   # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 
   # Other libraries.
