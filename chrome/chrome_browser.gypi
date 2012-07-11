@@ -533,6 +533,7 @@
         'browser/chromeos/gdata/gdata_auth_service.h',
         'browser/chromeos/gdata/gdata_cache.cc',
         'browser/chromeos/gdata/gdata_cache.h',
+        'browser/chromeos/gdata/gdata_cache_entry.h',
         'browser/chromeos/gdata/gdata_cache_metadata.cc',
         'browser/chromeos/gdata/gdata_cache_metadata.h',
         'browser/chromeos/gdata/gdata_db.h',

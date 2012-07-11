@@ -881,7 +881,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void UnpinIfPinned(const std::string& resource_id,
                      const std::string& md5,
                      bool success,
-                     const GDataCache::CacheEntry& cache_entry);
+                     const GDataCacheEntry& cache_entry);
 
   // Similar to OnFileDownloaded() but takes |has_enough_space| so we report
   // an error in case we don't have enough disk space.

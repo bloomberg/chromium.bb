@@ -160,7 +160,7 @@ class GDataSyncClient
   void OnGetCacheEntry(const std::string& resource_id,
                        const std::string& latest_md5,
                        bool success,
-                       const GDataCache::CacheEntry& cache_entry);
+                       const GDataCacheEntry& cache_entry);
 
   // Called when an existing cache entry and the local files are removed.
   void OnRemove(base::PlatformFileError error,

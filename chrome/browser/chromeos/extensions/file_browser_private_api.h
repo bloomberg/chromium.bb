@@ -466,7 +466,7 @@ class GetGDataFilePropertiesFunction : public FileBrowserFunction {
 
   void CacheStateReceived(base::DictionaryValue* property_dict,
                           bool success,
-                          const gdata::GDataCache::CacheEntry& cache_entry);
+                          const gdata::GDataCacheEntry& cache_entry);
 
   size_t current_index_;
   base::ListValue* path_list_;

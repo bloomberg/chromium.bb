@@ -122,9 +122,9 @@ ACTION_P4(MockUploadExistingFile,
   return kUploadId;
 }
 
-// Converts |cache_state| to a GDataCache::CacheEntry.
-GDataCache::CacheEntry ToCacheEntry(int cache_state) {
-  return GDataCache::CacheEntry("dummy_md5", cache_state);
+// Converts |cache_state| to a GDataCacheEntry.
+GDataCacheEntry ToCacheEntry(int cache_state) {
+  return GDataCacheEntry("dummy_md5", cache_state);
 }
 
 }  // namespace
@@ -420,10 +420,10 @@ class GDataFileSystemTest : public testing::Test {
   }
 
   // Helper function to call GetCacheEntry from origin thread.
-  scoped_ptr<GDataCache::CacheEntry> GetCacheEntryFromOriginThread(
+  scoped_ptr<GDataCacheEntry> GetCacheEntryFromOriginThread(
       const std::string& resource_id,
       const std::string& md5) {
-    scoped_ptr<GDataCache::CacheEntry> cache_entry;
+    scoped_ptr<GDataCacheEntry> cache_entry;
     content::BrowserThread::GetBlockingPool()
         ->GetSequencedTaskRunner(sequence_token_)->PostTask(
             FROM_HERE,
@@ -441,7 +441,7 @@ class GDataFileSystemTest : public testing::Test {
   void GetCacheEntryFromOriginThreadInternal(
       const std::string& resource_id,
       const std::string& md5,
-      scoped_ptr<GDataCache::CacheEntry>* cache_entry) {
+      scoped_ptr<GDataCacheEntry>* cache_entry) {
     cache_entry->reset(cache_->GetCacheEntry(resource_id, md5).release());
   }
 
@@ -502,7 +502,7 @@ class GDataFileSystemTest : public testing::Test {
     EXPECT_EQ(expected_error_, error);
 
     // Verify cache map.
-    scoped_ptr<GDataCache::CacheEntry> cache_entry =
+    scoped_ptr<GDataCacheEntry> cache_entry =
         GetCacheEntryFromOriginThread(resource_id, md5);
     if (cache_entry.get())
       EXPECT_TRUE(cache_entry->IsDirty());
@@ -671,9 +671,9 @@ class GDataFileSystemTest : public testing::Test {
                                      const std::string& md5,
                                      const FilePath& cache_file_path) {
     expected_error_ = base::PLATFORM_FILE_OK;
-    expected_cache_state_ = (GDataCache::CACHE_STATE_PRESENT |
-                             GDataCache::CACHE_STATE_DIRTY |
-                             GDataCache::CACHE_STATE_PERSISTENT);
+    expected_cache_state_ = (CACHE_STATE_PRESENT |
+                             CACHE_STATE_DIRTY |
+                             CACHE_STATE_PERSISTENT);
     expected_sub_dir_type_ = GDataCache::CACHE_TYPE_PERSISTENT;
     expect_outgoing_symlink_ = false;
     VerifyMarkDirty(error, resource_id, md5, cache_file_path);
@@ -686,9 +686,9 @@ class GDataFileSystemTest : public testing::Test {
                                       const std::string& resource_id,
                                       const std::string& md5) {
     expected_error_ = base::PLATFORM_FILE_OK;
-    expected_cache_state_ = (GDataCache::CACHE_STATE_PRESENT |
-                             GDataCache::CACHE_STATE_DIRTY |
-                             GDataCache::CACHE_STATE_PERSISTENT);
+    expected_cache_state_ = (CACHE_STATE_PRESENT |
+                             CACHE_STATE_DIRTY |
+                             CACHE_STATE_PERSISTENT);
     expected_sub_dir_type_ = GDataCache::CACHE_TYPE_PERSISTENT;
     expect_outgoing_symlink_ = true;
     VerifyCacheFileState(error, resource_id, md5);
@@ -702,13 +702,14 @@ class GDataFileSystemTest : public testing::Test {
     EXPECT_EQ(expected_error_, error);
 
     // Verify cache map.
-    scoped_ptr<GDataCache::CacheEntry> cache_entry =
+    scoped_ptr<GDataCacheEntry> cache_entry =
         GetCacheEntryFromOriginThread(resource_id, md5);
     if (ToCacheEntry(expected_cache_state_).IsPresent() ||
         ToCacheEntry(expected_cache_state_).IsPinned()) {
       ASSERT_TRUE(cache_entry.get());
       EXPECT_EQ(expected_cache_state_, cache_entry->cache_state());
-      EXPECT_EQ(expected_sub_dir_type_, cache_entry->GetSubDirectoryType());
+      EXPECT_EQ(expected_sub_dir_type_,
+                GDataCache::GetSubDirectoryType(*cache_entry));
     } else {
       EXPECT_FALSE(cache_entry.get());
     }
@@ -2145,7 +2146,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
                    "<md5>",
                    GetTestFilePath("root_feed.json"),
                    base::PLATFORM_FILE_OK,
-                   GDataCache::CACHE_STATE_PRESENT,
+                   CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
   ASSERT_TRUE(CacheEntryExists("<resource_id>", "<md5>"));
   ASSERT_TRUE(CacheFileExists("<resource_id>", "<md5>"));
@@ -2239,7 +2240,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromCache) {
                    file->file_md5(),
                    GetTestFilePath("root_feed.json"),
                    base::PLATFORM_FILE_OK,
-                   GDataCache::CACHE_STATE_PRESENT,
+                   CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
 
   // Make sure we don't fetch metadata for downloading file.
@@ -2339,7 +2340,7 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId_FromCache) {
                    file->file_md5(),
                    GetTestFilePath("root_feed.json"),
                    base::PLATFORM_FILE_OK,
-                   GDataCache::CACHE_STATE_PRESENT,
+                   CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
 
   // The file is obtained from the cache.
@@ -2369,7 +2370,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   TestPin(kResourceId,
           kMd5,
           base::PLATFORM_FILE_OK,
-          GDataCache::CACHE_STATE_PINNED,
+          CACHE_STATE_PINNED,
           GDataCache::CACHE_TYPE_TMP);
 
   // First store a file to cache. A cache file will be created at:
@@ -2382,9 +2383,9 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
                    kMd5,
                    GetTestFilePath("root_feed.json"),  // Anything works.
                    base::PLATFORM_FILE_OK,
-                   GDataCache::CACHE_STATE_PRESENT |
-                   GDataCache::CACHE_STATE_PINNED |
-                   GDataCache::CACHE_STATE_PERSISTENT,
+                   CACHE_STATE_PRESENT |
+                   CACHE_STATE_PINNED |
+                   CACHE_STATE_PERSISTENT,
                    GDataCache::CACHE_TYPE_PERSISTENT);
   ASSERT_TRUE(file_util::PathExists(original_cache_file_path));
 
@@ -2393,10 +2394,10 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   TestMarkDirty(kResourceId,
                 kMd5,
                 base::PLATFORM_FILE_OK,
-                GDataCache::CACHE_STATE_PRESENT |
-                GDataCache::CACHE_STATE_PINNED |
-                GDataCache::CACHE_STATE_DIRTY |
-                GDataCache::CACHE_STATE_PERSISTENT,
+                CACHE_STATE_PRESENT |
+                CACHE_STATE_PINNED |
+                CACHE_STATE_DIRTY |
+                CACHE_STATE_PERSISTENT,
                 GDataCache::CACHE_TYPE_PERSISTENT);
   const FilePath dirty_cache_file_path =
       GDataCache::GetCacheRootPath(profile_.get())
@@ -2412,10 +2413,10 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   TestCommitDirty(kResourceId,
                   kMd5,
                   base::PLATFORM_FILE_OK,
-                  GDataCache::CACHE_STATE_PRESENT |
-                  GDataCache::CACHE_STATE_PINNED |
-                  GDataCache::CACHE_STATE_DIRTY |
-                  GDataCache::CACHE_STATE_PERSISTENT,
+                  CACHE_STATE_PRESENT |
+                  CACHE_STATE_PINNED |
+                  CACHE_STATE_DIRTY |
+                  CACHE_STATE_PERSISTENT,
                   GDataCache::CACHE_TYPE_PERSISTENT);
   const FilePath outgoing_symlink_path =
       GDataCache::GetCacheRootPath(profile_.get())

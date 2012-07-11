@@ -260,7 +260,7 @@ void IntersectAvailableDriveTasks(
     ScopedVector<gdata::DriveWebAppInfo> info;
     registry->GetWebAppsForFile(*iter, std::string(""), &info);
     std::vector<gdata::DriveWebAppInfo*> info_ptrs;
-    info.release(&info_ptrs); // so they don't go away prematurely.
+    info.release(&info_ptrs);  // so they don't go away prematurely.
     std::set<std::string> apps_for_this_file;
     for (std::vector<gdata::DriveWebAppInfo*>::iterator
         apps = info_ptrs.begin(); apps != info_ptrs.end(); ++apps) {
@@ -1877,7 +1877,7 @@ void GetGDataFilePropertiesFunction::OnOperationComplete(
 void GetGDataFilePropertiesFunction::CacheStateReceived(
     base::DictionaryValue* property_dict,
     bool /* success */,
-    const gdata::GDataCache::CacheEntry& cache_entry) {
+    const gdata::GDataCacheEntry& cache_entry) {
   // In case of an error (i.e. success is false), cache_entry.cache_state is
   // set to CACHE_STATE_NONE.
   property_dict->SetBoolean("isPinned", cache_entry.IsPinned());

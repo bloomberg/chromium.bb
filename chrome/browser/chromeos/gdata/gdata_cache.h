@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/platform_file.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/chromeos/gdata/gdata_cache_entry.h"
 
 class Profile;
 
@@ -48,6 +49,13 @@ typedef base::Callback<void(const std::vector<std::string>& to_fetch,
 typedef base::Callback<void(const std::vector<std::string>& resource_ids)>
     GetResourceIdsCallback;
 
+// Callback for GetCacheEntryOnUIThread.
+// |success| indicates if the operation was successful.
+// |cache_entry| is the obtained cache entry. On failure, |cache_state| is
+// set to CACHE_STATE_NONE.
+typedef base::Callback<void(bool success, const GDataCacheEntry& cache_entry)>
+    GetCacheEntryCallback;
+
 // GDataCache is used to maintain cache states of GDataFileSystem.
 //
 // All non-static public member functions, unless mentioned otherwise (see
@@ -75,16 +83,6 @@ class GDataCache {
     CACHE_TYPE_TMP_DOWNLOADS,  // Downloaded files.
     CACHE_TYPE_TMP_DOCUMENTS,  // Temporary JSON files for hosted documents.
     NUM_CACHE_TYPES,           // This must be at the end.
-  };
-
-  // This is used as a bitmask for the cache state.
-  enum CacheState {
-    CACHE_STATE_NONE       = 0x0,
-    CACHE_STATE_PINNED     = 0x1 << 0,
-    CACHE_STATE_PRESENT    = 0x1 << 1,
-    CACHE_STATE_DIRTY      = 0x1 << 2,
-    CACHE_STATE_MOUNTED    = 0x1 << 3,
-    CACHE_STATE_PERSISTENT = 0x1 << 4,
   };
 
   // Enum defining origin of a cached file.
@@ -117,98 +115,6 @@ class GDataCache {
    protected:
     virtual ~Observer() {}
   };
-
-  // Structure to store information of an existing cache file.
-  class CacheEntry {
-   public:
-    CacheEntry() : cache_state_(CACHE_STATE_NONE) {}
-
-    CacheEntry(const std::string& md5,
-               int cache_state)
-        : md5_(md5),
-          cache_state_(cache_state) {
-    }
-
-    // The MD5 of the cache file. This can be "local" if the file is
-    // locally modified.
-    const std::string& md5() const { return md5_; }
-
-    // The cache state represented as a bitmask of GDataCacheState.
-    int cache_state() const { return cache_state_; }
-
-    void set_md5(const std::string& md5) { md5_ = md5; }
-    void set_cache_state(int cache_state) { cache_state_ = cache_state; }
-
-    // Returns true if the file is present locally.
-    bool IsPresent() const { return cache_state_ & CACHE_STATE_PRESENT; }
-
-    // Returns true if the file is pinned (i.e. available offline).
-    bool IsPinned() const { return cache_state_ & CACHE_STATE_PINNED; }
-
-    // Returns true if the file is dirty (i.e. modified locally).
-    bool IsDirty() const { return cache_state_ & CACHE_STATE_DIRTY; }
-
-    // Returns true if the file is a mounted archive file.
-    bool IsMounted() const { return cache_state_ & CACHE_STATE_MOUNTED; }
-
-    // Returns true if the file is in the persistent directory.
-    bool IsPersistent() const { return cache_state_ & CACHE_STATE_PERSISTENT; }
-
-    // Setters for the states describe above.
-    void SetPresent(bool value) {
-      if (value)
-        cache_state_ |= CACHE_STATE_PRESENT;
-      else
-        cache_state_ &= ~CACHE_STATE_PRESENT;
-    }
-    void SetPinned(bool value) {
-      if (value)
-        cache_state_ |= CACHE_STATE_PINNED;
-      else
-        cache_state_ &= ~CACHE_STATE_PINNED;
-    }
-    void SetDirty(bool value) {
-      if (value)
-        cache_state_ |= CACHE_STATE_DIRTY;
-      else
-        cache_state_ &= ~CACHE_STATE_DIRTY;
-    }
-    void SetMounted(bool value) {
-      if (value)
-        cache_state_ |= CACHE_STATE_MOUNTED;
-      else
-        cache_state_ &= ~CACHE_STATE_MOUNTED;
-    }
-    void SetPersistent(bool value) {
-      if (value)
-        cache_state_ |= CACHE_STATE_PERSISTENT;
-      else
-        cache_state_ &= ~CACHE_STATE_PERSISTENT;
-    }
-
-    // Returns the type of the sub directory where the cache file is stored.
-    CacheSubDirectoryType GetSubDirectoryType() const {
-      return IsPersistent() ? CACHE_TYPE_PERSISTENT : CACHE_TYPE_TMP;
-    }
-
-    // For debugging purposes.
-    std::string ToString() const;
-
-   private:
-    std::string md5_;
-    int cache_state_;
-  };
-
-  // Callback for GetCacheEntryOnUIThread.
-  // |success| indicates if the operation was successful.
-  // |cache_entry| is the obtained cache entry. On failure, |cache_state| is
-  // set to CACHE_STATE_NONE.
-  //
-  // TODO(satorux): Unlike other callback types, this has to be defined
-  // inside GDataCache as CacheEntry is inside GDataCache. We should get them
-  // outside of GDataCache.
-  typedef base::Callback<void(bool success, const CacheEntry& cache_entry)>
-      GetCacheEntryCallback;
 
   // Returns the sub-directory under gdata cache directory for the given sub
   // directory type. Example:  <user_profile_dir>/GCache/v1/tmp
@@ -350,8 +256,8 @@ class GDataCache {
   // |md5| can be empty if only matching |resource_id| is desired, which may
   // happen when looking for pinned entries where symlinks' filenames have no
   // extension and hence no md5.
-  scoped_ptr<CacheEntry> GetCacheEntry(const std::string& resource_id,
-                                       const std::string& md5);
+  scoped_ptr<GDataCacheEntry> GetCacheEntry(const std::string& resource_id,
+                                            const std::string& md5);
 
   // Factory methods for GDataCache.
   // |pool| and |sequence_token| are used to assert that the functions are
@@ -382,6 +288,10 @@ class GDataCache {
   // in linux box and unittest. (http://crosbug.com/27577)
   static bool CreateCacheDirectories(
       const std::vector<FilePath>& paths_to_create);
+
+  // Returns the type of the sub directory where the cache file is stored.
+  static CacheSubDirectoryType GetSubDirectoryType(
+      const GDataCacheEntry& cache_entry);
 
  private:
   GDataCache(
@@ -485,7 +395,7 @@ class GDataCache {
   void GetCacheEntryHelper(const std::string& resource_id,
                            const std::string& md5,
                            bool* success,
-                           GDataCache::CacheEntry* cache_entry);
+                           GDataCacheEntry* cache_entry);
 
   // The root directory of the cache (i.e. <user_profile_dir>/GCache/v1).
   const FilePath cache_root_path_;

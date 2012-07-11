@@ -345,7 +345,7 @@ void GDataSyncClient::OnGetCacheEntry(
     const std::string& resource_id,
     const std::string& latest_md5,
     bool success,
-    const GDataCache::CacheEntry& cache_entry) {
+    const GDataCacheEntry& cache_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!success) {

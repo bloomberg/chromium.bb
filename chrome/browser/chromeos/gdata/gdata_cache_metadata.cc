@@ -67,7 +67,7 @@ void RemoveInvalidFilesFromPersistentDirectory(
     GDataCacheMetadataMap::CacheMap::iterator cache_map_iter =
         cache_map->find(resource_id);
     if (cache_map_iter != cache_map->end()) {
-      const GDataCache::CacheEntry& cache_entry = cache_map_iter->second;
+      const GDataCacheEntry& cache_entry = cache_map_iter->second;
       // If the file is dirty but not committed, remove it.
       if (cache_entry.IsDirty() && outgoing_file_map.count(resource_id) == 0) {
         LOG(WARNING) << "Removing dirty-but-not-committed file: "
@@ -176,21 +176,21 @@ void GDataCacheMetadataMap::Initialize(
 
 void GDataCacheMetadataMap::UpdateCache(
     const std::string& resource_id,
-    const GDataCache::CacheEntry& cache_entry) {
+    const GDataCacheEntry& cache_entry) {
   AssertOnSequencedWorkerPool();
 
   CacheMap::iterator iter = cache_map_.find(resource_id);
   if (iter == cache_map_.end()) {  // New resource, create new entry.
     // Makes no sense to create new entry if cache state is NONE.
-    DCHECK(cache_entry.cache_state() != GDataCache::CACHE_STATE_NONE);
-    if (cache_entry.cache_state() != GDataCache::CACHE_STATE_NONE) {
+    DCHECK(cache_entry.cache_state() != CACHE_STATE_NONE);
+    if (cache_entry.cache_state() != CACHE_STATE_NONE) {
       cache_map_.insert(std::make_pair(resource_id, cache_entry));
       DVLOG(1) << "Added res_id=" << resource_id
                << ", " << cache_entry.ToString();
     }
   } else {  // Resource exists.
     // If cache state is NONE, delete entry from cache map.
-    if (cache_entry.cache_state() == GDataCache::CACHE_STATE_NONE) {
+    if (cache_entry.cache_state() == CACHE_STATE_NONE) {
       DVLOG(1) << "Deleting res_id=" << resource_id
                << ", " << iter->second.ToString();
       cache_map_.erase(iter);
@@ -213,7 +213,7 @@ void GDataCacheMetadataMap::RemoveFromCache(const std::string& resource_id) {
   }
 }
 
-scoped_ptr<GDataCache::CacheEntry> GDataCacheMetadataMap::GetCacheEntry(
+scoped_ptr<GDataCacheEntry> GDataCacheMetadataMap::GetCacheEntry(
     const std::string& resource_id,
     const std::string& md5) {
   AssertOnSequencedWorkerPool();
@@ -221,18 +221,18 @@ scoped_ptr<GDataCache::CacheEntry> GDataCacheMetadataMap::GetCacheEntry(
   CacheMap::iterator iter = cache_map_.find(resource_id);
   if (iter == cache_map_.end()) {
     DVLOG(1) << "Can't find " << resource_id << " in cache map";
-    return scoped_ptr<GDataCache::CacheEntry>();
+    return scoped_ptr<GDataCacheEntry>();
   }
 
-  scoped_ptr<GDataCache::CacheEntry> cache_entry(
-      new GDataCache::CacheEntry(iter->second));
+  scoped_ptr<GDataCacheEntry> cache_entry(
+      new GDataCacheEntry(iter->second));
 
   if (!CheckIfMd5Matches(md5, *cache_entry)) {
     DVLOG(1) << "Non-matching md5: want=" << md5
              << ", found=[res_id=" << resource_id
              << ", " << cache_entry->ToString()
              << "]";
-    return scoped_ptr<GDataCache::CacheEntry>();
+    return scoped_ptr<GDataCacheEntry>();
   }
 
   DVLOG(1) << "Found entry for res_id=" << resource_id
@@ -289,7 +289,7 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
     util::ParseCacheFilePath(current, &resource_id, &md5, &extra_extension);
 
     // Determine cache state.
-    GDataCache::CacheEntry cache_entry(md5, GDataCache::CACHE_STATE_NONE);
+    GDataCacheEntry cache_entry(md5, CACHE_STATE_NONE);
     // If we're scanning pinned directory and if entry already exists, just
     // update its pinned state.
     if (sub_dir_type == GDataCache::CACHE_TYPE_PINNED) {
@@ -381,7 +381,7 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
 // static
 bool GDataCacheMetadataMap::CheckIfMd5Matches(
     const std::string& md5,
-    const GDataCache::CacheEntry& cache_entry) {
+    const GDataCacheEntry& cache_entry) {
   if (cache_entry.IsDirty()) {
     // If the entry is dirty, its MD5 may have been replaced by "local"
     // during cache initialization, so we don't compare MD5.

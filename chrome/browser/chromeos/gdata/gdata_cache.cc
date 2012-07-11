@@ -231,7 +231,7 @@ void DeleteFilesSelectively(const FilePath& path_to_delete_pattern,
 void CollectBacklog(std::vector<std::string>* to_fetch,
                     std::vector<std::string>* to_upload,
                     const std::string& resource_id,
-                    const GDataCache::CacheEntry& cache_entry) {
+                    const GDataCacheEntry& cache_entry) {
   DCHECK(to_fetch);
   DCHECK(to_upload);
 
@@ -246,7 +246,7 @@ void CollectBacklog(std::vector<std::string>* to_fetch,
 // present (cached locally).
 void CollectExistingPinnedFile(std::vector<std::string>* resource_ids,
                                const std::string& resource_id,
-                               const GDataCache::CacheEntry& cache_entry) {
+                               const GDataCacheEntry& cache_entry) {
   DCHECK(resource_ids);
 
   if (cache_entry.IsPinned() && cache_entry.IsPresent())
@@ -323,9 +323,9 @@ void RunGetResourceIdsCallback(
 // Runs callback with pointers dereferenced.
 // Used to implement GetCacheEntryOnUIThread().
 void RunGetCacheEntryCallback(
-    const GDataCache::GetCacheEntryCallback& callback,
+    const GetCacheEntryCallback& callback,
     bool* success,
-    GDataCache::CacheEntry* cache_entry) {
+    GDataCacheEntry* cache_entry) {
   DCHECK(success);
   DCHECK(cache_entry);
 
@@ -335,7 +335,7 @@ void RunGetCacheEntryCallback(
 
 }  // namespace
 
-std::string GDataCache::CacheEntry::ToString() const {
+std::string GDataCacheEntry::ToString() const {
   std::vector<std::string> cache_states;
   if (IsPresent())
     cache_states.push_back("present");
@@ -428,7 +428,7 @@ void GDataCache::GetCacheEntryOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   bool* success = new bool(false);
-  GDataCache::CacheEntry* cache_entry = new GDataCache::CacheEntry;
+  GDataCacheEntry* cache_entry = new GDataCacheEntry;
   pool_->GetSequencedTaskRunner(sequence_token_)->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GDataCache::GetCacheEntryHelper,
@@ -711,7 +711,7 @@ void GDataCache::RequestInitializeOnUIThread() {
       base::Bind(&GDataCache::Initialize, base::Unretained(this)));
 }
 
-scoped_ptr<GDataCache::CacheEntry> GDataCache::GetCacheEntry(
+scoped_ptr<GDataCacheEntry> GDataCache::GetCacheEntry(
     const std::string& resource_id,
     const std::string& md5) {
   AssertOnSequencedWorkerPool();
@@ -780,7 +780,7 @@ void GDataCache::GetFile(const std::string& resource_id,
   DCHECK(error);
   DCHECK(cache_file_path);
 
-  scoped_ptr<CacheEntry> cache_entry = GetCacheEntry(
+  scoped_ptr<GDataCacheEntry> cache_entry = GetCacheEntry(
       resource_id, md5);
   if (cache_entry.get() && cache_entry->IsPresent()) {
     CachedFileOrigin file_origin;
@@ -794,7 +794,7 @@ void GDataCache::GetFile(const std::string& resource_id,
     *cache_file_path = GetCacheFilePath(
         resource_id,
         md5,
-        cache_entry->GetSubDirectoryType(),
+        GetSubDirectoryType(*cache_entry),
         file_origin);
     *error = base::PLATFORM_FILE_OK;
   } else {
@@ -812,10 +812,10 @@ void GDataCache::Store(const std::string& resource_id,
 
   FilePath dest_path;
   FilePath symlink_path;
-  CacheEntry new_cache_entry(md5, CACHE_STATE_NONE);
+  GDataCacheEntry new_cache_entry(md5, CACHE_STATE_NONE);
   CacheSubDirectoryType sub_dir_type = CACHE_TYPE_TMP;
 
-  scoped_ptr<CacheEntry> cache_entry = GetCacheEntry(resource_id, md5);
+  scoped_ptr<GDataCacheEntry> cache_entry = GetCacheEntry(resource_id, md5);
 
   // If file was previously pinned, store it in persistent dir and create
   // symlink in pinned dir.
@@ -897,10 +897,10 @@ void GDataCache::Pin(const std::string& resource_id,
   FilePath dest_path;
   FilePath symlink_path;
   bool create_symlink = true;
-  CacheEntry new_cache_entry(md5, CACHE_STATE_NONE);
+  GDataCacheEntry new_cache_entry(md5, CACHE_STATE_NONE);
   CacheSubDirectoryType sub_dir_type = CACHE_TYPE_PERSISTENT;
 
-  scoped_ptr<CacheEntry> cache_entry = GetCacheEntry(resource_id, md5);
+  scoped_ptr<GDataCacheEntry> cache_entry = GetCacheEntry(resource_id, md5);
 
   if (!cache_entry.get()) {  // Entry does not exist in cache.
     // Set both |dest_path| and |source_path| to /dev/null, so that:
@@ -926,14 +926,14 @@ void GDataCache::Pin(const std::string& resource_id,
       DCHECK(cache_entry->IsPersistent());
       dest_path = GetCacheFilePath(resource_id,
                                    md5,
-                                   cache_entry->GetSubDirectoryType(),
+                                   GetSubDirectoryType(*cache_entry),
                                    CACHED_FILE_LOCALLY_MODIFIED);
       source_path = dest_path;
     } else {
       // Gets the current path of the file in cache.
       source_path = GetCacheFilePath(resource_id,
                                      md5,
-                                     cache_entry->GetSubDirectoryType(),
+                                     GetSubDirectoryType(*cache_entry),
                                      CACHED_FILE_FROM_SERVER);
 
       // If file was pinned before but actual file blob doesn't exist in cache:
@@ -982,7 +982,7 @@ void GDataCache::Unpin(const std::string& resource_id,
   AssertOnSequencedWorkerPool();
   DCHECK(error);
 
-  scoped_ptr<CacheEntry> cache_entry = GetCacheEntry(resource_id, md5);
+  scoped_ptr<GDataCacheEntry> cache_entry = GetCacheEntry(resource_id, md5);
 
   // Unpinning a file means its entry must exist in cache.
   if (!cache_entry.get()) {
@@ -1007,14 +1007,14 @@ void GDataCache::Unpin(const std::string& resource_id,
     DCHECK(cache_entry->IsPersistent());
     dest_path = GetCacheFilePath(resource_id,
                                  md5,
-                                 cache_entry->GetSubDirectoryType(),
+                                 GetSubDirectoryType(*cache_entry),
                                  CACHED_FILE_LOCALLY_MODIFIED);
     source_path = dest_path;
   } else {
     // Gets the current path of the file in cache.
     source_path = GetCacheFilePath(resource_id,
                                    md5,
-                                   cache_entry->GetSubDirectoryType(),
+                                   GetSubDirectoryType(*cache_entry),
                                    CACHED_FILE_FROM_SERVER);
 
     // If file was pinned but actual file blob still doesn't exist in cache,
@@ -1049,7 +1049,7 @@ void GDataCache::Unpin(const std::string& resource_id,
 
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
-    CacheEntry new_cache_entry(md5, cache_entry->cache_state());
+    GDataCacheEntry new_cache_entry(md5, cache_entry->cache_state());
     new_cache_entry.SetPinned(false);
     new_cache_entry.SetPersistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
     metadata_->UpdateCache(resource_id, new_cache_entry);
@@ -1073,7 +1073,7 @@ void GDataCache::SetMountedState(const FilePath& file_path,
   DCHECK(!to_mount == (extra_extension == util::kMountedArchiveFileExtension));
 
   // Get cache entry associated with the resource_id and md5
-  scoped_ptr<CacheEntry> cache_entry = GetCacheEntry(
+  scoped_ptr<GDataCacheEntry> cache_entry = GetCacheEntry(
       resource_id, md5);
   if (!cache_entry.get()) {
     *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -1098,7 +1098,7 @@ void GDataCache::SetMountedState(const FilePath& file_path,
   // Determine the source and destination paths for moving the cache blob.
   FilePath source_path;
   CacheSubDirectoryType dest_subdir;
-  CacheEntry new_cache_entry(md5, cache_entry->cache_state());
+  GDataCacheEntry new_cache_entry(md5, cache_entry->cache_state());
   if (to_mount) {
     source_path = unmounted_path;
     *cache_file_path = mounted_path;
@@ -1134,7 +1134,7 @@ void GDataCache::MarkDirty(const std::string& resource_id,
   // would have lost the md5 info during cache initialization, because the file
   // would have been renamed to .local extension.
   // So, search for entry in cache without comparing md5.
-  scoped_ptr<CacheEntry> cache_entry =
+  scoped_ptr<GDataCacheEntry> cache_entry =
       GetCacheEntry(resource_id, std::string());
 
   // Marking a file dirty means its entry and actual file blob must exist in
@@ -1191,7 +1191,7 @@ void GDataCache::MarkDirty(const std::string& resource_id,
   FilePath source_path = GetCacheFilePath(
       resource_id,
       md5,
-      cache_entry->GetSubDirectoryType(),
+      GetSubDirectoryType(*cache_entry),
       CACHED_FILE_FROM_SERVER);
 
   // Determine destination path.
@@ -1219,7 +1219,7 @@ void GDataCache::MarkDirty(const std::string& resource_id,
 
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
-    CacheEntry new_cache_entry(md5, cache_entry->cache_state());
+    GDataCacheEntry new_cache_entry(md5, cache_entry->cache_state());
     new_cache_entry.SetDirty(true);
     new_cache_entry.SetPersistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
     metadata_->UpdateCache(resource_id, new_cache_entry);
@@ -1237,7 +1237,7 @@ void GDataCache::CommitDirty(const std::string& resource_id,
   // would have lost the md5 info during cache initialization, because the file
   // would have been renamed to .local extension.
   // So, search for entry in cache without comparing md5.
-  scoped_ptr<CacheEntry> cache_entry =
+  scoped_ptr<GDataCacheEntry> cache_entry =
       GetCacheEntry(resource_id, std::string());
 
   // Committing a file dirty means its entry and actual file blob must exist in
@@ -1272,7 +1272,7 @@ void GDataCache::CommitDirty(const std::string& resource_id,
   // Get target path of symlink i.e. current path of the file in cache.
   FilePath target_path = GetCacheFilePath(resource_id,
                                           md5,
-                                          cache_entry->GetSubDirectoryType(),
+                                          GetSubDirectoryType(*cache_entry),
                                           CACHED_FILE_LOCALLY_MODIFIED);
 
   // Since there's no need to move files, use |target_path| for both
@@ -1294,7 +1294,7 @@ void GDataCache::ClearDirty(const std::string& resource_id,
 
   // |md5| is the new .<md5> extension to rename the file to.
   // So, search for entry in cache without comparing md5.
-  scoped_ptr<CacheEntry> cache_entry =
+  scoped_ptr<GDataCacheEntry> cache_entry =
       GetCacheEntry(resource_id, std::string());
 
   // Clearing a dirty file means its entry and actual file blob must exist in
@@ -1323,7 +1323,7 @@ void GDataCache::ClearDirty(const std::string& resource_id,
   // Get the current path of the file in cache.
   FilePath source_path = GetCacheFilePath(resource_id,
                                           md5,
-                                          cache_entry->GetSubDirectoryType(),
+                                          GetSubDirectoryType(*cache_entry),
                                           CACHED_FILE_LOCALLY_MODIFIED);
 
   // Determine destination path.
@@ -1367,7 +1367,7 @@ void GDataCache::ClearDirty(const std::string& resource_id,
 
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
-    CacheEntry new_cache_entry(md5, cache_entry->cache_state());
+    GDataCacheEntry new_cache_entry(md5, cache_entry->cache_state());
     new_cache_entry.SetDirty(false);
     new_cache_entry.SetPersistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
     metadata_->UpdateCache(resource_id, new_cache_entry);
@@ -1383,7 +1383,7 @@ void GDataCache::Remove(const std::string& resource_id,
   // RemoveFromCacheOnBlockingPool, because we would delete all cache files
   // corresponding to <resource_id> regardless of the md5.
   // So, search for entry in cache without taking md5 into account.
-  scoped_ptr<CacheEntry> cache_entry =
+  scoped_ptr<GDataCacheEntry> cache_entry =
       GetCacheEntry(resource_id, std::string());
 
   // If entry doesn't exist or is dirty or mounted in cache, nothing to do.
@@ -1494,12 +1494,12 @@ void GDataCache::OnCommitDirty(base::PlatformFileError* error,
 void GDataCache::GetCacheEntryHelper(const std::string& resource_id,
                                      const std::string& md5,
                                      bool* success,
-                                     GDataCache::CacheEntry* cache_entry) {
+                                     GDataCacheEntry* cache_entry) {
   AssertOnSequencedWorkerPool();
   DCHECK(success);
   DCHECK(cache_entry);
 
-  scoped_ptr<GDataCache::CacheEntry> value(GetCacheEntry(resource_id, md5));
+  scoped_ptr<GDataCacheEntry> value(GetCacheEntry(resource_id, md5));
   *success = value.get();
   if (*success)
     *cache_entry = *value;
@@ -1547,6 +1547,12 @@ bool GDataCache::CreateCacheDirectories(
     }
   }
   return success;
+}
+
+// static
+GDataCache::CacheSubDirectoryType GDataCache::GetSubDirectoryType(
+    const GDataCacheEntry& cache_entry) {
+  return cache_entry.IsPersistent() ? CACHE_TYPE_PERSISTENT : CACHE_TYPE_TMP;
 }
 
 void SetFreeDiskSpaceGetterForTesting(FreeDiskSpaceGetterInterface* getter) {
