@@ -498,12 +498,14 @@ class MouseTest(ChromeDriverTest):
     self._driver.find_element_by_tag_name('a').click()
     self.assertTrue(self._driver.execute_script('return window.success'))
 
-  def testClickElementThatNeedsContainerScrolling(self):
+  # crbug.com/136875
+  def DISABLED_testClickElementThatNeedsContainerScrolling(self):
     self._driver.get(self.GetTestDataUrl() + '/test_page.html')
     self._driver.find_element_by_name('hidden_scroll').click()
     self.assertTrue(self._driver.execute_script('return window.success'))
 
-  def testClickElementThatNeedsIframeScrolling(self):
+  # crbug.com/136875
+  def DISABLED_testClickElementThatNeedsIframeScrolling(self):
     self._driver.get(self.GetTestDataUrl() + '/test_page.html')
     self._driver.switch_to_frame('iframe')
     self._driver.find_element_by_name('hidden_scroll').click()
