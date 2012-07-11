@@ -1656,6 +1656,9 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {0, 0, 0, 0, 50, 0,  4, 1, 97, 0},  // 29
     {0, 0, 0, 0, 50, 0,  9, 1, 98, 0},
     {0, 0, 0, 0, 50, 0, 14, 1, 99, 0},
+
+    {0, 0, 0, 0, 50, 0, 50, 40, 95, 0},  // 32
+    {0, 0, 0, 0, 50, 0, 70, 40, 96, GESTURES_FINGER_NO_TAP},
   };
   HWStateGs hwsgs[] = {
     // Simple 1-finger tap
@@ -1775,6 +1778,10 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {C,{ 0.02, 0, 2, 2, &fs[10] }, -1,  MkSet(97, 98),   0,   0, kFTB, false },
     {C,{ 0.03, 0, 0, 0, NULL   },  -1,  MkSet(),       kBR, kBR, kIdl, false },
     {C,{ 0.09, 0, 0, 0, NULL    }, .09, MkSet(),         0,   0, kIdl, false },
+    // left drumroll separation on fast swipe
+    {S,{ 0.00, 0, 1, 1, &fs[32] },  -1,  MkSet(95),  0, 0, kFTB, false },
+    {C,{ 0.01, 0, 1, 1, &fs[33] },  -1,  MkSet(96),  0, 0, kIdl, false },
+    {C,{ 0.02, 0, 0, 0, NULL    },  -1,  MkSet(),    0, 0, kIdl, false },
     // left tap, right-drag
     {S,{ 0.00, 0, 1, 1, &fs[0] },  -1, MkSet(91),       0, 0, kFTB, false },
     {C,{ 0.01, 0, 0, 0, NULL   },  -1, MkSet(),         0,   0, kTpC, true },

@@ -1041,9 +1041,13 @@ void ImmediateInterpreter::UpdateTapState(
 
   set<short, kMaxGesturingFingers> tap_gs_fingers;
 
+  bool cancel_tapping = false;
   if (hwstate) {
-    for (int i = 0; i < hwstate->finger_cnt; ++i)
+    for (int i = 0; i < hwstate->finger_cnt; ++i) {
       Log("HWSTATE: %d", hwstate->fingers[i].tracking_id);
+      if (hwstate->fingers[i].flags & GESTURES_FINGER_NO_TAP)
+        cancel_tapping = true;
+    }
     for (set<short, kMaxGesturingFingers>::const_iterator it =
              gs_fingers.begin(), e = gs_fingers.end(); it != e; ++it) {
       const FingerState* fs = hwstate->GetFingerState(*it);
@@ -1077,8 +1081,6 @@ void ImmediateInterpreter::UpdateTapState(
         const FingerState* fs = hwstate->GetFingerState(*it);
         if (FingerTooCloseToTap(*hwstate, *fs) ||
             FingerTooCloseToTap(prev_state_, *fs))
-          continue;
-        if (fs->flags & GESTURES_FINGER_NO_TAP)
           continue;
         added_fingers.insert(*it);
         Log("TTC: Added %d", *it);
@@ -1146,8 +1148,10 @@ void ImmediateInterpreter::UpdateTapState(
   if (!hwstate)
     Log("This is a timer callback");
   if (phys_button_down || KeyboardRecentlyUsed(now) ||
-      prev_result_.type == kGestureTypeScroll) {
-    Log("Physical button down or keyboard recently used. Going to Idle state");
+      prev_result_.type == kGestureTypeScroll ||
+      cancel_tapping) {
+    Log("Physical button down, keyboard recently used, or drumroll. "
+        "Going to Idle state");
     SetTapToClickState(kTtcIdle, now);
     return;
   }
