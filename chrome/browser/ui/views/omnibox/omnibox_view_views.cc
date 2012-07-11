@@ -397,7 +397,9 @@ void OmniboxViewViews::HandleMouseDragEvent(const views::MouseEvent& event) {
 void OmniboxViewViews::HandleMouseReleaseEvent(const views::MouseEvent& event) {
   if ((event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
       select_all_on_mouse_release_) {
-    textfield_->SelectAll();
+    // Select all in the reverse direction so as not to scroll the caret
+    // into view and shift the contents jarringly.
+    SelectAll(true);
   }
   select_all_on_mouse_release_ = false;
 }
