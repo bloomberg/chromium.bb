@@ -455,8 +455,10 @@ void BubbleBorder::DrawEdgeWithArrow(gfx::Canvas* canvas,
 void BubbleBorder::DrawArrowInterior(gfx::Canvas* canvas,
                                      float tip_x,
                                      float tip_y) const {
-  const int offset_to_next_vertex =
-      (is_arrow_on_left(arrow_location_) || is_arrow_on_top(arrow_location_)) ?
+  const bool is_horizontal = is_arrow_on_horizontal(arrow_location_);
+  const bool positive_offset = is_horizontal ?
+      is_arrow_on_top(arrow_location_) : is_arrow_on_left(arrow_location_);
+  const int offset_to_next_vertex = positive_offset ?
       kArrowInteriorHeight : -kArrowInteriorHeight;
 
   SkPath path;
@@ -464,7 +466,7 @@ void BubbleBorder::DrawArrowInterior(gfx::Canvas* canvas,
   path.moveTo(SkDoubleToScalar(tip_x), SkDoubleToScalar(tip_y));
   path.lineTo(SkDoubleToScalar(tip_x + offset_to_next_vertex),
               SkDoubleToScalar(tip_y + offset_to_next_vertex));
-  if (is_arrow_on_horizontal(arrow_location_)) {
+  if (is_horizontal) {
     path.lineTo(SkDoubleToScalar(tip_x - offset_to_next_vertex),
                 SkDoubleToScalar(tip_y + offset_to_next_vertex));
   } else {
