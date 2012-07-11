@@ -7,8 +7,8 @@
 import json
 import mox
 import os
-import re
 import sys
+import shutil
 import time
 import unittest
 
@@ -61,10 +61,12 @@ class RemoteTryTests(mox.MoxTestBase, cros_test_lib.TempDirMixin):
     # Make sure only one file per commit.
     return self._RunCommandSingleOutput(cmd, cwd=dirname)
 
-  def _SubmitJob(self, checkout_dir, job):
+  def _SubmitJob(self, checkout_dir, job, version=None):
     """Returns the path to the tryjob description."""
     self.assertTrue(isinstance(job, RemoteTryJobMock))
     basehash = cros_build_lib.GetGitRepoRevision(job.ssh_url)
+    if version is not None:
+      self._SetMirrorVersion(version)
     job.Submit(workdir=checkout_dir, dryrun=True)
     # Get the file that was just created.
     created_file = self._GetNewestFile(checkout_dir, basehash)
@@ -81,9 +83,28 @@ class RemoteTryTests(mox.MoxTestBase, cros_test_lib.TempDirMixin):
     os.mkdir(mirror)
     repository.CloneGitRepo(mirror, self.ext_mirror, reference=self.ext_mirror,
                             bare=True)
+
     self.int_mirror = mirror
     RemoteTryJobMock.EXT_SSH_URL = self.ext_mirror
     RemoteTryJobMock.INT_SSH_URL = self.int_mirror
+    self._SetMirrorVersion(remote_try.RemoteTryJob.TRYJOB_FORMAT_VERSION, True)
+
+  def _SetMirrorVersion(self, version, only_if_missing=False):
+    for path in (self.ext_mirror, self.int_mirror):
+      vpath = os.path.join(path, remote_try.RemoteTryJob.TRYJOB_FORMAT_FILE)
+      if os.path.exists(vpath) and only_if_missing:
+        continue
+      # Get ourselves a working dir.
+      tmp_repo = os.path.join(self.tempdir, 'tmp-repo')
+      cros_build_lib.RunGitCommand(self.tempdir, ['clone', path, tmp_repo])
+      vpath = os.path.join(tmp_repo, remote_try.RemoteTryJob.TRYJOB_FORMAT_FILE)
+      with open(vpath, 'w') as f:
+        f.write(str(version))
+      cros_build_lib.RunGitCommand(tmp_repo, ['add', vpath])
+      cros_build_lib.RunGitCommand(
+            tmp_repo, ['commit', '-m', 'setting version to %s' % version])
+      cros_build_lib.RunGitCommand(tmp_repo, ['push', path])
+      shutil.rmtree(tmp_repo)
 
   def _CreateJob(self, mirror=True):
     job_class = remote_try.RemoteTryJob
@@ -112,7 +133,7 @@ class RemoteTryTests(mox.MoxTestBase, cros_test_lib.TempDirMixin):
     file2 = submit_helper('test2')
     self.assertNotEqual(file1, file2)
 
-  def testSimpleTryJob(self):
+  def testSimpleTryJob(self, version=None):
     """Test that a tryjob spec file is created and pushed properly."""
     self.mox.StubOutWithMock(repository, 'IsARepoRoot')
     repository.IsARepoRoot(mox.IgnoreArg()).AndReturn(True)
@@ -127,7 +148,7 @@ class RemoteTryTests(mox.MoxTestBase, cros_test_lib.TempDirMixin):
     finally:
       os.environ.pop("GIT_AUTHOR_EMAIL", None)
       os.environ.pop("GIT_COMMITTER_EMAIL", None)
-    created_file = self._SubmitJob(self.checkout_dir, job)
+    created_file = self._SubmitJob(self.checkout_dir, job, version=version)
     with open(created_file, 'rb') as job_desc_file:
       values = json.load(job_desc_file)
 
@@ -144,6 +165,12 @@ class RemoteTryTests(mox.MoxTestBase, cros_test_lib.TempDirMixin):
         ['git', 'config', 'remote.origin.url'], redirect_stdout=True,
         cwd=self.checkout_dir).output.strip()
     self.assertEqual(remote_url, self.ext_mirror)
+
+  def testClientVersionAwareness(self):
+    self.assertRaises(
+        remote_try.ChromiteUpgradeNeeded,
+        self.testSimpleTryJob,
+        version=remote_try.RemoteTryJob.TRYJOB_FORMAT_VERSION + 1)
 
   def testInternalTryJob(self):
     """Verify internal tryjobs are pushed properly."""

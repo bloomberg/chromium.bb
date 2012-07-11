@@ -20,6 +20,24 @@ from chromite.buildbot import repository
 from chromite.buildbot import manifest_version
 from chromite.lib import cros_build_lib
 
+
+class ChromiteUpgradeNeeded(Exception):
+  """Exception thrown when it's detected that we need to upgrade chromite."""
+
+  def __init__(self, version=None):
+    Exception.__init__(self)
+    self.version = version
+    self.args = (version,)
+
+  def __str__(self):
+    version_str = ''
+    if self.version:
+      version_str = "  Need format version %r support." % (self.version,)
+    return (
+        "Your version of cbuildbot is too old; please resync it, "
+        "and then retry your submission.%s" % (version_str,))
+
+
 class RemoteTryJob(object):
   """Remote Tryjob that is submitted through a Git repo."""
   EXT_SSH_URL = os.path.join(constants.GERRIT_SSH_URL,
@@ -30,6 +48,7 @@ class RemoteTryJob(object):
   # In version 3, remote patches have an extra field.
   TRYJOB_FORMAT_VERSION = 3
   TRYSERVER_URL = 'http://chromegw/p/tryserver.chromiumos'
+  TRYJOB_FORMAT_FILE = '.tryjob_minimal_format_version'
 
   def __init__(self, options, bots, local_patches):
     """Construct the object.
@@ -80,7 +99,19 @@ class RemoteTryJob(object):
 
   def _Submit(self, testjob, dryrun):
     """Internal submission function.  See Submit() for arg description."""
+    # TODO(rcui): convert to shallow clone when that's available.
     current_time = str(int(time.time()))
+    repository.CloneGitRepo(self.tryjob_repo, self.ssh_url)
+    version_path = os.path.join(self.tryjob_repo,
+                                self.TRYJOB_FORMAT_FILE)
+    with open(version_path, 'r') as f:
+      try:
+        val = int(f.read().strip())
+      except ValueError:
+        raise ChromiteUpgradeNeeded()
+      if val > self.TRYJOB_FORMAT_VERSION:
+        raise ChromiteUpgradeNeeded(val)
+
     ref_base = os.path.join('refs/tryjobs', self.user, current_time)
     for patch in self.local_patches:
       sha1 = patch.Sha1Hash()[:8]
@@ -100,8 +131,6 @@ class RemoteTryJob(object):
                              % (patch.project, local_branch, ref_final,
                                 patch.tracking_branch, tag))
 
-    # TODO(rcui): convert to shallow clone when that's available.
-    repository.CloneGitRepo(self.tryjob_repo, self.ssh_url)
     push_branch = manifest_version.PUSH_BRANCH
     remote_branch = ('origin', 'test') if testjob else None
     cros_build_lib.CreatePushBranch(push_branch, self.tryjob_repo, sync=False,
