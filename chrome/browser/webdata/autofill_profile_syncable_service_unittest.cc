@@ -145,9 +145,10 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeDataAndStartSyncing) {
 
   syncer::SyncChangeList expected_change_list;
   expected_change_list.push_back(
-      syncer::SyncChange(syncer::SyncChange::ACTION_ADD,
-                 AutofillProfileSyncableService::CreateData(
-                     (*profiles_from_web_db.front()))));
+      syncer::SyncChange(FROM_HERE,
+                         syncer::SyncChange::ACTION_ADD,
+                         AutofillProfileSyncableService::CreateData(
+                             (*profiles_from_web_db.front()))));
 
   AutofillProfileSyncableService::DataBundle expected_bundle;
   expected_bundle.profiles_to_add.push_back(&profile1);
@@ -227,12 +228,15 @@ TEST_F(AutofillProfileSyncableServiceTest, ProcessSyncChanges) {
   AutofillProfile profile(guid_synced);
   profile.SetInfo(NAME_FIRST, UTF8ToUTF16("Jane"));
   change_list.push_back(
-      syncer::SyncChange(syncer::SyncChange::ACTION_ADD,
-      AutofillProfileSyncableService::CreateData(profile)));
+      syncer::SyncChange(FROM_HERE,
+                         syncer::SyncChange::ACTION_ADD,
+                         AutofillProfileSyncableService::CreateData(profile)));
   AutofillProfile empty_profile(guid_present);
   change_list.push_back(
-      syncer::SyncChange(syncer::SyncChange::ACTION_DELETE,
-                 AutofillProfileSyncableService::CreateData(empty_profile)));
+      syncer::SyncChange(
+          FROM_HERE,
+          syncer::SyncChange::ACTION_DELETE,
+          AutofillProfileSyncableService::CreateData(empty_profile)));
 
   AutofillProfileSyncableService::DataBundle expected_bundle;
   expected_bundle.profiles_to_delete.push_back(guid_present);

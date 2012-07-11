@@ -80,7 +80,9 @@ void PrefModelAssociator::InitPrefAndAssociate(
         return;
       }
       sync_changes->push_back(
-          syncer::SyncChange(syncer::SyncChange::ACTION_UPDATE, sync_data));
+          syncer::SyncChange(FROM_HERE,
+                             syncer::SyncChange::ACTION_UPDATE,
+                             sync_data));
     }
   } else if (pref->IsUserControlled()) {
     // The server does not know about this preference and should be added
@@ -91,7 +93,9 @@ void PrefModelAssociator::InitPrefAndAssociate(
       return;
     }
     sync_changes->push_back(
-        syncer::SyncChange(syncer::SyncChange::ACTION_ADD, sync_data));
+        syncer::SyncChange(FROM_HERE,
+                           syncer::SyncChange::ACTION_ADD,
+                           sync_data));
   } else {
     // This pref does not have a sync value but also does not have a user
     // controlled value (either it's a default value or it's policy controlled,
@@ -428,7 +432,9 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
       return;
     }
     changes.push_back(
-        syncer::SyncChange(syncer::SyncChange::ACTION_UPDATE, sync_data));
+        syncer::SyncChange(FROM_HERE,
+                           syncer::SyncChange::ACTION_UPDATE,
+                           sync_data));
   }
 
   syncer::SyncError error =

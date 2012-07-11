@@ -157,8 +157,9 @@ syncer::SyncError AutocompleteSyncableService::MergeDataAndStartSyncing(
   for (AutocompleteEntryMap::iterator i = new_db_entries.begin();
        i != new_db_entries.end(); ++i) {
     new_changes.push_back(
-        syncer::SyncChange(
-            i->second.first, CreateSyncData(*(i->second.second))));
+        syncer::SyncChange(FROM_HERE,
+                           i->second.first,
+                           CreateSyncData(*(i->second.second))));
   }
 
   if (ShouldCullSyncedData()) {
@@ -415,16 +416,18 @@ void AutocompleteSyncableService::ActOnChanges(
            (change->type() == AutofillChange::ADD) ?
             syncer::SyncChange::ACTION_ADD :
             syncer::SyncChange::ACTION_UPDATE;
-        new_changes.push_back(syncer::SyncChange(change_type,
-                                         CreateSyncData(entry)));
+        new_changes.push_back(syncer::SyncChange(FROM_HERE,
+                                                 change_type,
+                                                 CreateSyncData(entry)));
         break;
       }
       case AutofillChange::REMOVE: {
         std::vector<base::Time> timestamps;
         AutofillEntry entry(change->key(), timestamps);
         new_changes.push_back(
-            syncer::SyncChange(syncer::SyncChange::ACTION_DELETE,
-                              CreateSyncData(entry)));
+            syncer::SyncChange(FROM_HERE,
+                               syncer::SyncChange::ACTION_DELETE,
+                               CreateSyncData(entry)));
         break;
       }
       default:

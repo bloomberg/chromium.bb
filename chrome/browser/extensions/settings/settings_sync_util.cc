@@ -78,6 +78,7 @@ syncer::SyncChange CreateAdd(
     const Value& value,
     syncer::ModelType type) {
   return syncer::SyncChange(
+      FROM_HERE,
       syncer::SyncChange::ACTION_ADD,
       CreateData(extension_id, key, value, type));
 }
@@ -88,6 +89,7 @@ syncer::SyncChange CreateUpdate(
     const Value& value,
     syncer::ModelType type) {
   return syncer::SyncChange(
+      FROM_HERE,
       syncer::SyncChange::ACTION_UPDATE,
       CreateData(extension_id, key, value, type));
 }
@@ -98,6 +100,7 @@ syncer::SyncChange CreateDelete(
     syncer::ModelType type) {
   DictionaryValue no_value;
   return syncer::SyncChange(
+      FROM_HERE,
       syncer::SyncChange::ACTION_DELETE,
       CreateData(extension_id, key, no_value, type));
 }

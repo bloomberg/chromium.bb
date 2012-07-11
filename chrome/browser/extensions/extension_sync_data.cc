@@ -58,7 +58,7 @@ syncer::SyncData ExtensionSyncData::GetSyncData() const {
 
 syncer::SyncChange ExtensionSyncData::GetSyncChange(
     syncer::SyncChange::SyncChangeType change_type) const {
-  return syncer::SyncChange(change_type, GetSyncData());
+  return syncer::SyncChange(FROM_HERE, change_type, GetSyncData());
 }
 
 void ExtensionSyncData::PopulateExtensionSpecifics(

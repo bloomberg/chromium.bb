@@ -49,6 +49,7 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
     if (it->action == syncer::ChangeRecord::ACTION_DELETE) {
       syncer_changes_.push_back(
           syncer::SyncChange(
+              FROM_HERE,
               syncer::SyncChange::ACTION_DELETE,
               syncer::SyncData::CreateRemoteData(it->id, it->specifics)));
     } else {
@@ -65,9 +66,11 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
         return;
       }
       syncer_changes_.push_back(
-          syncer::SyncChange(action,
-                     syncer::SyncData::CreateRemoteData(
-                         it->id, read_node.GetEntitySpecifics())));
+          syncer::SyncChange(
+              FROM_HERE,
+              action,
+              syncer::SyncData::CreateRemoteData(
+                  it->id, read_node.GetEntitySpecifics())));
     }
   }
 }
