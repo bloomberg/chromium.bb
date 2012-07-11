@@ -63,6 +63,7 @@ readonly ARMEL_REPO=http://ports.ubuntu.com/ubuntu-ports
 readonly PACKAGE_LIST="${ARMEL_REPO}/dists/precise/main/binary-armel/Packages.bz2"
 
 # Packages for the host system
+# NOTE: at one point we should get rid of the 4.5 packages
 readonly CROSS_ARM_TC_PACKAGES="\
   libc6-armel-cross \
   libc6-dev-armel-cross \
@@ -73,10 +74,11 @@ readonly CROSS_ARM_TC_PACKAGES="\
   libgomp1-dbg-armel-cross \
   binutils-arm-linux-gnueabi \
   cpp-arm-linux-gnueabi \
-  cpp-arm-linux-gnueabi \
   gcc-arm-linux-gnueabi \
   g++-arm-linux-gnueabi \
-  libmudflap0-dev-armel-cross \
+  cpp-4.5-arm-linux-gnueabi \
+  gcc-4.5-arm-linux-gnueabi \
+  g++-4.5-arm-linux-gnueabi \
   libmudflap0-dbg-armel-cross
 "
 
