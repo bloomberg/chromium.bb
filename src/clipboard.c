@@ -243,6 +243,17 @@ clipboard_set_selection(struct wl_listener *listener, void *data)
 		return;
 }
 
+static void
+clipboard_destroy(struct wl_listener *listener, void *data)
+{
+	struct clipboard *clipboard =
+		container_of(listener, struct clipboard, destroy_listener);
+
+	wl_list_remove(&clipboard->selection_listener.link);
+
+	free(clipboard);
+}
+
 struct clipboard *
 clipboard_create(struct weston_seat *seat)
 {
@@ -255,9 +266,12 @@ clipboard_create(struct weston_seat *seat)
 
 	clipboard->seat = seat;
 	clipboard->selection_listener.notify = clipboard_set_selection;
+	clipboard->destroy_listener.notify = clipboard_destroy;
 
 	wl_signal_add(&seat->seat.selection_signal,
 		      &clipboard->selection_listener);
+	wl_signal_add(&seat->seat.destroy_signal,
+		      &clipboard->destroy_listener);
 
 	return clipboard;
 }
