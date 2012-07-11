@@ -117,7 +117,6 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool password_echo_enabled;
   bool should_print_backgrounds;
   bool enable_scroll_animator;
-  bool hixie76_websocket_protocol_enabled;
   bool visual_word_movement_enabled;
   bool css_regions_enabled;
   bool css_shaders_enabled;

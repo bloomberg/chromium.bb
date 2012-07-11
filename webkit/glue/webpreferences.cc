@@ -99,7 +99,6 @@ WebPreferences::WebPreferences()
       password_echo_enabled(false),
       should_print_backgrounds(false),
       enable_scroll_animator(false),
-      hixie76_websocket_protocol_enabled(false),
       visual_word_movement_enabled(false),
       css_regions_enabled(false),
       css_shaders_enabled(false),
@@ -383,8 +382,6 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setPasswordEchoEnabled(password_echo_enabled);
   settings->setShouldPrintBackgrounds(should_print_backgrounds);
   settings->setEnableScrollAnimator(enable_scroll_animator);
-  settings->setHixie76WebSocketProtocolEnabled(
-      hixie76_websocket_protocol_enabled);
   settings->setVisualWordMovementEnabled(visual_word_movement_enabled);
 
   settings->setExperimentalCSSRegionsEnabled(css_regions_enabled);
