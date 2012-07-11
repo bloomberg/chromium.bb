@@ -93,6 +93,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -2368,7 +2369,7 @@ void ExtensionService::Observe(int type,
 
       // Extensions need to know the channel for API restrictions.
       process->Send(new ExtensionMsg_SetChannel(
-          chrome::VersionInfo::GetChannel()));
+          extensions::Feature::GetCurrentChannel()));
 
       // Valid extension function names, used to setup bindings in renderer.
       std::vector<std::string> function_names;

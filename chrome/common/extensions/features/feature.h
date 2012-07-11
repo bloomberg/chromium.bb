@@ -81,6 +81,10 @@ class Feature {
   static void SetChannelForTesting(chrome::VersionInfo::Channel channel);
   static void ResetChannelForTesting();
 
+  // Returns the current channel as seen by the Feature system (i.e. the
+  // ChannelForTesting if one is set, otherwise the actual channel).
+  static chrome::VersionInfo::Channel GetCurrentChannel();
+
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }
 

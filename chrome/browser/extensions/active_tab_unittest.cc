@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -62,7 +63,9 @@ class ActiveTabTest : public TabContentsTestHarness {
         another_extension(CreateTestExtension("another", true)),
         extension_without_active_tab(
             CreateTestExtension("without activeTab", false)),
-        ui_thread_(BrowserThread::UI, MessageLoop::current()) {}
+        ui_thread_(BrowserThread::UI, MessageLoop::current()) {
+    Feature::SetChannelForTesting(chrome::VersionInfo::CHANNEL_UNKNOWN);
+  }
 
  protected:
   int tab_id() {

@@ -369,4 +369,11 @@ void Feature::ResetChannelForTesting() {
   g_channel.Get().ResetChannelForTesting();
 }
 
+// static
+chrome::VersionInfo::Channel Feature::GetCurrentChannel() {
+  if (g_channel_checking_enabled)
+    return g_channel.Get().GetChannel();
+  return chrome::VersionInfo::GetChannel();
+}
+
 }  // namespace
