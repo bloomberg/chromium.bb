@@ -14,6 +14,10 @@
 #include "ui/aura/event_filter.h"
 #include "ui/aura/window_observer.h"
 
+namespace aura {
+class LocatedEvent;
+}
+
 namespace ash {
 
 namespace wm {
@@ -54,6 +58,11 @@ class WindowModalityController : public aura::EventFilter,
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
  private:
+  // Processes a mouse/touch event, and returns true if the event should be
+  // consumed.
+  bool ProcessLocatedEvent(aura::Window* target,
+                           aura::LocatedEvent* event);
+
   std::vector<aura::Window*> windows_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowModalityController);

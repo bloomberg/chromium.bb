@@ -81,17 +81,14 @@ bool WindowModalityController::PreHandleKeyEvent(aura::Window* target,
 
 bool WindowModalityController::PreHandleMouseEvent(aura::Window* target,
                                                    aura::MouseEvent* event) {
-  aura::Window* modal_transient_child = wm::GetWindowModalTransient(target);
-  if (modal_transient_child && event->type() == ui::ET_MOUSE_PRESSED)
-    wm::ActivateWindow(modal_transient_child);
-  return !!modal_transient_child;
+  return ProcessLocatedEvent(target, event);
 }
 
 ui::TouchStatus WindowModalityController::PreHandleTouchEvent(
     aura::Window* target,
     aura::TouchEvent* event) {
-  // TODO: make touch work with modals.
-  return ui::TOUCH_STATUS_UNKNOWN;
+  return ProcessLocatedEvent(target, event) ? ui::TOUCH_STATUS_CONTINUE :
+                                              ui::TOUCH_STATUS_UNKNOWN;
 }
 
 ui::GestureStatus WindowModalityController::PreHandleGestureEvent(
@@ -122,6 +119,16 @@ void WindowModalityController::OnWindowVisibilityChanged(
 void WindowModalityController::OnWindowDestroyed(aura::Window* window) {
   windows_.erase(std::find(windows_.begin(), windows_.end(), window));
   window->RemoveObserver(this);
+}
+
+bool WindowModalityController::ProcessLocatedEvent(aura::Window* target,
+                                                   aura::LocatedEvent* event) {
+  aura::Window* modal_transient_child = wm::GetWindowModalTransient(target);
+  if (modal_transient_child && (event->type() == ui::ET_MOUSE_PRESSED ||
+                                event->type() == ui::ET_TOUCH_PRESSED)) {
+    wm::ActivateWindow(modal_transient_child);
+  }
+  return !!modal_transient_child;
 }
 
 }  // namespace internal

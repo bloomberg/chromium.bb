@@ -281,6 +281,66 @@ TEST_F(WindowModalityControllerTest, ChangeCapture) {
   EXPECT_FALSE(view->got_press());
 }
 
+class TouchTrackerWindowDelegate : public aura::test::TestWindowDelegate {
+ public:
+  TouchTrackerWindowDelegate() : received_touch_(false) {}
+  virtual ~TouchTrackerWindowDelegate() {}
+
+  void reset() {
+    received_touch_ = false;
+  }
+
+  bool received_touch() const { return received_touch_; }
+
+ private:
+  // Overridden from aura::test::TestWindowDelegate.
+  virtual ui::TouchStatus OnTouchEvent(aura::TouchEvent* event) OVERRIDE {
+    received_touch_ = true;
+    return aura::test::TestWindowDelegate::OnTouchEvent(event);
+  }
+
+  bool received_touch_;
+
+  DISALLOW_COPY_AND_ASSIGN(TouchTrackerWindowDelegate);
+};
+
+// Modality should prevent events from being passed to the transient parent.
+TEST_F(WindowModalityControllerTest, TouchEvent) {
+  TouchTrackerWindowDelegate d1;
+  scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(&d1,
+      -1, gfx::Rect(0, 0, 100, 100), NULL));
+  TouchTrackerWindowDelegate d11;
+  scoped_ptr<aura::Window> w11(aura::test::CreateTestWindowWithDelegate(&d11,
+      -11, gfx::Rect(20, 20, 50, 50), NULL));
+
+  w1->AddTransientChild(w11.get());
+  d1.reset();
+  d11.reset();
+
+  {
+    // Clicking a point within w1 should activate that window.
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                         gfx::Point(10, 10));
+    generator.PressMoveAndReleaseTouchTo(gfx::Point(10, 10));
+    EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+    EXPECT_TRUE(d1.received_touch());
+    EXPECT_FALSE(d11.received_touch());
+  }
+
+  w11->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  d1.reset();
+  d11.reset();
+
+  {
+    // Clicking a point within w1 should activate w11.
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                         gfx::Point(10, 10));
+    generator.PressMoveAndReleaseTouchTo(gfx::Point(10, 10));
+    EXPECT_TRUE(wm::IsActiveWindow(w11.get()));
+    EXPECT_FALSE(d1.received_touch());
+    EXPECT_FALSE(d11.received_touch());
+  }
+}
 
 }  // namespace internal
 }  // namespace ash
