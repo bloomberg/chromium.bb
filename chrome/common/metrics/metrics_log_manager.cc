@@ -75,7 +75,9 @@ void MetricsLogManager::StageNextLogForUpload() {
                                    : &unsent_initial_logs_;
   LogType source_type = (source_list == &unsent_ongoing_logs_) ? ONGOING_LOG
                                                                : INITIAL_LOG;
-  DCHECK(!source_list->empty());
+  // CHECK, rather than DCHECK, because swap()ing with an empty list causes
+  // hard-to-identify crashes much later.
+  CHECK(!source_list->empty());
   DCHECK(staged_log_text_.empty());
   DCHECK(staged_log_type_ == NO_LOG);
   staged_log_text_.swap(source_list->back());

@@ -754,8 +754,6 @@ void MetricsService::OnAppEnterBackground() {
   // to continue logging and uploading if the process does return.
   if (recording_active() && state_ >= INITIAL_LOG_READY) {
     PushPendingLogsToPersistentStorage();
-    if (state_ == SENDING_CURRENT_LOGS)
-      state_ = SENDING_OLD_LOGS;
     // Persisting logs stops recording, so start recording a new log immediately
     // to capture any background work that might be done before the process is
     // killed.
@@ -1152,6 +1150,17 @@ void MetricsService::StartScheduledUpload() {
     return;
   }
 
+  // If the callback was to upload an old log, but there no longer is one,
+  // just report success back to the scheduler to begin the ongoing log
+  // callbacks.
+  // TODO(stuartmorgan): Consider removing the distinction between
+  // SENDING_OLD_LOGS and SENDING_CURRENT_LOGS to simplify the state machine
+  // now that the log upload flow is the same for both modes.
+  if (state_ == SENDING_OLD_LOGS && !log_manager_.has_unsent_logs()) {
+    state_ = SENDING_CURRENT_LOGS;
+    scheduler_->UploadFinished(true /* healthy */, false /* no unsent logs */);
+    return;
+  }
   // If there are unsent logs, send the next one. If not, start the asynchronous
   // process of finalizing the current log for upload.
   if (state_ == SENDING_OLD_LOGS) {
