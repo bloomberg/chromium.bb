@@ -202,12 +202,12 @@ TimeDelta Pipeline::GetCurrentTime_Locked() const {
 Ranges<TimeDelta> Pipeline::GetBufferedTimeRanges() {
   base::AutoLock auto_lock(lock_);
   Ranges<TimeDelta> time_ranges;
-  if (clock_->Duration() == TimeDelta() || total_bytes_ == 0)
-    return time_ranges;
   for (size_t i = 0; i < buffered_time_ranges_.size(); ++i) {
     time_ranges.Add(buffered_time_ranges_.start(i),
                     buffered_time_ranges_.end(i));
   }
+  if (clock_->Duration() == TimeDelta() || total_bytes_ == 0)
+    return time_ranges;
   for (size_t i = 0; i < buffered_byte_ranges_.size(); ++i) {
     TimeDelta start = TimeForByteOffset_Locked(buffered_byte_ranges_.start(i));
     TimeDelta end = TimeForByteOffset_Locked(buffered_byte_ranges_.end(i));
