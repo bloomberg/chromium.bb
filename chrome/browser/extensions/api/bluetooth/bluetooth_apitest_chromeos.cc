@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/ui/browser.h"
 #include "chromeos/dbus/bluetooth_out_of_band_client.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using extensions::Extension;
@@ -56,12 +57,12 @@ class BluetoothApiTest : public PlatformAppApiTest {
  protected:
   testing::StrictMock<chromeos::MockBluetoothAdapter>* mock_adapter_;
 
- private:
   chromeos::ExtensionBluetoothEventRouter* event_router() {
     return browser()->profile()->GetExtensionService()->
         bluetooth_event_router();
   }
 
+ private:
   scoped_refptr<Extension> empty_extension_;
 };
 
@@ -322,4 +323,26 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
   stop_function = setupFunction(new api::BluetoothStopDiscoveryFunction);
   error = utils::RunFunctionAndReturnError(stop_function, "[]", browser());
   ASSERT_TRUE(!error.empty());
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Events) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  // Load and wait for setup
+  ExtensionTestMessageListener listener("ready", true);
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("bluetooth"));
+  GURL page_url = extension->GetResourceURL("test_events.html");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  event_router()->AdapterPoweredChanged(mock_adapter_, true);
+  event_router()->AdapterPoweredChanged(mock_adapter_, false);
+  event_router()->AdapterPresentChanged(mock_adapter_, true);
+  event_router()->AdapterPresentChanged(mock_adapter_, false);
+
+  listener.Reply("go");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
