@@ -16,14 +16,13 @@
 namespace chromeos {
 
 namespace {
-const char kIBusBusRegisterComponentMethod[] = "RegisterComponent";
 
 // The IBusClient implementation.
 class IBusClientImpl : public IBusClient {
  public:
   explicit IBusClientImpl(dbus::Bus* bus)
-      : proxy_(bus->GetObjectProxy(kIBusServiceName,
-                                   dbus::ObjectPath(kIBusServicePath))),
+      : proxy_(bus->GetObjectProxy(ibus::kServiceName,
+                                   dbus::ObjectPath(ibus::bus::kServicePath))),
         weak_ptr_factory_(this) {
   }
 
@@ -36,8 +35,8 @@ class IBusClientImpl : public IBusClient {
       const ErrorCallback& error_callback) OVERRIDE {
     DCHECK(!callback.is_null());
     DCHECK(!error_callback.is_null());
-    dbus::MethodCall method_call(kIBusServiceInterface,
-                                 kIBusBusCreateInputContextMethod);
+    dbus::MethodCall method_call(ibus::bus::kServiceInterface,
+                                 ibus::bus::kCreateInputContextMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(client_name);
     proxy_->CallMethodWithErrorCallback(
@@ -59,8 +58,8 @@ class IBusClientImpl : public IBusClient {
       const ErrorCallback& error_callback) OVERRIDE {
     DCHECK(!callback.is_null());
     DCHECK(!error_callback.is_null());
-    dbus::MethodCall method_call(kIBusServiceInterface,
-                                 kIBusBusRegisterComponentMethod);
+    dbus::MethodCall method_call(ibus::bus::kServiceInterface,
+                                 ibus::bus::kRegisterComponentMethod);
     dbus::MessageWriter writer(&method_call);
     ibus::AppendIBusComponent(ibus_component, &writer);
     proxy_->CallMethodWithErrorCallback(

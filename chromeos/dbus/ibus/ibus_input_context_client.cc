@@ -20,22 +20,6 @@ namespace chromeos {
 using chromeos::ibus::IBusText;
 
 namespace {
-const char kIBusInputContextInterface[] = "org.freedesktop.IBus.InputContext";
-
-// Signal names.
-const char kCommitTextSignal[] = "CommitText";
-const char kForwardKeyEventSignal[] = "ForwardKeyEvent";
-const char kHidePreeditTextSignal[] = "HidePreeditText";
-const char kShowPreeditTextSignal[] = "ShowPreeditText";
-const char kUpdatePreeditTextSignal[] = "UpdatePreeditText";
-
-// Method names.
-const char kFocusInMethod[] = "FocusIn";
-const char kFocusOutMethod[] = "FocusOut";
-const char kResetMethod[] = "Reset";
-const char kSetCapabilitiesMethod[] = "SetCapabilities";
-const char kSetCursorLocationMethod[] = "SetCursorLocation";
-const char kProcessKeyEventMethod[] = "ProcessKeyEvent";
 
 // The IBusInputContextClient implementation.
 class IBusInputContextClientImpl : public IBusInputContextClient {
@@ -55,7 +39,7 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
       LOG(ERROR) << "IBusInputContextClient is already initialized.";
       return;
     }
-    proxy_ = bus->GetObjectProxy(kIBusServiceName, object_path);
+    proxy_ = bus->GetObjectProxy(ibus::kServiceName, object_path);
 
     ConnectSignals();
   }
@@ -133,42 +117,47 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
 
   // IBusInputContextClient override.
   virtual void SetCapabilities(uint32 capabilities) OVERRIDE {
-    dbus::MethodCall method_call(kIBusInputContextInterface,
-                                 kSetCapabilitiesMethod);
+    dbus::MethodCall method_call(ibus::input_context::kServiceInterface,
+                                 ibus::input_context::kSetCapabilitiesMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendUint32(capabilities);
-    CallNoResponseMethod(&method_call, kSetCapabilitiesMethod);
+    CallNoResponseMethod(&method_call,
+                         ibus::input_context::kSetCapabilitiesMethod);
   }
 
   // IBusInputContextClient override.
   virtual void FocusIn() OVERRIDE {
-    dbus::MethodCall method_call(kIBusInputContextInterface, kFocusInMethod);
-    CallNoResponseMethod(&method_call, kFocusInMethod);
+    dbus::MethodCall method_call(ibus::input_context::kServiceInterface,
+                                 ibus::input_context::kFocusInMethod);
+    CallNoResponseMethod(&method_call, ibus::input_context::kFocusInMethod);
   }
 
   // IBusInputContextClient override.
   virtual void FocusOut() OVERRIDE {
-    dbus::MethodCall method_call(kIBusInputContextInterface, kFocusOutMethod);
-    CallNoResponseMethod(&method_call, kFocusOutMethod);
+    dbus::MethodCall method_call(ibus::input_context::kServiceInterface,
+                                 ibus::input_context::kFocusOutMethod);
+    CallNoResponseMethod(&method_call, ibus::input_context::kFocusOutMethod);
   }
 
   // IBusInputContextClient override.
   virtual void Reset() OVERRIDE {
-    dbus::MethodCall method_call(kIBusInputContextInterface, kResetMethod);
-    CallNoResponseMethod(&method_call, kResetMethod);
+    dbus::MethodCall method_call(ibus::input_context::kServiceInterface,
+                                 ibus::input_context::kResetMethod);
+    CallNoResponseMethod(&method_call, ibus::input_context::kResetMethod);
   }
 
   // IBusInputContextClient override.
   virtual void SetCursorLocation(int32 x, int32 y, int32 width,
                                  int32 height) OVERRIDE {
-    dbus::MethodCall method_call(kIBusInputContextInterface,
-                                 kSetCursorLocationMethod);
+    dbus::MethodCall method_call(ibus::input_context::kServiceInterface,
+                                 ibus::input_context::kSetCursorLocationMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendInt32(x);
     writer.AppendInt32(y);
     writer.AppendInt32(width);
     writer.AppendInt32(height);
-    CallNoResponseMethod(&method_call, kSetCursorLocationMethod);
+    CallNoResponseMethod(&method_call,
+                         ibus::input_context::kSetCursorLocationMethod);
   }
 
   // IBusInputContextClient override.
@@ -178,8 +167,8 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
       uint32 state,
       const ProcessKeyEventCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {
-    dbus::MethodCall method_call(kIBusInputContextInterface,
-                                 kProcessKeyEventMethod);
+    dbus::MethodCall method_call(ibus::input_context::kServiceInterface,
+                                 ibus::input_context::kProcessKeyEventMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendUint32(keyval);
     writer.AppendUint32(keycode);
@@ -313,40 +302,40 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
   // Connects signals to signal handlers.
   void ConnectSignals() {
     proxy_->ConnectToSignal(
-        kIBusInputContextInterface,
-        kCommitTextSignal,
+        ibus::input_context::kServiceInterface,
+        ibus::input_context::kCommitTextSignal,
         base::Bind(&IBusInputContextClientImpl::OnCommitText,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&IBusInputContextClientImpl::OnSignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
 
     proxy_->ConnectToSignal(
-        kIBusInputContextInterface,
-        kForwardKeyEventSignal,
+        ibus::input_context::kServiceInterface,
+        ibus::input_context::kForwardKeyEventSignal,
         base::Bind(&IBusInputContextClientImpl::OnForwardKeyEvent,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&IBusInputContextClientImpl::OnSignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
 
     proxy_->ConnectToSignal(
-        kIBusInputContextInterface,
-        kUpdatePreeditTextSignal,
+        ibus::input_context::kServiceInterface,
+        ibus::input_context::kUpdatePreeditTextSignal,
         base::Bind(&IBusInputContextClientImpl::OnUpdatePreeditText,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&IBusInputContextClientImpl::OnSignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
 
     proxy_->ConnectToSignal(
-        kIBusInputContextInterface,
-        kShowPreeditTextSignal,
+        ibus::input_context::kServiceInterface,
+        ibus::input_context::kShowPreeditTextSignal,
         base::Bind(&IBusInputContextClientImpl::OnShowPreeditText,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&IBusInputContextClientImpl::OnSignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
 
     proxy_->ConnectToSignal(
-        kIBusInputContextInterface,
-        kHidePreeditTextSignal,
+        ibus::input_context::kServiceInterface,
+        ibus::input_context::kHidePreeditTextSignal,
         base::Bind(&IBusInputContextClientImpl::OnHidePreeditText,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&IBusInputContextClientImpl::OnSignalConnected,

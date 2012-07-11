@@ -76,10 +76,12 @@ class IBusClientTest : public testing::Test {
     dbus::Bus::Options options;
     mock_bus_ = new dbus::MockBus(options);
     mock_proxy_ = new dbus::MockObjectProxy(mock_bus_.get(),
-                                            kIBusServiceName,
-                                            dbus::ObjectPath(kIBusServicePath));
-    EXPECT_CALL(*mock_bus_, GetObjectProxy(kIBusServiceName,
-                                           dbus::ObjectPath(kIBusServicePath)))
+                                            ibus::kServiceName,
+                                            dbus::ObjectPath(
+                                                ibus::bus::kServicePath));
+    EXPECT_CALL(*mock_bus_, GetObjectProxy(ibus::kServiceName,
+                                           dbus::ObjectPath(
+                                               ibus::bus::kServicePath)))
         .WillOnce(Return(mock_proxy_.get()));
 
     EXPECT_CALL(*mock_bus_, ShutdownAndBlock());
