@@ -212,9 +212,5 @@ namespace experimental.bluetooth {
     // Fired when the power state of bluetooth on the system changes.
     // |powered| : True if bluetooth is powered, false otherwise.
     static void onPowerChanged(boolean has_power);
-
-    // Used to return discovered devices to the extension. Users should not
-    // add listeners to this event directly.
-    static void onDeviceDiscovered_(Device device);
   };
 };
