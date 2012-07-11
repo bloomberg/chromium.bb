@@ -20,6 +20,10 @@ class PatchException(Exception):
   inflight = False
 
   def __init__(self, patch, message=None):
+    if not isinstance(patch, GitRepoPatch):
+      raise TypeError(
+          "Patch must be a GitRepoPatch derivative; got type %s: %r"
+          % (type(patch), patch))
     Exception.__init__(self)
     self.patch = patch
     self.message = message
@@ -381,7 +385,8 @@ class GitRepoPatch(object):
     # value now, has no relevance/value once cherry-picking is in.
     branch_base = os.path.basename(upstream)
     if self.tracking_branch != branch_base and do_check:
-      raise PatchException('branch %s for project %s is not tracking %s'
+      raise PatchException(self,
+                           'branch %s for project %s is not tracking %s'
                            % (self.ref, self.project, branch_base))
 
     rev = self.Fetch(project_dir)
