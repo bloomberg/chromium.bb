@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_file_system.idl modified Mon Mar 19 11:36:09 2012. */
+/* From ppb_file_system.idl modified Mon May 21 15:19:32 2012. */
 
 #ifndef PPAPI_C_PPB_FILE_SYSTEM_H_
 #define PPAPI_C_PPB_FILE_SYSTEM_H_
@@ -62,7 +62,16 @@ struct PPB_FileSystem_1_0 {
    *
    * @param[in] file_system A <code>PP_Resource</code> corresponding to a file
    * system.
-   * @param[in] expected_size The expected size of the file system.
+   *
+   * @param[in] expected_size The expected size of the file system. Note that
+   * this does not request quota; to do that, you must either invoke
+   * requestQuota from JavaScript:
+
+
+    * http://www.html5rocks.com/en/tutorials/file/filesystem/#toc-requesting-quota
+   * or set the unlimitedStorage permission for Chrome Web Store apps:
+   * http://code.google.com/chrome/extensions/manifest.html#permissions
+   *
    * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
    * completion of Open().
    *

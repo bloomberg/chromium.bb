@@ -46,7 +46,14 @@ interface PPB_FileSystem {
    *
    * @param[in] file_system A <code>PP_Resource</code> corresponding to a file
    * system.
-   * @param[in] expected_size The expected size of the file system.
+   *
+   * @param[in] expected_size The expected size of the file system. Note that
+   * this does not request quota; to do that, you must either invoke
+   * requestQuota from JavaScript:
+   * http://www.html5rocks.com/en/tutorials/file/filesystem/#toc-requesting-quota
+   * or set the unlimitedStorage permission for Chrome Web Store apps:
+   * http://code.google.com/chrome/extensions/manifest.html#permissions
+   *
    * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
    * completion of Open().
    *
