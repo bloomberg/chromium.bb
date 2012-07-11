@@ -64,6 +64,10 @@ class NotificationPromo {
   // Flush data members to prefs for storage.
   void WritePrefs();
 
+  // Tests group_ against max_group_.
+  // When max_group_ is 0, all groups pass.
+  bool ExceedsMaxGroup() const;
+
   // Tests views_ against max_views_.
   // When max_views_ is 0, we don't cap the number of views.
   bool ExceedsMaxViews() const;

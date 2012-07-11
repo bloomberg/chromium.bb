@@ -146,11 +146,11 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json) {
     grouping->GetInteger("increment_frequency", &time_slice_);
     grouping->GetInteger("increment_max", &max_group_);
 
-    DVLOG(1) << "num_groups_=" << num_groups_;
-    DVLOG(1) << "initial_segment_ = " << initial_segment_;
-    DVLOG(1) << "increment_ = " << increment_;
-    DVLOG(1) << "time_slice_ = " << time_slice_;
-    DVLOG(1) << "max_group_ = " << max_group_;
+    DVLOG(1) << "num_groups_ = " << num_groups_
+             << ", initial_segment_ = " << initial_segment_
+             << ", increment_ = " << increment_
+             << ", time_slice_ = " << time_slice_
+             << ", max_group_ = " << max_group_;
   }
 
   // Payload.
@@ -285,7 +285,7 @@ void NotificationPromo::InitFromPrefs() {
 bool NotificationPromo::CanShow() const {
   return !closed_ &&
       !promo_text_.empty() &&
-      group_ < max_group_ &&
+      !ExceedsMaxGroup() &&
       !ExceedsMaxViews() &&
       base::Time::FromDoubleT(StartTimeForGroup()) < base::Time::Now() &&
       base::Time::FromDoubleT(EndTime()) > base::Time::Now() &&
@@ -307,6 +307,10 @@ bool NotificationPromo::HandleViewed() {
 
   prefs_->SetInteger(prefs::kNtpPromoViews, ++views_);
   return ExceedsMaxViews();
+}
+
+bool NotificationPromo::ExceedsMaxGroup() const {
+  return (max_group_ == 0) ? false : group_ >= max_group_;
 }
 
 bool NotificationPromo::ExceedsMaxViews() const {

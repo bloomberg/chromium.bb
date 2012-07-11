@@ -197,6 +197,13 @@ class NotificationPromoTest {
       notification_promo_.group_ = i;
       EXPECT_TRUE(notification_promo_.CanShow());
     }
+
+    // When max_group_ is 0, all groups pass.
+    notification_promo_.max_group_ = 0;
+    for (int i = 0; i < num_groups_; i += incr) {
+      notification_promo_.group_ = i;
+      EXPECT_TRUE(notification_promo_.CanShow());
+    }
   }
 
   void TestViews() {
