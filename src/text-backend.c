@@ -46,14 +46,22 @@ struct input_method {
 };
 
 static void
+deactivate_text_model(struct text_model *text_model)
+{
+
+	if (text_model->input_method->active_model == text_model) {
+		text_model->input_method->active_model = NULL;
+		wl_signal_emit(&text_model->input_method->ec->hide_input_panel_signal, text_model->input_method->ec);
+	}
+}
+
+static void
 destroy_text_model(struct wl_resource *resource)
 {
 	struct text_model *text_model = container_of(resource,
 						     struct text_model, resource);
 
-	if (text_model->input_method->active_model == text_model) {
-		text_model->input_method->active_model = 0;
-	}
+	deactivate_text_model(text_model);
 
 	wl_list_remove(&text_model->link);
 	free(text_model);
@@ -90,10 +98,7 @@ text_model_deactivate(struct wl_client *client,
 {
 	struct text_model *text_model = resource->data;
 
-	if (text_model->input_method->active_model == text_model) {
-		text_model->input_method->active_model = NULL;
-		wl_signal_emit(&text_model->input_method->ec->hide_input_panel_signal, text_model->input_method->ec);
-	}
+	deactivate_text_model(text_model);
 }
 
 static void
@@ -145,13 +150,13 @@ static void input_method_create_text_model(struct wl_client *client,
 	struct input_method *input_method = resource->data;
 	struct text_model *text_model;
 
-	text_model = malloc(sizeof *text_model);
+	text_model = calloc(1, sizeof *text_model);
 
 	text_model->resource.destroy = destroy_text_model;
-	
+
 	text_model->resource.object.id = id;
 	text_model->resource.object.interface = &text_model_interface;
-	text_model->resource.object.implementation = 
+	text_model->resource.object.implementation =
 		(void (**)(void)) &text_model_implementation;
 	text_model->resource.data = text_model;
 
@@ -204,7 +209,7 @@ input_method_create(struct weston_compositor *ec)
 {
 	struct input_method *input_method;
 
-	input_method = malloc(sizeof *input_method);
+	input_method = calloc(1, sizeof *input_method);
 
 	input_method->base.interface = &input_method_interface;
 	input_method->base.implementation = (void(**)(void)) &input_method_implementation;
@@ -218,5 +223,5 @@ input_method_create(struct weston_compositor *ec)
 						     input_method, bind_input_method);
 
 	input_method->destroy_listener.notify = input_method_notifier_destroy;
-	wl_signal_add(&ec->destroy_signal, &input_method->destroy_listener); 
+	wl_signal_add(&ec->destroy_signal, &input_method->destroy_listener);
 }
