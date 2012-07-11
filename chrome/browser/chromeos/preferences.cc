@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/system/drm_settings.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
-#include "chrome/browser/chromeos/system/screen_locker_settings.h"
+#include "chrome/browser/chromeos/system/power_manager_settings.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -553,7 +553,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
 
   // Init or update power manager config.
   if (!pref_name || *pref_name == prefs::kEnableScreenLock) {
-    system::screen_locker_settings::EnableScreenLock(
+    system::power_manager_settings::EnableScreenLock(
         enable_screen_lock_.GetValue());
   }
 

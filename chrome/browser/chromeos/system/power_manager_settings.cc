@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/system/screen_locker_settings.h"
+#include "chrome/browser/chromeos/system/power_manager_settings.h"
 
 #include "base/bind.h"
 #include "base/chromeos/chromeos_version.h"
@@ -33,7 +33,7 @@ void EnableScreenLockOnFileThread(bool enable) {
 
 namespace chromeos {
 namespace system {
-namespace screen_locker_settings {
+namespace power_manager_settings {
 
 void EnableScreenLock(bool enable) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -44,6 +44,6 @@ void EnableScreenLock(bool enable) {
       base::Bind(&EnableScreenLockOnFileThread, enable));
 }
 
-}  // namespace screen_locker_settings
+}  // namespace power_manager_settings
 }  // namespace system
 }  // namespace chromeos
