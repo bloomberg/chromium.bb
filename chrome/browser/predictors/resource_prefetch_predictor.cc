@@ -18,7 +18,6 @@
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
-#include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -115,8 +114,10 @@ ResourcePrefetchPredictor::~ResourcePrefetchPredictor() {
 }
 
 // static
-bool ResourcePrefetchPredictor::IsEnabled(Profile* profile) {
-  return prerender::IsSpeculativeResourcePrefetchingLearningEnabled(profile);
+bool ResourcePrefetchPredictor::IsEnabled() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(
+      switches::kEnableSpeculativeResourcePrefetching);
 }
 
 void ResourcePrefetchPredictor::LazilyInitialize() {
