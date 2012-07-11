@@ -227,7 +227,7 @@ void VideoCaptureImpl::DoStopCapture(
   if (it != clients_pending_on_restart_.end()) {
     handler->OnStopped(this);
     handler->OnRemoved(this);
-    clients_pending_on_filter_.erase(it);
+    clients_pending_on_restart_.erase(it);
     return;
   }
 
@@ -253,11 +253,12 @@ void VideoCaptureImpl::DoFeedBuffer(scoped_refptr<VideoFrameBuffer> buffer) {
       break;
   }
 
-  DCHECK(it != cached_dibs_.end());
-  DCHECK_GT(it->second->references, 0);
-  it->second->references--;
-  if (it->second->references == 0) {
-    Send(new VideoCaptureHostMsg_BufferReady(device_id_, it->first));
+  if (it != cached_dibs_.end() && it->second) {
+    DCHECK_GT(it->second->references, 0);
+    it->second->references--;
+    if (it->second->references == 0) {
+      Send(new VideoCaptureHostMsg_BufferReady(device_id_, it->first));
+    }
   }
 }
 
