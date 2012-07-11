@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_CONTENT_VIEW_CORE_IMPL_H_
-#define CONTENT_BROWSER_ANDROID_CONTENT_VIEW_CORE_IMPL_H_
+#ifndef CONTENT_BROWSER_ANDROID_CONTENT_VIEW_IMPL_H_
+#define CONTENT_BROWSER_ANDROID_CONTENT_VIEW_IMPL_H_
 #pragma once
 
 #include "base/android/jni_helper.h"
@@ -12,7 +12,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
-#include "content/public/browser/android/content_view_core.h"
+#include "content/public/browser/android/content_view.h"
 #include "content/public/browser/notification_observer.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
@@ -22,12 +22,12 @@ class ContentViewClient;
 class RenderWidgetHostViewAndroid;
 
 // TODO(jrg): this is a shell.  Upstream the rest.
-class ContentViewCoreImpl : public ContentViewCore,
-                            public NotificationObserver {
+class ContentViewImpl : public ContentView,
+                        public NotificationObserver {
  public:
-  ContentViewCoreImpl(JNIEnv* env,
-                      jobject obj,
-                      WebContents* web_contents);
+  ContentViewImpl(JNIEnv* env,
+                  jobject obj,
+                  WebContents* web_contents);
   virtual void Destroy(JNIEnv* env, jobject obj);
 
   // --------------------------------------------------------------------------
@@ -102,7 +102,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   // --------------------------------------------------------------------------
   // Private methods that call to Java via JNI
   // --------------------------------------------------------------------------
-  virtual ~ContentViewCoreImpl();
+  virtual ~ContentViewImpl();
 
   // --------------------------------------------------------------------------
   // Other private methods and data
@@ -111,20 +111,20 @@ class ContentViewCoreImpl : public ContentViewCore,
   void PostLoadUrl(const GURL& url);
 
   // Reference to the current WebContents used to determine how and what to
-  // display in the ContentViewCore.
+  // display in the ContentView.
   WebContents* web_contents_;
 
   // We only set this to be the delegate of the web_contents if we own it.
   scoped_ptr<ContentViewClient> content_view_client_;
 
-  // Whether the renderer backing this ContentViewCore has crashed.
+  // Whether the renderer backing this ContentView has crashed.
   bool tab_crashed_;
 
-  DISALLOW_COPY_AND_ASSIGN(ContentViewCoreImpl);
+  DISALLOW_COPY_AND_ASSIGN(ContentViewImpl);
 };
 
-bool RegisterContentViewCore(JNIEnv* env);
+bool RegisterContentView(JNIEnv* env);
 
 };  // namespace content
 
-#endif  // CONTENT_BROWSER_ANDROID_CONTENT_VIEW_CORE_IMPL_H_
+#endif  // CONTENT_BROWSER_ANDROID_CONTENT_VIEW_IMPL_H_

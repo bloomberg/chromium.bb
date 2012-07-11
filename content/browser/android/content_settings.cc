@@ -6,7 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "content/browser/android/content_view_core_impl.h"
+#include "content/browser/android/content_view_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/web_contents.h"
@@ -285,10 +285,10 @@ void ContentSettings::RenderViewCreated(RenderViewHost* render_view_host) {
 }
 
 jint Init(
-    JNIEnv* env, jobject obj, jint nativeContentViewCore,
+    JNIEnv* env, jobject obj, jint nativeContentView,
     jboolean is_master_mode) {
   WebContents* web_contents =
-      reinterpret_cast<ContentViewCoreImpl*>(nativeContentViewCore)
+      reinterpret_cast<ContentViewImpl*>(nativeContentView)
           ->web_contents();
   ContentSettings* content_settings =
       new ContentSettings(env, obj, web_contents, is_master_mode);

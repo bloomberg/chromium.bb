@@ -5,17 +5,17 @@
 package org.chromium.content.browser;
 
 import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.Log;
 import android.view.KeyEvent;
 
+import java.net.URISyntaxException;
+
 import org.chromium.base.AccessedByNative;
 import org.chromium.base.CalledByNative;
-
-import java.net.URISyntaxException;
+import org.chromium.content.browser.ContentHttpAuthHandler;
 
 /**
  *  Main callback class used by ContentView.
@@ -277,7 +277,7 @@ public class ContentViewClient {
     /**
      * Called when a new content intent is requested to be started.
      */
-    public void onStartContentIntent(Context context, String contentUrl) {
+    public void onStartContentIntent(ContentView chromeView, String contentUrl) {
         Intent intent;
         // Perform generic parsing of the URI to turn it into an Intent.
         try {
@@ -288,7 +288,7 @@ public class ContentViewClient {
         }
 
         try {
-            context.startActivity(intent);
+            chromeView.getContext().startActivity(intent);
         } catch (ActivityNotFoundException ex) {
             Log.w(TAG, "No application can handle " + contentUrl);
         }

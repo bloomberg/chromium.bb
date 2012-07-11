@@ -9,7 +9,7 @@
 #include "content/browser/android/android_browser_process.h"
 #include "content/browser/android/content_settings.h"
 #include "content/browser/android/content_view_client.h"
-#include "content/browser/android/content_view_core_impl.h"
+#include "content/browser/android/content_view_impl.h"
 #include "content/browser/android/download_controller.h"
 #include "content/browser/android/sandboxed_process_launcher.h"
 #include "content/browser/android/touch_point.h"
@@ -22,8 +22,8 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     AndroidLocationApiAdapter::RegisterGeolocationService },
   { "AndroidBrowserProcess", content::RegisterAndroidBrowserProcess },
   { "ContentSettings", content::ContentSettings::RegisterContentSettings },
+  { "ContentView", content::RegisterContentView },
   { "ContentViewClient", content::RegisterContentViewClient },
-  { "ContentViewCore", content::RegisterContentViewCore },
   { "DeviceInfo", content::RegisterDeviceInfo },
   { "DownloadController",
     content::DownloadController::RegisterDownloadController },

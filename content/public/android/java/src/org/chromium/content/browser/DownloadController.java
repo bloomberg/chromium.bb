@@ -31,11 +31,11 @@ class DownloadController {
         nativeInit();
     }
 
-    private static DownloadListener listenerFromView(ContentViewCore view) {
+    private static DownloadListener listenerFromView(ContentView view) {
         return view.downloadListener();
     }
 
-    private static ContentViewDownloadDelegate downloadDelegateFromView(ContentViewCore view) {
+    private static ContentViewDownloadDelegate downloadDelegateFromView(ContentView view) {
         return view.getDownloadDelegate();
     }
 
@@ -50,7 +50,7 @@ class DownloadController {
      * The DownloadListener is expected to handle the download.
      */
     @CalledByNative
-    public void newHttpGetDownload(ContentViewCore view, String url,
+    public void newHttpGetDownload(ContentView view, String url,
             String userAgent, String contentDisposition, String mimetype,
             String cookie, long contentLength) {
         ContentViewDownloadDelegate downloadDelagate = downloadDelegateFromView(view);
@@ -72,7 +72,7 @@ class DownloadController {
      * Notifies the DownloadListener that a new POST download has started.
      */
     @CalledByNative
-    public void onHttpPostDownloadStarted(ContentViewCore view) {
+    public void onHttpPostDownloadStarted(ContentView view) {
         ContentViewDownloadDelegate downloadDelagate = downloadDelegateFromView(view);
 
         if (downloadDelagate != null) {
@@ -85,7 +85,7 @@ class DownloadController {
      * download.
      */
     @CalledByNative
-    public void onHttpPostDownloadCompleted(ContentViewCore view, String url,
+    public void onHttpPostDownloadCompleted(ContentView view, String url,
             String contentDisposition, String mimetype, String path,
             long contentLength, boolean successful) {
         ContentViewDownloadDelegate downloadDelagate = downloadDelegateFromView(view);
