@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/time.h"
+#include "build/build_config.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_errors.h"
@@ -312,10 +313,12 @@ PP_Bool PPB_Flash_Proxy::SetCrashData(PP_Instance instance,
                                       PP_Var value) {
   switch (key) {
     case PP_FLASHCRASHKEY_URL:
-      // TODO(raymes): This may be breaking crash reporting, see:
+#if defined(OS_WIN)
+      // TODO(raymes): This may be breaking crash reporting on Windows, see:
       // See https://code.google.com/p/chromium/issues/detail?id=135480.
       // Disable temporarily.
       return PP_FALSE;
+#endif
 
       StringVar *url_string_var(StringVar::FromPPVar(value));
       if (!url_string_var)
