@@ -419,6 +419,44 @@ void RunTaskOnThread(scoped_refptr<base::MessageLoopProxy> relay_proxy,
   }
 }
 
+// Callback for GetEntryByResourceIdAsync.
+// Removes stale entry upon upload of file.
+void RemoveStaleEntryOnUpload(const std::string& resource_id,
+                              GDataDirectory* parent_dir,
+                              GDataEntry* existing_entry) {
+  if (existing_entry &&
+      // This should always match, but just in case.
+      existing_entry->parent() == parent_dir) {
+    parent_dir->RemoveEntry(existing_entry);
+  } else {
+    LOG(ERROR) << "Entry for the existing file not found: " << resource_id;
+  }
+}
+
+// Callback for GetEntryByResourceIdAsync.
+// Adds |entry| to |results|. Runs |callback| with |results| when
+// |run_callback| is true.
+void AddEntryToSearchResults(
+    std::vector<SearchResultInfo>* results,
+    const SearchCallback& callback,
+    base::PlatformFileError error,
+    bool run_callback,
+    GDataEntry* entry) {
+  // If a result is not present in our local file system snapshot, ignore it.
+  // For example, this may happen if the entry has recently been added to the
+  // drive (and we still haven't received its delta feed).
+  if (entry) {
+    const bool is_directory = entry->AsGDataDirectory() != NULL;
+    results->push_back(SearchResultInfo(entry->GetFilePath(), is_directory));
+  }
+
+  if (run_callback) {
+    scoped_ptr<std::vector<SearchResultInfo> > result_vec(results);
+    if (!callback.is_null())
+      callback.Run(error, result_vec.Pass());
+  }
+}
+
 // Runs task on UI thread.
 void RunTaskOnUIThread(const base::Closure& task) {
   RunTaskOnThread(
@@ -2502,8 +2540,7 @@ void GDataFileSystem::OnSearch(const SearchCallback& callback,
   // The search results will be returned using virtual directory.
   // The directory is not really part of the file system, so it has no parent or
   // root.
-  scoped_ptr<std::vector<SearchResultInfo> > results(
-      new std::vector<SearchResultInfo>());
+  std::vector<SearchResultInfo>* results(new std::vector<SearchResultInfo>());
 
   DCHECK_EQ(1u, params->feed_list->size());
   DocumentFeed* feed = params->feed_list->at(0);
@@ -2535,21 +2572,13 @@ void GDataFileSystem::OnSearch(const SearchCallback& callback,
     // We can't use |entry| anymore, so we have to refetch entry from file
     // system. Also, |entry| doesn't have file path set before |RefreshFile|
     // call, so we can't get file path from there.
-    GDataEntry* saved_entry = root_->GetEntryByResourceId(entry_resource_id);
-
-    // If a result is not present in our local file system snapshot, ignore it.
-    // For example, this may happen if the entry has recently been added to the
-    // drive (and we still haven't received its delta feed).
-    if (!saved_entry)
-      continue;
-
-    bool is_directory = saved_entry->AsGDataDirectory() != NULL;
-    results->push_back(SearchResultInfo(saved_entry->GetFilePath(),
-                                        is_directory));
+    root_->GetEntryByResourceIdAsync(entry_resource_id,
+        base::Bind(&AddEntryToSearchResults,
+                   results,
+                   callback,
+                   error,
+                   i+1 == feed->entries().size()));
   }
-
-  if (!callback.is_null())
-    callback.Run(error, results.Pass());
 }
 
 void GDataFileSystem::Search(const std::string& search_query,
@@ -3560,16 +3589,9 @@ void GDataFileSystem::AddUploadedFileOnUIThread(
 
   if (upload_mode == UPLOAD_EXISTING_FILE) {
     // Remove an existing entry, which should be present.
-    GDataEntry* existing_entry = root_->GetEntryByResourceId(
-        new_entry->resource_id());
-    if (existing_entry &&
-        // This should always match, but just in case.
-        existing_entry->parent() == parent_dir) {
-      parent_dir->RemoveEntry(existing_entry);
-    } else {
-      LOG(ERROR) << "Entry for the existing file not found: "
-                 << new_entry->resource_id();
-    }
+    const std::string& resource_id = new_entry->resource_id();
+    root_->GetEntryByResourceIdAsync(resource_id,
+        base::Bind(&RemoveStaleEntryOnUpload, resource_id, parent_dir));
   }
 
   GDataFile* file = new_entry->AsGDataFile();
