@@ -38,8 +38,7 @@ class GDataCacheMetadata {
   // Updates cache map with entry corresponding to |resource_id|.
   // Creates new entry if it doesn't exist, otherwise update the entry.
   virtual void UpdateCache(const std::string& resource_id,
-                           const std::string& md5,
-                           int cache_state) = 0;
+                           const GDataCache::CacheEntry& cache_entry) = 0;
 
   // Removes entry corresponding to |resource_id| from cache map.
   virtual void RemoveFromCache(const std::string& resource_id) = 0;
@@ -84,9 +83,9 @@ class GDataCacheMetadataMap : public GDataCacheMetadata {
   void Initialize(const std::vector<FilePath>& cache_paths);
 
   // GDataCacheMetadata overrides:
-  virtual void UpdateCache(const std::string& resource_id,
-                           const std::string& md5,
-                           int cache_state) OVERRIDE;
+  virtual void UpdateCache(
+      const std::string& resource_id,
+      const GDataCache::CacheEntry& cache_entry) OVERRIDE;
   virtual void RemoveFromCache(const std::string& resource_id) OVERRIDE;
   virtual scoped_ptr<GDataCache::CacheEntry> GetCacheEntry(
       const std::string& resource_id,

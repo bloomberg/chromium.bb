@@ -142,7 +142,9 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
       GDataCache::CACHE_TYPE_PERSISTENT;
   int test_cache_state = (GDataCache::CACHE_STATE_PRESENT |
                           GDataCache::CACHE_STATE_PERSISTENT);
-  metadata_->UpdateCache(test_resource_id, test_file_md5, test_cache_state);
+  metadata_->UpdateCache(
+      test_resource_id,
+      GDataCache::CacheEntry(test_file_md5, test_cache_state));
 
   // Test that the entry can be retrieved.
   scoped_ptr<GDataCache::CacheEntry> cache_entry =
@@ -172,7 +174,9 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   test_file_md5 = "test_file_md5_2";
   test_sub_dir_type = GDataCache::CACHE_TYPE_TMP;
   test_cache_state = GDataCache::CACHE_STATE_PINNED;
-  metadata_->UpdateCache(test_resource_id, test_file_md5, test_cache_state);
+  metadata_->UpdateCache(
+      test_resource_id,
+      GDataCache::CacheEntry(test_file_md5, test_cache_state));
 
   // Make sure the values took.
   cache_entry =
@@ -192,7 +196,9 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   test_file_md5 = "test_file_md5_3";
   test_sub_dir_type = GDataCache::CACHE_TYPE_TMP;
   test_cache_state = GDataCache::CACHE_STATE_DIRTY;
-  metadata_->UpdateCache(test_resource_id, test_file_md5, test_cache_state);
+  metadata_->UpdateCache(
+      test_resource_id,
+      GDataCache::CacheEntry(test_file_md5, test_cache_state));
 
   // Make sure the values took.
   cache_entry =
@@ -225,7 +231,9 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   test_file_md5 = "test_file_md5_4";
   test_sub_dir_type = GDataCache::CACHE_TYPE_TMP;
   test_cache_state = GDataCache::CACHE_STATE_PRESENT;
-  metadata_->UpdateCache(test_resource_id, test_file_md5, test_cache_state);
+  metadata_->UpdateCache(
+      test_resource_id,
+      GDataCache::CacheEntry(test_file_md5, test_cache_state));
 
   // Make sure the values took.
   cache_entry =
@@ -239,7 +247,9 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   test_file_md5 = "test_file_md5_5";
   test_sub_dir_type = GDataCache::CACHE_TYPE_TMP;
   test_cache_state = GDataCache::CACHE_STATE_NONE;
-  metadata_->UpdateCache(test_resource_id, test_file_md5, test_cache_state);
+  metadata_->UpdateCache(
+      test_resource_id,
+      GDataCache::CacheEntry(test_file_md5, test_cache_state));
 
   cache_entry =
       metadata_->GetCacheEntry(test_resource_id, std::string()).Pass();

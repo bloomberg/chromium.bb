@@ -481,11 +481,11 @@ class GDataCache {
                            GDataCache::CacheEntry* cache_entry);
 
   // Wrapper around GDataCacheMetadata::UpdateCache(). This function takes
-  // |sub_dir_type| and modifies |cache_state| per the sub directory type.
-  void UpdateCacheWithSubDirectoryType(const std::string& resource_id,
-                                       const std::string& md5,
-                                       CacheSubDirectoryType sub_dir_type,
-                                       int cache_state);
+  // |sub_dir_type| and updates the cache per |cache_entry| and |sub_dir_type|.
+  void UpdateCacheWithSubDirectoryType(
+      const std::string& resource_id,
+      CacheSubDirectoryType sub_dir_type,
+      const CacheEntry& cache_entry);
 
   // The root directory of the cache (i.e. <user_profile_dir>/GCache/v1).
   const FilePath cache_root_path_;

@@ -881,9 +881,8 @@ void GDataCache::Store(const std::string& resource_id,
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
     UpdateCacheWithSubDirectoryType(resource_id,
-                                    md5,
                                     sub_dir_type,
-                                    cache_state);
+                                    CacheEntry(md5, cache_state));
   }
 }
 
@@ -971,9 +970,8 @@ void GDataCache::Pin(const std::string& resource_id,
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
     UpdateCacheWithSubDirectoryType(resource_id,
-                                    md5,
                                     sub_dir_type,
-                                    cache_state);
+                                    CacheEntry(md5, cache_state));
   }
 }
 
@@ -1053,9 +1051,8 @@ void GDataCache::Unpin(const std::string& resource_id,
     // Now that file operations have completed, update cache map.
     int cache_state = ClearCachePinned(cache_entry->cache_state);
     UpdateCacheWithSubDirectoryType(resource_id,
-                                    md5,
                                     sub_dir_type,
-                                    cache_state);
+                                    CacheEntry(md5, cache_state));
   }
 }
 
@@ -1120,9 +1117,8 @@ void GDataCache::SetMountedState(const FilePath& file_path,
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that cache operation is complete, update cache map
     UpdateCacheWithSubDirectoryType(resource_id,
-                                    md5,
                                     dest_subdir,
-                                    cache_state);
+                                    CacheEntry(md5, cache_state));
   }
 }
 
@@ -1226,9 +1222,8 @@ void GDataCache::MarkDirty(const std::string& resource_id,
     // Now that file operations have completed, update cache map.
     int cache_state = SetCacheDirty(cache_entry->cache_state);
     UpdateCacheWithSubDirectoryType(resource_id,
-                                    md5,
                                     sub_dir_type,
-                                    cache_state);
+                                    CacheEntry(md5, cache_state));
   }
 }
 
@@ -1374,10 +1369,9 @@ void GDataCache::ClearDirty(const std::string& resource_id,
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
     int cache_state = ClearCacheDirty(cache_entry->cache_state);
-    UpdateCacheWithSubDirectoryType(resource_id,
-                                    md5,
+   UpdateCacheWithSubDirectoryType(resource_id,
                                     sub_dir_type,
-                                    cache_state);
+                                    CacheEntry(md5, cache_state));
   }
 }
 
@@ -1514,18 +1508,18 @@ void GDataCache::GetCacheEntryHelper(const std::string& resource_id,
 
 void GDataCache::UpdateCacheWithSubDirectoryType(
     const std::string& resource_id,
-    const std::string& md5,
     CacheSubDirectoryType sub_dir_type,
-    int cache_state) {
+    const CacheEntry& in_cache_entry) {
   DCHECK(sub_dir_type == CACHE_TYPE_PERSISTENT ||
          sub_dir_type == CACHE_TYPE_TMP);
 
+  CacheEntry cache_entry = in_cache_entry;
   if (sub_dir_type == CACHE_TYPE_PERSISTENT)
-    cache_state = SetCachePersistent(cache_state);
+    cache_entry.cache_state = SetCachePersistent(cache_entry.cache_state);
   else
-    cache_state = ClearCachePersistent(cache_state);
+    cache_entry.cache_state = ClearCachePersistent(cache_entry.cache_state);
 
-  metadata_->UpdateCache(resource_id, md5, cache_state);
+  metadata_->UpdateCache(resource_id, cache_entry);
 }
 
 // static
