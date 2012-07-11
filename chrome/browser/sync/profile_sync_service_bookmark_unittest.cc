@@ -543,6 +543,10 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
         model_->bookmark_bar_node()->id());
   }
 
+  int64 GetSyncIdFromChromeNode(const BookmarkNode* node) {
+    return model_associator_->GetSyncIdFromChromeId(node->id());
+  }
+
  private:
   // Used by both |ui_thread_| and |file_thread_|.
   MessageLoop message_loop_;
@@ -1493,6 +1497,27 @@ TEST_F(ProfileSyncServiceBookmarkTest, AssociationState) {
   EXPECT_EQ(1, observer.get_completed());
 
   model_->RemoveObserver(&observer);
+}
+
+TEST_F(ProfileSyncServiceBookmarkTest, FaviconUpdateToDeletedBookmark) {
+  LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
+  const BookmarkNode* bnode = model_->AddURL(
+      model_->bookmark_bar_node(),
+      0,
+      ASCIIToUTF16("Internets #1 Pies Site"),
+      GURL("http://www.easypie.com/"));
+  StartSync();
+
+  {
+    syncer::WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
+    FakeServerChange dels(&trans);
+    dels.Delete(GetSyncIdFromChromeNode(bnode));
+    dels.ApplyPendingChanges(change_processor_.get());
+  }
+
+  // Now update the favicon locally. This should have no effect, but should
+  // not result in an error either.
+  change_processor_->BookmarkNodeFaviconChanged(model_, bnode);
 }
 
 }  // namespace

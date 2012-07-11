@@ -21,7 +21,6 @@
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
-#include "sync/syncable/entry.h"  // TODO(tim): Investigating bug 121587.
 #include "ui/gfx/image/image_util.h"
 
 using content::BrowserThread;
@@ -214,54 +213,8 @@ void BookmarkChangeProcessor::BookmarkNodeChanged(BookmarkModel* model,
   // Lookup the sync node that's associated with |node|.
   syncer::WriteNode sync_node(&trans);
   if (!model_associator_->InitSyncNodeFromChromeId(node->id(), &sync_node)) {
-    // TODO(tim): Investigating bug 121587.
-    if (model_associator_->GetSyncIdFromChromeId(node->id()) ==
-                                                 syncer::kInvalidId) {
-      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-          "Bookmark id not found in model associator on BookmarkNodeChanged");
-      LOG(ERROR) << "Bad id.";
-    } else if (!sync_node.GetEntry()->good()) {
-      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-          "Could not InitByIdLookup on BookmarkNodeChanged, good() failed");
-      LOG(ERROR) << "Bad entry.";
-    } else if (sync_node.GetEntry()->Get(syncer::syncable::IS_DEL)) {
-      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-          "Could not InitByIdLookup on BookmarkNodeChanged, is_del true");
-      LOG(ERROR) << "Deleted entry.";
-    } else {
-      syncer::Cryptographer* crypto = trans.GetCryptographer();
-      syncer::ModelTypeSet encrypted_types(crypto->GetEncryptedTypes());
-      const sync_pb::EntitySpecifics& specifics =
-          sync_node.GetEntry()->Get(syncer::syncable::SPECIFICS);
-      CHECK(specifics.has_encrypted());
-      const bool can_decrypt = crypto->CanDecrypt(specifics.encrypted());
-      const bool agreement = encrypted_types.Has(syncer::BOOKMARKS);
-      if (!agreement && !can_decrypt) {
-        error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-            "Could not InitByIdLookup on BookmarkNodeChanged, "
-            " Cryptographer thinks bookmarks not encrypted, and CanDecrypt"
-            " failed.");
-        LOG(ERROR) << "Case 1.";
-      } else if (agreement && can_decrypt) {
-        error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-            "Could not InitByIdLookup on BookmarkNodeChanged, "
-            " Cryptographer thinks bookmarks are encrypted, and CanDecrypt"
-            " succeeded (?!), but DecryptIfNecessary failed.");
-        LOG(ERROR) << "Case 2.";
-      } else if (agreement) {
-        error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-            "Could not InitByIdLookup on BookmarkNodeChanged, "
-            " Cryptographer thinks bookmarks are encrypted, but CanDecrypt"
-            " failed.");
-        LOG(ERROR) << "Case 3.";
-      } else {
-        error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-            "Could not InitByIdLookup on BookmarkNodeChanged, "
-            " Cryptographer thinks bookmarks not encrypted, but CanDecrypt"
-            " succeeded (super weird, btw)");
-        LOG(ERROR) << "Case 4.";
-      }
-    }
+    error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+          "Failed to load sync node for updated bookmark.");
     return;
   }
 
@@ -312,6 +265,13 @@ void BookmarkChangeProcessor::BookmarkNodeFaviconChanged(
     BookmarkModel* model,
     const BookmarkNode* node) {
   DCHECK(running());
+  // Because favicon changes come from a different thread, it's possible we're
+  // being notified of a favicon change for a url whose bookmark was recently
+  // deleted. Check if we have a sync node for this bookmark, and if not ignore
+  // the favicon change.
+  if (model_associator_->GetSyncIdFromChromeId(node->id()) ==
+          syncer::kInvalidId)
+    return;
   BookmarkNodeChanged(model, node);
 }
 
