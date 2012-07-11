@@ -15,7 +15,7 @@
 #include "webkit/forms/password_form.h"
 
 namespace content {
-class WebContents;
+class RenderViewHost;
 }  // namespace content
 
 class PasswordManager;
@@ -34,7 +34,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   //           used to filter login results from database.
   PasswordFormManager(Profile* profile,
                       PasswordManager* password_manager,
-                      content::WebContents* web_contents,
+                      content::RenderViewHost* host,
                       const webkit::forms::PasswordForm& observed_form,
                       bool ssl_valid);
   virtual ~PasswordFormManager();
@@ -242,9 +242,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // The profile from which we get the PasswordStore.
   Profile* profile_;
 
-  // Web contents from which we get the RenderViewHost for sending messages to
-  // the corresponding renderer.
-  content::WebContents* web_contents_;
+  // Render view host for sending messages to the corresponding renderer.
+  content::RenderViewHost* host_;
 
   // These three fields record the "ActionsTaken" by the browser and
   // the user with this form, and the result. They are combined and

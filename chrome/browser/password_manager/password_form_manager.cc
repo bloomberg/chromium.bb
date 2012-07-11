@@ -15,7 +15,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/autofill_messages.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/web_contents.h"
 #include "webkit/forms/password_form_dom_manager.h"
 
 using base::Time;
@@ -24,7 +23,7 @@ using webkit::forms::PasswordFormMap;
 
 PasswordFormManager::PasswordFormManager(Profile* profile,
                                          PasswordManager* password_manager,
-                                         content::WebContents* web_contents,
+                                         content::RenderViewHost* host,
                                          const PasswordForm& observed_form,
                                          bool ssl_valid)
     : best_matches_deleter_(&best_matches_),
@@ -36,7 +35,7 @@ PasswordFormManager::PasswordFormManager(Profile* profile,
       preferred_match_(NULL),
       state_(PRE_MATCHING_PHASE),
       profile_(profile),
-      web_contents_(web_contents),
+      host_(host),
       manager_action_(kManagerActionNone),
       user_action_(kUserActionNone),
       submit_result_(kSubmitResultNotSubmitted) {
@@ -508,7 +507,6 @@ void PasswordFormManager::SubmitFailed() {
 }
 
 void PasswordFormManager::SendNotBlacklistedToRenderer() {
-  content::RenderViewHost* host = web_contents_->GetRenderViewHost();
-  host->Send(new AutofillMsg_FormNotBlacklisted(host->GetRoutingID(),
+  host_->Send(new AutofillMsg_FormNotBlacklisted(host_->GetRoutingID(),
                                                  observed_form_));
 }
