@@ -4,7 +4,6 @@
 
 #ifndef CHROME_SERVICE_NET_SERVICE_URL_REQUEST_CONTEXT_H_
 #define CHROME_SERVICE_NET_SERVICE_URL_REQUEST_CONTEXT_H_
-#pragma once
 
 #include <string>
 

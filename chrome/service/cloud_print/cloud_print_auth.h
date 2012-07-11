@@ -4,7 +4,6 @@
 
 #ifndef CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_AUTH_H_
 #define CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_AUTH_H_
-#pragma once
 
 #include <string>
 

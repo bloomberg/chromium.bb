@@ -4,7 +4,6 @@
 
 #ifndef CHROME_SERVICE_SERVICE_UTILITY_PROCESS_HOST_H_
 #define CHROME_SERVICE_SERVICE_UTILITY_PROCESS_HOST_H_
-#pragma once
 
 #include "build/build_config.h"
 

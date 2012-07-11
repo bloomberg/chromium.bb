@@ -4,7 +4,6 @@
 
 #ifndef CHROME_SERVICE_SERVICE_PROCESS_H_
 #define CHROME_SERVICE_SERVICE_PROCESS_H_
-#pragma once
 
 #include <string>
 
