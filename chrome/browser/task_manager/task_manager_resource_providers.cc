@@ -36,6 +36,7 @@
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
@@ -239,8 +240,9 @@ TaskManagerTabContentsResource::TaskManagerTabContentsResource(
   }
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end(); ++i) {
-    if ((*i)->instant() &&
-        (*i)->instant()->GetPreviewContents() == tab_contents_) {
+    if ((*i)->instant_controller()->instant() &&
+        (*i)->instant_controller()->instant()->GetPreviewContents() ==
+            tab_contents_) {
       is_instant_preview_ = true;
       break;
     }

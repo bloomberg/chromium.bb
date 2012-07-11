@@ -58,8 +58,6 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
-#include "chrome/browser/instant/instant_controller.h"
-#include "chrome/browser/instant/instant_unload_handler.h"
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -99,6 +97,7 @@
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
@@ -139,7 +138,6 @@
 #include "chrome/browser/ui/unload_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/ui/webui/feedback_ui.h"
-#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
@@ -361,7 +359,6 @@ Browser::Browser(Type type, Profile* profile)
   profile_pref_registrar_.Add(prefs::kDevToolsDisabled, this);
   profile_pref_registrar_.Add(prefs::kShowBookmarkBar, this);
   profile_pref_registrar_.Add(prefs::kHomePage, this);
-  profile_pref_registrar_.Add(prefs::kInstantEnabled, this);
 
   BrowserList::AddBrowser(this);
 
@@ -370,7 +367,7 @@ Browser::Browser(Type type, Profile* profile)
   encoding_auto_detect_.Init(prefs::kWebKitUsesUniversalDetector,
                              profile_->GetPrefs(), NULL);
 
-  CreateInstantIfNecessary();
+  instant_controller_.reset(new chrome::BrowserInstantController(this));
 
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_INIT);
 
@@ -817,48 +814,6 @@ void Browser::UpdateDownloadShelfVisibility(bool visible) {
     GetStatusBubble()->UpdateDownloadShelfVisibility(visible);
 }
 
-bool Browser::OpenInstant(WindowOpenDisposition disposition) {
-  if (!instant() || !instant()->PrepareForCommit() ||
-      disposition == NEW_BACKGROUND_TAB) {
-    // NEW_BACKGROUND_TAB results in leaving the omnibox open, so we don't
-    // attempt to use the instant preview.
-    return false;
-  }
-
-  if (disposition == CURRENT_TAB) {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_INSTANT_COMMITTED,
-        content::Source<TabContents>(instant()->CommitCurrentPreview(
-            INSTANT_COMMIT_PRESSED_ENTER)),
-        content::NotificationService::NoDetails());
-    return true;
-  }
-  if (disposition == NEW_FOREGROUND_TAB) {
-    TabContents* preview_contents = instant()->ReleasePreviewContents(
-        INSTANT_COMMIT_PRESSED_ENTER, NULL);
-    // HideInstant is invoked after release so that InstantController is not
-    // active when HideInstant asks it for its state.
-    HideInstant();
-    preview_contents->web_contents()->GetController().PruneAllButActive();
-    tab_strip_model_->AddTabContents(
-        preview_contents,
-        -1,
-        instant()->last_transition_type(),
-        TabStripModel::ADD_ACTIVE);
-    instant()->CompleteRelease(preview_contents);
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_INSTANT_COMMITTED,
-        content::Source<TabContents>(preview_contents),
-        content::NotificationService::NoDetails());
-    return true;
-  }
-  // The omnibox currently doesn't use other dispositions, so we don't attempt
-  // to handle them. If you hit this NOTREACHED file a bug and I'll (sky) add
-  // support for the new disposition.
-  NOTREACHED();
-  return false;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 // static
@@ -1060,9 +1015,6 @@ void Browser::TabDetachedAt(TabContents* contents, int index) {
 void Browser::TabDeactivated(TabContents* contents) {
   fullscreen_controller_->OnTabDeactivated(contents);
   search_delegate_->OnTabDeactivated(contents);
-
-  if (instant())
-    instant()->Hide();
 
   // Save what the user's currently typing, so it can be restored when we
   // switch back to this tab.
@@ -1878,18 +1830,7 @@ void Browser::Observe(int type,
     case chrome::NOTIFICATION_PREF_CHANGED: {
       const std::string& pref_name =
           *content::Details<std::string>(details).ptr();
-      if (pref_name == prefs::kInstantEnabled) {
-        if (browser_shutdown::ShuttingDownWithoutClosingBrowsers() ||
-            !InstantController::IsEnabled(profile())) {
-          if (instant()) {
-            instant()->DestroyPreviewContents();
-            instant_.reset();
-            instant_unload_handler_.reset();
-          }
-        } else {
-          CreateInstantIfNecessary();
-        }
-      } else if (pref_name == prefs::kDevToolsDisabled) {
+      if (pref_name == prefs::kDevToolsDisabled) {
         if (profile_->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled))
           content::DevToolsManager::GetInstance()->CloseAllClientHosts();
       } else if (pref_name == prefs::kShowBookmarkBar) {
@@ -1924,62 +1865,6 @@ void Browser::Observe(int type,
     default:
       NOTREACHED() << "Got a notification we didn't register for.";
   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Browser, InstantControllerDelegate implementation:
-
-void Browser::ShowInstant(TabContents* preview_contents) {
-  window_->ShowInstant(preview_contents);
-
-  // TODO(beng): investigate if we can avoid this and instead rely on the
-  //             visibility of the WebContentsView
-  chrome::GetActiveWebContents(this)->WasHidden();
-  preview_contents->web_contents()->WasRestored();
-}
-
-void Browser::HideInstant() {
-  window_->HideInstant();
-  if (chrome::GetActiveWebContents(this))
-    chrome::GetActiveWebContents(this)->WasRestored();
-  if (instant_->GetPreviewContents())
-    instant_->GetPreviewContents()->web_contents()->WasHidden();
-}
-
-void Browser::CommitInstant(TabContents* preview_contents) {
-  TabContents* tab_contents = chrome::GetActiveTabContents(this);
-  int index = tab_strip_model_->GetIndexOfTabContents(tab_contents);
-  DCHECK_NE(TabStripModel::kNoTab, index);
-  // TabStripModel takes ownership of preview_contents.
-  tab_strip_model_->ReplaceTabContentsAt(index, preview_contents);
-  // InstantUnloadHandler takes ownership of tab_contents.
-  instant_unload_handler_->RunUnloadListenersOrDestroy(tab_contents, index);
-
-  GURL url = preview_contents->web_contents()->GetURL();
-  DCHECK(profile_->GetExtensionService());
-  if (profile_->GetExtensionService()->IsInstalledApp(url)) {
-    AppLauncherHandler::RecordAppLaunchType(
-        extension_misc::APP_LAUNCH_OMNIBOX_INSTANT);
-  }
-}
-
-void Browser::SetSuggestedText(const string16& text,
-                               InstantCompleteBehavior behavior) {
-  if (window()->GetLocationBar())
-    window()->GetLocationBar()->SetSuggestedText(text, behavior);
-}
-
-gfx::Rect Browser::GetInstantBounds() {
-  return window()->GetInstantBounds();
-}
-
-void Browser::InstantPreviewFocused() {
-  // NOTE: This is only invoked on aura.
-  window_->WebContentsFocused(instant_->GetPreviewContents()->web_contents());
-}
-
-TabContents* Browser::GetInstantHostTabContents() const {
-  return chrome::GetActiveTabContents(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2262,14 +2147,6 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
       features |= FEATURE_LOCATIONBAR;
   }
   return !!(features & feature);
-}
-
-void Browser::CreateInstantIfNecessary() {
-  if (is_type_tabbed() && InstantController::IsEnabled(profile()) &&
-      !profile()->IsOffTheRecord()) {
-    instant_.reset(new InstantController(this, InstantController::INSTANT));
-    instant_unload_handler_.reset(new InstantUnloadHandler(this));
-  }
 }
 
 void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {

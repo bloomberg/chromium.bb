@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -342,7 +343,7 @@ void OpenCurrentURL(Browser* browser) {
 
   WindowOpenDisposition open_disposition =
       location_bar->GetWindowOpenDisposition();
-  if (browser->OpenInstant(open_disposition))
+  if (browser->instant_controller()->OpenInstant(open_disposition))
     return;
 
   GURL url(location_bar->GetInputString());

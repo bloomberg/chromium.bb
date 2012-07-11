@@ -19,7 +19,6 @@
 #include "base/string16.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/event_disposition.h"
-#include "chrome/browser/instant/instant_controller_delegate.h"
 #include "chrome/browser/intents/device_attached_intent_source.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -54,8 +53,6 @@ class BrowserWindow;
 class ExtensionWindowController;
 class FindBarController;
 class FullscreenController;
-class InstantController;
-class InstantUnloadHandler;
 class PrefService;
 class Profile;
 class SkBitmap;
@@ -67,6 +64,7 @@ struct WebApplicationInfo;
 
 namespace chrome {
 class BrowserCommandController;
+class BrowserInstantController;
 class UnloadController;
 namespace search {
 class SearchDelegate;
@@ -105,8 +103,7 @@ class Browser : public TabStripModelObserver,
                 public ZoomObserver,
                 public content::PageNavigator,
                 public content::NotificationObserver,
-                public SelectFileDialog::Listener,
-                public InstantControllerDelegate {
+                public SelectFileDialog::Listener {
  public:
   // SessionService::WindowType mirrors these values.  If you add to this
   // enum, look at SessionService::WindowType to see if it needs to be
@@ -248,10 +245,6 @@ class Browser : public TabStripModelObserver,
   Profile* profile() const { return profile_; }
   gfx::Rect override_bounds() const { return override_bounds_; }
 
-  // Returns the InstantController or NULL if there is no InstantController for
-  // this Browser.
-  InstantController* instant() const { return instant_.get(); }
-
   // |window()| will return NULL if called before |CreateBrowserWindow()|
   // is done.
   BrowserWindow* window() const { return window_; }
@@ -277,6 +270,9 @@ class Browser : public TabStripModelObserver,
   }
   BrowserSyncedWindowDelegate* synced_window_delegate() {
     return synced_window_delegate_.get();
+  }
+  chrome::BrowserInstantController* instant_controller() {
+    return instant_controller_.get();
   }
 
   // Get the FindBarController for this browser, creating it if it does not
@@ -380,10 +376,6 @@ class Browser : public TabStripModelObserver,
   void OpenFile();
 
   void UpdateDownloadShelfVisibility(bool visible);
-
-  // Commits the current instant, returning true on success. This is intended
-  // for use from OpenCurrentURL.
-  bool OpenInstant(WindowOpenDisposition disposition);
 
   /////////////////////////////////////////////////////////////////////////////
 
@@ -701,16 +693,6 @@ class Browser : public TabStripModelObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Overriden from InstantControllerDelegate:
-  virtual void ShowInstant(TabContents* preview_contents) OVERRIDE;
-  virtual void HideInstant() OVERRIDE;
-  virtual void CommitInstant(TabContents* preview_contents) OVERRIDE;
-  virtual void SetSuggestedText(const string16& text,
-                                InstantCompleteBehavior behavior) OVERRIDE;
-  virtual gfx::Rect GetInstantBounds() OVERRIDE;
-  virtual void InstantPreviewFocused() OVERRIDE;
-  virtual TabContents* GetInstantHostTabContents() const OVERRIDE;
-
   // Command and state updating ///////////////////////////////////////////////
 
   // Set the preference that indicates that the home page has been changed.
@@ -802,9 +784,6 @@ class Browser : public TabStripModelObserver,
   // the browser.
   bool SupportsWindowFeatureImpl(WindowFeature feature,
                                  bool check_fullscreen) const;
-
-  // If this browser should have instant one is created, otherwise does nothing.
-  void CreateInstantIfNecessary();
 
   // Resets |bookmark_bar_state_| based on the active tab. Notifies the
   // BrowserWindow if necessary.
@@ -931,8 +910,7 @@ class Browser : public TabStripModelObserver,
   // Helper which implements the SyncedWindowDelegate interface.
   scoped_ptr<BrowserSyncedWindowDelegate> synced_window_delegate_;
 
-  scoped_ptr<InstantController> instant_;
-  scoped_ptr<InstantUnloadHandler> instant_unload_handler_;
+  scoped_ptr<chrome::BrowserInstantController> instant_controller_;
 
   BookmarkBar::State bookmark_bar_state_;
   DeviceAttachedIntentSource device_attached_intent_source_;

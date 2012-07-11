@@ -2411,6 +2411,8 @@
         'browser/ui/browser_dialogs.h',
         'browser/ui/browser_finder.cc',
         'browser/ui/browser_finder.h',
+        'browser/ui/browser_instant_controller.cc',
+        'browser/ui/browser_instant_controller.h',
         'browser/ui/browser_list.cc',
         'browser/ui/browser_list.h',
         'browser/ui/browser_mac.cc',

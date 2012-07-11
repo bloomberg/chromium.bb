@@ -27,6 +27,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
@@ -319,7 +320,7 @@ string16 LocationBarViewMac::GetTitle() const {
 }
 
 InstantController* LocationBarViewMac::GetInstant() {
-  return browser_->instant();
+  return browser_->instant_controller()->instant();
 }
 
 TabContents* LocationBarViewMac::GetTabContents() const {

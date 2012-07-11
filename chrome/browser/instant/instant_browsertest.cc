@@ -17,6 +17,7 @@
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -114,7 +115,7 @@ class InstantTest : public InProcessBrowserTest {
   }
 
   InstantController* instant() const {
-    return browser()->instant();
+    return browser()->instant_controller()->instant();
   }
 
   OmniboxView* omnibox() const {
