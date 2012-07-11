@@ -1610,10 +1610,7 @@ class Dtrace(ApiBase):
       text = text[:-2]
 
       def unescape(x):
-        """Replaces '\\' with '\' and '\?' (where ? is anything) with ?.
-
-        Implemented as an automaton.
-        """
+        """Replaces '\\' with '\' and '\?' (where ? is anything) with ?."""
         out = []
         escaped = False
         for i in x:
