@@ -99,7 +99,7 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
         CookieMonster::CanonicalCookie(GURL(), name, value, domain, path,
                                        std::string(), std::string(),
                                        creation, creation, creation,
-                                       false, false, true, true));
+                                       false, false));
   }
 
   virtual void SetUp() {
@@ -335,8 +335,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadOldSessionCookies) {
   store_->AddCookie(
       CookieMonster::CanonicalCookie(
           GURL(), "C", "D", "sessioncookie.com", "/", std::string(),
-          std::string(), base::Time::Now(), base::Time::Now(),
-          base::Time::Now(), false, false, true, false /*is_persistent*/));
+          std::string(), base::Time::Now(), base::Time(),
+          base::Time::Now(), false, false));
 
   // Force the store to write its data to the disk.
   DestroyStore();
@@ -362,8 +362,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestDontLoadOldSessionCookies) {
   store_->AddCookie(
       CookieMonster::CanonicalCookie(
           GURL(), "C", "D", "sessioncookie.com", "/", std::string(),
-          std::string(), base::Time::Now(), base::Time::Now(),
-          base::Time::Now(), false, false, true, false /*is_persistent*/));
+          std::string(), base::Time::Now(), base::Time(),
+          base::Time::Now(), false, false));
 
   // Force the store to write its data to the disk.
   DestroyStore();
@@ -384,45 +384,31 @@ TEST_F(SQLitePersistentCookieStoreTest, TestDontLoadOldSessionCookies) {
   ASSERT_EQ(0U, cookies.size());
 }
 
-TEST_F(SQLitePersistentCookieStoreTest, PersistHasExpiresAndIsPersistent) {
+TEST_F(SQLitePersistentCookieStoreTest, PersistIsPersistent) {
   InitializeStore(true);
-  static const char kSessionHasExpiresName[] = "session-hasexpires";
-  static const char kSessionNoExpiresName[] = "session-noexpires";
+  static const char kSessionName[] = "session";
   static const char kPersistentName[] = "persistent";
 
-  // Add a session cookie with has_expires = false, and another session cookie
-  // with has_expires = true.
+  // Add a session cookie.
   store_->AddCookie(
       CookieMonster::CanonicalCookie(
-          GURL(), kSessionHasExpiresName, "val", "sessioncookie.com", "/",
+          GURL(), kSessionName, "val", "sessioncookie.com", "/",
           std::string(), std::string(),
-          base::Time::Now() - base::TimeDelta::FromDays(3), base::Time::Now(),
-          base::Time::Now(), false, false, true /* has_expires */,
-          false /* is_persistent */));
-  store_->AddCookie(
-      CookieMonster::CanonicalCookie(
-          GURL(), kSessionNoExpiresName, "val", "sessioncookie.com", "/",
-          std::string(), std::string(),
-          base::Time::Now() - base::TimeDelta::FromDays(2), base::Time::Now(),
-          base::Time::Now(), false, false, false /* has_expires */,
-          false /* is_persistent */));
+          base::Time::Now(), base::Time(), base::Time::Now(),
+          false, false));
   // Add a persistent cookie.
   store_->AddCookie(
       CookieMonster::CanonicalCookie(
           GURL(), kPersistentName, "val", "sessioncookie.com", "/",
           std::string(), std::string(),
           base::Time::Now() - base::TimeDelta::FromDays(1), base::Time::Now(),
-          base::Time::Now(), false, false, true /* has_expires */,
-          true /* is_persistent */));
+          base::Time::Now(), false, false));
 
-  // Force the store to write its data to the disk.
-  DestroyStore();
-
-  // Create a store that loads session cookies and test that the the DoesExpire
-  // and IsPersistent attributes are restored.
+  // Create a store that loads session cookie and test that the the IsPersistent
+  // attribute is restored.
   CanonicalCookieVector cookies;
   CreateAndLoad(true, &cookies);
-  ASSERT_EQ(3U, cookies.size());
+  ASSERT_EQ(2U, cookies.size());
 
   std::map<std::string, CookieMonster::CanonicalCookie*> cookie_map;
   for (CanonicalCookieVector::const_iterator it = cookies.begin();
@@ -432,19 +418,12 @@ TEST_F(SQLitePersistentCookieStoreTest, PersistHasExpiresAndIsPersistent) {
   }
 
   std::map<std::string, CookieMonster::CanonicalCookie*>::const_iterator it =
-      cookie_map.find(kSessionHasExpiresName);
+      cookie_map.find(kSessionName);
   ASSERT_TRUE(it != cookie_map.end());
-  EXPECT_TRUE(cookie_map[kSessionHasExpiresName]->DoesExpire());
-  EXPECT_FALSE(cookie_map[kSessionHasExpiresName]->IsPersistent());
-
-  it = cookie_map.find(kSessionNoExpiresName);
-  ASSERT_TRUE(it != cookie_map.end());
-  EXPECT_FALSE(cookie_map[kSessionNoExpiresName]->DoesExpire());
-  EXPECT_FALSE(cookie_map[kSessionNoExpiresName]->IsPersistent());
+  EXPECT_FALSE(cookie_map[kSessionName]->IsPersistent());
 
   it = cookie_map.find(kPersistentName);
   ASSERT_TRUE(it != cookie_map.end());
-  EXPECT_TRUE(cookie_map[kPersistentName]->DoesExpire());
   EXPECT_TRUE(cookie_map[kPersistentName]->IsPersistent());
 
   STLDeleteElements(&cookies);
@@ -506,7 +485,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestClearOnExitPolicy) {
       CookieMonster::CanonicalCookie(GURL(), "D", "4", session_origin, "/",
                                      std::string(), std::string(),
                                      t, t, t,
-                                     true, false, true, true));
+                                     true, false));
 
   // First, check that we can override the policy.
   store_->SetForceKeepSessionState();

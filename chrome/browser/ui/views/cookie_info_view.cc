@@ -68,13 +68,13 @@ void CookieInfoView::SetCookie(
   created_value_field_->SetText(
       base::TimeFormatFriendlyDateAndTime(cookie.CreationDate()));
 
-  string16 expire_text = cookie.DoesExpire() ?
+  string16 expire_text = cookie.IsPersistent() ?
       base::TimeFormatFriendlyDateAndTime(cookie.ExpiryDate()) :
       l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_EXPIRES_SESSION);
 
   if (editable_expiration_date_) {
     expire_combo_values_.clear();
-    if (cookie.DoesExpire())
+    if (cookie.IsPersistent())
       expire_combo_values_.push_back(expire_text);
     expire_combo_values_.push_back(
         l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_EXPIRES_SESSION));

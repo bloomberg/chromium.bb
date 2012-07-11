@@ -478,7 +478,7 @@ void gtk_chrome_cookie_view_display_cookie(
                      UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
                          cookie.CreationDate())).c_str());
 
-  std::string expire_text = cookie.DoesExpire() ?
+  std::string expire_text = cookie.IsPersistent() ?
       UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(cookie.ExpiryDate())) :
       l10n_util::GetStringUTF8(IDS_COOKIES_COOKIE_EXPIRES_SESSION);
 
@@ -490,7 +490,7 @@ void gtk_chrome_cookie_view_display_cookie(
     GtkTreeIter iter;
     gtk_list_store_clear(store);
 
-    if (cookie.DoesExpire()) {
+    if (cookie.IsPersistent()) {
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(store, &iter, 0, expire_text.c_str(), -1);
     }

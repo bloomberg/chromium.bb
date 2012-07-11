@@ -70,8 +70,8 @@ DictionaryValue* CreateCookieValue(
                     IsStringUTF8(cookie.Path()) ? cookie.Path() : "");
   result->SetBoolean(keys::kSecureKey, cookie.IsSecure());
   result->SetBoolean(keys::kHttpOnlyKey, cookie.IsHttpOnly());
-  result->SetBoolean(keys::kSessionKey, !cookie.DoesExpire());
-  if (cookie.DoesExpire()) {
+  result->SetBoolean(keys::kSessionKey, !cookie.IsPersistent());
+  if (cookie.IsPersistent()) {
     result->SetDouble(keys::kExpirationDateKey,
                       cookie.ExpiryDate().ToDoubleT());
   }
@@ -155,7 +155,7 @@ bool MatchFilter::MatchesCookie(
          MatchesDomain(cookie.Domain()) &&
          MatchesString(keys::kPathKey, cookie.Path()) &&
          MatchesBoolean(keys::kSecureKey, cookie.IsSecure()) &&
-         MatchesBoolean(keys::kSessionKey, !cookie.DoesExpire());
+         MatchesBoolean(keys::kSessionKey, !cookie.IsPersistent());
 }
 
 bool MatchFilter::MatchesString(const char* key, const std::string& value) {

@@ -121,14 +121,14 @@
    canEditExpiration:(BOOL)canEditExpiration {
   if ((self = [super init])) {
     type_ = kCocoaCookieDetailsTypeCookie;
-    hasExpiration_ = cookie->DoesExpire();
+    hasExpiration_ = cookie->IsPersistent();
     canEditExpiration_ = canEditExpiration && hasExpiration_;
     name_.reset([base::SysUTF8ToNSString(cookie->Name()) retain]);
     content_.reset([base::SysUTF8ToNSString(cookie->Value()) retain]);
     path_.reset([base::SysUTF8ToNSString(cookie->Path()) retain]);
     domain_.reset([origin retain]);
 
-    if (cookie->DoesExpire()) {
+    if (cookie->IsPersistent()) {
       expires_.reset([base::SysUTF16ToNSString(
           base::TimeFormatFriendlyDateAndTime(cookie->ExpiryDate())) retain]);
     } else {

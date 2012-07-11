@@ -253,7 +253,7 @@ class SQLitePersistentCookieStore::Backend
 // database can store session cookies as well as persistent cookies. Databases
 // of version 5 are incompatible with older versions of code. If a database of
 // version 5 is read by older code, session cookies will be treated as normal
-// cookies.
+// cookies. Currently, these fields are written, but not read anymore.
 //
 // In version 4, we migrated the time epoch.  If you open the DB with an older
 // version on Mac or Linux, the times will look wonky, but the file will likely
@@ -627,9 +627,7 @@ bool SQLitePersistentCookieStore::Backend::LoadCookiesForDomains(
               Time::FromInternalValue(smt.ColumnInt64(5)),    // expires_utc
               Time::FromInternalValue(smt.ColumnInt64(8)),    // last_access_utc
               smt.ColumnInt(6) != 0,                          // secure
-              smt.ColumnInt(7) != 0,                          // httponly
-              smt.ColumnInt(9) != 0,                          // has_expires
-              smt.ColumnInt(10) != 0));                       // is_persistent
+              smt.ColumnInt(7) != 0));                        // httponly
       DLOG_IF(WARNING,
               cc->CreationDate() > Time::Now()) << L"CreationDate too recent";
       cookies_per_origin_[CookieOrigin(cc->Domain(), cc->IsSecure())]++;
@@ -854,7 +852,7 @@ void SQLitePersistentCookieStore::Backend::Commit() {
         add_smt.BindInt(6, po->cc().IsSecure());
         add_smt.BindInt(7, po->cc().IsHttpOnly());
         add_smt.BindInt64(8, po->cc().LastAccessDate().ToInternalValue());
-        add_smt.BindInt(9, po->cc().DoesExpire());
+        add_smt.BindInt(9, po->cc().IsPersistent());
         add_smt.BindInt(10, po->cc().IsPersistent());
         if (!add_smt.Run())
           NOTREACHED() << "Could not add a cookie to the DB.";

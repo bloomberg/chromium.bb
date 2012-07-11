@@ -263,7 +263,7 @@ void GetCookiesJSON(AutomationProvider* provider,
     cookie_dict->SetString("domain", cookie.Domain());
     cookie_dict->SetBoolean("secure", cookie.IsSecure());
     cookie_dict->SetBoolean("http_only", cookie.IsHttpOnly());
-    if (cookie.DoesExpire())
+    if (cookie.IsPersistent())
       cookie_dict->SetDouble("expiry", cookie.ExpiryDate().ToDoubleT());
     list->Append(cookie_dict);
   }
@@ -368,7 +368,7 @@ void SetCookieJSON(AutomationProvider* provider,
       net::CookieMonster::CanonicalCookie::Create(
           GURL(url), name, value, domain, path,
           mac_key, mac_algorithm, base::Time(),
-          base::Time::FromDoubleT(expiry), secure, http_only, expiry != 0));
+          base::Time::FromDoubleT(expiry), secure, http_only));
   if (!cookie.get()) {
     reply.SendError("given 'cookie' parameters are invalid");
     return;
