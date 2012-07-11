@@ -4,7 +4,6 @@
 
 #ifndef CHROMEOS_DISPLAY_OUTPUT_CONFIGURATOR_H_
 #define CHROMEOS_DISPLAY_OUTPUT_CONFIGURATOR_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/event_types.h"

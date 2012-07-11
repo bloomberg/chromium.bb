@@ -4,7 +4,6 @@
 
 #ifndef CHROMEOS_DBUS_MOCK_CASHEW_CLIENT_H_
 #define CHROMEOS_DBUS_MOCK_CASHEW_CLIENT_H_
-#pragma once
 
 #include "chromeos/dbus/cashew_client.h"
 #include "testing/gmock/include/gmock/gmock.h"

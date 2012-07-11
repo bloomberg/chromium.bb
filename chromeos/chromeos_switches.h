@@ -4,7 +4,6 @@
 
 #ifndef CHROMEOS_CHROMEOS_SWITCHES_H_
 #define CHROMEOS_CHROMEOS_SWITCHES_H_
-#pragma once
 
 #include "chromeos/chromeos_export.h"
 

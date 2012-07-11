@@ -4,7 +4,6 @@
 
 #ifndef CHROMEOS_DBUS_MOCK_IMAGE_BURNER_CLIENT_H_
 #define CHROMEOS_DBUS_MOCK_IMAGE_BURNER_CLIENT_H_
-#pragma once
 
 #include <string>
 

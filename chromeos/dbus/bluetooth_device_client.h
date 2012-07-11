@@ -4,7 +4,6 @@
 
 #ifndef CHROMEOS_DBUS_BLUETOOTH_DEVICE_CLIENT_H_
 #define CHROMEOS_DBUS_BLUETOOTH_DEVICE_CLIENT_H_
-#pragma once
 
 #include <map>
 #include <string>

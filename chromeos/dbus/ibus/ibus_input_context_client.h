@@ -4,7 +4,6 @@
 
 #ifndef CHROMEOS_DBUS_IBUS_IBUS_INPUT_CONTEXT_CLIENT_H_
 #define CHROMEOS_DBUS_IBUS_IBUS_INPUT_CONTEXT_CLIENT_H_
-#pragma once
 
 #include "base/bind.h"
 #include "base/callback.h"

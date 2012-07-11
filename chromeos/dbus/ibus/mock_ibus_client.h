@@ -4,7 +4,6 @@
 
 #ifndef CHROMEOS_DBUS_IBUS_MOCK_IBUS_CLIENT_H_
 #define CHROMEOS_DBUS_IBUS_MOCK_IBUS_CLIENT_H_
-#pragma once
 
 #include <string>
 #include "base/callback.h"

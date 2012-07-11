@@ -4,7 +4,6 @@
 
 #ifndef CHROMEOS_DBUS_DBUS_THREAD_MANAGER_H_
 #define CHROMEOS_DBUS_DBUS_THREAD_MANAGER_H_
-#pragma once
 
 #include <string>
 

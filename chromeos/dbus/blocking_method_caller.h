@@ -4,7 +4,6 @@
 
 #ifndef CHROMEOS_DBUS_BLOCKING_METHOD_CALLER_H_
 #define CHROMEOS_DBUS_BLOCKING_METHOD_CALLER_H_
-#pragma once
 
 #include "base/callback.h"
 #include "base/synchronization/waitable_event.h"
