@@ -45,6 +45,13 @@ class TestResponseGenerator {
   // Generates a regular HTTP 404 response.
   WebKit::WebURLResponse Generate404();
 
+  // Generates a file:// response starting from |first_byte_offset| until the
+  // end of the resource.
+  //
+  // If |first_byte_offset| is negative a response containing no content length
+  // will be returned.
+  WebKit::WebURLResponse GenerateFileResponse(int64 first_byte_offset);
+
   const GURL& gurl() { return gurl_; }
   int64 content_length() { return content_length_; }
 

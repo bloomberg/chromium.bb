@@ -40,7 +40,7 @@ BufferedDataSource::BufferedDataSource(
     const DownloadingCB& downloading_cb)
     : cors_mode_(BufferedResourceLoader::kUnspecified),
       total_bytes_(kPositionNotSpecified),
-      buffered_bytes_(0),
+      assume_fully_buffered_(false),
       streaming_(false),
       frame_(frame),
       read_size_(0),
@@ -288,7 +288,7 @@ void BufferedDataSource::RestartLoadingTask() {
         frame_);
   } else {
     loader_->Start(
-        base::Bind(&BufferedDataSource::NonHttpInitialStartCallback, this),
+        base::Bind(&BufferedDataSource::PartialReadStartCallback, this),
         base::Bind(&NonHttpLoadingStateChangedCallback),
         base::Bind(&NonHttpProgressCallback),
         frame_);
@@ -452,7 +452,7 @@ void BufferedDataSource::NonHttpInitialStartCallback(
 
   if (success) {
     total_bytes_ = instance_size;
-    buffered_bytes_ = total_bytes_;
+    assume_fully_buffered_ = true;
   } else {
     loader_->Stop();
   }
@@ -607,11 +607,13 @@ void BufferedDataSource::UpdateHostState_Locked() {
   if (!host())
     return;
 
-  if (total_bytes_ != kPositionNotSpecified)
-    host()->SetTotalBytes(total_bytes_);
-  int64 start = loader_->first_byte_position();
-  if (buffered_bytes_ > start)
-    host()->AddBufferedByteRange(start, buffered_bytes_);
+  if (total_bytes_ == kPositionNotSpecified)
+    return;
+
+  host()->SetTotalBytes(total_bytes_);
+
+  if (assume_fully_buffered_)
+    host()->AddBufferedByteRange(0, total_bytes_);
 }
 
 }  // namespace webkit_media

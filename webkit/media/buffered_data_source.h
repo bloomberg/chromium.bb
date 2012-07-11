@@ -154,12 +154,14 @@ class BufferedDataSource : public media::DataSource {
   // crossorigin attribute on the corresponding HTML media element, if any.
   BufferedResourceLoader::CORSMode cors_mode_;
 
-  // Members for total bytes of the requested object. It is written once on
-  // render thread but may be read from any thread. However reading of this
-  // member is guaranteed to happen after it is first written, so we don't
-  // need to protect it.
+  // The total size of the resource. Set during StartCallback() if the size is
+  // known, otherwise it will remain kPositionNotSpecified until the size is
+  // determined by reaching EOF.
   int64 total_bytes_;
-  int64 buffered_bytes_;
+
+  // Some resources are assumed to be fully buffered (i.e., file://) so we don't
+  // need to report what |loader_| has buffered.
+  bool assume_fully_buffered_;
 
   // This value will be true if this data source can only support streaming.
   // i.e. range request is not supported.

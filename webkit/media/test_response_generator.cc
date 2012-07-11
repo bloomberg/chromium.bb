@@ -85,4 +85,17 @@ WebURLResponse TestResponseGenerator::Generate404() {
   return response;
 }
 
+WebURLResponse TestResponseGenerator::GenerateFileResponse(
+    int64 first_byte_offset) {
+  WebURLResponse response(gurl_);
+  response.setHTTPStatusCode(0);
+
+  if (first_byte_offset >= 0) {
+    response.setExpectedContentLength(content_length_ - first_byte_offset);
+  } else {
+    response.setExpectedContentLength(-1);
+  }
+  return response;
+}
+
 }  // namespace webkit_media
