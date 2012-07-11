@@ -1220,13 +1220,13 @@ void TestingAutomationProvider::OpenProfileWindow(
         "Invalid or missing arg: 'num_loads'");
     return;
   }
-    new BrowserOpenedWithExistingProfileNotificationObserver(
-        this, reply_message, num_loads);
-    ProfileManager::FindOrCreateNewWindowForProfile(
-        profile,
-        chrome::startup::IS_NOT_PROCESS_STARTUP,
-        chrome::startup::IS_NOT_FIRST_RUN,
-        0);
+  new BrowserOpenedWithExistingProfileNotificationObserver(
+      this, reply_message, num_loads);
+  ProfileManager::FindOrCreateNewWindowForProfile(
+      profile,
+      chrome::startup::IS_NOT_PROCESS_STARTUP,
+      chrome::startup::IS_NOT_FIRST_RUN,
+      0);
   }
 
 void TestingAutomationProvider::GetWindowForBrowser(int browser_handle,

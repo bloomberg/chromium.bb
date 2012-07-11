@@ -664,8 +664,7 @@ class BookmarksTest(pyauto.PyUITest):
     # Launch profile1, verify bookmark is same as before.
     self.OpenProfileWindow(path=profile1_path)
     self._AssertBookmark('GoogleNews', 'http://news.google.com/', windex=1)
-    # Launch default, verify bookmark is changed to 'YouTube'.
-    self.OpenProfileWindow(path=default_path)
+    self.CloseBrowserWindow(1)
     self._AssertBookmark('YouTube', 'http://www.youtube.com/')
 
   def testSearchBookmarksInMultiProfile(self):
