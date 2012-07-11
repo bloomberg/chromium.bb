@@ -187,10 +187,10 @@ class CONTENT_EXPORT DownloadManagerImpl
       int32 download_id, content::DownloadInterruptReason reason);
 
   // Called when a download entry is committed to the persistent store.
-  void OnDownloadItemAddedToPersistentStore(int32 download_id, int64 db_handle);
+  void OnDownloadItemAddedToPersistentStore(content::DownloadItem* item);
 
   // Called when Save Page As entry is committed to the persistent store.
-  void OnSavePageItemAddedToPersistentStore(int32 download_id, int64 db_handle);
+  void OnSavePageItemAddedToPersistentStore(content::DownloadItem* item);
 
   // Factory for creation of downloads items.
   scoped_ptr<content::DownloadItemFactory> factory_;
@@ -209,11 +209,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   // processed. The key is the ID assigned by the DownloadFileManager,
   // which is unique for the current session.
   //
-  // |save_page_downloads_| (if defined) is a collection of all the
-  // downloads the "save page as" system has given to us to hold onto
-  // until we are destroyed. They key is DownloadFileManager, so it is unique
-  // compared to download item. It is only used for debugging.
-  //
   // When a download is created through a user action, the corresponding
   // DownloadItem* is placed in |active_downloads_| and remains there until the
   // download is in a terminal state (COMPLETE or CANCELLED).  Once it has a
@@ -224,7 +219,6 @@ class CONTENT_EXPORT DownloadManagerImpl
 
   DownloadMap downloads_;
   DownloadMap active_downloads_;
-  DownloadMap save_page_downloads_;
 
   int history_size_;
 

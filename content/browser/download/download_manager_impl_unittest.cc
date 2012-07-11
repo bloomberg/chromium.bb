@@ -553,6 +553,8 @@ TEST_F(DownloadManagerTest, OnDownloadStopped_Persisted) {
   content::MockDownloadItem& item(AddItemToManager());
   int download_id = item.GetId();
   int64 db_handle = 0x7;
+  EXPECT_CALL(item, GetExternalData(_))
+      .WillOnce(Return(static_cast<DownloadItem::ExternalData*>(NULL)));
   AddItemToHistory(item, db_handle);
 
   EXPECT_CALL(item, IsPersisted())

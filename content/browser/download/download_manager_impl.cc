@@ -51,6 +51,28 @@ using content::WebContents;
 
 namespace {
 
+// This is just used to remember which DownloadItems come from SavePage.
+class SavePageExternalData : public DownloadItem::ExternalData {
+ public:
+  // A spoonful of syntactic sugar.
+  static bool Get(DownloadItem* item) {
+    return item->GetExternalData(kKey) != NULL;
+  }
+
+  explicit SavePageExternalData(DownloadItem* item) {
+    item->SetExternalData(kKey, this);
+  }
+
+  virtual ~SavePageExternalData() {}
+
+ private:
+  static const char kKey[];
+
+  DISALLOW_COPY_AND_ASSIGN(SavePageExternalData);
+};
+
+const char SavePageExternalData::kKey[] = "DownloadItem SavePageExternalData";
+
 void BeginDownload(content::DownloadUrlParameters* params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // ResourceDispatcherHost{Base} is-not-a URLRequest::Delegate, and
@@ -306,8 +328,6 @@ void DownloadManagerImpl::Shutdown() {
   // We'll have nothing more to report to the observers after this point.
   observers_.Clear();
 
-  DCHECK(save_page_downloads_.empty());
-
   file_manager_ = NULL;
   if (delegate_)
     delegate_->Shutdown();
@@ -540,8 +560,9 @@ DownloadItem* DownloadManagerImpl::CreateSavePackageDownloadItem(
 
   DCHECK(!ContainsKey(downloads_, download->GetId()));
   downloads_[download->GetId()] = download;
-  DCHECK(!ContainsKey(save_page_downloads_, download->GetId()));
-  save_page_downloads_[download->GetId()] = download;
+  DCHECK(!SavePageExternalData::Get(download));
+  new SavePageExternalData(download);
+  DCHECK(SavePageExternalData::Get(download));
 
   // Will notify the observer in the callback.
   if (delegate_)
@@ -804,7 +825,6 @@ int DownloadManagerImpl::RemoveDownloadItems(
       ++it) {
     DownloadItem* download = *it;
     DCHECK(download);
-    save_page_downloads_.erase(download->GetId());
     downloads_.erase(download->GetId());
   }
 
@@ -975,12 +995,16 @@ void DownloadManagerImpl::AddDownloadItemToHistory(DownloadItem* download,
 
 void DownloadManagerImpl::OnItemAddedToPersistentStore(int32 download_id,
                                                        int64 db_handle) {
-  if (save_page_downloads_.count(download_id)) {
-    OnSavePageItemAddedToPersistentStore(download_id, db_handle);
-  } else if (active_downloads_.count(download_id)) {
-    OnDownloadItemAddedToPersistentStore(download_id, db_handle);
-  }
+  DownloadItem* item = GetDownload(download_id);
   // It's valid that we don't find a matching item, i.e. on shutdown.
+  if (!item)
+    return;
+  AddDownloadItemToHistory(item, db_handle);
+  if (SavePageExternalData::Get(item)) {
+    OnSavePageItemAddedToPersistentStore(item);
+  } else {
+    OnDownloadItemAddedToPersistentStore(item);
+  }
 }
 
 // Once the new DownloadItem has been committed to the persistent store,
@@ -990,17 +1014,12 @@ void DownloadManagerImpl::OnItemAddedToPersistentStore(int32 download_id,
 // item when it's created so they can observe it directly. Are there any
 // clients that actually need to know when the item is added to the history?).
 void DownloadManagerImpl::OnDownloadItemAddedToPersistentStore(
-    int32 download_id, int64 db_handle) {
+    DownloadItem* item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DownloadItem* download = GetActiveDownloadItem(download_id);
-  if (!download)
-    return;
 
-  VLOG(20) << __FUNCTION__ << "()" << " db_handle = " << db_handle
-           << " download_id = " << download_id
-           << " download = " << download->DebugString(true);
-
-  AddDownloadItemToHistory(download, db_handle);
+  VLOG(20) << __FUNCTION__ << "()" << " db_handle = " << item->GetDbHandle()
+           << " download_id = " << item->GetId()
+           << " download = " << item->DebugString(true);
 
   // If the download is still in progress, try to complete it.
   //
@@ -1009,14 +1028,14 @@ void DownloadManagerImpl::OnDownloadItemAddedToPersistentStore(
   // service so that it can be properly in sync with the DownloadItem's
   // completion status, and also inform any observers so that they get
   // more than just the start notification.
-  if (download->IsInProgress()) {
-    MaybeCompleteDownload(download);
+  if (item->IsInProgress()) {
+    MaybeCompleteDownload(item);
   } else {
-    DCHECK(download->IsCancelled());
-    active_downloads_.erase(download_id);
+    DCHECK(item->IsCancelled());
+    active_downloads_.erase(item->GetId());
     if (delegate_)
-      delegate_->UpdateItemInPersistentStore(download);
-    download->UpdateObservers();
+      delegate_->UpdateItemInPersistentStore(item);
+    item->UpdateObservers();
   }
 }
 
@@ -1077,10 +1096,9 @@ DownloadItem* DownloadManagerImpl::GetActiveDownloadItem(int download_id) {
 void DownloadManagerImpl::AssertContainersConsistent() const {
 #if !defined(NDEBUG)
   // Turn everything into sets.
-  const DownloadMap* input_maps[] = {&active_downloads_,
-                                     &save_page_downloads_};
-  DownloadSet active_set, save_page_set;
-  DownloadSet* all_sets[] = {&active_set, &save_page_set};
+  const DownloadMap* input_maps[] = {&active_downloads_};
+  DownloadSet active_set;
+  DownloadSet* all_sets[] = {&active_set};
   DCHECK_EQ(ARRAYSIZE_UNSAFE(input_maps), ARRAYSIZE_UNSAFE(all_sets));
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_maps); i++) {
     for (DownloadMap::const_iterator it = input_maps[i]->begin();
@@ -1122,35 +1140,18 @@ void DownloadManagerImpl::AssertContainersConsistent() const {
 // to solve that without canceling on Remove (which would then update the DB).
 
 void DownloadManagerImpl::OnSavePageItemAddedToPersistentStore(
-    int32 download_id, int64 db_handle) {
+    DownloadItem* item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DownloadMap::const_iterator it = save_page_downloads_.find(download_id);
-  // This can happen if the download manager is shutting down and all maps
-  // have been cleared.
-  if (it == save_page_downloads_.end())
-    return;
-
-  DownloadItem* download = it->second;
-  if (!download) {
-    NOTREACHED();
-    return;
-  }
-
-  AddDownloadItemToHistory(download, db_handle);
-
   // Finalize this download if it finished before the history callback.
-  if (!download->IsInProgress())
-    SavePageDownloadFinished(download);
+  if (!item->IsInProgress())
+    SavePageDownloadFinished(item);
 }
 
 void DownloadManagerImpl::SavePageDownloadFinished(DownloadItem* download) {
   if (download->IsPersisted()) {
     if (delegate_)
       delegate_->UpdateItemInPersistentStore(download);
-    DCHECK(ContainsKey(save_page_downloads_, download->GetId()));
-    save_page_downloads_.erase(download->GetId());
-
     if (download->IsComplete())
       content::NotificationService::current()->Notify(
           content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
