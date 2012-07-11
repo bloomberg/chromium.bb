@@ -51,7 +51,10 @@ class RequestLocalFileSystemFunction : public AsyncExtensionFunction {
   void RespondSuccessOnUIThread(const std::string& name,
                                 const GURL& root_path);
   void RespondFailedOnUIThread(base::PlatformFileError error_code);
-  void RequestOnFileThread(const GURL& source_url, int child_id);
+  void RequestOnFileThread(
+      scoped_refptr<fileapi::FileSystemContext> file_system_context,
+      const GURL& source_url,
+      int child_id);
 };
 
 // Implements the chrome.fileBrowserPrivate.addFileWatch method.
@@ -68,10 +71,12 @@ class FileWatchBrowserFunctionBase : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  bool GetLocalFilePath(const GURL& file_url, FilePath* local_path,
-                        FilePath* virtual_path);
+  bool GetLocalFilePath(
+      scoped_refptr<fileapi::FileSystemContext> file_system_context,
+      const GURL& file_url, FilePath* local_path, FilePath* virtual_path);
   void RespondOnUIThread(bool success);
   void RunFileWatchOperationOnFileThread(
+      scoped_refptr<fileapi::FileSystemContext> file_system_context,
       scoped_refptr<FileBrowserEventRouter> event_router,
       const GURL& file_url,
       const std::string& extension_id);

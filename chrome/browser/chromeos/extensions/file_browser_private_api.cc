@@ -354,13 +354,13 @@ class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
  public:
   static fileapi::FileSystemContext::OpenFileSystemCallback CreateCallback(
       RequestLocalFileSystemFunction* function,
-      Profile* profile,
+      scoped_refptr<fileapi::FileSystemContext> file_system_context,
       int child_id,
       scoped_refptr<const Extension> extension) {
     return base::Bind(
         &LocalFileSystemCallbackDispatcher::DidOpenFileSystem,
         base::Owned(new LocalFileSystemCallbackDispatcher(
-            function, profile, child_id, extension)));
+            function, file_system_context, child_id, extension)));
   }
 
   void DidOpenFileSystem(base::PlatformFileError result,
@@ -398,11 +398,11 @@ class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
  private:
   LocalFileSystemCallbackDispatcher(
       RequestLocalFileSystemFunction* function,
-      Profile* profile,
+      scoped_refptr<fileapi::FileSystemContext> file_system_context,
       int child_id,
       scoped_refptr<const Extension> extension)
       : function_(function),
-        profile_(profile),
+        file_system_context_(file_system_context),
         child_id_(child_id),
         extension_(extension)  {
     DCHECK(function_);
@@ -422,7 +422,7 @@ class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
     }
 
     fileapi::ExternalFileSystemMountPointProvider* provider =
-        BrowserContext::GetFileSystemContext(profile_)->external_provider();
+        file_system_context_->external_provider();
     if (!provider)
       return false;
 
@@ -442,7 +442,7 @@ class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
   }
 
   RequestLocalFileSystemFunction* function_;
-  Profile* profile_;
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   // Renderer process id.
   int child_id_;
   // Extension source URL.
@@ -451,13 +451,15 @@ class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
 };
 
 void RequestLocalFileSystemFunction::RequestOnFileThread(
-    const GURL& source_url, int child_id) {
+    scoped_refptr<fileapi::FileSystemContext> file_system_context,
+    const GURL& source_url,
+    int child_id) {
   GURL origin_url = source_url.GetOrigin();
-  BrowserContext::GetFileSystemContext(profile())->OpenFileSystem(
+  file_system_context->OpenFileSystem(
       origin_url, fileapi::kFileSystemTypeExternal, false,  // create
       LocalFileSystemCallbackDispatcher::CreateCallback(
           this,
-          profile(),
+          file_system_context,
           child_id,
           GetExtension()));
 }
@@ -466,11 +468,14 @@ bool RequestLocalFileSystemFunction::RunImpl() {
   if (!dispatcher() || !render_view_host() || !render_view_host()->GetProcess())
     return false;
 
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetFileSystemContext(profile_);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(
           &RequestLocalFileSystemFunction::RequestOnFileThread,
           this,
+          file_system_context,
           source_url_,
           render_view_host()->GetProcess()->GetID()));
   // Will finish asynchronously.
@@ -501,6 +506,7 @@ void RequestLocalFileSystemFunction::RespondFailedOnUIThread(
 }
 
 bool FileWatchBrowserFunctionBase::GetLocalFilePath(
+    scoped_refptr<fileapi::FileSystemContext> file_system_context,
     const GURL& file_url, FilePath* local_path, FilePath* virtual_path) {
   GURL file_origin_url;
   fileapi::FileSystemType type;
@@ -511,7 +517,7 @@ bool FileWatchBrowserFunctionBase::GetLocalFilePath(
   if (type != fileapi::kFileSystemTypeExternal)
     return false;
 
-  FilePath root_path = BrowserContext::GetFileSystemContext(profile_)->
+  FilePath root_path = file_system_context->
       external_provider()->GetFileSystemRootPathOnFileThread(
           file_origin_url,
           fileapi::kFileSystemTypeExternal,
@@ -539,11 +545,14 @@ bool FileWatchBrowserFunctionBase::RunImpl() {
     return false;
 
   GURL file_watch_url(url);
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetFileSystemContext(profile_);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(
           &FileWatchBrowserFunctionBase::RunFileWatchOperationOnFileThread,
           this,
+          file_system_context,
           FileBrowserEventRouterFactory::GetForProfile(profile_),
           file_watch_url,
           extension_id()));
@@ -552,11 +561,13 @@ bool FileWatchBrowserFunctionBase::RunImpl() {
 }
 
 void FileWatchBrowserFunctionBase::RunFileWatchOperationOnFileThread(
+    scoped_refptr<fileapi::FileSystemContext> file_system_context,
     scoped_refptr<FileBrowserEventRouter> event_router,
     const GURL& file_url, const std::string& extension_id) {
   FilePath local_path;
   FilePath virtual_path;
-  if (!GetLocalFilePath(file_url, &local_path, &virtual_path) ||
+  if (!GetLocalFilePath(
+          file_system_context, file_url, &local_path, &virtual_path) ||
       local_path == FilePath()) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

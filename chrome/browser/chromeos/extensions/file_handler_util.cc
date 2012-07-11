@@ -380,6 +380,7 @@ class ExtensionTaskExecutor : public FileTaskExecutor {
   typedef std::vector<FileDefinition> FileDefinitionList;
   class ExecuteTasksFileSystemCallbackDispatcher;
   void RequestFileEntryOnFileThread(
+      scoped_refptr<fileapi::FileSystemContext> file_system_context,
       const GURL& handler_base_url,
       const scoped_refptr<const extensions::Extension>& handler,
       int handler_pid,
@@ -474,7 +475,7 @@ class ExtensionTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
  public:
   static fileapi::FileSystemContext::OpenFileSystemCallback CreateCallback(
       ExtensionTaskExecutor* executor,
-      Profile* profile,
+      scoped_refptr<fileapi::FileSystemContext> file_system_context,
       const GURL& source_url,
       scoped_refptr<const Extension> handler_extension,
       int handler_pid,
@@ -483,7 +484,7 @@ class ExtensionTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
     return base::Bind(
         &ExecuteTasksFileSystemCallbackDispatcher::DidOpenFileSystem,
         base::Owned(new ExecuteTasksFileSystemCallbackDispatcher(
-            executor, profile, source_url, handler_extension,
+            executor, file_system_context, source_url, handler_extension,
             handler_pid, action_id, file_urls)));
   }
 
@@ -539,14 +540,14 @@ class ExtensionTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
  private:
   ExecuteTasksFileSystemCallbackDispatcher(
       ExtensionTaskExecutor* executor,
-      Profile* profile,
+      scoped_refptr<fileapi::FileSystemContext> file_system_context,
       const GURL& source_url,
       const scoped_refptr<const Extension>& handler_extension,
       int handler_pid,
       const std::string& action_id,
       const std::vector<GURL>& file_urls)
       : executor_(executor),
-        profile_(profile),
+        file_system_context_(file_system_context),
         source_url_(source_url),
         handler_extension_(handler_extension),
         handler_pid_(handler_pid),
@@ -577,7 +578,7 @@ class ExtensionTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
       return false;
 
     fileapi::ExternalFileSystemMountPointProvider* external_provider =
-        BrowserContext::GetFileSystemContext(profile_)->external_provider();
+        file_system_context_->external_provider();
     if (!external_provider)
       return false;
 
@@ -635,7 +636,7 @@ class ExtensionTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
   }
 
   ExtensionTaskExecutor* executor_;
-  Profile* profile_;
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   // Extension source URL.
   GURL source_url_;
   scoped_refptr<const Extension> handler_extension_;
@@ -680,11 +681,14 @@ bool ExtensionTaskExecutor::ExecuteAndNotify(
   done_ = done;
 
   // Get local file system instance on file thread.
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetFileSystemContext(profile());
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(
           &ExtensionTaskExecutor::RequestFileEntryOnFileThread,
           this,
+          file_system_context,
           Extension::GetBaseURLFromExtensionId(handler->id()),
           handler,
           handler_pid,
@@ -693,17 +697,18 @@ bool ExtensionTaskExecutor::ExecuteAndNotify(
 }
 
 void ExtensionTaskExecutor::RequestFileEntryOnFileThread(
+    scoped_refptr<fileapi::FileSystemContext> file_system_context,
     const GURL& handler_base_url,
     const scoped_refptr<const Extension>& handler,
     int handler_pid,
     const std::vector<GURL>& file_urls) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   GURL origin_url = handler_base_url.GetOrigin();
-  BrowserContext::GetFileSystemContext(profile())->OpenFileSystem(
+  file_system_context->OpenFileSystem(
       origin_url, fileapi::kFileSystemTypeExternal, false, // create
       ExecuteTasksFileSystemCallbackDispatcher::CreateCallback(
           this,
-          profile(),
+          file_system_context,
           source_url_,
           handler,
           handler_pid,
