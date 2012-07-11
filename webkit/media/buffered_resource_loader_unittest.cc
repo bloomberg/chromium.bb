@@ -87,7 +87,7 @@ class BufferedResourceLoaderTest : public testing::Test {
     loader_.reset(new BufferedResourceLoader(
         gurl_, BufferedResourceLoader::kUnspecified,
         first_position_, last_position_,
-        BufferedResourceLoader::kThresholdDefer, 0, 0,
+        BufferedResourceLoader::kCapacityDefer, 0, 0,
         new media::MediaLog()));
 
     // |test_loader_| will be used when Start() is called.
@@ -397,7 +397,7 @@ TEST_F(BufferedResourceLoaderTest, InvalidPartialResponse) {
 // Tests the logic of sliding window for data buffering and reading.
 TEST_F(BufferedResourceLoaderTest, BufferAndRead) {
   Initialize(kHttpUrl, 10, 29);
-  loader_->UpdateDeferStrategy(BufferedResourceLoader::kThresholdDefer);
+  loader_->UpdateDeferStrategy(BufferedResourceLoader::kCapacityDefer);
   Start();
   PartialResponse(10, 29, 30);
 
@@ -657,7 +657,7 @@ TEST_F(BufferedResourceLoaderTest, ReadThenDeferStrategy) {
   StopWhenLoad();
 }
 
-// Tests the data buffering logic of ThresholdDefer strategy.
+// Tests the data buffering logic of kCapacityDefer strategy.
 TEST_F(BufferedResourceLoaderTest, ThresholdDeferStrategy) {
   Initialize(kHttpUrl, 10, 99);
   SetLoaderBuffer(10, 20);
@@ -667,29 +667,21 @@ TEST_F(BufferedResourceLoaderTest, ThresholdDeferStrategy) {
   uint8 buffer[10];
   InSequence s;
 
-  // Write half of threshold: keep not deferring.
+  // Write half of capacity: keep not deferring.
   WriteData(5);
 
-  // Write rest of space until threshold: start deferring.
+  // Write rest of space until capacity: start deferring.
   EXPECT_CALL(*this, LoadingCallback(BufferedResourceLoader::kLoadingDeferred));
   WriteData(5);
 
-  // Read a little from the buffer: keep deferring.
+  // Read a byte from the buffer: stop deferring.
   EXPECT_CALL(*this, ReadCallback(BufferedResourceLoader::kOk, 1));
+  EXPECT_CALL(*this, LoadingCallback(BufferedResourceLoader::kLoading));
   ReadLoader(10, 1, buffer);
 
-  // Read a little more and go under threshold: stop deferring.
-  EXPECT_CALL(*this, ReadCallback(BufferedResourceLoader::kOk, 4));
-  EXPECT_CALL(*this, LoadingCallback(BufferedResourceLoader::kLoading));
-  ReadLoader(12, 4, buffer);
-
-  // Write rest of space until threshold: start deferring.
+  // Write a byte to hit capacity: start deferring.
   EXPECT_CALL(*this, LoadingCallback(BufferedResourceLoader::kLoadingDeferred));
   WriteData(6);
-
-  // Read a little from the buffer: keep deferring.
-  EXPECT_CALL(*this, ReadCallback(BufferedResourceLoader::kOk, 1));
-  ReadLoader(16, 1, buffer);
 
   StopWhenLoad();
 }
@@ -706,6 +698,7 @@ TEST_F(BufferedResourceLoaderTest, Tricky_ReadForwardsPastBuffered) {
   // PRECONDITION
   WriteUntilThreshold();
   EXPECT_CALL(*this, ReadCallback(BufferedResourceLoader::kOk, 1));
+  EXPECT_CALL(*this, LoadingCallback(BufferedResourceLoader::kLoading));
   ReadLoader(10, 1, buffer);
   ConfirmBufferState(1, 10, 9, 10);
   ConfirmLoaderOffsets(11, 0, 0);
@@ -722,7 +715,6 @@ TEST_F(BufferedResourceLoaderTest, Tricky_ReadForwardsPastBuffered) {
   // AFTER
   //   offset=24 [__________]
   //
-  EXPECT_CALL(*this, LoadingCallback(BufferedResourceLoader::kLoading));
   ReadLoader(20, 4, buffer);
 
   // Write a little, make sure we didn't start deferring.
@@ -787,7 +779,7 @@ TEST_F(BufferedResourceLoaderTest, Tricky_SmallReadWithinThreshold) {
   ConfirmLoaderOffsets(10, 0, 0);
 
   // *** TRICKY BUSINESS, PT. III ***
-  // Read past forward capacity but within threshold: stop deferring.
+  // Read past forward capacity but within capacity: stop deferring.
   //
   // In order for the read to complete we must:
   //   1) Adjust offset forward to create capacity.
@@ -836,7 +828,7 @@ TEST_F(BufferedResourceLoaderTest, Tricky_LargeReadWithinThreshold) {
 
   // *** TRICKY BUSINESS, PT. IV ***
   // Read a large amount past forward capacity but within
-  // threshold: stop deferring.
+  // capacity: stop deferring.
   //
   // In order for the read to complete we must:
   //   1) Adjust offset forward to create capacity.

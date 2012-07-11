@@ -31,19 +31,17 @@ const char kHttpScheme[] = "http";
 const char kHttpsScheme[] = "https";
 const char kDataScheme[] = "data";
 
-// This class works inside demuxer thread and render thread. It contains a
-// WebURLLoader and does the actual resource loading. This object does
-// buffering internally, it defers the resource loading if buffer is full
-// and un-defers the resource loading if it is under buffered.
+// Wraps a WebURLLoader to maintain an in-memory buffer of downloaded
+// data according to the current defer strategy.
 class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
  public:
   // kNeverDefer - Aggresively buffer; never defer loading while paused.
   // kReadThenDefer - Request only enough data to fulfill read requests.
-  // kThresholdDefer - Try to keep amount of buffered data at a threshold.
+  // kCapacityDefer - Try to keep amount of buffered data at capacity.
   enum DeferStrategy {
     kNeverDefer,
     kReadThenDefer,
-    kThresholdDefer,
+    kCapacityDefer,
   };
 
   // Status codes for start/read operations on BufferedResourceLoader.
@@ -179,7 +177,7 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   bool DidPassCORSAccessCheck() const;
 
   // Sets the defer strategy to the given value unless it seems unwise.
-  // Specifically downgrade kNeverDefer to kThresholdDefer if we know the
+  // Specifically downgrade kNeverDefer to kCapacityDefer if we know the
   // current response will not be used to satisfy future requests (the cache
   // won't help us).
   void UpdateDeferStrategy(DeferStrategy strategy);

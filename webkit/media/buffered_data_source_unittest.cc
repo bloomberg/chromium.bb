@@ -498,7 +498,7 @@ TEST_F(BufferedDataSourceTest, DefaultValues) {
 
   // Ensure we have sane values for default loading scenario.
   EXPECT_EQ(AUTO, preload());
-  EXPECT_EQ(BufferedResourceLoader::kThresholdDefer, defer_strategy());
+  EXPECT_EQ(BufferedResourceLoader::kCapacityDefer, defer_strategy());
 
   EXPECT_EQ(0, data_source_bitrate());
   EXPECT_EQ(0.0f, data_source_playback_rate());

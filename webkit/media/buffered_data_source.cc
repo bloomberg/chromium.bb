@@ -72,7 +72,7 @@ BufferedResourceLoader* BufferedDataSource::CreateResourceLoader(
 
   BufferedResourceLoader::DeferStrategy strategy = preload_ == METADATA ?
       BufferedResourceLoader::kReadThenDefer :
-      BufferedResourceLoader::kThresholdDefer;
+      BufferedResourceLoader::kCapacityDefer;
 
   return new BufferedResourceLoader(url_,
                                     cors_mode_,
@@ -309,18 +309,18 @@ void BufferedDataSource::SetPlaybackRateTask(float playback_rate) {
     // 200 responses end up not being reused to satisfy future range requests,
     // and we don't want to get too far ahead of the read-head (and thus require
     // a restart), so keep to the thresholds.
-    loader_->UpdateDeferStrategy(BufferedResourceLoader::kThresholdDefer);
+    loader_->UpdateDeferStrategy(BufferedResourceLoader::kCapacityDefer);
   } else if (media_has_played_ && playback_rate == 0) {
     // If the playback has started (at which point the preload value is ignored)
     // and we're paused, then try to load as much as possible (the loader will
-    // fall back to kThresholdDefer if it knows the current response won't be
+    // fall back to kCapacityDefer if it knows the current response won't be
     // useful from the cache in the future).
     loader_->UpdateDeferStrategy(BufferedResourceLoader::kNeverDefer);
   } else {
     // If media is currently playing or the page indicated preload=auto,
     // use threshold strategy to enable/disable deferring when the buffer
     // is full/depleted.
-    loader_->UpdateDeferStrategy(BufferedResourceLoader::kThresholdDefer);
+    loader_->UpdateDeferStrategy(BufferedResourceLoader::kCapacityDefer);
   }
 }
 

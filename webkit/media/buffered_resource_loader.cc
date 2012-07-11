@@ -53,13 +53,6 @@ static const int kMaxBufferCapacity = 20 * kMegabyte;
 // location and will instead reset the request.
 static const int kForwardWaitThreshold = 2 * kMegabyte;
 
-// The lower bound on our buffer (expressed as a fraction of the buffer size)
-// where we'll disable deferring and continue downloading data.
-//
-// TODO(scherkus): refer to http://crbug.com/124719 for more discussion on
-// how we could improve our buffering logic.
-static const double kDisableDeferThreshold = 0.9;
-
 // Computes the suggested backward and forward capacity for the buffer
 // if one wants to play at |playback_rate| * the natural playback speed.
 // Use a value of 0 for |bitrate| if it is unknown.
@@ -575,7 +568,7 @@ bool BufferedResourceLoader::DidPassCORSAccessCheck() const {
 
 void BufferedResourceLoader::UpdateDeferStrategy(DeferStrategy strategy) {
   if (!might_be_reused_from_cache_in_future_ && strategy == kNeverDefer)
-    strategy = kThresholdDefer;
+    strategy = kCapacityDefer;
   defer_strategy_ = strategy;
   UpdateDeferBehavior();
 }
@@ -642,8 +635,8 @@ bool BufferedResourceLoader::ShouldEnableDefer() const {
     case kReadThenDefer:
       return read_cb_.is_null();
 
-    // Defer if we've reached the max capacity of the threshold.
-    case kThresholdDefer:
+    // Defer if we've reached max capacity.
+    case kCapacityDefer:
       return buffer_.forward_bytes() >= buffer_.forward_capacity();
   }
   // Otherwise don't enable defer.
@@ -666,15 +659,9 @@ bool BufferedResourceLoader::ShouldDisableDefer() const {
       return !read_cb_.is_null() && last_offset_ > buffer_.forward_bytes();
 
     // Disable deferring whenever our forward-buffered amount falls beneath our
-    // threshold.
-    //
-    // TODO(scherkus): refer to http://crbug.com/124719 for more discussion on
-    // how we could improve our buffering logic.
-    case kThresholdDefer: {
-      int buffered = buffer_.forward_bytes();
-      int threshold = buffer_.forward_capacity() * kDisableDeferThreshold;
-      return buffered < threshold;
-    }
+    // capacity.
+    case kCapacityDefer:
+      return buffer_.forward_bytes() < buffer_.forward_capacity();
   }
 
   // Otherwise keep deferring.
