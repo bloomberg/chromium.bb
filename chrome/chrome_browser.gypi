@@ -1354,6 +1354,8 @@
         'browser/lifetime/application_lifetime_mac.mm',
         'browser/lifetime/application_lifetime_stub.cc',
         'browser/lifetime/application_lifetime_win.cc',
+        'browser/local_data_container.cc',
+        'browser/local_data_container.h',
         'browser/mac/dock.h',
         'browser/mac/dock.mm',
         'browser/mac/install_from_dmg.h',

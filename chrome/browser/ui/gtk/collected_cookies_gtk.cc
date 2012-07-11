@@ -17,6 +17,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/local_data_container.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -213,17 +214,19 @@ GtkWidget* CollectedCookiesGtk::CreateAllowedPane() {
 
   const LocalSharedObjectsContainer& allowed_lsos =
       content_settings->allowed_local_shared_objects();
-  allowed_cookies_tree_model_.reset(
-      new CookiesTreeModel(allowed_lsos.cookies()->Clone(),
-                           allowed_lsos.databases()->Clone(),
-                           allowed_lsos.local_storages()->Clone(),
-                           allowed_lsos.session_storages()->Clone(),
-                           allowed_lsos.appcaches()->Clone(),
-                           allowed_lsos.indexed_dbs()->Clone(),
-                           allowed_lsos.file_systems()->Clone(),
-                           NULL,
-                           allowed_lsos.server_bound_certs()->Clone(),
-                           true));
+  ContainerMap apps_map;
+  apps_map[std::string()] = new LocalDataContainer(
+      std::string(), std::string(),
+      allowed_lsos.cookies()->Clone(),
+      allowed_lsos.databases()->Clone(),
+      allowed_lsos.local_storages()->Clone(),
+      allowed_lsos.session_storages()->Clone(),
+      allowed_lsos.appcaches()->Clone(),
+      allowed_lsos.indexed_dbs()->Clone(),
+      allowed_lsos.file_systems()->Clone(),
+      NULL,
+      allowed_lsos.server_bound_certs()->Clone());
+  allowed_cookies_tree_model_.reset(new CookiesTreeModel(apps_map, true));
   allowed_cookies_tree_adapter_.reset(
       new gtk_tree::TreeAdapter(this, allowed_cookies_tree_model_.get()));
   allowed_tree_ = gtk_tree_view_new_with_model(
@@ -302,17 +305,19 @@ GtkWidget* CollectedCookiesGtk::CreateBlockedPane() {
 
   const LocalSharedObjectsContainer& blocked_lsos =
       content_settings->blocked_local_shared_objects();
-  blocked_cookies_tree_model_.reset(
-      new CookiesTreeModel(blocked_lsos.cookies()->Clone(),
-                           blocked_lsos.databases()->Clone(),
-                           blocked_lsos.local_storages()->Clone(),
-                           blocked_lsos.session_storages()->Clone(),
-                           blocked_lsos.appcaches()->Clone(),
-                           blocked_lsos.indexed_dbs()->Clone(),
-                           blocked_lsos.file_systems()->Clone(),
-                           NULL,
-                           blocked_lsos.server_bound_certs()->Clone(),
-                           true));
+  ContainerMap apps_map;
+  apps_map[std::string()] = new LocalDataContainer(
+      std::string(), std::string(),
+      blocked_lsos.cookies()->Clone(),
+      blocked_lsos.databases()->Clone(),
+      blocked_lsos.local_storages()->Clone(),
+      blocked_lsos.session_storages()->Clone(),
+      blocked_lsos.appcaches()->Clone(),
+      blocked_lsos.indexed_dbs()->Clone(),
+      blocked_lsos.file_systems()->Clone(),
+      NULL,
+      blocked_lsos.server_bound_certs()->Clone());
+  blocked_cookies_tree_model_.reset(new CookiesTreeModel(apps_map, true));
   blocked_cookies_tree_adapter_.reset(
       new gtk_tree::TreeAdapter(this, blocked_cookies_tree_model_.get()));
   blocked_tree_ = gtk_tree_view_new_with_model(

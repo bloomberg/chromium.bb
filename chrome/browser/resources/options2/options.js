@@ -13,6 +13,7 @@ var ContentSettings = options.ContentSettings;
 var ContentSettingsExceptionsArea =
     options.contentSettings.ContentSettingsExceptionsArea;
 var CookiesView = options.CookiesView;
+var CookiesViewApp = options.CookiesViewApp;
 var FontSettings = options.FontSettings;
 var HandlerOptions = options.HandlerOptions;
 var HomePageOverlay = options.HomePageOverlay;
@@ -79,6 +80,10 @@ function load() {
                               ContentSettings.getInstance(),
                               [$('privacyContentSettingsButton'),
                                $('show-cookies-button')]);
+  OptionsPage.registerOverlay(CookiesViewApp.getInstance(),
+                              ContentSettings.getInstance(),
+                              [$('privacyContentSettingsButton'),
+                               $('show-app-cookies-button')]);
   OptionsPage.registerOverlay(FontSettings.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('fontSettingsCustomizeFontsButton')]);

@@ -386,30 +386,41 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 
   const LocalSharedObjectsContainer& allowed_lsos =
       content_settings->allowed_local_shared_objects();
-  allowedTreeModel_.reset(
-      new CookiesTreeModel(allowed_lsos.cookies()->Clone(),
-                           allowed_lsos.databases()->Clone(),
-                           allowed_lsos.local_storages()->Clone(),
-                           allowed_lsos.session_storages()->Clone(),
-                           allowed_lsos.appcaches()->Clone(),
-                           allowed_lsos.indexed_dbs()->Clone(),
-                           allowed_lsos.file_systems()->Clone(),
-                           NULL,
-                           allowed_lsos.server_bound_certs()->Clone(),
-                           true));
+  {
+    ContainerMap apps_map;
+    apps_map[std::string()] = new LocalDataContainer(
+        std::string(), std::string(),
+        allowed_lsos.cookies()->Clone(),
+        allowed_lsos.databases()->Clone(),
+        allowed_lsos.local_storages()->Clone(),
+        allowed_lsos.session_storages()->Clone(),
+        allowed_lsos.appcaches()->Clone(),
+        allowed_lsos.indexed_dbs()->Clone(),
+        allowed_lsos.file_systems()->Clone(),
+        NULL,
+        allowed_lsos.server_bound_certs()->Clone());
+
+    allowedTreeModel_.reset(new CookiesTreeModel(apps_map, true));
+  }
+
   const LocalSharedObjectsContainer& blocked_lsos =
       content_settings->blocked_local_shared_objects();
-  blockedTreeModel_.reset(
-      new CookiesTreeModel(blocked_lsos.cookies()->Clone(),
-                           blocked_lsos.databases()->Clone(),
-                           blocked_lsos.local_storages()->Clone(),
-                           blocked_lsos.session_storages()->Clone(),
-                           blocked_lsos.appcaches()->Clone(),
-                           blocked_lsos.indexed_dbs()->Clone(),
-                           blocked_lsos.file_systems()->Clone(),
-                           NULL,
-                           blocked_lsos.server_bound_certs()->Clone(),
-                           true));
+  {
+    ContainerMap apps_map;
+    apps_map[std::string()] = new LocalDataContainer(
+        std::string(), std::string(),
+        blocked_lsos.cookies()->Clone(),
+        blocked_lsos.databases()->Clone(),
+        blocked_lsos.local_storages()->Clone(),
+        blocked_lsos.session_storages()->Clone(),
+        blocked_lsos.appcaches()->Clone(),
+        blocked_lsos.indexed_dbs()->Clone(),
+        blocked_lsos.file_systems()->Clone(),
+        NULL,
+        blocked_lsos.server_bound_certs()->Clone());
+
+    blockedTreeModel_.reset(new CookiesTreeModel(apps_map, true));
+  }
 
   // Convert the model's icons from Skia to Cocoa.
   std::vector<gfx::ImageSkia> skiaIcons;

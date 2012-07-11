@@ -3,27 +3,30 @@
  * found in the LICENSE file. */
 
 /* Styles for the cookies list page. */
-#cookies-view-page {
+.cookies-view-page {
   height: 90%;
   margin-left: -15px;
   width: 720px;
 }
 
 /* Styles for the cookies list elements in cookies_view.html. */
-#cookies-list {
+.cookies-list {
   -webkit-box-flex: 1;
   /* This property overrides the |min-height: 192px;| property above due to
    * special behavior of the cookies list. */
+  border: 1px solid #D9D9D9;
+  margin: 0;
+  margin-top: 5px;
   min-height: 0;
 }
 
-#cookies-list-content-area {
+.cookies-list-content-area {
   -webkit-box-orient: vertical;
   display: -webkit-box;
   overflow-y: hidden;
 }
 
-#cookies-column-headers {
+.cookies-column-headers {
   -webkit-box-align: baseline;
   -webkit-box-orient: horizontal;
   display: -webkit-box;
@@ -31,34 +34,25 @@
   width: 100%;
 }
 
-#cookies-column-headers > * {
+.cookies-column-headers > * {
   display: block;
 }
 
-#cookies-column-headers h3 {
+.cookies-column-headers h3 {
   font-size: 105%;
   font-weight: bold;
   margin: 10px 0;
 }
 
 /* Notice the width and padding for these columns match up with those below. */
-#cookies-site-column {
+.cookies-site-column {
   -webkit-padding-start: 7px;
   width: 14em;
 }
 
-#cookies-data-column {
+.cookies-data-column {
   -webkit-box-flex: 1;
   -webkit-padding-start: 7px;
-}
-
-#cookies-header-controls > * {
-  margin-bottom: 5px;
-}
-
-#cookies-list {
-  border: 1px solid #D9D9D9;
-  margin: 0;
 }
 
 /* Enable animating the height of items. */
@@ -195,4 +189,18 @@ list.cookie-list > .deletable-item[selected] .cookie-details {
 
 .cookie-details-value {
   word-wrap: break-word;
+}
+
+
+/* Styles specific to the app cookies window */
+#app-cookies-site-column {
+  width: 20em;
+}
+
+.app-cookie-site {
+  width: 20em;
+}
+
+.app-cookie-items {
+  -webkit-margin-start: 20em;
 }

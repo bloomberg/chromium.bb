@@ -10,6 +10,8 @@
 #include "base/bind_helpers.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/browser/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data_database_helper.h"
@@ -18,6 +20,7 @@
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data_server_bound_cert_helper.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/cookies_tree_model_util.h"
 #include "content/public/browser/web_ui.h"
@@ -27,8 +30,9 @@
 namespace options2 {
 
 CookiesViewHandler::CookiesViewHandler()
-    : batch_update_(false),
-      model_util_(new CookiesTreeModelUtil) {
+  : batch_update_(false),
+    app_context_(false),
+    model_util_(new CookiesTreeModelUtil) {
 }
 
 CookiesViewHandler::~CookiesViewHandler() {
@@ -92,6 +96,8 @@ void CookiesViewHandler::GetLocalizedValues(
   RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "cookiesViewPage",
                 IDS_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE);
+  RegisterTitle(localized_strings, "appCookiesViewPage",
+                IDS_APP_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE);
 }
 
 void CookiesViewHandler::RegisterMessages() {
@@ -107,6 +113,9 @@ void CookiesViewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("loadCookie",
       base::Bind(&CookiesViewHandler::LoadChildren,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("setViewContext",
+      base::Bind(&CookiesViewHandler::SetViewContext,
+                 base::Unretained(this)));
 }
 
 void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,
@@ -117,20 +126,22 @@ void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,
   if (batch_update_)
     return;
 
-  CookieTreeNode* parent_node = cookies_tree_model_->AsNode(parent);
+  CookiesTreeModel* tree_model = static_cast<CookiesTreeModel*>(model);
+  CookieTreeNode* parent_node = tree_model->AsNode(parent);
 
   ListValue* children = new ListValue;
   model_util_->GetChildNodeList(parent_node, start, count,
                                             children);
 
   ListValue args;
-  args.Append(parent == cookies_tree_model_->GetRoot() ?
+  args.Append(parent == tree_model->GetRoot() ?
       Value::CreateNullValue() :
       Value::CreateStringValue(
           model_util_->GetTreeNodeId(parent_node)));
   args.Append(Value::CreateIntegerValue(start));
   args.Append(children);
-  web_ui()->CallJavascriptFunction("CookiesView.onTreeItemAdded", args);
+  web_ui()->CallJavascriptFunction(
+      GetCallback("onTreeItemAdded", tree_model), args);
 }
 
 void CookiesViewHandler::TreeNodesRemoved(ui::TreeModel* model,
@@ -141,14 +152,17 @@ void CookiesViewHandler::TreeNodesRemoved(ui::TreeModel* model,
   if (batch_update_)
     return;
 
+  CookiesTreeModel* tree_model = static_cast<CookiesTreeModel*>(model);
+
   ListValue args;
-  args.Append(parent == cookies_tree_model_->GetRoot() ?
+  args.Append(parent == tree_model->GetRoot() ?
       Value::CreateNullValue() :
       Value::CreateStringValue(model_util_->GetTreeNodeId(
-          cookies_tree_model_->AsNode(parent))));
+          tree_model->AsNode(parent))));
   args.Append(Value::CreateIntegerValue(start));
   args.Append(Value::CreateIntegerValue(count));
-  web_ui()->CallJavascriptFunction("CookiesView.onTreeItemRemoved", args);
+  web_ui()->CallJavascriptFunction(
+      GetCallback("onTreeItemRemoved", tree_model), args);
 }
 
 void CookiesViewHandler::TreeModelBeginBatch(CookiesTreeModel* model) {
@@ -160,13 +174,15 @@ void CookiesViewHandler::TreeModelEndBatch(CookiesTreeModel* model) {
   DCHECK(batch_update_);
   batch_update_ = false;
 
-  SendChildren(cookies_tree_model_->GetRoot());
+  SendChildren(model->GetRoot());
 }
 
 void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
-  if (!cookies_tree_model_.get()) {
+  if (!app_context_ && !cookies_tree_model_.get()) {
     Profile* profile = Profile::FromWebUI(web_ui());
-    cookies_tree_model_.reset(new CookiesTreeModel(
+    ContainerMap apps_map;
+    apps_map[std::string()] = new LocalDataContainer(
+        "Site Data", std::string(),
         new BrowsingDataCookieHelper(profile->GetRequestContext()),
         new BrowsingDataDatabaseHelper(profile),
         new BrowsingDataLocalStorageHelper(profile),
@@ -175,26 +191,51 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
         BrowsingDataIndexedDBHelper::Create(profile),
         BrowsingDataFileSystemHelper::Create(profile),
         BrowsingDataQuotaHelper::Create(profile),
-        BrowsingDataServerBoundCertHelper::Create(profile),
-        false));
+        BrowsingDataServerBoundCertHelper::Create(profile));
+    cookies_tree_model_.reset(new CookiesTreeModel(apps_map, false));
     cookies_tree_model_->AddCookiesTreeObserver(this);
+  }
+
+  if (app_context_ && !app_cookies_tree_model_.get()) {
+    Profile* profile = Profile::FromWebUI(web_ui());
+    ContainerMap apps_map;
+    const ExtensionService* service = profile->GetExtensionService();
+    if (service) {
+      const ExtensionSet* extensions = service->extensions();
+      for (ExtensionSet::const_iterator it = extensions->begin();
+           it != extensions->end(); ++it) {
+        if ((*it)->is_storage_isolated()) {
+          net::URLRequestContextGetter* context_getter =
+              profile->GetRequestContextForIsolatedApp((*it)->id());
+          // TODO(nasko): When new types of storage are isolated, add the
+          // appropriate browsing data helper objects to the constructor.
+          // For now, just cookies are isolated, so other parameters are NULL.
+          apps_map[(*it)->id()] = new LocalDataContainer(
+              (*it)->name(), (*it)->id(),
+              new BrowsingDataCookieHelper(context_getter),
+              NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+        }
+      }
+      app_cookies_tree_model_.reset(new CookiesTreeModel(apps_map, false));
+      app_cookies_tree_model_->AddCookiesTreeObserver(this);
+    }
   }
 }
 
 void CookiesViewHandler::UpdateSearchResults(const ListValue* args) {
-  std::string query;
+  string16 query;
   if (!args->GetString(0, &query)) {
     return;
   }
 
   EnsureCookiesTreeModelCreated();
 
-  cookies_tree_model_->UpdateSearchResults(UTF8ToWide(query));
+  GetTreeModel()->UpdateSearchResults(query);
 }
 
 void CookiesViewHandler::RemoveAll(const ListValue* args) {
   EnsureCookiesTreeModelCreated();
-  cookies_tree_model_->DeleteAllStoredObjects();
+  GetTreeModel()->DeleteAllStoredObjects();
 }
 
 void CookiesViewHandler::Remove(const ListValue* args) {
@@ -206,9 +247,9 @@ void CookiesViewHandler::Remove(const ListValue* args) {
   EnsureCookiesTreeModelCreated();
 
   const CookieTreeNode* node = model_util_->GetTreeNodeFromPath(
-      cookies_tree_model_->GetRoot(), node_path);
+      GetTreeModel()->GetRoot(), node_path);
   if (node)
-    cookies_tree_model_->DeleteCookieNode(const_cast<CookieTreeNode*>(node));
+    GetTreeModel()->DeleteCookieNode(const_cast<CookieTreeNode*>(node));
 }
 
 void CookiesViewHandler::LoadChildren(const ListValue* args) {
@@ -220,7 +261,7 @@ void CookiesViewHandler::LoadChildren(const ListValue* args) {
   EnsureCookiesTreeModelCreated();
 
   const CookieTreeNode* node = model_util_->GetTreeNodeFromPath(
-      cookies_tree_model_->GetRoot(), node_path);
+      GetTreeModel()->GetRoot(), node_path);
   if (node)
     SendChildren(node);
 }
@@ -231,12 +272,35 @@ void CookiesViewHandler::SendChildren(const CookieTreeNode* parent) {
       children);
 
   ListValue args;
-  args.Append(parent == cookies_tree_model_->GetRoot() ?
+  args.Append(parent == GetTreeModel()->GetRoot() ?
       Value::CreateNullValue() :
       Value::CreateStringValue(model_util_->GetTreeNodeId(parent)));
   args.Append(children);
 
-  web_ui()->CallJavascriptFunction("CookiesView.loadChildren", args);
+  web_ui()->CallJavascriptFunction(
+      GetCallback("loadChildren", GetTreeModel()), args);
+}
+
+void CookiesViewHandler::SetViewContext(const base::ListValue* args) {
+  bool app_context = false;
+  if (args->GetBoolean(0, &app_context))
+    app_context_ = app_context;
+}
+
+CookiesTreeModel* CookiesViewHandler::GetTreeModel() {
+  CookiesTreeModel* model = app_context_ ?
+      app_cookies_tree_model_.get() : cookies_tree_model_.get();
+  DCHECK(model);
+  return model;
+}
+
+std::string CookiesViewHandler::GetCallback(
+     std::string method, CookiesTreeModel* model) {
+  std::string callback("CookiesView");
+
+  if (model == app_cookies_tree_model_)
+    callback.append("App");
+  return callback.append(".").append(method);
 }
 
 }  // namespace options2

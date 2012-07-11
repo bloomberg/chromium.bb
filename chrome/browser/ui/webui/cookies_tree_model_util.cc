@@ -25,6 +25,8 @@ const char kKeyIcon[] = "icon";
 const char kKeyType[] = "type";
 const char kKeyHasChildren[] = "hasChildren";
 
+const char kKeyAppId[] = "appId";
+
 const char kKeyName[] = "name";
 const char kKeyContent[] = "content";
 const char kKeyDomain[] = "domain";
@@ -94,6 +96,7 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
   switch (node.GetDetailedInfo().node_type) {
     case CookieTreeNode::DetailedInfo::TYPE_ORIGIN: {
       dict->SetString(kKeyType, "origin");
+      dict->SetString(kKeyAppId, node.GetDetailedInfo().app_id);
 #if defined(OS_MACOSX)
       dict->SetString(kKeyIcon, "chrome://theme/IDR_BOOKMARK_BAR_FOLDER");
 #endif

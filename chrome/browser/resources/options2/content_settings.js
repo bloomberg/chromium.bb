@@ -72,6 +72,9 @@ cr.define('options', function() {
         chrome.send('coreOptionsUserMetricsAction', ['Options_ShowCookies']);
         OptionsPage.navigateToPage('cookies');
       };
+      $('show-app-cookies-button').onclick = function(event) {
+        OptionsPage.navigateToPage('app-cookies');
+      };
 
       var intentsSection = $('intents-section');
       if (!loadTimeData.getBoolean('enable_web_intents') && intentsSection)
