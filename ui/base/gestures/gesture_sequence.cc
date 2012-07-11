@@ -298,7 +298,7 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     GesturePoint* new_point = &points_[event.GetTouchId()];
     // We shouldn't be able to get two PRESSED events from the same
     // finger without either a RELEASE or CANCEL in between.
-    DCHECK(!points_[event.GetTouchId()].in_use());
+    DCHECK(!new_point->in_use());
     new_point->set_point_id(point_count_++);
     new_point->set_touch_id(event.GetTouchId());
   }

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <map>
 #include <peninputpanel_i.c>
+#include <stack>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -499,7 +500,7 @@ class LocalTouchEvent :
   }
 
   // Returns a copy of the touch event at the specified index.
-  const LocalTouchEvent& Index( size_t index) {
+  const LocalTouchEvent& Index( size_t index) const {
     const int touch_history_size = 40;
     static LocalTouchEvent touch_history[touch_history_size];
     static int touch_history_index;
@@ -538,9 +539,17 @@ class WebTouchState {
   bool is_changed() { return touch_event_.data().changedTouchesLength != 0; }
 
   void QueueEvents(ui::GestureConsumer* consumer, ui::GestureRecognizer* gr) {
+    if (touch_event_.data().touchesLength > 0)
+      touch_count_.push(touch_event_.data().touchesLength);
     for (size_t i = 0; i < touch_event_.data().touchesLength; ++i) {
         gr->QueueTouchEventForGesture(consumer, touch_event_.Index(i));
     }
+  }
+
+  int GetNextTouchCount() {
+    int result = touch_count_.top();
+    touch_count_.pop();
+    return result;
   }
 
  private:
@@ -559,6 +568,12 @@ class WebTouchState {
 
   // Remove any mappings that are no longer in use.
   void RemoveExpiredMappings();
+
+  // The gesture recognizer processes touch events one at a time, but WebKit
+  // (ForwardTouchEvent) takes a set of touch events. |touchCount_| tracks how
+  // many individual touch events were sent to ForwardTouchEvent, so we can
+  // send the correct number of AdvanceTouchQueue's
+  std::stack<int> touch_count_;
 
   LocalTouchEvent touch_event_;
   const RenderWidgetHostViewWin* const window_;
@@ -1195,9 +1210,16 @@ void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {
 
 void RenderWidgetHostViewWin::ProcessTouchAck(
     WebKit::WebInputEvent::Type type, bool processed) {
-  scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
-  gestures.reset(gesture_recognizer_->AdvanceTouchQueue(this, processed));
-  ProcessGestures(gestures.get());
+
+  DCHECK(render_widget_host_->has_touch_handler() &&
+      touch_events_enabled_);
+
+  int touch_count = touch_state_->GetNextTouchCount();
+  for (int i = 0; i < touch_count; ++i) {
+    scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
+    gestures.reset(gesture_recognizer_->AdvanceTouchQueue(this, processed));
+    ProcessGestures(gestures.get());
+  }
 
   if (type == WebKit::WebInputEvent::TouchStart)
     UpdateDesiredTouchMode(processed);
@@ -1572,9 +1594,6 @@ void RenderWidgetHostViewWin::OnSetFocus(HWND window) {
 
   render_widget_host_->GotFocus();
   render_widget_host_->SetActive(true);
-
-  if (touch_state_->ReleaseTouchPoints() && touch_events_enabled_)
-    render_widget_host_->ForwardTouchEvent(touch_state_->touch_event());
 }
 
 void RenderWidgetHostViewWin::OnKillFocus(HWND window) {
@@ -1584,9 +1603,6 @@ void RenderWidgetHostViewWin::OnKillFocus(HWND window) {
 
   render_widget_host_->SetActive(false);
   render_widget_host_->Blur();
-
-  if (touch_state_->ReleaseTouchPoints() && touch_events_enabled_)
-    render_widget_host_->ForwardTouchEvent(touch_state_->touch_event());
 }
 
 void RenderWidgetHostViewWin::OnCaptureChanged(HWND window) {
@@ -2281,15 +2297,18 @@ LRESULT RenderWidgetHostViewWin::OnTouchEvent(UINT message, WPARAM wparam,
   for (size_t start = 0; start < total;) {
     start += touch_state_->UpdateTouchPoints(points + start, total - start);
     if (has_touch_handler) {
-      if  (touch_state_->is_changed())
+      if (touch_state_->is_changed()) {
         render_widget_host_->ForwardTouchEvent(touch_state_->touch_event());
-      touch_state_->QueueEvents(this,gesture_recognizer_.get());
+        touch_state_->QueueEvents(this, gesture_recognizer_.get());
+      }
     } else {
-      // TODO: This probably needs to be updated to call Next()
-      scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
-      gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(
-          *touch_state_->ui_touch_event(), ui::TOUCH_STATUS_UNKNOWN, this));
-      ProcessGestures(gestures.get());
+      const LocalTouchEvent* touch_event = touch_state_->ui_touch_event();
+      for (size_t i = 0; i < touch_event->data().touchesLength; ++i) {
+        scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
+        gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(
+            touch_event->Index(i), ui::TOUCH_STATUS_UNKNOWN, this));
+        ProcessGestures(gestures.get());
+      }
     }
   }
 
