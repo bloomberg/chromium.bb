@@ -58,6 +58,8 @@ class GetAuthTokenFunction : public AsyncExtensionFunction,
 class LaunchWebAuthFlowFunction : public AsyncExtensionFunction,
                                   public WebAuthFlow::Delegate {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.identity.launchWebAuthFlow");
+
   LaunchWebAuthFlowFunction();
 
  private:
@@ -69,8 +71,6 @@ class LaunchWebAuthFlowFunction : public AsyncExtensionFunction,
   virtual void OnAuthFlowFailure() OVERRIDE;
 
   scoped_ptr<WebAuthFlow> auth_flow_;
-
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.identity.launchWebAuthFlow");
 };
 
 }  // namespace extensions

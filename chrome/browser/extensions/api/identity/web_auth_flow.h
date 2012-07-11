@@ -51,7 +51,8 @@ class WebAuthFlow : public content::WebContentsDelegate,
     // the flow.
     virtual void OnAuthFlowFailure() = 0;
 
-    virtual ~Delegate() { }
+   protected:
+    virtual ~Delegate() {}
   };
 
   // Interceptor interface for testing.

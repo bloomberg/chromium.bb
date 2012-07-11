@@ -11,6 +11,9 @@
 #include "base/logging.h"
 
 namespace {
+
+using gpu::gles2::ShaderTranslator;
+
 void FinalizeShaderTranslator(void* /* dummy */) {
   ShFinalize();
 }
@@ -24,7 +27,6 @@ bool InitializeShaderTranslator() {
   return initialized;
 }
 
-using gpu::gles2::ShaderTranslator;
 void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
                      ShaderTranslator::VariableMap* var_map) {
   int name_len = 0, mapped_name_len = 0;
@@ -72,6 +74,7 @@ void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
     (*var_map)[mapped_name.get()] = info;
   }
 }
+
 }  // namespace
 
 namespace gpu {
@@ -87,15 +90,6 @@ ShaderTranslator::ShaderTranslator()
     : compiler_(NULL),
       implementation_is_glsl_es_(false),
       needs_built_in_function_emulation_(false) {
-}
-
-ShaderTranslator::~ShaderTranslator() {
-  FOR_EACH_OBSERVER(DestructionObserver,
-                    destruction_observers_,
-                    OnDestruct(this));
-
-  if (compiler_ != NULL)
-    ShDestruct(compiler_);
 }
 
 bool ShaderTranslator::Init(
@@ -189,6 +183,15 @@ void ShaderTranslator::AddDestructionObserver(
 void ShaderTranslator::RemoveDestructionObserver(
     DestructionObserver* observer) {
   destruction_observers_.RemoveObserver(observer);
+}
+
+ShaderTranslator::~ShaderTranslator() {
+  FOR_EACH_OBSERVER(DestructionObserver,
+                    destruction_observers_,
+                    OnDestruct(this));
+
+  if (compiler_ != NULL)
+    ShDestruct(compiler_);
 }
 
 void ShaderTranslator::ClearResults() {

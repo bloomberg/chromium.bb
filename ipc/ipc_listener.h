@@ -16,8 +16,6 @@ class Message;
 // Implemented by consumers of a Channel to receive messages.
 class IPC_EXPORT Listener {
  public:
-  virtual ~Listener() {}
-
   // Called when a message is received.  Returns true iff the message was
   // handled.
   virtual bool OnMessageReceived(const Message& message) = 0;
@@ -39,6 +37,9 @@ class IPC_EXPORT Listener {
   // has an error that causes the listening channel to close.
   virtual void OnChannelListenError() {}
 #endif  // OS_POSIX
+
+ protected:
+  virtual ~Listener() {}
 };
 
 }  // namespace IPC

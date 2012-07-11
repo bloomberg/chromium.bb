@@ -18,8 +18,6 @@ namespace proxy {
 // bookkeeping rules.
 class VarSerializationRules : public base::RefCounted<VarSerializationRules> {
  public:
-  virtual ~VarSerializationRules() {}
-
   // Caller-owned calls --------------------------------------------------------
   //
   // A caller-owned call is when doing a function call with a "normal" input
@@ -79,6 +77,10 @@ class VarSerializationRules : public base::RefCounted<VarSerializationRules> {
 
  protected:
   VarSerializationRules() {}
+  virtual ~VarSerializationRules() {}
+
+ private:
+  friend class base::RefCounted<VarSerializationRules>;
 };
 
 }  // namespace proxy

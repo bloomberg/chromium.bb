@@ -28,7 +28,7 @@ uint32 SyncPointManager::GenerateSyncPoint() {
 }
 
 void SyncPointManager::RetireSyncPoint(uint32 sync_point) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   ClosureList list;
   {
     base::AutoLock lock(lock_);
@@ -43,7 +43,7 @@ void SyncPointManager::RetireSyncPoint(uint32 sync_point) {
 
 void SyncPointManager::AddSyncPointCallback(uint32 sync_point,
                                             const base::Closure& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   {
     base::AutoLock lock(lock_);
     SyncPointMap::iterator it = sync_point_map_.find(sync_point);

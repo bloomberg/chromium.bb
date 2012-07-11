@@ -32,7 +32,25 @@ class ShaderTranslatorInterface {
     kGlslBuiltInFunctionEmulated
   };
 
-  virtual ~ShaderTranslatorInterface() { }
+  struct VariableInfo {
+    VariableInfo()
+        : type(0),
+          size(0) {
+    }
+
+    VariableInfo(int _type, int _size, std::string _name)
+        : type(_type),
+          size(_size),
+          name(_name) {
+    }
+
+    int type;
+    int size;
+    std::string name;  // name in the original shader source.
+  };
+
+  // Mapping between variable name and info.
+  typedef base::hash_map<std::string, VariableInfo> VariableMap;
 
   // Initializes the translator.
   // Must be called once before using the translator object.
@@ -54,24 +72,11 @@ class ShaderTranslatorInterface {
   virtual const char* translated_shader() const = 0;
   virtual const char* info_log() const = 0;
 
-  struct VariableInfo {
-    VariableInfo()
-        : type(0),
-          size(0) {
-    }
-      VariableInfo(int _type, int _size, std::string _name)
-        : type(_type),
-          size(_size),
-          name(_name) {
-    }
-    int type;
-    int size;
-    std::string name;  // name in the original shader source.
-  };
-  // Mapping between variable name and info.
-  typedef base::hash_map<std::string, VariableInfo> VariableMap;
   virtual const VariableMap& attrib_map() const = 0;
   virtual const VariableMap& uniform_map() const = 0;
+
+ protected:
+  virtual ~ShaderTranslatorInterface() {}
 };
 
 // Implementation of ShaderTranslatorInterface
@@ -85,6 +90,7 @@ class GPU_EXPORT ShaderTranslator
     virtual ~DestructionObserver();
 
     virtual void OnDestruct(ShaderTranslator* translator) = 0;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(DestructionObserver);
   };
@@ -114,8 +120,9 @@ class GPU_EXPORT ShaderTranslator
   void RemoveDestructionObserver(DestructionObserver* observer);
 
  private:
-  virtual ~ShaderTranslator();
+  friend class base::RefCounted<ShaderTranslator>;
 
+  virtual ~ShaderTranslator();
   void ClearResults();
 
   ShHandle compiler_;
@@ -126,8 +133,6 @@ class GPU_EXPORT ShaderTranslator
   bool implementation_is_glsl_es_;
   bool needs_built_in_function_emulation_;
   ObserverList<DestructionObserver> destruction_observers_;
-
-  friend class base::RefCounted<ShaderTranslator>;
 
   DISALLOW_COPY_AND_ASSIGN(ShaderTranslator);
 };

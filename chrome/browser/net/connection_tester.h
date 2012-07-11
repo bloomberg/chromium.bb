@@ -103,8 +103,6 @@ class ConnectionTester {
   // delegate methods.
   class Delegate {
    public:
-    virtual ~Delegate() {}
-
     // Called once the test suite is about to start.
     virtual void OnStartConnectionTestSuite() = 0;
 
@@ -122,6 +120,9 @@ class ConnectionTester {
 
     // Called once ALL tests have completed.
     virtual void OnCompletedConnectionTestSuite() = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   // Constructs a ConnectionTester that notifies test progress to |delegate|.
