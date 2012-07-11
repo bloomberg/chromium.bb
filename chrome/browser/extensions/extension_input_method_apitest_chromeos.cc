@@ -8,7 +8,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
-#include "chrome/browser/extensions/extension_test_api.h"
+#include "chrome/browser/extensions/api/test/test_api.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_observer.h"
@@ -52,8 +52,9 @@ class SetInputMethodListener : public content::NotificationObserver {
       chromeos::input_method::InputMethodManager::GetInstance()->
           ChangeInputMethod(StringPrintf("xkb:%s", kNewInputMethod));
 
-      ExtensionTestSendMessageFunction* function =
-          content::Source<ExtensionTestSendMessageFunction>(source).ptr();
+      extensions::TestSendMessageFunction* function =
+          content::Source<extensions::TestSendMessageFunction>(
+              source).ptr();
       EXPECT_GT(count_--, 0);
       function->Reply(kSetInputMethodDone);
     }

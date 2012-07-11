@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_test_api.h"
+#include "chrome/browser/extensions/api/test/test_api.h"
 
 #include <string>
 
@@ -21,7 +21,7 @@ namespace {
 
 // If you see this error in your test, you need to set the config state
 // to be returned by chrome.test.getConfig().  Do this by calling
-// ExtensionTestGetConfigFunction::set_test_config_state(Value* state)
+// TestGetConfigFunction::set_test_config_state(Value* state)
 // in test set up.
 const char kNoTestConfigDataError[] = "Test configuration was not set.";
 
@@ -29,6 +29,8 @@ const char kNotTestProcessError[] =
     "The chrome.test namespace is only available in tests.";
 
 }  // namespace
+
+namespace extensions {
 
 TestExtensionFunction::~TestExtensionFunction() {}
 
@@ -41,9 +43,9 @@ void TestExtensionFunction::Run() {
   SendResponse(RunImpl());
 }
 
-ExtensionTestPassFunction::~ExtensionTestPassFunction() {}
+TestNotifyPassFunction::~TestNotifyPassFunction() {}
 
-bool ExtensionTestPassFunction::RunImpl() {
+bool TestNotifyPassFunction::RunImpl() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_TEST_PASSED,
       content::Source<Profile>(dispatcher()->profile()),
@@ -51,9 +53,9 @@ bool ExtensionTestPassFunction::RunImpl() {
   return true;
 }
 
-ExtensionTestFailFunction::~ExtensionTestFailFunction() {}
+TestFailFunction::~TestFailFunction() {}
 
-bool ExtensionTestFailFunction::RunImpl() {
+bool TestFailFunction::RunImpl() {
   std::string message;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &message));
   content::NotificationService::current()->Notify(
@@ -63,18 +65,18 @@ bool ExtensionTestFailFunction::RunImpl() {
   return true;
 }
 
-ExtensionTestLogFunction::~ExtensionTestLogFunction() {}
+TestLogFunction::~TestLogFunction() {}
 
-bool ExtensionTestLogFunction::RunImpl() {
+bool TestLogFunction::RunImpl() {
   std::string message;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &message));
   VLOG(1) << message;
   return true;
 }
 
-ExtensionTestQuotaResetFunction::~ExtensionTestQuotaResetFunction() {}
+TestResetQuotaFunction::~TestResetQuotaFunction() {}
 
-bool ExtensionTestQuotaResetFunction::RunImpl() {
+bool TestResetQuotaFunction::RunImpl() {
   ExtensionService* service = profile()->GetExtensionService();
   ExtensionsQuotaService* quota = service->quota_service();
   quota->Purge();
@@ -82,53 +84,53 @@ bool ExtensionTestQuotaResetFunction::RunImpl() {
   return true;
 }
 
-ExtensionTestCreateIncognitoTabFunction::
-   ~ExtensionTestCreateIncognitoTabFunction() {}
+TestCreateIncognitoTabFunction::
+   ~TestCreateIncognitoTabFunction() {}
 
-bool ExtensionTestCreateIncognitoTabFunction::RunImpl() {
+bool TestCreateIncognitoTabFunction::RunImpl() {
   std::string url;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url));
   chrome::OpenURLOffTheRecord(profile(), GURL(url));
   return true;
 }
 
-bool ExtensionTestSendMessageFunction::RunImpl() {
+bool TestSendMessageFunction::RunImpl() {
   std::string message;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &message));
   AddRef();  // balanced in Reply
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
-      content::Source<ExtensionTestSendMessageFunction>(this),
+      content::Source<TestSendMessageFunction>(this),
       content::Details<std::string>(&message));
   return true;
 }
-ExtensionTestSendMessageFunction::~ExtensionTestSendMessageFunction() {}
+TestSendMessageFunction::~TestSendMessageFunction() {}
 
-void ExtensionTestSendMessageFunction::Reply(const std::string& message) {
+void TestSendMessageFunction::Reply(const std::string& message) {
   result_.reset(Value::CreateStringValue(message));
   SendResponse(true);
   Release();  // balanced in RunImpl
 }
 
 // static
-void ExtensionTestGetConfigFunction::set_test_config_state(
+void TestGetConfigFunction::set_test_config_state(
     DictionaryValue* value) {
   TestConfigState* test_config_state = TestConfigState::GetInstance();
   test_config_state->set_config_state(value);
 }
 
-ExtensionTestGetConfigFunction::TestConfigState::TestConfigState()
+TestGetConfigFunction::TestConfigState::TestConfigState()
   : config_state_(NULL) {}
 
 // static
-ExtensionTestGetConfigFunction::TestConfigState*
-ExtensionTestGetConfigFunction::TestConfigState::GetInstance() {
+TestGetConfigFunction::TestConfigState*
+TestGetConfigFunction::TestConfigState::GetInstance() {
   return Singleton<TestConfigState>::get();
 }
 
-ExtensionTestGetConfigFunction::~ExtensionTestGetConfigFunction() {}
+TestGetConfigFunction::~TestGetConfigFunction() {}
 
-bool ExtensionTestGetConfigFunction::RunImpl() {
+bool TestGetConfigFunction::RunImpl() {
   TestConfigState* test_config_state = TestConfigState::GetInstance();
 
   if (!test_config_state->config_state()) {
@@ -139,3 +141,5 @@ bool ExtensionTestGetConfigFunction::RunImpl() {
   result_.reset(test_config_state->config_state()->DeepCopy());
   return true;
 }
+
+}  // namespace extensions

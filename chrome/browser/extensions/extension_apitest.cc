@@ -7,7 +7,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_test_api.h"
+#include "chrome/browser/extensions/api/test/test_api.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile.h"
@@ -102,11 +102,12 @@ void ExtensionApiTest::SetUpInProcessBrowserTestFixture() {
   test_config_.reset(new DictionaryValue());
   test_config_->SetString(kTestDataDirectory,
                           net::FilePathToFileURL(test_data_dir_).spec());
-  ExtensionTestGetConfigFunction::set_test_config_state(test_config_.get());
+  extensions::TestGetConfigFunction::set_test_config_state(
+      test_config_.get());
 }
 
 void ExtensionApiTest::TearDownInProcessBrowserTestFixture() {
-  ExtensionTestGetConfigFunction::set_test_config_state(NULL);
+  extensions::TestGetConfigFunction::set_test_config_state(NULL);
   test_config_.reset(NULL);
 }
 

@@ -29,6 +29,7 @@
 #include "chrome/browser/extensions/api/socket/socket_api.h"
 #include "chrome/browser/extensions/api/tabs/execute_code_in_tab_function.h"
 #include "chrome/browser/extensions/api/tabs/tabs.h"
+#include "chrome/browser/extensions/api/test/test_api.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/api/web_socket_proxy_private/web_socket_proxy_private_api.h"
@@ -44,7 +45,6 @@
 #include "chrome/browser/extensions/extension_page_capture_api.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
-#include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/browser/extensions/settings/settings_api.h"
 #include "chrome/browser/extensions/system/system_api.h"
 #include "chrome/browser/history/history_extension_api.h"
@@ -233,13 +233,13 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<extensions::GetAllCookieStoresFunction>();
 
   // Test.
-  RegisterFunction<ExtensionTestPassFunction>();
-  RegisterFunction<ExtensionTestFailFunction>();
-  RegisterFunction<ExtensionTestLogFunction>();
-  RegisterFunction<ExtensionTestQuotaResetFunction>();
-  RegisterFunction<ExtensionTestCreateIncognitoTabFunction>();
-  RegisterFunction<ExtensionTestSendMessageFunction>();
-  RegisterFunction<ExtensionTestGetConfigFunction>();
+  RegisterFunction<extensions::TestNotifyPassFunction>();
+  RegisterFunction<extensions::TestFailFunction>();
+  RegisterFunction<extensions::TestLogFunction>();
+  RegisterFunction<extensions::TestResetQuotaFunction>();
+  RegisterFunction<extensions::TestCreateIncognitoTabFunction>();
+  RegisterFunction<extensions::TestSendMessageFunction>();
+  RegisterFunction<extensions::TestGetConfigFunction>();
 
   // Record.
   RegisterFunction<extensions::CaptureURLsFunction>();

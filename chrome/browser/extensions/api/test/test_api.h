@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_TEST_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_TEST_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_TEST_TEST_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_TEST_TEST_API_H_
 #pragma once
 
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_function.h"
 
 template <typename T> struct DefaultSingletonTraits;
+
+namespace extensions {
 
 // A function that is only available in tests.
 // Prior to running, checks that we are in an extension process.
@@ -21,62 +23,62 @@ class TestExtensionFunction : public SyncExtensionFunction {
   virtual void Run() OVERRIDE;
 };
 
-class ExtensionTestPassFunction : public TestExtensionFunction {
+class TestNotifyPassFunction : public TestExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("test.notifyPass")
 
  protected:
-  virtual ~ExtensionTestPassFunction();
+  virtual ~TestNotifyPassFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class ExtensionTestFailFunction : public TestExtensionFunction {
+class TestFailFunction : public TestExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("test.notifyFail")
 
  protected:
-  virtual ~ExtensionTestFailFunction();
+  virtual ~TestFailFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class ExtensionTestLogFunction : public TestExtensionFunction {
+class TestLogFunction : public TestExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("test.log")
 
  protected:
-  virtual ~ExtensionTestLogFunction();
+  virtual ~TestLogFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class ExtensionTestQuotaResetFunction : public TestExtensionFunction {
+class TestResetQuotaFunction : public TestExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("test.resetQuota")
 
  protected:
-  virtual ~ExtensionTestQuotaResetFunction();
+  virtual ~TestResetQuotaFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class ExtensionTestCreateIncognitoTabFunction : public TestExtensionFunction {
+class TestCreateIncognitoTabFunction : public TestExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("test.createIncognitoTab")
 
  protected:
-  virtual ~ExtensionTestCreateIncognitoTabFunction();
+  virtual ~TestCreateIncognitoTabFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class ExtensionTestSendMessageFunction : public AsyncExtensionFunction {
+class TestSendMessageFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("test.sendMessage")
 
@@ -85,13 +87,13 @@ class ExtensionTestSendMessageFunction : public AsyncExtensionFunction {
   void Reply(const std::string& message);
 
  protected:
-  virtual ~ExtensionTestSendMessageFunction();
+  virtual ~TestSendMessageFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class ExtensionTestGetConfigFunction : public SyncExtensionFunction {
+class TestGetConfigFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("test.getConfig")
 
@@ -125,10 +127,12 @@ class ExtensionTestGetConfigFunction : public SyncExtensionFunction {
     DISALLOW_COPY_AND_ASSIGN(TestConfigState);
   };
 
-  virtual ~ExtensionTestGetConfigFunction();
+  virtual ~TestGetConfigFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TEST_API_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_TEST_TEST_API_H_

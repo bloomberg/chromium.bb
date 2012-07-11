@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 
 #include "base/string_number_conversions.h"
-#include "chrome/browser/extensions/extension_test_api.h"
+#include "chrome/browser/extensions/api/test/test_api.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
@@ -49,7 +49,8 @@ void ExtensionTestMessageListener::Observe(
     const content::NotificationDetails& details) {
   const std::string& content = *content::Details<std::string>(details).ptr();
   if (!satisfied_ && content == expected_message_) {
-    function_ = content::Source<ExtensionTestSendMessageFunction>(source).ptr();
+    function_ = content::Source<extensions::TestSendMessageFunction>(
+        source).ptr();
     satisfied_ = true;
     registrar_.RemoveAll();  // Stop listening for more messages.
     if (!will_reply_) {

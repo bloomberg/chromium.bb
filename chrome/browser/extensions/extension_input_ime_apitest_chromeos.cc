@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_test_api.h"
+#include "chrome/browser/extensions/api/test/test_api.h"
 #include "chrome/common/chrome_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
