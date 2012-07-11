@@ -8,16 +8,29 @@
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
 chromeHidden.registerCustomHook('input.ime', function() {
-  chrome.input.ime.onKeyEvent.dispatchToListener = function(callback, args) {
-    var engineID = args[0];
-    var keyData = args[1];
-
-    var result = false;
-    try {
-      result = chrome.Event.prototype.dispatchToListener(callback, args);
-    } catch (e) {
-      console.error('Error in event handler for onKeyEvent: ' + e.stack);
+  chrome.input.ime.onKeyEvent.dispatch = function(engineID, keyData) {
+    var args = Array.prototype.slice.call(arguments);
+    if (this.validate_) {
+      var validationErrors = this.validate_(args);
+      if (validationErrors) {
+        chrome.input.ime.eventHandled(requestId, false);
+        return validationErrors;
+      }
     }
-    chrome.input.ime.eventHandled(keyData.requestId, result);
+    if (this.listeners_.length > 1) {
+      console.error('Too many listeners for onKeyEvent: ' + e.stack);
+      chrome.input.ime.eventHandled(requestId, false);
+      return;
+    }
+    for (var i = 0; i < this.listeners_.length; i++) {
+      try {
+        var requestId = keyData.requestId;
+        var result = this.listeners_[i].callback.apply(null, args);
+        chrome.input.ime.eventHandled(requestId, result);
+      } catch (e) {
+        console.error('Error in event handler for onKeyEvent: ' + e.stack);
+        chrome.input.ime.eventHandled(requestId, false);
+      }
+    }
   };
 });

@@ -6,13 +6,12 @@
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
-chromeHidden.Event.registerArgumentMassager('ttsEngine.onSpeak',
-    function(args, dispatch) {
-  var text = args[0];
-  var options = args[1];
-  var requestId = args[2];
-  var sendTtsEvent = function(event) {
-    chrome.ttsEngine.sendTtsEvent(requestId, event);
+chromeHidden.registerCustomHook('ttsEngine', function() {
+  chrome.ttsEngine.onSpeak.dispatch = function(text, options, requestId) {
+    var sendTtsEvent = function(event) {
+      chrome.ttsEngine.sendTtsEvent(requestId, event);
+    };
+    chrome.Event.prototype.dispatch.apply(
+        this, [text, options, sendTtsEvent]);
   };
-  dispatch([text, options, sendTtsEvent]);
 });

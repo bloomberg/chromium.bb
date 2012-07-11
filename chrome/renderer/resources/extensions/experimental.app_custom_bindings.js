@@ -11,52 +11,52 @@ var appNatives = requireNative('experimental_app');
 var DeserializeString = appNatives.DeserializeString;
 var CreateBlob = appNatives.CreateBlob;
 
-chromeHidden.Event.registerArgumentMassager('experimental.app.onLaunched',
-    function(args, dispatch) {
-  var launchData = args[0];
-  var intentData = args[1];
-
-  if (launchData && intentData) {
-    switch(intentData.format) {
-      case('fileEntry'):
-        var fs = GetIsolatedFileSystem(intentData.fileSystemId);
-        try {
-          fs.root.getFile(intentData.baseName, {}, function(fileEntry) {
-            launchData.intent.data = fileEntry;
-            launchData.intent.postResult = function() {};
-            launchData.intent.postFailure = function() {};
-            dispatch([launchData]);
-          }, function(fileError) {
-            console.error('Error getting fileEntry, code: ' + fileError.code);
-            dispatch([]);
-          });
-        } catch (e) {
-          console.error('Error in event handler for onLaunched: ' + e.stack);
-          dispatch([]);
-        }
-        break;
-      case('serialized'):
-        var deserializedData = DeserializeString(intentData.data);
-        launchData.intent.data = deserializedData;
-        launchData.intent.postResult = function() {};
-        launchData.intent.postFailure = function() {};
-        dispatch([launchData]);
-        break;
-      case('blob'):
-        var blobData = CreateBlob(intentData.blobFilePath,
-                                  intentData.blobLength);
-        launchData.intent.data = blobData;
-        launchData.intent.postResult = function() {};
-        launchData.intent.postFailure = function() {};
-        dispatch([launchData]);
-        break;
-      default:
-        console.error('Unexpected launch data format');
-        dispatch([]);
+chromeHidden.registerCustomHook('experimental.app', function(bindingsAPI) {
+  chrome.experimental.app.onLaunched.dispatch =
+      function(launchData, intentData) {
+    if (launchData && intentData) {
+      switch(intentData.format) {
+        case('fileEntry'):
+          var event = this;
+          var fs = GetIsolatedFileSystem(intentData.fileSystemId);
+          try {
+            fs.root.getFile(intentData.baseName, {}, function(fileEntry) {
+              launchData.intent.data = fileEntry;
+              launchData.intent.postResult = function() {};
+              launchData.intent.postFailure = function() {};
+              chrome.Event.prototype.dispatch.call(event, launchData);
+            }, function(fileError) {
+              console.error('Error getting fileEntry, code: ' + fileError.code);
+              chrome.Event.prototype.dispatch.call(event);
+            });
+          } catch (e) {
+            console.error('Error in event handler for onLaunched: ' + e.stack);
+            chrome.Event.prototype.dispatch.call(event);
+          }
+          break;
+        case('serialized'):
+          var deserializedData = DeserializeString(intentData.data);
+          launchData.intent.data = deserializedData;
+          launchData.intent.postResult = function() {};
+          launchData.intent.postFailure = function() {};
+          chrome.Event.prototype.dispatch.call(this, launchData);
+          break;
+        case('blob'):
+          var blobData = CreateBlob(intentData.blobFilePath,
+                                    intentData.blobLength);
+          launchData.intent.data = blobData;
+          launchData.intent.postResult = function() {};
+          launchData.intent.postFailure = function() {};
+          chrome.Event.prototype.dispatch.call(this, launchData);
+          break;
+        default:
+          console.error('Unexpected launch data format');
+          chrome.Event.prototype.dispatch.call(this);
+      }
+    } else if (launchData) {
+      chrome.Event.prototype.dispatch.call(this, launchData);
+    } else {
+      chrome.Event.prototype.dispatch.call(this);
     }
-  } else if (launchData) {
-    dispatch([launchData]);
-  } else {
-    dispatch([]);
-  }
+  };
 });

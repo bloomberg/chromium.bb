@@ -60,15 +60,12 @@ bool ModuleSystem::IsPresentInCurrentContext() {
 }
 
 // static
-void ModuleSystem::DumpException(const v8::TryCatch& try_catch) {
-  v8::Handle<v8::Message> message(try_catch.Message());
-
+void ModuleSystem::DumpException(v8::Handle<v8::Message> message) {
   LOG(ERROR) << "["
              << *v8::String::Utf8Value(
                  message->GetScriptResourceName()->ToString())
              << "(" << message->GetLineNumber() << ")] "
-             << *v8::String::Utf8Value(message->Get())
-             << "{" << *v8::String::Utf8Value(try_catch.StackTrace()) << "}";
+             << *v8::String::Utf8Value(message->Get());
 }
 
 void ModuleSystem::Require(const std::string& module_name) {
@@ -99,10 +96,8 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
       v8::Handle<v8::String>::Cast(source)));
   v8::Handle<v8::Function> func =
       v8::Handle<v8::Function>::Cast(RunString(wrapped_source, module_name));
-  if (func.IsEmpty()) {
-    return ThrowException(std::string(*v8::String::AsciiValue(module_name)) +
-        ": Bad source");
-  }
+  if (func.IsEmpty())
+    return handle_scope.Close(v8::Handle<v8::Value>());
 
   exports = v8::Object::New();
   v8::Handle<v8::Object> natives(NewInstance());
@@ -113,12 +108,7 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
   };
   {
     WebKit::WebScopedMicrotaskSuppression suppression;
-    v8::TryCatch try_catch;
     func->Call(global, 3, args);
-    if (try_catch.HasCaught()) {
-      DumpException(try_catch);
-      return v8::Undefined();
-    }
   }
   modules->Set(module_name, exports);
   return handle_scope.Close(exports);
@@ -194,15 +184,16 @@ v8::Handle<v8::Value> ModuleSystem::RunString(v8::Handle<v8::String> code,
   WebKit::WebScopedMicrotaskSuppression suppression;
   v8::Handle<v8::Value> result;
   v8::TryCatch try_catch;
+  try_catch.SetCaptureMessage(true);
   v8::Handle<v8::Script> script(v8::Script::New(code, name));
   if (try_catch.HasCaught()) {
-    DumpException(try_catch);
+    DumpException(try_catch.Message());
     return handle_scope.Close(result);
   }
 
   result = script->Run();
   if (try_catch.HasCaught())
-    DumpException(try_catch);
+    DumpException(try_catch.Message());
 
   return handle_scope.Close(result);
 }
