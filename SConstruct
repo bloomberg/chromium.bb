@@ -64,9 +64,8 @@ def ExtendFileList(existing, additional):
 # turning garbage collection off reduces startup time by 10%
 import gc
 gc.disable()
-# ----------------------------------------------------------
+
 # REPORT
-# ----------------------------------------------------------
 CMD_COUNTER = {}
 ENV_COUNTER = {}
 def PrintFinalReport():
@@ -118,9 +117,8 @@ def VerboseConfigInfo(env):
   if env.Bit('prebuilt') or env.Bit('built_elsewhere'): return False
   return env.Bit('sysinfo')
 
-# ----------------------------------------------------------
+
 # SANITY CHECKS
-# ----------------------------------------------------------
 
 # NOTE BitFromArgument(...) implicitly defines additional ACCEPTABLE_ARGUMENTS.
 ACCEPTABLE_ARGUMENTS = set([
@@ -427,13 +425,10 @@ def ExpandArguments():
         ARGUMENTS.get('buildbot'), )
     sys.exit(-1)
 
-#-----------------------------------------------------------
 ExpandArguments()
 
-# ----------------------------------------------------------
 environment_list = []
 
-# ----------------------------------------------------------
 # Base environment for both nacl and non-nacl variants.
 kwargs = {}
 if ARGUMENTS.get('DESTINATION_ROOT') is not None:
@@ -476,9 +471,7 @@ def PatchedSpawn(sh, escape, cmd, args, env):
 OriginalSpawn = pre_base_env['SPAWN']
 pre_base_env['SPAWN'] = PatchedSpawn
 
-# ----------------------------------------------------------
 # CLANG
-# ----------------------------------------------------------
 DeclareBit('clang', 'Use clang to build trusted code')
 pre_base_env.SetBitFromOption('clang', False)
 
@@ -488,9 +481,8 @@ pre_base_env.SetBitFromOption('asan', False)
 if pre_base_env.Bit('asan'):
   pre_base_env.SetBits('clang')
 
-# ----------------------------------------------------------
+
 # CODE COVERAGE
-# ----------------------------------------------------------
 DeclareBit('coverage_enabled', 'The build should be instrumented to generate'
            'coverage information')
 
@@ -557,7 +549,6 @@ if pre_base_env.Bit('clang'):
   werror_flags += ['-Wno-c++11-extensions']
 
 
-# ----------------------------------------------------------
 # Method to make sure -pedantic, etc, are not stripped from the
 # default env, since occasionally an engineer will be tempted down the
 # dark -- but wide and well-trodden -- path of expediency and stray
@@ -577,17 +568,16 @@ def EnsureRequiredBuildWarnings(env):
 
 pre_base_env.AddMethod(EnsureRequiredBuildWarnings)
 
-# ----------------------------------------------------------
+
 # Method to add target suffix to name.
 def NaClTargetArchSuffix(env, name):
   return name + '_' + env['TARGET_FULLARCH'].replace('-', '_')
 
 pre_base_env.AddMethod(NaClTargetArchSuffix)
 
-# ----------------------------------------------------------
+
 # Generic Test Wrapper
 
-# ----------------------------------------------------------
 # Add list of Flaky or Bad tests to skip per platform.  A
 # platform is defined as build type
 # <BUILD_TYPE>-<SUBARCH>
@@ -862,7 +852,7 @@ def AddNodeToTestSuite(env, node, suite_name, node_name=None, is_broken=False,
 
 pre_base_env.AddMethod(AddNodeToTestSuite)
 
-# ----------------------------------------------------------
+
 # Convenient testing aliases
 # NOTE: work around for scons non-determinism in the following two lines
 Alias('sel_ldr_sled_tests', [])
@@ -885,7 +875,6 @@ else:
   Alias('tsan_bot_tests', [])
 
 
-# ----------------------------------------------------------
 def Banner(text):
   print '=' * 70
   print text
@@ -893,9 +882,8 @@ def Banner(text):
 
 pre_base_env.AddMethod(Banner)
 
-# ----------------------------------------------------------
+
 # PLATFORM LOGIC
-# ----------------------------------------------------------
 # Define the build and target platforms, and use them to define the path
 # for the scons-out directory (aka TARGET_ROOT)
 #.
@@ -1061,7 +1049,7 @@ def CrossToolsBuild(env):
 
 pre_base_env.AddMethod(CrossToolsBuild, 'CrossToolsBuild')
 
-# ----------------------------------------------------------
+
 def HasSuffix(item, suffix):
   if isinstance(item, str):
     return item.endswith(suffix)
@@ -1137,9 +1125,7 @@ DeclareBit('prebuilt', 'Disable all build steps, only support install steps')
 pre_base_env.SetBitFromOption('prebuilt', False)
 
 
-# ----------------------------------------------------------
 # HELPERS FOR TEST INVOLVING TRUSTED AND UNTRUSTED ENV
-# ----------------------------------------------------------
 def GetEmulator(env):
   emulator = ARGUMENTS.get('force_emulator')
   if emulator is None and 'TRUSTED_ENV' in env:
@@ -1243,7 +1229,6 @@ def ExtractPublishedFiles(env, target_name):
 pre_base_env.AddMethod(ExtractPublishedFiles)
 
 
-# ----------------------------------------------------------
 EXTRA_ENV = ['XAUTHORITY', 'HOME', 'DISPLAY', 'SSH_TTY', 'KRB5CCNAME']
 
 def SetupBrowserEnv(env):
@@ -1947,7 +1932,7 @@ def PyAutoTesterSurfawayAsyncIsBroken(env):
 
 pre_base_env.AddMethod(PyAutoTesterSurfawayAsyncIsBroken)
 
-# ----------------------------------------------------------
+
 def DemoSelLdrNacl(env,
                    target,
                    nexe,
@@ -1979,7 +1964,7 @@ def DemoSelLdrNacl(env,
 #       Support would likely require some emulation magic.
 pre_base_env.AddMethod(DemoSelLdrNacl)
 
-# ----------------------------------------------------------
+
 def CommandGdbTestNacl(env, name, command,
                        gdb_flags=[],
                        input=None,
@@ -2051,8 +2036,6 @@ def SelUniversalTest(env, name, nexe, sel_universal_flags=None, **kwargs):
 pre_base_env.AddMethod(SelUniversalTest)
 
 
-# ----------------------------------------------------------
-
 def MakeNaClLogOption(env, target):
   """ Make up a filename related to the [target], for use with NACLLOG.
   The file should end up in the build directory (scons-out/...).
@@ -2079,7 +2062,7 @@ def ShouldUseVerboseOptions(extra):
   return ('process_output_single' in extra or
           'log_golden' in extra)
 
-# ----------------------------------------------------------
+
 DeclareBit('tests_use_irt', 'Non-browser tests also load the IRT image', False)
 
 # Translate the given pexe.
@@ -2236,7 +2219,7 @@ def CommandSelLdrTestNacl(env, name, nexe,
 
 pre_base_env.AddMethod(CommandSelLdrTestNacl)
 
-# ----------------------------------------------------------
+
 TEST_EXTRA_ARGS = ['stdin', 'log_file',
                    'stdout_golden', 'stderr_golden', 'log_golden',
                    'filter_regex', 'filter_inverse', 'filter_group_only',
@@ -2494,7 +2477,7 @@ def AutoDepsCommand(env, name, command, extra_deps=[], posix_path=False,
 
 pre_base_env.AddMethod(AutoDepsCommand)
 
-# ----------------------------------------------------------
+
 def GetPrintableCommandName(cmd):
   """Look at the first few elements of cmd to derive a suitable command name."""
   cmd_tokens = cmd.split()
@@ -2536,8 +2519,6 @@ def CustomCommandPrinter(cmd, targets, source, env):
 pre_base_env.Append(PRINT_CMD_LINE_FUNC=CustomCommandPrinter)
 
 
-
-# ----------------------------------------------------------
 def GetAbsDirArg(env, argument, target):
   """Fetch the named command-line argument and turn it into an absolute
 directory name.  If the argument is missing, raise a UserError saying
@@ -2549,7 +2530,7 @@ that the given target requires that argument be given."""
 
 pre_base_env.AddMethod(GetAbsDirArg)
 
-# ----------------------------------------------------------
+
 pre_base_env.Append(
     CPPDEFINES = [
         ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
@@ -2756,7 +2737,6 @@ Automagically generated help:
 -----------------------------
 """)
 
-# ---------------------------------------------------------
 
 def SetupClang(env):
   if env.Bit('asan'):
@@ -2801,7 +2781,7 @@ def GenerateOptimizationLevels(env):
 
   return (debug_env, opt_env)
 
-# ----------------------------------------------------------
+
 def SDKInstallBin(env, name, node, target=None):
   """Add the given node to the build_bin and install_bin targets.
 It will be installed under the given name with the build target appended.
@@ -3103,13 +3083,11 @@ def MakeLinuxEnv():
 pre_base_env.Append(
     PNACL_BCLDFLAGS = ARGUMENTS.get('pnacl_bcldflags', '').split(':'))
 
-# ----------------------------------------------------------
+
 # The nacl_env is used to build native_client modules
 # using a special tool chain which produces platform
 # independent binaries
 # NOTE: this loads stuff from: site_scons/site_tools/naclsdk.py
-# ----------------------------------------------------------
-
 nacl_env = MakeArchSpecificEnv().Clone(
     tools = ['naclsdk'],
     NACL_BUILD_FAMILY = 'UNTRUSTED',
@@ -3523,9 +3501,7 @@ nonvariant_tests = ExtendFileList([
 
 nacl_env.Append(BUILD_SCONSCRIPTS=irt_variant_tests + nonvariant_tests)
 
-# ----------------------------------------------------------
-# Possibly install an sdk by downloading it
-# ----------------------------------------------------------
+# Possibly install a toolchain by downloading it
 # TODO: explore using a less heavy weight mechanism
 # NOTE: this uses stuff from: site_scons/site_tools/naclsdk.py
 import SCons.Script
@@ -3567,9 +3543,7 @@ def NaClSdkLibrary(env, lib_name, *args, **kwargs):
 nacl_env.AddMethod(NaClSdkLibrary)
 
 
-# ---------------------------------------------------------------------
 # Special environment for untrusted test binaries that use raw syscalls
-# ---------------------------------------------------------------------
 def RawSyscallObjects(env, sources):
   raw_syscall_env = env.Clone()
   raw_syscall_env.Append(
@@ -3849,9 +3823,8 @@ linux_coverage_env['OPTIONAL_COVERAGE_LIBS'] = '$COVERAGE_LIBS'
 AddDualLibrary(linux_coverage_env)
 environment_list.append(linux_coverage_env)
 
-# ----------------------------------------------------------
+
 # Environment Massaging
-# ----------------------------------------------------------
 RELEVANT_CONFIG = ['NACL_BUILD_FAMILY',
                    'BUILD_TYPE',
                    'TARGET_ROOT',
@@ -3961,7 +3934,7 @@ def PnaclSetEmulatorForSandboxedTranslator(selected_envs):
       env.Append(LINK=' --pnacl-use-emulator')
       env.Append(TRANSLATE=' --pnacl-use-emulator')
 
-# ----------------------------------------------------------
+
 # Blank out defaults.
 Default(None)
 
@@ -4002,9 +3975,8 @@ BuildEnvironments(selected_envs)
 # Change default to build everything, but not run tests.
 Default(['all_programs', 'all_bundles', 'all_test_programs', 'all_libraries'])
 
-# ----------------------------------------------------------
+
 # Sanity check whether we are ready to build nacl modules
-# ----------------------------------------------------------
 # NOTE: this uses stuff from: site_scons/site_tools/naclsdk.py
 if nacl_env.Bit('naclsdk_validate') and (nacl_env in selected_envs or
                                          nacl_irt_env in selected_envs):
