@@ -75,7 +75,7 @@ load_jpeg(FILE *fp)
 {
 	struct jpeg_decompress_struct cinfo;
 	struct jpeg_error_mgr jerr;
-	struct pixman_image_t *pixman_image = NULL;
+	pixman_image_t *pixman_image = NULL;
 	unsigned int i;
 	int stride, first;
 	JSAMPLE *data, *rows[4];
