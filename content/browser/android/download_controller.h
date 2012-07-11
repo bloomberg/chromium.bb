@@ -110,7 +110,7 @@ class DownloadController : public DownloadItem::Observer {
                             int render_process_id,
                             int render_view_id);
 
-  jobject GetContentViewFromWebContents(WebContents* web_contents);
+  jobject GetContentViewCoreFromWebContents(WebContents* web_contents);
   jobject GetContentView(int render_process_id, int render_view_id);
 
   // Creates Java object if it is not created already and returns it.

@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/android/content_view_impl.h"
+#include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/android/device_info.h"
@@ -17,13 +17,13 @@ namespace content {
 
 RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     RenderWidgetHostImpl* widget_host,
-    ContentViewImpl* content_view)
+    ContentViewCoreImpl* content_view_core)
     : host_(widget_host),
-      // ContentViewImpl represents the native side of the Java ContentView.
-      // It being NULL means that it is not attached to the View system yet,
-      // so we treat it as hidden.
-      is_hidden_(!content_view),
-      content_view_(content_view) {
+      // ContentViewCoreImpl represents the native side of the Java
+      // ContentViewCore.  It being NULL means that it is not attached to the
+      // View system yet, so we treat it as hidden.
+      is_hidden_(!content_view_core),
+      content_view_core_(content_view_core) {
   host_->SetView(this);
   // RenderWidgetHost is initialized as visible. If is_hidden_ is true, tell
   // RenderWidgetHost to hide.
@@ -92,7 +92,7 @@ void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
 }
 
 gfx::NativeView RenderWidgetHostViewAndroid::GetNativeView() const {
-  return content_view_;
+  return content_view_core_;
 }
 
 gfx::NativeViewId RenderWidgetHostViewAndroid::GetNativeViewId() const {
@@ -126,10 +126,10 @@ void RenderWidgetHostViewAndroid::Blur() {
 }
 
 bool RenderWidgetHostViewAndroid::HasFocus() const {
-  if (!content_view_)
-    return false;  // ContentView not created yet.
+  if (!content_view_core_)
+    return false;  // ContentViewCore not created yet.
 
-  return content_view_->HasFocus();
+  return content_view_core_->HasFocus();
 }
 
 bool RenderWidgetHostViewAndroid::IsSurfaceAvailableForCopy() const {
@@ -150,10 +150,10 @@ bool RenderWidgetHostViewAndroid::IsShowing() {
 }
 
 gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
-  if (content_view_) {
-    return content_view_->GetBounds();
+  if (content_view_core_) {
+    return content_view_core_->GetBounds();
   } else {
-    // The ContentView has not been created yet. This only happens when
+    // The ContentViewCore has not been created yet. This only happens when
     // renderer asks for creating new window, for example,
     // javascript window.open().
     return gfx::Rect(0, 0, 0, 0);
@@ -194,7 +194,7 @@ void RenderWidgetHostViewAndroid::RenderViewGone(
 }
 
 void RenderWidgetHostViewAndroid::Destroy() {
-  content_view_ = NULL;
+  content_view_core_ = NULL;
 
   // The RenderWidgetHost's destruction led here, so don't call it.
   host_ = NULL;
@@ -212,7 +212,7 @@ void RenderWidgetHostViewAndroid::SelectionChanged(const string16& text,
                                                    const ui::Range& range) {
   RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
 
-  if (text.empty() || range.is_empty() || !content_view_)
+  if (text.empty() || range.is_empty() || !content_view_core_)
     return;
   size_t pos = range.GetMin() - offset;
   size_t n = range.length();
@@ -225,7 +225,7 @@ void RenderWidgetHostViewAndroid::SelectionChanged(const string16& text,
 
   std::string utf8_selection = UTF16ToUTF8(text.substr(pos, n));
 
-  content_view_->OnSelectionChanged(utf8_selection);
+  content_view_core_->OnSelectionChanged(utf8_selection);
 }
 
 BackingStore* RenderWidgetHostViewAndroid::AllocBackingStore(
@@ -249,8 +249,9 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
 
 void RenderWidgetHostViewAndroid::OnAcceleratedCompositingStateChange() {
   const bool activated = host_->is_accelerated_compositing_active();
-  if (content_view_)
-    content_view_->OnAcceleratedCompositingStateChange(this, activated, false);
+  if (content_view_core_)
+    content_view_core_->OnAcceleratedCompositingStateChange(
+        this, activated, false);
 }
 
 void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
@@ -322,12 +323,12 @@ void RenderWidgetHostViewAndroid::UnlockMouse() {
   NOTIMPLEMENTED();
 }
 
-void RenderWidgetHostViewAndroid::SetContentView(
-    ContentViewImpl* content_view) {
-  content_view_ = content_view;
+void RenderWidgetHostViewAndroid::SetContentViewCore(
+    ContentViewCoreImpl* content_view_core) {
+  content_view_core_ = content_view_core;
   if (host_) {
     GpuSurfaceTracker::Get()->SetSurfaceHandle(
-        host_->surface_id(), content_view_ ?
+        host_->surface_id(), content_view_core_ ?
             GetCompositingSurface() : gfx::GLSurfaceHandle());
   }
 }

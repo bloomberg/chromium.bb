@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -218,7 +219,7 @@ void DownloadController::OnPostDownloadStarted(
   // Register for updates to the DownloadItem.
   download_item->AddObserver(this);
 
-  jobject view = GetContentViewFromWebContents(web_contents);
+  jobject view = GetContentViewCoreFromWebContents(web_contents);
   if(!view) {
     // The view went away. Can't proceed.
     return;
@@ -245,14 +246,14 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
   ScopedJavaLocalRef<jstring> jpath =
       ConvertUTF8ToJavaString(env, item->GetFullPath().value());
 
-  jobject view = GetContentViewFromWebContents(item->GetWebContents());
-  if(!view) {
+  jobject view_core = GetContentViewCoreFromWebContents(item->GetWebContents());
+  if (!view_core) {
     // We can get NULL WebContents from the DownloadItem.
     return;
   }
 
   Java_DownloadController_onHttpPostDownloadCompleted(env,
-      GetJavaObject()->Controller(env).obj(), view, jurl.obj(),
+      GetJavaObject()->Controller(env).obj(), view_core, jurl.obj(),
       jcontent_disposition.obj(), jmime_type.obj(), jpath.obj(),
       item->GetReceivedBytes(), true);
 }
@@ -274,10 +275,10 @@ jobject DownloadController::GetContentView(int render_process_id,
   if (!web_contents)
     return NULL;
 
-  return GetContentViewFromWebContents(web_contents);
+  return GetContentViewCoreFromWebContents(web_contents);
 }
 
-jobject DownloadController::GetContentViewFromWebContents(
+jobject DownloadController::GetContentViewCoreFromWebContents(
     WebContents* web_contents) {
   NOTIMPLEMENTED();
   return NULL;

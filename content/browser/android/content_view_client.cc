@@ -9,7 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "content/browser/android/content_util.h"
-#include "content/browser/android/content_view_impl.h"
+#include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/download_controller.h"
 #include "content/browser/android/ime_utils.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"

@@ -5,7 +5,7 @@
 #include "content/browser/web_contents/web_contents_view_android.h"
 
 #include "base/logging.h"
-#include "content/browser/android/content_view_impl.h"
+#include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -34,13 +34,13 @@ WebContentsViewAndroid::WebContentsViewAndroid(
 WebContentsViewAndroid::~WebContentsViewAndroid() {
 }
 
-void WebContentsViewAndroid::SetContentView(
-    ContentViewImpl* content_view) {
-  content_view_ = content_view;
+void WebContentsViewAndroid::SetContentViewCore(
+    ContentViewCoreImpl* content_view_core) {
+  content_view_core_ = content_view_core;
   RenderWidgetHostViewAndroid* rwhv = static_cast<RenderWidgetHostViewAndroid*>(
       web_contents_->GetRenderWidgetHostView());
   if (rwhv)
-    rwhv->SetContentView(content_view_);
+    rwhv->SetContentViewCore(content_view_core_);
   if (web_contents_->ShowingInterstitialPage()) {
     NOTIMPLEMENTED() << "not upstreamed yet";
   }
@@ -66,29 +66,29 @@ RenderWidgetHostView* WebContentsViewAndroid::CreateViewForWidget(
   // order to paint it. See ContentView::GetRenderWidgetHostViewAndroid for an
   // example of how this is achieved for InterstitialPages.
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(render_widget_host);
-  return new RenderWidgetHostViewAndroid(rwhi, content_view_);
+  return new RenderWidgetHostViewAndroid(rwhi, content_view_core_);
 }
 
 gfx::NativeView WebContentsViewAndroid::GetNativeView() const {
-  return content_view_;
+  return content_view_core_;
 }
 
 gfx::NativeView WebContentsViewAndroid::GetContentNativeView() const {
-  return content_view_;
+  return content_view_core_;
 }
 
 gfx::NativeWindow WebContentsViewAndroid::GetTopLevelNativeWindow() const {
-  return content_view_;
+  return content_view_core_;
 }
 
 void WebContentsViewAndroid::GetContainerBounds(gfx::Rect* out) const {
-  if (content_view_)
-    *out = content_view_->GetBounds();
+  if (content_view_core_)
+    *out = content_view_core_->GetBounds();
 }
 
 void WebContentsViewAndroid::SetPageTitle(const string16& title) {
-  if (content_view_)
-    content_view_->SetTitle(title);
+  if (content_view_core_)
+    content_view_core_->SetTitle(title);
 }
 
 void WebContentsViewAndroid::OnTabCrashed(base::TerminationStatus status,
@@ -152,8 +152,8 @@ void WebContentsViewAndroid::CloseTabAfterEventTracking() {
 }
 
 gfx::Rect WebContentsViewAndroid::GetViewBounds() const {
-  if (content_view_)
-    return content_view_->GetBounds();
+  if (content_view_core_)
+    return content_view_core_->GetBounds();
   else
     return gfx::Rect();
 }

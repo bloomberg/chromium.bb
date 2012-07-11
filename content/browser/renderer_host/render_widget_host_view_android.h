@@ -18,7 +18,7 @@ struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
 
 namespace content {
-class ContentViewImpl;
+class ContentViewCoreImpl;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
 struct NativeWebKeyboardEvent;
@@ -29,7 +29,7 @@ struct NativeWebKeyboardEvent;
 class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
  public:
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
-                              ContentViewImpl* content_view);
+                              ContentViewCoreImpl* content_view_core);
   virtual ~RenderWidgetHostViewAndroid();
 
   // RenderWidgetHostView implementation.
@@ -102,7 +102,7 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
 
-  void SetContentView(ContentViewImpl* content_view);
+  void SetContentViewCore(ContentViewCoreImpl* content_view_core);
 
  private:
   // The model object.
@@ -111,8 +111,8 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   // Whether or not this widget is hidden.
   bool is_hidden_;
 
-  // ContentViewImpl is our interface to the view system.
-  ContentViewImpl* content_view_;
+  // ContentViewCoreImpl is our interface to the view system.
+  ContentViewCoreImpl* content_view_core_;
 
   // The size that we want the renderer to be.  We keep this in a separate
   // variable because resizing is async.
