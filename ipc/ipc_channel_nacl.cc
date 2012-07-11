@@ -132,17 +132,6 @@ Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle& channel_handle,
     LOG(WARNING) << "Unable to create pipe named \"" << channel_handle.name
                  << "\" in " << modestr << " mode";
   }
-  reader_thread_runner_.reset(
-      new ReaderThreadRunner(
-          pipe_,
-          base::Bind(&Channel::ChannelImpl::DidRecvMsg,
-                     weak_ptr_factory_.GetWeakPtr()),
-          base::Bind(&Channel::ChannelImpl::ReadDidFail,
-                     weak_ptr_factory_.GetWeakPtr()),
-          base::MessageLoopProxy::current()));
-  reader_thread_.reset(
-      new base::DelegateSimpleThread(reader_thread_runner_.get(),
-                                     "ipc_channel_nacl reader thread"));
 }
 
 Channel::ChannelImpl::~ChannelImpl() {
@@ -155,6 +144,22 @@ bool Channel::ChannelImpl::Connect() {
     return false;
   }
 
+  // Note that Connect is called on the "Channel" thread (i.e., the same thread
+  // where Channel::Send will be called, and the same thread that should receive
+  // messages). The constructor might be invoked on another thread (see
+  // ChannelProxy for an example of that). Therefore, we must wait until Connect
+  // is called to decide which MessageLoopProxy to pass to ReaderThreadRunner.
+  reader_thread_runner_.reset(
+      new ReaderThreadRunner(
+          pipe_,
+          base::Bind(&Channel::ChannelImpl::DidRecvMsg,
+                     weak_ptr_factory_.GetWeakPtr()),
+          base::Bind(&Channel::ChannelImpl::ReadDidFail,
+                     weak_ptr_factory_.GetWeakPtr()),
+          base::MessageLoopProxy::current()));
+  reader_thread_.reset(
+      new base::DelegateSimpleThread(reader_thread_runner_.get(),
+                                     "ipc_channel_nacl reader thread"));
   reader_thread_->Start();
   waiting_connect_ = false;
   // If there were any messages queued before connection, send them.
