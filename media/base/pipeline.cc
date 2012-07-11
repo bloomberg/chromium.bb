@@ -1227,16 +1227,8 @@ void Pipeline::OnDemuxerStopDone(const base::Closure& callback) {
 }
 
 void Pipeline::DoSeek(TimeDelta seek_timestamp) {
-  // TODO(acolwell): We might be able to convert this if (demuxer_) into a
-  // DCHECK(). Further investigation is needed to make sure this won't introduce
-  // a bug.
-  if (demuxer_) {
-    demuxer_->Seek(seek_timestamp, base::Bind(
-        &Pipeline::OnDemuxerSeekDone, this, seek_timestamp));
-    return;
-  }
-
-  OnDemuxerSeekDone(seek_timestamp, PIPELINE_OK);
+  demuxer_->Seek(seek_timestamp, base::Bind(
+      &Pipeline::OnDemuxerSeekDone, this, seek_timestamp));
 }
 
 void Pipeline::OnDemuxerSeekDone(TimeDelta seek_timestamp,
