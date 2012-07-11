@@ -120,8 +120,7 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
   if (!node || !browser)
     return; // shouldn't be reached
 
-  bookmark_utils::OpenAll(NULL, browser->profile(), browser, node,
-                          disposition);
+  bookmark_utils::OpenAll(NULL, browser, node, disposition);
 
   if (disposition == NEW_FOREGROUND_TAB) {
     content::RecordAction(UserMetricsAction("OpenAllBookmarks"));

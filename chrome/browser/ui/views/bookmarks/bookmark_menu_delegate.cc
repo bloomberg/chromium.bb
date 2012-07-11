@@ -127,8 +127,9 @@ void BookmarkMenuDelegate::ExecuteCommand(int id, int mouse_event_flags) {
   std::vector<const BookmarkNode*> selection;
   selection.push_back(node);
 
-  bookmark_utils::OpenAll(parent_->GetNativeWindow(), profile_, page_navigator_,
-      selection, chrome::DispositionFromEventFlags(mouse_event_flags));
+  bookmark_utils::OpenAll(
+      parent_->GetNativeWindow(), page_navigator_, selection,
+      chrome::DispositionFromEventFlags(mouse_event_flags));
   bookmark_utils::RecordBookmarkLaunch(location_);
 }
 

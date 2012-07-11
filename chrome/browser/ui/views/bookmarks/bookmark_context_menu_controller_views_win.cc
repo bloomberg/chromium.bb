@@ -8,11 +8,58 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/views/widget/widget.h"
 
+using content::OpenURLParams;
 using content::UserMetricsAction;
+using content::WebContents;
+
+namespace {
+
+// A PageNavigator implementation that creates a new Browser. This is used when
+// opening a url and there is no Browser open. The Browser is created the first
+// time the PageNavigator method is invoked.
+class NewBrowserPageNavigator : public content::PageNavigator {
+ public:
+  explicit NewBrowserPageNavigator(Profile* profile)
+      : profile_(profile),
+        browser_(NULL) {}
+
+  virtual ~NewBrowserPageNavigator() {
+    if (browser_)
+      browser_->window()->Show();
+  }
+
+  Browser* browser() const { return browser_; }
+
+  virtual WebContents* OpenURL(const OpenURLParams& params) OVERRIDE {
+    if (!browser_) {
+      Profile* profile = (params.disposition == OFF_THE_RECORD) ?
+          profile_->GetOffTheRecordProfile() : profile_;
+      browser_ = Browser::Create(profile);
+    }
+
+    OpenURLParams forward_params = params;
+    forward_params.disposition = NEW_FOREGROUND_TAB;
+    return browser_->OpenURL(forward_params);
+  }
+
+ private:
+  Profile* profile_;
+  Browser* browser_;
+
+  DISALLOW_COPY_AND_ASSIGN(NewBrowserPageNavigator);
+};
+
+}  // namespace
 
 // static
 BookmarkContextMenuControllerViews* BookmarkContextMenuControllerViews::Create(
@@ -68,12 +115,19 @@ void BookmarkContextMenuControllerViewsWin::ExecuteCommand(int id) {
           content::RecordAction(
               UserMetricsAction("BookmarkBar_ContextMenu_OpenAllIncognito"));
         }
-        // Passing in NULL for the PageNavigator ensures that we first look for
-        // an existing browser window to handle the request before trying to
-        // create one.
-        bookmark_utils::OpenAll(parent_widget()->GetNativeWindow(),
-                                profile_to_use, NULL, selection(),
-                                NEW_FOREGROUND_TAB);
+
+        NewBrowserPageNavigator navigator_impl(profile_to_use);
+        Browser* browser = browser::FindTabbedBrowser(profile_to_use, false);
+        content::PageNavigator* navigator = NULL;
+        if (!browser || !chrome::GetActiveWebContents(browser)) {
+          navigator = &navigator_impl;
+        } else {
+          browser->window()->Activate();
+          navigator = chrome::GetActiveWebContents(browser);
+        }
+
+        bookmark_utils::OpenAll(parent_widget()->GetNativeWindow(), navigator,
+                                selection(), NEW_FOREGROUND_TAB);
         bookmark_utils::RecordBookmarkLaunch(
             bookmark_utils::LAUNCH_CONTEXT_MENU);
         return;

@@ -1042,16 +1042,16 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
   WindowOpenDisposition disposition_from_event_flags =
       chrome::DispositionFromEventFlags(sender->mouse_event_flags());
 
-  Profile* profile = browser_->profile();
   if (node->is_url()) {
-    RecordAppLaunch(profile, node->url());
+    RecordAppLaunch(browser_->profile(), node->url());
     OpenURLParams params(
         node->url(), Referrer(), disposition_from_event_flags,
         content::PAGE_TRANSITION_AUTO_BOOKMARK, false);
     page_navigator_->OpenURL(params);
   } else {
-    bookmark_utils::OpenAll(GetWidget()->GetNativeWindow(), profile,
-        page_navigator_, node, disposition_from_event_flags);
+    bookmark_utils::OpenAll(
+        GetWidget()->GetNativeWindow(), page_navigator_, node,
+        disposition_from_event_flags);
   }
 
   bookmark_utils::RecordBookmarkLaunch(IsDetached() ?

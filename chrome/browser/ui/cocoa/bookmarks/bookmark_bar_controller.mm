@@ -2621,7 +2621,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     disposition:(WindowOpenDisposition)disposition {
   [self closeFolderAndStopTrackingMenus];
   bookmark_utils::OpenAll([[self view] window],
-                          browser_->profile(),
                           browser_,
                           node,
                           disposition);

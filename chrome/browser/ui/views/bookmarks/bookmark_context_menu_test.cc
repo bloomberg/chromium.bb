@@ -125,8 +125,7 @@ TEST_F(BookmarkContextMenuTest, DeleteURL) {
 // Tests open all on a folder with a couple of bookmarks.
 TEST_F(BookmarkContextMenuTest, OpenAll) {
   const BookmarkNode* folder = model_->bookmark_bar_node()->GetChild(1);
-  bookmark_utils::OpenAll(
-      NULL, profile_.get(), &navigator_, folder, NEW_FOREGROUND_TAB);
+  bookmark_utils::OpenAll(NULL, &navigator_, folder, NEW_FOREGROUND_TAB);
 
   // Should have navigated to F1's child but not F11's child.
   ASSERT_EQ(static_cast<size_t>(1), navigator_.urls_.size());

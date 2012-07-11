@@ -128,7 +128,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
         content::RecordAction(
             UserMetricsAction("BookmarkBar_ContextMenu_OpenAllIncognito"));
       }
-      bookmark_utils::OpenAll(parent_window_, profile_, navigator_, selection_,
+      bookmark_utils::OpenAll(parent_window_, navigator_, selection_,
                               initial_disposition);
       break;
     }

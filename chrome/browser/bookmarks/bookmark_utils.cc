@@ -21,12 +21,9 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -58,41 +55,6 @@ using content::PageNavigator;
 using content::WebContents;
 
 namespace {
-
-// A PageNavigator implementation that creates a new Browser. This is used when
-// opening a url and there is no Browser open. The Browser is created the first
-// time the PageNavigator method is invoked.
-class NewBrowserPageNavigator : public PageNavigator {
- public:
-  explicit NewBrowserPageNavigator(Profile* profile)
-      : profile_(profile),
-        browser_(NULL) {}
-
-  virtual ~NewBrowserPageNavigator() {
-    if (browser_)
-      browser_->window()->Show();
-  }
-
-  Browser* browser() const { return browser_; }
-
-  virtual WebContents* OpenURL(const OpenURLParams& params) OVERRIDE {
-    if (!browser_) {
-      Profile* profile = (params.disposition == OFF_THE_RECORD) ?
-          profile_->GetOffTheRecordProfile() : profile_;
-      browser_ = Browser::Create(profile);
-    }
-
-    OpenURLParams forward_params = params;
-    forward_params.disposition = NEW_FOREGROUND_TAB;
-    return browser_->OpenURL(forward_params);
-  }
-
- private:
-  Profile* profile_;
-  Browser* browser_;
-
-  DISALLOW_COPY_AND_ASSIGN(NewBrowserPageNavigator);
-};
 
 void CloneBookmarkNodeImpl(BookmarkModel* model,
                            const BookmarkNodeData::Element& element,
@@ -377,26 +339,11 @@ void DragBookmarks(Profile* profile,
 }
 
 void OpenAll(gfx::NativeWindow parent,
-             Profile* profile,
              PageNavigator* navigator,
              const std::vector<const BookmarkNode*>& nodes,
              WindowOpenDisposition initial_disposition) {
   if (!ShouldOpenAll(parent, nodes))
     return;
-
-  NewBrowserPageNavigator navigator_impl(profile);
-  if (!navigator) {
-    Browser* browser = browser::FindTabbedBrowser(profile, false);
-    if (!browser || !chrome::GetActiveWebContents(browser)) {
-      navigator = &navigator_impl;
-    } else {
-      if (initial_disposition != NEW_WINDOW &&
-          initial_disposition != OFF_THE_RECORD) {
-        browser->window()->Activate();
-      }
-      navigator = chrome::GetActiveWebContents(browser);
-    }
-  }
 
   bool opened_url = false;
   for (size_t i = 0; i < nodes.size(); ++i)
@@ -404,13 +351,12 @@ void OpenAll(gfx::NativeWindow parent,
 }
 
 void OpenAll(gfx::NativeWindow parent,
-             Profile* profile,
              PageNavigator* navigator,
              const BookmarkNode* node,
              WindowOpenDisposition initial_disposition) {
   std::vector<const BookmarkNode*> nodes;
   nodes.push_back(node);
-  OpenAll(parent, profile, navigator, nodes, initial_disposition);
+  OpenAll(parent, navigator, nodes, initial_disposition);
 }
 
 void CopyToClipboard(BookmarkModel* model,

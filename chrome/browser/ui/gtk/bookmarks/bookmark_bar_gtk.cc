@@ -1150,10 +1150,10 @@ void BookmarkBarGtk::OnClicked(GtkWidget* sender) {
   DCHECK(node->is_url());
   DCHECK(page_navigator_);
 
-  Profile* profile = browser_->profile();
-  RecordAppLaunch(profile, node->url());
-  bookmark_utils::OpenAll(window_->GetNativeWindow(), profile, page_navigator_,
-      node, event_utils::DispositionForCurrentButtonPressEvent());
+  RecordAppLaunch(browser_->profile(), node->url());
+  bookmark_utils::OpenAll(
+      window_->GetNativeWindow(), page_navigator_, node,
+      event_utils::DispositionForCurrentButtonPressEvent());
 
   content::RecordAction(UserMetricsAction("ClickedBookmarkBarURLButton"));
 }
@@ -1237,8 +1237,8 @@ void BookmarkBarGtk::OnFolderClicked(GtkWidget* sender) {
     PopupForButton(sender);
   } else if (event->button.button == 2) {
     const BookmarkNode* node = GetNodeForToolButton(sender);
-    bookmark_utils::OpenAll(window_->GetNativeWindow(), browser_->profile(),
-                            page_navigator_, node, NEW_BACKGROUND_TAB);
+    bookmark_utils::OpenAll(window_->GetNativeWindow(), page_navigator_, node,
+                            NEW_BACKGROUND_TAB);
   }
 }
 
