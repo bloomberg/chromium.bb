@@ -621,10 +621,10 @@ void ChromeLauncherController::Observe(
           details);
       const Extension* extension = unload_info->extension;
       if (IsAppPinned(extension->id())) {
-        if (unload_info->reason == extension_misc::UNLOAD_REASON_UNINSTALL)
-          DoUnpinAppsWithID(extension->id());
-        else
+        if (unload_info->reason == extension_misc::UNLOAD_REASON_UPDATE)
           MarkAppPending(extension->id());
+        else
+          DoUnpinAppsWithID(extension->id());
       }
       break;
     }
