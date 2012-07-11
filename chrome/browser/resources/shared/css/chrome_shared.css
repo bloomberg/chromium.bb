@@ -136,20 +136,19 @@ html[dir='rtl'] .weakrtl input::-webkit-input-placeholder {
     padding-top: 8px;
   }
 
-  button:not(.custom-appearance):not(.link-button),
-  input[type=button]:not(.custom-appearance),
-  input[type=submit]:not(.custom-appearance),
-  select {
+  :-webkit-any(button,
+               input[type='button'],
+               input[type='submit'],
+               select):not(.custom-appearance):not(.link-button) {
     margin-bottom: 6px;
     margin-top: 6px;
-    padding-bottom: 7px;
-    padding-top: 6px;
   }
 
-  list button:not(.custom-appearance):not(.link-button),
-  list input[type=button]:not(.custom-appearance),
-  list input[type=submit]:not(.custom-appearance),
-  list select {
+  list :-webkit-any(
+      button,
+      input[type='button'],
+      input[type='submit'],
+      select):not(.custom-appearance):not(.link-button) {
     margin: 0;
     padding-bottom: 0;
     padding-top: 3px;
