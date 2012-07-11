@@ -112,7 +112,7 @@ void ModuleSystemTest::OverrideNativeHandler(const std::string& name,
 
 void ModuleSystemTest::TearDown() {
   if (try_catch_.HasCaught())
-    ModuleSystem::DumpException(try_catch_.Message());
+    ModuleSystem::DumpException(try_catch_);
   EXPECT_FALSE(try_catch_.HasCaught());
   // All tests must assert at least once unless otherwise specified.
   EXPECT_EQ(should_assertions_be_made_,

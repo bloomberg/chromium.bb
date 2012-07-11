@@ -469,6 +469,12 @@
         "name": "onKeyEvent",
         "type": "function",
         "description": "This event is sent if this extension owns the active IME.",
+        "options": {
+          "supportsFilters": false,
+          "supportsListeners": true,
+          "supportsRules": false,
+          "maxListeners": 1
+        },
         "parameters": [
           {
             "type": "string",

@@ -97,12 +97,14 @@ chromeHidden.registerCustomHook('omnibox', function(bindingsAPI) {
     }
     return [requestId, suggestions];
   });
+});
 
-  chrome.omnibox.onInputChanged.dispatch =
-      function(text, requestId) {
-    var suggestCallback = function(suggestions) {
-      chrome.omnibox.sendSuggestions(requestId, suggestions);
-    };
-    chrome.Event.prototype.dispatch.apply(this, [text, suggestCallback]);
+chromeHidden.Event.registerArgumentMassager('omnibox.onInputChanged',
+    function(args, dispatch) {
+  var text = args[0];
+  var requestId = args[1];
+  var suggestCallback = function(suggestions) {
+    chrome.omnibox.sendSuggestions(requestId, suggestions);
   };
+  dispatch([text, suggestCallback]);
 });
