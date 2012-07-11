@@ -259,8 +259,8 @@ def _CheckNoIOStreamInHeaders(input_api, output_api):
 
   if len(files):
     return [ output_api.PresubmitError(
-        'Do not #include <iostream> in header files, since it inserts static ' +
-        'initialization into every file including the header. Instead, ' +
+        'Do not #include <iostream> in header files, since it inserts static '
+        'initialization into every file including the header. Instead, '
         '#include <ostream>. See http://crbug.com/94794',
         files) ]
   return []
@@ -354,6 +354,25 @@ def _CheckNoBannedFunctions(input_api, output_api):
   return result
 
 
+def _CheckNoPragmaOnce(input_api, output_api):
+  """Make sure that banned functions are not used."""
+  files = []
+  pattern = input_api.re.compile(r'^#pragma\s+once',
+                                 input_api.re.MULTILINE)
+  for f in input_api.AffectedSourceFiles(input_api.FilterSourceFile):
+    if not f.LocalPath().endswith('.h'):
+      continue
+    contents = input_api.ReadFile(f)
+    if pattern.search(contents):
+      files.append(f)
+
+  if files:
+    return [output_api.PresubmitError(
+        'Do not use #pragma once in header files.\n'
+        'See http://www.chromium.org/developers/coding-style#TOC-File-headers',
+        files)]
+  return []
+
 
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
@@ -368,6 +387,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoNewWStrings(input_api, output_api))
   results.extend(_CheckNoDEPSGIT(input_api, output_api))
   results.extend(_CheckNoBannedFunctions(input_api, output_api))
+  results.extend(_CheckNoPragmaOnce(input_api, output_api))
   return results
 
 
