@@ -302,6 +302,36 @@ class Imm12Bits0To11Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm12Bits0To11Interface);
 };
 
+// Interface class to pull out an immediate 24 address in bits 0 through 23
+class Imm24AddressBits0To23Interface {
+ public:
+  static inline uint32_t value(const Instruction& i) {
+    return i.Bits(23, 0);
+  }
+  static inline int32_t relative_address(const Instruction& i) {
+    // Sign extend and shift left 2:
+    int32_t offset = (int32_t)(value(i) << 8) >> 6;
+    return offset + 8;  // because r15 reads as 8 bytes ahead
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm24AddressBits0To23Interface);
+};
+
+// Interface class to pull out a Register List in bits 0 through 15
+class RegisterListBits0To15Interface {
+ public:
+  static inline uint32_t value(const Instruction& i) {
+    return i.Bits(15, 0);
+  }
+  static inline RegisterList registers(const Instruction& i) {
+    return RegisterList(value(i));
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(RegisterListBits0To15Interface);
+};
+
 // Interface class to pull out an immediate value in bits 7 through 11.
 class Imm5Bits7To11Interface {
  public:
@@ -440,6 +470,9 @@ class AddOffsetBit23Interface {
 // for indexing.
 class PrePostIndexingBit24Interface {
  public:
+  static inline bool IsDefined(const Instruction& i) {
+    return i.Bit(24);
+  }
   static inline bool IsPreIndexing(const Instruction& i) {
     return i.Bit(24);
   }

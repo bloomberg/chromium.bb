@@ -174,6 +174,30 @@ class Immediate16Use : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Immediate16Use);
 };
 
+// Models a branch to a 24-bit (left-shifted two bits) address.
+// B{L}<c> <label>
+// +--------+------+--+------------------------------------------------+
+// |31302928|272625|24|2322212019181716151413121110 9 8 7 6 5 4 3 2 1 0|
+// +--------+------+--+------------------------------------------------+
+// |  cond  |      | P|                 imm24                          |
+// +--------+------+--+------------------------------------------------+
+class BranchImmediate24 : public ClassDecoder {
+ public:
+  static const Imm24AddressBits0To23Interface imm24;
+  static const PrePostIndexingBit24Interface link_flag;
+  static const ConditionBits28To31Interface cond;
+
+  inline BranchImmediate24() {}
+  virtual ~BranchImmediate24() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+  virtual bool is_relative_branch(Instruction i) const;
+  virtual int32_t branch_target_offset(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(BranchImmediate24);
+};
+
 // Defines a break point, which is also used to act as a constant pool header
 // if the constant is 0x7777.
 class BreakPointAndConstantPoolHead : public Immediate16Use {
@@ -737,6 +761,62 @@ class Store2RegisterImm12Op : public LoadStore2RegisterImm12Op {
 
  protected:
   NACL_DISALLOW_COPY_AND_ASSIGN(Store2RegisterImm12Op);
+};
+
+// Models a load/store of  multiple registers into/out of memory.
+// Op<c> <Rn>{!}, <registers>
+// +--------+------------+--+--+--------+--------------------------------+
+// |31302928|272625242322|21|20|19181716|151413121110 9 8 7 6 5 4 3 2 1 0|
+// +--------+------------+--+--+--------+--------------------------------+
+// |  cond  |            | W|  |   Rn   |         register_list          |
+// +--------+------------+--+--+--------+--------------------------------+
+// if n=15 || BitCount(registers) < 1 then UNPREDICTABLE.
+class LoadStoreRegisterList : public ClassDecoder {
+ public:
+  // Interfaces for components in the instruction.
+  static const RegisterListBits0To15Interface register_list;
+  static const RegNBits16To19Interface n;
+  static const WritesBit21Interface wback;
+  static const ConditionBits28To31Interface cond;
+
+  // Methods for class.
+  inline LoadStoreRegisterList() {}
+  virtual ~LoadStoreRegisterList() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStoreRegisterList);
+};
+
+// A LoadStoreRegisterList with constraint:
+// Arm constraints:
+// If wback && register<n> == '1' && ArchVerision() >= 7 then UNPREDICTABLE.
+// Note: Since we don't know how to implement ArchVersion(), we are being
+// safe by assuming ArchVersion() >= 7.
+// Nacl Constraints:
+// If registers<pc> == '1' then FORBIDDEN_OPERANDS.
+
+class LoadRegisterList : public LoadStoreRegisterList {
+ public:
+  inline LoadRegisterList() {}
+  virtual ~LoadRegisterList() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadRegisterList);
+};
+
+class StoreRegisterList : public LoadStoreRegisterList {
+ public:
+  inline StoreRegisterList() {}
+  virtual ~StoreRegisterList() {}
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(StoreRegisterList);
 };
 
 // Models a 3-register binary operation of the form:

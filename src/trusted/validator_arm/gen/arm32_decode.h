@@ -192,7 +192,7 @@ class Arm32DecoderState : DecoderState {
   const StoreBasedOffsetMemory StoreBasedOffsetMemory_instance_;
   const StoreBasedOffsetMemoryDouble StoreBasedOffsetMemoryDouble_instance_;
   const StoreCoprocessor StoreCoprocessor_instance_;
-  const StoreImmediate StoreImmediate_instance_;
+  const StoreRegisterList StoreRegisterList_instance_;
   const TestIfAddressMasked TestIfAddressMasked_instance_;
   const Unary1RegisterBitRange Unary1RegisterBitRange_instance_;
   const Unary1RegisterSet Unary1RegisterSet_instance_;

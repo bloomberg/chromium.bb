@@ -53,7 +53,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , StoreBasedOffsetMemory_instance_()
   , StoreBasedOffsetMemoryDouble_instance_()
   , StoreCoprocessor_instance_()
-  , StoreImmediate_instance_()
+  , StoreRegisterList_instance_()
   , TestIfAddressMasked_instance_()
   , Unary1RegisterBitRange_instance_()
   , Unary1RegisterSet_instance_()
@@ -114,7 +114,7 @@ const ClassDecoder& Arm32DecoderState::decode_branch_block_xfer(
 {
   UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x02500000) == 0x00000000 /* op(25:20) == 0xx0x0 */)
-    return StoreImmediate_instance_;
+    return StoreRegisterList_instance_;
 
   if ((insn.Bits() & 0x02500000) == 0x00100000 /* op(25:20) == 0xx0x1 */)
     return LoadMultiple_instance_;

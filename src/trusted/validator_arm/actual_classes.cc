@@ -567,7 +567,9 @@ SafetyLevel LoadMultiple::safety(const Instruction i) const {
     // (Pre-v7 this was still a weird thing to do.)
     return UNPREDICTABLE;
   }
-
+  if (Rn(i).Equals(kRegisterPc) || (i.Bits(15, 0) == 0)) {
+    return UNPREDICTABLE;
+  }
   if (defs(i).Contains(kRegisterPc)) {
     return FORBIDDEN_OPERANDS;
   }

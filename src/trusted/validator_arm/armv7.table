@@ -108,6 +108,7 @@
 
 class BreakPointAndConstantPoolHead : Immediate16Use
 class ForbiddenCondNop : UnsafeCondNop
+class LoadRegisterList : LoadStoreRegisterList      
 class Load3RegisterDoubleOp : LoadStore3RegisterDoubleOp
 class Load2RegisterImm8DoubleOp : LoadStore2RegisterImm8DoubleOp
 class Load2RegisterImm8Op : LoadStore2RegisterImm8Op
@@ -116,6 +117,7 @@ class Load3RegisterImm5Op : LoadStore3RegisterImm5Op
 class Load3RegisterOp : LoadStore3RegisterOp
 class MaskedBinary2RegisterImmediateOp : Binary2RegisterImmediateOp
 class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
+class StoreRegisterList : LoadStoreRegisterList
 class Store3RegisterDoubleOp : LoadStore3RegisterDoubleOp
 class Store2RegisterImm8DoubleOp : LoadStore2RegisterImm8DoubleOp
 class Store2RegisterImm8Op : LoadStore2RegisterImm8Op
@@ -1155,20 +1157,49 @@ class Store3RegisterOp : LoadStore3RegisterOp
 +--
 
 +-- branch_block_xfer (See Section A5.5)
+# TODO(karl): Clean up the actual classes once baseline has been committed.
 | op(25:20) R(15)
-| 0000x0    -     =StoreImmediate  # STMDA / STMED
-| 0000x1    -     =LoadMultiple    # LDMDA / LDMFA
-| 0010x0    -     =StoreImmediate  # STM / STMIA / STMEA
-| 0010x1    -     =LoadMultiple    # LDM / LDMIA / LDMFD
-| 0100x0    -     =StoreImmediate  # STMDB / STMFD
-| 0100x1    -     =LoadMultiple    # LDMDB / LDMEA
-| 0110x0    -     =StoreImmediate  # STMIB / STMFA
-| 0110x1    -     =LoadMultiple    # LDMIB / LDMED
-| 0xx1x0    -     =Forbidden       # STM, ring0 version
-| 0xx1x1    0     =Forbidden       # LDM, ring0 version
-| "         1     =Forbidden       # LDM, exception return
-| 10xxxx    -     =Branch          # B
-| 11xxxx    -     =Branch          # BL
+| 0000x0    -     = StoreRegisterList
+                    Stmda_Stmed_Rule_190_A1_P376
+                    cccc100000w0nnnnrrrrrrrrrrrrrrrr
+| 0000x1    -     = LoadRegisterList => LoadMultiple
+                    Ldmda_Ldmfa_Rule_54_A1_P112
+                    cccc100000w1nnnnrrrrrrrrrrrrrrrr
+| 0010x0    -     = StoreRegisterList
+                    Stm_Stmia_Stmea_Rule_189_A1_P374
+                    cccc100010w0nnnnrrrrrrrrrrrrrrrr
+# Note: When W=1 and Rn=Sp, the following instruction implements POP.
+| 0010x1    -     = LoadRegisterList => LoadMultiple
+                    Ldm_Ldmia_Ldmfd_Rule_53_A1_P110
+                    cccc100010w1nnnnrrrrrrrrrrrrrrrr
+# Note: When W=1 and Rn=Sp, the following instruction implements PUSH.
+| 0100x0    -     = StoreRegisterList
+                    Stmdb_Stmfd_Rule_191_A1_P378
+                    cccc100100w0nnnnrrrrrrrrrrrrrrrr
+| 0100x1    -     = LoadRegisterList => LoadMultiple
+                    Ldmdb_Ldmea_Rule_55_A1_P114
+                    cccc100100w1nnnnrrrrrrrrrrrrrrrr
+| 0110x0    -     = StoreRegisterList
+                    Stmid_Stmfa_Rule_192_A1_P380
+                    cccc100110w0nnnnrrrrrrrrrrrrrrrr
+| 0110x1    -     = LoadRegisterList => LoadMultiple
+                    Ldmib_Ldmed_Rule_56_A1_P116
+                    cccc100110w1nnnnrrrrrrrrrrrrrrrr
+| 0xx1x0    -     = ForbiddenCondNop => Forbidden
+                    Stm_Rule_11_B6_A1_P22 # ring0 version
+                    cccc100pu100nnnnrrrrrrrrrrrrrrrr
+| 0xx1x1    0     = ForbiddenCondNop => Forbidden
+                    Ldm_Rule_3_B6_A1_P7   # ring0 version
+                    cccc100pu101nnnn0rrrrrrrrrrrrrrr
+| "         1     = ForbiddenCondNop => Forbidden
+                    Ldm_Rule_2_B6_A1_P5   # exception return
+                    cccc100pu1w1nnnn1rrrrrrrrrrrrrrr
+| 10xxxx    -     = BranchImmediate24 => Branch
+                    B_Rule_16_A1_P44
+                    cccc1010iiiiiiiiiiiiiiiiiiiiiiii
+| 11xxxx    -     = BranchImmediate24 => Branch
+                    Bl_Blx_Rule_23_A1_P58
+                    cccc1011iiiiiiiiiiiiiiiiiiiiiiii
 +--
 
 +-- super_cop (See Section A5.6)

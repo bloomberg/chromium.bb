@@ -66,6 +66,26 @@ RegisterList Immediate16Use::defs(const Instruction i) const {
   return RegisterList();
 }
 
+// BranchImmediate24
+SafetyLevel BranchImmediate24::safety(const Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return MAY_BE_SAFE;
+}
+
+RegisterList BranchImmediate24::defs(const Instruction i) const {
+  return RegisterList(kRegisterPc).
+      Add(link_flag.IsDefined(i) ? kRegisterLink : kRegisterNone);
+}
+
+bool BranchImmediate24::is_relative_branch(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return true;
+}
+
+int32_t BranchImmediate24::branch_target_offset(Instruction i) const {
+  return imm24.relative_address(i);
+}
+
 // BreakPointAndConstantPoolHead
 bool BreakPointAndConstantPoolHead::
 is_literal_pool_head(const Instruction i) const {
@@ -460,6 +480,43 @@ bool Load2RegisterImm12Op::offset_is_immediate(Instruction i) const {
 // Store2RegisterImm12Op
 RegisterList Store2RegisterImm12Op::defs(Instruction i) const {
   return immediate_addressing_defs(i);
+}
+
+// LoadStoreRegisterList
+SafetyLevel LoadStoreRegisterList::safety(const Instruction i) const {
+  if (n.reg(i).Equals(kRegisterPc) || (register_list.value(i) == 0)) {
+    return UNPREDICTABLE;
+  }
+  return MAY_BE_SAFE;
+}
+
+RegisterList LoadStoreRegisterList::defs(const Instruction i) const {
+  return immediate_addressing_defs(i);
+}
+
+Register LoadStoreRegisterList::
+base_address_register(const Instruction i) const {
+  return n.reg(i);
+}
+
+RegisterList LoadStoreRegisterList::
+immediate_addressing_defs(const Instruction i) const {
+  return RegisterList(wback.IsDefined(i) ? n.reg(i) : kRegisterNone);
+}
+
+// LoadRegisterList
+SafetyLevel LoadRegisterList::safety(const Instruction i) const {
+  if (wback.IsDefined(i) && register_list.registers(i).Contains(n.reg(i))) {
+    return UNPREDICTABLE;
+  }
+  if (register_list.registers(i).Contains(kRegisterPc)) {
+    return FORBIDDEN_OPERANDS;
+  }
+  return LoadStoreRegisterList::safety(i);
+}
+
+RegisterList LoadRegisterList::defs(const Instruction i) const {
+  return register_list.registers(i).Union(LoadStoreRegisterList::defs(i));
 }
 
 // LoadStore3RegisterOp

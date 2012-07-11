@@ -179,6 +179,26 @@ class Immediate16UseTester : public CondDecoderTester {
   NACL_DISALLOW_COPY_AND_ASSIGN(Immediate16UseTester);
 };
 
+// Implements a decoder tester for BranchImmediate24.
+// B{L}<c> <label>
+// +--------+------+--+------------------------------------------------+
+// |31302928|272625|24|2322212019181716151413121110 9 8 7 6 5 4 3 2 1 0|
+// +--------+------+--+------------------------------------------------+
+// |  cond  |      | P|                 imm24                          |
+// +--------+------+--+------------------------------------------------+
+class BranchImmediate24Tester : public CondDecoderTester {
+ public:
+  explicit BranchImmediate24Tester(const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::BranchImmediate24 expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(BranchImmediate24Tester);
+};
+
 // Implements a decoder tester for decoder BranchToRegister.
 // Op<c> <Rm>
 // +--------+---------------------------------------------+--+--+--------+
@@ -255,7 +275,7 @@ class Unary1RegisterImmediateOpTesterRegsNotPc
 class Unary1RegisterImmediateOpTesterNotRdIsPcAndS
     : public Unary1RegisterImmediateOpTester {
  public:
-  Unary1RegisterImmediateOpTesterNotRdIsPcAndS(
+  explicit Unary1RegisterImmediateOpTesterNotRdIsPcAndS(
       const NamedClassDecoder& decoder);
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -475,7 +495,7 @@ class Binary2RegisterImmediateOpTester : public  CondDecoderTester {
 class Binary2RegisterImmediateOpTesterNotRdIsPcAndS
     : public Binary2RegisterImmediateOpTester {
  public:
-  Binary2RegisterImmediateOpTesterNotRdIsPcAndS(
+  explicit Binary2RegisterImmediateOpTesterNotRdIsPcAndS(
       const NamedClassDecoder& decoder);
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -494,7 +514,7 @@ class Binary2RegisterImmediateOpTesterNotRdIsPcAndS
 class Binary2RegisterImmediateOpTesterNeitherRdIsPcAndSNorRnIsPcAndNotS
     : public Binary2RegisterImmediateOpTesterNotRdIsPcAndS {
  public:
-  Binary2RegisterImmediateOpTesterNeitherRdIsPcAndSNorRnIsPcAndNotS(
+  explicit Binary2RegisterImmediateOpTesterNeitherRdIsPcAndSNorRnIsPcAndNotS(
       const NamedClassDecoder& decoder);
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -861,7 +881,7 @@ class LoadStore2RegisterImm8OpTester : public CondDecoderTester {
 class LoadStore2RegisterImm8OpTesterNotRnIsPc
     : public LoadStore2RegisterImm8OpTester {
  public:
-  LoadStore2RegisterImm8OpTesterNotRnIsPc(
+  explicit LoadStore2RegisterImm8OpTesterNotRnIsPc(
       const NamedClassDecoder& decoder);
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -897,7 +917,7 @@ class LoadStore2RegisterImm8DoubleOpTester
 class LoadStore2RegisterImm8DoubleOpTesterNotRnIsPc
     : public LoadStore2RegisterImm8DoubleOpTester {
  public:
-  LoadStore2RegisterImm8DoubleOpTesterNotRnIsPc(
+  explicit LoadStore2RegisterImm8DoubleOpTesterNotRnIsPc(
       const NamedClassDecoder& decoder);
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -955,7 +975,7 @@ class LoadStore2RegisterImm12OpTester : public CondDecoderTester {
 class LoadStore2RegisterImm12OpTesterNotRnIsPc
     : public LoadStore2RegisterImm12OpTester {
  public:
-  LoadStore2RegisterImm12OpTesterNotRnIsPc(
+  explicit LoadStore2RegisterImm12OpTesterNotRnIsPc(
       const NamedClassDecoder& decoder);
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -966,6 +986,29 @@ class LoadStore2RegisterImm12OpTesterNotRnIsPc
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImm12OpTesterNotRnIsPc);
+};
+
+// Tests decoder class LoadStoreRegisterList.
+// Models a load/store of  multiple registers into/out of memory.
+// Op<c> <Rn>{!}, <registers>
+// +--------+------------+--+--+--------+--------------------------------+
+// |31302928|272625242322|21|20|19181716|151413121110 9 8 7 6 5 4 3 2 1 0|
+// +--------+------------+--+--+--------+--------------------------------+
+// |  cond  |            | W|  |   Rn   |         register_list          |
+// +--------+------------+--+--+--------+--------------------------------+
+// if n=15 || BitCount(registers) < 1 then UNPREDICTABLE.
+class LoadStoreRegisterListTester : public CondDecoderTester {
+ public:
+  explicit LoadStoreRegisterListTester(const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::LoadStoreRegisterList expected_decoder;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStoreRegisterListTester);
 };
 
 // Models a 3-register load/store operation of the forms:

@@ -70,17 +70,46 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_ARMv7(
 const NamedClassDecoder& NamedArm32DecoderState::decode_branch_block_xfer(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
-  if ((insn.Bits() & 0x02500000) == 0x00000000 /* op(25:20) == 0xx0x0 */)
-    return StoreImmediate_None_instance_;
+  if ((insn.Bits() & 0x03D00000) == 0x00000000 /* op(25:20) == 0000x0 */)
+    return StoreRegisterList_Stmda_Stmed_Rule_190_A1_P376_instance_;
 
-  if ((insn.Bits() & 0x02500000) == 0x00100000 /* op(25:20) == 0xx0x1 */)
-    return LoadMultiple_None_instance_;
+  if ((insn.Bits() & 0x03D00000) == 0x00100000 /* op(25:20) == 0000x1 */)
+    return LoadRegisterList_Ldmda_Ldmfa_Rule_54_A1_P112_instance_;
 
-  if ((insn.Bits() & 0x02400000) == 0x00400000 /* op(25:20) == 0xx1xx */)
-    return Forbidden_None_instance_;
+  if ((insn.Bits() & 0x03D00000) == 0x00800000 /* op(25:20) == 0010x0 */)
+    return StoreRegisterList_Stm_Stmia_Stmea_Rule_189_A1_P374_instance_;
 
-  if ((insn.Bits() & 0x02000000) == 0x02000000 /* op(25:20) == 1xxxxx */)
-    return Branch_None_instance_;
+  if ((insn.Bits() & 0x03D00000) == 0x00900000 /* op(25:20) == 0010x1 */)
+    return LoadRegisterList_Ldm_Ldmia_Ldmfd_Rule_53_A1_P110_instance_;
+
+  if ((insn.Bits() & 0x03D00000) == 0x01000000 /* op(25:20) == 0100x0 */)
+    return StoreRegisterList_Stmdb_Stmfd_Rule_191_A1_P378_instance_;
+
+  if ((insn.Bits() & 0x03D00000) == 0x01100000 /* op(25:20) == 0100x1 */)
+    return LoadRegisterList_Ldmdb_Ldmea_Rule_55_A1_P114_instance_;
+
+  if ((insn.Bits() & 0x03D00000) == 0x01800000 /* op(25:20) == 0110x0 */)
+    return StoreRegisterList_Stmid_Stmfa_Rule_192_A1_P380_instance_;
+
+  if ((insn.Bits() & 0x03D00000) == 0x01900000 /* op(25:20) == 0110x1 */)
+    return LoadRegisterList_Ldmib_Ldmed_Rule_56_A1_P116_instance_;
+
+  if ((insn.Bits() & 0x02500000) == 0x00400000 /* op(25:20) == 0xx1x0 */)
+    return ForbiddenCondNop_Stm_Rule_11_B6_A1_P22_instance_;
+
+  if ((insn.Bits() & 0x02500000) == 0x00500000 /* op(25:20) == 0xx1x1 */ &&
+      (insn.Bits() & 0x00008000) == 0x00000000 /* R(15:15) == 0 */)
+    return ForbiddenCondNop_Ldm_Rule_3_B6_A1_P7_instance_;
+
+  if ((insn.Bits() & 0x02500000) == 0x00500000 /* op(25:20) == 0xx1x1 */ &&
+      (insn.Bits() & 0x00008000) == 0x00008000 /* R(15:15) == 1 */)
+    return ForbiddenCondNop_Ldm_Rule_2_B6_A1_P5_instance_;
+
+  if ((insn.Bits() & 0x03000000) == 0x02000000 /* op(25:20) == 10xxxx */)
+    return BranchImmediate24_B_Rule_16_A1_P44_instance_;
+
+  if ((insn.Bits() & 0x03000000) == 0x03000000 /* op(25:20) == 11xxxx */)
+    return BranchImmediate24_Bl_Blx_Rule_23_A1_P58_instance_;
 
   // Catch any attempt to fall through...
   return not_implemented_;

@@ -199,6 +199,23 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
+// BranchImmediate24Tester
+BranchImmediate24Tester::BranchImmediate24Tester(
+    const NamedClassDecoder& decoder)
+    : CondDecoderTester(decoder) {}
+
+bool BranchImmediate24Tester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  // Check if expected class name found.
+  NC_PRECOND(CondDecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check if immediate values are defined correctly.
+  EXPECT_EQ(expected_decoder_.imm24.value(inst), inst.Bits(23, 0));
+
+  return true;
+}
+
 // BranchToRegisterTester
 BranchToRegisterTester::BranchToRegisterTester(const NamedClassDecoder& decoder)
     : CondDecoderTester(decoder) {}
@@ -1185,6 +1202,32 @@ ApplySanityChecks(Instruction inst,
     NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
   }
   return LoadStore2RegisterImm12OpTester::ApplySanityChecks(inst, decoder);
+}
+
+// LoadStoreRegisterListTester
+LoadStoreRegisterListTester::LoadStoreRegisterListTester(
+    const NamedClassDecoder& decoder)
+    : CondDecoderTester(decoder) {}
+
+bool LoadStoreRegisterListTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  // Check if expected class name found.
+  NC_PRECOND(CondDecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check Registers and flags used.
+  EXPECT_TRUE(expected_decoder.n.reg(inst).Equals(inst.Reg(19, 16)));
+  EXPECT_EQ(expected_decoder.wback.IsDefined(inst), inst.Bit(21));
+  EXPECT_EQ(expected_decoder.register_list.value(inst), inst.Bits(15, 0));
+
+  // Other ARM constraints about this instruction.
+  EXPECT_FALSE(expected_decoder.n.reg(inst).Equals(kRegisterPc))
+      << "Expected UNPREDICTABLE for " << InstContents();
+  EXPECT_NE(static_cast<uint32_t>(0),
+            expected_decoder.register_list.value(inst))
+      << "Expected UNPREDICTABLE for " << InstContents();
+
+  return true;
 }
 
 // LoadStore3RegisterOpTester
