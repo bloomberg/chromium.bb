@@ -124,10 +124,10 @@ TabContents::TabContents(WebContents* contents)
   synced_tab_delegate_.reset(new TabContentsSyncedTabDelegate(this));
   content_settings_.reset(new TabSpecificContentSettings(contents));
   translate_tab_helper_.reset(new TranslateTabHelper(contents));
-  web_intent_picker_controller_.reset(new WebIntentPickerController(this));
   zoom_controller_.reset(new ZoomController(this));
 
 #if !defined(OS_ANDROID)
+  web_intent_picker_controller_.reset(new WebIntentPickerController(this));
   sad_tab_helper_.reset(new SadTabHelper(contents));
 #endif
 

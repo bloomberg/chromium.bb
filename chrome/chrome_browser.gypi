@@ -4880,6 +4880,7 @@
             ['exclude', '^browser/captive_portal/'],
             ['exclude', '^browser/chrome_to_mobile'],
             ['exclude', '^browser/importer/'],
+            ['exclude', '^browser/ui/intents/'],
             ['exclude', '^browser/ui/panels/'],
             ['exclude', '^browser/ui/tabs/'],
             ['exclude', '^browser/ui/toolbar/'],
