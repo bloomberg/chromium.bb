@@ -52,7 +52,7 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface,
                                                   std::string server_port);
   int SpdyHandleNewStream(SpdyStreamId stream_id,
                           SpdyPriority priority,
-                          const linked_ptr<SpdyHeaderBlock>& headers,
+                          const SpdyHeaderBlock& headers,
                           std::string& http_data,
                           bool* is_https_scheme);
 
@@ -67,17 +67,17 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface,
                            uint8 credential_slot,
                            bool fin,
                            bool unidirectional,
-                           const linked_ptr<SpdyHeaderBlock>& headers) OVERRIDE;
+                           const SpdyHeaderBlock& headers) OVERRIDE;
 
   // Called after all the header data for SYN_REPLY control frame is received.
   virtual void OnSynReply(SpdyStreamId stream_id,
                           bool fin,
-                          const linked_ptr<SpdyHeaderBlock>& headers) OVERRIDE;
+                          const SpdyHeaderBlock& headers) OVERRIDE;
 
   // Called after all the header data for HEADERS control frame is received.
   virtual void OnHeaders(SpdyStreamId stream_id,
                          bool fin,
-                         const linked_ptr<SpdyHeaderBlock>& headers) OVERRIDE;
+                         const SpdyHeaderBlock& headers) OVERRIDE;
 
   // Called when data is received.
   // |stream_id| The stream receiving data.

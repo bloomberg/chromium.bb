@@ -121,24 +121,24 @@ SMInterface* SpdySM::FindOrMakeNewSMConnectionInterface(
 int SpdySM::SpdyHandleNewStream(
     SpdyStreamId stream_id,
     SpdyPriority priority,
-    const linked_ptr<SpdyHeaderBlock>& headers,
+    const SpdyHeaderBlock& headers,
     std::string &http_data,
     bool* is_https_scheme) {
   *is_https_scheme = false;
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: OnSyn("
           << stream_id << ")";
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: # headers: "
-          << headers->size();
+          << headers.size();
 
-  SpdyHeaderBlock::iterator url = headers->find("url");
-  SpdyHeaderBlock::iterator method = headers->find("method");
-  if (url == headers->end() || method == headers->end()) {
+  SpdyHeaderBlock::const_iterator url = headers.find("url");
+  SpdyHeaderBlock::const_iterator method = headers.find("method");
+  if (url == headers.end() || method == headers.end()) {
     VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: didn't find method or url "
             << "or method. Not creating stream";
     return 0;
   }
 
-  SpdyHeaderBlock::iterator scheme = headers->find("scheme");
+  SpdyHeaderBlock::const_iterator scheme = headers.find("scheme");
   if (scheme->second.compare("https") == 0) {
     *is_https_scheme = true;
   }
@@ -159,12 +159,12 @@ int SpdySM::SpdyHandleNewStream(
     std::string filename = EncodeURL(uri, host, method->second);
     NewStream(stream_id, priority, filename);
   } else {
-    SpdyHeaderBlock::iterator version = headers->find("version");
+    SpdyHeaderBlock::const_iterator version = headers.find("version");
     http_data += method->second + " " + uri + " " + version->second + "\r\n";
     VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Request: " << method->second << " "
             << uri << " " << version->second;
-    for (SpdyHeaderBlock::iterator i = headers->begin();
-         i != headers->end(); ++i) {
+    for (SpdyHeaderBlock::const_iterator i = headers.begin();
+         i != headers.end(); ++i) {
       http_data += i->first + ": " + i->second + "\r\n";
       VLOG(2) << ACCEPTOR_CLIENT_IDENT << i->first.c_str() << ":"
               << i->second.c_str();
@@ -204,7 +204,7 @@ void SpdySM::OnSynStream(SpdyStreamId stream_id,
                          uint8 credential_slot,
                          bool fin,
                          bool unidirectional,
-                         const linked_ptr<SpdyHeaderBlock>& headers) {
+                         const SpdyHeaderBlock& headers) {
   std::string http_data;
   bool is_https_scheme;
   int ret = SpdyHandleNewStream(stream_id, priority, headers, http_data,
@@ -238,7 +238,7 @@ void SpdySM::OnSynStream(SpdyStreamId stream_id,
 
 void SpdySM::OnSynReply(SpdyStreamId stream_id,
                         bool fin,
-                        const linked_ptr<SpdyHeaderBlock>& headers) {
+                        const SpdyHeaderBlock& headers) {
   // TODO(willchan): if there is an error parsing headers, we
   // should send a RST_STREAM.
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: OnSynReply("
@@ -247,7 +247,7 @@ void SpdySM::OnSynReply(SpdyStreamId stream_id,
 
 void SpdySM::OnHeaders(SpdyStreamId stream_id,
                        bool fin,
-                       const linked_ptr<SpdyHeaderBlock>& headers) {
+                       const SpdyHeaderBlock& headers) {
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: OnHeaders("
           << stream_id << ")";
 }
