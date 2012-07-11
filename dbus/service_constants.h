@@ -633,6 +633,10 @@ const char kUnknownString[] = "UNKNOWN";
 }  // namespace flimflam
 
 namespace shill {
+// Device property names.
+const char kReceiveByteCountProperty[] = "ReceiveByteCount";
+const char kTransmitByteCountProperty[] = "TransmitByteCount";
+
 // Manager property names.
 const char kHostNameProperty[] = "HostName";
 const char kPortalCheckIntervalProperty[] = "PortalCheckInterval";
