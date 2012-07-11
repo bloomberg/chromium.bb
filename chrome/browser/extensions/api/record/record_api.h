@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_RECORD_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_RECORD_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_RECORD_RECORD_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_RECORD_RECORD_API_H_
 #pragma once
 
 #include "chrome/browser/extensions/extension_function.h"
@@ -18,6 +18,8 @@ const char kErrorsKey[] = "errors";
 const char kStatsKey[] = "stats";
 
 };
+
+namespace extensions {
 
 // ProcessStrategy abstracts the API's starting and waiting on a test
 // browser instance.  This lets us browser-test the API without actually
@@ -159,4 +161,6 @@ class ReplayURLsFunction : public RunPageCyclerFunction {
   std::string stats_;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_RECORD_API_H_
+} // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_RECORD_RECORD_API_H_

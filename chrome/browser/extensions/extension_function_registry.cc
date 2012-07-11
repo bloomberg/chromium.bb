@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/api/offscreen_tabs/offscreen_tabs_api.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
+#include "chrome/browser/extensions/api/record/record_api.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/serial/serial_api.h"
 #include "chrome/browser/extensions/api/socket/socket_api.h"
@@ -43,7 +44,6 @@
 #include "chrome/browser/extensions/extension_page_capture_api.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
-#include "chrome/browser/extensions/extension_record_api.h"
 #include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/browser/extensions/settings/settings_api.h"
 #include "chrome/browser/extensions/system/system_api.h"
@@ -217,10 +217,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<MetricsRecordMediumTimeFunction>();
   RegisterFunction<MetricsRecordLongTimeFunction>();
 
-  // Record.
-  RegisterFunction<CaptureURLsFunction>();
-  RegisterFunction<ReplayURLsFunction>();
-
   // RLZ.
 #if defined(OS_WIN) || defined(OS_MACOSX)
   RegisterFunction<RlzRecordProductEventFunction>();
@@ -246,8 +242,8 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<ExtensionTestGetConfigFunction>();
 
   // Record.
-  RegisterFunction<CaptureURLsFunction>();
-  RegisterFunction<ReplayURLsFunction>();
+  RegisterFunction<extensions::CaptureURLsFunction>();
+  RegisterFunction<extensions::ReplayURLsFunction>();
 
   // Accessibility.
   RegisterFunction<GetFocusedControlFunction>();

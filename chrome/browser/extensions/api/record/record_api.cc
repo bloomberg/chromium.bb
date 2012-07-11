@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_record_api.h"
+#include "chrome/browser/extensions/api/record/record_api.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -20,7 +20,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 
-namespace record = extensions::api::experimental_record;
+namespace extensions {
+
+namespace record = api::experimental_record;
 
 ProcessStrategy::~ProcessStrategy() {}
 
@@ -249,3 +251,4 @@ void ReplayURLsFunction::Finish() {
   SendResponse(true);
 }
 
+} // namespace extensions

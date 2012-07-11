@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_record_api.h"
+#include "chrome/browser/extensions/api/record/record_api.h"
 
 #include <string>
 
@@ -28,6 +28,8 @@
 #include "content/public/common/content_switches.h"
 
 namespace utils = extension_function_test_utils;
+
+namespace extensions {
 
 namespace {
 
@@ -341,3 +343,5 @@ IN_PROC_BROWSER_TEST_F(RecordApiTest, MAYBE_CheckPlayback) {
   EXPECT_TRUE(result->GetList(kErrorsKey, &errors));
   EXPECT_TRUE(VerifyURLHandling(errors, strategy));
 }
+
+} // namespace extensions
