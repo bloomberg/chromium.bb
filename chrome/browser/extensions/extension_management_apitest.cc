@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, ManagementPolicyAllowed) {
                                         false));
 
   // Ensure that all actions are allowed.
-  ExtensionSystem::Get(
+  extensions::ExtensionSystem::Get(
       browser()->profile())->management_policy()->UnregisterAllProviders();
 
   ASSERT_TRUE(RunExtensionSubtest("management/management_policy",
@@ -120,8 +120,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, ManagementPolicyProhibited) {
                                         false));
 
   // Prohibit status changes.
-  extensions::ManagementPolicy* policy =
-      ExtensionSystem::Get(browser()->profile())->management_policy();
+  extensions::ManagementPolicy* policy = extensions::ExtensionSystem::Get(
+      browser()->profile())->management_policy();
   policy->UnregisterAllProviders();
   extensions::TestManagementPolicyProvider provider(
     extensions::TestManagementPolicyProvider::PROHIBIT_MODIFY_STATUS);

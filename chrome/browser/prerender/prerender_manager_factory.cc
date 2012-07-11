@@ -34,7 +34,7 @@ PrerenderManagerFactory* PrerenderManagerFactory::GetInstance() {
 PrerenderManagerFactory::PrerenderManagerFactory()
     : ProfileKeyedServiceFactory("PrerenderManager",
                                  ProfileDependencyManager::GetInstance()) {
-  DependsOn(ExtensionSystemFactory::GetInstance());
+  DependsOn(extensions::ExtensionSystemFactory::GetInstance());
 }
 
 PrerenderManagerFactory::~PrerenderManagerFactory() {

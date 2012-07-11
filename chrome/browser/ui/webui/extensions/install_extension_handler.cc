@@ -85,7 +85,7 @@ void InstallExtensionHandler::HandleInstallMessage(const ListValue* args) {
   Profile* profile = browser->profile();
   scoped_refptr<CrxInstaller> crx_installer(
       CrxInstaller::Create(
-          ExtensionSystem::Get(profile)->extension_service(),
+          extensions::ExtensionSystem::Get(profile)->extension_service(),
           chrome::CreateExtensionInstallPromptWithBrowser(browser)));
   crx_installer->set_off_store_install_allow_reason(
       CrxInstaller::OffStoreInstallAllowedFromSettingsPage);

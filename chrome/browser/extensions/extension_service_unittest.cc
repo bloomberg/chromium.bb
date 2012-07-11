@@ -101,6 +101,7 @@ using extensions::APIPermissionSet;
 using extensions::Extension;
 using extensions::ExtensionCreator;
 using extensions::ExtensionPrefs;
+using extensions::ExtensionSystem;
 using extensions::PermissionSet;
 
 namespace keys = extension_manifest_keys;
@@ -421,7 +422,7 @@ void ExtensionServiceTestBase::InitializeExtensionService(
 
   profile_.reset(profile);
 
-  service_ = static_cast<TestExtensionSystem*>(
+  service_ = static_cast<extensions::TestExtensionSystem*>(
       ExtensionSystem::Get(profile))->CreateExtensionService(
           CommandLine::ForCurrentProcess(),
           extensions_install_dir,
@@ -429,7 +430,7 @@ void ExtensionServiceTestBase::InitializeExtensionService(
   service_->set_extensions_enabled(true);
   service_->set_show_extensions_prompts(false);
 
-  management_policy_ = static_cast<TestExtensionSystem*>(
+  management_policy_ = static_cast<extensions::TestExtensionSystem*>(
       ExtensionSystem::Get(profile))->CreateManagementPolicy();
 
   // When we start up, we want to make sure there is no external provider,
@@ -464,7 +465,7 @@ void ExtensionServiceTestBase::InitializeEmptyExtensionService() {
 }
 
 void ExtensionServiceTestBase::InitializeExtensionProcessManager() {
-  static_cast<TestExtensionSystem*>(
+  static_cast<extensions::TestExtensionSystem*>(
       ExtensionSystem::Get(profile_.get()))->
       CreateExtensionProcessManager();
 }
@@ -4077,7 +4078,7 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
 
   // By default, we are enabled.
   command_line.reset(new CommandLine(CommandLine::NO_PROGRAM));
-  ExtensionService* service = static_cast<TestExtensionSystem*>(
+  ExtensionService* service = static_cast<extensions::TestExtensionSystem*>(
       ExtensionSystem::Get(profile.get()))->
       CreateExtensionService(
           command_line.get(),
@@ -4092,7 +4093,7 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   recorder.set_ready(false);
   profile.reset(new TestingProfile());
   command_line->AppendSwitch(switches::kDisableExtensions);
-  service = static_cast<TestExtensionSystem*>(
+  service = static_cast<extensions::TestExtensionSystem*>(
       ExtensionSystem::Get(profile.get()))->
       CreateExtensionService(
           command_line.get(),
@@ -4106,7 +4107,7 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   recorder.set_ready(false);
   profile.reset(new TestingProfile());
   profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
-  service = static_cast<TestExtensionSystem*>(
+  service = static_cast<extensions::TestExtensionSystem*>(
       ExtensionSystem::Get(profile.get()))->
       CreateExtensionService(
           command_line.get(),
@@ -4121,7 +4122,7 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   profile.reset(new TestingProfile());
   profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
   command_line.reset(new CommandLine(CommandLine::NO_PROGRAM));
-  service = static_cast<TestExtensionSystem*>(
+  service = static_cast<extensions::TestExtensionSystem*>(
       ExtensionSystem::Get(profile.get()))->
       CreateExtensionService(
           command_line.get(),

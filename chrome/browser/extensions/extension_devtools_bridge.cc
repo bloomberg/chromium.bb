@@ -34,7 +34,7 @@ ExtensionDevToolsBridge::ExtensionDevToolsBridge(int tab_id,
       on_tab_close_event_name_(
           ExtensionDevToolsEvents::OnTabCloseEventNameForTab(tab_id)) {
   extension_devtools_manager_ =
-      ExtensionSystem::Get(profile)->devtools_manager();
+      extensions::ExtensionSystem::Get(profile)->devtools_manager();
   DCHECK(extension_devtools_manager_.get());
 }
 

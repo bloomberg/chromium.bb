@@ -88,7 +88,7 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
     : profile_(profile),
       command_line_(command_line),
       extension_system_(
-          ExtensionSystemFactory::GetForProfile(profile)),
+          extensions::ExtensionSystemFactory::GetForProfile(profile)),
       web_data_service_(WebDataServiceFactory::GetForProfile(
           profile_, Profile::IMPLICIT_ACCESS)) {
 }

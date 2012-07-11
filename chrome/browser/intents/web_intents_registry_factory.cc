@@ -21,7 +21,7 @@ WebIntentsRegistryFactory::WebIntentsRegistryFactory()
     : ProfileKeyedServiceFactory("WebIntentsRegistry",
                                  ProfileDependencyManager::GetInstance()) {
   DependsOn(WebDataServiceFactory::GetInstance());
-  DependsOn(ExtensionSystemFactory::GetInstance());
+  DependsOn(extensions::ExtensionSystemFactory::GetInstance());
 }
 
 WebIntentsRegistryFactory::~WebIntentsRegistryFactory() {

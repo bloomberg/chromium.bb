@@ -226,8 +226,8 @@ bool ExtensionAppItem::IsCommandIdEnabled(int command_id) const {
         !extension->options_url().is_empty();
   } else if (command_id == UNINSTALL) {
     const Extension* extension = GetExtension();
-    const extensions::ManagementPolicy* policy = ExtensionSystem::Get(
-        profile_)->management_policy();
+    const extensions::ManagementPolicy* policy =
+        extensions::ExtensionSystem::Get(profile_)->management_policy();
     return extension &&
            policy->UserMayModifySettings(extension, NULL);
   }

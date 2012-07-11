@@ -242,7 +242,7 @@ bool SyncExtensionHelper::ExtensionStatesMatch(
 }
 
 void SyncExtensionHelper::SetupProfile(Profile* profile) {
-  ExtensionSystem::Get(profile)->Init(true);
+  extensions::ExtensionSystem::Get(profile)->Init(true);
   profile_extensions_.insert(make_pair(profile, ExtensionNameMap()));
 }
 

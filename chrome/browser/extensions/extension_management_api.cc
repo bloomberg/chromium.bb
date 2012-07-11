@@ -75,7 +75,7 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
   bool enabled = service->IsExtensionEnabled(extension.id());
   extension.GetBasicInfo(enabled, info);
 
-  const extensions::ManagementPolicy* policy = ExtensionSystem::Get(
+  const extensions::ManagementPolicy* policy = extensions::ExtensionSystem::Get(
       service->profile())->management_policy();
   info->SetBoolean(keys::kMayDisableKey,
                    policy->UserMayModifySettings(&extension, NULL));
@@ -390,7 +390,7 @@ bool SetEnabledFunction::RunImpl() {
     return false;
   }
 
-  const extensions::ManagementPolicy* policy = ExtensionSystem::Get(
+  const extensions::ManagementPolicy* policy = extensions::ExtensionSystem::Get(
       profile())->management_policy();
   if (!policy->UserMayModifySettings(extension, NULL)) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
@@ -466,7 +466,7 @@ bool UninstallFunction::RunImpl() {
     return false;
   }
 
-  if (!ExtensionSystem::Get(
+  if (!extensions::ExtensionSystem::Get(
       profile())->management_policy()->UserMayModifySettings(extension, NULL)) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kUserCantModifyError, extension_id_);

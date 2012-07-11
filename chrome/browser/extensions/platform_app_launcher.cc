@@ -30,6 +30,7 @@
 
 using content::BrowserThread;
 using extensions::Extension;
+using extensions::ExtensionSystem;
 
 namespace {
 

@@ -1348,8 +1348,8 @@ TEST_F(TranslateManagerTest, BeforeTranslateExtraButtons) {
   TranslateInfoBarDelegate* infobar;
   TestingProfile* test_profile =
       static_cast<TestingProfile*>(contents()->GetBrowserContext());
-  static_cast<TestExtensionSystem*>(
-      ExtensionSystem::Get(test_profile))->
+  static_cast<extensions::TestExtensionSystem*>(
+      extensions::ExtensionSystem::Get(test_profile))->
       CreateExtensionProcessManager();
   test_profile->set_incognito(true);
   for (int i = 0; i < 8; ++i) {

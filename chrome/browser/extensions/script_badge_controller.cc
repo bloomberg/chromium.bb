@@ -82,7 +82,8 @@ void ScriptBadgeController::OnExecuteScriptFinished(
 }
 
 ExtensionService* ScriptBadgeController::GetExtensionService() {
-  return ExtensionSystem::Get(tab_contents_->profile())->extension_service();
+  return extensions::ExtensionSystem::Get(
+      tab_contents_->profile())->extension_service();
 }
 
 int32 ScriptBadgeController::GetPageID() {

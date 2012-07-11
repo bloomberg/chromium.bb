@@ -47,8 +47,8 @@ ExtensionInstallPrompt* CreateExtensionInstallPrompt(Profile* profile) {
 }
 
 bool OffStoreInstallAllowedByPrefs(Profile* profile, const DownloadItem& item) {
-  extensions::ExtensionPrefs* prefs =
-      ExtensionSystem::Get(profile)->extension_service()->extension_prefs();
+  extensions::ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(
+      profile)->extension_service()->extension_prefs();
   CHECK(prefs);
 
   URLPatternSet url_patterns = prefs->GetAllowedInstallSites();

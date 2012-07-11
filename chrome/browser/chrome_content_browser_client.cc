@@ -644,7 +644,7 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ExtensionInfoMap::RegisterExtensionProcess,
-                 ExtensionSystem::Get(profile)->info_map(),
+                 extensions::ExtensionSystem::Get(profile)->info_map(),
                  extension->id(),
                  site_instance->GetProcess()->GetID(),
                  site_instance->GetId()));
@@ -673,7 +673,7 @@ void ChromeContentBrowserClient::SiteInstanceDeleting(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ExtensionInfoMap::UnregisterExtensionProcess,
-                 ExtensionSystem::Get(profile)->info_map(),
+                 extensions::ExtensionSystem::Get(profile)->info_map(),
                  extension->id(),
                  site_instance->GetProcess()->GetID(),
                  site_instance->GetId()));

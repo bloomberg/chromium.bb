@@ -99,8 +99,8 @@ void CommandHandler::GetAllCommands(base::DictionaryValue* commands) {
   CommandService* command_service =
       CommandServiceFactory::GetForProfile(profile);
 
-  const ExtensionSet* extensions =
-      ExtensionSystem::Get(profile)->extension_service()->extensions();
+  const ExtensionSet* extensions = extensions::ExtensionSystem::Get(profile)->
+      extension_service()->extensions();
   for (ExtensionSet::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
     scoped_ptr<DictionaryValue> extension_dict(new DictionaryValue);

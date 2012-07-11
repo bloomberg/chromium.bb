@@ -20,6 +20,7 @@
 #include "chrome/browser/value_store/testing_value_store.h"
 #include "chrome/common/chrome_switches.h"
 
+namespace extensions {
 
 TestExtensionSystem::TestExtensionSystem(Profile* profile)
     : profile_(profile),
@@ -38,8 +39,8 @@ void TestExtensionSystem::CreateExtensionProcessManager() {
 }
 
 void TestExtensionSystem::CreateAlarmManager(
-    extensions::AlarmManager::TimeProvider now) {
-  alarm_manager_.reset(new extensions::AlarmManager(profile_, now));
+    AlarmManager::TimeProvider now) {
+  alarm_manager_.reset(new AlarmManager(profile_, now));
 }
 
 ExtensionService* TestExtensionSystem::CreateExtensionService(
@@ -54,13 +55,11 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
   // are not reflected in the pref service. One would need to
   // inject a new ExtensionPrefStore(extension_pref_value_map, false).
 
-  extension_prefs_.reset(new extensions::ExtensionPrefs(
+  extension_prefs_.reset(new ExtensionPrefs(
       profile_->GetPrefs(),
       install_directory,
       ExtensionPrefValueMapFactory::GetForProfile(profile_)));
-  state_store_.reset(new extensions::StateStore(
-      profile_,
-      new TestingValueStore()));
+  state_store_.reset(new StateStore(profile_, new TestingValueStore()));
   extension_prefs_->Init(extensions_disabled);
   extension_service_.reset(new ExtensionService(profile_,
                                                 command_line,
@@ -72,8 +71,8 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
   return extension_service_.get();
 }
 
-extensions::ManagementPolicy* TestExtensionSystem::CreateManagementPolicy() {
-  management_policy_.reset(new extensions::ManagementPolicy());
+ManagementPolicy* TestExtensionSystem::CreateManagementPolicy() {
+  management_policy_.reset(new ManagementPolicy());
   DCHECK(extension_prefs_.get());
   management_policy_->RegisterProvider(extension_prefs_.get());
 
@@ -84,7 +83,7 @@ ExtensionService* TestExtensionSystem::extension_service() {
   return extension_service_.get();
 }
 
-extensions::ManagementPolicy* TestExtensionSystem::management_policy() {
+ManagementPolicy* TestExtensionSystem::management_policy() {
   return management_policy_.get();
 }
 
@@ -104,11 +103,11 @@ ExtensionProcessManager* TestExtensionSystem::process_manager() {
   return extension_process_manager_.get();
 }
 
-extensions::AlarmManager* TestExtensionSystem::alarm_manager() {
+AlarmManager* TestExtensionSystem::alarm_manager() {
   return alarm_manager_.get();
 }
 
-extensions::StateStore* TestExtensionSystem::state_store() {
+StateStore* TestExtensionSystem::state_store() {
   return state_store_.get();
 }
 
@@ -116,7 +115,7 @@ ExtensionInfoMap* TestExtensionSystem::info_map() {
   return info_map_.get();
 }
 
-extensions::LazyBackgroundTaskQueue*
+LazyBackgroundTaskQueue*
 TestExtensionSystem::lazy_background_task_queue() {
   return NULL;
 }
@@ -129,8 +128,7 @@ ExtensionEventRouter* TestExtensionSystem::event_router() {
   return NULL;
 }
 
-extensions::RulesRegistryService*
-TestExtensionSystem::rules_registry_service() {
+RulesRegistryService* TestExtensionSystem::rules_registry_service() {
   return NULL;
 }
 
@@ -138,3 +136,5 @@ TestExtensionSystem::rules_registry_service() {
 ProfileKeyedService* TestExtensionSystem::Build(Profile* profile) {
   return new TestExtensionSystem(profile);
 }
+
+}  // namespace extensions

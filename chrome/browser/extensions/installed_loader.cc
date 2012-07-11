@@ -93,7 +93,7 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
 
   // Check policy on every load in case an extension was blacklisted while
   // Chrome was not running.
-  const ManagementPolicy* policy = ExtensionSystem::Get(
+  const ManagementPolicy* policy = extensions::ExtensionSystem::Get(
       extension_service_->profile())->management_policy();
   if (extension &&
       !policy->UserMayLoad(extension, NULL)) {

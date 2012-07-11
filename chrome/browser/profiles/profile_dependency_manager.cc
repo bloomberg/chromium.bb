@@ -207,7 +207,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   DownloadServiceFactory::GetInstance();
   extensions::CommandServiceFactory::GetInstance();
   extensions::SuggestedLinksRegistryFactory::GetInstance();
-  ExtensionSystemFactory::GetInstance();
+  extensions::ExtensionSystemFactory::GetInstance();
   FindBarStateFactory::GetInstance();
 #if defined(USE_AURA)
   GesturePrefsObserverFactoryAura::GetInstance();

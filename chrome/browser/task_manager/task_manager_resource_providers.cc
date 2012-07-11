@@ -1187,7 +1187,7 @@ const Extension* TaskManagerExtensionProcessResource::GetExtension() const {
   Profile* profile = Profile::FromBrowserContext(
       render_view_host_->GetProcess()->GetBrowserContext());
   ExtensionProcessManager* process_manager =
-      ExtensionSystem::Get(profile)->process_manager();
+      extensions::ExtensionSystem::Get(profile)->process_manager();
   return process_manager->GetExtensionForRenderViewHost(render_view_host_);
 }
 

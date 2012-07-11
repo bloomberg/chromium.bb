@@ -606,19 +606,19 @@ VisitedLinkMaster* ProfileImpl::GetVisitedLinkMaster() {
 }
 
 ExtensionService* ProfileImpl::GetExtensionService() {
-  return ExtensionSystem::Get(this)->extension_service();
+  return extensions::ExtensionSystem::Get(this)->extension_service();
 }
 
 UserScriptMaster* ProfileImpl::GetUserScriptMaster() {
-  return ExtensionSystem::Get(this)->user_script_master();
+  return extensions::ExtensionSystem::Get(this)->user_script_master();
 }
 
 ExtensionProcessManager* ProfileImpl::GetExtensionProcessManager() {
-  return ExtensionSystem::Get(this)->process_manager();
+  return extensions::ExtensionSystem::Get(this)->process_manager();
 }
 
 ExtensionEventRouter* ProfileImpl::GetExtensionEventRouter() {
-  return ExtensionSystem::Get(this)->event_router();
+  return extensions::ExtensionSystem::Get(this)->event_router();
 }
 
 ExtensionSpecialStoragePolicy*
@@ -714,7 +714,7 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContext() {
 net::URLRequestContextGetter* ProfileImpl::GetRequestContextForRenderProcess(
     int renderer_child_id) {
   ExtensionService* extension_service =
-      ExtensionSystem::Get(this)->extension_service();
+      extensions::ExtensionSystem::Get(this)->extension_service();
   if (extension_service) {
     const extensions::Extension* installed_app = extension_service->
         GetInstalledAppForRenderer(renderer_child_id);

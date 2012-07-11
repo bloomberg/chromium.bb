@@ -45,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, DeclarativeApi) {
   // is therefore processed after the UnloadExtension task has been executed.
 
   RulesRegistryService* rules_registry_service =
-      ExtensionSystemFactory::GetForProfile(browser()->profile())->
+      extensions::ExtensionSystemFactory::GetForProfile(browser()->profile())->
       rules_registry_service();
   scoped_refptr<RulesRegistry> rules_registry =
       rules_registry_service->GetRulesRegistry(

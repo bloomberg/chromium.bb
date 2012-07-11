@@ -776,7 +776,8 @@ void ExtensionTaskExecutor::OnInitAccessForExecuteFileActionsOnUIThread(
   } else {
     // We have to wake the handler background page before we proceed.
     extensions::LazyBackgroundTaskQueue* queue =
-        ExtensionSystem::Get(profile())->lazy_background_task_queue();
+        extensions::ExtensionSystem::Get(profile())->
+        lazy_background_task_queue();
     if (!queue->ShouldEnqueueTask(profile(), extension)) {
       ExecuteDoneOnUIThread(false);
       return;

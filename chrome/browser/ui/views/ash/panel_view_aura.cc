@@ -246,8 +246,9 @@ void PanelExtensionWindowController::SetFullscreenMode(
 
 bool PanelExtensionWindowController::IsVisibleToExtension(
     const extensions::Extension* extension) const {
- ExtensionProcessManager* process_manager =
-      ExtensionSystem::Get(panel_host_->profile())->process_manager();
+  ExtensionProcessManager* process_manager =
+      extensions::ExtensionSystem::Get(
+          panel_host_->profile())->process_manager();
   const extensions::Extension* panel_extension = process_manager->
       GetExtensionForRenderViewHost(
           panel_view_->WebContents()->GetRenderViewHost());

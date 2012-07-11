@@ -26,11 +26,11 @@ namespace extensions {
 class AlarmManager;
 class Extension;
 class ExtensionPrefs;
+class ExtensionSystemSharedFactory;
 class LazyBackgroundTaskQueue;
 class ManagementPolicy;
 class RulesRegistryService;
 class StateStore;
-}
 
 // The ExtensionSystem manages the creation and destruction of services
 // related to extensions. Most objects are shared between normal
@@ -60,7 +60,7 @@ class ExtensionSystem : public ProfileKeyedService {
   // The class controlling whether users are permitted to perform certain
   // actions on extensions (install, uninstall, disable, etc.).
   // The ManagementPolicy is created at startup.
-  virtual extensions::ManagementPolicy* management_policy() = 0;
+  virtual ManagementPolicy* management_policy() = 0;
 
   //  The ExtensionDevToolsManager is created at startup.
   virtual ExtensionDevToolsManager* devtools_manager() = 0;
@@ -72,16 +72,16 @@ class ExtensionSystem : public ProfileKeyedService {
   virtual ExtensionProcessManager* process_manager() = 0;
 
   // The AlarmManager is created at startup.
-  virtual extensions::AlarmManager* alarm_manager() = 0;
+  virtual AlarmManager* alarm_manager() = 0;
 
   // The StateStore is created at startup.
-  virtual extensions::StateStore* state_store() = 0;
+  virtual StateStore* state_store() = 0;
 
   // Returns the IO-thread-accessible extension data.
   virtual ExtensionInfoMap* info_map() = 0;
 
   // The LazyBackgroundTaskQueue is created at startup.
-  virtual extensions::LazyBackgroundTaskQueue* lazy_background_task_queue() = 0;
+  virtual LazyBackgroundTaskQueue* lazy_background_task_queue() = 0;
 
   // The ExtensionMessageService is created at startup.
   virtual ExtensionMessageService* message_service() = 0;
@@ -90,7 +90,7 @@ class ExtensionSystem : public ProfileKeyedService {
   virtual ExtensionEventRouter* event_router() = 0;
 
   // The RulesRegistryService is created at startup.
-  virtual extensions::RulesRegistryService* rules_registry_service() = 0;
+  virtual RulesRegistryService* rules_registry_service() = 0;
 
   // Called by the ExtensionService that lives in this system. Gives the
   // info map a chance to react to the load event before the EXTENSION_LOADED
@@ -98,7 +98,7 @@ class ExtensionSystem : public ProfileKeyedService {
   // avoid race conditions by making sure URLRequestContexts learn about new
   // extensions before anything else needs them to know.
   virtual void RegisterExtensionWithRequestContexts(
-      const extensions::Extension* extension) {}
+      const Extension* extension) {}
 
   // Called by the ExtensionService that lives in this system. Lets the
   // info map clean up its RequestContexts once all the listeners to the
@@ -124,23 +124,23 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual void Init(bool extensions_enabled) OVERRIDE;
 
   virtual ExtensionService* extension_service() OVERRIDE;  // shared
-  virtual extensions::ManagementPolicy* management_policy() OVERRIDE;  // shared
+  virtual ManagementPolicy* management_policy() OVERRIDE;  // shared
   virtual UserScriptMaster* user_script_master() OVERRIDE;  // shared
   virtual ExtensionDevToolsManager* devtools_manager() OVERRIDE;
   virtual ExtensionProcessManager* process_manager() OVERRIDE;
-  virtual extensions::AlarmManager* alarm_manager() OVERRIDE;
-  virtual extensions::StateStore* state_store() OVERRIDE;
-  virtual extensions::LazyBackgroundTaskQueue* lazy_background_task_queue()
+  virtual AlarmManager* alarm_manager() OVERRIDE;
+  virtual StateStore* state_store() OVERRIDE;
+  virtual LazyBackgroundTaskQueue* lazy_background_task_queue()
       OVERRIDE;  // shared
   virtual ExtensionInfoMap* info_map() OVERRIDE;  // shared
   virtual ExtensionMessageService* message_service() OVERRIDE;  // shared
   virtual ExtensionEventRouter* event_router() OVERRIDE;  // shared
   // The RulesRegistryService is created at startup.
-  virtual extensions::RulesRegistryService* rules_registry_service()
+  virtual RulesRegistryService* rules_registry_service()
       OVERRIDE;  // shared
 
   virtual void RegisterExtensionWithRequestContexts(
-      const extensions::Extension* extension) OVERRIDE;
+      const Extension* extension) OVERRIDE;
 
   virtual void UnregisterExtensionWithRequestContexts(
       const std::string& extension_id,
@@ -163,35 +163,35 @@ class ExtensionSystemImpl : public ExtensionSystem {
     void InitInfoMap();
     void Init(bool extensions_enabled);
 
-    extensions::StateStore* state_store();
+    StateStore* state_store();
     ExtensionService* extension_service();
-    extensions::ManagementPolicy* management_policy();
+    ManagementPolicy* management_policy();
     UserScriptMaster* user_script_master();
     ExtensionInfoMap* info_map();
-    extensions::LazyBackgroundTaskQueue* lazy_background_task_queue();
+    LazyBackgroundTaskQueue* lazy_background_task_queue();
     ExtensionMessageService* message_service();
     ExtensionEventRouter* event_router();
-    extensions::RulesRegistryService* rules_registry_service();
+    RulesRegistryService* rules_registry_service();
 
    private:
     Profile* profile_;
 
     // The services that are shared between normal and incognito profiles.
 
-    scoped_ptr<extensions::StateStore> state_store_;
-    scoped_ptr<extensions::ExtensionPrefs> extension_prefs_;
+    scoped_ptr<StateStore> state_store_;
+    scoped_ptr<ExtensionPrefs> extension_prefs_;
     // ExtensionService depends on the 2 above.
     scoped_ptr<ExtensionService> extension_service_;
-    scoped_ptr<extensions::ManagementPolicy> management_policy_;
+    scoped_ptr<ManagementPolicy> management_policy_;
     scoped_refptr<UserScriptMaster> user_script_master_;
     // extension_info_map_ needs to outlive extension_process_manager_.
     scoped_refptr<ExtensionInfoMap> extension_info_map_;
     // This is a dependency of ExtensionMessageService and ExtensionEventRouter.
-    scoped_ptr<extensions::LazyBackgroundTaskQueue> lazy_background_task_queue_;
+    scoped_ptr<LazyBackgroundTaskQueue> lazy_background_task_queue_;
     scoped_ptr<ExtensionMessageService> extension_message_service_;
     scoped_ptr<ExtensionEventRouter> extension_event_router_;
     scoped_ptr<ExtensionNavigationObserver> extension_navigation_observer_;
-    scoped_ptr<extensions::RulesRegistryService> rules_registry_service_;
+    scoped_ptr<RulesRegistryService> rules_registry_service_;
   };
 
   Profile* profile_;
@@ -205,9 +205,11 @@ class ExtensionSystemImpl : public ExtensionSystem {
   // incoming resource requests from extension processes and those require
   // access to the ResourceContext owned by |io_data_|.
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
-  scoped_ptr<extensions::AlarmManager> alarm_manager_;
+  scoped_ptr<AlarmManager> alarm_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSystemImpl);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SYSTEM_H_

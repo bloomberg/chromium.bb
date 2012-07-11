@@ -14,11 +14,13 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 
+namespace extensions {
+
 // ExtensionSystemSharedFactory
 
 // static
-ExtensionSystemImpl::Shared* ExtensionSystemSharedFactory::GetForProfile(
-    Profile* profile) {
+ExtensionSystemImpl::Shared*
+ExtensionSystemSharedFactory::GetForProfile(Profile* profile) {
   return static_cast<ExtensionSystemImpl::Shared*>(
       GetInstance()->GetServiceForProfile(profile, true));
 }
@@ -89,3 +91,5 @@ bool ExtensionSystemFactory::ServiceHasOwnInstanceInIncognito() {
 bool ExtensionSystemFactory::ServiceIsCreatedWithProfile() {
   return true;
 }
+
+}  // namespace extensions

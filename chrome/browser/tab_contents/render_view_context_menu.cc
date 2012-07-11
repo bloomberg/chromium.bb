@@ -637,7 +637,8 @@ void RenderViewContextMenu::InitMenu() {
 }
 
 const Extension* RenderViewContextMenu::GetExtension() const {
-  ExtensionSystem* system = ExtensionSystem::Get(profile_);
+  extensions::ExtensionSystem* system =
+      extensions::ExtensionSystem::Get(profile_);
   // There is no process manager in some tests.
   if (!system->process_manager())
     return NULL;

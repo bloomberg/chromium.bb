@@ -406,8 +406,8 @@ void CrxInstaller::ConfirmInstall() {
   }
 
   string16 error;
-  if (!ExtensionSystem::Get(profile_)->management_policy()->UserMayLoad(
-      extension_, &error)) {
+  if (!extensions::ExtensionSystem::Get(profile_)->management_policy()->
+      UserMayLoad(extension_, &error)) {
     ReportFailureFromUIThread(CrxInstallerError(error));
     return;
   }

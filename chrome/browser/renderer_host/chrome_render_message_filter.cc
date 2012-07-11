@@ -59,7 +59,8 @@ ChromeRenderMessageFilter::ChromeRenderMessageFilter(
       profile_(profile),
       off_the_record_(profile_->IsOffTheRecord()),
       request_context_(request_context),
-      extension_info_map_(ExtensionSystem::Get(profile)->info_map()),
+      extension_info_map_(
+          extensions::ExtensionSystem::Get(profile)->info_map()),
       cookie_settings_(CookieSettings::Factory::GetForProfile(profile)),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
@@ -282,7 +283,7 @@ void ChromeRenderMessageFilter::OpenChannelToExtensionOnUIThread(
     const std::string& target_extension_id,
     const std::string& channel_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ExtensionSystem::Get(profile_)->message_service()->
+  extensions::ExtensionSystem::Get(profile_)->message_service()->
       OpenChannelToExtension(
           source_process_id, source_routing_id, receiver_port_id,
           source_extension_id, target_extension_id, channel_name);
@@ -308,7 +309,7 @@ void ChromeRenderMessageFilter::OpenChannelToTabOnUIThread(
     const std::string& extension_id,
     const std::string& channel_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ExtensionSystem::Get(profile_)->message_service()->
+  extensions::ExtensionSystem::Get(profile_)->message_service()->
       OpenChannelToTab(
           source_process_id, source_routing_id, receiver_port_id,
           tab_id, extension_id, channel_name);
@@ -422,7 +423,7 @@ void ChromeRenderMessageFilter::OnExtensionCloseChannel(int port_id,
     return;  // To guard against crash in browser_tests shutdown.
 
   ExtensionMessageService* message_service =
-      ExtensionSystem::Get(profile_)->message_service();
+      extensions::ExtensionSystem::Get(profile_)->message_service();
   if (message_service)
     message_service->CloseChannel(port_id, connection_error);
 }

@@ -103,7 +103,7 @@ void ExtensionEventRouter::DispatchEvent(
 ExtensionEventRouter::ExtensionEventRouter(Profile* profile)
     : profile_(profile),
       extension_devtools_manager_(
-          ExtensionSystem::Get(profile)->devtools_manager()),
+          extensions::ExtensionSystem::Get(profile)->devtools_manager()),
       listeners_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllSources());
@@ -474,7 +474,7 @@ void ExtensionEventRouter::MaybeLoadLazyBackgroundPageToDispatchEvent(
     return;
 
   extensions::LazyBackgroundTaskQueue* queue =
-      ExtensionSystem::Get(profile)->lazy_background_task_queue();
+      extensions::ExtensionSystem::Get(profile)->lazy_background_task_queue();
   if (queue->ShouldEnqueueTask(profile, extension)) {
     queue->AddPendingTask(
         profile, extension->id(),
@@ -489,7 +489,7 @@ void ExtensionEventRouter::IncrementInFlightEvents(
   // because that's the only time we'll get an ACK.
   if (extension->has_lazy_background_page()) {
     ExtensionProcessManager* pm =
-        ExtensionSystem::Get(profile)->process_manager();
+        extensions::ExtensionSystem::Get(profile)->process_manager();
     ExtensionHost* host = pm->GetBackgroundHostForExtension(extension->id());
     if (host)
       pm->IncrementLazyKeepaliveCount(extension);
@@ -499,7 +499,7 @@ void ExtensionEventRouter::IncrementInFlightEvents(
 void ExtensionEventRouter::OnEventAck(
     Profile* profile, const std::string& extension_id) {
   ExtensionProcessManager* pm =
-      ExtensionSystem::Get(profile)->process_manager();
+      extensions::ExtensionSystem::Get(profile)->process_manager();
   ExtensionHost* host = pm->GetBackgroundHostForExtension(extension_id);
   // The event ACK is routed to the background host, so this should never be
   // NULL.

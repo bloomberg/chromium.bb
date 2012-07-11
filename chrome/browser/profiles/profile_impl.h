@@ -21,7 +21,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 class ExtensionNavigationObserver;
-class ExtensionSystem;
 class NetPrefObserver;
 class PrefService;
 class SSLConfigServiceManager;
@@ -41,6 +40,10 @@ class Preferences;
 
 namespace content {
 class SpeechRecognitionPreferences;
+}
+
+namespace extensions {
+class ExtensionSystem;
 }
 
 // The default profile implementation.

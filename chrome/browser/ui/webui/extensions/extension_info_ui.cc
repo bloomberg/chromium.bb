@@ -52,8 +52,8 @@ GURL ExtensionInfoUI::GetURL(const std::string& extension_id) {
 
 void ExtensionInfoUI::AddExtensionDataToSource(
     const std::string& extension_id) {
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(Profile::FromWebUI(web_ui()))->extension_service();
+  ExtensionService* extension_service = extensions::ExtensionSystem::Get(
+      Profile::FromWebUI(web_ui()))->extension_service();
   const extensions::Extension* extension =
       extension_service->extensions()->GetByID(extension_id);
   if (!extension)

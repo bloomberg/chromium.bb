@@ -199,7 +199,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->cookie_monster_delegate =
       new ChromeCookieMonsterDelegate(profile_getter);
   params->extension_info_map =
-      ExtensionSystem::Get(profile)->info_map();
+      extensions::ExtensionSystem::Get(profile)->info_map();
 
   if (predictors::ResourcePrefetchPredictor* predictor =
           predictors::ResourcePrefetchPredictorFactory::GetForProfile(

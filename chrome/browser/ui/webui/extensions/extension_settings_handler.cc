@@ -313,7 +313,7 @@ void ExtensionSettingsHandler::RegisterMessages() {
         GetExtensionService();
   }
   if (!management_policy_) {
-    management_policy_ = ExtensionSystem::Get(
+    management_policy_ = extensions::ExtensionSystem::Get(
         extension_service_->profile())->management_policy();
   }
 
@@ -567,7 +567,7 @@ void ExtensionSettingsHandler::HandleInspectMessage(const ListValue* args) {
 
     ExtensionProcessManager* pm = profile->GetExtensionProcessManager();
     extensions::LazyBackgroundTaskQueue* queue =
-        ExtensionSystem::Get(profile)->lazy_background_task_queue();
+        extensions::ExtensionSystem::Get(profile)->lazy_background_task_queue();
 
     ExtensionHost* host = pm->GetBackgroundHostForExtension(extension->id());
     if (host) {

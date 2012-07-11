@@ -250,11 +250,11 @@ void ManagedMode::SetInManagedMode(Profile* newly_managed_profile) {
   // so pref observers see the correct ManagedMode state.
   if (newly_managed_profile) {
     DCHECK(!managed_profile_ || managed_profile_ == newly_managed_profile);
-    ExtensionSystem::Get(
+    extensions::ExtensionSystem::Get(
         newly_managed_profile)->management_policy()->RegisterProvider(this);
     g_browser_process->local_state()->SetBoolean(prefs::kInManagedMode, true);
   } else {
-    ExtensionSystem::Get(
+    extensions::ExtensionSystem::Get(
         managed_profile_)->management_policy()->UnregisterProvider(this);
     g_browser_process->local_state()->SetBoolean(prefs::kInManagedMode, false);
   }

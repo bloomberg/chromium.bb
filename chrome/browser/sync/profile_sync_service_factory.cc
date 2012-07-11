@@ -56,7 +56,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(GlobalErrorServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(PasswordStoreFactory::GetInstance());
-  DependsOn(ExtensionSystemFactory::GetInstance());
+  DependsOn(extensions::ExtensionSystemFactory::GetInstance());
   DependsOn(WebDataServiceFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(BookmarkModelFactory::GetInstance());

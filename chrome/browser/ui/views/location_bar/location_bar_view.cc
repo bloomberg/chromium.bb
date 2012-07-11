@@ -276,7 +276,7 @@ void LocationBarView::Init(views::View* popup_parent_view) {
 
   if (extensions::switch_utils::IsActionBoxEnabled()) {
     action_box_button_view_ = new ActionBoxButtonView(
-        ExtensionSystem::Get(profile_)->extension_service());
+        extensions::ExtensionSystem::Get(profile_)->extension_service());
     AddChildView(action_box_button_view_);
   } else if (browser_defaults::bookmarks_enabled && (mode_ == NORMAL)) {
     // Note: condition above means that the star and ChromeToMobile icons are

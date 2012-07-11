@@ -36,8 +36,9 @@ class ChromeLauncherControllerTest : public testing::Test {
     manifest.SetString("version", "1");
     manifest.SetString("description", "for testing pinned apps");
 
-    TestExtensionSystem* extension_system(
-        static_cast<TestExtensionSystem*>(ExtensionSystem::Get(&profile_)));
+    extensions::TestExtensionSystem* extension_system(
+        static_cast<extensions::TestExtensionSystem*>(
+            extensions::ExtensionSystem::Get(&profile_)));
     extension_service_ = extension_system->CreateExtensionService(
         CommandLine::ForCurrentProcess(), FilePath(), false);
 

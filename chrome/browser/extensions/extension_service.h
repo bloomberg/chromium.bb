@@ -57,7 +57,6 @@ class ExtensionManagedModeEventRouter;
 class ExtensionManagementEventRouter;
 class ExtensionPreferenceEventRouter;
 class ExtensionSyncData;
-class ExtensionSystem;
 class ExtensionToolbarModel;
 class HistoryExtensionEventRouter;
 class GURL;
@@ -82,6 +81,7 @@ class ContentSettingsStore;
 class Extension;
 class ExtensionCookiesEventRouter;
 class ExtensionSyncData;
+class ExtensionSystem;
 class ExtensionUpdater;
 class SettingsFrontend;
 class WebNavigationEventRouter;
@@ -708,7 +708,7 @@ class ExtensionService
   Profile* profile_;
 
   // The ExtensionSystem for the profile above.
-  ExtensionSystem* system_;
+  extensions::ExtensionSystem* system_;
 
   // Preferences for the owning profile (weak reference).
   extensions::ExtensionPrefs* extension_prefs_;

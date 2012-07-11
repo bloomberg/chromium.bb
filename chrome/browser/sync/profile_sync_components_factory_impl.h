@@ -13,8 +13,11 @@
 #include "chrome/browser/webdata/web_data_service.h"
 
 class CommandLine;
-class ExtensionSystem;
 class Profile;
+
+namespace extensions {
+class ExtensionSystem;
+}
 
 class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
  public:
@@ -63,9 +66,10 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
  private:
   Profile* profile_;
   CommandLine* command_line_;
-  // Set on the UI thread (since ExtensionSystemFactory is non-threadsafe);
-  // accessed on both the UI and FILE threads in GetSyncableServiceForType.
-  ExtensionSystem* extension_system_;
+  // Set on the UI thread (since extensions::ExtensionSystemFactory is
+  // non-threadsafe); accessed on both the UI and FILE threads in
+  // GetSyncableServiceForType.
+  extensions::ExtensionSystem* extension_system_;
   scoped_refptr<WebDataService> web_data_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncComponentsFactoryImpl);

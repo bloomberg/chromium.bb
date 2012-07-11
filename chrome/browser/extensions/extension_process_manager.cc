@@ -339,7 +339,7 @@ const Extension* ExtensionProcessManager::GetExtensionForRenderViewHost(
     return NULL;
 
   ExtensionService* service =
-      ExtensionSystem::Get(GetProfile())->extension_service();
+      extensions::ExtensionSystem::Get(GetProfile())->extension_service();
   return service->extensions()->GetByID(GetExtensionID(render_view_host));
 }
 

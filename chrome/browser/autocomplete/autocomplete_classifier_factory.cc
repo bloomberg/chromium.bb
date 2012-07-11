@@ -32,7 +32,7 @@ ProfileKeyedService* AutocompleteClassifierFactory::BuildInstanceFor(
 AutocompleteClassifierFactory::AutocompleteClassifierFactory()
     : ProfileKeyedServiceFactory("AutocompleteClassifier",
                                  ProfileDependencyManager::GetInstance()) {
-  DependsOn(ExtensionSystemFactory::GetInstance());
+  DependsOn(extensions::ExtensionSystemFactory::GetInstance());
   DependsOn(TemplateURLServiceFactory::GetInstance());
   // TODO(pkasting): Uncomment these once they exist.
   //   DependsOn(PrefServiceFactory::GetInstance());

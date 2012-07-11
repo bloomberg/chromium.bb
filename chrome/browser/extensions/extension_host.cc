@@ -60,6 +60,7 @@ using content::OpenURLParams;
 using content::RenderViewHost;
 using content::SiteInstance;
 using content::WebContents;
+using extensions::ExtensionSystem;
 
 // Helper class that rate-limits the creation of renderer processes for
 // ExtensionHosts, to avoid blocking the UI.

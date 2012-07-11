@@ -253,7 +253,7 @@ void SpeechInputExtensionManager::ResetToIdleState() {
 int SpeechInputExtensionManager::GetRenderProcessIDForExtension(
     const std::string& extension_id) const {
   ExtensionProcessManager* epm =
-      ExtensionSystem::Get(profile_)->process_manager();
+      extensions::ExtensionSystem::Get(profile_)->process_manager();
   DCHECK(epm);
   ExtensionHost* eh = epm->GetBackgroundHostForExtension(extension_id);
   DCHECK(eh);

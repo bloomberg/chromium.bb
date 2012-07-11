@@ -43,6 +43,8 @@
 
 using content::BrowserThread;
 
+namespace extensions {
+
 //
 // ExtensionSystem
 //
@@ -51,7 +53,7 @@ ExtensionSystem::ExtensionSystem() {
   // In lieu of a way for Feature to check whether it's running on the browser
   // process, tell it.
   // See http://crbug.com/126535.
-  extensions::Feature::SetChannelCheckingEnabled(true);
+  Feature::SetChannelCheckingEnabled(true);
 }
 
 ExtensionSystem::~ExtensionSystem() {
@@ -79,13 +81,13 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
   bool extensions_disabled =
       profile_->GetPrefs()->GetBoolean(prefs::kDisableExtensions) ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableExtensions);
-  extension_prefs_.reset(new extensions::ExtensionPrefs(
+  extension_prefs_.reset(new ExtensionPrefs(
       profile_->GetPrefs(),
       profile_->GetPath().AppendASCII(ExtensionService::kInstallDirectoryName),
       ExtensionPrefValueMapFactory::GetForProfile(profile_)));
   extension_prefs_->Init(extensions_disabled);
 
-  state_store_.reset(new extensions::StateStore(
+  state_store_.reset(new StateStore(
       profile_,
       profile_->GetPath().AppendASCII(ExtensionService::kStateStoreName)));
 }
@@ -104,8 +106,7 @@ void ExtensionSystemImpl::Shared::InitInfoMap() {
 void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
-  lazy_background_task_queue_.reset(new extensions::LazyBackgroundTaskQueue(
-      profile_));
+  lazy_background_task_queue_.reset(new LazyBackgroundTaskQueue(profile_));
   extension_event_router_.reset(new ExtensionEventRouter(profile_));
   extension_message_service_.reset(new ExtensionMessageService(
       lazy_background_task_queue_.get()));
@@ -134,11 +135,10 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   // These services must be registered before the ExtensionService tries to
   // load any extensions.
   {
-    rules_registry_service_.reset(
-        new extensions::RulesRegistryService(profile_));
+    rules_registry_service_.reset(new RulesRegistryService(profile_));
     rules_registry_service_->RegisterDefaultRulesRegistries();
 
-    management_policy_.reset(new extensions::ManagementPolicy);
+    management_policy_.reset(new ManagementPolicy);
     RegisterManagementPolicyProviders();
   }
 
@@ -170,8 +170,8 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
       StringTokenizerT<CommandLine::StringType,
           CommandLine::StringType::const_iterator> t(path_list,
                                                      FILE_PATH_LITERAL(","));
-      scoped_refptr<extensions::UnpackedInstaller> installer =
-          extensions::UnpackedInstaller::Create(extension_service_.get());
+      scoped_refptr<UnpackedInstaller> installer =
+          UnpackedInstaller::Create(extension_service_.get());
       while (t.GetNext()) {
         installer->LoadFromCommandLine(FilePath(t.token()));
       }
@@ -204,7 +204,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   }
 }
 
-extensions::StateStore* ExtensionSystemImpl::Shared::state_store() {
+StateStore* ExtensionSystemImpl::Shared::state_store() {
   return state_store_.get();
 }
 
@@ -212,7 +212,7 @@ ExtensionService* ExtensionSystemImpl::Shared::extension_service() {
   return extension_service_.get();
 }
 
-extensions::ManagementPolicy* ExtensionSystemImpl::Shared::management_policy() {
+ManagementPolicy* ExtensionSystemImpl::Shared::management_policy() {
   return management_policy_.get();
 }
 
@@ -224,8 +224,8 @@ ExtensionInfoMap* ExtensionSystemImpl::Shared::info_map() {
   return extension_info_map_.get();
 }
 
-extensions::LazyBackgroundTaskQueue*
-ExtensionSystemImpl::Shared::lazy_background_task_queue() {
+LazyBackgroundTaskQueue*
+    ExtensionSystemImpl::Shared::lazy_background_task_queue() {
   return lazy_background_task_queue_.get();
 }
 
@@ -237,8 +237,7 @@ ExtensionEventRouter* ExtensionSystemImpl::Shared::event_router() {
   return extension_event_router_.get();
 }
 
-extensions::RulesRegistryService*
-ExtensionSystemImpl::Shared::rules_registry_service() {
+RulesRegistryService* ExtensionSystemImpl::Shared::rules_registry_service() {
   return rules_registry_service_.get();
 }
 
@@ -279,8 +278,8 @@ void ExtensionSystemImpl::Init(bool extensions_enabled) {
   shared_->InitInfoMap();
 
   extension_process_manager_.reset(ExtensionProcessManager::Create(profile_));
-  alarm_manager_.reset(new extensions::AlarmManager(profile_,
-                                                    &base::Time::Now));
+  alarm_manager_.reset(new AlarmManager(profile_,
+                                        &base::Time::Now));
 
   shared_->Init(extensions_enabled);
 }
@@ -289,7 +288,7 @@ ExtensionService* ExtensionSystemImpl::extension_service() {
   return shared_->extension_service();
 }
 
-extensions::ManagementPolicy* ExtensionSystemImpl::management_policy() {
+ManagementPolicy* ExtensionSystemImpl::management_policy() {
   return shared_->management_policy();
 }
 
@@ -307,11 +306,11 @@ ExtensionProcessManager* ExtensionSystemImpl::process_manager() {
   return extension_process_manager_.get();
 }
 
-extensions::AlarmManager* ExtensionSystemImpl::alarm_manager() {
+AlarmManager* ExtensionSystemImpl::alarm_manager() {
   return alarm_manager_.get();
 }
 
-extensions::StateStore* ExtensionSystemImpl::state_store() {
+StateStore* ExtensionSystemImpl::state_store() {
   return shared_->state_store();
 }
 
@@ -319,8 +318,7 @@ ExtensionInfoMap* ExtensionSystemImpl::info_map() {
   return shared_->info_map();
 }
 
-extensions::LazyBackgroundTaskQueue*
-ExtensionSystemImpl::lazy_background_task_queue() {
+LazyBackgroundTaskQueue* ExtensionSystemImpl::lazy_background_task_queue() {
   return shared_->lazy_background_task_queue();
 }
 
@@ -332,15 +330,14 @@ ExtensionEventRouter* ExtensionSystemImpl::event_router() {
   return shared_->event_router();
 }
 
-extensions::RulesRegistryService*
-ExtensionSystemImpl::rules_registry_service() {
+RulesRegistryService* ExtensionSystemImpl::rules_registry_service() {
   return shared_->rules_registry_service();
 }
 
 void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
-    const extensions::Extension* extension) {
+    const Extension* extension) {
   base::Time install_time;
-  if (extension->location() != extensions::Extension::COMPONENT) {
+  if (extension->location() != Extension::COMPONENT) {
     install_time = extension_service()->extension_prefs()->
         GetInstallTime(extension->id());
   }
@@ -361,3 +358,5 @@ void ExtensionSystemImpl::UnregisterExtensionWithRequestContexts(
       base::Bind(&ExtensionInfoMap::RemoveExtension, info_map(),
                  extension_id, reason));
 }
+
+}  // namespace extensions

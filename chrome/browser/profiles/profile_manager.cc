@@ -659,12 +659,12 @@ void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
 void ProfileManager::DoFinalInitForServices(Profile* profile,
                                             bool go_off_the_record) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  ExtensionSystem::Get(profile)->Init(!go_off_the_record);
+  extensions::ExtensionSystem::Get(profile)->Init(!go_off_the_record);
   // During tests, when |profile| is an instance of TestingProfile,
   // ExtensionSystem might not create an ExtensionService.
-  if (ExtensionSystem::Get(profile)->extension_service()) {
+  if (extensions::ExtensionSystem::Get(profile)->extension_service()) {
     profile->GetHostContentSettingsMap()->RegisterExtensionService(
-        ExtensionSystem::Get(profile)->extension_service());
+        extensions::ExtensionSystem::Get(profile)->extension_service());
   }
   if (!command_line.HasSwitch(switches::kDisableWebResources))
     profile->InitPromoResources();

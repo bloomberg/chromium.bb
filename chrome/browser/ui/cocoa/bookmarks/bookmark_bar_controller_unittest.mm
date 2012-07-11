@@ -275,8 +275,8 @@ class BookmarkBarControllerTestBase : public CocoaProfileTest {
     ASSERT_TRUE(profile());
 
     FilePath extension_dir;
-    static_cast<TestExtensionSystem*>(
-        ExtensionSystem::Get(profile()))->
+    static_cast<extensions::TestExtensionSystem*>(
+        extensions::ExtensionSystem::Get(profile()))->
         CreateExtensionService(
             CommandLine::ForCurrentProcess(),
             extension_dir, false);

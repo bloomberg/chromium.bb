@@ -117,7 +117,7 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
       !service->GetTerminatedExtension(extension->id());
   extension->GetBasicInfo(enabled, value);
 
-  value->SetBoolean("mayDisable", ExtensionSystem::Get(
+  value->SetBoolean("mayDisable", extensions::ExtensionSystem::Get(
       service->profile())->management_policy()->UserMayModifySettings(
       extension, NULL));
 
@@ -598,8 +598,8 @@ void AppLauncherHandler::HandleUninstallApp(const ListValue* args) {
   if (!extension)
     return;
 
-  if (!ExtensionSystem::Get(extension_service_->profile())->
-        management_policy()->UserMayModifySettings(extension, NULL)) {
+  if (!extensions::ExtensionSystem::Get(extension_service_->profile())->
+          management_policy()->UserMayModifySettings(extension, NULL)) {
     LOG(ERROR) << "Attempt to uninstall an extension that is non-usermanagable "
                << "was made. Extension id : " << extension->id();
     return;

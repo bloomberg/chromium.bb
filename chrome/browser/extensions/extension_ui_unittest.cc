@@ -28,8 +28,9 @@ class ExtensionUITest : public testing::Test {
   void SetUp() {
     // Create an ExtensionService and ManagementPolicy to inject into the
     // ExtensionSettingsHandler.
-    TestExtensionSystem* system = static_cast<TestExtensionSystem*>(
-        ExtensionSystem::Get(&profile_));
+    extensions::TestExtensionSystem* system =
+        static_cast<extensions::TestExtensionSystem*>(
+            extensions::ExtensionSystem::Get(&profile_));
     extension_service_ = system->CreateExtensionService(
         CommandLine::ForCurrentProcess(), FilePath(), false);
     management_policy_ = system->CreateManagementPolicy();

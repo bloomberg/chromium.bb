@@ -45,7 +45,7 @@ void ExtensionMessageHandler::OnPostMessage(int port_id,
   Profile* profile = Profile::FromBrowserContext(
       render_view_host()->GetProcess()->GetBrowserContext());
   ExtensionMessageService* message_service =
-      ExtensionSystem::Get(profile)->message_service();
+      extensions::ExtensionSystem::Get(profile)->message_service();
   if (message_service) {
     message_service->PostMessageFromRenderer(port_id, message);
   }

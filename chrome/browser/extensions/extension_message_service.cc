@@ -139,7 +139,7 @@ static void IncrementLazyKeepaliveCount(
   Profile* profile =
       Profile::FromBrowserContext(port->process->GetBrowserContext());
   ExtensionProcessManager* pm =
-      ExtensionSystem::Get(profile)->process_manager();
+      extensions::ExtensionSystem::Get(profile)->process_manager();
   ExtensionHost* host = pm->GetBackgroundHostForExtension(port->extension_id);
   if (host && host->extension()->has_lazy_background_page())
     pm->IncrementLazyKeepaliveCount(host->extension());
@@ -154,7 +154,7 @@ static void DecrementLazyKeepaliveCount(
   Profile* profile =
       Profile::FromBrowserContext(port->process->GetBrowserContext());
   ExtensionProcessManager* pm =
-      ExtensionSystem::Get(profile)->process_manager();
+      extensions::ExtensionSystem::Get(profile)->process_manager();
   ExtensionHost* host = pm->GetBackgroundHostForExtension(port->extension_id);
   if (host && host == port->background_host_ptr)
     pm->DecrementLazyKeepaliveCount(host->extension());

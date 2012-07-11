@@ -120,7 +120,7 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
     io_data_.GetResourceContextNoInit());
 
   ExtensionService* extension_service =
-      ExtensionSystem::Get(this)->extension_service();
+      extensions::ExtensionSystem::Get(this)->extension_service();
   if (extension_service && extension_service->extensions_enabled()) {
     extension_service->extension_prefs()->
         ClearIncognitoSessionOnlyContentSettings();
@@ -191,20 +191,20 @@ VisitedLinkMaster* OffTheRecordProfileImpl::GetVisitedLinkMaster() {
 }
 
 ExtensionService* OffTheRecordProfileImpl::GetExtensionService() {
-  return ExtensionSystem::Get(this)->extension_service();
+  return extensions::ExtensionSystem::Get(this)->extension_service();
 }
 
 UserScriptMaster* OffTheRecordProfileImpl::GetUserScriptMaster() {
-  return ExtensionSystem::Get(this)->user_script_master();
+  return extensions::ExtensionSystem::Get(this)->user_script_master();
 }
 
 ExtensionProcessManager*
     OffTheRecordProfileImpl::GetExtensionProcessManager() {
-  return ExtensionSystem::Get(this)->process_manager();
+  return extensions::ExtensionSystem::Get(this)->process_manager();
 }
 
 ExtensionEventRouter* OffTheRecordProfileImpl::GetExtensionEventRouter() {
-  return ExtensionSystem::Get(this)->event_router();
+  return extensions::ExtensionSystem::Get(this)->event_router();
 }
 
 ExtensionSpecialStoragePolicy*

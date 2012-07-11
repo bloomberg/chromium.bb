@@ -214,8 +214,8 @@ void TestingProfile::Init() {
   if (!file_util::PathExists(profile_path_))
     file_util::CreateDirectory(profile_path_);
 
-  ExtensionSystemFactory::GetInstance()->SetTestingFactory(
-      this, TestExtensionSystem::Build);
+  extensions::ExtensionSystemFactory::GetInstance()->SetTestingFactory(
+      this, extensions::TestExtensionSystem::Build);
 
   profile_dependency_manager_->CreateProfileServices(this, true);
 
@@ -448,19 +448,19 @@ VisitedLinkMaster* TestingProfile::GetVisitedLinkMaster() {
 }
 
 ExtensionService* TestingProfile::GetExtensionService() {
-  return ExtensionSystem::Get(this)->extension_service();
+  return extensions::ExtensionSystem::Get(this)->extension_service();
 }
 
 UserScriptMaster* TestingProfile::GetUserScriptMaster() {
-  return ExtensionSystem::Get(this)->user_script_master();
+  return extensions::ExtensionSystem::Get(this)->user_script_master();
 }
 
 ExtensionProcessManager* TestingProfile::GetExtensionProcessManager() {
-  return ExtensionSystem::Get(this)->process_manager();
+  return extensions::ExtensionSystem::Get(this)->process_manager();
 }
 
 ExtensionEventRouter* TestingProfile::GetExtensionEventRouter() {
-  return ExtensionSystem::Get(this)->event_router();
+  return extensions::ExtensionSystem::Get(this)->event_router();
 }
 
 void TestingProfile::SetExtensionSpecialStoragePolicy(
@@ -552,7 +552,7 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContext() {
 net::URLRequestContextGetter* TestingProfile::GetRequestContextForRenderProcess(
     int renderer_child_id) {
   ExtensionService* extension_service =
-      ExtensionSystem::Get(this)->extension_service();
+      extensions::ExtensionSystem::Get(this)->extension_service();
   if (extension_service) {
     const extensions::Extension* installed_app = extension_service->
         GetInstalledAppForRenderer(renderer_child_id);

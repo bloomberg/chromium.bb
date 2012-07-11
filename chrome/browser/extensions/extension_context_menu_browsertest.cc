@@ -534,7 +534,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, PolicyDisablesItems) {
   scoped_refptr<ExtensionContextMenuModel> menu(
       new ExtensionContextMenuModel(extension, browser(), NULL));
 
-  ExtensionSystem::Get(
+  extensions::ExtensionSystem::Get(
       browser()->profile())->management_policy()->UnregisterAllProviders();
 
   // Actions should be enabled.
@@ -543,7 +543,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, PolicyDisablesItems) {
 
   extensions::TestManagementPolicyProvider policy_provider(
     extensions::TestManagementPolicyProvider::PROHIBIT_MODIFY_STATUS);
-  ExtensionSystem::Get(
+  extensions::ExtensionSystem::Get(
       browser()->profile())->management_policy()->RegisterProvider(
       &policy_provider);
 

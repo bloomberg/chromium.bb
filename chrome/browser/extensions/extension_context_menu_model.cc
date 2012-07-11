@@ -83,7 +83,7 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
         tab_contents->extension_tab_helper()->tab_id());
   } else if (command_id == DISABLE || command_id == UNINSTALL) {
     // Some extension types can not be disabled or uninstalled.
-    return ExtensionSystem::Get(
+    return extensions::ExtensionSystem::Get(
         profile_)->management_policy()->UserMayModifySettings(extension, NULL);
   }
   return true;
