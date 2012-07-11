@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -11,9 +11,9 @@ set -e
 
 # Using Android 4.0, API Level: 14 (ice cream sandwich). The SDK package is
 # about 25M.
-SDK_FILE_NAME="android-sdk_r18-linux.tgz"
+SDK_FILE_NAME="android-sdk_r20-linux.tgz"
 SDK_DOWNLOAD_URL="http://dl.google.com/android/${SDK_FILE_NAME}"
-SDK_MD5SUM="6cd716d0e04624b865ffed3c25b3485c"
+SDK_MD5SUM="22a81cf1d4a951c62f71a8758290e9bb"
 
 # Using "ANDROID_SDK_ROOT/tools/android list targets" to get the matching target
 # id which will be loaded in simulator for testing.
@@ -74,7 +74,7 @@ install_dev_kit() {
   echo "Install ${local_file_name}"
   mv "${local_file_name}" "${install_path}"
   cd "${install_path}"
-  tar -xvf "${local_file_name}"
+  tar -xf "${local_file_name}"
 }
 
 if [[ -z "${ANDROID_SDK_ROOT}" ]]; then
@@ -125,10 +125,10 @@ fi
 # configuration and override the existing one, since there is no easy way to
 # check whether current AVD has correct configuration and it takes almost no
 # time to create a new one.  Create one ARM AVD and one x86 AVD.
-"${ANDROID_SDK_ROOT}/tools/android" --silent create avd --name buildbot \
+"${ANDROID_SDK_ROOT}/tools/android" --silent create avd --name avd_armeabi \
   --abi armeabi-v7a --target ${SDK_TARGET_ID} --force <<< "no"
 
-"${ANDROID_SDK_ROOT}/tools/android" --silent create avd --name buildbot \
+"${ANDROID_SDK_ROOT}/tools/android" --silent create avd --name avd_x86 \
   --abi x86 --target ${SDK_TARGET_ID} --force <<< "no"
 
 # Install Android NDK if it doesn't exist.
