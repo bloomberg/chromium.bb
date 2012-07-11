@@ -191,15 +191,25 @@ class GetDataOperation : public UrlFetchOperationBase {
   virtual ~GetDataOperation();
 
   // Parse GData JSON response.
-  virtual base::Value* ParseResponse(const std::string& data);
+  virtual bool ParseResponse(GDataErrorCode fetch_error_code,
+                             const std::string& data);
 
  protected:
   // Overridden from UrlFetchOperationBase.
   virtual bool ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
-  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
+  virtual void RunCallbackOnPrematureFailure(
+      GDataErrorCode fetch_error_code) OVERRIDE;
+
+  void RunCallback(GDataErrorCode fetch_error_code,
+                   scoped_ptr<base::Value> value);
 
  private:
+  void OnDataParsed(GDataErrorCode fetch_error_code,
+                    scoped_ptr<base::Value>* value);
+
   GetDataCallback callback_;
+  base::WeakPtrFactory<GetDataOperation> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(GetDataOperation);
 };
 
@@ -440,7 +450,8 @@ class AuthorizeAppsOperation : public GetDataOperation {
 
   // Must override GetDataOperation's ParseResponse because the response is XML
   // not JSON.
-  virtual base::Value* ParseResponse(const std::string& data) OVERRIDE;
+  virtual bool ParseResponse(GDataErrorCode code,
+                             const std::string& data) OVERRIDE;
  private:
   std::string app_id_;
   GURL document_url_;
