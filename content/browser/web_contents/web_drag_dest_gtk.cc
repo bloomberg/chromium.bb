@@ -91,7 +91,6 @@ void WebDragDestGtk::UpdateDragStatus(WebDragOperation operation) {
 
 void WebDragDestGtk::DragLeave() {
   GetRenderViewHost()->DragTargetDragLeave();
-
   if (delegate())
     delegate()->OnDragLeave();
 
@@ -269,6 +268,12 @@ void WebDragDestGtk::OnDragLeave(GtkWidget* sender, GdkDragContext* context,
   // Set |context_| to NULL to make sure we will recognize the next DragMotion
   // as an enter.
   context_ = NULL;
+
+  // Sometimes we get a drag-leave event before getting a drag-data-received
+  // event. In that case, we don't want to bother the renderer with a
+  // DragLeave event.
+  if (data_requests_ != 0)
+    return;
 
   // When GTK sends us a drag-drop signal, it is shortly (and synchronously)
   // preceded by a drag-leave. The renderer doesn't like getting the signals
