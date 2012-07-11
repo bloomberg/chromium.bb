@@ -399,7 +399,7 @@ const char kPrivacyLearnMoreURL[] =
 #endif
 
 const char kSessionRestoreLearnMoreURL[] =
-    "http://support.google.com/chrome/bin/answer.py?answer=95421";
+    "https://support.google.com/chrome/?p=settings_reopen_pages";
 
 const char kChromiumProjectURL[] = "http://code.google.com/chromium/";
 
