@@ -35,7 +35,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources_standard.h"
+#include "grit/theme_resources.h"
 #include "third_party/apple_sample_code/ImageAndTextCell.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"

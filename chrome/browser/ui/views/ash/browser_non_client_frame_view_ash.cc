@@ -19,7 +19,6 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"  // Accessibility names
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"

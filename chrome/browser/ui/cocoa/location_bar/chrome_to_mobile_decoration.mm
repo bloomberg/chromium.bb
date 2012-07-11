@@ -10,7 +10,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources_standard.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 // An inset to anchor the bubble within the icon's built-in padding.

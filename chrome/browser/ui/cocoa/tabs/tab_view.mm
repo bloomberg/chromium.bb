@@ -13,7 +13,6 @@
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 

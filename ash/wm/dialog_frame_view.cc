@@ -4,7 +4,7 @@
 
 #include "ash/wm/dialog_frame_view.h"
 
-#include "grit/ui_resources_standard.h"
+#include "grit/ui_resources.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"

@@ -21,7 +21,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
-#include "grit/theme_resources_standard.h"
+#include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/gfx/canvas.h"

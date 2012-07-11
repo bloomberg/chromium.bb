@@ -41,7 +41,6 @@
         '../ui/base/strings/ui_strings.gyp:ui_strings',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
-        '../ui/ui.gyp:ui_resources_standard',
         '../webkit/support/webkit_support.gyp:appcache',
         '../webkit/support/webkit_support.gyp:blob',
         '../webkit/support/webkit_support.gyp:database',

@@ -10,7 +10,7 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/image_utils.h"
-#include "grit/theme_resources_standard.h"
+#include "grit/theme_resources.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/l10n/l10n_util.h"

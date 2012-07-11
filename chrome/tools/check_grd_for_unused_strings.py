@@ -148,7 +148,6 @@ def main():
       os.path.join(chrome_dir, 'common', 'common_resources.grd'),
       os.path.join(chrome_dir, 'renderer', 'renderer_resources.grd'),
       os.path.join(src_dir, 'ui', 'resources', 'ui_resources.grd'),
-      os.path.join(src_dir, 'ui', 'resources', 'ui_resources_standard.grd'),
       os.path.join(ui_base_strings_dir, 'app_locale_settings.grd'),
       os.path.join(ui_base_strings_dir, 'ui_strings.grd'),
     ]

@@ -178,7 +178,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "grit/theme_resources_standard.h"
+#include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domain.h"
 #include "net/cookies/cookie_monster.h"

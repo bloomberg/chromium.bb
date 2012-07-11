@@ -12,7 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
-#include "grit/theme_resources_standard.h"
+#include "grit/theme_resources.h"
 
 // How long to wait between checks for whether the user has been idle.
 static const int kIdleRepeatingTimerWait = 10;  // Minutes (seconds if testing).

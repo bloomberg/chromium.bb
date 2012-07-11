@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/global_error/global_error_bubble_view_base.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 
 GlobalError::GlobalError()
     : has_shown_bubble_view_(false),

@@ -20,7 +20,6 @@
         '../compositor/compositor.gyp:compositor',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
-        '../ui.gyp:ui_resources_standard',
         '../views/views.gyp:views',
       ],
       'defines': [

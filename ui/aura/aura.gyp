@@ -18,7 +18,6 @@
         '../compositor/compositor.gyp:compositor',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
-        '../ui.gyp:ui_resources_standard',
       ],
       'defines': [
         'AURA_IMPLEMENTATION',
@@ -182,7 +181,7 @@
       'target_name': 'test_support_aura_pak',
       'type': 'none',
       'dependencies': [
-        '<(DEPTH)/ui/ui.gyp:ui_resources_standard',
+        '<(DEPTH)/ui/ui.gyp:ui_resources',
       ],
       'variables': {
         'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
@@ -192,7 +191,7 @@
           'action_name': 'repack_test_support_aura_pack',
           'variables': {
             'pak_inputs': [
-              '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_standard.pak',
             ],
           },
           'inputs': [
@@ -220,7 +219,6 @@
         '../compositor/compositor.gyp:compositor_test_support',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
-        '../ui.gyp:ui_resources_standard',
         'aura',
       ],
       'include_dirs': [
@@ -228,8 +226,7 @@
       ],
       'sources': [
         'demo/demo_main.cc',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_standard.rc',
       ],
     },
     {
@@ -245,7 +242,6 @@
         '../compositor/compositor.gyp:compositor_test_support',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
-        '../ui.gyp:ui_resources_standard',
         'aura',
       ],
       'include_dirs': [
@@ -253,8 +249,7 @@
       ],
       'sources': [
         'bench/bench_main.cc',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_standard.rc',
       ],
     },
     {
@@ -270,7 +265,6 @@
         '../gl/gl.gyp:gl',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
-        '../ui.gyp:ui_resources_standard',
         '../ui.gyp:ui_test_support',
         'test_support_aura',
         'aura',
@@ -289,8 +283,7 @@
         'event_filter_unittest.cc',
         'event_unittest.cc',
         'window_unittest.cc',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_standard.rc',
       ],
       'conditions': [
         # osmesa GL implementation is used on linux.

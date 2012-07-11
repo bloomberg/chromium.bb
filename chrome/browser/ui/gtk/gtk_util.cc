@@ -33,7 +33,6 @@
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_screen_util.h"

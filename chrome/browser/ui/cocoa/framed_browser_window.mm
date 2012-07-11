@@ -14,7 +14,6 @@
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 
 // Replicate specific 10.7 SDK declarations for building with prior SDKs.
 #if !defined(MAC_OS_X_VERSION_10_7) || \

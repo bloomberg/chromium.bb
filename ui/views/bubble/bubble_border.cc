@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "grit/ui_resources.h"
-#include "grit/ui_resources_standard.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"

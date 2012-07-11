@@ -41,7 +41,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
 #include "ui/base/accelerators/accelerator_gtk.h"
 #include "ui/base/gtk/gtk_compat.h"

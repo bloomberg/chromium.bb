@@ -17,7 +17,7 @@
 #include "base/message_pump_aurax11.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
-#include "grit/ui_resources_standard.h"
+#include "grit/ui_resources.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/user_action_client.h"
 #include "ui/aura/dispatcher_linux.h"

@@ -11,7 +11,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "grit/ui_resources_standard.h"
+#include "grit/ui_resources.h"
 #include "grit/ui_strings.h"  // Accessibility names
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/hit_test.h"

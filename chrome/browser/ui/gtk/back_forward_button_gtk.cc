@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // The time in milliseconds between when the user clicks and the menu appears.

@@ -38,7 +38,6 @@
         '../compositor/compositor.gyp:compositor',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
-        '../ui.gyp:ui_resources_standard',
       ],
       'defines': [
         'VIEWS_IMPLEMENTATION',
@@ -504,7 +503,6 @@
         '../compositor/compositor.gyp:compositor_test_support',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
-        '../ui.gyp:ui_resources_standard',
         '../ui.gyp:ui_test_support',
         'test_support_views',
         'views',
@@ -550,8 +548,7 @@
         'widget/widget_unittest.cc',
         'run_all_unittests.cc',
 
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_standard.rc',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -608,7 +605,6 @@
         '../../third_party/icu/icu.gyp:icuuc',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
-        '../ui.gyp:ui_resources_standard',
         'views',
       ],
       'include_dirs': [
@@ -692,7 +688,6 @@
         '../../third_party/icu/icu.gyp:icuuc',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
-        '../ui.gyp:ui_resources_standard',
         'views_examples_lib',
       ],
       'include_dirs': [
@@ -709,8 +704,7 @@
         'examples/examples_main.cc',
         'test/test_views_delegate.cc',
         'test/test_views_delegate.h',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_standard.rc',
       ],
       'conditions': [
         ['OS=="win"', {

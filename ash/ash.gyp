@@ -32,7 +32,6 @@
         '../ui/oak/oak.gyp:oak',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
-        '../ui/ui.gyp:ui_resources_standard',
         '../ui/views/views.gyp:views',
       ],
       'defines': [
@@ -372,7 +371,6 @@
         '../ui/compositor/compositor.gyp:compositor_test_support',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
-        '../ui/ui.gyp:ui_resources_standard',
         '../ui/ui.gyp:ui_test_support',
         '../ui/views/views.gyp:views',
         '../ui/views/views.gyp:test_support_views',
@@ -450,8 +448,7 @@
         'wm/workspace/workspace_manager_unittest.cc',
         'wm/workspace/workspace_window_resizer_unittest.cc',
 
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_standard.rc',
       ],
       'conditions': [
         ['use_ibus==1', {
@@ -501,7 +498,6 @@
         '../ui/compositor/compositor.gyp:compositor_test_support',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
-        '../ui/ui.gyp:ui_resources_standard',
         '../ui/views/views.gyp:views',
         '../ui/views/views.gyp:views_examples_lib',
         '../ui/views/views.gyp:test_support_views',
@@ -535,8 +531,7 @@
         'shell/window_type_launcher.h',
         'shell/window_watcher.cc',
         'shell/window_watcher.h',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_standard.rc',
         '../content/app/startup_helper_win.cc',
         '../ui/views/test/test_views_delegate.cc',
       ],

@@ -48,9 +48,11 @@
   },
   "ui/resources/ui_resources.grd": {
     "includes": [5500],
+    "structures": [24000],
   },
   "chrome/app/theme/theme_resources.grd": {
     "includes": [6000],
+    "structures": [21000],
   },
   "chrome_frame/resources/chrome_frame_resources.grd": {
     "includes": [6500],
@@ -147,9 +149,6 @@
   "devtools_resources.grd": {
     "includes": [20500],
   },
-  "chrome/app/theme/theme_resources_standard.grd": {
-    "structures": [21000],
-  },
   # This file is generated during the build.
   "chrome/browser/debugger/frontend/devtools_discovery_page_resources.grd": {
     "includes": [21500],
@@ -165,9 +164,6 @@
   },
   "chrome/browser/resources/quota_internals_resources.grd": {
     "includes": [23000],
-  },
-  "ui/resources/ui_resources_standard.grd": {
-    "structures": [24000],
   },
   "content/content_resources.grd": {
     "includes": [24500],

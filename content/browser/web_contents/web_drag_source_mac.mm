@@ -22,7 +22,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
-#include "grit/ui_resources_standard.h"
+#include "grit/ui_resources.h"
 #include "net/base/escape.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"

@@ -30,7 +30,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/animation_container.h"
 #include "ui/base/animation/throb_animation.h"

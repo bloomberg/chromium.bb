@@ -8,7 +8,6 @@
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/hover_image_button.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"

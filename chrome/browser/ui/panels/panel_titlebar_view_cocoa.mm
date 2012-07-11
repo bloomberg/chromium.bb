@@ -17,7 +17,6 @@
 #import "chrome/browser/ui/panels/panel_constants.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"

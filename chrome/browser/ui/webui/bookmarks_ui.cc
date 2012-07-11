@@ -21,7 +21,6 @@
 #include "content/public/browser/web_ui.h"
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 

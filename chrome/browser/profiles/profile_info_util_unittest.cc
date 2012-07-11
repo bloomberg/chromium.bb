@@ -5,7 +5,7 @@
 #include "chrome/browser/profiles/profile_info_util.h"
 
 #include "grit/generated_resources.h"
-#include "grit/theme_resources_standard.h"
+#include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_unittest_util.h"

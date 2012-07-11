@@ -16,7 +16,7 @@
 #include "chrome/browser/chrome_to_mobile_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources_standard.h"
+#include "grit/theme_resources.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"

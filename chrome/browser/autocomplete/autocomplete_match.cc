@@ -12,7 +12,6 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 
 // AutocompleteMatch ----------------------------------------------------------
 

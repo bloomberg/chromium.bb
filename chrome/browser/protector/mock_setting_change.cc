@@ -6,7 +6,6 @@
 
 #include "base/utf_string_conversions.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 
 using ::testing::Return;
 

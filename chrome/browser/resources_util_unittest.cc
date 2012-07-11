@@ -1,11 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/resources_util.h"
 
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

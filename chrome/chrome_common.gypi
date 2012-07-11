@@ -52,7 +52,6 @@
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
         '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
-        '<(DEPTH)/ui/ui.gyp:ui_resources_standard',
         '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
       ],
       'sources': [

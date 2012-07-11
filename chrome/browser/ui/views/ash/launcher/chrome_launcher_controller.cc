@@ -40,7 +40,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/theme_resources_standard.h"
+#include "grit/theme_resources.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"

@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 SelectedKeywordDecoration::SelectedKeywordDecoration(NSFont* font)

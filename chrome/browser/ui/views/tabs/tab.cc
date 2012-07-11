@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/animation/multi_animation.h"

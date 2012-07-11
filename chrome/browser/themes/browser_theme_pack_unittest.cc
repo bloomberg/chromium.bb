@@ -15,7 +15,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "content/public/test/test_browser_thread.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/color_utils.h"
 

@@ -65,7 +65,7 @@
           {
             'destination': '<(PRODUCT_DIR)/ui_unittests_strings',
             'files': [
-              '<(grit_base_out_dir)/ui_resources/ui_resources.pak',
+              '<(grit_base_out_dir)/ui_resources/ui_resources_standard.pak',
             ],
           },
         ],

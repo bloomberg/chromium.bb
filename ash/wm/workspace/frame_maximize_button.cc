@@ -12,7 +12,6 @@
 #include "ash/wm/workspace/snap_sizer.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
-#include "grit/ui_resources_standard.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -12,7 +12,6 @@
 #include "base/message_loop.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
-#include "grit/ui_resources_standard.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"

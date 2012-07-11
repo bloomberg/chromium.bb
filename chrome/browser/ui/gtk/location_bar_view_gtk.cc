@@ -77,7 +77,6 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "net/base/net_util.h"
 #include "ui/base/accelerators/accelerator_gtk.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"

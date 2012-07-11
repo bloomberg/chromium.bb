@@ -89,7 +89,6 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
 #include "grit/webkit_resources.h"
 #include "ui/base/accelerators/accelerator.h"
