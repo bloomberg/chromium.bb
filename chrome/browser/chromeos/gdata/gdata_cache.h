@@ -121,7 +121,7 @@ class GDataCache {
 
   // Structure to store information of an existing cache file.
   struct CacheEntry {
-    CacheEntry() : cache_state(0) {}
+    CacheEntry() : cache_state(CACHE_STATE_NONE) {}
 
     CacheEntry(const std::string& md5,
                int cache_state)
@@ -149,7 +149,8 @@ class GDataCache {
 
   // Callback for GetCacheEntryOnUIThread.
   // |success| indicates if the operation was successful.
-  // |cache_entry| is the obtained cache entry.
+  // |cache_entry| is the obtained cache entry. On failure, |cache_state| is
+  // set to CACHE_STATE_NONE.
   //
   // TODO(satorux): Unlike other callback types, this has to be defined
   // inside GDataCache as CacheEntry is inside GDataCache. We should get them

@@ -337,13 +337,13 @@ void RunGetCacheEntryCallback(
 
 std::string GDataCache::CacheEntry::ToString() const {
   std::vector<std::string> cache_states;
-  if (GDataCache::IsCachePresent(cache_state))
+  if (IsPresent())
     cache_states.push_back("present");
-  if (GDataCache::IsCachePinned(cache_state))
+  if (IsPinned())
     cache_states.push_back("pinned");
-  if (GDataCache::IsCacheDirty(cache_state))
+  if (IsDirty())
     cache_states.push_back("dirty");
-  if (GDataCache::IsCachePersistent(cache_state))
+  if (IsPersistent())
     cache_states.push_back("persistent");
 
   return base::StringPrintf("md5=%s, cache_state=%s",

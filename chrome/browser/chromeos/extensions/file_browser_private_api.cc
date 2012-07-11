@@ -1876,21 +1876,14 @@ void GetGDataFilePropertiesFunction::OnOperationComplete(
 
 void GetGDataFilePropertiesFunction::CacheStateReceived(
     base::DictionaryValue* property_dict,
-    bool success,
+    bool /* success */,
     const gdata::GDataCache::CacheEntry& cache_entry) {
-  const int cache_state = (success ? cache_entry.cache_state :
-                           gdata::GDataCache::CACHE_STATE_NONE);
-  property_dict->SetBoolean(
-      "isPinned",
-      gdata::GDataCache::IsCachePinned(cache_state));
+  // In case of an error (i.e. success is false), cache_entry.cache_state is
+  // set to CACHE_STATE_NONE.
+  property_dict->SetBoolean("isPinned", cache_entry.IsPinned());
+  property_dict->SetBoolean("isPresent", cache_entry.IsPresent());
+  property_dict->SetBoolean("isDirty", cache_entry.IsDirty());
 
-  property_dict->SetBoolean(
-      "isPresent",
-      gdata::GDataCache::IsCachePresent(cache_state));
-
-  property_dict->SetBoolean(
-      "isDirty",
-      gdata::GDataCache::IsCacheDirty(cache_state));
   CompleteGetFileProperties();
 }
 
