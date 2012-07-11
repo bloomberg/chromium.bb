@@ -157,6 +157,10 @@ class Target {
   // Thread for subsequent registers access operations.
   uint32_t reg_thread_;
 
+  // Thread that is stepping over a breakpoint while other threads remain
+  // suspended.
+  uint32_t step_over_breakpoint_thread_;
+
   uint64_t mem_base_;
 };
 

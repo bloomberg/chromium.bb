@@ -360,6 +360,19 @@ void NaClSignalHandlerInitPlatform() {
   for (a = 0; a < NACL_ARRAY_SIZE(s_Signals); a++) {
     sigaddset(&sa.sa_mask, s_Signals[a]);
   }
+#if NACL_LINUX
+  /*
+   * Don't mask NACL_THREAD_SUSPEND_SIGNAL.
+   * When NaClUntrustedThreadSuspend() decides to suspend a thread, it doesn't
+   * know that it's about to enter (for example) the SIGTRAP handler.  If it
+   * sends NACL_THREAD_SUSPEND_SIGNAL, it will expect to get a reply from the
+   * NACL_THREAD_SUSPEND_SIGNAL handler.  Since the SIGTRAP handler may block
+   * for a while, we need to make sure that the reply is prompt.  Moreover,
+   * the debug stub's SIGTRAP handler will in turn try to suspend threads,
+   * resulting in deadlock.
+   */
+  CHECK(sigdelset(&sa.sa_mask, NACL_THREAD_SUSPEND_SIGNAL) == 0);
+#endif
 
   /* Install all handlers */
   for (a = 0; a < NACL_ARRAY_SIZE(s_Signals); a++) {

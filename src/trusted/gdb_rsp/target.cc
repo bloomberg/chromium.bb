@@ -44,6 +44,7 @@ Target::Target(const Abi* abi)
     cur_signal_(0),
     sig_thread_(0),
     reg_thread_(0),
+    step_over_breakpoint_thread_(0),
     mem_base_(0) {
   if (NULL == abi_) abi_ = Abi::Get();
 }
@@ -226,7 +227,11 @@ void Target::Run(Session *ses) {
         sig_thread_ = 0;
 
         // Suspend all threads.
-        IThread::SuspendAllThreadsExceptSignaled(0);
+        if (step_over_breakpoint_thread_ == 0) {
+          IThread::SuspendAllThreadsExceptSignaled(0);
+        } else {
+          NaClLog(LOG_FATAL, "Target::Run: step over breakpoint error\n");
+        }
       } else {
         // otherwise, nothing to do so try again.
         continue;
@@ -238,7 +243,14 @@ void Target::Run(Session *ses) {
       // Suspend all threads except signaled.
       // Signaled thread is effectively suspended already, being waiting in
       // a signal handler.
-      IThread::SuspendAllThreadsExceptSignaled(id);
+      if (step_over_breakpoint_thread_ == 0) {
+        IThread::SuspendAllThreadsExceptSignaled(id);
+      } else if (step_over_breakpoint_thread_ != id) {
+        NaClLog(LOG_FATAL, "Target::Run: bad step_over_breakpoint_thread_\n");
+      }
+
+      // Finish step over breakpoint.
+      step_over_breakpoint_thread_ = 0;
 
       // Reset single stepping.
       IThread *thread = threads_[id];
@@ -285,7 +297,9 @@ void Target::Run(Session *ses) {
     // Signaled thread will be resumed by waking a a signal handler.
     // TODO(eaeltsin): it might make sense to resume signaled thread before
     // others, though it is not required by GDB docs.
-    IThread::ResumeAllThreadsExceptSignaled(id);
+    if (step_over_breakpoint_thread_ == 0) {
+      IThread::ResumeAllThreadsExceptSignaled(id);
+    }
 
     // If there is no signaled thread, then we were interrupted by GDB, and
     // there is no signal handler waiting.
@@ -629,10 +643,7 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
               err = BAD_ARGS;
               break;
             }
-            // TODO(eaeltsin): switch to stepping-over-breakpoint mode, when
-            // suspended threads are not resumed. Save thread being stepped
-            // for checking.
-            // step_over_breakpoint_thread_ = sig_thread_;
+            step_over_breakpoint_thread_ = sig_thread_;
           } else if (strcmp(end, ";c") == 0) {
             // Single step one thread and continue all other threads.
           } else {

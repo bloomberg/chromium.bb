@@ -8,8 +8,8 @@ Import('env')
 if 'TRUSTED_ENV' not in env:
   Return()
 
-# gdb is currently built only on Linux.
-# PNaCl and ARM bots don't have gdb.
+# GDB is currently built only on Linux.
+# PNaCl and ARM bots don't have GDB.
 # TODO(halyavin) : check debugger with PNaCl and enable test if possible.
 if not env.Bit('host_linux') or env.Bit('bitcode') or env.Bit('target_arm'):
   Return()
@@ -17,19 +17,14 @@ if not env.Bit('host_linux') or env.Bit('bitcode') or env.Bit('target_arm'):
 # We need -O0 to make stepping predictable and read local variables/function
 # arguments that may otherwise be optimized out.
 env.Append(CCFLAGS=['-O0', '-g'])
-gdb_test_guest = env.ComponentProgram(
-    'gdb_test_guest', 'gdb_test_guest.c',
-    EXTRA_LIBS=['${NONIRT_LIBS}'])
 
 sel_ldr = env.GetSelLdr()
 irt = env.GetIrtNexe()
-dependencies = [sel_ldr, irt, gdb_test_guest]
 
 env_vars = [
     'OUT_DIR=%s' % env.subst('${TARGET_ROOT}/test_results'),
     'NACL_SEL_LDR=%s' % sel_ldr,
     'NACL_IRT=%s' % irt,
-    'GDB_TEST_GUEST=%s' % gdb_test_guest.abspath,
     'NACL_GDB=%s' % env['GDB'],
     ]
 if env.Bit('asan'):
@@ -38,11 +33,15 @@ if not env.Bit('nacl_static_link'):
   env_vars += ['NACL_LD_SO=%s' % env.subst('${NACL_SDK_LIB}/runnable-ld.so'),
                'NACL_LIBS=%s' % env['NACL_SDK_LIB']]
 
+gdb_test_guest = env.ComponentProgram(
+    'gdb_test_guest', 'gdb_test_guest.c',
+    EXTRA_LIBS=['${NONIRT_LIBS}'])
+
 node = env.CommandTest(
     'gdb_stepi_after_break.out',
     command=['${PYTHON}', env.File('stepi_after_break.py')],
-    osenv=env_vars,
-    extra_deps=dependencies)
+    osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest.abspath],
+    extra_deps=[sel_ldr, irt, gdb_test_guest])
 
 # Nearly nothing works in 64-bit debugger due to address size issues.
 env.AddNodeToTestSuite(node, ['large_tests'], 'run_gdb_stepi_after_break_test',
@@ -51,8 +50,24 @@ env.AddNodeToTestSuite(node, ['large_tests'], 'run_gdb_stepi_after_break_test',
 node = env.CommandTest(
     'gdb_print_symbol.out',
     command=['${PYTHON}', env.File('print_symbol.py')],
-    osenv=env_vars,
-    extra_deps=dependencies)
+    osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest.abspath],
+    extra_deps=[sel_ldr, irt, gdb_test_guest])
 
 env.AddNodeToTestSuite(node, ['large_tests'], 'run_gdb_print_symbol_test',
+                       is_broken=env.Bit('build_x86_64'))
+
+# GDB treats multithreaded programs specially. Provide distinct nexe for
+# multithreaded tests to isolate multiple threads-specific issues.
+gdb_test_guest_thread = env.ComponentProgram(
+    'gdb_test_guest_thread', 'gdb_test_guest_thread.c',
+    EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
+
+node = env.CommandTest(
+    'gdb_break_continue_thread.out',
+    command=['${PYTHON}', env.File('break_continue_thread.py')],
+    osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest_thread.abspath],
+    extra_deps=[sel_ldr, irt, gdb_test_guest_thread])
+
+env.AddNodeToTestSuite(node, ['large_tests'],
+                       'run_gdb_break_continue_thread_test',
                        is_broken=env.Bit('build_x86_64'))
