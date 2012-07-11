@@ -14,7 +14,6 @@
 
 namespace content {
 class ShellBrowserContext;
-class ShellBrowserMainParts;
 }
 
 namespace views {
