@@ -7,6 +7,7 @@
 
 namespace aura {
 class KeyEvent;
+class LocatedEvent;
 }  // namespace aura
 
 namespace ash {
@@ -25,6 +26,7 @@ class KeyRewriterDelegate {
   // 1) Just return ACTION_DROP_EVENT to drop the |event|.
   // 2) Rewrite the |event| and return ACTION_REWRITE_EVENT.
   virtual Action RewriteOrFilterKeyEvent(aura::KeyEvent* event) = 0;
+  virtual Action RewriteOrFilterLocatedEvent(aura::LocatedEvent* event) = 0;
 };
 
 }  // namespace ash

@@ -8,33 +8,6 @@
 
 #include "ui/base/events.h"
 
-namespace {
-
-// Pro-processes an XEvent before it is handled. The pre-processings include:
-// - Map Alt+Button1 to Button3
-void PreprocessXEvent(XEvent* xevent) {
-  if (!xevent || xevent->type != GenericEvent)
-    return;
-
-  XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xevent->xcookie.data);
-  if ((xievent->evtype == XI_ButtonPress ||
-      xievent->evtype == XI_ButtonRelease) &&
-        (xievent->mods.effective & Mod1Mask) &&
-        xievent->detail == 1) {
-    xievent->mods.effective &= ~Mod1Mask;
-    xievent->detail = 3;
-    if (xievent->evtype == XI_ButtonRelease) {
-      // On the release clear the left button from the existing state and the
-      // mods, and set the right button.
-      XISetMask(xievent->buttons.mask, 3);
-      XIClearMask(xievent->buttons.mask, 1);
-      xievent->mods.effective &= ~Button1Mask;
-    }
-  }
-}
-
-}  // namespace
-
 namespace aura {
 
 DispatcherLinux::DispatcherLinux()
@@ -109,7 +82,6 @@ bool DispatcherLinux::Dispatch(const base::NativeEvent& xev) {
 
 base::EventStatus DispatcherLinux::WillProcessEvent(
     const base::NativeEvent& event) {
-  PreprocessXEvent(event);
   return base::EVENT_CONTINUE;
 }
 

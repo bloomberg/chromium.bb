@@ -76,6 +76,8 @@ class KeyRewriter : public ash::KeyRewriterDelegate,
   // ash::KeyRewriterDelegate overrides:
   virtual ash::KeyRewriterDelegate::Action RewriteOrFilterKeyEvent(
       aura::KeyEvent* event) OVERRIDE;
+  virtual ash::KeyRewriterDelegate::Action RewriteOrFilterLocatedEvent(
+      aura::LocatedEvent* event) OVERRIDE;
 
   // aura::RootWindowObserver overrides:
   virtual void OnKeyboardMappingChanged(const aura::RootWindow* root) OVERRIDE;
@@ -112,6 +114,9 @@ class KeyRewriter : public ash::KeyRewriterDelegate,
   //  * Ctrl+Alt+Down -> End
   bool RewriteBackspaceAndArrowKeys(aura::KeyEvent* event);
 
+  // Rewrites the located |event|.
+  void RewriteLocatedEvent(aura::LocatedEvent* event);
+
   // Overwrites |event| with the keycodes and flags.
   void OverwriteEvent(aura::KeyEvent* event,
                       unsigned int new_native_keycode,
@@ -125,6 +130,13 @@ class KeyRewriter : public ash::KeyRewriterDelegate,
 
   // Returns true if |last_device_id_| is Apple's.
   bool IsAppleKeyboard() const;
+
+  // Remaps |original_flags| to |remapped_flags| and |original_native_modifiers|
+  // to |remapped_native_modifiers| following the current user prefs.
+  void GetRemappedModifierMasks(int original_flags,
+                                unsigned int original_native_modifiers,
+                                int* remapped_flags,
+                                unsigned int* remapped_native_modifiers) const;
 
   std::map<int, DeviceType> device_id_to_type_;
   int last_device_id_;

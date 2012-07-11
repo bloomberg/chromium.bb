@@ -44,7 +44,18 @@ bool KeyRewriterEventFilter::PreHandleKeyEvent(
 
 bool KeyRewriterEventFilter::PreHandleMouseEvent(
     aura::Window* target, aura::MouseEvent* event) {
-  return false;  // Not handled.
+  if (!delegate_.get())
+    return false;
+
+  switch (delegate_->RewriteOrFilterLocatedEvent(event)) {
+    case KeyRewriterDelegate::ACTION_REWRITE_EVENT:
+      return false;
+    case KeyRewriterDelegate::ACTION_DROP_EVENT:
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 ui::TouchStatus KeyRewriterEventFilter::PreHandleTouchEvent(
