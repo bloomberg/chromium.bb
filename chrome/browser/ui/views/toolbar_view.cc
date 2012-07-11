@@ -349,7 +349,8 @@ gfx::ImageSkia ToolbarView::GetAppMenuIcon(
     return icon;
 
   // Draw the chrome app menu icon onto the canvas.
-  scoped_ptr<gfx::Canvas> canvas(new gfx::Canvas(icon, false));
+  gfx::ImageSkiaRep image_rep = gfx::ImageSkiaRep(icon, ui::SCALE_FACTOR_100P);
+  scoped_ptr<gfx::Canvas> canvas(new gfx::Canvas(image_rep, false));
 
   gfx::ImageSkia badge;
   // Only one badge can be active at any given time. The Upgrade notification

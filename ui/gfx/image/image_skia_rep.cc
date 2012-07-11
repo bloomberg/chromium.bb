@@ -25,25 +25,10 @@ ImageSkiaRep::ImageSkiaRep(const gfx::Size& size,
   bitmap_.allocPixels();
 }
 
-ImageSkiaRep::ImageSkiaRep(const SkBitmap& src)
-    : bitmap_(src),
-      scale_factor_(ui::SCALE_FACTOR_NONE) {
-}
-
 ImageSkiaRep::ImageSkiaRep(const SkBitmap& src,
                            ui::ScaleFactor scale_factor)
     : bitmap_(src),
       scale_factor_(scale_factor) {
-}
-
-ImageSkiaRep& ImageSkiaRep::operator=(const SkBitmap& other) {
-  bitmap_ = other;
-  scale_factor_ = ui::SCALE_FACTOR_NONE;
-  return *this;
-}
-
-ImageSkiaRep::operator SkBitmap&() const {
-  return const_cast<SkBitmap&>(bitmap_);
 }
 
 int ImageSkiaRep::GetWidth() const {

@@ -24,19 +24,9 @@ class UI_EXPORT ImageSkiaRep {
   // This allocates pixels in the bitmap.
   ImageSkiaRep(const gfx::Size& size, ui::ScaleFactor scale_factor);
 
-  // Creates a bitmap with a default scale factor of 1x.
-  // Adds ref to |src|.
-  // TODO(pkotwicz): This is temporary and should be removed ASAP.
-  ImageSkiaRep(const SkBitmap& src);
-
   // Creates a bitmap with given scale factor.
   // Adds ref to |src|.
   ImageSkiaRep(const SkBitmap& src, ui::ScaleFactor scale_factor);
-
-  // Converts to and from SkBitmap.
-  // TODO(pkotwicz): This is temporary and should be removed ASAP.
-  ImageSkiaRep& operator=(const SkBitmap& other);
-  operator SkBitmap&() const;
 
   // Returns true if the backing bitmap is null.
   bool is_null() const { return bitmap_.isNull(); }

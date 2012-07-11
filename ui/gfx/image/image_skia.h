@@ -61,17 +61,10 @@ class UI_EXPORT ImageSkia {
   // done.
   ImageSkia& operator=(const SkBitmap& other);
 
-  // Converts from gfx::ImageSkiaRep.
-  // Adds ref to passed in image rep.
-  // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
-  // done.
-  ImageSkia& operator=(const gfx::ImageSkiaRep& other);
-
   // Converts to gfx::ImageSkiaRep and SkBitmap.
   // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
   // done.
   operator SkBitmap&() const;
-  operator gfx::ImageSkiaRep&() const;
 
   ~ImageSkia();
 

@@ -271,7 +271,7 @@ class NetworkMenuIconSource : public gfx::ImageSkiaSource {
     gfx::ImageSkia* images;
     if (type_ == NetworkMenuIcon::ARCS) {
       if (index_ >= kNumArcsImages)
-        return gfx::ImageSkia();
+        return gfx::ImageSkiaRep();
       images = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           color_ == NetworkMenuIcon::COLOR_DARK ?
           IDR_STATUSBAR_NETWORK_ARCS_DARK : IDR_STATUSBAR_NETWORK_ARCS_LIGHT);
@@ -279,7 +279,7 @@ class NetworkMenuIconSource : public gfx::ImageSkiaSource {
       height = images->height() / kNumArcsImages;
     } else {
       if (index_ >= kNumBarsImages)
-        return gfx::ImageSkia();
+        return gfx::ImageSkiaRep();
 
       images = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           color_ == NetworkMenuIcon::COLOR_DARK ?

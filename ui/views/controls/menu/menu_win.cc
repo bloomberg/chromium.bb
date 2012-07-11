@@ -183,8 +183,10 @@ class MenuHostWindow : public ui::WindowImpl {
 
       // Draw the icon after the label, otherwise it would be covered
       // by the label.
+      gfx::ImageSkiaRep icon_image_rep =
+          data->icon.GetRepresentation(ui::SCALE_FACTOR_100P);
       if (data->icon.width() != 0 && data->icon.height() != 0) {
-        gfx::Canvas canvas(data->icon, false);
+        gfx::Canvas canvas(icon_image_rep, false);
         skia::DrawToNativeContext(
             canvas.sk_canvas(), hDC, lpdis->rcItem.left + kItemLeftMargin,
             lpdis->rcItem.top + (lpdis->rcItem.bottom - lpdis->rcItem.top -

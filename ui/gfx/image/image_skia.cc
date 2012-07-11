@@ -141,7 +141,7 @@ ImageSkia::ImageSkia(ImageSkiaSource* source, const gfx::Size& size)
 }
 
 ImageSkia::ImageSkia(const SkBitmap& bitmap) {
-  Init(ImageSkiaRep(bitmap));
+  Init(ImageSkiaRep(bitmap, ui::SCALE_FACTOR_100P));
 }
 
 ImageSkia::ImageSkia(const ImageSkiaRep& image_rep) {
@@ -157,12 +157,7 @@ ImageSkia& ImageSkia::operator=(const ImageSkia& other) {
 }
 
 ImageSkia& ImageSkia::operator=(const SkBitmap& other) {
-  Init(ImageSkiaRep(other));
-  return *this;
-}
-
-ImageSkia& ImageSkia::operator=(const ImageSkiaRep& other) {
-  Init(other);
+  Init(ImageSkiaRep(other, ui::SCALE_FACTOR_100P));
   return *this;
 }
 
@@ -171,13 +166,6 @@ ImageSkia::operator SkBitmap&() const {
     return const_cast<SkBitmap&>(NullImageRep().sk_bitmap());
 
   return const_cast<SkBitmap&>(storage_->image_reps()[0].sk_bitmap());
-}
-
-ImageSkia::operator ImageSkiaRep&() const {
-  if (isNull())
-    return NullImageRep();
-
-  return storage_->image_reps()[0];
 }
 
 ImageSkia::~ImageSkia() {
