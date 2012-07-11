@@ -22,7 +22,6 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRect.h"
-#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/gestures/gesture_configuration.h"
@@ -42,31 +41,10 @@ using views::Widget;
 
 const int kSystemPinchPoints = 4;
 
-const int kAffordanceOuterRadius = 60;
-const int kAffordanceInnerRadius = 50;
-
-// Angles from x-axis at which the outer and inner circles start.
-const int kAffordanceOuterStartAngle = -109;
-const int kAffordanceInnerStartAngle = -65;
-
-// The following are half widths (half to avoid division by 2)
-const int kAffordanceGlowWidth = 12;
-const int kAffordanceArcWidth = 3;
-
-// Start and end values for various animations.
-const float kAffordanceScaleStartValue = 0.8;
-const float kAffordanceScaleEndValue = 1.0;
-const float kAffordanceOpacityStartValue = 0.1;
-const float kAffordanceOpacityEndValue = 0.4;
-const int kAffordanceAngleStartValue = 0;
-// The end angle is a bit greater than 360 to make sure the circle completes at
-// the end of the animation.
-const int kAffordanceAngleEndValue = 380;
-
-// Visual constants.
-const SkColor kAffordanceGlowStartColor = SkColorSetARGB(64, 255, 255, 255);
-const SkColor kAffordanceGlowEndColor = SkColorSetARGB(0, 255, 255, 255);
-const SkColor kAffordanceArcColor = SkColorSetARGB(128, 64, 64, 64);
+const int kAffordanceRadius = 40;
+const int kAffordanceWidth = 3;
+const SkColor kAffordanceFullColor = SkColorSetARGB(125, 0, 0, 255);
+const SkColor kAffordanceEmptyColor = SkColorSetARGB(50, 0, 0, 255);
 const int kAffordanceFrameRateHz = 60;
 
 const double kPinchThresholdForMaximize = 1.5;
@@ -101,62 +79,9 @@ Widget* CreateAffordanceWidget() {
   widget->GetNativeWindow()->SetParent(
       ash::Shell::GetPrimaryRootWindowController()->GetContainer(
           ash::internal::kShellWindowId_OverlayContainer));
+  ash::SetWindowVisibilityAnimationTransition(widget->GetNativeView(),
+      ash::ANIMATE_HIDE);
   return widget;
-}
-
-void PaintAffordanceArc(gfx::Canvas* canvas,
-                        gfx::Point& center,
-                        int radius,
-                        int start_angle,
-                        int end_angle) {
-  SkPaint paint;
-  paint.setStyle(SkPaint::kStroke_Style);
-  paint.setStrokeWidth(2 * kAffordanceArcWidth);
-  paint.setColor(kAffordanceArcColor);
-  paint.setAntiAlias(true);
-
-  SkPath arc_path;
-  arc_path.addArc(SkRect::MakeXYWH(center.x() - radius + kAffordanceArcWidth,
-                                   center.y() - radius + kAffordanceArcWidth,
-                                   2 * (radius - kAffordanceArcWidth),
-                                   2 * (radius - kAffordanceArcWidth)),
-                  start_angle, end_angle);
-  canvas->DrawPath(arc_path, paint);
-}
-
-void PaintAffordanceGlow(gfx::Canvas* canvas,
-                        gfx::Point& center,
-                        int radius,
-                        int start_angle,
-                        int end_angle,
-                        SkColor* colors,
-                        int num_colors,
-                        int glow_width) {
-  SkPoint sk_center;
-  sk_center.iset(center.x(), center.y());
-  SkShader* shader = SkGradientShader::CreateTwoPointRadial(
-      sk_center,
-      SkIntToScalar(radius),
-      sk_center,
-      SkIntToScalar(radius + 2 * glow_width),
-      colors,
-      NULL,
-      num_colors,
-      SkShader::kClamp_TileMode);
-  DCHECK(shader);
-  SkPaint paint;
-  paint.setStyle(SkPaint::kStroke_Style);
-  paint.setStrokeWidth(2 * glow_width);
-  paint.setShader(shader);
-  paint.setAntiAlias(true);
-  shader->unref();
-  SkPath arc_path;
-  arc_path.addArc(SkRect::MakeXYWH(center.x() - radius - glow_width,
-                                   center.y() - radius - glow_width,
-                                   2 * (radius + glow_width),
-                                   2 * (radius + glow_width)),
-                  start_angle, end_angle);
-  canvas->DrawPath(arc_path, paint);
 }
 
 }  // namespace
@@ -167,26 +92,25 @@ namespace internal {
 // View of the LongPressAffordanceAnimation. Draws the actual contents and
 // updates as the animation proceeds. It also maintains the views::Widget that
 // the animation is shown in.
+// Currently the affordance is to simply show an empty circle and fill it up as
+// the animation proceeds.
+// TODO(varunjain): Change the look of this affordance when we get official UX.
 class LongPressAffordanceAnimation::LongPressAffordanceView
     : public views::View {
  public:
   explicit LongPressAffordanceView(const gfx::Point& event_location)
       : views::View(),
         widget_(CreateAffordanceWidget()),
-        current_angle_(kAffordanceAngleStartValue),
-        current_scale_(kAffordanceScaleStartValue) {
+        current_angle_(0) {
     widget_->SetContentsView(this);
     widget_->SetAlwaysOnTop(true);
 
     // We are owned by the LongPressAffordance.
     set_owned_by_client();
-    widget_->SetBounds(gfx::Rect(
-        event_location.x() - (kAffordanceOuterRadius +
-            2 * kAffordanceGlowWidth),
-        event_location.y() - (kAffordanceOuterRadius +
-            2 * kAffordanceGlowWidth),
-        GetPreferredSize().width(),
-        GetPreferredSize().height()));
+    widget_->SetBounds(gfx::Rect(event_location.x() - kAffordanceRadius,
+                                 event_location.y() - kAffordanceRadius,
+                                 GetPreferredSize().width(),
+                                 GetPreferredSize().height()));
     widget_->Show();
   }
 
@@ -195,80 +119,39 @@ class LongPressAffordanceAnimation::LongPressAffordanceView
 
   void UpdateWithAnimation(ui::Animation* animation) {
     // Update the portion of the circle filled so far and re-draw.
-    current_angle_ = animation->CurrentValueBetween(kAffordanceAngleStartValue,
-        kAffordanceAngleEndValue);
-    current_scale_ = animation->CurrentValueBetween(kAffordanceScaleStartValue,
-        kAffordanceScaleEndValue);
-    widget_->GetNativeView()->layer()->SetOpacity(
-        animation->CurrentValueBetween(kAffordanceOpacityStartValue,
-            kAffordanceOpacityEndValue));
+    current_angle_ = animation->CurrentValueBetween(0, 360);
     SchedulePaint();
   }
 
  private:
   // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE {
-    return gfx::Size(2 * (kAffordanceOuterRadius + 2 * kAffordanceGlowWidth),
-        2 * (kAffordanceOuterRadius + 2 * kAffordanceGlowWidth));
+    return gfx::Size(2 * kAffordanceRadius, 2 * kAffordanceRadius);
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    gfx::Point center(GetPreferredSize().width() / 2,
-                      GetPreferredSize().height() / 2);
-    canvas->Save();
+    SkPaint paint;
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setStrokeWidth(kAffordanceWidth);
+    paint.setColor(kAffordanceEmptyColor);
 
-    ui::Transform scale;
-    scale.SetScale(current_scale_, current_scale_);
-    // We want to scale from the center.
-    canvas->Translate(gfx::Point(center.x(), center.y()));
-    canvas->Transform(scale);
-    canvas->Translate(gfx::Point(-center.x(), -center.y()));
+    // Draw empty circle.
+    canvas->DrawCircle(gfx::Point(kAffordanceRadius, kAffordanceRadius),
+        kAffordanceRadius - kAffordanceWidth, paint);
 
-    // Paint inner circle.
-    PaintAffordanceArc(canvas, center, kAffordanceInnerRadius,
-        kAffordanceInnerStartAngle, -current_angle_);
-    // Paint outer circle.
-    PaintAffordanceArc(canvas, center, kAffordanceOuterRadius,
-        kAffordanceOuterStartAngle, current_angle_);
-
-    int num_colors = 2;
-    SkColor colors[num_colors];
-    colors[0] = kAffordanceGlowEndColor;
-    colors[1] = kAffordanceGlowStartColor;
-
-    // Paint inner glow for inner circle.
-    PaintAffordanceGlow(canvas, center,
-        kAffordanceInnerRadius - 2 * (kAffordanceGlowWidth +
-            kAffordanceArcWidth),
-        kAffordanceInnerStartAngle, -current_angle_, colors, num_colors,
-        kAffordanceGlowWidth);
-
-    // Paint inner glow for outer circle.
-    PaintAffordanceGlow(canvas, center, kAffordanceInnerRadius,
-        kAffordanceOuterStartAngle, current_angle_, colors, num_colors,
-        (kAffordanceOuterRadius - 2 * kAffordanceArcWidth -
-            kAffordanceInnerRadius) / 2);
-
-    colors[0] = kAffordanceGlowStartColor;
-    colors[1] = kAffordanceGlowEndColor;
-
-    // Paint outer glow for inner circle.
-    PaintAffordanceGlow(canvas, center, kAffordanceInnerRadius,
-        kAffordanceInnerStartAngle, -current_angle_, colors, num_colors,
-        (kAffordanceOuterRadius - 2 * kAffordanceArcWidth -
-            kAffordanceInnerRadius) / 2);
-
-    // Paint outer glow for outer circle.
-    PaintAffordanceGlow(canvas, center, kAffordanceOuterRadius,
-        kAffordanceOuterStartAngle, current_angle_, colors, num_colors,
-        kAffordanceGlowWidth);
-
-    canvas->Restore();
+    // Then draw the portion filled so far by the animation.
+    SkPath path;
+    path.addArc(
+        SkRect::MakeXYWH(kAffordanceWidth, kAffordanceWidth,
+                         2 * (kAffordanceRadius - kAffordanceWidth),
+                         2 * (kAffordanceRadius - kAffordanceWidth)),
+        -90, current_angle_);
+    paint.setColor(kAffordanceFullColor);
+    canvas->DrawPath(path, paint);
   }
 
   scoped_ptr<views::Widget> widget_;
   int current_angle_;
-  float current_scale_;
 
   DISALLOW_COPY_AND_ASSIGN(LongPressAffordanceView);
 };
