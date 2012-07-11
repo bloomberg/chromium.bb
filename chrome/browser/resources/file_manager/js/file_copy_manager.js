@@ -196,10 +196,6 @@ FileCopyManager.prototype.getStatus = function() {
     completedFiles: 0,
     completedDirectories: 0,
     completedBytes: 0,
-
-    // If source or target are on gdata we can't use completed bytes to track
-    // progress.
-    useBytesForPercentage: true
   };
 
   for (var i = 0; i < this.copyTasks_.length; i++) {
@@ -211,8 +207,6 @@ FileCopyManager.prototype.getStatus = function() {
     rv.completedFiles += task.completedFiles.length;
     rv.completedDirectories += task.completedDirectories.length;
     rv.completedBytes += task.completedBytes;
-    if (task.sourceOnGData || task.targetOnGData)
-      rv.useBytesForPercentage = false;
   }
   rv.pendingItems = rv.pendingFiles + rv.pendingDirectories;
   rv.completedItems = rv.completedFiles + rv.completedDirectories;
@@ -234,18 +228,7 @@ FileCopyManager.prototype.getStatus = function() {
 FileCopyManager.prototype.getProgress = function() {
   var status = this.getStatus();
 
-  // TODO(tbarzic): We can't use completedBytes and totalBytes to estimate
-  // progress if the file is transferred from/to drive for two reasons:
-  // 1' completedBytes don't get updated for drive files.
-  // 2' There is no way to get completed bytes in real time. If completed bytes
-  //    are updated when each item finished and if there is a large item to be
-  //    copied, the progress bar would stop moving until the item is finished
-  //    and then jump a large portion of the bar.
-  //
-  // Obviously 2' > 1'.
-  var percentage = status.useBytesForPercentage ?
-      (status.completedBytes / status.totalBytes) :
-      ((status.completedItems + 0.5) / status.totalItems);
+  var percentage = status.completedBytes / status.totalBytes;
 
   return {
     percentage: percentage,
@@ -765,9 +748,24 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
       var sourceFileUrl = sourceEntry.toURL();
       var targetFileUrl = targetDirEntry.toURL() + '/' +
                           encodeURIComponent(targetRelativePath);
+      var transferedBytes = 0;
+      function onFileTransfersUpdated(statusList) {
+        for (var i = 0; i < statusList.length; i++) {
+          var s = statusList[i];
+          if ((s.fileUrl == sourceFileUrl || s.fileUrl == targetFileUrl) &&
+              s.processed > transferedBytes) {
+            onCopyProgress(sourceEntry, s.processed - transferedBytes);
+            transferedBytes = s.processed;
+          }
+        }
+      }
+      chrome.fileBrowserPrivate.onFileTransfersUpdated.addListener(
+          onFileTransfersUpdated);
       chrome.fileBrowserPrivate.transferFile(
         sourceFileUrl, targetFileUrl,
         function() {
+          chrome.fileBrowserPrivate.onFileTransfersUpdated.removeListener(
+              onFileTransfersUpdated);
           if (chrome.extension.lastError) {
             console.log(
                 'Error copying ' + sourceFileUrl + ' to ' + targetFileUrl);
@@ -778,7 +776,14 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
             });
           } else {
             targetDirEntry.getFile(targetRelativePath, {},
-                onFilesystemCopyComplete.bind(self, sourceEntry),
+                function(targetEntry) {
+                  targetEntry.getMetadata(function(metadata) {
+                    if (metadata.size > transferedBytes)
+                      onCopyProgress(sourceEntry,
+                                     metadata.size - transferedBytes);
+                    onFilesystemCopyComplete(sourceEntry, targetEntry);
+                  });
+                },
                 onFilesystemError);
           }
         });
