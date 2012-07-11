@@ -131,9 +131,6 @@ class GDataUploader : public GDataUploaderInterface {
   // Initiate the upload.
   void InitiateUpload(UploadFileInfo* uploader_file_info);
 
-  // When upload completes, move the file into the gdata cache.
-  void MoveFileToCache(UploadFileInfo* upload_file_info);
-
   // Handle failed uploads.
   void UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
                     base::PlatformFileError error);

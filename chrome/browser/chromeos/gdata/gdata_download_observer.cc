@@ -34,18 +34,27 @@ const char kGDataPathKey[] = "GDataPath";
 // External Data stored in DownloadItem for ongoing uploads.
 class UploadingExternalData : public DownloadCompletionBlocker {
  public:
-  UploadingExternalData(GDataUploader* uploader, int upload_id)
+  UploadingExternalData(GDataUploader* uploader,
+                        int upload_id,
+                        const FilePath& virtual_dir_path)
       : uploader_(uploader),
-        upload_id_(upload_id) {
+        upload_id_(upload_id),
+        virtual_dir_path_(virtual_dir_path) {
   }
   virtual ~UploadingExternalData() {}
 
   int upload_id() const { return upload_id_; }
   GDataUploader* uploader() { return uploader_; }
+  const FilePath& virtual_dir_path() const { return virtual_dir_path_; }
+
+  void set_entry(scoped_ptr<DocumentEntry> entry) { entry_ = entry.Pass(); }
+  scoped_ptr<DocumentEntry> entry_passed() { return entry_.Pass(); }
 
  private:
   GDataUploader* uploader_;
   int upload_id_;
+  FilePath virtual_dir_path_;
+  scoped_ptr<DocumentEntry> entry_;
 
   DISALLOW_COPY_AND_ASSIGN(UploadingExternalData);
 };
@@ -169,8 +178,11 @@ void OnAuthenticate(Profile* profile,
 
 }  // namespace
 
-GDataDownloadObserver::GDataDownloadObserver()
-    : gdata_uploader_(NULL),
+GDataDownloadObserver::GDataDownloadObserver(
+    GDataUploader* uploader,
+    GDataFileSystem* file_system)
+    : gdata_uploader_(uploader),
+      file_system_(file_system),
       download_manager_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
@@ -186,12 +198,9 @@ GDataDownloadObserver::~GDataDownloadObserver() {
 }
 
 void GDataDownloadObserver::Initialize(
-    GDataUploader* gdata_uploader,
     DownloadManager* download_manager,
     const FilePath& gdata_tmp_download_path) {
-  DCHECK(gdata_uploader);
   DCHECK(!gdata_tmp_download_path.empty());
-  gdata_uploader_ = gdata_uploader;
   download_manager_ = download_manager;
   if (download_manager_)
     download_manager_->AddObserver(this);
@@ -353,6 +362,7 @@ void GDataDownloadObserver::OnDownloadUpdated(DownloadItem* download) {
 
     case DownloadItem::COMPLETE:
       UploadDownloadItem(download);
+      MoveFileToGDataCache(download);
       RemovePendingDownload(download);
       break;
 
@@ -366,6 +376,7 @@ void GDataDownloadObserver::OnDownloadUpdated(DownloadItem* download) {
     default:
       NOTREACHED();
   }
+
   DVLOG(1) << "Number of pending downloads=" << pending_downloads_.size();
 }
 
@@ -407,6 +418,7 @@ void GDataDownloadObserver::UploadDownloadItem(DownloadItem* download) {
     return;
 
   scoped_ptr<UploadFileInfo> upload_file_info = CreateUploadFileInfo(download);
+  const FilePath& virtual_dir_path = upload_file_info->gdata_path.DirName();
   const int upload_id = gdata_uploader_->UploadNewFile(
       upload_file_info.Pass());
 
@@ -414,7 +426,7 @@ void GDataDownloadObserver::UploadDownloadItem(DownloadItem* download) {
   // We won't know the upload ID until the after the
   // GDataUploader::UploadNewFile() call.
   download->SetExternalData(&kUploadingKey,
-      new UploadingExternalData(gdata_uploader_, upload_id));
+      new UploadingExternalData(gdata_uploader_, upload_id, virtual_dir_path));
 }
 
 void GDataDownloadObserver::UpdateUpload(DownloadItem* download) {
@@ -474,6 +486,10 @@ void GDataDownloadObserver::OnUploadComplete(
     base::PlatformFileError error,
     scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(upload_file_info.get());
+  DCHECK(upload_file_info->entry.get());
+
+  // Look up the DownloadItem for the |download_id|.
   DownloadMap::iterator iter = pending_downloads_.find(download_id);
   if (iter == pending_downloads_.end()) {
     DVLOG(1) << "Pending download not found" << download_id;
@@ -481,9 +497,45 @@ void GDataDownloadObserver::OnUploadComplete(
   }
   DVLOG(1) << "Completing upload for download ID " << download_id;
   DownloadItem* download_item = iter->second;
+
   UploadingExternalData* upload_data = GetUploadingExternalData(download_item);
   DCHECK(upload_data);
+
+  // Take ownership of the DocumentEntry from UploadFileInfo. This is used by
+  // GDataFileSystem::AddUploadedFile() to add the entry to GDataCache after the
+  // upload completes.
+  upload_data->set_entry(upload_file_info->entry.Pass());
+
+  // Allow the download item to complete.
   upload_data->CompleteDownload();
+}
+
+void GDataDownloadObserver::MoveFileToGDataCache(DownloadItem* download) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  UploadingExternalData* data = GetUploadingExternalData(download);
+  if (!data) {
+    NOTREACHED();
+    return;
+  }
+
+  // Take ownership of the DocumentEntry object. It will be released upon
+  // completion of the AddUploadedFile() call below.
+  DocumentEntry* entry = data->entry_passed().release();
+  if (!entry) {
+    NOTREACHED();
+    return;
+  }
+
+  // Move downloaded file to gdata cache. Note that |content_file_path| should
+  // use the final target path when the download item is in COMPLETE state.
+  file_system_->AddUploadedFile(UPLOAD_NEW_FILE,
+                                data->virtual_dir_path(),
+                                entry,
+                                download->GetTargetFilePath(),
+                                GDataCache::FILE_OPERATION_MOVE,
+                                base::Bind(&base::DeletePointer<DocumentEntry>,
+                                           entry));
 }
 
 }  // namespace gdata

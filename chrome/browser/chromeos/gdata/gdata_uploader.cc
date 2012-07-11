@@ -167,9 +167,6 @@ void GDataUploader::UpdateUpload(int upload_id,
     upload_file_info->should_retry_file_open = false;
     OpenFile(upload_file_info);
   }
-
-  if (download->IsComplete())
-    MoveFileToCache(upload_file_info);
 }
 
 int64 GDataUploader::GetUploadedBytes(int upload_id) const {
@@ -484,26 +481,6 @@ void GDataUploader::OnResumeUploadResponseReceived(
 
   // Continue uploading.
   UploadNextChunk(upload_file_info);
-}
-
-void GDataUploader::MoveFileToCache(UploadFileInfo* upload_file_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (upload_file_info->entry == NULL)
-    return;
-
-  // Remove |upload_id| from the UploadFileInfoMap. The UploadFileInfo object
-  // will be deleted upon completion of AddUploadedFile.
-  RemoveUpload(upload_file_info->upload_id);
-
-  DVLOG(1) << "MoveFileToCache " << upload_file_info->file_path.value();
-  file_system_->AddUploadedFile(
-      UPLOAD_NEW_FILE,
-      upload_file_info->gdata_path.DirName(),
-      upload_file_info->entry.get(),
-      upload_file_info->file_path,
-      GDataCache::FILE_OPERATION_MOVE,
-      base::Bind(&base::DeletePointer<UploadFileInfo>,
-                 upload_file_info));
 }
 
 void GDataUploader::UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,

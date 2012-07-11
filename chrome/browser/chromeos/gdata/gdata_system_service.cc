@@ -46,7 +46,7 @@ GDataSystemService::GDataSystemService(Profile* profile)
                                        uploader(),
                                        webapps_registry(),
                                        sequence_token_)),
-      download_observer_(new GDataDownloadObserver),
+      download_observer_(new GDataDownloadObserver(uploader(), file_system())),
       sync_client_(new GDataSyncClient(profile, file_system(), cache())) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -71,7 +71,6 @@ void GDataSystemService::Initialize() {
     g_browser_process->download_status_updater() ?
         BrowserContext::GetDownloadManager(profile_) : NULL;
   download_observer_->Initialize(
-      uploader_.get(),
       download_manager,
       cache_->GetCacheDirectoryPath(
           GDataCache::CACHE_TYPE_TMP_DOWNLOADS));

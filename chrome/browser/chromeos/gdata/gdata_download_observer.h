@@ -19,6 +19,7 @@ class Profile;
 namespace gdata {
 
 class DocumentEntry;
+class GDataFileSystem;
 class GDataUploader;
 struct UploadFileInfo;
 
@@ -27,12 +28,11 @@ struct UploadFileInfo;
 class GDataDownloadObserver : public content::DownloadManager::Observer,
                               public content::DownloadItem::Observer {
  public:
-  GDataDownloadObserver();
+  GDataDownloadObserver(GDataUploader* uploader, GDataFileSystem* file_system);
   virtual ~GDataDownloadObserver();
 
   // Become an observer of  DownloadManager.
-  void Initialize(GDataUploader* gdata_uploader,
-                  content::DownloadManager* download_manager,
+  void Initialize(content::DownloadManager* download_manager,
                   const FilePath& gdata_tmp_download_path);
 
   typedef base::Callback<void(const FilePath&)>
@@ -114,15 +114,22 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
 
   // Callback invoked by GDataUploader when the upload associated with
   // |download_id| has completed. |error| indicated whether the
-  // call was successful. This function invokes the MaybeCompleteDownload()
-  // method on the DownloadItem to allow it to complete.
+  // call was successful. This function takes ownership of DocumentEntry from
+  // |upload_file_info| for use by MoveFileToGDataCache(). It also invokes the
+  // MaybeCompleteDownload() method on the DownloadItem to allow it to complete.
   void OnUploadComplete(int32 download_id,
                         base::PlatformFileError error,
                         scoped_ptr<UploadFileInfo> upload_file_info);
 
+  // Moves the downloaded file to gdata cache.
+  // Must be called after GDataDownloadObserver receives COMPLETE notification.
+  void MoveFileToGDataCache(content::DownloadItem* download);
+
   // Private data.
-  // Use GDataUploader to trigger file uploads.
+  // The uploader owned by GDataSystemService. Used to trigger file uploads.
   GDataUploader* gdata_uploader_;
+  // The file system owned by GDataSystemService.
+  GDataFileSystem* file_system_;
   // Observe the DownloadManager for new downloads.
   content::DownloadManager* download_manager_;
 
