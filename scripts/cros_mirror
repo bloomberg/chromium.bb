@@ -84,7 +84,7 @@ while [[ $# -gt 0 ]]; do
   case $1 in
   --external) MANIFEST_URL=${MANIFEST_URL_EXT};;
   --internal) MANIFEST_URL=${MANIFEST_URL_INT};;
-  -j|--jobs)  JOBS=$2;;
+  -j|--jobs)  JOBS=$2; shift;;
   -q|--quiet) QUIET="-q";;
   -r|--root)  ROOT=$2; shift;;
   -u|--url)   URL=$2; shift;;
