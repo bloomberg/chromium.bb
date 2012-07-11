@@ -766,7 +766,11 @@ class Manifest(object):
     return self.projects[project].get(attribute)
 
   def GetProjectsLocalRevision(self, project):
-    """Returns the upstream defined revspec for a project."""
+    """Returns the upstream defined revspec for a project.
+
+    Args:
+      project: Which project we're looking at.
+    """
     return self.GetAttributeForProject(project, 'local_revision')
 
   @staticmethod
@@ -834,6 +838,21 @@ class ManifestCheckout(Manifest):
     if manifest_path is None:
       manifest_path = os.path.join(root, '.repo', 'manifest.xml')
     return root, manifest_path
+
+  def GetProjectsLocalRevision(self, project, fallback=True):
+    """Returns the upstream defined revspec for a project.
+
+    Args:
+      project: Which project we're looking at.
+      fallback: If True, return the revision for revision locked manifests.
+        If False, remotes/m/<default_branch> is returned.
+    """
+    ref = Manifest.GetProjectsLocalRevision(self, project)
+    if ref.startswith("refs/") or not fallback:
+      return ref
+    # Revlocked manifests return sha1s; use the repo defined branch
+    # so tracking is supported.
+    return self.default_branch
 
   def ProjectIsContentMerging(self, project):
     """Returns whether the given project has content merging enabled in git.

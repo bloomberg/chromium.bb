@@ -356,16 +356,15 @@ class GitRepoPatch(object):
       cros_build_lib.RunCommand(['git', 'checkout', constants.PATCH_BRANCH],
                                 cwd=project_dir, print_cmd=False)
 
-  def _GetUpstreamBranch(self, buildroot, force_default=False):
+  def _GetUpstreamBranch(self, buildroot, fallback=True):
     """Get the branch specified in the manifest for this patch."""
     # TODO(ferringb): remove this via cherry-picking; it's broken
     # now since it assumes the tracking_branch (which is local
     # to the originating repo) is what should be used for rebasing
     # this patch into the current tree).
     manifest = cros_build_lib.ManifestCheckout.Cached(buildroot)
-    if force_default:
-      return manifest.default_branch
-    return manifest.GetProjectsLocalRevision(self.project)
+    return manifest.GetProjectsLocalRevision(
+        self.project, fallback=fallback)
 
   def ApplyIntoGitRepo(self, project_dir, upstream, trivial=False,
                        do_check=True):
@@ -408,13 +407,13 @@ class GitRepoPatch(object):
       ApplyPatchException: If the patch failed to apply.
     """
     logging.info('Attempting to apply change %s', self)
-    manifest_branch = self._GetUpstreamBranch(buildroot)
+    manifest_branch = self._GetUpstreamBranch(buildroot, False)
     do_check = manifest_branch.startswith('refs/')
     if not do_check:
       # Revision locked.  Use the manifest default branch which
       # is set to the manifest locked revision, and
       # suppress the tracking/upstream check.
-      manifest_branch = self._GetUpstreamBranch(buildroot, True)
+      manifest_branch = self._GetUpstreamBranch(buildroot)
     project_dir = self.ProjectDir(buildroot)
     self.ApplyIntoGitRepo(project_dir, manifest_branch, trivial,
                           do_check=do_check)
