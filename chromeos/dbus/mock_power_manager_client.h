@@ -25,6 +25,8 @@ class MockPowerManagerClient : public PowerManagerClient {
   MOCK_METHOD2(SetScreenBrightnessPercent, void(double, bool));
   MOCK_METHOD1(GetScreenBrightnessPercent,
                void(const GetScreenBrightnessPercentCallback&));
+  MOCK_METHOD0(DecreaseKeyboardBrightness, void(void));
+  MOCK_METHOD0(IncreaseKeyboardBrightness, void(void));
   MOCK_METHOD1(RequestStatusUpdate, void(UpdateRequestType));
   MOCK_METHOD0(RequestRestart, void(void));
   MOCK_METHOD0(RequestShutdown, void(void));

@@ -141,6 +141,14 @@ class PowerManagerClientImpl : public PowerManagerClient {
     SimpleMethodCallToPowerManager(power_manager::kIncreaseScreenBrightness);
   }
 
+  virtual void DecreaseKeyboardBrightness() OVERRIDE {
+    SimpleMethodCallToPowerManager(power_manager::kDecreaseKeyboardBrightness);
+  }
+
+  virtual void IncreaseKeyboardBrightness() OVERRIDE {
+    SimpleMethodCallToPowerManager(power_manager::kIncreaseKeyboardBrightness);
+  }
+
   virtual void SetScreenBrightnessPercent(double percent, bool gradual) {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
@@ -557,6 +565,14 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
   virtual void GetScreenBrightnessPercent(
       const GetScreenBrightnessPercentCallback& callback) OVERRIDE {
     callback.Run(brightness_);
+  }
+
+  virtual void DecreaseKeyboardBrightness() OVERRIDE {
+    VLOG(1) << "Requested to descrease keyboard brightness";
+  }
+
+  virtual void IncreaseKeyboardBrightness() OVERRIDE {
+    VLOG(1) << "Requested to increase keyboard brightness";
   }
 
   virtual void RequestStatusUpdate(UpdateRequestType update_type) OVERRIDE {

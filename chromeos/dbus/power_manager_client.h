@@ -119,6 +119,12 @@ class CHROMEOS_EXPORT PowerManagerClient {
   virtual void GetScreenBrightnessPercent(
       const GetScreenBrightnessPercentCallback& callback) = 0;
 
+  // Decreases the keyboard brightness.
+  virtual void DecreaseKeyboardBrightness() = 0;
+
+  // Increases the keyboard brightness.
+  virtual void IncreaseKeyboardBrightness() = 0;
+
   // Request for power supply status update.
   virtual void RequestStatusUpdate(UpdateRequestType update_type) = 0;
 
