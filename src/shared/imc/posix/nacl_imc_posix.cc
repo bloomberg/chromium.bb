@@ -10,11 +10,6 @@
 // This file implements common parts of IMC for "unix like systems" (i.e. not
 // used on Windows).
 
-// TODO(shiki): Perhaps this file should go into a platform-specific directory
-// (posix? unixlike?)  We have a little convention going where mac/linux stuff
-// goes in the linux directory and is referenced by the mac build but that's a
-// little sloppy.
-
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>

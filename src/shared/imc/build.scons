@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2009 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 
 Import('env')
@@ -22,14 +22,14 @@ if env.Bit('windows'):
 
 if env.Bit('linux'):
   nacl_imc_inputs += [
-    'nacl_imc_unistd.cc',
     'linux/nacl_imc.cc',
+    'posix/nacl_imc_posix.cc',
   ]
 
 if env.Bit('mac'):
   nacl_imc_inputs += [
-    'nacl_imc_unistd.cc',
     'osx/nacl_imc.cc',
+    'posix/nacl_imc_posix.cc',
   ]
 
 
