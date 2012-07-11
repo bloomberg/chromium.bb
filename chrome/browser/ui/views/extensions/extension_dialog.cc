@@ -194,6 +194,11 @@ void ExtensionDialog::MaybeFocusRenderView() {
   if (!view)
     return;
 
+  // TODO(oshima): Views + aura doesn't seem to update the views focus
+  // manager when an aura window gets focus. This is a workaround for
+  // this issue. Fix it this and remove this workaround.
+  // See bug.com/127222.
+  focus_manager->SetFocusedView(GetContentsView());
   view->Focus();
 }
 
