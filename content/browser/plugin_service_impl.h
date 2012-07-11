@@ -7,7 +7,6 @@
 
 #ifndef CONTENT_BROWSER_PLUGIN_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_PLUGIN_SERVICE_IMPL_H_
-#pragma once
 
 #include <map>
 #include <set>

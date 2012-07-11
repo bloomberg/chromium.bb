@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_TRACE_SUBSCRIBER_STDIO_H_
 #define CONTENT_BROWSER_TRACE_SUBSCRIBER_STDIO_H_
-#pragma once
 
 #include <string>
 

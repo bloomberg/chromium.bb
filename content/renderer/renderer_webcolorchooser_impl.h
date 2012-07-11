@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_RENDERER_WEBCOLORCHOOSER_IMPL_H_
 #define CONTENT_RENDERER_RENDERER_WEBCOLORCHOOSER_IMPL_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "content/public/renderer/render_view_observer.h"

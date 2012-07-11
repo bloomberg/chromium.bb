@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_SHELL_LAYOUT_TEST_CONTROLLER_BINDINGS_H_
 #define CONTENT_SHELL_LAYOUT_TEST_CONTROLLER_BINDINGS_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

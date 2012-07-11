@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_SHELL_SHELL_RESOURCE_DISPATCHER_HOST_DELEGATE_H_
 #define CONTENT_SHELL_SHELL_RESOURCE_DISPATCHER_HOST_DELEGATE_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"

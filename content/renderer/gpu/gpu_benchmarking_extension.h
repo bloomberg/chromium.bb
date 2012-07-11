@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_GPU_GPU_BENCHMARKING_EXTENSION_H_
 #define CONTENT_RENDERER_GPU_GPU_BENCHMARKING_EXTENSION_H_
-#pragma once
 
 namespace v8 {
 class Extension;

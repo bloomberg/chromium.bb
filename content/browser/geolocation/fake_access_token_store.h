@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_GEOLOCATION_FAKE_ACCESS_TOKEN_STORE_H_
 #define CONTENT_BROWSER_GEOLOCATION_FAKE_ACCESS_TOKEN_STORE_H_
-#pragma once
 
 #include "base/message_loop_proxy.h"
 #include "content/public/browser/access_token_store.h"

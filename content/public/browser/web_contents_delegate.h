@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_DELEGATE_H_
 #define CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_DELEGATE_H_
-#pragma once
 
 #include <set>
 #include <string>

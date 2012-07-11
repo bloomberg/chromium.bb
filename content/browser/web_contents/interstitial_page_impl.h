@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_WEB_CONTENTS_INTERSTITIAL_PAGE_IMPL_H_
 #define CONTENT_BROWSER_WEB_CONTENTS_INTERSTITIAL_PAGE_IMPL_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_UTILITY_PROCESS_HOST_CLIENT_H_
 #define CONTENT_PUBLIC_BROWSER_UTILITY_PROCESS_HOST_CLIENT_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"

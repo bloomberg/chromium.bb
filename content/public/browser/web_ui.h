@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_WEB_UI_H_
 #define CONTENT_PUBLIC_BROWSER_WEB_UI_H_
-#pragma once
 
 #include <vector>
 

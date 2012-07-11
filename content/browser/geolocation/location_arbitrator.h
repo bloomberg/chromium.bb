@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_GEOLOCATION_LOCATION_ARBITRATOR_H_
 #define CONTENT_BROWSER_GEOLOCATION_LOCATION_ARBITRATOR_H_
-#pragma once
 
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_PEPPER_FLASH_SETTINGS_HELPER_H_
 #define CONTENT_PUBLIC_BROWSER_PEPPER_FLASH_SETTINGS_HELPER_H_
-#pragma once
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"

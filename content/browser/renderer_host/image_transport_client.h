@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_IMAGE_TRANSPORT_CLIENT_H_
 #define CONTENT_BROWSER_RENDERER_HOST_IMAGE_TRANSPORT_CLIENT_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/compositor/compositor.h"

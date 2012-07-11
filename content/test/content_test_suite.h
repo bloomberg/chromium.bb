@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_TEST_CONTENT_TEST_SUITE_H_
 #define CONTENT_TEST_CONTENT_TEST_SUITE_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/win/scoped_com_initializer.h"

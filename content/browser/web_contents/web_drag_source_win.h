@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_WEB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_
 #define CONTENT_BROWSER_WEB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "content/public/browser/notification_observer.h"

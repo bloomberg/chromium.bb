@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_URL_PARAMETERS_H_
 #define CONTENT_PUBLIC_BROWSER_DOWNLOAD_URL_PARAMETERS_H_
-#pragma once
 
 #include <string>
 #include <vector>

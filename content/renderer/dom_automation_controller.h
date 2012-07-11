@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_DOM_AUTOMATION_CONTROLLER_H_
 #define CONTENT_RENDERER_DOM_AUTOMATION_CONTROLLER_H_
-#pragma once
 
 #include "ipc/ipc_sender.h"
 #include "webkit/glue/cpp_bound_class.h"

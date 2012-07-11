@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_ZYGOTE_HOST_LINUX_H_
 #define CONTENT_PUBLIC_BROWSER_ZYGOTE_HOST_LINUX_H_
-#pragma once
 
 #include <unistd.h>
 

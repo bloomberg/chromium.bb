@@ -12,7 +12,6 @@
 
 #ifndef CONTENT_PUBLIC_COMMON_WEBKIT_PARAM_TRAITS_H_
 #define CONTENT_PUBLIC_COMMON_WEBKIT_PARAM_TRAITS_H_
-#pragma once
 
 #include <string>
 

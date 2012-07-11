@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_COMMON_FIND_MATCH_RECT_ANDROID_H_
 #define CONTENT_PUBLIC_COMMON_FIND_MATCH_RECT_ANDROID_H_
-#pragma once
 
 namespace content {
 

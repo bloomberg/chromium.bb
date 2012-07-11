@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_DOWNLOAD_SAVE_PACKAGE_H_
 #define CONTENT_BROWSER_DOWNLOAD_SAVE_PACKAGE_H_
-#pragma once
 
 #include <queue>
 #include <string>

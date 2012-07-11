@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_INDEXED_DB_INDEXED_DB_PARAM_TRAITS_H_
 #define CONTENT_COMMON_INDEXED_DB_INDEXED_DB_PARAM_TRAITS_H_
-#pragma once
 
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_param_traits.h"

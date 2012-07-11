@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_NOTIFICATION_TYPES_H_
 #define CONTENT_PUBLIC_BROWSER_NOTIFICATION_TYPES_H_
-#pragma once
 
 // This file describes various types used to describe and filter notifications
 // that pass through the NotificationService.

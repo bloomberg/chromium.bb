@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_RENDERER_DOCUMENT_STATE_H_
 #define CONTENT_PUBLIC_RENDERER_DOCUMENT_STATE_H_
-#pragma once
 
 #include <string>
 

@@ -6,7 +6,6 @@
 
 #ifndef CONTENT_COMMON_NPOBJECT_UTIL_H_
 #define CONTENT_COMMON_NPOBJECT_UTIL_H_
-#pragma once
 
 #include "build/build_config.h"
 

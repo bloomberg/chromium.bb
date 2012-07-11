@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_KEYBOARD_LISTENER_H_
 #define CONTENT_PUBLIC_BROWSER_KEYBOARD_LISTENER_H_
-#pragma once
 
 #include "content/common/content_export.h"
 

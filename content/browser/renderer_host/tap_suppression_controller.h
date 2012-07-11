@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_TAP_SUPPRESSION_CONTROLLER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_TAP_SUPPRESSION_CONTROLLER_H_
-#pragma once
 
 #include "base/time.h"
 #include "base/timer.h"

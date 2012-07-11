@@ -1,10 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CONTENT_COMMON_INJECTION_TEST_DLL_H_
 #define CONTENT_COMMON_INJECTION_TEST_DLL_H_
-#pragma once
 
 // This file defines the entry points for any DLL that can be loaded into the
 // renderer or plugin process for the purposes of testing. The DLL code must

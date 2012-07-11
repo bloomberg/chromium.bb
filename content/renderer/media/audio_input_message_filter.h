@@ -9,7 +9,6 @@
 
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_INPUT_MESSAGE_FILTER_H_
 #define CONTENT_RENDERER_MEDIA_AUDIO_INPUT_MESSAGE_FILTER_H_
-#pragma once
 
 #include "base/id_map.h"
 #include "base/shared_memory.h"

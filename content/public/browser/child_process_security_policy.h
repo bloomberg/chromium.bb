@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_CHILD_PROCESS_SECURITY_POLICY_H_
 #define CONTENT_PUBLIC_BROWSER_CHILD_PROCESS_SECURITY_POLICY_H_
-#pragma once
 
 #include <set>
 #include <string>

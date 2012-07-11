@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_COMMON_GPU_FEATURE_TYPE_H_
 #define CONTENT_PUBLIC_COMMON_GPU_FEATURE_TYPE_H_
-#pragma once
 
 namespace content {
 

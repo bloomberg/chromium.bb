@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_SAVABLE_URL_SCHEMES_H_
 #define CONTENT_COMMON_SAVABLE_URL_SCHEMES_H_
-#pragma once
 
 namespace content {
 

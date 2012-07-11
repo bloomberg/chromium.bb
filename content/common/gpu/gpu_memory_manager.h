@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_GPU_GPU_MEMORY_MANAGER_H_
 #define CONTENT_COMMON_GPU_GPU_MEMORY_MANAGER_H_
-#pragma once
 
 #if defined(ENABLE_GPU)
 

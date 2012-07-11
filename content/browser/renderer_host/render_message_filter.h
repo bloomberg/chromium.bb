@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_MESSAGE_FILTER_H_
-#pragma once
 
 #if defined(OS_WIN)
 #include <windows.h>

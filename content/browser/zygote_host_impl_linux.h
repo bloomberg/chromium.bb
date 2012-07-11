@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_ZYGOTE_HOST_IMPL_LINUX_H_
 #define CONTENT_BROWSER_ZYGOTE_HOST_IMPL_LINUX_H_
-#pragma once
 
 #include <string>
 #include <vector>

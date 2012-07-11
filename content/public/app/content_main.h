@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_APP_CONTENT_MAIN_H_
 #define CONTENT_PUBLIC_APP_CONTENT_MAIN_H_
-#pragma once
 
 #include "build/build_config.h"
 #include "content/common/content_export.h"

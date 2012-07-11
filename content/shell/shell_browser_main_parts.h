@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_SHELL_SHELL_BROWSER_MAIN_PARTS_H_
 #define CONTENT_SHELL_SHELL_BROWSER_MAIN_PARTS_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

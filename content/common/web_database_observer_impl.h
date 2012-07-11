@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_WEB_DATABASE_OBSERVER_IMPL_H_
 #define CONTENT_COMMON_WEB_DATABASE_OBSERVER_IMPL_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "ipc/ipc_sync_message_filter.h"

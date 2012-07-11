@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HELPER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HELPER_H_
-#pragma once
 
 #include <deque>
 #include <map>

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_MAC_FONT_LOADER_H_
 #define CONTENT_COMMON_MAC_FONT_LOADER_H_
-#pragma once
 
 #include <ApplicationServices/ApplicationServices.h>
 

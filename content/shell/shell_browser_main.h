@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_SHELL_SHELL_BROWSER_MAIN_H_
 #define CONTENT_SHELL_SHELL_BROWSER_MAIN_H_
-#pragma once
 
 namespace content {
 struct MainFunctionParams;

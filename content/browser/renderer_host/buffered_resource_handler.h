@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_BUFFERED_RESOURCE_HANDLER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_BUFFERED_RESOURCE_HANDLER_H_
-#pragma once
 
 #include <string>
 #include <vector>

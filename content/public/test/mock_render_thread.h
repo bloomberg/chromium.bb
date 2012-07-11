@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_TEST_MOCK_RENDER_THREAD_H_
 #define CONTENT_PUBLIC_TEST_MOCK_RENDER_THREAD_H_
-#pragma once
 
 #include "base/shared_memory.h"
 #include "base/string16.h"

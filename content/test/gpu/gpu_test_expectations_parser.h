@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_TEST_GPU_GPU_TEST_EXPECTATIONS_PARSER_H_
 #define CONTENT_TEST_GPU_GPU_TEST_EXPECTATIONS_PARSER_H_
-#pragma once
 
 #include <string>
 #include <vector>

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_WEB_CONTENTS_RENDER_VIEW_HOST_MANAGER_H_
 #define CONTENT_BROWSER_WEB_CONTENTS_RENDER_VIEW_HOST_MANAGER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/logging.h"

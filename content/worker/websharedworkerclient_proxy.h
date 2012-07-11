@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_WORKER_WEBWORKERCLIENT_PROXY_H_
 #define CONTENT_WORKER_WEBWORKERCLIENT_PROXY_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"

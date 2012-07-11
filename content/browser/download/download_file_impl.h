@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_IMPL_H_
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_IMPL_H_
-#pragma once
 
 #include "content/browser/download/download_file.h"
 

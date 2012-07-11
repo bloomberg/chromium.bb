@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_RENDER_THREAD_IMPL_H_
 #define CONTENT_RENDERER_RENDER_THREAD_IMPL_H_
-#pragma once
 
 #include <set>
 #include <string>

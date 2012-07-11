@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_TEST_RENDER_VIEW_TEST_H_
 #define CONTENT_PUBLIC_TEST_RENDER_VIEW_TEST_H_
-#pragma once
 
 #include <string>
 

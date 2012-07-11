@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_DOWNLOAD_BYTE_STREAM_H_
 #define CONTENT_BROWSER_DOWNLOAD_BYTE_STREAM_H_
-#pragma once
 
 #include <set>
 #include <utility>

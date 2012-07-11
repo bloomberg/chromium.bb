@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_COMMON_JAVASCRIPT_MESSAGE_TYPE_H_
 #define CONTENT_PUBLIC_COMMON_JAVASCRIPT_MESSAGE_TYPE_H_
-#pragma once
 
 namespace content {
 

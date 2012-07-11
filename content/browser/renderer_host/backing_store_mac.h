@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_MAC_H_
 #define CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_MAC_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/mac/scoped_cftyperef.h"

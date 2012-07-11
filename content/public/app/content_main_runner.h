@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_APP_CONTENT_MAIN_RUNNER_H_
 #define CONTENT_PUBLIC_APP_CONTENT_MAIN_RUNNER_H_
-#pragma once
 
 #include <string>
 

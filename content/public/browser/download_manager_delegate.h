@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_MANAGER_DELEGATE_H_
 #define CONTENT_PUBLIC_BROWSER_DOWNLOAD_MANAGER_DELEGATE_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/callback.h"

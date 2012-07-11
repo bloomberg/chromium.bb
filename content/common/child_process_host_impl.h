@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_CHILD_PROCESS_HOST_IMPL_H_
 #define CONTENT_COMMON_CHILD_PROCESS_HOST_IMPL_H_
-#pragma once
 
 #include <string>
 #include <vector>

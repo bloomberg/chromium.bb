@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_GEOLOCATION_DISPATCHER_H_
 #define CONTENT_RENDERER_GEOLOCATION_DISPATCHER_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_view_observer.h"

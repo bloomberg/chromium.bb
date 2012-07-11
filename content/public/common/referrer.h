@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_COMMON_REFERRER_H_
 #define CONTENT_PUBLIC_COMMON_REFERRER_H_
-#pragma once
 
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"

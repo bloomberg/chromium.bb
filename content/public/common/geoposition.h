@@ -8,7 +8,6 @@
 
 #ifndef CONTENT_PUBLIC_COMMON_GEOPOSITION_H_
 #define CONTENT_PUBLIC_COMMON_GEOPOSITION_H_
-#pragma once
 
 #include <string>
 

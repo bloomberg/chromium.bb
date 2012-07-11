@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_THROTTLING_RESOURCE_HANDLER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_THROTTLING_RESOURCE_HANDLER_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"

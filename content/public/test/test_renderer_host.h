@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_TEST_TEST_RENDERER_HOST_H_
 #define CONTENT_PUBLIC_TEST_TEST_RENDERER_HOST_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"

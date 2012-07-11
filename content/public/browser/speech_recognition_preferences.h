@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNITION_PREFERENCES_H_
 #define CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNITION_PREFERENCES_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 

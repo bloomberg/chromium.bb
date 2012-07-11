@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_RENDERER_ACCESSIBILITY_FOCUS_ONLY_H_
 #define CONTENT_RENDERER_RENDERER_ACCESSIBILITY_FOCUS_ONLY_H_
-#pragma once
 
 #include "content/renderer/renderer_accessibility.h"
 

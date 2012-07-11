@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_AURA_H_
 #define CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_AURA_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/backing_store.h"

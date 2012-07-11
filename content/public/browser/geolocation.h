@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_GEOLOCATION_H_
 #define CONTENT_PUBLIC_BROWSER_GEOLOCATION_H_
-#pragma once
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_TRANSFER_NAVIGATION_RESOURCE_THROTTLE_H_
 #define CONTENT_BROWSER_RENDERER_HOST_TRANSFER_NAVIGATION_RESOURCE_THROTTLE_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

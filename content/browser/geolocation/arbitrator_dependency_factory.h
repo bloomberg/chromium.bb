@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_GEOLOCATION_ARBITRATOR_DEPENDENCY_FACTORY_H_
 #define CONTENT_BROWSER_GEOLOCATION_ARBITRATOR_DEPENDENCY_FACTORY_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"

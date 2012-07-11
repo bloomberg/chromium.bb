@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_DOM_STORAGE_CONTEXT_H_
 #define CONTENT_PUBLIC_BROWSER_DOM_STORAGE_CONTEXT_H_
-#pragma once
 
 #include <vector>
 

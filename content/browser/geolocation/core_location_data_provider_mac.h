@@ -8,7 +8,6 @@
 
 #ifndef CONTENT_BROWSER_GEOLOCATION_CORE_LOCATION_DATA_PROVIDER_H_
 #define CONTENT_BROWSER_GEOLOCATION_CORE_LOCATION_DATA_PROVIDER_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_nsobject.h"

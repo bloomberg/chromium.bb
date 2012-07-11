@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_APP_ANDROID_CONTENT_MAIN_H_
 #define CONTENT_APP_ANDROID_CONTENT_MAIN_H_
-#pragma once
 
 #include <jni.h>
 

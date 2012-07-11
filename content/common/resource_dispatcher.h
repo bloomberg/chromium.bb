@@ -6,7 +6,6 @@
 
 #ifndef CONTENT_COMMON_RESOURCE_DISPATCHER_H_
 #define CONTENT_COMMON_RESOURCE_DISPATCHER_H_
-#pragma once
 
 #include <deque>
 #include <string>

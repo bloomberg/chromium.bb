@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_MACH_BROKER_MAC_H_
 #define CONTENT_BROWSER_MACH_BROKER_MAC_H_
-#pragma once
 
 #include <map>
 #include <string>

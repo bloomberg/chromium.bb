@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_SHELL_CONFIG_H_
 #define CONTENT_SHELL_CONFIG_H_
-#pragma once
 
 // Required to build WebTestingSupport.
 

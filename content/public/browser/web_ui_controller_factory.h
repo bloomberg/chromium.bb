@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_WEB_UI_CONTROLLER_FACTORY_H_
 #define CONTENT_PUBLIC_BROWSER_WEB_UI_CONTROLLER_FACTORY_H_
-#pragma once
 
 #include "content/common/content_export.h"
 #include "content/public/browser/web_ui.h"

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_COMMON_CONSOLE_MESSAGE_LEVEL_H_
 #define CONTENT_PUBLIC_COMMON_CONSOLE_MESSAGE_LEVEL_H_
-#pragma once
 
 namespace content {
 

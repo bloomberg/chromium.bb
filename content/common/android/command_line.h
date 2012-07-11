@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_ANDROID_COMMAND_LINE_H_
 #define CONTENT_COMMON_ANDROID_COMMAND_LINE_H_
-#pragma once
 
 #include <jni.h>
 

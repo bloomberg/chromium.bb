@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_ANDROID_DEVICE_INFO_H_
 #define CONTENT_COMMON_ANDROID_DEVICE_INFO_H_
-#pragma once
 
 #include <jni.h>
 #include <string>

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_SOCKET_STREAM_H_
 #define CONTENT_COMMON_SOCKET_STREAM_H_
-#pragma once
 
 namespace content {
 

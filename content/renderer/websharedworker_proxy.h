@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_WEBSHAREDWORKER_PROXY_H_
 #define CONTENT_RENDERER_WEBSHAREDWORKER_PROXY_H_
-#pragma once
 
 #include <string>
 #include <vector>

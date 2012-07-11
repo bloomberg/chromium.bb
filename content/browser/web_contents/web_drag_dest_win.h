@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_WEB_CONTENTS_WEB_DRAG_DEST_WIN_H_
 #define CONTENT_BROWSER_WEB_CONTENTS_WEB_DRAG_DEST_WIN_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"

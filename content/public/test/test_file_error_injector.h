@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_TEST_TEST_FILE_ERROR_INJECTOR_H_
 #define CONTENT_PUBLIC_TEST_TEST_FILE_ERROR_INJECTOR_H_
-#pragma once
 
 #include <map>
 #include <string>

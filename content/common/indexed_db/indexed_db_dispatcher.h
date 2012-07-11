@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_INDEXED_DB_INDEXED_DB_DISPATCHER_H_
 #define CONTENT_COMMON_INDEXED_DB_INDEXED_DB_DISPATCHER_H_
-#pragma once
 
 #include <map>
 #include <vector>

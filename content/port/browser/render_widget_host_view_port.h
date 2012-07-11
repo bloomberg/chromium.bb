@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PORT_BROWSER_RENDER_WIDGET_HOST_VIEW_PORT_H_
 #define CONTENT_PORT_BROWSER_RENDER_WIDGET_HOST_VIEW_PORT_H_
-#pragma once
 
 #include "base/callback.h"
 #include "base/process_util.h"

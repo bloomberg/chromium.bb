@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PPAPI_PLUGIN_PPAPI_THREAD_H_
 #define CONTENT_PPAPI_PLUGIN_PPAPI_THREAD_H_
-#pragma once
 
 #include <map>
 #include <string>

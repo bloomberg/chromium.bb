@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_ANDROID_EMAIL_DETECTOR_H_
 #define CONTENT_RENDERER_ANDROID_EMAIL_DETECTOR_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "content/renderer/android/content_detector.h"

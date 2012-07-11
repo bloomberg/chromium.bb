@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_ID_H_
 #define CONTENT_PUBLIC_BROWSER_DOWNLOAD_ID_H_
-#pragma once
 
 #include <iosfwd>
 #include <string>

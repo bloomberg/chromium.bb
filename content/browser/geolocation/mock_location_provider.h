@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_GEOLOCATION_MOCK_LOCATION_PROVIDER_H_
 #define CONTENT_BROWSER_GEOLOCATION_MOCK_LOCATION_PROVIDER_H_
-#pragma once
 
 
 #include "base/compiler_specific.h"

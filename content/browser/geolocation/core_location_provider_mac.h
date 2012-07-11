@@ -8,7 +8,6 @@
 
 #ifndef CONTENT_BROWSER_GEOLOCATION_CORE_LOCATION_PROVIDER_MAC_H_
 #define CONTENT_BROWSER_GEOLOCATION_CORE_LOCATION_PROVIDER_MAC_H_
-#pragma once
 
 #include "content/browser/geolocation/location_provider.h"
 #include "content/public/common/geoposition.h"

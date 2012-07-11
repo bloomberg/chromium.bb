@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_WORKER_HOST_WORKER_PROCESS_HOST_H_
 #define CONTENT_BROWSER_WORKER_HOST_WORKER_PROCESS_HOST_H_
-#pragma once
 
 #include <list>
 #include <utility>

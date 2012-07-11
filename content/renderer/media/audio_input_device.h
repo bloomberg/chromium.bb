@@ -67,7 +67,6 @@
 
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_INPUT_DEVICE_H_
 #define CONTENT_RENDERER_MEDIA_AUDIO_INPUT_DEVICE_H_
-#pragma once
 
 #include <string>
 #include <vector>

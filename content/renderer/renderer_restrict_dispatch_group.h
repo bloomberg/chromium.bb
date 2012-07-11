@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_RESTRICT_DISPATCH_GROUP_H_
 #define CONTENT_RENDERER_RESTRICT_DISPATCH_GROUP_H_
-#pragma once
 
 #include "ipc/ipc_sync_channel.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_MEDIA_RENDER_MEDIA_LOG_H_
 #define CONTENT_RENDERER_MEDIA_RENDER_MEDIA_LOG_H_
-#pragma once
 
 #include "media/base/media_log.h"
 

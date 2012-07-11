@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_GPU_GPU_PROCESS_LAUNCH_CAUSES_H_
 #define CONTENT_COMMON_GPU_GPU_PROCESS_LAUNCH_CAUSES_H_
-#pragma once
 
 namespace content {
 

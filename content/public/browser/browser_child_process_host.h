@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_BROWSER_CHILD_PROCESS_HOST_H_
 #define CONTENT_PUBLIC_BROWSER_BROWSER_CHILD_PROCESS_HOST_H_
-#pragma once
 
 #include "base/process_util.h"
 #include "base/string16.h"

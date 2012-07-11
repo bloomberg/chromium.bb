@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_TEST_MOCK_RESOURCE_CONTEXT_H_
 #define CONTENT_PUBLIC_TEST_MOCK_RESOURCE_CONTEXT_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

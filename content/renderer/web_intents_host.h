@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_WEB_INTENTS_HOST_H_
 #define CONTENT_RENDERER_WEB_INTENTS_HOST_H_
-#pragma once
 
 #include <map>
 

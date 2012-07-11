@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_BROWSER_MAIN_PARTS_H_
 #define CONTENT_PUBLIC_BROWSER_BROWSER_MAIN_PARTS_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"

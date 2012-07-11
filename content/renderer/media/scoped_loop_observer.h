@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_MEDIA_SCOPED_LOOP_OBSERVER_H_
 #define CONTENT_RENDERER_MEDIA_SCOPED_LOOP_OBSERVER_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"

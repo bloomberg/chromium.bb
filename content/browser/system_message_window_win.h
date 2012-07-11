@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_SYSTEM_MESSAGE_WINDOW_WIN_H_
 #define CONTENT_BROWSER_SYSTEM_MESSAGE_WINDOW_WIN_H_
-#pragma once
 
 #include <windows.h>
 

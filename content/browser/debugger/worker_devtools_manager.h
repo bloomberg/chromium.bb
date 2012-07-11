@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_DEBUGGER_WORKER_DEVTOOLS_MANAGER_H_
 #define CONTENT_BROWSER_DEBUGGER_WORKER_DEVTOOLS_MANAGER_H_
-#pragma once
 
 #include <list>
 #include <map>

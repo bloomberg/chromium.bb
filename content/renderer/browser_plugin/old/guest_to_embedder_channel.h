@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_BROWSER_PLUGIN_OLD_GUEST_TO_EMBEDDER_CHANNEL_H_
 #define CONTENT_RENDERER_BROWSER_PLUGIN_OLD_GUEST_TO_EMBEDDER_CHANNEL_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"

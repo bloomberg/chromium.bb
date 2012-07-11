@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_RENDERER_RENDER_PROCESS_OBSERVER_H_
 #define CONTENT_PUBLIC_RENDERER_RENDER_PROCESS_OBSERVER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_ADDRESS_PARSER_INTERNAL_H_
 #define CONTENT_COMMON_ADDRESS_PARSER_INTERNAL_H_
-#pragma once
 
 #include <vector>
 

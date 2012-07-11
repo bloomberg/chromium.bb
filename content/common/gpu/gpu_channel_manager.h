@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_GPU_GPU_CHANNEL_MANAGER_H_
 #define CONTENT_COMMON_GPU_GPU_CHANNEL_MANAGER_H_
-#pragma once
 
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"

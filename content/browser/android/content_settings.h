@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_ANDROID_CONTENT_SETTINGS_H_
 #define CONTENT_BROWSER_ANDROID_CONTENT_SETTINGS_H_
-#pragma once
 
 #include <jni.h>
 

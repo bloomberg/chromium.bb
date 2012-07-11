@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_CONTEXT_IMPL_H_
 #define CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_CONTEXT_IMPL_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/dom_storage_context.h"

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_WORKER_WORKER_WEBKITPLATFORMSUPPORT_IMPL_H_
 #define CONTENT_WORKER_WORKER_WEBKITPLATFORMSUPPORT_IMPL_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/webkitplatformsupport_impl.h"

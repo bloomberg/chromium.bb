@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_SHELL_SHELL_CONTENT_MAIN_H_
 #define CONTENT_SHELL_SHELL_CONTENT_MAIN_H_
-#pragma once
 
 #include "base/basictypes.h"
 

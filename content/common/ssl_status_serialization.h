@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_SSL_STATUS_SERIALIZATION_H_
 #define CONTENT_COMMON_SSL_STATUS_SERIALIZATION_H_
-#pragma once
 
 #include <string>
 

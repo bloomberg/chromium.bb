@@ -7,7 +7,6 @@
 
 #ifndef CONTENT_COMMON_NPOBJECT_STUB_H_
 #define CONTENT_COMMON_NPOBJECT_STUB_H_
-#pragma once
 
 #include <vector>
 

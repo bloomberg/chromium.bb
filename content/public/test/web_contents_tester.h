@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_TEST_WEB_CONTENTS_TESTER_H_
 #define CONTENT_PUBLIC_TEST_WEB_CONTENTS_TESTER_H_
-#pragma once
 
 #include "content/public/common/page_transition_types.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_BROWSER_MAIN_LOOP_H_
 #define CONTENT_BROWSER_BROWSER_MAIN_LOOP_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

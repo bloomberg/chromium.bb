@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_ANDROID_SURFACE_CALLBACK_H_
 #define CONTENT_COMMON_ANDROID_SURFACE_CALLBACK_H_
-#pragma once
 
 #include <jni.h>
 

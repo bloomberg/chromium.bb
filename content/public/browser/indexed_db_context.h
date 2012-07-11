@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_INDEXED_DB_CONTEXT_H_
 #define CONTENT_PUBLIC_BROWSER_INDEXED_DB_CONTEXT_H_
-#pragma once
 
 #include <vector>
 

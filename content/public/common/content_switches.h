@@ -6,7 +6,6 @@
 
 #ifndef CONTENT_PUBLIC_COMMON_CONTENT_SWITCHES_H_
 #define CONTENT_PUBLIC_COMMON_CONTENT_SWITCHES_H_
-#pragma once
 
 #include "build/build_config.h"
 #include "content/common/content_export.h"

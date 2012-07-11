@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_BROWSER_THREAD_IMPL_H_
 #define CONTENT_BROWSER_BROWSER_THREAD_IMPL_H_
-#pragma once
 
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"

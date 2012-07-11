@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PLUGIN_WEBPLUGIN_PROXY_H_
 #define CONTENT_PLUGIN_WEBPLUGIN_PROXY_H_
-#pragma once
 
 #include <string>
 

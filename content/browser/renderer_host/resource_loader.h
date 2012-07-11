@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RESOURCE_LOADER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RESOURCE_LOADER_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

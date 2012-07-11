@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_SITE_INSTANCE_H_
 #define CONTENT_PUBLIC_BROWSER_SITE_INSTANCE_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"

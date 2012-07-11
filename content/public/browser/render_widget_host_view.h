@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_H_
 #define CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_RENDER_WIDGET_HOST_DELEGATE_H_
 #define CONTENT_BROWSER_RENDER_WIDGET_HOST_DELEGATE_H_
-#pragma once
 
 #include "content/common/content_export.h"
 

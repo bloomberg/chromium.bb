@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_CREATE_INFO_H_
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_CREATE_INFO_H_
-#pragma once
 
 #include <string>
 #include <vector>

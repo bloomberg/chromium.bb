@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_MAC_BASE_H_
 #define CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_MAC_BASE_H_
-#pragma once
 
 // The Mac RenderWidgetHostView implementation conforms to this protocol.
 //

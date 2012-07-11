@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_QUOTA_PERMISSION_CONTEXT_H_
 #define CONTENT_PUBLIC_BROWSER_QUOTA_PERMISSION_CONTEXT_H_
-#pragma once
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"

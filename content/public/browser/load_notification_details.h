@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_LOAD_NOTIFICATION_DETAILS_H_
 #define CONTENT_PUBLIC_BROWSER_LOAD_NOTIFICATION_DETAILS_H_
-#pragma once
 
 #include "base/time.h"
 #include "content/public/browser/navigation_controller.h"

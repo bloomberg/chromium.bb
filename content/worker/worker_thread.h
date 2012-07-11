@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_WORKER_WORKER_THREAD_H_
 #define CONTENT_WORKER_WORKER_THREAD_H_
-#pragma once
 
 #include <set>
 

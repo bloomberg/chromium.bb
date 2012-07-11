@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_OBSERVER_H_
 #define CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_OBSERVER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "ipc/ipc_listener.h"

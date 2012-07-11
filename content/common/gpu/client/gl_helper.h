@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_GPU_CLIENT_GL_HELPER_H_
 #define CONTENT_COMMON_GPU_CLIENT_GL_HELPER_H_
-#pragma once
 
 #include "base/atomicops.h"
 #include "base/basictypes.h"

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_GEOLOCATION_ARBITRATOR_DEPENDENCY_FACTORIES_FOR_TEST_H_
 #define CONTENT_BROWSER_GEOLOCATION_ARBITRATOR_DEPENDENCY_FACTORIES_FOR_TEST_H_
-#pragma once
 
 #include "content/browser/geolocation/arbitrator_dependency_factory.h"
 

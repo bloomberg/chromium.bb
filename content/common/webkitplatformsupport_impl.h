@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_CONTENT_WEBKITPLATFORMSUPPORT_IMPL_H_
 #define CONTENT_COMMON_CONTENT_WEBKITPLATFORMSUPPORT_IMPL_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"

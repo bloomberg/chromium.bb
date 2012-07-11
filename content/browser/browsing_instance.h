@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_BROWSING_INSTANCE_H_
 #define CONTENT_BROWSER_BROWSING_INSTANCE_H_
-#pragma once
 
 #include "base/hash_tables.h"
 #include "base/lazy_instance.h"

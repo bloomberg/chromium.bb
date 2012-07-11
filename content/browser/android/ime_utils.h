@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_ANDROID_IME_UTILS_H_
 #define CONTENT_BROWSER_ANDROID_IME_UTILS_H_
-#pragma once
 
 #include <jni.h>
 

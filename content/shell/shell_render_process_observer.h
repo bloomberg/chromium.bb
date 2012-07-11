@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_SHELL_SHELL_RENDER_PROCESS_OBSERVER_H_
 #define CONTENT_SHELL_SHELL_RENDER_PROCESS_OBSERVER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

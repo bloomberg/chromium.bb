@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_APP_ANDROID_ANDROID_BROWSER_PROCESS_H_
 #define CONTENT_APP_ANDROID_ANDROID_BROWSER_PROCESS_H_
-#pragma once
 
 #include <jni.h>
 

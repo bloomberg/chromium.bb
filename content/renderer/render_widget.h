@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_RENDER_WIDGET_H_
 #define CONTENT_RENDERER_RENDER_WIDGET_H_
-#pragma once
 
 #include <deque>
 #include <vector>

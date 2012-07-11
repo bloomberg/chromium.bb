@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_SSL_SSL_MANAGER_H_
 #define CONTENT_BROWSER_SSL_SSL_MANAGER_H_
-#pragma once
 
 #include <string>
 

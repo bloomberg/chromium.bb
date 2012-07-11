@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_INDEXED_DB_PROXY_WEBIDBINDEX_IMPL_H_
 #define CONTENT_COMMON_INDEXED_DB_PROXY_WEBIDBINDEX_IMPL_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"

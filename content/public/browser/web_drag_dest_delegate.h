@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_WEB_DRAG_DEST_DELEGATE_H_
 #define CONTENT_PUBLIC_BROWSER_WEB_DRAG_DEST_DELEGATE_H_
-#pragma once
 
 #if defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_THREAD_H_
 #define CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_THREAD_H_
-#pragma once
 
 #include <vector>
 

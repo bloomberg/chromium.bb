@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_SHELL_SHELL_JAVASCRIPT_DIALOG_CREATOR_H_
 #define CONTENT_SHELL_SHELL_JAVASCRIPT_DIALOG_CREATOR_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_WIN_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_WIN_H_
-#pragma once
 
 #include <atlbase.h>
 #include <atlcom.h>

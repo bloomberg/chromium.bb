@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_IMAGE_TRANSPORT_FACTORY_H_
 #define CONTENT_BROWSER_RENDERER_HOST_IMAGE_TRANSPORT_FACTORY_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/native_widget_types.h"

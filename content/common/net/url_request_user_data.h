@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_NET_URL_REQUEST_USER_DATA_H_
 #define CONTENT_COMMON_NET_URL_REQUEST_USER_DATA_H_
-#pragma once
 
 #include "base/supports_user_data.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PLUGIN_PLUGIN_CHANNEL_H_
 #define CONTENT_PLUGIN_PLUGIN_CHANNEL_H_
-#pragma once
 
 #include <vector>
 #include "base/memory/ref_counted.h"

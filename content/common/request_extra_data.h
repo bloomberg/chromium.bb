@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_REQUEST_EXTRA_DATA_H_
 #define CONTENT_COMMON_REQUEST_EXTRA_DATA_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"

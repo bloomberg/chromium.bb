@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_PLUGIN_SERVICE_H_
 #define CONTENT_PUBLIC_BROWSER_PLUGIN_SERVICE_H_
-#pragma once
 
 #include <string>
 #include <vector>

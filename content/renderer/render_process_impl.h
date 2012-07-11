@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_RENDER_PROCESS_IMPL_H_
 #define CONTENT_RENDERER_RENDER_PROCESS_IMPL_H_
-#pragma once
 
 #include "base/timer.h"
 #include "content/renderer/render_process.h"

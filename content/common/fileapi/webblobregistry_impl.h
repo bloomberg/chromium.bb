@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_FILEAPI_WEBBLOBREGISTRY_IMPL_H_
 #define CONTENT_COMMON_FILEAPI_WEBBLOBREGISTRY_IMPL_H_
-#pragma once
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebBlobRegistry.h"
 

@@ -13,7 +13,6 @@
 
 #ifndef CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_H_
 #define CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"

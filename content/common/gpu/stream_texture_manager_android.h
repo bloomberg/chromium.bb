@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_GPU_STREAM_TEXTURE_MANAGER_ANDROID_H_
 #define CONTENT_COMMON_GPU_STREAM_TEXTURE_MANAGER_ANDROID_H_
-#pragma once
 
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"

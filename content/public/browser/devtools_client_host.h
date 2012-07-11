@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_DEVTOOLS_CLIENT_HOST_H_
 #define CONTENT_PUBLIC_BROWSER_DEVTOOLS_CLIENT_HOST_H_
-#pragma once
 
 #include <string>
 

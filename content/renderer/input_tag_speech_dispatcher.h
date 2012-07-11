@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_INPUT_TAG_SPEECH_DISPATCHER_H_
 #define CONTENT_RENDERER_INPUT_TAG_SPEECH_DISPATCHER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "content/public/renderer/render_view_observer.h"

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_LOAD_FROM_MEMORY_CACHE_DETAILS_H_
 #define CONTENT_PUBLIC_BROWSER_LOAD_FROM_MEMORY_CACHE_DETAILS_H_
-#pragma once
 
 #include <string>
 #include "base/basictypes.h"

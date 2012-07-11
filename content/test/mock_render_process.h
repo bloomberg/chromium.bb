@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_TEST_MOCK_RENDER_PROCESS_H_
 #define CONTENT_TEST_MOCK_RENDER_PROCESS_H_
-#pragma once
 
 #include "content/renderer/render_process.h"
 

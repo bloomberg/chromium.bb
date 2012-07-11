@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_BROWSER_THREAD_H_
 #define CONTENT_PUBLIC_BROWSER_BROWSER_THREAD_H_
-#pragma once
 
 #include <string>
 

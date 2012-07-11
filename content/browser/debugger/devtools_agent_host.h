@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_DEBUGGER_DEVTOOLS_AGENT_HOST_H_
 #define CONTENT_BROWSER_DEBUGGER_DEVTOOLS_AGENT_HOST_H_
-#pragma once
 
 #include <string>
 

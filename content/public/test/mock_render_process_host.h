@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_TEST_MOCK_RENDER_PROCESS_HOST_H_
 #define CONTENT_PUBLIC_TEST_MOCK_RENDER_PROCESS_HOST_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"

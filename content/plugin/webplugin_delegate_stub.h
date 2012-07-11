@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PLUGIN_WEBPLUGIN_DELEGATE_STUB_H_
 #define CONTENT_PLUGIN_WEBPLUGIN_DELEGATE_STUB_H_
-#pragma once
 
 #include <string>
 #include <vector>

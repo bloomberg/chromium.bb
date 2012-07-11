@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_RESOURCE_REQUEST_INFO_H_
 #define CONTENT_PUBLIC_BROWSER_RESOURCE_REQUEST_INFO_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"

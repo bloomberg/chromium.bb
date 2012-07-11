@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_H_
 #define CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_H_
-#pragma once
 
 #include "base/values.h"
 #include "content/common/content_export.h"

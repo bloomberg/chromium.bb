@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_SHELL_PATHS_MAC_H_
 #define CONTENT_SHELL_PATHS_MAC_H_
-#pragma once
 
 #include "base/file_path.h"
 

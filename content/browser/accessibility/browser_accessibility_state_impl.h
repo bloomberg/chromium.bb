@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_STATE_IMPL_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_STATE_IMPL_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

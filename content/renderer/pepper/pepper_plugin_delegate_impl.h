@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_PLUGIN_DELEGATE_IMPL_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_PLUGIN_DELEGATE_IMPL_H_
-#pragma once
 
 #include <map>
 #include <set>

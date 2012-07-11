@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_GPU_TEXTURE_IMAGE_TRANSPORT_SURFACE_H_
 #define CONTENT_COMMON_GPU_TEXTURE_IMAGE_TRANSPORT_SURFACE_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"

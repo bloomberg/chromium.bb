@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_TEST_TEST_CONTENT_CLIENT_INITIALIZER_
 #define CONTENT_PUBLIC_TEST_TEST_CONTENT_CLIENT_INITIALIZER_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

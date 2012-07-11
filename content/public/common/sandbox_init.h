@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_COMMON_SANDBOX_INIT_H_
 #define CONTENT_PUBLIC_COMMON_SANDBOX_INIT_H_
-#pragma once
 
 #include "base/process.h"
 #include "build/build_config.h"

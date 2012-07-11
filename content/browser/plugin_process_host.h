@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_PLUGIN_PROCESS_HOST_H_
 #define CONTENT_BROWSER_PLUGIN_PROCESS_HOST_H_
-#pragma once
 
 #include "build/build_config.h"
 

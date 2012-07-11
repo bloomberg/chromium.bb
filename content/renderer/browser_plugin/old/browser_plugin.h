@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_H_
 #define CONTENT_RENDERER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_H_
-#pragma once
 
 #include "base/process.h"
 #include "content/renderer/render_view_impl.h"

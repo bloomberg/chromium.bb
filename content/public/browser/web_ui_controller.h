@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_WEB_UI_CONTROLLER_H_
 #define CONTENT_PUBLIC_BROWSER_WEB_UI_CONTROLLER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/string16.h"

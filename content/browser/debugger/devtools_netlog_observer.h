@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_DEBUGGER_DEVTOOLS_NETLOG_OBSERVER_H_
 #define CONTENT_BROWSER_DEBUGGER_DEVTOOLS_NETLOG_OBSERVER_H_
-#pragma once
 
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"

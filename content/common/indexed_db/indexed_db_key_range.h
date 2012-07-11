@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_INDEXED_DB_INDEXED_DB_KEY_RANGE_H_
 #define CONTENT_COMMON_INDEXED_DB_INDEXED_DB_KEY_RANGE_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"

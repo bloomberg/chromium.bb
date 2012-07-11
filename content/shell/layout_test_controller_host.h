@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_SHELL_LAYOUT_TEST_CONTROLLER_HOST_H_
 #define CONTENT_SHELL_LAYOUT_TEST_CONTROLLER_HOST_H_
-#pragma once
 
 #include <map>
 #include <string>

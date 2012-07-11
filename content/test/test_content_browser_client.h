@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_TEST_TEST_CONTENT_BROWSER_CLIENT_H_
 #define CONTENT_TEST_TEST_CONTENT_BROWSER_CLIENT_H_
-#pragma once
 
 #include <string>
 

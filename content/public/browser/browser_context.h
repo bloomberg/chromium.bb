@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_BROWSER_CONTEXT_H_
 #define CONTENT_PUBLIC_BROWSER_BROWSER_CONTEXT_H_
-#pragma once
 
 #include "base/hash_tables.h"
 #include "base/supports_user_data.h"

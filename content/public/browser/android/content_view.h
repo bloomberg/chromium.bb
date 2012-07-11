@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_CONTENT_VIEW_H_
 #define CONTENT_PUBLIC_BROWSER_CONTENT_VIEW_H_
-#pragma once
 
 #include <jni.h>
 

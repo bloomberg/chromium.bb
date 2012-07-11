@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_FACTORY_H_
 #define CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_FACTORY_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"

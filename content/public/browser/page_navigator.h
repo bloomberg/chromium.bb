@@ -8,7 +8,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_PAGE_NAVIGATOR_H_
 #define CONTENT_PUBLIC_BROWSER_PAGE_NAVIGATOR_H_
-#pragma once
 
 #include <string>
 

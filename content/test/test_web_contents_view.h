@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_TEST_TEST_WEB_CONTENTS_VIEW_H_
 #define CONTENT_TEST_TEST_WEB_CONTENTS_VIEW_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "content/port/browser/render_view_host_delegate_view.h"

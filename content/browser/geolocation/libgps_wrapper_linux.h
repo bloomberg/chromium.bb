@@ -7,7 +7,6 @@
 
 #ifndef CONTENT_BROWSER_GEOLOCATION_LIBGPS_WRAPPER_LINUX_H_
 #define CONTENT_BROWSER_GEOLOCATION_LIBGPS_WRAPPER_LINUX_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

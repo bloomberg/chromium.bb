@@ -5,7 +5,6 @@
 #ifndef CONTENT_SHELL_SHELL_H_
 #define CONTENT_SHELL_SHELL_H_
 
-#pragma once
 
 #include <vector>
 

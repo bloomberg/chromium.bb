@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_REGISTRY_H_
 #define CONTENT_RENDERER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_REGISTRY_H_
-#pragma once
 
 #include "base/id_map.h"
 #include "base/process.h"

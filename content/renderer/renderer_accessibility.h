@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_RENDERER_ACCESSIBILITY_H_
 #define CONTENT_RENDERER_RENDERER_ACCESSIBILITY_H_
-#pragma once
 
 #include "content/common/accessibility_messages.h"
 #include "content/public/renderer/render_view_observer.h"

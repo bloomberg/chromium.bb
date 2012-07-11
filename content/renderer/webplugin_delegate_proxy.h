@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_WEBPLUGIN_DELEGATE_PROXY_H_
 #define CONTENT_RENDERER_WEBPLUGIN_DELEGATE_PROXY_H_
-#pragma once
 
 #include <string>
 #include <vector>

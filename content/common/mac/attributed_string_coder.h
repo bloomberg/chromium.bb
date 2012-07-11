@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_MAC_ATTRIBUTED_STRING_CODER_H_
 #define CONTENT_COMMON_MAC_ATTRIBUTED_STRING_CODER_H_
-#pragma once
 
 #include <set>
 

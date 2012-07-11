@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_HOST_ZOOM_MAP_IMPL_H_
 #define CONTENT_BROWSER_HOST_ZOOM_MAP_IMPL_H_
-#pragma once
 
 #include <map>
 #include <string>

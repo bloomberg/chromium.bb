@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_SITE_INSTANCE_IMPL_H_
 #define CONTENT_BROWSER_SITE_INSTANCE_IMPL_H_
-#pragma once
 
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/content_export.h"

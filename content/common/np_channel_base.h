@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_NP_CHANNEL_BASE_H_
 #define CONTENT_COMMON_NP_CHANNEL_BASE_H_
-#pragma once
 
 #include <string>
 

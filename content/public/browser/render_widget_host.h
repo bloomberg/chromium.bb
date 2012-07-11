@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_H_
 #define CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_H_
-#pragma once
 
 #include "base/callback.h"
 #include "content/common/content_export.h"

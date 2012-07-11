@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_SECCOMP_SANDBOX_H_
 #define CONTENT_COMMON_SECCOMP_SANDBOX_H_
-#pragma once
 
 // Seccomp enable/disable logic is centralized here.
 // - We define SECCOMP_SANDBOX if seccomp is compiled in at all: currently,

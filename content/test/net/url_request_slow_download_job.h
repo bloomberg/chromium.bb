@@ -8,7 +8,6 @@
 
 #ifndef CONTENT_TEST_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
 #define CONTENT_TEST_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
-#pragma once
 
 #include <set>
 #include <string>

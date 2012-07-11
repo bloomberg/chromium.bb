@@ -16,7 +16,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_ITEM_H_
 #define CONTENT_PUBLIC_BROWSER_DOWNLOAD_ITEM_H_
-#pragma once
 
 #include <map>
 #include <string>

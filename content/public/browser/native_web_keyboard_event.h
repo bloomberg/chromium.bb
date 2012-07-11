@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_NATIVE_WEB_KEYBOARD_EVENT_H_
 #define CONTENT_PUBLIC_BROWSER_NATIVE_WEB_KEYBOARD_EVENT_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

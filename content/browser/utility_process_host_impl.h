@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_UTILITY_PROCESS_HOST_IMPL_H_
 #define CONTENT_BROWSER_UTILITY_PROCESS_HOST_IMPL_H_
-#pragma once
 
 #include <string>
 #include <vector>

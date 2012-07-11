@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_SHELL_LAYOUT_TEST_CONTROLLER_H_
 #define CONTENT_SHELL_LAYOUT_TEST_CONTROLLER_H_
-#pragma once
 
 #include "content/public/renderer/render_view_observer.h"
 

@@ -62,7 +62,6 @@
 
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_H_
 #define CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/bind.h"

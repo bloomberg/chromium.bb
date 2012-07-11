@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_ANDROID_SURFACE_TEXTURE_LISTENER_H_
 #define CONTENT_COMMON_ANDROID_SURFACE_TEXTURE_LISTENER_H_
-#pragma once
 
 #include <jni.h>
 #include "base/callback.h"

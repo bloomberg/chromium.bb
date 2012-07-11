@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_SHELL_SHELL_CONTENT_BROWSER_CLIENT_H_
 #define CONTENT_SHELL_SHELL_CONTENT_BROWSER_CLIENT_H_
-#pragma once
 
 #include <string>
 

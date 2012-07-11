@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_SAVE_INFO_H_
 #define CONTENT_PUBLIC_BROWSER_DOWNLOAD_SAVE_INFO_H_
-#pragma once
 
 #include "base/file_path.h"
 #include "base/memory/linked_ptr.h"

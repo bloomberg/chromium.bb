@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_ANDROID_H_
 #define CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_ANDROID_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "content/port/browser/render_view_host_delegate_view.h"

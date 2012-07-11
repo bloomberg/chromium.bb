@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_BROWSER_PROCESS_SUB_THREAD_H_
 #define CONTENT_BROWSER_BROWSER_PROCESS_SUB_THREAD_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "content/browser/browser_thread_impl.h"

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PLUGIN_WEBPLUGIN_ACCELERATED_SURFACE_PROXY_H_
 #define CONTENT_PLUGIN_WEBPLUGIN_ACCELERATED_SURFACE_PROXY_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/gl/gpu_preference.h"

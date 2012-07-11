@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_WEB_CONTENTS_DEBUG_URLS_H_
 #define CONTENT_BROWSER_WEB_CONTENTS_DEBUG_URLS_H_
-#pragma once
 
 #include "content/public/common/page_transition_types.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_TEST_WEBRTC_AUDIO_DEVICE_TEST_H_
 #define CONTENT_TEST_WEBRTC_AUDIO_DEVICE_TEST_H_
-#pragma once
 
 #include <string>
 

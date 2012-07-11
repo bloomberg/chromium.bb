@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_RESOLVE_PROXY_MSG_HELPER_H_
 #define CONTENT_BROWSER_RESOLVE_PROXY_MSG_HELPER_H_
-#pragma once
 
 #include <deque>
 #include <string>

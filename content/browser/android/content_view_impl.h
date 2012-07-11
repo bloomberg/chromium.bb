@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_ANDROID_CONTENT_VIEW_IMPL_H_
 #define CONTENT_BROWSER_ANDROID_CONTENT_VIEW_IMPL_H_
-#pragma once
 
 #include "base/android/jni_helper.h"
 #include "base/basictypes.h"

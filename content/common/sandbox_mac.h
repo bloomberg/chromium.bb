@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_SANDBOX_MAC_H_
 #define CONTENT_COMMON_SANDBOX_MAC_H_
-#pragma once
 
 #include <string>
 

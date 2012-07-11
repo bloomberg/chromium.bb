@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_GPU_GPU_MEMORY_ALLOCATION_H_
 #define CONTENT_COMMON_GPU_GPU_MEMORY_ALLOCATION_H_
-#pragma once
 
 #include "base/basictypes.h"
 

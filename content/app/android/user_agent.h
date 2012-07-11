@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_APP_ANDROID_USER_AGENT_H_
 #define CONTENT_APP_ANDROID_USER_AGENT_H_
-#pragma once
 
 #include <jni.h>
 #include <string>

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_WORKER_SERVICE_OBSERVER_H_
 #define CONTENT_PUBLIC_BROWSER_WORKER_SERVICE_OBSERVER_H_
-#pragma once
 
 #include "base/process.h"
 #include "base/string16.h"

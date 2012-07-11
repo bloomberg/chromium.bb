@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_SHELL_GEOLOCATION_SHELL_ACCESS_TOKEN_STORE_H_
 #define CONTENT_SHELL_GEOLOCATION_SHELL_ACCESS_TOKEN_STORE_H_
-#pragma once
 
 #include "content/public/browser/access_token_store.h"
 

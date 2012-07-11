@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_SPEECH_GOOGLE_STREAMING_REMOTE_ENGINE_H_
 #define CONTENT_BROWSER_SPEECH_GOOGLE_STREAMING_REMOTE_ENGINE_H_
-#pragma once
 
 #include <string>
 #include <vector>

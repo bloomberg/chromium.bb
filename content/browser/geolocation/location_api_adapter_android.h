@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_GEOLOCATION_LOCATION_API_ADAPTER_ANDROID_H_
 #define CONTENT_BROWSER_GEOLOCATION_LOCATION_API_ADAPTER_ANDROID_H_
-#pragma once
 
 #include "base/android/jni_helper.h"
 #include "base/android/scoped_java_ref.h"

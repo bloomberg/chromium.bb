@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_COMMON_SSL_STATUS_H_
 #define CONTENT_PUBLIC_COMMON_SSL_STATUS_H_
-#pragma once
 
 #include "content/common/content_export.h"
 #include "content/public/common/security_style.h"

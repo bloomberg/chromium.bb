@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_COMMON_CONTEXT_MENU_PARAMS_H_
 #define CONTENT_PUBLIC_COMMON_CONTEXT_MENU_PARAMS_H_
-#pragma once
 
 #include <vector>
 

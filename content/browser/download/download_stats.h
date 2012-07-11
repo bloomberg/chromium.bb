@@ -6,7 +6,6 @@
 
 #ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_STATS_H_
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_STATS_H_
-#pragma once
 
 #include <string>
 

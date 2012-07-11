@@ -8,7 +8,6 @@
 
 #ifndef CONTENT_PUBLIC_COMMON_MAIN_FUNCTION_PARAMS_H_
 #define CONTENT_PUBLIC_COMMON_MAIN_FUNCTION_PARAMS_H_
-#pragma once
 
 #include "base/command_line.h"
 #include "base/callback_forward.h"

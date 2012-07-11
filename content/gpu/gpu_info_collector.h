@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_GPU_GPU_INFO_COLLECTOR_H_
 #define CONTENT_GPU_GPU_INFO_COLLECTOR_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "build/build_config.h"

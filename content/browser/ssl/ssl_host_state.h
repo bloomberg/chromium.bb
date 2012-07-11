@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_SSL_SSL_HOST_STATE_H_
 #define CONTENT_BROWSER_SSL_SSL_HOST_STATE_H_
-#pragma once
 
 #include <string>
 #include <map>

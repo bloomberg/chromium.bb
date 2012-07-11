@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_DIP_UTIL_H_
 #define CONTENT_BROWSER_RENDERER_HOST_DIP_UTIL_H_
-#pragma once
 
 #include "content/common/content_export.h"
 

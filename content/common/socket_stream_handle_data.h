@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_SOCKET_STREAM_HANDLE_DATA_H_
 #define CONTENT_RENDERER_SOCKET_STREAM_HANDLE_DATA_H_
-#pragma once
 
 #include "base/supports_user_data.h"
 #include "content_export.h"

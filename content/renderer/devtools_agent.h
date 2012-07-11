@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_DEVTOOLS_AGENT_H_
 #define CONTENT_RENDERER_DEVTOOLS_AGENT_H_
-#pragma once
 
 #include <string>
 

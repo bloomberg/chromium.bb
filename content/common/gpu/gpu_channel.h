@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_GPU_GPU_CHANNEL_H_
 #define CONTENT_COMMON_GPU_GPU_CHANNEL_H_
-#pragma once
 
 #include <deque>
 #include <string>

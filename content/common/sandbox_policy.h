@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_SANDBOX_POLICY_H_
 #define CONTENT_COMMON_SANDBOX_POLICY_H_
-#pragma once
 
 #include "base/process.h"
 #include "content/common/content_export.h"

@@ -6,7 +6,6 @@
 
 #ifndef CONTENT_PUBLIC_COMMON_CONTENT_CONSTANTS_H_
 #define CONTENT_PUBLIC_COMMON_CONTENT_CONSTANTS_H_
-#pragma once
 
 #include <stddef.h>         // For size_t
 

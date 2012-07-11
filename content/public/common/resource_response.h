@@ -6,7 +6,6 @@
 
 #ifndef CONTENT_PUBLIC_COMMON_RESOURCE_RESPONSE_H_
 #define CONTENT_PUBLIC_COMMON_RESOURCE_RESPONSE_H_
-#pragma once
 
 #include <string>
 

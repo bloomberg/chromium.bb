@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_GPU_GPU_CHILD_THREAD_H_
 #define CONTENT_GPU_GPU_CHILD_THREAD_H_
-#pragma once
 
 #include <string>
 

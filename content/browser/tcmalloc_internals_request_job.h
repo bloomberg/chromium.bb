@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_TCMALLOC_INTERNALS_REQUEST_JOB_H_
 #define CONTENT_BROWSER_TCMALLOC_INTERNALS_REQUEST_JOB_H_
-#pragma once
 
 #include <map>
 #include "base/basictypes.h"

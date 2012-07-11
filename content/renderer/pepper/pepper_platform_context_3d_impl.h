@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_CONTEXT_3D_IMPL_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_CONTEXT_3D_IMPL_H_
-#pragma once
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"

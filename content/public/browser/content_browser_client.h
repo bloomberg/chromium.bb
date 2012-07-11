@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_CONTENT_BROWSER_CLIENT_H_
 #define CONTENT_PUBLIC_BROWSER_CONTENT_BROWSER_CLIENT_H_
-#pragma once
 
 #include <string>
 #include <utility>

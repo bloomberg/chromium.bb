@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_WEB_CONTENTS_NAVIGATION_ENTRY_IMPL_H_
 #define CONTENT_BROWSER_WEB_CONTENTS_NAVIGATION_ENTRY_IMPL_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"

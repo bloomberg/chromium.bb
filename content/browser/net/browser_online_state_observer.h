@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_NET_BROWSER_ONLINE_STATE_OBSERVER_H_
 #define CONTENT_BROWSER_NET_BROWSER_ONLINE_STATE_OBSERVER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "net/base/network_change_notifier.h"

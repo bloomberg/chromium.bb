@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_RENDER_VIEW_MOUSE_LOCK_DISPATCHER_H_
 #define CONTENT_RENDERER_RENDER_VIEW_MOUSE_LOCK_DISPATCHER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

@@ -26,7 +26,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_MANAGER_H_
 #define CONTENT_PUBLIC_BROWSER_DOWNLOAD_MANAGER_H_
-#pragma once
 
 #include <string>
 #include <vector>

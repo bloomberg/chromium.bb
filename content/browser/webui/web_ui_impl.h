@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_WEBUI_WEB_UI_IMPL_H_
 #define CONTENT_BROWSER_WEBUI_WEB_UI_IMPL_H_
-#pragma once
 
 #include <map>
 

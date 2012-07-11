@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_SHELL_SHELL_JAVASCRIPT_DIALOG_H_
 #define CONTENT_SHELL_SHELL_JAVASCRIPT_DIALOG_H_
-#pragma once
 
 #include "content/public/browser/javascript_dialogs.h"
 

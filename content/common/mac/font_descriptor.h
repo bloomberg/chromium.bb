@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_MAC_FONT_DESCRIPTOR_H_
 #define CONTENT_COMMON_MAC_FONT_DESCRIPTOR_H_
-#pragma once
 
 #include "base/string16.h"
 #include "content/common/content_export.h"

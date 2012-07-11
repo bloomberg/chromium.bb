@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_NAVIGATION_CONTROLLER_H_
 #define CONTENT_PUBLIC_BROWSER_NAVIGATION_CONTROLLER_H_
-#pragma once
 
 #include <string>
 #include <vector>

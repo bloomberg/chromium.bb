@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_FILE_H_
 #define CONTENT_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_FILE_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/file_path.h"

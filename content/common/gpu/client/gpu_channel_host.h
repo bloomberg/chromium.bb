@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_COMMON_GPU_CLIENT_GPU_CHANNEL_HOST_H_
 #define CONTENT_COMMON_GPU_CLIENT_GPU_CHANNEL_HOST_H_
-#pragma once
 
 #include <string>
 #include <vector>

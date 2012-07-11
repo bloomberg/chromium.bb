@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_SHELL_SHELL_DEVTOOLS_DELEGATE_H_
 #define CONTENT_SHELL_SHELL_DEVTOOLS_DELEGATE_H_
-#pragma once
 
 #include <vector>
 

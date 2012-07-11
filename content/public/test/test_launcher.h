@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_TEST_TEST_LAUNCHER_H_
 #define CONTENT_PUBLIC_TEST_TEST_LAUNCHER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_DANGER_TYPE_H_
 #define CONTENT_PUBLIC_BROWSER_DOWNLOAD_DANGER_TYPE_H_
-#pragma once
 
 namespace content {
 

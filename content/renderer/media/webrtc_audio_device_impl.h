@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_MEDIA_WEBRTC_AUDIO_DEVICE_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_WEBRTC_AUDIO_DEVICE_IMPL_H_
-#pragma once
 
 #include <string>
 #include <vector>

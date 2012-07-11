@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_PLUGIN_CHANNEL_HOST_H_
 #define CONTENT_RENDERER_PLUGIN_CHANNEL_HOST_H_
-#pragma once
 
 #include "base/hash_tables.h"
 #include "content/common/np_channel_base.h"

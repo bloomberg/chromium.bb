@@ -4,7 +4,7 @@
 
 // Singly or Multiply-included shared traits file depending on circumstances.
 // This allows the use of IPC serialization macros in more than one IPC message
-// file. Hence, provide include guard but no pragma once.
+// file.
 #ifndef CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_MACROS_H_
 #define CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_MACROS_H_
 

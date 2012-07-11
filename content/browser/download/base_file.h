@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_BROWSER_DOWNLOAD_BASE_FILE_H_
 #define CONTENT_BROWSER_DOWNLOAD_BASE_FILE_H_
-#pragma once
 
 #include <string>
 

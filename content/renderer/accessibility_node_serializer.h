@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_RENDERER_ACCESSIBILITY_NODE_SERIALIZER_H_
 #define CONTENT_RENDERER_ACCESSIBILITY_NODE_SERIALIZER_H_
-#pragma once
 
 #include "content/common/accessibility_node_data.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"

@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_SHELL_SHELL_LOGIN_DIALOG_H_
 #define CONTENT_SHELL_SHELL_LOGIN_DIALOG_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/string16.h"

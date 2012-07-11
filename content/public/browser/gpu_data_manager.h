@@ -4,7 +4,6 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_GPU_DATA_MANAGER_H_
 #define CONTENT_PUBLIC_BROWSER_GPU_DATA_MANAGER_H_
-#pragma once
 
 #include "content/common/content_export.h"
 #include "content/public/common/gpu_feature_type.h"
