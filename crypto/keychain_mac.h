@@ -4,7 +4,6 @@
 
 #ifndef CRYPTO_KEYCHAIN_MAC_H_
 #define CRYPTO_KEYCHAIN_MAC_H_
-#pragma once
 
 #include <Security/Security.h>
 

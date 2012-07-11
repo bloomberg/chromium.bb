@@ -4,7 +4,6 @@
 
 #ifndef CRYPTO_MOCK_KEYCHAIN_MAC_H_
 #define CRYPTO_MOCK_KEYCHAIN_MAC_H_
-#pragma once
 
 #include <map>
 #include <set>
