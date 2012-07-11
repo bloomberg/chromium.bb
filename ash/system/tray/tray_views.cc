@@ -314,6 +314,7 @@ TrayPopupTextButton::TrayPopupTextButton(views::ButtonListener* listener,
   set_alignment(ALIGN_CENTER);
   set_border(NULL);
   set_focusable(true);
+  set_request_focus_on_press(false);
 }
 
 TrayPopupTextButton::~TrayPopupTextButton() {}
@@ -400,6 +401,7 @@ TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
   set_focusable(true);
+  set_request_focus_on_press(false);
 }
 
 TrayPopupHeaderButton::~TrayPopupHeaderButton() {}
