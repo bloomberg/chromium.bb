@@ -98,7 +98,7 @@ class IPCChannelPosixTest : public base::MultiProcessTest {
  public:
   static void SetUpSocket(IPC::ChannelHandle *handle,
                           IPC::Channel::Mode mode);
-  static void SpinRunLoop(int milliseconds);
+  static void SpinRunLoop(base::TimeDelta delay);
   static const std::string GetConnectionSocketName();
   static const std::string GetChannelDirName();
 
@@ -180,7 +180,7 @@ void IPCChannelPosixTest::SetUpSocket(IPC::ChannelHandle *handle,
   handle->socket.fd = socket_fd;
 }
 
-void IPCChannelPosixTest::SpinRunLoop(int milliseconds) {
+void IPCChannelPosixTest::SpinRunLoop(base::TimeDelta delay) {
   MessageLoopForIO *loop = MessageLoopForIO::current();
   // Post a quit task so that this loop eventually ends and we don't hang
   // in the case of a bad test. Usually, the run loop will quit sooner than
@@ -189,7 +189,7 @@ void IPCChannelPosixTest::SpinRunLoop(int milliseconds) {
   loop->PostDelayedTask(
       FROM_HERE,
       MessageLoop::QuitClosure(),
-      base::TimeDelta::FromMilliseconds(milliseconds));
+      delay);
   loop->Run();
 }
 
@@ -244,14 +244,14 @@ TEST_F(IPCChannelPosixTest, AdvancedConnected) {
   base::ProcessHandle handle = SpawnChild("IPCChannelPosixTestConnectionProc",
                                           false);
   ASSERT_TRUE(handle);
-  SpinRunLoop(TestTimeouts::action_max_timeout_ms());
+  SpinRunLoop(TestTimeouts::action_max_timeout());
   ASSERT_EQ(IPCChannelPosixTestListener::CONNECTED, listener.status());
   ASSERT_TRUE(channel.HasAcceptedConnection());
   IPC::Message* message = new IPC::Message(0,  // routing_id
                                            kQuitMessage,  // message type
                                            IPC::Message::PRIORITY_NORMAL);
   channel.Send(message);
-  SpinRunLoop(TestTimeouts::action_timeout_ms());
+  SpinRunLoop(TestTimeouts::action_timeout());
   int exit_code = 0;
   EXPECT_TRUE(base::WaitForExitCode(handle, &exit_code));
   EXPECT_EQ(0, exit_code);
@@ -274,7 +274,7 @@ TEST_F(IPCChannelPosixTest, ResetState) {
   base::ProcessHandle handle = SpawnChild("IPCChannelPosixTestConnectionProc",
                                           false);
   ASSERT_TRUE(handle);
-  SpinRunLoop(TestTimeouts::action_max_timeout_ms());
+  SpinRunLoop(TestTimeouts::action_max_timeout());
   ASSERT_EQ(IPCChannelPosixTestListener::CONNECTED, listener.status());
   ASSERT_TRUE(channel.HasAcceptedConnection());
   channel.ResetToAcceptingConnectionState();
@@ -283,14 +283,14 @@ TEST_F(IPCChannelPosixTest, ResetState) {
   base::ProcessHandle handle2 = SpawnChild("IPCChannelPosixTestConnectionProc",
                                           false);
   ASSERT_TRUE(handle2);
-  SpinRunLoop(TestTimeouts::action_max_timeout_ms());
+  SpinRunLoop(TestTimeouts::action_max_timeout());
   ASSERT_EQ(IPCChannelPosixTestListener::CONNECTED, listener.status());
   ASSERT_TRUE(channel.HasAcceptedConnection());
   IPC::Message* message = new IPC::Message(0,  // routing_id
                                            kQuitMessage,  // message type
                                            IPC::Message::PRIORITY_NORMAL);
   channel.Send(message);
-  SpinRunLoop(TestTimeouts::action_timeout_ms());
+  SpinRunLoop(TestTimeouts::action_timeout());
   EXPECT_TRUE(base::KillProcess(handle, 0, false));
   int exit_code = 0;
   EXPECT_TRUE(base::WaitForExitCode(handle2, &exit_code));
@@ -333,13 +333,13 @@ TEST_F(IPCChannelPosixTest, MultiConnection) {
   base::ProcessHandle handle = SpawnChild("IPCChannelPosixTestConnectionProc",
                                           false);
   ASSERT_TRUE(handle);
-  SpinRunLoop(TestTimeouts::action_max_timeout_ms());
+  SpinRunLoop(TestTimeouts::action_max_timeout());
   ASSERT_EQ(IPCChannelPosixTestListener::CONNECTED, listener.status());
   ASSERT_TRUE(channel.HasAcceptedConnection());
   base::ProcessHandle handle2 = SpawnChild("IPCChannelPosixFailConnectionProc",
                                            false);
   ASSERT_TRUE(handle2);
-  SpinRunLoop(TestTimeouts::action_max_timeout_ms());
+  SpinRunLoop(TestTimeouts::action_max_timeout());
   int exit_code = 0;
   EXPECT_TRUE(base::WaitForExitCode(handle2, &exit_code));
   EXPECT_EQ(exit_code, 0);
@@ -349,7 +349,7 @@ TEST_F(IPCChannelPosixTest, MultiConnection) {
                                            kQuitMessage,  // message type
                                            IPC::Message::PRIORITY_NORMAL);
   channel.Send(message);
-  SpinRunLoop(TestTimeouts::action_timeout_ms());
+  SpinRunLoop(TestTimeouts::action_timeout());
   EXPECT_TRUE(base::WaitForExitCode(handle, &exit_code));
   EXPECT_EQ(exit_code, 0);
   ASSERT_EQ(IPCChannelPosixTestListener::CHANNEL_ERROR, listener.status());
@@ -398,7 +398,7 @@ MULTIPROCESS_TEST_MAIN(IPCChannelPosixTestConnectionProc) {
   IPCChannelPosixTest::SetUpSocket(&handle, IPC::Channel::MODE_NAMED_CLIENT);
   IPC::Channel channel(handle, IPC::Channel::MODE_NAMED_CLIENT, &listener);
   EXPECT_TRUE(channel.Connect());
-  IPCChannelPosixTest::SpinRunLoop(TestTimeouts::action_max_timeout_ms());
+  IPCChannelPosixTest::SpinRunLoop(TestTimeouts::action_max_timeout());
   EXPECT_EQ(IPCChannelPosixTestListener::MESSAGE_RECEIVED, listener.status());
   return 0;
 }
@@ -418,7 +418,7 @@ MULTIPROCESS_TEST_MAIN(IPCChannelPosixFailConnectionProc) {
   // it.
   bool connected = channel.Connect();
   if (connected) {
-    IPCChannelPosixTest::SpinRunLoop(TestTimeouts::action_max_timeout_ms());
+    IPCChannelPosixTest::SpinRunLoop(TestTimeouts::action_max_timeout());
     EXPECT_EQ(IPCChannelPosixTestListener::CHANNEL_ERROR, listener.status());
   } else {
     EXPECT_EQ(IPCChannelPosixTestListener::DISCONNECTED, listener.status());

@@ -106,7 +106,8 @@ void TestDescriptorServer(IPC::Channel &chan,
   chan.Close();
 
   // Cleanup child process.
-  EXPECT_TRUE(base::WaitForSingleProcess(process_handle, 5000));
+  EXPECT_TRUE(base::WaitForSingleProcess(
+      process_handle, base::TimeDelta::FromSeconds(5)));
 }
 
 int TestDescriptorClient(ino_t expected_inode_num) {

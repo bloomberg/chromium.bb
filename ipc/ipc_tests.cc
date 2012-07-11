@@ -238,7 +238,8 @@ TEST_F(IPCChannelTest, ChannelTest) {
   chan.Close();
 
   // Cleanup child process.
-  EXPECT_TRUE(base::WaitForSingleProcess(process_handle, 5000));
+  EXPECT_TRUE(base::WaitForSingleProcess(
+      process_handle, base::TimeDelta::FromSeconds(5)));
   base::CloseProcessHandle(process_handle);
 }
 
@@ -278,7 +279,8 @@ TEST_F(IPCChannelTest, ChannelTestExistingPipe) {
   chan.Close();
 
   // Cleanup child process.
-  EXPECT_TRUE(base::WaitForSingleProcess(process_handle, 5000));
+  EXPECT_TRUE(base::WaitForSingleProcess(
+      process_handle, base::TimeDelta::FromSeconds(5)));
   base::CloseProcessHandle(process_handle);
 }
 #endif  // defined (OS_WIN)
@@ -323,7 +325,8 @@ TEST_F(IPCChannelTest, ChannelProxyTest) {
     MessageLoop::current()->Run();
 
     // cleanup child process
-    EXPECT_TRUE(base::WaitForSingleProcess(process_handle, 5000));
+    EXPECT_TRUE(base::WaitForSingleProcess(
+        process_handle, base::TimeDelta::FromSeconds(5)));
     base::CloseProcessHandle(process_handle);
   }
   thread.Stop();
@@ -399,7 +402,8 @@ TEST_F(IPCChannelTest, MAYBE_SendMessageInChannelConnected) {
   channel.Close();
 
   // Cleanup child process.
-  EXPECT_TRUE(base::WaitForSingleProcess(process_handle, 5000));
+  EXPECT_TRUE(base::WaitForSingleProcess(
+      process_handle, base::TimeDelta::FromSeconds(5)));
   base::CloseProcessHandle(process_handle);
 }
 

@@ -282,7 +282,8 @@ TEST_F(IPCFuzzingTest, SanityTest) {
   chan.Send(msg);
   EXPECT_TRUE(listener.ExpectMessage(value, MsgClassSI::ID));
 
-  EXPECT_TRUE(base::WaitForSingleProcess(server_process, 5000));
+  EXPECT_TRUE(base::WaitForSingleProcess(
+      server_process, base::TimeDelta::FromSeconds(5)));
   base::CloseProcessHandle(server_process);
 }
 
@@ -312,7 +313,8 @@ TEST_F(IPCFuzzingTest, MsgBadPayloadShort) {
   chan.Send(msg);
   EXPECT_TRUE(listener.ExpectMessage(1, MsgClassSI::ID));
 
-  EXPECT_TRUE(base::WaitForSingleProcess(server_process, 5000));
+  EXPECT_TRUE(base::WaitForSingleProcess(
+      server_process, base::TimeDelta::FromSeconds(5)));
   base::CloseProcessHandle(server_process);
 }
 #endif
@@ -347,7 +349,8 @@ TEST_F(IPCFuzzingTest, MsgBadPayloadArgs) {
   chan.Send(msg);
   EXPECT_TRUE(listener.ExpectMessage(3, MsgClassIS::ID));
 
-  EXPECT_TRUE(base::WaitForSingleProcess(server_process, 5000));
+  EXPECT_TRUE(base::WaitForSingleProcess(
+      server_process, base::TimeDelta::FromSeconds(5)));
   base::CloseProcessHandle(server_process);
 }
 

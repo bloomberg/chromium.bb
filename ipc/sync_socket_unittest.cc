@@ -203,7 +203,8 @@ TEST_F(SyncSocketTest, SanityTest) {
   // Shut down.
   pair[0].Close();
   pair[1].Close();
-  EXPECT_TRUE(base::WaitForSingleProcess(server_process, 5000));
+  EXPECT_TRUE(base::WaitForSingleProcess(
+      server_process, base::TimeDelta::FromSeconds(5)));
   base::CloseProcessHandle(server_process);
 }
 
