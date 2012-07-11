@@ -64,12 +64,47 @@ class TraceInputs(unittest.TestCase):
     self.assertEquals(os.path.join('/usr', '$FOO/bar'), actual.full_path)
     self.assertEquals(True, actual.tainted)
 
-  if sys.platform == 'win32':
-    def test_native_case_windows(self):
-      windows_path = os.environ['SystemRoot']
+  def test_native_case_end_with_os_path_sep(self):
+    # Make sure the trailing os.path.sep is kept.
+    path = trace_inputs.get_native_path_case(ROOT_DIR) + os.path.sep
+    self.assertEquals(trace_inputs.get_native_path_case(path), path)
+
+  def test_native_case_non_existing(self):
+    # Make sure it doesn't throw on non-existing files.
+    non_existing = 'trace_input_test_this_file_should_not_exist'
+    path = os.path.expanduser('~/' + non_existing)
+    self.assertFalse(os.path.exists(path))
+    path = trace_inputs.get_native_path_case(ROOT_DIR) + os.path.sep
+    self.assertEquals(trace_inputs.get_native_path_case(path), path)
+
+  if sys.platform in ('darwin', 'win32'):
+    def test_native_case_not_sensitive(self):
+      # The home directory is almost guaranteed to have mixed upper/lower case
+      # letters on both Windows and OSX.
+      # This test also ensures that the output is independent on the input
+      # string case.
+      path = os.path.expanduser('~')
+      self.assertTrue(os.path.isdir(path))
+      # This test assumes the variable is in the native path case on disk, this
+      # should be the case. Verify this assumption:
+      self.assertEquals(path, trace_inputs.get_native_path_case(path))
       self.assertEquals(
-          trace_inputs.get_native_path_case(windows_path.lower()),
-          trace_inputs.get_native_path_case(windows_path.upper()))
+          trace_inputs.get_native_path_case(path.lower()),
+          trace_inputs.get_native_path_case(path.upper()))
+
+    def test_native_case_not_sensitive_non_existent(self):
+      # This test also ensures that the output is independent on the input
+      # string case.
+      non_existing = os.path.join(
+          'trace_input_test_this_dir_should_not_exist', 'really not', '')
+      path = os.path.expanduser(os.path.join('~', non_existing))
+      self.assertFalse(os.path.exists(path))
+      lower = trace_inputs.get_native_path_case(path.lower())
+      upper = trace_inputs.get_native_path_case(path.upper())
+      # Make sure non-existing element is not modified:
+      self.assertTrue(lower.endswith(non_existing.lower()))
+      self.assertTrue(upper.endswith(non_existing.upper()))
+      self.assertEquals(lower[:-len(non_existing)], upper[:-len(non_existing)])
 
   if sys.platform != 'win32':
     def test_symlink(self):

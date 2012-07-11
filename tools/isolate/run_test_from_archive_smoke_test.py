@@ -104,7 +104,10 @@ class RunTestFromArchive(unittest.TestCase):
       '--cache', self.cache,
       '--remote', self.table,
     ]
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        universal_newlines=True)
     out, err = proc.communicate()
     self.assertEquals(1070, len(out))
     self.assertEquals('', err)
@@ -132,7 +135,10 @@ class RunTestFromArchive(unittest.TestCase):
       '--cache', self.cache,
       '--remote', self.table,
     ]
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        universal_newlines=True)
     out, err = proc.communicate()
     self.assertEquals(1070, len(out))
     self.assertEquals('', err)
@@ -146,7 +152,10 @@ class RunTestFromArchive(unittest.TestCase):
       '--cache', self.cache,
       '--remote', self.table,
     ]
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        universal_newlines=True)
     out, err = proc.communicate()
     self.assertEquals('', out)
     self.assertEquals('No file to map\n', err)

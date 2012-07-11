@@ -194,29 +194,32 @@ if sys.platform == 'win32':
     return os.path.isabs(path) or len(path) == 2 and path[1] == ':'
 
 
-  def get_native_path_case(path):
+  def get_native_path_case(p):
     """Returns the native path case for an existing file.
 
     On Windows, removes any leading '\\?\'.
     """
-    if not isabs(path):
+    if not isabs(p):
       raise ValueError(
-          'Can\'t get native path case for a non-absolute path: %s' % path,
-          path)
+          'Can\'t get native path case for a non-absolute path: %s' % p,
+          p)
     # Windows used to have an option to turn on case sensitivity on non Win32
     # subsystem but that's out of scope here and isn't supported anymore.
     # Go figure why GetShortPathName() is needed.
     try:
-      path = GetLongPathName(GetShortPathName(path))
-    except OSError:
-      # This is wrong to silently eat the exception but there's nothing that can
-      # be done about it.
-      logging.info('No access to %s' % path)
-    if path.startswith('\\\\?\\'):
-      path = path[4:]
+      out = GetLongPathName(GetShortPathName(p))
+    except OSError, e:
+      if e.args[0] in (2, 3):
+        # The path does not exist. Try to recurse and reconstruct the path.
+        base = os.path.dirname(p)
+        rest = os.path.basename(p)
+        return os.path.join(get_native_path_case(base), rest)
+      raise
+    if out.startswith('\\\\?\\'):
+      out = out[4:]
     # Always upper case the first letter since GetLongPathName() will return the
     # drive letter in the case it was given.
-    return path[0].upper() + path[1:]
+    return out[0].upper() + out[1:]
 
 
   def CommandLineToArgvW(command_line):
@@ -254,8 +257,16 @@ elif sys.platform == 'darwin':
     logging.debug('native_case(%s)' % p)
     try:
       rel_ref, _ = Carbon.File.FSPathMakeRef(p)
-      return rel_ref.FSRefMakePath()
+      out = rel_ref.FSRefMakePath()
+      if p.endswith(os.path.sep) and not out.endswith(os.path.sep):
+        return out + os.path.sep
+      return out
     except MacOS.Error, e:
+      if e.args[0] == -43:
+        # The path does not exist. Try to recurse and reconstruct the path.
+        base = os.path.dirname(p)
+        rest = os.path.basename(p)
+        return os.path.join(_native_case(base), rest)
       raise OSError(
           e.args[0], 'Failed to get native path for %s' % p, p, e.args[1])
 
@@ -294,7 +305,7 @@ elif sys.platform == 'darwin':
 
     # There was a symlink, process it.
     base, symlink, rest = _split_at_symlink_native(None, path)
-    assert symlink, (path, base, symlink, rest)
+    assert symlink, (path, base, symlink, rest, resolved)
     prev = base
     base = safe_join(_native_case(base), symlink)
     assert len(base) > len(prev)
@@ -334,7 +345,10 @@ else:  # OSes other than Windows and OSX.
     # Linux traces tends to not be normalized so use this occasion to normalize
     # it. This function implementation already normalizes the path on the other
     # OS so this needs to be done here to be coherent between OSes.
-    return os.path.normpath(path)
+    out = os.path.normpath(path)
+    if path.endswith(os.path.sep) and not out.endswith(os.path.sep):
+      return out + os.path.sep
+    return out
 
 
 if sys.platform != 'win32':  # All non-Windows OSes.
@@ -569,8 +583,7 @@ class Results(object):
       assert tainted or bool(root) != bool(isabs(path)), (root, path)
       assert tainted or (
           not os.path.exists(self.full_path) or
-          (self.full_path.rstrip(os.path.sep) ==
-            get_native_path_case(self.full_path))), (
+          (self.full_path == get_native_path_case(self.full_path))), (
               tainted, self.full_path, get_native_path_case(self.full_path))
 
     @property
