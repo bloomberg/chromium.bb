@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SYNC_GLUE_SHARED_CHANGE_PROCESSOR_MOCK_H_
 #define CHROME_BROWSER_SYNC_GLUE_SHARED_CHANGE_PROCESSOR_MOCK_H_
-#pragma once
 
 #include "chrome/browser/sync/glue/shared_change_processor.h"
 #include "sync/api/sync_change.h"

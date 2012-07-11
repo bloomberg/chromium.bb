@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SYNC_GLUE_PASSWORD_MODEL_WORKER_H_
 #define CHROME_BROWSER_SYNC_GLUE_PASSWORD_MODEL_WORKER_H_
-#pragma once
 
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 

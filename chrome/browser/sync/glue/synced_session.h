@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SYNC_GLUE_SYNCED_SESSION_H_
 #define CHROME_BROWSER_SYNC_GLUE_SYNCED_SESSION_H_
-#pragma once
 
 #include <map>
 #include <string>

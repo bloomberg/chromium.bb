@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SYNC_TEST_TEST_HTTP_BRIDGE_FACTORY_H_
 #define CHROME_BROWSER_SYNC_TEST_TEST_HTTP_BRIDGE_FACTORY_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"

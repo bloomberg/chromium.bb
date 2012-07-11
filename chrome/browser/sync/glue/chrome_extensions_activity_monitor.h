@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SYNC_GLUE_CHROME_EXTENSIONS_ACTIVITY_MONITOR_H_
 #define CHROME_BROWSER_SYNC_GLUE_CHROME_EXTENSIONS_ACTIVITY_MONITOR_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/synchronization/lock.h"

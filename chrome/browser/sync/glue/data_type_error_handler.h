@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_ERROR_HANDLER_H__
 #define CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_ERROR_HANDLER_H__
-#pragma once
 
 #include <string>
 #include "base/location.h"

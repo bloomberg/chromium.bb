@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SYNC_USER_SELECTABLE_SYNC_TYPE_H_
 #define CHROME_BROWSER_SYNC_USER_SELECTABLE_SYNC_TYPE_H_
-#pragma once
 
 namespace browser_sync {
 namespace user_selectable_type {

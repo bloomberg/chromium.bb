@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SYNC_GLUE_MODEL_ASSOCIATOR_MOCK_H__
 #define CHROME_BROWSER_SYNC_GLUE_MODEL_ASSOCIATOR_MOCK_H__
-#pragma once
 
 #include "base/location.h"
 #include "chrome/browser/sync/glue/model_associator.h"

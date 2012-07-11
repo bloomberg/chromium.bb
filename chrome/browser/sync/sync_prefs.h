@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SYNC_SYNC_PREFS_H_
 #define CHROME_BROWSER_SYNC_SYNC_PREFS_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SYNC_GLUE_SYNCED_TAB_DELEGATE_H__
 #define CHROME_BROWSER_SYNC_GLUE_SYNCED_TAB_DELEGATE_H__
-#pragma once
 
 #include <string>
 

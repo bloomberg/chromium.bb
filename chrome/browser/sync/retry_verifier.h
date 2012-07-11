@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SYNC_RETRY_VERIFIER_H_
 #define CHROME_BROWSER_SYNC_RETRY_VERIFIER_H_
-#pragma once
 
 #include "base/time.h"
 
