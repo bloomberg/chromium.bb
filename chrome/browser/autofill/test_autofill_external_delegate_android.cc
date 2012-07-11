@@ -2,14 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autofill/autofill_external_delegate.h"
-
-#include "chrome/browser/autofill/autofill_manager.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/autofill/test_autofill_external_delegate.h"
 
 AutofillExternalDelegate* AutofillExternalDelegate::Create(
     TabContents* tab_contents,
     AutofillManager* manager) {
-  NOTIMPLEMENTED() << "TODO(jrg): Upstream AutofillExternalDelegateAndroid";
-  return NULL;
+  return new TestAutofillExternalDelegate(tab_contents, manager);
 }

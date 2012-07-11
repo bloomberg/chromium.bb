@@ -169,7 +169,6 @@
         'browser/autofill/autofill_download.h',
         'browser/autofill/autofill_external_delegate.cc',
         'browser/autofill/autofill_external_delegate.h',
-        'browser/autofill/autofill_external_delegate_android.cc',
         'browser/autofill/autofill_external_delegate_gtk.cc',
         'browser/autofill/autofill_external_delegate_gtk.h',
         'browser/autofill/autofill_feedback_infobar_delegate.cc',

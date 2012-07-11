@@ -85,6 +85,7 @@
         'browser/autofill/data_driven_test.h',
         'browser/autofill/test_autofill_external_delegate.cc',
         'browser/autofill/test_autofill_external_delegate.h',
+        'browser/autofill/test_autofill_external_delegate_android.cc',
         'browser/automation/mock_tab_event_observer.cc',
         'browser/automation/mock_tab_event_observer.h',
         'browser/chromeos/cros/mock_cert_library.cc',
