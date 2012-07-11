@@ -16,7 +16,7 @@ class Profile;
 namespace extensions {
 
 // A Delegate to the RulesRegistryWithCache which handles reading/writing rules
-// to the extension state store. This class should be initialized on the UI
+// to the extension state store. This class should be (de)initialized on the UI
 // thread, but used on the RulesRegistry thread.
 class RulesRegistryStorageDelegate : public RulesRegistryWithCache::Delegate {
  public:
@@ -24,9 +24,10 @@ class RulesRegistryStorageDelegate : public RulesRegistryWithCache::Delegate {
   virtual ~RulesRegistryStorageDelegate();
 
   // Called on the UI thread to initialize the delegate.
-  void Init(Profile* profile,
-            RulesRegistryWithCache* rules_registry,
-            const std::string& storage_key);
+  void InitOnUIThread(Profile* profile,
+                      RulesRegistryWithCache* rules_registry,
+                      const std::string& storage_key);
+  void CleanupOnUIThread();
 
   // RulesRegistryWithCache::Delegate
   virtual bool IsReady() OVERRIDE;

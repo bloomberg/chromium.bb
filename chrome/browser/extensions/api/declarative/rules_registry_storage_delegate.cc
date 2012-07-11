@@ -52,18 +52,15 @@ std::vector<linked_ptr<RulesRegistry::Rule> > RulesFromValue(
 // should be used on the UI thread unless otherwise noted.
 class RulesRegistryStorageDelegate::Inner
     : public content::NotificationObserver,
-      public base::RefCountedThreadSafe<
-          Inner, content::BrowserThread::DeleteOnUIThread> {
+      public base::RefCountedThreadSafe<Inner> {
  public:
   Inner(Profile* profile,
         RulesRegistryWithCache* rules_registry,
         const std::string& storage_key);
 
  private:
+  friend class base::RefCountedThreadSafe<Inner>;
   friend class RulesRegistryStorageDelegate;
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::UI>;
-  friend class base::DeleteHelper<Inner>;
 
   ~Inner();
 
@@ -93,7 +90,7 @@ class RulesRegistryStorageDelegate::Inner
   // Notify the RulesRegistry that we are now ready.
   void NotifyReadyOnRegistryThread();
 
-  content::NotificationRegistrar registrar_;
+  scoped_ptr<content::NotificationRegistrar> registrar_;
   Profile* profile_;
 
   // The key under which rules are stored.
@@ -123,14 +120,20 @@ RulesRegistryStorageDelegate::~RulesRegistryStorageDelegate() {
   inner_->rules_registry_ = NULL;
 }
 
-void RulesRegistryStorageDelegate::Init(Profile* profile,
-                                        RulesRegistryWithCache* rules_registry,
-                                        const std::string& storage_key) {
+void RulesRegistryStorageDelegate::InitOnUIThread(
+    Profile* profile,
+    RulesRegistryWithCache* rules_registry,
+    const std::string& storage_key) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   extensions::StateStore* store = ExtensionSystem::Get(profile)->state_store();
   if (store)
     store->RegisterKey(storage_key);
   inner_ = new Inner(profile, rules_registry, storage_key);
+}
+
+void RulesRegistryStorageDelegate::CleanupOnUIThread() {
+  // The registrar must be deleted on the UI thread.
+  inner_->registrar_.reset();
 }
 
 bool RulesRegistryStorageDelegate::IsReady() {
@@ -155,23 +158,27 @@ RulesRegistryStorageDelegate::Inner::Inner(
     Profile* profile,
     RulesRegistryWithCache* rules_registry,
     const std::string& storage_key)
-    : profile_(profile),
+    : registrar_(new content::NotificationRegistrar()),
+      profile_(profile),
       storage_key_(storage_key),
       rules_registry_thread_(rules_registry->GetOwnerThread()),
       rules_registry_(rules_registry),
       ready_(false) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 content::Source<Profile>(profile));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
-                 content::Source<Profile>(profile));
+  registrar_->Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+                  content::Source<Profile>(profile));
+  registrar_->Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
+                  content::Source<Profile>(profile));
 }
 
-RulesRegistryStorageDelegate::Inner::~Inner() {}
+RulesRegistryStorageDelegate::Inner::~Inner() {
+  DCHECK(!registrar_.get());
+}
 
 void RulesRegistryStorageDelegate::Inner::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (type == chrome::NOTIFICATION_EXTENSION_LOADED) {
     const extensions::Extension* extension =
         content::Details<const extensions::Extension>(details).ptr();
@@ -188,6 +195,7 @@ void RulesRegistryStorageDelegate::Inner::Observe(
 
 void RulesRegistryStorageDelegate::Inner::ReadFromStorage(
     const std::string& extension_id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   extensions::StateStore* store = ExtensionSystem::Get(profile_)->state_store();
   if (store) {
     waiting_for_extensions_.insert(extension_id);

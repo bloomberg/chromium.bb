@@ -43,15 +43,19 @@ RulesRegistryService::RulesRegistryService(Profile* profile)
   }
 }
 
-RulesRegistryService::~RulesRegistryService() {}
+RulesRegistryService::~RulesRegistryService() {
+  for (size_t i = 0; i < delegates_.size(); ++i)
+    delegates_[i]->CleanupOnUIThread();
+}
 
 void RulesRegistryService::RegisterDefaultRulesRegistries() {
   RulesRegistryStorageDelegate* delegate = new RulesRegistryStorageDelegate();
   scoped_refptr<WebRequestRulesRegistry> web_request_rules_registry(
       new WebRequestRulesRegistry(profile_, delegate));
-  delegate->Init(profile_, web_request_rules_registry,
+  delegate->InitOnUIThread(profile_, web_request_rules_registry,
       GetDeclarativeRuleStorageKey(
           declarative_webrequest_constants::kOnRequest));
+  delegates_.push_back(delegate);
 
   RegisterRulesRegistry(declarative_webrequest_constants::kOnRequest,
                         web_request_rules_registry);
