@@ -445,7 +445,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstoreGetWebGLStatusTest, Blocked) {
       "    }\n"
       "  ]\n"
       "}";
-  scoped_ptr<Version> os_version(Version::GetVersionFromString("1.0"));
   GpuBlacklist* blacklist = GpuBlacklist::GetInstance();
 
   ASSERT_TRUE(blacklist->LoadGpuBlacklist(

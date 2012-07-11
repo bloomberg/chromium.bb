@@ -40,11 +40,11 @@ enum GTalkPluginLogVersion {
 // 10 * major + minor - kGTalkPluginLogMinVersion.
 GTalkPluginLogVersion GetGTalkPluginVersion(const string16& version) {
   int gtalk_plugin_version = GTALK_PLUGIN_VERSION_MIN;
-  scoped_ptr<Version> plugin_version(
-      webkit::npapi::PluginGroup::CreateVersionFromString(version));
-  if (plugin_version.get() && plugin_version->components().size() >= 2) {
-    gtalk_plugin_version = 10 * plugin_version->components()[0] +
-        plugin_version->components()[1] - kGTalkPluginLogMinVersion;
+  Version plugin_version;
+  webkit::npapi::PluginGroup::CreateVersionFromString(version, &plugin_version);
+  if (plugin_version.IsValid() && plugin_version.components().size() >= 2) {
+    gtalk_plugin_version = 10 * plugin_version.components()[0] +
+        plugin_version.components()[1] - kGTalkPluginLogMinVersion;
   }
 
   if (gtalk_plugin_version < GTALK_PLUGIN_VERSION_MIN)

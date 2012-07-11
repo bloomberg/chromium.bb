@@ -107,9 +107,9 @@ bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
       } else if (GetDeclarationValue(line, kNameDeclaration, &value)) {
         script->set_name(value);
       } else if (GetDeclarationValue(line, kVersionDeclaration, &value)) {
-        scoped_ptr<Version> version(Version::GetVersionFromString(value));
-        if (version.get())
-          script->set_version(version->GetString());
+        Version version(value);
+        if (version.IsValid())
+          script->set_version(version.GetString());
       } else if (GetDeclarationValue(line, kDescriptionDeclaration, &value)) {
         script->set_description(value);
       } else if (GetDeclarationValue(line, kMatchDeclaration, &value)) {

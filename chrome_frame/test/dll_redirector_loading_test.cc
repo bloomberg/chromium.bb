@@ -45,9 +45,9 @@ class DllRedirectorLoadingTest : public testing::Test {
     scoped_ptr<FileVersionInfo> original_version_info(
         FileVersionInfo::CreateFileVersionInfo(build_chrome_frame_dll));
     ASSERT_TRUE(original_version_info != NULL);
-    original_version_.reset(Version::GetVersionFromString(
-        WideToASCII(original_version_info->file_version())));
-    ASSERT_TRUE(original_version_ != NULL);
+    original_version_.reset(
+        new Version(WideToASCII(original_version_info->file_version())));
+    ASSERT_TRUE(original_version_->IsValid());
 
     // Make a place for us to run the test from.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -80,9 +80,9 @@ class DllRedirectorLoadingTest : public testing::Test {
     scoped_ptr<FileVersionInfo> new_version_info(
         FileVersionInfo::CreateFileVersionInfo(temporary_new_chrome_frame_dll));
     ASSERT_TRUE(new_version_info != NULL);
-    new_version_.reset(Version::GetVersionFromString(
-        WideToASCII(new_version_info->file_version())));
-    ASSERT_TRUE(new_version_ != NULL);
+    new_version_.reset(
+        new Version(WideToASCII(new_version_info->file_version())));
+    ASSERT_TRUE(new_version_->IsValid());
 
     // Make sure the new version is larger than the old.
     ASSERT_EQ(new_version_->CompareTo(*original_version_.get()), 1);
@@ -208,10 +208,10 @@ TEST_F(DllRedirectorLoadingTest, MAYBE_TestDllRedirection) {
 
     char buffer[kSharedMemoryBytes] = {0};
     memcpy(buffer, beacon.memory(), kSharedMemoryBytes - 1);
-    scoped_ptr<Version> beacon_version(Version::GetVersionFromString(buffer));
-    ASSERT_TRUE(beacon_version != NULL);
+    Version beacon_version(buffer);
+    ASSERT_TRUE(beacon_version.IsValid());
 
     EXPECT_EQ(0,
-              beacon_version->CompareTo(*test_data[i].expected_beacon_version));
+              beacon_version.CompareTo(*test_data[i].expected_beacon_version));
   }
 }

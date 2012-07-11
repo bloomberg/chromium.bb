@@ -968,9 +968,8 @@ bool Extension::CheckMinimumChromeVersion(string16* error) {
     return false;
   }
 
-  scoped_ptr<Version> minimum_version(
-      Version::GetVersionFromString(minimum_version_string));
-  if (!minimum_version.get()) {
+  Version minimum_version(minimum_version_string);
+  if (!minimum_version.IsValid()) {
     *error = ASCIIToUTF16(errors::kInvalidMinimumChromeVersion);
     return false;
   }
@@ -981,14 +980,13 @@ bool Extension::CheckMinimumChromeVersion(string16* error) {
     return false;
   }
 
-  scoped_ptr<Version> current_version(
-      Version::GetVersionFromString(current_version_info.Version()));
-  if (!current_version.get()) {
+  Version current_version(current_version_info.Version());
+  if (!current_version.IsValid()) {
     DCHECK(false);
     return false;
   }
 
-  if (current_version->CompareTo(*minimum_version) < 0) {
+  if (current_version.CompareTo(minimum_version) < 0) {
     *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
         errors::kChromeVersionTooLow,
         l10n_util::GetStringUTF8(IDS_PRODUCT_NAME),
@@ -1327,8 +1325,8 @@ bool Extension::LoadVersion(string16* error) {
     *error = ASCIIToUTF16(errors::kInvalidVersion);
     return false;
   }
-  version_.reset(Version::GetVersionFromString(version_str));
-  if (!version_.get() ||
+  version_.reset(new Version(version_str));
+  if (!version_->IsValid() ||
       version_->components().size() > 4) {
     *error = ASCIIToUTF16(errors::kInvalidVersion);
     return false;

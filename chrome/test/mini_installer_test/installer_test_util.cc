@@ -112,11 +112,11 @@ bool GetInstalledProducts(
     if (type != InstallationValidator::NO_PRODUCTS) {
       current_dist = BrowserDistribution::GetSpecificDistribution(
           ToBrowserDistributionType(type));
-      scoped_ptr<Version> version(
-        InstallUtil::GetChromeVersion(current_dist, system_level));
-      if (version.get()) {
+      Version version;
+      InstallUtil::GetChromeVersion(current_dist, system_level, &version);
+      if (version.IsValid()) {
         current_prod.type = type;
-        current_prod.version = version->GetString();
+        current_prod.version = version.GetString();
         current_prod.system = system_level;
         products->push_back(current_prod);
       }

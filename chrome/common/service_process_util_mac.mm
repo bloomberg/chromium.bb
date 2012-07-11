@@ -205,27 +205,26 @@ bool CheckServiceProcessReady() {
   if (!GetServiceProcessData(&version, &pid)) {
     return false;
   }
-  scoped_ptr<Version> service_version(Version::GetVersionFromString(version));
+  Version service_version(version);
   bool ready = true;
-  if (!service_version.get()) {
+  if (!service_version.IsValid()) {
     ready = false;
   } else {
     chrome::VersionInfo version_info;
     if (!version_info.is_valid()) {
       // Our own version is invalid. This is an error case. Pretend that we
       // are out of date.
-      NOTREACHED() << "Failed to get current file version";
+      NOTREACHED();
       ready = true;
     }
     else {
-      scoped_ptr<Version> running_version(Version::GetVersionFromString(
-          version_info.Version()));
-      if (!running_version.get()) {
+      Version running_version(version_info.Version());
+      if (!running_version.IsValid()) {
         // Our own version is invalid. This is an error case. Pretend that we
         // are out of date.
-        NOTREACHED() << "Failed to parse version info";
+        NOTREACHED();
         ready = true;
-      } else if (running_version->CompareTo(*service_version) > 0) {
+      } else if (running_version.CompareTo(service_version) > 0) {
         ready = false;
       } else {
         ready = true;

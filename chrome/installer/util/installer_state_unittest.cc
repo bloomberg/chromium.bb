@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -136,12 +136,11 @@ TEST_F(InstallerStateTest, Delete) {
 
   MockInstallerState installer_state;
   BuildSingleChromeState(chrome_dir, &installer_state);
-  scoped_ptr<Version> latest_version(Version::GetVersionFromString("1.0.4.0"));
+  Version latest_version("1.0.4.0");
   {
     ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-    installer_state.RemoveOldVersionDirectories(*latest_version.get(),
-                                                NULL,
+    installer_state.RemoveOldVersionDirectories(latest_version, NULL,
                                                 temp_dir.path());
   }
 
@@ -217,14 +216,13 @@ TEST_F(InstallerStateTest, DeleteInUsed) {
 
   MockInstallerState installer_state;
   BuildSingleChromeState(chrome_dir, &installer_state);
-  scoped_ptr<Version> latest_version(Version::GetVersionFromString("1.0.4.0"));
-  scoped_ptr<Version> existing_version(
-      Version::GetVersionFromString("1.0.1.0"));
+  Version latest_version("1.0.4.0");
+  Version existing_version("1.0.1.0");
   {
     ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-    installer_state.RemoveOldVersionDirectories(*latest_version.get(),
-                                                existing_version.get(),
+    installer_state.RemoveOldVersionDirectories(latest_version,
+                                                &existing_version,
                                                 temp_dir.path());
   }
 
@@ -262,19 +260,18 @@ TEST_F(InstallerStateTest, Basic) {
   const char kOldVersion[] = "1.2.3.4";
   const char kNewVersion[] = "2.3.4.5";
 
-  scoped_ptr<Version> new_version(Version::GetVersionFromString(kNewVersion));
-  scoped_ptr<Version> old_version(Version::GetVersionFromString(kOldVersion));
-  ASSERT_TRUE(new_version.get() != NULL);
-  ASSERT_TRUE(old_version.get() != NULL);
+  Version new_version(kNewVersion);
+  Version old_version(kOldVersion);
+  ASSERT_TRUE(new_version.IsValid());
+  ASSERT_TRUE(old_version.IsValid());
 
-  FilePath installer_dir(
-      installer_state.GetInstallerDirectory(*new_version.get()));
+  FilePath installer_dir(installer_state.GetInstallerDirectory(new_version));
   EXPECT_FALSE(installer_dir.empty());
 
   FilePath new_version_dir(installer_state.target_path().Append(
-      UTF8ToWide(new_version->GetString())));
+      UTF8ToWide(new_version.GetString())));
   FilePath old_version_dir(installer_state.target_path().Append(
-      UTF8ToWide(old_version->GetString())));
+      UTF8ToWide(old_version.GetString())));
 
   EXPECT_FALSE(file_util::PathExists(new_version_dir));
   EXPECT_FALSE(file_util::PathExists(old_version_dir));
@@ -304,7 +301,7 @@ TEST_F(InstallerStateTest, Basic) {
 
   // Don't explicitly tell the directory cleanup logic not to delete the
   // old version, rely on the key files to keep it around.
-  installer_state.RemoveOldVersionDirectories(*new_version.get(),
+  installer_state.RemoveOldVersionDirectories(new_version,
                                               NULL,
                                               temp_dir.path());
 
@@ -315,7 +312,7 @@ TEST_F(InstallerStateTest, Basic) {
   // Now close the file handle to make it possible to delete our key file.
   file.Close();
 
-  installer_state.RemoveOldVersionDirectories(*new_version.get(),
+  installer_state.RemoveOldVersionDirectories(new_version,
                                               NULL,
                                               temp_dir.path());
   // The new directory should still exist.
@@ -343,8 +340,7 @@ TEST_F(InstallerStateTest, WithProduct) {
   EXPECT_EQ(system_level, installer_state.system_install());
 
   const char kCurrentVersion[] = "1.2.3.4";
-  scoped_ptr<Version> current_version(
-      Version::GetVersionFromString(kCurrentVersion));
+  Version current_version(kCurrentVersion);
 
   HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   EXPECT_EQ(root, installer_state.root_key());
@@ -358,15 +354,13 @@ TEST_F(InstallerStateTest, WithProduct) {
     EXPECT_TRUE(chrome_key.Valid());
     if (chrome_key.Valid()) {
       chrome_key.WriteValue(google_update::kRegVersionField,
-                            UTF8ToWide(current_version->GetString()).c_str());
+                            UTF8ToWide(current_version.GetString()).c_str());
       machine_state.Initialize();
       // TODO(tommi): Also test for when there exists a new_chrome.exe.
-      scoped_ptr<Version> found_version(installer_state.GetCurrentVersion(
-          machine_state));
-      EXPECT_TRUE(found_version.get() != NULL);
-      if (found_version.get()) {
-        EXPECT_TRUE(current_version->Equals(*found_version));
-      }
+      Version found_version(*installer_state.GetCurrentVersion(machine_state));
+      EXPECT_TRUE(found_version.IsValid());
+      if (found_version.IsValid())
+        EXPECT_TRUE(current_version.Equals(found_version));
     }
   }
 }
@@ -454,7 +448,7 @@ TEST_F(InstallerStateTest, GetCurrentVersionMigrateChrome) {
 
   // Pretend that this version of single-install Chrome is already installed.
   machine_state.AddChrome(system_install, false,
-      Version::GetVersionFromString(chrome::kChromeVersion));
+                          new Version(chrome::kChromeVersion));
 
   // Now we're invoked to install multi Chrome.
   CommandLine cmd_line(

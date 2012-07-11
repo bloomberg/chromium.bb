@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@ class MockDllRedirector : public DllRedirector {
   }
 
   virtual Version* GetCurrentModuleVersion() {
-    return Version::GetVersionFromString(kMockVersionString);
+    return new Version(kMockVersionString);
   }
 
   virtual HMODULE GetFirstModule() {
@@ -46,7 +46,7 @@ class MockDllRedirector : public DllRedirector {
 
   Version* GetFirstModuleVersion() {
     // Lazy man's copy.
-    return Version::GetVersionFromString(dll_version_->GetString());
+    return new Version(dll_version_->GetString());
   }
 
   base::SharedMemory* shared_memory() {
@@ -64,7 +64,7 @@ class MockDllRedirector2 : public MockDllRedirector {
   }
 
   virtual Version* GetCurrentModuleVersion() {
-    return Version::GetVersionFromString(kMockVersionString2);
+    return new Version(kMockVersionString2);
   }
 };
 
@@ -87,8 +87,8 @@ class DllRedirectorTest : public testing::Test {
  public:
   virtual void SetUp() {
     shared_memory_.reset(new base::SharedMemory);
-    mock_version_.reset(Version::GetVersionFromString(kMockVersionString));
-    mock_version2_.reset(Version::GetVersionFromString(kMockVersionString2));
+    mock_version_.reset(new Version(kMockVersionString));
+    mock_version2_.reset(new Version(kMockVersionString2));
   }
 
   virtual void TearDown() {
@@ -119,7 +119,10 @@ class DllRedirectorTest : public testing::Test {
 
     char buffer[kSharedMemorySize] = {0};
     memcpy(buffer, shared_memory_->memory(), kSharedMemorySize - 1);
-    return Version::GetVersionFromString(buffer);
+    scoped_ptr<Version> version(new Version(buffer));
+    if (!version->IsValid())
+      version.reset();
+    return version.release();
   }
 
   void CloseBeacon() {
@@ -140,15 +143,15 @@ TEST_F(DllRedirectorTest, RegisterAsFirstModule) {
   base::SharedMemory* redirector_memory = redirector->shared_memory();
   char buffer[kSharedMemorySize] = {0};
   memcpy(buffer, redirector_memory->memory(), kSharedMemorySize - 1);
-  scoped_ptr<Version> redirector_version(Version::GetVersionFromString(buffer));
-  ASSERT_TRUE(redirector_version.get());
-  EXPECT_TRUE(redirector_version->Equals(*mock_version_.get()));
+  Version redirector_version(buffer);
+  ASSERT_TRUE(redirector_version.IsValid());
+  EXPECT_TRUE(redirector_version.Equals(*mock_version_.get()));
   redirector_memory = NULL;
 
   scoped_ptr<Version> memory_version(
       OpenAndReadVersionFromBeacon(kTestVersionBeaconName));
   ASSERT_TRUE(memory_version.get());
-  EXPECT_TRUE(redirector_version->Equals(*memory_version.get()));
+  EXPECT_TRUE(redirector_version.Equals(*memory_version.get()));
   CloseBeacon();
 
   redirector.reset();

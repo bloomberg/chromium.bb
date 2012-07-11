@@ -61,7 +61,7 @@ Version* GetMaxVersionFromArchiveDir(const FilePath& chrome_path) {
   // TODO(tommi): The version directory really should match the version of
   // setup.exe.  To begin with, we should at least DCHECK that that's true.
 
-  scoped_ptr<Version> max_version(Version::GetVersionFromString("0.0.0.0"));
+  scoped_ptr<Version> max_version(new Version("0.0.0.0"));
   bool version_found = false;
 
   while (!version_enum.Next().empty()) {
@@ -70,8 +70,8 @@ Version* GetMaxVersionFromArchiveDir(const FilePath& chrome_path) {
     VLOG(1) << "directory found: " << find_data.cFileName;
 
     scoped_ptr<Version> found_version(
-        Version::GetVersionFromString(WideToASCII(find_data.cFileName)));
-    if (found_version.get() != NULL &&
+        new Version(WideToASCII(find_data.cFileName)));
+    if (found_version->IsValid() &&
         found_version->CompareTo(*max_version.get()) > 0) {
       max_version.reset(found_version.release());
       version_found = true;

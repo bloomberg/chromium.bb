@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,10 +98,9 @@ TEST_F(ProductTest, MAYBE_ProductInstallBasic) {
     ASSERT_TRUE(version_key.Valid());
 
     const char kCurrentVersion[] = "1.2.3.4";
-    scoped_ptr<Version> current_version(
-        Version::GetVersionFromString(kCurrentVersion));
+    Version current_version(kCurrentVersion);
     version_key.WriteValue(google_update::kRegVersionField,
-                           UTF8ToWide(current_version->GetString()).c_str());
+                           UTF8ToWide(current_version.GetString()).c_str());
 
     // We started out with a non-msi product.
     machine_state.Initialize();
@@ -109,7 +108,7 @@ TEST_F(ProductTest, MAYBE_ProductInstallBasic) {
         machine_state.GetProductState(system_level, distribution->GetType());
     EXPECT_TRUE(chrome_state != NULL);
     if (chrome_state != NULL) {
-      EXPECT_TRUE(chrome_state->version().Equals(*current_version.get()));
+      EXPECT_TRUE(chrome_state->version().Equals(current_version));
       EXPECT_FALSE(chrome_state->is_msi());
     }
 

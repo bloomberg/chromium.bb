@@ -217,15 +217,14 @@ void ExternalExtensionProviderImpl::SetPrefs(DictionaryValue* prefs) {
         path = base_path.Append(external_crx);
       }
 
-      scoped_ptr<Version> version;
-      version.reset(Version::GetVersionFromString(external_version));
-      if (!version.get()) {
+      Version version(external_version);
+      if (!version.IsValid()) {
         LOG(WARNING) << "Malformed extension dictionary for extension: "
                      << extension_id.c_str() << ".  Invalid version string \""
                      << external_version << "\".";
         continue;
       }
-      service_->OnExternalExtensionFileFound(extension_id, version.get(), path,
+      service_->OnExternalExtensionFileFound(extension_id, &version, path,
                                              crx_location_, creation_flags,
                                              auto_acknowledge_);
     } else { // if (has_external_update_url)
@@ -296,7 +295,7 @@ bool ExternalExtensionProviderImpl::GetExtensionDetails(
       return false;
 
     if (version)
-      version->reset(Version::GetVersionFromString(external_version));
+      version->reset(new Version(external_version));
 
   } else {
     NOTREACHED();  // Chrome should not allow prefs to get into this state.

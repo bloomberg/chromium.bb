@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,9 +69,9 @@ ServiceProcessRunningState GetServiceProcessRunningState(
   if (service_version_out)
     *service_version_out = version;
 
-  scoped_ptr<Version> service_version(Version::GetVersionFromString(version));
+  Version service_version(version);
   // If the version string is invalid, treat it like an older version.
-  if (!service_version.get())
+  if (!service_version.IsValid())
     return SERVICE_OLDER_VERSION_RUNNING;
 
   // Get the version of the currently *running* instance of Chrome.
@@ -82,18 +82,17 @@ ServiceProcessRunningState GetServiceProcessRunningState(
     // are out of date.
     return SERVICE_NEWER_VERSION_RUNNING;
   }
-  scoped_ptr<Version> running_version(Version::GetVersionFromString(
-      version_info.Version()));
-  if (!running_version.get()) {
+  Version running_version(version_info.Version());
+  if (!running_version.IsValid()) {
     NOTREACHED() << "Failed to parse version info";
     // Our own version is invalid. This is an error case. Pretend that we
     // are out of date.
     return SERVICE_NEWER_VERSION_RUNNING;
   }
 
-  if (running_version->CompareTo(*service_version) > 0) {
+  if (running_version.CompareTo(service_version) > 0) {
     return SERVICE_OLDER_VERSION_RUNNING;
-  } else if (service_version->CompareTo(*running_version) > 0) {
+  } else if (service_version.CompareTo(running_version) > 0) {
     return SERVICE_NEWER_VERSION_RUNNING;
   }
   return SERVICE_SAME_VERSION_RUNNING;

@@ -187,9 +187,10 @@ bool DllRedirector::RegisterAsFirstCFModule() {
       } else {
         char buffer[kSharedMemorySize] = {0};
         memcpy(buffer, shared_memory_->memory(), kSharedMemorySize - 1);
-        dll_version_.reset(Version::GetVersionFromString(buffer));
+        dll_version_.reset(new Version(buffer));
 
-        if (!dll_version_.get() || dll_version_->Equals(*our_version.get())) {
+        if (!dll_version_->IsValid() ||
+            dll_version_->Equals(*our_version.get())) {
           // If we either couldn't parse a valid version out of the shared
           // memory or we did parse a version and it is the same as our own,
           // then pretend we're first in to avoid trying to load any other DLLs.
@@ -242,14 +243,14 @@ Version* DllRedirector::GetCurrentModuleVersion() {
       FileVersionInfo::CreateFileVersionInfoForCurrentModule());
   DCHECK(file_version_info.get());
 
-  Version* current_version = NULL;
+  scoped_ptr<Version> current_version;
   if (file_version_info.get()) {
-     current_version = Version::GetVersionFromString(
-         WideToASCII(file_version_info->file_version()));
-    DCHECK(current_version);
+     current_version.reset(
+         new Version(WideToASCII(file_version_info->file_version())));
+    DCHECK(current_version->IsValid());
   }
 
-  return current_version;
+  return current_version.release();
 }
 
 HMODULE DllRedirector::GetFirstModule() {

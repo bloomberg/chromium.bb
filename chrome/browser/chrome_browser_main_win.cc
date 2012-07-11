@@ -295,8 +295,9 @@ bool ChromeBrowserMainPartsWin::CheckMachineLevelInstall() {
   // TODO(tommi): Check if using the default distribution is always the right
   // thing to do.
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  scoped_ptr<Version> version(InstallUtil::GetChromeVersion(dist, true));
-  if (version.get()) {
+  Version version;
+  InstallUtil::GetChromeVersion(dist, true, &version);
+  if (version.IsValid()) {
     FilePath exe_path;
     PathService::Get(base::DIR_EXE, &exe_path);
     std::wstring exe = exe_path.value();

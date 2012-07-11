@@ -24,19 +24,21 @@ using content::GpuFeatureType;
 namespace {
 
 // Encode a date as Version, where [0] is year, [1] is month, and [2] is day.
-Version* GetDateFromString(const std::string& date_string) {
+void GetDateFromString(const std::string& date_string, Version* version) {
   // TODO(zmo): verify if in Windows registry, driver dates are always in the
   // format of "mm-dd-yyyy".
   std::vector<std::string> pieces;
   base::SplitString(date_string, '-', &pieces);
-  if (pieces.size() != 3)
-    return NULL;
+  if (pieces.size() != 3) {
+    *version = Version();
+    return;
+  }
   std::string date_as_version_string = pieces[2];
   for (size_t i = 0; i < 2; ++i) {
     date_as_version_string += ".";
     date_as_version_string += pieces[i];
   }
-  return Version::GetVersionFromString(date_as_version_string);
+  *version = Version(date_as_version_string);
 }
 
 // We assume the input format is major.minor, and we treat major version
@@ -91,14 +93,14 @@ GpuBlacklist::VersionInfo::VersionInfo(
     processed_version_string = version_string;
     processed_version_string2 = version_string2;
   }
-  version_.reset(Version::GetVersionFromString(processed_version_string));
-  if (version_.get() == NULL) {
+  version_.reset(new Version(processed_version_string));
+  if (!version_->IsValid()) {
     op_ = kUnknown;
     return;
   }
   if (op_ == kBetween) {
-    version2_.reset(Version::GetVersionFromString(processed_version_string2));
-    if (version2_.get() == NULL)
+    version2_.reset(new Version(processed_version_string2));
+    if (!version2_->IsValid())
       op_ = kUnknown;
   }
 }
@@ -795,16 +797,15 @@ bool GpuBlacklist::GpuBlacklistEntry::Contains(
       processed_driver_version = NumericalToLexical(gpu_info.driver_version);
     else
       processed_driver_version = gpu_info.driver_version;
-    scoped_ptr<Version> driver_version(
-        Version::GetVersionFromString(processed_driver_version));
-    if (driver_version.get() == NULL ||
-        !driver_version_info_->Contains(*driver_version))
+    Version driver_version(processed_driver_version);
+    if (!driver_version.IsValid() ||
+        !driver_version_info_->Contains(driver_version))
       return false;
   }
   if (driver_date_info_.get() != NULL) {
-    scoped_ptr<Version> driver_date(GetDateFromString(gpu_info.driver_date));
-    if (driver_date.get() == NULL ||
-        !driver_date_info_->Contains(*driver_date))
+    Version driver_date;
+    GetDateFromString(gpu_info.driver_date, &driver_date);
+    if (!driver_date.IsValid() || !driver_date_info_->Contains(driver_date))
       return false;
   }
   if (gl_vendor_info_.get() != NULL &&
@@ -878,8 +879,8 @@ bool GpuBlacklist::LoadGpuBlacklist(
     const std::string& browser_version_string,
     const std::string& json_context,
     GpuBlacklist::OsFilter os_filter) {
-  browser_version_.reset(Version::GetVersionFromString(browser_version_string));
-  DCHECK(browser_version_.get() != NULL);
+  browser_version_.reset(new Version(browser_version_string));
+  DCHECK(browser_version_->IsValid());
 
   scoped_ptr<Value> root;
   root.reset(base::JSONReader::Read(json_context));
@@ -897,8 +898,8 @@ bool GpuBlacklist::LoadGpuBlacklist(
 
   std::string version_string;
   parsed_json.GetString("version", &version_string);
-  version_.reset(Version::GetVersionFromString(version_string));
-  if (version_.get() == NULL)
+  version_.reset(new Version(version_string));
+  if (!version_->IsValid())
     return false;
 
   ListValue* list = NULL;
@@ -966,7 +967,7 @@ GpuFeatureType GpuBlacklist::DetermineGpuFeatureType(
     size_t pos = version_string.find_first_not_of("0123456789.");
     if (pos != std::string::npos)
       version_string = version_string.substr(0, pos);
-    my_os_version.reset(Version::GetVersionFromString(version_string));
+    my_os_version.reset(new Version(version_string));
     os_version = my_os_version.get();
   }
   DCHECK(os_version != NULL);

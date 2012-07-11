@@ -129,10 +129,8 @@ void ExternalRegistryExtensionLoader::LoadOnFileThread() {
       continue;
     }
 
-    scoped_ptr<Version> version;
-    version.reset(Version::GetVersionFromString(
-                      WideToASCII(extension_version)));
-    if (!version.get()) {
+    Version version(WideToASCII(extension_version));
+    if (!version.IsValid()) {
       LOG(ERROR) << "Invalid version value " << extension_version
                  << " for key " << key_path << ".";
       continue;

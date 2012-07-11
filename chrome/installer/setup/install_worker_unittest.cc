@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -165,8 +165,8 @@ class MockInstallerState : public InstallerState {
 class InstallWorkerTest : public testing::Test {
  public:
   virtual void SetUp() {
-    current_version_.reset(Version::GetVersionFromString("1.0.0.0"));
-    new_version_.reset(Version::GetVersionFromString("42.0.0.0"));
+    current_version_.reset(new Version("1.0.0.0"));
+    new_version_.reset(new Version("42.0.0.0"));
 
     // Don't bother ensuring that these paths exist. Since we're just
     // building the work item lists and not running them, they shouldn't
@@ -190,7 +190,7 @@ class InstallWorkerTest : public testing::Test {
     if (installation_state->GetProductState(
             system_level, BrowserDistribution::CHROME_BINARIES) == NULL) {
       MockProductState product_state;
-      product_state.set_version(current_version_->Clone());
+      product_state.set_version(new Version(*current_version_));
       installation_state->SetProductState(system_level,
                                           BrowserDistribution::CHROME_BINARIES,
                                           product_state);
@@ -205,7 +205,7 @@ class InstallWorkerTest : public testing::Test {
     if (multi_install)
       MaybeAddBinariesToInstallationState(system_level, installation_state);
     MockProductState product_state;
-    product_state.set_version(current_version_->Clone());
+    product_state.set_version(new Version(*current_version_));
     product_state.set_multi_install(multi_install);
     product_state.set_brand(L"TEST");
     product_state.set_eula_accepted(1);
@@ -244,7 +244,7 @@ class InstallWorkerTest : public testing::Test {
     if (multi_install)
       MaybeAddBinariesToInstallationState(system_level, installation_state);
     MockProductState product_state;
-    product_state.set_version(current_version_->Clone());
+    product_state.set_version(new Version(*current_version_));
     product_state.set_multi_install(multi_install);
     BrowserDistribution* dist =
         BrowserDistribution::GetSpecificDistribution(
@@ -498,7 +498,7 @@ TEST_F(InstallWorkerTest, GoogleUpdateWorkItemsTest) {
       BuildChromeInstallationState(system_level, false));
 
   MockProductState cf_state;
-  cf_state.set_version(current_version_->Clone());
+  cf_state.set_version(new Version(*current_version_));
   cf_state.set_multi_install(false);
 
   installation_state->SetProductState(system_level,
@@ -571,7 +571,7 @@ TEST_F(InstallWorkerTest, AddUsageStatsWorkItems) {
       BuildChromeInstallationState(system_level, multi_install));
 
   MockProductState chrome_state;
-  chrome_state.set_version(current_version_->Clone());
+  chrome_state.set_version(new Version(*current_version_));
   chrome_state.set_multi_install(false);
   chrome_state.set_usagestats(1);
 

@@ -140,9 +140,9 @@ int GetGpuBlacklistHistogramValueWin(GpuFeatureStatus status) {
     size_t pos = version_str.find_first_not_of("0123456789.");
     if (pos != std::string::npos)
       version_str = version_str.substr(0, pos);
-    scoped_ptr<Version> os_version(Version::GetVersionFromString(version_str));
-    if (os_version.get() && os_version->components().size() >= 2) {
-      const std::vector<uint16>& version_numbers = os_version->components();
+    Version os_version(version_str);
+    if (os_version.IsValid() && os_version.components().size() >= 2) {
+      const std::vector<uint16>& version_numbers = os_version.components();
       if (version_numbers[0] == 5)
         sub_version = kWinXP;
       else if (version_numbers[0] == 6 && version_numbers[1] == 0)

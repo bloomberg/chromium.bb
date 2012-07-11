@@ -857,10 +857,9 @@ class ExtensionUpdaterTest : public testing::Test {
 
     std::string id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     std::string hash = "";
-    scoped_ptr<Version> version(Version::GetVersionFromString("0.0.1"));
-    ASSERT_TRUE(version.get());
+    Version version("0.0.1");
     updater.downloader_->FetchUpdatedExtension(
-        id, test_url, hash, version->GetString());
+        id, test_url, hash, version.GetString());
 
     if (pending) {
       const bool kIsFromSync = true;
@@ -868,7 +867,7 @@ class ExtensionUpdaterTest : public testing::Test {
       PendingExtensionManager* pending_extension_manager =
           service->pending_extension_manager();
       pending_extension_manager->AddForTesting(
-          PendingExtensionInfo(id, test_url, *version,
+          PendingExtensionInfo(id, test_url, version,
                                &ShouldAlwaysInstall, kIsFromSync,
                                kInstallSilently,
                                Extension::INTERNAL));

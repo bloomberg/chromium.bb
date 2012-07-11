@@ -292,14 +292,16 @@ void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
   // the directory where chrome is installed.
   if (!version_info) {
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    scoped_ptr<Version> ver_system(InstallUtil::GetChromeVersion(dist, true));
-    scoped_ptr<Version> ver_user(InstallUtil::GetChromeVersion(dist, false));
-    ASSERT_TRUE(ver_system.get() || ver_user.get());
+    Version ver_system;
+    InstallUtil::GetChromeVersion(dist, true, &ver_system);
+    Version ver_user;
+    InstallUtil::GetChromeVersion(dist, false, &ver_system);
+    ASSERT_TRUE(ver_system.IsValid() || ver_user.IsValid());
 
-    bool system_install = ver_system != NULL;
+    bool system_install = ver_system.IsValid();
     FilePath cf_dll_path(installer::GetChromeInstallPath(system_install, dist));
     cf_dll_path = cf_dll_path.Append(UTF8ToWide(
-        ver_system.get() ? ver_system->GetString() : ver_user->GetString()));
+        ver_system.IsValid() ? ver_system.GetString() : ver_user.GetString()));
     cf_dll_path = cf_dll_path.Append(kChromeFrameDllName);
     version_info = FileVersionInfo::CreateFileVersionInfo(cf_dll_path);
     if (version_info)

@@ -412,7 +412,7 @@ Version* InstallerState::GetCurrentVersion(
     if (version == NULL)
       version = &product_state->version();
 
-    current_version.reset(version->Clone());
+    current_version.reset(new Version(*version));
   }
 
   return current_version.release();
@@ -467,7 +467,7 @@ void InstallerState::RemoveOldVersionDirectories(
     const Version& new_version,
     Version* existing_version,
     const FilePath& temp_path) const {
-  scoped_ptr<Version> version;
+  Version version;
   std::vector<FilePath> key_files;
   scoped_ptr<WorkItem> item;
 
@@ -478,12 +478,12 @@ void InstallerState::RemoveOldVersionDirectories(
   for (FilePath next_version = version_enum.Next(); !next_version.empty();
        next_version = version_enum.Next()) {
     FilePath dir_name(next_version.BaseName());
-    version.reset(Version::GetVersionFromString(WideToASCII(dir_name.value())));
+    version = Version(WideToASCII(dir_name.value()));
     // Delete the version folder if it is less than the new version and not
     // equal to the old version (if we have an old version).
-    if (version.get() &&
-        version->CompareTo(new_version) < 0 &&
-        (existing_version == NULL || !version->Equals(*existing_version))) {
+    if (version.IsValid() &&
+        version.CompareTo(new_version) < 0 &&
+        (existing_version == NULL || !version.Equals(*existing_version))) {
       // Collect the key files (relative to the version dir) for all products.
       key_files.clear();
       std::for_each(products_.begin(), products_.end(),

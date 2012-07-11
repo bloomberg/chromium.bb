@@ -255,12 +255,13 @@ std::wstring GetKeyPath(HKEY key) {
 }
 
 int GetPluginMajorVersion(const WebPluginInfo& plugin_info) {
-  scoped_ptr<Version> plugin_version(PluginGroup::CreateVersionFromString(
-      plugin_info.version));
+  Version plugin_version;
+  PluginGroup::CreateVersionFromString(plugin_info.version, &plugin_version);
+
   int major_version = 0;
-  if (plugin_version.get()) {
-    major_version = plugin_version->components()[0];
-  }
+  if (plugin_version.IsValid())
+    major_version = plugin_version.components()[0];
+
   return major_version;
 }
 

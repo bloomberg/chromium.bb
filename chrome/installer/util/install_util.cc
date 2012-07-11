@@ -171,8 +171,9 @@ CommandLine InstallUtil::GetChromeUninstallCmd(
   return CommandLine(CommandLine::NO_PROGRAM);
 }
 
-Version* InstallUtil::GetChromeVersion(BrowserDistribution* dist,
-                                       bool system_install) {
+void InstallUtil::GetChromeVersion(BrowserDistribution* dist,
+                                   bool system_install,
+                                   Version* version) {
   DCHECK(dist);
   RegKey key;
   HKEY reg_root = (system_install) ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
@@ -183,22 +184,21 @@ Version* InstallUtil::GetChromeVersion(BrowserDistribution* dist,
   if (result == ERROR_SUCCESS)
     result = key.ReadValue(google_update::kRegVersionField, &version_str);
 
-  Version* ret = NULL;
+  *version = Version();
   if (result == ERROR_SUCCESS && !version_str.empty()) {
     VLOG(1) << "Existing " << dist->GetAppShortCutName() << " version found "
             << version_str;
-    ret = Version::GetVersionFromString(WideToASCII(version_str));
+    *version = Version(WideToASCII(version_str));
   } else {
     DCHECK_EQ(ERROR_FILE_NOT_FOUND, result);
     VLOG(1) << "No existing " << dist->GetAppShortCutName()
             << " install found.";
   }
-
-  return ret;
 }
 
-Version* InstallUtil::GetCriticalUpdateVersion(BrowserDistribution* dist,
-                                               bool system_install) {
+void InstallUtil::GetCriticalUpdateVersion(BrowserDistribution* dist,
+                                           bool system_install,
+                                           Version* version) {
   DCHECK(dist);
   RegKey key;
   HKEY reg_root = (system_install) ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
@@ -210,18 +210,16 @@ Version* InstallUtil::GetCriticalUpdateVersion(BrowserDistribution* dist,
     result = key.ReadValue(google_update::kRegCriticalVersionField,
                            &version_str);
 
-  Version* ret = NULL;
+  *version = Version();
   if (result == ERROR_SUCCESS && !version_str.empty()) {
     VLOG(1) << "Critical Update version for " << dist->GetAppShortCutName()
             << " found " << version_str;
-    ret = Version::GetVersionFromString(WideToASCII(version_str));
+    *version = Version(WideToASCII(version_str));
   } else {
     DCHECK_EQ(ERROR_FILE_NOT_FOUND, result);
     VLOG(1) << "No existing " << dist->GetAppShortCutName()
             << " install found.";
   }
-
-  return ret;
 }
 
 bool InstallUtil::IsOSSupported() {
@@ -345,14 +343,15 @@ bool InstallUtil::HasDelegateExecuteHandler(BrowserDistribution* dist,
                                             const string16& chrome_exe) {
   bool found = false;
   bool system_install = !IsPerUserInstall(chrome_exe.c_str());
-  scoped_ptr<Version> version(GetChromeVersion(dist, system_install));
-  if (!version.get()) {
+  Version version;
+  GetChromeVersion(dist, system_install, &version);
+  if (!version.IsValid()) {
     LOG(ERROR) << __FUNCTION__ << " failed to determine version of "
                << dist->GetAppShortCutName() << " installed at " << chrome_exe;
   } else {
     FilePath handler(
         FilePath(chrome_exe).DirName()
-            .AppendASCII(version->GetString())
+            .AppendASCII(version.GetString())
             .Append(installer::kDelegateExecuteExe));
     found = file_util::PathExists(handler);
   }

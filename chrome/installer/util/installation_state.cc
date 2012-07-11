@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,7 +60,9 @@ bool ProductState::Initialize(bool system_install,
     std::wstring version_str;
     if (key.ReadValue(google_update::kRegVersionField,
                       &version_str) == ERROR_SUCCESS) {
-      version_.reset(Version::GetVersionFromString(WideToASCII(version_str)));
+      version_.reset(new Version(WideToASCII(version_str)));
+      if (!version_->IsValid())
+        version_.reset();
     }
 
     // Attempt to read the other values even if the "pv" version value was
@@ -68,8 +70,9 @@ bool ProductState::Initialize(bool system_install,
     // only be accessible via InstallationState::GetNonVersionedProductState.
     if (key.ReadValue(google_update::kRegOldVersionField,
                       &version_str) == ERROR_SUCCESS) {
-      old_version_.reset(
-          Version::GetVersionFromString(WideToASCII(version_str)));
+      old_version_.reset(new Version(WideToASCII(version_str)));
+      if (!old_version_->IsValid())
+        old_version_.reset();
     }
 
     key.ReadValue(google_update::kRegRenameCmdField, &rename_cmd_);
@@ -151,9 +154,9 @@ const Version& ProductState::version() const {
 
 ProductState& ProductState::CopyFrom(const ProductState& other) {
   channel_.set_value(other.channel_.value());
-  version_.reset(other.version_.get() == NULL ? NULL : other.version_->Clone());
+  version_.reset(other.version_.get() ? new Version(*other.version_) : NULL);
   old_version_.reset(
-      other.old_version_.get() == NULL ? NULL : other.old_version_->Clone());
+      other.old_version_.get() ? new Version(*other.old_version_) : NULL);
   brand_ = other.brand_;
   rename_cmd_ = other.rename_cmd_;
   uninstall_command_ = other.uninstall_command_;

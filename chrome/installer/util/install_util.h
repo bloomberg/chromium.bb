@@ -39,20 +39,23 @@ class InstallUtil {
       BrowserDistribution::Type distribution_type);
 
   // Find the version of Chrome installed on the system by checking the
-  // Google Update registry key. Returns the version or NULL if no version is
-  // found.
+  // Google Update registry key. Fills |version| with the version or a
+  // default-constructed Version if no version is found.
   // system_install: if true, looks for version number under the HKLM root,
   //                 otherwise looks under the HKCU.
-  static Version* GetChromeVersion(BrowserDistribution* dist,
-                                   bool system_install);
+  static void GetChromeVersion(BrowserDistribution* dist,
+                               bool system_install,
+                               Version* version);
 
-  // Find the last critical update (version) of Chrome. Returns the version or
-  // NULL if no such version is found. A critical update is a specially flagged
-  // version (by Google Update) that contains an important security fix.
+  // Find the last critical update (version) of Chrome. Fills |version| with the
+  // version or a default-constructed Version if no version is found. A critical
+  // update is a specially flagged version (by Google Update) that contains an
+  // important security fix.
   // system_install: if true, looks for version number under the HKLM root,
   //                 otherwise looks under the HKCU.
-  static Version* GetCriticalUpdateVersion(BrowserDistribution* dist,
-                                           bool system_install);
+  static void GetCriticalUpdateVersion(BrowserDistribution* dist,
+                                       bool system_install,
+                                       Version* version);
 
   // This function checks if the current OS is supported for Chromium.
   static bool IsOSSupported();

@@ -475,9 +475,8 @@ void CrxInstaller::CompleteInstall() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   if (!current_version_.empty()) {
-    scoped_ptr<Version> current_version(
-        Version::GetVersionFromString(current_version_));
-    if (current_version->CompareTo(*(extension_->version())) > 0) {
+    Version current_version(current_version_);
+    if (current_version.CompareTo(*(extension_->version())) > 0) {
       ReportFailureFromFileThread(
           CrxInstallerError(
               l10n_util::GetStringUTF16(IDS_EXTENSION_CANT_DOWNGRADE_VERSION)));

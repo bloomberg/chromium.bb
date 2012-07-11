@@ -105,16 +105,14 @@ bool SwapNewChromeExeIfPresent() {
     if (cmd_line.HasSwitch(switches::kChromeVersion)) {
       std::string version_string =
           cmd_line.GetSwitchValueASCII(switches::kChromeVersion);
-      scoped_ptr<Version> cmd_version(
-          Version::GetVersionFromString(version_string));
+      Version cmd_version(version_string);
 
       std::wstring pv_value;
       if (key.ReadValue(google_update::kRegVersionField,
                         &pv_value) == ERROR_SUCCESS) {
-        scoped_ptr<Version> pv_version(
-            Version::GetVersionFromString(WideToASCII(pv_value)));
-        if (cmd_version.get() && pv_version.get() &&
-            !cmd_version->Equals(*pv_version.get())) {
+        Version pv_version(WideToASCII(pv_value));
+        if (cmd_version.IsValid() && pv_version.IsValid() &&
+            !cmd_version.Equals(pv_version)) {
           return false;
         }
       }

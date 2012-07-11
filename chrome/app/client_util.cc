@@ -354,13 +354,13 @@ HMODULE MainDllLoader::Load(std::wstring* out_version, std::wstring* out_file) {
     return dll;
 
   std::wstring version_string;
-  scoped_ptr<Version> version;
+  Version version;
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
   if (cmd_line.HasSwitch(switches::kChromeVersion)) {
     version_string = cmd_line.GetSwitchValueNative(switches::kChromeVersion);
-    version.reset(Version::GetVersionFromString(WideToASCII(version_string)));
+    version = Version(WideToASCII(version_string));
 
-    if (!version.get()) {
+    if (!version.IsValid()) {
       // If a bogus command line flag was given, then abort.
       LOG(ERROR) << "Invalid command line version: " << version_string;
       return NULL;
@@ -368,17 +368,17 @@ HMODULE MainDllLoader::Load(std::wstring* out_version, std::wstring* out_file) {
   }
 
   // If no version on the command line, then look in the environment.
-  if (!version.get()) {
+  if (!version.IsValid()) {
     if (EnvQueryStr(ASCIIToWide(chrome::kChromeVersionEnvVar).c_str(),
                     &version_string)) {
-      version.reset(Version::GetVersionFromString(WideToASCII(version_string)));
-      LOG_IF(ERROR, !version.get()) << "Invalid environment version: "
-                                    << version_string;
+      version = Version(WideToASCII(version_string));
+      LOG_IF(ERROR, !version.IsValid()) << "Invalid environment version: "
+                                        << version_string;
     }
   }
 
   // If no version in the environment, then look in the registry.
-  if (!version.get()) {
+  if (!version.IsValid()) {
     version_string = GetVersion();
     if (version_string.empty()) {
       LOG(ERROR) << "Could not get Chrome DLL version.";

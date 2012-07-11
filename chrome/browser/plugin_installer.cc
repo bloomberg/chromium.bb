@@ -96,14 +96,14 @@ PluginInstaller::SecurityStatus PluginInstaller::GetSecurityStatus(
   if (versions_.empty())
     return SECURITY_STATUS_REQUIRES_AUTHORIZATION;
 
-  scoped_ptr<Version> version(
-      webkit::npapi::PluginGroup::CreateVersionFromString(plugin.version));
-  if (!version.get())
-    version.reset(new Version("0"));
+  Version version;
+  webkit::npapi::PluginGroup::CreateVersionFromString(plugin.version, &version);
+  if (!version.IsValid())
+    version = Version("0");
 
   // |lower_bound| returns the latest version that is not newer than |version|.
   std::map<Version, SecurityStatus, VersionComparator>::const_iterator it =
-      versions_.lower_bound(*version);
+      versions_.lower_bound(version);
   // If there is at least one version defined, everything older than the oldest
   // defined version is considered out-of-date.
   if (it == versions_.end())

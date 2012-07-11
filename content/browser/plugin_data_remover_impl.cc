@@ -45,13 +45,12 @@ void PluginDataRemover::GetSupportedPlugins(
   std::vector<webkit::WebPluginInfo> plugins;
   PluginService::GetInstance()->GetPluginInfoArray(
       GURL(), kFlashMimeType, allow_wildcard, &plugins, NULL);
-  scoped_ptr<Version> min_version(
-      Version::GetVersionFromString(kMinFlashVersion));
+  Version min_version(kMinFlashVersion);
   for (std::vector<webkit::WebPluginInfo>::iterator it = plugins.begin();
        it != plugins.end(); ++it) {
-    scoped_ptr<Version> version(
-        webkit::npapi::PluginGroup::CreateVersionFromString(it->version));
-    if (version.get() && min_version->CompareTo(*version) == -1)
+    Version version;
+    webkit::npapi::PluginGroup::CreateVersionFromString(it->version, &version);
+    if (version.IsValid() && min_version.CompareTo(version) == -1)
       supported_plugins->push_back(*it);
   }
 }

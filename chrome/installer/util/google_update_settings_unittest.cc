@@ -398,7 +398,7 @@ TEST_F(GoogleUpdateSettingsTest, SetEULAConsent) {
 
   // Chrome is installed.
   machine_state.AddChrome(system_level, multi_install,
-      Version::GetVersionFromString(chrome::kChromeVersion));
+      new Version(chrome::kChromeVersion));
 
   RegKey key;
   DWORD value;

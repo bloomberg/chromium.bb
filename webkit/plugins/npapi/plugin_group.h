@@ -88,7 +88,8 @@ class WEBKIT_PLUGINS_EXPORT PluginGroup {
 
   // Parse a version string as used by a plug-in. This method is more lenient
   // in accepting weird version strings than Version::GetFromString().
-  static Version* CreateVersionFromString(const string16& version_string);
+  static void CreateVersionFromString(const string16& version_string,
+                                      Version* version);
 
   const std::vector<webkit::WebPluginInfo>& web_plugin_infos() const {
     return web_plugin_infos_;

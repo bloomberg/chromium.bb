@@ -30,9 +30,10 @@ TEST(PluginGroupTest, VersionExtraction) {
   };
 
   for (size_t i = 0; i < arraysize(versions); i++) {
-    scoped_ptr<Version> version(PluginGroup::CreateVersionFromString(
-        ASCIIToUTF16(versions[i][0])));
-    EXPECT_EQ(versions[i][1], version->GetString());
+    Version version;
+    PluginGroup::CreateVersionFromString(ASCIIToUTF16(versions[i][0]),
+                                         &version);
+    EXPECT_EQ(versions[i][1], version.GetString());
   }
 }
 

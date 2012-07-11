@@ -111,7 +111,7 @@ class CrxInstaller
   void set_expected_id(const std::string& val) { expected_id_ = val; }
 
   void set_expected_version(const Version& val) {
-    expected_version_.reset(val.Clone());
+    expected_version_.reset(new Version(val));
   }
 
   bool delete_source() const { return delete_source_; }
