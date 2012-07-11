@@ -42,12 +42,6 @@ class CCGenerator(object):
       )
 
     (c.Append()
-      .Append('using base::Value;')
-      .Append('using base::DictionaryValue;')
-      .Append('using base::ListValue;')
-      .Append('using base::BinaryValue;')
-      .Append('using %s;' % any_helper.ANY_CLASS)
-      .Append()
       .Concat(self._cpp_type_generator.GetRootNamespaceStart())
       .Concat(self._cpp_type_generator.GetNamespaceStart())
       .Append()
@@ -173,13 +167,13 @@ class CCGenerator(object):
     c = Code()
     (c.Append('// static')
       .Sblock('bool %(namespace)s::Populate'
-              '(const Value& value, %(name)s* out) {')
-        .Append('if (!value.IsType(Value::TYPE_DICTIONARY))')
+              '(const base::Value& value, %(name)s* out) {')
+        .Append('if (!value.IsType(base::Value::TYPE_DICTIONARY))')
         .Append('  return false;')
     )
     if type_.properties:
-      (c.Append('const DictionaryValue* dict = '
-                'static_cast<const DictionaryValue*>(&value);')
+      (c.Append('const base::DictionaryValue* dict = '
+                'static_cast<const base::DictionaryValue*>(&value);')
         .Append()
       )
       for prop in type_.properties.values():
@@ -204,12 +198,12 @@ class CCGenerator(object):
   def _GenerateTypePopulateProperty(self, prop, src, dst):
     """Generate the code to populate a single property in a type.
 
-    src: DictionaryValue*
+    src: base::DictionaryValue*
     dst: Type*
     """
     c = Code()
     value_var = prop.unix_name + '_value'
-    c.Append('Value* %(value_var)s = NULL;')
+    c.Append('base::Value* %(value_var)s = NULL;')
     if prop.optional:
       (c.Sblock(
           'if (%(src)s->GetWithoutPathExpansion("%(key)s", &%(value_var)s)) {'
@@ -230,14 +224,16 @@ class CCGenerator(object):
     return c
 
   def _GenerateTypeToValue(self, cpp_namespace, type_):
-    """Generates a function that serializes the type into a |DictionaryValue|.
+    """Generates a function that serializes the type into a
+    |base::DictionaryValue|.
 
     E.g. for type "Foo" generates Foo::ToValue()
     """
     c = Code()
-    (c.Sblock('scoped_ptr<DictionaryValue> %s::ToValue() const {' %
+    (c.Sblock('scoped_ptr<base::DictionaryValue> %s::ToValue() const {' %
           cpp_namespace)
-        .Append('scoped_ptr<DictionaryValue> value(new DictionaryValue());')
+        .Append('scoped_ptr<base::DictionaryValue> value('
+                'new base::DictionaryValue());')
         .Append()
     )
     for prop in type_.properties.values():
@@ -287,27 +283,29 @@ class CCGenerator(object):
     return c
 
   def _GenerateCreateEnumValue(self, cpp_namespace, prop):
-    """Generates CreateEnumValue() that returns the |StringValue|
+    """Generates CreateEnumValue() that returns the |base::StringValue|
     representation of an enum.
     """
     c = Code()
     c.Append('// static')
-    c.Sblock('scoped_ptr<Value> %(cpp_namespace)s::CreateEnumValue(%(arg)s) {')
+    c.Sblock('scoped_ptr<base::Value> %(cpp_namespace)s::CreateEnumValue('
+             '%(arg)s) {')
     c.Sblock('switch (%s) {' % prop.unix_name)
     if prop.optional:
       (c.Append('case %s: {' % self._cpp_type_generator.GetEnumNoneValue(prop))
-        .Append('  return scoped_ptr<Value>();')
+        .Append('  return scoped_ptr<base::Value>();')
         .Append('}')
       )
     for enum_value in prop.enum_values:
       (c.Append('case %s: {' %
           self._cpp_type_generator.GetEnumValue(prop, enum_value))
-        .Append('  return scoped_ptr<Value>(Value::CreateStringValue("%s"));' %
-            enum_value)
+        .Append('  return scoped_ptr<base::Value>('
+                'base::Value::CreateStringValue("%s"));' %
+                enum_value)
         .Append('}')
       )
     (c.Append('default: {')
-      .Append('  return scoped_ptr<Value>();')
+      .Append('  return scoped_ptr<base::Value>();')
       .Append('}')
     )
     c.Eblock('}')
@@ -320,20 +318,20 @@ class CCGenerator(object):
     return c
 
   def _CreateValueFromProperty(self, prop, var):
-    """Creates a Value given a property. Generated code passes ownership
+    """Creates a base::Value given a property. Generated code passes ownership
     to caller.
 
     var: variable or variable*
 
-    E.g for std::string, generate Value::CreateStringValue(var)
+    E.g for std::string, generate base::Value::CreateStringValue(var)
     """
     if prop.type_ == PropertyType.CHOICES:
       # CHOICES conversion not implemented. If needed, write something to
-      # generate a function that returns a scoped_ptr<Value> and put it in
+      # generate a function that returns a scoped_ptr<base::Value> and put it in
       # _GeneratePropertyFunctions, then use it here. Look at CreateEnumValue()
       # for reference.
       raise NotImplementedError(
-          'Conversion of CHOICES to Value not implemented')
+          'Conversion of CHOICES to base::Value not implemented')
     if self._IsObjectOrObjectRef(prop):
       if prop.optional:
         return '%s->ToValue().release()' % var
@@ -356,13 +354,13 @@ class CCGenerator(object):
         var = '*' + var
       prop = self._cpp_type_generator.GetReferencedProperty(prop);
       return {
-          PropertyType.STRING: 'Value::CreateStringValue(%s)',
-          PropertyType.BOOLEAN: 'Value::CreateBooleanValue(%s)',
-          PropertyType.INTEGER: 'Value::CreateIntegerValue(%s)',
-          PropertyType.DOUBLE: 'Value::CreateDoubleValue(%s)',
+          PropertyType.STRING: 'base::Value::CreateStringValue(%s)',
+          PropertyType.BOOLEAN: 'base::Value::CreateBooleanValue(%s)',
+          PropertyType.INTEGER: 'base::Value::CreateIntegerValue(%s)',
+          PropertyType.DOUBLE: 'base::Value::CreateDoubleValue(%s)',
       }[prop.type_] % var
     else:
-      raise NotImplementedError('Conversion of %s to Value not '
+      raise NotImplementedError('Conversion of %s to base::Value not '
           'implemented' % repr(prop.type_))
 
   def _GenerateParamsCheck(self, function, var):
@@ -391,14 +389,14 @@ class CCGenerator(object):
 
   def _GenerateFunctionParamsCreate(self, cpp_namespace, function):
     """Generate function to create an instance of Params. The generated
-    function takes a ListValue of arguments.
+    function takes a base::ListValue of arguments.
 
     E.g for function "Bar", generate Bar::Params::Create()
     """
     c = Code()
     (c.Append('// static')
       .Sblock('scoped_ptr<%(cpp_namespace)s::Params> '
-        '%(cpp_namespace)s::Params::Create(const ListValue& args) {')
+        '%(cpp_namespace)s::Params::Create(const base::ListValue& args) {')
       .Concat(self._GenerateParamsCheck(function, 'args'))
       .Append('scoped_ptr<Params> params(new Params());')
     )
@@ -415,9 +413,9 @@ class CCGenerator(object):
       failure_value = 'scoped_ptr<Params>()'
       c.Append()
       value_var = param.unix_name + '_value'
-      (c.Append('Value* %(value_var)s = NULL;')
-        .Append('if (args.Get(%(i)s, &%(value_var)s) && '
-            '!%(value_var)s->IsType(Value::TYPE_NULL))')
+      (c.Append('base::Value* %(value_var)s = NULL;')
+        .Append('if (args.Get(%(i)s, &%(value_var)s) &&\n'
+                '    !%(value_var)s->IsType(base::Value::TYPE_NULL))')
         .Sblock('{')
         .Concat(self._GeneratePopulatePropertyFromValue(
             param, value_var, 'params', failure_value))
@@ -439,16 +437,17 @@ class CCGenerator(object):
 
   def _GeneratePopulatePropertyFromValue(
       self, prop, value_var, dst, failure_value, check_type=True):
-    """Generates code to populate a model.Property given a Value*. The
-    existence of data inside the Value* is assumed so checks for existence
+    """Generates code to populate a model.Property given a base::Value*. The
+    existence of data inside the base::Value* is assumed so checks for existence
     should be performed before the code this generates.
 
     prop: the property the code is populating.
-    value_var: a Value* that should represent |prop|.
+    value_var: a base::Value* that should represent |prop|.
     dst: the object with |prop| as a member.
     failure_value: the value to return if |prop| cannot be extracted from
     |value_var|
-    check_type: if true, will check if |value_var| is the correct Value::Type
+    check_type: if true, will check if |value_var| is the correct
+    base::Value::Type
     """
     c = Code()
     c.Sblock('{')
@@ -474,7 +473,7 @@ class CCGenerator(object):
         )
     elif self._IsObjectOrObjectRef(prop):
       if prop.optional:
-        (c.Append('DictionaryValue* dictionary = NULL;')
+        (c.Append('base::DictionaryValue* dictionary = NULL;')
           .Append('if (!%(value_var)s->GetAsDictionary(&dictionary))')
           .Append('  return %(failure_value)s;')
           .Append('scoped_ptr<%(ctype)s> temp(new %(ctype)s());')
@@ -483,7 +482,7 @@ class CCGenerator(object):
           .Append('%(dst)s->%(name)s = temp.Pass();')
         )
       else:
-        (c.Append('DictionaryValue* dictionary = NULL;')
+        (c.Append('base::DictionaryValue* dictionary = NULL;')
           .Append('if (!%(value_var)s->GetAsDictionary(&dictionary))')
           .Append('  return %(failure_value)s;')
           .Append(
@@ -492,11 +491,11 @@ class CCGenerator(object):
         )
     elif prop.type_ == PropertyType.ANY:
       if prop.optional:
-        c.Append('%(dst)s->%(name)s.reset(new Any());')
+        c.Append('%(dst)s->%(name)s.reset(new ' + any_helper.ANY_CLASS + '());')
       c.Append(self._any_helper.Init(prop, value_var, dst) + ';')
     elif self._IsArrayOrArrayRef(prop):
       # util_cc_helper deals with optional and required arrays
-      (c.Append('ListValue* list = NULL;')
+      (c.Append('base::ListValue* list = NULL;')
         .Append('if (!%(value_var)s->GetAsList(&list))')
         .Append('  return %(failure_value)s;'))
       if prop.item_type.type_ == PropertyType.ENUM:
@@ -533,12 +532,13 @@ class CCGenerator(object):
       c.Eblock('}')
     elif prop.type_ == PropertyType.BINARY:
       # This is the same if the property is optional or not. We need a pointer
-      # to the BinaryValue to be able to populate it, so a scoped_ptr is used
-      # whether it is optional or required.
+      # to the base::BinaryValue to be able to populate it, so a scoped_ptr is
+      # used whether it is optional or required.
       (c.Append('if (!%(value_var)s->IsType(%(value_type)s))')
         .Append('  return %(failure_value)s;')
         .Append('%(dst)s->%(name)s.reset(')
-        .Append('    static_cast<BinaryValue*>(%(value_var)s)->DeepCopy());')
+        .Append('    static_cast<base::BinaryValue*>(%(value_var)s)'
+                '->DeepCopy());')
       )
     else:
       raise NotImplementedError(prop.type_)
@@ -632,8 +632,8 @@ class CCGenerator(object):
     params = function.callback.params
 
     if not params:
-      (c.Append('Value* %s::Result::Create() {' % cpp_namespace)
-        .Append('  return Value::CreateNullValue();')
+      (c.Append('base::Value* %s::Result::Create() {' % cpp_namespace)
+        .Append('  return base::Value::CreateNullValue();')
         .Append('}')
       )
     else:
@@ -648,13 +648,14 @@ class CCGenerator(object):
       # time.
       for param in expanded_params:
         if param.type_ == PropertyType.ANY:
-          # Generation of Value* Create(Value*) is redundant.
+          # Generation of base::Value* Create(base::Value*) is redundant.
           continue
         # We treat this argument as 'required' to avoid wrapping it in a
         # scoped_ptr if it's optional.
         param_copy = param.Copy()
         param_copy.optional = False
-        c.Sblock('Value* %(cpp_namespace)s::Result::Create(const %(arg)s) {')
+        c.Sblock('base::Value* %(cpp_namespace)s::Result::Create('
+                 'const %(arg)s) {')
         c.Append('return %s;' %
            self._CreateValueFromProperty(param_copy, param_copy.unix_name))
         c.Eblock('}')

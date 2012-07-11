@@ -59,12 +59,14 @@ class CppTypeGeneratorTest(unittest.TestCase):
   def testGenerateIncludesAndForwardDeclarationsMultipleTypes(self):
     m = model.Model()
     self.tabs_json[0]['types'].append(self.permissions_json[0]['types'][0])
-    tabs_namespace = m.AddNamespace(self.tabs_json[0],
-        'path/to/tabs.json')
     self.windows_json[0]['functions'].append(
         self.permissions_json[0]['functions'][1])
+    # Insert 'windows' before 'tabs' in order to test that they are sorted
+    # properly.
     windows = m.AddNamespace(self.windows_json[0],
         'path/to/windows.json')
+    tabs_namespace = m.AddNamespace(self.tabs_json[0],
+        'path/to/tabs.json')
     manager = CppTypeGenerator('', windows, self.windows.unix_name)
     manager.AddNamespace(tabs_namespace, self.tabs.unix_name)
     self.assertEquals('#include "path/to/tabs.h"',
@@ -81,16 +83,18 @@ class CppTypeGeneratorTest(unittest.TestCase):
 
   def testGenerateIncludesAndForwardDeclarationsDependencies(self):
     m = model.Model()
-    browser_action_namespace = m.AddNamespace(self.browser_action_json[0],
-        'path/to/browser_action.json')
+    # Insert 'font_settings' before 'browser_action' in order to test that
+    # CppTypeGenerator sorts them properly.
     font_settings_namespace = m.AddNamespace(self.font_settings_json[0],
         'path/to/font_settings.json')
+    browser_action_namespace = m.AddNamespace(self.browser_action_json[0],
+        'path/to/browser_action.json')
     manager = CppTypeGenerator('', self.dependency_tester,
         self.dependency_tester.unix_name)
-    manager.AddNamespace(browser_action_namespace,
-        self.browser_action.unix_name)
     manager.AddNamespace(font_settings_namespace,
         self.font_settings.unix_name)
+    manager.AddNamespace(browser_action_namespace,
+        self.browser_action.unix_name)
     self.assertEquals('#include "path/to/browser_action.h"\n'
                       '#include "path/to/font_settings.h"',
                       manager.GenerateIncludes().Render())

@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/api/context_menu/context_menu_api.h"
 #include "chrome/browser/extensions/api/cookies/cookies_api.h"
 #include "chrome/browser/extensions/api/declarative/declarative_api.h"
-#include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_browser_actions_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_script_badge_api.h"
@@ -450,19 +449,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<GetAllPermissionsFunction>();
   RegisterFunction<RemovePermissionsFunction>();
   RegisterFunction<RequestPermissionsFunction>();
-
-  // Downloads
-  RegisterFunction<DownloadsDownloadFunction>();
-  RegisterFunction<DownloadsSearchFunction>();
-  RegisterFunction<DownloadsPauseFunction>();
-  RegisterFunction<DownloadsResumeFunction>();
-  RegisterFunction<DownloadsCancelFunction>();
-  RegisterFunction<DownloadsEraseFunction>();
-  RegisterFunction<DownloadsSetDestinationFunction>();
-  RegisterFunction<DownloadsAcceptDangerFunction>();
-  RegisterFunction<DownloadsShowFunction>();
-  RegisterFunction<DownloadsDragFunction>();
-  RegisterFunction<DownloadsGetFileIconFunction>();
 
   // PageCapture
   RegisterFunction<PageCaptureSaveAsMHTMLFunction>();

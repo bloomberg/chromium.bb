@@ -55,7 +55,7 @@ def ProcessComment(comment):
   # Escape double quotes.
   comment = comment.replace('"', '\\"');
 
-  # Find all the parameter comments of the form "|name|: comment".
+  # Find all the parameter comments of the form '|name|: comment'.
   parameter_starts = list(re.finditer(r'\n *\|([^|]*)\| *: *', comment))
 
   # Get the parent comment (everything before the first parameter comment.
@@ -104,9 +104,9 @@ class Param(object):
     self.node = param_node
 
   def process(self, callbacks):
-    return Typeref(self.node.GetProperty( 'TYPEREF'),
+    return Typeref(self.node.GetProperty('TYPEREF'),
                    self.node,
-                   { 'name': self.node.GetName() }).process(callbacks)
+                   {'name': self.node.GetName()}).process(callbacks)
 
 class Dictionary(object):
   '''
@@ -122,30 +122,12 @@ class Dictionary(object):
       if node.cls == 'Member':
         k, v = Member(node).process(callbacks)
         properties[k] = v
-    return { 'id': self.node.GetName(),
-             'properties': properties,
-             'type': 'object' }
-
-class Enum(object):
-  '''
-  Given an IDL Enum node, converts into a Python dictionary that the JSON
-  schema compiler expects to see.
-  '''
-  def __init__(self, enum_node):
-    self.node = enum_node
-
-  def process(self, callbacks):
-    enum = []
-    for node in self.node.children:
-      if node.cls == 'EnumItem':
-        name = node.GetName()
-        enum.append(name)
-      else:
-        sys.exit("Did not process %s %s" % (node.cls, node))
-    return { "id" : self.node.GetName(),
-             'enum': enum,
-             'type': 'string' }
-
+    result = {'id': self.node.GetName(),
+              'properties': properties,
+              'type': 'object'}
+    if self.node.GetProperty('inline_doc'):
+      result['inline_doc'] = True
+    return result
 
 
 class Member(object):
@@ -169,8 +151,7 @@ class Member(object):
       if node.cls == 'Comment':
         (parent_comment, parameter_comments) = ProcessComment(node.GetName())
         properties['description'] = parent_comment
-    for node in self.node.children:
-      if node.cls == 'Callspec':
+      elif node.cls == 'Callspec':
         is_function = True
         name, parameters = Callspec(node, parameter_comments).process(callbacks)
         properties['parameters'] = parameters
@@ -180,6 +161,13 @@ class Member(object):
     else:
       properties = Typeref(self.node.GetProperty('TYPEREF'),
                            self.node, properties).process(callbacks)
+    enum_values = self.node.GetProperty('legalValues')
+    if enum_values:
+      if properties['type'] == 'integer':
+        enum_values = map(int, enum_values)
+      elif properties['type'] == 'double':
+        enum_values = map(float, enum_values)
+      properties['enum'] = enum_values
     return name, properties
 
 class Typeref(object):
@@ -240,42 +228,70 @@ class Typeref(object):
 
     return result
 
+
+class Enum(object):
+  '''
+  Given an IDL Enum node, converts into a Python dictionary that the JSON
+  schema compiler expects to see.
+  '''
+  def __init__(self, enum_node):
+    self.node = enum_node
+    self.description = ''
+
+  def process(self, callbacks):
+    enum = []
+    for node in self.node.children:
+      if node.cls == 'EnumItem':
+        enum.append(node.GetName())
+      elif node.cls == 'Comment':
+        self.description = ProcessComment(node.GetName())[0]
+      else:
+        sys.exit('Did not process %s %s' % (node.cls, node))
+    result = {'id' : self.node.GetName(),
+              'description': self.description,
+              'type': 'string',
+              'enum': enum}
+    if self.node.GetProperty('inline_doc'):
+      result['inline_doc'] = True
+    return result
+
+
 class Namespace(object):
   '''
   Given an IDLNode representing an IDL namespace, converts into a Python
   dictionary that the JSON schema compiler expects to see.
   '''
 
-  def __init__(self, namespace_node, nodoc=False):
+  def __init__(self, namespace_node, nodoc=False, permissions=None):
     self.namespace = namespace_node
     self.nodoc = nodoc
     self.events = []
     self.functions = []
     self.types = []
     self.callbacks = {}
+    self.permissions = permissions or []
 
   def process(self):
     for node in self.namespace.children:
-      cls = node.cls
-      if cls == "Dictionary":
+      if node.cls == 'Dictionary':
         self.types.append(Dictionary(node).process(self.callbacks))
-      elif cls == "Callback":
+      elif node.cls == 'Callback':
         k, v = Member(node).process(self.callbacks)
         self.callbacks[k] = v
-      elif cls == "Interface" and node.GetName() == "Functions":
+      elif node.cls == 'Interface' and node.GetName() == 'Functions':
         self.functions = self.process_interface(node)
-      elif cls == "Interface" and node.GetName() == "Events":
+      elif node.cls == 'Interface' and node.GetName() == 'Events':
         self.events = self.process_interface(node)
-      elif cls == "Enum":
+      elif node.cls == 'Enum':
         self.types.append(Enum(node).process(self.callbacks))
       else:
-        sys.exit("Did not process %s %s" % (node.cls, node))
-
-    return { 'events': self.events,
-             'functions': self.functions,
-             'types': self.types,
-             'namespace': self.namespace.GetName(),
-             'nodoc': self.nodoc }
+        sys.exit('Did not process %s %s' % (node.cls, node))
+    return {'namespace': self.namespace.GetName(),
+            'nodoc': self.nodoc,
+            'documentation_permissions_required': self.permissions,
+            'types': self.types,
+            'functions': self.functions,
+            'events': self.events}
 
   def process_interface(self, node):
     members = []
@@ -296,23 +312,25 @@ class IDLSchema(object):
 
   def process(self):
     namespaces = []
+    nodoc = False
+    permissions = None
     for node in self.idl:
-      nodoc = False
-      cls = node.cls
-      if cls == 'Namespace':
-        namespace = Namespace(node, nodoc)
+      if node.cls == 'Namespace':
+        namespace = Namespace(node, nodoc, permissions)
         namespaces.append(namespace.process())
-      elif cls == 'Copyright':
+      elif node.cls == 'Copyright':
         continue
-      elif cls == 'Comment':
+      elif node.cls == 'Comment':
         continue
-      elif cls == 'ExtAttribute':
+      elif node.cls == 'ExtAttribute':
         if node.name == 'nodoc':
           nodoc = bool(node.value)
+        elif node.name == 'permissions':
+          permission = node.value.split(',')
         else:
           continue
       else:
-        sys.exit("Did not process %s %s" % (node.cls, node))
+        sys.exit('Did not process %s %s' % (node.cls, node))
     schema_util.PrefixSchemasWithNamespace(namespaces)
     return namespaces
 

@@ -365,8 +365,6 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST));
   RegisterSchema("devtools", ReadFromResource(
       IDR_EXTENSION_API_JSON_DEVTOOLS));
-  RegisterSchema("downloads", ReadFromResource(
-      IDR_EXTENSION_API_JSON_DOWNLOADS));
   RegisterSchema("events", ReadFromResource(
       IDR_EXTENSION_API_JSON_EVENTS));
   RegisterSchema("experimental.accessibility", ReadFromResource(

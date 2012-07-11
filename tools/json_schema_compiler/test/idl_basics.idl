@@ -5,13 +5,15 @@
 // Tests a variety of basic API definition features.
 
 namespace idl_basics {
+  // Enum description
   enum EnumType {
     name1,
     name2
   };
 
   dictionary MyType1 {
-    long x; // This comment tests "double-quotes".
+    // This comment tests "double-quotes".
+    [legalValues=(1,2)] long x;
     DOMString y;
   };
 

@@ -5,8 +5,6 @@
 from code import Code
 from model import PropertyType
 import cpp_util
-import model
-import os
 import schema_util
 
 class HGenerator(object):
@@ -110,7 +108,8 @@ class HGenerator(object):
         raise ValueError("Illegal circular dependency via cycle " +
                          ", ".join(map(lambda x: x.name, path + [type_])))
       for prop in type_.properties.values():
-        if not prop.optional and prop.type_ == PropertyType.REF:
+        if (prop.type_ == PropertyType.REF and
+            schema_util.GetNamespace(prop.ref_type) == self._namespace.name):
           ExpandType(path + [type_], self._namespace.types[prop.ref_type])
       if not type_ in dependency_order:
         dependency_order.append(type_)
@@ -177,7 +176,6 @@ class HGenerator(object):
       if type_.description:
         c.Comment(type_.description)
       c.Append('typedef std::string %(classname)s;')
-      c.Substitute({'classname': classname})
     else:
       if type_.description:
         c.Comment(type_.description)
@@ -189,18 +187,18 @@ class HGenerator(object):
           .Concat(self._GenerateFields(type_.properties.values()))
       )
       if type_.from_json:
-        (c.Comment('Populates a %s object from a Value. Returns'
+        (c.Comment('Populates a %s object from a base::Value. Returns'
                    ' whether |out| was successfully populated.' % classname)
-          .Append(
-              'static bool Populate(const Value& value, %(classname)s* out);')
+          .Append('static bool Populate(const base::Value& value, '
+                  '%(classname)s* out);')
           .Append()
         )
 
       if type_.from_client:
-        (c.Comment('Returns a new DictionaryValue representing the'
+        (c.Comment('Returns a new base::DictionaryValue representing the'
                    ' serialized form of this %s object. Passes '
                    'ownership to caller.' % classname)
-          .Append('scoped_ptr<DictionaryValue> ToValue() const;')
+          .Append('scoped_ptr<base::DictionaryValue> ToValue() const;')
         )
 
       (c.Eblock()
@@ -238,7 +236,8 @@ class HGenerator(object):
           .Concat(self._GenerateFields(function.params))
           .Append('~Params();')
           .Append()
-          .Append('static scoped_ptr<Params> Create(const ListValue& args);')
+          .Append('static scoped_ptr<Params> Create('
+                  'const base::ListValue& args);')
         .Eblock()
         .Sblock(' private:')
           .Append('Params();')
@@ -273,7 +272,7 @@ class HGenerator(object):
             enum_name,
             prop,
             prop.enum_values))
-        c.Append('static scoped_ptr<Value> CreateEnumValue(%s %s);' %
+        c.Append('static scoped_ptr<base::Value> CreateEnumValue(%s %s);' %
             (enum_name, prop.unix_name))
     return c
 
@@ -285,7 +284,7 @@ class HGenerator(object):
     c.Sblock('namespace Result {')
     params = function.callback.params
     if not params:
-      c.Append('Value* Create();')
+      c.Append('base::Value* Create();')
     else:
       c.Concat(self._GeneratePropertyStructures(params))
 
@@ -297,11 +296,12 @@ class HGenerator(object):
         if param.description:
           c.Comment(param.description)
         if param.type_ == PropertyType.ANY:
-          c.Comment("Value* Result::Create(Value*) not generated "
+          c.Comment("base::Value* Result::Create(base::Value*) not generated "
                     "because it's redundant.")
           continue
-        c.Append('Value* Create(const %s);' % cpp_util.GetParameterDeclaration(
-            param, self._cpp_type_generator.GetType(param)))
+        c.Append('base::Value* Create(const %s);' %
+                 cpp_util.GetParameterDeclaration(
+                     param, self._cpp_type_generator.GetType(param)))
     c.Eblock('};')
 
     return c

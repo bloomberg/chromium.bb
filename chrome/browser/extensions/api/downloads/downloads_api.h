@@ -46,295 +46,161 @@ extern const char kNotImplementedError[];
 
 }  // namespace download_extension_errors
 
-class DownloadsFunctionInterface {
- public:
-  enum DownloadsFunctionName {
-    DOWNLOADS_FUNCTION_DOWNLOAD = 0,
-    DOWNLOADS_FUNCTION_SEARCH = 1,
-    DOWNLOADS_FUNCTION_PAUSE = 2,
-    DOWNLOADS_FUNCTION_RESUME = 3,
-    DOWNLOADS_FUNCTION_CANCEL = 4,
-    DOWNLOADS_FUNCTION_ERASE = 5,
-    DOWNLOADS_FUNCTION_SET_DESTINATION = 6,
-    DOWNLOADS_FUNCTION_ACCEPT_DANGER = 7,
-    DOWNLOADS_FUNCTION_SHOW = 8,
-    DOWNLOADS_FUNCTION_DRAG = 9,
-    DOWNLOADS_FUNCTION_GET_FILE_ICON = 10,
-    // Insert new values here, not at the beginning.
-    DOWNLOADS_FUNCTION_LAST
-  };
 
- protected:
-  virtual ~DownloadsFunctionInterface() {}
-
-  // Return true if args_ is well-formed, otherwise set error_ and return false.
-  virtual bool ParseArgs() = 0;
-
-  // Implementation-specific logic. "Do the thing that you do."  Should return
-  // true if the call succeeded and false otherwise.
-  virtual bool RunInternal() = 0;
-
-  // Which subclass is this.
-  virtual DownloadsFunctionName function() const = 0;
-
-  // Wrap ParseArgs(), RunInternal().
-  static bool RunImplImpl(DownloadsFunctionInterface* pimpl);
-};
-
-class SyncDownloadsFunction : public SyncExtensionFunction,
-                              public DownloadsFunctionInterface {
- protected:
-  explicit SyncDownloadsFunction(DownloadsFunctionName function);
-  virtual ~SyncDownloadsFunction();
-
-  // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
-
-  // DownloadsFunctionInterface:
-  virtual DownloadsFunctionName function() const OVERRIDE;
-
-  content::DownloadItem* GetActiveItem(int download_id);
-
- private:
-  DownloadsFunctionName function_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncDownloadsFunction);
-};
-
-class AsyncDownloadsFunction : public AsyncExtensionFunction,
-                               public DownloadsFunctionInterface {
- protected:
-  explicit AsyncDownloadsFunction(DownloadsFunctionName function);
-  virtual ~AsyncDownloadsFunction();
-
-  // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
-
-  // DownloadsFunctionInterface:
-  virtual DownloadsFunctionName function() const OVERRIDE;
-
-  content::DownloadItem* GetActiveItem(int download_id);
-
- private:
-  DownloadsFunctionName function_;
-
-  DISALLOW_COPY_AND_ASSIGN(AsyncDownloadsFunction);
-};
-
-class DownloadsDownloadFunction : public AsyncDownloadsFunction {
+class DownloadsDownloadFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("downloads.download");
-
   DownloadsDownloadFunction();
+  virtual bool RunImpl() OVERRIDE;
 
  protected:
   virtual ~DownloadsDownloadFunction();
 
-  // DownloadsFunctionInterface:
-  virtual bool ParseArgs() OVERRIDE;
-  virtual bool RunInternal() OVERRIDE;
-
  private:
-  struct IOData {
-   public:
-    IOData();
-    ~IOData();
-
-    GURL url;
-    string16 filename;
-    bool save_as;
-    base::ListValue* extra_headers;
-    std::string method;
-    std::string post_body;
-    content::ResourceDispatcherHost* rdh;
-    content::ResourceContext* resource_context;
-    int render_process_host_id;
-    int render_view_host_routing_id;
-  };
-
-  void BeginDownloadOnIOThread();
   void OnStarted(content::DownloadId dl_id, net::Error error);
-
-  scoped_ptr<IOData> iodata_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsDownloadFunction);
 };
 
-class DownloadsSearchFunction : public SyncDownloadsFunction {
+class DownloadsSearchFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("downloads.search");
-
   DownloadsSearchFunction();
+  virtual bool RunImpl() OVERRIDE;
 
  protected:
   virtual ~DownloadsSearchFunction();
 
-  // DownloadsFunctionInterface:
-  virtual bool ParseArgs() OVERRIDE;
-  virtual bool RunInternal() OVERRIDE;
-
  private:
-  bool ParseOrderBy(const base::Value& order_by_value);
-
-  scoped_ptr<DownloadQuery> query_;
-  int get_id_;
-  bool has_get_id_;
-
   DISALLOW_COPY_AND_ASSIGN(DownloadsSearchFunction);
 };
 
-class DownloadsPauseFunction : public SyncDownloadsFunction {
+class DownloadsPauseFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("downloads.pause");
-
   DownloadsPauseFunction();
+  virtual bool RunImpl() OVERRIDE;
 
  protected:
   virtual ~DownloadsPauseFunction();
 
-  // DownloadsFunctionInterface:
-  virtual bool ParseArgs() OVERRIDE;
-  virtual bool RunInternal() OVERRIDE;
-
  private:
-  int download_id_;
   DISALLOW_COPY_AND_ASSIGN(DownloadsPauseFunction);
 };
 
-class DownloadsResumeFunction : public SyncDownloadsFunction {
+class DownloadsResumeFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("downloads.resume");
-
   DownloadsResumeFunction();
+  virtual bool RunImpl() OVERRIDE;
 
  protected:
   virtual ~DownloadsResumeFunction();
 
-  // DownloadsFunctionInterface:
-  virtual bool ParseArgs() OVERRIDE;
-  virtual bool RunInternal() OVERRIDE;
-
  private:
-  int download_id_;
   DISALLOW_COPY_AND_ASSIGN(DownloadsResumeFunction);
 };
 
-class DownloadsCancelFunction : public SyncDownloadsFunction {
+class DownloadsCancelFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("downloads.cancel");
-
   DownloadsCancelFunction();
+  virtual bool RunImpl() OVERRIDE;
 
  protected:
   virtual ~DownloadsCancelFunction();
 
-  // DownloadsFunctionInterface:
-  virtual bool ParseArgs() OVERRIDE;
-  virtual bool RunInternal() OVERRIDE;
-
  private:
-  int download_id_;
   DISALLOW_COPY_AND_ASSIGN(DownloadsCancelFunction);
 };
 
-class DownloadsEraseFunction : public AsyncDownloadsFunction {
+class DownloadsEraseFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("downloads.erase");
-
   DownloadsEraseFunction();
+  virtual bool RunImpl() OVERRIDE;
 
  protected:
   virtual ~DownloadsEraseFunction();
-
-  // DownloadsFunctionInterface:
-  virtual bool ParseArgs() OVERRIDE;
-  virtual bool RunInternal() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsEraseFunction);
 };
 
-class DownloadsSetDestinationFunction : public AsyncDownloadsFunction {
+class DownloadsSetDestinationFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("downloads.setDestination");
-
   DownloadsSetDestinationFunction();
+  virtual bool RunImpl() OVERRIDE;
 
  protected:
   virtual ~DownloadsSetDestinationFunction();
-
-  // DownloadsFunctionInterface:
-  virtual bool ParseArgs() OVERRIDE;
-  virtual bool RunInternal() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsSetDestinationFunction);
 };
 
-class DownloadsAcceptDangerFunction : public AsyncDownloadsFunction {
+class DownloadsAcceptDangerFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("downloads.acceptDanger");
-
   DownloadsAcceptDangerFunction();
+  virtual bool RunImpl() OVERRIDE;
 
  protected:
   virtual ~DownloadsAcceptDangerFunction();
-
-  // DownloadsFunctionInterface:
-  virtual bool ParseArgs() OVERRIDE;
-  virtual bool RunInternal() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsAcceptDangerFunction);
 };
 
-class DownloadsShowFunction : public AsyncDownloadsFunction {
+class DownloadsShowFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("downloads.show");
-
   DownloadsShowFunction();
+  virtual bool RunImpl() OVERRIDE;
 
  protected:
   virtual ~DownloadsShowFunction();
-
-  // DownloadsFunctionInterface:
-  virtual bool ParseArgs() OVERRIDE;
-  virtual bool RunInternal() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsShowFunction);
 };
 
-class DownloadsDragFunction : public AsyncDownloadsFunction {
+class DownloadsOpenFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("downloads.open");
+  DownloadsOpenFunction();
+  virtual bool RunImpl() OVERRIDE;
+
+ protected:
+  virtual ~DownloadsOpenFunction();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DownloadsOpenFunction);
+};
+
+class DownloadsDragFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("downloads.drag");
-
   DownloadsDragFunction();
+  virtual bool RunImpl() OVERRIDE;
 
  protected:
   virtual ~DownloadsDragFunction();
-
-  // DownloadsFunctionInterface:
-  virtual bool ParseArgs() OVERRIDE;
-  virtual bool RunInternal() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsDragFunction);
 };
 
-class DownloadsGetFileIconFunction : public AsyncDownloadsFunction {
+class DownloadsGetFileIconFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("downloads.getFileIcon");
-
   DownloadsGetFileIconFunction();
+  virtual bool RunImpl() OVERRIDE;
   void SetIconExtractorForTesting(DownloadFileIconExtractor* extractor);
 
  protected:
   virtual ~DownloadsGetFileIconFunction();
-
-  // DownloadsFunctionInterface:
-  virtual bool ParseArgs() OVERRIDE;
-  virtual bool RunInternal() OVERRIDE;
 
  private:
   void OnIconURLExtracted(const std::string& url);

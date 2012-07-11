@@ -7,7 +7,6 @@ from model import PropertyType
 import any_helper
 import cpp_util
 import schema_util
-import string
 
 class CppTypeGenerator(object):
   """Manages the types of properties and provides utilities for getting the
@@ -191,9 +190,10 @@ class CppTypeGenerator(object):
           c.Append('typedef std::string %s;' % type_name)
         elif namespace.types[type_].type_ == PropertyType.ARRAY:
           c.Append('typedef std::vector<%(item_type)s> %(name)s;')
-          c.Substitute({'name': type_name, 'item_type':
-              self.GetType(namespace.types[type_].item_type,
-                           wrap_optional=True)})
+          c.Substitute({
+            'name': type_name,
+            'item_type': self.GetType(namespace.types[type_].item_type,
+                                      wrap_optional=True)})
         else:
           c.Append('struct %s;' % type_name)
       c.Append('}')

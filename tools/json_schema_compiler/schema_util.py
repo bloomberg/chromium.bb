@@ -4,6 +4,10 @@
 """Utilies for the processing of schema python structures.
 """
 
+def GetNamespace(ref_type):
+  if '.' in ref_type:
+    return ref_type[:ref_type.rindex('.')]
+
 def StripSchemaNamespace(s):
   last_dot = s.rfind('.')
   if not last_dot == -1:

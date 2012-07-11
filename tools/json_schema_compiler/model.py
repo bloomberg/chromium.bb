@@ -193,7 +193,9 @@ class Property(object):
     elif '$ref' in json:
       self.ref_type = json['$ref']
       self.type_ = PropertyType.REF
-    elif 'enum' in json:
+    elif 'enum' in json and json.get('type') == 'string':
+      # Non-string enums (as in the case of [legalValues=(1,2)]) should fall
+      # through to the next elif.
       self.enum_values = []
       for value in json['enum']:
         self.enum_values.append(value)

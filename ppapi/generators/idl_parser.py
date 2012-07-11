@@ -221,6 +221,15 @@ class IDLParser(IDLLexer):
     p[0] = ListFromConcat(Copyright, Filedoc, p[3], p[4])
     if self.parse_debug: DumpReduction('top', p)
 
+  def p_top_short(self, p):
+    """top : COMMENT ext_attr_block top_list"""
+    Copyright = self.BuildComment('Copyright', p, 1)
+    Filedoc = IDLNode('Comment', self.lexobj.filename, p.lineno(2)-1,
+        p.lexpos(2)-1, [self.BuildAttribute('NAME', ''),
+          self.BuildAttribute('FORM', 'cc')])
+    p[0] = ListFromConcat(Copyright, Filedoc, p[2], p[3])
+    if self.parse_debug: DumpReduction('top', p)
+
   # Build a list of top level items.
   def p_top_list(self, p):
     """top_list : callback_decl top_list
@@ -289,11 +298,11 @@ class IDLParser(IDLLexer):
 #
 # Dictionary
 #
-# A dictionary contains is a named list of optional and required members.
+# A dictionary is a named list of optional and required members.
 #
   def p_dictionary_block(self, p):
     """dictionary_block : modifiers DICTIONARY SYMBOL '{' struct_list '}' ';'"""
-    p[0] = self.BuildNamed('Dictionary', p, 3, ListFromConcat(p[5]))
+    p[0] = self.BuildNamed('Dictionary', p, 3, ListFromConcat(p[1], p[5]))
 
 #
 # Callback
@@ -369,6 +378,29 @@ class IDLParser(IDLLexer):
     else:
       p[0] = ListFromConcat(self.BuildAttribute(p[1], 'True'), p[2])
     if self.parse_debug: DumpReduction('ext_attribute_list', p)
+
+  def p_ext_attr_list_values(self, p):
+    """ext_attr_list : SYMBOL '=' '(' values ')' ext_attr_cont
+                     | SYMBOL '=' '(' symbols ')' ext_attr_cont"""
+    p[0] = ListFromConcat(self.BuildAttribute(p[1], p[4]), p[6])
+
+  def p_values(self, p):
+    """values : value values_cont"""
+    p[0] = ListFromConcat(p[1], p[2])
+
+  def p_symbols(self, p):
+    """symbols : SYMBOL symbols_cont"""
+    p[0] = ListFromConcat(p[1], p[2])
+
+  def p_symbols_cont(self, p):
+    """symbols_cont : ',' SYMBOL symbols_cont
+                    | """
+    if len(p) > 1: p[0] = ListFromConcat(p[2], p[3])
+
+  def p_values_cont(self, p):
+    """values_cont : ',' value values_cont
+                   | """
+    if len(p) > 1: p[0] = ListFromConcat(p[2], p[3])
 
   def p_ext_attr_cont(self, p):
     """ext_attr_cont : ',' ext_attr_list
@@ -555,7 +587,7 @@ class IDLParser(IDLLexer):
   def p_param_item(self, p):
     """param_item : modifiers optional SYMBOL arrays identifier"""
     typeref = self.BuildAttribute('TYPEREF', p[3])
-    children = ListFromConcat(p[1],p[2], typeref, p[4])
+    children = ListFromConcat(p[1], p[2], typeref, p[4])
     p[0] = self.BuildNamed('Param', p, 5, children)
     if self.parse_debug: DumpReduction('param_item', p)
 

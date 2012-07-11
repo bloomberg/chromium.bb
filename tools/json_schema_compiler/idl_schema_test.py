@@ -56,11 +56,18 @@ class IdlSchemaTest(unittest.TestCase):
                           'parameters':[{'type':'integer', 'name':'x'}]}}]
     self.assertEquals(expected, getParams(schema, 'whatever'))
 
+  def testLegalValues(self):
+    self.assertEquals({
+        'x': {'name': 'x', 'type': 'integer', 'enum': [1,2],
+              'description': 'This comment tests \\\"double-quotes\\\".'},
+        'y': {'name': 'y', 'type': 'string'}},
+      getType(self.idl_basics, 'idl_basics.MyType1')['properties'])
+
   def testEnum(self):
     schema = self.idl_basics
-    expected = {'enum': ['name1', 'name2'],
+    expected = {'enum': ['name1', 'name2'], 'description': 'Enum description',
                 'type': 'string', 'id': 'idl_basics.EnumType'}
-    self.assertEquals(expected, getType(schema, 'idl_basics.EnumType'))
+    self.assertEquals(expected, getType(schema, expected['id']))
 
     expected = [{'name':'type', '$ref':'idl_basics.EnumType'},
                 {'type':'function', 'name':'Callback5',

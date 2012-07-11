@@ -83,13 +83,13 @@ def parse_idl_file(path):
   api_def = idl_schema.Load(path)
   for namespace_def in api_def:
     namespace_dot = namespace_def['namespace'] + '.'
-    types = dict((type_['id'], type_)
-                for type_ in namespace_def.get('types', [])
-                if type_)
+    inline_types = dict((type_['id'], type_)
+                        for type_ in namespace_def.get('types', [])
+                        if type_ and type_.get('inline_doc', False))
     def SubstituteInlineDoc(prop):
       prop_ref_type = prop.get('$ref', '')
-      type_obj = types.get(namespace_dot + prop_ref_type,
-                              types.get(prop_ref_type, {}))
+      type_obj = inline_types.get(namespace_dot + prop_ref_type,
+                                  inline_types.get(prop_ref_type, {}))
       if not type_obj:
         return
       if 'properties' in type_obj:
@@ -113,17 +113,18 @@ def parse_idl_file(path):
       if (prop.get('type', '') == 'array' and
           prop.get('items', {}).get('$ref', '').startswith(namespace_dot)):
         prop['items']['$ref'] = prop['items']['$ref'][len(namespace_dot):]
-      if prop.get('inline_doc', False):
-        del prop['inline_doc']
-        SubstituteInlineDoc(prop)
-        if 'items' in prop:
-          SubstituteInlineDoc(prop['items'])
+      SubstituteInlineDoc(prop)
+      if 'items' in prop:
+        SubstituteInlineDoc(prop['items'])
 
     for type_ in namespace_def.get('types', []):
       if type_.get('id', '').startswith(namespace_dot):
         type_['id'] = type_['id'][len(namespace_dot):]
       for prop in type_.get('properties', {}).values():
         FixReferences(prop)
+      if type_.get('inline_doc', False):
+        del type_['inline_doc']
+        type_['nodoc'] = True
     for func in namespace_def.get('functions', []):
       for param in func.get('parameters', []):
         FixReferences(param)

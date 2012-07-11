@@ -38,9 +38,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/downloads.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_save_info.h"
+#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -324,10 +326,7 @@ void GetManagers(
   }
 }
 
-DownloadItem* GetActiveItemInternal(
-    Profile* profile,
-    bool include_incognito,
-    int id) {
+DownloadItem* GetActiveItem(Profile* profile, bool include_incognito, int id) {
   DownloadManager* manager = NULL;
   DownloadManager* incognito_manager = NULL;
   GetManagers(profile, include_incognito, &manager, &incognito_manager);
@@ -337,299 +336,38 @@ DownloadItem* GetActiveItemInternal(
   return download_item;
 }
 
-}  // namespace
+enum DownloadsFunctionName {
+  DOWNLOADS_FUNCTION_DOWNLOAD = 0,
+  DOWNLOADS_FUNCTION_SEARCH = 1,
+  DOWNLOADS_FUNCTION_PAUSE = 2,
+  DOWNLOADS_FUNCTION_RESUME = 3,
+  DOWNLOADS_FUNCTION_CANCEL = 4,
+  DOWNLOADS_FUNCTION_ERASE = 5,
+  DOWNLOADS_FUNCTION_SET_DESTINATION = 6,
+  DOWNLOADS_FUNCTION_ACCEPT_DANGER = 7,
+  DOWNLOADS_FUNCTION_SHOW = 8,
+  DOWNLOADS_FUNCTION_DRAG = 9,
+  DOWNLOADS_FUNCTION_GET_FILE_ICON = 10,
+  DOWNLOADS_FUNCTION_OPEN = 11,
+  // Insert new values here, not at the beginning.
+  DOWNLOADS_FUNCTION_LAST
+};
 
-bool DownloadsFunctionInterface::RunImplImpl(
-    DownloadsFunctionInterface* pimpl) {
-  CHECK(pimpl);
-  if (!pimpl->ParseArgs()) return false;
-  UMA_HISTOGRAM_ENUMERATION(
-      "Download.ApiFunctions", pimpl->function(), DOWNLOADS_FUNCTION_LAST);
-  return pimpl->RunInternal();
+void RecordApiFunctions(DownloadsFunctionName function) {
+  UMA_HISTOGRAM_ENUMERATION("Download.ApiFunctions",
+                            function,
+                            DOWNLOADS_FUNCTION_LAST);
 }
 
-SyncDownloadsFunction::SyncDownloadsFunction(
-    DownloadsFunctionInterface::DownloadsFunctionName function)
-  : function_(function) {
-}
-
-SyncDownloadsFunction::~SyncDownloadsFunction() {}
-
-bool SyncDownloadsFunction::RunImpl() {
-  return DownloadsFunctionInterface::RunImplImpl(this);
-}
-
-DownloadsFunctionInterface::DownloadsFunctionName
-SyncDownloadsFunction::function() const {
-  return function_;
-}
-
-DownloadItem* SyncDownloadsFunction::GetActiveItem(int download_id) {
-  return GetActiveItemInternal(profile(), include_incognito(), download_id);
-}
-
-AsyncDownloadsFunction::AsyncDownloadsFunction(
-    DownloadsFunctionInterface::DownloadsFunctionName function)
-  : function_(function) {
-}
-
-AsyncDownloadsFunction::~AsyncDownloadsFunction() {}
-
-bool AsyncDownloadsFunction::RunImpl() {
-  return DownloadsFunctionInterface::RunImplImpl(this);
-}
-
-DownloadsFunctionInterface::DownloadsFunctionName
-AsyncDownloadsFunction::function() const {
-  return function_;
-}
-
-DownloadItem* AsyncDownloadsFunction::GetActiveItem(int download_id) {
-  return GetActiveItemInternal(profile(), include_incognito(), download_id);
-}
-
-DownloadsDownloadFunction::DownloadsDownloadFunction()
-  : AsyncDownloadsFunction(DOWNLOADS_FUNCTION_DOWNLOAD) {
-}
-
-DownloadsDownloadFunction::~DownloadsDownloadFunction() {}
-
-DownloadsDownloadFunction::IOData::IOData()
-  : save_as(false),
-    extra_headers(NULL),
-    method("GET"),
-    rdh(NULL),
-    resource_context(NULL),
-    render_process_host_id(0),
-    render_view_host_routing_id(0) {
-}
-
-DownloadsDownloadFunction::IOData::~IOData() {}
-
-bool DownloadsDownloadFunction::ParseArgs() {
-  base::DictionaryValue* options = NULL;
-  std::string url;
-  iodata_.reset(new IOData());
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &options));
-  EXTENSION_FUNCTION_VALIDATE(options->GetString(kUrlKey, &url));
-  iodata_->url = GURL(url);
-  if (!iodata_->url.is_valid()) {
-    error_ = download_extension_errors::kInvalidURLError;
-    return false;
-  }
-
-  if (!iodata_->url.SchemeIs("data") &&
-      iodata_->url.GetOrigin() != GetExtension()->url().GetOrigin() &&
-      !GetExtension()->HasHostPermission(iodata_->url)) {
-    error_ = download_extension_errors::kInvalidURLError;
-    return false;
-  }
-
-  if (options->HasKey(kFilenameKey)) {
-    EXTENSION_FUNCTION_VALIDATE(options->GetString(
-        kFilenameKey, &iodata_->filename));
-    if (!ValidateFilename(iodata_->filename)) {
-      error_ = download_extension_errors::kGenericError;
-      return false;
-    }
-  }
-
-  if (options->HasKey(kSaveAsKey)) {
-    EXTENSION_FUNCTION_VALIDATE(options->GetBoolean(
-        kSaveAsKey, &iodata_->save_as));
-  }
-
-  if (options->HasKey(kMethodKey)) {
-    EXTENSION_FUNCTION_VALIDATE(options->GetString(
-        kMethodKey, &iodata_->method));
-  }
-
-  // It's ok to use a pointer to extra_headers without DeepCopy()ing because
-  // |args_| (which owns *extra_headers) is guaranteed to live as long as
-  // |this|.
-  if (options->HasKey(kHeadersKey)) {
-    EXTENSION_FUNCTION_VALIDATE(options->GetList(
-        kHeadersKey, &iodata_->extra_headers));
-  }
-
-  if (options->HasKey(kBodyKey)) {
-    EXTENSION_FUNCTION_VALIDATE(options->GetString(
-        kBodyKey, &iodata_->post_body));
-  }
-
-  if (iodata_->extra_headers != NULL) {
-    for (size_t index = 0; index < iodata_->extra_headers->GetSize(); ++index) {
-      base::DictionaryValue* header = NULL;
-      std::string name;
-      EXTENSION_FUNCTION_VALIDATE(iodata_->extra_headers->GetDictionary(
-            index, &header));
-      EXTENSION_FUNCTION_VALIDATE(header->GetString(
-            kHeaderNameKey, &name));
-      if (!net::HttpUtil::IsSafeHeader(name)) {
-        error_ = download_extension_errors::kGenericError;
-        return false;
-      }
-    }
-  }
-  iodata_->rdh = content::ResourceDispatcherHost::Get();
-  iodata_->resource_context = profile()->GetResourceContext();
-  iodata_->render_process_host_id = render_view_host()->GetProcess()->GetID();
-  iodata_->render_view_host_routing_id = render_view_host()->GetRoutingID();
-  return true;
-}
-
-bool DownloadsDownloadFunction::RunInternal() {
-  VLOG(1) << __FUNCTION__ << " " << iodata_->url.spec();
-  if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-          &DownloadsDownloadFunction::BeginDownloadOnIOThread, this))) {
-    error_ = download_extension_errors::kGenericError;
-    return false;
-  }
-  return true;
-}
-
-void DownloadsDownloadFunction::BeginDownloadOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DVLOG(1) << __FUNCTION__ << " " << iodata_->url.spec();
-  content::DownloadSaveInfo save_info;
-  // TODO(benjhayden) Ensure that this filename is interpreted as a path
-  // relative to the default downloads directory without allowing '..'.
-  save_info.suggested_name = iodata_->filename;
-  save_info.prompt_for_save_location = iodata_->save_as;
-
-  scoped_ptr<net::URLRequest> request(new net::URLRequest(
-      iodata_->url,
-      NULL,
-      iodata_->resource_context->GetRequestContext()));
-  request->set_method(iodata_->method);
-  if (iodata_->extra_headers != NULL) {
-    for (size_t index = 0; index < iodata_->extra_headers->GetSize(); ++index) {
-      base::DictionaryValue* header = NULL;
-      std::string name, value;
-      CHECK(iodata_->extra_headers->GetDictionary(index, &header));
-      CHECK(header->GetString(kHeaderNameKey, &name));
-      CHECK(header->GetString(kHeaderValueKey, &value));
-      request->SetExtraRequestHeaderByName(name, value, false/*overwrite*/);
-    }
-  }
-  if (!iodata_->post_body.empty()) {
-    request->AppendBytesToUpload(iodata_->post_body.data(),
-                                 iodata_->post_body.size());
-  }
-
-  // Prevent login prompts for 401/407 responses.
-  request->set_load_flags(request->load_flags() |
-                          net::LOAD_DO_NOT_PROMPT_FOR_LOGIN);
-
-  net::Error error = iodata_->rdh->BeginDownload(
-      request.Pass(),
-      false,  // is_content_initiated
-      iodata_->resource_context,
-      iodata_->render_process_host_id,
-      iodata_->render_view_host_routing_id,
-      false,  // prefer_cache
-      save_info,
-      base::Bind(&DownloadsDownloadFunction::OnStarted, this));
-  iodata_.reset();
-
-  if (error != net::OK) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&DownloadsDownloadFunction::OnStarted, this,
-                   DownloadId::Invalid(), error));
-  }
-}
-
-void DownloadsDownloadFunction::OnStarted(DownloadId dl_id, net::Error error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  VLOG(1) << __FUNCTION__ << " " << dl_id << " " << error;
-  if (dl_id.local() >= 0) {
-    result_.reset(base::Value::CreateIntegerValue(dl_id.local()));
-  } else {
-    error_ = net::ErrorToString(error);
-  }
-  SendResponse(error_.empty());
-}
-
-DownloadsSearchFunction::DownloadsSearchFunction()
-  : SyncDownloadsFunction(DOWNLOADS_FUNCTION_SEARCH),
-    query_(new DownloadQuery()),
-    get_id_(0),
-    has_get_id_(false) {
-}
-
-DownloadsSearchFunction::~DownloadsSearchFunction() {}
-
-bool DownloadsSearchFunction::ParseArgs() {
-  static base::LazyInstance<FilterTypeMap> filter_types =
-    LAZY_INSTANCE_INITIALIZER;
-  if (filter_types.Get().size() == 0)
-    InitFilterTypeMap(filter_types.Get());
-
-  base::DictionaryValue* query_json = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &query_json));
-  for (base::DictionaryValue::Iterator query_json_field(*query_json);
-       query_json_field.HasNext(); query_json_field.Advance()) {
-    FilterTypeMap::const_iterator filter_type =
-        filter_types.Get().find(query_json_field.key());
-
-    if (filter_type != filter_types.Get().end()) {
-      if (!query_->AddFilter(filter_type->second, query_json_field.value())) {
-        error_ = download_extension_errors::kInvalidFilterError;
-        return false;
-      }
-    } else if (query_json_field.key() == kIdKey) {
-      EXTENSION_FUNCTION_VALIDATE(query_json_field.value().GetAsInteger(
-          &get_id_));
-      has_get_id_ = true;
-    } else if (query_json_field.key() == kOrderByKey) {
-      if (!ParseOrderBy(query_json_field.value()))
-        return false;
-    } else if (query_json_field.key() == kDangerKey) {
-      std::string danger_str;
-      EXTENSION_FUNCTION_VALIDATE(query_json_field.value().GetAsString(
-          &danger_str));
-      content::DownloadDangerType danger_type =
-          DangerEnumFromString(danger_str);
-      if (danger_type == content::DOWNLOAD_DANGER_TYPE_MAX) {
-        error_ = download_extension_errors::kInvalidDangerTypeError;
-        return false;
-      }
-      query_->AddFilter(danger_type);
-    } else if (query_json_field.key() == kStateKey) {
-      std::string state_str;
-      EXTENSION_FUNCTION_VALIDATE(query_json_field.value().GetAsString(
-          &state_str));
-      DownloadItem::DownloadState state = StateEnumFromString(state_str);
-      if (state == DownloadItem::MAX_DOWNLOAD_STATE) {
-        error_ = download_extension_errors::kInvalidStateError;
-        return false;
-      }
-      query_->AddFilter(state);
-    } else if (query_json_field.key() == kLimitKey) {
-      int limit = 0;
-      EXTENSION_FUNCTION_VALIDATE(query_json_field.value().GetAsInteger(
-          &limit));
-      if (limit < 0) {
-        error_ = download_extension_errors::kInvalidQueryLimit;
-        return false;
-      }
-      query_->Limit(limit);
-    } else {
-      EXTENSION_FUNCTION_VALIDATE(false);
-    }
-  }
-  return true;
-}
-
-bool DownloadsSearchFunction::ParseOrderBy(const base::Value& order_by_value) {
+void CompileDownloadQueryOrderBy(
+    const std::string& order_by_str, std::string* error, DownloadQuery* query) {
+  // TODO(benjhayden): Consider switching from LazyInstance to explicit string
+  // comparisons.
   static base::LazyInstance<SortTypeMap> sorter_types =
     LAZY_INSTANCE_INITIALIZER;
   if (sorter_types.Get().size() == 0)
     InitSortTypeMap(sorter_types.Get());
 
-  std::string order_by_str;
-  EXTENSION_FUNCTION_VALIDATE(order_by_value.GetAsString(&order_by_str));
   std::vector<std::string> order_by_strs;
   base::SplitString(order_by_str, ' ', &order_by_strs);
   for (std::vector<std::string>::const_iterator iter = order_by_strs.begin();
@@ -645,23 +383,80 @@ bool DownloadsSearchFunction::ParseOrderBy(const base::Value& order_by_value) {
     SortTypeMap::const_iterator sorter_type =
         sorter_types.Get().find(term_str);
     if (sorter_type == sorter_types.Get().end()) {
-      error_ = download_extension_errors::kInvalidOrderByError;
-      return false;
+      *error = download_extension_errors::kInvalidOrderByError;
+      return;
     }
-    query_->AddSorter(sorter_type->second, direction);
+    query->AddSorter(sorter_type->second, direction);
   }
-  return true;
 }
 
-bool DownloadsSearchFunction::RunInternal() {
+void RunDownloadQuery(
+    const extensions::api::downloads::DownloadQuery& query_in,
+    Profile* profile,
+    bool include_incognito,
+    std::string* error,
+    DownloadQuery::DownloadVector* results) {
+  // TODO(benjhayden): Consider switching from LazyInstance to explicit string
+  // comparisons.
+  static base::LazyInstance<FilterTypeMap> filter_types =
+    LAZY_INSTANCE_INITIALIZER;
+  if (filter_types.Get().size() == 0)
+    InitFilterTypeMap(filter_types.Get());
+
+  DownloadQuery query_out;
+
+  if (query_in.limit.get()) {
+    if (*query_in.limit.get() < 0) {
+      *error = download_extension_errors::kInvalidQueryLimit;
+      return;
+    }
+    query_out.Limit(*query_in.limit.get());
+  }
+  if (query_in.state.get()) {
+    DownloadItem::DownloadState state = StateEnumFromString(
+        *query_in.state.get());
+    if (state == DownloadItem::MAX_DOWNLOAD_STATE) {
+      *error = download_extension_errors::kInvalidStateError;
+      return;
+    }
+    query_out.AddFilter(state);
+  }
+  if (query_in.danger.get()) {
+    content::DownloadDangerType danger_type =
+        DangerEnumFromString(*query_in.danger.get());
+    if (danger_type == content::DOWNLOAD_DANGER_TYPE_MAX) {
+      *error = download_extension_errors::kInvalidDangerTypeError;
+      return;
+    }
+    query_out.AddFilter(danger_type);
+  }
+  if (query_in.order_by.get()) {
+    CompileDownloadQueryOrderBy(*query_in.order_by.get(), error, &query_out);
+    if (!error->empty())
+      return;
+  }
+
+  scoped_ptr<base::DictionaryValue> query_in_value(query_in.ToValue().Pass());
+  for (base::DictionaryValue::Iterator query_json_field(*query_in_value.get());
+       query_json_field.HasNext(); query_json_field.Advance()) {
+    FilterTypeMap::const_iterator filter_type =
+        filter_types.Get().find(query_json_field.key());
+    if (filter_type != filter_types.Get().end()) {
+      if (!query_out.AddFilter(filter_type->second, query_json_field.value())) {
+        *error = download_extension_errors::kInvalidFilterError;
+        return;
+      }
+    }
+  }
+
   DownloadManager* manager = NULL;
   DownloadManager* incognito_manager = NULL;
-  GetManagers(profile(), include_incognito(), &manager, &incognito_manager);
-  DownloadQuery::DownloadVector all_items, cpp_results;
-  if (has_get_id_) {
-    DownloadItem* item = manager->GetDownloadItem(get_id_);
+  GetManagers(profile, include_incognito, &manager, &incognito_manager);
+  DownloadQuery::DownloadVector all_items;
+  if (query_in.id.get()) {
+    DownloadItem* item = manager->GetDownloadItem(*query_in.id.get());
     if (!item && incognito_manager)
-      item = incognito_manager->GetDownloadItem(get_id_);
+      item = incognito_manager->GetDownloadItem(*query_in.id.get());
     if (item)
       all_items.push_back(item);
   } else {
@@ -670,31 +465,136 @@ bool DownloadsSearchFunction::RunInternal() {
       incognito_manager->GetAllDownloads(
           FilePath(FILE_PATH_LITERAL("")), &all_items);
   }
-  query_->Search(all_items.begin(), all_items.end(), &cpp_results);
+  query_out.Search(all_items.begin(), all_items.end(), results);
+}
+
+}  // namespace
+
+DownloadsDownloadFunction::DownloadsDownloadFunction() {}
+DownloadsDownloadFunction::~DownloadsDownloadFunction() {}
+
+bool DownloadsDownloadFunction::RunImpl() {
+  scoped_ptr<extensions::api::downloads::Download::Params> params(
+      extensions::api::downloads::Download::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  const extensions::api::downloads::DownloadOptions& options = params->options;
+  GURL download_url(options.url);
+  if (!download_url.is_valid() ||
+      (!download_url.SchemeIs("data") &&
+       download_url.GetOrigin() != GetExtension()->url().GetOrigin() &&
+       !GetExtension()->HasHostPermission(download_url))) {
+    error_ = download_extension_errors::kInvalidURLError;
+    return false;
+  }
+
+  content::DownloadSaveInfo save_info;
+  if (options.filename.get()) {
+    // TODO(benjhayden): Make json_schema_compiler generate string16s instead of
+    // std::strings. Can't get filename16 from options.ToValue() because that
+    // converts it from std::string.
+    base::DictionaryValue* options_value = NULL;
+    EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &options_value));
+    string16 filename16;
+    EXTENSION_FUNCTION_VALIDATE(options_value->GetString(
+        kFilenameKey, &filename16));
+    if (!ValidateFilename(filename16)) {
+      error_ = download_extension_errors::kGenericError;
+      return false;
+    }
+    // TODO(benjhayden) Ensure that this filename is interpreted as a path
+    // relative to the default downloads directory without allowing '..'.
+    save_info.suggested_name = filename16;
+  }
+
+  if (options.save_as.get())
+    save_info.prompt_for_save_location = *options.save_as.get();
+
+  Profile* current_profile = profile();
+  if (include_incognito() && profile()->HasOffTheRecordProfile())
+    current_profile = profile()->GetOffTheRecordProfile();
+
+  scoped_ptr<content::DownloadUrlParameters> download_params(
+      new content::DownloadUrlParameters(
+          download_url,
+          render_view_host()->GetProcess()->GetID(),
+          render_view_host()->GetRoutingID(),
+          current_profile->GetResourceContext(),
+          save_info));
+
+  if (options.headers.get()) {
+    typedef extensions::api::downloads::HeaderNameValuePair HeaderNameValuePair;
+    for (std::vector<linked_ptr<HeaderNameValuePair> >::const_iterator iter =
+         options.headers->begin();
+         iter != options.headers->end();
+         ++iter) {
+      const HeaderNameValuePair& name_value = **iter;
+      if (!net::HttpUtil::IsSafeHeader(name_value.name)) {
+        error_ = download_extension_errors::kGenericError;
+        return false;
+      }
+      download_params->add_request_header(name_value.name, name_value.value);
+    }
+  }
+
+  if (options.method.get())
+    download_params->set_method(*options.method.get());
+  if (options.body.get())
+    download_params->set_post_body(*options.body.get());
+  download_params->set_callback(base::Bind(
+      &DownloadsDownloadFunction::OnStarted, this));
+  // Prevent login prompts for 401/407 responses.
+  download_params->set_load_flags(net::LOAD_DO_NOT_PROMPT_FOR_LOGIN);
+
+  DownloadManager* manager = BrowserContext::GetDownloadManager(
+      current_profile);
+  manager->DownloadUrl(download_params.Pass());
+  RecordApiFunctions(DOWNLOADS_FUNCTION_DOWNLOAD);
+  return true;
+}
+
+void DownloadsDownloadFunction::OnStarted(DownloadId dl_id, net::Error error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  VLOG(1) << __FUNCTION__ << " " << dl_id << " " << error;
+  if (dl_id.local() >= 0) {
+    result_.reset(base::Value::CreateIntegerValue(dl_id.local()));
+  } else {
+    error_ = net::ErrorToString(error);
+  }
+  SendResponse(error_.empty());
+}
+
+DownloadsSearchFunction::DownloadsSearchFunction() {}
+DownloadsSearchFunction::~DownloadsSearchFunction() {}
+
+bool DownloadsSearchFunction::RunImpl() {
+  scoped_ptr<extensions::api::downloads::Search::Params> params(
+      extensions::api::downloads::Search::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  DownloadQuery::DownloadVector results;
+  RunDownloadQuery(params->query, profile(), include_incognito(),
+                   &error_, &results);
+  if (!error_.empty())
+    return false;
   base::ListValue* json_results = new base::ListValue();
-  for (DownloadManager::DownloadVector::const_iterator it = cpp_results.begin();
-       it != cpp_results.end(); ++it) {
+  for (DownloadManager::DownloadVector::const_iterator it = results.begin();
+       it != results.end(); ++it) {
     scoped_ptr<base::DictionaryValue> item(DownloadItemToJSON(*it));
     json_results->Append(item.release());
   }
   result_.reset(json_results);
+  RecordApiFunctions(DOWNLOADS_FUNCTION_SEARCH);
   return true;
 }
 
-DownloadsPauseFunction::DownloadsPauseFunction()
-  : SyncDownloadsFunction(DOWNLOADS_FUNCTION_PAUSE),
-    download_id_(DownloadId::Invalid().local()) {
-}
-
+DownloadsPauseFunction::DownloadsPauseFunction() {}
 DownloadsPauseFunction::~DownloadsPauseFunction() {}
 
-bool DownloadsPauseFunction::ParseArgs() {
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &download_id_));
-  return true;
-}
-
-bool DownloadsPauseFunction::RunInternal() {
-  DownloadItem* download_item = GetActiveItem(download_id_);
+bool DownloadsPauseFunction::RunImpl() {
+  scoped_ptr<extensions::api::downloads::Pause::Params> params(
+      extensions::api::downloads::Pause::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  DownloadItem* download_item = GetActiveItem(
+      profile(), include_incognito(), params->download_id);
   if ((download_item == NULL) || !download_item->IsInProgress()) {
     // This could be due to an invalid download ID, or it could be due to the
     // download not being currently active.
@@ -703,23 +603,20 @@ bool DownloadsPauseFunction::RunInternal() {
     // If download_item->IsPaused() already then we treat it as a success.
     download_item->TogglePause();
   }
+  if (error_.empty())
+    RecordApiFunctions(DOWNLOADS_FUNCTION_PAUSE);
   return error_.empty();
 }
 
-DownloadsResumeFunction::DownloadsResumeFunction()
-  : SyncDownloadsFunction(DOWNLOADS_FUNCTION_RESUME),
-    download_id_(DownloadId::Invalid().local()) {
-}
-
+DownloadsResumeFunction::DownloadsResumeFunction() {}
 DownloadsResumeFunction::~DownloadsResumeFunction() {}
 
-bool DownloadsResumeFunction::ParseArgs() {
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &download_id_));
-  return true;
-}
-
-bool DownloadsResumeFunction::RunInternal() {
-  DownloadItem* download_item = GetActiveItem(download_id_);
+bool DownloadsResumeFunction::RunImpl() {
+  scoped_ptr<extensions::api::downloads::Resume::Params> params(
+      extensions::api::downloads::Resume::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  DownloadItem* download_item = GetActiveItem(
+      profile(), include_incognito(), params->download_id);
   if (download_item == NULL) {
     // This could be due to an invalid download ID, or it could be due to the
     // download not being currently active.
@@ -728,130 +625,110 @@ bool DownloadsResumeFunction::RunInternal() {
     // If !download_item->IsPaused() already, then we treat it as a success.
     download_item->TogglePause();
   }
+  if (error_.empty())
+    RecordApiFunctions(DOWNLOADS_FUNCTION_RESUME);
   return error_.empty();
 }
 
-DownloadsCancelFunction::DownloadsCancelFunction()
-  : SyncDownloadsFunction(DOWNLOADS_FUNCTION_CANCEL),
-    download_id_(DownloadId::Invalid().local()) {
-}
-
+DownloadsCancelFunction::DownloadsCancelFunction() {}
 DownloadsCancelFunction::~DownloadsCancelFunction() {}
 
-bool DownloadsCancelFunction::ParseArgs() {
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &download_id_));
-  return true;
-}
-
-bool DownloadsCancelFunction::RunInternal() {
-  DownloadItem* download_item = GetActiveItem(download_id_);
+bool DownloadsCancelFunction::RunImpl() {
+  scoped_ptr<extensions::api::downloads::Resume::Params> params(
+      extensions::api::downloads::Resume::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  DownloadItem* download_item = GetActiveItem(
+      profile(), include_incognito(), params->download_id);
   if (download_item != NULL)
     download_item->Cancel(true);
   // |download_item| can be NULL if the download ID was invalid or if the
   // download is not currently active.  Either way, we don't consider it a
   // failure.
+  if (error_.empty())
+    RecordApiFunctions(DOWNLOADS_FUNCTION_CANCEL);
   return error_.empty();
 }
 
-DownloadsEraseFunction::DownloadsEraseFunction()
-  : AsyncDownloadsFunction(DOWNLOADS_FUNCTION_ERASE) {
-}
-
+DownloadsEraseFunction::DownloadsEraseFunction() {}
 DownloadsEraseFunction::~DownloadsEraseFunction() {}
 
-bool DownloadsEraseFunction::ParseArgs() {
-  base::DictionaryValue* query_json = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &query_json));
+bool DownloadsEraseFunction::RunImpl() {
+  scoped_ptr<extensions::api::downloads::Erase::Params> params(
+      extensions::api::downloads::Erase::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
   error_ = download_extension_errors::kNotImplementedError;
-  return false;
+  if (error_.empty())
+    RecordApiFunctions(DOWNLOADS_FUNCTION_ERASE);
+  return error_.empty();
 }
 
-bool DownloadsEraseFunction::RunInternal() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-DownloadsSetDestinationFunction::DownloadsSetDestinationFunction()
-  : AsyncDownloadsFunction(DOWNLOADS_FUNCTION_SET_DESTINATION) {
-}
-
+DownloadsSetDestinationFunction::DownloadsSetDestinationFunction() {}
 DownloadsSetDestinationFunction::~DownloadsSetDestinationFunction() {}
 
-bool DownloadsSetDestinationFunction::ParseArgs() {
-  int dl_id = 0;
-  std::string path;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &path));
-  VLOG(1) << __FUNCTION__ << " " << dl_id << " " << &path;
+bool DownloadsSetDestinationFunction::RunImpl() {
+  scoped_ptr<extensions::api::downloads::SetDestination::Params> params(
+      extensions::api::downloads::SetDestination::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
   error_ = download_extension_errors::kNotImplementedError;
-  return false;
+  if (error_.empty())
+    RecordApiFunctions(DOWNLOADS_FUNCTION_SET_DESTINATION);
+  return error_.empty();
 }
 
-bool DownloadsSetDestinationFunction::RunInternal() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-DownloadsAcceptDangerFunction::DownloadsAcceptDangerFunction()
-  : AsyncDownloadsFunction(DOWNLOADS_FUNCTION_ACCEPT_DANGER) {
-}
-
+DownloadsAcceptDangerFunction::DownloadsAcceptDangerFunction() {}
 DownloadsAcceptDangerFunction::~DownloadsAcceptDangerFunction() {}
 
-bool DownloadsAcceptDangerFunction::ParseArgs() {
-  int dl_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
-  VLOG(1) << __FUNCTION__ << " " << dl_id;
+bool DownloadsAcceptDangerFunction::RunImpl() {
+  scoped_ptr<extensions::api::downloads::AcceptDanger::Params> params(
+      extensions::api::downloads::AcceptDanger::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
   error_ = download_extension_errors::kNotImplementedError;
-  return false;
+  if (error_.empty())
+    RecordApiFunctions(DOWNLOADS_FUNCTION_ACCEPT_DANGER);
+  return error_.empty();
 }
 
-bool DownloadsAcceptDangerFunction::RunInternal() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-DownloadsShowFunction::DownloadsShowFunction()
-  : AsyncDownloadsFunction(DOWNLOADS_FUNCTION_SHOW) {
-}
-
+DownloadsShowFunction::DownloadsShowFunction() {}
 DownloadsShowFunction::~DownloadsShowFunction() {}
 
-bool DownloadsShowFunction::ParseArgs() {
-  int dl_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
-  VLOG(1) << __FUNCTION__ << " " << dl_id;
+bool DownloadsShowFunction::RunImpl() {
+  scoped_ptr<extensions::api::downloads::Show::Params> params(
+      extensions::api::downloads::Show::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
   error_ = download_extension_errors::kNotImplementedError;
-  return false;
+  if (error_.empty())
+    RecordApiFunctions(DOWNLOADS_FUNCTION_SHOW);
+  return error_.empty();
 }
 
-bool DownloadsShowFunction::RunInternal() {
-  NOTIMPLEMENTED();
-  return false;
+DownloadsOpenFunction::DownloadsOpenFunction() {}
+DownloadsOpenFunction::~DownloadsOpenFunction() {}
+
+bool DownloadsOpenFunction::RunImpl() {
+  scoped_ptr<extensions::api::downloads::Open::Params> params(
+      extensions::api::downloads::Open::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  error_ = download_extension_errors::kNotImplementedError;
+  if (error_.empty())
+    RecordApiFunctions(DOWNLOADS_FUNCTION_OPEN);
+  return error_.empty();
 }
 
-DownloadsDragFunction::DownloadsDragFunction()
-  : AsyncDownloadsFunction(DOWNLOADS_FUNCTION_DRAG) {
-}
-
+DownloadsDragFunction::DownloadsDragFunction() {}
 DownloadsDragFunction::~DownloadsDragFunction() {}
 
-bool DownloadsDragFunction::ParseArgs() {
-  int dl_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
-  VLOG(1) << __FUNCTION__ << " " << dl_id;
+bool DownloadsDragFunction::RunImpl() {
+  scoped_ptr<extensions::api::downloads::Drag::Params> params(
+      extensions::api::downloads::Drag::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
   error_ = download_extension_errors::kNotImplementedError;
-  return false;
-}
-
-bool DownloadsDragFunction::RunInternal() {
-  NOTIMPLEMENTED();
-  return false;
+  if (error_.empty())
+    RecordApiFunctions(DOWNLOADS_FUNCTION_DRAG);
+  return error_.empty();
 }
 
 DownloadsGetFileIconFunction::DownloadsGetFileIconFunction()
-  : AsyncDownloadsFunction(DOWNLOADS_FUNCTION_GET_FILE_ICON),
-    icon_size_(kDefaultIconSize),
+  : icon_size_(kDefaultIconSize),
     icon_extractor_(new DownloadFileIconExtractorImpl()) {
 }
 
@@ -863,25 +740,21 @@ void DownloadsGetFileIconFunction::SetIconExtractorForTesting(
   icon_extractor_.reset(extractor);
 }
 
-bool DownloadsGetFileIconFunction::ParseArgs() {
-  int dl_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
-
-  base::DictionaryValue* options = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &options));
-  if (options->HasKey(kSizeKey)) {
-    EXTENSION_FUNCTION_VALIDATE(options->GetInteger(kSizeKey, &icon_size_));
-    // We only support 16px and 32px icons. This is enforced in
-    // downloads.json.
-    DCHECK(icon_size_ == 16 || icon_size_ == 32);
-  }
-
+bool DownloadsGetFileIconFunction::RunImpl() {
+  scoped_ptr<extensions::api::downloads::GetFileIcon::Params> params(
+      extensions::api::downloads::GetFileIcon::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  const extensions::api::downloads::GetFileIconOptions* options =
+      params->options.get();
+  int icon_size = kDefaultIconSize;
+  if (options && options->size.get())
+    icon_size = *options->size.get();
   DownloadManager* manager = NULL;
   DownloadManager* incognito_manager = NULL;
   GetManagers(profile(), include_incognito(), &manager, &incognito_manager);
-  DownloadItem* download_item = manager->GetDownloadItem(dl_id);
+  DownloadItem* download_item = manager->GetDownloadItem(params->download_id);
   if (!download_item && incognito_manager)
-    download_item = incognito_manager->GetDownloadItem(dl_id);
+    download_item = incognito_manager->GetDownloadItem(params->download_id);
   if (!download_item) {
     // The DownloadItem is is added to history when the path is determined. If
     // the download is not in history, then we don't have a path / final
@@ -892,26 +765,24 @@ bool DownloadsGetFileIconFunction::ParseArgs() {
   // In-progress downloads return the intermediate filename for GetFullPath()
   // which doesn't have the final extension. Therefore we won't be able to
   // derive a good file icon for it. So we use GetTargetFilePath() instead.
-  path_ = download_item->GetTargetFilePath();
-  DCHECK(!path_.empty());
-  return true;
-}
-
-bool DownloadsGetFileIconFunction::RunInternal() {
-  DCHECK(!path_.empty());
+  FilePath path = download_item->GetTargetFilePath();
+  DCHECK(!path.empty());
   DCHECK(icon_extractor_.get());
+  DCHECK(icon_size == 16 || icon_size == 32);
   EXTENSION_FUNCTION_VALIDATE(icon_extractor_->ExtractIconURLForPath(
-      path_, IconLoaderSizeFromPixelSize(icon_size_),
+      path, IconLoaderSizeFromPixelSize(icon_size),
       base::Bind(&DownloadsGetFileIconFunction::OnIconURLExtracted, this)));
   return true;
 }
 
 void DownloadsGetFileIconFunction::OnIconURLExtracted(const std::string& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (url.empty())
+  if (url.empty()) {
     error_ = download_extension_errors::kIconNotFoundError;
-  else
+  } else {
+    RecordApiFunctions(DOWNLOADS_FUNCTION_GET_FILE_ICON);
     result_.reset(base::Value::CreateStringValue(url));
+  }
   SendResponse(error_.empty());
 }
 
