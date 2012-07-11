@@ -108,6 +108,9 @@ class OffTheRecordProfileIOData : public ProfileIOData {
           ChromeURLRequestContext* main_context,
           const std::string& app_id) const OVERRIDE;
 
+  void CreateFtpProtocolHandler(net::URLRequestJobFactory* job_factory,
+                                net::FtpAuthCache* ftp_auth_cache) const;
+
   mutable scoped_ptr<net::HttpServerPropertiesImpl> http_server_properties_;
 
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;

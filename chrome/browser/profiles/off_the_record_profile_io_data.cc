@@ -27,6 +27,7 @@
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_server_properties_impl.h"
+#include "net/url_request/ftp_protocol_handler.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "webkit/database/database_tracker.h"
 
@@ -254,8 +255,13 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
   job_factories[0] = main_job_factory_.get();
   job_factories[1] = extensions_job_factory_.get();
 
+  net::FtpAuthCache* ftp_auth_caches[2];
+  ftp_auth_caches[0] = main_context->ftp_auth_cache();
+  ftp_auth_caches[1] = extensions_context->ftp_auth_cache();
+
   for (int i = 0; i < 2; i++) {
     SetUpJobFactoryDefaults(job_factories[i]);
+    CreateFtpProtocolHandler(job_factories[i], ftp_auth_caches[i]);
   }
 
   main_context->set_job_factory(main_job_factory_.get());
@@ -304,3 +310,13 @@ OffTheRecordProfileIOData::AcquireIsolatedAppRequestContext(
   DCHECK(app_request_context);
   return app_request_context;
 }
+
+void OffTheRecordProfileIOData::CreateFtpProtocolHandler(
+    net::URLRequestJobFactory* job_factory,
+    net::FtpAuthCache* ftp_auth_cache) const {
+  job_factory->SetProtocolHandler(
+      chrome::kFtpScheme,
+      new net::FtpProtocolHandler(
+          network_delegate(), ftp_factory_.get(), ftp_auth_cache));
+}
+

@@ -141,6 +141,9 @@ class ProfileImplIOData : public ProfileIOData {
           ChromeURLRequestContext* main_context,
           const std::string& app_id) const OVERRIDE;
 
+  void CreateFtpProtocolHandler(net::URLRequestJobFactory* job_factory,
+                                net::FtpAuthCache* ftp_auth_cache) const;
+
   // Clears the networking history since |time|.
   void ClearNetworkingHistorySinceOnIOThread(base::Time time);
 

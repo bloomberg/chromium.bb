@@ -30,6 +30,7 @@
 #include "net/base/server_bound_cert_service.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
+#include "net/url_request/ftp_protocol_handler.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "webkit/quota/special_storage_policy.h"
 
@@ -446,8 +447,14 @@ void ProfileImplIOData::LazyInitializeInternal(
   job_factories[1] = media_request_job_factory_.get();
   job_factories[2] = extensions_job_factory_.get();
 
+  net::FtpAuthCache* ftp_auth_caches[3];
+  ftp_auth_caches[0] = main_context->ftp_auth_cache();
+  ftp_auth_caches[1] = media_request_context_->ftp_auth_cache();
+  ftp_auth_caches[2] = extensions_context->ftp_auth_cache();
+
   for (int i = 0; i < 3; i++) {
     SetUpJobFactoryDefaults(job_factories[i]);
+    CreateFtpProtocolHandler(job_factories[i], ftp_auth_caches[i]);
     job_factories[i]->AddInterceptor(
         new chrome_browser_net::ConnectInterceptor(predictor_.get()));
   }
@@ -538,6 +545,16 @@ ProfileImplIOData::AcquireIsolatedAppRequestContext(
       InitializeAppRequestContext(main_context, app_id);
   DCHECK(app_request_context);
   return app_request_context;
+}
+
+void ProfileImplIOData::CreateFtpProtocolHandler(
+    net::URLRequestJobFactory* job_factory,
+    net::FtpAuthCache* ftp_auth_cache) const {
+  job_factory->SetProtocolHandler(
+      chrome::kFtpScheme,
+      new net::FtpProtocolHandler(network_delegate(),
+                                  ftp_factory_.get(),
+                                  ftp_auth_cache));
 }
 
 void ProfileImplIOData::ClearNetworkingHistorySinceOnIOThread(
