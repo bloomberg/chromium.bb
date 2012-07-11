@@ -71,7 +71,7 @@ html[oobe=old] .pod.focused .user-image {
   box-shadow: 0 6px 16px #a4a4a4;
 }
 
-html[oobe=new] .user-image {
+html[oobe=new] .pod .user-image {
   opacity: 0.7;
 }
 
