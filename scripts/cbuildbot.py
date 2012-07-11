@@ -897,8 +897,8 @@ def _CreateParser():
   # Debug options
   group = CustomGroup(parser, "Debug Options")
 
-  group.add_option('--debug', action='store_true', default=None,
-                    help='Override some options to run as a developer.')
+  group.add_remote_option('--debug', action='store_true', default=None,
+                          help='Override some options to run as a developer.')
   group.add_option('--dump_config', action='store_true', dest='dump_config',
                     default=False,
                     help='Dump out build config options, and exit.')
@@ -1075,14 +1075,14 @@ def main(argv):
 
     print 'Submitting tryjob...'
     tryjob = remote_try.RemoteTryJob(options, args, patch_pool.local_patches)
-    tryjob.Submit(testjob=options.test_tryjob, dryrun=options.debug)
+    tryjob.Submit(testjob=options.test_tryjob, dryrun=False)
     print 'Tryjob submitted!'
     print ('Go to %s to view the status of your job.'
            % tryjob.GetTrybotWaterfallLink())
     if options.debug:
       print
-      print "Keep in mind that you had --debug enabled, thus nothing was"
-      print "actually submitted."
+      print "Keep in mind that you actually submitted a tryjob run with "
+      print "--debug enabled."
     sys.exit(0)
   elif (not options.buildbot and not options.remote_trybot
         and not options.resume and not options.local):
