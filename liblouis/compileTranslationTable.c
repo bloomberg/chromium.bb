@@ -188,7 +188,7 @@ lou_logPrint (char *format, ...)
     return;
   if (logFile == NULL && initialLogFileName[0] != 0)
     logFile = fopen (initialLogFileName, "wb");
-  if (logFile == NULL);
+  if (logFile == NULL)
   logFile = stderr;
   va_start (argp, format);
   vfprintf (logFile, format, argp);
@@ -4954,14 +4954,14 @@ lou_getTable (const char *tableList)
     {
       /* See if table in current directory or on a path in 
        * the table name*/
-      if (!(errorCount == 1 && fileCount == 1))
+      if (errorCount > 0 && (!(errorCount == 1 && fileCount == 1)))
         return NULL;
       table = getTable (tableList);
     }
   if (!table)
     {
 /* See if table on dataPath. */
-      if (!(errorCount == 1 && fileCount == 1))
+      if (errorCount > 0 && (!(errorCount == 1 && fileCount == 1)))
         return NULL;
       pathList = lou_getDataPath ();
       if (pathList)
@@ -4980,7 +4980,7 @@ lou_getTable (const char *tableList)
   if (!table)
     {
       /* See if table on installed or program path. */
-      if (!(errorCount == 1 && fileCount == 1))
+      if (errorCount > 0 && (!(errorCount == 1 && fileCount == 1)))
         return NULL;
 #ifdef _WIN32
       strcpy (trialPath, lou_getProgramPath ());
@@ -4994,7 +4994,7 @@ lou_getTable (const char *tableList)
     }
   if (!table)
     lou_logPrint ("%s could not be found", tableList);
-  return NULL;
+  return table;
 }
 
 static unsigned char *destSpacing = NULL;
