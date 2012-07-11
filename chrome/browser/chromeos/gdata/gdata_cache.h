@@ -119,60 +119,71 @@ class GDataCache {
   };
 
   // Structure to store information of an existing cache file.
-  struct CacheEntry {
-    CacheEntry() : cache_state(CACHE_STATE_NONE) {}
+  class CacheEntry {
+   public:
+    CacheEntry() : cache_state_(CACHE_STATE_NONE) {}
 
     CacheEntry(const std::string& md5,
                int cache_state)
-        : md5(md5),
-          cache_state(cache_state) {
+        : md5_(md5),
+          cache_state_(cache_state) {
     }
 
+    // The MD5 of the cache file. This can be "local" if the file is
+    // locally modified.
+    const std::string& md5() const { return md5_; }
+
+    // The cache state represented as a bitmask of GDataCacheState.
+    int cache_state() const { return cache_state_; }
+
+    void set_md5(const std::string& md5) { md5_ = md5; }
+    void set_cache_state(int cache_state) { cache_state_ = cache_state; }
+
     // Returns true if the file is present locally.
-    bool IsPresent() const { return cache_state & CACHE_STATE_PRESENT; }
+    bool IsPresent() const { return cache_state_ & CACHE_STATE_PRESENT; }
 
     // Returns true if the file is pinned (i.e. available offline).
-    bool IsPinned() const { return cache_state & CACHE_STATE_PINNED; }
+    bool IsPinned() const { return cache_state_ & CACHE_STATE_PINNED; }
 
     // Returns true if the file is dirty (i.e. modified locally).
-    bool IsDirty() const { return cache_state & CACHE_STATE_DIRTY; }
+    bool IsDirty() const { return cache_state_ & CACHE_STATE_DIRTY; }
 
     // Returns true if the file is a mounted archive file.
-    bool IsMounted() const { return cache_state & CACHE_STATE_MOUNTED; }
+    bool IsMounted() const { return cache_state_ & CACHE_STATE_MOUNTED; }
 
     // Returns true if the file is in the persistent directory.
-    bool IsPersistent() const { return cache_state & CACHE_STATE_PERSISTENT; }
+    bool IsPersistent() const { return cache_state_ & CACHE_STATE_PERSISTENT; }
 
     // Setters for the states describe above.
     void SetPresent(bool value) {
       if (value)
-        cache_state |= CACHE_STATE_PRESENT;
+        cache_state_ |= CACHE_STATE_PRESENT;
       else
-        cache_state &= ~CACHE_STATE_PRESENT;
+        cache_state_ &= ~CACHE_STATE_PRESENT;
     }
     void SetPinned(bool value) {
       if (value)
-        cache_state |= CACHE_STATE_PINNED;
+        cache_state_ |= CACHE_STATE_PINNED;
       else
-        cache_state &= ~CACHE_STATE_PINNED;
+        cache_state_ &= ~CACHE_STATE_PINNED;
     }
     void SetDirty(bool value) {
       if (value)
-        cache_state |= CACHE_STATE_DIRTY;
+        cache_state_ |= CACHE_STATE_DIRTY;
       else
-        cache_state &= ~CACHE_STATE_DIRTY;
+        cache_state_ &= ~CACHE_STATE_DIRTY;
     }
     void SetMounted(bool value) {
       if (value)
-        cache_state |= CACHE_STATE_MOUNTED;
+        cache_state_ |= CACHE_STATE_MOUNTED;
       else
-        cache_state &= ~CACHE_STATE_MOUNTED;
+        cache_state_ &= ~CACHE_STATE_MOUNTED;
     }
     void SetPersistent(bool value) {
       if (value)
-        cache_state |= CACHE_STATE_PERSISTENT;
+        cache_state_ |= CACHE_STATE_PERSISTENT;
       else
-        cache_state &= ~CACHE_STATE_PERSISTENT;
+        cache_state_ &= ~CACHE_STATE_PERSISTENT;
     }
 
     // Returns the type of the sub directory where the cache file is stored.
@@ -183,8 +194,9 @@ class GDataCache {
     // For debugging purposes.
     std::string ToString() const;
 
-    std::string md5;
-    int cache_state;
+   private:
+    std::string md5_;
+    int cache_state_;
   };
 
   // Callback for GetCacheEntryOnUIThread.

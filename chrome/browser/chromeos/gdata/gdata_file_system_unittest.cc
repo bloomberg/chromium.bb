@@ -707,7 +707,7 @@ class GDataFileSystemTest : public testing::Test {
     if (ToCacheEntry(expected_cache_state_).IsPresent() ||
         ToCacheEntry(expected_cache_state_).IsPinned()) {
       ASSERT_TRUE(cache_entry.get());
-      EXPECT_EQ(expected_cache_state_, cache_entry->cache_state);
+      EXPECT_EQ(expected_cache_state_, cache_entry->cache_state());
       EXPECT_EQ(expected_sub_dir_type_, cache_entry->GetSubDirectoryType());
     } else {
       EXPECT_FALSE(cache_entry.get());

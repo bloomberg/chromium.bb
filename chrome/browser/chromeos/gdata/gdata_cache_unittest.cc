@@ -340,7 +340,7 @@ class GDataCacheTest : public testing::Test {
       scoped_ptr<GDataCache::CacheEntry> cache_entry =
           GetCacheEntryFromOriginThread(resource.resource_id, md5);
       ASSERT_TRUE(cache_entry.get());
-      EXPECT_EQ(resource.cache_state, cache_entry->cache_state);
+      EXPECT_EQ(resource.cache_state, cache_entry->cache_state());
       EXPECT_EQ(resource.expected_sub_dir_type,
                 cache_entry->GetSubDirectoryType());
     }
@@ -570,7 +570,7 @@ class GDataCacheTest : public testing::Test {
     EXPECT_EQ(expected_success_, success);
 
     if (success) {
-      EXPECT_EQ(expected_cache_state_, cache_entry.cache_state);
+      EXPECT_EQ(expected_cache_state_, cache_entry.cache_state());
     }
   }
 
@@ -697,7 +697,7 @@ class GDataCacheTest : public testing::Test {
     if (ToCacheEntry(expected_cache_state_).IsPresent() ||
         ToCacheEntry(expected_cache_state_).IsPinned()) {
       ASSERT_TRUE(cache_entry.get());
-      EXPECT_EQ(expected_cache_state_, cache_entry->cache_state);
+      EXPECT_EQ(expected_cache_state_, cache_entry->cache_state());
       EXPECT_EQ(expected_sub_dir_type_, cache_entry->GetSubDirectoryType());
     } else {
       EXPECT_FALSE(cache_entry.get());
@@ -878,7 +878,7 @@ TEST_F(GDataCacheTest, InitializeCache) {
   TestInitializeCache();
 }
 
-TEST_F(GDataCacheTest, CacheEntry_Is) {
+TEST_F(GDataCacheTest, CacheEntry_CacheStateChanges) {
   GDataCache::CacheEntry cache_entry("dummy_md5", GDataCache::CACHE_STATE_NONE);
   EXPECT_FALSE(cache_entry.IsPresent());
   EXPECT_FALSE(cache_entry.IsPinned());
@@ -886,96 +886,82 @@ TEST_F(GDataCacheTest, CacheEntry_Is) {
   EXPECT_FALSE(cache_entry.IsMounted());
   EXPECT_FALSE(cache_entry.IsPersistent());
 
-  cache_entry.cache_state = GDataCache::CACHE_STATE_PRESENT;
+  cache_entry.SetPresent(true);
   EXPECT_TRUE(cache_entry.IsPresent());
   EXPECT_FALSE(cache_entry.IsPinned());
   EXPECT_FALSE(cache_entry.IsDirty());
   EXPECT_FALSE(cache_entry.IsMounted());
   EXPECT_FALSE(cache_entry.IsPersistent());
 
-  cache_entry.cache_state |= GDataCache::CACHE_STATE_PINNED;
+  cache_entry.SetPinned(true);
   EXPECT_TRUE(cache_entry.IsPresent());
   EXPECT_TRUE(cache_entry.IsPinned());
   EXPECT_FALSE(cache_entry.IsDirty());
   EXPECT_FALSE(cache_entry.IsMounted());
   EXPECT_FALSE(cache_entry.IsPersistent());
 
-  cache_entry.cache_state |= GDataCache::CACHE_STATE_DIRTY;
+  cache_entry.SetDirty(true);
   EXPECT_TRUE(cache_entry.IsPresent());
   EXPECT_TRUE(cache_entry.IsPinned());
   EXPECT_TRUE(cache_entry.IsDirty());
   EXPECT_FALSE(cache_entry.IsMounted());
   EXPECT_FALSE(cache_entry.IsPersistent());
 
-  cache_entry.cache_state |= GDataCache::CACHE_STATE_MOUNTED;
+  cache_entry.SetMounted(true);
   EXPECT_TRUE(cache_entry.IsPresent());
   EXPECT_TRUE(cache_entry.IsPinned());
   EXPECT_TRUE(cache_entry.IsDirty());
   EXPECT_TRUE(cache_entry.IsMounted());
   EXPECT_FALSE(cache_entry.IsPersistent());
 
-  cache_entry.cache_state |= GDataCache::CACHE_STATE_PERSISTENT;
+  cache_entry.SetPersistent(true);
   EXPECT_TRUE(cache_entry.IsPresent());
   EXPECT_TRUE(cache_entry.IsPinned());
   EXPECT_TRUE(cache_entry.IsDirty());
   EXPECT_TRUE(cache_entry.IsMounted());
   EXPECT_TRUE(cache_entry.IsPersistent());
-}
-
-TEST_F(GDataCacheTest, CacheEntry_Set) {
-  GDataCache::CacheEntry cache_entry("dummy_md5", GDataCache::CACHE_STATE_NONE);
-
-  cache_entry.SetPresent(true);
-  EXPECT_EQ(GDataCache::CACHE_STATE_PRESENT, cache_entry.cache_state);
-
-  cache_entry.SetPinned(true);
-  EXPECT_EQ(GDataCache::CACHE_STATE_PRESENT |
-            GDataCache::CACHE_STATE_PINNED,
-            cache_entry.cache_state);
-
-  cache_entry.SetDirty(true);
-  EXPECT_EQ(GDataCache::CACHE_STATE_PRESENT |
-            GDataCache::CACHE_STATE_PINNED |
-            GDataCache::CACHE_STATE_DIRTY,
-            cache_entry.cache_state);
-
-  cache_entry.SetMounted(true);
-  EXPECT_EQ(GDataCache::CACHE_STATE_PRESENT |
-            GDataCache::CACHE_STATE_PINNED |
-            GDataCache::CACHE_STATE_DIRTY |
-            GDataCache::CACHE_STATE_MOUNTED,
-            cache_entry.cache_state);
-
-  cache_entry.SetPersistent(true);
-  EXPECT_EQ(GDataCache::CACHE_STATE_PRESENT |
-            GDataCache::CACHE_STATE_PINNED |
-            GDataCache::CACHE_STATE_DIRTY |
-            GDataCache::CACHE_STATE_MOUNTED |
-            GDataCache::CACHE_STATE_PERSISTENT,
-            cache_entry.cache_state);
 
   cache_entry.SetPresent(false);
-  EXPECT_EQ(GDataCache::CACHE_STATE_PINNED |
-            GDataCache::CACHE_STATE_DIRTY |
-            GDataCache::CACHE_STATE_MOUNTED |
-            GDataCache::CACHE_STATE_PERSISTENT,
-            cache_entry.cache_state);
+  EXPECT_FALSE(cache_entry.IsPresent());
+  EXPECT_TRUE(cache_entry.IsPinned());
+  EXPECT_TRUE(cache_entry.IsDirty());
+  EXPECT_TRUE(cache_entry.IsMounted());
+  EXPECT_TRUE(cache_entry.IsPersistent());
+
+  cache_entry.SetPresent(false);
+  EXPECT_FALSE(cache_entry.IsPresent());
+  EXPECT_TRUE(cache_entry.IsPinned());
+  EXPECT_TRUE(cache_entry.IsDirty());
+  EXPECT_TRUE(cache_entry.IsMounted());
+  EXPECT_TRUE(cache_entry.IsPersistent());
 
   cache_entry.SetPinned(false);
-  EXPECT_EQ(GDataCache::CACHE_STATE_DIRTY |
-            GDataCache::CACHE_STATE_MOUNTED |
-            GDataCache::CACHE_STATE_PERSISTENT,
-            cache_entry.cache_state);
+  EXPECT_FALSE(cache_entry.IsPresent());
+  EXPECT_FALSE(cache_entry.IsPinned());
+  EXPECT_TRUE(cache_entry.IsDirty());
+  EXPECT_TRUE(cache_entry.IsMounted());
+  EXPECT_TRUE(cache_entry.IsPersistent());
 
   cache_entry.SetDirty(false);
-  EXPECT_EQ(GDataCache::CACHE_STATE_MOUNTED |
-            GDataCache::CACHE_STATE_PERSISTENT, cache_entry.cache_state);
+  EXPECT_FALSE(cache_entry.IsPresent());
+  EXPECT_FALSE(cache_entry.IsPinned());
+  EXPECT_FALSE(cache_entry.IsDirty());
+  EXPECT_TRUE(cache_entry.IsMounted());
+  EXPECT_TRUE(cache_entry.IsPersistent());
 
   cache_entry.SetMounted(false);
-  EXPECT_EQ(GDataCache::CACHE_STATE_PERSISTENT, cache_entry.cache_state);
+  EXPECT_FALSE(cache_entry.IsPresent());
+  EXPECT_FALSE(cache_entry.IsPinned());
+  EXPECT_FALSE(cache_entry.IsDirty());
+  EXPECT_FALSE(cache_entry.IsMounted());
+  EXPECT_TRUE(cache_entry.IsPersistent());
 
   cache_entry.SetPersistent(false);
-  EXPECT_EQ(GDataCache::CACHE_STATE_NONE, cache_entry.cache_state);
+  EXPECT_FALSE(cache_entry.IsPresent());
+  EXPECT_FALSE(cache_entry.IsPinned());
+  EXPECT_FALSE(cache_entry.IsDirty());
+  EXPECT_FALSE(cache_entry.IsMounted());
+  EXPECT_FALSE(cache_entry.IsPersistent());
 }
 
 TEST_F(GDataCacheTest, GetCacheFilePath) {
