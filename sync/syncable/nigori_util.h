@@ -6,7 +6,6 @@
 
 #ifndef SYNC_SYNCABLE_NIGORI_UTIL_H_
 #define SYNC_SYNCABLE_NIGORI_UTIL_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "sync/internal_api/public/base/model_type.h"

@@ -6,7 +6,6 @@
 
 #ifndef SYNC_NOTIFIER_INVALIDATION_UTIL_H_
 #define SYNC_NOTIFIER_INVALIDATION_UTIL_H_
-#pragma once
 
 #include <set>
 #include <string>

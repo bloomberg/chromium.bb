@@ -4,7 +4,6 @@
 
 #ifndef SYNC_UTIL_GET_SESSION_NAME_MAC_H_
 #define SYNC_UTIL_GET_SESSION_NAME_MAC_H_
-#pragma once
 
 #include <string>
 

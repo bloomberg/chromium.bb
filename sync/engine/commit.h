@@ -4,7 +4,6 @@
 
 #ifndef SYNC_ENGINE_COMMIT_H_
 #define SYNC_ENGINE_COMMIT_H_
-#pragma once
 
 #include "sync/internal_api/public/util/syncer_error.h"
 

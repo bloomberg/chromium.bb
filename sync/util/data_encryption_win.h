@@ -4,7 +4,6 @@
 
 #ifndef SYNC_UTIL_DATA_ENCRYPTION_WIN_H_
 #define SYNC_UTIL_DATA_ENCRYPTION_WIN_H_
-#pragma once
 
 #include <string>
 #include <vector>

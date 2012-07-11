@@ -4,7 +4,6 @@
 
 #ifndef SYNC_SYNCABLE_BLOB_H_
 #define SYNC_SYNCABLE_BLOB_H_
-#pragma once
 
 #include <vector>
 

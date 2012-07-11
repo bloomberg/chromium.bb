@@ -4,7 +4,6 @@
 
 #ifndef SYNC_SYNCABLE_SYNCABLE_ID_H_
 #define SYNC_SYNCABLE_SYNCABLE_ID_H_
-#pragma once
 
 #include <iosfwd>
 #include <limits>

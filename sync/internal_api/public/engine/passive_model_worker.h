@@ -4,7 +4,6 @@
 
 #ifndef SYNC_INTERNAL_API_PUBLIC_ENGINE_PASSIVE_MODEL_WORKER_H_
 #define SYNC_INTERNAL_API_PUBLIC_ENGINE_PASSIVE_MODEL_WORKER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

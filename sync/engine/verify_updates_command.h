@@ -4,7 +4,6 @@
 
 #ifndef SYNC_ENGINE_VERIFY_UPDATES_COMMAND_H_
 #define SYNC_ENGINE_VERIFY_UPDATES_COMMAND_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

@@ -4,7 +4,6 @@
 
 #ifndef SYNC_JS_SYNC_JS_CONTROLLER_H_
 #define SYNC_JS_SYNC_JS_CONTROLLER_H_
-#pragma once
 
 #include <string>
 #include <vector>

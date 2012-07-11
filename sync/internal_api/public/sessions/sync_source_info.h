@@ -4,7 +4,6 @@
 
 #ifndef SYNC_INTERNAL_API_PUBLIC_SESSIONS_SYNC_SOURCE_INFO_H_
 #define SYNC_INTERNAL_API_PUBLIC_SESSIONS_SYNC_SOURCE_INFO_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "sync/internal_api/public/base/model_type.h"

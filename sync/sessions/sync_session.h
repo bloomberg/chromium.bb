@@ -13,7 +13,6 @@
 
 #ifndef SYNC_SESSIONS_SYNC_SESSION_H_
 #define SYNC_SESSIONS_SYNC_SESSION_H_
-#pragma once
 
 #include <map>
 #include <set>

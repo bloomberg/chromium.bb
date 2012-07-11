@@ -4,7 +4,6 @@
 
 #ifndef SYNC_JS_JS_REPLY_HANDLER_H_
 #define SYNC_JS_JS_REPLY_HANDLER_H_
-#pragma once
 
 // See README.js for design comments.
 

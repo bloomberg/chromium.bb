@@ -4,7 +4,6 @@
 
 #ifndef SYNC_SYNCABLE_ENTRY_KERNEL_H_
 #define SYNC_SYNCABLE_ENTRY_KERNEL_H_
-#pragma once
 
 #include "base/time.h"
 #include "base/values.h"

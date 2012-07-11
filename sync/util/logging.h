@@ -4,7 +4,6 @@
 
 #ifndef SYNC_UTIL_LOGGING_H_
 #define SYNC_UTIL_LOGGING_H_
-#pragma once
 
 #include "base/logging.h"
 

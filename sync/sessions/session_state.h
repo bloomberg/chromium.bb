@@ -11,7 +11,6 @@
 
 #ifndef SYNC_SESSIONS_SESSION_STATE_H_
 #define SYNC_SESSIONS_SESSION_STATE_H_
-#pragma once
 
 #include <set>
 #include <vector>

@@ -4,7 +4,6 @@
 
 #ifndef SYNC_PROTOCOL_PROTO_ENUM_CONVERSIONS_H_
 #define SYNC_PROTOCOL_PROTO_ENUM_CONVERSIONS_H_
-#pragma once
 
 // Keep this file in sync with the .proto files in this directory.
 

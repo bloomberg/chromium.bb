@@ -4,7 +4,6 @@
 
 #ifndef SYNC_ENGINE_NET_SERVER_CONNECTION_MANAGER_H_
 #define SYNC_ENGINE_NET_SERVER_CONNECTION_MANAGER_H_
-#pragma once
 
 #include <iosfwd>
 #include <string>

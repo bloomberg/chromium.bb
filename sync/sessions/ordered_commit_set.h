@@ -4,7 +4,6 @@
 
 #ifndef SYNC_SESSIONS_ORDERED_COMMIT_SET_H_
 #define SYNC_SESSIONS_ORDERED_COMMIT_SET_H_
-#pragma once
 
 #include <map>
 #include <set>

@@ -6,7 +6,6 @@
 
 #ifndef SYNC_PROTOCOL_PROTO_VALUE_CONVERSIONS_H_
 #define SYNC_PROTOCOL_PROTO_VALUE_CONVERSIONS_H_
-#pragma once
 
 namespace base {
 class DictionaryValue;

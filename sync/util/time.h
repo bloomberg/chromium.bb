@@ -6,7 +6,6 @@
 
 #ifndef SYNC_UTIL_TIME_H_
 #define SYNC_UTIL_TIME_H_
-#pragma once
 
 #include <string>
 

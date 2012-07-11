@@ -4,7 +4,6 @@
 
 #ifndef SYNC_UTIL_REPORT_UNRECOVERABLE_ERROR_FUNCTION_H_
 #define SYNC_UTIL_REPORT_UNRECOVERABLE_ERROR_FUNCTION_H_
-#pragma once
 
 namespace syncer {
 

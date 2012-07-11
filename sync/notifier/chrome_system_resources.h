@@ -8,7 +8,6 @@
 
 #ifndef SYNC_NOTIFIER_CHROME_SYSTEM_RESOURCES_H_
 #define SYNC_NOTIFIER_CHROME_SYSTEM_RESOURCES_H_
-#pragma once
 
 #include <set>
 #include <string>

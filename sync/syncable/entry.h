@@ -4,7 +4,6 @@
 
 #ifndef SYNC_SYNCABLE_ENTRY_H_
 #define SYNC_SYNCABLE_ENTRY_H_
-#pragma once
 
 #include "sync/syncable/entry_kernel.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef SYNC_JS_JS_TEST_UTIL_H_
 #define SYNC_JS_JS_TEST_UTIL_H_
-#pragma once
 
 #include <ostream>
 #include <string>

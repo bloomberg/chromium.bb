@@ -7,7 +7,6 @@
 
 #ifndef SYNC_ENGINE_CONFLICT_RESOLVER_H_
 #define SYNC_ENGINE_CONFLICT_RESOLVER_H_
-#pragma once
 
 #include <map>
 #include <set>

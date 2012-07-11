@@ -4,7 +4,6 @@
 
 #ifndef SYNC_ENGINE_SYNC_ENGINE_EVENT_H_
 #define SYNC_ENGINE_SYNC_ENGINE_EVENT_H_
-#pragma once
 
 #include <string>
 

@@ -4,7 +4,6 @@
 
 #ifndef SYNC_SYNCABLE_SCOPED_KERNEL_LOCK_H_
 #define SYNC_SYNCABLE_SCOPED_KERNEL_LOCK_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/synchronization/lock.h"

@@ -6,7 +6,6 @@
 #define SYNC_UTIL_UNRECOVERABLE_ERROR_INFO_H_
 // TODO(lipalani): Figure out the right location for this class so it is
 // accessible outside of sync engine as well.
-#pragma once
 
 #include <string>
 

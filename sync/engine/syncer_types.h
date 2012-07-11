@@ -4,7 +4,6 @@
 
 #ifndef SYNC_ENGINE_SYNCER_TYPES_H_
 #define SYNC_ENGINE_SYNCER_TYPES_H_
-#pragma once
 
 // The intent of this is to keep all shared data types and enums for the syncer
 // in a single place without having dependencies between other files.

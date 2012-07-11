@@ -4,7 +4,6 @@
 
 #ifndef SYNC_SYNCABLE_READ_TRANSACTION_H_
 #define SYNC_SYNCABLE_READ_TRANSACTION_H_
-#pragma once
 
 #include "sync/syncable/base_transaction.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef SYNC_INTERNAL_API_PUBLIC_HTTP_BRIDGE_H_
 #define SYNC_INTERNAL_API_PUBLIC_HTTP_BRIDGE_H_
-#pragma once
 
 #include <string>
 

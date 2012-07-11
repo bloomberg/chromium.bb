@@ -4,7 +4,6 @@
 
 #ifndef SYNC_UTIL_EXTENSIONS_ACTIVITY_MONITOR_H_
 #define SYNC_UTIL_EXTENSIONS_ACTIVITY_MONITOR_H_
-#pragma once
 
 #include <map>
 #include <string>

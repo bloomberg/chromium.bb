@@ -4,7 +4,6 @@
 
 #ifndef SYNC_API_SYNC_ERROR_H_
 #define SYNC_API_SYNC_ERROR_H_
-#pragma once
 
 #include <iosfwd>
 #include <string>

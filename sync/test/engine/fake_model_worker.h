@@ -4,7 +4,6 @@
 
 #ifndef SYNC_TEST_ENGINE_FAKE_MODEL_WORKER_H_
 #define SYNC_TEST_ENGINE_FAKE_MODEL_WORKER_H_
-#pragma once
 
 #include <vector>
 

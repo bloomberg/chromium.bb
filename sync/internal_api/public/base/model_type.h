@@ -8,7 +8,6 @@
 
 #ifndef SYNC_INTERNAL_API_PUBLIC_BASE_MODEL_TYPE_H_
 #define SYNC_INTERNAL_API_PUBLIC_BASE_MODEL_TYPE_H_
-#pragma once
 
 #include <set>
 #include <string>

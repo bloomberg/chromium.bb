@@ -4,7 +4,6 @@
 
 #ifndef SYNC_NOTIFIER_MOCK_SYNC_NOTIFIER_OBSERVER_H_
 #define SYNC_NOTIFIER_MOCK_SYNC_NOTIFIER_OBSERVER_H_
-#pragma once
 
 #include <string>
 

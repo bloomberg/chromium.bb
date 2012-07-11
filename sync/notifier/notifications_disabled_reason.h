@@ -4,7 +4,6 @@
 
 #ifndef SYNC_NOTIFIER_NOTIFICATIONS_DISABLED_REASON_H_
 #define SYNC_NOTIFIER_NOTIFICATIONS_DISABLED_REASON_H_
-#pragma once
 
 #include "jingle/notifier/listener/push_client_observer.h"
 

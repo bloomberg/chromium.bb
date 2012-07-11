@@ -4,7 +4,6 @@
 
 #ifndef SYNC_SYNCABLE_ON_DISK_DIRECTORY_BACKING_STORE_H_
 #define SYNC_SYNCABLE_ON_DISK_DIRECTORY_BACKING_STORE_H_
-#pragma once
 
 #include "base/file_path.h"
 #include "sync/syncable/directory_backing_store.h"

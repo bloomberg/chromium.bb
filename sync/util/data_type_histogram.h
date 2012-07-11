@@ -4,7 +4,6 @@
 
 #ifndef SYNC_UTIL_DATA_TYPE_HISTOGRAM_H_
 #define SYNC_UTIL_DATA_TYPE_HISTOGRAM_H_
-#pragma once
 
 #include "base/metrics/histogram.h"
 #include "base/time.h"

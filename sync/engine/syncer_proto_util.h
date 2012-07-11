@@ -4,7 +4,6 @@
 
 #ifndef SYNC_ENGINE_SYNCER_PROTO_UTIL_H_
 #define SYNC_ENGINE_SYNCER_PROTO_UTIL_H_
-#pragma once
 
 #include <string>
 

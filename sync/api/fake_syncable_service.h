@@ -4,7 +4,6 @@
 
 #ifndef SYNC_API_FAKE_SYNCABLE_SERVICE_H_
 #define SYNC_API_FAKE_SYNCABLE_SERVICE_H_
-#pragma once
 
 #include "sync/api/syncable_service.h"
 

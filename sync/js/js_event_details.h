@@ -4,7 +4,6 @@
 
 #ifndef SYNC_JS_JS_EVENT_DETAILS_H_
 #define SYNC_JS_JS_EVENT_DETAILS_H_
-#pragma once
 
 // See README.js for design comments.
 

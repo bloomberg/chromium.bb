@@ -4,7 +4,6 @@
 
 #ifndef SYNC_SYNCABLE_DIR_OPEN_RESULT_H_
 #define SYNC_SYNCABLE_DIR_OPEN_RESULT_H_
-#pragma once
 
 namespace syncer {
 namespace syncable {

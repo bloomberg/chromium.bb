@@ -4,7 +4,6 @@
 
 #ifndef SYNC_SYNCABLE_SYNCABLE_COLUMNS_H_
 #define SYNC_SYNCABLE_SYNCABLE_COLUMNS_H_
-#pragma once
 
 #include "sync/syncable/entry_kernel.h"
 #include "sync/syncable/syncable_changes_version.h"

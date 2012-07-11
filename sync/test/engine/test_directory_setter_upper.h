@@ -28,7 +28,6 @@
 
 #ifndef SYNC_TEST_ENGINE_TEST_DIRECTORY_SETTER_UPPER_H_
 #define SYNC_TEST_ENGINE_TEST_DIRECTORY_SETTER_UPPER_H_
-#pragma once
 
 #include <string>
 

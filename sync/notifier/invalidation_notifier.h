@@ -11,7 +11,6 @@
 
 #ifndef SYNC_NOTIFIER_INVALIDATION_NOTIFIER_H_
 #define SYNC_NOTIFIER_INVALIDATION_NOTIFIER_H_
-#pragma once
 
 #include <string>
 

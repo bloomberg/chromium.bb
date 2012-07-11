@@ -4,7 +4,6 @@
 
 #ifndef SYNC_ENGINE_THROTTLED_DATA_TYPE_TRACKER_H_
 #define SYNC_ENGINE_THROTTLED_DATA_TYPE_TRACKER_H_
-#pragma once
 
 #include <map>
 

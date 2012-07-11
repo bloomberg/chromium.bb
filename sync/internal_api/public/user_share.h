@@ -4,7 +4,6 @@
 
 #ifndef SYNC_INTERNAL_API_PUBLIC_USER_SHARE_H_
 #define SYNC_INTERNAL_API_PUBLIC_USER_SHARE_H_
-#pragma once
 
 #include <string>
 

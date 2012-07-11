@@ -46,7 +46,6 @@
 
 #ifndef SYNC_UTIL_WEAK_HANDLE_H_
 #define SYNC_UTIL_WEAK_HANDLE_H_
-#pragma once
 
 #include <cstddef>
 

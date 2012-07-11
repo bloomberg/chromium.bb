@@ -4,7 +4,6 @@
 
 #ifndef SYNC_SYNCABLE_SYNCABLE_MOCK_H_
 #define SYNC_SYNCABLE_SYNCABLE_MOCK_H_
-#pragma once
 
 #include <string>
 

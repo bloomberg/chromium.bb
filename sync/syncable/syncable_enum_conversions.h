@@ -4,7 +4,6 @@
 
 #ifndef SYNC_SYNCABLE_SYNCABLE_ENUM_CONVERSIONS_H_
 #define SYNC_SYNCABLE_SYNCABLE_ENUM_CONVERSIONS_H_
-#pragma once
 
 // Keep this file in sync with entry_kernel.h.
 

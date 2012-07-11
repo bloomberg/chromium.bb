@@ -4,7 +4,6 @@
 
 #ifndef SYNC_TEST_FAKE_ENCRYPTOR_H_
 #define SYNC_TEST_FAKE_ENCRYPTOR_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "sync/util/encryptor.h"

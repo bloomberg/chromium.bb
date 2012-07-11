@@ -4,7 +4,6 @@
 
 #ifndef SYNC_TEST_NULL_TRANSACTION_OBSERVER_H_
 #define SYNC_TEST_NULL_TRANSACTION_OBSERVER_H_
-#pragma once
 
 #include "sync/internal_api/public/util/weak_handle.h"
 

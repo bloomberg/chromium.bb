@@ -4,7 +4,6 @@
 
 #ifndef SYNC_TEST_FAKE_EXTENSIONS_ACTIVITY_MONITOR_H_
 #define SYNC_TEST_FAKE_EXTENSIONS_ACTIVITY_MONITOR_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/threading/non_thread_safe.h"

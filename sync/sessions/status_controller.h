@@ -31,7 +31,6 @@
 
 #ifndef SYNC_SESSIONS_STATUS_CONTROLLER_H_
 #define SYNC_SESSIONS_STATUS_CONTROLLER_H_
-#pragma once
 
 #include <map>
 #include <vector>

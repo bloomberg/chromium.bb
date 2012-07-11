@@ -4,7 +4,6 @@
 
 #ifndef SYNC_INTERNAL_API_JS_MUTATION_EVENT_OBSERVER_H_
 #define SYNC_INTERNAL_API_JS_MUTATION_EVENT_OBSERVER_H_
-#pragma once
 
 #include <string>
 

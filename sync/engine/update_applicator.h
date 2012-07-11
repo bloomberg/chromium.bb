@@ -10,7 +10,6 @@
 
 #ifndef SYNC_ENGINE_UPDATE_APPLICATOR_H_
 #define SYNC_ENGINE_UPDATE_APPLICATOR_H_
-#pragma once
 
 #include <vector>
 

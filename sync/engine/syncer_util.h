@@ -7,7 +7,6 @@
 
 #ifndef SYNC_ENGINE_SYNCER_UTIL_H_
 #define SYNC_ENGINE_SYNCER_UTIL_H_
-#pragma once
 
 #include <set>
 #include <string>

@@ -4,7 +4,6 @@
 
 #ifndef SYNC_SYNCABLE_DIRECTORY_BACKING_STORE_H_
 #define SYNC_SYNCABLE_DIRECTORY_BACKING_STORE_H_
-#pragma once
 
 #include <string>
 

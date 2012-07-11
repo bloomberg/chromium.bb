@@ -5,7 +5,6 @@
 // Utils to simulate various outcomes of a sync session.
 #ifndef SYNC_SESSIONS_TEST_UTIL_H_
 #define SYNC_SESSIONS_TEST_UTIL_H_
-#pragma once
 
 #include "sync/engine/syncer.h"
 #include "sync/sessions/sync_session.h"

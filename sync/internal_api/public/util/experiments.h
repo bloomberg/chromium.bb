@@ -4,7 +4,6 @@
 
 #ifndef SYNC_UTIL_EXPERIMENTS_
 #define SYNC_UTIL_EXPERIMENTS_
-#pragma once
 
 #include "sync/internal_api/public/base/model_type.h"
 

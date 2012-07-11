@@ -4,7 +4,6 @@
 
 #ifndef SYNC_ENGINE_MODEL_CHANGING_SYNCER_COMMAND_H_
 #define SYNC_ENGINE_MODEL_CHANGING_SYNCER_COMMAND_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "sync/engine/syncer_command.h"

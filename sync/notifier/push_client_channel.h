@@ -4,7 +4,6 @@
 
 #ifndef SYNC_NOTIFIER_PUSH_CLIENT_CHANNEL_H_
 #define SYNC_NOTIFIER_PUSH_CLIENT_CHANNEL_H_
-#pragma once
 
 #include <string>
 #include <vector>

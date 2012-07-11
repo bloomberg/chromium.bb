@@ -4,7 +4,6 @@
 
 #ifndef SYNC_UTIL_ENCRYPTOR_H_
 #define SYNC_UTIL_ENCRYPTOR_H_
-#pragma once
 
 #include <string>
 

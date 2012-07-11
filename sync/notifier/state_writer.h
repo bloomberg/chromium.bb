@@ -6,7 +6,6 @@
 
 #ifndef SYNC_NOTIFIER_STATE_WRITER_H_
 #define SYNC_NOTIFIER_STATE_WRITER_H_
-#pragma once
 
 #include <string>
 

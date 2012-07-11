@@ -4,7 +4,6 @@
 
 #ifndef SYNC_SYNCABLE_DIRECTORY_H_
 #define SYNC_SYNCABLE_DIRECTORY_H_
-#pragma once
 
 #include <set>
 #include <string>

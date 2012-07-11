@@ -4,7 +4,6 @@
 
 #ifndef SYNC_ENGINE_SYNCER_COMMAND_H_
 #define SYNC_ENGINE_SYNCER_COMMAND_H_
-#pragma once
 
 #include "base/basictypes.h"
 

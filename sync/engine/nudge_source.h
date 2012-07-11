@@ -4,7 +4,6 @@
 
 #ifndef SYNC_ENGINE_NUDGE_SOURCE_H_
 #define SYNC_ENGINE_NUDGE_SOURCE_H_
-#pragma once
 
 namespace syncer {
 

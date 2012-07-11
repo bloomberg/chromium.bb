@@ -4,7 +4,6 @@
 
 #ifndef SYNC_API_SYNCABLE_SERVICE_H_
 #define SYNC_API_SYNCABLE_SERVICE_H_
-#pragma once
 
 #include <vector>
 

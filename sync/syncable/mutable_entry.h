@@ -4,7 +4,6 @@
 
 #ifndef SYNC_SYNCABLE_MUTABLE_ENTRY_H_
 #define SYNC_SYNCABLE_MUTABLE_ENTRY_H_
-#pragma once
 
 #include "sync/syncable/entry.h"
 #include "sync/syncable/metahandle_set.h"

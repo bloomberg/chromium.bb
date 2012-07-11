@@ -5,7 +5,6 @@
 // A class to schedule syncer tasks intelligently.
 #ifndef SYNC_ENGINE_SYNC_SCHEDULER_H_
 #define SYNC_ENGINE_SYNC_SCHEDULER_H_
-#pragma once
 
 #include <string>
 

@@ -7,7 +7,6 @@
 
 #ifndef SYNC_NOTIFIER_CHROME_INVALIDATION_CLIENT_H_
 #define SYNC_NOTIFIER_CHROME_INVALIDATION_CLIENT_H_
-#pragma once
 
 #include <map>
 #include <string>

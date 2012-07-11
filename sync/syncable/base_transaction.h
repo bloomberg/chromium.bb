@@ -4,7 +4,6 @@
 
 #ifndef SYNC_SYNCABLE_BASE_TRANSACTION_H_
 #define SYNC_SYNCABLE_BASE_TRANSACTION_H_
-#pragma once
 
 #include "base/location.h"
 #include "sync/syncable/syncable_id.h"

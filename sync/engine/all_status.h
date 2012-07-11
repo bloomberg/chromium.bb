@@ -7,7 +7,6 @@
 
 #ifndef SYNC_INTERNAL_API_ALL_STATUS_H_
 #define SYNC_INTERNAL_API_ALL_STATUS_H_
-#pragma once
 
 #include <map>
 #include <string>

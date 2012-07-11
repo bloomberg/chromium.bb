@@ -4,7 +4,6 @@
 
 #ifndef SYNC_INTERNAL_API_PUBLIC_READ_NODE_H_
 #define SYNC_INTERNAL_API_PUBLIC_READ_NODE_H_
-#pragma once
 
 #include <string>
 

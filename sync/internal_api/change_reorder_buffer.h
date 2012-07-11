@@ -8,7 +8,6 @@
 
 #ifndef SYNC_INTERNAL_API_CHANGE_REORDER_BUFFER_H_
 #define SYNC_INTERNAL_API_CHANGE_REORDER_BUFFER_H_
-#pragma once
 
 #include <map>
 #include <vector>

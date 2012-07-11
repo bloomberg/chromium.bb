@@ -6,7 +6,6 @@
 
 #ifndef SYNC_INTERNAL_PUBLIC_API_BASE_MODEL_TYPE_PAYLOAD_MAP_H_
 #define SYNC_INTERNAL_PUBLIC_API_BASE_MODEL_TYPE_PAYLOAD_MAP_H_
-#pragma once
 
 #include <map>
 #include <string>

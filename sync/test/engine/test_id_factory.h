@@ -6,7 +6,6 @@
 
 #ifndef SYNC_TEST_ENGINE_TEST_ID_FACTORY_H_
 #define SYNC_TEST_ENGINE_TEST_ID_FACTORY_H_
-#pragma once
 
 #include <string>
 

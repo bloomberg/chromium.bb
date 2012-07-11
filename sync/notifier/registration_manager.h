@@ -7,7 +7,6 @@
 
 #ifndef SYNC_NOTIFIER_REGISTRATION_MANAGER_H_
 #define SYNC_NOTIFIER_REGISTRATION_MANAGER_H_
-#pragma once
 
 #include <map>
 

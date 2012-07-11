@@ -17,7 +17,6 @@
 
 #ifndef SYNC_SESSIONS_SYNC_SESSION_CONTEXT_H_
 #define SYNC_SESSIONS_SYNC_SESSION_CONTEXT_H_
-#pragma once
 
 #include <map>
 #include <string>

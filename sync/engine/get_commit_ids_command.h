@@ -4,7 +4,6 @@
 
 #ifndef SYNC_ENGINE_GET_COMMIT_IDS_COMMAND_H_
 #define SYNC_ENGINE_GET_COMMIT_IDS_COMMAND_H_
-#pragma once
 
 #include <utility>
 #include <vector>

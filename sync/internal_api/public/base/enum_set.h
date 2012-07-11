@@ -4,7 +4,6 @@
 
 #ifndef SYNC_INTERNAL_API_PUBLIC_BASE_ENUM_SET_H_
 #define SYNC_INTERNAL_API_PUBLIC_BASE_ENUM_SET_H_
-#pragma once
 
 #include <bitset>
 #include <cstddef>

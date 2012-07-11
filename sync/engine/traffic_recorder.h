@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SYNC_ENGINE_TRAFFIC_RECORDER_H_
 #define CHROME_BROWSER_SYNC_ENGINE_TRAFFIC_RECORDER_H_
-#pragma once
 
 #include <deque>
 #include <string>

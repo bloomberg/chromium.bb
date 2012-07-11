@@ -4,7 +4,6 @@
 
 #ifndef SYNC_INTERNAL_API_PUBLIC_CONFIGURE_REASON_H_
 #define SYNC_INTERNAL_API_PUBLIC_CONFIGURE_REASON_H_
-#pragma once
 
 namespace syncer {
 

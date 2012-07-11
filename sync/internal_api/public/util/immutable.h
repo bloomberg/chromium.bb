@@ -64,7 +64,6 @@
 
 #ifndef SYNC_UTIL_IMMUTABLE_H_
 #define SYNC_UTIL_IMMUTABLE_H_
-#pragma once
 
 // For std::swap().
 #include <algorithm>

@@ -4,7 +4,6 @@
 
 #ifndef SYNC_SYNCABLE_WRITE_TRANSACTION_H_
 #define SYNC_SYNCABLE_WRITE_TRANSACTION_H_
-#pragma once
 
 #include "sync/syncable/base_transaction.h"
 #include "sync/syncable/entry_kernel.h"

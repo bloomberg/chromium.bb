@@ -6,7 +6,6 @@
 
 #ifndef SYNC_TEST_ENGINE_MOCK_CONNECTION_MANAGER_H_
 #define SYNC_TEST_ENGINE_MOCK_CONNECTION_MANAGER_H_
-#pragma once
 
 #include <bitset>
 #include <list>

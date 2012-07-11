@@ -8,7 +8,6 @@
 
 #ifndef CHROME_BROWSER_SYNC_ENGINE_TRAFFIC_LOGGER_H_
 #define CHROME_BROWSER_SYNC_ENGINE_TRAFFIC_LOGGER_H_
-#pragma once
 
 namespace sync_pb {
 class ClientToServerResponse;

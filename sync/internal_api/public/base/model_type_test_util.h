@@ -4,7 +4,6 @@
 
 #ifndef SYNC_INTERNAL_PUBLIC_API_BASE_MODEL_TYPE_TEST_UTIL_H_
 #define SYNC_INTERNAL_PUBLIC_API_BASE_MODEL_TYPE_TEST_UTIL_H_
-#pragma once
 
 #include <ostream>
 

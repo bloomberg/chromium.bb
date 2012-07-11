@@ -4,7 +4,6 @@
 
 #ifndef SYNC_SESSIONS_MODEL_NEUTRAL_STATE_H
 #define SYNC_SESSIONS_MODEL_NEUTRAL_STATE_H
-#pragma once
 
 #include "base/basictypes.h"
 #include "sync/internal_api/public/util/syncer_error.h"

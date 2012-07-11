@@ -4,7 +4,6 @@
 
 #ifndef SYNC_UTIL_CRYPTOGRAPHER_H_
 #define SYNC_UTIL_CRYPTOGRAPHER_H_
-#pragma once
 
 #include <map>
 #include <string>

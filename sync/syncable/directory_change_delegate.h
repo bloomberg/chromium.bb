@@ -4,7 +4,6 @@
 
 #ifndef SYNC_SYNCABLE_DIRECTORY_CHANGE_DELEGATE_H_
 #define SYNC_SYNCABLE_DIRECTORY_CHANGE_DELEGATE_H_
-#pragma once
 
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/syncable/write_transaction_info.h"

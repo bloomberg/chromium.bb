@@ -4,7 +4,6 @@
 
 #ifndef SYNC_TEST_ENGINE_SYNCER_COMMAND_TEST_H_
 #define SYNC_TEST_ENGINE_SYNCER_COMMAND_TEST_H_
-#pragma once
 
 #include <algorithm>
 #include <string>

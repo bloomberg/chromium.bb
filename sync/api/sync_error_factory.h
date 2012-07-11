@@ -4,7 +4,6 @@
 
 #ifndef SYNC_API_SYNC_ERROR_FACTORY_H_
 #define SYNC_API_SYNC_ERROR_FACTORY_H_
-#pragma once
 
 #include <string>
 

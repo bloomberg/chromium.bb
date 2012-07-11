@@ -4,7 +4,6 @@
 
 #ifndef SYNC_SYNCABLE_SYNCABLE_CHANGES_VERSION_H_
 #define SYNC_SYNCABLE_SYNCABLE_CHANGES_VERSION_H_
-#pragma once
 
 namespace syncer {
 namespace syncable {

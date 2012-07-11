@@ -4,7 +4,6 @@
 
 #ifndef SYNC_API_SYNC_ERROR_FACTORY_MOCK_H_
 #define SYNC_API_SYNC_ERROR_FACTORY_MOCK_H_
-#pragma once
 
 #include "sync/api/sync_error_factory.h"
 

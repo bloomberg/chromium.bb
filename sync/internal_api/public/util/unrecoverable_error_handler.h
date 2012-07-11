@@ -4,7 +4,6 @@
 
 #ifndef SYNC_UTIL_UNRECOVERABLE_ERROR_HANDLER_H_
 #define SYNC_UTIL_UNRECOVERABLE_ERROR_HANDLER_H_
-#pragma once
 
 #include <string>
 

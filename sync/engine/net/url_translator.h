@@ -7,7 +7,6 @@
 
 #ifndef SYNC_ENGINE_NET_URL_TRANSLATOR_H_
 #define SYNC_ENGINE_NET_URL_TRANSLATOR_H_
-#pragma once
 
 #include <string>
 

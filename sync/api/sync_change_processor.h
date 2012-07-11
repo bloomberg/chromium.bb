@@ -4,7 +4,6 @@
 
 #ifndef SYNC_API_SYNC_CHANGE_PROCESSOR_H_
 #define SYNC_API_SYNC_CHANGE_PROCESSOR_H_
-#pragma once
 
 #include <vector>
 

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 #ifndef SYNC_PROTOCOL_SYNC_PROTOCOL_ERROR_H_
 #define SYNC_PROTOCOL_SYNC_PROTOCOL_ERROR_H_
-#pragma once
 
 #include <string>
 
