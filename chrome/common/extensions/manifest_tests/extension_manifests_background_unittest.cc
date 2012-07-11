@@ -11,6 +11,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/features/simple_feature_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -88,6 +89,7 @@ TEST_F(ExtensionManifestTest, BackgroundAllowNoJsAccess) {
 TEST_F(ExtensionManifestTest, BackgroundPageWebRequest) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
+  Feature::SetChannelForTesting(chrome::VersionInfo::CHANNEL_UNKNOWN);
 
   std::string error;
   scoped_ptr<DictionaryValue> manifest(
