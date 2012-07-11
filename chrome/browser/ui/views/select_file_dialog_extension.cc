@@ -313,8 +313,10 @@ void SelectFileDialogExtension::SelectFileImpl(
   }
 
   FilePath virtual_path;
-  if (!file_manager_util::ConvertFileToRelativeFileSystemPath(
+  if (file_manager_util::ConvertFileToRelativeFileSystemPath(
           profile_, default_path, &virtual_path)) {
+    virtual_path = FilePath("/").Append(virtual_path);
+  } else {
     virtual_path = default_path.BaseName();
   }
 

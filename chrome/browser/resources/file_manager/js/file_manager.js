@@ -19,9 +19,6 @@ function FileManager(dialogDom) {
   this.params_ = location.search ?
                  JSON.parse(decodeURIComponent(location.search.substr(1))) :
                  {};
-  if (this.params_.defaultPath && this.params_.defaultPath.indexOf('/') != 0)
-    this.params_.defaultPath = '/' + this.params_.defaultPath;
-
   this.listType_ = null;
   this.showDelayTimeout_ = null;
 
@@ -1507,8 +1504,10 @@ FileManager.prototype = {
       return;
 
     if (!path) {
-      this.directoryModel_.setupDefaultPath();
-      return;
+      path = this.directoryModel_.getDefaultDirectory();
+    } else if (path.indexOf('/') == -1) {
+      // Path is a file name.
+      path = this.directoryModel_.getDefaultDirectory() + '/' + path;
     }
 
     // In the FULL_PAGE mode if the hash path points to a file we might have
