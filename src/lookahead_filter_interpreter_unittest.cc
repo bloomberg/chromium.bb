@@ -4,6 +4,7 @@
 
 #include <deque>
 #include <math.h>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -31,6 +32,8 @@ class LookaheadFilterInterpreterTestInterpreter : public Interpreter {
         expected_flags_at_occurred_(false) {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
+    for (size_t i = 0; i < hwstate->finger_cnt; i++)
+      all_ids_.insert(hwstate->fingers[i].tracking_id);
     if (expected_id_ >= 0) {
       EXPECT_EQ(1, hwstate->finger_cnt);
       EXPECT_EQ(expected_id_, hwstate->fingers[0].tracking_id);
@@ -38,13 +41,15 @@ class LookaheadFilterInterpreterTestInterpreter : public Interpreter {
     if (!expected_ids_.empty()) {
       EXPECT_EQ(expected_ids_.size(), hwstate->finger_cnt);
       for (set<short, kMaxFingers>::iterator it = expected_ids_.begin(),
-           e = expected_ids_.end(); it != e; ++it) {
-        EXPECT_TRUE(hwstate->GetFingerState(*it));
+               e = expected_ids_.end(); it != e; ++it) {
+        EXPECT_TRUE(hwstate->GetFingerState(*it)) << "Can't find ID " << *it
+                                                  << " at "
+                                                  << hwstate->timestamp;
       }
     }
     if (expected_flags_at_ >= 0 &&
         DoubleEq(expected_flags_at_, hwstate->timestamp) &&
-                 hwstate->finger_cnt > 0) {
+        hwstate->finger_cnt > 0) {
       EXPECT_EQ(expected_flags_, hwstate->fingers[0].flags);
       expected_flags_at_occurred_ = true;
     }
@@ -87,6 +92,7 @@ class LookaheadFilterInterpreterTestInterpreter : public Interpreter {
   unsigned expected_flags_;
   stime_t expected_flags_at_;
   bool expected_flags_at_occurred_;
+  std::set<short> all_ids_;
 };
 
 TEST(LookaheadFilterInterpreterTest, SimpleTest) {
@@ -775,6 +781,96 @@ TEST(LookaheadFilterInterpreterTest, QuickMoveTest) {
   EXPECT_EQ(queue->Tail()->fs_[0].tracking_id, 4);
   EXPECT_EQ(queue->Tail()->prev_->fs_[0].tracking_id, 4);
   EXPECT_EQ(queue->Tail()->prev_->prev_->fs_[0].tracking_id, 4);
+}
+
+struct QuickSwipeTestInputs {
+  stime_t now;
+  float x0, y0, pressure0;
+  short id0;
+  float x1, y1, pressure1;
+  short id1;
+};
+
+// Based on a couple quick swipes of 2 fingers on Alex, makes sure that we
+// don't drumroll-separate the fingers.
+TEST(LookaheadFilterInterpreterTest, QuickSwipeTest) {
+  LookaheadFilterInterpreterTestInterpreter* base_interpreter = NULL;
+  scoped_ptr<LookaheadFilterInterpreter> interpreter;
+
+  HardwareProperties initial_hwprops = {
+    0.000000,  // left edge
+    0.000000,  // top edge
+    95.934784,  // right edge
+    65.259262,  // bottom edge
+    1.000000,  // x pixels/TP width
+    1.000000,  // y pixels/TP height
+    25.400000,  // x screen DPI
+    25.400000,  // y screen DPI
+    2,  // max fingers
+    5,  // max touch
+    1,  // t5r2
+    0,  // semi-mt
+    1   // is button pad
+  };
+
+  // Actual data captured from Alex
+  QuickSwipeTestInputs inputs[] = {
+    // Two fingers arriving at the same time doing a swipe
+    { 6.30188, 50.34, 53.29, 22.20, 91, 33.28, 56.05, 22.20, 92 },
+    { 6.33170, 55.13, 32.40, 31.85, 91, 35.02, 42.20, 28.63, 92 },
+
+    // Two fingers doing a swipe, but one arrives a few frames before
+    // the other
+    { 84.602478, 35.41, 65.27,  7.71, 93, -1.00, -1.00, -1.00, -1 },
+    { 84.641174, 38.17, 43.07, 31.85, 93, -1.00, -1.00, -1.00, -1 },
+    { 84.666290, 42.78, 21.66, 35.07, 93, 61.36, 31.83, 22.20, 94 },
+    { 84.690422, 50.43,  5.37, 15.75, 93, 66.93, 12.64, 28.63, 94 },
+  };
+
+  base_interpreter = new LookaheadFilterInterpreterTestInterpreter;
+  interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
+  interpreter->SetHardwareProperties(initial_hwprops);
+
+  interpreter->min_delay_.val_ = 0.017;
+  interpreter->max_delay_.val_ = 0.026;
+
+  // Prime it w/ a dummy hardware state
+  stime_t timeout = -1.0;
+  HardwareState temp_hs = { 0.000001, 0, 0, 0, NULL };
+  interpreter->SyncInterpret(&temp_hs, &timeout);
+  interpreter->HandleTimer(temp_hs.timestamp + timeout, NULL);
+
+  std::set<short> input_ids;
+
+  for (size_t i = 0; i < arraysize(inputs); i++) {
+    const QuickSwipeTestInputs& in = inputs[i];
+    FingerState fs[] = {
+      // TM, Tm, WM, Wm, pr, orient, x, y, id, flags
+      { 0, 0, 0, 0, in.pressure0, 0, in.x0, in.y0, in.id0, 0 },
+      { 0, 0, 0, 0, in.pressure1, 0, in.x1, in.y1, in.id1, 0 },
+    };
+    unsigned short finger_cnt = in.id0 < 0 ? 0 : (in.id1 < 0 ? 1 : 2);
+    HardwareState hs = { in.now, 0, finger_cnt, finger_cnt, fs };
+
+    for (size_t idx = 0; idx < finger_cnt; idx++)
+      input_ids.insert(fs[idx].tracking_id);
+
+    stime_t timeout = -1;
+    interpreter->SyncInterpret(&hs, &timeout);
+    if (timeout >= 0) {
+      stime_t next_timestamp = INFINITY;
+      if (i < arraysize(inputs) - 1)
+        next_timestamp = inputs[i + 1].now;
+      stime_t now = in.now;
+      while (timeout >= 0 && (now + timeout) < next_timestamp) {
+        now += timeout;
+        timeout = -1;
+        interpreter->HandleTimer(now, &timeout);
+      }
+    }
+  }
+
+  EXPECT_EQ(input_ids.size(), base_interpreter->all_ids_.size());
 }
 
 struct CyapaDrumrollTestInputs {

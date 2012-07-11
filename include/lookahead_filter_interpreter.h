@@ -27,6 +27,7 @@ class LookaheadFilterInterpreter : public Interpreter {
   FRIEND_TEST(LookaheadFilterInterpreterTest, InterpolationOverdueTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, NoTapSetTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, QuickMoveTest);
+  FRIEND_TEST(LookaheadFilterInterpreterTest, QuickSwipeTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, SemiMtNoTrackingIdAssignmentTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, SimpleTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, SpuriousCallbackTest);
@@ -137,6 +138,10 @@ class LookaheadFilterInterpreter : public Interpreter {
   // HardwareState, it is considered to be a quick move and the tracking ID
   // reassignment due to drumroll detection may get corrected.
   DoubleProperty quick_move_thresh_;
+  // If we're going to drumroll-suppress a finger that is moving too much,
+  // we abort said suppression if it's moving less than co_move_ratio_ *
+  // distance of another non-drumroll-suppressed finger.
+  DoubleProperty co_move_ratio_;
   // Temporary property to turn on/off the generation of TapDown gestures
   // (i.e., stop flinging gestures).
   BoolProperty suppress_immediate_tapdown_;

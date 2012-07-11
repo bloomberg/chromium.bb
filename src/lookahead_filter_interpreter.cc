@@ -33,6 +33,7 @@ LookaheadFilterInterpreter::LookaheadFilterInterpreter(
                                 "Drumroll Max Speed Change Factor",
                                 15.0),
       quick_move_thresh_(prop_reg, "Quick Move Distance Thresh", 3.0),
+      co_move_ratio_(prop_reg, "Drumroll Co Move Ratio", 1.2),
       suppress_immediate_tapdown_(prop_reg, "Suppress Immediate Tapdown", 1) {
   next_.reset(next);
 }
@@ -148,7 +149,11 @@ void LookaheadFilterInterpreter::AssignTrackingIds() {
       drumroll_max_speed_ratio_.val_;
   const float prev_dt_sq = prev_dt * prev_dt;
 
-  bool did_separate = false;
+  set<short, kMaxFingers> separated_fingers;  // input ids
+  float max_dist_sq = 0.0;  // largest non-drumroll dist squared.
+  // If there is only a single finger drumrolling, this is the distance
+  // it travelled squared.
+  float drum_dist_sq = INFINITY;
   bool new_finger_present = false;
   for (size_t i = 0; i < hs->finger_cnt; i++) {
     FingerState* fs = &hs->fingers[i];
@@ -181,6 +186,9 @@ void LookaheadFilterInterpreter::AssignTrackingIds() {
     float dx = fs->position_x - prev_fs->position_x;
     float dy = fs->position_y - prev_fs->position_y;
     float dist_sq = dx * dx + dy * dy;
+    float prev_max_dist_sq = max_dist_sq;
+    if (dist_sq > max_dist_sq)
+      max_dist_sq = dist_sq;
 
     FingerState* prev2_fs = NULL;
 
@@ -233,16 +241,49 @@ void LookaheadFilterInterpreter::AssignTrackingIds() {
         fs->flags |= (GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y);
         continue;
       }
-      did_separate = true;
+      separated_fingers.insert(old_id);
       SeparateFinger(tail, fs, old_id);
       // Separating fingers shouldn't tap.
       fs->flags |= GESTURES_FINGER_NO_TAP;
       // Try to also flag the previous frame, if we didn't execute it yet
       if (!prev_qs->completed_)
         prev_fs->flags |= GESTURES_FINGER_NO_TAP;
+      // Since this is drumroll, don't count it toward the max dist sq.
+      max_dist_sq = prev_max_dist_sq;
+      // Instead, store this distance as the drumroll distance
+      drum_dist_sq = dist_sq;
     }
   }
-  if (did_separate || new_finger_present) {
+  // There are some times where we abort drumrolls. If two fingers are both
+  // drumrolling, that's unlikely (they are probably quickly swiping). Also,
+  // if a single finger is moving enough to trigger drumroll, but another
+  // finger is moving about as much, don't drumroll-suppress the one finger.
+  if (separated_fingers.size() > 1 ||
+      (separated_fingers.size() == 1 &&
+       drum_dist_sq <
+       max_dist_sq * co_move_ratio_.val_ * co_move_ratio_.val_)) {
+    // Two fingers drumrolling at the exact same time. More likely this is
+    // a fast multi-finger swipe. Abort the drumroll detection.
+    for (set<short, kMaxFingers>::const_iterator it = separated_fingers.begin(),
+             e = separated_fingers.end(); it != e; ++it) {
+      short input_id = *it;
+      if (!MapContainsKey(prev_qs->output_ids_, input_id)) {
+        Err("How is input ID missing from prev state? %d", input_id);
+        continue;
+      }
+      short new_bad_output_id = tail->output_ids_[input_id];
+      short prev_output_id = prev_qs->output_ids_[input_id];
+      tail->output_ids_[input_id] = prev_output_id;
+      FingerState* fs = tail->state_.GetFingerState(new_bad_output_id);
+      if (!fs) {
+        Err("Can't find finger state.");
+        continue;
+      }
+      fs->tracking_id = prev_output_id;
+    }
+    separated_fingers.clear();
+  }
+  if (!separated_fingers.empty() || new_finger_present) {
     // Possibly add some extra delay to correct, incase this separation
     // shouldn't have occurred.
     tail->due_ += ExtraVariableDelay();
