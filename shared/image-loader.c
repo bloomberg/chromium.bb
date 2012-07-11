@@ -64,11 +64,18 @@ error_exit(j_common_ptr cinfo)
 	longjmp(cinfo->client_data, 1);
 }
 
+static void
+pixman_image_destroy_func(pixman_image_t *image, void *data)
+{
+	free(data);
+}
+
 static pixman_image_t *
 load_jpeg(FILE *fp)
 {
 	struct jpeg_decompress_struct cinfo;
 	struct jpeg_error_mgr jerr;
+	struct pixman_image_t *pixman_image = NULL;
 	unsigned int i;
 	int stride, first;
 	JSAMPLE *data, *rows[4];
@@ -110,10 +117,15 @@ load_jpeg(FILE *fp)
 
 	jpeg_destroy_decompress(&cinfo);
 
-	return pixman_image_create_bits(PIXMAN_a8r8g8b8,
+	pixman_image = pixman_image_create_bits(PIXMAN_a8r8g8b8,
 					cinfo.output_width,
 					cinfo.output_height,
 					(uint32_t *) data, stride);
+
+	pixman_image_set_destroy_function(pixman_image,
+				pixman_image_destroy_func, data);
+
+	return pixman_image;
 }
 
 static inline int
@@ -180,6 +192,7 @@ load_png(FILE *fp)
 	png_uint_32 width, height;
 	int depth, color_type, interlace, stride;
 	unsigned int i;
+	pixman_image_t *pixman_image = NULL;
 
 	png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL,
 				     png_error_callback, NULL);
@@ -260,8 +273,13 @@ load_png(FILE *fp)
 	free(row_pointers);
 	png_destroy_read_struct(&png, &info, NULL);
 
-	return pixman_image_create_bits(PIXMAN_a8r8g8b8, width, height,
-					(uint32_t *) data, stride);
+	pixman_image = pixman_image_create_bits(PIXMAN_a8r8g8b8,
+				width, height, (uint32_t *) data, stride);
+
+	pixman_image_set_destroy_function(pixman_image,
+				pixman_image_destroy_func, data);
+
+	return pixman_image;
 }
 
 #ifdef HAVE_WEBP
