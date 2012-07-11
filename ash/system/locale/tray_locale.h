@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_LOCALE_TRAY_LOCALE_H_
 #define ASH_SYSTEM_LOCALE_TRAY_LOCALE_H_
-#pragma once
 
 #include <string>
 

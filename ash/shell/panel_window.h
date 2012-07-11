@@ -4,7 +4,6 @@
 
 #ifndef ASH_SHELL_PANEL_WINDOW_H_
 #define ASH_SHELL_PANEL_WINDOW_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/aura/aura_export.h"

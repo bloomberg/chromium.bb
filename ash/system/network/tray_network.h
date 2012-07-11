@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_NETWORK_TRAY_NETWORK_H
 #define ASH_SYSTEM_NETWORK_TRAY_NETWORK_H
-#pragma once
 
 #include "ash/system/network/network_observer.h"
 #include "ash/system/tray/system_tray_item.h"

@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_VIDEO_DETECTOR_H_
 #define ASH_WM_VIDEO_DETECTOR_H_
-#pragma once
 
 #include <map>
 

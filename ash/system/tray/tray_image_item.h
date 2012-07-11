@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_TRAY_TRAY_IMAGE_ITEM_H_
 #define ASH_SYSTEM_TRAY_TRAY_IMAGE_ITEM_H_
-#pragma once
 
 #include "ash/system/tray/system_tray_item.h"
 

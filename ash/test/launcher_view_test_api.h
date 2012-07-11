@@ -4,7 +4,6 @@
 
 #ifndef ASH_TEST_LAUNCHER_VIEW_TEST_API_H_
 #define ASH_TEST_LAUNCHER_VIEW_TEST_API_H_
-#pragma once
 
 #include "base/basictypes.h"
 

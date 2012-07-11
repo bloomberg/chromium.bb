@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_WORKSPACE_WINDOW_RESIZER_H_
 #define ASH_WM_WORKSPACE_WINDOW_RESIZER_H_
-#pragma once
 
 #include <vector>
 

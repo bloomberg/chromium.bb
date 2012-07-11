@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_EVENT_CLIENT_IMPL_H_
 #define ASH_WM_EVENT_CLIENT_IMPL_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "ui/aura/client/event_client.h"

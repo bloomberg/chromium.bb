@@ -4,7 +4,6 @@
 
 #ifndef ASH_SHELL_WINDOW_IDS_H_
 #define ASH_SHELL_WINDOW_IDS_H_
-#pragma once
 
 // Declarations of ids of special shell windows.
 

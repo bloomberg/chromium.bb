@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_WORKSPACE_CONTROLLER_TEST_HELPER_H_
 #define ASH_WM_WORKSPACE_CONTROLLER_TEST_HELPER_H_
-#pragma once
 
 #include "ash/wm/workspace_controller.h"
 

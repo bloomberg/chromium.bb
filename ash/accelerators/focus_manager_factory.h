@@ -4,7 +4,6 @@
 
 #ifndef ASH_ACCELERATORS_FOCUS_MANAGER_FACTORY_H_
 #define ASH_ACCELERATORS_FOCUS_MANAGER_FACTORY_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

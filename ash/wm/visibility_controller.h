@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_VISIBILITY_CONTROLLER_H_
 #define ASH_WM_VISIBILITY_CONTROLLER_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"

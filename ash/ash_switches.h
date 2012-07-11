@@ -4,7 +4,6 @@
 
 #ifndef ASH_ASH_SWITCHES_H_
 #define ASH_ASH_SWITCHES_H_
-#pragma once
 
 #include "ash/ash_export.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef ASH_TEST_ASH_TEST_BASE_H_
 #define ASH_TEST_ASH_TEST_BASE_H_
-#pragma once
 
 #include <string>
 

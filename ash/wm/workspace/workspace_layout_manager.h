@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_H_
 #define ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_H_
-#pragma once
 
 #include "ash/wm/base_layout_manager.h"
 #include "base/basictypes.h"

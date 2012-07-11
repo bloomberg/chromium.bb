@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_TRAY_SYSTEM_TRAY_H_
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "ash/system/power/power_supply_status.h"

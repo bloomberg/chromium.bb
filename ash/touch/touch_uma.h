@@ -4,7 +4,6 @@
 
 #ifndef ASH_TOUCH_TOUCH_OBSERVER_UMA_H_
 #define ASH_TOUCH_TOUCH_OBSERVER_UMA_H_
-#pragma once
 
 #include <map>
 

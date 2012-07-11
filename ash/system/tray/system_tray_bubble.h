@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_TRAY_SYSTEM_TRAY_BUBBLE_H_
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_BUBBLE_H_
-#pragma once
 
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/user/login_status.h"

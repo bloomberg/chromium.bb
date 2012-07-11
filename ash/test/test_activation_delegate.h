@@ -4,7 +4,6 @@
 
 #ifndef ASH_TEST_TEST_ACTIVATION_DELEGATE_H_
 #define ASH_TEST_TEST_ACTIVATION_DELEGATE_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"

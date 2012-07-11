@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_BRIGHTNESS_BRIGHTNESS_CONTROL_DELEGATE_H_
 #define ASH_SYSTEM_BRIGHTNESS_BRIGHTNESS_CONTROL_DELEGATE_H_
-#pragma once
 
 #include "base/callback.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_SHELF_LAYOUT_MANAGER_H_
 #define ASH_WM_SHELF_LAYOUT_MANAGER_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "ash/launcher/launcher.h"

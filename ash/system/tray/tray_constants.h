@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_TRAY_TRAY_CONSTANTS_H_
 #define ASH_SYSTEM_TRAY_TRAY_CONSTANTS_H_
-#pragma once
 
 typedef unsigned int SkColor;
 

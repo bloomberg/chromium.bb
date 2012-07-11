@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_CUSTOM_FRAME_VIEW_ASH_H_
 #define ASH_WM_CUSTOM_FRAME_VIEW_ASH_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "base/memory/scoped_ptr.h"

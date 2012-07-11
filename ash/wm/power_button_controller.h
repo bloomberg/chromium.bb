@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_POWER_BUTTON_CONTROLLER_H_
 #define ASH_WM_POWER_BUTTON_CONTROLLER_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"

@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_USER_ACTIVITY_OBSERVER_H_
 #define ASH_WM_USER_ACTIVITY_OBSERVER_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"

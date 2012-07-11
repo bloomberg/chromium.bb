@@ -4,7 +4,6 @@
 
 #ifndef ASH_LAUNCHER_APP_LIST_BUTTON_H_
 #define ASH_LAUNCHER_APP_LIST_BUTTON_H_
-#pragma once
 
 #include "ui/views/controls/button/image_button.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_WORKSPACE_WORKSPACE_EVENT_FILTER_H_
 #define ASH_WM_WORKSPACE_WORKSPACE_EVENT_FILTER_H_
-#pragma once
 
 #include "ash/wm/toplevel_window_event_filter.h"
 #include "ash/wm/workspace/multi_window_resize_controller.h"

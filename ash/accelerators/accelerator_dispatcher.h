@@ -4,7 +4,6 @@
 
 #ifndef ASH_ACCELERATORS_ACCELERATOR_DISPATCHER_H_
 #define ASH_ACCELERATORS_ACCELERATOR_DISPATCHER_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "base/message_loop.h"

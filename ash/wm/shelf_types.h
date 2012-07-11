@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_SHELF_TYPES_H_
 #define ASH_WM_SHELF_TYPES_H_
-#pragma once
 
 namespace ash {
 

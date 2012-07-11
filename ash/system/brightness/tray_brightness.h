@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_BRIGHTNESS_TRAY_BRIGHTNESS_H_
 #define ASH_SYSTEM_BRIGHTNESS_TRAY_BRIGHTNESS_H_
-#pragma once
 
 #include "ash/system/brightness/brightness_observer.h"
 #include "ash/system/tray/system_tray_item.h"

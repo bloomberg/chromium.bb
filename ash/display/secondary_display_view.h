@@ -4,7 +4,6 @@
 
 #ifndef ASH_DISPLAY_SECONDARY_DISPLAY_VIEW_H_
 #define ASH_DISPLAY_SECONDARY_DISPLAY_VIEW_H_
-#pragma once
 
 namespace aura {
 class Window;

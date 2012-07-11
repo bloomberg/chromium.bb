@@ -4,7 +4,6 @@
 
 #ifndef ASH_SCREENSAVER_SCREENSAVER_VIEW_H_
 #define ASH_SCREENSAVER_SCREENSAVER_VIEW_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "base/callback.h"

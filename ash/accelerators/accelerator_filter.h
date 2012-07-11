@@ -4,7 +4,6 @@
 
 #ifndef ASH_ACCELERATORS_ACCELERATOR_FILTER_H_
 #define ASH_ACCELERATORS_ACCELERATOR_FILTER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

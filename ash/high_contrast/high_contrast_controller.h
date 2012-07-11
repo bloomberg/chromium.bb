@@ -4,7 +4,6 @@
 
 #ifndef ASH_HIGH_CONTRAST_HIGH_CONTRAST_CONTROLLER_H_
 #define ASH_HIGH_CONTRAST_HIGH_CONTRAST_CONTROLLER_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"

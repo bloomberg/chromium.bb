@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_BASE_LAYOUT_MANAGER_H_
 #define ASH_WM_BASE_LAYOUT_MANAGER_H_
-#pragma once
 
 #include <set>
 

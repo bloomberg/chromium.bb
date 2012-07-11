@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_TRAY_TRAY_ITEM_MORE_H_
 #define ASH_SYSTEM_TRAY_TRAY_ITEM_MORE_H_
-#pragma once
 
 #include "ash/system/tray/tray_views.h"
 #include "ui/views/view.h"

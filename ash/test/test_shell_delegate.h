@@ -4,7 +4,6 @@
 
 #ifndef ASH_TEST_TEST_SHELL_DELEGATE_H_
 #define ASH_TEST_TEST_SHELL_DELEGATE_H_
-#pragma once
 
 #include "ash/shell_delegate.h"
 #include "base/compiler_specific.h"

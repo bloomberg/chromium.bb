@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_SHADOW_CONTROLLER_H_
 #define ASH_WM_SHADOW_CONTROLLER_H_
-#pragma once
 
 #include <map>
 

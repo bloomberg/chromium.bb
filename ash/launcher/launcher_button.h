@@ -4,7 +4,6 @@
 
 #ifndef ASH_LAUNCHER_LAUNCHER_BUTTON_H_
 #define ASH_LAUNCHER_LAUNCHER_BUTTON_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/button/custom_button.h"

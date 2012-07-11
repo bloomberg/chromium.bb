@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_ALWAYS_ON_TOP_CONTROLLER_H_
 #define ASH_WM_ALWAYS_ON_TOP_CONTROLLER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_TRAY_TRAY_NOTIFICATION_VIEW_H_
 #define ASH_SYSTEM_TRAY_TRAY_NOTIFICATION_VIEWS_H_
-#pragma once
 
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/view.h"

@@ -4,7 +4,6 @@
 
 #ifndef ASH_LAUNCHER_LAUNCHER_VIEW_H_
 #define ASH_LAUNCHER_LAUNCHER_VIEW_H_
-#pragma once
 
 #include <utility>
 #include <vector>

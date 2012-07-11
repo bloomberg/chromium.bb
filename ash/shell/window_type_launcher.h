@@ -4,7 +4,6 @@
 
 #ifndef ASH_SHELL_WINDOW_TYPE_LAUNCHER_H_
 #define ASH_SHELL_WINDOW_TYPE_LAUNCHER_H_
-#pragma once
 
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"

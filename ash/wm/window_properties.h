@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_WINDOW_PROPERTIES_H_
 #define ASH_WM_WINDOW_PROPERTIES_H_
-#pragma once
 
 #include "ash/wm/property_util.h"
 #include "ash/wm/shadow_types.h"

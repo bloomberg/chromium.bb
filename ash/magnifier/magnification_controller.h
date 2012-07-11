@@ -4,7 +4,6 @@
 
 #ifndef ASH_MAGNIFIER_MAGNIFICATION_CONTROLLER_H_
 #define ASH_MAGNIFIER_MAGNIFICATION_CONTROLLER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"

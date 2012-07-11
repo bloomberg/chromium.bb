@@ -4,7 +4,6 @@
 
 #ifndef ASH_LAUNCHER_LAUNCHER_BUTTON_HOST_H_
 #define ASH_LAUNCHER_LAUNCHER_BUTTON_HOST_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "ash/wm/shelf_types.h"

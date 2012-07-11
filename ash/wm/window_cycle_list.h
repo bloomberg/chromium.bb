@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_WINDOW_CYCLE_LIST_H_
 #define ASH_WM_WINDOW_CYCLE_LIST_H_
-#pragma once
 
 #include <vector>
 

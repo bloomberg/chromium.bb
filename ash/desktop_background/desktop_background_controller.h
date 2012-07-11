@@ -4,7 +4,6 @@
 
 #ifndef ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_CONTROLLER_H_
 #define ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_CONTROLLER_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "ash/desktop_background/desktop_background_resources.h"

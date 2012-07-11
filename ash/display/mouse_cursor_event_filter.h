@@ -4,7 +4,6 @@
 
 #ifndef ASH_DISPLAY_MOUSE_CURSOR_EVENT_FILTER_H
 #define ASH_DISPLAY_MOUSE_CURSOR_EVENT_FILTER_H
-#pragma once
 
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"

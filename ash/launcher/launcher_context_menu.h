@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_LAUNCHER_LAUNCHER_CONTEXT_MENU_H_
 #define ASH_WM_LAUNCHER_LAUNCHER_CONTEXT_MENU_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "ash/launcher/launcher_alignment_menu.h"

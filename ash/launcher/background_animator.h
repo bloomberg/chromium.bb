@@ -4,7 +4,6 @@
 
 #ifndef ASH_LAUNCHER_BACKGROUND_ANIMATOR_H_
 #define ASH_LAUNCHER_BACKGROUND_ANIMATOR_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"

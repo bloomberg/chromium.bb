@@ -4,7 +4,6 @@
 
 #ifndef ASH_KEY_REWRITER_DELEGATE_H_
 #define ASH_KEY_REWRITER_DELEGATE_H_
-#pragma once
 
 namespace aura {
 class KeyEvent;

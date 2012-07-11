@@ -4,7 +4,6 @@
 
 #ifndef ASH_TOUCH_TOUCH_OBSERVER_HUD_H_
 #define ASH_TOUCH_TOUCH_OBSERVER_HUD_H_
-#pragma once
 
 #include "ash/shell.h"
 #include "ui/aura/event_filter.h"

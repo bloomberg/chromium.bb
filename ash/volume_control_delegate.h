@@ -4,7 +4,6 @@
 
 #ifndef ASH_VOLUME_CONTROL_DELEGATE_H_
 #define ASH_VOLUME_CONTROL_DELEGATE_H_
-#pragma once
 
 namespace ui {
 class Accelerator;

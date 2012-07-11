@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_SYSTEM_MODAL_CONTAINER_EVENT_FILTER_H_
 #define ASH_WM_SYSTEM_MODAL_CONTAINER_EVENT_FILTER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/aura/event_filter.h"

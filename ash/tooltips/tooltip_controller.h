@@ -4,7 +4,6 @@
 
 #ifndef ASH_TOOLTIPS_TOOLTIP_CONTROLLER_H_
 #define ASH_TOOLTIPS_TOOLTIP_CONTROLLER_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"

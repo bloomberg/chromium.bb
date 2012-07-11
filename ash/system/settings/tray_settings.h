@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_SETTINGS_TRAY_SETTINGS_H_
 #define ASH_SYSTEM_SETTINGS_TRAY_SETTINGS_H_
-#pragma once
 
 #include "ash/system/power/power_status_observer.h"
 #include "ash/system/tray/system_tray_item.h"

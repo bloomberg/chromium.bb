@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_IME_IME_OBSERVER_H_
 #define ASH_SYSTEM_IME_IME_OBSERVER_H_
-#pragma once
 
 namespace ash {
 

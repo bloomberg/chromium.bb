@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_PARTIAL_SCREENSHOT_EVENT_FILTER_H_
 #define ASH_WM_PARTIAL_SCREENSHOT_EVENT_FILTER_H_
-#pragma once
 
 #include "ash/shell_observer.h"
 #include "base/compiler_specific.h"

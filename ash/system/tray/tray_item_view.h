@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_TRAY_TRAY_ITEM_VIEW_H_
 #define ASH_SYSTEM_TRAY_TRAY_ITEM_VIEW_H_
-#pragma once
 
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/views/view.h"

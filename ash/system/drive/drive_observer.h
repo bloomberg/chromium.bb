@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_DRIVE_DRIVE_OBSERVER_H_
 #define ASH_SYSTEM_DRIVE_DRIVE_OBSERVER_H_
-#pragma once
 
 #include "ash/system/tray/system_tray_delegate.h"
 

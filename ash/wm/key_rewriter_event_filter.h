@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_KEY_REWRITER_EVENT_FILTER_
 #define ASH_WM_KEY_REWRITER_EVENT_FILTER_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"

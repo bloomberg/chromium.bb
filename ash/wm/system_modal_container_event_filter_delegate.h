@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_MODALITY_EVENT_FILTER_DELEGATE_H_
 #define ASH_WM_MODALITY_EVENT_FILTER_DELEGATE_H_
-#pragma once
 
 #include "ash/ash_export.h"
 

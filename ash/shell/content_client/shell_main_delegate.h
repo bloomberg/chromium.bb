@@ -4,7 +4,6 @@
 
 #ifndef ASH_SHELL_CONTENT_CLIENT_SHELL_MAIN_DELEGATE_H_
 #define ASH_SHELL_CONTENT_CLIENT_SHELL_MAIN_DELEGATE_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"

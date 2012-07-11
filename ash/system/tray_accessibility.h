@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_TRAY_ACCESSIBILITY_H_
 #define ASH_SYSTEM_TRAY_ACCESSIBILITY_H_
-#pragma once
 
 #include "ash/system/tray/tray_image_item.h"
 

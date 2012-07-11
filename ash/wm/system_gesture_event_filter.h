@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_SYSTEM_GESTURE_EVENT_FILTER_H_
 #define ASH_WM_SYSTEM_GESTURE_EVENT_FILTER_H_
-#pragma once
 
 #include "ash/shell.h"
 #include "ash/touch/touch_uma.h"

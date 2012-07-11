@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_DRIVE_TRAY_DRIVE_H_
 #define ASH_SYSTEM_DRIVE_TRAY_DRIVE_H_
-#pragma once
 
 #include "ash/system/drive/drive_observer.h"
 #include "ash/system/tray/tray_image_item.h"

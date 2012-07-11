@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_NOTIFICATION_WEB_NOTIFICATION_TRAY_H_
 #define ASH_SYSTEM_NOTIFICATION_WEB_NOTIFICATION_TRAY_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "ash/system/tray/tray_background_view.h"

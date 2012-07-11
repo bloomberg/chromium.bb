@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_APP_LIST_CONTROLLER_H_
 #define ASH_WM_APP_LIST_CONTROLLER_H_
-#pragma once
 
 #include "ash/launcher/launcher_icon_observer.h"
 #include "ash/shell_observer.h"

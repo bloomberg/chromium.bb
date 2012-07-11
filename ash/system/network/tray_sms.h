@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_NETWORK_TRAY_SMS_H
 #define ASH_SYSTEM_NETWORK_TRAY_SMS_H
-#pragma once
 
 #include <string>
 

@@ -4,7 +4,6 @@
 
 #ifndef ASH_SHELL_OBSERVER_H_
 #define ASH_SHELL_OBSERVER_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "ash/system/user/login_status.h"

@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_DIALOG_FRAME_VIEW_H_
 #define ASH_WM_DIALOG_FRAME_VIEW_H_
-#pragma once
 
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"

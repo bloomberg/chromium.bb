@@ -4,7 +4,6 @@
 
 #ifndef ASH_LAUNCHER_LAUNCHER_DELEGATE_H_
 #define ASH_LAUNCHER_LAUNCHER_DELEGATE_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "ash/launcher/launcher_types.h"

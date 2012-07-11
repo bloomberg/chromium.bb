@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_PANEL_WINDOW_EVENT_FILTER_H
 #define ASH_WM_PANEL_WINDOW_EVENT_FILTER_H
-#pragma once
 
 #include "ui/aura/event_filter.h"
 #include "ash/wm/panel_layout_manager.h"

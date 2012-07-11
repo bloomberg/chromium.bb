@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_SHADOW_H_
 #define ASH_WM_SHADOW_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"

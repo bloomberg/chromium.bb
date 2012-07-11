@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_TRAY_TRAY_BACKGROUND_VIEW_H_
 #define ASH_SYSTEM_TRAY_TRAY_BACKGROUND_VIEW_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "ash/launcher/background_animator.h"

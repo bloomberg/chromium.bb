@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_USER_TRAY_USER_H_
 #define ASH_SYSTEM_USER_TRAY_USER_H_
-#pragma once
 
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/user/user_observer.h"

@@ -4,7 +4,6 @@
 
 #ifndef ASH_TEST_CAPTURE_TRACKING_VIEW_
 #define ASH_TEST_CAPTURE_TRACKING_VIEW_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/views/view.h"

@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_SYSTEM_MODAL_CONTAINER_LAYOUT_MANAGER_H_
 #define ASH_WM_SYSTEM_MODAL_CONTAINER_LAYOUT_MANAGER_H_
-#pragma once
 
 #include <vector>
 

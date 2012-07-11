@@ -4,7 +4,6 @@
 
 #ifndef ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_H_
 #define ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_H_
-#pragma once
 
 #include <map>
 #include <set>

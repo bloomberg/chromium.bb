@@ -4,7 +4,6 @@
 
 #ifndef ASH_SCREEN_ROTATION_H_
 #define ASH_SCREEN_ROTATION_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"

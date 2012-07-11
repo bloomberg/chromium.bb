@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_LOCALE_LOCALE_OBSERVER_H_
 #define ASH_SYSTEM_LOCALE_LOCALE_OBSERVER_H_
-#pragma once
 
 #include "ash/ash_export.h"
 

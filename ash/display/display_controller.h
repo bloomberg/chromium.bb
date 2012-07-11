@@ -4,7 +4,6 @@
 
 #ifndef ASH_DISPLAY_DISPLAY_CONTROLLER_H_
 #define ASH_DISPLAY_DISPLAY_CONTROLLER_H_
-#pragma once
 
 #include <map>
 #include <vector>

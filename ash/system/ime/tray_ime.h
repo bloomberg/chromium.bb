@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_IME_TRAY_IME_H_
 #define ASH_SYSTEM_IME_TRAY_IME_H_
-#pragma once
 
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/tray/system_tray_item.h"

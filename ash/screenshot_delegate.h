@@ -4,7 +4,6 @@
 
 #ifndef ASH_SCREENSHOT_DELEGATE_H_
 #define ASH_SCREENSHOT_DELEGATE_H_
-#pragma once
 
 namespace aura {
 class Window;

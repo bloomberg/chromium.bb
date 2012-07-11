@@ -4,7 +4,6 @@
 
 #ifndef ASH_DRAG_DROP_DRAG_DROP_CONTROLLER_H_
 #define ASH_DRAG_DROP_DRAG_DROP_CONTROLLER_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "base/callback.h"

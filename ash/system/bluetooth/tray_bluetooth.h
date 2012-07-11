@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_BLUETOOTH_TRAY_BLUETOOTH_H_
 #define ASH_SYSTEM_BLUETOOTH_TRAY_BLUETOOTH_H_
-#pragma once
 
 #include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/tray/system_tray_item.h"

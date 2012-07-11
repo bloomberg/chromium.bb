@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_DATE_DATE_VIEW_H_
 #define ASH_SYSTEM_DATE_DATE_VIEW_H_
-#pragma once
 
 #include "ash/system/date/tray_date.h"
 #include "ash/system/tray/tray_views.h"

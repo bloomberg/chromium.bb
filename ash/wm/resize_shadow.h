@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_RESIZE_SHADOW_H_
 #define ASH_WM_RESIZE_SHADOW_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

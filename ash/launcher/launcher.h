@@ -4,7 +4,6 @@
 
 #ifndef ASH_LAUNCHER_LAUNCHER_H_
 #define ASH_LAUNCHER_LAUNCHER_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "ash/launcher/background_animator.h"

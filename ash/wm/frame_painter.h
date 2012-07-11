@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_FRAME_PAINTER_H_
 #define ASH_WM_FRAME_PAINTER_H_
-#pragma once
 
 #include <set>
 

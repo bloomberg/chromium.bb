@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_NETWORK_SMS_OBSERVER_H
 #define ASH_SYSTEM_NETWORK_SMS_OBSERVER_H
-#pragma once
 
 #include "base/string16.h"
 

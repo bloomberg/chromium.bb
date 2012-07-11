@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_POWER_POWER_STATUS_VIEW_H_
 #define ASH_SYSTEM_POWER_POWER_STATUS_VIEW_H_
-#pragma once
 
 #include "ash/system/power/power_supply_status.h"
 #include "ui/views/view.h"

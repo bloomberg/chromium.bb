@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_STATUS_AREA_WIDGET_DELEGATE_H_
 #define ASH_SYSTEM_STATUS_AREA_WIDGET_DELEGATE_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "ash/wm/shelf_types.h"

@@ -4,7 +4,6 @@
 
 #ifndef ASH_SHELL_WINDOW_WATCHER_H_
 #define ASH_SHELL_WINDOW_WATCHER_H_
-#pragma once
 
 #include <map>
 

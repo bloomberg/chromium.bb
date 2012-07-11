@@ -4,7 +4,6 @@
 
 #ifndef ASH_LAUNCHER_TABBED_LAUNCHER_BUTTON_H_
 #define ASH_LAUNCHER_TABBED_LAUNCHER_BUTTON_H_
-#pragma once
 
 #include "ash/launcher/launcher_button.h"
 #include "base/memory/scoped_ptr.h"

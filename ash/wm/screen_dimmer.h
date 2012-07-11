@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_SCREEN_DIMMER_H_
 #define ASH_WM_SCREEN_DIMMER_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"

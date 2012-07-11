@@ -4,7 +4,6 @@
 
 #ifndef ASH_SHELL_CONTEXT_MENU_H_
 #define ASH_SHELL_CONTEXT_MENU_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/models/simple_menu_model.h"

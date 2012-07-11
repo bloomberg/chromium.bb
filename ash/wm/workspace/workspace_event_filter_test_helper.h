@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_WORKSPACE_WORKSPACE_EVENT_FILTER_TEST_HELPER_H_
 #define ASH_WM_WORKSPACE_WORKSPACE_EVENT_FILTER_TEST_HELPER_H_
-#pragma once
 
 #include "ash/wm/workspace/workspace_event_filter.h"
 

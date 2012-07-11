@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_WINDOW_FRAME_H_
 #define ASH_WM_WINDOW_FRAME_H_
-#pragma once
 
 #include "ash/ash_export.h"
 #include "ui/aura/window.h"

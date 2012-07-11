@@ -4,7 +4,6 @@
 
 #ifndef ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_VIEW_H_
 #define ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_VIEW_H_
-#pragma once
 
 #include "ash/desktop_background/desktop_background_resources.h"
 #include "ui/gfx/image/image_skia.h"

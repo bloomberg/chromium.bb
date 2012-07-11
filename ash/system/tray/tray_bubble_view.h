@@ -4,7 +4,6 @@
 
 #ifndef ASH_SYSTEM_TRAY_TRAY_BUBBLE_VIEW_H_
 #define ASH_SYSTEM_TRAY_TRAY_BUBBLE_VIEW_H_
-#pragma once
 
 #include "ui/aura/event_filter.h"
 #include "ui/views/bubble/bubble_delegate.h"

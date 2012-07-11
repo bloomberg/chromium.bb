@@ -4,7 +4,6 @@
 
 #ifndef ASH_SHELL_H_
 #define ASH_SHELL_H_
-#pragma once
 
 #include <utility>
 #include <vector>

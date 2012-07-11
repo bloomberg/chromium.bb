@@ -4,7 +4,6 @@
 
 #ifndef ASH_SHELL_EXAMPLE_FACTORY_H_
 #define ASH_SHELL_EXAMPLE_FACTORY_H_
-#pragma once
 
 namespace app_list {
 class AppListViewDelegate;

@@ -4,7 +4,6 @@
 
 #ifndef ASH_CAPS_LOCK_DELEGATE_H_
 #define ASH_CAPS_LOCK_DELEGATE_H_
-#pragma once
 
 namespace ash {
 

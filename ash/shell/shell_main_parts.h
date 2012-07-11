@@ -4,7 +4,6 @@
 
 #ifndef ASH_SHELL_SHELL_MAIN_PARTS_H_
 #define ASH_SHELL_SHELL_MAIN_PARTS_H_
-#pragma once
 
 namespace ash {
 namespace shell {

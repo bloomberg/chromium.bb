@@ -4,7 +4,6 @@
 
 #ifndef FOCUS_CYCLER_H_
 #define FOCUS_CYCLER_H_
-#pragma once
 
 #include <vector>
 

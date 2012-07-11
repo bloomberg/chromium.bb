@@ -4,7 +4,6 @@
 
 #ifndef ASH_WM_TOPLEVEL_WINDOW_EVENT_FILTER_H_
 #define ASH_WM_TOPLEVEL_WINDOW_EVENT_FILTER_H_
-#pragma once
 
 #include <set>
 
