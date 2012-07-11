@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_POLICY_ASYNC_POLICY_LOADER_H_
 #define CHROME_BROWSER_POLICY_ASYNC_POLICY_LOADER_H_
-#pragma once
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_POLICY_ASYNC_POLICY_PROVIDER_H_
 #define CHROME_BROWSER_POLICY_ASYNC_POLICY_PROVIDER_H_
-#pragma once
 
 #include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"

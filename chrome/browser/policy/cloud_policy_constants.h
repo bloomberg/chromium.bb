@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_POLICY_CLOUD_POLICY_CONSTANTS_H_
 #define CHROME_BROWSER_POLICY_CLOUD_POLICY_CONSTANTS_H_
-#pragma once
 
 namespace policy {
 

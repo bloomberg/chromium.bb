@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_HANDLER_CHROMEOS_H_
 #define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_HANDLER_CHROMEOS_H_
-#pragma once
 
 #include "chrome/browser/chromeos/cros/network_ui_data.h"
 #include "chrome/browser/policy/configuration_policy_handler.h"

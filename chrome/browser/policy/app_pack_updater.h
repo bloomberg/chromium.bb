@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_POLICY_APP_PACK_UPDATER_H_
 #define CHROME_BROWSER_POLICY_APP_PACK_UPDATER_H_
-#pragma once
 
 #include <map>
 #include <set>

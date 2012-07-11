@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_POLICY_USER_POLICY_DISK_CACHE_H_
 #define CHROME_BROWSER_POLICY_USER_POLICY_DISK_CACHE_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/file_path.h"

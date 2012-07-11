@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_POLICY_MOCK_CLOUD_POLICY_STORE_H_
 #define CHROME_BROWSER_POLICY_MOCK_CLOUD_POLICY_STORE_H_
-#pragma once
 
 #include "chrome/browser/policy/cloud_policy_store.h"
 #include "testing/gmock/include/gmock/gmock.h"

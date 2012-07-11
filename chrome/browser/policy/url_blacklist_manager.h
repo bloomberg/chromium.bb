@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_POLICY_URL_BLACKLIST_MANAGER_H_
 #define CHROME_BROWSER_POLICY_URL_BLACKLIST_MANAGER_H_
-#pragma once
 
 #include <string>
 #include <vector>

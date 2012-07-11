@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_POLICY_MANAGED_MODE_POLICY_PROVIDER_FACTORY_H_
 #define CHROME_BROWSER_POLICY_MANAGED_MODE_POLICY_PROVIDER_FACTORY_H_
-#pragma once
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"

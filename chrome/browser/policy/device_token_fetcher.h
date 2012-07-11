@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_POLICY_DEVICE_TOKEN_FETCHER_H_
 #define CHROME_BROWSER_POLICY_DEVICE_TOKEN_FETCHER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

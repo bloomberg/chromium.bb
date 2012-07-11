@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_POLICY_MANAGED_MODE_POLICY_PROVIDER_H_
 #define CHROME_BROWSER_POLICY_MANAGED_MODE_POLICY_PROVIDER_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"

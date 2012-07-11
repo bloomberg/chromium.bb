@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_POLICY_CLOUD_POLICY_SUBSYSTEM_H_
 #define CHROME_BROWSER_POLICY_CLOUD_POLICY_SUBSYSTEM_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"

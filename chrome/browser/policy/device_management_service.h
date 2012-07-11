@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_POLICY_DEVICE_MANAGEMENT_SERVICE_H_
 #define CHROME_BROWSER_POLICY_DEVICE_MANAGEMENT_SERVICE_H_
-#pragma once
 
 #include <deque>
 #include <map>

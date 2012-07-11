@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_POLICY_POLICY_LOADER_WIN_H_
 #define CHROME_BROWSER_POLICY_POLICY_LOADER_WIN_H_
-#pragma once
 
 #include "base/synchronization/waitable_event.h"
 #include "base/win/object_watcher.h"

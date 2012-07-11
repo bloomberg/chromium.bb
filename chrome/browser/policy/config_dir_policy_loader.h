@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_POLICY_CONFIG_DIR_POLICY_LOADER_H_
 #define CHROME_BROWSER_POLICY_CONFIG_DIR_POLICY_LOADER_H_
-#pragma once
 
 #include "base/file_path.h"
 #include "base/files/file_path_watcher.h"

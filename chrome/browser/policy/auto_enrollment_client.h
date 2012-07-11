@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_POLICY_AUTO_ENROLLMENT_CLIENT_H_
 #define CHROME_BROWSER_POLICY_AUTO_ENROLLMENT_CLIENT_H_
-#pragma once
 
 #include <string>
 

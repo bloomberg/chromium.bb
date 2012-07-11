@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_POLICY_POLICY_ERROR_MAP_H_
 #define CHROME_BROWSER_POLICY_POLICY_ERROR_MAP_H_
-#pragma once
 
 #include <map>
 #include <string>

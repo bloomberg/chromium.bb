@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_POLICY_CLOUD_POLICY_CACHE_BASE_H_
 #define CHROME_BROWSER_POLICY_CLOUD_POLICY_CACHE_BASE_H_
-#pragma once
 
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"

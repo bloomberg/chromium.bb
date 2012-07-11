@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_POLICY_MOCK_CLOUD_POLICY_CLIENT_H_
 #define CHROME_BROWSER_POLICY_MOCK_CLOUD_POLICY_CLIENT_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/browser/policy/cloud_policy_client.h"
