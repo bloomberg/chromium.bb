@@ -14,6 +14,7 @@
 
 #include <limits>
 #include <list>
+#include <string>
 
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -140,7 +141,8 @@ UserSpecificRegistrySuffix::UserSpecificRegistrySuffix() {
   }
   COMPILE_ASSERT(sizeof(base::MD5Digest) == 16, size_of_MD5_not_as_expected_);
   base::MD5Digest md5_digest;
-  base::MD5Sum(user_sid.c_str(), user_sid.length(), &md5_digest);
+  std::string user_sid_ascii(UTF16ToASCII(user_sid));
+  base::MD5Sum(user_sid_ascii.c_str(), user_sid_ascii.length(), &md5_digest);
   const string16 base32_md5(
       ShellUtil::ByteArrayToBase32(md5_digest.a, arraysize(md5_digest.a)));
   // The value returned by the base32 algorithm above must never change and
