@@ -734,20 +734,20 @@ scoped_ptr<GDataEntry> GDataEntry::FromProtoString(
   GDataDirectoryProto dir_proto;
   bool ok = dir_proto.ParseFromString(serialized_proto);
   if (ok && dir_proto.gdata_entry().file_info().is_directory()) {
-    GDataDirectory* dir = new GDataDirectory(NULL, NULL);
+    scoped_ptr<GDataDirectory> dir(new GDataDirectory(NULL, NULL));
     if (!dir->FromProto(dir_proto))
       return scoped_ptr<GDataEntry>(NULL);
-    return scoped_ptr<GDataEntry>(dir);
+    return scoped_ptr<GDataEntry>(dir.release());
   }
 
   GDataFileProto file_proto;
   ok = file_proto.ParseFromString(serialized_proto);
   if (ok) {
     DCHECK(!file_proto.gdata_entry().file_info().is_directory());
-    GDataFile* file = new GDataFile(NULL, NULL);
+    scoped_ptr<GDataFile> file(new GDataFile(NULL, NULL));
     if (!file->FromProto(file_proto))
       return scoped_ptr<GDataEntry>(NULL);
-    return scoped_ptr<GDataEntry>(file);
+    return scoped_ptr<GDataEntry>(file.release());
   }
   return scoped_ptr<GDataEntry>(NULL);
 }

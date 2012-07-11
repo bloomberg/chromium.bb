@@ -5550,16 +5550,6 @@
    fun:_ZN16RenderThreadImplC1ERKSs
    fun:_ZN21WebRTCAudioDeviceTest5SetUpEv
 }
-{
-   bug_chromium_os_32464
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5gdata10GDataEntry15FromProtoStringERKSs
-   fun:_ZN5gdata12GDataLevelDB15GetByResourceIdERKSsP10scoped_ptrINS_10GDataEntryEE
-   ...
-   fun:_ZN5gdata12_GLOBAL__N_111*
-   fun:_ZN5gdata38GDataDBTest_IncompatibleProtoTest_Test8TestBodyEv
-}
 
 
 #-----------------------------------------------------------------------
