@@ -20,6 +20,7 @@
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
 #include "base/global_descriptors_posix.h"
+#include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/posix/unix_domain_socket.h"
@@ -235,9 +236,11 @@ int main(int argc, char *argv[]) {
     if (msglen == 0 || (msglen == -1 && errno == ECONNRESET)) {
       // EOF from the browser. Goodbye!
       _exit(0);
-    }
-    if (msglen == sizeof(kNaClForkRequest) - 1 &&
-        memcmp(buf, kNaClForkRequest, msglen) == 0) {
+    } else if (msglen < 0) {
+      LOG(ERROR) << "nacl_helper: receive from zygote failed, errno = "
+                 << errno;
+    } else if (msglen == sizeof(kNaClForkRequest) - 1 &&
+               memcmp(buf, kNaClForkRequest, msglen) == 0) {
       if (kNaClParentFDIndex + 1 == fds.size()) {
         HandleForkRequest(fds, prereserved_sandbox_size);
         continue;  // fork succeeded. Note: child does not return
@@ -246,10 +249,9 @@ int main(int argc, char *argv[]) {
                    << fds.size();
       }
     } else {
-      if (msglen != 0) {
-        LOG(ERROR) << "nacl_helper unrecognized request: %s";
-        _exit(-1);
-      }
+      LOG(ERROR) << "nacl_helper unrecognized request: "
+                 << base::GetDoubleQuotedJson(std::string(buf, buf + msglen));
+      _exit(-1);
     }
     // if fork fails, send PID=-1 to zygote
     if (!UnixDomainSocket::SendMsg(kNaClZygoteDescriptor, &badpid,
