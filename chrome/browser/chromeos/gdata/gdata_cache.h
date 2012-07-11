@@ -145,24 +145,34 @@ class GDataCache {
 
     // Setters for the states describe above.
     void SetPresent(bool value) {
-      cache_state = (value ? cache_state |= CACHE_STATE_PRESENT :
-                     cache_state &= ~CACHE_STATE_PRESENT);
+      if (value)
+        cache_state |= CACHE_STATE_PRESENT;
+      else
+        cache_state &= ~CACHE_STATE_PRESENT;
     }
     void SetPinned(bool value) {
-      cache_state = (value ? cache_state |= CACHE_STATE_PINNED :
-                     cache_state &= ~CACHE_STATE_PINNED);
+      if (value)
+        cache_state |= CACHE_STATE_PINNED;
+      else
+        cache_state &= ~CACHE_STATE_PINNED;
     }
     void SetDirty(bool value) {
-      cache_state = (value ? cache_state |= CACHE_STATE_DIRTY :
-                     cache_state &= ~CACHE_STATE_DIRTY);
+      if (value)
+        cache_state |= CACHE_STATE_DIRTY;
+      else
+        cache_state &= ~CACHE_STATE_DIRTY;
     }
     void SetMounted(bool value) {
-      cache_state = (value ? cache_state |= CACHE_STATE_MOUNTED :
-                     cache_state &= ~CACHE_STATE_MOUNTED);
+      if (value)
+        cache_state |= CACHE_STATE_MOUNTED;
+      else
+        cache_state &= ~CACHE_STATE_MOUNTED;
     }
     void SetPersistent(bool value) {
-      cache_state = (value ? cache_state |= CACHE_STATE_PERSISTENT :
-                     cache_state &= ~CACHE_STATE_PERSISTENT);
+      if (value)
+        cache_state |= CACHE_STATE_PERSISTENT;
+      else
+        cache_state &= ~CACHE_STATE_PERSISTENT;
     }
 
     // Returns the type of the sub directory where the cache file is stored.
