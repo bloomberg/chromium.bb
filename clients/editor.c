@@ -20,6 +20,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -233,22 +234,29 @@ button_handler(struct widget *widget,
 	x -= allocation.x;
 	y -= allocation.y;
 
-	editor->entry->active = 0;
-	editor->editor->active = 0;
+	int32_t activate_entry = rectangle_contains(&editor->entry->allocation, x, y);
+	int32_t activate_editor = rectangle_contains(&editor->editor->allocation, x, y);
+	assert(!(activate_entry && activate_editor));
 
-	editor->entry->active = rectangle_contains(&editor->entry->allocation, x, y);
-	editor->editor->active = rectangle_contains(&editor->editor->allocation, x, y);
-
-	if (editor->entry->active) {
-		text_entry_activate(editor->entry);
+	if (activate_entry) {
+		if (editor->editor->active)
+			text_entry_deactivate(editor->editor);
+		if (!editor->entry->active)
+			text_entry_activate(editor->entry);
+	} else if (activate_editor) {
+		if (editor->entry->active)
+			text_entry_deactivate(editor->entry);
+		if (!editor->editor->active)
+			text_entry_activate(editor->editor);
 	} else {
-		text_entry_deactivate(editor->entry);
+		if (editor->entry->active)
+			text_entry_deactivate(editor->entry);
+		if (editor->editor->active)
+			text_entry_deactivate(editor->editor);
 	}
-	if (editor->editor->active) {
-		text_entry_activate(editor->editor);
-	} else {
-		text_entry_deactivate(editor->editor);
-	}
+	editor->entry->active = activate_entry;
+	editor->editor->active = activate_editor;
+	assert(!(editor->entry->active && editor->editor->active));
 
 	widget_schedule_redraw(widget);
 }
