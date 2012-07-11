@@ -4,8 +4,8 @@
 
 #include "content/app/android/content_main.h"
 
-#include "base/base_switches.h"
 #include "base/at_exit.h"
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "content/app/android/user_agent.h"

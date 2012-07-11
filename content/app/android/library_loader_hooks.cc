@@ -32,9 +32,6 @@ base::AtExitManager* g_at_exit_manager = NULL;
 
 jboolean LibraryLoadedOnMainThread(JNIEnv* env, jclass clazz,
                                    jobjectArray init_command_line) {
-  // We need the Chrome AtExitManager to be created before we do any tracing or
-  // logging.
-  g_at_exit_manager = new base::AtExitManager();
   InitNativeCommandLineFromJavaArray(env, init_command_line);
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -91,6 +88,9 @@ void LibraryLoaderExitHook() {
 }
 
 bool RegisterLibraryLoaderEntryHook(JNIEnv* env) {
+  // We need the AtExitManager to be created at the very beginning.
+  g_at_exit_manager = new base::AtExitManager();
+
   return RegisterNativesImpl(env);
 }
 
