@@ -459,6 +459,13 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 #define MAYBE_WebGLGreenTriangle WebGLGreenTriangle
 #endif
 
+// http://crbug.com/136430
+#if defined(OS_WIN)
+#define MAYBE_CSS3DBlueBox FLAKY_CSS3DBlueBox
+#else
+#define MAYBE_CSS3DBlueBox CSS3DBlueBox
+#endif
+
 IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLGreenTriangle) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
@@ -470,7 +477,7 @@ IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLGreenTriangle) {
   RunPixelTest(container_size, url, ref_img_revision_update);
 }
 
-IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, CSS3DBlueBox) {
+IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_CSS3DBlueBox) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
   const int64 ref_img_revision_update = 123489;
