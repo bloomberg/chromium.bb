@@ -380,7 +380,7 @@ class GDataFileSystemInterface {
   // |callback| will be called on the UI thread upon completion of operation.
   virtual void AddUploadedFile(UploadMode upload_mode,
                                const FilePath& virtual_dir_path,
-                               DocumentEntry* entry,
+                               scoped_ptr<DocumentEntry> entry,
                                const FilePath& file_content_path,
                                GDataCache::FileOperationType cache_operation,
                                const base::Closure& callback) = 0;
@@ -465,7 +465,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const GetAvailableSpaceCallback& callback) OVERRIDE;
   virtual void AddUploadedFile(UploadMode upload_mode,
                                const FilePath& virtual_dir_path,
-                               DocumentEntry* entry,
+                               scoped_ptr<DocumentEntry> entry,
                                const FilePath& file_content_path,
                                GDataCache::FileOperationType cache_operation,
                                const base::Closure& callback) OVERRIDE;
@@ -1226,7 +1226,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void GetAvailableSpaceOnUIThread(const GetAvailableSpaceCallback& callback);
   void AddUploadedFileOnUIThread(UploadMode upload_mode,
                                  const FilePath& virtual_dir_path,
-                                 DocumentEntry* entry,
+                                 scoped_ptr<DocumentEntry> entry,
                                  const FilePath& file_content_path,
                                  GDataCache::FileOperationType cache_operation,
                                  const base::Closure& callback);

@@ -233,8 +233,7 @@ void OnCacheUpdatedForAddUploadedFile(
 // OnTransferCompleted.
 void OnAddUploadFileCompleted(
     const FileOperationCallback& callback,
-    base::PlatformFileError error,
-    scoped_ptr<UploadFileInfo> /* upload_file_info */) {
+    base::PlatformFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!callback.is_null())
     callback.Run(error);
@@ -1203,19 +1202,12 @@ void GDataFileSystem::OnTransferCompleted(
   DCHECK(upload_file_info.get());
 
   if (error == base::PLATFORM_FILE_OK && upload_file_info->entry.get()) {
-    // Save a local copy of the UploadFileInfo pointer. Depending on order of
-    // argument evaluation, base::Passed() may invalidate the scoped pointer
-    // |upload_file_info| before it can be dereferenced to access its members.
-    const UploadFileInfo* upload_file_info_ptr = upload_file_info.get();
     AddUploadedFile(UPLOAD_NEW_FILE,
-                    upload_file_info_ptr->gdata_path.DirName(),
-                    upload_file_info_ptr->entry.get(),
-                    upload_file_info_ptr->file_path,
+                    upload_file_info->gdata_path.DirName(),
+                    upload_file_info->entry.Pass(),
+                    upload_file_info->file_path,
                     GDataCache::FILE_OPERATION_COPY,
-                    base::Bind(&OnAddUploadFileCompleted,
-                               callback,
-                               error,
-                               base::Passed(&upload_file_info)));
+                    base::Bind(&OnAddUploadFileCompleted, callback, error));
   } else if (!callback.is_null()) {
     callback.Run(error);
   }
@@ -2425,17 +2417,12 @@ void GDataFileSystem::OnUpdatedFileUploaded(
     return;
   }
 
-  // See comments in OnTransferCompleted() for why we copy this pointer.
-  const UploadFileInfo* upload_file_info_ptr = upload_file_info.get();
   AddUploadedFile(UPLOAD_EXISTING_FILE,
-                  upload_file_info_ptr->gdata_path.DirName(),
-                  upload_file_info_ptr->entry.get(),
-                  upload_file_info_ptr->file_path,
+                  upload_file_info->gdata_path.DirName(),
+                  upload_file_info->entry.Pass(),
+                  upload_file_info->file_path,
                   GDataCache::FILE_OPERATION_MOVE,
-                  base::Bind(&OnAddUploadFileCompleted,
-                             callback,
-                             error,
-                             base::Passed(&upload_file_info)));
+                  base::Bind(&OnAddUploadFileCompleted, callback, error));
 }
 
 void GDataFileSystem::GetAvailableSpace(
@@ -3532,7 +3519,7 @@ base::PlatformFileError GDataFileSystem::RemoveEntryFromGData(
 void GDataFileSystem::AddUploadedFile(
     UploadMode upload_mode,
     const FilePath& virtual_dir_path,
-    DocumentEntry* entry,
+    scoped_ptr<DocumentEntry> entry,
     const FilePath& file_content_path,
     GDataCache::FileOperationType cache_operation,
     const base::Closure& callback) {
@@ -3546,7 +3533,7 @@ void GDataFileSystem::AddUploadedFile(
                  ui_weak_ptr_,
                  upload_mode,
                  virtual_dir_path,
-                 entry,
+                 base::Passed(&entry),
                  file_content_path,
                  cache_operation,
                  callback));
@@ -3555,14 +3542,14 @@ void GDataFileSystem::AddUploadedFile(
 void GDataFileSystem::AddUploadedFileOnUIThread(
     UploadMode upload_mode,
     const FilePath& virtual_dir_path,
-    DocumentEntry* entry,
+    scoped_ptr<DocumentEntry> entry,
     const FilePath& file_content_path,
     GDataCache::FileOperationType cache_operation,
     const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (!entry) {
+  if (!entry.get()) {
     NOTREACHED();
     callback.Run();
     return;
@@ -3581,7 +3568,7 @@ void GDataFileSystem::AddUploadedFileOnUIThread(
   }
 
   scoped_ptr<GDataEntry> new_entry(
-      GDataEntry::FromDocumentEntry(parent_dir, entry, root_.get()));
+      GDataEntry::FromDocumentEntry(parent_dir, entry.get(), root_.get()));
   if (!new_entry.get()) {
     callback.Run();
     return;

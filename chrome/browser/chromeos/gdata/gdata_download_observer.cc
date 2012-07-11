@@ -519,10 +519,9 @@ void GDataDownloadObserver::MoveFileToGDataCache(DownloadItem* download) {
     return;
   }
 
-  // Take ownership of the DocumentEntry object. It will be released upon
-  // completion of the AddUploadedFile() call below.
-  DocumentEntry* entry = data->entry_passed().release();
-  if (!entry) {
+  // Pass ownership of the DocumentEntry object to AddUploadedFile().
+  scoped_ptr<DocumentEntry> entry = data->entry_passed();
+  if (!entry.get()) {
     NOTREACHED();
     return;
   }
@@ -531,11 +530,10 @@ void GDataDownloadObserver::MoveFileToGDataCache(DownloadItem* download) {
   // use the final target path when the download item is in COMPLETE state.
   file_system_->AddUploadedFile(UPLOAD_NEW_FILE,
                                 data->virtual_dir_path(),
-                                entry,
+                                entry.Pass(),
                                 download->GetTargetFilePath(),
                                 GDataCache::FILE_OPERATION_MOVE,
-                                base::Bind(&base::DeletePointer<DocumentEntry>,
-                                           entry));
+                                base::Bind(&base::DoNothing));
 }
 
 }  // namespace gdata

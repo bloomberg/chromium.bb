@@ -82,13 +82,13 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
                void(const FilePath& file_path));
   MOCK_METHOD1(GetAvailableSpace,
                void(const GetAvailableSpaceCallback& callback));
-  MOCK_METHOD6(AddUploadedFile,
-               void(UploadMode upload_mode,
-                    const FilePath& file,
-                    DocumentEntry* entry,
-                    const FilePath& file_content_path,
-                    GDataCache::FileOperationType cache_operation,
-                    const base::Closure& callback));
+  // This function is not mockable by gmock because scoped_ptr is not supported.
+  virtual void AddUploadedFile(UploadMode upload_mode,
+                               const FilePath& file,
+                               scoped_ptr<DocumentEntry> entry,
+                               const FilePath& file_content_path,
+                               GDataCache::FileOperationType cache_operation,
+                               const base::Closure& callback) OVERRIDE {}
 };
 
 }  // namespace gdata
