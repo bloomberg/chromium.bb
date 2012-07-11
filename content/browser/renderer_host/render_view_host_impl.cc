@@ -916,6 +916,9 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptEvalResponse, OnScriptEvalResponse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaNotification, OnMediaNotification)
+#if defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_StartContentIntent, OnStartContentIntent)
+#endif
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_RequestPermission,
                         OnRequestDesktopNotificationPermission)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_Show,
@@ -1790,6 +1793,13 @@ void RenderViewHostImpl::OnMediaNotification(int64 player_cookie,
     power_save_blockers_.erase(player_cookie);
   }
 }
+
+#if defined(OS_ANDROID)
+void RenderViewHostImpl::OnStartContentIntent(const GURL& content_url) {
+  if (GetView())
+    GetView()->StartContentIntent(content_url);
+}
+#endif
 
 void RenderViewHostImpl::OnRequestDesktopNotificationPermission(
     const GURL& source_origin, int callback_context) {

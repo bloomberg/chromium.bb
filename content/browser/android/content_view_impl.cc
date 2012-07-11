@@ -13,16 +13,26 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/content_view_jni.h"
 
+using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::GetClass;
 using base::android::HasField;
+using base::android::ScopedJavaLocalRef;
 
 namespace {
 jfieldID g_native_content_view;
 }  // namespace
 
 namespace content {
+
+struct ContentViewImpl::JavaObject {
+  jweak obj;
+
+  ScopedJavaLocalRef<jobject> View(JNIEnv* env) {
+    return GetRealObject(env, obj);
+  }
+};
 
 // ----------------------------------------------------------------------------
 // Implementation of static ContentView public interfaces
@@ -45,9 +55,17 @@ ContentViewImpl::ContentViewImpl(JNIEnv* env, jobject obj,
       tab_crashed_(false) {
   DCHECK(web_contents) <<
       "A ContentViewImpl should be created with a valid WebContents.";
+
+  InitJNI(env, obj);
 }
 
 ContentViewImpl::~ContentViewImpl() {
+  if (java_object_) {
+    JNIEnv* env = AttachCurrentThread();
+    env->DeleteWeakGlobalRef(java_object_->obj);
+    delete java_object_;
+    java_object_ = 0;
+  }
 }
 
 void ContentViewImpl::Destroy(JNIEnv* env, jobject obj) {
@@ -58,6 +76,11 @@ void ContentViewImpl::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
   // TODO(jrg)
+}
+
+void ContentViewImpl::InitJNI(JNIEnv* env, jobject obj) {
+  java_object_ = new JavaObject;
+  java_object_->obj = env->NewWeakGlobalRef(obj);
 }
 
 // ----------------------------------------------------------------------------
@@ -240,6 +263,15 @@ void ContentViewImpl::OnSelectionBoundsChanged(
 void ContentViewImpl::OnAcceleratedCompositingStateChange(
     RenderWidgetHostViewAndroid* rwhva, bool activated, bool force) {
   NOTIMPLEMENTED() << "not upstreamed yet";
+}
+
+void ContentViewImpl::StartContentIntent(const GURL& content_url) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jcontent_url =
+      ConvertUTF8ToJavaString(env, content_url.spec());
+  Java_ContentView_startContentIntent(env,
+                                      java_object_->View(env).obj(),
+                                      jcontent_url.obj());
 }
 
 // --------------------------------------------------------------------------

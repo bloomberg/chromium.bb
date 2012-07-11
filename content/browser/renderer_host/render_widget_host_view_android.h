@@ -101,6 +101,8 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
 
+  virtual void StartContentIntent(const GURL& content_url) OVERRIDE;
+
   void SetContentView(ContentViewImpl* content_view);
 
  private:

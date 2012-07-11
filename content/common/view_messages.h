@@ -2092,6 +2092,12 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_SendSerializedHtmlData,
                     std::string /* data buffer */,
                     int32 /* complete status */)
 
+#if defined(OS_ANDROID)
+// Start an android intent with the given URI.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_StartContentIntent,
+                    GURL /* content_url */)
+#endif
+
 // Notifies the browser of an event occurring in the media pipeline.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_MediaLogEvent,
                      media::MediaLogEvent /* event */)

@@ -78,6 +78,7 @@ class ContentViewImpl : public ContentView,
   void OnAcceleratedCompositingStateChange(RenderWidgetHostViewAndroid* rwhva,
                                            bool activated,
                                            bool force);
+  virtual void StartContentIntent(const GURL& content_url) OVERRIDE;
 
   // --------------------------------------------------------------------------
   // Methods called from native code
@@ -107,7 +108,12 @@ class ContentViewImpl : public ContentView,
   // Other private methods and data
   // --------------------------------------------------------------------------
 
+  void InitJNI(JNIEnv* env, jobject obj);
+
   void PostLoadUrl(const GURL& url);
+
+  struct JavaObject;
+  JavaObject* java_object_;
 
   // Reference to the current WebContents used to determine how and what to
   // display in the ContentView.

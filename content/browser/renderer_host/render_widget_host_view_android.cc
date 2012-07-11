@@ -275,6 +275,12 @@ bool RenderWidgetHostViewAndroid::HasAcceleratedSurface(
   return false;
 }
 
+void RenderWidgetHostViewAndroid::StartContentIntent(
+    const GURL& content_url) {
+  if (content_view_)
+    content_view_->StartContentIntent(content_url);
+}
+
 gfx::GLSurfaceHandle RenderWidgetHostViewAndroid::GetCompositingSurface() {
   // On Android, we cannot generate a window handle that can be passed to the
   // GPU process through the native side. Instead, we send the surface handle

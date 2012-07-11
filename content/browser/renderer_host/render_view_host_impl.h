@@ -550,6 +550,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnMsgShowPopup(const ViewHostMsg_ShowPopup_Params& params);
 #endif
 
+#if defined(OS_ANDROID)
+  void OnStartContentIntent(const GURL& content_url);
+#endif
+
  private:
   friend class TestRenderViewHost;
 

@@ -11,6 +11,7 @@ import android.view.View;
 import android.webkit.DownloadListener;
 import android.widget.FrameLayout;
 
+import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.WeakContext;
 import org.chromium.content.app.AppResource;
@@ -547,6 +548,12 @@ public class ContentView extends FrameLayout {
     public View getZoomControlsForTest() {
         return mZoomManager.getZoomControlsViewForTest();
     }
+
+    @CalledByNative
+    private void startContentIntent(String contentUrl) {
+        getContentViewClient().onStartContentIntent(getContext(), contentUrl);
+    }
+
 
     /**
      * Initialize the ContentView native side.

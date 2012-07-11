@@ -17,6 +17,7 @@
 #endif
 
 class BrowserAccessibilityManager;
+class GURL;
 
 namespace gfx {
 class Rect;
@@ -130,6 +131,10 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Builds a submenu containing all the gtk input method commands.
   virtual gfx::NativeView BuildInputMethodsGtkMenu() = 0;
 #endif  // defined(TOOLKIT_GTK)
+
+#if defined(OS_ANDROID)
+  virtual void StartContentIntent(const GURL& content_url) = 0;
+#endif
 
   // Subclasses should override this method to do what is appropriate to set
   // the custom background for their platform.

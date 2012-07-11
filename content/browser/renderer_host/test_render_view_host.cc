@@ -176,7 +176,10 @@ void TestRenderWidgetHostView::AcceleratedSurfaceSetTransportDIB(
 #elif defined(OS_WIN) && !defined(USE_AURA)
 void TestRenderWidgetHostView::WillWmDestroy() {
 }
+#endif
 
+#if defined(OS_ANDROID)
+void TestRenderWidgetHostView::StartContentIntent(const GURL&) {}
 #endif
 
 #if defined(OS_POSIX) || defined(USE_AURA)

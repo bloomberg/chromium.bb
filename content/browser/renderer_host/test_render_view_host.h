@@ -130,6 +130,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
       int32 width,
       int32 height,
       TransportDIB::Handle transport_dib) OVERRIDE;
+#elif defined(OS_ANDROID)
+  virtual void StartContentIntent(const GURL&) OVERRIDE;
 #elif defined(OS_WIN) && !defined(USE_AURA)
   virtual void WillWmDestroy() OVERRIDE;
 #endif

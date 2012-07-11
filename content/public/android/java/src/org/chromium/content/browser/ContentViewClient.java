@@ -5,6 +5,7 @@
 package org.chromium.content.browser;
 
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -277,7 +278,7 @@ public class ContentViewClient {
     /**
      * Called when a new content intent is requested to be started.
      */
-    public void onStartContentIntent(ContentView chromeView, String contentUrl) {
+    public void onStartContentIntent(Context context, String contentUrl) {
         Intent intent;
         // Perform generic parsing of the URI to turn it into an Intent.
         try {
@@ -288,7 +289,7 @@ public class ContentViewClient {
         }
 
         try {
-            chromeView.getContext().startActivity(intent);
+            context.startActivity(intent);
         } catch (ActivityNotFoundException ex) {
             Log.w(TAG, "No application can handle " + contentUrl);
         }

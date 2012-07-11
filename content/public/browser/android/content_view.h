@@ -7,6 +7,8 @@
 
 #include <jni.h>
 
+class GURL;
+
 namespace content {
 
 class WebContents;
@@ -32,6 +34,12 @@ class ContentView {
   static ContentView* Create(JNIEnv* env, jobject obj,
                              WebContents* web_contents);
   static ContentView* GetNativeContentView(JNIEnv* env, jobject obj);
+
+  // --------------------------------------------------------------------------
+  // Public methods that call to Java via JNI
+  // --------------------------------------------------------------------------
+
+  virtual void StartContentIntent(const GURL& content_url) = 0;
 
  protected:
   virtual ~ContentView() {};
