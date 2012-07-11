@@ -127,18 +127,8 @@ void CreateShortcut(
       BrowserThread::FILE,
       FROM_HERE,
       base::Bind(base::IgnoreResult(&CreateShortcutOnFileThread),
-                 profile_path, shortcut_info));
-}
-
-void DeleteAllShortcuts(const FilePath& profile_path,
-                        const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&internals::DeletePlatformShortcuts, profile_path,
-                 extension_id));
+                 profile_path,
+                 shortcut_info));
 }
 
 bool CreateShortcutOnFileThread(

@@ -54,11 +54,6 @@ void CreateShortcut(
     const FilePath& profile_path,
     const ShellIntegration::ShortcutInfo& shortcut_info);
 
-// Delete all the shortcuts that have been created for the extension with
-// |extension_id| in the profile with |profile_path|.
-void DeleteAllShortcuts(const FilePath& profile_path,
-                        const std::string& extension_id);
-
 // Creates a shortcut. Must be called on the file thread. This is used to
 // implement CreateShortcut() above, and can also be used directly from the
 // file thread. |profile_path| is the path of the creating profile.
@@ -101,12 +96,6 @@ bool CreatePlatformShortcut(
     const FilePath& shortcut_data_path,
     const FilePath& profile_path,
     const ShellIntegration::ShortcutInfo& shortcut_info);
-
-// Delete all the shortcuts we have added for this extension. This is the
-// platform specific implementation of the DeleteAllShortcuts function, and
-// is executed on the FILE thread..
-void DeletePlatformShortcuts(const FilePath& profile_path,
-                             const std::string& extension_id);
 
 // Sanitizes |name| and returns a version of it that is safe to use as an
 // on-disk file name .

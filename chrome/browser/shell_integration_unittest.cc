@@ -139,7 +139,7 @@ TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
   }
 }
 
-TEST(ShellIntegrationTest, GetWebShortcutFilename) {
+TEST(ShellIntegrationTest, GetDesktopShortcutFilename) {
   const struct {
     const FilePath::CharType* path;
     const char* url;
@@ -156,7 +156,7 @@ TEST(ShellIntegrationTest, GetWebShortcutFilename) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); i++) {
     EXPECT_EQ(std::string(chrome::kBrowserProcessExecutableName) + "-" +
               test_cases[i].path,
-              ShellIntegrationLinux::GetWebShortcutFilename(
+              ShellIntegrationLinux::GetDesktopShortcutFilename(
                   GURL(test_cases[i].url)).value()) <<
         " while testing " << test_cases[i].url;
   }
