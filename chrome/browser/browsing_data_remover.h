@@ -253,7 +253,9 @@ class BrowsingDataRemover : public content::NotificationObserver,
 
   // Callback responding to deletion of a single quota managed origin's
   // persistent data
-  void OnQuotaManagedOriginDeletion(quota::QuotaStatusCode);
+  void OnQuotaManagedOriginDeletion(const GURL& origin,
+                                    quota::StorageType type,
+                                    quota::QuotaStatusCode);
 
   // Called to check whether all temporary and persistent origin data that
   // should be deleted has been deleted. If everything's good to go, invokes

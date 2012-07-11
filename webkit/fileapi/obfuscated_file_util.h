@@ -139,18 +139,16 @@ class FILEAPI_EXPORT_PRIVATE ObfuscatedFileUtil : public FileSystemFileUtil {
   // Gets the topmost directory specific to this origin and type.  This will
   // contain both the directory database's files and all the backing file
   // subdirectories.
+  // Returns an empty path if the directory is undefined (e.g. because |type|
+  // is invalid). If the directory is defined, it will be returned, even if
+  // there is a file system error (e.g. the directory doesn't exist on disk and
+  // |create| is false). Callers should always check |error_code| to make sure
+  // the returned path is usable.
   FilePath GetDirectoryForOriginAndType(
       const GURL& origin,
       FileSystemType type,
       bool create,
       base::PlatformFileError* error_code);
-
-  FilePath GetDirectoryForOriginAndType(
-      const GURL& origin,
-      FileSystemType type,
-      bool create) {
-    return GetDirectoryForOriginAndType(origin, type, create, NULL);
-  }
 
   // Deletes the topmost directory specific to this origin and type.  This will
   // delete its directory database.

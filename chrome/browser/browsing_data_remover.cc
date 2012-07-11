@@ -785,7 +785,7 @@ void BrowsingDataRemover::OnGotQuotaManagedOrigins(
         origin->GetOrigin(), type,
         BrowsingDataRemover::GenerateQuotaClientMask(remove_mask_),
         base::Bind(&BrowsingDataRemover::OnQuotaManagedOriginDeletion,
-                   base::Unretained(this)));
+                   base::Unretained(this), origin->GetOrigin(), type));
   }
 
   --quota_managed_storage_types_to_delete_count_;
@@ -793,12 +793,13 @@ void BrowsingDataRemover::OnGotQuotaManagedOrigins(
 }
 
 void BrowsingDataRemover::OnQuotaManagedOriginDeletion(
+    const GURL& origin,
+    quota::StorageType type,
     quota::QuotaStatusCode status) {
   DCHECK_GT(quota_managed_origins_to_delete_count_, 0);
   if (status != quota::kQuotaStatusOk) {
-    // TODO(mkwst): We should add the GURL to StatusCallback; this is a pretty
-    // worthless error message otherwise.
-    DLOG(ERROR) << "Couldn't remove origin. Status: " << status;
+    DLOG(ERROR) << "Couldn't remove data of type " << type << " for origin "
+                << origin << ". Status: " << status;
   }
 
   --quota_managed_origins_to_delete_count_;

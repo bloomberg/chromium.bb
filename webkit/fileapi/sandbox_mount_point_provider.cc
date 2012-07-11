@@ -297,7 +297,7 @@ void ValidateRootOnFileThread(
   FilePath root_path =
       file_util->GetDirectoryForOriginAndType(
           origin_url, type, create, error_ptr);
-  if (root_path.empty()) {
+  if (*error_ptr != base::PLATFORM_FILE_OK) {
     UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemLabel,
                               kCreateDirectoryError,
                               kFileSystemErrorMax);
@@ -386,10 +386,7 @@ SandboxMountPointProvider::GetFileSystemRootPathOnFileThread(
   if (!IsAllowedScheme(origin_url))
     return FilePath();
 
-  MigrateIfNeeded(sandbox_file_util_.get(), old_base_path());
-
-  return sandbox_file_util_->GetDirectoryForOriginAndType(
-      origin_url, type, create);
+  return GetBaseDirectoryForOriginAndType(origin_url, type, create);
 }
 
 bool SandboxMountPointProvider::IsAccessAllowed(const GURL& origin_url,
@@ -482,8 +479,12 @@ FilePath SandboxMountPointProvider::GetBaseDirectoryForOriginAndType(
 
   MigrateIfNeeded(sandbox_file_util_.get(), old_base_path());
 
-  return sandbox_file_util_->GetDirectoryForOriginAndType(
-      origin_url, type, create);
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  FilePath path = sandbox_file_util_->GetDirectoryForOriginAndType(
+      origin_url, type, create, &error);
+  if (error != base::PLATFORM_FILE_OK)
+    return FilePath();
+  return path;
 }
 
 bool SandboxMountPointProvider::DeleteOriginDataOnFileThread(

@@ -908,45 +908,66 @@ FilePath ObfuscatedFileUtil::GetDirectoryForOriginAndType(
     return FilePath();
   }
   FilePath path = origin_dir.Append(type_string);
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
   if (!file_util::DirectoryExists(path) &&
       (!create || !file_util::CreateDirectory(path))) {
-    if (error_code) {
-      *error_code = create ?
+    error = create ?
           base::PLATFORM_FILE_ERROR_FAILED :
           base::PLATFORM_FILE_ERROR_NOT_FOUND;
-    }
-    return FilePath();
   }
 
   if (error_code)
-    *error_code = base::PLATFORM_FILE_OK;
+    *error_code = error;
   return path;
 }
 
 bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
     const GURL& origin, FileSystemType type) {
-  FilePath origin_type_path = GetDirectoryForOriginAndType(origin, type, false);
-  if (!file_util::PathExists(origin_type_path))
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  FilePath origin_type_path = GetDirectoryForOriginAndType(origin, type, false,
+                                                           &error);
+  if (origin_type_path.empty())
     return true;
 
-  // TODO(dmikurube): Consider the return value of DestroyDirectoryDatabase.
-  // We ignore its error now since 1) it doesn't matter the final result, and
-  // 2) it always returns false in Windows because of LevelDB's implementation.
-  // Information about failure would be useful for debugging.
-  DestroyDirectoryDatabase(origin, type);
-  if (!file_util::Delete(origin_type_path, true /* recursive */))
-    return false;
+  if (error != base::PLATFORM_FILE_ERROR_NOT_FOUND) {
+    // TODO(dmikurube): Consider the return value of DestroyDirectoryDatabase.
+    // We ignore its error now since 1) it doesn't matter the final result, and
+    // 2) it always returns false in Windows because of LevelDB's
+    // implementation.
+    // Information about failure would be useful for debugging.
+    DestroyDirectoryDatabase(origin, type);
+    if (!file_util::Delete(origin_type_path, true /* recursive */))
+      return false;
+  }
 
   FilePath origin_path = origin_type_path.DirName();
   DCHECK_EQ(origin_path.value(),
             GetDirectoryForOrigin(origin, false, NULL).value());
 
   // Delete the origin directory if the deleted one was the last remaining
-  // type for the origin.
-  if (file_util::Delete(origin_path, false /* recursive */)) {
+  // type for the origin, i.e. if the *other* type doesn't exist.
+  FileSystemType other_type = kFileSystemTypeUnknown;
+  switch (type) {
+    case kFileSystemTypeTemporary:
+      other_type = kFileSystemTypePersistent;
+      break;
+    case kFileSystemTypePersistent:
+      other_type = kFileSystemTypeTemporary;
+      break;
+    // These types shouldn't be used.
+    case kFileSystemTypeUnknown:
+    case kFileSystemTypeIsolated:
+    case kFileSystemTypeExternal:
+    case kFileSystemTypeTest:
+      NOTREACHED();
+  }
+  if (!file_util::DirectoryExists(
+          origin_path.Append(GetDirectoryNameForType(other_type)))) {
     InitOriginDatabase(false);
     if (origin_database_.get())
       origin_database_->RemovePathForOrigin(GetOriginIdentifierFromURL(origin));
+    if (!file_util::Delete(origin_path, true /* recursive */))
+      return false;
   }
 
   // At this point we are sure we had successfully deleted the origin/type
@@ -958,8 +979,10 @@ bool ObfuscatedFileUtil::MigrateFromOldSandbox(
     const GURL& origin_url, FileSystemType type, const FilePath& src_root) {
   if (!DestroyDirectoryDatabase(origin_url, type))
     return false;
-  FilePath dest_root = GetDirectoryForOriginAndType(origin_url, type, true);
-  if (dest_root.empty())
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  FilePath dest_root = GetDirectoryForOriginAndType(origin_url, type, true,
+                                                    &error);
+  if (error != base::PLATFORM_FILE_OK)
     return false;
   FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
       origin_url, type, true);
@@ -1063,10 +1086,9 @@ bool ObfuscatedFileUtil::DestroyDirectoryDatabase(
     delete database;
   }
 
-  FilePath path = GetDirectoryForOriginAndType(origin, type, false);
-  if (path.empty())
-    return true;
-  if (!file_util::DirectoryExists(path))
+  PlatformFileError error = base::PLATFORM_FILE_OK;
+  FilePath path = GetDirectoryForOriginAndType(origin, type, false, &error);
+  if (path.empty() || error == base::PLATFORM_FILE_ERROR_NOT_FOUND)
     return true;
   return FileSystemDirectoryDatabase::DestroyDatabase(path);
 }
@@ -1137,13 +1159,15 @@ PlatformFileError ObfuscatedFileUtil::CreateFile(
   FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
       dest_origin, dest_type, true);
 
-  FilePath root = GetDirectoryForOriginAndType(dest_origin, dest_type, false);
-  if (root.empty())
-    return base::PLATFORM_FILE_ERROR_FAILED;
+  PlatformFileError error = base::PLATFORM_FILE_OK;
+  FilePath root = GetDirectoryForOriginAndType(dest_origin, dest_type, false,
+                                               &error);
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
 
   FilePath dest_local_path;
-  PlatformFileError error = GenerateNewLocalPath(
-      db, context, dest_origin, dest_type, &dest_local_path);
+  error = GenerateNewLocalPath(db, context, dest_origin, dest_type,
+                               &dest_local_path);
   if (error != base::PLATFORM_FILE_OK)
     return error;
 
@@ -1207,9 +1231,10 @@ PlatformFileError ObfuscatedFileUtil::CreateFile(
 
 FilePath ObfuscatedFileUtil::DataPathToLocalPath(
     const GURL& origin, FileSystemType type, const FilePath& data_path) {
-  FilePath root = GetDirectoryForOriginAndType(origin, type, false);
-  if (root.empty())
-    return root;
+  PlatformFileError error = base::PLATFORM_FILE_OK;
+  FilePath root = GetDirectoryForOriginAndType(origin, type, false, &error);
+  if (error != base::PLATFORM_FILE_OK)
+    return FilePath();
   return root.Append(data_path);
 }
 
@@ -1230,14 +1255,11 @@ FileSystemDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
     return iter->second;
   }
 
-  FilePath path = GetDirectoryForOriginAndType(origin, type, create);
-  if (path.empty())
+  PlatformFileError error = base::PLATFORM_FILE_OK;
+  FilePath path = GetDirectoryForOriginAndType(origin, type, create, &error);
+  if (error != base::PLATFORM_FILE_OK) {
+    LOG(WARNING) << "Failed to get origin+type directory: " << path.value();
     return NULL;
-  if (!file_util::DirectoryExists(path)) {
-    if (!file_util::CreateDirectory(path)) {
-      LOG(WARNING) << "Failed to origin+type directory: " << path.value();
-      return NULL;
-    }
   }
   MarkUsed();
   FileSystemDirectoryDatabase* database = new FileSystemDirectoryDatabase(path);
@@ -1346,16 +1368,18 @@ PlatformFileError ObfuscatedFileUtil::GenerateNewLocalPath(
   if (!db || !db->GetNextInteger(&number))
     return base::PLATFORM_FILE_ERROR_FAILED;
 
-  // We use the third- and fourth-to-last digits as the directory.
-  int64 directory_number = number % 10000 / 100;
-  FilePath new_local_path = GetDirectoryForOriginAndType(origin, type, false);
-  if (new_local_path.empty())
+  PlatformFileError error = base::PLATFORM_FILE_OK;
+  FilePath new_local_path = GetDirectoryForOriginAndType(origin, type, false,
+                                                         &error);
+  if (error != base::PLATFORM_FILE_OK)
     return base::PLATFORM_FILE_ERROR_FAILED;
 
+  // We use the third- and fourth-to-last digits as the directory.
+  int64 directory_number = number % 10000 / 100;
   new_local_path = new_local_path.AppendASCII(
       StringPrintf("%02" PRId64, directory_number));
 
-  PlatformFileError error = NativeFileUtil::CreateDirectory(
+  error = NativeFileUtil::CreateDirectory(
       new_local_path, false /* exclusive */, false /* recursive */);
   if (error != base::PLATFORM_FILE_OK)
     return error;
