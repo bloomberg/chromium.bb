@@ -116,11 +116,10 @@ remoting.HostList.prototype.refresh = function(onDone) {
   };
   /** @param {remoting.Error} error */
   var onError = function(error) {
+    that.hosts_ = [];
     that.lastError_ = error;
     onDone(false);
   };
-  this.hosts_ = [];
-  this.lastError_ = '';
   remoting.oauth2.callWithToken(getHosts, onError);
 };
 
@@ -135,6 +134,8 @@ remoting.HostList.prototype.refresh = function(onDone) {
  * @private
  */
 remoting.HostList.prototype.parseHostListResponse_ = function(onDone, xhr) {
+  this.hosts_ = [];
+  this.lastError_ = '';
   try {
     if (xhr.status == 200) {
       var response =
@@ -155,10 +156,9 @@ remoting.HostList.prototype.parseHostListResponse_ = function(onDone, xhr) {
             return 0;
           };
           this.hosts_ = /** @type {Array} */ this.hosts_.sort(cmp);
-        } else {
-          this.hosts_ = [];
         }
       } else {
+        this.lastError_ = remoting.Error.UNEXPECTED;
         console.error('Invalid "hosts" response from server.');
       }
     } else {

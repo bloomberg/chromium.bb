@@ -93,6 +93,7 @@ remoting.initDaemonUi = function () {
   remoting.setMode(getAppStartupMode_());
   remoting.hostSetupDialog =
       new remoting.HostSetupDialog(remoting.hostController);
+  // Display the cached host list, then asynchronously update and re-display it.
   remoting.extractThisHostAndDisplay(true);
   remoting.hostList.refresh(remoting.extractThisHostAndDisplay);
 };
