@@ -92,7 +92,7 @@ void PasswordManager::SetFormHasGeneratedPassword(const PasswordForm& form) {
   PasswordFormManager* manager =
       new PasswordFormManager(delegate_->GetProfile(),
                               this,
-                              web_contents()->GetRenderViewHost(),
+                              web_contents(),
                               form,
                               ssl_valid);
   pending_login_managers_.push_back(manager);
@@ -200,7 +200,7 @@ void PasswordManager::OnPasswordFormsParsed(
     PasswordFormManager* manager =
         new PasswordFormManager(delegate_->GetProfile(),
                                 this,
-                                web_contents()->GetRenderViewHost(),
+                                web_contents(),
                                 *iter,
                                 ssl_valid);
     pending_login_managers_.push_back(manager);
