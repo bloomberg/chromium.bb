@@ -72,6 +72,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/locale_settings.h"
@@ -225,6 +227,37 @@ void RecordAppLaunches(Profile* profile,
   }
 }
 
+class WebContentsCloseObserver : public content::NotificationObserver {
+ public:
+  WebContentsCloseObserver() : contents_(NULL) {}
+  virtual ~WebContentsCloseObserver() {}
+
+  void SetContents(content::WebContents* contents) {
+    DCHECK(!contents_);
+    contents_ = contents;
+
+    registrar_.Add(this,
+                   content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                   content::Source<content::WebContents>(contents_));
+  }
+
+  content::WebContents* contents() { return contents_; }
+
+ private:
+  // content::NotificationObserver overrides:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
+    DCHECK_EQ(type, content::NOTIFICATION_WEB_CONTENTS_DESTROYED);
+    contents_ = NULL;
+  }
+
+  content::WebContents* contents_;
+  content::NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebContentsCloseObserver);
+};
+
 }  // namespace
 
 StartupBrowserCreatorImpl::StartupBrowserCreatorImpl(
@@ -308,6 +341,13 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     // affecting browser startup have been detected.
     CheckPreferencesBackup(profile);
 
+    // Watch for |app_contents| closing since ProcessLaunchURLs might run a
+    // synchronous session restore which has a nested message loop and could
+    // close |app_contents|.
+    WebContentsCloseObserver app_contents_observer;
+    if (browser_defaults::kAppRestoreSession && app_contents)
+      app_contents_observer.SetContents(app_contents);
+
     ProcessLaunchURLs(process_startup, urls_to_open);
 
     // If this is an app launch, but we didn't open an app window, it may
@@ -315,8 +355,8 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     OpenApplicationTab(profile);
 
     // In case of app mode + session restore we want to focus that app.
-    if (browser_defaults::kAppRestoreSession && app_contents)
-      app_contents->GetView()->SetInitialFocus();
+    if (app_contents_observer.contents())
+      app_contents_observer.contents()->GetView()->SetInitialFocus();
 
     if (process_startup) {
       if (browser_defaults::kOSSupportsOtherBrowsers &&
