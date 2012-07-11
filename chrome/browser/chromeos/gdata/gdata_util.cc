@@ -11,16 +11,14 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/common/chrome_version_info.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
@@ -30,6 +28,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "net/base/escape.h"
@@ -375,6 +377,12 @@ void ParseCacheFilePath(const FilePath& path,
                                  std::string();
   *extra_extension = (extension_count > 1) ? extensions[extension_count - 2] :
                                              std::string();
+}
+
+bool IsDriveV2ApiEnabled() {
+  static bool enabled = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableDriveV2Api);
+  return enabled;
 }
 
 }  // namespace util

@@ -93,6 +93,10 @@ void ParseCacheFilePath(const FilePath& path,
                         std::string* resource_id,
                         std::string* md5,
                         std::string* extra_extension);
+
+// Returns true if Drive v2 API is enabled via commandline switch.
+bool IsDriveV2ApiEnabled();
+
 }  // namespace util
 }  // namespace gdata
 
