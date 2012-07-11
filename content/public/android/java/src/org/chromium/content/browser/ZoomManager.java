@@ -21,7 +21,7 @@ import android.widget.ZoomButtonsController;
 class ZoomManager {
     private static final String TAG = "ContentViewZoom";
 
-    private ContentView mContentView;
+    private ContentViewCore mContentViewCore;
     private ZoomButtonsController mZoomButtonsController;
 
     private class ScaleGestureListener implements ScaleGestureDetector.OnScaleGestureListener {
@@ -55,14 +55,14 @@ class ZoomManager {
         public boolean onScaleBegin(ScaleGestureDetector detector) {
             if (ignoreDetectorEvents()) return false;
             mPinchEventSent = false;
-            mContentView.setIgnoreSingleTap(true);
+            mContentViewCore.setIgnoreSingleTap(true);
             return true;
         }
 
         @Override
         public void onScaleEnd(ScaleGestureDetector detector) {
-            if (!mPinchEventSent || !mContentView.isAlive()) return;
-            mContentView.pinchEnd(detector.getEventTime());
+            if (!mPinchEventSent || !mContentViewCore.isAlive()) return;
+            mContentViewCore.pinchEnd(detector.getEventTime());
             mPinchEventSent = false;
         }
 
@@ -76,11 +76,11 @@ class ZoomManager {
             // that pinchBy() is called without any pinchBegin().
             // To solve this problem, we call pinchBegin() here if it is never called.
             if (!mPinchEventSent) {
-                mContentView.pinchBegin(detector.getEventTime(),
+                mContentViewCore.pinchBegin(detector.getEventTime(),
                         (int) detector.getFocusX(), (int) detector.getFocusY());
                 mPinchEventSent = true;
             }
-            mContentView.pinchBy(
+            mContentViewCore.pinchBy(
                     detector.getEventTime(), (int) detector.getFocusX(), (int) detector.getFocusY(),
                     detector.getScaleFactor());
             return true;
@@ -89,15 +89,15 @@ class ZoomManager {
         private boolean ignoreDetectorEvents() {
             return mPermanentlyIgnoreDetectorEvents ||
                     mTemporarilyIgnoreDetectorEvents ||
-                    !mContentView.isAlive();
+                    !mContentViewCore.isAlive();
         }
     }
 
     private ScaleGestureDetector mMultiTouchDetector;
     private ScaleGestureListener mMultiTouchListener;
 
-    ZoomManager(final Context context, ContentView contentView) {
-        mContentView = contentView;
+    ZoomManager(final Context context, ContentViewCore contentViewCore) {
+        mContentViewCore = contentViewCore;
         mMultiTouchListener = new ScaleGestureListener();
         mMultiTouchDetector = new ScaleGestureDetector(context, mMultiTouchListener);
     }
@@ -148,13 +148,14 @@ class ZoomManager {
 
     void updateMultiTouchSupport() {
         mMultiTouchListener.setPermanentlyIgnoreDetectorEvents(
-            !mContentView.getContentSettings().supportsMultiTouchZoom());
+            !mContentViewCore.getContentSettings().supportsMultiTouchZoom());
     }
 
     private ZoomButtonsController getZoomControls() {
         if (mZoomButtonsController == null &&
-            mContentView.getContentSettings().shouldDisplayZoomControls()) {
-            mZoomButtonsController = new ZoomButtonsController(mContentView);
+            mContentViewCore.getContentSettings().shouldDisplayZoomControls()) {
+            mZoomButtonsController = new ZoomButtonsController(
+                    mContentViewCore.getContainerView());
             mZoomButtonsController.setOnZoomListener(new ZoomListener());
             // ZoomButtonsController positions the buttons at the bottom, but in
             // the middle. Change their layout parameters so they appear on the
@@ -175,8 +176,8 @@ class ZoomManager {
 
     void updateZoomControls() {
         if (mZoomButtonsController == null) return;
-        boolean canZoomIn = mContentView.canZoomIn();
-        boolean canZoomOut = mContentView.canZoomOut();
+        boolean canZoomIn = mContentViewCore.canZoomIn();
+        boolean canZoomOut = mContentViewCore.canZoomOut();
         if (!canZoomIn && !canZoomOut) {
             // Hide the zoom in and out buttons if the page cannot zoom
             mZoomButtonsController.getZoomControls().setVisibility(View.GONE);
@@ -200,9 +201,9 @@ class ZoomManager {
         @Override
         public void onZoom(boolean zoomIn) {
             if (zoomIn) {
-                mContentView.zoomIn();
+                mContentViewCore.zoomIn();
             } else {
-                mContentView.zoomOut();
+                mContentViewCore.zoomOut();
             }
             // ContentView will call updateZoomControls after its current page scale
             // is got updated from the native code.

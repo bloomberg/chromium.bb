@@ -12,11 +12,10 @@ import android.graphics.RectF;
 import android.util.Log;
 import android.view.KeyEvent;
 
-import java.net.URISyntaxException;
-
 import org.chromium.base.AccessedByNative;
 import org.chromium.base.CalledByNative;
-import org.chromium.content.browser.ContentHttpAuthHandler;
+
+import java.net.URISyntaxException;
 
 /**
  *  Main callback class used by ContentView.

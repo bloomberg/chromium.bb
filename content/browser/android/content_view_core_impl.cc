@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/content_view_impl.h"
+#include "content/browser/android/content_view_core_impl.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -11,7 +11,7 @@
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/content_view_jni.h"
+#include "jni/content_view_core_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
@@ -26,7 +26,7 @@ jfieldID g_native_content_view;
 
 namespace content {
 
-struct ContentViewImpl::JavaObject {
+struct ContentViewCoreImpl::JavaObject {
   jweak obj;
 
   ScopedJavaLocalRef<jobject> View(JNIEnv* env) {
@@ -35,31 +35,32 @@ struct ContentViewImpl::JavaObject {
 };
 
 // ----------------------------------------------------------------------------
-// Implementation of static ContentView public interfaces
+// Implementation of static ContentViewCore public interfaces
 
-ContentView* ContentView::Create(JNIEnv* env, jobject obj,
-                                 WebContents* web_contents) {
-  return new ContentViewImpl(env, obj, web_contents);
+ContentViewCore* ContentViewCore::Create(JNIEnv* env, jobject obj,
+                                         WebContents* web_contents) {
+  return new ContentViewCoreImpl(env, obj, web_contents);
 }
 
-ContentView* ContentView::GetNativeContentView(JNIEnv* env, jobject obj) {
-  return reinterpret_cast<ContentView*>(
+ContentViewCore* ContentViewCore::GetNativeContentViewCore(JNIEnv* env,
+                                                           jobject obj) {
+  return reinterpret_cast<ContentViewCore*>(
       env->GetIntField(obj, g_native_content_view));
 }
 
 // ----------------------------------------------------------------------------
 
-ContentViewImpl::ContentViewImpl(JNIEnv* env, jobject obj,
-                                 WebContents* web_contents)
+ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
+                                         WebContents* web_contents)
     : web_contents_(web_contents),
       tab_crashed_(false) {
   DCHECK(web_contents) <<
-      "A ContentViewImpl should be created with a valid WebContents.";
+      "A ContentViewCoreImpl should be created with a valid WebContents.";
 
   InitJNI(env, obj);
 }
 
-ContentViewImpl::~ContentViewImpl() {
+ContentViewCoreImpl::~ContentViewCoreImpl() {
   if (java_object_) {
     JNIEnv* env = AttachCurrentThread();
     env->DeleteWeakGlobalRef(java_object_->obj);
@@ -68,17 +69,17 @@ ContentViewImpl::~ContentViewImpl() {
   }
 }
 
-void ContentViewImpl::Destroy(JNIEnv* env, jobject obj) {
+void ContentViewCoreImpl::Destroy(JNIEnv* env, jobject obj) {
   delete this;
 }
 
-void ContentViewImpl::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+void ContentViewCoreImpl::Observe(int type,
+                                  const NotificationSource& source,
+                                  const NotificationDetails& details) {
   // TODO(jrg)
 }
 
-void ContentViewImpl::InitJNI(JNIEnv* env, jobject obj) {
+void ContentViewCoreImpl::InitJNI(JNIEnv* env, jobject obj) {
   java_object_ = new JavaObject;
   java_object_->obj = env->NewWeakGlobalRef(obj);
 }
@@ -87,16 +88,16 @@ void ContentViewImpl::InitJNI(JNIEnv* env, jobject obj) {
 // Methods called from Java via JNI
 // ----------------------------------------------------------------------------
 
-void ContentViewImpl::LoadUrlWithoutUrlSanitization(JNIEnv* env,
-                                                    jobject,
-                                                    jstring jurl,
-                                                    int page_transition) {
+void ContentViewCoreImpl::LoadUrlWithoutUrlSanitization(JNIEnv* env,
+                                                        jobject,
+                                                        jstring jurl,
+                                                        int page_transition) {
   GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
 
   LoadUrl(url, page_transition);
 }
 
-void ContentViewImpl::LoadUrlWithoutUrlSanitizationWithUserAgentOverride(
+void ContentViewCoreImpl::LoadUrlWithoutUrlSanitizationWithUserAgentOverride(
     JNIEnv* env,
     jobject,
     jstring jurl,
@@ -110,17 +111,17 @@ void ContentViewImpl::LoadUrlWithoutUrlSanitizationWithUserAgentOverride(
       base::android::ConvertJavaStringToUTF8(env, user_agent_override));
 }
 
-ScopedJavaLocalRef<jstring> ContentViewImpl::GetURL(
+ScopedJavaLocalRef<jstring> ContentViewCoreImpl::GetURL(
     JNIEnv* env, jobject) const {
   return ConvertUTF8ToJavaString(env, web_contents()->GetURL().spec());
 }
 
-ScopedJavaLocalRef<jstring> ContentViewImpl::GetTitle(
+ScopedJavaLocalRef<jstring> ContentViewCoreImpl::GetTitle(
     JNIEnv* env, jobject obj) const {
   return ConvertUTF16ToJavaString(env, web_contents()->GetTitle());
 }
 
-jdouble ContentViewImpl::GetLoadProgress(JNIEnv* env, jobject obj) const {
+jdouble ContentViewCoreImpl::GetLoadProgress(JNIEnv* env, jobject obj) const {
   // An empty page never loads anything and always has a progress of 0.
   // We report 1 in that case so the UI does not assume the page is loading.
   if (web_contents()->GetURL().is_empty() || !content_view_client_.get())
@@ -128,57 +129,57 @@ jdouble ContentViewImpl::GetLoadProgress(JNIEnv* env, jobject obj) const {
   return static_cast<jdouble>(content_view_client_->GetLoadProgress());
 }
 
-jboolean ContentViewImpl::IsIncognito(JNIEnv* env, jobject obj) {
+jboolean ContentViewCoreImpl::IsIncognito(JNIEnv* env, jobject obj) {
   return web_contents()->GetBrowserContext()->IsOffTheRecord();
 }
 
-jboolean ContentViewImpl::CanGoBack(JNIEnv* env, jobject obj) {
+jboolean ContentViewCoreImpl::CanGoBack(JNIEnv* env, jobject obj) {
   return web_contents_->GetController().CanGoBack();
 }
 
-jboolean ContentViewImpl::CanGoForward(JNIEnv* env, jobject obj) {
+jboolean ContentViewCoreImpl::CanGoForward(JNIEnv* env, jobject obj) {
   return web_contents_->GetController().CanGoForward();
 }
 
-jboolean ContentViewImpl::CanGoToOffset(
-    JNIEnv* env, jobject obj, jint offset) {
+jboolean ContentViewCoreImpl::CanGoToOffset(JNIEnv* env, jobject obj,
+                                            jint offset) {
   return web_contents_->GetController().CanGoToOffset(offset);
 }
 
-void ContentViewImpl::GoBack(JNIEnv* env, jobject obj) {
+void ContentViewCoreImpl::GoBack(JNIEnv* env, jobject obj) {
   web_contents_->GetController().GoBack();
   tab_crashed_ = false;
 }
 
-void ContentViewImpl::GoForward(JNIEnv* env, jobject obj) {
+void ContentViewCoreImpl::GoForward(JNIEnv* env, jobject obj) {
   web_contents_->GetController().GoForward();
   tab_crashed_ = false;
 }
 
-void ContentViewImpl::GoToOffset(JNIEnv* env, jobject obj, jint offset) {
+void ContentViewCoreImpl::GoToOffset(JNIEnv* env, jobject obj, jint offset) {
   web_contents_->GetController().GoToOffset(offset);
 }
 
-void ContentViewImpl::StopLoading(JNIEnv* env, jobject obj) {
+void ContentViewCoreImpl::StopLoading(JNIEnv* env, jobject obj) {
   web_contents_->Stop();
 }
 
-void ContentViewImpl::Reload(JNIEnv* env, jobject obj) {
+void ContentViewCoreImpl::Reload(JNIEnv* env, jobject obj) {
   // Set check_for_repost parameter to false as we have no repost confirmation
   // dialog ("confirm form resubmission" screen will still appear, however).
   web_contents_->GetController().Reload(false);
   tab_crashed_ = false;
 }
 
-void ContentViewImpl::ClearHistory(JNIEnv* env, jobject obj) {
+void ContentViewCoreImpl::ClearHistory(JNIEnv* env, jobject obj) {
   web_contents_->GetController().PruneAllButActive();
 }
 
-jboolean ContentViewImpl::NeedsReload(JNIEnv* env, jobject obj) {
+jboolean ContentViewCoreImpl::NeedsReload(JNIEnv* env, jobject obj) {
   return web_contents_->GetController().NeedsReload();
 }
 
-void ContentViewImpl::SetClient(JNIEnv* env, jobject obj, jobject jclient) {
+void ContentViewCoreImpl::SetClient(JNIEnv* env, jobject obj, jobject jclient) {
   scoped_ptr<ContentViewClient> client(
       ContentViewClient::CreateNativeContentViewClient(env, jclient));
 
@@ -191,7 +192,7 @@ void ContentViewImpl::SetClient(JNIEnv* env, jobject obj, jobject jclient) {
 // Methods called from native code
 // --------------------------------------------------------------------------
 
-void ContentViewImpl::LoadUrl(const GURL& url, int page_transition) {
+void ContentViewCoreImpl::LoadUrl(const GURL& url, int page_transition) {
   content::Referrer referer;
 
   web_contents()->GetController().LoadURL(
@@ -200,7 +201,7 @@ void ContentViewImpl::LoadUrl(const GURL& url, int page_transition) {
   PostLoadUrl(url);
 }
 
-void ContentViewImpl::LoadUrlWithUserAgentOverride(
+void ContentViewCoreImpl::LoadUrlWithUserAgentOverride(
     const GURL& url,
     int page_transition,
     const std::string& user_agent_override) {
@@ -213,7 +214,7 @@ void ContentViewImpl::LoadUrlWithUserAgentOverride(
   PostLoadUrl(url);
 }
 
-void ContentViewImpl::PostLoadUrl(const GURL& url) {
+void ContentViewCoreImpl::PostLoadUrl(const GURL& url) {
   tab_crashed_ = false;
   // TODO(tedchoc): Update the content view client of the page load request.
 }
@@ -222,9 +223,9 @@ void ContentViewImpl::PostLoadUrl(const GURL& url) {
 // Native JNI methods
 // ----------------------------------------------------------------------------
 
-// This is called for each ContentView.
-static jint Init(JNIEnv* env, jobject obj, jint native_web_contents) {
-  ContentView* view = ContentView::Create(
+// This is called for each ContentViewCore.
+jint Init(JNIEnv* env, jobject obj, jint native_web_contents) {
+  ContentViewCore* view = ContentViewCore::Create(
       env, obj, reinterpret_cast<WebContents*>(native_web_contents));
   return reinterpret_cast<jint>(view);
 }
@@ -233,24 +234,24 @@ static jint Init(JNIEnv* env, jobject obj, jint native_web_contents) {
 // Public methods that call to Java via JNI
 // --------------------------------------------------------------------------
 
-void ContentViewImpl::OnTabCrashed(const base::ProcessHandle handle) {
+void ContentViewCoreImpl::OnTabCrashed(const base::ProcessHandle handle) {
   NOTIMPLEMENTED() << "not upstreamed yet";
 }
 
-void ContentViewImpl::SetTitle(const string16& title) {
+void ContentViewCoreImpl::SetTitle(const string16& title) {
   NOTIMPLEMENTED() << "not upstreamed yet";
 }
 
-bool ContentViewImpl::HasFocus() {
+bool ContentViewCoreImpl::HasFocus() {
   NOTIMPLEMENTED() << "not upstreamed yet";
   return false;
 }
 
-void ContentViewImpl::OnSelectionChanged(const std::string& text) {
+void ContentViewCoreImpl::OnSelectionChanged(const std::string& text) {
   NOTIMPLEMENTED() << "not upstreamed yet";
 }
 
-void ContentViewImpl::OnSelectionBoundsChanged(
+void ContentViewCoreImpl::OnSelectionBoundsChanged(
     int startx,
     int starty,
     base::i18n::TextDirection start_dir,
@@ -260,18 +261,18 @@ void ContentViewImpl::OnSelectionBoundsChanged(
   NOTIMPLEMENTED() << "not upstreamed yet";
 }
 
-void ContentViewImpl::OnAcceleratedCompositingStateChange(
+void ContentViewCoreImpl::OnAcceleratedCompositingStateChange(
     RenderWidgetHostViewAndroid* rwhva, bool activated, bool force) {
   NOTIMPLEMENTED() << "not upstreamed yet";
 }
 
-void ContentViewImpl::StartContentIntent(const GURL& content_url) {
+void ContentViewCoreImpl::StartContentIntent(const GURL& content_url) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jcontent_url =
       ConvertUTF8ToJavaString(env, content_url.spec());
-  Java_ContentView_startContentIntent(env,
-                                      java_object_->View(env).obj(),
-                                      jcontent_url.obj());
+  Java_ContentViewCore_startContentIntent(env,
+                                          java_object_->View(env).obj(),
+                                          jcontent_url.obj());
 }
 
 // --------------------------------------------------------------------------
@@ -282,24 +283,24 @@ void ContentViewImpl::StartContentIntent(const GURL& content_url) {
 // Methods called from native code
 // --------------------------------------------------------------------------
 
-gfx::Rect ContentViewImpl::GetBounds() const {
+gfx::Rect ContentViewCoreImpl::GetBounds() const {
   NOTIMPLEMENTED() << "not upstreamed yet";
   return gfx::Rect();
 }
 
 // ----------------------------------------------------------------------------
 
-bool RegisterContentView(JNIEnv* env) {
-  if (!base::android::HasClass(env, kContentViewClassPath)) {
-    DLOG(ERROR) << "Unable to find class ContentView!";
+bool RegisterContentViewCore(JNIEnv* env) {
+  if (!base::android::HasClass(env, kContentViewCoreClassPath)) {
+    DLOG(ERROR) << "Unable to find class ContentViewCore!";
     return false;
   }
-  ScopedJavaLocalRef<jclass> clazz = GetClass(env, kContentViewClassPath);
-  if (!HasField(env, clazz, "mNativeContentView", "I")) {
-    DLOG(ERROR) << "Unable to find ContentView.mNativeContentView!";
+  ScopedJavaLocalRef<jclass> clazz = GetClass(env, kContentViewCoreClassPath);
+  if (!HasField(env, clazz, "mNativeContentViewCore", "I")) {
+    DLOG(ERROR) << "Unable to find ContentView.mNativeContentViewCore!";
     return false;
   }
-  g_native_content_view = GetFieldID(env, clazz, "mNativeContentView", "I");
+  g_native_content_view = GetFieldID(env, clazz, "mNativeContentViewCore", "I");
 
   return RegisterNativesImpl(env) >= 0;
 }

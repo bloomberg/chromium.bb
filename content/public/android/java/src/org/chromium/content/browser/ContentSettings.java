@@ -29,7 +29,7 @@ public class ContentSettings {
 
     private int mNativeContentSettings = 0;
 
-    private ContentView mContentView;
+    private ContentViewCore mContentViewCore;
 
     // When ContentView is used in PERSONALITY_CHROME mode, settings can't
     // be modified through the ContentSettings instance.
@@ -84,7 +84,7 @@ public class ContentSettings {
         private Handler mHandler;
 
         EventHandler() {
-            mHandler = mContentView.isPersonalityView() ?
+            mHandler = mContentViewCore.isPersonalityView() ?
                     new Handler() {
                         @Override
                         public void handleMessage(Message msg) {
@@ -96,13 +96,13 @@ public class ContentSettings {
                                     }
                                     break;
                                 case UPDATE_UA:
-                                    synchronized (mContentView) {
-                                        mContentView.setAllUserAgentOverridesInHistory();
+                                    synchronized (mContentViewCore) {
+                                        mContentViewCore.setAllUserAgentOverridesInHistory();
                                     }
                                     break;
                                 case UPDATE_MULTI_TOUCH:
-                                    synchronized (mContentView) {
-                                        mContentView.updateMultiTouchZoomSupport();
+                                    synchronized (mContentViewCore) {
+                                        mContentViewCore.updateMultiTouchZoomSupport();
                                     }
                                     break;
                             }
@@ -140,10 +140,10 @@ public class ContentSettings {
      * Package constructor to prevent clients from creating a new settings
      * instance. Must be called on the UI thread.
      */
-    ContentSettings(ContentView contentView, int nativeContentView) {
+    ContentSettings(ContentViewCore contentViewCore, int nativeContentView) {
         ThreadUtils.assertOnUiThread();
-        mContentView = contentView;
-        mCanModifySettings = mContentView.isPersonalityView();
+        mContentViewCore = contentViewCore;
+        mCanModifySettings = mContentViewCore.isPersonalityView();
         mNativeContentSettings = nativeInit(nativeContentView, mCanModifySettings);
         assert mNativeContentSettings != 0;
 

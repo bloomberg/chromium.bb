@@ -13,7 +13,7 @@
 #include "content/public/common/context_menu_params.h"
 
 namespace content {
-class ContentViewImpl;
+class ContentViewCoreImpl;
 
 // Android-specific implementation of the WebContentsView.
 class WebContentsViewAndroid : public WebContentsView,
@@ -23,10 +23,10 @@ class WebContentsViewAndroid : public WebContentsView,
                          WebContentsViewDelegate* delegate);
   virtual ~WebContentsViewAndroid();
 
-  // Sets the interface to the view system. ContentViewImpl is owned
-  // by its Java ContentView counterpart, whose lifetime is managed
+  // Sets the interface to the view system. ContentViewCoreImpl is owned
+  // by its Java ContentViewCore counterpart, whose lifetime is managed
   // by the UI frontend.
-  void SetContentView(ContentViewImpl* content_view);
+  void SetContentViewCore(ContentViewCoreImpl* content_view_core);
 
   // WebContentsView implementation --------------------------------------------
 
@@ -74,8 +74,8 @@ class WebContentsViewAndroid : public WebContentsView,
   // The WebContents whose contents we display.
   WebContentsImpl* web_contents_;
 
-  // ContentViewImpl is our interface to the view system.
-  ContentViewImpl* content_view_;
+  // ContentViewCoreImpl is our interface to the view system.
+  ContentViewCoreImpl* content_view_core_;
 
   // Interface for extensions to WebContentsView. Used to show the context menu.
   scoped_ptr<WebContentsViewDelegate> delegate_;
