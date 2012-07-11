@@ -5,6 +5,7 @@
 #include "content/renderer/android/content_detector.h"
 
 #include "base/logging.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHitTestResult.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSurroundingText.h"
 
@@ -33,7 +34,8 @@ WebRange ContentDetector::FindContentRange(
   // As the surrounding text extractor looks at maxLength/2 characters on
   // either side of the hit point, we need to double max content length here.
   WebSurroundingText surrounding_text;
-  surrounding_text.initialize(hit_test, GetMaximumContentLength() * 2);
+  surrounding_text.initialize(hit_test.node(), hit_test.localPoint(),
+                              GetMaximumContentLength() * 2);
   if (surrounding_text.isNull())
     return WebRange();
 
