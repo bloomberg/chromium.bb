@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,6 +68,10 @@ enum ResultCode {
 
   // Failed to silently uninstall an extension.
   RESULT_CODE_UNINSTALL_EXTENSION_ERROR,
+
+  // The browser process exited early by passing the command line to another
+  // running browser.
+  RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED,
 
   // Last return code (keep this last).
   RESULT_CODE_CHROME_LAST_CODE,

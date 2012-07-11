@@ -1555,13 +1555,22 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     return chrome::RESULT_CODE_PACK_EXTENSION_ERROR;
   }
 
+  bool pass_command_line = true;
+
 #if !defined(OS_MACOSX)
   // In environments other than Mac OS X we support import of settings
   // from other browsers. In case this process is a short-lived "import"
   // process that another browser runs just to import the settings, we
   // don't want to be checking for another browser process, by design.
-  if (!HasImportSwitch(parsed_command_line())) {
+  pass_command_line = !HasImportSwitch(parsed_command_line());
 #endif
+
+  // If we're being launched just to check the connector policy, we are
+  // short-lived and don't want to be passing that switch off.
+  pass_command_line = pass_command_line && !parsed_command_line().HasSwitch(
+      switches::kCheckCloudPrintConnectorPolicy);
+
+  if (pass_command_line) {
     // When another process is running, use that process instead of starting a
     // new one. NotifyOtherProcess will currently give the other process up to
     // 20 seconds to respond. Note that this needs to be done before we attempt
@@ -1578,7 +1587,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
         printf("%s\n", base::SysWideToNativeMB(UTF16ToWide(
             l10n_util::GetStringUTF16(IDS_USED_EXISTING_BROWSER))).c_str());
 #endif
-        return content::RESULT_CODE_NORMAL_EXIT;
+        return chrome::RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED;
 
       case ProcessSingleton::PROFILE_IN_USE:
         return chrome::RESULT_CODE_PROFILE_IN_USE;
@@ -1594,9 +1603,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       default:
         NOTREACHED();
     }
-#if !defined(OS_MACOSX)  // closing brace for if
   }
-#endif
 
 #if defined(USE_X11)
   SetBrowserX11ErrorHandlers();
