@@ -15,7 +15,6 @@
 
 #ifndef JINGLE_NOTIFIER_BASE_FAKE_SSL_CLIENT_SOCKET_H_
 #define JINGLE_NOTIFIER_BASE_FAKE_SSL_CLIENT_SOCKET_H_
-#pragma once
 
 #include <cstddef>
 

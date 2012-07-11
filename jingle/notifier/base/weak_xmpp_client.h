@@ -8,7 +8,6 @@
 
 #ifndef JINGLE_NOTIFIER_BASE_WEAK_XMPP_CLIENT_H_
 #define JINGLE_NOTIFIER_BASE_WEAK_XMPP_CLIENT_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

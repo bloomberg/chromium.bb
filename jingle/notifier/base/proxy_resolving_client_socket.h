@@ -7,7 +7,6 @@
 
 #ifndef JINGLE_NOTIFIER_BASE_PROXY_RESOLVING_CLIENT_SOCKET_H_
 #define JINGLE_NOTIFIER_BASE_PROXY_RESOLVING_CLIENT_SOCKET_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

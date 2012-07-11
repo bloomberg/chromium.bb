@@ -6,7 +6,6 @@
 
 #ifndef JINGLE_NOTIFIER_BASE_XMPP_CONNECTION_H_
 #define JINGLE_NOTIFIER_BASE_XMPP_CONNECTION_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
