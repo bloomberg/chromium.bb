@@ -535,7 +535,8 @@ bool AcceleratorController::PerformAction(int action,
     case WINDOW_SNAP_LEFT:
     case WINDOW_SNAP_RIGHT: {
       aura::Window* window = wm::GetActiveWindow();
-      if (!window)
+      // Disable window docking shortcut key due to http://crbug.com/135487.
+      if (!window || wm::IsWindowFullscreen(window))
         break;
       internal::SnapSizer sizer(window,
           gfx::Point(),
