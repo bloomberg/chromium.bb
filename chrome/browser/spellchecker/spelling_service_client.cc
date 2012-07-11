@@ -4,6 +4,7 @@
 
 #include "chrome/browser/spellchecker/spelling_service_client.h"
 
+#include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
@@ -13,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_result.h"
 #include "content/public/browser/browser_thread.h"
@@ -117,6 +119,12 @@ bool SpellingServiceClient::IsAvailable(Profile* profile, ServiceType type) {
   if (!pref->GetBoolean(prefs::kEnableSpellCheck) ||
       !pref->GetBoolean(prefs::kSpellCheckUseSpellingService))
     return false;
+
+  // The spellchecking service should be avilable only when asynchronous
+  // spellchecking is enabled because this service depends on it.
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableAsynchronousSpellChecking))
+    return type == SUGGEST;
 
   // Enable the suggest service only on languages not supported by the
   // spellcheck service. When this client calls the spellcheck service, it
