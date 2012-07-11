@@ -205,6 +205,12 @@ SafetyLevel Unary2RegisterOpNotRmIsPc::safety(const Instruction i) const {
   return Unary2RegisterOp::safety(i);
 }
 
+// Unary2RegisterOpNotRmIsPcNoCondUpdates
+RegisterList Unary2RegisterOpNotRmIsPcNoCondUpdates
+::defs(const Instruction i) const {
+  return RegisterList(d.reg(i));
+}
+
 // Binary3RegisterOp
 SafetyLevel Binary3RegisterOp::safety(const Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).
@@ -734,6 +740,28 @@ RegisterList Unary2RegisterImmedShiftedOp::defs(const Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
+// Unary2RegisterImmediateShiftedOpRegsNotPc
+SafetyLevel Unary2RegisterImmedShiftedOpRegsNotPc::
+safety(const Instruction i) const {
+  if (RegisterList(d.reg(i)).Add(m.reg(i)).Contains(kRegisterPc))
+      return FORBIDDEN_OPERANDS;
+  return MAY_BE_SAFE;
+}
+
+// Unary2RegisterSatImmedShiftedOp
+SafetyLevel Unary2RegisterSatImmedShiftedOp::safety(const Instruction i) const {
+  if (RegisterList(d.reg(i)).Add(n.reg(i)).Contains(kRegisterPc))
+    return UNPREDICTABLE;
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
+RegisterList Unary2RegisterSatImmedShiftedOp::defs(const Instruction i) const {
+  return RegisterList(d.reg(i));
+}
+
 // Unary3RegisterShiftedOp
 SafetyLevel Unary3RegisterShiftedOp::safety(Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).
@@ -758,6 +786,16 @@ SafetyLevel Binary3RegisterImmedShiftedOp::safety(const Instruction i) const {
 
 RegisterList Binary3RegisterImmedShiftedOp::defs(const Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
+}
+
+// Binary3RegisterImmedShiftedOpRegsNotPc
+SafetyLevel Binary3RegisterImmedShiftedOpRegsNotPc::
+safety(const Instruction i) const {
+  if (RegisterList(d.reg(i)).Add(n.reg(i)).Add(m.reg(i))
+      .Contains(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+  return MAY_BE_SAFE;
 }
 
 // Binary4RegisterShiftedOp

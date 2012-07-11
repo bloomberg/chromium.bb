@@ -95,6 +95,9 @@
 #    NotRaIsPcAndRegsNotPc - Parse precondition Ra!=Pc and safety
 #         constraint that all registers defined by the instruction
 #         are not Pc (R15).
+#    NotRnIsPcAndRegsNotPc - Parse precondition Rn!=pc and safety
+#         constraint that all registers defined by the instruction
+#         are not Pc (R15).
 
 ##############################################################
 # The following defines a class decoder hierarchy used to select the
@@ -107,6 +110,7 @@
 # #############################################################
 
 class BreakPointAndConstantPoolHead : Immediate16Use
+class Binary3RegisterImmedShiftedOpRegsNotPc : Binary3RegisterImmedShiftedOp
 class ForbiddenCondNop : UnsafeCondNop
 class LoadRegisterList : LoadStoreRegisterList      
 class Load3RegisterDoubleOp : LoadStore3RegisterDoubleOp
@@ -124,6 +128,7 @@ class Store2RegisterImm8Op : LoadStore2RegisterImm8Op
 class Store2RegisterImm12Op : LoadStore2RegisterImm12Op
 class Store3RegisterImm5Op : LoadStore3RegisterImm5Op
 class Store3RegisterOp : LoadStore3RegisterOp
+class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 
 ##############################################################
 # The following define decoder tables.
@@ -1055,29 +1060,103 @@ class Store3RegisterOp : LoadStore3RegisterOp
 
 +-- pack_sat_rev (See Section A5.4.3)
 | op1(22:20) op2(7:5) A(19:16)
-| 000        xx0      -        =PackSatRev(v6)    # PKH
-| 01x        xx0      -        =PackSatRev(v6)    # SSAT
-| 11x        xx0      -        =PackSatRev(v6)    # USAT
-| 000        011      ~1111    =PackSatRev(v6)    # SXTAB16
-| "          "        1111     =PackSatRev(v6)    # SXTB16
-| "          101      -        =PackSatRev(v6)    # SEL
-| 010        001      -        =PackSatRev(v6)    # SSAT16
-| "          011      ~1111    =PackSatRev(v6)    # SXTAB
-| "          "        1111     =PackSatRev(v6)    # SXTB
-| 011        001      -        =PackSatRev(v6)    # REV
-| "          011      ~1111    =PackSatRev(v6)    # SXTAH
-| "          "        1111     =PackSatRev(v6)    # SXTH
-| 011        101      -        =PackSatRev(v6)    # REV16
-| 100        011      ~1111    =PackSatRev(v6)    # UXTAB16
-| "          "        1111     =PackSatRev(v6)    # UXTB16
-| 110        001      -        =PackSatRev(v6)    # USAT16
-| "          011      ~1111    =PackSatRev(v6)    # UXTAB
-| "          "        1111     =PackSatRev(v6)    # UXTB
-| 111        001      -        =PackSatRev(v6T2)  # RBIT
-| "          011      ~1111    =PackSatRev(v6)    # UXTAH
-| "          "        1111     =PackSatRev(v6)    # UXTH
-| "          101      -        =PackSatRev(v6)    # REVSH
-| else:                        =Undefined  # Note on page A5-24
+| 000        xx0      -        = Binary3RegisterImmedShiftedOpRegsNotPc
+                                 => Defs12To15CondsDontCareRnRdRmNotPc
+                                 Pkh_Rule_116_A1_P234
+                                 cccc01101000nnnnddddiiiiit01mmmm
+                                 RegsNotPc (v6)
+| 01x        xx0      -        = Unary2RegisterSatImmedShiftedOp
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Ssat_Rule_183_A1_P362
+                                 cccc0110101iiiiiddddiiiiis01nnnn (v6)
+| 11x        xx0      -        = Unary2RegisterSatImmedShiftedOp
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Usat_Rule_255_A1_P504
+                                 cccc0110111iiiiiddddiiiiis01nnnn (v6)
+| 000        011      ~1111    = Binary3RegisterImmedShiftedOpRegsNotPc
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Sxtab16_Rule_221_A1_P436
+                                 cccc01101000nnnnddddrr000111mmmm
+                                 NotRnIsPcAndRegsNotPc (v6)
+| "          "        1111     = Unary2RegisterImmedShiftedOpRegsNotPc
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Sxtb16_Rule_224_A1_P442
+                                 cccc011010001111ddddrr000111mmmm (v6)
+| "          101      -        = Binary3RegisterOpAltB
+                                 => Defs12To15CondsDontCareRnRdRmNotPc
+                                 Sel_Rule_156_A1_P312
+                                 cccc01101000nnnndddd11111011mmmm
+                                 RegsNotPc (v6)
+| 010        001      -        = Unary2RegisterSatImmedShiftedOp
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Ssat16_Rule_184_A1_P364
+                                 cccc01101010iiiidddd11110011nnnn (v6)
+| "          011      ~1111    = Binary3RegisterOpAltB
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Sxtab_Rule_220_A1_P434
+                                 cccc01101010nnnnddddrr000111mmmm
+                                 NotRnIsPcAndRegsNotPc (v6)
+| "          "        1111     = Unary2RegisterImmedShiftedOpRegsNotPc
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Sxtb_Rule_223_A1_P440
+                                 cccc011010101111ddddrr000111mmmm (v6)
+| 011        001      -        = Unary2RegisterOpNotRmIsPcNoCondUpdates
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Rev_Rule_135_A1_P272
+                                 cccc011010111111dddd11110011mmmm (v6)
+| "          011      ~1111    = Binary3RegisterOpAltBNoCondUpdates
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Sxtah_Rule_222_A1_P438
+                                 cccc01101011nnnnddddrr000111mmmm
+                                 NotRnIsPc (v6)
+| "          "        1111     = Unary2RegisterOpNotRmIsPcNoCondUpdates
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Sxth_Rule_225_A1_P444
+                                 cccc011010111111ddddrr000111mmmm (v6)
+| 011        101      -        = Unary2RegisterOpNotRmIsPcNoCondUpdates
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Rev16_Rule_136_A1_P274
+                                 cccc011010111111dddd11111011mmmm (v6)
+| 100        011      ~1111    = Binary3RegisterOpAltBNoCondUpdates
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Uxtah_Rule_262_A1_P516
+                                 cccc01101100nnnnddddrr000111mmmm
+                                 NotRnIsPc (v6)
+| "          "        1111     = Unary2RegisterOpNotRmIsPc
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Uxtb16_Rule_264_A1_P522
+                                 cccc011011001111ddddrr000111mmmm (v6)
+| 110        001      -        = Unary2RegisterSatImmedShiftedOp
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Usat16_Rule_256_A1_P506
+                                 cccc01101110iiiidddd11110011nnnn (v6)
+| "          011      ~1111    = Binary3RegisterOpAltBNoCondUpdates
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Uxtab_Rule_260_A1_P514
+                                 cccc01101110nnnnddddrr000111mmmm
+                                 NotRnIsPc (v6)
+| "          "        1111     = Unary2RegisterOpNotRmIsPc
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Uxtb_Rule_263_A1_P520
+                                 cccc011011101111ddddrr000111mmmm (v6)
+| 111        001      -        = Unary2RegisterOpNotRmIsPc
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Rbit_Rule_134_A1_P270
+                                 cccc011011111111dddd11110011mmmm (v6T2)
+| "          011      ~1111    = Binary3RegisterOpAltBNoCondUpdates
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Uxtah_Rule_262_A1_P518
+                                 cccc01101111nnnnddddrr000111mmmm
+                                 NotRnIsPc (v6)
+| "          "        1111     = Unary2RegisterOpNotRmIsPc
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Uxth_Rule_265_A1_P524
+                                 cccc011011111111ddddrr000111mmmm (v6)
+| "          101      -        = Unary2RegisterOpNotRmIsPc
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Revsh_Rule_137_A1_P276
+                                 cccc011011111111dddd11111011mmmm (v6)
+| else:                        = Undefined  # Note on page A5-24
 +--
 
 +-- signed_mult (See Section A5.4.4)

@@ -20,6 +20,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , DataProc_instance_()
   , Defs12To15_instance_()
   , Defs12To15CondsDontCare_instance_()
+  , Defs12To15CondsDontCareRdRnNotPc_instance_()
   , Defs12To15CondsDontCareRdRnRsRmNotPc_instance_()
   , Defs12To15CondsDontCareRnRdRmNotPc_instance_()
   , Defs12To15RdRmRnNotPc_instance_()
@@ -44,7 +45,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , MaskAddress_instance_()
   , MoveDoubleFromCoprocessor_instance_()
   , MoveFromCoprocessor_instance_()
-  , PackSatRev_instance_()
   , Roadblock_instance_()
   , StoreBasedImmedMemory_instance_()
   , StoreBasedImmedMemoryDouble_instance_()
@@ -878,39 +878,39 @@ const ClassDecoder& Arm32DecoderState::decode_pack_sat_rev(
   UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x00700000) == 0x00000000 /* op1(22:20) == 000 */ &&
       (insn.Bits() & 0x000000E0) == 0x000000A0 /* op2(7:5) == 101 */)
-    return PackSatRev_instance_;
+    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
 
   if ((insn.Bits() & 0x00700000) == 0x00000000 /* op1(22:20) == 000 */ &&
       (insn.Bits() & 0x00000020) == 0x00000000 /* op2(7:5) == xx0 */)
-    return PackSatRev_instance_;
+    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
 
   if ((insn.Bits() & 0x00700000) == 0x00600000 /* op1(22:20) == 110 */ &&
       (insn.Bits() & 0x000000E0) == 0x00000020 /* op2(7:5) == 001 */)
-    return PackSatRev_instance_;
+    return Defs12To15CondsDontCareRdRnNotPc_instance_;
 
   if ((insn.Bits() & 0x00700000) == 0x00700000 /* op1(22:20) == 111 */ &&
       (insn.Bits() & 0x000000E0) == 0x00000020 /* op2(7:5) == 001 */)
-    return PackSatRev_instance_;
+    return Defs12To15CondsDontCareRdRnNotPc_instance_;
 
   if ((insn.Bits() & 0x00300000) == 0x00300000 /* op1(22:20) == x11 */ &&
       (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */)
-    return PackSatRev_instance_;
+    return Defs12To15CondsDontCareRdRnNotPc_instance_;
 
   if ((insn.Bits() & 0x00300000) == 0x00300000 /* op1(22:20) == x11 */ &&
       (insn.Bits() & 0x000000E0) == 0x000000A0 /* op2(7:5) == 101 */)
-    return PackSatRev_instance_;
+    return Defs12To15CondsDontCareRdRnNotPc_instance_;
 
   if ((insn.Bits() & 0x00600000) == 0x00200000 /* op1(22:20) == 01x */ &&
       (insn.Bits() & 0x000000E0) == 0x00000020 /* op2(7:5) == 001 */)
-    return PackSatRev_instance_;
+    return Defs12To15CondsDontCareRdRnNotPc_instance_;
 
   if ((insn.Bits() & 0x00100000) == 0x00000000 /* op1(22:20) == xx0 */ &&
       (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */)
-    return PackSatRev_instance_;
+    return Defs12To15CondsDontCareRdRnNotPc_instance_;
 
   if ((insn.Bits() & 0x00200000) == 0x00200000 /* op1(22:20) == x1x */ &&
       (insn.Bits() & 0x00000020) == 0x00000000 /* op2(7:5) == xx0 */)
-    return PackSatRev_instance_;
+    return Defs12To15CondsDontCareRdRnNotPc_instance_;
 
   if (true)
     return Undefined_instance_;

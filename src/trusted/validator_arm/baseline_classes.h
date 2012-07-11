@@ -470,6 +470,19 @@ class Unary2RegisterOpNotRmIsPc : public Unary2RegisterOp {
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterOpNotRmIsPc);
 };
 
+// Unary2RegisterOpNotRmIsPc where the conditions flags are not set, even
+// though bit S may be true.
+class Unary2RegisterOpNotRmIsPcNoCondUpdates
+    : public Unary2RegisterOpNotRmIsPc {
+ public:
+  inline Unary2RegisterOpNotRmIsPcNoCondUpdates() {}
+  virtual ~Unary2RegisterOpNotRmIsPcNoCondUpdates() {}
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterOpNotRmIsPcNoCondUpdates);
+};
+
 // Models a 3-register binary operation of the form:
 // Op(S)<c> <Rd>, <Rn>, <Rm>
 // +--------+--------------+--+--------+--------+--------+--------+--------+
@@ -1259,6 +1272,61 @@ class Unary2RegisterImmedShiftedOp : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterImmedShiftedOp);
 };
 
+// Implements a Unary2RegisterImmedShiftedOp with the constraint
+// that if either Rm or Rd is Pc, the instruction is unpredictable.
+class Unary2RegisterImmedShiftedOpRegsNotPc
+    : public Unary2RegisterImmedShiftedOp {
+ public:
+  inline Unary2RegisterImmedShiftedOpRegsNotPc() {}
+  virtual ~Unary2RegisterImmedShiftedOpRegsNotPc() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterImmedShiftedOpRegsNotPc);
+};
+
+// Models a 2-register immediate-shifted unary operation with saturation
+// of the form:
+// Op(S)<c> <Rd>, #<imm>, <Rn> {,<shift>}
+// +--------+--------------+----------+--------+----------+----+--+--------+
+// |31302928|27262524232221|2019181716|15141312|1110 9 8 7| 6 5| 4| 3 2 1 0|
+// +--------+--------------+----------+--------+----------+----+--+--------+
+// |  cond  |              | sat_immed|   Rd   |   imm5   |type|  |   Rn   |
+// +--------+--------------+----------+--------+----------+----+--+--------+
+// Definitions:
+//    Rd - The destination register.
+//    Rn - The register that contains the value to be saturated.
+//    sat_immed+1 - The bit position for saturation, in the range 1 to 32.
+//    shift - DecodeImmShift(type, imm5) is the amount to shift.
+//
+// If Rd or Rn is R15, the instruction is unpredictable.
+//
+// NaCl disallows writing to PC to cause a jump.
+class Unary2RegisterSatImmedShiftedOp : public ClassDecoder {
+ public:
+  // Interfaces for components in the instruction.
+  static const RegMBits0To3Interface n;
+  static const ShiftTypeBits5To6Interface shift_type;
+  static const Imm5Bits7To11Interface imm5;
+  static const RegDBits12To15Interface d;
+  static const Imm5Bits16To20Interface sat_immed;
+  static const ConditionBits28To31Interface cond;
+
+  // The immediate value stored in the instruction.
+  inline uint32_t ImmediateValue(const Instruction& i) const {
+    return shift_type.DecodeImmShift(i, imm5.value(i));
+  }
+
+  // Methods for class.
+  inline Unary2RegisterSatImmedShiftedOp() {}
+  virtual ~Unary2RegisterSatImmedShiftedOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterSatImmedShiftedOp);
+};
+
 // Models a 3-register-shifted unary operation of the form:
 // Op(S)<c> <Rd>, <Rm>,  <type> <Rs>
 // +--------+--------------+--+--------+--------+--------+--+----+--+--------+
@@ -1346,6 +1414,19 @@ class Binary3RegisterImmedShiftedOp : public ClassDecoder {
   }
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterImmedShiftedOp);
+};
+
+// Implements a Binary3RegisterImmedShiftedOp with the constraint
+// that if either Rn, Rm, or Rd is Pc, the instruction is unpredictable.
+class Binary3RegisterImmedShiftedOpRegsNotPc
+    : public Binary3RegisterImmedShiftedOp {
+ public:
+  inline Binary3RegisterImmedShiftedOpRegsNotPc() {}
+  virtual ~Binary3RegisterImmedShiftedOpRegsNotPc() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterImmedShiftedOpRegsNotPc);
 };
 
 // Models a 4-register-shifted binary operation of the form:

@@ -1102,40 +1102,104 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_pack_sat_rev(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x00700000) == 0x00000000 /* op1(22:20) == 000 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */ &&
+      (insn.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16) == ~1111 */)
+    return Binary3RegisterImmedShiftedOpRegsNotPc_Sxtab16_Rule_221_A1_P436_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00000000 /* op1(22:20) == 000 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */ &&
+      (insn.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16) == 1111 */)
+    return Unary2RegisterImmedShiftedOpRegsNotPc_Sxtb16_Rule_224_A1_P442_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00000000 /* op1(22:20) == 000 */ &&
       (insn.Bits() & 0x000000E0) == 0x000000A0 /* op2(7:5) == 101 */)
-    return PackSatRev_None_instance_;
+    return Binary3RegisterOpAltB_Sel_Rule_156_A1_P312_instance_;
 
   if ((insn.Bits() & 0x00700000) == 0x00000000 /* op1(22:20) == 000 */ &&
       (insn.Bits() & 0x00000020) == 0x00000000 /* op2(7:5) == xx0 */)
-    return PackSatRev_None_instance_;
+    return Binary3RegisterImmedShiftedOpRegsNotPc_Pkh_Rule_116_A1_P234_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00200000 /* op1(22:20) == 010 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000020 /* op2(7:5) == 001 */)
+    return Unary2RegisterSatImmedShiftedOp_Ssat16_Rule_184_A1_P364_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00200000 /* op1(22:20) == 010 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */ &&
+      (insn.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16) == ~1111 */)
+    return Binary3RegisterOpAltB_Sxtab_Rule_220_A1_P434_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00200000 /* op1(22:20) == 010 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */ &&
+      (insn.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16) == 1111 */)
+    return Unary2RegisterImmedShiftedOpRegsNotPc_Sxtb_Rule_223_A1_P440_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00300000 /* op1(22:20) == 011 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000020 /* op2(7:5) == 001 */)
+    return Unary2RegisterOpNotRmIsPcNoCondUpdates_Rev_Rule_135_A1_P272_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00300000 /* op1(22:20) == 011 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */ &&
+      (insn.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16) == ~1111 */)
+    return Binary3RegisterOpAltBNoCondUpdates_Sxtah_Rule_222_A1_P438_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00300000 /* op1(22:20) == 011 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */ &&
+      (insn.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16) == 1111 */)
+    return Unary2RegisterOpNotRmIsPcNoCondUpdates_Sxth_Rule_225_A1_P444_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00300000 /* op1(22:20) == 011 */ &&
+      (insn.Bits() & 0x000000E0) == 0x000000A0 /* op2(7:5) == 101 */)
+    return Unary2RegisterOpNotRmIsPcNoCondUpdates_Rev16_Rule_136_A1_P274_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00400000 /* op1(22:20) == 100 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */ &&
+      (insn.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16) == ~1111 */)
+    return Binary3RegisterOpAltBNoCondUpdates_Uxtah_Rule_262_A1_P516_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00400000 /* op1(22:20) == 100 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */ &&
+      (insn.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16) == 1111 */)
+    return Unary2RegisterOpNotRmIsPc_Uxtb16_Rule_264_A1_P522_instance_;
 
   if ((insn.Bits() & 0x00700000) == 0x00600000 /* op1(22:20) == 110 */ &&
       (insn.Bits() & 0x000000E0) == 0x00000020 /* op2(7:5) == 001 */)
-    return PackSatRev_None_instance_;
+    return Unary2RegisterSatImmedShiftedOp_Usat16_Rule_256_A1_P506_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00600000 /* op1(22:20) == 110 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */ &&
+      (insn.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16) == ~1111 */)
+    return Binary3RegisterOpAltBNoCondUpdates_Uxtab_Rule_260_A1_P514_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00600000 /* op1(22:20) == 110 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */ &&
+      (insn.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16) == 1111 */)
+    return Unary2RegisterOpNotRmIsPc_Uxtb_Rule_263_A1_P520_instance_;
 
   if ((insn.Bits() & 0x00700000) == 0x00700000 /* op1(22:20) == 111 */ &&
       (insn.Bits() & 0x000000E0) == 0x00000020 /* op2(7:5) == 001 */)
-    return PackSatRev_None_instance_;
+    return Unary2RegisterOpNotRmIsPc_Rbit_Rule_134_A1_P270_instance_;
 
-  if ((insn.Bits() & 0x00300000) == 0x00300000 /* op1(22:20) == x11 */ &&
-      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */)
-    return PackSatRev_None_instance_;
+  if ((insn.Bits() & 0x00700000) == 0x00700000 /* op1(22:20) == 111 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */ &&
+      (insn.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16) == ~1111 */)
+    return Binary3RegisterOpAltBNoCondUpdates_Uxtah_Rule_262_A1_P518_instance_;
 
-  if ((insn.Bits() & 0x00300000) == 0x00300000 /* op1(22:20) == x11 */ &&
+  if ((insn.Bits() & 0x00700000) == 0x00700000 /* op1(22:20) == 111 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */ &&
+      (insn.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16) == 1111 */)
+    return Unary2RegisterOpNotRmIsPc_Uxth_Rule_265_A1_P524_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00700000 /* op1(22:20) == 111 */ &&
       (insn.Bits() & 0x000000E0) == 0x000000A0 /* op2(7:5) == 101 */)
-    return PackSatRev_None_instance_;
+    return Unary2RegisterOpNotRmIsPc_Revsh_Rule_137_A1_P276_instance_;
 
   if ((insn.Bits() & 0x00600000) == 0x00200000 /* op1(22:20) == 01x */ &&
-      (insn.Bits() & 0x000000E0) == 0x00000020 /* op2(7:5) == 001 */)
-    return PackSatRev_None_instance_;
-
-  if ((insn.Bits() & 0x00100000) == 0x00000000 /* op1(22:20) == xx0 */ &&
-      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */)
-    return PackSatRev_None_instance_;
-
-  if ((insn.Bits() & 0x00200000) == 0x00200000 /* op1(22:20) == x1x */ &&
       (insn.Bits() & 0x00000020) == 0x00000000 /* op2(7:5) == xx0 */)
-    return PackSatRev_None_instance_;
+    return Unary2RegisterSatImmedShiftedOp_Ssat_Rule_183_A1_P362_instance_;
+
+  if ((insn.Bits() & 0x00600000) == 0x00600000 /* op1(22:20) == 11x */ &&
+      (insn.Bits() & 0x00000020) == 0x00000000 /* op2(7:5) == xx0 */)
+    return Unary2RegisterSatImmedShiftedOp_Usat_Rule_255_A1_P504_instance_;
 
   if (true)
     return Undefined_None_instance_;

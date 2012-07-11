@@ -159,6 +159,7 @@ class Arm32DecoderState : DecoderState {
   const DataProc DataProc_instance_;
   const Defs12To15 Defs12To15_instance_;
   const Defs12To15CondsDontCare Defs12To15CondsDontCare_instance_;
+  const Defs12To15CondsDontCareRdRnNotPc Defs12To15CondsDontCareRdRnNotPc_instance_;
   const Defs12To15CondsDontCareRdRnRsRmNotPc Defs12To15CondsDontCareRdRnRsRmNotPc_instance_;
   const Defs12To15CondsDontCareRnRdRmNotPc Defs12To15CondsDontCareRnRdRmNotPc_instance_;
   const Defs12To15RdRmRnNotPc Defs12To15RdRmRnNotPc_instance_;
@@ -183,7 +184,6 @@ class Arm32DecoderState : DecoderState {
   const MaskAddress MaskAddress_instance_;
   const MoveDoubleFromCoprocessor MoveDoubleFromCoprocessor_instance_;
   const MoveFromCoprocessor MoveFromCoprocessor_instance_;
-  const PackSatRev PackSatRev_instance_;
   const Roadblock Roadblock_instance_;
   const StoreBasedImmedMemory StoreBasedImmedMemory_instance_;
   const StoreBasedImmedMemoryDouble StoreBasedImmedMemoryDouble_instance_;

@@ -65,6 +65,15 @@ RegisterList Defs12To15CondsDontCare::defs(const Instruction i) const {
   return RegisterList(kCondsDontCare).Add(d.reg(i));
 }
 
+SafetyLevel Defs12To15CondsDontCareRdRnNotPc::safety(Instruction i) const {
+  if (RegisterList(d.reg(i)).Add(n.reg(i)).Contains(kRegisterPc))
+    return UNPREDICTABLE;
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
 SafetyLevel Defs12To15RdRnNotPc::safety(Instruction i) const {
   if (RegisterList(d.reg(i)).Add(n.reg(i)).Contains(kRegisterPc))
     return UNPREDICTABLE;

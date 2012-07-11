@@ -143,6 +143,25 @@ class Defs12To15CondsDontCare : public NoPcAssignCondsDontCare {
   NACL_DISALLOW_COPY_AND_ASSIGN(Defs12To15CondsDontCare);
 };
 
+// Defs12To15CondsDontCare where registers Rd(15:12) and Rn(3:0) are not PC.
+//
+// Note: Some instructions may use other names for the registers,
+// but they have the same placement within the instruction, and
+// hence do not need a separate class decoder.
+class Defs12To15CondsDontCareRdRnNotPc : public Defs12To15CondsDontCare {
+ public:
+  // We use the following Rd and Rn to capture the
+  // registers that need checking.
+  static const RegNBits0To3Interface n;
+  static const RegDBits12To15Interface d;
+
+  inline Defs12To15CondsDontCareRdRnNotPc() {}
+  virtual ~Defs12To15CondsDontCareRdRnNotPc() {}
+  virtual SafetyLevel safety(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Defs12To15CondsDontCareRdRnNotPc);
+};
+
 // Defs12To15 where registers Rd(15:12) and Rn(3:0) are not PC.
 //
 // Note: Some instructions may use other names for the registers,
