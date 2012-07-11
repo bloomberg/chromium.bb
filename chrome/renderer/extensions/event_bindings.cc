@@ -64,40 +64,46 @@ typedef std::map<std::string, linked_ptr<extensions::ValueCounter> >
 base::LazyInstance<std::map<std::string, FilteredEventListenerCounts> >
     g_filtered_listener_counts = LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<extensions::EventFilter> g_event_filter =
-    LAZY_INSTANCE_INITIALIZER;
-
 // TODO(koz): Merge this into EventBindings.
 class ExtensionImpl : public ChromeV8Extension {
  public:
 
-  explicit ExtensionImpl(ExtensionDispatcher* dispatcher)
-      : ChromeV8Extension(dispatcher) {
-    RouteStaticFunction("AttachEvent", &AttachEvent);
-    RouteStaticFunction("DetachEvent", &DetachEvent);
-    RouteStaticFunction("AttachFilteredEvent", &AttachFilteredEvent);
-    RouteStaticFunction("DetachFilteredEvent", &DetachFilteredEvent);
-    RouteStaticFunction("MatchAgainstEventFilter", &MatchAgainstEventFilter);
+  ExtensionImpl(ExtensionDispatcher* dispatcher,
+      extensions::EventFilter* event_filter)
+      : ChromeV8Extension(dispatcher),
+        event_filter_(event_filter) {
+    RouteFunction("AttachEvent",
+        base::Bind(&ExtensionImpl::AttachEvent,
+                   base::Unretained(this)));
+    RouteFunction("DetachEvent",
+        base::Bind(&ExtensionImpl::DetachEvent,
+                   base::Unretained(this)));
+    RouteFunction("AttachFilteredEvent",
+        base::Bind(&ExtensionImpl::AttachFilteredEvent,
+                   base::Unretained(this)));
+    RouteFunction("DetachFilteredEvent",
+        base::Bind(&ExtensionImpl::DetachFilteredEvent,
+                   base::Unretained(this)));
+    RouteFunction("MatchAgainstEventFilter",
+        base::Bind(&ExtensionImpl::MatchAgainstEventFilter,
+                   base::Unretained(this)));
   }
-
   ~ExtensionImpl() {}
 
   // Attach an event name to an object.
-  static v8::Handle<v8::Value> AttachEvent(const v8::Arguments& args) {
+  v8::Handle<v8::Value> AttachEvent(const v8::Arguments& args) {
     DCHECK(args.Length() == 1);
     // TODO(erikkay) should enforce that event name is a string in the bindings
     DCHECK(args[0]->IsString() || args[0]->IsUndefined());
 
     if (args[0]->IsString()) {
-      ExtensionImpl* self = GetFromArguments<ExtensionImpl>(args);
       std::string event_name = *v8::String::AsciiValue(args[0]->ToString());
-      ExtensionDispatcher* extension_dispatcher = self->extension_dispatcher();
       const ChromeV8ContextSet& context_set =
-          extension_dispatcher->v8_context_set();
+          extension_dispatcher()->v8_context_set();
       ChromeV8Context* context = context_set.GetCurrent();
       CHECK(context);
 
-      if (!extension_dispatcher->CheckCurrentContextAccessToExtensionAPI(
+      if (!extension_dispatcher()->CheckCurrentContextAccessToExtensionAPI(
               event_name))
         return v8::Undefined();
 
@@ -120,7 +126,7 @@ class ExtensionImpl : public ChromeV8Extension {
     return v8::Undefined();
   }
 
-  static v8::Handle<v8::Value> DetachEvent(const v8::Arguments& args) {
+  v8::Handle<v8::Value> DetachEvent(const v8::Arguments& args) {
     DCHECK(args.Length() == 2);
     // TODO(erikkay) should enforce that event name is a string in the bindings
     DCHECK(args[0]->IsString() || args[0]->IsUndefined());
@@ -129,10 +135,8 @@ class ExtensionImpl : public ChromeV8Extension {
       std::string event_name = *v8::String::AsciiValue(args[0]->ToString());
       bool is_manual = args[1]->BooleanValue();
 
-      ExtensionImpl* self = GetFromArguments<ExtensionImpl>(args);
-      ExtensionDispatcher* extension_dispatcher = self->extension_dispatcher();
       const ChromeV8ContextSet& context_set =
-          extension_dispatcher->v8_context_set();
+          extension_dispatcher()->v8_context_set();
       ChromeV8Context* context = context_set.GetCurrent();
       if (!context)
         return v8::Undefined();
@@ -163,15 +167,13 @@ class ExtensionImpl : public ChromeV8Extension {
   // filter - Which instances of the named event are we interested in.
   // returns the id assigned to the listener, which will be returned from calls
   // to MatchAgainstEventFilter where this listener matches.
-  static v8::Handle<v8::Value> AttachFilteredEvent(const v8::Arguments& args) {
+  v8::Handle<v8::Value> AttachFilteredEvent(const v8::Arguments& args) {
     DCHECK_EQ(2, args.Length());
     DCHECK(args[0]->IsString());
     DCHECK(args[1]->IsObject());
 
-    ExtensionImpl* self = GetFromArguments<ExtensionImpl>(args);
-    ExtensionDispatcher* extension_dispatcher = self->extension_dispatcher();
     const ChromeV8ContextSet& context_set =
-        extension_dispatcher->v8_context_set();
+        extension_dispatcher()->v8_context_set();
     ChromeV8Context* context = context_set.GetCurrent();
     DCHECK(context);
     if (!context)
@@ -179,7 +181,7 @@ class ExtensionImpl : public ChromeV8Extension {
 
     std::string event_name = *v8::String::AsciiValue(args[0]);
     // This method throws an exception if it returns false.
-    if (!extension_dispatcher->CheckCurrentContextAccessToExtensionAPI(
+    if (!extension_dispatcher()->CheckCurrentContextAccessToExtensionAPI(
             event_name))
       return v8::Undefined();
 
@@ -200,8 +202,7 @@ class ExtensionImpl : public ChromeV8Extension {
     }
 
     filter.reset(filter_dict);
-    extensions::EventFilter& event_filter = g_event_filter.Get();
-    int id = event_filter.AddEventMatcher(event_name, ParseEventMatcher(
+    int id = event_filter_->AddEventMatcher(event_name, ParseEventMatcher(
         filter.get()));
 
     // Only send IPCs the first time a filter gets added.
@@ -217,9 +218,9 @@ class ExtensionImpl : public ChromeV8Extension {
 
   // Add a filter to |event_name| in |extension_id|, returning true if it
   // was the first filter for that event in that extension.
-  static bool AddFilter(const std::string& event_name,
-                        const std::string& extension_id,
-                        base::DictionaryValue* filter) {
+  bool AddFilter(const std::string& event_name,
+                 const std::string& extension_id,
+                 base::DictionaryValue* filter) {
     FilteredEventListenerCounts& counts =
         g_filtered_listener_counts.Get()[extension_id];
     FilteredEventListenerCounts::iterator it = counts.find(event_name);
@@ -232,9 +233,9 @@ class ExtensionImpl : public ChromeV8Extension {
 
   // Remove a filter from |event_name| in |extension_id|, returning true if it
   // was the last filter for that event in that extension.
-  static bool RemoveFilter(const std::string& event_name,
-                           const std::string& extension_id,
-                           base::DictionaryValue* filter) {
+  bool RemoveFilter(const std::string& event_name,
+                    const std::string& extension_id,
+                    base::DictionaryValue* filter) {
     FilteredEventListenerCounts& counts =
         g_filtered_listener_counts.Get()[extension_id];
     FilteredEventListenerCounts::iterator it = counts.find(event_name);
@@ -247,15 +248,13 @@ class ExtensionImpl : public ChromeV8Extension {
   // id     - Id of the event to detach.
   // manual - false if this is part of the extension unload process where all
   //          listeners are automatically detached.
-  static v8::Handle<v8::Value> DetachFilteredEvent(const v8::Arguments& args) {
+  v8::Handle<v8::Value> DetachFilteredEvent(const v8::Arguments& args) {
     DCHECK_EQ(2, args.Length());
     DCHECK(args[0]->IsInt32());
     DCHECK(args[1]->IsBoolean());
     bool is_manual = args[1]->BooleanValue();
-    ExtensionImpl* self = GetFromArguments<ExtensionImpl>(args);
-    ExtensionDispatcher* extension_dispatcher = self->extension_dispatcher();
     const ChromeV8ContextSet& context_set =
-        extension_dispatcher->v8_context_set();
+        extension_dispatcher()->v8_context_set();
     ChromeV8Context* context = context_set.GetCurrent();
     if (!context)
       return v8::Undefined();
@@ -265,11 +264,10 @@ class ExtensionImpl : public ChromeV8Extension {
       return v8::Undefined();
 
     int matcher_id = args[0]->Int32Value();
-    extensions::EventFilter& event_filter = g_event_filter.Get();
     extensions::EventMatcher* event_matcher =
-        event_filter.GetEventMatcher(matcher_id);
+        event_filter_->GetEventMatcher(matcher_id);
 
-    const std::string& event_name = event_filter.GetEventName(matcher_id);
+    const std::string& event_name = event_filter_->GetEventName(matcher_id);
 
     // Only send IPCs the last time a filter gets removed.
     if (RemoveFilter(event_name, extension_id, event_matcher->value())) {
@@ -280,19 +278,17 @@ class ExtensionImpl : public ChromeV8Extension {
                                                       lazy));
     }
 
-    event_filter.RemoveEventMatcher(matcher_id);
+    event_filter_->RemoveEventMatcher(matcher_id);
 
     return v8::Undefined();
   }
 
-  static v8::Handle<v8::Value> MatchAgainstEventFilter(
-      const v8::Arguments& args) {
+  v8::Handle<v8::Value> MatchAgainstEventFilter(const v8::Arguments& args) {
     typedef std::set<extensions::EventFilter::MatcherID> MatcherIDs;
 
-    extensions::EventFilter& event_filter = g_event_filter.Get();
     std::string event_name = *v8::String::AsciiValue(args[0]->ToString());
     extensions::EventFilteringInfo info = ParseFromObject(args[1]->ToObject());
-    MatcherIDs matched_event_filters = event_filter.MatchEvent(
+    MatcherIDs matched_event_filters = event_filter_->MatchEvent(
         event_name, info);
     v8::Handle<v8::Array> array(v8::Array::New(matched_event_filters.size()));
     int i = 0;
@@ -303,7 +299,7 @@ class ExtensionImpl : public ChromeV8Extension {
     return array;
   }
 
-  static extensions::EventFilteringInfo ParseFromObject(
+  extensions::EventFilteringInfo ParseFromObject(
       v8::Handle<v8::Object> object) {
     extensions::EventFilteringInfo info;
     v8::Handle<v8::String> url(v8::String::New("url"));
@@ -315,7 +311,8 @@ class ExtensionImpl : public ChromeV8Extension {
   }
 
  private:
-  static bool IsLazyBackgroundPage(const Extension* extension) {
+  extensions::EventFilter* event_filter_;
+  bool IsLazyBackgroundPage(const Extension* extension) {
     content::RenderView* render_view = GetCurrentRenderView();
     if (!render_view)
       return false;
@@ -325,7 +322,7 @@ class ExtensionImpl : public ChromeV8Extension {
             helper->view_type() == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
   }
 
-  static scoped_ptr<extensions::EventMatcher> ParseEventMatcher(
+  scoped_ptr<extensions::EventMatcher> ParseEventMatcher(
       base::DictionaryValue* filter_dict) {
     return scoped_ptr<extensions::EventMatcher>(new extensions::EventMatcher(
         scoped_ptr<base::DictionaryValue>(filter_dict->DeepCopy())));
@@ -335,6 +332,7 @@ class ExtensionImpl : public ChromeV8Extension {
 }  // namespace
 
 // static
-ChromeV8Extension* EventBindings::Get(ExtensionDispatcher* dispatcher) {
-  return new ExtensionImpl(dispatcher);
+ChromeV8Extension* EventBindings::Get(ExtensionDispatcher* dispatcher,
+    extensions::EventFilter* event_filter) {
+  return new ExtensionImpl(dispatcher, event_filter);
 }

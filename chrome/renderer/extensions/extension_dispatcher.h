@@ -263,6 +263,10 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   // TODO(aa): Remove when we can restrict non-permission APIs to dev-only.
   int chrome_channel_;
 
+  // Routes events to the appropriate listener taking into consideration event
+  // filters.
+  scoped_ptr<extensions::EventFilter> event_filter_;
+
   DISALLOW_COPY_AND_ASSIGN(ExtensionDispatcher);
 };
 
