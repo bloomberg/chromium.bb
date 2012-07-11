@@ -2407,6 +2407,7 @@
 
             # There's no Browser/BrowserList on Android.
             'browser/browser_commands_unittest.cc',
+            'browser/extensions/extension_ui_unittest.cc',
             'browser/managed_mode_unittest.cc',
             'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
             'browser/page_cycler/page_cycler_unittest.cc',

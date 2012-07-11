@@ -4867,6 +4867,8 @@
             'browser/ui/webui/certificate_viewer_webui.cc',
             'browser/ui/webui/extensions/command_handler.cc',
             'browser/ui/webui/extensions/extensions_ui.cc',
+            'browser/ui/webui/extensions/extension_settings_handler.cc',
+            'browser/ui/webui/extensions/extension_settings_handler.h',
             'browser/ui/webui/extensions/install_extension_handler.cc',
             'browser/ui/webui/ntp/app_launcher_handler.cc',
             'browser/ui/webui/ntp/app_launcher_handler.h',
