@@ -107,12 +107,6 @@ const char kSwitchFormatString[] = " --%s=\"%s\"";
 // User name which is used in the Guest session.
 const char kGuestUserName[] = "";
 
-// TODO(zelidrag): Figure out if we need to add more services here.
-const char kServiceScopeChromeOSDocuments[] =
-    "https://docs.google.com/feeds/ "
-    "https://spreadsheets.google.com/feeds/ "
-    "https://docs.googleusercontent.com/";
-
 class InitializeCookieMonsterHelper {
  public:
   explicit InitializeCookieMonsterHelper(
