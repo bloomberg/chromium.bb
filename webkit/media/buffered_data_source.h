@@ -123,29 +123,17 @@ class BufferedDataSource : public media::DataSource {
   // Calls |initialize_cb_| and reset it.
   void DoneInitialization_Locked(media::PipelineStatus status);
 
-  // Callback method for |loader_| if URL for the resource requested is using
-  // HTTP protocol. This method is called when response for initial request is
-  // received.
-  void HttpInitialStartCallback(BufferedResourceLoader::Status status);
+  // BufferedResourceLoader::Start() callback for initial load.
+  void StartCallback(BufferedResourceLoader::Status status);
 
-  // Callback method for |loader_| if URL for the resource requested is using
-  // a non-HTTP protocol, e.g. local files. This method is called when response
-  // for initial request is received.
-  void NonHttpInitialStartCallback(BufferedResourceLoader::Status status);
-
-  // Callback method to be passed to BufferedResourceLoader during range
-  // request. Once a resource request has started, this method will be called
-  // with the error code. This method will be executed on the thread
-  // BufferedResourceLoader lives, i.e. render thread.
+  // BufferedResourceLoader::Start() callback for subsequent loads (i.e.,
+  // when accessing ranges that are outside initial buffered region).
   void PartialReadStartCallback(BufferedResourceLoader::Status status);
 
-  // Read callback for BufferedResourceLoader.
+  // BufferedResourceLoader callbacks.
   void ReadCallback(BufferedResourceLoader::Status status, int bytes_read);
-
-  // Loading and progress callbacks for HTTP resources.
-  void HttpLoadingStateChangedCallback(
-      BufferedResourceLoader::LoadingState state);
-  void HttpProgressCallback(int64 position);
+  void LoadingStateChangedCallback(BufferedResourceLoader::LoadingState state);
+  void ProgressCallback(int64 position);
 
   void UpdateHostState_Locked();
 

@@ -31,8 +31,10 @@ const char kHttpScheme[] = "http";
 const char kHttpsScheme[] = "https";
 const char kDataScheme[] = "data";
 
-// Wraps a WebURLLoader to maintain an in-memory buffer of downloaded
-// data according to the current defer strategy.
+// BufferedResourceLoader is single threaded and must be accessed on the
+// render thread. It wraps a WebURLLoader and does in-memory buffering,
+// pausing resource loading when the in-memory buffer is full and resuming
+// resource loading when there is available capacity.
 class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
  public:
   // kNeverDefer - Aggresively buffer; never defer loading while paused.

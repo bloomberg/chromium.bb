@@ -465,6 +465,7 @@ TEST_F(BufferedDataSourceTest, File_Successful) {
   InitializeWithFileResponse();
 
   EXPECT_TRUE(data_source_->loading());
+  EXPECT_FALSE(data_source_->IsStreaming());
   Stop();
 }
 
