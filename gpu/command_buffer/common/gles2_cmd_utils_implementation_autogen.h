@@ -854,12 +854,7 @@ std::string GLES2Util::GetStringGetMaxIndexType(uint32 value) {
 std::string GLES2Util::GetStringGetTexParamTarget(uint32 value) {
   static EnumToString string_table[] = {
     { GL_TEXTURE_2D, "GL_TEXTURE_2D" },
-    { GL_TEXTURE_CUBE_MAP_POSITIVE_X, "GL_TEXTURE_CUBE_MAP_POSITIVE_X" },
-    { GL_TEXTURE_CUBE_MAP_NEGATIVE_X, "GL_TEXTURE_CUBE_MAP_NEGATIVE_X" },
-    { GL_TEXTURE_CUBE_MAP_POSITIVE_Y, "GL_TEXTURE_CUBE_MAP_POSITIVE_Y" },
-    { GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, "GL_TEXTURE_CUBE_MAP_NEGATIVE_Y" },
-    { GL_TEXTURE_CUBE_MAP_POSITIVE_Z, "GL_TEXTURE_CUBE_MAP_POSITIVE_Z" },
-    { GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, "GL_TEXTURE_CUBE_MAP_NEGATIVE_Z" },
+    { GL_TEXTURE_CUBE_MAP, "GL_TEXTURE_CUBE_MAP" },
   };
   return GLES2Util::GetQualifiedEnumString(
       string_table, arraysize(string_table), value);

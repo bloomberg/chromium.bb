@@ -216,12 +216,7 @@ static GLenum valid_get_max_index_type_table[] = {
 
 static GLenum valid_get_tex_param_target_table[] = {
   GL_TEXTURE_2D,
-  GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-  GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-  GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-  GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-  GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-  GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+  GL_TEXTURE_CUBE_MAP,
 };
 
 static GLenum valid_hint_mode_table[] = {
