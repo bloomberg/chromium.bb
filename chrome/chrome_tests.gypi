@@ -3718,6 +3718,7 @@
         'test/perf/dromaeo_benchmark_uitest.cc',
         'test/perf/feature_startup_test.cc',
         'test/perf/frame_rate/frame_rate_tests.cc',
+        'test/perf/indexeddb_uitest.cc',
         'test/perf/kraken_benchmark_uitest.cc',
         'test/perf/memory_test.cc',
         'test/perf/page_cycler_test.cc',
