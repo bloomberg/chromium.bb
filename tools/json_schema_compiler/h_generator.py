@@ -32,7 +32,6 @@ class HGenerator(object):
                                               self._target_namespace)
     (c.Append('#ifndef %s' % ifndef_name)
       .Append('#define %s' % ifndef_name)
-      .Append('#pragma once')
       .Append()
       .Append('#include <string>')
       .Append('#include <vector>')

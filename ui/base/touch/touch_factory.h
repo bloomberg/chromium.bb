@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_TOUCH_TOUCH_FACTORY_H_
 #define UI_BASE_TOUCH_TOUCH_FACTORY_H_
-#pragma once
 
 #include <bitset>
 #include <map>

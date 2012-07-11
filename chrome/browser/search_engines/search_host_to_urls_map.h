@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SEARCH_ENGINES_SEARCH_HOST_TO_URLS_MAP_H_
 #define CHROME_BROWSER_SEARCH_ENGINES_SEARCH_HOST_TO_URLS_MAP_H_
-#pragma once
 
 #include <map>
 #include <set>

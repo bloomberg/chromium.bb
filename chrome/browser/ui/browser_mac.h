@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_BROWSER_MAC_H_
 #define CHROME_BROWSER_UI_BROWSER_MAC_H_
-#pragma once
 
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"

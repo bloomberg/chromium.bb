@@ -4,7 +4,6 @@
 
 #ifndef NET_TOOLS_FLIP_SERVER_RING_BUFFER_H__
 #define NET_TOOLS_FLIP_SERVER_RING_BUFFER_H__
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"

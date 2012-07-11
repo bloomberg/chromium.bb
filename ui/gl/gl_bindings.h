@@ -4,7 +4,6 @@
 
 #ifndef UI_GL_GL_BINDINGS_H_
 #define UI_GL_GL_BINDINGS_H_
-#pragma once
 
 // Includes the platform independent and platform dependent GL headers.
 // Only include this in cc files. It pulls in system headers, including

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_PREF_STORE_H_
 #define CHROME_COMMON_PREF_STORE_H_
-#pragma once
 
 #include <string>
 

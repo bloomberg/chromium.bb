@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_SYSTEM_H_
 #define CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_SYSTEM_H_
-#pragma once
 
 #include "chrome/browser/extensions/extension_system.h"
 

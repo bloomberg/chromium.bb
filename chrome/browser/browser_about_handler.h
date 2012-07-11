@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_BROWSER_ABOUT_HANDLER_H_
 #define CHROME_BROWSER_BROWSER_ABOUT_HANDLER_H_
-#pragma once
 
 #include <map>
 #include <string>

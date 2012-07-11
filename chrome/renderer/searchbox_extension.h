@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_SEARCHBOX_EXTENSION_H_
 #define CHROME_RENDERER_SEARCHBOX_EXTENSION_H_
-#pragma once
 
 #include "base/basictypes.h"
 

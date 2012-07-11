@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_INTENTS_WEB_INTENTS_REGISTRY_H_
 #define CHROME_BROWSER_INTENTS_WEB_INTENTS_REGISTRY_H_
-#pragma once
 
 #include "base/callback_forward.h"
 #include "base/hash_tables.h"

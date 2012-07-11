@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_EVENT_FILTER_H_
 #define UI_AURA_EVENT_FILTER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/aura/aura_export.h"

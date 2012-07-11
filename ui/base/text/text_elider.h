@@ -6,7 +6,6 @@
 
 #ifndef UI_BASE_TEXT_TEXT_ELIDER_H_
 #define UI_BASE_TEXT_TEXT_ELIDER_H_
-#pragma once
 
 #include <string>
 #include <vector>

@@ -6,7 +6,6 @@
 
 #ifndef CHROME_COMMON_EXTENSIONS_MATCHER_URL_MATCHER_CONSTANTS_H_
 #define CHROME_COMMON_EXTENSIONS_MATCHER_URL_MATCHER_CONSTANTS_H_
-#pragma once
 
 namespace extensions {
 namespace url_matcher_constants {

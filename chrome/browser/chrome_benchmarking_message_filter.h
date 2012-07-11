@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROME_BENCHMARKING_MESSAGE_FILTER_H_
 #define CHROME_BROWSER_CHROME_BENCHMARKING_MESSAGE_FILTER_H_
-#pragma once
 
 #include "content/public/browser/browser_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"

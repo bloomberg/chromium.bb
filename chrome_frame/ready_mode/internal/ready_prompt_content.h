@@ -4,7 +4,6 @@
 
 #ifndef CHROME_FRAME_READY_MODE_INTERNAL_READY_PROMPT_CONTENT_H_
 #define CHROME_FRAME_READY_MODE_INTERNAL_READY_PROMPT_CONTENT_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_SEARCH_ENGINES_TEMPLATE_URL_TABLE_MODEL_H_
 #define CHROME_BROWSER_UI_SEARCH_ENGINES_TEMPLATE_URL_TABLE_MODEL_H_
-#pragma once
 
 #include <string>
 #include <vector>

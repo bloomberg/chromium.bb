@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_SCREEN_IMPL_H_
 #define UI_GFX_SCREEN_IMPL_H_
-#pragma once
 
 #include "ui/gfx/display.h"
 #include "ui/gfx/native_widget_types.h"

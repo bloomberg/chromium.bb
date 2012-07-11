@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_STATUS_NETWORK_MENU_ICON_H_
 #define CHROME_BROWSER_CHROMEOS_STATUS_NETWORK_MENU_ICON_H_
-#pragma once
 
 // NetworkMenuIcon Manages an icon that reflects the current state of the
 // network (see chromeos::NetworkLibrary). It takes an optional Delegate

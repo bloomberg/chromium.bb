@@ -4,7 +4,6 @@
 
 #ifndef CHROME_INSTALLER_UTIL_FAKE_INSTALLATION_STATE_H_
 #define CHROME_INSTALLER_UTIL_FAKE_INSTALLATION_STATE_H_
-#pragma once
 
 #include "base/file_path.h"
 #include "base/version.h"

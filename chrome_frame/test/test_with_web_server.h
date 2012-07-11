@@ -4,7 +4,6 @@
 
 #ifndef CHROME_FRAME_TEST_TEST_WITH_WEB_SERVER_H_
 #define CHROME_FRAME_TEST_TEST_WITH_WEB_SERVER_H_
-#pragma once
 
 #include <windows.h>
 #include <string>

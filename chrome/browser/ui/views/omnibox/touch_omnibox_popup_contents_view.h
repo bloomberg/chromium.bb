@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_OMNIBOX_TOUCH_OMNIBOX_POPUP_CONTENTS_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_OMNIBOX_TOUCH_OMNIBOX_POPUP_CONTENTS_VIEW_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"

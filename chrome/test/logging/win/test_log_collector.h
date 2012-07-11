@@ -16,7 +16,6 @@
 
 #ifndef CHROME_TEST_LOGGING_WIN_TEST_LOG_COLLECTOR_H_
 #define CHROME_TEST_LOGGING_WIN_TEST_LOG_COLLECTOR_H_
-#pragma once
 
 namespace testing {
 class UnitTest;

@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_CANVAS_SKIA_PAINT_H_
 #define UI_GFX_CANVAS_SKIA_PAINT_H_
-#pragma once
 
 #include "base/logging.h"
 #include "skia/ext/canvas_paint.h"

@@ -4,7 +4,6 @@
 
 #ifndef PRINTING_BACKEND_PRINT_BACKEND_H_
 #define PRINTING_BACKEND_PRINT_BACKEND_H_
-#pragma once
 
 #include <map>
 #include <string>

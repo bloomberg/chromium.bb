@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_BUTTON_MENU_BUTTON_H_
 #define UI_VIEWS_CONTROLS_BUTTON_MENU_BUTTON_H_
-#pragma once
 
 #include <string>
 

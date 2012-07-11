@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_STATUS_ICONS_STATUS_ICON_OBSERVER_H_
 #define CHROME_BROWSER_STATUS_ICONS_STATUS_ICON_OBSERVER_H_
-#pragma once
 
 class StatusIconObserver {
  public:

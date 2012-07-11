@@ -7,7 +7,6 @@
 
 #ifndef CHROME_COMMON_METRICS_METRICS_LOG_BASE_H_
 #define CHROME_COMMON_METRICS_METRICS_LOG_BASE_H_
-#pragma once
 
 #include <string>
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_WEB_DIALOG_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_WEB_DIALOG_VIEW_H_
-#pragma once
 
 #include <string>
 #include <vector>

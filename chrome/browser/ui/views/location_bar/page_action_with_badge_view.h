@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_PAGE_ACTION_WITH_BADGE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_PAGE_ACTION_WITH_BADGE_VIEW_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/views/location_bar/touchable_location_bar_view.h"

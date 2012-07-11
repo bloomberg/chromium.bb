@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_DISPLAY_CHANGE_OBSERVER_X11_H
 #define UI_AURA_DISPLAY_CHANGE_OBSERVER_X11_H
-#pragma once
 
 #include <X11/Xlib.h>
 

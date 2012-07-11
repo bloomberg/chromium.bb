@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_SESSION_FAVICON_SOURCE_H_
 #define CHROME_BROWSER_UI_WEBUI_SESSION_FAVICON_SOURCE_H_
-#pragma once
 
 #include "chrome/browser/ui/webui/favicon_source.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_CHROME_PAGES_H_
 #define CHROME_BROWSER_UI_CHROME_PAGES_H_
-#pragma once
 
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/content_settings_types.h"

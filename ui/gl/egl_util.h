@@ -4,7 +4,6 @@
 
 #ifndef UI_GL_EGL_UTIL_H_
 #define UI_GL_EGL_UTIL_H_
-#pragma once
 
 namespace gfx {
 

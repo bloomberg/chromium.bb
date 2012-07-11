@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_BUILDER_H_
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_BUILDER_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

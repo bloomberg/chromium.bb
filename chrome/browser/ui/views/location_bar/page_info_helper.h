@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_PAGE_INFO_HELPER_H_
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_PAGE_INFO_HELPER_H_
-#pragma once
 
 #include "base/basictypes.h"
 

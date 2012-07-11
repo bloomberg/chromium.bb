@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_WIN_WINDOW_IMPL_H_
 #define UI_BASE_WIN_WINDOW_IMPL_H_
-#pragma once
 
 #include <atlbase.h>
 #include <atlapp.h>

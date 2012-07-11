@@ -5,7 +5,6 @@
 
 #ifndef SKIA_EXT_CANVAS_PAINT_MAC_H_
 #define SKIA_EXT_CANVAS_PAINT_MAC_H_
-#pragma once
 
 #include "skia/ext/canvas_paint_common.h"
 #include "skia/ext/platform_canvas.h"

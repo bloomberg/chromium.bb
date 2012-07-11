@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_SETTINGS_SETTING_SYNC_DATA_H_
 #define CHROME_BROWSER_EXTENSIONS_SETTINGS_SETTING_SYNC_DATA_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

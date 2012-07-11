@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_GLUE_GL_BINDINGS_SKIA_CMD_BUFFER_H_
 #define WEBKIT_GLUE_GL_BINDINGS_SKIA_CMD_BUFFER_H_
-#pragma once
 
 #include "webkit/glue/webkit_glue_export.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_PANELS_PANEL_HOST_H_
 #define CHROME_BROWSER_UI_PANELS_PANEL_HOST_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

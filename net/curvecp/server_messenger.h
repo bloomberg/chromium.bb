@@ -4,7 +4,6 @@
 
 #ifndef NET_CURVECP_SERVER_MESSENGER_H_
 #define NET_CURVECP_SERVER_MESSENGER_H_
-#pragma once
 
 #include <list>
 

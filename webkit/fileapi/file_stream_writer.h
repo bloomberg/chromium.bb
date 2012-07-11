@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_FILEAPI_FILE_STREAM_WRITER_H_
 #define WEBKIT_FILEAPI_FILE_STREAM_WRITER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "net/base/completion_callback.h"

@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_THEME_PROVIDER_H_
 #define UI_BASE_THEME_PROVIDER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"

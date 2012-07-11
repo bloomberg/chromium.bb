@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_FILEAPI_FILE_SYSTEM_TEST_HELPER_H_
 #define WEBKIT_FILEAPI_FILE_SYSTEM_TEST_HELPER_H_
-#pragma once
 
 #include <string>
 

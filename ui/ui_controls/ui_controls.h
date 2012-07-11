@@ -4,7 +4,6 @@
 
 #ifndef UI_UI_CONTROLS_UI_CONTROLS_H_
 #define UI_UI_CONTROLS_UI_CONTROLS_H_
-#pragma once
 
 #include "build/build_config.h"
 

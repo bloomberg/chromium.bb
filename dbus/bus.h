@@ -4,7 +4,6 @@
 
 #ifndef DBUS_BUS_H_
 #define DBUS_BUS_H_
-#pragma once
 
 #include <map>
 #include <set>

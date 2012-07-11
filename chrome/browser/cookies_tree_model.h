@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_COOKIES_TREE_MODEL_H_
 #define CHROME_BROWSER_COOKIES_TREE_MODEL_H_
-#pragma once
 
 // TODO(viettrungluu): This header file #includes far too much and has too much
 // inline code (which shouldn't be inline).

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_COMPLETION_BLOCKER_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_COMPLETION_BLOCKER_H_
-#pragma once
 
 #include "base/callback.h"
 #include "content/public/browser/download_item.h"

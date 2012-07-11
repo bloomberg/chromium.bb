@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SESSIONS_SESSION_BACKEND_H_
 #define CHROME_BROWSER_SESSIONS_SESSION_BACKEND_H_
-#pragma once
 
 #include <vector>
 

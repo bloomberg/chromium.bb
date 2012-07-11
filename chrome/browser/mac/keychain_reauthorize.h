@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_MAC_KEYCHAIN_REAUTHORIZE_H_
 #define CHROME_BROWSER_MAC_KEYCHAIN_REAUTHORIZE_H_
-#pragma once
 
 #ifdef __OBJC__
 @class NSString;

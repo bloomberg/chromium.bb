@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_INSTANT_INSTANT_LOADER_H_
 #define CHROME_BROWSER_INSTANT_INSTANT_LOADER_H_
-#pragma once
 
 #include <string>
 

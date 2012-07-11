@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_POLICY_PROVIDER_H_
 #define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_POLICY_PROVIDER_H_
-#pragma once
 
 // A content settings provider that takes its settings out of policies.
 

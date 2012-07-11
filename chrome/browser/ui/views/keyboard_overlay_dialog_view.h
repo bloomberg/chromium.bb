@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_KEYBOARD_OVERLAY_DIALOG_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_KEYBOARD_OVERLAY_DIALOG_VIEW_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/views/web_dialog_view.h"

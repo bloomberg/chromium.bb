@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_PREFS_PREFS_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_PREFS_PREFS_TAB_HELPER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"

@@ -4,7 +4,6 @@
 
 #ifndef DBUS_VALUES_UTIL_H_
 #define DBUS_VALUES_UTIL_H_
-#pragma once
 
 namespace base {
 class Value;

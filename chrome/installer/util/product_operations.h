@@ -4,7 +4,6 @@
 
 #ifndef CHROME_INSTALLER_UTIL_PRODUCT_OPERATIONS_H_
 #define CHROME_INSTALLER_UTIL_PRODUCT_OPERATIONS_H_
-#pragma once
 
 #include <set>
 #include <string>

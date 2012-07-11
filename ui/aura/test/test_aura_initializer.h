@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_TEST_TEST_AURA_INITIALIZER_H_
 #define UI_AURA_TEST_TEST_AURA_INITIALIZER_H_
-#pragma once
 
 #include "base/basictypes.h"
 

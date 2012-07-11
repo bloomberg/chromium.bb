@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_APP_CONTROLLER_MAC_H_
 #define CHROME_BROWSER_APP_CONTROLLER_MAC_H_
-#pragma once
 
 #if defined(__OBJC__)
 

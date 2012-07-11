@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_X_ROOT_WINDOW_PROPERTY_WATCHER_X_H_
 #define UI_BASE_X_ROOT_WINDOW_PROPERTY_WATCHER_X_H_
-#pragma once
 
 #include <gdk/gdk.h>
 

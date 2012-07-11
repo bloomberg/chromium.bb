@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_SHADOW_VALUE_H_
 #define UI_GFX_SHADOW_VALUE_H_
-#pragma once
 
 #include <string>
 #include <vector>

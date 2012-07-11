@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PREFS_VALUE_MAP_PREF_STORE_H_
 #define CHROME_BROWSER_PREFS_VALUE_MAP_PREF_STORE_H_
-#pragma once
 
 #include <map>
 #include <string>

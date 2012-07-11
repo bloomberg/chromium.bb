@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DISCOVERY_SUGGESTED_LINK_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DISCOVERY_SUGGESTED_LINK_H_
-#pragma once
 
 #include <string>
 #include <vector>

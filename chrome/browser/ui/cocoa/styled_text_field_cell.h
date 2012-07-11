@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_STYLED_TEXT_FIELD_CELL_H_
 #define CHROME_BROWSER_UI_COCOA_STYLED_TEXT_FIELD_CELL_H_
-#pragma once
 
 #import <Cocoa/Cocoa.h>
 

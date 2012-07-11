@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_MENU_MENU_CONTROLLER_H_
 #define UI_VIEWS_CONTROLS_MENU_MENU_CONTROLLER_H_
-#pragma once
 
 #include "build/build_config.h"
 

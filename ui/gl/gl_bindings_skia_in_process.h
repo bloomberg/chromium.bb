@@ -4,7 +4,6 @@
 
 #ifndef UI_GL_GL_BINDINGS_SKIA_IN_PROCESS_H_
 #define UI_GL_GL_BINDINGS_SKIA_IN_PROCESS_H_
-#pragma once
 
 #include "ui/gl/gl_export.h"
 

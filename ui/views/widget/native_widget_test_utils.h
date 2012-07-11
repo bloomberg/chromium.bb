@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_WIDGET_NATIVE_WIDGET_TEST_UTILS_H_
 #define UI_VIEWS_WIDGET_NATIVE_WIDGET_TEST_UTILS_H_
-#pragma once
 
 namespace views {
 namespace internal {

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_TOOLBAR_BOOKMARK_SUB_MENU_MODEL_H_
 #define CHROME_BROWSER_UI_TOOLBAR_BOOKMARK_SUB_MENU_MODEL_H_
-#pragma once
 
 // For views and cocoa, we have complex delegate systems to handle
 // injecting the bookmarks to the bookmark submenu. This is done to support

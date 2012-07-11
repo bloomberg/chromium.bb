@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_PERF_BROWSER_PERF_TEST_H_
 #define CHROME_TEST_PERF_BROWSER_PERF_TEST_H_
-#pragma once
 
 #include "chrome/test/base/in_process_browser_test.h"
 

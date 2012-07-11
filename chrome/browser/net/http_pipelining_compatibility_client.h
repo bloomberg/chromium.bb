@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_NET_HTTP_PIPELINING_COMPATIBILITY_CLIENT_H_
 #define CHROME_BROWSER_NET_HTTP_PIPELINING_COMPATIBILITY_CLIENT_H_
-#pragma once
 
 #include <string>
 #include <vector>

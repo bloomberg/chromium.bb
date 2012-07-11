@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_API_PERMISSIONS_PERMISSIONS_API_HELPERS_H_
 #define CHROME_BROWSER_EXTENSIONS_API_PERMISSIONS_PERMISSIONS_API_HELPERS_H_
-#pragma once
 
 #include <string>
 #include "base/memory/scoped_ptr.h"

@@ -4,7 +4,6 @@
 
 #ifndef BASE_STACK_CONTAINER_H_
 #define BASE_STACK_CONTAINER_H_
-#pragma once
 
 #include <string>
 #include <vector>

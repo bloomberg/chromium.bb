@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_NET_CRL_SET_FETCHER_H_
 #define CHROME_BROWSER_NET_CRL_SET_FETCHER_H_
-#pragma once
 
 #include <string>
 

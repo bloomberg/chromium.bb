@@ -7,7 +7,6 @@
 
 #ifndef CHROME_INSTALLER_UTIL_CHROME_FRAME_DISTRIBUTION_H_
 #define CHROME_INSTALLER_UTIL_CHROME_FRAME_DISTRIBUTION_H_
-#pragma once
 
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/util_constants.h"

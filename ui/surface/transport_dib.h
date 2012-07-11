@@ -4,7 +4,6 @@
 
 #ifndef UI_SURFACE_TRANSPORT_DIB_H_
 #define UI_SURFACE_TRANSPORT_DIB_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/surface/surface_export.h"

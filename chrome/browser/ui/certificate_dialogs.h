@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_CERTIFICATE_DIALOGS_H_
 #define CHROME_BROWSER_UI_CERTIFICATE_DIALOGS_H_
-#pragma once
 
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "net/base/x509_certificate.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PLUGIN_PREFS_H_
 #define CHROME_BROWSER_PLUGIN_PREFS_H_
-#pragma once
 
 #include <map>
 #include <set>

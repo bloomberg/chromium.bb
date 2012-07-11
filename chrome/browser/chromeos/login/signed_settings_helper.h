@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SIGNED_SETTINGS_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SIGNED_SETTINGS_HELPER_H_
-#pragma once
 
 #include "chrome/browser/chromeos/login/signed_settings.h"
 

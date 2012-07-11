@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_CHROME_SANDBOX_TYPE_MAC_H_
 #define CHROME_COMMON_CHROME_SANDBOX_TYPE_MAC_H_
-#pragma once
 
 #include "content/public/common/sandbox_type_mac.h"
 

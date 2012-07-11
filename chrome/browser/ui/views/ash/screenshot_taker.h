@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_ASH_SCREENSHOT_TAKER_H_
 #define CHROME_BROWSER_UI_VIEWS_ASH_SCREENSHOT_TAKER_H_
-#pragma once
 
 #include "ash/screenshot_delegate.h"
 #include "base/basictypes.h"

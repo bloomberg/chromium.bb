@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_MODEL_DELEGATE_H_
 #define CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_MODEL_DELEGATE_H_
-#pragma once
 
 namespace content {
 class WebContents;

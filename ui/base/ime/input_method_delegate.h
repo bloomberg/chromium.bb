@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_IME_INPUT_METHOD_DELEGATE_H_
 #define UI_BASE_IME_INPUT_METHOD_DELEGATE_H_
-#pragma once
 
 #include "base/event_types.h"
 #include "ui/base/events.h"

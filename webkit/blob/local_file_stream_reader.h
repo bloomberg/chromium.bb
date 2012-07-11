@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_BLOB_LOCAL_FILE_STREAM_READER_H_
 #define WEBKIT_BLOB_LOCAL_FILE_STREAM_READER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

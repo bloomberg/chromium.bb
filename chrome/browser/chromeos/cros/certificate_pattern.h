@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_CERTIFICATE_PATTERN_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_CERTIFICATE_PATTERN_H_
-#pragma once
 
 #include <list>
 #include <string>

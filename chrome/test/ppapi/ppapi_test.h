@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_PPAPI_PPAPI_TEST_H_
 #define CHROME_TEST_PPAPI_PPAPI_TEST_H_
-#pragma once
 
 #include <string>
 

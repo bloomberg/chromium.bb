@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_CAPTIVE_PORTAL_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_CAPTIVE_PORTAL_VIEW_H_
-#pragma once
 
 #include <string>
 #include "chrome/browser/chromeos/login/simple_web_view_dialog.h"

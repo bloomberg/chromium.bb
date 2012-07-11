@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_BUTTON_IMAGE_BUTTON_H_
 #define UI_VIEWS_CONTROLS_BUTTON_IMAGE_BUTTON_H_
-#pragma once
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"

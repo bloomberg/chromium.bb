@@ -8,7 +8,6 @@
 
 #ifndef CHROME_BROWSER_NET_SDCH_DICTIONARY_FETCHER_H_
 #define CHROME_BROWSER_NET_SDCH_DICTIONARY_FETCHER_H_
-#pragma once
 
 #include <queue>
 #include <set>

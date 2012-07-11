@@ -6,7 +6,6 @@
 
 #ifndef NET_BASE_FILE_STREAM_WIN_H_
 #define NET_BASE_FILE_STREAM_WIN_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

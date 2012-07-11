@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_JUMPLIST_WIN_H_
 #define CHROME_BROWSER_JUMPLIST_WIN_H_
-#pragma once
 
 #include <list>
 #include <string>

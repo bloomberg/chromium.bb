@@ -4,7 +4,6 @@
 
 #ifndef UI_COMPOSITOR_TEST_WEB_GRAPHICS_CONTEXT_3D_H_
 #define UI_COMPOSITOR_TEST_WEB_GRAPHICS_CONTEXT_3D_H_
-#pragma once
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"

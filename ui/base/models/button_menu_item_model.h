@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_MODELS_BUTTON_MENU_ITEM_MODEL_H_
 #define UI_BASE_MODELS_BUTTON_MENU_ITEM_MODEL_H_
-#pragma once
 
 #include <vector>
 

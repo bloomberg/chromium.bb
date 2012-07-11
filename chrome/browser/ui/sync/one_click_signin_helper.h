@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_SYNC_ONE_CLICK_SIGNIN_HELPER_H_
 #define CHROME_BROWSER_UI_SYNC_ONE_CLICK_SIGNIN_HELPER_H_
-#pragma once
 
 #include <string>
 

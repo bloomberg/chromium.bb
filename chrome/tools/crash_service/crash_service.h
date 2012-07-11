@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TOOLS_CRASH_SERVICE_CRASH_SERVICE_H_
 #define CHROME_TOOLS_CRASH_SERVICE_CRASH_SERVICE_H_
-#pragma once
 
 #include <string>
 

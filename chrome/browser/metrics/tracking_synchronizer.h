@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_METRICS_TRACKING_SYNCHRONIZER_H_
 #define CHROME_BROWSER_METRICS_TRACKING_SYNCHRONIZER_H_
-#pragma once
 
 #include <map>
 #include <string>

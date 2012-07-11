@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_ASH_CHROME_SHELL_DELEGATE_H_
 #define CHROME_BROWSER_UI_VIEWS_ASH_CHROME_SHELL_DELEGATE_H_
-#pragma once
 
 #include "ash/launcher/launcher_types.h"
 #include "ash/shell_delegate.h"

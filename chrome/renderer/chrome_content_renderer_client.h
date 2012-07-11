@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_CHROME_CONTENT_RENDERER_CLIENT_H_
 #define CHROME_RENDERER_CHROME_CONTENT_RENDERER_CLIENT_H_
-#pragma once
 
 #include <set>
 #include <string>

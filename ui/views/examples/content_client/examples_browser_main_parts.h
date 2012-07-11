@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_EXAMPLES_CONTENT_CLIENT_EXAMPLES_BROWSER_MAIN_PARTS_H_
 #define UI_VIEWS_EXAMPLES_CONTENT_CLIENT_EXAMPLES_BROWSER_MAIN_PARTS_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_GESTURES_VELOCITY_CALCULATOR_H_
 #define UI_BASE_GESTURES_VELOCITY_CALCULATOR_H_
-#pragma once
 
 #include <vector>
 

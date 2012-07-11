@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PREFS_MANAGER_H_
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PREFS_MANAGER_H_
-#pragma once
 
 #include "chrome/browser/notifications/balloon_collection.h"
 

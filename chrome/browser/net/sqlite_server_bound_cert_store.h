@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_NET_SQLITE_SERVER_BOUND_CERT_STORE_H_
 #define CHROME_BROWSER_NET_SQLITE_SERVER_BOUND_CERT_STORE_H_
-#pragma once
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"

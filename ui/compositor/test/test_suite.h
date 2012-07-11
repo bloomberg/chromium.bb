@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_COMPOSITOR_TEST_TEST_SUITE_H_
 #define UI_GFX_COMPOSITOR_TEST_TEST_SUITE_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"

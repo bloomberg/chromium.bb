@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_TAB_ID_MAP_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_TAB_ID_MAP_H_
-#pragma once
 
 #include <map>
 #include <utility>

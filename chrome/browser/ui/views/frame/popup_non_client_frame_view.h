@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_POPUP_NON_CLIENT_FRAME_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_POPUP_NON_CLIENT_FRAME_VIEW_H_
-#pragma once
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 

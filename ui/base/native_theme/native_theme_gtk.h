@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_NATIVE_THEME_NATIVE_THEME_GTK_H_
 #define UI_BASE_NATIVE_THEME_NATIVE_THEME_GTK_H_
-#pragma once
 
 #include "ui/base/native_theme/native_theme_base.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_CHROMEOS_FILEAPI_FILE_ACCESS_PERMISSIONS_H_
 #define WEBKIT_CHROMEOS_FILEAPI_FILE_ACCESS_PERMISSIONS_H_
-#pragma once
 
 #include <map>
 #include <set>

@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_FONT_LIST_H_
 #define UI_GFX_FONT_LIST_H_
-#pragma once
 
 #include <string>
 #include <vector>

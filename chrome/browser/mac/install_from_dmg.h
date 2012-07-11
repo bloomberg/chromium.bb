@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_MAC_INSTALL_FROM_DMG_H_
 #define CHROME_BROWSER_MAC_INSTALL_FROM_DMG_H_
-#pragma once
 
 #include <string>
 

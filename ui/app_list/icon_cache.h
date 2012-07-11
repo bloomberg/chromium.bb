@@ -4,7 +4,6 @@
 
 #ifndef UI_APP_LIST_ICON_CACHE_H_
 #define UI_APP_LIST_ICON_CACHE_H_
-#pragma once
 
 #include <map>
 #include <string>

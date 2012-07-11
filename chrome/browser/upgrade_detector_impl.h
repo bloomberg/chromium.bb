@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UPGRADE_DETECTOR_IMPL_H_
 #define CHROME_BROWSER_UPGRADE_DETECTOR_IMPL_H_
-#pragma once
 
 #include "base/memory/weak_ptr.h"
 #include "base/timer.h"

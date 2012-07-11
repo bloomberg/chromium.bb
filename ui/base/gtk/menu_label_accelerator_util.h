@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_GTK_MENU_LABEL_ACCELERATOR_UTIL_H_
 #define UI_BASE_GTK_MENU_LABEL_ACCELERATOR_UTIL_H_
-#pragma once
 
 #include <string>
 

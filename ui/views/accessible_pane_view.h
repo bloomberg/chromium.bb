@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_ACCESSIBLE_PANE_VIEW_H_
 #define UI_VIEWS_ACCESSIBLE_PANE_VIEW_H_
-#pragma once
 
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"

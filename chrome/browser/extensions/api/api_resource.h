@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_API_API_RESOURCE_H_
 #define CHROME_BROWSER_EXTENSIONS_API_API_RESOURCE_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"

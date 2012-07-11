@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_MODULE_H__
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_MODULE_H__
-#pragma once
 
 #include "chrome/browser/extensions/extension_function.h"
 

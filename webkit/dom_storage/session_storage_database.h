@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_DOM_STORAGE_SESSION_STORAGE_DATABASE_H_
 #define WEBKIT_DOM_STORAGE_SESSION_STORAGE_DATABASE_H_
-#pragma once
 
 #include <map>
 #include <string>

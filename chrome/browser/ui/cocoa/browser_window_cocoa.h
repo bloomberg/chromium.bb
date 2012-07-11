@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_COCOA_H_
 #define CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_COCOA_H_
-#pragma once
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/weak_ptr.h"

@@ -7,7 +7,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_FONT_SETTINGS_API_H__
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_FONT_SETTINGS_API_H__
-#pragma once
 
 #include <map>
 #include <string>

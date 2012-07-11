@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_WORKER_THREAD_TICKER_H_
 #define CHROME_COMMON_WORKER_THREAD_TICKER_H_
-#pragma once
 
 #include <vector>
 

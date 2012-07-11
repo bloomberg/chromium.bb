@@ -4,7 +4,6 @@
 
 #ifndef SKIA_EXT_VECTOR_PLATFORM_DEVICE_SKIA_H_
 #define SKIA_EXT_VECTOR_PLATFORM_DEVICE_SKIA_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

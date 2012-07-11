@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_DOWNLOAD_CHROME_DOWNLOAD_MANAGER_DELEGATE_H_
 #define CHROME_BROWSER_DOWNLOAD_CHROME_DOWNLOAD_MANAGER_DELEGATE_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/hash_tables.h"

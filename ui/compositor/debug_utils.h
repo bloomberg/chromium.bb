@@ -4,7 +4,6 @@
 
 #ifndef UI_COMPOSITOR_DEBUG_UTILS_H_
 #define UI_COMPOSITOR_DEBUG_UTILS_H_
-#pragma once
 
 #ifndef NDEBUG
 

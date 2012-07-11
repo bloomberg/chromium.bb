@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_DATABASE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_DATABASE_H_
-#pragma once
 
 #include <set>
 #include <vector>

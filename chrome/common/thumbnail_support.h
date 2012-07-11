@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_THUMBNAIL_SUPPORT_H_
 #define CHROME_COMMON_THUMBNAIL_SUPPORT_H_
-#pragma once
 
 // TODO(mazda): Remove this file once in-browser thumbnailing is supported on
 // all platforms.

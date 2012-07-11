@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_INDEXED_DB_INFO_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_INDEXED_DB_INFO_VIEW_H_
-#pragma once
 
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
 #include "ui/views/view.h"

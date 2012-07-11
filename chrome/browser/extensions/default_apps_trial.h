@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_DEFAULT_APPS_TRIAL_H_
 #define CHROME_BROWSER_EXTENSIONS_DEFAULT_APPS_TRIAL_H_
-#pragma once
 
 // Strings used with default apps field trial.  If the field trial is running
 // base::FieldTrialList::TrialExists(kDefaultAppsTrial_Name) returns true.

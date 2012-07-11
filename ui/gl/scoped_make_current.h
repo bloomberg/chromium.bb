@@ -4,7 +4,6 @@
 
 #ifndef UI_GL_SCOPED_MAKE_CURRENT_H_
 #define UI_GL_SCOPED_MAKE_CURRENT_H_
-#pragma once
 
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"

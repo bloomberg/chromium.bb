@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_GESTURES_GESTURE_POINT_H_
 #define UI_BASE_GESTURES_GESTURE_POINT_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/base/gestures/velocity_calculator.h"

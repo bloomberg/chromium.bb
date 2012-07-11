@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_NET_LOAD_TIMING_OBSERVER_H_
 #define CHROME_BROWSER_NET_LOAD_TIMING_OBSERVER_H_
-#pragma once
 
 #include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"

@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_WIDGET_DROP_HELPER_H_
 #define UI_VIEWS_WIDGET_DROP_HELPER_H_
-#pragma once
 
 #include "base/basictypes.h"
 

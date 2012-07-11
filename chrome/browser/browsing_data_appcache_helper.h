@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_BROWSING_DATA_APPCACHE_HELPER_H_
 #define CHROME_BROWSER_BROWSING_DATA_APPCACHE_HELPER_H_
-#pragma once
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"

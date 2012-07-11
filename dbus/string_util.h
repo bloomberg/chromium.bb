@@ -4,7 +4,6 @@
 
 #ifndef DBUS_STRING_UTIL_H_
 #define DBUS_STRING_UTIL_H_
-#pragma once
 
 #include <string>
 

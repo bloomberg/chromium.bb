@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_STARTUP_OBSOLETE_OS_PROMPT_H_
 #define CHROME_BROWSER_UI_STARTUP_OBSOLETE_OS_PROMPT_H_
-#pragma once
 
 #include "build/build_config.h"
 

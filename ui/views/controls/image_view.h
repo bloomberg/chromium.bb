@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_IMAGE_VIEW_H_
 #define UI_VIEWS_CONTROLS_IMAGE_VIEW_H_
-#pragma once
 
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/view.h"

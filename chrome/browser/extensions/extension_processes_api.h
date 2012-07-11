@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PROCESSES_API_H__
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_PROCESSES_API_H__
-#pragma once
 
 #include <set>
 #include <string>

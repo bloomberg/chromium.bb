@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EVENT_LISTENER_MAP_H_
 #define CHROME_BROWSER_EXTENSIONS_EVENT_LISTENER_MAP_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/event_filter.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_UI_LOCALIZER_H_
 #define CHROME_BROWSER_UI_COCOA_UI_LOCALIZER_H_
-#pragma once
 
 #import "third_party/GTM/AppKit/GTMUILocalizer.h"
 

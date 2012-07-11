@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_DOM_STORAGE_SESSION_STORAGE_DATABASE_ADAPTER_H_
 #define WEBKIT_DOM_STORAGE_SESSION_STORAGE_DATABASE_ADAPTER_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "googleurl/src/gurl.h"

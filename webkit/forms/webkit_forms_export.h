@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_FORMS_WEBKIT_FORMS_EXPORT_H_
 #define WEBKIT_FORMS_WEBKIT_FORMS_EXPORT_H_
-#pragma once
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)

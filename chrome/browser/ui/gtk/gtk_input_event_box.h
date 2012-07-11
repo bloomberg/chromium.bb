@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_GTK_GTK_INPUT_EVENT_BOX_H_
 #define CHROME_BROWSER_UI_GTK_GTK_INPUT_EVENT_BOX_H_
-#pragma once
 
 #include <gtk/gtk.h>
 

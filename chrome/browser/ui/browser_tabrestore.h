@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_BROWSER_TABRESTORE_H_
 #define CHROME_BROWSER_UI_BROWSER_TABRESTORE_H_
-#pragma once
 
 #include <vector>
 

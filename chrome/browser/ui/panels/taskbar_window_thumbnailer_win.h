@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_PANELS_TASKBAR_WINDOW_THUMBNAILER_WIN_H_
 #define CHROME_BROWSER_UI_PANELS_TASKBAR_WINDOW_THUMBNAILER_WIN_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/win/hwnd_subclass.h"

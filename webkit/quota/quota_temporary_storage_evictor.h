@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_QUOTA_QUOTA_TEMPORARY_STORAGE_EVICTOR_H_
 #define WEBKIT_QUOTA_QUOTA_TEMPORARY_STORAGE_EVICTOR_H_
-#pragma once
 
 #include <map>
 #include <string>

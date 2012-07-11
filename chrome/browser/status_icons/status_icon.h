@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_STATUS_ICONS_STATUS_ICON_H_
 #define CHROME_BROWSER_STATUS_ICONS_STATUS_ICON_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

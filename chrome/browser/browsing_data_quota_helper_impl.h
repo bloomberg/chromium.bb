@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_BROWSING_DATA_QUOTA_HELPER_IMPL_H_
 #define CHROME_BROWSER_BROWSING_DATA_QUOTA_HELPER_IMPL_H_
-#pragma once
 
 #include <map>
 #include <set>

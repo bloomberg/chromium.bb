@@ -4,7 +4,6 @@
 
 #ifndef UI_GL_ANDROID_NATIVE_WINDOW_H_
 #define UI_GL_ANDROID_NATIVE_WINDOW_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

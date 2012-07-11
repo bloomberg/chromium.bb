@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_LIBGTK2UI_LIBGTK2UI_EXPORT_H_
 #define CHROME_BROWSER_UI_LIBGTK2UI_LIBGTK2UI_EXPORT_H_
-#pragma once
 
 // Defines LIBGTK2UI_EXPORT so that functionality implemented by our limited
 // gtk2 module can be exported to consumers.

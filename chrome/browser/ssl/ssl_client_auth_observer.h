@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SSL_SSL_CLIENT_AUTH_OBSERVER_H_
 #define CHROME_BROWSER_SSL_SSL_CLIENT_AUTH_OBSERVER_H_
-#pragma once
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_STARTUP_OBSOLETE_OS_INFO_BAR_H_
 #define CHROME_BROWSER_UI_STARTUP_OBSOLETE_OS_INFO_BAR_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/string16.h"

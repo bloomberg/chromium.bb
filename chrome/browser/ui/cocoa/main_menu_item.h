@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_MAIN_MENU_ITEM_H_
 #define CHROME_BROWSER_UI_COCOA_MAIN_MENU_ITEM_H_
-#pragma once
 
 // This interface is implemented by top-level main menubar items that need to
 // be dynamically updated based on the profile. The C++ bridge should implement

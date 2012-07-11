@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_POWER_BUTTON_CONTROLLER_DELEGATE_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_POWER_BUTTON_CONTROLLER_DELEGATE_CHROMEOS_H_
-#pragma once
 
 #include "ash/wm/power_button_controller.h"
 #include "base/basictypes.h"

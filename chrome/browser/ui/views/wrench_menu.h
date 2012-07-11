@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_WRENCH_MENU_H_
 #define CHROME_BROWSER_UI_VIEWS_WRENCH_MENU_H_
-#pragma once
 
 #include <map>
 #include <utility>

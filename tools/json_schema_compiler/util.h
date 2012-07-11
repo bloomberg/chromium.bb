@@ -4,7 +4,6 @@
 
 #ifndef TOOLS_JSON_SCHEMA_COMPILER_UTIL_H__
 #define TOOLS_JSON_SCHEMA_COMPILER_UTIL_H__
-#pragma once
 
 #include <string>
 #include <vector>

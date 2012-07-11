@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_WEBDRIVER_WEBDRIVER_BASIC_TYPES_H_
 #define CHROME_TEST_WEBDRIVER_WEBDRIVER_BASIC_TYPES_H_
-#pragma once
 
 #include "chrome/test/automation/value_conversion_traits.h"
 

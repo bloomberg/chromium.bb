@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_VIEWS_DELEGATE_H_
 #define UI_VIEWS_VIEWS_DELEGATE_H_
-#pragma once
 
 #include <string>
 

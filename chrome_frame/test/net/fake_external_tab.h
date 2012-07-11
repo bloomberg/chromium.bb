@@ -4,7 +4,6 @@
 
 #ifndef CHROME_FRAME_TEST_NET_FAKE_EXTERNAL_TAB_H_
 #define CHROME_FRAME_TEST_NET_FAKE_EXTERNAL_TAB_H_
-#pragma once
 
 #include <string>
 

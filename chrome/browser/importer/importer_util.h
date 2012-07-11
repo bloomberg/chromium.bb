@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_IMPORTER_IMPORTER_UTIL_H_
 #define CHROME_BROWSER_IMPORTER_IMPORTER_UTIL_H_
-#pragma once
 
 #include <cstddef>
 #include <vector>

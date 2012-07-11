@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_STARTUP_STARTUP_BROWSER_CREATOR_H_
 #define CHROME_BROWSER_UI_STARTUP_STARTUP_BROWSER_CREATOR_H_
-#pragma once
 
 #include <string>
 #include <vector>

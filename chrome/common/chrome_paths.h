@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_CHROME_PATHS_H__
 #define CHROME_COMMON_CHROME_PATHS_H__
-#pragma once
 
 #include "build/build_config.h"
 

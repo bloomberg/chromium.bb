@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_EXTENSIONS_EVENT_FILTERING_INFO_H_
 #define CHROME_COMMON_EXTENSIONS_EVENT_FILTERING_INFO_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"

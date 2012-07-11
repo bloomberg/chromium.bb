@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_WEBDRIVER_WEBDRIVER_ELEMENT_ID_H_
 #define CHROME_TEST_WEBDRIVER_WEBDRIVER_ELEMENT_ID_H_
-#pragma once
 
 #include <string>
 

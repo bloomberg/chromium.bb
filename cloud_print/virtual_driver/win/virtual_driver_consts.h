@@ -4,7 +4,6 @@
 
 #ifndef CLOUD_PRINT_VIRTUAL_DRIVER_WIN_VIRTUAL_DRIVER_CONSTS_H_
 #define CLOUD_PRINT_VIRTUAL_DRIVER_WIN_VIRTUAL_DRIVER_CONSTS_H_
-#pragma once
 
 namespace cloud_print {
 extern const wchar_t kPortName[];

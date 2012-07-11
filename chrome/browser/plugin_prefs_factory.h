@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PLUGIN_PREFS_FACTORY_H_
 #define CHROME_BROWSER_PLUGIN_PREFS_FACTORY_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"

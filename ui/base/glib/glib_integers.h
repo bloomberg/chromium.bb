@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_GLIB_GLIB_INTEGERS_H_
 #define UI_BASE_GLIB_GLIB_INTEGERS_H_
-#pragma once
 
 // GLib/GObject/Gtk all use their own integer typedefs. They are copied here
 // for forward declaration reasons so we don't pull in all of glib/gtypes.h

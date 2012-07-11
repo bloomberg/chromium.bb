@@ -6,7 +6,6 @@
 
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GPU_SWITCHES_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GPU_SWITCHES_H_
-#pragma once
 
 #include "gpu/gpu_export.h"
 

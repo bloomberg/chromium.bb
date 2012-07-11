@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_IME_INPUT_METHOD_WIN_H_
 #define UI_VIEWS_IME_INPUT_METHOD_WIN_H_
-#pragma once
 
 #include <windows.h>
 

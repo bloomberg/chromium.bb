@@ -13,7 +13,6 @@
 
 #ifndef CHROME_BROWSER_SAFE_BROWSING_CHUNK_RANGE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_CHUNK_RANGE_H_
-#pragma once
 
 #include <string>
 #include <vector>

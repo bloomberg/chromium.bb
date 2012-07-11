@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_WEB_UI_TEST_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_WEB_UI_TEST_HANDLER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/string16.h"

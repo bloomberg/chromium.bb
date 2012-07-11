@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_SEARCH_PROVIDER_H_
 #define CHROME_COMMON_SEARCH_PROVIDER_H_
-#pragma once
 
 namespace search_provider {
 

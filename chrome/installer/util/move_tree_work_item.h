@@ -4,7 +4,6 @@
 
 #ifndef CHROME_INSTALLER_UTIL_MOVE_TREE_WORK_ITEM_H_
 #define CHROME_INSTALLER_UTIL_MOVE_TREE_WORK_ITEM_H_
-#pragma once
 
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"

@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_WIDGET_NATIVE_WIDGET_PRIVATE_H_
 #define UI_VIEWS_WIDGET_NATIVE_WIDGET_PRIVATE_H_
-#pragma once
 
 #include "base/string16.h"
 #include "ui/base/ui_base_types.h"

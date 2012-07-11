@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_GESTURES_GESTURE_RECOGNIZER_IMPL_H_
 #define UI_BASE_GESTURES_GESTURE_RECOGNIZER_IMPL_H_
-#pragma once
 
 #include <map>
 #include <queue>

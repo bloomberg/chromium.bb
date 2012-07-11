@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_COCOA_BASE_VIEW_H_
 #define UI_BASE_COCOA_BASE_VIEW_H_
-#pragma once
 
 #import <Cocoa/Cocoa.h>
 

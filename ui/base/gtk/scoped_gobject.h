@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_GTK_SCOPED_GOBJECT_H_
 #define UI_BASE_GTK_SCOPED_GOBJECT_H_
-#pragma once
 
 #include <glib-object.h>
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_LOGGING_WIN_FILE_LOGGER_H_
 #define CHROME_TEST_LOGGING_WIN_FILE_LOGGER_H_
-#pragma once
 
 #include <guiddef.h>
 

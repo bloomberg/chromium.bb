@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS2_FONT_SETTINGS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS2_FONT_SETTINGS_HANDLER_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_member.h"

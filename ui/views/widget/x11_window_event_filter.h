@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_WIDGET_X11_WINDOW_EVENT_FILTER_H_
 #define UI_VIEWS_WIDGET_X11_WINDOW_EVENT_FILTER_H_
-#pragma once
 
 #include <X11/Xlib.h>
 // Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.

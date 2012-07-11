@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_TOOLBAR_WRENCH_MENU_MODEL_H_
 #define CHROME_BROWSER_UI_TOOLBAR_WRENCH_MENU_MODEL_H_
-#pragma once
 
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"

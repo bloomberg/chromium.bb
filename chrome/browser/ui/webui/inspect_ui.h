@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_INSPECT_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_INSPECT_UI_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/notification_observer.h"

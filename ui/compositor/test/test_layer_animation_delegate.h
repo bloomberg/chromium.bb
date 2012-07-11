@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_COMPOSITOR_TEST_TEST_LAYER_ANIMATION_DELEGATE_H_
 #define UI_GFX_COMPOSITOR_TEST_TEST_LAYER_ANIMATION_DELEGATE_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/compositor/layer_animation_delegate.h"

@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_BUTTON_BUTTON_DROPDOWN_H_
 #define UI_VIEWS_CONTROLS_BUTTON_BUTTON_DROPDOWN_H_
-#pragma once
 
 #include "base/memory/weak_ptr.h"
 #include "ui/views/controls/button/image_button.h"

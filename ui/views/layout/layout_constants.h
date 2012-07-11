@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_LAYOUT_LAYOUT_CONSTANTS_H_
 #define UI_VIEWS_LAYOUT_LAYOUT_CONSTANTS_H_
-#pragma once
 
 // This file contains some constants we use to implement our standard panel
 // layout.

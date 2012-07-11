@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_WINDOW_CUSTOM_FRAME_VIEW_H_
 #define UI_VIEWS_WINDOW_CUSTOM_FRAME_VIEW_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

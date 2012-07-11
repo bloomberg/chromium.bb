@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_FILEAPI_LOCAL_FILE_STREAM_WRITER_H_
 #define WEBKIT_FILEAPI_LOCAL_FILE_STREAM_WRITER_H_
-#pragma once
 
 #include <utility>
 

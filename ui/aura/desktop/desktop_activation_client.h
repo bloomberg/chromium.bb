@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_DESKTOP_DESTKOP_ACTIVATION_CLIENT_H_
 #define UI_AURA_DESKTOP_DESTKOP_ACTIVATION_CLIENT_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"

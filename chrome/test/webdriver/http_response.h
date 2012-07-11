@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_WEBDRIVER_HTTP_RESPONSE_H_
 #define CHROME_TEST_WEBDRIVER_HTTP_RESPONSE_H_
-#pragma once
 
 #include <map>
 #include <string>

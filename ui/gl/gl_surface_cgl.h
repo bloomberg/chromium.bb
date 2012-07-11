@@ -4,7 +4,6 @@
 
 #ifndef UI_GL_GL_SURFACE_CGL_H_
 #define UI_GL_GL_SURFACE_CGL_H_
-#pragma once
 
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_surface.h"

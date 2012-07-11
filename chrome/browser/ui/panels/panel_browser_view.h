@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_PANELS_PANEL_BROWSER_VIEW_H_
 #define CHROME_BROWSER_UI_PANELS_PANEL_BROWSER_VIEW_H_
-#pragma once
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"

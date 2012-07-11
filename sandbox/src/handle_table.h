@@ -4,7 +4,6 @@
 
 #ifndef SANDBOX_SRC_HANDLE_TABLE_H_
 #define SANDBOX_SRC_HANDLE_TABLE_H_
-#pragma once
 
 #include <windows.h>
 #include <vector>

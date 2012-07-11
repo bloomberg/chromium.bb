@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_WIN_H_
-#pragma once
 
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h"
 

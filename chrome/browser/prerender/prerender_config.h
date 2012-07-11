@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_CONFIG_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_CONFIG_H_
-#pragma once
 
 #include "base/time.h"
 #include "ui/gfx/rect.h"

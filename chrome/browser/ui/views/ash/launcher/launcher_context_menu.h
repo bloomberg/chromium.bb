@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_CONTEXT_MENU_H_
 #define CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_CONTEXT_MENU_H_
-#pragma once
 
 #include "ash/launcher/launcher_alignment_menu.h"
 #include "ash/launcher/launcher_types.h"

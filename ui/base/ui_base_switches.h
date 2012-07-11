@@ -6,7 +6,6 @@
 
 #ifndef UI_BASE_UI_BASE_SWITCHES_H_
 #define UI_BASE_UI_BASE_SWITCHES_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/base/ui_export.h"

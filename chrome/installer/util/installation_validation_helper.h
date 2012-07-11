@@ -8,7 +8,6 @@
 
 #ifndef CHROME_INSTALLER_UTIL_INSTALLATION_VALIDATION_HELPER_H_
 #define CHROME_INSTALLER_UTIL_INSTALLATION_VALIDATION_HELPER_H_
-#pragma once
 
 #include "chrome/installer/util/installation_validator.h"
 

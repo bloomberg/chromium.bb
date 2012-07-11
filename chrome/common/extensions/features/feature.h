@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_EXTENSIONS_FEATURES_FEATURE_H_
 #define CHROME_COMMON_EXTENSIONS_FEATURES_FEATURE_H_
-#pragma once
 
 #include <set>
 #include <string>

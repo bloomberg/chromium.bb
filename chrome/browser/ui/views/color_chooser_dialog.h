@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_COLOR_CHOOSER_DIALOG_H_
 #define CHROME_BROWSER_UI_VIEWS_COLOR_CHOOSER_DIALOG_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/views/color_chooser_dialog.h"

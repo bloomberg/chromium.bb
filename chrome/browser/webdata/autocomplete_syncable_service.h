@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 #ifndef CHROME_BROWSER_WEBDATA_AUTOCOMPLETE_SYNCABLE_SERVICE_H_
 #define CHROME_BROWSER_WEBDATA_AUTOCOMPLETE_SYNCABLE_SERVICE_H_
-#pragma once
 
 #include <map>
 #include <set>

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SEARCH_ENGINES_UTIL_H_
 #define CHROME_BROWSER_SEARCH_ENGINES_UTIL_H_
-#pragma once
 
 // This file contains utility functions for search engine functionality.
 #include <set>

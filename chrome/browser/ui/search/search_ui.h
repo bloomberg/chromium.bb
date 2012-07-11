@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_SEARCH_SEARCH_UI_H_
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_UI_H_
-#pragma once
 
 #include "third_party/skia/include/core/SkColor.h"
 

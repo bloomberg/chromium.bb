@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_PROCESS_PROXY_PROCESS_PROXY_H_
 #define CHROME_BROWSER_CHROMEOS_PROCESS_PROXY_PROCESS_PROXY_H_
-#pragma once
 
 #include <fcntl.h>
 #include <signal.h>

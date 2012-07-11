@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTERNAL_EXTENSION_LOADER_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTERNAL_EXTENSION_LOADER_H_
-#pragma once
 
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"

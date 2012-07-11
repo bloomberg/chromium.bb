@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_VISITEDLINK_SLAVE_H_
 #define CHROME_RENDERER_VISITEDLINK_SLAVE_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/shared_memory.h"

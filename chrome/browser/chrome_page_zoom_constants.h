@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROME_PAGE_ZOOM_CONSTANTS_H_
 #define CHROME_BROWSER_CHROME_PAGE_ZOOM_CONSTANTS_H_
-#pragma once
 
 #include "base/basictypes.h"
 

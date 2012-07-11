@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_BUBBLE_BUBBLE_FRAME_VIEW_H_
 #define UI_VIEWS_BUBBLE_BUBBLE_FRAME_VIEW_H_
-#pragma once
 
 #include "base/gtest_prod_util.h"
 #include "third_party/skia/include/core/SkColor.h"

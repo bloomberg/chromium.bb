@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_APP_MODAL_DIALOGS_NATIVE_APP_MODAL_DIALOG_H_
 #define CHROME_BROWSER_UI_APP_MODAL_DIALOGS_NATIVE_APP_MODAL_DIALOG_H_
-#pragma once
 
 #include "ui/gfx/native_widget_types.h"
 

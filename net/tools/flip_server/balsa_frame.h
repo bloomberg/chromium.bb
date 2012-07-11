@@ -4,7 +4,6 @@
 
 #ifndef NET_TOOLS_FLIP_SERVER_BALSA_FRAME_H_
 #define NET_TOOLS_FLIP_SERVER_BALSA_FRAME_H_
-#pragma once
 
 #include <strings.h>
 

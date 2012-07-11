@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_SCROLLBAR_BASE_SCROLL_BAR_THUMB_H_
 #define UI_VIEWS_CONTROLS_SCROLLBAR_BASE_SCROLL_BAR_THUMB_H_
-#pragma once
 
 #include "ui/gfx/size.h"
 #include "ui/views/controls/button/custom_button.h"

@@ -7,7 +7,6 @@
 
 #ifndef GPU_COMMAND_BUFFER_COMMON_GL_MOCK_H_
 #define GPU_COMMAND_BUFFER_COMMON_GL_MOCK_H_
-#pragma once
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gl/gl_interface.h"

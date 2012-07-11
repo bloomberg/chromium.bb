@@ -4,7 +4,6 @@
 
 #ifndef UI_APP_LIST_SEARCH_BOX_VIEW_H_
 #define UI_APP_LIST_SEARCH_BOX_VIEW_H_
-#pragma once
 
 #include <string>
 

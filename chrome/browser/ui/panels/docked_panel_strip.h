@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_PANELS_DOCKED_PANEL_STRIP_H_
 #define CHROME_BROWSER_UI_PANELS_DOCKED_PANEL_STRIP_H_
-#pragma once
 
 #include <list>
 #include <set>

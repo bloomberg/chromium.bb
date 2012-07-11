@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_SAFE_BROWSING_TEST_UTILS_H_
 #define CHROME_RENDERER_SAFE_BROWSING_TEST_UTILS_H_
-#pragma once
 
 namespace safe_browsing {
 class FeatureMap;

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_UPGRADE_DETECTOR_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_UPGRADE_DETECTOR_CHROMEOS_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/timer.h"

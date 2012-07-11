@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_ACCELERATORS_COCOA_H_
 #define CHROME_BROWSER_UI_COCOA_ACCELERATORS_COCOA_H_
-#pragma once
 
 #include <map>
 

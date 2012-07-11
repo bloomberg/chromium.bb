@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_API_TABS_TABS_H__
 #define CHROME_BROWSER_EXTENSIONS_API_TABS_TABS_H__
-#pragma once
 
 #include <string>
 #include <vector>

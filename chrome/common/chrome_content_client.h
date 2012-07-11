@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_CHROME_CONTENT_CLIENT_H_
 #define CHROME_COMMON_CHROME_CONTENT_CLIENT_H_
-#pragma once
 
 #include <string>
 #include <vector>

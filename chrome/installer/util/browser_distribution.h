@@ -6,7 +6,6 @@
 
 #ifndef CHROME_INSTALLER_UTIL_BROWSER_DISTRIBUTION_H_
 #define CHROME_INSTALLER_UTIL_BROWSER_DISTRIBUTION_H_
-#pragma once
 
 #include <string>
 

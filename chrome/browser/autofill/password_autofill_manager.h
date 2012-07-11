@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_AUTOFILL_PASSWORD_AUTOFILL_MANAGER_H_
 #define CHROME_BROWSER_AUTOFILL_PASSWORD_AUTOFILL_MANAGER_H_
-#pragma once
 
 // This file was contains some repeated code from
 // chrome/renderer/autofill/password_autofill_manager because as we move to the

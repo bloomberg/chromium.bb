@@ -7,7 +7,6 @@
 
 #ifndef CHROME_INSTALLER_UTIL_LANGUAGE_SELECTOR_H_
 #define CHROME_INSTALLER_UTIL_LANGUAGE_SELECTOR_H_
-#pragma once
 
 #include <string>
 #include <vector>

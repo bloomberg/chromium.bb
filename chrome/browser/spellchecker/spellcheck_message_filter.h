@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_MESSAGE_FILTER_H_
 #define CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_MESSAGE_FILTER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"

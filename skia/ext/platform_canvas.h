@@ -4,7 +4,6 @@
 
 #ifndef SKIA_EXT_PLATFORM_CANVAS_H_
 #define SKIA_EXT_PLATFORM_CANVAS_H_
-#pragma once
 
 // The platform-specific device will include the necessary platform headers
 // to get the surface type.

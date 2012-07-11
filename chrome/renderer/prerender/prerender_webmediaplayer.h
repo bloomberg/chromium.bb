@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_PRERENDER_PRERENDER_WEBMEDIAPLAYER_H_
 #define CHROME_RENDERER_PRERENDER_PRERENDER_WEBMEDIAPLAYER_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

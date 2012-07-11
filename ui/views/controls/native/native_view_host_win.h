@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_WIN_H_
 #define UI_VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_WIN_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/views/controls/native/native_view_host_wrapper.h"

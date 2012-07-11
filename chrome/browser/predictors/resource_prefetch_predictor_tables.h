@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PREDICTORS_RESOURCE_PREFETCH_PREDICTOR_TABLES_H_
 #define CHROME_BROWSER_PREDICTORS_RESOURCE_PREFETCH_PREDICTOR_TABLES_H_
-#pragma once
 
 #include "chrome/browser/predictors/predictor_table_base.h"
 

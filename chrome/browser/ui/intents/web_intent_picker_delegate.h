@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_INTENTS_WEB_INTENT_PICKER_DELEGATE_H_
 #define CHROME_BROWSER_UI_INTENTS_WEB_INTENT_PICKER_DELEGATE_H_
-#pragma once
 
 #include <string>
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"

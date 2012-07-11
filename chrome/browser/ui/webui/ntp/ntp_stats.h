@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_NTP_NTP_STATS_H_
 #define CHROME_BROWSER_UI_WEBUI_NTP_NTP_STATS_H_
-#pragma once
 
 // This enum is also defined in histograms.xml. These values represent the
 // action that the user has taken to leave the NTP. This is shared between the

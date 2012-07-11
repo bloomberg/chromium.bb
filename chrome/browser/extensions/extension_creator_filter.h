@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_CREATOR_FILTER_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_CREATOR_FILTER_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 

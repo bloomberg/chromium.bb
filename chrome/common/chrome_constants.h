@@ -6,7 +6,6 @@
 
 #ifndef CHROME_COMMON_CHROME_CONSTANTS_H_
 #define CHROME_COMMON_CHROME_CONSTANTS_H_
-#pragma once
 
 #include "base/file_path.h"
 

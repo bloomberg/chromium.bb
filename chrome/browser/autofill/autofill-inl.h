@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_AUTOFILL_AUTOFILL_INL_H_
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_INL_H_
-#pragma once
 
 template<typename T>
 class FormGroupMatchesByCompareFunctor {

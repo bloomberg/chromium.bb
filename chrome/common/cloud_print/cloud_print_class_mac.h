@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_CLOUD_PRINT_CLOUD_PRINT_CLASS_MAC_H_
 #define CHROME_COMMON_CLOUD_PRINT_CLOUD_PRINT_CLASS_MAC_H_
-#pragma once
 
 #import <AppKit/AppKit.h>
 

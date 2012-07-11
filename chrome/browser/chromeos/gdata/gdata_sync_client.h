@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_SYNC_CLIENT_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_SYNC_CLIENT_H_
-#pragma once
 
 #include <deque>
 #include <string>

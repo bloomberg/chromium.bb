@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_H_
-#pragma once
 
 #include <vector>
 

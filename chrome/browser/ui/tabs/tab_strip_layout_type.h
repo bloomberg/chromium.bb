@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_TABS_TAB_STRIP_LAYOUT_TYPE_H_
 #define CHROME_BROWSER_UI_TABS_TAB_STRIP_LAYOUT_TYPE_H_
-#pragma once
 
 // Defines what should happen when the tabs won't fit at their ideal size.
 enum TabStripLayoutType {

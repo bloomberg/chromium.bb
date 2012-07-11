@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_SELECTION_MODEL_H_
 #define UI_GFX_SELECTION_MODEL_H_
-#pragma once
 
 #include <string>
 

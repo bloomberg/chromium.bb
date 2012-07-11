@@ -9,7 +9,6 @@
 
 #ifndef UI_BASE_CLIPBOARD_CUSTOM_DATA_HELPER_H_
 #define UI_BASE_CLIPBOARD_CUSTOM_DATA_HELPER_H_
-#pragma once
 
 #include <map>
 #include <vector>

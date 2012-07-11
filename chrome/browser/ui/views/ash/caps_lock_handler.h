@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_ASH_CAPS_LOCK_HANDLER_H_
 #define CHROME_BROWSER_UI_VIEWS_ASH_CAPS_LOCK_HANDLER_H_
-#pragma once
 
 #include "ash/caps_lock_delegate.h"
 #include "base/basictypes.h"

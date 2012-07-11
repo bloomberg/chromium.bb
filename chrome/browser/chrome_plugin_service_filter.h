@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROME_PLUGIN_SERVICE_FILTER_H_
 #define CHROME_BROWSER_CHROME_PLUGIN_SERVICE_FILTER_H_
-#pragma once
 
 #include <map>
 #include <vector>

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_ONC_CONSTANTS_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_ONC_CONSTANTS_H_
-#pragma once
 
 namespace chromeos {
 

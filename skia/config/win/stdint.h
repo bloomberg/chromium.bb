@@ -8,7 +8,6 @@
 
 #ifndef SKIA_CONFIG_WIN_STDINT_H_
 #define SKIA_CONFIG_WIN_STDINT_H_
-#pragma once
 
 #if !defined(_MSC_VER)
 #error This file should only be included when compiling with MSVC.

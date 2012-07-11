@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 #ifndef NET_CURVECP_RECEIVED_BLOCK_LIST_H_
 #define NET_CURVECP_RECEIVED_BLOCK_LIST_H_
-#pragma once
 
 #include <deque>
 

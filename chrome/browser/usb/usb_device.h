@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_USB_USB_DEVICE_H_
 #define CHROME_BROWSER_USB_USB_DEVICE_H_
-#pragma once
 
 #include <map>
 

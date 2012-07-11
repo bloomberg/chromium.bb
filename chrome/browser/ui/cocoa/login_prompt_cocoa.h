@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_LOGIN_PROMPT_COCOA_H_
 #define CHROME_BROWSER_UI_COCOA_LOGIN_PROMPT_COCOA_H_
-#pragma once
 
 #import <Cocoa/Cocoa.h>
 

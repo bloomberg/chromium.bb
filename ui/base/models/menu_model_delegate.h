@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_MODELS_MENU_MODEL_DELEGATE_H_
 #define UI_BASE_MODELS_MENU_MODEL_DELEGATE_H_
-#pragma once
 
 namespace ui {
 

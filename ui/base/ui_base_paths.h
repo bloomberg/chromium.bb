@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_UI_BASE_PATHS_H_
 #define UI_BASE_UI_BASE_PATHS_H_
-#pragma once
 
 #include "ui/base/ui_export.h"
 

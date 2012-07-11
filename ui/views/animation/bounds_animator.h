@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_ANIMATION_BOUNDS_ANIMATOR_H_
 #define UI_VIEWS_ANIMATION_BOUNDS_ANIMATOR_H_
-#pragma once
 
 #include <map>
 

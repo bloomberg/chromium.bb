@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_CURSOR_MANAGER_H_
 #define UI_AURA_CURSOR_MANAGER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/aura/aura_export.h"

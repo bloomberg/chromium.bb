@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_CROS_IN_PROCESS_BROWSER_TEST_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_CROS_IN_PROCESS_BROWSER_TEST_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"

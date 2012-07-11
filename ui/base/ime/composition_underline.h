@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_IME_COMPOSITION_UNDERLINE_H_
 #define UI_BASE_IME_COMPOSITION_UNDERLINE_H_
-#pragma once
 
 #include <vector>
 

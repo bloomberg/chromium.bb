@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_SECURITY_TESTS_IPC_SECURITY_TESTS_H__
 #define CHROME_TEST_SECURITY_TESTS_IPC_SECURITY_TESTS_H__
-#pragma once
 
 // Impersonates a chrome server pipe. See the implementation for details.
 // Returns false if the attack could not be set. If it returns true then

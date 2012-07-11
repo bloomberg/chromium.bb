@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_COMPOSITOR_TEST_TEST_COMPOSITOR_HOST_H_
 #define UI_GFX_COMPOSITOR_TEST_TEST_COMPOSITOR_HOST_H_
-#pragma once
 
 #include "base/message_loop.h"
 

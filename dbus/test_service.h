@@ -4,7 +4,6 @@
 
 #ifndef DBUS_TEST_SERVICE_H_
 #define DBUS_TEST_SERVICE_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"

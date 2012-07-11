@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_ENCRYPTOR_H__
 #define CHROME_BROWSER_PASSWORD_MANAGER_ENCRYPTOR_H__
-#pragma once
 
 #include <string>
 

@@ -18,7 +18,6 @@
 
 #ifndef UI_GFX_IMAGE_IMAGE_H_
 #define UI_GFX_IMAGE_IMAGE_H_
-#pragma once
 
 #include <map>
 #include <vector>

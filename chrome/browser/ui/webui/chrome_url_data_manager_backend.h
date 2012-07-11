@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROME_URL_DATA_MANAGER_BACKEND_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROME_URL_DATA_MANAGER_BACKEND_H_
-#pragma once
 
 #include <map>
 #include <string>

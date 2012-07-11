@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_AUTOFILL_PERSONAL_DATA_MANAGER_OBSERVER_H_
 #define CHROME_BROWSER_AUTOFILL_PERSONAL_DATA_MANAGER_OBSERVER_H_
-#pragma once
 
 // An interface the PersonalDataManager uses to notify its clients (observers)
 // when it has finished loading personal data from the web database.  Register

@@ -4,7 +4,6 @@
 
 #ifndef SKIA_EXT_VECTOR_CANVAS_H_
 #define SKIA_EXT_VECTOR_CANVAS_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "skia/ext/platform_canvas.h"

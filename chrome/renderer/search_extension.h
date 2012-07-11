@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_SEARCH_EXTENSION_H_
 #define CHROME_RENDERER_SEARCH_EXTENSION_H_
-#pragma once
 
 namespace v8 {
 class Extension;

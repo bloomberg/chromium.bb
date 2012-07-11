@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_SIMPLE_MESSAGE_BOX_H_
 #define CHROME_BROWSER_UI_SIMPLE_MESSAGE_BOX_H_
-#pragma once
 
 #include "base/string16.h"
 #include "ui/gfx/native_widget_types.h"

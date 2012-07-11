@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_PANELS_PANEL_BOUNDS_ANIMATION_H_
 #define CHROME_BROWSER_UI_PANELS_PANEL_BOUNDS_ANIMATION_H_
-#pragma once
 
 #include "ui/base/animation/linear_animation.h"
 

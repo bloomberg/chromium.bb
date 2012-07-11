@@ -4,7 +4,6 @@
 
 #ifndef SKIA_EXT_SKIA_TRACE_SHIM_H_
 #define SKIA_EXT_SKIA_TRACE_SHIM_H_
-#pragma once
 
 #include "base/debug/trace_event.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_BASE_CHROME_PROCESS_UTIL_H_
 #define CHROME_TEST_BASE_CHROME_PROCESS_UTIL_H_
-#pragma once
 
 #include <vector>
 

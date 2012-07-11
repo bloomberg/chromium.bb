@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_API_WEB_SOCKET_PROXY_PRIVATE_WEB_SOCKET_PROXY_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_WEB_SOCKET_PROXY_PRIVATE_WEB_SOCKET_PROXY_PRIVATE_API_H_
-#pragma once
 
 #include "base/timer.h"
 #include "chrome/browser/extensions/extension_function.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_FIRST_RUN_UPGRADE_UTIL_LINUX_H_
 #define CHROME_BROWSER_FIRST_RUN_UPGRADE_UTIL_LINUX_H_
-#pragma once
 
 namespace upgrade_util {
 

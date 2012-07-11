@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_CHROME_RESULT_CODES_H_
 #define CHROME_COMMON_CHROME_RESULT_CODES_H_
-#pragma once
 
 #include "content/public/common/result_codes.h"
 

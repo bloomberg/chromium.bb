@@ -6,7 +6,6 @@
 
 #ifndef CHROME_INSTALLER_TEST_RESOURCE_LOADER_H_
 #define CHROME_INSTALLER_TEST_RESOURCE_LOADER_H_
-#pragma once
 
 #include <windows.h>
 

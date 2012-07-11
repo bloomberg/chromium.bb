@@ -8,7 +8,6 @@
 
 #ifndef BASE_ATOMICOPS_INTERNALS_ARM_GCC_H_
 #define BASE_ATOMICOPS_INTERNALS_ARM_GCC_H_
-#pragma once
 
 namespace base {
 namespace subtle {

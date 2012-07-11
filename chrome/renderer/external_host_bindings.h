@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_EXTERNAL_HOST_BINDINGS_H_
 #define CHROME_RENDERER_EXTERNAL_HOST_BINDINGS_H_
-#pragma once
 
 #include "ipc/ipc_sender.h"
 #include "webkit/glue/cpp_bound_class.h"

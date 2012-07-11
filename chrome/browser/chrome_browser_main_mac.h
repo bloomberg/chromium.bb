@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROME_BROWSER_MAIN_MAC_H_
 #define CHROME_BROWSER_CHROME_BROWSER_MAIN_MAC_H_
-#pragma once
 
 #include "chrome/browser/chrome_browser_main_posix.h"
 

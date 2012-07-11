@@ -4,7 +4,6 @@
 
 #ifndef CHROME_INSTALLER_MINI_INSTALLER_CONFIGURATION_H_
 #define CHROME_INSTALLER_MINI_INSTALLER_CONFIGURATION_H_
-#pragma once
 
 namespace mini_installer {
 

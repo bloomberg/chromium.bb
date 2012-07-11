@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_GLUE_WEBURLREQUEST_EXTRADATA_IMPL_H_
 #define WEBKIT_GLUE_WEBURLREQUEST_EXTRADATA_IMPL_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"

@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_FILEAPI_FILE_SYSTEM_UTIL_H_
 #define WEBKIT_FILEAPI_FILE_SYSTEM_UTIL_H_
-#pragma once
 
 #include <string>
 #include <vector>

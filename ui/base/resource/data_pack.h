@@ -8,7 +8,6 @@
 
 #ifndef UI_BASE_RESOURCE_DATA_PACK_H_
 #define UI_BASE_RESOURCE_DATA_PACK_H_
-#pragma once
 
 #include <map>
 

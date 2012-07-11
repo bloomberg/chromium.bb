@@ -4,7 +4,6 @@
 
 #ifndef PPAPI_PROXY_PPAPI_PROXY_EXPORT_H_
 #define PPAPI_PROXY_PPAPI_PROXY_EXPORT_H_
-#pragma once
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)

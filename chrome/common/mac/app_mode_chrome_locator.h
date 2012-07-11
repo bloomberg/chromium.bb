@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_MAC_APP_MODE_CHROME_LOCATOR_H_
 #define CHROME_COMMON_MAC_APP_MODE_CHROME_LOCATOR_H_
-#pragma once
 
 #include <CoreFoundation/CoreFoundation.h>
 

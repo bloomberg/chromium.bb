@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_WINDOW_FRAME_BACKGROUND_H_
 #define UI_VIEWS_WINDOW_FRAME_BACKGROUND_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"

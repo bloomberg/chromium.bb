@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_DEVTOOLS_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_DEVTOOLS_UI_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "content/public/browser/web_ui_controller.h"

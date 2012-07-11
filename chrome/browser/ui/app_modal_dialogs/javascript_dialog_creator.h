@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_APP_MODAL_DIALOGS_JAVASCRIPT_DIALOG_CREATOR_H_
 #define CHROME_BROWSER_UI_APP_MODAL_DIALOGS_JAVASCRIPT_DIALOG_CREATOR_H_
-#pragma once
 
 namespace content {
 class JavaScriptDialogCreator;

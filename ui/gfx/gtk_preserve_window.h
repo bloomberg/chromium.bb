@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_GTK_PRESERVE_WINDOW_H_
 #define UI_GFX_GTK_PRESERVE_WINDOW_H_
-#pragma once
 
 #include <atk/atk.h>
 #include <gdk/gdk.h>

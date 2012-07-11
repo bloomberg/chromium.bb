@@ -6,7 +6,6 @@
 
 #ifndef CHROME_BROWSER_UI_GTK_COLLECTED_COOKIES_GTK_H_
 #define CHROME_BROWSER_UI_GTK_COLLECTED_COOKIES_GTK_H_
-#pragma once
 
 #include <gtk/gtk.h>
 

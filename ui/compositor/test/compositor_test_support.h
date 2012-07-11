@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_COMPOSITOR_TEST_TEST_SUPPORT_H_
 #define UI_GFX_COMPOSITOR_TEST_TEST_SUPPORT_H_
-#pragma once
 
 namespace ui {
 

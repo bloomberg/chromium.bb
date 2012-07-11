@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_WIN_IME_INPUT_H_
 #define UI_BASE_WIN_IME_INPUT_H_
-#pragma once
 
 #include <windows.h>
 

@@ -4,7 +4,7 @@
 
 // Singly or multiply-included shared traits file depending upon circumstances.
 // This allows the use of IPC serialization macros in more than one IPC message
-// file. Hence, provide an include guard symbol but no pragma once.
+// file.
 #ifndef CHROME_COMMON_COMMON_PARAM_TRAITS_MACROS_H_
 #define CHROME_COMMON_COMMON_PARAM_TRAITS_MACROS_H_
 

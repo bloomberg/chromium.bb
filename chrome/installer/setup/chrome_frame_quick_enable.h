@@ -6,7 +6,6 @@
 
 #ifndef CHROME_INSTALLER_SETUP_CHROME_FRAME_QUICK_ENABLE_H_
 #define CHROME_INSTALLER_SETUP_CHROME_FRAME_QUICK_ENABLE_H_
-#pragma once
 
 #include "chrome/installer/util/util_constants.h"
 

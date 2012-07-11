@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_DEV_TOOLS_CONTROLLER_H_
 #define CHROME_BROWSER_UI_COCOA_DEV_TOOLS_CONTROLLER_H_
-#pragma once
 
 #import <Foundation/Foundation.h>
 

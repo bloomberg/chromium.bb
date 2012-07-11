@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_CONSTRAINED_WEB_DIALOG_DELEGATE_BASE_H_
 #define CHROME_BROWSER_UI_WEBUI_CONSTRAINED_WEB_DIALOG_DELEGATE_BASE_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"

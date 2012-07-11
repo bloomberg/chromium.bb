@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_GTK_GDK_X_COMPAT_H_
 #define UI_BASE_GTK_GDK_X_COMPAT_H_
-#pragma once
 
 #include <gdk/gdkx.h>
 

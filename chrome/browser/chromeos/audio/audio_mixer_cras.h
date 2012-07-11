@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_AUDIO_AUDIO_MIXER_CRAS_H_
 #define CHROME_BROWSER_CHROMEOS_AUDIO_AUDIO_MIXER_CRAS_H_
-#pragma once
 
 #include <cras_client.h>
 

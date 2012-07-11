@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_TAB_MODAL_CONFIRM_DIALOG_WEBUI_H_
 #define CHROME_BROWSER_UI_WEBUI_TAB_MODAL_CONFIRM_DIALOG_WEBUI_H_
-#pragma once
 
 #if !(defined(USE_AURA) || defined(OS_CHROMEOS))
 #error Tab-modal confirm dialog should be shown with native UI.

@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_GTK_GTK_EXPANDED_CONTAINER_H_
 #define UI_BASE_GTK_GTK_EXPANDED_CONTAINER_H_
-#pragma once
 
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>

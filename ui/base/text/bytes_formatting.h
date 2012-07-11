@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_TEXT_BYTES_FORMATTING_H_
 #define UI_BASE_TEXT_BYTES_FORMATTING_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/string16.h"

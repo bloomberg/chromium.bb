@@ -4,7 +4,6 @@
 
 #ifndef UI_SURFACE_IO_SURFACE_SUPPORT_MAC_H_
 #define UI_SURFACE_IO_SURFACE_SUPPORT_MAC_H_
-#pragma once
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreVideo/CoreVideo.h>

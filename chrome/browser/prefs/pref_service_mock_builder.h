@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PREFS_PREF_SERVICE_MOCK_BUILDER_H_
 #define CHROME_BROWSER_PREFS_PREF_SERVICE_MOCK_BUILDER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"

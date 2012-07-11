@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_EXIT_BUBBLE_TYPE_H_
 #define CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_EXIT_BUBBLE_TYPE_H_
-#pragma once
 
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"

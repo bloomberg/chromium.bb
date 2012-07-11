@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_BROWSER_SHUTDOWN_H__
 #define CHROME_BROWSER_BROWSER_SHUTDOWN_H__
-#pragma once
 
 class PrefService;
 

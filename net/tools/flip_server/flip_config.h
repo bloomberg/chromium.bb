@@ -4,7 +4,6 @@
 
 #ifndef NET_TOOLS_FLIP_PROXY_CONFIG_H
 #define NET_TOOLS_FLIP_PROXY_CONFIG_H
-#pragma once
 
 #include <arpa/inet.h>  // in_addr_t
 

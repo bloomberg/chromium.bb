@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_TEST_EVENT_GENERATOR_H_
 #define UI_AURA_TEST_EVENT_GENERATOR_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/base/keycodes/keyboard_codes.h"

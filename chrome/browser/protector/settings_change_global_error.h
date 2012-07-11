@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PROTECTOR_SETTINGS_CHANGE_GLOBAL_ERROR_H_
 #define CHROME_BROWSER_PROTECTOR_SETTINGS_CHANGE_GLOBAL_ERROR_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_PRERENDER_PRERENDERER_CLIENT_H_
 #define CHROME_RENDERER_PRERENDER_PRERENDERER_CLIENT_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "content/public/renderer/render_view_observer.h"

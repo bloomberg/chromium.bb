@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_MEDIA_MEDIA_STREAM_CAPTURE_INDICATOR_H_
 #define CHROME_BROWSER_MEDIA_MEDIA_STREAM_CAPTURE_INDICATOR_H_
-#pragma once
 
 #include <string>
 #include <vector>

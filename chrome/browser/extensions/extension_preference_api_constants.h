@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFERENCE_API_CONSTANTS_H__
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFERENCE_API_CONSTANTS_H__
-#pragma once
 
 namespace extension_preference_api_constants {
 

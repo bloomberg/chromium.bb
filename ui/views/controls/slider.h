@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_SLIDER_H_
 #define UI_VIEWS_CONTROLS_SLIDER_H_
-#pragma once
 
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/views/view.h"

@@ -6,7 +6,6 @@
 
 #ifndef CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_RULE_H_
 #define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_RULE_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"

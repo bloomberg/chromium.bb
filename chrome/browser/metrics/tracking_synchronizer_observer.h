@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_METRICS_TRACKING_SYNCHRONIZER_OBSERVER_H_
 #define CHROME_BROWSER_METRICS_TRACKING_SYNCHRONIZER_OBSERVER_H_
-#pragma once
 
 #include "content/public/common/process_type.h"
 

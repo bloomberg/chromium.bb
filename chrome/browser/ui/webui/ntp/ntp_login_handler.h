@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_NTP_NTP_LOGIN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_NTP_NTP_LOGIN_HANDLER_H_
-#pragma once
 
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"

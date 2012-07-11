@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_HISTORY_ANDROID_ANDROID_CACHE_DATABASE_H_
 #define CHROME_BROWSER_HISTORY_ANDROID_ANDROID_CACHE_DATABASE_H_
-#pragma once
 
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_GLASS_BROWSER_FRAME_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_GLASS_BROWSER_FRAME_VIEW_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/views/frame/browser_frame_win.h"

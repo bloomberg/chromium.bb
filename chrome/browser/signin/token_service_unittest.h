@@ -6,7 +6,6 @@
 
 #ifndef CHROME_BROWSER_SIGNIN_TOKEN_SERVICE_UNITTEST_H_
 #define CHROME_BROWSER_SIGNIN_TOKEN_SERVICE_UNITTEST_H_
-#pragma once
 
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"

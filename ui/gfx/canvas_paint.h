@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_CANVAS_PAINT_H_
 #define UI_GFX_CANVAS_PAINT_H_
-#pragma once
 
 #include "ui/base/ui_export.h"
 #include "ui/gfx/native_widget_types.h"

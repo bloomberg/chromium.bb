@@ -48,7 +48,6 @@
 
 #ifndef CHROME_BROWSER_SAFE_BROWSING_PREFIX_SET_H_
 #define CHROME_BROWSER_SAFE_BROWSING_PREFIX_SET_H_
-#pragma once
 
 #include <vector>
 

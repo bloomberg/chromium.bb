@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_GFX_SCOPED_REGION_GFX_H_
 #define UI_BASE_GFX_SCOPED_REGION_GFX_H_
-#pragma once
 
 #include "third_party/skia/include/core/SkRegion.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_CHROME_RENDER_VIEW_OBSERVER_H_
 #define CHROME_RENDERER_CHROME_RENDER_VIEW_OBSERVER_H_
-#pragma once
 
 #include <set>
 #include <string>

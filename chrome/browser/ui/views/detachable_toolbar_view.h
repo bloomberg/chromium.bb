@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_DETACHABLE_TOOLBAR_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_DETACHABLE_TOOLBAR_VIEW_H_
-#pragma once
 
 #include "ui/views/accessible_pane_view.h"
 

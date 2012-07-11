@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_USER_ACTIVITY_NOTIFIER_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_USER_ACTIVITY_NOTIFIER_H_
-#pragma once
 
 #include "ash/wm/user_activity_observer.h"
 #include "base/basictypes.h"

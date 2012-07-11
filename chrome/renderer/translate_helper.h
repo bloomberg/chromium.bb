@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_TRANSLATE_HELPER_H_
 #define CHROME_RENDERER_TRANSLATE_HELPER_H_
-#pragma once
 
 #include <string>
 

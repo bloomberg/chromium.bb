@@ -4,7 +4,6 @@
 
 #ifndef SANDBOX_LINUX_SUID_SANDBOX_H_
 #define SANDBOX_LINUX_SUID_SANDBOX_H_
-#pragma once
 
 #if defined(__cplusplus)
 namespace sandbox {

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_NETWORK_PARSER_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_NETWORK_PARSER_H_
-#pragma once
 
 #include <map>
 #include <string>

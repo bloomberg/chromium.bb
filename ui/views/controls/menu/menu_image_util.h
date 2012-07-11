@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_MENU_MENU_IMAGE_UTIL_H_
 #define UI_VIEWS_CONTROLS_MENU_MENU_IMAGE_UTIL_H_
-#pragma once
 
 namespace gfx {
 class ImageSkia;

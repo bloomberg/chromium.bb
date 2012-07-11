@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_WIN_SHELL_H_
 #define UI_BASE_WIN_SHELL_H_
-#pragma once
 
 #include <windows.h>
 

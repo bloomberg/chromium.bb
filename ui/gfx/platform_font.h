@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_PLATFORM_FONT_H_
 #define UI_GFX_PLATFORM_FONT_H_
-#pragma once
 
 #include <string>
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_CROS_LANGUAGE_OPTIONS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_CROS_LANGUAGE_OPTIONS_HANDLER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/input_method/input_method_descriptor.h"

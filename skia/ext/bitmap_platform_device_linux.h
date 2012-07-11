@@ -4,7 +4,6 @@
 
 #ifndef SKIA_EXT_BITMAP_PLATFORM_DEVICE_LINUX_H_
 #define SKIA_EXT_BITMAP_PLATFORM_DEVICE_LINUX_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

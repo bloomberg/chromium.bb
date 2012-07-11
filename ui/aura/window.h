@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_WINDOW_H_
 #define UI_AURA_WINDOW_H_
-#pragma once
 
 #include <map>
 #include <string>

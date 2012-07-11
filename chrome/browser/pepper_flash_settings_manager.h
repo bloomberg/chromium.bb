@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PEPPER_FLASH_SETTINGS_MANAGER_H_
 #define CHROME_BROWSER_PEPPER_FLASH_SETTINGS_MANAGER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"

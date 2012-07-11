@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_FIND_BAR_FIND_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_FIND_BAR_FIND_TAB_HELPER_H_
-#pragma once
 
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"

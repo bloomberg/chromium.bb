@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_UNINSTALL_BROWSER_PROMPT_H_
 #define CHROME_BROWSER_UI_UNINSTALL_BROWSER_PROMPT_H_
-#pragma once
 
 namespace chrome {
 

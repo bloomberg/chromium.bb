@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_OBSERVER_H_
 #define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_OBSERVER_H_
-#pragma once
 
 // TemplateURLServiceObserver is notified whenever the set of TemplateURLs
 // are modified.

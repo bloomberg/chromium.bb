@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_MODULE_SYSTEM_H_
 #define CHROME_RENDERER_MODULE_SYSTEM_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"

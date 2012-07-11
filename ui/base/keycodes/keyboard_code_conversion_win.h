@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_WIN_H_
 #define UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_WIN_H_
-#pragma once
 
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/ui_export.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_GTK_CHROME_GTK_FRAME_H_
 #define CHROME_BROWSER_UI_GTK_CHROME_GTK_FRAME_H_
-#pragma once
 
 #include <gtk/gtk.h>
 

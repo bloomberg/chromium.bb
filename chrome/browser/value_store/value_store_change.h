@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_VALUE_STORE_VALUE_STORE_CHANGE_H_
 #define CHROME_BROWSER_VALUE_STORE_VALUE_STORE_CHANGE_H_
-#pragma once
 
 #include <string>
 

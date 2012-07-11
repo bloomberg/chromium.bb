@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_POPUP_CONTENTS_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_POPUP_CONTENTS_VIEW_H_
-#pragma once
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PRINTING_PRINT_PREVIEW_UNIT_TEST_BASE_H_
 #define CHROME_BROWSER_PRINTING_PRINT_PREVIEW_UNIT_TEST_BASE_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/browser_with_test_window_test.h"

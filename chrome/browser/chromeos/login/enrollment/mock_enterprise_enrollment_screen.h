@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_MOCK_ENTERPRISE_ENROLLMENT_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_MOCK_ENTERPRISE_ENROLLMENT_SCREEN_H_
-#pragma once
 
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"

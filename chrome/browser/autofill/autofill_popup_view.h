@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_AUTOFILL_AUTOFILL_POPUP_VIEW_H_
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_POPUP_VIEW_H_
-#pragma once
 
 #include <vector>
 

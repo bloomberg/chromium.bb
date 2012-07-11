@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS2_LANGUAGE_OPTIONS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS2_LANGUAGE_OPTIONS_HANDLER_H_
-#pragma once
 
 #include "chrome/browser/ui/webui/options2/language_options_handler_common.h"
 

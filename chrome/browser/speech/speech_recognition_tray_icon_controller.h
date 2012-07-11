@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SPEECH_SPEECH_RECOGNITION_TRAY_ICON_CONTROLLER_H_
 #define CHROME_BROWSER_SPEECH_SPEECH_RECOGNITION_TRAY_ICON_CONTROLLER_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

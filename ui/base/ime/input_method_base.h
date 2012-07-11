@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_IME_INPUT_METHOD_BASE_H_
 #define UI_BASE_IME_INPUT_METHOD_BASE_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

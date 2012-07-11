@@ -6,7 +6,6 @@
 
 #ifndef CHROME_BROWSER_CHROME_BROWSER_MAIN_LINUX_H_
 #define CHROME_BROWSER_CHROME_BROWSER_MAIN_LINUX_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"

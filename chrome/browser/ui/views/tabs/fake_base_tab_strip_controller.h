@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_FAKE_BASE_TAB_STRIP_CONTROLLER_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_FAKE_BASE_TAB_STRIP_CONTROLLER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/tabs/tab_strip_selection_model.h"

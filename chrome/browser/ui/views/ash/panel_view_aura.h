@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_ASH_PANEL_VIEW_AURA_H_
 #define CHROME_BROWSER_UI_VIEWS_ASH_PANEL_VIEW_AURA_H_
-#pragma once
 
 #include <string>
 

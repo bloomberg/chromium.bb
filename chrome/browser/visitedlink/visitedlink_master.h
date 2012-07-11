@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_VISITEDLINK_VISITEDLINK_MASTER_H_
 #define CHROME_BROWSER_VISITEDLINK_VISITEDLINK_MASTER_H_
-#pragma once
 
 #if defined(OS_WIN)
 #include <windows.h>

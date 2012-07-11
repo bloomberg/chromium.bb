@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_FILEAPI_TEST_MOUNT_POINT_PROVIDER_H_
 #define WEBKIT_FILEAPI_TEST_MOUNT_POINT_PROVIDER_H_
-#pragma once
 
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"

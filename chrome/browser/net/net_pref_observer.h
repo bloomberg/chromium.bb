@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_NET_NET_PREF_OBSERVER_H_
 #define CHROME_BROWSER_NET_NET_PREF_OBSERVER_H_
-#pragma once
 
 #include <string>
 

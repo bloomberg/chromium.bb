@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_NET_CHROME_COOKIE_NOTIFICATION_DETAILS_H_
 #define CHROME_BROWSER_NET_CHROME_COOKIE_NOTIFICATION_DETAILS_H_
-#pragma once
 
 #include "net/cookies/cookie_monster.h"
 

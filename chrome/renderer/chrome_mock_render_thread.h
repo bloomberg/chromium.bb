@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_CHROME_MOCK_RENDER_THREAD_H_
 #define CHROME_RENDERER_CHROME_MOCK_RENDER_THREAD_H_
-#pragma once
 
 #include <string>
 

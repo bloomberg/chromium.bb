@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_WINDOW_LIFE_TRACKER_H_
 #define UI_AURA_WINDOW_LIFE_TRACKER_H_
-#pragma once
 
 #include <set>
 

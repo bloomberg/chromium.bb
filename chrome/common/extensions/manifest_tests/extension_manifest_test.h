@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_EXTENSIONS_MANIFEST_TESTS_EXTENSION_MANIFEST_TEST_H_
 #define CHROME_COMMON_EXTENSIONS_MANIFEST_TESTS_EXTENSION_MANIFEST_TEST_H_
-#pragma once
 
 #include "base/values.h"
 #include "base/memory/scoped_ptr.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MOCK_AUTH_ATTEMPT_STATE_RESOLVER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_MOCK_AUTH_ATTEMPT_STATE_RESOLVER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state_resolver.h"

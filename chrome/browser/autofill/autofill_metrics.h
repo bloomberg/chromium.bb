@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_AUTOFILL_AUTOFILL_METRICS_H_
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_METRICS_H_
-#pragma once
 
 #include <stddef.h>
 #include <string>

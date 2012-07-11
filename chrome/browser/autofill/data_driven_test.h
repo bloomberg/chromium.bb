@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_AUTOFILL_DATA_DRIVEN_TEST_H_
 #define CHROME_BROWSER_AUTOFILL_DATA_DRIVEN_TEST_H_
-#pragma once
 
 #include <string>
 

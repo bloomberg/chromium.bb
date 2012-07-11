@@ -4,7 +4,6 @@
 
 #ifndef IPC_IPC_TESTS_H_
 #define IPC_IPC_TESTS_H_
-#pragma once
 
 #include "base/test/multiprocess_test.h"
 #include "base/process.h"

@@ -9,7 +9,6 @@
 
 #ifndef UI_BASE_GTK_GTK_HIG_CONSTANTS_H_
 #define UI_BASE_GTK_GTK_HIG_CONSTANTS_H_
-#pragma once
 
 #include "ui/base/ui_export.h"
 

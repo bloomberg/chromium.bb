@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_GLUE_WEBKIT_GLUE_EXPORT_H_
 #define WEBKIT_GLUE_WEBKIT_GLUE_EXPORT_H_
-#pragma once
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)

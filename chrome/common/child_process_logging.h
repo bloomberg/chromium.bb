@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_CHILD_PROCESS_LOGGING_H_
 #define CHROME_COMMON_CHILD_PROCESS_LOGGING_H_
-#pragma once
 
 #include <set>
 #include <string>

@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_GESTURES_GESTURE_TYPES_H_
 #define UI_BASE_GESTURES_GESTURE_TYPES_H_
-#pragma once
 
 #include "base/logging.h"
 #include "base/time.h"

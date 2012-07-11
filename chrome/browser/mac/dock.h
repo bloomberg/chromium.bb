@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_MAC_DOCK_H_
 #define CHROME_BROWSER_MAC_DOCK_H_
-#pragma once
 
 #if defined(__OBJC__)
 @class NSString;

@@ -6,7 +6,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_WEBREQUEST_WEBREQUEST_CONSTANTS_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_WEBREQUEST_WEBREQUEST_CONSTANTS_H_
-#pragma once
 
 namespace extensions {
 namespace declarative_webrequest_constants {

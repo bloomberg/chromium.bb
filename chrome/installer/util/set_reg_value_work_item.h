@@ -4,7 +4,6 @@
 
 #ifndef CHROME_INSTALLER_UTIL_SET_REG_VALUE_WORK_ITEM_H__
 #define CHROME_INSTALLER_UTIL_SET_REG_VALUE_WORK_ITEM_H__
-#pragma once
 
 #include <windows.h>
 

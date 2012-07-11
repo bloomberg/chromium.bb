@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_CONTROLLER_H_
 #define CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_CONTROLLER_H_
-#pragma once
 
 // A class acting as the Objective-C controller for the Browser
 // object. Handles interactions between Cocoa and the cross-platform

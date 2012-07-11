@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_API_ALARMS_ALARM_MANAGER_H__
 #define CHROME_BROWSER_EXTENSIONS_API_ALARMS_ALARM_MANAGER_H__
-#pragma once
 
 #include <string>
 #include <map>

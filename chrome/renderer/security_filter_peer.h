@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_SECURITY_FILTER_PEER_H_
 #define CHROME_RENDERER_SECURITY_FILTER_PEER_H_
-#pragma once
 
 #include "webkit/glue/resource_loader_bridge.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_INSTALLER_UTIL_FAKE_PRODUCT_STATE_H_
 #define CHROME_INSTALLER_UTIL_FAKE_PRODUCT_STATE_H_
-#pragma once
 
 #include <string>
 #include "chrome/installer/util/installation_state.h"

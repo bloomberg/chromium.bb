@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_NATIVE_THEME_DELEGATE_H_
 #define UI_VIEWS_NATIVE_THEME_DELEGATE_H_
-#pragma once
 
 #include "ui/base/native_theme/native_theme.h"
 #include "ui/gfx/rect.h"

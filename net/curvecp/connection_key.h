@@ -4,7 +4,6 @@
 
 #ifndef NET_CURVECP_CONNECTION_KEY_H_
 #define NET_CURVECP_CONNECTION_KEY_H_
-#pragma once
 
 #include <string>
 

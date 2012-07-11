@@ -4,7 +4,6 @@
 
 #ifndef CHROME_INSTALLER_UTIL_COMPAT_CHECKS_H_
 #define CHROME_INSTALLER_UTIL_COMPAT_CHECKS_H_
-#pragma once
 
 // Returns true if this computer has a Symantec End Point version that
 // is known to cause trouble. Non- null parameters are only used in testing.

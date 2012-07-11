@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_DIAGNOSTICS_RECON_DIAGNOSTICS_H_
 #define CHROME_BROWSER_DIAGNOSTICS_RECON_DIAGNOSTICS_H_
-#pragma once
 
 #include "chrome/browser/diagnostics/diagnostics_test.h"
 

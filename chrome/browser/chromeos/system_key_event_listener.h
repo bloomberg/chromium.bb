@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_KEY_EVENT_LISTENER_H_
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_KEY_EVENT_LISTENER_H_
-#pragma once
 
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"

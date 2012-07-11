@@ -4,7 +4,6 @@
 
 #ifndef IPC_IPC_LOGGING_H_
 #define IPC_IPC_LOGGING_H_
-#pragma once
 
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
 

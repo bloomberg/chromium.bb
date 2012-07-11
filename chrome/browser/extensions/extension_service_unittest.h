@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_UNITTEST_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_UNITTEST_H_
-#pragma once
 
 #include "base/at_exit.h"
 #include "base/file_path.h"

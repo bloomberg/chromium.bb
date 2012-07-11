@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_TAB_CONTENTS_INSECURE_CONTENT_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_TAB_CONTENTS_INSECURE_CONTENT_INFOBAR_DELEGATE_H_
-#pragma once
 
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 

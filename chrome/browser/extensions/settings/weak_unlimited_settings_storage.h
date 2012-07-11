@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_SETTINGS_WEAK_UNLIMITED_SETTINGS_STORAGE_H_
 #define CHROME_BROWSER_EXTENSIONS_SETTINGS_WEAK_UNLIMITED_SETTINGS_STORAGE_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/value_store/value_store.h"

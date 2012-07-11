@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_PANELS_DISPLAY_SETTINGS_PROVIDER_H_
 #define CHROME_BROWSER_UI_PANELS_DISPLAY_SETTINGS_PROVIDER_H_
-#pragma once
 
 #include "base/observer_list.h"
 #include "base/timer.h"

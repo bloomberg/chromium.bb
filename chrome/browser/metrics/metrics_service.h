@@ -7,7 +7,6 @@
 
 #ifndef CHROME_BROWSER_METRICS_METRICS_SERVICE_H_
 #define CHROME_BROWSER_METRICS_METRICS_SERVICE_H_
-#pragma once
 
 #include <map>
 #include <string>

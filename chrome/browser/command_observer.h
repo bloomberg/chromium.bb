@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_COMMAND_OBSERVER_H_
 #define CHROME_BROWSER_COMMAND_OBSERVER_H_
-#pragma once
 
 // An Observer interface implemented by objects that want to be informed when
 // the state of a particular command ID is modified. See CommandUpdater.

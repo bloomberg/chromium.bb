@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_KEYBOARD_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_KEYBOARD_HANDLER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/prefs/pref_member.h"

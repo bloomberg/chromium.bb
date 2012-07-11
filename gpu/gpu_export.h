@@ -4,7 +4,6 @@
 
 #ifndef GPU_GPU_EXPORT_H_
 #define GPU_GPU_EXPORT_H_
-#pragma once
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)

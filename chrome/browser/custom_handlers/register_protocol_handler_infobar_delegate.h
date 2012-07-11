@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CUSTOM_HANDLERS_REGISTER_PROTOCOL_HANDLER_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_CUSTOM_HANDLERS_REGISTER_PROTOCOL_HANDLER_INFOBAR_DELEGATE_H_
-#pragma once
 
 #include "base/string16.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS2_MEDIA_GALLERY_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS2_MEDIA_GALLERY_HANDLER_H_
-#pragma once
 
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/select_file_dialog.h"

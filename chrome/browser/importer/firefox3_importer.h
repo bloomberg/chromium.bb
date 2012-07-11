@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_IMPORTER_FIREFOX3_IMPORTER_H_
 #define CHROME_BROWSER_IMPORTER_FIREFOX3_IMPORTER_H_
-#pragma once
 
 #include <map>
 #include <set>

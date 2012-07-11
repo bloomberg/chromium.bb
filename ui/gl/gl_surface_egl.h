@@ -4,7 +4,6 @@
 
 #ifndef UI_GL_GL_SURFACE_EGL_H_
 #define UI_GL_GL_SURFACE_EGL_H_
-#pragma once
 
 #if defined(OS_WIN)
 #include <windows.h>

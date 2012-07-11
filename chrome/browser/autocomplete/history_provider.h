@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_AUTOCOMPLETE_HISTORY_PROVIDER_H_
 #define CHROME_BROWSER_AUTOCOMPLETE_HISTORY_PROVIDER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"

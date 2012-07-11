@@ -4,7 +4,6 @@
 
 #ifndef CHROME_APP_CHROME_COMMAND_IDS_H_
 #define CHROME_APP_CHROME_COMMAND_IDS_H_
-#pragma once
 
 // This file lists all the command IDs understood by e.g. the browser.
 // It is used by Windows RC files, Mac NIB files, and other platforms too.

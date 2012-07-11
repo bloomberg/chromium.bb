@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_MENU_MENU_2_H_
 #define UI_VIEWS_CONTROLS_MENU_MENU_2_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_INSTANT_INSTANT_LOADER_DELEGATE_H_
 #define CHROME_BROWSER_INSTANT_INSTANT_LOADER_DELEGATE_H_
-#pragma once
 
 #include "base/string16.h"
 #include "chrome/common/instant_types.h"

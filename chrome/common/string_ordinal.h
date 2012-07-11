@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_STRING_ORDINAL_H_
 #define CHROME_COMMON_STRING_ORDINAL_H_
-#pragma once
 
 #include <string>
 

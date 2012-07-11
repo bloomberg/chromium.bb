@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_CONFIRM_BUBBLE_MODEL_H_
 #define CHROME_BROWSER_UI_CONFIRM_BUBBLE_MODEL_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/string16.h"

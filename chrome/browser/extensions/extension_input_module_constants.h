@@ -6,7 +6,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_INPUT_MODULE_CONSTANTS_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_INPUT_MODULE_CONSTANTS_H_
-#pragma once
 
 namespace extension_input_module_constants {
 

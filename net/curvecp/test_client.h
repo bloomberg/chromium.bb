@@ -4,7 +4,6 @@
 
 #ifndef NET_CURVECP_TEST_CLIENT_H_
 #define NET_CURVECP_TEST_CLIENT_H_
-#pragma once
 
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"

@@ -4,7 +4,6 @@
 
 #ifndef SKIA_EXT_BITMAP_PLATFORM_DEVICE_H_
 #define SKIA_EXT_BITMAP_PLATFORM_DEVICE_H_
-#pragma once
 
 // This file provides an easy way to include the appropriate
 // BitmapPlatformDevice header file for your platform.

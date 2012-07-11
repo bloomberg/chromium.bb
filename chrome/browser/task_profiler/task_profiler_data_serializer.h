@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_TASK_PROFILER_TASK_PROFILER_DATA_SERIALIZER_H_
 #define CHROME_BROWSER_TASK_PROFILER_TASK_PROFILER_DATA_SERIALIZER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "content/public/common/process_type.h"

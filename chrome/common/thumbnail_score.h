@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_THUMBNAIL_SCORE_H_
 #define CHROME_COMMON_THUMBNAIL_SCORE_H_
-#pragma once
 
 #include <string>
 #include "base/time.h"

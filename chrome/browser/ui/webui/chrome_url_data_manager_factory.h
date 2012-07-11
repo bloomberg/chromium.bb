@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROME_URL_DATA_MANAGER_FACTORY_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROME_URL_DATA_MANAGER_FACTORY_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"

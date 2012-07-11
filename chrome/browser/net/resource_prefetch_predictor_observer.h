@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_NET_RESOURCE_PREFETCH_PREDICTOR_OBSERVER_H_
 #define CHROME_BROWSER_NET_RESOURCE_PREFETCH_PREDICTOR_OBSERVER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"

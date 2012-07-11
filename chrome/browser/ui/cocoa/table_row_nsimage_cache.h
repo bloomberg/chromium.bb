@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_TABLE_ROW_NSIMAGE_CACHE_H_
 #define CHROME_BROWSER_UI_COCOA_TABLE_ROW_NSIMAGE_CACHE_H_
-#pragma once
 
 #import <Cocoa/Cocoa.h>
 

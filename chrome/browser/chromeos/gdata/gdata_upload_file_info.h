@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_UPLOAD_FILE_INFO_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_UPLOAD_FILE_INFO_H_
-#pragma once
 
 #include <string>
 #include <vector>

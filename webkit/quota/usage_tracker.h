@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_QUOTA_USAGE_TRACKER_H_
 #define WEBKIT_QUOTA_USAGE_TRACKER_H_
-#pragma once
 
 #include <list>
 #include <map>

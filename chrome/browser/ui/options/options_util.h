@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_OPTIONS_OPTIONS_UTIL_H_
 #define CHROME_BROWSER_UI_OPTIONS_OPTIONS_UTIL_H_
-#pragma once
 
 #include "base/basictypes.h"
 

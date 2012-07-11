@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_RESOURCE_RESOURCE_HANDLE_H_
 #define UI_BASE_RESOURCE_RESOURCE_HANDLE_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/string_piece.h"

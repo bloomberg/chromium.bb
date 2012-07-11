@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_FILE_UTIL_H_
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_FILE_UTIL_H_
-#pragma once
 
 #include <string>
 #include <map>

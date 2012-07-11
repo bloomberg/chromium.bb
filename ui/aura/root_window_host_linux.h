@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_ROOT_WINDOW_HOST_LINUX_H_
 #define UI_AURA_ROOT_WINDOW_HOST_LINUX_H_
-#pragma once
 
 #include <X11/Xlib.h>
 

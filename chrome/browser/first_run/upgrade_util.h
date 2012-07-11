@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_FIRST_RUN_UPGRADE_UTIL_H_
 #define CHROME_BROWSER_FIRST_RUN_UPGRADE_UTIL_H_
-#pragma once
 
 #include "build/build_config.h"
 

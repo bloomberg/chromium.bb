@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_VIDEO_DECODE_ACCELERATION_SUPPORT_MAC_H_
 #define UI_GFX_VIDEO_DECODE_ACCELERATION_SUPPORT_MAC_H_
-#pragma once
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreVideo/CoreVideo.h>

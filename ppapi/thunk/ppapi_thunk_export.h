@@ -4,7 +4,6 @@
 
 #ifndef PPAPI_THUNK_PPAPI_THUNK_EXPORT_H_
 #define PPAPI_THUNK_PPAPI_THUNK_EXPORT_H_
-#pragma once
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)

@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_WIN_SCOPED_OLE_INITIALIZER_H_
 #define UI_BASE_WIN_SCOPED_OLE_INITIALIZER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/base/ui_export.h"

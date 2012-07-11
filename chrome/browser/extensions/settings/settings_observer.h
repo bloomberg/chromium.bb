@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_SETTINGS_SETTINGS_OBSERVER_H_
 #define CHROME_BROWSER_EXTENSIONS_SETTINGS_SETTINGS_OBSERVER_H_
-#pragma once
 
 #include "base/observer_list_threadsafe.h"
 #include "chrome/browser/extensions/settings/settings_namespace.h"

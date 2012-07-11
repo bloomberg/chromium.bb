@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_CROS_LIBRARY_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_CROS_LIBRARY_H_
-#pragma once
 
 #include <string>
 #include "base/basictypes.h"

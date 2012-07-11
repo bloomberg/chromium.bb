@@ -4,7 +4,6 @@
 
 #ifndef PRINTING_PRINT_DESTINATION_INTERFACE_H_
 #define PRINTING_PRINT_DESTINATION_INTERFACE_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "printing/printing_export.h"

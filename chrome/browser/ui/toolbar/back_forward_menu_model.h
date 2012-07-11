@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_TOOLBAR_BACK_FORWARD_MENU_MODEL_H_
 #define CHROME_BROWSER_UI_TOOLBAR_BACK_FORWARD_MENU_MODEL_H_
-#pragma once
 
 #include <set>
 #include <string>

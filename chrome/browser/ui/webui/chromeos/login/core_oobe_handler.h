@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_CORE_OOBE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_CORE_OOBE_HANDLER_H_
-#pragma once
 
 #include "chrome/browser/chromeos/login/version_info_updater.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"

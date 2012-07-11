@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_STATE_FACTORY_H_
 #define CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_STATE_FACTORY_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"

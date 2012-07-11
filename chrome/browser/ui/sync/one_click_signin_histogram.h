@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_SYNC_ONE_CLICK_SIGNIN_HISTOGRAM_H_
 #define CHROME_BROWSER_UI_SYNC_ONE_CLICK_SIGNIN_HISTOGRAM_H_
-#pragma once
 
 namespace one_click_signin {
 

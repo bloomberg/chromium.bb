@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_DB_FACTORY_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_DB_FACTORY_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 

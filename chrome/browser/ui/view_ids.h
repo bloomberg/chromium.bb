@@ -7,7 +7,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEW_IDS_H_
 #define CHROME_BROWSER_UI_VIEW_IDS_H_
-#pragma once
 
 enum ViewID {
   VIEW_ID_NONE = 0,

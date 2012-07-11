@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_MODELS_LIST_MODEL_H_
 #define UI_BASE_MODELS_LIST_MODEL_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/logging.h"

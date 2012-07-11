@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_GLUE_WORKER_TASK_RUNNER_H_
 #define WEBKIT_GLUE_WORKER_TASK_RUNNER_H_
-#pragma once
 
 #include <map>
 

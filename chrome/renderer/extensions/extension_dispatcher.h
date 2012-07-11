@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_EXTENSIONS_EXTENSION_DISPATCHER_H_
 #define CHROME_RENDERER_EXTENSIONS_EXTENSION_DISPATCHER_H_
-#pragma once
 
 #include <set>
 #include <string>

@@ -8,7 +8,6 @@
 
 #ifndef CHROME_TEST_LOGGING_WIN_LOG_FILE_PRINTER_H_
 #define CHROME_TEST_LOGGING_WIN_LOG_FILE_PRINTER_H_
-#pragma once
 
 #include <iosfwd>
 

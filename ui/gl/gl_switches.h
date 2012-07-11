@@ -4,7 +4,6 @@
 
 #ifndef UI_GL_GL_SWITCHES_H_
 #define UI_GL_GL_SWITCHES_H_
-#pragma once
 
 // Defines all the command-line switches used by ui/gl.
 

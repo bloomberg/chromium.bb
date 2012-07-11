@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_CONTROLLER_IMPL_H_
-#pragma once
 
 #include <gio/gio.h>  // GAsyncResult and related types.
 #include <glib-object.h>

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_PAGE_ACTION_CONTROLLER_H_
 #define CHROME_BROWSER_EXTENSIONS_PAGE_ACTION_CONTROLLER_H_
-#pragma once
 
 #include <set>
 #include <string>

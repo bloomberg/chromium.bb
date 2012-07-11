@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_POINT3_H_
 #define UI_GFX_POINT3_H_
-#pragma once
 
 #include <cmath>
 

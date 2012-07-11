@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_SEARCH_TOOLBAR_SEARCH_ANIMATOR_H_
 #define CHROME_BROWSER_UI_SEARCH_TOOLBAR_SEARCH_ANIMATOR_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"

@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_RENDER_TEXT_LINUX_H_
 #define UI_GFX_RENDER_TEXT_LINUX_H_
-#pragma once
 
 #include <pango/pango.h>
 #include <vector>

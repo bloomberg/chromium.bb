@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_EVENT_H_
 #define UI_AURA_EVENT_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

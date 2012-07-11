@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_BROWSER_TABSTRIP_H_
 #define CHROME_BROWSER_UI_BROWSER_TABSTRIP_H_
-#pragma once
 
 #include "content/public/common/page_transition_types.h"
 #include "webkit/glue/window_open_disposition.h"

@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_SKIA_UTILS_GTK_H_
 #define UI_GFX_SKIA_UTILS_GTK_H_
-#pragma once
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_export.h"

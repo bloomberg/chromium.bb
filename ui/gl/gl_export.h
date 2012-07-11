@@ -4,7 +4,6 @@
 
 #ifndef UI_GL_GL_EXPORT_H_
 #define UI_GL_GL_EXPORT_H_
-#pragma once
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)

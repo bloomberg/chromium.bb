@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_WINDOW_WINDOW_RESOURCES_H_
 #define UI_VIEWS_WINDOW_WINDOW_RESOURCES_H_
-#pragma once
 
 namespace gfx {
 class ImageSkia;

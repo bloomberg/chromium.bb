@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_EXAMPLES_EXAMPLES_WINDOW_H_
 #define UI_VIEWS_EXAMPLES_EXAMPLES_WINDOW_H_
-#pragma once
 
 namespace content {
 class BrowserContext;

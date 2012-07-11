@@ -4,7 +4,6 @@
 
 #ifndef PRINTING_BACKEND_WIN_HELPER_H_
 #define PRINTING_BACKEND_WIN_HELPER_H_
-#pragma once
 
 #include <objidl.h>
 #include <winspool.h>

@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_TEXT_UTF16_INDEXING_H_
 #define UI_BASE_TEXT_UTF16_INDEXING_H_
-#pragma once
 
 #include "base/string16.h"
 #include "ui/base/ui_export.h"

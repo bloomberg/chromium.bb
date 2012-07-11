@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_IE7_PASSWORD_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_IE7_PASSWORD_H_
-#pragma once
 
 #include <windows.h>
 #include <string>

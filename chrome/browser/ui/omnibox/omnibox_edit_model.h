@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_EDIT_MODEL_H_
 #define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_EDIT_MODEL_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_MULTI_PROCESS_LOCK_H_
 #define CHROME_COMMON_MULTI_PROCESS_LOCK_H_
-#pragma once
 
 #include <sys/types.h>
 #include <string>

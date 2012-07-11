@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_TASK_MANAGER_TASK_MANAGER_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_TASK_MANAGER_TASK_MANAGER_HANDLER_H_
-#pragma once
 
 #include <set>
 #include <string>

@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_BUTTON_BUTTON_H_
 #define UI_VIEWS_CONTROLS_BUTTON_BUTTON_H_
-#pragma once
 
 #include "ui/views/view.h"
 

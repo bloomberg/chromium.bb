@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_EXTENSIONS_APPLICATION_LAUNCH_H_
 #define CHROME_BROWSER_UI_EXTENSIONS_APPLICATION_LAUNCH_H_
-#pragma once
 
 #include "chrome/common/extensions/extension_constants.h"
 #include "webkit/glue/window_open_disposition.h"

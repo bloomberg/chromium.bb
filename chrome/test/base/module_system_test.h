@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_BASE_MODULE_SYSTEM_TEST_H_
 #define CHROME_TEST_BASE_MODULE_SYSTEM_TEST_H_
-#pragma once
 
 #include "chrome/renderer/module_system.h"
 #include "v8/include/v8.h"

@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_H_
 #define UI_VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_H_
-#pragma once
 
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/point.h"

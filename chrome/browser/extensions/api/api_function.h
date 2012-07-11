@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_API_API_FUNCTION_H_
 #define CHROME_BROWSER_EXTENSIONS_API_API_FUNCTION_H_
-#pragma once
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/api/api_resource.h"

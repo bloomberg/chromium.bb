@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CRASH_UPLOAD_LIST_H_
 #define CHROME_BROWSER_CRASH_UPLOAD_LIST_H_
-#pragma once
 
 #include <string>
 #include <vector>

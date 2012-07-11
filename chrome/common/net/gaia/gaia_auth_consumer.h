@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_NET_GAIA_GAIA_AUTH_CONSUMER_H_
 #define CHROME_COMMON_NET_GAIA_GAIA_AUTH_CONSUMER_H_
-#pragma once
 
 #include <string>
 #include <map>

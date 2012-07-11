@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_WIDGET_NATIVE_WIDGET_H_
 #define UI_VIEWS_WIDGET_NATIVE_WIDGET_H_
-#pragma once
 
 #include "ui/views/widget/widget.h"
 

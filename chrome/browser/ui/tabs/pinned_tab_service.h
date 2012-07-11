@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_TABS_PINNED_TAB_SERVICE_H_
 #define CHROME_BROWSER_UI_TABS_PINNED_TAB_SERVICE_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"

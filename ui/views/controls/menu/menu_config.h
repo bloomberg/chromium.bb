@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_MENU_MENU_CONFIG_H_
 #define UI_VIEWS_CONTROLS_MENU_MENU_CONFIG_H_
-#pragma once
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font.h"

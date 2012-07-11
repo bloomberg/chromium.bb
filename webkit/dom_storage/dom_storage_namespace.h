@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_DOM_STORAGE_DOM_STORAGE_NAMESPACE_H_
 #define WEBKIT_DOM_STORAGE_DOM_STORAGE_NAMESPACE_H_
-#pragma once
 
 #include <map>
 

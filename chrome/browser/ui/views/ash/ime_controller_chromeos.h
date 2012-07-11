@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_ASH_IME_CONTROLLER_CHROMEOS_H_
 #define CHROME_BROWSER_UI_VIEWS_ASH_IME_CONTROLLER_CHROMEOS_H_
-#pragma once
 
 #include "ash/ime_control_delegate.h"
 #include "base/basictypes.h"

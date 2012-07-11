@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_MOBILE_MOBILE_ACTIVATOR_H_
 #define CHROME_BROWSER_CHROMEOS_MOBILE_MOBILE_ACTIVATOR_H_
-#pragma once
 
 #include <map>
 #include <string>

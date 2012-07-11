@@ -4,7 +4,6 @@
 
 #ifndef UI_COMPOSITOR_LAYER_TYPE_H_
 #define UI_COMPOSITOR_LAYER_TYPE_H_
-#pragma once
 
 namespace ui {
 

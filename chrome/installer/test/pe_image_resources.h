@@ -7,7 +7,6 @@
 
 #ifndef CHROME_INSTALLER_TEST_PE_IMAGE_RESOURCES_H_
 #define CHROME_INSTALLER_TEST_PE_IMAGE_RESOURCES_H_
-#pragma once
 
 #include <windows.h>
 

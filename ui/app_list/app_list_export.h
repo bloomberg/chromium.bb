@@ -4,7 +4,6 @@
 
 #ifndef UI_APP_LIST_APP_LIST_EXPORT_H_
 #define UI_APP_LIST_APP_LIST_EXPORT_H_
-#pragma once
 
 // Defines APP_LIST_EXPORT so that functionality implemented by the app_list
 // module can be exported to consumers.

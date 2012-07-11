@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_HISTORY_EXPIRE_HISTORY_BACKEND_H_
 #define CHROME_BROWSER_HISTORY_EXPIRE_HISTORY_BACKEND_H_
-#pragma once
 
 #include <queue>
 #include <set>

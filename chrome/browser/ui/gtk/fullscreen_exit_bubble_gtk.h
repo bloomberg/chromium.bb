@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_GTK_FULLSCREEN_EXIT_BUBBLE_GTK_H_
 #define CHROME_BROWSER_UI_GTK_FULLSCREEN_EXIT_BUBBLE_GTK_H_
-#pragma once
 
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"

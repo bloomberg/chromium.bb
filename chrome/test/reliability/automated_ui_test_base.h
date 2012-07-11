@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_RELIABILITY_AUTOMATED_UI_TEST_BASE_H_
 #define CHROME_TEST_RELIABILITY_AUTOMATED_UI_TEST_BASE_H_
-#pragma once
 
 #include <string>
 

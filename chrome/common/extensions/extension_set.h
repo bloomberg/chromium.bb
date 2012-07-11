@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_SET_H_
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_SET_H_
-#pragma once
 
 #include <iterator>
 #include <map>

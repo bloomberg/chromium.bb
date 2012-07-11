@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_VIEW_H_
-#pragma once
 
 #include "build/build_config.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_POINTER_DEVICE_OBSERVER_H_
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_POINTER_DEVICE_OBSERVER_H_
-#pragma once
 
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"

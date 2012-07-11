@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_PLATFORM_FONT_MAC_H_
 #define UI_GFX_PLATFORM_FONT_MAC_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/gfx/platform_font.h"

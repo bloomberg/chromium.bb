@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PRINTING_PRINT_VIEW_MANAGER_H_
 #define CHROME_BROWSER_PRINTING_PRINT_VIEW_MANAGER_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"

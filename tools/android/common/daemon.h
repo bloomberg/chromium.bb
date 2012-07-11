@@ -4,7 +4,6 @@
 
 #ifndef TOOLS_ANDROID_COMMON_DAEMON_H_
 #define TOOLS_ANDROID_COMMON_DAEMON_H_
-#pragma once
 
 class CommandLine;
 

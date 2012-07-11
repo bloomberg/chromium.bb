@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_INFOBARS_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_INFOBARS_INFOBAR_DELEGATE_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/string16.h"

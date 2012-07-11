@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_MOCK_STATISTICS_PROVIDER_H_
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_MOCK_STATISTICS_PROVIDER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"

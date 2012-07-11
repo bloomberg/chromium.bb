@@ -6,7 +6,6 @@
 
 #ifndef CHROME_COMMON_URL_CONSTANTS_H_
 #define CHROME_COMMON_URL_CONSTANTS_H_
-#pragma once
 
 #include "build/build_config.h"
 #include "content/public/common/url_constants.h"

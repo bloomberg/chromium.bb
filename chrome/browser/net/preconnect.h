@@ -7,7 +7,6 @@
 
 #ifndef CHROME_BROWSER_NET_PRECONNECT_H_
 #define CHROME_BROWSER_NET_PRECONNECT_H_
-#pragma once
 
 #include "chrome/browser/net/url_info.h"
 

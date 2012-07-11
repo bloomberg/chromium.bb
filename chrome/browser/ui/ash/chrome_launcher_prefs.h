@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_ASH_CHROME_LAUNCHER_PREFS_H_
 #define CHROME_BROWSER_UI_ASH_CHROME_LAUNCHER_PREFS_H_
-#pragma once
 
 #include <string>
 

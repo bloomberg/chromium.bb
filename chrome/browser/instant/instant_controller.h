@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_INSTANT_INSTANT_CONTROLLER_H_
 #define CHROME_BROWSER_INSTANT_INSTANT_CONTROLLER_H_
-#pragma once
 
 #include <set>
 #include <string>

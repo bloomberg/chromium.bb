@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_WIDGET_DROP_TARGET_WIN_H_
 #define UI_VIEWS_WIDGET_DROP_TARGET_WIN_H_
-#pragma once
 
 #include "ui/base/dragdrop/drop_target.h"
 #include "ui/views/widget/drop_helper.h"

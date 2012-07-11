@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_TEST_WEB_VIEW_TEST_HELPER_H_
 #define UI_VIEWS_TEST_WEB_VIEW_TEST_HELPER_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 

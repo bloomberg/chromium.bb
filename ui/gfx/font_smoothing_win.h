@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_FONT_SMOOTHING_WIN_H_
 #define UI_GFX_FONT_SMOOTHING_WIN_H_
-#pragma once
 
 namespace gfx {
 

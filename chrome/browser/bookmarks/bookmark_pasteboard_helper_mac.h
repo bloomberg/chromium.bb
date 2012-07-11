@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_PASTEBOARD_HELPER_MAC_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_PASTEBOARD_HELPER_MAC_H_
-#pragma once
 
 #include "base/file_path.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"

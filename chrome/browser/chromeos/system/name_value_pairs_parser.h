@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_NAME_VALUE_PAIRS_PARSER_H_
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_NAME_VALUE_PAIRS_PARSER_H_
-#pragma once
 
 #include <map>
 #include <string>

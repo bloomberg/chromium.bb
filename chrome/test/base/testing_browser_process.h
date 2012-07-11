@@ -9,7 +9,6 @@
 
 #ifndef CHROME_TEST_BASE_TESTING_BROWSER_PROCESS_H_
 #define CHROME_TEST_BASE_TESTING_BROWSER_PROCESS_H_
-#pragma once
 
 #include <string>
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_OBSERVER_H_
 #define CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_OBSERVER_H_
-#pragma once
 
 namespace content {
 struct ContextMenuParams;

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_MEMORY_DETAILS_H_
 #define CHROME_BROWSER_MEMORY_DETAILS_H_
-#pragma once
 
 #include <vector>
 

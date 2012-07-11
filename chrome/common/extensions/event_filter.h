@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_EXTENSIONS_EVENT_FILTER_H_
 #define CHROME_COMMON_EXTENSIONS_EVENT_FILTER_H_
-#pragma once
 
 #include "base/memory/linked_ptr.h"
 #include "chrome/common/extensions/event_matcher.h"

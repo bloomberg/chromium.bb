@@ -4,7 +4,6 @@
 
 #ifndef NET_CURVECP_PROTOCOL_H_
 #define NET_CURVECP_PROTOCOL_H_
-#pragma once
 
 // Mike's thoughts on the protocol:
 //   1) the packet layer probably should have a "close" mechanism.  although

@@ -6,7 +6,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_API_OFFSCREEN_TABS_OFFSCREEN_TABS_CONSTANTS_H_
 #define CHROME_BROWSER_EXTENSIONS_API_OFFSCREEN_TABS_OFFSCREEN_TABS_CONSTANTS_H_
-#pragma once
 
 namespace extensions {
 namespace offscreen_tabs_constants {

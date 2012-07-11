@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_CHROME_AUTH_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_CHROME_AUTH_PRIVATE_API_H_
-#pragma once
 
 #include <string>
 #include "chrome/browser/extensions/extension_function.h"

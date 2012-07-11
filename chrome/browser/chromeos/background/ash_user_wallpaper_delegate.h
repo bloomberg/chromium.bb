@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_BACKGROUND_ASH_USER_WALLPAPER_DELEGATE_H_
 #define CHROME_BROWSER_CHROMEOS_BACKGROUND_ASH_USER_WALLPAPER_DELEGATE_H_
-#pragma once
 
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

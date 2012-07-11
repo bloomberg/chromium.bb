@@ -6,7 +6,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_WEB_REQUEST_API_CONSTANTS_H_
 #define CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_WEB_REQUEST_API_CONSTANTS_H_
-#pragma once
 
 namespace extension_web_request_api_constants {
 

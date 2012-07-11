@@ -6,7 +6,6 @@
 
 #ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_L10N_UTIL_H_
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_L10N_UTIL_H_
-#pragma once
 
 #include <set>
 #include <string>

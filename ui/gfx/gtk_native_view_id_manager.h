@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_GTK_NATIVE_VIEW_ID_MANAGER_H_
 #define UI_GFX_GTK_NATIVE_VIEW_ID_MANAGER_H_
-#pragma once
 
 #include <map>
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_BASE_TEST_LOCATION_BAR_H_
 #define CHROME_TEST_BASE_TEST_LOCATION_BAR_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/string16.h"

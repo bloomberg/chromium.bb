@@ -4,7 +4,6 @@
 
 #ifndef CHROME_APP_CHROME_MAIN_MAC_H_
 #define CHROME_APP_CHROME_MAIN_MAC_H_
-#pragma once
 
 class FilePath;
 

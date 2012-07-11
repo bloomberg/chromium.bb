@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_AURA_SWITCHES_H_
 #define UI_AURA_AURA_SWITCHES_H_
-#pragma once
 
 #include "ui/aura/aura_export.h"
 

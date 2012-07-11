@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_QUERY_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_QUERY_H_
-#pragma once
 
 #include <map>
 #include <string>

@@ -10,7 +10,6 @@
 
 #ifndef CHROME_BROWSER_AUTOCOMPLETE_SEARCH_PROVIDER_H_
 #define CHROME_BROWSER_AUTOCOMPLETE_SEARCH_PROVIDER_H_
-#pragma once
 
 #include <map>
 #include <string>

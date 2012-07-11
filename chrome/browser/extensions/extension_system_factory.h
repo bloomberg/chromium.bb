@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_SYSTEM_FACTORY_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SYSTEM_FACTORY_H_
-#pragma once
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/extensions/extension_system.h"

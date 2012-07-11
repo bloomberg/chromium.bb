@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_VIEWS_H_
 #define UI_VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_VIEWS_H_
-#pragma once
 
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_TRANSLATE_ERRORS_H_
 #define CHROME_COMMON_TRANSLATE_ERRORS_H_
-#pragma once
 
 // This file consolidates all the error types for translation of a page.
 

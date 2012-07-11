@@ -35,7 +35,6 @@
 
 #ifndef UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_GTK_H_
 #define UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_GTK_H_
-#pragma once
 
 #include "ui/base/keycodes/keyboard_codes_posix.h"
 #include "ui/base/ui_export.h"

@@ -7,7 +7,6 @@
 
 #ifndef CHROME_BROWSER_MEDIA_GALLERY_MEDIA_FILE_SYSTEM_REGISTRY_H_
 #define CHROME_BROWSER_MEDIA_GALLERY_MEDIA_FILE_SYSTEM_REGISTRY_H_
-#pragma once
 
 #include <map>
 #include <string>

@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_IME_COMPOSITION_TEXT_H_
 #define UI_BASE_IME_COMPOSITION_TEXT_H_
-#pragma once
 
 #include "base/string16.h"
 #include "ui/base/ime/composition_underline.h"

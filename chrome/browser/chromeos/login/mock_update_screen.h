@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MOCK_UPDATE_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_MOCK_UPDATE_SCREEN_H_
-#pragma once
 
 #include "chrome/browser/chromeos/login/update_screen.h"
 #include "chrome/browser/chromeos/login/update_screen_actor.h"

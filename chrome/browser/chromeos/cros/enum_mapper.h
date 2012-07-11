@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_ENUM_MAPPER_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_ENUM_MAPPER_H_
-#pragma once
 
 #include <map>
 #include <string>

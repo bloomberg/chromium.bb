@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_WIDGET_DESKTOP_NATIVE_WIDGET_HELPER_AURA_H_
 #define UI_VIEWS_WIDGET_DESKTOP_NATIVE_WIDGET_HELPER_AURA_H_
-#pragma once
 
 #include "ui/aura/root_window_observer.h"
 #include "ui/gfx/rect.h"

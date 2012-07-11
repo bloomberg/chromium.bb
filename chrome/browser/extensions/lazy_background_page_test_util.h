@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_LAZY_BACKGROUND_PAGE_TEST_UTIL_H_
 #define CHROME_BROWSER_EXTENSIONS_LAZY_BACKGROUND_PAGE_TEST_UTIL_H_
-#pragma once
 
 #include "content/public/browser/notification_service.h"
 #include "chrome/common/chrome_notification_types.h"

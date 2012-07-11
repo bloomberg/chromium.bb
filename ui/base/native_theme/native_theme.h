@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_NATIVE_THEME_NATIVE_THEME_H_
 #define UI_BASE_NATIVE_THEME_NATIVE_THEME_H_
-#pragma once
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_export.h"

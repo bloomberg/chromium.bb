@@ -4,7 +4,6 @@
 
 #ifndef PRINTING_BACKEND_CUPS_HELPER_H_
 #define PRINTING_BACKEND_CUPS_HELPER_H_
-#pragma once
 
 #include <cups/cups.h>
 

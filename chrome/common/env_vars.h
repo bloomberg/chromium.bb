@@ -6,7 +6,6 @@
 
 #ifndef CHROME_COMMON_ENV_VARS_H__
 #define CHROME_COMMON_ENV_VARS_H__
-#pragma once
 
 namespace env_vars {
 

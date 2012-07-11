@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_MENU_MENU_SEPARATOR_H_
 #define UI_VIEWS_CONTROLS_MENU_MENU_SEPARATOR_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/views/view.h"

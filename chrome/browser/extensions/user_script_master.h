@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_USER_SCRIPT_MASTER_H_
 #define CHROME_BROWSER_EXTENSIONS_USER_SCRIPT_MASTER_H_
-#pragma once
 
 #include <map>
 #include <string>

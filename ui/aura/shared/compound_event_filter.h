@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_SHARED_COMPOUND_EVENT_FILTER_H_
 #define UI_AURA_SHARED_COMPOUND_EVENT_FILTER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"

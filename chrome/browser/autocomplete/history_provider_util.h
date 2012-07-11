@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_AUTOCOMPLETE_HISTORY_PROVIDER_UTIL_H_
 #define CHROME_BROWSER_AUTOCOMPLETE_HISTORY_PROVIDER_UTIL_H_
-#pragma once
 
 #include <deque>
 #include <vector>

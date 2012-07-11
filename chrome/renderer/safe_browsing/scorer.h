@@ -13,7 +13,6 @@
 
 #ifndef CHROME_RENDERER_SAFE_BROWSING_SCORER_H_
 #define CHROME_RENDERER_SAFE_BROWSING_SCORER_H_
-#pragma once
 
 #include <string>
 

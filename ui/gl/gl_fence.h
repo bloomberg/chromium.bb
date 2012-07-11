@@ -4,7 +4,6 @@
 
 #ifndef UI_GL_GL_FENCE_H_
 #define UI_GL_GL_FENCE_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/gl/gl_export.h"

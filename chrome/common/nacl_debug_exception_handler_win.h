@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_NACL_DEBUG_EXCEPTION_HANDLER_WIN_H_
 #define CHROME_COMMON_NACL_DEBUG_EXCEPTION_HANDLER_WIN_H_
-#pragma once
 
 #include "base/callback.h"
 #include "base/message_loop.h"

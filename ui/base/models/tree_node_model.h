@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_MODELS_TREE_NODE_MODEL_H_
 #define UI_BASE_MODELS_TREE_NODE_MODEL_H_
-#pragma once
 
 #include <algorithm>
 #include <vector>

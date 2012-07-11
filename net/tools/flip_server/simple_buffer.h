@@ -4,7 +4,6 @@
 
 #ifndef NET_TOOLS_FLIP_SERVER_SIMPLE_BUFFER_H__
 #define NET_TOOLS_FLIP_SERVER_SIMPLE_BUFFER_H__
-#pragma once
 
 #include <string>
 

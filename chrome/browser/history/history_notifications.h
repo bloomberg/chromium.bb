@@ -6,7 +6,6 @@
 
 #ifndef CHROME_BROWSER_HISTORY_HISTORY_NOTIFICATIONS_H__
 #define CHROME_BROWSER_HISTORY_HISTORY_NOTIFICATIONS_H__
-#pragma once
 
 #include <set>
 #include <vector>

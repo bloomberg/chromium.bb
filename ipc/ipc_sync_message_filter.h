@@ -4,7 +4,6 @@
 
 #ifndef IPC_IPC_SYNC_MESSAGE_FILTER_H_
 #define IPC_IPC_SYNC_MESSAGE_FILTER_H_
-#pragma once
 
 #include <set>
 

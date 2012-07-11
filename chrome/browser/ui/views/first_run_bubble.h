@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_FIRST_RUN_BUBBLE_H_
 #define CHROME_BROWSER_UI_VIEWS_FIRST_RUN_BUBBLE_H_
-#pragma once
 
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"

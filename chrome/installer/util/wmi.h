@@ -19,7 +19,6 @@
 
 #ifndef CHROME_INSTALLER_UTIL_WMI_H_
 #define CHROME_INSTALLER_UTIL_WMI_H_
-#pragma once
 
 #include "base/string16.h"
 #include <string>

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGEMENT_API_H__
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGEMENT_API_H__
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_BOOKMARK_HANDLER_WIN_H_
 #define CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_BOOKMARK_HANDLER_WIN_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"

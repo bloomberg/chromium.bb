@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_EXTENSIONS_CHROME_V8_EXTENSION_H_
 #define CHROME_RENDERER_EXTENSIONS_CHROME_V8_EXTENSION_H_
-#pragma once
 
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"

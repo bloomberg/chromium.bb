@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_VIEWS_H_
 #define UI_VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_VIEWS_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/base/native_theme/native_theme.h"

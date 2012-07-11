@@ -4,7 +4,6 @@
 
 #ifndef DBUS_FILE_DESCRIPTOR_H_
 #define DBUS_FILE_DESCRIPTOR_H_
-#pragma once
 
 namespace dbus {
 

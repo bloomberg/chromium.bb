@@ -4,7 +4,6 @@
 
 #ifndef UI_WEB_DIALOGS_WEB_DIALOGS_EXPORT_H_
 #define UI_WEB_DIALOGS_WEB_DIALOGS_EXPORT_H_
-#pragma once
 
 // Defines WEB_DIALOGS_EXPORT so that functionality implemented by the
 // web_dialogs module can be exported to consumers.

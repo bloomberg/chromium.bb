@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_SAD_TAB_CONTROLLER_H_
 #define CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_SAD_TAB_CONTROLLER_H_
-#pragma once
 
 #include "ui/gfx/native_widget_types.h"
 

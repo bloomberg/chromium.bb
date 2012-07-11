@@ -7,7 +7,6 @@
 
 #ifndef SANDBOX_LINUX_SUID_PROCESS_UTIL_H_
 #define SANDBOX_LINUX_SUID_PROCESS_UTIL_H_
-#pragma once
 
 #include <stdbool.h>
 #include <sys/types.h>

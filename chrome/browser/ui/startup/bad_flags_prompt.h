@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_STARTUP_BAD_FLAGS_PROMPT_H_
 #define CHROME_BROWSER_UI_STARTUP_BAD_FLAGS_PROMPT_H_
-#pragma once
 
 class Browser;
 

@@ -4,7 +4,6 @@
 
 #ifndef UI_APP_LIST_APP_LIST_BUBBLE_BORDER_H_
 #define UI_APP_LIST_APP_LIST_BUBBLE_BORDER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/gfx/shadow_value.h"

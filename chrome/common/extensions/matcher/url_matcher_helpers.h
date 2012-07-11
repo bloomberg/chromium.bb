@@ -6,7 +6,6 @@
 
 #ifndef CHROME_COMMON_EXTENSIONS_MATCHER_URL_MATCHER_HELPERS_H_
 #define CHROME_COMMON_EXTENSIONS_MATCHER_URL_MATCHER_HELPERS_H_
-#pragma once
 
 #include <string>
 #include <vector>

@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_WIDGET_NATIVE_WIDGET_AURA_H_
 #define UI_VIEWS_WIDGET_NATIVE_WIDGET_AURA_H_
-#pragma once
 
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"

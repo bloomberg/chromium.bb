@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_COCOA_TEST_HELPER_H_
 #define CHROME_BROWSER_UI_COCOA_COCOA_TEST_HELPER_H_
-#pragma once
 
 #import <Cocoa/Cocoa.h>
 

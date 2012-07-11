@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTERNAL_REGISTRY_EXTENSION_LOADER_WIN_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTERNAL_REGISTRY_EXTENSION_LOADER_WIN_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/external_extension_loader.h"

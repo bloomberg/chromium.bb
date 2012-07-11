@@ -4,7 +4,6 @@
 
 #ifndef UI_COMPOSITOR_LAYER_ANIMATION_ELEMENT_H_
 #define UI_COMPOSITOR_LAYER_ANIMATION_ELEMENT_H_
-#pragma once
 
 #include <set>
 

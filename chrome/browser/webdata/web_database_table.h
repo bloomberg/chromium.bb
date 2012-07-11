@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_WEBDATA_WEB_DATABASE_TABLE_H_
 #define CHROME_BROWSER_WEBDATA_WEB_DATABASE_TABLE_H_
-#pragma once
 
 #include "base/logging.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_IMAGE_IMAGE_SKIA_REP_H_
 #define UI_GFX_IMAGE_IMAGE_SKIA_REP_H_
-#pragma once
 
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/layout.h"

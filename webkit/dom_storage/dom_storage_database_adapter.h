@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_DOM_STORAGE_DOM_STORAGE_DATABASE_ADAPTER_H_
 #define WEBKIT_DOM_STORAGE_DOM_STORAGE_DATABASE_ADAPTER_H_
-#pragma once
 
 // Database interface used by DomStorageArea. Abstracts the differences between
 // the per-origin DomStorageDatabases for localStorage and

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTERNAL_TAB_CONTAINER_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTERNAL_TAB_CONTAINER_WIN_H_
-#pragma once
 
 #include <map>
 #include <string>

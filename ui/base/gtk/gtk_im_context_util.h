@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_GTK_GTK_IM_CONTEXT_UTIL_H_
 #define UI_BASE_GTK_GTK_IM_CONTEXT_UTIL_H_
-#pragma once
 
 #include <pango/pango-attributes.h>
 

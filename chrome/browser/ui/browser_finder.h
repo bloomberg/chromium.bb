@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_BROWSER_FINDER_H_
 #define CHROME_BROWSER_UI_BROWSER_FINDER_H_
-#pragma once
 
 #include "chrome/browser/ui/browser.h"
 #include "ui/gfx/native_widget_types.h"

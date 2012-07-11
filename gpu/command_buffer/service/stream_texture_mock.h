@@ -4,7 +4,6 @@
 
 #ifndef GPU_COMMAND_BUFFER_SERVICE_STREAM_TEXTURE_MOCK_H_
 #define GPU_COMMAND_BUFFER_SERVICE_STREAM_TEXTURE_MOCK_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/stream_texture.h"

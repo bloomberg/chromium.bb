@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_LIST_H_
 #define CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_LIST_H_
-#pragma once
 
 #include <vector>
 #include "base/basictypes.h"

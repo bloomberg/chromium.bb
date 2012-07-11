@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_STARTUP_STARTUP_TYPES_H_
 #define CHROME_BROWSER_UI_STARTUP_STARTUP_TYPES_H_
-#pragma once
 
 namespace chrome {
 namespace startup {

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_THEMES_BROWSER_THEME_PACK_H_
 #define CHROME_BROWSER_THEMES_BROWSER_THEME_PACK_H_
-#pragma once
 
 #include <map>
 #include <string>

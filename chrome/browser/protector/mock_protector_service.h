@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PROTECTOR_MOCK_PROTECTOR_SERVICE_H_
 #define CHROME_BROWSER_PROTECTOR_MOCK_PROTECTOR_SERVICE_H_
-#pragma once
 
 #include "chrome/browser/protector/protector_service.h"
 #include "testing/gmock/include/gmock/gmock.h"

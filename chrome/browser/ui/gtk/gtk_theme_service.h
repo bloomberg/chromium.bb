@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_GTK_GTK_THEME_SERVICE_H_
 #define CHROME_BROWSER_UI_GTK_GTK_THEME_SERVICE_H_
-#pragma once
 
 #include <map>
 #include <vector>

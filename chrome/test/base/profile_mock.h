@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_BASE_PROFILE_MOCK_H_
 #define CHROME_TEST_BASE_PROFILE_MOCK_H_
-#pragma once
 
 #include "chrome/test/base/testing_profile.h"
 

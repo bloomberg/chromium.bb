@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PERFORMANCE_MONITOR_PERFORMANCE_MONITOR_H_
 #define CHROME_BROWSER_PERFORMANCE_MONITOR_PERFORMANCE_MONITOR_H_
-#pragma once
 
 #include "base/callback.h"
 #include "base/file_path.h"

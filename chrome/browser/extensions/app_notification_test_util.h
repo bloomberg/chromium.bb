@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_APP_NOTIFICATION_TEST_UTIL_H_
 #define CHROME_BROWSER_EXTENSIONS_APP_NOTIFICATION_TEST_UTIL_H_
-#pragma once
 
 #include "chrome/browser/extensions/app_notification.h"
 

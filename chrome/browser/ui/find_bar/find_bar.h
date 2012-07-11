@@ -8,7 +8,6 @@
 
 #ifndef CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_H_
 #define CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_H_
-#pragma once
 
 #include "base/string16.h"
 #include "ui/gfx/rect.h"

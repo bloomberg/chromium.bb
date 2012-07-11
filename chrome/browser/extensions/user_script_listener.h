@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_USER_SCRIPT_LISTENER_H_
 #define CHROME_BROWSER_EXTENSIONS_USER_SCRIPT_LISTENER_H_
-#pragma once
 
 #include <deque>
 #include <list>

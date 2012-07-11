@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_BUTTON_MENU_BUTTON_LISTENER_H_
 #define UI_VIEWS_CONTROLS_BUTTON_MENU_BUTTON_LISTENER_H_
-#pragma once
 
 #include "ui/views/views_export.h"
 

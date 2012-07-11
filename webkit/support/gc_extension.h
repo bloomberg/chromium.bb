@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_SUPPORT_GC_EXTENSION_H_
 #define WEBKIT_SUPPORT_GC_EXTENSION_H_
-#pragma once
 
 namespace v8 {
 class Extension;

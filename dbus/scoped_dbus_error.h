@@ -4,7 +4,6 @@
 
 #ifndef DBUS_SCOPED_DBUS_ERROR_H_
 #define DBUS_SCOPED_DBUS_ERROR_H_
-#pragma once
 
 #include <dbus/dbus.h>
 

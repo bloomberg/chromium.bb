@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_METRICS_METRICS_LOG_MANAGER_H_
 #define CHROME_COMMON_METRICS_METRICS_LOG_MANAGER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

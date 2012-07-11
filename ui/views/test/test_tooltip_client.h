@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_TEST_TEST_TOOLTIP_CLIENT_H_
 #define UI_AURA_TEST_TEST_TOOLTIP_CLIENT_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/aura/client/tooltip_client.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_AUTOMATION_AUTOMATION_JSON_REQUESTS_H_
 #define CHROME_TEST_AUTOMATION_AUTOMATION_JSON_REQUESTS_H_
-#pragma once
 
 #include <string>
 #include <vector>

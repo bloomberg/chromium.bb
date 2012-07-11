@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_TABLE_GROUP_TABLE_VIEW_H_
 #define UI_VIEWS_CONTROLS_TABLE_GROUP_TABLE_VIEW_H_
-#pragma once
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "ui/views/controls/table/group_table_view_win.h"

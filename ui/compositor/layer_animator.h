@@ -4,7 +4,6 @@
 
 #ifndef UI_COMPOSITOR_LAYER_ANIMATOR_H_
 #define UI_COMPOSITOR_LAYER_ANIMATOR_H_
-#pragma once
 
 #include <deque>
 #include <vector>

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_PROXY_CONFIG_SERVICE_IMPL_H_
 #define CHROME_BROWSER_CHROMEOS_PROXY_CONFIG_SERVICE_IMPL_H_
-#pragma once
 
 #include <string>
 #include <vector>

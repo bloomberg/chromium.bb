@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_WIN_HWND_SUBCLASS_H_
 #define UI_BASE_WIN_HWND_SUBCLASS_H_
-#pragma once
 
 #include <vector>
 #include <windows.h>

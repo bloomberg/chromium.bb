@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_PLUGINS_NPAPI_WEBPLUGIN_ACCELERATED_SURFACE_MAC_H_
 #define WEBKIT_PLUGINS_NPAPI_WEBPLUGIN_ACCELERATED_SURFACE_MAC_H_
-#pragma once
 
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"

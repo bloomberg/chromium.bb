@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_COCOA_NIB_LOADING_H_
 #define UI_BASE_COCOA_NIB_LOADING_H_
-#pragma once
 
 #import <Cocoa/Cocoa.h>
 

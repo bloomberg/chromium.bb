@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_DIALOGS_SELECT_FILE_POLICY_H_
 #define UI_BASE_DIALOGS_SELECT_FILE_POLICY_H_
-#pragma once
 
 #include "ui/base/ui_export.h"
 

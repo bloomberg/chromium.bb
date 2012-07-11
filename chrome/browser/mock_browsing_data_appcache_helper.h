@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_MOCK_BROWSING_DATA_APPCACHE_HELPER_H_
 #define CHROME_BROWSER_MOCK_BROWSING_DATA_APPCACHE_HELPER_H_
-#pragma once
 
 #include "base/callback_forward.h"
 #include "chrome/browser/browsing_data_appcache_helper.h"

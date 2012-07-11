@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_URL_DROP_TARGET_H_
 #define CHROME_BROWSER_UI_COCOA_URL_DROP_TARGET_H_
-#pragma once
 
 #import <Cocoa/Cocoa.h>
 

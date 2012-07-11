@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_CHROME_BROWSER_WINDOW_H_
 #define CHROME_BROWSER_UI_COCOA_CHROME_BROWSER_WINDOW_H_
-#pragma once
 
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 

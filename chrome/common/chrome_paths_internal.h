@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_CHROME_PATHS_INTERNAL_H_
 #define CHROME_COMMON_CHROME_PATHS_INTERNAL_H_
-#pragma once
 
 #include <string>
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_SEARCH_SEARCH_MODEL_OBSERVER_BRIDGE_H_
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_MODEL_OBSERVER_BRIDGE_H_
-#pragma once
 
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_model_observer.h"

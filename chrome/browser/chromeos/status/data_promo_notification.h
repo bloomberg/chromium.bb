@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_STATUS_DATA_PROMO_NOTIFICATION_H_
 #define CHROME_BROWSER_CHROMEOS_STATUS_DATA_PROMO_NOTIFICATION_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"

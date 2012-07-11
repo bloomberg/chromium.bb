@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_WIDGET_DEFAULT_THEME_PROVIDER_H_
 #define UI_VIEWS_WIDGET_DEFAULT_THEME_PROVIDER_H_
-#pragma once
 
 #include <vector>
 

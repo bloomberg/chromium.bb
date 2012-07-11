@@ -4,7 +4,6 @@
 
 #ifndef UI_COMPOSITOR_DIP_UTIL_H_
 #define UI_COMPOSITOR_DIP_UTIL_H_
-#pragma once
 
 #include "ui/compositor/compositor_export.h"
 #include "base/basictypes.h"

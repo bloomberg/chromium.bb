@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_GLUE_WEB_INTENT_SERVICE_DATA_H_
 #define WEBKIT_GLUE_WEB_INTENT_SERVICE_DATA_H_
-#pragma once
 
 #include <iosfwd>
 

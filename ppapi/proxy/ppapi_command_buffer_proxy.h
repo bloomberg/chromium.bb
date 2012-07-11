@@ -4,7 +4,6 @@
 
 #ifndef PPAPI_PROXY_COMMAND_BUFFER_PROXY_H_
 #define PPAPI_PROXY_COMMAND_BUFFER_PROXY_H_
-#pragma once
 
 #include "base/callback.h"
 #include "base/hash_tables.h"

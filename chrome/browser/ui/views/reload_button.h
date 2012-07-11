@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_RELOAD_BUTTON_H__
 #define CHROME_BROWSER_UI_VIEWS_RELOAD_BUTTON_H__
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"

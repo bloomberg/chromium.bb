@@ -4,7 +4,6 @@
 
 #ifndef PPAPI_SHARED_IMPL_PPAPI_SHARED_EXPORT_H_
 #define PPAPI_SHARED_IMPL_PPAPI_SHARED_EXPORT_H_
-#pragma once
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)

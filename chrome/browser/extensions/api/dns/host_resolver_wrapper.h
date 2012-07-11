@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DNS_HOST_RESOLVER_WRAPPER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DNS_HOST_RESOLVER_WRAPPER_H_
-#pragma once
 
 #include "base/memory/singleton.h"
 #include "net/base/host_resolver.h"

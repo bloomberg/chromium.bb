@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_FILE_PICKER_CHROMEOS_H__
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_FILE_PICKER_CHROMEOS_H__
-#pragma once
 
 #include "chrome/browser/download/download_file_picker.h"
 

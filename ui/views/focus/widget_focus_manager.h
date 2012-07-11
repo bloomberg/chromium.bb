@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_FOCUS_WIDGET_FOCUS_MANAGER_H_
 #define UI_VIEWS_FOCUS_WIDGET_FOCUS_MANAGER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"

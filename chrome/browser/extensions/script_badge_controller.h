@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_SCRIPT_BADGE_CONTROLLER_H_
 #define CHROME_BROWSER_EXTENSIONS_SCRIPT_BADGE_CONTROLLER_H_
-#pragma once
 
 #include <map>
 #include <set>

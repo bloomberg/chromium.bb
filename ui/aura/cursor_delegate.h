@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_CURSOR_DELEGATE_H_
 #define UI_AURA_CURSOR_DELEGATE_H_
-#pragma once
 
 #include "ui/aura/aura_export.h"
 #include "ui/gfx/native_widget_types.h"

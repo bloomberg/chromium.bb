@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_AUTOMATION_MOCK_TAB_EVENT_OBSERVER_H_
 #define CHROME_BROWSER_AUTOMATION_MOCK_TAB_EVENT_OBSERVER_H_
-#pragma once
 
 #include "chrome/browser/automation/automation_tab_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"

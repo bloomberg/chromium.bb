@@ -17,7 +17,6 @@
 
 #ifndef FontConfigDirect_DEFINED
 #define FontConfigDirect_DEFINED
-#pragma once
 
 #include <map>
 #include <string>

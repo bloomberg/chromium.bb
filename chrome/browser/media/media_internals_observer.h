@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_MEDIA_MEDIA_INTERNALS_OBSERVER_H_
 #define CHROME_BROWSER_MEDIA_MEDIA_INTERNALS_OBSERVER_H_
-#pragma once
 
 // Used by MediaInternalsUI to receive callbacks on media events.
 // Callbacks will be on the IO thread.

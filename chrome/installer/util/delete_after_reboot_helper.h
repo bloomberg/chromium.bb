@@ -7,7 +7,6 @@
 
 #ifndef CHROME_INSTALLER_UTIL_DELETE_AFTER_REBOOT_HELPER_H_
 #define CHROME_INSTALLER_UTIL_DELETE_AFTER_REBOOT_HELPER_H_
-#pragma once
 
 #include <string>
 #include <vector>

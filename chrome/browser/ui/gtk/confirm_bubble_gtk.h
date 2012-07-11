@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_GTK_CONFIRM_BUBBLE_GTK_H_
 #define CHROME_BROWSER_UI_GTK_CONFIRM_BUBBLE_GTK_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"

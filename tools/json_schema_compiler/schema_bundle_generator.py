@@ -35,7 +35,6 @@ class SchemaBundleGenerator(object):
     c.Append()
     c.Append('#ifndef %s' % ifndef_name)
     c.Append('#define %s' % ifndef_name)
-    c.Append('#pragma once')
     c.Append()
     c.Concat(body_code)
     c.Append()

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_GTK_ACCELERATORS_GTK_H_
 #define CHROME_BROWSER_UI_GTK_ACCELERATORS_GTK_H_
-#pragma once
 
 #include "base/hash_tables.h"
 #include "ui/base/accelerators/accelerator_gtk.h"

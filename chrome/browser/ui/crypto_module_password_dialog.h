@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_CRYPTO_MODULE_PASSWORD_DIALOG_H_
 #define CHROME_BROWSER_UI_CRYPTO_MODULE_PASSWORD_DIALOG_H_
-#pragma once
 
 #include <string>
 #include <vector>

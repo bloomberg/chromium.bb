@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_INSTANT_TYPES_H_
 #define CHROME_COMMON_INSTANT_TYPES_H_
-#pragma once
 
 // Enum describing the ways instant suggest text can be completed.
 enum InstantCompleteBehavior {

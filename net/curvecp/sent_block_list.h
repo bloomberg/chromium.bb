@@ -4,7 +4,6 @@
 
 #ifndef NET_CURVECP_SENT_BLOCK_LIST_H_
 #define NET_CURVECP_SENT_BLOCK_LIST_H_
-#pragma once
 
 #include <vector>
 

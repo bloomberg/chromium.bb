@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PROFILES_OFF_THE_RECORD_PROFILE_IO_DATA_H_
 #define CHROME_BROWSER_PROFILES_OFF_THE_RECORD_PROFILE_IO_DATA_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/callback.h"

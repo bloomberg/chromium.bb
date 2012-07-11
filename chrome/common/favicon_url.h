@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_FAVICON_URL_
 #define CHROME_COMMON_FAVICON_URL_
-#pragma once
 
 #include "googleurl/src/gurl.h"
 

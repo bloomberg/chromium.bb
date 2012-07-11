@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CAPTIVE_PORTAL_CAPTIVE_PORTAL_TAB_RELOADER_H_
 #define CHROME_BROWSER_CAPTIVE_PORTAL_CAPTIVE_PORTAL_TAB_RELOADER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"

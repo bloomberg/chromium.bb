@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_ASH_EXTENSION_UTILS_H_
 #define CHROME_BROWSER_UI_VIEWS_ASH_EXTENSION_UTILS_H_
-#pragma once
 
 class Profile;
 

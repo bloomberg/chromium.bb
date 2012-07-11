@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_ANIMATION_ANIMATION_H_
 #define UI_BASE_ANIMATION_ANIMATION_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"

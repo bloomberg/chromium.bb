@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SSL_CLIENT_CERTIFICATE_SELECTOR_H_
 #define CHROME_BROWSER_SSL_CLIENT_CERTIFICATE_SELECTOR_H_
-#pragma once
 
 #include "base/callback_forward.h"
 

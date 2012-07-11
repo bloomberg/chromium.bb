@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_XKEYBOARD_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_XKEYBOARD_H_
-#pragma once
 
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 

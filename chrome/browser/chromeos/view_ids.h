@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_VIEW_IDS_H_
 #define CHROME_BROWSER_CHROMEOS_VIEW_IDS_H_
-#pragma once
 
 #include "chrome/browser/ui/view_ids.h"
 

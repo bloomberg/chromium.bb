@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_NET_GAIA_OAUTH_REQUEST_SIGNER_H_
 #define CHROME_COMMON_NET_GAIA_OAUTH_REQUEST_SIGNER_H_
-#pragma once
 
 #include <map>
 #include <string>

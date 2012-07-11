@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SHELL_INTEGRATION_H_
 #define CHROME_BROWSER_SHELL_INTEGRATION_H_
-#pragma once
 
 #include <string>
 

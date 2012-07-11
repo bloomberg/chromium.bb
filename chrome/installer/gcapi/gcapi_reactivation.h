@@ -4,7 +4,6 @@
 
 #ifndef CHROME_INSTALLER_GCAPI_GCAPI_REACTIVATION_H_
 #define CHROME_INSTALLER_GCAPI_GCAPI_REACTIVATION_H_
-#pragma once
 
 #include <string>
 #include <vector>

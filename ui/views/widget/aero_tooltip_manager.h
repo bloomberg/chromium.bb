@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_WIDGET_AERO_TOOLTIP_MANAGER_H_
 #define UI_VIEWS_WIDGET_AERO_TOOLTIP_MANAGER_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "ui/views/widget/tooltip_manager_win.h"

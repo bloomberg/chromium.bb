@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_TAB_MODAL_CONFIRM_DIALOG_DELEGATE_H_
 #define CHROME_BROWSER_UI_TAB_MODAL_CONFIRM_DIALOG_DELEGATE_H_
-#pragma once
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_AUTOFILL_FORM_CACHE_H_
 #define CHROME_RENDERER_AUTOFILL_FORM_CACHE_H_
-#pragma once
 
 #include <map>
 #include <set>

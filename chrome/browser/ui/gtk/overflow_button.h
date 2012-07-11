@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_GTK_OVERFLOW_BUTTON_H_
 #define CHROME_BROWSER_UI_GTK_OVERFLOW_BUTTON_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "content/public/browser/notification_observer.h"

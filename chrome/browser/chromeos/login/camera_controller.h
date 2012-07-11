@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_CAMERA_CONTROLLER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_CAMERA_CONTROLLER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_HISTORY_IN_MEMORY_URL_INDEX_TYPES_H_
 #define CHROME_BROWSER_HISTORY_IN_MEMORY_URL_INDEX_TYPES_H_
-#pragma once
 
 #include <map>
 #include <set>

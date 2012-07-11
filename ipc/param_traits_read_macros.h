@@ -4,7 +4,6 @@
 
 #ifndef IPC_PARAM_TRAITS_READ_MACROS_H_
 #define IPC_PARAM_TRAITS_READ_MACROS_H_
-#pragma once
 
 // Null out all the macros that need nulling.
 #include "ipc/ipc_message_null_macros.h"

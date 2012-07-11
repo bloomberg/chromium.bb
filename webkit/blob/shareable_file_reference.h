@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_BLOB_SHAREABLE_FILE_REFERENCE_H_
 #define WEBKIT_BLOB_SHAREABLE_FILE_REFERENCE_H_
-#pragma once
 
 #include <vector>
 

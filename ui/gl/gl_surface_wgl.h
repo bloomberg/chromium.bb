@@ -4,7 +4,6 @@
 
 #ifndef UI_GL_GL_SURFACE_WGL_H_
 #define UI_GL_GL_SURFACE_WGL_H_
-#pragma once
 
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface.h"

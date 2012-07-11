@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_SHARED_ROOT_WINDOW_CAPTURE_CLIENT_H_
 #define UI_AURA_SHARED_ROOT_WINDOW_CAPTURE_CLIENT_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

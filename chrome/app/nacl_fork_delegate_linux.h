@@ -4,7 +4,6 @@
 
 #ifndef CHROME_APP_NACL_FORK_DELEGATE_LINUX_H_
 #define CHROME_APP_NACL_FORK_DELEGATE_LINUX_H_
-#pragma once
 
 #include <string>
 #include <vector>

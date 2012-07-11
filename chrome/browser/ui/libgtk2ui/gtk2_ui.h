@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_LIBGTK2UI_GTK2_UI_H_
 #define CHROME_BROWSER_UI_LIBGTK2UI_GTK2_UI_H_
-#pragma once
 
 #include <map>
 

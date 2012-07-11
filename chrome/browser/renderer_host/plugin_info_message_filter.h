@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_PLUGIN_INFO_MESSAGE_FILTER_H_
 #define CHROME_BROWSER_RENDERER_HOST_PLUGIN_INFO_MESSAGE_FILTER_H_
-#pragma once
 
 #include <string>
 #include <vector>

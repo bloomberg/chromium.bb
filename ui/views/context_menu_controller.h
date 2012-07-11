@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTEXT_MENU_CONTROLLER_H_
 #define UI_VIEWS_CONTEXT_MENU_CONTROLLER_H_
-#pragma once
 
 #include "ui/views/views_export.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_HISTORY_SCORED_HISTORY_MATCH_H_
 #define CHROME_BROWSER_HISTORY_SCORED_HISTORY_MATCH_H_
-#pragma once
 
 #include <map>
 #include <set>

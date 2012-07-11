@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_UPDATER_EXTENSION_UPDATER_H_
 #define CHROME_BROWSER_EXTENSIONS_UPDATER_EXTENSION_UPDATER_H_
-#pragma once
 
 #include <list>
 #include <stack>

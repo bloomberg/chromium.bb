@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_BUTTON_CUSTOM_BUTTON_H_
 #define UI_VIEWS_CONTROLS_BUTTON_CUSTOM_BUTTON_H_
-#pragma once
 
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/events.h"

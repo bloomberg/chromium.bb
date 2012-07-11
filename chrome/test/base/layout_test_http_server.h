@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_BASE_LAYOUT_TEST_HTTP_SERVER_H_
 #define CHROME_TEST_BASE_LAYOUT_TEST_HTTP_SERVER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/file_path.h"

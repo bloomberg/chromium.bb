@@ -4,7 +4,6 @@
 
 #ifndef UI_OAK_OAK_DETAILS_MODEL_H_
 #define UI_OAK_OAK_DETAILS_MODEL_H_
-#pragma once
 
 #include "ui/base/models/table_model.h"
 

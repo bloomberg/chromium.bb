@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_NATIVE_HANDLER_H_
 #define CHROME_RENDERER_NATIVE_HANDLER_H_
-#pragma once
 
 #include "base/bind.h"
 #include "base/memory/linked_ptr.h"

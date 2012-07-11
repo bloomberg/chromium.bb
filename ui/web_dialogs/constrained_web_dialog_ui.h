@@ -4,7 +4,6 @@
 
 #ifndef UI_WEB_DIALOGS_CONSTRAINED_WEB_DIALOG_UI_H_
 #define UI_WEB_DIALOGS_CONSTRAINED_WEB_DIALOG_UI_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "content/public/browser/web_ui_controller.h"

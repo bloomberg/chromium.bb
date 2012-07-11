@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_KEY_IDENTIFIER_CONVERSION_VIEWS_H_
 #define CHROME_BROWSER_EXTENSIONS_KEY_IDENTIFIER_CONVERSION_VIEWS_H_
-#pragma once
 
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/events/event.h"

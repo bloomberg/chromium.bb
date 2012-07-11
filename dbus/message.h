@@ -4,7 +4,6 @@
 
 #ifndef DBUS_MESSAGE_H_
 #define DBUS_MESSAGE_H_
-#pragma once
 
 #include <string>
 #include <vector>

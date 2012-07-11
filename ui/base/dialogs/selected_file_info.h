@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_DIALOGS_SELECTED_FILE_INFO_H_
 #define UI_BASE_DIALOGS_SELECTED_FILE_INFO_H_
-#pragma once
 
 #include <vector>
 

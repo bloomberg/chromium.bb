@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_COLOR_UTILS_H_
 #define UI_GFX_COLOR_UTILS_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"

@@ -48,7 +48,6 @@
 
 #ifndef CHROME_BROWSER_UI_LIBGTK2UI_OWNED_WIDGET_GTK2_H_
 #define CHROME_BROWSER_UI_LIBGTK2UI_OWNED_WIDGET_GTK2_H_
-#pragma once
 
 #include "base/basictypes.h"
 

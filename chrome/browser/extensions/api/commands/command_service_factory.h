@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_API_COMMANDS_COMMAND_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_EXTENSIONS_API_COMMANDS_COMMAND_SERVICE_FACTORY_H_
-#pragma once
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"

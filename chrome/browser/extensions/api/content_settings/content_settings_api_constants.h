@@ -6,7 +6,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_API_CONTENT_SETTINGS_CONTENT_SETTINGS_API_CONSTANTS_H__
 #define CHROME_BROWSER_EXTENSIONS_API_CONTENT_SETTINGS_CONTENT_SETTINGS_API_CONSTANTS_H__
-#pragma once
 
 namespace extensions {
 namespace content_settings_api_constants {

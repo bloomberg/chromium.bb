@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_BUBBLE_BUBBLE_DELEGATE_H_
 #define UI_VIEWS_BUBBLE_BUBBLE_DELEGATE_H_
-#pragma once
 
 #include "base/gtest_prod_util.h"
 #include "ui/base/animation/animation_delegate.h"

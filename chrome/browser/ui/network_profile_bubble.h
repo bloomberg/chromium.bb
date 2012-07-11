@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_NETWORK_PROFILE_BUBBLE_H_
 #define CHROME_BROWSER_UI_NETWORK_PROFILE_BUBBLE_H_
-#pragma once
 
 #include "base/basictypes.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_TEST_VIEWS_TEST_BASE_H_
 #define UI_VIEWS_TEST_VIEWS_TEST_BASE_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"

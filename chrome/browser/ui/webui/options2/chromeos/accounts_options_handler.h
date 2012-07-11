@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_ACCOUNTS_OPTIONS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_ACCOUNTS_OPTIONS_HANDLER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/webui/options2/options_ui.h"

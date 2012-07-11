@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_TEST_CHROME_WEB_UI_FACTORY_H_
 #define CHROME_BROWSER_UI_WEBUI_TEST_CHROME_WEB_UI_FACTORY_H_
-#pragma once
 
 #include <functional>
 #include <map>

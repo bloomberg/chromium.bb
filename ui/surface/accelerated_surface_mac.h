@@ -4,7 +4,6 @@
 
 #ifndef UI_SURFACE_ACCELERATED_SURFACE_MAC_H_
 #define UI_SURFACE_ACCELERATED_SURFACE_MAC_H_
-#pragma once
 
 #include <CoreFoundation/CoreFoundation.h>
 

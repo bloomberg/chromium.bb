@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_HISTORY_HISTORY_TYPES_H_
 #define CHROME_BROWSER_HISTORY_HISTORY_TYPES_H_
-#pragma once
 
 #include <deque>
 #include <map>

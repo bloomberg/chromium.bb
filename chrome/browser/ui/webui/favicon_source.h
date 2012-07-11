@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_FAVICON_SOURCE_H_
 #define CHROME_BROWSER_UI_WEBUI_FAVICON_SOURCE_H_
-#pragma once
 
 #include <map>
 #include <string>

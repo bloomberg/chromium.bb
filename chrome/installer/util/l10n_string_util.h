@@ -12,7 +12,6 @@
 
 #ifndef CHROME_INSTALLER_UTIL_L10N_STRING_UTIL_H_
 #define CHROME_INSTALLER_UTIL_L10N_STRING_UTIL_H_
-#pragma once
 
 #include <string>
 

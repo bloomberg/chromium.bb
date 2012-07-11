@@ -4,7 +4,6 @@
 
 #ifndef SKIA_EXT_SKIA_UTILS_WIN_H_
 #define SKIA_EXT_SKIA_UTILS_WIN_H_
-#pragma once
 
 #include "third_party/skia/include/core/SkColor.h"
 

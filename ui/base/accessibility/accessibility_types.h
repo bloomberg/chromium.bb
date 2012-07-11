@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_ACCESSIBILITY_ACCESSIBILITY_TYPES_H_
 #define UI_BASE_ACCESSIBILITY_ACCESSIBILITY_TYPES_H_
-#pragma once
 
 #include "base/basictypes.h"
 

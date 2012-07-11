@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_ANIMATION_UTILS_H
 #define CHROME_BROWSER_UI_COCOA_ANIMATION_UTILS_H
-#pragma once
 
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/QuartzCore.h>

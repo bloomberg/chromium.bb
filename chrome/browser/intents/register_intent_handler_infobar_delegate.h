@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_INTENTS_REGISTER_INTENT_HANDLER_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_INTENTS_REGISTER_INTENT_HANDLER_INFOBAR_DELEGATE_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/string16.h"

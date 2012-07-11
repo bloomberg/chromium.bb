@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_LINK_LISTENER_H_
 #define UI_VIEWS_CONTROLS_LINK_LISTENER_H_
-#pragma once
 
 namespace views {
 

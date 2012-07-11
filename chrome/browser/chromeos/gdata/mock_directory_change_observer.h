@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_MOCK_DIRECTORY_CHANGE_OBSERVER_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_MOCK_DIRECTORY_CHANGE_OBSERVER_H_
-#pragma once
 
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "testing/gmock/include/gmock/gmock.h"

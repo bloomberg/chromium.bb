@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_DOM_STORAGE_LOCAL_STORAGE_DATABASE_ADAPTER_H_
 #define WEBKIT_DOM_STORAGE_LOCAL_STORAGE_DATABASE_ADAPTER_H_
-#pragma once
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"

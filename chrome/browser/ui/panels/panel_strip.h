@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_PANELS_PANEL_STRIP_H_
 #define CHROME_BROWSER_UI_PANELS_PANEL_STRIP_H_
-#pragma once
 
 #include "chrome/browser/ui/panels/panel_constants.h"
 #include "ui/gfx/point.h"

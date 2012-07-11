@@ -6,7 +6,6 @@
 
 #ifndef CHROME_INSTALLER_SETUP_CHROME_FRAME_READY_MODE_H_
 #define CHROME_INSTALLER_SETUP_CHROME_FRAME_READY_MODE_H_
-#pragma once
 
 namespace installer {
 

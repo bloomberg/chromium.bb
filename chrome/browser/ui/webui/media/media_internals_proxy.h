@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_MEDIA_MEDIA_INTERNALS_PROXY_H_
 #define CHROME_BROWSER_UI_WEBUI_MEDIA_MEDIA_INTERNALS_PROXY_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"

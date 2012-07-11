@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_BROWSING_DATA_REMOVER_H_
 #define CHROME_BROWSER_BROWSING_DATA_REMOVER_H_
-#pragma once
 
 #include <set>
 

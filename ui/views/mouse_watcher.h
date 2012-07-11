@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_MOUSE_WATCHER_H_
 #define UI_VIEWS_MOUSE_WATCHER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

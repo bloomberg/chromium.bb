@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_NATIVE_VIEW_PHOTOBOOTH_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_NATIVE_VIEW_PHOTOBOOTH_WIN_H_
-#pragma once
 
 #include "chrome/browser/ui/views/tabs/native_view_photobooth.h"
 

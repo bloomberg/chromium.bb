@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_ZIP_INTERNAL_H_
 #define CHROME_COMMON_ZIP_INTERNAL_H_
-#pragma once
 
 #include <string>
 

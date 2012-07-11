@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_COCOA_FIND_PASTEBOARD_H_
 #define UI_BASE_COCOA_FIND_PASTEBOARD_H_
-#pragma once
 
 #include "base/string16.h"
 

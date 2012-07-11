@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_AUTHENTICATION_NOTIFICATION_DETAILS_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_AUTHENTICATION_NOTIFICATION_DETAILS_H_
-#pragma once
 
 // A class to hold the parameters we get back from an authentication attempt
 // through the login manager

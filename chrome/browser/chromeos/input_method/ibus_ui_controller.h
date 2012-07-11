@@ -8,7 +8,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_UI_CONTROLLER_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_UI_CONTROLLER_H_
-#pragma once
 
 #include <string>
 #include <vector>

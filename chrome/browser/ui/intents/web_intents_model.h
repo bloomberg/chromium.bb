@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_INTENTS_WEB_INTENTS_MODEL_H_
 #define CHROME_BROWSER_UI_INTENTS_WEB_INTENTS_MODEL_H_
-#pragma once
 
 #include "base/values.h"
 #include "chrome/browser/intents/web_intents_registry.h"

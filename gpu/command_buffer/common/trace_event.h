@@ -4,7 +4,6 @@
 
 #ifndef GPU_COMMAND_BUFFER_COMMON_TRACE_EVENT_H_
 #define GPU_COMMAND_BUFFER_COMMON_TRACE_EVENT_H_
-#pragma once
 
 #if !defined(__native_client__)
 

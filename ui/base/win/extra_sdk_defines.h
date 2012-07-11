@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_WIN_EXTRA_SDK_DEFINES_H_
 #define UI_BASE_WIN_EXTRA_SDK_DEFINES_H_
-#pragma once
 
 #include <windows.h>
 #include <winuser.h>

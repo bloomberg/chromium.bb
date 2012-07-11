@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_GTK_GCONF_TITLEBAR_LISTENER_H_
 #define CHROME_BROWSER_UI_GTK_GCONF_TITLEBAR_LISTENER_H_
-#pragma once
 
 #include <gconf/gconf-client.h>
 #include <gtk/gtk.h>

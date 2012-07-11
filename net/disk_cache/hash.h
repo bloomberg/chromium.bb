@@ -4,7 +4,6 @@
 
 #ifndef NET_DISK_CACHE_HASH_H__
 #define NET_DISK_CACHE_HASH_H__
-#pragma once
 
 #include <string>
 

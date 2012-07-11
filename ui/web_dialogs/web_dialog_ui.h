@@ -4,7 +4,6 @@
 
 #ifndef UI_WEB_DIALOGS_WEB_DIALOG_UI_H_
 #define UI_WEB_DIALOGS_WEB_DIALOG_UI_H_
-#pragma once
 
 #include <string>
 #include <vector>

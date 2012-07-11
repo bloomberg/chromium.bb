@@ -15,7 +15,6 @@
 
 #ifndef BASE_MEMORY_MRU_CACHE_H_
 #define BASE_MEMORY_MRU_CACHE_H_
-#pragma once
 
 #include <list>
 #include <map>

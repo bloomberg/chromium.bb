@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PREDICTORS_AUTOCOMPLETE_ACTION_PREDICTOR_FACTORY_H_
 #define CHROME_BROWSER_PREDICTORS_AUTOCOMPLETE_ACTION_PREDICTOR_FACTORY_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"

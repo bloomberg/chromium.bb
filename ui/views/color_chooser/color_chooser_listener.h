@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_COLOR_CHOOSER_COLOR_CHOOSER_LISTENER_H_
 #define UI_VIEWS_COLOR_CHOOSER_COLOR_CHOOSER_LISTENER_H_
-#pragma once
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/views_export.h"

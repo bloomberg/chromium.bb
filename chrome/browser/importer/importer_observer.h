@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_IMPORTER_IMPORTER_OBSERVER_H_
 #define CHROME_BROWSER_IMPORTER_IMPORTER_OBSERVER_H_
-#pragma once
 
 // An interface that notifies the consumers that the import process was
 // completed.

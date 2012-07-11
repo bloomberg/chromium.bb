@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_SAD_TAB_VIEW_H_
 #define CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_SAD_TAB_VIEW_H_
-#pragma once
 
 #include "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_nsobject.h"

@@ -4,7 +4,6 @@
 
 #ifndef SKIA_EXT_CANVAS_PAINT_COMMON_H_
 #define SKIA_EXT_CANVAS_PAINT_COMMON_H_
-#pragma once
 
 namespace skia {
 class PlatformCanvas;

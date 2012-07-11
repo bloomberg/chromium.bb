@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_EXTENSIONS_UPDATE_MANIFEST_H_
 #define CHROME_COMMON_EXTENSIONS_UPDATE_MANIFEST_H_
-#pragma once
 
 #include <string>
 #include <vector>

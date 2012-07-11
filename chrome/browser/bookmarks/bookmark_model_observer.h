@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_MODEL_OBSERVER_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_MODEL_OBSERVER_H_
-#pragma once
 
 class BookmarkModel;
 class BookmarkNode;

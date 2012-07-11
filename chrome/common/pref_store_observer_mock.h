@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_PREF_STORE_OBSERVER_MOCK_H_
 #define CHROME_COMMON_PREF_STORE_OBSERVER_MOCK_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/common/pref_store.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_DEBUGGER_DEVTOOLS_FILE_HELPER_H_
 #define CHROME_BROWSER_DEBUGGER_DEVTOOLS_FILE_HELPER_H_
-#pragma once
 
 #include <map>
 #include <string>

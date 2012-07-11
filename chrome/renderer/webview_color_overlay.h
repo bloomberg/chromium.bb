@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_WEBVIEW_COLOR_OVERLAY_H_
 #define CHROME_RENDERER_WEBVIEW_COLOR_OVERLAY_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

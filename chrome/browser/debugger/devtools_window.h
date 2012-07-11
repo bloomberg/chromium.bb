@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_DEBUGGER_DEVTOOLS_WINDOW_H_
 #define CHROME_BROWSER_DEBUGGER_DEVTOOLS_WINDOW_H_
-#pragma once
 
 #include <string>
 #include <vector>

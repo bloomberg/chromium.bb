@@ -4,7 +4,6 @@
 
 #ifndef CLOUD_PRINT_VIRTUAL_DRIVER_WIN_PORT_MONITOR_PORT_MONITOR_H_
 #define CLOUD_PRINT_VIRTUAL_DRIVER_WIN_PORT_MONITOR_PORT_MONITOR_H_
-#pragma once
 
 #include <windows.h>
 #include <string>

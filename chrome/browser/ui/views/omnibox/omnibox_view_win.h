@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_VIEW_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_VIEW_WIN_H_
-#pragma once
 
 #include <atlbase.h>
 #include <atlapp.h>

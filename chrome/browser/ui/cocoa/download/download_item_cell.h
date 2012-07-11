@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_DOWNLOAD_DOWNLOAD_ITEM_CELL_H_
 #define CHROME_BROWSER_UI_COCOA_DOWNLOAD_DOWNLOAD_ITEM_CELL_H_
-#pragma once
 
 #import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_ptr.h"

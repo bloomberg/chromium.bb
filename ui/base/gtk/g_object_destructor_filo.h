@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_GTK_G_OBJECT_DESTRUCTOR_FILO_H_
 #define UI_BASE_GTK_G_OBJECT_DESTRUCTOR_FILO_H_
-#pragma once
 
 #include <glib.h>
 #include <map>

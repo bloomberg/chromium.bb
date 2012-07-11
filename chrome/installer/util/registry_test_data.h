@@ -4,7 +4,6 @@
 
 #ifndef CHROME_INSTALLER_UTIL_REGISTRY_TEST_DATA_H_
 #define CHROME_INSTALLER_UTIL_REGISTRY_TEST_DATA_H_
-#pragma once
 
 #include <windows.h>
 

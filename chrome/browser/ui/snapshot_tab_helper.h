@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_SNAPSHOT_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_SNAPSHOT_TAB_HELPER_H_
-#pragma once
 
 #include "content/public/browser/web_contents_observer.h"
 

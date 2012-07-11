@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_PERFORMANCE_MONITOR_WEB_UI_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_PERFORMANCE_MONITOR_WEB_UI_HANDLER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"

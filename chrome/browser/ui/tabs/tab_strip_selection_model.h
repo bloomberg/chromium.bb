@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_TABS_TAB_STRIP_SELECTION_MODEL_H_
 #define CHROME_BROWSER_UI_TABS_TAB_STRIP_SELECTION_MODEL_H_
-#pragma once
 
 #include <vector>
 

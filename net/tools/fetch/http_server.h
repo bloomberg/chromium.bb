@@ -4,7 +4,6 @@
 
 #ifndef NET_BASE_TOOLS_HTTP_SERVER_H_
 #define NET_BASE_TOOLS_HTTP_SERVER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

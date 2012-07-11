@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_EXTENSIONS_USER_SCRIPT_SCHEDULER_H_
 #define CHROME_RENDERER_EXTENSIONS_USER_SCRIPT_SCHEDULER_H_
-#pragma once
 
 #include <map>
 #include <queue>

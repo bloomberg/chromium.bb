@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_EXAMPLES_PROGRESS_BAR_EXAMPLE_H_
 #define UI_VIEWS_EXAMPLES_PROGRESS_BAR_EXAMPLE_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

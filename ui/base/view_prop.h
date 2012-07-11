@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_VIEW_PROP_H_
 #define UI_BASE_VIEW_PROP_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"

@@ -4,7 +4,6 @@
 
 #ifndef UI_GL_GL_INTERFACE_H_
 #define UI_GL_GL_INTERFACE_H_
-#pragma once
 
 // This file implements glue to a GL interface so we can mock it for unit
 // testing. It has to be Desktop GL, not GLES2 as it is used to test the service

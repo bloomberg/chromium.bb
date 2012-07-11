@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PROCESS_SINGLETON_H_
 #define CHROME_BROWSER_PROCESS_SINGLETON_H_
-#pragma once
 
 #include "build/build_config.h"
 

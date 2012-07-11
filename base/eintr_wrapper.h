@@ -9,7 +9,6 @@
 
 #ifndef BASE_EINTR_WRAPPER_H_
 #define BASE_EINTR_WRAPPER_H_
-#pragma once
 
 #include "build/build_config.h"
 

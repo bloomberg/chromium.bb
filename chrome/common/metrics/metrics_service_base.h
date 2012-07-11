@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_METRICS_METRICS_SERVICE_BASE_H_
 #define CHROME_COMMON_METRICS_METRICS_SERVICE_BASE_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/metrics/histogram.h"

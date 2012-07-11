@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_WEB_CONTENTS_DELEGATE_H_
 #define CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_WEB_CONTENTS_DELEGATE_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "content/public/browser/web_contents_delegate.h"

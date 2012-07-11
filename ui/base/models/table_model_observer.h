@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_MODELS_TABLE_MODEL_OBSERVER_H_
 #define UI_BASE_MODELS_TABLE_MODEL_OBSERVER_H_
-#pragma once
 
 #include "ui/base/ui_export.h"
 

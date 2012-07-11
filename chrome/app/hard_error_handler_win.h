@@ -7,7 +7,6 @@
 
 #ifndef CHROME_APP_HARD_ERROR_HANDLER_WIN_H_
 #define CHROME_APP_HARD_ERROR_HANDLER_WIN_H_
-#pragma once
 
 #include <windows.h>
 

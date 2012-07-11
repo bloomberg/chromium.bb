@@ -4,7 +4,6 @@
 
 #ifndef NET_CURVECP_CIRCULAR_BUFFER_H_
 #define NET_CURVECP_CIRCULAR_BUFFER_H_
-#pragma once
 
 namespace net {
 

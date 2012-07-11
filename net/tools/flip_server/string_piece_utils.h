@@ -4,7 +4,6 @@
 
 #ifndef NET_TOOLS_FLIP_SERVER_STRING_PIECE_UTILS_H_
 #define NET_TOOLS_FLIP_SERVER_STRING_PIECE_UTILS_H_
-#pragma once
 
 #include <ctype.h>
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_EDITOR_CONTROLLER_H_
 #define CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_EDITOR_CONTROLLER_H_
-#pragma once
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_base_controller.h"
 

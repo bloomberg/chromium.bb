@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_EXTENSIONS_WEB_AUTH_FLOW_WINDOW_H_
 #define CHROME_BROWSER_UI_EXTENSIONS_WEB_AUTH_FLOW_WINDOW_H_
-#pragma once
 
 #include "base/basictypes.h"
 

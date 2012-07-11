@@ -4,7 +4,6 @@
 
 #ifndef UI_OAK_OAK_EXPORT_H_
 #define UI_OAK_OAK_EXPORT_H_
-#pragma once
 
 // Defines AURA_EXPORT so that functionality implemented by the aura module
 // can be exported to consumers.

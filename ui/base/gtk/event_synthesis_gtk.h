@@ -8,7 +8,6 @@
 
 #ifndef UI_BASE_GTK_EVENT_SYNTHESIS_GTK_
 #define UI_BASE_GTK_EVENT_SYNTHESIS_GTK_
-#pragma once
 
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>

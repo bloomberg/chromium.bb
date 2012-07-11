@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_GPU_FEATURE_CHECKER_H_
 #define CHROME_BROWSER_GPU_FEATURE_CHECKER_H_
-#pragma once
 
 #include "base/callback.h"
 #include "content/public/browser/gpu_data_manager_observer.h"

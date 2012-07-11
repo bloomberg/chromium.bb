@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DELEGATE_IMPL_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DELEGATE_IMPL_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

@@ -7,7 +7,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_API_MEDIA_GALLERY_MEDIA_GALLERY_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_MEDIA_GALLERY_MEDIA_GALLERY_API_H_
-#pragma once
 
 #include "chrome/browser/extensions/extension_function.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_IMPORTER_FIREFOX_PROFILE_LOCK_H__
 #define CHROME_BROWSER_IMPORTER_FIREFOX_PROFILE_LOCK_H__
-#pragma once
 
 #include "build/build_config.h"
 

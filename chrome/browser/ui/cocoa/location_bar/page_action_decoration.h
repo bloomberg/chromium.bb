@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_LOCATION_BAR_PAGE_ACTION_DECORATION_H_
 #define CHROME_BROWSER_UI_COCOA_LOCATION_BAR_PAGE_ACTION_DECORATION_H_
-#pragma once
 
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #import "chrome/browser/ui/cocoa/location_bar/image_decoration.h"

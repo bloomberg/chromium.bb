@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_UI_JAVASCRIPT_TEST_UTIL_H_
 #define CHROME_TEST_UI_JAVASCRIPT_TEST_UTIL_H_
-#pragma once
 
 #include <string>
 #include <map>

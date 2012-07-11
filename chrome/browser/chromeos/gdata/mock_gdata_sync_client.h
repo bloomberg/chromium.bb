@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_MOCK_GDATA_SYNC_CLIENT_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_MOCK_GDATA_SYNC_CLIENT_H_
-#pragma once
 
 #include "chrome/browser/chromeos/gdata/gdata_sync_client.h"
 #include "content/public/browser/notification_details.h"

@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_ANIMATION_SLIDE_ANIMATION_H_
 #define UI_BASE_ANIMATION_SLIDE_ANIMATION_H_
-#pragma once
 
 #include "ui/base/animation/linear_animation.h"
 #include "ui/base/animation/tween.h"

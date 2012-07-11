@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_SUGGESTIONS_INTERNALS_SUGGESTIONS_INTERNALS_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_SUGGESTIONS_INTERNALS_SUGGESTIONS_INTERNALS_UI_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "content/public/browser/web_ui_controller.h"

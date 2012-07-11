@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_BROWSER_INSTANT_CONTROLLER_H_
 #define CHROME_BROWSER_UI_BROWSER_INSTANT_CONTROLLER_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/instant/instant_controller_delegate.h"

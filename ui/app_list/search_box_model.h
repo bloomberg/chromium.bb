@@ -4,7 +4,6 @@
 
 #ifndef UI_APP_LIST_SEARCH_BOX_MODEL_H_
 #define UI_APP_LIST_SEARCH_BOX_MODEL_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"

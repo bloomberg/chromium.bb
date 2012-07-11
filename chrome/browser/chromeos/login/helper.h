@@ -6,7 +6,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_HELPER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/string16.h"

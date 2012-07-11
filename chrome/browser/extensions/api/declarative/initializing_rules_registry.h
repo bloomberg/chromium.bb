@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_INITIALIZING_RULES_REGISTRY_H__
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_INITIALIZING_RULES_REGISTRY_H__
-#pragma once
 
 #include "chrome/browser/extensions/api/declarative/rules_registry.h"
 

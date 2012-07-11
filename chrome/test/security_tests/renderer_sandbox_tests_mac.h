@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_SECURITY_TESTS_RENDERER_SANDBOX_TESTS_MAC_H_
 #define CHROME_TEST_SECURITY_TESTS_RENDERER_SANDBOX_TESTS_MAC_H_
-#pragma once
 
 #import <Foundation/Foundation.h>
 

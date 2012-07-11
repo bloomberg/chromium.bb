@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_VISITEDLINK_COMMON_H__
 #define CHROME_COMMON_VISITEDLINK_COMMON_H__
-#pragma once
 
 #include <vector>
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_NET_CONNECT_INTERCEPTOR_H_
 #define CHROME_BROWSER_NET_CONNECT_INTERCEPTOR_H_
-#pragma once
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/mru_cache.h"

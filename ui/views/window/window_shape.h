@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_WINDOW_WINDOW_SHAPE_H_
 #define UI_VIEWS_WINDOW_WINDOW_SHAPE_H_
-#pragma once
 
 #include "ui/views/views_export.h"
 

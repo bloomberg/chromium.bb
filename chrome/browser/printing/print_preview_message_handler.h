@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PRINTING_PRINT_PREVIEW_MESSAGE_HANDLER_H_
 #define CHROME_BROWSER_PRINTING_PRINT_PREVIEW_MESSAGE_HANDLER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "content/public/browser/web_contents_observer.h"

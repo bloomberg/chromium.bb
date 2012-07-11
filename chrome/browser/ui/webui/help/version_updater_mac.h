@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_HELP_VERSION_UPDATER_MAC_H_
 #define CHROME_BROWSER_UI_WEBUI_HELP_VERSION_UPDATER_MAC_H_
-#pragma once
 
 #import <AppKit/AppKit.h>
 

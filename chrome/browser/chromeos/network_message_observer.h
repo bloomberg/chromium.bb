@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_NETWORK_MESSAGE_OBSERVER_H_
 #define CHROME_BROWSER_CHROMEOS_NETWORK_MESSAGE_OBSERVER_H_
-#pragma once
 
 #include <map>
 #include <string>

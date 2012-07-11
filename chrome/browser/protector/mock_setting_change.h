@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PROTECTOR_MOCK_SETTING_CHANGE_H_
 #define CHROME_BROWSER_PROTECTOR_MOCK_SETTING_CHANGE_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/protector/base_setting_change.h"

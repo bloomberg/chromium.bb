@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PLUGIN_STATUS_PREF_SETTER_H_
 #define CHROME_BROWSER_PLUGIN_STATUS_PREF_SETTER_H_
-#pragma once
 
 #include <vector>
 

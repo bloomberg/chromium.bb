@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SIGNED_SETTINGS_CACHE_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SIGNED_SETTINGS_CACHE_H_
-#pragma once
 
 namespace enterprise_management {
 class PolicyData;

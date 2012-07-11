@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_INFOBARS_AFTER_TRANSLATE_INFOBAR_H_
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_AFTER_TRANSLATE_INFOBAR_H_
-#pragma once
 
 #include "chrome/browser/translate/languages_menu_model.h"
 #include "chrome/browser/translate/options_menu_model.h"

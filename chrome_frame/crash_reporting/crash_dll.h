@@ -4,7 +4,6 @@
 
 #ifndef CHROME_FRAME_CRASH_REPORTING_CRASH_DLL_H_
 #define CHROME_FRAME_CRASH_REPORTING_CRASH_DLL_H_
-#pragma once
 
 // Set either of these environment variables to
 // crash at load or unload time, respectively.

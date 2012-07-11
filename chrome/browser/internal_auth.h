@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_INTERNAL_AUTH_H_
 #define CHROME_BROWSER_INTERNAL_AUTH_H_
-#pragma once
 
 #include <map>
 #include <string>

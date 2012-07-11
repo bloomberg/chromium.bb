@@ -4,7 +4,6 @@
 
 #ifndef UI_APP_LIST_PAGE_SWITCHER_H_
 #define UI_APP_LIST_PAGE_SWITCHER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/app_list/pagination_model_observer.h"

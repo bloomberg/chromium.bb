@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_FILEAPI_FILE_SYSTEM_DIR_URL_REQUEST_JOB_H_
 #define WEBKIT_FILEAPI_FILE_SYSTEM_DIR_URL_REQUEST_JOB_H_
-#pragma once
 
 #include <string>
 #include <vector>

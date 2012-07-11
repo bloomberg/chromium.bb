@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_AUTOMATION_EVENTS_H_
 #define CHROME_COMMON_AUTOMATION_EVENTS_H_
-#pragma once
 
 #include <string>
 #include <vector>

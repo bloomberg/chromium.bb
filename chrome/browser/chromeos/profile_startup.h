@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_PROFILE_STARTUP_H_
 #define CHROME_BROWSER_CHROMEOS_PROFILE_STARTUP_H_
-#pragma once
 
 class Profile;
 

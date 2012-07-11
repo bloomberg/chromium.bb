@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_TAB_UTIL_H__
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_TAB_UTIL_H__
-#pragma once
 
 #include <string>
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_INSTALLER_UTIL_GOOGLE_UPDATE_SETTINGS_H_
 #define CHROME_INSTALLER_UTIL_GOOGLE_UPDATE_SETTINGS_H_
-#pragma once
 
 #include <string>
 

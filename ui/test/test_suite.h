@@ -4,7 +4,6 @@
 
 #ifndef UI_TEST_TEST_SUITE_H_
 #define UI_TEST_TEST_SUITE_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

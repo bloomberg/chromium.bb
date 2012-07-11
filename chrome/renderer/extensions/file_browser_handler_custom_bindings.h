@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_EXTENSIONS_FILE_BROWSER_HANDLER_CUSTOM_BINDINGS_H_
 #define CHROME_RENDERER_EXTENSIONS_FILE_BROWSER_HANDLER_CUSTOM_BINDINGS_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"

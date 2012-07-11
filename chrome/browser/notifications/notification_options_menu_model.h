@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_OPTIONS_MENU_MODEL_H_
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_OPTIONS_MENU_MODEL_H_
-#pragma once
 
 #include "chrome/browser/notifications/balloon.h"
 #include "ui/base/models/simple_menu_model.h"

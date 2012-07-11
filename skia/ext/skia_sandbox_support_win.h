@@ -4,7 +4,6 @@
 
 #ifndef SKIA_EXT_SKIA_SANDBOX_SUPPORT_WIN_H_
 #define SKIA_EXT_SKIA_SANDBOX_SUPPORT_WIN_H_
-#pragma once
 
 #include <windows.h>
 

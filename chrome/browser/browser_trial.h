@@ -7,7 +7,6 @@
 
 #ifndef CHROME_BROWSER_BROWSER_TRIAL_H_
 #define CHROME_BROWSER_BROWSER_TRIAL_H_
-#pragma once
 
 #include "base/basictypes.h"
 

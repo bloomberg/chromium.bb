@@ -7,7 +7,6 @@
 
 #ifndef CHROME_INSTALLER_UTIL_MASTER_PREFERENCES_CONSTANTS_H_
 #define CHROME_INSTALLER_UTIL_MASTER_PREFERENCES_CONSTANTS_H_
-#pragma once
 
 namespace installer {
 namespace master_preferences {

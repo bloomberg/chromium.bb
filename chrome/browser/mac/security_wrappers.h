@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_MAC_SECURITY_WRAPPERS_H_
 #define CHROME_BROWSER_MAC_SECURITY_WRAPPERS_H_
-#pragma once
 
 #include <Security/Security.h>
 

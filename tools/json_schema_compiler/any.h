@@ -4,7 +4,6 @@
 
 #ifndef TOOLS_JSON_SCHEMA_COMPILER_ANY_H__
 #define TOOLS_JSON_SCHEMA_COMPILER_ANY_H__
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

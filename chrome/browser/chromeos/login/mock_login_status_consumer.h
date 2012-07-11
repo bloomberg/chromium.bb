@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MOCK_LOGIN_STATUS_CONSUMER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_MOCK_LOGIN_STATUS_CONSUMER_H_
-#pragma once
 
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "testing/gmock/include/gmock/gmock.h"

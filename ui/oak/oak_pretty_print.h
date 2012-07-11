@@ -4,7 +4,6 @@
 
 #ifndef UI_OAK_OAK_PRETTY_PRINT_H_
 #define UI_OAK_OAK_PRETTY_PRINT_H_
-#pragma once
 
 #include "base/string16.h"
 

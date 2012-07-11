@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_EVENTS_H_
 #define UI_BASE_EVENTS_H_
-#pragma once
 
 #include "base/event_types.h"
 #include "ui/base/keycodes/keyboard_codes.h"

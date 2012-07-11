@@ -4,7 +4,6 @@
 
 #ifndef BASE_PROPERTY_BAG_H_
 #define BASE_PROPERTY_BAG_H_
-#pragma once
 
 #include <map>
 

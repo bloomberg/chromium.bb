@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_INSTALLED_LOADER_H_
 #define CHROME_BROWSER_EXTENSIONS_INSTALLED_LOADER_H_
-#pragma once
 
 class ExtensionService;
 

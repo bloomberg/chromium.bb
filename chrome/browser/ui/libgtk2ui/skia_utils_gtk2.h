@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_LIBGTK2UI_SKIA_UTILS_GTK2_H_
 #define CHROME_BROWSER_UI_LIBGTK2UI_SKIA_UTILS_GTK2_H_
-#pragma once
 
 #include "third_party/skia/include/core/SkColor.h"
 

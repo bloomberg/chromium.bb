@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_RENDER_TEXT_H_
 #define UI_GFX_RENDER_TEXT_H_
-#pragma once
 
 #include <algorithm>
 #include <cstring>

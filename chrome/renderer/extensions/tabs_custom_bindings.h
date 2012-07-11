@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_EXTENSIONS_TABS_CUSTOM_BINDINGS_H_
 #define CHROME_RENDERER_EXTENSIONS_TABS_CUSTOM_BINDINGS_H_
-#pragma once
 
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 

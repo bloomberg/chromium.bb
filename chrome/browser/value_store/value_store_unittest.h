@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_VALUE_STORE_VALUE_STORE_UNITTEST_H_
 #define CHROME_BROWSER_VALUE_STORE_VALUE_STORE_UNITTEST_H_
-#pragma once
 
 #include "testing/gtest/include/gtest/gtest.h"
 

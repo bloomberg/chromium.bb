@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_EXTENSIONS_V8_SCHEMA_REGISTRY_H_
 #define CHROME_RENDERER_EXTENSIONS_V8_SCHEMA_REGISTRY_H_
-#pragma once
 
 #include <map>
 #include <set>

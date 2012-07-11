@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_APPCACHE_APPCACHE_HISTOGRAMS_H_
 #define WEBKIT_APPCACHE_APPCACHE_HISTOGRAMS_H_
-#pragma once
 
 #include "base/basictypes.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_BUTTON_CHECKBOX_H_
 #define UI_VIEWS_CONTROLS_BUTTON_CHECKBOX_H_
-#pragma once
 
 #include <string>
 

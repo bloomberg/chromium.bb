@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_DELEGATE_H_
 #define CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_DELEGATE_H_
-#pragma once
 
 #include <vector>
 

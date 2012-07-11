@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_ABOUT_IPC_DIALOG_H_
 #define CHROME_BROWSER_UI_VIEWS_ABOUT_IPC_DIALOG_H_
-#pragma once
 
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
 

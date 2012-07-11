@@ -76,7 +76,7 @@
 // of inclusions of other headers (which are self-guarding) and IPC
 // macros (which are multiply evaluating).
 //
-// Note that there is no #pragma once either; doing so would mark the whole
+// Note that #pragma once cannot be used here; doing so would mark the whole
 // file as being singly-included.  Since your XXX_messages.h file is only
 // partially-guarded, care must be taken to ensure that it is only included
 // by other .cc files (and the YYY_message_generator.h file).  Including an

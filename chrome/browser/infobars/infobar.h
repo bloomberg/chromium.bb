@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_INFOBARS_INFOBAR_H_
 #define CHROME_BROWSER_INFOBARS_INFOBAR_H_
-#pragma once
 
 #include <utility>
 

@@ -4,7 +4,6 @@
 
 #ifndef IPC_FILE_DESCRIPTOR_SET_POSIX_H_
 #define IPC_FILE_DESCRIPTOR_SET_POSIX_H_
-#pragma once
 
 #include <vector>
 

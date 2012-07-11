@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SESSIONS_RESTORE_TAB_HELPER_H_
 #define CHROME_BROWSER_SESSIONS_RESTORE_TAB_HELPER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/browser/sessions/session_id.h"

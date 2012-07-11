@@ -4,7 +4,6 @@
 
 #ifndef NET_TOOLS_FLIP_SERVER_BALSA_ENUMS_H_
 #define NET_TOOLS_FLIP_SERVER_BALSA_ENUMS_H_
-#pragma once
 
 namespace net {
 

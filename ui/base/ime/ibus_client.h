@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_IME_IBUS_CLIENT_H_
 #define UI_BASE_IME_IBUS_CLIENT_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/base/ui_export.h"

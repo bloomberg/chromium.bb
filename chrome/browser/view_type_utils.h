@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_VIEW_TYPE_UTILS_H_
 #define CHROME_BROWSER_VIEW_TYPE_UTILS_H_
-#pragma once
 
 #include "chrome/common/view_type.h"
 

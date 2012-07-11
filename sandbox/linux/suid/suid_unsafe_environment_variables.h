@@ -15,7 +15,6 @@
 
 #ifndef SANDBOX_LINUX_SUID_SUID_UNSAFE_ENVIRONMENT_VARIABLES_H_
 #define SANDBOX_LINUX_SUID_SUID_UNSAFE_ENVIRONMENT_VARIABLES_H_
-#pragma once
 
 static const char* kSUIDUnsafeEnvironmentVariables[] = {
   "LD_AOUT_LIBRARY_PATH",

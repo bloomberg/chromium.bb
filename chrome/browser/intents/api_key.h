@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_INTENTS_API_KEY_H_
 #define CHROME_BROWSER_INTENTS_API_KEY_H_
-#pragma once
 
 namespace web_intents {
 

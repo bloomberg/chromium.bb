@@ -24,7 +24,6 @@
 
 #ifndef CHROME_RENDERER_SAFE_BROWSING_FEATURES_H_
 #define CHROME_RENDERER_SAFE_BROWSING_FEATURES_H_
-#pragma once
 
 #include <string>
 #include "base/basictypes.h"

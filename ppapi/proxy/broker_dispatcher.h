@@ -4,7 +4,6 @@
 
 #ifndef PPAPI_PROXY_BROKER_DISPATCHER_H_
 #define PPAPI_PROXY_BROKER_DISPATCHER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "ppapi/c/trusted/ppp_broker.h"

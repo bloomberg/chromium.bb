@@ -4,7 +4,6 @@
 
 #ifndef UI_GL_GL_SURFACE_ANDROID_H_
 #define UI_GL_GL_SURFACE_ANDROID_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "ui/gl/gl_surface_egl.h"

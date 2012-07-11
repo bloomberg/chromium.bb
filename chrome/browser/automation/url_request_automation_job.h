@@ -5,7 +5,6 @@
 
 #ifndef CHROME_BROWSER_AUTOMATION_URL_REQUEST_AUTOMATION_JOB_H_
 #define CHROME_BROWSER_AUTOMATION_URL_REQUEST_AUTOMATION_JOB_H_
-#pragma once
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/ref_counted_util.h"

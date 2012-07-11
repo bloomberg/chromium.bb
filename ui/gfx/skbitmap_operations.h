@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_SKBITMAP_OPERATIONS_H_
 #define UI_GFX_SKBITMAP_OPERATIONS_H_
-#pragma once
 
 #include "base/gtest_prod_util.h"
 #include "ui/base/ui_export.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PROTOCOLS_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_PROTOCOLS_H_
-#pragma once
 
 #include "net/url_request/url_request_job_factory.h"
 

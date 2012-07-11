@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_HISTORY_SHORTCUTS_DATABASE_H_
 #define CHROME_BROWSER_HISTORY_SHORTCUTS_DATABASE_H_
-#pragma once
 
 #include <map>
 #include <string>

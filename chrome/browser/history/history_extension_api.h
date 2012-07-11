@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_HISTORY_HISTORY_EXTENSION_API_H_
 #define CHROME_BROWSER_HISTORY_HISTORY_EXTENSION_API_H_
-#pragma once
 
 #include <string>
 

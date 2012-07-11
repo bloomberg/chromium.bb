@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_EXIT_BUBBLE_H_
 #define CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_EXIT_BUBBLE_H_
-#pragma once
 
 #include "base/timer.h"
 #include "chrome/browser/command_updater.h"

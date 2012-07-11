@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_TABS_PINNED_TAB_TEST_UTILS_H_
 #define CHROME_BROWSER_UI_TABS_PINNED_TAB_TEST_UTILS_H_
-#pragma once
 
 #include <string>
 #include <vector>

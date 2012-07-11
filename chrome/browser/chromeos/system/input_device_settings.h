@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_INPUT_DEVICE_SETTINGS_H_
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_INPUT_DEVICE_SETTINGS_H_
-#pragma once
 
 namespace chromeos {
 namespace system {

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_PANELS_OLD_BASE_PANEL_BROWSER_TEST_H_
 #define CHROME_BROWSER_UI_PANELS_OLD_BASE_PANEL_BROWSER_TEST_H_
-#pragma once
 
 #include "base/values.h"
 #include "base/memory/ref_counted.h"

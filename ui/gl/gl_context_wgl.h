@@ -4,7 +4,6 @@
 
 #ifndef UI_GL_GL_CONTEXT_WGL_H_
 #define UI_GL_GL_CONTEXT_WGL_H_
-#pragma once
 
 #include <string>
 

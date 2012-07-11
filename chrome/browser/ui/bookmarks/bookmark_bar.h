@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_BAR_H_
 #define CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_BAR_H_
-#pragma once
 
 #include "base/basictypes.h"
 

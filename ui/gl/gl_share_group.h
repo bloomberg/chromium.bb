@@ -4,7 +4,6 @@
 
 #ifndef UI_GL_GL_SHARE_GROUP_H_
 #define UI_GL_GL_SHARE_GROUP_H_
-#pragma once
 
 #include <set>
 

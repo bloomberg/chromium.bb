@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_MEDIA_MEDIA_STREAM_DEVICES_MENU_MODEL_H_
 #define CHROME_BROWSER_MEDIA_MEDIA_STREAM_DEVICES_MENU_MODEL_H_
-#pragma once
 
 #include <map>
 #include <string>

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SPELLCHECKER_SPELLING_SERVICE_CLIENT_H_
 #define CHROME_BROWSER_SPELLCHECKER_SPELLING_SERVICE_CLIENT_H_
-#pragma once
 
 #include <string>
 #include <vector>

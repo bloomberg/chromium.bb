@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_FILEAPI_FILE_SYSTEM_FILE_STREAM_READER_H_
 #define WEBKIT_FILEAPI_FILE_SYSTEM_FILE_STREAM_READER_H_
-#pragma once
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"

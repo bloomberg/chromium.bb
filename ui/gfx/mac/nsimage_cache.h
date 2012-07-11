@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_MAC_NSIMAGE_CACHE_H_
 #define UI_GFX_MAC_NSIMAGE_CACHE_H_
-#pragma once
 
 #include "ui/base/ui_export.h"
 

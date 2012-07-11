@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_WIDGET_TOOLTIP_MANAGER_WIN_H_
 #define UI_VIEWS_WIDGET_TOOLTIP_MANAGER_WIN_H_
-#pragma once
 
 #include <windows.h>
 #include <commctrl.h>

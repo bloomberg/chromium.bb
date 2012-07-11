@@ -4,7 +4,6 @@
 
 #ifndef SKIA_EXT_PLATFORM_DEVICE_H_
 #define SKIA_EXT_PLATFORM_DEVICE_H_
-#pragma once
 
 #include "build/build_config.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_TRANSFORM_UTIL_H_
 #define UI_GFX_TRANSFORM_UTIL_H_
-#pragma once
 
 #include "ui/base/ui_export.h"
 #include "ui/gfx/transform.h"

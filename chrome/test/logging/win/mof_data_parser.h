@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_LOGGING_WIN_MOF_DATA_PARSER_H_
 #define CHROME_TEST_LOGGING_WIN_MOF_DATA_PARSER_H_
-#pragma once
 
 #include <stddef.h>
 #include <windows.h>

@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_WIDGET_CHILD_WINDOW_MESSAGE_PROCESSOR_H_
 #define UI_VIEWS_WIDGET_CHILD_WINDOW_MESSAGE_PROCESSOR_H_
-#pragma once
 
 #include <windows.h>
 

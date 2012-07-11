@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_CONTEXT_MENU_H_
 #define CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_CONTEXT_MENU_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_context_menu_controller_views.h"

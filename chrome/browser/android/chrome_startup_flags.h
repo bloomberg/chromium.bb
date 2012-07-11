@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_ANDROID_CHROME_STARTUP_FLAGS_H_
 #define CHROME_BROWSER_ANDROID_CHROME_STARTUP_FLAGS_H_
-#pragma once
 
 #include <string>
 

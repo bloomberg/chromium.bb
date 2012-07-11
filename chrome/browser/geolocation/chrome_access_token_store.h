@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_GEOLOCATION_CHROME_ACCESS_TOKEN_STORE_H_
 #define CHROME_BROWSER_GEOLOCATION_CHROME_ACCESS_TOKEN_STORE_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/access_token_store.h"

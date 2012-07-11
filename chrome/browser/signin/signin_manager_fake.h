@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_FAKE_H_
 #define CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_FAKE_H_
-#pragma once
 
 #include <string>
 

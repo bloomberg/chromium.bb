@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_SCOPED_NS_GRAPHICS_CONTEXT_SAVE_GSTATE_MAC_H_
 #define UI_GFX_SCOPED_NS_GRAPHICS_CONTEXT_SAVE_GSTATE_MAC_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/base/ui_export.h"

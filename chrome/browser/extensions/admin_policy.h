@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_ADMIN_POLICY_H_
 #define CHROME_BROWSER_EXTENSIONS_ADMIN_POLICY_H_
-#pragma once
 
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"

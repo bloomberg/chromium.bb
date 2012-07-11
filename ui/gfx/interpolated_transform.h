@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_INTERPOLATED_TRANSFORM_H_
 #define UI_GFX_INTERPOLATED_TRANSFORM_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

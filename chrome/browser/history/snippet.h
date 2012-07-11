@@ -7,7 +7,6 @@
 
 #ifndef CHROME_BROWSER_HISTORY_SNIPPET_H__
 #define CHROME_BROWSER_HISTORY_SNIPPET_H__
-#pragma once
 
 #include <vector>
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_BROWSER_TAB_STRIP_MODEL_DELEGATE_H_
 #define CHROME_BROWSER_UI_BROWSER_TAB_STRIP_MODEL_DELEGATE_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"

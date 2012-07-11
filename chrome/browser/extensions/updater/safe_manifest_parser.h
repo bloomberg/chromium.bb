@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_UPDATER_SAFE_MANIFEST_PARSER_H_
 #define CHROME_BROWSER_EXTENSIONS_UPDATER_SAFE_MANIFEST_PARSER_H_
-#pragma once
 #include <string>
 
 #include "base/basictypes.h"

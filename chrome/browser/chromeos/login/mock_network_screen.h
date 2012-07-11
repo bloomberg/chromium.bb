@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MOCK_NETWORK_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_MOCK_NETWORK_SCREEN_H_
-#pragma once
 
 #include "chrome/browser/chromeos/login/network_screen.h"
 #include "chrome/browser/chromeos/login/network_screen_actor.h"

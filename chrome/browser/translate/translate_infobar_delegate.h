@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_TRANSLATE_TRANSLATE_INFOBAR_DELEGATE_H_
-#pragma once
 
 #include <string>
 #include <utility>

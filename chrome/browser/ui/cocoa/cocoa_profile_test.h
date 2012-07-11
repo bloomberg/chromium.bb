@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_PROFILE_TEST_H_
 #define CHROME_BROWSER_UI_COCOA_PROFILE_TEST_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"

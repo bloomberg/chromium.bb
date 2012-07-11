@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_SINGLE_DISPLAY_MANAGER_H_
 #define UI_AURA_SINGLE_DISPLAY_MANAGER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/aura/aura_export.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_GTK_UPDATE_RECOMMENDED_DIALOG_H_
 #define CHROME_BROWSER_UI_GTK_UPDATE_RECOMMENDED_DIALOG_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/base/glib/glib_integers.h"

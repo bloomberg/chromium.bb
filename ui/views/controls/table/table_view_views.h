@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW_VIEWS_H_
 #define UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW_VIEWS_H_
-#pragma once
 
 #include <vector>
 

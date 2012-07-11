@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_WIN_SINGLETON_HWND_H_
 #define UI_BASE_WIN_SINGLETON_HWND_H_
-#pragma once
 
 #include <windows.h>
 #include <vector>

@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_RENDER_TEXT_WIN_H_
 #define UI_GFX_RENDER_TEXT_WIN_H_
-#pragma once
 
 #include <usp10.h>
 

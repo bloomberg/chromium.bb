@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_CHROME_RENDER_VIEW_HOST_OBSERVER_H_
 #define CHROME_BROWSER_RENDERER_HOST_CHROME_RENDER_VIEW_HOST_OBSERVER_H_
-#pragma once
 
 #include "content/public/browser/render_view_host_observer.h"
 

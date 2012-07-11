@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_FILE_READER_H_
 #define CHROME_BROWSER_EXTENSIONS_FILE_READER_H_
-#pragma once
 
 #include <string>
 

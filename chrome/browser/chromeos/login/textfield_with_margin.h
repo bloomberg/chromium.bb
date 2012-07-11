@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_TEXTFIELD_WITH_MARGIN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_TEXTFIELD_WITH_MARGIN_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/views/controls/textfield/textfield.h"

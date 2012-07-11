@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_COCOA_UNDERLAY_OPENGL_HOSTING_WINDOW_H_
 #define UI_BASE_COCOA_UNDERLAY_OPENGL_HOSTING_WINDOW_H_
-#pragma once
 
 #import <Cocoa/Cocoa.h>
 

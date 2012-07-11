@@ -4,7 +4,6 @@
 
 #ifndef BASE_SCOPED_TEMP_DIR_H_
 #define BASE_SCOPED_TEMP_DIR_H_
-#pragma once
 
 // An object representing a temporary / scratch directory that should be cleaned
 // up (recursively) when this object goes out of scope.  Note that since

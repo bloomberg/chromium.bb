@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_IME_TEXT_INPUT_TYPE_H_
 #define UI_BASE_IME_TEXT_INPUT_TYPE_H_
-#pragma once
 
 namespace ui {
 

@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_IME_INPUT_METHOD_FACTORY_H_
 #define UI_BASE_IME_INPUT_METHOD_FACTORY_H_
-#pragma once
 
 #include "ui/base/ui_export.h"
 

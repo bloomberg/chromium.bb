@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_EXTENSIONS_USER_SCRIPT_SLAVE_H_
 #define CHROME_RENDERER_EXTENSIONS_USER_SCRIPT_SLAVE_H_
-#pragma once
 
 #include <map>
 #include <set>

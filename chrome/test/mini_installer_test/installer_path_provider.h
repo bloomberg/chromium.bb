@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_MINI_INSTALLER_TEST_INSTALLER_PATH_PROVIDER_H_
 #define CHROME_TEST_MINI_INSTALLER_TEST_INSTALLER_PATH_PROVIDER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/file_path.h"

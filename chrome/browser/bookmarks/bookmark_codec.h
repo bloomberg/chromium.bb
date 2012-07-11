@@ -8,7 +8,6 @@
 
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_CODEC_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_CODEC_H_
-#pragma once
 
 #include <set>
 #include <string>

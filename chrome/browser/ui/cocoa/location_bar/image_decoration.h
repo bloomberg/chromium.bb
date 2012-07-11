@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_LOCATION_BAR_IMAGE_DECORATION_H_
 #define CHROME_BROWSER_UI_COCOA_LOCATION_BAR_IMAGE_DECORATION_H_
-#pragma once
 
 #import "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"

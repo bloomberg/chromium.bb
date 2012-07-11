@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_WEBDATA_TOKEN_SERVICE_TABLE_H_
 #define CHROME_BROWSER_WEBDATA_TOKEN_SERVICE_TABLE_H_
-#pragma once
 
 #include <map>
 #include <string>

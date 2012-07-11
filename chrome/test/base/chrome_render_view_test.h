@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_BASE_CHROME_RENDER_VIEW_TEST_H_
 #define CHROME_TEST_BASE_CHROME_RENDER_VIEW_TEST_H_
-#pragma once
 
 #include <string>
 

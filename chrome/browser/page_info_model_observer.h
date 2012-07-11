@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PAGE_INFO_MODEL_OBSERVER_H_
 #define CHROME_BROWSER_PAGE_INFO_MODEL_OBSERVER_H_
-#pragma once
 
 // This interface should be implemented by classes interested in getting
 // notifications from PageInfoModel.

@@ -4,7 +4,6 @@
 
 #ifndef GPU_COMMAND_BUFFER_SERVICE_STREAM_TEXTURE_H_
 #define GPU_COMMAND_BUFFER_SERVICE_STREAM_TEXTURE_H_
-#pragma once
 
 #include "base/basictypes.h"
 

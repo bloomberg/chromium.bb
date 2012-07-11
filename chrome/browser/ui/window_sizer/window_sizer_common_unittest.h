@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WINDOW_SIZER_WINDOW_SIZER_COMMON_UNITTEST_H_
 #define CHROME_BROWSER_UI_WINDOW_SIZER_WINDOW_SIZER_COMMON_UNITTEST_H_
-#pragma once
 
 // Some standard monitor sizes (no task bar).
 static const gfx::Rect tentwentyfour(0, 0, 1024, 768);

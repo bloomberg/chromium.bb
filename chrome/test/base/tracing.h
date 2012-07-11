@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_BASE_TRACING_H_
 #define CHROME_TEST_BASE_TRACING_H_
-#pragma once
 
 #include <string>
 

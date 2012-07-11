@@ -4,7 +4,6 @@
 
 #ifndef NET_CURVECP_CURVECP_SERVER_SOCKET_H_
 #define NET_CURVECP_CURVECP_SERVER_SOCKET_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "net/base/completion_callback.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_MAC_RELAUNCHER_H_
 #define CHROME_BROWSER_MAC_RELAUNCHER_H_
-#pragma once
 
 // mac_relauncher implements main browser application relaunches on the Mac.
 // When a browser wants to relaunch itself, it can't simply fork off a new

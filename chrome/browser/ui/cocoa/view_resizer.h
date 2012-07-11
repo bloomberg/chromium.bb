@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_VIEW_RESIZER_H_
 #define CHROME_BROWSER_UI_COCOA_VIEW_RESIZER_H_
-#pragma once
 
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_IMPORTER_TOOLBAR_IMPORTER_UTILS_H_
 #define CHROME_BROWSER_IMPORTER_TOOLBAR_IMPORTER_UTILS_H_
-#pragma once
 
 #include "base/callback_forward.h"
 

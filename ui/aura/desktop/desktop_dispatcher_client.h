@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_DESKTOP_DESKTOP_DISPATCHER_CLIENT_H_
 #define UI_AURA_DESKTOP_DESKTOP_DISPATCHER_CLIENT_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/aura/client/dispatcher_client.h"

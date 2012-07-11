@@ -17,7 +17,6 @@
 
 #ifndef FontConfigControl_DEFINED
 #define FontConfigControl_DEFINED
-#pragma once
 
 #include "SkPreConfig.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_AUTOFILL_PASSWORD_GENERATOR_H_
 #define CHROME_BROWSER_AUTOFILL_PASSWORD_GENERATOR_H_
-#pragma once
 
 #include <string>
 

@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_NATIVE_THEME_PAINTER_H_
 #define UI_VIEWS_NATIVE_THEME_PAINTER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/views/painter.h"

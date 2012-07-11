@@ -4,7 +4,6 @@
 
 #ifndef DBUS_EXPORTED_OBJECT_H_
 #define DBUS_EXPORTED_OBJECT_H_
-#pragma once
 
 #include <dbus/dbus.h>
 

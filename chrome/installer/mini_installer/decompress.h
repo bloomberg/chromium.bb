@@ -4,7 +4,6 @@
 
 #ifndef CHROME_INSTALLER_MINI_INSTALLER_DECOMPRESS_H_
 #define CHROME_INSTALLER_MINI_INSTALLER_DECOMPRESS_H_
-#pragma once
 
 // arraysize borrowed from basictypes.h
 template <typename T, size_t N>

@@ -4,7 +4,6 @@
 
 #ifndef TOOLS_ANDROID_COMMON_ADB_CONNECTION_H_
 #define TOOLS_ANDROID_COMMON_ADB_CONNECTION_H_
-#pragma once
 
 namespace tools {
 

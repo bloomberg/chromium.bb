@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_COCOA_H_
 #define CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_COCOA_H_
-#pragma once
 
 #include "chrome/browser/ui/panels/native_panel.h"
 

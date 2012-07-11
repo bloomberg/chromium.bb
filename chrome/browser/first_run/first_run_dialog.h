@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_FIRST_RUN_FIRST_RUN_DIALOG_H_
 #define CHROME_BROWSER_FIRST_RUN_FIRST_RUN_DIALOG_H_
-#pragma once
 
 class Profile;
 

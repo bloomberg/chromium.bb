@@ -4,7 +4,6 @@
 
 #ifndef NET_CURVECP_CLIENT_PACKETIZER_H_
 #define NET_CURVECP_CLIENT_PACKETIZER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"

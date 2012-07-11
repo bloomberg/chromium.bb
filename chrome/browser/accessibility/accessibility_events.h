@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EVENTS_H_
 #define CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EVENTS_H_
-#pragma once
 
 #include <string>
 #include "base/compiler_specific.h"

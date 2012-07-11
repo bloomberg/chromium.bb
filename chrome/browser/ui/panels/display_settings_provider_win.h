@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_PANELS_DISPLAY_SETTINGS_PROVIDER_WIN_H_
 #define CHROME_BROWSER_UI_PANELS_DISPLAY_SETTINGS_PROVIDER_WIN_H_
-#pragma once
 
 #include "chrome/browser/ui/panels/display_settings_provider.h"
 

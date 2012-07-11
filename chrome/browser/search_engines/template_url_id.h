@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_ID_H_
 #define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_ID_H_
-#pragma once
 
 #include "base/basictypes.h"
 

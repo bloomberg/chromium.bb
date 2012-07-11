@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_WINDOW_NON_CLIENT_VIEW_H_
 #define UI_VIEWS_WINDOW_NON_CLIENT_VIEW_H_
-#pragma once
 
 #include "ui/views/view.h"
 #include "ui/views/window/client_view.h"

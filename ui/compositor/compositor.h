@@ -4,7 +4,6 @@
 
 #ifndef UI_COMPOSITOR_COMPOSITOR_H_
 #define UI_COMPOSITOR_COMPOSITOR_H_
-#pragma once
 
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"

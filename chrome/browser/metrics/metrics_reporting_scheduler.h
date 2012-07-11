@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_METRICS_METRICS_REPORTING_SCHEDULER_H_
 #define CHROME_BROWSER_METRICS_METRICS_REPORTING_SCHEDULER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/callback.h"

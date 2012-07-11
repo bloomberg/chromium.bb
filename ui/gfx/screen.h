@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_SCREEN_H_
 #define UI_GFX_SCREEN_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/base/ui_export.h"

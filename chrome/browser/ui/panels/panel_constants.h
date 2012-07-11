@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_PANELS_PANEL_CONSTANTS_H_
 #define CHROME_BROWSER_UI_PANELS_PANEL_CONSTANTS_H_
-#pragma once
 
 namespace panel {
 

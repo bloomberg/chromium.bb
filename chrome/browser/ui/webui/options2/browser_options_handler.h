@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS2_BROWSER_OPTIONS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS2_BROWSER_OPTIONS_HANDLER_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

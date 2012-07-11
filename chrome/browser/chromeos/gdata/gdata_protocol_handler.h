@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_PROTOCOL_HANDLER_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_PROTOCOL_HANDLER_H_
-#pragma once
 
 #include "net/url_request/url_request_job_factory.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef DBUS_OBJECT_PATH_H_
 #define DBUS_OBJECT_PATH_H_
-#pragma once
 
 #include <string>
 

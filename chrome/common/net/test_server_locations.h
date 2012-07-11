@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_NET_TEST_SERVER_LOCATIONS_H_
 #define CHROME_COMMON_NET_TEST_SERVER_LOCATIONS_H_
-#pragma once
 
 namespace chrome_common_net {
 

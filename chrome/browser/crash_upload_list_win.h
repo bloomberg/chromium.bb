@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CRASH_UPLOAD_LIST_WIN_H_
 #define CHROME_BROWSER_CRASH_UPLOAD_LIST_WIN_H_
-#pragma once
 
 #include "chrome/browser/crash_upload_list.h"
 #include "base/compiler_specific.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_PRESENTATION_MODE_PREFS_H_
 #define CHROME_BROWSER_UI_COCOA_PRESENTATION_MODE_PREFS_H_
-#pragma once
 
 #include "base/basictypes.h"
 

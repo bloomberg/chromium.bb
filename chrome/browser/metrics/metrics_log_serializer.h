@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_METRICS_METRICS_LOG_SERIALIZER_H_
 #define CHROME_BROWSER_METRICS_METRICS_LOG_SERIALIZER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"

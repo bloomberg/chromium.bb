@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS2_FONT_SETTINGS_UTILS_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS2_FONT_SETTINGS_UTILS_H_
-#pragma once
 
 #include "base/basictypes.h"
 

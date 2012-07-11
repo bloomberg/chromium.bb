@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_ICON_LOADER_H_
 #define CHROME_BROWSER_ICON_LOADER_H_
-#pragma once
 
 #include "build/build_config.h"
 

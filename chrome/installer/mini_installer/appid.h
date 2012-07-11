@@ -4,7 +4,6 @@
 
 #ifndef CHROME_INSTALLER_MINI_INSTALLER_APPID_H_
 #define CHROME_INSTALLER_MINI_INSTALLER_APPID_H_
-#pragma once
 
 // The appid included by the mini_installer.
 namespace google_update {

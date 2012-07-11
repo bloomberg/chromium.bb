@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_INFOBARS_EXTENSION_INFOBAR_H_
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_EXTENSION_INFOBAR_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"

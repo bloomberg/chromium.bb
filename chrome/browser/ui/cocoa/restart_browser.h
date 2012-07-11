@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_RESTART_BROWSER_H_
 #define CHROME_BROWSER_UI_COCOA_RESTART_BROWSER_H_
-#pragma once
 
 #import <Cocoa/Cocoa.h>
 

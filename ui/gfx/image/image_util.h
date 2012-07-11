@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_IMAGE_IMAGE_UTIL_H_
 #define UI_GFX_IMAGE_IMAGE_UTIL_H_
-#pragma once
 
 #include <vector>
 

@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_TABBED_PANE_NATIVE_TABBED_PANE_WRAPPER_H_
 #define UI_VIEWS_CONTROLS_TABBED_PANE_NATIVE_TABBED_PANE_WRAPPER_H_
-#pragma once
 
 #include "base/string16.h"
 #include "ui/gfx/native_widget_types.h"

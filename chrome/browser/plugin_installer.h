@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PLUGIN_INSTALLER_H_
 #define CHROME_BROWSER_PLUGIN_INSTALLER_H_
-#pragma once
 
 #include "base/observer_list.h"
 #include "base/string16.h"

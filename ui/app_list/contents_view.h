@@ -4,7 +4,6 @@
 
 #ifndef UI_APP_LIST_CONTENTS_VIEW_H_
 #define UI_APP_LIST_CONTENTS_VIEW_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

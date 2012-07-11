@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_GTK_ONE_CLICK_SIGNIN_BUBBLE_GTK_H_
 #define CHROME_BROWSER_UI_GTK_ONE_CLICK_SIGNIN_BUBBLE_GTK_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/callback.h"

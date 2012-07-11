@@ -10,7 +10,6 @@
 
 #ifndef UI_BASE_CLIPBOARD_SCOPED_CLIPBOARD_WRITER_H_
 #define UI_BASE_CLIPBOARD_SCOPED_CLIPBOARD_WRITER_H_
-#pragma once
 
 #include <string>
 

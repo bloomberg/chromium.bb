@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_VALUE_STORE_TESTING_VALUE_STORE_H_
 #define CHROME_BROWSER_VALUE_STORE_TESTING_VALUE_STORE_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/value_store/value_store.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_GTK_GTK_CUSTOM_MENU_ITEM_H_
 #define CHROME_BROWSER_UI_GTK_GTK_CUSTOM_MENU_ITEM_H_
-#pragma once
 
 // GtkCustomMenuItem is a GtkMenuItem subclass that has buttons in it and acts
 // to support this. GtkCustomMenuItems only render properly when put in a

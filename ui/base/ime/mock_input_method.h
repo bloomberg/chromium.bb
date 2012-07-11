@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_IME_MOCK_INPUT_METHOD_H_
 #define UI_BASE_IME_MOCK_INPUT_METHOD_H_
-#pragma once
 
 #include <string>
 

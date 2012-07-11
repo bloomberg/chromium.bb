@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_PLUGINS_PLUGIN_PLACEHOLDER_H_
 #define CHROME_RENDERER_PLUGINS_PLUGIN_PLACEHOLDER_H_
-#pragma once
 
 #include "content/public/renderer/render_process_observer.h"
 #include "content/public/renderer/render_view_observer.h"

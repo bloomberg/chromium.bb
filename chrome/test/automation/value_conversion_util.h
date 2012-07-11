@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_AUTOMATION_VALUE_CONVERSION_UTIL_H_
 #define CHROME_TEST_AUTOMATION_VALUE_CONVERSION_UTIL_H_
-#pragma once
 
 #include <string>
 

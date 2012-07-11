@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_TOOLBAR_TOOLBAR_VIEW_H_
 #define CHROME_BROWSER_UI_COCOA_TOOLBAR_TOOLBAR_VIEW_H_
-#pragma once
 
 #import <Cocoa/Cocoa.h>
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"

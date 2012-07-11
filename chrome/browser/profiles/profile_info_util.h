@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_INFO_UTIL_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_INFO_UTIL_H_
-#pragma once
 
 #include "ui/gfx/image/image.h"
 

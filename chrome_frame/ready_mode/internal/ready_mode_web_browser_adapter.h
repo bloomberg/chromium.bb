@@ -4,7 +4,6 @@
 
 #ifndef CHROME_FRAME_READY_MODE_INTERNAL_READY_MODE_WEB_BROWSER_ADAPTER_H_
 #define CHROME_FRAME_READY_MODE_INTERNAL_READY_MODE_WEB_BROWSER_ADAPTER_H_
-#pragma once
 
 #include <atlbase.h>
 #include <atlcom.h>

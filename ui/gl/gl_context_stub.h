@@ -4,7 +4,6 @@
 
 #ifndef UI_GL_GL_CONTEXT_STUB_H_
 #define UI_GL_GL_CONTEXT_STUB_H_
-#pragma once
 
 #include "ui/gl/gl_context.h"
 

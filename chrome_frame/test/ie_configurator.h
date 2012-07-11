@@ -9,7 +9,6 @@
 
 #ifndef CHROME_FRAME_TEST_IE_CONFIGURATOR_H_
 #define CHROME_FRAME_TEST_IE_CONFIGURATOR_H_
-#pragma once
 
 #include "base/basictypes.h"
 

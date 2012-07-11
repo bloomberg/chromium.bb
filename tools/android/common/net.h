@@ -4,7 +4,6 @@
 
 #ifndef TOOLS_ANDROID_COMMON_NET_H_
 #define TOOLS_ANDROID_COMMON_NET_H_
-#pragma once
 
 #include <string>
 

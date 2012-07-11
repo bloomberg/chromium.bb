@@ -14,7 +14,6 @@
 
 #ifndef CHROME_BROWSER_NET_REFERRER_H_
 #define CHROME_BROWSER_NET_REFERRER_H_
-#pragma once
 
 #include <map>
 

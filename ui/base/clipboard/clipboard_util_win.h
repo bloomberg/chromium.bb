@@ -6,7 +6,6 @@
 
 #ifndef UI_BASE_CLIPBOARD_CLIPBOARD_UTIL_WIN_H_
 #define UI_BASE_CLIPBOARD_CLIPBOARD_UTIL_WIN_H_
-#pragma once
 
 #include <shlobj.h>
 #include <map>

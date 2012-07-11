@@ -4,7 +4,6 @@
 
 #ifndef BASE_THREADING_SEQUENCED_WORKER_POOL_TASK_RUNNER_H_
 #define BASE_THREADING_SEQUENCED_WORKER_POOL_TASK_RUNNER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"

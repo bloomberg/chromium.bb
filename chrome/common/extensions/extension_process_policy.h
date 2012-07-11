@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_PROCESS_POLICY_H_
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_PROCESS_POLICY_H_
-#pragma once
 
 class ExtensionSet;
 class ExtensionURLInfo;

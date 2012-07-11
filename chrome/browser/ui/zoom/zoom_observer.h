@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_ZOOM_ZOOM_OBSERVER_H_
 #define CHROME_BROWSER_UI_ZOOM_ZOOM_OBSERVER_H_
-#pragma once
 
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_LAYOUT_GRID_LAYOUT_H_
 #define UI_VIEWS_LAYOUT_GRID_LAYOUT_H_
-#pragma once
 
 #include <string>
 #include <vector>

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS2_MANAGE_PROFILE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS2_MANAGE_PROFILE_HANDLER_H_
-#pragma once
 
 #include "chrome/browser/ui/webui/options2/options_ui.h"
 

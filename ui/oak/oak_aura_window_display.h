@@ -4,7 +4,6 @@
 
 #ifndef UI_OAK_OAK_AURA_WINDOW_DISPLAY_H_
 #define UI_OAK_OAK_AURA_WINDOW_DISPLAY_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/oak/oak_details_model.h"

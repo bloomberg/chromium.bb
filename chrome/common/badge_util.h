@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_BADGE_UTIL_H_
 #define CHROME_COMMON_BADGE_UTIL_H_
-#pragma once
 
 #include "base/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"

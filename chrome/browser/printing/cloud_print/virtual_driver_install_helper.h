@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PRINTING_CLOUD_PRINT_VIRTUAL_DRIVER_INSTALL_HELPER_H_
 #define CHROME_BROWSER_PRINTING_CLOUD_PRINT_VIRTUAL_DRIVER_INSTALL_HELPER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"

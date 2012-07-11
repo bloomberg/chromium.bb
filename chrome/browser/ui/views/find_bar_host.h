@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_FIND_BAR_HOST_H_
 #define CHROME_BROWSER_UI_VIEWS_FIND_BAR_HOST_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"

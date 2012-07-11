@@ -4,7 +4,6 @@
 
 #ifndef SKIA_EXT_CONVOLVER_H_
 #define SKIA_EXT_CONVOLVER_H_
-#pragma once
 
 #include <cmath>
 #include <vector>

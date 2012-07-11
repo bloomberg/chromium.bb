@@ -4,7 +4,6 @@
 
 #ifndef UI_GL_GPU_PREFERENCE_H_
 #define UI_GL_GPU_PREFERENCE_H_
-#pragma once
 
 namespace gfx {
 

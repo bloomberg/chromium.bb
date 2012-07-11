@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_HISTORY_URL_DATABASE_H_
 #define CHROME_BROWSER_HISTORY_URL_DATABASE_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/browser/history/history_types.h"

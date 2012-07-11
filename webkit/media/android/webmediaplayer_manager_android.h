@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_MEDIA_ANDROID_WEBMEDIAPLAYER_MANAGER_ANDROID_H_
 #define WEBKIT_MEDIA_ANDROID_WEBMEDIAPLAYER_MANAGER_ANDROID_H_
-#pragma once
 
 #include <jni.h>
 #include <map>

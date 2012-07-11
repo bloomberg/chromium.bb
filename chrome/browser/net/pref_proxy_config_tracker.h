@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_NET_PREF_PROXY_CONFIG_TRACKER_H_
 #define CHROME_BROWSER_NET_PREF_PROXY_CONFIG_TRACKER_H_
-#pragma once
 
 #include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
 

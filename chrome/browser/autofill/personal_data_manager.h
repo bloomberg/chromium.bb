@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_AUTOFILL_PERSONAL_DATA_MANAGER_H_
 #define CHROME_BROWSER_AUTOFILL_PERSONAL_DATA_MANAGER_H_
-#pragma once
 
 #include <set>
 #include <vector>

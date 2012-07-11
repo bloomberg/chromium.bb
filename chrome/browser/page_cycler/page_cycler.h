@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PAGE_CYCLER_PAGE_CYCLER_H_
 #define CHROME_BROWSER_PAGE_CYCLER_PAGE_CYCLER_H_
-#pragma once
 
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"

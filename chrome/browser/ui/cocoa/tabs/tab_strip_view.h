@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_TABS_TAB_STRIP_VIEW_H_
 #define CHROME_BROWSER_UI_COCOA_TABS_TAB_STRIP_VIEW_H_
-#pragma once
 
 #import <Cocoa/Cocoa.h>
 

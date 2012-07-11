@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_SUPPORT_TEST_STREAM_TEXTURE_FACTORY_ANDROID_H_
 #define WEBKIT_SUPPORT_TEST_STREAM_TEXTURE_FACTORY_ANDROID_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

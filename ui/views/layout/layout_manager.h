@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_LAYOUT_LAYOUT_MANAGER_H_
 #define UI_VIEWS_LAYOUT_LAYOUT_MANAGER_H_
-#pragma once
 
 #include "ui/views/views_export.h"
 

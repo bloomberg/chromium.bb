@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_BASE_WINDOW_H_
 #define CHROME_BROWSER_UI_BASE_WINDOW_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/gfx/native_widget_types.h"

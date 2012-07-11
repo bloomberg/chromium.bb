@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_GLOW_HOVER_CONTROLLER_H_
 #define UI_VIEWS_CONTROLS_GLOW_HOVER_CONTROLLER_H_
-#pragma once
 
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"

@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_MODELS_MENU_MODEL_H_
 #define UI_BASE_MODELS_MENU_MODEL_H_
-#pragma once
 
 #include "base/string16.h"
 #include "ui/base/models/menu_model_delegate.h"

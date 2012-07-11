@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_DISPLAY_MANAGER_H_
 #define UI_AURA_DISPLAY_MANAGER_H_
-#pragma once
 
 #include <string>
 #include <vector>

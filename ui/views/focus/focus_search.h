@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_FOCUS_FOCUS_SEARCH_H_
 #define UI_VIEWS_FOCUS_FOCUS_SEARCH_H_
-#pragma once
 
 #include "ui/views/view.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_SEARCHBOX_H_
 #define CHROME_RENDERER_SEARCHBOX_H_
-#pragma once
 
 #include <string>
 #include <vector>

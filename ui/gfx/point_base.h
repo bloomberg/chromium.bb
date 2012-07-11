@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_POINT_BASE_H_
 #define UI_GFX_POINT_BASE_H_
-#pragma once
 
 #include <string>
 

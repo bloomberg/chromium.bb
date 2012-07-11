@@ -4,7 +4,6 @@
 
 // MeasurePageLoadTimeBHO.h : Declaration of the CMeasurePageLoadTimeBHO
 
-#pragma once
 #include "resource.h"       // main symbols
 
 #include <shlguid.h>     // IID_IWebBrowser2, DIID_DWebBrowserEvents2, et

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_CHROME_URL_REQUEST_USER_DATA_H_
 #define CHROME_BROWSER_RENDERER_HOST_CHROME_URL_REQUEST_USER_DATA_H_
-#pragma once
 
 #include "base/supports_user_data.h"
 

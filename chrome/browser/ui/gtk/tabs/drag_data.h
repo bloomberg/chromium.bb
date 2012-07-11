@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_GTK_TABS_DRAG_DATA_H_
 #define CHROME_BROWSER_UI_GTK_TABS_DRAG_DATA_H_
-#pragma once
 
 #include <vector>
 

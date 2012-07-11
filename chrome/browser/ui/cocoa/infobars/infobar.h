@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_H_
 #define CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_H_
-#pragma once
 
 #include "base/logging.h"  // for DCHECK
 

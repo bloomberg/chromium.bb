@@ -10,7 +10,6 @@
 
 #ifndef CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_H_
 #define CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_H_
-#pragma once
 
 #include <string>
 

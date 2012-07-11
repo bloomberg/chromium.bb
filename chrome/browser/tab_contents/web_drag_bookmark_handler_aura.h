@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_BOOKMARK_HANDLER_AURA_H_
 #define CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_BOOKMARK_HANDLER_AURA_H_
-#pragma once
 
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_drag_dest_delegate.h"

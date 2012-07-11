@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_EXTENSIONS_API_DEFINITIONS_NATIVES_H_
 #define CHROME_RENDERER_EXTENSIONS_API_DEFINITIONS_NATIVES_H_
-#pragma once
 
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"

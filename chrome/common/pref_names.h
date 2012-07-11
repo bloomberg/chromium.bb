@@ -6,7 +6,6 @@
 
 #ifndef CHROME_COMMON_PREF_NAMES_H_
 #define CHROME_COMMON_PREF_NAMES_H_
-#pragma once
 
 #include <stddef.h>
 

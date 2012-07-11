@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_LAZY_BACKGROUND_TASK_QUEUE_H_
 #define CHROME_BROWSER_EXTENSIONS_LAZY_BACKGROUND_TASK_QUEUE_H_
-#pragma once
 
 #include <map>
 #include <set>

@@ -4,7 +4,6 @@
 
 #ifndef UI_UI_VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_IMPL_H_
 #define UI_UI_VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_IMPL_H_
-#pragma once
 
 #include "base/timer.h"
 #include "ui/gfx/point.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_FRAME_READY_MODE_INTERNAL_URL_LAUNCHER_H_
 #define CHROME_FRAME_READY_MODE_INTERNAL_URL_LAUNCHER_H_
-#pragma once
 
 // Implements the launching of a new browser window/tab. The
 // ReadyPromptContent invokes this, in response to user action, to display

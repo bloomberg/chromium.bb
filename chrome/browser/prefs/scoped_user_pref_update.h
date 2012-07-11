@@ -7,7 +7,6 @@
 
 #ifndef CHROME_BROWSER_PREFS_SCOPED_USER_PREF_UPDATE_H_
 #define CHROME_BROWSER_PREFS_SCOPED_USER_PREF_UPDATE_H_
-#pragma once
 
 #include <string>
 

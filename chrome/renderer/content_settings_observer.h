@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_CONTENT_SETTINGS_OBSERVER_H_
 #define CHROME_RENDERER_CONTENT_SETTINGS_OBSERVER_H_
-#pragma once
 
 #include <map>
 #include <set>

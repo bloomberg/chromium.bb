@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_IMAGE_IMAGE_SKIA_SOURCE_H_
 #define UI_GFX_IMAGE_IMAGE_SKIA_SOURCE_H_
-#pragma once
 
 #include "ui/base/layout.h"
 

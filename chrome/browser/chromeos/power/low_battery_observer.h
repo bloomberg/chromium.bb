@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_LOW_BATTERY_OBSERVER_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_LOW_BATTERY_OBSERVER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

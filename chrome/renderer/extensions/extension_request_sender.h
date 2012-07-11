@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_EXTENSIONS_EXTENSION_REQUEST_SENDER_H_
 #define CHROME_RENDERER_EXTENSIONS_EXTENSION_REQUEST_SENDER_H_
-#pragma once
 
 #include <string>
 #include <map>

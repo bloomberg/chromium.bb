@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_ZIP_READER_H_
 #define CHROME_COMMON_ZIP_READER_H_
-#pragma once
 
 #include <string>
 

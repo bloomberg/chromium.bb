@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PROTECTOR_BASE_SETTING_CHANGE_H_
 #define CHROME_BROWSER_PROTECTOR_BASE_SETTING_CHANGE_H_
-#pragma once
 
 #include <utility>
 

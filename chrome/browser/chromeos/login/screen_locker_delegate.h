@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREEN_LOCKER_DELEGATE_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREEN_LOCKER_DELEGATE_H_
-#pragma once
 
 #include "base/string16.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"

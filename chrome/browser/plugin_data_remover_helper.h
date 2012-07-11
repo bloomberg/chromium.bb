@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PLUGIN_DATA_REMOVER_HELPER_H_
 #define CHROME_BROWSER_PLUGIN_DATA_REMOVER_HELPER_H_
-#pragma once
 
 class PluginPrefs;
 

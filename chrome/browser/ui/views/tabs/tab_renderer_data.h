@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_RENDERER_DATA_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_RENDERER_DATA_H_
-#pragma once
 
 #include "base/process_util.h"
 #include "base/string16.h"

@@ -4,7 +4,6 @@
 
 #ifndef DBUS_MOCK_OBJECT_PROXY_H_
 #define DBUS_MOCK_OBJECT_PROXY_H_
-#pragma once
 
 #include <string>
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_WEB_AUTH_FLOW_WINDOW_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_WEB_AUTH_FLOW_WINDOW_VIEWS_H_
-#pragma once
 
 #include "chrome/browser/ui/extensions/web_auth_flow_window.h"
 #include "ui/gfx/rect.h"

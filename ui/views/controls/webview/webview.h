@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_WEBVIEW_WEBVIEW_H_
 #define UI_VIEWS_CONTROLS_WEBVIEW_WEBVIEW_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/notification_observer.h"

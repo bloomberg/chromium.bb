@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CRASH_HANDLER_HOST_LINUX_H_
 #define CHROME_BROWSER_CRASH_HANDLER_HOST_LINUX_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"

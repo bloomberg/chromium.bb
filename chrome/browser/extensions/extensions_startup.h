@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSIONS_STARTUP_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSIONS_STARTUP_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/pack_extension_job.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_INFO_CACHE_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_INFO_CACHE_H_
-#pragma once
 
 #include <map>
 #include <string>

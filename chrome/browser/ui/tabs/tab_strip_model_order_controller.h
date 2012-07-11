@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_ORDER_CONTROLLER_H_
 #define CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_ORDER_CONTROLLER_H_
-#pragma once
 
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/common/page_transition_types.h"

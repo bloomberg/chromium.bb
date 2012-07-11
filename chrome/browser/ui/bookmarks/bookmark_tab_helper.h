@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_TAB_HELPER_H_
-#pragma once
 
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

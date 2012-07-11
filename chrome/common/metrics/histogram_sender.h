@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_METRICS_HISTOGRAM_SENDER_H_
 #define CHROME_COMMON_METRICS_HISTOGRAM_SENDER_H_
-#pragma once
 
 #include <map>
 #include <string>

@@ -7,7 +7,6 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_CRX_UTIL_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_CRX_UTIL_H_
 
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"

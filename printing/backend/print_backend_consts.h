@@ -4,7 +4,6 @@
 
 #ifndef PRINTING_BACKEND_PRINT_BACKEND_CONSTS_H_
 #define PRINTING_BACKEND_PRINT_BACKEND_CONSTS_H_
-#pragma once
 
 #include "printing/printing_export.h"
 

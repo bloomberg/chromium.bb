@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_DRAGDROP_GTK_DND_UTIL_H_
 #define UI_BASE_DRAGDROP_GTK_DND_UTIL_H_
-#pragma once
 
 #include <gtk/gtk.h>
 

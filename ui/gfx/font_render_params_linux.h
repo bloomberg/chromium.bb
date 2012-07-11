@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_FONT_RENDER_PARAMS_LINUX_H_
 #define UI_GFX_FONT_RENDER_PARAMS_LINUX_H_
-#pragma once
 
 #include "ui/base/ui_export.h"
 

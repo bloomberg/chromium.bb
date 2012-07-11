@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_ENV_H_
 #define UI_AURA_ENV_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"

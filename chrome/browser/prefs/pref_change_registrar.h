@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PREFS_PREF_CHANGE_REGISTRAR_H_
 #define CHROME_BROWSER_PREFS_PREF_CHANGE_REGISTRAR_H_
-#pragma once
 
 #include <set>
 #include <string>

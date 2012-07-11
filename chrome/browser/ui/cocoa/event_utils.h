@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_EVENT_UTILS_H_
 #define CHROME_BROWSER_UI_COCOA_EVENT_UTILS_H_
-#pragma once
 
 #import <Cocoa/Cocoa.h>
 

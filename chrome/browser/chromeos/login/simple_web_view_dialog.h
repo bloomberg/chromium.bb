@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SIMPLE_WEB_VIEW_DIALOG_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SIMPLE_WEB_VIEW_DIALOG_H_
-#pragma once
 
 #include <string>
 #include "base/memory/scoped_ptr.h"

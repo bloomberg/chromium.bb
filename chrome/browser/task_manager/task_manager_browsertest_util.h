@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_BROWSERTEST_UTIL_H_
 #define CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_BROWSERTEST_UTIL_H_
-#pragma once
 
 #include "chrome/browser/ui/browser.h"
 

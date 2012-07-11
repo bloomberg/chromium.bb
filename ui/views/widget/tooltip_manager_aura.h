@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_WIDGET_TOOLTIP_MANAGER_AURA_H_
 #define UI_VIEWS_WIDGET_TOOLTIP_MANAGER_AURA_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/string16.h"

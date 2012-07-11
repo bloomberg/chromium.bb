@@ -4,7 +4,6 @@
 
 #ifndef CHROME_INSTALLER_UTIL_SELF_CLEANING_TEMP_DIR_H_
 #define CHROME_INSTALLER_UTIL_SELF_CLEANING_TEMP_DIR_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/file_path.h"

@@ -4,7 +4,6 @@
 
 #ifndef DBUS_MOCK_BUS_H_
 #define DBUS_MOCK_BUS_H_
-#pragma once
 
 #include "dbus/bus.h"
 #include "dbus/object_path.h"

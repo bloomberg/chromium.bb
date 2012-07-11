@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_MESSAGE_BUNDLE_H_
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_MESSAGE_BUNDLE_H_
-#pragma once
 
 #include <map>
 #include <string>

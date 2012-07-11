@@ -14,7 +14,6 @@
 
 #ifndef CHROME_FRAME_TEST_TEST_SCRUBBER_H_
 #define CHROME_FRAME_TEST_TEST_SCRUBBER_H_
-#pragma once
 
 #include "base/string_piece.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_ENTERPRISE_EXTENSION_OBSERVER_H_
 #define CHROME_BROWSER_CHROMEOS_ENTERPRISE_EXTENSION_OBSERVER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/common/extensions/extension.h"

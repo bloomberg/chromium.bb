@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_NOTIFICATIONS_BALLOON_VIEW_HOST_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_NOTIFICATIONS_BALLOON_VIEW_HOST_CHROMEOS_H_
-#pragma once
 
 #include "chrome/browser/ui/views/notifications/balloon_view_host.h"
 

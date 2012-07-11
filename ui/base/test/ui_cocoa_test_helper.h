@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_TEST_UI_COCOA_TEST_HELPER_H_
 #define UI_BASE_TEST_UI_COCOA_TEST_HELPER_H_
-#pragma once
 
 #include <set>
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_ASH_BROWSER_NON_CLIENT_FRAME_VIEW_ASH_H_
 #define CHROME_BROWSER_UI_VIEWS_ASH_BROWSER_NON_CLIENT_FRAME_VIEW_ASH_H_
-#pragma once
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"

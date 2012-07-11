@@ -4,7 +4,6 @@
 
 #ifndef CHROME_INSTALLER_UTIL_APP_COMMANDS_H_
 #define CHROME_INSTALLER_UTIL_APP_COMMANDS_H_
-#pragma once
 
 #include <windows.h>
 

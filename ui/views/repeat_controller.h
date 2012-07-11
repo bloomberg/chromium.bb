@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_REPEAT_CONTROLLER_H_
 #define UI_VIEWS_REPEAT_CONTROLLER_H_
-#pragma once
 
 #include "base/callback.h"
 #include "base/timer.h"

@@ -4,7 +4,6 @@
 
 #ifndef UI_COMPOSITOR_LAYER_OWNER_H_
 #define UI_COMPOSITOR_LAYER_OWNER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"

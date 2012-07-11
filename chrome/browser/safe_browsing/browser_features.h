@@ -7,7 +7,6 @@
 
 #ifndef CHROME_BROWSER_SAFE_BROWSING_BROWSER_FEATURES_H_
 #define CHROME_BROWSER_SAFE_BROWSING_BROWSER_FEATURES_H_
-#pragma once
 
 namespace safe_browsing {
 namespace features {

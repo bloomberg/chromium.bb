@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_GTK_SCOPED_REGION_H_
 #define UI_BASE_GTK_SCOPED_REGION_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/base/ui_export.h"

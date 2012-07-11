@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_NATIVE_THEME_NATIVE_THEME_WIN_H_
 #define UI_BASE_NATIVE_THEME_NATIVE_THEME_WIN_H_
-#pragma once
 
 // A wrapper class for working with custom XP/Vista themes provided in
 // uxtheme.dll.  This is a singleton class that can be grabbed using

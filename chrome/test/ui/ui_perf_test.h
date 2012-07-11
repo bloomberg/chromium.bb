@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_UI_UI_PERF_TEST_H_
 #define CHROME_TEST_UI_UI_PERF_TEST_H_
-#pragma once
 
 #include "chrome/test/ui/ui_test.h"
 

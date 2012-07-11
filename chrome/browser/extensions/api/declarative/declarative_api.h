@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_DECLARATIVE_API_H__
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_DECLARATIVE_API_H__
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"

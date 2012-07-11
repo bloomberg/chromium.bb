@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_ASH_APP_LIST_SEARCH_BUILDER_H_
 #define CHROME_BROWSER_UI_VIEWS_ASH_APP_LIST_SEARCH_BUILDER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"

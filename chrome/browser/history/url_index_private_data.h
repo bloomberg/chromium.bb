@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_HISTORY_URL_INDEX_PRIVATE_DATA_H_
 #define CHROME_BROWSER_HISTORY_URL_INDEX_PRIVATE_DATA_H_
-#pragma once
 
 #include <set>
 #include <string>

@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_WORK_AREA_WATCHER_OBSERVER_H_
 #define UI_BASE_WORK_AREA_WATCHER_OBSERVER_H_
-#pragma once
 
 #include "ui/base/ui_export.h"
 

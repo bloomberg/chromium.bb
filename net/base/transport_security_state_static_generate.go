@@ -420,7 +420,6 @@ func writeHeader(out *bufio.Writer) {
 
 #ifndef NET_BASE_TRANSPORT_SECURITY_STATE_STATIC_H_
 #define NET_BASE_TRANSPORT_SECURITY_STATE_STATIC_H_
-#pragma once
 
 `)
 

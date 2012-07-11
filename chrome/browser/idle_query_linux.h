@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_IDLE_QUERY_LINUX_H_
 #define CHROME_BROWSER_IDLE_QUERY_LINUX_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

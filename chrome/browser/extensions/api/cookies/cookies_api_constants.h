@@ -6,7 +6,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_API_COOKIES_COOKIES_API_CONSTANTS_H_
 #define CHROME_BROWSER_EXTENSIONS_API_COOKIES_COOKIES_API_CONSTANTS_H_
-#pragma once
 
 namespace extensions {
 namespace cookies_api_constants {

@@ -4,7 +4,6 @@
 
 #ifndef BASE_MAC_CLOSURE_BLOCKS_LEOPARD_COMPAT_H_
 #define BASE_MAC_CLOSURE_BLOCKS_LEOPARD_COMPAT_H_
-#pragma once
 
 // libclosure (blocks) compatibility for Mac OS X 10.5 (Leopard)
 //

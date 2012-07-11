@@ -4,7 +4,6 @@
 
 #ifndef GPU_COMMAND_BUFFER_COMMON_COMPILER_SPECIFIC_H_
 #define GPU_COMMAND_BUFFER_COMMON_COMPILER_SPECIFIC_H_
-#pragma once
 
 // Annotate a virtual method indicating it must be overriding a virtual
 // method in the parent class.

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_NETWORK_UI_DATA_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_NETWORK_UI_DATA_H_
-#pragma once
 
 #include <string>
 

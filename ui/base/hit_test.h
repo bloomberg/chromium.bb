@@ -4,7 +4,6 @@
 
 #ifndef VIEWS_WINDOW_HIT_TEST_H_
 #define VIEWS_WINDOW_HIT_TEST_H_
-#pragma once
 
 #if !defined(OS_WIN)
 

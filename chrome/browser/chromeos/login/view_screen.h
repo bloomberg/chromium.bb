@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_VIEW_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_VIEW_SCREEN_H_
-#pragma once
 
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/login/helper.h"

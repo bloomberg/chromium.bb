@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_TRANSFORM_H_
 #define UI_GFX_TRANSFORM_H_
-#pragma once
 
 #include "third_party/skia/include/utils/SkMatrix44.h"
 #include "ui/base/ui_export.h"

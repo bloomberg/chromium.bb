@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_INSTANT_INSTANT_COMMIT_TYPE_H_
 #define CHROME_BROWSER_INSTANT_INSTANT_COMMIT_TYPE_H_
-#pragma once
 
 // Reason why the Instant preview is committed (merged into a tab).
 enum InstantCommitType {

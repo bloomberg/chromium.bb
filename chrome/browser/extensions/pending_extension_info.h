@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_PENDING_EXTENSION_INFO_H_
 #define CHROME_BROWSER_EXTENSIONS_PENDING_EXTENSION_INFO_H_
-#pragma once
 
 #include "base/version.h"
 #include "chrome/common/extensions/extension.h"

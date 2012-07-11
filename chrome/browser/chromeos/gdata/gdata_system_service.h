@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_SYSTEM_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_SYSTEM_SERVICE_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"

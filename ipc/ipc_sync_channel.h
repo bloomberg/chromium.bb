@@ -4,7 +4,6 @@
 
 #ifndef IPC_IPC_SYNC_CHANNEL_H_
 #define IPC_IPC_SYNC_CHANNEL_H_
-#pragma once
 
 #include <string>
 #include <deque>

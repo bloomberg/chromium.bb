@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_SEARCH_SEARCH_MODEL_OBSERVER_H_
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_MODEL_OBSERVER_H_
-#pragma once
 
 namespace chrome {
 namespace search {

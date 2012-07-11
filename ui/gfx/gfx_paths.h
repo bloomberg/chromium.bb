@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_GFX_PATHS_H_
 #define UI_GFX_GFX_PATHS_H_
-#pragma once
 
 #include "ui/base/ui_export.h"
 

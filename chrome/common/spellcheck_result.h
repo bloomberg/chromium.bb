@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_SPELLCHECK_RESULT_H_
 #define CHROME_COMMON_SPELLCHECK_RESULT_H_
-#pragma once
 
 #include "base/string16.h"
 

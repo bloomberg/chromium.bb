@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_CHROME_NOTIFICATION_TYPES_H_
 #define CHROME_COMMON_CHROME_NOTIFICATION_TYPES_H_
-#pragma once
 
 #include "content/public/browser/notification_types.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_BASE_MENU_MODEL_TEST_H_
 #define CHROME_TEST_BASE_MENU_MODEL_TEST_H_
-#pragma once
 
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/simple_menu_model.h"

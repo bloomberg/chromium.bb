@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_EXTENSIONS_CSP_VALIDATOR_H_
 #define CHROME_COMMON_EXTENSIONS_CSP_VALIDATOR_H_
-#pragma once
 
 #include <string>
 

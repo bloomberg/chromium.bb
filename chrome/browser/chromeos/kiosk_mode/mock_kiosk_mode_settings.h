@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_KIOSK_MODE_MOCK_KIOSK_MODE_SETTINGS_H_
 #define CHROME_BROWSER_CHROMEOS_KIOSK_MODE_MOCK_KIOSK_MODE_SETTINGS_H_
-#pragma once
 
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 

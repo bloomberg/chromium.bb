@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_L10N_L10N_UTIL_MAC_H_
 #define UI_BASE_L10N_L10N_UTIL_MAC_H_
-#pragma once
 
 #include <string>
 #include <vector>

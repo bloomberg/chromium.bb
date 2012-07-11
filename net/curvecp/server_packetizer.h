@@ -4,7 +4,6 @@
 
 #ifndef NET_CURVECP_SERVER_PACKETIZER_H_
 #define NET_CURVECP_SERVER_PACKETIZER_H_
-#pragma once
 
 #include <map>
 

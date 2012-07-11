@@ -7,7 +7,6 @@
 
 #ifndef CHROME_BROWSER_HISTORY_HISTORY_MARSHALING_H_
 #define CHROME_BROWSER_HISTORY_HISTORY_MARSHALING_H_
-#pragma once
 
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/cancelable_request.h"

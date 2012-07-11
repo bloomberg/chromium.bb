@@ -4,7 +4,6 @@
 
 #ifndef UI_GL_GL_CONTEXT_CGL_H_
 #define UI_GL_GL_CONTEXT_CGL_H_
-#pragma once
 
 #include <OpenGL/CGLTypes.h>
 

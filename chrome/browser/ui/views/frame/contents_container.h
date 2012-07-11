@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_CONTENTS_CONTAINER_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_CONTENTS_CONTAINER_H_
-#pragma once
 
 #include "ui/views/view.h"
 

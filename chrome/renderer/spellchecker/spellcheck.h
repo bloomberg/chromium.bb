@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_H_
 #define CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_H_
-#pragma once
 
 #include <string>
 #include <queue>

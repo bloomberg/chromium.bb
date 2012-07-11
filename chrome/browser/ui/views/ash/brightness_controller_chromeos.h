@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_ASH_BRIGHTNESS_CONTROLLER_CHROMEOS_H_
 #define CHROME_BROWSER_UI_VIEWS_ASH_BRIGHTNESS_CONTROLLER_CHROMEOS_H_
-#pragma once
 
 #include "ash/system/brightness/brightness_control_delegate.h"
 #include "base/basictypes.h"

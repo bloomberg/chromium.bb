@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_COLLECTED_COOKIES_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_COLLECTED_COOKIES_VIEWS_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/common/content_settings.h"

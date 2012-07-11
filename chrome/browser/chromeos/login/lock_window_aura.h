@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_LOCK_WINDOW_AURA_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_LOCK_WINDOW_AURA_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/lock_window.h"

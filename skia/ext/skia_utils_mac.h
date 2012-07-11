@@ -4,7 +4,6 @@
 
 #ifndef SKIA_EXT_SKIA_UTILS_MAC_H_
 #define SKIA_EXT_SKIA_UTILS_MAC_H_
-#pragma once
 
 #include <ApplicationServices/ApplicationServices.h>
 #include <vector>

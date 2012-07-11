@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROME_TO_MOBILE_SERVICE_H_
 #define CHROME_BROWSER_CHROME_TO_MOBILE_SERVICE_H_
-#pragma once
 
 #include <map>
 #include <set>

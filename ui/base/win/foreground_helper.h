@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_WIN_FOREGROUND_HELPER_H_
 #define UI_BASE_WIN_FOREGROUND_HELPER_H_
-#pragma once
 
 #include "base/logging.h"
 #include "ui/base/win/window_impl.h"

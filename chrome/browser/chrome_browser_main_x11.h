@@ -6,7 +6,6 @@
 
 #ifndef CHROME_BROWSER_CHROME_BROWSER_MAIN_X11_H_
 #define CHROME_BROWSER_CHROME_BROWSER_MAIN_X11_H_
-#pragma once
 
 // Installs the X11 error handlers for the browser process. This will
 // allow us to exit cleanly if X exits before us.

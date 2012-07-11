@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_PDF_PDF_TAB_OBSERVER_H_
 #define CHROME_BROWSER_UI_PDF_PDF_TAB_OBSERVER_H_
-#pragma once
 
 #include "content/public/browser/web_contents_observer.h"
 

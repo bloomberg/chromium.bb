@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_SIGNED_SETTINGS_MIGRATION_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_SIGNED_SETTINGS_MIGRATION_HELPER_H_
-#pragma once
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"

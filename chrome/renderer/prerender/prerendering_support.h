@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_PRERENDER_PRERENDERING_SUPPORT_H_
 #define CHROME_RENDERER_PRERENDER_PRERENDERING_SUPPORT_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebPrerenderingSupport.h"

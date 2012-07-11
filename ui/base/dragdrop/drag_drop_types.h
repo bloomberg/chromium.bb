@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_DRAGDROP_DRAG_DROP_TYPES_H_
 #define UI_BASE_DRAGDROP_DRAG_DROP_TYPES_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/base/ui_export.h"

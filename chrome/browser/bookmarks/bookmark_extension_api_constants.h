@@ -6,7 +6,6 @@
 
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_EXTENSION_API_CONSTANTS_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_EXTENSION_API_CONSTANTS_H_
-#pragma once
 
 namespace bookmark_extension_api_constants {
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_NET_CROS_NETWORK_CHANGE_NOTIFIER_FACTORY_H_
 #define CHROME_BROWSER_CHROMEOS_NET_CROS_NETWORK_CHANGE_NOTIFIER_FACTORY_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "net/base/network_change_notifier_factory.h"

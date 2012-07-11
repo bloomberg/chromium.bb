@@ -4,7 +4,6 @@
 
 #ifndef NET_TOOLS_GDIG_FILE_NET_LOG_H_
 #define NET_TOOLS_GDIG_FILE_NET_LOG_H_
-#pragma once
 
 #include <string>
 

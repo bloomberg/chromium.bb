@@ -7,7 +7,6 @@
 
 #ifndef CHROME_BROWSER_NET_CLEAR_ON_EXIT_POLICY_H_
 #define CHROME_BROWSER_NET_CLEAR_ON_EXIT_POLICY_H_
-#pragma once
 
 #include <string>
 

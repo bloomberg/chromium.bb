@@ -4,7 +4,6 @@
 
 #ifndef UI_WEB_DIALOGS_WEB_DIALOG_OBSERVER_H_
 #define UI_WEB_DIALOGS_WEB_DIALOG_OBSERVER_H_
-#pragma once
 
 namespace content {
 class RenderViewHost;

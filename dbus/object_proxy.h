@@ -4,7 +4,6 @@
 
 #ifndef DBUS_OBJECT_PROXY_H_
 #define DBUS_OBJECT_PROXY_H_
-#pragma once
 
 #include <dbus/dbus.h>
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_HELP_VERSION_UPDATER_BASIC_H_
 #define CHROME_BROWSER_UI_WEBUI_HELP_VERSION_UPDATER_BASIC_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/webui/help/version_updater.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_AUTOMATION_CONSTANTS_H__
 #define CHROME_COMMON_AUTOMATION_CONSTANTS_H__
-#pragma once
 
 #include <string>
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SIGNIN_UBERTOKEN_FETCHER_H_
 #define CHROME_BROWSER_SIGNIN_UBERTOKEN_FETCHER_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"

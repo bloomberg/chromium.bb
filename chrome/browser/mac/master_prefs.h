@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_MAC_MASTER_PREFS_H_
 #define CHROME_BROWSER_MAC_MASTER_PREFS_H_
-#pragma once
 
 #include "base/file_path.h"
 

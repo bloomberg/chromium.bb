@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_INTRANET_REDIRECT_DETECTOR_H_
 #define CHROME_BROWSER_INTRANET_REDIRECT_DETECTOR_H_
-#pragma once
 
 #include <set>
 #include <string>

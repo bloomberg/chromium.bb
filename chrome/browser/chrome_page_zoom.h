@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROME_PAGE_ZOOM_H_
 #define CHROME_BROWSER_CHROME_PAGE_ZOOM_H_
-#pragma once
 
 #include <vector>
 

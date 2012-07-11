@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_PANELS_PANEL_COCOA_H_
 #define CHROME_BROWSER_UI_PANELS_PANEL_COCOA_H_
-#pragma once
 
 #import <Foundation/Foundation.h>
 #include "base/memory/scoped_ptr.h"

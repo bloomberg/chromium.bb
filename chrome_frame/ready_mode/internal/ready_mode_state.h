@@ -4,7 +4,6 @@
 
 #ifndef CHROME_FRAME_READY_MODE_INTERNAL_READY_MODE_STATE_H_
 #define CHROME_FRAME_READY_MODE_INTERNAL_READY_MODE_STATE_H_
-#pragma once
 
 // Allows the UI element to signal the user's response to a Ready Mode prompt.
 class ReadyModeState {

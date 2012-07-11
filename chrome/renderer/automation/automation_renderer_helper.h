@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_AUTOMATION_AUTOMATION_RENDERER_HELPER_H_
 #define CHROME_RENDERER_AUTOMATION_AUTOMATION_RENDERER_HELPER_H_
-#pragma once
 
 #include <string>
 #include <vector>

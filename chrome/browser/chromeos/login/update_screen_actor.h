@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UPDATE_SCREEN_ACTOR_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UPDATE_SCREEN_ACTOR_H_
-#pragma once
 
 #include "base/time.h"
 

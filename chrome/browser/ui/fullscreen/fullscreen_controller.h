@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_H_
 #define CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"

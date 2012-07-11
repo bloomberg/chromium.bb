@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_WIN_DPI_H_
 #define UI_BASE_WIN_DPI_H_
-#pragma once
 
 #include "ui/gfx/size.h"
 #include "ui/base/ui_export.h"

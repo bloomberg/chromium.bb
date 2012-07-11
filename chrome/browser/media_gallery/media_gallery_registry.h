@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_MEDIA_GALLERY_MEDIA_GALLERY_REGISTRY_H_
 #define CHROME_BROWSER_MEDIA_GALLERY_MEDIA_GALLERY_REGISTRY_H_
-#pragma once
 
 #include <list>
 #include <string>

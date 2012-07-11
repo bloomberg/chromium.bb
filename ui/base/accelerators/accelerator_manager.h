@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_ACCELERATORS_ACCELERATOR_MANAGER_H_
 #define UI_BASE_ACCELERATORS_ACCELERATOR_MANAGER_H_
-#pragma once
 
 #include <list>
 #include <map>

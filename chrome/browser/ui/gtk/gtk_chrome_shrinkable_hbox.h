@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_GTK_GTK_CHROME_SHRINKABLE_HBOX_H_
 #define CHROME_BROWSER_UI_GTK_GTK_CHROME_SHRINKABLE_HBOX_H_
-#pragma once
 
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>

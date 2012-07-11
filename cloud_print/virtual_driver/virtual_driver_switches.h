@@ -4,7 +4,6 @@
 
 #ifndef CLOUD_PRINT_VIRTUAL_DRIVER_VIRTUAL_DRIVER_SWITCHES_H_
 #define CLOUD_PRINT_VIRTUAL_DRIVER_VIRTUAL_DRIVER_SWITCHES_H_
-#pragma once
 
 namespace switches {
 // These constants are duplicated from chrome/common/chrome_switches.cc

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_TIME_FORMAT_H_
 #define CHROME_COMMON_TIME_FORMAT_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/string16.h"

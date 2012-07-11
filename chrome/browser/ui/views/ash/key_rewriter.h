@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_ASH_KEY_REWRITER_H_
 #define CHROME_BROWSER_UI_VIEWS_ASH_KEY_REWRITER_H_
-#pragma once
 
 #include <map>
 #include <string>

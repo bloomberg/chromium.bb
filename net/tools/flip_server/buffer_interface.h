@@ -4,7 +4,6 @@
 
 #ifndef NET_TOOLS_FLIP_SERVER_BUFFER_INTERFACE_H__
 #define NET_TOOLS_FLIP_SERVER_BUFFER_INTERFACE_H__
-#pragma once
 
 namespace net {
 

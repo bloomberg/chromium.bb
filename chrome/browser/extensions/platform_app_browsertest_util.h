@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_PLATFORM_APP_BROWSERTEST_UTIL_H_
 #define CHROME_BROWSER_EXTENSIONS_PLATFORM_APP_BROWSERTEST_UTIL_H_
-#pragma once
 
 
 #include "chrome/browser/extensions/extension_apitest.h"

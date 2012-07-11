@@ -32,7 +32,6 @@
 
 #ifndef CHROME_COMMON_EXTENSIONS_VALUE_BUILDER_H_
 #define CHROME_COMMON_EXTENSIONS_VALUE_BUILDER_H_
-#pragma once
 
 #include <string>
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_WEB_PAGE_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_WEB_PAGE_SCREEN_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

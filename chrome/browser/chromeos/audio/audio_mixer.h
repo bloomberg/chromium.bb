@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_AUDIO_AUDIO_MIXER_H_
 #define CHROME_BROWSER_CHROMEOS_AUDIO_AUDIO_MIXER_H_
-#pragma once
 
 #include "base/basictypes.h"
 

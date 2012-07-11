@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_MEDIA_ANDROID_STREAM_TEXTURE_FACTORY_ANDROID_H_
 #define WEBKIT_MEDIA_ANDROID_STREAM_TEXTURE_FACTORY_ANDROID_H_
-#pragma once
 
 namespace WebKit {
 class WebStreamTextureClient;

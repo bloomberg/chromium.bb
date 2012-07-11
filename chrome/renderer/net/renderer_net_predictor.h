@@ -20,7 +20,6 @@
 
 #ifndef CHROME_RENDERER_NET_RENDERER_NET_PREDICTOR_H_
 #define CHROME_RENDERER_NET_RENDERER_NET_PREDICTOR_H_
-#pragma once
 
 #include <map>
 #include <string>

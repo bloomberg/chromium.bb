@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_WINDOW_DIALOG_CLIENT_VIEW_H_
 #define UI_VIEWS_WINDOW_DIALOG_CLIENT_VIEW_H_
-#pragma once
 
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/button.h"

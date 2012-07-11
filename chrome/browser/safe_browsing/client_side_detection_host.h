@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SAFE_BROWSING_CLIENT_SIDE_DETECTION_HOST_H_
 #define CHROME_BROWSER_SAFE_BROWSING_CLIENT_SIDE_DETECTION_HOST_H_
-#pragma once
 
 #include <string>
 #include <vector>

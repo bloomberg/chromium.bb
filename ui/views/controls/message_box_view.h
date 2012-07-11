@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_MESSAGE_BOX_VIEW_H_
 #define UI_VIEWS_CONTROLS_MESSAGE_BOX_VIEW_H_
-#pragma once
 
 #include <vector>
 

@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_DOM_STORAGE_DOM_STORAGE_TASK_RUNNER_
 #define WEBKIT_DOM_STORAGE_DOM_STORAGE_TASK_RUNNER_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"

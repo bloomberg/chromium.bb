@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_TEST_COCOA_TEST_EVENT_UTILS_H_
 #define UI_BASE_TEST_COCOA_TEST_EVENT_UTILS_H_
-#pragma once
 
 #include <utility>
 

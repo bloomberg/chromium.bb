@@ -34,7 +34,6 @@
 
 #ifndef CHROME_BROWSER_SIGNIN_TOKEN_SERVICE_H_
 #define CHROME_BROWSER_SIGNIN_TOKEN_SERVICE_H_
-#pragma once
 
 #include <map>
 #include <string>

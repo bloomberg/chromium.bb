@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_TAB_CONTENTS_TEST_TAB_CONTENTS_H_
 #define CHROME_BROWSER_UI_TAB_CONTENTS_TEST_TAB_CONTENTS_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"

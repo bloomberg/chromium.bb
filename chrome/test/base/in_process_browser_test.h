@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_BASE_IN_PROCESS_BROWSER_TEST_H_
 #define CHROME_TEST_BASE_IN_PROCESS_BROWSER_TEST_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"

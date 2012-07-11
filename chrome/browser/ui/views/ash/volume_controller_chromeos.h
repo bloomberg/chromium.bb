@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_ASH_VOLUME_CONTROLLER_CHROMEOS_H_
 #define CHROME_BROWSER_UI_VIEWS_ASH_VOLUME_CONTROLLER_CHROMEOS_H_
-#pragma once
 
 #include "ash/volume_control_delegate.h"
 #include "base/basictypes.h"

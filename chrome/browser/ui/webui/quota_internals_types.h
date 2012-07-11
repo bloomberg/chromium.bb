@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_QUOTA_INTERNALS_TYPES_H_
 #define CHROME_BROWSER_UI_WEBUI_QUOTA_INTERNALS_TYPES_H_
-#pragma once
 
 #include <map>
 #include <string>

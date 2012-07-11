@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_NET_INTERNALS_NET_INTERNALS_UI_BROWSERTEST_H_
 #define CHROME_BROWSER_UI_WEBUI_NET_INTERNALS_NET_INTERNALS_UI_BROWSERTEST_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/web_ui_browsertest.h"

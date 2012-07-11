@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_THEME_HELPERS_H__
 #define CHROME_BROWSER_UI_VIEWS_THEME_HELPERS_H__
-#pragma once
 
 #include <windows.h>
 

@@ -6,7 +6,6 @@
 
 #ifndef CHROME_BROWSER_NOTIFICATIONS_BALLOON_COLLECTION_H_
 #define CHROME_BROWSER_NOTIFICATIONS_BALLOON_COLLECTION_H_
-#pragma once
 
 #include <deque>
 #include <string>

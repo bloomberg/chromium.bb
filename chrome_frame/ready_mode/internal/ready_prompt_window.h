@@ -4,7 +4,6 @@
 
 #ifndef CHROME_FRAME_READY_MODE_INTERNAL_READY_PROMPT_WINDOW_H_
 #define CHROME_FRAME_READY_MODE_INTERNAL_READY_PROMPT_WINDOW_H_
-#pragma once
 
 #include <atlbase.h>
 #include <atlapp.h>

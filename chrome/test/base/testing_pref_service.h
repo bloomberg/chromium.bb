@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_BASE_TESTING_PREF_SERVICE_H_
 #define CHROME_TEST_BASE_TESTING_PREF_SERVICE_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/prefs/pref_service.h"

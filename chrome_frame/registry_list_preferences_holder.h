@@ -9,7 +9,6 @@
 
 #ifndef CHROME_FRAME_REGISTRY_LIST_PREFERENCES_HOLDER_H_
 #define CHROME_FRAME_REGISTRY_LIST_PREFERENCES_HOLDER_H_
-#pragma once
 
 #include <windows.h>
 

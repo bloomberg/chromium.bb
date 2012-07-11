@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_EVENT_UTILS_H_
 #define CHROME_BROWSER_UI_VIEWS_EVENT_UTILS_H_
-#pragma once
 
 namespace views {
 class Event;

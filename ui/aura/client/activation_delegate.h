@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_CLIENT_ACTIVATION_DELEGATE_H_
 #define UI_AURA_CLIENT_ACTIVATION_DELEGATE_H_
-#pragma once
 
 #include "ui/aura/aura_export.h"
 

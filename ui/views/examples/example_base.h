@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_EXAMPLES_EXAMPLE_BASE_H_
 #define UI_VIEWS_EXAMPLES_EXAMPLE_BASE_H_
-#pragma once
 
 #include <string>
 

@@ -4,7 +4,6 @@
 
 #ifndef UI_SURFACE_ACCELERATED_SURFACE_WIN_H_
 #define UI_SURFACE_ACCELERATED_SURFACE_WIN_H_
-#pragma once
 
 #include <d3d9.h>
 

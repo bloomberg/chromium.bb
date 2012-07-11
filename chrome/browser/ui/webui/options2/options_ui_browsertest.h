@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS2_OPTIONS_UI2_BROWSERTEST_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS2_OPTIONS_UI2_BROWSERTEST_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/test/base/in_process_browser_test.h"

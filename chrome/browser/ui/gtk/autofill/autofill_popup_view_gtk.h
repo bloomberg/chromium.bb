@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_GTK_AUTOFILL_AUTOFILL_POPUP_VIEW_GTK_H_
 #define CHROME_BROWSER_UI_GTK_AUTOFILL_AUTOFILL_POPUP_VIEW_GTK_H_
-#pragma once
 
 #include <pango/pango.h>
 #include <vector>

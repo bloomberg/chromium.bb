@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_EXTENSION_API_CHROMEOS_H_
 #define CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_EXTENSION_API_CHROMEOS_H_
-#pragma once
 
 // This is called by AudioMixerAlsa to signal that it's safe to begin
 // using TTS on ChromeOS - this must happen after AudioMixerAlsa has

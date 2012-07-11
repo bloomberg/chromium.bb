@@ -4,7 +4,6 @@
 
 #ifndef NET_DNS_DNS_CONFIG_WATCHER_H_
 #define NET_DNS_DNS_CONFIG_WATCHER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

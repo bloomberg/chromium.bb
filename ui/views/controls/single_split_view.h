@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_SINGLE_SPLIT_VIEW_H_
 #define UI_VIEWS_CONTROLS_SINGLE_SPLIT_VIEW_H_
-#pragma once
 
 #include "base/gtest_prod_util.h"
 #include "ui/views/view.h"

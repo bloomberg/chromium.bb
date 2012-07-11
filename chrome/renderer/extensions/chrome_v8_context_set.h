@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_EXTENSIONS_CHROME_V8_CONTEXT_SET_H_
 #define CHROME_RENDERER_EXTENSIONS_CHROME_V8_CONTEXT_SET_H_
-#pragma once
 
 #include <set>
 #include <string>

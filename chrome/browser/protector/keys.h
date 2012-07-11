@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PROTECTOR_KEYS_H_
 #define CHROME_BROWSER_PROTECTOR_KEYS_H_
-#pragma once
 
 namespace protector {
 

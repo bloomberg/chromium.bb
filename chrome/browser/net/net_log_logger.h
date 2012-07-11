@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_NET_NET_LOG_LOGGER_H_
 #define CHROME_BROWSER_NET_NET_LOG_LOGGER_H_
-#pragma once
 
 #include "base/memory/scoped_handle.h"
 #include "net/base/net_log.h"

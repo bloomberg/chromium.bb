@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_OPTIONS_TAKE_PHOTO_DIALOG_H_
 #define CHROME_BROWSER_CHROMEOS_OPTIONS_TAKE_PHOTO_DIALOG_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"

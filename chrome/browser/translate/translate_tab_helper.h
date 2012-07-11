@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_TAB_HELPER_H_
 #define CHROME_BROWSER_TRANSLATE_TRANSLATE_TAB_HELPER_H_
-#pragma once
 
 #include "chrome/browser/tab_contents/language_state.h"
 #include "chrome/common/translate_errors.h"

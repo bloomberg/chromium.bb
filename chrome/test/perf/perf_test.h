@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_PERF_PERF_TEST_H_
 #define CHROME_TEST_PERF_PERF_TEST_H_
-#pragma once
 
 #include <stdio.h>
 #include <string>

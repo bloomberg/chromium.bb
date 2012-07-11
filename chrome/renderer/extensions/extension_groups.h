@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_EXTENSIONS_EXTENSION_GROUPS_H_
 #define CHROME_RENDERER_EXTENSIONS_EXTENSION_GROUPS_H_
-#pragma once
 
 // A set of extension groups for use with WebKit::registerExtension and
 // WebFrame::ExecuteScriptInNewWorld to control which extensions get loaded

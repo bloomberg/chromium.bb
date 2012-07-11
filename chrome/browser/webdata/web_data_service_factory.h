@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_FACTORY_H__
 #define CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_FACTORY_H__
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"

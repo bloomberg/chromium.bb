@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_OBSOLETE_OS_H_
 #define CHROME_BROWSER_UI_COCOA_OBSOLETE_OS_H_
-#pragma once
 
 #include "base/mac/mac_util.h"
 #include "base/string16.h"

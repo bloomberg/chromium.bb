@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_H_
 #define CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_H_
-#pragma once
 
 #include "chrome/browser/ui/panels/panel.h"
 #include "ui/gfx/native_widget_types.h"

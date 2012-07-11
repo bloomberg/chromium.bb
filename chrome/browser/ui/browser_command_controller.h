@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_BROWSER_COMMAND_CONTROLLER_H_
 #define CHROME_BROWSER_UI_BROWSER_COMMAND_CONTROLLER_H_
-#pragma once
 
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"

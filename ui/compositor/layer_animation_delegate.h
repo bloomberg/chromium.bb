@@ -4,7 +4,6 @@
 
 #ifndef UI_COMPOSITOR_LAYER_ANIMATION_DELEGATE_H_
 #define UI_COMPOSITOR_LAYER_ANIMATION_DELEGATE_H_
-#pragma once
 
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/rect.h"

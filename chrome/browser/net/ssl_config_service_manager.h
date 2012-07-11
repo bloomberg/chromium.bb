@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_NET_SSL_CONFIG_SERVICE_MANAGER_H_
 #define CHROME_BROWSER_NET_SSL_CONFIG_SERVICE_MANAGER_H_
-#pragma once
 
 namespace net {
 class SSLConfigService;

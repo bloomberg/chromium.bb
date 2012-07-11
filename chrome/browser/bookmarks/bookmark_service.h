@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_SERVICE_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_SERVICE_H_
-#pragma once
 
 #include <vector>
 

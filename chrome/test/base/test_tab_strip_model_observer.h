@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_BASE_TEST_TAB_STRIP_MODEL_OBSERVER_H_
 #define CHROME_TEST_BASE_TEST_TAB_STRIP_MODEL_OBSERVER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"

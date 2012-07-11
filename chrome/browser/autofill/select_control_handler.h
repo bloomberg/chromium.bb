@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_AUTOFILL_SELECT_CONTROL_HANDLER_H_
 #define CHROME_BROWSER_AUTOFILL_SELECT_CONTROL_HANDLER_H_
-#pragma once
 
 #include "chrome/browser/autofill/field_types.h"
 #include "base/string16.h"

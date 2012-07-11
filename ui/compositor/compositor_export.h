@@ -4,7 +4,6 @@
 
 #ifndef UI_COMPOSITOR_COMPOSITOR_EXPORT_H_
 #define UI_COMPOSITOR_COMPOSITOR_EXPORT_H_
-#pragma once
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)

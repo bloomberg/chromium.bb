@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_ASH_APP_LIST_CHROME_APP_LIST_ITEM_H_
 #define CHROME_BROWSER_UI_VIEWS_ASH_APP_LIST_CHROME_APP_LIST_ITEM_H_
-#pragma once
 
 #include "ui/app_list/app_list_item_model.h"
 

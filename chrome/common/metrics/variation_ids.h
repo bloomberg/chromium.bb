@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_METRICS_VARIATION_IDS_H_
 #define CHROME_COMMON_METRICS_VARIATION_IDS_H_
-#pragma once
 
 namespace chrome_variations {
 

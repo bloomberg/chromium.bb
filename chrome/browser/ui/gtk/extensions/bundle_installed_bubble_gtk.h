@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_GTK_EXTENSIONS_BUNDLE_INSTALLED_BUBBLE_GTK_H_
 #define CHROME_BROWSER_UI_GTK_EXTENSIONS_BUNDLE_INSTALLED_BUBBLE_GTK_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

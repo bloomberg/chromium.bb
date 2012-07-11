@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_INTENTS_WEB_INTENT_INLINE_DISPOSITION_DELEGATE_H_
 #define CHROME_BROWSER_UI_INTENTS_WEB_INTENT_INLINE_DISPOSITION_DELEGATE_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"

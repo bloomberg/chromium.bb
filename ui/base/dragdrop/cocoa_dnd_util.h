@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_DRAGDROP_MAC_DND_UTIL_H_
 #define UI_BASE_DRAGDROP_MAC_DND_UTIL_H_
-#pragma once
 
 #import <Cocoa/Cocoa.h>
 

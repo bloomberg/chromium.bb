@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_EDIT_CONTROLLER_H_
 #define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_EDIT_CONTROLLER_H_
-#pragma once
 
 #include "base/string16.h"
 #include "content/public/common/page_transition_types.h"

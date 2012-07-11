@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_ROOT_WINDOW_MAC_H_
 #define UI_AURA_ROOT_WINDOW_MAC_H_
-#pragma once
 
 #import <Cocoa/Cocoa.h>
 

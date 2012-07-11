@@ -4,7 +4,6 @@
 
 #ifndef NET_CURVECP_PACKETIZER_H_
 #define NET_CURVECP_PACKETIZER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "net/base/completion_callback.h"

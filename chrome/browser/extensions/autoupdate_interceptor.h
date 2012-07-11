@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_AUTOUPDATE_INTERCEPTOR_H_
 #define CHROME_BROWSER_EXTENSIONS_AUTOUPDATE_INTERCEPTOR_H_
-#pragma once
 
 #include <map>
 #include <string>

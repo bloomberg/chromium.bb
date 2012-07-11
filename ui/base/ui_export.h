@@ -4,7 +4,6 @@
 
 #ifndef UI_UI_EXPORT_H_
 #define UI_UI_EXPORT_H_
-#pragma once
 
 // Defines UI_EXPORT so that functionality implemented by the UI module can be
 // exported to consumers.

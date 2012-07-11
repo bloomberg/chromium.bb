@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_IME_INPUT_METHOD_IBUS_H_
 #define UI_BASE_IME_INPUT_METHOD_IBUS_H_
-#pragma once
 
 #include <set>
 #include <string>

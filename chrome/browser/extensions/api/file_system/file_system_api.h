@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_API_FILE_SYSTEM_FILE_SYSTEM_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_FILE_SYSTEM_FILE_SYSTEM_API_H_
-#pragma once
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/ui/select_file_dialog.h"

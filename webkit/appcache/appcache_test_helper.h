@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_APPCACHE_APPCACHE_TEST_HELPER_H_
 #define WEBKIT_APPCACHE_APPCACHE_TEST_HELPER_H_
-#pragma once
 
 #include <set>
 

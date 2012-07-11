@@ -16,7 +16,6 @@
 
 #ifndef CHROME_RENDERER_SAFE_BROWSING_PHISHING_THUMBNAILER_H_
 #define CHROME_RENDERER_SAFE_BROWSING_PHISHING_THUMBNAILER_H_
-#pragma once
 
 namespace content {
 class RenderView;

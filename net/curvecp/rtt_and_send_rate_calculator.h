@@ -4,7 +4,6 @@
 
 #ifndef NET_CURVECP_RTT_AND_SEND_RATE_CALCULATOR_H_
 #define NET_CURVECP_RTT_AND_SEND_RATE_CALCULATOR_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/time.h"

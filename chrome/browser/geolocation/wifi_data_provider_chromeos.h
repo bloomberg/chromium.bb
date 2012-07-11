@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_CHROMEOS_H_
 #define CHROME_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_CHROMEOS_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "content/browser/geolocation/wifi_data_provider_common.h"

@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_ANIMATION_ANIMATION_CONTAINER_ELEMENT_H_
 #define UI_BASE_ANIMATION_ANIMATION_CONTAINER_ELEMENT_H_
-#pragma once
 
 #include "base/time.h"
 #include "ui/base/ui_export.h"

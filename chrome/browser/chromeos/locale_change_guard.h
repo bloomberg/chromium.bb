@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOCALE_CHANGE_GUARD_H_
 #define CHROME_BROWSER_CHROMEOS_LOCALE_CHANGE_GUARD_H_
-#pragma once
 
 #include <string>
 

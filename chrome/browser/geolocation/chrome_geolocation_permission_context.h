@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_GEOLOCATION_CHROME_GEOLOCATION_PERMISSION_CONTEXT_H_
 #define CHROME_BROWSER_GEOLOCATION_CHROME_GEOLOCATION_PERMISSION_CONTEXT_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/geolocation_permission_context.h"

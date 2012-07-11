@@ -8,7 +8,6 @@
 
 #ifndef CHROME_APP_IMAGE_PRE_READER_WIN_H_
 #define CHROME_APP_IMAGE_PRE_READER_WIN_H_
-#pragma once
 
 #include "base/basictypes.h"
 

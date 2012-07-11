@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_PROFILE_ERROR_DIALOG_H_
 #define CHROME_BROWSER_UI_PROFILE_ERROR_DIALOG_H_
-#pragma once
 
 // Shows an error dialog corresponding to the inability to open some portion of
 // the profile. |message_id| is a string id corresponding to the message to

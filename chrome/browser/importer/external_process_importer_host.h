@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_IMPORTER_EXTERNAL_PROCESS_IMPORTER_HOST_H_
 #define CHROME_BROWSER_IMPORTER_EXTERNAL_PROCESS_IMPORTER_HOST_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

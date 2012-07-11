@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_WEB_UI_BROWSERTEST_H_
 #define CHROME_BROWSER_UI_WEBUI_WEB_UI_BROWSERTEST_H_
-#pragma once
 
 #include <string>
 #include <vector>

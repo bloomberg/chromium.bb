@@ -30,7 +30,6 @@
 
 #ifndef UI_BASE_KEYCODES_KEYBOARD_CODES_POSIX_H_
 #define UI_BASE_KEYCODES_KEYBOARD_CODES_POSIX_H_
-#pragma once
 
 namespace ui {
 

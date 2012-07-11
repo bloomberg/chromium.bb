@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_VIEW_MAC_H_
 #define CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_VIEW_MAC_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkBitmap.h"

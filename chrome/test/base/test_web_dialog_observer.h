@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_BASE_TEST_WEB_DIALOG_OBSERVER_H_
 #define CHROME_TEST_BASE_TEST_WEB_DIALOG_OBSERVER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

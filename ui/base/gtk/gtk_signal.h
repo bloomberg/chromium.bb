@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_GTK_GTK_SIGNAL_H_
 #define UI_BASE_GTK_GTK_SIGNAL_H_
-#pragma once
 
 #include "ui/base/glib/glib_signal.h"
 

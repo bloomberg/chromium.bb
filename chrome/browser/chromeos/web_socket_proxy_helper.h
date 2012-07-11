@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_WEB_SOCKET_PROXY_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_WEB_SOCKET_PROXY_HELPER_H_
-#pragma once
 
 #include <string>
 #include "base/basictypes.h"

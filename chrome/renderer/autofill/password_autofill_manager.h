@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_AUTOFILL_PASSWORD_AUTOFILL_MANAGER_H_
 #define CHROME_RENDERER_AUTOFILL_PASSWORD_AUTOFILL_MANAGER_H_
-#pragma once
 
 #include <map>
 #include <vector>

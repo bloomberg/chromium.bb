@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_AUTOFILL_AUTOFILL_COMMON_TEST_H_
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_COMMON_TEST_H_
-#pragma once
 
 class AutofillProfile;
 class CreditCard;

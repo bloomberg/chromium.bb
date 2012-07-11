@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_NET_SERVICE_PROVIDERS_WIN_H_
 #define CHROME_BROWSER_NET_SERVICE_PROVIDERS_WIN_H_
-#pragma once
 
 #include <vector>
 

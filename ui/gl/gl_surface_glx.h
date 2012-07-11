@@ -4,7 +4,6 @@
 
 #ifndef UI_GL_GL_SURFACE_GLX_H_
 #define UI_GL_GL_SURFACE_GLX_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/base/x/x11_util.h"

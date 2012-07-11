@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_WRAPPER_H_
 #define UI_VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_WRAPPER_H_
-#pragma once
 
 #include "ui/views/views_export.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_WEBDRIVER_COMMANDS_COOKIE_COMMANDS_H_
 #define CHROME_TEST_WEBDRIVER_COMMANDS_COOKIE_COMMANDS_H_
-#pragma once
 
 #include <string>
 #include <vector>

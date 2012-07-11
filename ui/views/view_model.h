@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_VIEW_MODEL_H_
 #define UI_VIEWS_VIEW_MODEL_H_
-#pragma once
 
 #include <vector>
 

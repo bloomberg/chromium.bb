@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_ALTERNATE_NAV_URL_FETCHER_H_
 #define CHROME_BROWSER_ALTERNATE_NAV_URL_FETCHER_H_
-#pragma once
 
 #include <string>
 

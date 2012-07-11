@@ -6,7 +6,6 @@
 
 #ifndef IPC_IPC_SWITCHES_H_
 #define IPC_IPC_SWITCHES_H_
-#pragma once
 
 #include "ipc/ipc_export.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_PLUGINS_NPAPI_PLUGIN_GROUP_H_
 #define WEBKIT_PLUGINS_NPAPI_PLUGIN_GROUP_H_
-#pragma once
 
 #include <string>
 #include <vector>

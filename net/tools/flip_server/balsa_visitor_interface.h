@@ -4,7 +4,6 @@
 
 #ifndef NET_TOOLS_FLIP_SERVER_BALSA_VISITOR_INTERFACE_H_
 #define NET_TOOLS_FLIP_SERVER_BALSA_VISITOR_INTERFACE_H_
-#pragma once
 
 #include <cstddef>
 

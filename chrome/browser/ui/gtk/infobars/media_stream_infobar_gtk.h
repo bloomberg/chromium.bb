@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_GTK_INFOBARS_MEDIA_STREAM_INFOBAR_GTK_H_
 #define CHROME_BROWSER_UI_GTK_INFOBARS_MEDIA_STREAM_INFOBAR_GTK_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"

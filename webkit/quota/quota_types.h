@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_QUOTA_QUOTA_TYPES_H_
 #define WEBKIT_QUOTA_QUOTA_TYPES_H_
-#pragma once
 
 #include <deque>
 #include <map>

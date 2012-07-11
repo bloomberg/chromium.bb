@@ -4,7 +4,6 @@
 
 #ifndef CHROME_RENDERER_EXTENSIONS_TAB_FINDER_H_
 #define CHROME_RENDERER_EXTENSIONS_TAB_FINDER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_ATTRITION_EXPERIMENTS_H_
 #define CHROME_COMMON_ATTRITION_EXPERIMENTS_H_
-#pragma once
 
 #include "grit/chromium_strings.h"
 

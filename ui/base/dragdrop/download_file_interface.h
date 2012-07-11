@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_DRAGDROP_DOWNLOAD_FILE_INTERFACE_H_
 #define UI_BASE_DRAGDROP_DOWNLOAD_FILE_INTERFACE_H_
-#pragma once
 
 #include "build/build_config.h"
 

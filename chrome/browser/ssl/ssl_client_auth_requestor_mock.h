@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SSL_SSL_CLIENT_AUTH_REQUESTOR_MOCK_H_
 #define CHROME_BROWSER_SSL_SSL_CLIENT_AUTH_REQUESTOR_MOCK_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "testing/gmock/include/gmock/gmock.h"

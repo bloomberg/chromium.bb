@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_QUOTA_MOCK_QUOTA_MANAGER_H_
 #define WEBKIT_QUOTA_MOCK_QUOTA_MANAGER_H_
-#pragma once
 
 #include <vector>
 #include <string>

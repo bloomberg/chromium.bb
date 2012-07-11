@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_CURSOR_CURSOR_H_
 #define UI_BASE_CURSOR_CURSOR_H_
-#pragma once
 
 #include "build/build_config.h"
 #include "ui/base/ui_export.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_TOOLKIT_EXTRA_PARTS_H_
 #define CHROME_BROWSER_TOOLKIT_EXTRA_PARTS_H_
-#pragma once
 
 #include "build/build_config.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_PANGO_UTIL_H_
 #define UI_GFX_PANGO_UTIL_H_
-#pragma once
 
 #include <cairo/cairo.h>
 #include <pango/pango.h>

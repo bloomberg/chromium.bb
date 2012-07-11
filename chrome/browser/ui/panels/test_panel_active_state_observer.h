@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_PANELS_TEST_PANEL_ACTIVE_STATE_OBSERVER_H_
 #define CHROME_BROWSER_UI_PANELS_TEST_PANEL_ACTIVE_STATE_OBSERVER_H_
-#pragma once
 
 #include "chrome/test/base/ui_test_utils.h"
 

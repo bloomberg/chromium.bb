@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_POPUP_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_POPUP_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_host.h"

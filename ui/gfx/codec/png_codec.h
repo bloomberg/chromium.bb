@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_CODEC_PNG_CODEC_H_
 #define UI_GFX_CODEC_PNG_CODEC_H_
-#pragma once
 
 #include <string>
 #include <vector>

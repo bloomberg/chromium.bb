@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_CERTIFICATE_VIEWER_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_CERTIFICATE_VIEWER_UI_H_
-#pragma once
 
 #include "ui/web_dialogs/constrained_web_dialog_ui.h"
 

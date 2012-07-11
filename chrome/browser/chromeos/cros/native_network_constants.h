@@ -6,7 +6,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_NATIVE_NETWORK_CONSTANTS_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_NATIVE_NETWORK_CONSTANTS_H_
-#pragma once
 
 #include "chrome/browser/chromeos/cros/network_library.h"
 

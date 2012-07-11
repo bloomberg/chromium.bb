@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_BLUETOOTH_BLUETOOTH_ADAPTER_H_
 #define CHROME_BROWSER_CHROMEOS_BLUETOOTH_BLUETOOTH_ADAPTER_H_
-#pragma once
 
 #include <map>
 #include <string>

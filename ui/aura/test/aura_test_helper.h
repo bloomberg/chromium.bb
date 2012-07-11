@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_TEST_AURA_TEST_HELPER_H_
 #define UI_AURA_TEST_AURA_TEST_HELPER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_NACL_NACL_LISTENER_H_
 #define CHROME_NACL_NACL_LISTENER_H_
-#pragma once
 
 #include <vector>
 

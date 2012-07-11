@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_NACL_HOST_NACL_VALIDATION_CACHE_H_
 #define CHROME_BROWSER_NACL_HOST_NACL_VALIDATION_CACHE_H_
-#pragma once
 
 #include "base/memory/mru_cache.h"
 

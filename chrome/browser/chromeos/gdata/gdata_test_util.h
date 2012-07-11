@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_TEST_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_TEST_UTIL_H_
-#pragma once
 
 namespace gdata {
 namespace test_util {

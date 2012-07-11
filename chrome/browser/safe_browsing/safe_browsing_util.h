@@ -6,7 +6,6 @@
 
 #ifndef CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_UTIL_H_
 #define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_UTIL_H_
-#pragma once
 
 #include <cstring>
 #include <deque>

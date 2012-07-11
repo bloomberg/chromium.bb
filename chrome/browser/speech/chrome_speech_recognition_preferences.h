@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SPEECH_CHROME_SPEECH_RECOGNITION_PREFERENCES_H_
 #define CHROME_BROWSER_SPEECH_CHROME_SPEECH_RECOGNITION_PREFERENCES_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"

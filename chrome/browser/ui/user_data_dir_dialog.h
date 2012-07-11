@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_USER_DATA_DIR_DIALOG_H_
 #define CHROME_BROWSER_UI_USER_DATA_DIR_DIALOG_H_
-#pragma once
 
 class FilePath;
 

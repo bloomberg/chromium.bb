@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_CONTROLS_TABBED_PANE_TABBED_PANE_H_
 #define UI_VIEWS_CONTROLS_TABBED_PANE_TABBED_PANE_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

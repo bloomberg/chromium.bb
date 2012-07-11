@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_APP_MENU_BUTTON_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_APP_MENU_BUTTON_WIN_H_
-#pragma once
 
 #include "ui/views/controls/button/menu_button.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_ENGINE_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_ENGINE_H_
-#pragma once
 
 #include <string>
 #include <vector>

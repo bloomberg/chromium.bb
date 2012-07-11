@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_DRAGDROP_DRAG_SOURCE_H_
 #define UI_BASE_DRAGDROP_DRAG_SOURCE_H_
-#pragma once
 
 #include <objidl.h>
 

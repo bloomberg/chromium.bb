@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_LIBGTK2UI_GTK2_UTIL_H_
 #define CHROME_BROWSER_UI_LIBGTK2UI_GTK2_UTIL_H_
-#pragma once
 
 typedef struct _GdkPixbuf GdkPixbuf;
 

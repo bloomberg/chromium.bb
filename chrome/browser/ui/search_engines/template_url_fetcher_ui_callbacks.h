@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_UI_CALLBACKS_H_
 #define CHROME_BROWSER_UI_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_UI_CALLBACKS_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

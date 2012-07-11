@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_FIRST_RUN_TRY_CHROME_DIALOG_VIEW_H_
 #define CHROME_BROWSER_FIRST_RUN_TRY_CHROME_DIALOG_VIEW_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

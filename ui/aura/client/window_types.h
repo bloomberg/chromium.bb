@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_WINDOW_TYPES_H_
 #define UI_AURA_WINDOW_TYPES_H_
-#pragma once
 
 namespace aura {
 namespace client {

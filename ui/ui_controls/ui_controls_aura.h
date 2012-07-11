@@ -4,7 +4,6 @@
 
 #ifndef UI_UI_CONTROLS_UI_CONTROLS_AURA_H_
 #define UI_UI_CONTROLS_UI_CONTROLS_AURA_H_
-#pragma once
 
 #include "base/callback_forward.h"
 #include "ui/base/keycodes/keyboard_codes.h"

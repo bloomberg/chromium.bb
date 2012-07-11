@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PREDICTORS_PREDICTOR_DATABASE_H_
 #define CHROME_BROWSER_PREDICTORS_PREDICTOR_DATABASE_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"

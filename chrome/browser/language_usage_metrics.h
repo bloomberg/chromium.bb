@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_LANGUAGE_USAGE_METRICS_H_
 #define CHROME_BROWSER_LANGUAGE_USAGE_METRICS_H_
-#pragma once
 
 #include <set>
 #include <string>

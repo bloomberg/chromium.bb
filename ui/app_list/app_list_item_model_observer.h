@@ -4,7 +4,6 @@
 
 #ifndef UI_APP_LIST_APP_LIST_ITEM_MODEL_OBSERVER_H_
 #define UI_APP_LIST_APP_LIST_ITEM_MODEL_OBSERVER_H_
-#pragma once
 
 #include "ui/app_list/app_list_export.h"
 

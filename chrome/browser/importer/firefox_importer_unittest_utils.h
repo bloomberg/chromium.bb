@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_IMPORTER_FIREFOX_IMPORTER_UNITTEST_UTILS_H_
 #define CHROME_BROWSER_IMPORTER_FIREFOX_IMPORTER_UNITTEST_UTILS_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

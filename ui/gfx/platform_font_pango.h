@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_PLATFORM_FONT_PANGO_H_
 #define UI_GFX_PLATFORM_FONT_PANGO_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_INPUT_API_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_INPUT_API_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"

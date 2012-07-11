@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_MODEL_H_
 #define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_MODEL_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"

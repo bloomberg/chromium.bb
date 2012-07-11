@@ -4,7 +4,6 @@
 
 #ifndef PPAPI_HOST_PPAPI_HOST_EXPORT_H_
 #define PPAPI_HOST_PPAPI_HOST_EXPORT_H_
-#pragma once
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)

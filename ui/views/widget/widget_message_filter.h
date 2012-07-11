@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_WIDGET_WIDGET_MESSAGE_FILTER_H_
 #define UI_VIEWS_WIDGET_WIDGET_MESSAGE_FILTER_H_
-#pragma once
 
 #include "ui/base/win/hwnd_subclass.h"
 

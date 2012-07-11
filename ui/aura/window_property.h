@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_WINDOW_PROPERTY_H_
 #define UI_AURA_WINDOW_PROPERTY_H_
-#pragma once
 
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window.h"

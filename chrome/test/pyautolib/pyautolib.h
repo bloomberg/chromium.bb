@@ -7,7 +7,6 @@
 
 #ifndef CHROME_TEST_PYAUTOLIB_PYAUTOLIB_H_
 #define CHROME_TEST_PYAUTOLIB_PYAUTOLIB_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"

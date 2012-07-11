@@ -4,7 +4,6 @@
 
 #ifndef DBUS_PROPERTY_H_
 #define DBUS_PROPERTY_H_
-#pragma once
 
 #include <map>
 #include <string>

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_NET_GAIA_OAUTH2_ACCESS_TOKEN_FETCHER_H_
 #define CHROME_COMMON_NET_GAIA_OAUTH2_ACCESS_TOKEN_FETCHER_H_
-#pragma once
 
 #include <string>
 #include <vector>

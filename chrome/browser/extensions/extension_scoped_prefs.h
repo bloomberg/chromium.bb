@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_SCOPED_PREFS_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SCOPED_PREFS_H_
-#pragma once
 
 class ExtensionScopedPrefs {
  public:

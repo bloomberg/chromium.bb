@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_BUTTON_BORDER_H_
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_BUTTON_BORDER_H_
-#pragma once
 
 #include "ui/views/controls/button/text_button.h"
 

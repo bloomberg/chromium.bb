@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_MINI_INSTALLER_TEST_SWITCH_BUILDER_H_
 #define CHROME_TEST_MINI_INSTALLER_TEST_SWITCH_BUILDER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/command_line.h"

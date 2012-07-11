@@ -4,7 +4,6 @@
 
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GL_SURFACE_MOCK_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GL_SURFACE_MOCK_H_
-#pragma once
 
 #include "ui/gl/gl_surface.h"
 #include "testing/gmock/include/gmock/gmock.h"

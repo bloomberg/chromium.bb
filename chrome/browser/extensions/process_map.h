@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_PROCESS_MAP_H_
 #define CHROME_BROWSER_EXTENSIONS_PROCESS_MAP_H_
-#pragma once
 
 #include <set>
 #include <string>

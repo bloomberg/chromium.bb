@@ -164,7 +164,6 @@ def _WritePolicyConstantHeader(template_file_contents, args, opts):
 
     f.write('#ifndef CHROME_COMMON_POLICY_CONSTANTS_H_\n'
             '#define CHROME_COMMON_POLICY_CONSTANTS_H_\n'
-            '#pragma once\n'
             '\n'
             '#include <string>\n'
             '\n'

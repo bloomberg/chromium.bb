@@ -4,7 +4,6 @@
 
 #ifndef DBUS_MOCK_EXPORTED_OBJECT_H_
 #define DBUS_MOCK_EXPORTED_OBJECT_H_
-#pragma once
 
 #include <string>
 

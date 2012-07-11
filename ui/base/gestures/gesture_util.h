@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_GESTURES_GESTURE_UTIL_H_
 #define UI_BASE_GESTURES_GESTURE_UTIL_H_
-#pragma once
 
 #include "ui/base/ui_export.h"
 

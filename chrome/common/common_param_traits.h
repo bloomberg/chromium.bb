@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_COMMON_PARAM_TRAITS_H_
 #define CHROME_COMMON_COMMON_PARAM_TRAITS_H_
-#pragma once
 
 // This file provides declarations of IPC serialization macros that are used
 // in more than one IPC message file.

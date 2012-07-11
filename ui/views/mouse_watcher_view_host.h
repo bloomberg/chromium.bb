@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_MOUSE_WATCHER_VIEW_HOST_H_
 #define UI_VIEWS_MOUSE_WATCHER_VIEW_HOST_H_
-#pragma once
 
 #include "ui/views/mouse_watcher.h"
 

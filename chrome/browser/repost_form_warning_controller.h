@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_REPOST_FORM_WARNING_CONTROLLER_H_
 #define CHROME_BROWSER_REPOST_FORM_WARNING_CONTROLLER_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_COMMON_NACL_HELPER_LINUX_H_
 #define CHROME_COMMON_NACL_HELPER_LINUX_H_
-#pragma once
 
 // A mini-zygote specifically for Native Client. This file defines
 // constants used to implement communication between the nacl_helper

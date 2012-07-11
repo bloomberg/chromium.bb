@@ -4,7 +4,6 @@
 
 #ifndef CHROME_APP_CHROME_MAIN_DELEGATE_H_
 #define CHROME_APP_CHROME_MAIN_DELEGATE_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/stats_counters.h"

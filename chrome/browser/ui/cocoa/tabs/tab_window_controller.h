@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_COCOA_TABS_TAB_WINDOW_CONTROLLER_H_
 #define CHROME_BROWSER_UI_COCOA_TABS_TAB_WINDOW_CONTROLLER_H_
-#pragma once
 
 // A class acting as the Objective-C window controller for a window that has
 // tabs which can be dragged around. Tabs can be re-arranged within the same

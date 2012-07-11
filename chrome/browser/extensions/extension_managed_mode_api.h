@@ -7,7 +7,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGED_MODE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGED_MODE_API_H_
-#pragma once
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"

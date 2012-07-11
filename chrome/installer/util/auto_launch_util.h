@@ -4,7 +4,6 @@
 
 #ifndef CHROME_INSTALLER_UTIL_AUTO_LAUNCH_UTIL_H_
 #define CHROME_INSTALLER_UTIL_AUTO_LAUNCH_UTIL_H_
-#pragma once
 
 #include "base/string16.h"
 

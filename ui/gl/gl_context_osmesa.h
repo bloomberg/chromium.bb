@@ -4,7 +4,6 @@
 
 #ifndef UI_GL_GL_CONTEXT_OSMESA_H_
 #define UI_GL_GL_CONTEXT_OSMESA_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

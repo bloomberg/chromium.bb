@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_ASH_WINDOW_POSITIONER_H_
 #define CHROME_BROWSER_UI_VIEWS_ASH_WINDOW_POSITIONER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/gfx/rect.h"

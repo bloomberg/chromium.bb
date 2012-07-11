@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_DIALOGS_BASE_SHELL_DIALOG_H_
 #define UI_BASE_DIALOGS_BASE_SHELL_DIALOG_H_
-#pragma once
 
 #include "ui/base/ui_export.h"
 #include "ui/gfx/native_widget_types.h"

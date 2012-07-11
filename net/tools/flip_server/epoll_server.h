@@ -4,7 +4,6 @@
 
 #ifndef NET_TOOLS_FLIP_SERVER_EPOLL_SERVER_H_
 #define NET_TOOLS_FLIP_SERVER_EPOLL_SERVER_H_
-#pragma once
 
 #include <fcntl.h>
 #include <sys/queue.h>

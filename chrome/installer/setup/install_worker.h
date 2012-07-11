@@ -7,7 +7,6 @@
 
 #ifndef CHROME_INSTALLER_SETUP_INSTALL_WORKER_H_
 #define CHROME_INSTALLER_SETUP_INSTALL_WORKER_H_
-#pragma once
 
 #include <windows.h>
 

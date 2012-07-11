@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_TOOLS_TEST_SHELL_SIMPLE_DOM_STORAGE_SYSTEM_H_
 #define WEBKIT_TOOLS_TEST_SHELL_SIMPLE_DOM_STORAGE_SYSTEM_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

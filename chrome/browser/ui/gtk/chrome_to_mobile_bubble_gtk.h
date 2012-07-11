@@ -10,7 +10,6 @@
 
 #ifndef CHROME_BROWSER_UI_GTK_CHROME_TO_MOBILE_BUBBLE_GTK_H_
 #define CHROME_BROWSER_UI_GTK_CHROME_TO_MOBILE_BUBBLE_GTK_H_
-#pragma once
 
 #include <map>
 #include <vector>

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_NACL_HOST_NACL_BROWSER_H_
 #define CHROME_BROWSER_NACL_HOST_NACL_BROWSER_H_
-#pragma once
 
 #include "base/bind.h"
 #include "base/file_util_proxy.h"

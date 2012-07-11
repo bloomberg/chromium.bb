@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_NET_PREF_PROXY_CONFIG_TRACKER_IMPL_H_
 #define CHROME_BROWSER_NET_PREF_PROXY_CONFIG_TRACKER_IMPL_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"

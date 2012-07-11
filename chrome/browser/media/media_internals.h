@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_MEDIA_MEDIA_INTERNALS_H_
 #define CHROME_BROWSER_MEDIA_MEDIA_INTERNALS_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"

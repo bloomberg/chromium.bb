@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_CHROMEOS_FILEAPI_REMOTE_FILE_STREAM_WRITER_H_
 #define WEBKIT_CHROMEOS_FILEAPI_REMOTE_FILE_STREAM_WRITER_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/file_path.h"

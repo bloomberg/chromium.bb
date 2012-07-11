@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_TEST_TEST_WINDOWS_H_
 #define UI_AURA_TEST_TEST_WINDOWS_H_
-#pragma once
 
 #include <string>
 

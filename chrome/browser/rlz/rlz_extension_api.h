@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_RLZ_RLZ_EXTENSION_API_H_
 #define CHROME_BROWSER_RLZ_RLZ_EXTENSION_API_H_
-#pragma once
 
 #include "build/build_config.h"
 

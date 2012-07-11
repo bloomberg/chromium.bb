@@ -4,7 +4,6 @@
 
 #ifndef CHROME_NACL_NACL_IPC_ADAPTER_H_
 #define CHROME_NACL_NACL_IPC_ADAPTER_H_
-#pragma once
 
 #include <queue>
 #include <string>

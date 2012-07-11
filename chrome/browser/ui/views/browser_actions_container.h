@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_BROWSER_ACTIONS_CONTAINER_H_
 #define CHROME_BROWSER_UI_VIEWS_BROWSER_ACTIONS_CONTAINER_H_
-#pragma once
 
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/views/extensions/browser_action_overflow_menu_controller.h"

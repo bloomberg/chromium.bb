@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_IMAGE_CAIRO_CACHED_SURFACE_H_
 #define UI_GFX_IMAGE_CAIRO_CACHED_SURFACE_H_
-#pragma once
 
 #include <vector>
 

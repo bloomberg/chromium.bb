@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_NET_HTTP_SERVER_PROPERTIES_MANAGER_H_
 #define CHROME_BROWSER_NET_HTTP_SERVER_PROPERTIES_MANAGER_H_
-#pragma once
 
 #include <string>
 #include <vector>

@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_UI_CONTROLS_AURA_H_
 #define UI_AURA_UI_CONTROLS_AURA_H_
-#pragma once
 
 #include "ui/aura/aura_export.h"
 

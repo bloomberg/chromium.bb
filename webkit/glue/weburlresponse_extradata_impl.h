@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_GLUE_WEBURLRESPONSE_EXTRADATA_IMPL_H_
 #define WEBKIT_GLUE_WEBURLRESPONSE_EXTRADATA_IMPL_H_
-#pragma once
 
 #include <string>
 

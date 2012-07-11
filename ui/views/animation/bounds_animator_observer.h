@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_ANIMATION_BOUNDS_ANIMATOR_OBSERVER_H_
 #define UI_VIEWS_ANIMATION_BOUNDS_ANIMATOR_OBSERVER_H_
-#pragma once
 
 #include "ui/views/views_export.h"
 

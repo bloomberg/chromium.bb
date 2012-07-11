@@ -4,7 +4,6 @@
 
 #ifndef GPU_IPC_COMMAND_BUFFER_PROXY_H_
 #define GPU_IPC_COMMAND_BUFFER_PROXY_H_
-#pragma once
 
 #include <string>
 

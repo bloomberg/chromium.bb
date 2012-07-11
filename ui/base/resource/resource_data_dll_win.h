@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_RESOURCE_RESOURCE_DATA_DLL_WIN_H_
 #define UI_BASE_RESOURCE_RESOURCE_DATA_DLL_WIN_H_
-#pragma once
 
 #include <windows.h>
 

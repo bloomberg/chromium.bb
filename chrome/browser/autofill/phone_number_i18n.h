@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_AUTOFILL_PHONE_NUMBER_I18N_H_
 #define CHROME_BROWSER_AUTOFILL_PHONE_NUMBER_I18N_H_
-#pragma once
 
 #include <string>
 #include <vector>

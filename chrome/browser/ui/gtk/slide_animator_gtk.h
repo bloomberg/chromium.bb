@@ -13,7 +13,6 @@
 
 #ifndef CHROME_BROWSER_UI_GTK_SLIDE_ANIMATOR_GTK_H_
 #define CHROME_BROWSER_UI_GTK_SLIDE_ANIMATOR_GTK_H_
-#pragma once
 
 #include <gtk/gtk.h>
 

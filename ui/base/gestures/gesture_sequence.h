@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_GESTURES_GESTURE_SEQUENCE_H_
 #define UI_BASE_GESTURES_GESTURE_SEQUENCE_H_
-#pragma once
 
 #include "base/timer.h"
 #include "ui/base/events.h"

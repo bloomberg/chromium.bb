@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_PANELS_PANEL_UTILS_COCOA_H_
 #define CHROME_BROWSER_UI_PANELS_PANEL_UTILS_COCOA_H_
-#pragma once
 
 #import <Cocoa/Cocoa.h>
 #include "ui/gfx/point.h"

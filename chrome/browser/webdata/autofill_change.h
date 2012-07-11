@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_WEBDATA_AUTOFILL_CHANGE_H__
 #define CHROME_BROWSER_WEBDATA_AUTOFILL_CHANGE_H__
-#pragma once
 
 #include "chrome/browser/webdata/autofill_entry.h"
 

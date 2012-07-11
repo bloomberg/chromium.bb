@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PRINTING_CLOUD_PRINT_CLOUD_PRINT_SETUP_HANDLER_H_
 #define CHROME_BROWSER_PRINTING_CLOUD_PRINT_CLOUD_PRINT_SETUP_HANDLER_H_
-#pragma once
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"

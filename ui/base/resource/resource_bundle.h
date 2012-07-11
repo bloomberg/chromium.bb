@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_RESOURCE_RESOURCE_BUNDLE_H_
 #define UI_BASE_RESOURCE_RESOURCE_BUNDLE_H_
-#pragma once
 
 #include "build/build_config.h"
 

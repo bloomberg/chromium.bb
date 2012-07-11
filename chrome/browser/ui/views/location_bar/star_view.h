@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_STAR_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_STAR_VIEW_H_
-#pragma once
 
 #include "chrome/browser/ui/views/location_bar/touchable_location_bar_view.h"
 #include "ui/views/controls/image_view.h"

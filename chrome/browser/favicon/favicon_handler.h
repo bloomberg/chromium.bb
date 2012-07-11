@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_FAVICON_FAVICON_HANDLER_H_
 #define CHROME_BROWSER_FAVICON_FAVICON_HANDLER_H_
-#pragma once
 
 #include <map>
 

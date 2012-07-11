@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_VIDEO_ACTIVITY_NOTIFIER_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_VIDEO_ACTIVITY_NOTIFIER_H_
-#pragma once
 
 #include "ash/wm/video_detector.h"
 #include "base/basictypes.h"

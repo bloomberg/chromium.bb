@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_MANAGER_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_MANAGER_H_
-#pragma once
 
 #include <list>
 #include <string>

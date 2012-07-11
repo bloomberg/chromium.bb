@@ -4,7 +4,6 @@
 
 #ifndef CHROME_FRAME_READY_MODE_READY_MODE_H_
 #define CHROME_FRAME_READY_MODE_READY_MODE_H_
-#pragma once
 
 #include <atlbase.h>
 #include <atlcom.h>

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_TAB_CONTENTS_THUMBNAIL_GENERATOR_H_
 #define CHROME_BROWSER_TAB_CONTENTS_THUMBNAIL_GENERATOR_H_
-#pragma once
 
 #include <map>
 #include <utility>

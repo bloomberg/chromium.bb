@@ -4,7 +4,6 @@
 
 #ifndef CHROME_NACL_NACL_BROKER_LISTENER_H_
 #define CHROME_NACL_NACL_BROKER_LISTENER_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"

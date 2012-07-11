@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_NET_CHROME_URL_REQUEST_CONTEXT_H_
 #define CHROME_BROWSER_NET_CHROME_URL_REQUEST_CONTEXT_H_
-#pragma once
 
 #include <string>
 

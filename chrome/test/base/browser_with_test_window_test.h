@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_BASE_BROWSER_WITH_TEST_WINDOW_TEST_H_
 #define CHROME_TEST_BASE_BROWSER_WITH_TEST_WINDOW_TEST_H_
-#pragma once
 
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"

@@ -4,7 +4,6 @@
 
 #ifndef WEBKIT_DOM_STORAGE_CACHED_AREA_H_
 #define WEBKIT_DOM_STORAGE_CACHED_AREA_H_
-#pragma once
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"

@@ -6,7 +6,6 @@
 
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_MANAGER_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_MANAGER_H_
-#pragma once
 
 #include <list>
 #include <vector>

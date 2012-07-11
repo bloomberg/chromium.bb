@@ -4,7 +4,6 @@
 
 #ifndef UI_AURA_ROOT_WINDOW_HOST_WIN_H_
 #define UI_AURA_ROOT_WINDOW_HOST_WIN_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/aura/root_window_host.h"

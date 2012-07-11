@@ -4,7 +4,6 @@
 
 #ifndef CHROME_TEST_BASE_UI_TEST_UTILS_H_
 #define CHROME_TEST_BASE_UI_TEST_UTILS_H_
-#pragma once
 
 #include <map>
 #include <queue>

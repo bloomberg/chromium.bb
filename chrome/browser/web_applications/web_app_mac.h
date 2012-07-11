@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_MAC_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_MAC_H_
-#pragma once
 
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"

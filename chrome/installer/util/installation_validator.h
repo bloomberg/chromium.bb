@@ -4,7 +4,6 @@
 
 #ifndef CHROME_INSTALLER_UTIL_INSTALLATION_VALIDATOR_H_
 #define CHROME_INSTALLER_UTIL_INSTALLATION_VALIDATOR_H_
-#pragma once
 
 #include <map>
 #include <string>

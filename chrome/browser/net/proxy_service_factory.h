@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_NET_PROXY_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_NET_PROXY_SERVICE_FACTORY_H_
-#pragma once
 
 #include "base/basictypes.h"
 

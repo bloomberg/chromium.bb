@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_RESOURCE_THROTTLE_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_RESOURCE_THROTTLE_H_
-#pragma once
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/download/download_request_limiter.h"

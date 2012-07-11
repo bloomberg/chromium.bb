@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_ANDROID_EXTENSIONS_EXTENSION_VIEW_ANDROID_H_
 #define CHROME_BROWSER_UI_ANDROID_EXTENSIONS_EXTENSION_VIEW_ANDROID_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/gfx/size.h"

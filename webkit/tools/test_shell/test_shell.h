@@ -5,7 +5,6 @@
 #ifndef WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_H_
 #define WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_H_
 
-#pragma once
 
 #include <list>
 #include <map>

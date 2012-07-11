@@ -4,7 +4,6 @@
 
 #ifndef IPC_IPC_PARAM_TRAITS_H_
 #define IPC_IPC_PARAM_TRAITS_H_
-#pragma once
 
 // Our IPC system uses the following partially specialized header to define how
 // a data type is read, written and logged in the IPC system.

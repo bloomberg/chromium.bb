@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_MANAGER_EXTENSION_API_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_MANAGER_EXTENSION_API_H_
-#pragma once
 
 #include "chrome/browser/bookmarks/bookmark_extension_api.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"

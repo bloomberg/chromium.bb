@@ -4,7 +4,6 @@
 
 #ifndef CHROME_UTILITY_CHROME_CONTENT_UTILITY_CLIENT_H_
 #define CHROME_UTILITY_CHROME_CONTENT_UTILITY_CLIENT_H_
-#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"

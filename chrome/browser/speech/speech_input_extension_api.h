@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_SPEECH_SPEECH_INPUT_EXTENSION_API_H_
 #define CHROME_BROWSER_SPEECH_SPEECH_INPUT_EXTENSION_API_H_
-#pragma once
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/public/browser/notification_observer.h"

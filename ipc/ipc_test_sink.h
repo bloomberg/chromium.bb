@@ -4,7 +4,6 @@
 
 #ifndef IPC_IPC_TEST_SINK_H_
 #define IPC_IPC_TEST_SINK_H_
-#pragma once
 
 #include <utility>
 #include <vector>

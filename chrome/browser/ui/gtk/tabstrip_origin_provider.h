@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_GTK_TABSTRIP_ORIGIN_PROVIDER_H_
 #define CHROME_BROWSER_UI_GTK_TABSTRIP_ORIGIN_PROVIDER_H_
-#pragma once
 
 namespace gfx{
 class Point;

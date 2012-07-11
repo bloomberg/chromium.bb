@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 #ifndef CHROME_TEST_DATA_WEBUI_ASYNC_GEN_H_
 #define CHROME_TEST_DATA_WEBUI_ASYNC_GEN_H_
-#pragma once
 
 #include "chrome/browser/ui/webui/web_ui_browsertest.h"
 #include "content/public/browser/web_ui_message_handler.h"

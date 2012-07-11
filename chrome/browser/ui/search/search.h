@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_SEARCH_SEARCH_H_
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_H_
-#pragma once
 
 class Profile;
 

@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_UI_BASE_TYPES_H_
 #define UI_BASE_UI_BASE_TYPES_H_
-#pragma once
 
 namespace ui {
 

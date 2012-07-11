@@ -6,7 +6,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_NOTIFICATIONS_BALLOON_VIEW_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_NOTIFICATIONS_BALLOON_VIEW_VIEWS_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_INSTALLER_MINI_INSTALLER_MINI_STRING_H_
 #define CHROME_INSTALLER_MINI_INSTALLER_MINI_STRING_H_
-#pragma once
 
 #ifndef COMPILE_ASSERT
 // COMPILE_ASSERT macro borrowed from basictypes.h

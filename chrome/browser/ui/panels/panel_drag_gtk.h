@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_PANELS_PANEL_DRAG_GTK_H_
 #define CHROME_BROWSER_UI_PANELS_PANEL_DRAG_GTK_H_
-#pragma once
 
 #include <gtk/gtk.h>
 

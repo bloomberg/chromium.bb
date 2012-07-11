@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_EXTENSIONS_SHELL_WINDOW_H_
 #define CHROME_BROWSER_UI_EXTENSIONS_SHELL_WINDOW_H_
-#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"

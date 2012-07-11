@@ -7,7 +7,6 @@
 
 #ifndef CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_PLATFORM_MAC_H_
 #define CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_PLATFORM_MAC_H_
-#pragma once
 
 #include <string>
 #include <vector>

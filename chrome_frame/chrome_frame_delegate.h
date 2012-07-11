@@ -4,7 +4,6 @@
 
 #ifndef CHROME_FRAME_CHROME_FRAME_DELEGATE_H_
 #define CHROME_FRAME_CHROME_FRAME_DELEGATE_H_
-#pragma once
 
 #include <atlbase.h>
 #include <atlwin.h>

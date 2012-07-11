@@ -4,7 +4,6 @@
 
 #ifndef UI_VIEWS_EXAMPLES_NATIVE_THEME_CHECKBOX_EXAMPLE_H_
 #define UI_VIEWS_EXAMPLES_NATIVE_THEME_CHECKBOX_EXAMPLE_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "ui/base/native_theme/native_theme.h"

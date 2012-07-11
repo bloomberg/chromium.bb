@@ -4,7 +4,6 @@
 
 #ifndef UI_APP_LIST_DROP_SHADOW_LABEL_H_
 #define UI_APP_LIST_DROP_SHADOW_LABEL_H_
-#pragma once
 
 #include <vector>
 

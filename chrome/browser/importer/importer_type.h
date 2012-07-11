@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_IMPORTER_IMPORTER_TYPE_H_
 #define CHROME_BROWSER_IMPORTER_IMPORTER_TYPE_H_
-#pragma once
 
 #include "build/build_config.h"
 

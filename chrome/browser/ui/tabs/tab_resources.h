@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_TABS_TAB_RESOURCES_H_
 #define CHROME_BROWSER_UI_TABS_TAB_RESOURCES_H_
-#pragma once
 
 namespace gfx {
 class Path;

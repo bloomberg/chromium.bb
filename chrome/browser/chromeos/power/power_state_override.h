@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_POWER_STATE_OVERRIDE_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_POWER_STATE_OVERRIDE_H_
-#pragma once
 
 #include "base/memory/weak_ptr.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_CRX_INSTALLER_ERROR_H_
 #define CHROME_BROWSER_EXTENSIONS_CRX_INSTALLER_ERROR_H_
-#pragma once
 
 #include "base/string16.h"
 

@@ -4,7 +4,6 @@
 
 #ifndef UI_GFX_COLOR_ANALYSIS_H_
 #define UI_GFX_COLOR_ANALYSIS_H_
-#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

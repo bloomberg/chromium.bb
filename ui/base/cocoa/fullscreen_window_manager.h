@@ -4,7 +4,6 @@
 
 #ifndef UI_BASE_COCOA_FULLSCREEN_WINDOW_MANAGER_H_
 #define UI_BASE_COCOA_FULLSCREEN_WINDOW_MANAGER_H_
-#pragma once
 
 #import <Cocoa/Cocoa.h>
 
