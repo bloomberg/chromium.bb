@@ -37,7 +37,7 @@ ResourcePrefetchPredictorFactory::~ResourcePrefetchPredictorFactory() {}
 ProfileKeyedService*
     ResourcePrefetchPredictorFactory::BuildServiceInstanceFor(
         Profile* profile) const {
-  return ResourcePrefetchPredictor::IsEnabled() ?
+  return ResourcePrefetchPredictor::IsEnabled(profile) ?
           new ResourcePrefetchPredictor(ResourcePrefetchPredictor::Config(),
                                         profile) :
           NULL;

@@ -105,7 +105,7 @@ class ResourcePrefetchPredictor
   virtual ~ResourcePrefetchPredictor();
 
   // Thread safe.
-  static bool IsEnabled();
+  static bool IsEnabled(Profile* profile);
   static bool ShouldRecordRequest(net::URLRequest* request,
                                   ResourceType::Type resource_type);
   static bool ShouldRecordResponse(net::URLRequest* response);

@@ -23,6 +23,10 @@ namespace {
 const char kOmniboxTrialName[] = "PrerenderFromOmnibox";
 int g_omnibox_trial_default_group_number = -1;
 
+const char kSpeculativePrefetchingLearningTrialName[] =
+    "SpeculativePrefetchingLearning";
+int g_speculative_prefetching_learning_default_group_number = -1;
+
 void SetupPrefetchFieldTrial() {
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
@@ -122,6 +126,7 @@ void SetupPrerenderFieldTrial() {
 }  // end namespace
 
 void ConfigureOmniboxPrerender();
+void ConfigureSpeculativePrefetching();
 
 void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
   enum PrerenderOption {
@@ -182,6 +187,7 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
                             PrerenderManager::PRERENDER_MODE_MAX);
 
   ConfigureOmniboxPrerender();
+  ConfigureSpeculativePrefetching();
 }
 
 void ConfigureOmniboxPrerender() {
@@ -228,6 +234,48 @@ bool IsOmniboxEnabled(Profile* profile) {
   const int group = base::FieldTrialList::FindValue(kOmniboxTrialName);
   return group == base::FieldTrial::kNotFinalized ||
          group == g_omnibox_trial_default_group_number;
+}
+
+void ConfigureSpeculativePrefetching() {
+  // Field trial to see if we're enabled.
+  const base::FieldTrial::Probability kDivisor = 100;
+
+  base::FieldTrial::Probability kDisabledProbability = 99;
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
+      channel == chrome::VersionInfo::CHANNEL_BETA) {
+    kDisabledProbability = 100;
+  }
+  scoped_refptr<base::FieldTrial> speculative_prefetching_learning_trial(
+      base::FieldTrialList::FactoryGetFieldTrial(
+          kSpeculativePrefetchingLearningTrialName,
+          kDivisor,
+          "SpeculativePrefetchingLearningEnabled",
+          2012, 12, 30,
+          &g_speculative_prefetching_learning_default_group_number));
+  speculative_prefetching_learning_trial->AppendGroup(
+      "SpeculativePrefetchingDisabled",
+      kDisabledProbability);
+}
+
+bool IsSpeculativeResourcePrefetchingLearningEnabled(Profile* profile) {
+  if (!profile)
+    return false;
+
+  // Override any field trial groups if the user has set a command line flag.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSpeculativeResourcePrefetching)) {
+    const std::string switch_value =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kSpeculativeResourcePrefetching);
+
+    if (switch_value == switches::kSpeculativeResourcePrefetchingLearning)
+      return true;
+  }
+
+  const int group = base::FieldTrialList::FindValue(
+      kSpeculativePrefetchingLearningTrialName);
+  return group == g_speculative_prefetching_learning_default_group_number;
 }
 
 }  // namespace prerender
