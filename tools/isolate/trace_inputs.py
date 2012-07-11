@@ -569,14 +569,18 @@ class Results(object):
 
   class _TouchedObject(object):
     """Something, a file or a directory, that was accessed."""
-    def __init__(self, root, path, tainted):
-      logging.debug('%s(%s, %s)' % (self.__class__.__name__, root, path))
+    def __init__(self, root, path, tainted, size, nb_files):
+      logging.debug(
+          '%s(%s, %s, %s, %s, %s)' %
+          (self.__class__.__name__, root, path, tainted, size, nb_files))
       self.root = root
       self.path = path
       self.tainted = tainted
+      self.nb_files = nb_files
+      # Can be used as a cache or a default value, depending on context.
+      self._size = size
       # These are cache only.
       self._real_path = None
-      self._size = None
 
       # Check internal consistency.
       assert path, path
@@ -614,7 +618,10 @@ class Results(object):
       return self._size
 
     def flatten(self):
-      """Returns a dict representing this object."""
+      """Returns a dict representing this object.
+
+      A 'size' of 0 means the file was only touched and not read.
+      """
       return {
         'path': self.path,
         'size': self.size,
@@ -650,25 +657,25 @@ class Results(object):
       raise NotImplementedError(self.__class__.__name__)
 
   class File(_TouchedObject):
-    """A file that was accessed.
+    """A file that was accessed. May not be present anymore.
 
     If tainted is true, it means it is not a real path anymore as a variable
     replacement occured.
+
+    If touched_only is True, this means the file was probed for existence, and
+    it is existent, but was never _opened_. If touched_only is True, the file
+    must have existed.
     """
-    def __init__(self, root, path, tainted):
-      """Represents a file accessed. May not be present anymore."""
-      super(Results.File, self).__init__(root, path, tainted)
-      # For compatibility with Directory object interface.
-      # Shouldn't be used normally, only exists to simplify algorithms.
-      self.nb_files = 1
+    def __init__(self, root, path, tainted, size):
+      super(Results.File, self).__init__(root, path, tainted, size, 1)
 
     def _clone(self, new_root, new_path, tainted):
       """Clones itself keeping meta-data."""
-      out = self.__class__(new_root, new_path, tainted)
-      # Keep the cache for performance reason. It is also important when the
-      # file becomes tainted (with a variable instead of the real path) since
-      # self.path is not an on-disk path anymore so out._size cannot be updated.
-      out._size = self.size
+      # Keep the self.size and self._real_path caches for performance reason. It
+      # is also important when the file becomes tainted (with a variable instead
+      # of the real path) since self.path is not an on-disk path anymore so
+      # out._size cannot be updated.
+      out = self.__class__(new_root, new_path, tainted, self.size)
       out._real_path = self._real_path
       return out
 
@@ -677,12 +684,12 @@ class Results(object):
     def __init__(self, root, path, tainted, size, nb_files):
       """path='.' is a valid value and must be handled appropriately."""
       assert not path.endswith(os.path.sep), path
-      super(Results.Directory, self).__init__(root, path + os.path.sep, tainted)
-      self.nb_files = nb_files
+      super(Results.Directory, self).__init__(
+          root, path + os.path.sep, tainted, size, nb_files)
       # In that case, it's not a cache, it's an actual value that is never
-      # modified.
+      # modified and represents the total size of the files contained in this
+      # directory.
       assert size
-      self._size = size
 
     def flatten(self):
       out = super(Results.Directory, self).flatten()
@@ -705,20 +712,18 @@ class Results(object):
 
     Contains references to the files accessed by this process and its children.
     """
-    def __init__(
-        self, pid, files, executable, command, initial_cwd, children):
+    def __init__(self, pid, files, executable, command, initial_cwd, children):
       logging.debug('Process(%s, %d, ...)' % (pid, len(files)))
       self.pid = pid
-      self.files = sorted(
-          (Results.File(None, f, False) for f in files), key=lambda x: x.path)
+      self.files = sorted(files, key=lambda x: x.path)
       self.children = children
       self.executable = executable
       self.command = command
       self.initial_cwd = initial_cwd
 
       # Check internal consistency.
-      assert len(set(f.path for f in self.files)) == len(self.files), [
-          f.path for f in self.files]
+      assert len(set(f.path for f in self.files)) == len(self.files), sorted(
+          f.path for f in self.files)
       assert isinstance(self.children, list)
       assert isinstance(self.files, list)
 
@@ -741,19 +746,17 @@ class Results(object):
 
     def strip_root(self, root):
       assert isabs(root) and root.endswith(os.path.sep), root
+      # Loads the files after since they are constructed as objects.
       out = self.__class__(
           self.pid,
-          [],
+          filter(None, (f.strip_root(root) for f in self.files)),
           self.executable,
           self.command,
           self.initial_cwd,
           [c.strip_root(root) for c in self.children])
-      # Override the files property.
-      out.files = filter(None, (f.strip_root(root) for f in self.files))
       logging.debug(
           'strip_root(%s) %d -> %d' % (root, len(self.files), len(out.files)))
       return out
-
 
   def __init__(self, process):
     self.process = process
@@ -815,6 +818,7 @@ class ApiBase(object):
         self.initial_cwd = initial_cwd
         self.cwd = None
         self.files = set()
+        self.only_touched = set()
         self.executable = None
         self.command = None
 
@@ -843,10 +847,22 @@ class ApiBase(object):
             return x
           return get_native_path_case(x)
 
+        # Filters out directories. Some may have passed through.
+        files = set(map(render_to_string_and_fix_case, self.files))
+        only_touched = set(
+            map(render_to_string_and_fix_case, self.only_touched))
+        only_touched -= files
+
         files = [
-          f for f in set(map(render_to_string_and_fix_case, self.files))
+          Results.File(None, f, False, None) for f in files
           if not os.path.isdir(f)
         ]
+        # Using 0 as size means the file's content is ignored since the file was
+        # never opened for I/O.
+        files.extend(
+          Results.File(None, f, False, 0) for f in only_touched
+          if not os.path.isdir(f)
+        )
         return Results.Process(
             self.pid,
             files,

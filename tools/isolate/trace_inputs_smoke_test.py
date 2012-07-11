@@ -559,6 +559,41 @@ class TraceInputsImport(TraceInputsBase):
     self.assertTrue(actual['root'].pop('pid'))
     self.assertEquals(expected, actual)
 
+  def _touch_expected(self, command):
+    # Look for file that were touched but not opened, using different APIs.
+    results = self._execute_trace(
+      [sys.executable, os.path.join('trace_inputs', 'touch_only.py'), command])
+    expected = {
+      'root': {
+        'children': [],
+        'command': [
+          self.executable,
+          os.path.join('trace_inputs', 'touch_only.py'),
+          command,
+        ],
+        'executable': self.real_executable,
+        'files': [
+          {
+            'path': os.path.join(u'data', 'trace_inputs', 'touch_only.py'),
+            'size': self._size('data', 'trace_inputs', 'touch_only.py'),
+          },
+        ],
+        'initial_cwd': self.initial_cwd,
+      },
+    }
+    actual = results.flatten()
+    self.assertTrue(actual['root'].pop('pid'))
+    self.assertEquals(expected, actual)
+
+  def test_trace_touch_only_access(self):
+    self._touch_expected('access')
+
+  def test_trace_touch_only_isfile(self):
+    self._touch_expected('isfile')
+
+  def test_trace_touch_only_stat(self):
+    self._touch_expected('stat')
+
 
 if __name__ == '__main__':
   VERBOSE = '-v' in sys.argv

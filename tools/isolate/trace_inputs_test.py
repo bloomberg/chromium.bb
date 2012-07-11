@@ -51,14 +51,14 @@ class TraceInputs(unittest.TestCase):
 
 
   def test_variable_abs(self):
-    value = trace_inputs.Results.File(None, '/foo/bar', False)
+    value = trace_inputs.Results.File(None, '/foo/bar', False, False)
     actual = value.replace_variables({'$FOO': '/foo'})
     self.assertEquals('$FOO/bar', actual.path)
     self.assertEquals('$FOO/bar', actual.full_path)
     self.assertEquals(True, actual.tainted)
 
   def test_variable_rel(self):
-    value = trace_inputs.Results.File('/usr', 'foo/bar', False)
+    value = trace_inputs.Results.File('/usr', 'foo/bar', False, False)
     actual = value.replace_variables({'$FOO': 'foo'})
     self.assertEquals('$FOO/bar', actual.path)
     self.assertEquals(os.path.join('/usr', '$FOO/bar'), actual.full_path)
