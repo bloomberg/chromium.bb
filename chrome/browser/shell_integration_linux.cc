@@ -154,6 +154,12 @@ bool CreateShortcutOnDesktop(const FilePath& shortcut_filename,
   return true;
 }
 
+void DeleteShortcutOnDesktop(const FilePath& shortcut_filename) {
+  FilePath desktop_path;
+  if (PathService::Get(chrome::DIR_USER_DESKTOP, &desktop_path))
+    file_util::Delete(desktop_path.Append(shortcut_filename), false);
+}
+
 bool CreateShortcutInApplicationsMenu(const FilePath& shortcut_filename,
                                       const std::string& contents) {
   ScopedTempDir temp_dir;
@@ -181,6 +187,22 @@ bool CreateShortcutInApplicationsMenu(const FilePath& shortcut_filename,
   int exit_code;
   LaunchXdgUtility(argv, &exit_code);
   return exit_code == 0;
+}
+
+void DeleteShortcutInApplicationsMenu(const FilePath& shortcut_filename) {
+  std::vector<std::string> argv;
+  argv.push_back("xdg-desktop-menu");
+  argv.push_back("uninstall");
+
+  // Uninstall in user mode, to match the install.
+  argv.push_back("--mode");
+  argv.push_back("user");
+
+  // The file does not need to exist anywhere - xdg-desktop-menu will uninstall
+  // items from the menu with a matching name.
+  argv.push_back(shortcut_filename.value());
+  int exit_code;
+  LaunchXdgUtility(argv, &exit_code);
 }
 
 // Quote a string such that it appears as one verbatim argument for the Exec
@@ -455,7 +477,7 @@ bool GetDesktopShortcutTemplate(base::Environment* env,
   return false;
 }
 
-FilePath GetDesktopShortcutFilename(const GURL& url) {
+FilePath GetWebShortcutFilename(const GURL& url) {
   // Use a prefix, because xdg-desktop-menu requires it.
   std::string filename =
       std::string(chrome::kBrowserProcessExecutableName) + "-" + url.spec();
@@ -477,6 +499,20 @@ FilePath GetDesktopShortcutFilename(const GURL& url) {
   }
 
   return FilePath();
+}
+
+FilePath GetExtensionShortcutFilename(const FilePath& profile_path,
+                                      const std::string& extension_id) {
+  DCHECK(!extension_id.empty());
+
+  // Use a prefix, because xdg-desktop-menu requires it.
+  std::string filename(chrome::kBrowserProcessExecutableName);
+  filename.append("-")
+      .append(extension_id)
+      .append("-")
+      .append(profile_path.BaseName().value());
+  file_util::ReplaceIllegalCharactersInPath(&filename, '_');
+  return FilePath(filename.append(".desktop"));
 }
 
 std::string GetDesktopFileContents(
@@ -597,8 +633,19 @@ bool CreateDesktopShortcut(
     const std::string& shortcut_template) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  FilePath shortcut_filename =
-      ShellIntegrationLinux::GetDesktopShortcutFilename(shortcut_info.url);
+  FilePath shortcut_filename;
+  if (!shortcut_info.extension_id.empty()) {
+    shortcut_filename = GetExtensionShortcutFilename(
+        shortcut_info.profile_path, shortcut_info.extension_id);
+    // For extensions we do not want duplicate shortcuts. So, delete any that
+    // already exist and replace them.
+    if (shortcut_info.create_on_desktop)
+      DeleteShortcutOnDesktop(shortcut_filename);
+    if (shortcut_info.create_in_applications_menu)
+      DeleteShortcutInApplicationsMenu(shortcut_filename);
+  } else {
+    shortcut_filename = GetWebShortcutFilename(shortcut_info.url);
+  }
   if (shortcut_filename.empty())
     return false;
 
@@ -627,6 +674,18 @@ bool CreateDesktopShortcut(
               success;
 
   return success;
+}
+
+void DeleteDesktopShortcuts(const FilePath& profile_path,
+                            const std::string& extension_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  FilePath shortcut_filename = GetExtensionShortcutFilename(
+      profile_path, extension_id);
+  DCHECK(!shortcut_filename.empty());
+
+  DeleteShortcutOnDesktop(shortcut_filename);
+  DeleteShortcutInApplicationsMenu(shortcut_filename);
 }
 
 }  // namespace ShellIntegrationLinux

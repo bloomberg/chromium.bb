@@ -36,6 +36,8 @@ AppShortcutManager::AppShortcutManager(Profile* profile)
       tracker_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                  content::Source<Profile>(profile_));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+                 content::Source<Profile>(profile_));
 }
 
 void AppShortcutManager::OnImageLoaded(const gfx::Image& image,
@@ -61,15 +63,28 @@ void AppShortcutManager::OnImageLoaded(const gfx::Image& image,
 void AppShortcutManager::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_EXTENSION_INSTALLED);
-  #if !defined(OS_MACOSX)
-    const Extension* extension = content::Details<const Extension>(
-        details).ptr();
-    if (!disable_shortcut_creation_for_tests &&
-        extension->is_platform_app() &&
-        extension->location() != Extension::LOAD)
-      InstallApplicationShortcuts(extension);
-  #endif
+#if !defined(OS_MACOSX)
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
+      const Extension* extension = content::Details<const Extension>(
+          details).ptr();
+      if (!disable_shortcut_creation_for_tests &&
+          extension->is_platform_app() &&
+          extension->location() != Extension::LOAD) {
+        InstallApplicationShortcuts(extension);
+      }
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
+      std::string extension_id = *content::Details<std::string>(details).ptr();
+      if (!disable_shortcut_creation_for_tests)
+        web_app::DeleteAllShortcuts(profile_->GetPath(), extension_id);
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+#endif
 }
 
 // static

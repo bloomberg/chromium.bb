@@ -29,5 +29,10 @@ bool CreatePlatformShortcut(
       shortcut_info, shortcut_template);
 }
 
+void DeletePlatformShortcuts(const FilePath& profile_path,
+                             const std::string& extension_id) {
+  ShellIntegrationLinux::DeleteDesktopShortcuts(profile_path, extension_id);
+}
+
 }  // namespace internals
 }  // namespace web_app

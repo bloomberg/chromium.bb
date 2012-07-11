@@ -255,6 +255,11 @@ bool CreatePlatformShortcut(
   return success;
 }
 
+void DeletePlatformShortcuts(const FilePath& profile_path,
+                             const std::string& extension_id) {
+  // TODO(benwells): Implement this.
+}
+
 }  // namespace internals
 
 }  // namespace web_app

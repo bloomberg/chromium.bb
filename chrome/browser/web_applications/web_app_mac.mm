@@ -262,5 +262,11 @@ bool CreatePlatformShortcut(
   return shortcut_creator.CreateShortcut();
 }
 
+void DeletePlatformShortcuts(const FilePath& profile_path,
+                             const std::string& extension_id) {
+  // TODO(benwells): Implement this when shortcuts / weblings are enabled on
+  // mac.
+}
+
 }  // namespace internals
 }  // namespace web_app
