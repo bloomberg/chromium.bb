@@ -78,7 +78,8 @@ class PrintableObject(object):
 
 def FileRead(filename, mode='rU'):
   with open(filename, mode=mode) as f:
-    # codecs.open() has different behavior than open() on python 2.6.
+    # codecs.open() has different behavior than open() on python 2.6 so use
+    # open() and decode manually.
     return f.read().decode('utf-8')
 
 
