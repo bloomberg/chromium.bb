@@ -1873,12 +1873,14 @@ void ExtensionService::GarbageCollectExtensions() {
               extension_paths)))
     NOTREACHED();
 
+#if defined(ENABLE_THEMES)
   // Also garbage-collect themes.  We check |profile_| to be
   // defensive; in the future, we may call GarbageCollectExtensions()
   // from somewhere other than Init() (e.g., in a timer).
   if (profile_) {
     ThemeServiceFactory::GetForProfile(profile_)->RemoveUnusedThemes();
   }
+#endif
 }
 
 void ExtensionService::SyncExtensionChangeIfNeeded(const Extension& extension) {

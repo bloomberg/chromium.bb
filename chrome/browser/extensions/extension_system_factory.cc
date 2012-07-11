@@ -33,9 +33,13 @@ ExtensionSystemSharedFactory::ExtensionSystemSharedFactory()
         "ExtensionSystemShared",
         ProfileDependencyManager::GetInstance()) {
   DependsOn(GlobalErrorServiceFactory::GetInstance());
+#if defined(ENABLE_THEMES)
   DependsOn(ThemeServiceFactory::GetInstance());
+#endif
+#if defined(ENABLE_PROTECTOR_SERVICE)
   // ProtectorService should be destroyed after us.
   DependsOn(protector::ProtectorServiceFactory::GetInstance());
+#endif
 }
 
 ExtensionSystemSharedFactory::~ExtensionSystemSharedFactory() {

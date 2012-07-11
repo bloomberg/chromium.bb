@@ -414,7 +414,9 @@ void ExtensionServiceTestBase::InitializeExtensionService(
   chrome::RegisterUserPrefs(prefs);
   profile->SetPrefService(prefs);
 
+#if defined(ENABLE_THEMES)
   ThemeServiceFactory::GetInstance()->ForceRegisterPrefsForTest(prefs);
+#endif
   PluginPrefsFactory::GetInstance()->ForceRegisterPrefsForTest(prefs);
 
   profile_.reset(profile);
