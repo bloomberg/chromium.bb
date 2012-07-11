@@ -100,6 +100,6 @@ class NavigationState {
   DISALLOW_COPY_AND_ASSIGN(NavigationState);
 };
 
-#endif  // CONTENT_PUBLIC_RENDERER_NAVIGATION_STATE_H_
-
 }  // namespace content
+
+#endif  // CONTENT_PUBLIC_RENDERER_NAVIGATION_STATE_H_
