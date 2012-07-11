@@ -79,7 +79,9 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_BROWSER_SEARCH, ui::EF_NONE, TOGGLE_APP_LIST },
   { true, ui::VKEY_LWIN, ui::EF_SHIFT_DOWN, TOGGLE_CAPS_LOCK },
   { true, ui::VKEY_F6, ui::EF_NONE, BRIGHTNESS_DOWN },
+  { true, ui::VKEY_F6, ui::EF_ALT_DOWN, KEYBOARD_BRIGHTNESS_DOWN },
   { true, ui::VKEY_F7, ui::EF_NONE, BRIGHTNESS_UP },
+  { true, ui::VKEY_F7, ui::EF_ALT_DOWN, KEYBOARD_BRIGHTNESS_UP },
   { true, ui::VKEY_F8, ui::EF_NONE, VOLUME_MUTE },
   { true, ui::VKEY_VOLUME_MUTE, ui::EF_NONE, VOLUME_MUTE },
   { true, ui::VKEY_F9, ui::EF_NONE, VOLUME_DOWN },
@@ -157,6 +159,8 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
 #if defined(OS_CHROMEOS)
   CYCLE_DISPLAY_MODE,
 #endif  // defined(OS_CHROMEOS)
+  KEYBOARD_BRIGHTNESS_DOWN,
+  KEYBOARD_BRIGHTNESS_UP,
   NEXT_IME,
   PREVIOUS_IME,
   SWITCH_IME,  // Switch to another IME depending on the accelerator.

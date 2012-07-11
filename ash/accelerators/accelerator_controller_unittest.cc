@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/brightness/brightness_control_delegate.h"
+#include "ash/system/keyboard_brightness/keyboard_brightness_control_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/volume_control_delegate.h"
@@ -264,6 +265,51 @@ class DummyImeControlDelegate : public ImeControlDelegate {
   ui::Accelerator last_accelerator_;
 
   DISALLOW_COPY_AND_ASSIGN(DummyImeControlDelegate);
+};
+
+class DummyKeyboardBrightnessControlDelegate
+    : public KeyboardBrightnessControlDelegate {
+ public:
+  explicit DummyKeyboardBrightnessControlDelegate(bool consume)
+      : consume_(consume),
+        handle_keyboard_brightness_down_count_(0),
+        handle_keyboard_brightness_up_count_(0) {
+  }
+  virtual ~DummyKeyboardBrightnessControlDelegate() {}
+
+  virtual bool HandleKeyboardBrightnessDown(
+      const ui::Accelerator& accelerator) OVERRIDE {
+    ++handle_keyboard_brightness_down_count_;
+    last_accelerator_ = accelerator;
+    return consume_;
+  }
+
+  virtual bool HandleKeyboardBrightnessUp(
+      const ui::Accelerator& accelerator) OVERRIDE {
+    ++handle_keyboard_brightness_up_count_;
+    last_accelerator_ = accelerator;
+    return consume_;
+  }
+
+  int handle_keyboard_brightness_down_count() const {
+    return handle_keyboard_brightness_down_count_;
+  }
+
+  int handle_keyboard_brightness_up_count() const {
+    return handle_keyboard_brightness_up_count_;
+  }
+
+  const ui::Accelerator& last_accelerator() const {
+    return last_accelerator_;
+  }
+
+ private:
+  const bool consume_;
+  int handle_keyboard_brightness_down_count_;
+  int handle_keyboard_brightness_up_count_;
+  ui::Accelerator last_accelerator_;
+
+  DISALLOW_COPY_AND_ASSIGN(DummyKeyboardBrightnessControlDelegate);
 };
 
 bool TestTarget::AcceleratorPressed(const ui::Accelerator& accelerator) {
@@ -712,6 +758,41 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_EQ(brightness_up, delegate->last_accelerator());
   }
 #endif
+
+  // Keyboard brightness
+  const ui::Accelerator alt_f6(ui::VKEY_F6, ui::EF_ALT_DOWN);
+  const ui::Accelerator alt_f7(ui::VKEY_F7, ui::EF_ALT_DOWN);
+  {
+    EXPECT_FALSE(GetController()->Process(alt_f6));
+    EXPECT_FALSE(GetController()->Process(alt_f7));
+    DummyKeyboardBrightnessControlDelegate* delegate =
+        new DummyKeyboardBrightnessControlDelegate(false);
+    GetController()->SetKeyboardBrightnessControlDelegate(
+        scoped_ptr<KeyboardBrightnessControlDelegate>(delegate).Pass());
+    EXPECT_EQ(0, delegate->handle_keyboard_brightness_down_count());
+    EXPECT_FALSE(GetController()->Process(alt_f6));
+    EXPECT_EQ(1, delegate->handle_keyboard_brightness_down_count());
+    EXPECT_EQ(alt_f6, delegate->last_accelerator());
+    EXPECT_EQ(0, delegate->handle_keyboard_brightness_up_count());
+    EXPECT_FALSE(GetController()->Process(alt_f7));
+    EXPECT_EQ(1, delegate->handle_keyboard_brightness_up_count());
+    EXPECT_EQ(alt_f7, delegate->last_accelerator());
+  }
+  {
+    DummyKeyboardBrightnessControlDelegate* delegate =
+        new DummyKeyboardBrightnessControlDelegate(true);
+    GetController()->SetKeyboardBrightnessControlDelegate(
+        scoped_ptr<KeyboardBrightnessControlDelegate>(delegate).Pass());
+    EXPECT_EQ(0, delegate->handle_keyboard_brightness_down_count());
+    EXPECT_TRUE(GetController()->Process(alt_f6));
+    EXPECT_EQ(1, delegate->handle_keyboard_brightness_down_count());
+    EXPECT_EQ(alt_f6, delegate->last_accelerator());
+    EXPECT_EQ(0, delegate->handle_keyboard_brightness_up_count());
+    EXPECT_TRUE(GetController()->Process(alt_f7));
+    EXPECT_EQ(1, delegate->handle_keyboard_brightness_up_count());
+    EXPECT_EQ(alt_f7, delegate->last_accelerator());
+  }
+
 #if !defined(NDEBUG)
   // RotateScreen
   EXPECT_TRUE(GetController()->Process(

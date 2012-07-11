@@ -24,6 +24,7 @@ namespace ash {
 class BrightnessControlDelegate;
 class CapsLockDelegate;
 class ImeControlDelegate;
+class KeyboardBrightnessControlDelegate;
 class ScreenshotDelegate;
 class VolumeControlDelegate;
 
@@ -77,6 +78,9 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   void SetCapsLockDelegate(scoped_ptr<CapsLockDelegate> caps_lock_delegate);
   void SetImeControlDelegate(
       scoped_ptr<ImeControlDelegate> ime_control_delegate);
+  void SetKeyboardBrightnessControlDelegate(
+      scoped_ptr<KeyboardBrightnessControlDelegate>
+      keyboard_brightness_control_delegate);
   void SetScreenshotDelegate(
       scoped_ptr<ScreenshotDelegate> screenshot_delegate);
   void SetVolumeControlDelegate(
@@ -105,6 +109,8 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   scoped_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   scoped_ptr<CapsLockDelegate> caps_lock_delegate_;
   scoped_ptr<ImeControlDelegate> ime_control_delegate_;
+  scoped_ptr<KeyboardBrightnessControlDelegate>
+      keyboard_brightness_control_delegate_;
   scoped_ptr<ScreenshotDelegate> screenshot_delegate_;
   scoped_ptr<VolumeControlDelegate> volume_control_delegate_;
 

@@ -25,6 +25,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/brightness/brightness_control_delegate.h"
+#include "ash/system/keyboard_brightness/keyboard_brightness_control_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/property_util.h"
@@ -445,6 +446,16 @@ bool AcceleratorController::PerformAction(int action,
       if (brightness_control_delegate_.get())
         return brightness_control_delegate_->HandleBrightnessUp(accelerator);
       break;
+    case KEYBOARD_BRIGHTNESS_DOWN:
+      if (keyboard_brightness_control_delegate_.get())
+        return keyboard_brightness_control_delegate_->
+            HandleKeyboardBrightnessDown(accelerator);
+      break;
+    case KEYBOARD_BRIGHTNESS_UP:
+      if (keyboard_brightness_control_delegate_.get())
+        return keyboard_brightness_control_delegate_->
+            HandleKeyboardBrightnessUp(accelerator);
+      break;
     case VOLUME_MUTE:
       if (volume_control_delegate_.get())
         return volume_control_delegate_->HandleVolumeMute(accelerator);
@@ -627,6 +638,13 @@ void AcceleratorController::SetCapsLockDelegate(
 void AcceleratorController::SetImeControlDelegate(
     scoped_ptr<ImeControlDelegate> ime_control_delegate) {
   ime_control_delegate_.swap(ime_control_delegate);
+}
+
+void AcceleratorController::SetKeyboardBrightnessControlDelegate(
+    scoped_ptr<KeyboardBrightnessControlDelegate>
+    keyboard_brightness_control_delegate) {
+  keyboard_brightness_control_delegate_.swap(
+      keyboard_brightness_control_delegate);
 }
 
 void AcceleratorController::SetScreenshotDelegate(
