@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "chrome/browser/ui/webui/options2/options_ui2.h"
+#include "chrome/browser/ui/webui/options2/options_ui.h"
 #include "ui/aura/display_observer.h"
 
 namespace base {

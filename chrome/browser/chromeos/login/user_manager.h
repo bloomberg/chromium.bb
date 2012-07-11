@@ -12,7 +12,7 @@
 #include "base/memory/singleton.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/login/user.h"
-#include "chrome/browser/ui/webui/options2/chromeos/set_wallpaper_options_handler2.h"
+#include "chrome/browser/ui/webui/options2/chromeos/set_wallpaper_options_handler.h"
 
 class SkBitmap;
 class FilePath;

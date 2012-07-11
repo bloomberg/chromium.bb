@@ -8,7 +8,7 @@
 
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/select_file_dialog.h"
-#include "chrome/browser/ui/webui/options2/options_ui2.h"
+#include "chrome/browser/ui/webui/options2/options_ui.h"
 #include "content/public/browser/notification_observer.h"
 
 namespace options2 {

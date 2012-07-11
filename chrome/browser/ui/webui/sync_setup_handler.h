@@ -8,7 +8,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/signin/signin_tracker.h"
-#include "chrome/browser/ui/webui/options2/options_ui2.h"
+#include "chrome/browser/ui/webui/options2/options_ui.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 
 class LoginUIService;
