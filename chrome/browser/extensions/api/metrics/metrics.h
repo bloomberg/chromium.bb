@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_METRICS_MODULE_H__
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_METRICS_MODULE_H__
+#ifndef CHROME_BROWSER_EXTENSIONS_API_METRICS_METRICS_H_
+#define CHROME_BROWSER_EXTENSIONS_API_METRICS_METRICS_H_
 #pragma once
 
 #include <string>
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/extension_function.h"
+
+namespace extensions {
 
 class MetricsRecordUserActionFunction : public SyncExtensionFunction {
  public:
@@ -28,7 +30,8 @@ class MetricsHistogramHelperFunction : public SyncExtensionFunction {
   bool GetNameAndSample(std::string* name, int* sample);
   virtual bool RecordValue(const std::string& name,
                            base::Histogram::ClassType type,
-                           int min, int max, size_t buckets, int sample);
+                           int min, int max, size_t buckets,
+                           int sample);
 };
 
 class MetricsRecordValueFunction : public MetricsHistogramHelperFunction {
@@ -119,4 +122,6 @@ class MetricsRecordLongTimeFunction : public MetricsHistogramHelperFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_METRICS_MODULE_H__
+} // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_METRICS_METRICS_H_

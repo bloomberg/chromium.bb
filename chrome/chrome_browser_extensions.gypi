@@ -528,6 +528,8 @@
         }],
         ['enable_extensions==1', {
           'sources': [
+            'browser/extensions/api/metrics/metrics.cc',
+            'browser/extensions/api/metrics/metrics.h',
             'browser/extensions/api/tabs/execute_code_in_tab_function.cc',
             'browser/extensions/api/tabs/execute_code_in_tab_function.h',
             'browser/extensions/api/tabs/tabs.cc',
@@ -556,8 +558,6 @@
             'browser/extensions/extension_managed_mode_api.h',
             'browser/extensions/extension_management_api.cc',
             'browser/extensions/extension_management_api.h',
-            'browser/extensions/extension_metrics_module.cc',
-            'browser/extensions/extension_metrics_module.h',
             'browser/extensions/extension_page_capture_api.cc',
             'browser/extensions/extension_page_capture_api.h',
             'browser/extensions/extension_preference_api.cc',

@@ -197,7 +197,7 @@
                   '|chrome/common/metrics/.*'\
                   '|chrome_frame/metrics.*'\
                   '|chrome/browser/chromeos/external_metrics.*'\
-                  '|chrome/browser/extensions/extension_metrics_module.*'\
+                  '|chrome/browser/extensions/api/metrics/metrics.*'\
                   '|chrome/browser/ui/webui/metrics_handler.*'\
                   '|content/browser/user_metrics.cc'\
                   '|content/public/browser/user_metrics.h'\

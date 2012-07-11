@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 
 // Any changes to the logging done in these functions should be matched
 // with the checks done in IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Metrics).
-// See extension_metrics_apitest.cc.
+// See metrics_apitest.cc.
 chrome.test.runTests([
   function recordUserAction() {
     // Log a metric once.

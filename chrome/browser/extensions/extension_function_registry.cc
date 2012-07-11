@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/api/extension_action/extension_script_badge_api.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/api/media_gallery/media_gallery_api.h"
+#include "chrome/browser/extensions/api/metrics/metrics.h"
 #include "chrome/browser/extensions/api/offscreen_tabs/offscreen_tabs_api.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
@@ -39,7 +40,6 @@
 #include "chrome/browser/extensions/extension_idle_api.h"
 #include "chrome/browser/extensions/extension_managed_mode_api.h"
 #include "chrome/browser/extensions/extension_management_api.h"
-#include "chrome/browser/extensions/extension_metrics_module.h"
 #include "chrome/browser/extensions/extension_module.h"
 #include "chrome/browser/extensions/extension_page_capture_api.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
@@ -207,15 +207,15 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<GetProcessInfoFunction>();
 
   // Metrics.
-  RegisterFunction<MetricsRecordUserActionFunction>();
-  RegisterFunction<MetricsRecordValueFunction>();
-  RegisterFunction<MetricsRecordPercentageFunction>();
-  RegisterFunction<MetricsRecordCountFunction>();
-  RegisterFunction<MetricsRecordSmallCountFunction>();
-  RegisterFunction<MetricsRecordMediumCountFunction>();
-  RegisterFunction<MetricsRecordTimeFunction>();
-  RegisterFunction<MetricsRecordMediumTimeFunction>();
-  RegisterFunction<MetricsRecordLongTimeFunction>();
+  RegisterFunction<extensions::MetricsRecordUserActionFunction>();
+  RegisterFunction<extensions::MetricsRecordValueFunction>();
+  RegisterFunction<extensions::MetricsRecordPercentageFunction>();
+  RegisterFunction<extensions::MetricsRecordCountFunction>();
+  RegisterFunction<extensions::MetricsRecordSmallCountFunction>();
+  RegisterFunction<extensions::MetricsRecordMediumCountFunction>();
+  RegisterFunction<extensions::MetricsRecordTimeFunction>();
+  RegisterFunction<extensions::MetricsRecordMediumTimeFunction>();
+  RegisterFunction<extensions::MetricsRecordLongTimeFunction>();
 
   // RLZ.
 #if defined(OS_WIN) || defined(OS_MACOSX)

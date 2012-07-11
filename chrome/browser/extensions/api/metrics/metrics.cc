@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_metrics_module.h"
+#include "chrome/browser/extensions/api/metrics/metrics.h"
 
 #include <algorithm>
 
@@ -10,13 +10,17 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/user_metrics.h"
 
+namespace extensions {
+
 using base::Histogram;
 using base::LinearHistogram;
-using content::UserMetricsAction;
+
+namespace {
 
 const size_t kMaxBuckets = 10000; // We don't ever want more than these many
                                   // buckets; there is no real need for them
                                   // and would cause crazy memory usage
+} // namespace
 
 bool MetricsRecordUserActionFunction::RunImpl() {
   std::string name;
@@ -33,12 +37,11 @@ bool MetricsHistogramHelperFunction::GetNameAndSample(std::string* name,
   return true;
 }
 
-bool MetricsHistogramHelperFunction::RecordValue(const std::string& name,
-                                                 Histogram::ClassType type,
-                                                 int min,
-                                                 int max,
-                                                 size_t buckets,
-                                                 int sample) {
+bool MetricsHistogramHelperFunction::RecordValue(
+    const std::string& name,
+    Histogram::ClassType type,
+    int min, int max, size_t buckets,
+    int sample) {
   // Make sure toxic values don't get to internal code.
   // Fix for maximums
   min = std::min(min, INT_MAX - 3);
@@ -55,15 +58,11 @@ bool MetricsHistogramHelperFunction::RecordValue(const std::string& name,
   Histogram* counter;
   if (type == Histogram::LINEAR_HISTOGRAM) {
     counter = LinearHistogram::FactoryGet(name,
-                                          min,
-                                          max,
-                                          buckets,
+                                          min, max, buckets,
                                           Histogram::kUmaTargetedHistogramFlag);
   } else {
     counter = Histogram::FactoryGet(name,
-                                    min,
-                                    max,
-                                    buckets,
+                                    min, max, buckets,
                                     Histogram::kUmaTargetedHistogramFlag);
   }
 
@@ -99,7 +98,10 @@ bool MetricsRecordPercentageFunction::RunImpl() {
   std::string name;
   int sample;
   EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));
-  return RecordValue(name, Histogram::LINEAR_HISTOGRAM, 1, 101, 102, sample);
+  return RecordValue(name,
+                     Histogram::LINEAR_HISTOGRAM,
+                     1, 101, 102,
+                     sample);
 }
 
 bool MetricsRecordCountFunction::RunImpl() {
@@ -146,3 +148,5 @@ bool MetricsRecordLongTimeFunction::RunImpl() {
   static const int kOneHourMs = 60 * 60 * 1000;
   return RecordValue(name, Histogram::HISTOGRAM, 1, kOneHourMs, 50, sample);
 }
+
+} // namespace extensions
