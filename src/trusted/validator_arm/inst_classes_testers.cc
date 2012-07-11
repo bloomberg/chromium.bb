@@ -28,9 +28,7 @@ bool CondDecoderTester::PassesParsePreconditions(
     Instruction inst,
     const NamedClassDecoder& decoder) {
   // Didn't parse undefined conditional.
-  if (cond_decoder_.cond.undefined(inst)) {
-    NC_PRECOND(&ExpectedDecoder() != &decoder);
-  }
+  NC_PRECOND(cond_decoder_.cond.defined(inst));
   return Arm32DecoderTester::PassesParsePreconditions(inst, decoder);
 }
 
@@ -302,10 +300,8 @@ bool Unary1RegisterImmediateOpTesterNotRdIsPcAndS::
 PassesParsePreconditions(Instruction inst,
                          const NamedClassDecoder& decoder) {
   // Check that we don't parse when Rd=15 and S=1.
-  if ((expected_decoder_.d.reg(inst).Equals(kRegisterPc)) &&
-      expected_decoder_.conditions.is_updated(inst)) {
-    NC_PRECOND(&ExpectedDecoder() != &decoder);
-  }
+  NC_PRECOND(!(expected_decoder_.d.reg(inst).Equals(kRegisterPc) &&
+               expected_decoder_.conditions.is_updated(inst)));
   return Unary1RegisterImmediateOpTester::
       PassesParsePreconditions(inst, decoder);
 }
@@ -389,8 +385,7 @@ Binary2RegisterBitRangeTesterNotRnIsPc::Binary2RegisterBitRangeTesterNotRnIsPc(
 bool Binary2RegisterBitRangeTesterNotRnIsPc::
 PassesParsePreconditions(Instruction inst,
                          const NamedClassDecoder& decoder) {
-  if (expected_decoder_.n.reg(inst).Equals(kRegisterPc))
-    return false;
+  NC_PRECOND(!(expected_decoder_.n.reg(inst).Equals(kRegisterPc)));
   return Binary2RegisterBitRangeTester::PassesParsePreconditions(inst, decoder);
 }
 
@@ -441,10 +436,8 @@ bool Binary2RegisterImmediateOpTesterNotRdIsPcAndS::
 PassesParsePreconditions(Instruction inst,
                          const NamedClassDecoder& decoder) {
   // Check that we don't parse when Rd=15 and S=1.
-  if ((expected_decoder_.d.reg(inst).Equals(kRegisterPc)) &&
-      expected_decoder_.conditions.is_updated(inst)) {
-    NC_PRECOND(&ExpectedDecoder() != &decoder);
-  }
+  NC_PRECOND(!(expected_decoder_.d.reg(inst).Equals(kRegisterPc) &&
+               expected_decoder_.conditions.is_updated(inst)));
   return Binary2RegisterImmediateOpTester::
       PassesParsePreconditions(inst, decoder);
 }
@@ -471,10 +464,8 @@ bool Binary2RegisterImmediateOpTesterNeitherRdIsPcAndSNorRnIsPcAndNotS::
 PassesParsePreconditions(Instruction inst,
                          const NamedClassDecoder& decoder) {
   // Check that we don't parse when Rn=15 and S=0.
-  if ((expected_decoder_.n.reg(inst).Equals(kRegisterPc)) &&
-      !expected_decoder_.conditions.is_updated(inst)) {
-    NC_PRECOND(&ExpectedDecoder() != &decoder);
-  }
+  NC_PRECOND(!(expected_decoder_.n.reg(inst).Equals(kRegisterPc) &&
+               !expected_decoder_.conditions.is_updated(inst)));
   return Binary2RegisterImmediateOpTesterNotRdIsPcAndS::
       PassesParsePreconditions(inst, decoder);
 }
@@ -579,10 +570,8 @@ bool Unary2RegisterOpTesterNotRdIsPcAndS::
 PassesParsePreconditions(Instruction inst,
                          const NamedClassDecoder& decoder) {
   // Check that we don't parse when Rd=15 and S=1.
-  if ((expected_decoder_.d.reg(inst).Equals(kRegisterPc)) &&
-      expected_decoder_.conditions.is_updated(inst)) {
-    NC_PRECOND(&ExpectedDecoder() != &decoder);
-  }
+  NC_PRECOND(!(expected_decoder_.d.reg(inst).Equals(kRegisterPc) &&
+               expected_decoder_.conditions.is_updated(inst)));
   return Unary2RegisterOpTester::PassesParsePreconditions(inst, decoder);
 }
 
@@ -855,9 +844,7 @@ bool Binary4RegisterDualOpTesterNotRaIsPcAndRegsNotPc::
 PassesParsePreconditions(Instruction inst,
                          const NamedClassDecoder& decoder) {
   // Check that we don't parse when bits(15:12)=15.
-  if (expected_decoder_.a.reg(inst).Equals(kRegisterPc)) {
-    NC_PRECOND(&ExpectedDecoder() != &decoder);
-  }
+  NC_PRECOND(!(expected_decoder_.a.reg(inst).Equals(kRegisterPc)));
   return Binary4RegisterDualOpTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
@@ -989,10 +976,8 @@ bool LoadStore2RegisterImm8OpTester::
 PassesParsePreconditions(Instruction inst,
                          const NamedClassDecoder& decoder) {
   // Should not parse if P=0 && W=1.
-  if (expected_decoder_.indexing.IsPostIndexing(inst) &&
-      expected_decoder_.writes.IsDefined(inst)) {
-    NC_PRECOND(&ExpectedDecoder() != &decoder);
-  }
+  NC_PRECOND(!(expected_decoder_.indexing.IsPostIndexing(inst) &&
+               expected_decoder_.writes.IsDefined(inst)));
   return CondDecoderTester::PassesParsePreconditions(inst, decoder);
 }
 
@@ -1047,9 +1032,7 @@ bool LoadStore2RegisterImm8OpTesterNotRnIsPc::
 PassesParsePreconditions(Instruction inst,
                          const NamedClassDecoder& decoder) {
   // Check that we don't parse when Rn=15.
-  if (expected_decoder_.n.reg(inst).Equals(kRegisterPc)) {
-    NC_PRECOND(&ExpectedDecoder() != &decoder);
-  }
+  NC_PRECOND(!(expected_decoder_.n.reg(inst).Equals(kRegisterPc)));
   return LoadStore2RegisterImm8OpTester::
       PassesParsePreconditions(inst, decoder);
 }
@@ -1107,9 +1090,7 @@ bool LoadStore2RegisterImm8DoubleOpTesterNotRnIsPc::
 PassesParsePreconditions(Instruction inst,
                          const NamedClassDecoder& decoder) {
   // Check that we don't parse when Rn=15.
-  if (expected_decoder_.n.reg(inst).Equals(kRegisterPc)) {
-    NC_PRECOND(&ExpectedDecoder() != &decoder);
-  }
+  NC_PRECOND(!(expected_decoder_.n.reg(inst).Equals(kRegisterPc)));
   return LoadStore2RegisterImm8DoubleOpTester::
       PassesParsePreconditions(inst, decoder);
 }
@@ -1134,10 +1115,8 @@ bool LoadStore2RegisterImm12OpTester::
 PassesParsePreconditions(Instruction inst,
                          const NamedClassDecoder& decoder) {
   // Should not parse if P=0 && W=1.
-  if (expected_decoder_.indexing.IsPostIndexing(inst) &&
-      expected_decoder_.writes.IsDefined(inst)) {
-    NC_PRECOND(&ExpectedDecoder() != &decoder);
-  }
+  NC_PRECOND(!(expected_decoder_.indexing.IsPostIndexing(inst) &&
+               expected_decoder_.writes.IsDefined(inst)));
   return CondDecoderTester::PassesParsePreconditions(inst, decoder);
 }
 
@@ -1193,9 +1172,7 @@ bool LoadStore2RegisterImm12OpTesterNotRnIsPc::
 PassesParsePreconditions(Instruction inst,
                          const NamedClassDecoder& decoder) {
   // Check that we don't parse when Rn=15.
-  if (expected_decoder_.n.reg(inst).Equals(kRegisterPc)) {
-    NC_PRECOND(&ExpectedDecoder() != &decoder);
-  }
+  NC_PRECOND(!(expected_decoder_.n.reg(inst).Equals(kRegisterPc)));
   return LoadStore2RegisterImm12OpTester::
       PassesParsePreconditions(inst, decoder);
 }
@@ -1218,10 +1195,8 @@ bool LoadStore3RegisterOpTester::
 PassesParsePreconditions(Instruction inst,
                          const NamedClassDecoder& decoder) {
   // Should not parse if P=0 && W=1.
-  if (expected_decoder_.indexing.IsPostIndexing(inst) &&
-      expected_decoder_.writes.IsDefined(inst)) {
-    NC_PRECOND(&ExpectedDecoder() != &decoder);
-  }
+  NC_PRECOND(!(expected_decoder_.indexing.IsPostIndexing(inst) &&
+               expected_decoder_.writes.IsDefined(inst)));
   return CondDecoderTester::PassesParsePreconditions(inst, decoder);
 }
 
@@ -1459,9 +1434,7 @@ bool Unary2RegisterImmedShiftedOpTesterImm5NotZero::
 PassesParsePreconditions(Instruction inst,
                          const NamedClassDecoder& decoder) {
   // Check that we don't parse when imm5=0.
-  if (0 == expected_decoder_.imm.value(inst)) {
-    NC_PRECOND(&ExpectedDecoder() != &decoder);
-  }
+  NC_PRECOND(0 != expected_decoder_.imm.value(inst));
   return Unary2RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
 }
@@ -1486,10 +1459,8 @@ bool Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS::
 PassesParsePreconditions(Instruction inst,
                          const NamedClassDecoder& decoder) {
   // Check that we don't parse when Rd=15 and S=1.
-  if ((expected_decoder_.d.reg(inst).Equals(kRegisterPc)) &&
-      expected_decoder_.conditions.is_updated(inst)) {
-    NC_PRECOND(&ExpectedDecoder() != &decoder);
-  }
+  NC_PRECOND(!(expected_decoder_.d.reg(inst).Equals(kRegisterPc) &&
+               expected_decoder_.conditions.is_updated(inst)));
   return Unary2RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
 }
@@ -1608,10 +1579,8 @@ bool Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS::
 PassesParsePreconditions(Instruction inst,
                          const NamedClassDecoder& decoder) {
   // Check that we don't parse when Rd=15 and S=1.
-  if ((expected_decoder_.d.reg(inst).Equals(kRegisterPc)) &&
-      expected_decoder_.conditions.is_updated(inst)) {
-    NC_PRECOND(&ExpectedDecoder() != &decoder);
-  }
+  NC_PRECOND(!(expected_decoder_.d.reg(inst).Equals(kRegisterPc) &&
+               expected_decoder_.conditions.is_updated(inst)));
   return Binary3RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
 }
