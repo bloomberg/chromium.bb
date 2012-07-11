@@ -51,6 +51,21 @@ class AdbInterface:
     """Direct all future commands to Android target with the given serial."""
     self._target_arg = "-s %s" % serial
 
+  def RestartAdbServer(self):
+    """Restart the adb server."""
+    self.KillAdbServer()
+    self.StartAdbServer()
+
+  def KillAdbServer(self):
+    """Kill adb server."""
+    adb_cmd = "adb kill-server"
+    return run_command.RunCommand(adb_cmd)
+
+  def StartAdbServer(self):
+    """Start adb server."""
+    adb_cmd = "adb start-server"
+    return run_command.RunCommand(adb_cmd)
+
   def SendCommand(self, command_string, timeout_time=20, retry_count=3):
     """Send a command via adb.
 
@@ -418,6 +433,39 @@ class AdbInterface:
 
     if not success:
       raise errors.WaitForResponseTimedOutError()
+
+  def WaitForSystemBootCompleted(self, wait_time=120):
+    """Waits for targeted system's boot_completed flag to be set.
+
+    Args:
+      wait_time: time in seconds to wait
+
+    Raises:
+      WaitForResponseTimedOutError if wait_time elapses and flag still not
+      set.
+    """
+    logger.Log("Waiting for system boot completed...")
+    self.SendCommand("wait-for-device")
+    # Now the device is there, but system not boot completed.
+    # Query the sys.boot_completed flag with a basic command
+    boot_completed = False
+    attempts = 0
+    wait_period = 5
+    while not boot_completed and (attempts*wait_period) < wait_time:
+      output = self.SendShellCommand("getprop sys.boot_completed", retry_count=1)
+      output = output.strip()
+      if output == "1":
+        boot_completed = True
+      else:
+        # If 'error: xxx' returned when querying the flag, it means
+        # adb server lost the connection to the emulator, so restart the adb server.
+        if "error:" in output:
+          self.RestartAdbServer()
+        time.sleep(wait_period)
+        attempts += 1
+    if not boot_completed:
+      raise errors.WaitForResponseTimedOutError(
+          "sys.boot_completed flag was not set after %s seconds" % wait_time)
 
   def WaitForBootComplete(self, wait_time=120):
     """Waits for targeted device's bootcomplete flag to be set.
