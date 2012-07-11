@@ -90,7 +90,13 @@ struct PathToVerify {
   FilePath path_to_scan;
   FilePath expected_existing_path;
 };
-}  // anonymous namespace
+
+// Converts |cache_state| to a GDataCache::CacheEntry.
+GDataCache::CacheEntry ToCacheEntry(int cache_state) {
+  return GDataCache::CacheEntry("dummy_md5", cache_state);
+}
+
+}  // namespace
 
 class MockFreeDiskSpaceGetter : public FreeDiskSpaceGetterInterface {
  public:
@@ -269,17 +275,17 @@ class GDataCacheTest : public testing::Test {
       FilePath dest_path = cache_->GetCacheFilePath(
           resource.resource_id,
           resource.md5,
-          GDataCache::IsCachePinned(resource.cache_state) ||
-              GDataCache::IsCacheDirty(resource.cache_state) ?
+          ToCacheEntry(resource.cache_state).IsPinned() ||
+          ToCacheEntry(resource.cache_state).IsDirty() ?
                   GDataCache::CACHE_TYPE_PERSISTENT :
                   GDataCache::CACHE_TYPE_TMP,
-          GDataCache::IsCacheDirty(resource.cache_state) ?
+          ToCacheEntry(resource.cache_state).IsDirty() ?
               GDataCache::CACHED_FILE_LOCALLY_MODIFIED :
               GDataCache::CACHED_FILE_FROM_SERVER);
 
       // Copy file from data dir to cache subdir, naming it per cache files
       // convention.
-      if (GDataCache::IsCachePresent(resource.cache_state)) {
+      if (ToCacheEntry(resource.cache_state).IsPresent()) {
         FilePath source_path = GetTestFilePath(resource.source_file);
         ASSERT_TRUE(file_util::CopyFile(source_path, dest_path));
       } else {
@@ -288,7 +294,7 @@ class GDataCacheTest : public testing::Test {
 
       // Create symbolic link in pinned dir, naming it per cache files
       // convention.
-      if (GDataCache::IsCachePinned(resource.cache_state)) {
+      if (ToCacheEntry(resource.cache_state).IsPinned()) {
         FilePath link_path = cache_->GetCacheFilePath(
             resource.resource_id,
             "",
@@ -299,7 +305,7 @@ class GDataCacheTest : public testing::Test {
 
       // Create symbolic link in outgoing dir, naming it per cache files
       // convention.
-      if (GDataCache::IsCacheDirty(resource.cache_state)) {
+      if (ToCacheEntry(resource.cache_state).IsDirty()) {
         FilePath link_path = cache_->GetCacheFilePath(
             resource.resource_id,
             "",
@@ -321,7 +327,7 @@ class GDataCacheTest : public testing::Test {
       TestGetFileFromCacheByResourceIdAndMd5(
           resource.resource_id,
           resource.md5,
-          GDataCache::IsCachePresent(resource.cache_state) ?
+          ToCacheEntry(resource.cache_state).IsPresent() ?
           base::PLATFORM_FILE_OK :
           base::PLATFORM_FILE_ERROR_NOT_FOUND,
           resource.expected_file_extension);
@@ -329,7 +335,7 @@ class GDataCacheTest : public testing::Test {
 
       // Verify cache state.
       std::string md5;
-      if (GDataCache::IsCachePresent(resource.cache_state))
+      if (ToCacheEntry(resource.cache_state).IsPresent())
          md5 = resource.md5;
       scoped_ptr<GDataCache::CacheEntry> cache_entry =
           GetCacheEntryFromOriginThread(resource.resource_id, md5);
@@ -688,8 +694,8 @@ class GDataCacheTest : public testing::Test {
     // Verify cache map.
     scoped_ptr<GDataCache::CacheEntry> cache_entry =
         GetCacheEntryFromOriginThread(resource_id, md5);
-    if (GDataCache::IsCachePresent(expected_cache_state_) ||
-        GDataCache::IsCachePinned(expected_cache_state_)) {
+    if (ToCacheEntry(expected_cache_state_).IsPresent() ||
+        ToCacheEntry(expected_cache_state_).IsPinned()) {
       ASSERT_TRUE(cache_entry.get());
       EXPECT_EQ(expected_cache_state_, cache_entry->cache_state);
       EXPECT_EQ(expected_sub_dir_type_, cache_entry->GetSubDirectoryType());
@@ -701,15 +707,15 @@ class GDataCacheTest : public testing::Test {
     FilePath dest_path = cache_->GetCacheFilePath(
         resource_id,
         md5,
-        GDataCache::IsCachePinned(expected_cache_state_) ||
-            GDataCache::IsCacheDirty(expected_cache_state_) ?
+        ToCacheEntry(expected_cache_state_).IsPinned() ||
+        ToCacheEntry(expected_cache_state_).IsDirty() ?
                 GDataCache::CACHE_TYPE_PERSISTENT :
                 GDataCache::CACHE_TYPE_TMP,
-        GDataCache::IsCacheDirty(expected_cache_state_) ?
+        ToCacheEntry(expected_cache_state_).IsDirty() ?
             GDataCache::CACHED_FILE_LOCALLY_MODIFIED :
             GDataCache::CACHED_FILE_FROM_SERVER);
     bool exists = file_util::PathExists(dest_path);
-    if (GDataCache::IsCachePresent(expected_cache_state_))
+    if (ToCacheEntry(expected_cache_state_).IsPresent())
       EXPECT_TRUE(exists);
     else
       EXPECT_FALSE(exists);
@@ -722,11 +728,11 @@ class GDataCacheTest : public testing::Test {
         GDataCache::CACHED_FILE_FROM_SERVER);
     // Check that pin symlink exists, without deferencing to target path.
     exists = file_util::IsLink(symlink_path);
-    if (GDataCache::IsCachePinned(expected_cache_state_)) {
+    if (ToCacheEntry(expected_cache_state_).IsPinned()) {
       EXPECT_TRUE(exists);
       FilePath target_path;
       EXPECT_TRUE(file_util::ReadSymbolicLink(symlink_path, &target_path));
-      if (GDataCache::IsCachePresent(expected_cache_state_))
+      if (ToCacheEntry(expected_cache_state_).IsPresent())
         EXPECT_EQ(dest_path, target_path);
       else
         EXPECT_EQ(kSymLinkToDevNull, target_path.value());
@@ -743,12 +749,12 @@ class GDataCacheTest : public testing::Test {
     // Check that outgoing symlink exists, without deferencing to target path.
     exists = file_util::IsLink(symlink_path);
     if (expect_outgoing_symlink_ &&
-        GDataCache::IsCacheDirty(expected_cache_state_)) {
+        ToCacheEntry(expected_cache_state_).IsDirty()) {
       EXPECT_TRUE(exists);
       FilePath target_path;
       EXPECT_TRUE(file_util::ReadSymbolicLink(symlink_path, &target_path));
       EXPECT_TRUE(target_path.value() != kSymLinkToDevNull);
-      if (GDataCache::IsCachePresent(expected_cache_state_))
+      if (ToCacheEntry(expected_cache_state_).IsPresent())
         EXPECT_EQ(dest_path, target_path);
     } else {
       EXPECT_FALSE(exists);
@@ -872,71 +878,104 @@ TEST_F(GDataCacheTest, InitializeCache) {
   TestInitializeCache();
 }
 
-TEST_F(GDataCacheTest, CacheStateBitmasks) {
-  GDataCache::CacheEntry cache_entry("md5_cache_state_bitmasks",
-                                     GDataCache::CACHE_STATE_NONE);
+TEST_F(GDataCacheTest, CacheEntry_Is) {
+  GDataCache::CacheEntry cache_entry("dummy_md5", GDataCache::CACHE_STATE_NONE);
   EXPECT_FALSE(cache_entry.IsPresent());
   EXPECT_FALSE(cache_entry.IsPinned());
   EXPECT_FALSE(cache_entry.IsDirty());
+  EXPECT_FALSE(cache_entry.IsMounted());
+  EXPECT_FALSE(cache_entry.IsPersistent());
 
   cache_entry.cache_state = GDataCache::CACHE_STATE_PRESENT;
   EXPECT_TRUE(cache_entry.IsPresent());
   EXPECT_FALSE(cache_entry.IsPinned());
   EXPECT_FALSE(cache_entry.IsDirty());
+  EXPECT_FALSE(cache_entry.IsMounted());
+  EXPECT_FALSE(cache_entry.IsPersistent());
 
-  cache_entry.cache_state = GDataCache::CACHE_STATE_PINNED;
-  EXPECT_FALSE(cache_entry.IsPresent());
-  EXPECT_TRUE(cache_entry.IsPinned());
-  EXPECT_FALSE(cache_entry.IsDirty());
-
-  cache_entry.cache_state = GDataCache::CACHE_STATE_PRESENT |
-                            GDataCache::CACHE_STATE_PINNED;
+  cache_entry.cache_state |= GDataCache::CACHE_STATE_PINNED;
   EXPECT_TRUE(cache_entry.IsPresent());
   EXPECT_TRUE(cache_entry.IsPinned());
   EXPECT_FALSE(cache_entry.IsDirty());
+  EXPECT_FALSE(cache_entry.IsMounted());
+  EXPECT_FALSE(cache_entry.IsPersistent());
 
-  cache_entry.cache_state = GDataCache::CACHE_STATE_PRESENT |
-                            GDataCache::CACHE_STATE_DIRTY;
-  EXPECT_TRUE(cache_entry.IsPresent());
-  EXPECT_FALSE(cache_entry.IsPinned());
-  EXPECT_TRUE(cache_entry.IsDirty());
-
-  cache_entry.cache_state = GDataCache::CACHE_STATE_PRESENT |
-                            GDataCache::CACHE_STATE_PINNED |
-                            GDataCache::CACHE_STATE_DIRTY;
+  cache_entry.cache_state |= GDataCache::CACHE_STATE_DIRTY;
   EXPECT_TRUE(cache_entry.IsPresent());
   EXPECT_TRUE(cache_entry.IsPinned());
   EXPECT_TRUE(cache_entry.IsDirty());
+  EXPECT_FALSE(cache_entry.IsMounted());
+  EXPECT_FALSE(cache_entry.IsPersistent());
 
-  int cache_state = GDataCache::CACHE_STATE_NONE;
-  EXPECT_EQ(GDataCache::CACHE_STATE_PRESENT,
-            GDataCache::SetCachePresent(cache_state));
-  EXPECT_EQ(GDataCache::CACHE_STATE_PINNED,
-            GDataCache::SetCachePinned(cache_state));
+  cache_entry.cache_state |= GDataCache::CACHE_STATE_MOUNTED;
+  EXPECT_TRUE(cache_entry.IsPresent());
+  EXPECT_TRUE(cache_entry.IsPinned());
+  EXPECT_TRUE(cache_entry.IsDirty());
+  EXPECT_TRUE(cache_entry.IsMounted());
+  EXPECT_FALSE(cache_entry.IsPersistent());
 
-  cache_state = GDataCache::CACHE_STATE_PRESENT;
-  EXPECT_EQ(GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_PINNED,
-            GDataCache::SetCachePinned(cache_state));
-  EXPECT_EQ(GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_DIRTY,
-            GDataCache::SetCacheDirty(cache_state));
-  cache_state |= GDataCache::CACHE_STATE_PINNED;
-  EXPECT_EQ(GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_PINNED |
+  cache_entry.cache_state |= GDataCache::CACHE_STATE_PERSISTENT;
+  EXPECT_TRUE(cache_entry.IsPresent());
+  EXPECT_TRUE(cache_entry.IsPinned());
+  EXPECT_TRUE(cache_entry.IsDirty());
+  EXPECT_TRUE(cache_entry.IsMounted());
+  EXPECT_TRUE(cache_entry.IsPersistent());
+}
+
+TEST_F(GDataCacheTest, CacheEntry_Set) {
+  GDataCache::CacheEntry cache_entry("dummy_md5", GDataCache::CACHE_STATE_NONE);
+
+  cache_entry.SetPresent(true);
+  EXPECT_EQ(GDataCache::CACHE_STATE_PRESENT, cache_entry.cache_state);
+
+  cache_entry.SetPinned(true);
+  EXPECT_EQ(GDataCache::CACHE_STATE_PRESENT |
+            GDataCache::CACHE_STATE_PINNED,
+            cache_entry.cache_state);
+
+  cache_entry.SetDirty(true);
+  EXPECT_EQ(GDataCache::CACHE_STATE_PRESENT |
+            GDataCache::CACHE_STATE_PINNED |
             GDataCache::CACHE_STATE_DIRTY,
-            GDataCache::SetCacheDirty(cache_state));
+            cache_entry.cache_state);
 
-  cache_state = GDataCache::CACHE_STATE_PINNED;
-  EXPECT_EQ(GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_PINNED,
-            GDataCache::SetCachePresent(cache_state));
+  cache_entry.SetMounted(true);
+  EXPECT_EQ(GDataCache::CACHE_STATE_PRESENT |
+            GDataCache::CACHE_STATE_PINNED |
+            GDataCache::CACHE_STATE_DIRTY |
+            GDataCache::CACHE_STATE_MOUNTED,
+            cache_entry.cache_state);
 
-  cache_state = GDataCache::CACHE_STATE_PRESENT |
-                GDataCache::CACHE_STATE_PINNED |
-                GDataCache::CACHE_STATE_DIRTY;
-  EXPECT_EQ(cache_state & ~GDataCache::CACHE_STATE_PRESENT,
-            GDataCache::ClearCachePresent(cache_state));
-  EXPECT_EQ(cache_state & ~GDataCache::CACHE_STATE_PINNED,
-            GDataCache::ClearCachePinned(cache_state));
-  EXPECT_EQ(cache_state & ~GDataCache::CACHE_STATE_DIRTY,
-            GDataCache::ClearCacheDirty(cache_state));
+  cache_entry.SetPersistent(true);
+  EXPECT_EQ(GDataCache::CACHE_STATE_PRESENT |
+            GDataCache::CACHE_STATE_PINNED |
+            GDataCache::CACHE_STATE_DIRTY |
+            GDataCache::CACHE_STATE_MOUNTED |
+            GDataCache::CACHE_STATE_PERSISTENT,
+            cache_entry.cache_state);
+
+  cache_entry.SetPresent(false);
+  EXPECT_EQ(GDataCache::CACHE_STATE_PINNED |
+            GDataCache::CACHE_STATE_DIRTY |
+            GDataCache::CACHE_STATE_MOUNTED |
+            GDataCache::CACHE_STATE_PERSISTENT,
+            cache_entry.cache_state);
+
+  cache_entry.SetPinned(false);
+  EXPECT_EQ(GDataCache::CACHE_STATE_DIRTY |
+            GDataCache::CACHE_STATE_MOUNTED |
+            GDataCache::CACHE_STATE_PERSISTENT,
+            cache_entry.cache_state);
+
+  cache_entry.SetDirty(false);
+  EXPECT_EQ(GDataCache::CACHE_STATE_MOUNTED |
+            GDataCache::CACHE_STATE_PERSISTENT, cache_entry.cache_state);
+
+  cache_entry.SetMounted(false);
+  EXPECT_EQ(GDataCache::CACHE_STATE_PERSISTENT, cache_entry.cache_state);
+
+  cache_entry.SetPersistent(false);
+  EXPECT_EQ(GDataCache::CACHE_STATE_NONE, cache_entry.cache_state);
 }
 
 TEST_F(GDataCacheTest, GetCacheFilePath) {
@@ -989,10 +1028,11 @@ TEST_F(GDataCacheTest, StoreToCacheSimple) {
 
   // Verify that there's only one file with name <resource_id>, i.e. previously
   // cached file with the different md5 should be deleted.
-  FilePath path = GetCacheFilePath(resource_id, "*",
-      (GDataCache::IsCachePinned(expected_cache_state_)) ?
-          GDataCache::CACHE_TYPE_PERSISTENT :
-          GDataCache::CACHE_TYPE_TMP,
+  FilePath path = GetCacheFilePath(
+      resource_id, "*",
+      (ToCacheEntry(expected_cache_state_).IsPinned() ?
+       GDataCache::CACHE_TYPE_PERSISTENT :
+       GDataCache::CACHE_TYPE_TMP),
       GDataCache::CACHED_FILE_FROM_SERVER);
   file_util::FileEnumerator enumerator(path.DirName(), false,
                                        file_util::FileEnumerator::FILES,

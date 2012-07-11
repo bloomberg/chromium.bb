@@ -812,7 +812,7 @@ void GDataCache::Store(const std::string& resource_id,
 
   FilePath dest_path;
   FilePath symlink_path;
-  int cache_state = CACHE_STATE_PRESENT;
+  CacheEntry new_cache_entry(md5, CACHE_STATE_NONE);
   CacheSubDirectoryType sub_dir_type = CACHE_TYPE_TMP;
 
   scoped_ptr<CacheEntry> cache_entry = GetCacheEntry(resource_id, md5);
@@ -830,7 +830,7 @@ void GDataCache::Store(const std::string& resource_id,
       return;
     }
 
-    cache_state |= cache_entry->cache_state;
+    new_cache_entry.cache_state = cache_entry->cache_state;
 
     // If file is pinned, determines destination path.
     if (cache_entry->IsPinned()) {
@@ -880,9 +880,10 @@ void GDataCache::Store(const std::string& resource_id,
 
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
+    new_cache_entry.SetPresent(true);
     UpdateCacheWithSubDirectoryType(resource_id,
                                     sub_dir_type,
-                                    CacheEntry(md5, cache_state));
+                                    new_cache_entry);
   }
 }
 
@@ -897,7 +898,7 @@ void GDataCache::Pin(const std::string& resource_id,
   FilePath dest_path;
   FilePath symlink_path;
   bool create_symlink = true;
-  int cache_state = CACHE_STATE_PINNED;
+  CacheEntry new_cache_entry(md5, CACHE_STATE_NONE);
   CacheSubDirectoryType sub_dir_type = CACHE_TYPE_PERSISTENT;
 
   scoped_ptr<CacheEntry> cache_entry = GetCacheEntry(resource_id, md5);
@@ -915,7 +916,7 @@ void GDataCache::Pin(const std::string& resource_id,
     // then moved to 'persistent'.
     sub_dir_type = CACHE_TYPE_TMP;
   } else {  // File exists in cache, determines destination path.
-    cache_state |= cache_entry->cache_state;
+    new_cache_entry.cache_state = cache_entry->cache_state;
 
     // Determine source and destination paths.
 
@@ -969,9 +970,10 @@ void GDataCache::Pin(const std::string& resource_id,
 
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
+    new_cache_entry.SetPinned(true);
     UpdateCacheWithSubDirectoryType(resource_id,
                                     sub_dir_type,
-                                    CacheEntry(md5, cache_state));
+                                    new_cache_entry);
   }
 }
 
@@ -1049,10 +1051,11 @@ void GDataCache::Unpin(const std::string& resource_id,
 
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
-    int cache_state = ClearCachePinned(cache_entry->cache_state);
+    CacheEntry new_cache_entry(md5, cache_entry->cache_state);
+    new_cache_entry.SetPinned(false);
     UpdateCacheWithSubDirectoryType(resource_id,
                                     sub_dir_type,
-                                    CacheEntry(md5, cache_state));
+                                    new_cache_entry);
   }
 }
 
@@ -1098,17 +1101,17 @@ void GDataCache::SetMountedState(const FilePath& file_path,
   // Determine the source and destination paths for moving the cache blob.
   FilePath source_path;
   CacheSubDirectoryType dest_subdir;
-  int cache_state = cache_entry->cache_state;
+  CacheEntry new_cache_entry(md5, cache_entry->cache_state);
   if (to_mount) {
     source_path = unmounted_path;
     *cache_file_path = mounted_path;
     dest_subdir = mounted_subdir;
-    cache_state = SetCacheMounted(cache_state);
+    new_cache_entry.SetMounted(true);
   } else {
     source_path = mounted_path;
     *cache_file_path = unmounted_path;
     dest_subdir = unmounted_subdir;
-    cache_state = ClearCacheMounted(cache_state);
+    new_cache_entry.SetMounted(false);
   }
 
   // Move cache blob from source path to destination path.
@@ -1118,7 +1121,7 @@ void GDataCache::SetMountedState(const FilePath& file_path,
     // Now that cache operation is complete, update cache map
     UpdateCacheWithSubDirectoryType(resource_id,
                                     dest_subdir,
-                                    CacheEntry(md5, cache_state));
+                                    new_cache_entry);
   }
 }
 
@@ -1220,10 +1223,11 @@ void GDataCache::MarkDirty(const std::string& resource_id,
 
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
-    int cache_state = SetCacheDirty(cache_entry->cache_state);
+    CacheEntry new_cache_entry(md5, cache_entry->cache_state);
+    new_cache_entry.SetDirty(true);
     UpdateCacheWithSubDirectoryType(resource_id,
                                     sub_dir_type,
-                                    CacheEntry(md5, cache_state));
+                                    new_cache_entry);
   }
 }
 
@@ -1368,10 +1372,11 @@ void GDataCache::ClearDirty(const std::string& resource_id,
 
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
-    int cache_state = ClearCacheDirty(cache_entry->cache_state);
-   UpdateCacheWithSubDirectoryType(resource_id,
+    CacheEntry new_cache_entry(md5, cache_entry->cache_state);
+    new_cache_entry.SetDirty(false);
+    UpdateCacheWithSubDirectoryType(resource_id,
                                     sub_dir_type,
-                                    CacheEntry(md5, cache_state));
+                                    new_cache_entry);
   }
 }
 
@@ -1514,10 +1519,7 @@ void GDataCache::UpdateCacheWithSubDirectoryType(
          sub_dir_type == CACHE_TYPE_TMP);
 
   CacheEntry cache_entry = in_cache_entry;
-  if (sub_dir_type == CACHE_TYPE_PERSISTENT)
-    cache_entry.cache_state = SetCachePersistent(cache_entry.cache_state);
-  else
-    cache_entry.cache_state = ClearCachePersistent(cache_entry.cache_state);
+  cache_entry.SetPersistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
 
   metadata_->UpdateCache(resource_id, cache_entry);
 }

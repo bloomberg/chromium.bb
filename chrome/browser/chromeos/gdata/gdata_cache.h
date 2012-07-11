@@ -128,11 +128,42 @@ class GDataCache {
           cache_state(cache_state) {
     }
 
-    bool IsPresent() const { return IsCachePresent(cache_state); }
-    bool IsPinned() const { return IsCachePinned(cache_state); }
-    bool IsDirty() const { return IsCacheDirty(cache_state); }
-    bool IsMounted() const { return IsCacheMounted(cache_state); }
-    bool IsPersistent() const { return IsCachePersistent(cache_state); }
+    // Returns true if the file is present locally.
+    bool IsPresent() const { return cache_state & CACHE_STATE_PRESENT; }
+
+    // Returns true if the file is pinned (i.e. available offline).
+    bool IsPinned() const { return cache_state & CACHE_STATE_PINNED; }
+
+    // Returns true if the file is dirty (i.e. modified locally).
+    bool IsDirty() const { return cache_state & CACHE_STATE_DIRTY; }
+
+    // Returns true if the file is a mounted archive file.
+    bool IsMounted() const { return cache_state & CACHE_STATE_MOUNTED; }
+
+    // Returns true if the file is in the persistent directory.
+    bool IsPersistent() const { return cache_state & CACHE_STATE_PERSISTENT; }
+
+    // Setters for the states describe above.
+    void SetPresent(bool value) {
+      cache_state = (value ? cache_state |= CACHE_STATE_PRESENT :
+                     cache_state &= ~CACHE_STATE_PRESENT);
+    }
+    void SetPinned(bool value) {
+      cache_state = (value ? cache_state |= CACHE_STATE_PINNED :
+                     cache_state &= ~CACHE_STATE_PINNED);
+    }
+    void SetDirty(bool value) {
+      cache_state = (value ? cache_state |= CACHE_STATE_DIRTY :
+                     cache_state &= ~CACHE_STATE_DIRTY);
+    }
+    void SetMounted(bool value) {
+      cache_state = (value ? cache_state |= CACHE_STATE_MOUNTED :
+                     cache_state &= ~CACHE_STATE_MOUNTED);
+    }
+    void SetPersistent(bool value) {
+      cache_state = (value ? cache_state |= CACHE_STATE_PERSISTENT :
+                     cache_state &= ~CACHE_STATE_PERSISTENT);
+    }
 
     // Returns the type of the sub directory where the cache file is stored.
     CacheSubDirectoryType GetSubDirectoryType() const {
@@ -156,52 +187,6 @@ class GDataCache {
   // outside of GDataCache.
   typedef base::Callback<void(bool success, const CacheEntry& cache_entry)>
       GetCacheEntryCallback;
-
-  static bool IsCachePresent(int cache_state) {
-    return cache_state & CACHE_STATE_PRESENT;
-  }
-  static bool IsCachePinned(int cache_state) {
-    return cache_state & CACHE_STATE_PINNED;
-  }
-  static bool IsCacheDirty(int cache_state) {
-    return cache_state & CACHE_STATE_DIRTY;
-  }
-  static bool IsCacheMounted(int cache_state) {
-    return cache_state & CACHE_STATE_MOUNTED;
-  }
-  static bool IsCachePersistent(int cache_state) {
-    return cache_state & CACHE_STATE_PERSISTENT;
-  }
-  static int SetCachePresent(int cache_state) {
-    return cache_state |= CACHE_STATE_PRESENT;
-  }
-  static int SetCachePinned(int cache_state) {
-    return cache_state |= CACHE_STATE_PINNED;
-  }
-  static int SetCacheDirty(int cache_state) {
-    return cache_state |= CACHE_STATE_DIRTY;
-  }
-  static int SetCacheMounted(int cache_state) {
-    return cache_state |= CACHE_STATE_MOUNTED;
-  }
-  static int SetCachePersistent(int cache_state) {
-    return cache_state |= CACHE_STATE_PERSISTENT;
-  }
-  static int ClearCachePresent(int cache_state) {
-    return cache_state &= ~CACHE_STATE_PRESENT;
-  }
-  static int ClearCachePinned(int cache_state) {
-    return cache_state &= ~CACHE_STATE_PINNED;
-  }
-  static int ClearCacheDirty(int cache_state) {
-    return cache_state &= ~CACHE_STATE_DIRTY;
-  }
-  static int ClearCacheMounted(int cache_state) {
-    return cache_state &= ~CACHE_STATE_MOUNTED;
-  }
-  static int ClearCachePersistent(int cache_state) {
-    return cache_state &= ~CACHE_STATE_PERSISTENT;
-  }
 
   // Returns the sub-directory under gdata cache directory for the given sub
   // directory type. Example:  <user_profile_dir>/GCache/v1/tmp

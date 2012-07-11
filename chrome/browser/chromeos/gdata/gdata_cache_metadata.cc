@@ -289,7 +289,7 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
     util::ParseCacheFilePath(current, &resource_id, &md5, &extra_extension);
 
     // Determine cache state.
-    int cache_state = GDataCache::CACHE_STATE_NONE;
+    GDataCache::CacheEntry cache_entry(md5, GDataCache::CACHE_STATE_NONE);
     // If we're scanning pinned directory and if entry already exists, just
     // update its pinned state.
     if (sub_dir_type == GDataCache::CACHE_TYPE_PINNED) {
@@ -303,8 +303,7 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
 
       CacheMap::iterator iter = cache_map->find(resource_id);
       if (iter != cache_map->end()) {  // Entry exists, update pinned state.
-        iter->second.cache_state =
-            GDataCache::SetCachePinned(iter->second.cache_state);
+        iter->second.SetPinned(true);
 
         processed_file_map->insert(std::make_pair(resource_id, current));
         continue;
@@ -312,7 +311,7 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
       // Entry doesn't exist, this is a special symlink that refers to
       // /dev/null; follow through to create an entry with the PINNED but not
       // PRESENT state.
-      cache_state = GDataCache::SetCachePinned(cache_state);
+      cache_entry.SetPinned(true);
     } else if (sub_dir_type == GDataCache::CACHE_TYPE_OUTGOING) {
       std::string reason;
       if (!IsValidSymbolicLink(current, sub_dir_type, cache_paths, &reason)) {
@@ -338,7 +337,7 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
     } else if (sub_dir_type == GDataCache::CACHE_TYPE_PERSISTENT ||
                sub_dir_type == GDataCache::CACHE_TYPE_TMP) {
       if (sub_dir_type == GDataCache::CACHE_TYPE_PERSISTENT)
-        cache_state = GDataCache::SetCachePersistent(cache_state);
+        cache_entry.SetPersistent(true);
 
       if (file_util::IsLink(current)) {
         LOG(WARNING) << "Removing a symlink in persistent/tmp directory"
@@ -354,13 +353,13 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
         file_util::Delete(current, false);
       } else {
         // The cache file is present.
-        cache_state = GDataCache::SetCachePresent(cache_state);
+        cache_entry.SetPresent(true);
 
         // Adds the dirty bit if |md5| indicates that the file is dirty, and
         // the file is in the persistent directory.
         if (md5 == util::kLocallyModifiedFileExtension) {
           if (sub_dir_type == GDataCache::CACHE_TYPE_PERSISTENT) {
-            cache_state = GDataCache::SetCacheDirty(cache_state);
+            cache_entry.SetDirty(true);
           } else {
             LOG(WARNING) << "Removing a dirty file in tmp directory: "
                          << current.value();
@@ -374,8 +373,7 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
     }
 
     // Create and insert new entry into cache map.
-    cache_map->insert(std::make_pair(
-        resource_id, GDataCache::CacheEntry(md5, cache_state)));
+    cache_map->insert(std::make_pair(resource_id, cache_entry));
     processed_file_map->insert(std::make_pair(resource_id, current));
   }
 }

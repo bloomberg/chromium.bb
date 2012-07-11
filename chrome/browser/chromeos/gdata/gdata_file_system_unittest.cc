@@ -122,7 +122,12 @@ ACTION_P4(MockUploadExistingFile,
   return kUploadId;
 }
 
-}  // anonymous namespace
+// Converts |cache_state| to a GDataCache::CacheEntry.
+GDataCache::CacheEntry ToCacheEntry(int cache_state) {
+  return GDataCache::CacheEntry("dummy_md5", cache_state);
+}
+
+}  // namespace
 
 class MockFreeDiskSpaceGetter : public FreeDiskSpaceGetterInterface {
  public:
@@ -699,8 +704,8 @@ class GDataFileSystemTest : public testing::Test {
     // Verify cache map.
     scoped_ptr<GDataCache::CacheEntry> cache_entry =
         GetCacheEntryFromOriginThread(resource_id, md5);
-    if (GDataCache::IsCachePresent(expected_cache_state_) ||
-        GDataCache::IsCachePinned(expected_cache_state_)) {
+    if (ToCacheEntry(expected_cache_state_).IsPresent() ||
+        ToCacheEntry(expected_cache_state_).IsPinned()) {
       ASSERT_TRUE(cache_entry.get());
       EXPECT_EQ(expected_cache_state_, cache_entry->cache_state);
       EXPECT_EQ(expected_sub_dir_type_, cache_entry->GetSubDirectoryType());
@@ -712,15 +717,15 @@ class GDataFileSystemTest : public testing::Test {
     FilePath dest_path = cache_->GetCacheFilePath(
         resource_id,
         md5,
-        GDataCache::IsCachePinned(expected_cache_state_) ||
-            GDataCache::IsCacheDirty(expected_cache_state_) ?
+        ToCacheEntry(expected_cache_state_).IsPinned() ||
+        ToCacheEntry(expected_cache_state_).IsDirty() ?
                 GDataCache::CACHE_TYPE_PERSISTENT :
                 GDataCache::CACHE_TYPE_TMP,
-        GDataCache::IsCacheDirty(expected_cache_state_) ?
+        ToCacheEntry(expected_cache_state_).IsDirty() ?
             GDataCache::CACHED_FILE_LOCALLY_MODIFIED :
             GDataCache::CACHED_FILE_FROM_SERVER);
     bool exists = file_util::PathExists(dest_path);
-    if (GDataCache::IsCachePresent(expected_cache_state_))
+    if (ToCacheEntry(expected_cache_state_).IsPresent())
       EXPECT_TRUE(exists);
     else
       EXPECT_FALSE(exists);
@@ -733,11 +738,11 @@ class GDataFileSystemTest : public testing::Test {
         GDataCache::CACHED_FILE_FROM_SERVER);
     // Check that pin symlink exists, without deferencing to target path.
     exists = file_util::IsLink(symlink_path);
-    if (GDataCache::IsCachePinned(expected_cache_state_)) {
+    if (ToCacheEntry(expected_cache_state_).IsPinned()) {
       EXPECT_TRUE(exists);
       FilePath target_path;
       EXPECT_TRUE(file_util::ReadSymbolicLink(symlink_path, &target_path));
-      if (GDataCache::IsCachePresent(expected_cache_state_))
+      if (ToCacheEntry(expected_cache_state_).IsPresent())
         EXPECT_EQ(dest_path, target_path);
       else
         EXPECT_EQ(kSymLinkToDevNull, target_path.value());
@@ -754,12 +759,12 @@ class GDataFileSystemTest : public testing::Test {
     // Check that outgoing symlink exists, without deferencing to target path.
     exists = file_util::IsLink(symlink_path);
     if (expect_outgoing_symlink_ &&
-        GDataCache::IsCacheDirty(expected_cache_state_)) {
+        ToCacheEntry(expected_cache_state_).IsDirty()) {
       EXPECT_TRUE(exists);
       FilePath target_path;
       EXPECT_TRUE(file_util::ReadSymbolicLink(symlink_path, &target_path));
       EXPECT_TRUE(target_path.value() != kSymLinkToDevNull);
-      if (GDataCache::IsCachePresent(expected_cache_state_))
+      if (ToCacheEntry(expected_cache_state_).IsPresent())
         EXPECT_EQ(dest_path, target_path);
     } else {
       EXPECT_FALSE(exists);
