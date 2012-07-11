@@ -253,13 +253,11 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
 
   // Callback invoked when the download has been renamed to its final name.
   void OnDownloadRenamedToFinalName(DownloadFileManager* file_manager,
-                                    content::DownloadInterruptReason reason,
                                     const FilePath& full_path);
 
   // Callback invoked when the download has been renamed to its intermediate
   // name.
-  void OnDownloadRenamedToIntermediateName(
-      content::DownloadInterruptReason reason, const FilePath& full_path);
+  void OnDownloadRenamedToIntermediateName(const FilePath& full_path);
 
   // Callback from file thread when we release the DownloadFile.
   void OnDownloadFileReleased();

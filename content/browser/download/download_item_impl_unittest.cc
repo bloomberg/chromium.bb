@@ -101,9 +101,8 @@ class MockDownloadFileManager : public DownloadFileManager {
 //               RenameDownloadFile(_,_,_,_))
 //       .WillOnce(ScheduleRenameCallback(new_path));
 ACTION_P(ScheduleRenameCallback, new_path) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(arg3, content::DOWNLOAD_INTERRUPT_REASON_NONE, new_path));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(arg3, new_path));
 }
 
 // Similarly for scheduling a completion callback.

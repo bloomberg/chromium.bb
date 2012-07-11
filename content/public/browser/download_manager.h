@@ -152,6 +152,8 @@ class CONTENT_EXPORT DownloadManager
   // |reason| is a download interrupt reason code.
   virtual void OnDownloadInterrupted(
       int32 download_id,
+      int64 size,
+      const std::string& hash_state,
       DownloadInterruptReason reason) = 0;
 
   // Remove downloads after remove_begin (inclusive) and before remove_end

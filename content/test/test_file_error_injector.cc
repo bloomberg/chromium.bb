@@ -55,22 +55,14 @@ class DownloadFileWithErrors: public DownloadFileImpl {
   virtual content::DownloadInterruptReason Initialize() OVERRIDE;
   virtual content::DownloadInterruptReason AppendDataToFile(
       const char* data, size_t data_len) OVERRIDE;
-  virtual void Rename(const FilePath& full_path,
-                      bool overwrite_existing_file,
-                      const RenameCompletionCallback& callback) OVERRIDE;
+  virtual content::DownloadInterruptReason Rename(
+      const FilePath& full_path) OVERRIDE;
 
  private:
   // Error generating helper.
   content::DownloadInterruptReason ShouldReturnError(
       content::TestFileErrorInjector::FileOperationCode code,
       content::DownloadInterruptReason original_error);
-
-  // Used in place of original rename callback to intercept with
-  // ShouldReturnError.
-  void RenameErrorCallback(
-    const RenameCompletionCallback& original_callback,
-    content::DownloadInterruptReason original_error,
-    const FilePath& path_result);
 
   // Source URL for the file being downloaded.
   GURL source_url_;
@@ -126,16 +118,11 @@ content::DownloadInterruptReason DownloadFileWithErrors::AppendDataToFile(
       DownloadFileImpl::AppendDataToFile(data, data_len));
 }
 
-void DownloadFileWithErrors::Rename(
-    const FilePath& full_path,
-    bool overwrite_existing_file,
-    const RenameCompletionCallback& callback) {
-  DownloadFileImpl::Rename(
-      full_path, overwrite_existing_file,
-      base::Bind(&DownloadFileWithErrors::RenameErrorCallback,
-                 // Unretained since this'll only be called from
-                 // the DownloadFileImpl slice of the same object.
-                 base::Unretained(this), callback));
+content::DownloadInterruptReason DownloadFileWithErrors::Rename(
+    const FilePath& full_path) {
+  return ShouldReturnError(
+      content::TestFileErrorInjector::FILE_OPERATION_RENAME,
+      DownloadFileImpl::Rename(full_path));
 }
 
 content::DownloadInterruptReason DownloadFileWithErrors::ShouldReturnError(
@@ -165,15 +152,6 @@ content::DownloadInterruptReason DownloadFileWithErrors::ShouldReturnError(
   return error_info_.error;
 }
 
-void DownloadFileWithErrors::RenameErrorCallback(
-    const RenameCompletionCallback& original_callback,
-    content::DownloadInterruptReason original_error,
-    const FilePath& path_result) {
-  original_callback.Run(ShouldReturnError(
-      content::TestFileErrorInjector::FILE_OPERATION_RENAME,
-      original_error), path_result);
-}
-
 }  // namespace
 
 namespace content {
@@ -189,7 +167,7 @@ class DownloadFileWithErrorsFactory
   virtual ~DownloadFileWithErrorsFactory();
 
   // DownloadFileFactory interface.
-  virtual DownloadFile* CreateFile(
+  virtual content::DownloadFile* CreateFile(
       DownloadCreateInfo* info,
       scoped_ptr<content::ByteStreamReader> stream,
       content::DownloadManager* download_manager,

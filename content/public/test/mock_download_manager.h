@@ -49,8 +49,10 @@ class MockDownloadManager : public content::DownloadManager {
                                          int64 size,
                                          const std::string& hash));
   MOCK_METHOD1(CancelDownload, void(int32 download_id));
-  MOCK_METHOD2(OnDownloadInterrupted,
+  MOCK_METHOD4(OnDownloadInterrupted,
                void(int32 download_id,
+                    int64 size,
+                    const std::string& hash_state,
                     content::DownloadInterruptReason reason));
   MOCK_METHOD2(RemoveDownloadsBetween, int(base::Time remove_begin,
                                            base::Time remove_end));

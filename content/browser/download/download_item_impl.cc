@@ -489,19 +489,8 @@ void DownloadItemImpl::Cancel(bool user_cancel) {
 
 // An error occurred somewhere.
 void DownloadItemImpl::Interrupt(content::DownloadInterruptReason reason) {
-  // Somewhat counter-intuitively, it is possible for us to receive an
-  // interrupt after we've already been interrupted.  The generation of
-  // interrupts from the file thread Renames and the generation of
-  // interrupts from disk writes go through two different mechanisms (driven
-  // by rename requests from UI thread and by write requests from IO thread,
-  // respectively), and since we choose not to keep state on the File thread,
-  // this is the place where the races collide.  It's also possible for
-  // interrupts to race with cancels.
-
-  // Whatever happens, the first one to hit the UI thread wins.
-  if (!IsInProgress())
-    return;
-
+  // It should not be possible both to have an error and complete.
+  DCHECK(IsInProgress());
   last_reason_ = reason;
   TransitionTo(INTERRUPTED);
   download_stats::RecordDownloadInterrupted(
@@ -750,7 +739,6 @@ void DownloadItemImpl::OnDownloadCompleting(DownloadFileManager* file_manager) {
 
 void DownloadItemImpl::OnDownloadRenamedToFinalName(
     DownloadFileManager* file_manager,
-    content::DownloadInterruptReason reason,
     const FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -760,13 +748,12 @@ void DownloadItemImpl::OnDownloadRenamedToFinalName(
            << " " << DebugString(false);
   DCHECK(NeedsRename());
 
-  if (content::DOWNLOAD_INTERRUPT_REASON_NONE != reason) {
-    Interrupt(reason);
+  if (full_path.empty())
+    // Indicates error; also reported
+    // by DownloadManagerImpl::OnDownloadInterrupted.
     return;
-  }
 
   // full_path is now the current and target file path.
-  DCHECK(!full_path.empty());
   target_path_ = full_path;
   SetFullPath(full_path);
   delegate_->DownloadRenamedToFinalName(this);
@@ -788,16 +775,12 @@ void DownloadItemImpl::OnDownloadFileReleased() {
 }
 
 void DownloadItemImpl::OnDownloadRenamedToIntermediateName(
-    content::DownloadInterruptReason reason,
     const FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (content::DOWNLOAD_INTERRUPT_REASON_NONE != reason) {
-    Interrupt(reason);
-  } else {
+  if (!full_path.empty()) {
     SetFullPath(full_path);
     UpdateObservers();
   }
-
   delegate_->DownloadRenamedToIntermediateName(this);
 }
 

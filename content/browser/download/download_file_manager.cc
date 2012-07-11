@@ -195,14 +195,42 @@ void DownloadFileManager::RenameDownloadFile(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DownloadFile* download_file = GetDownloadFile(global_id);
   if (!download_file) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(callback, content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
-                   FilePath()));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(callback, FilePath()));
     return;
   }
 
-  download_file->Rename(full_path, overwrite_existing_file, callback);
+  FilePath new_path(full_path);
+  if (!overwrite_existing_file) {
+    // Make the file unique if requested.
+    int uniquifier =
+        file_util::GetUniquePathNumber(new_path, FILE_PATH_LITERAL(""));
+    if (uniquifier > 0) {
+      new_path = new_path.InsertBeforeExtensionASCII(
+          StringPrintf(" (%d)", uniquifier));
+    }
+  }
+
+  // Do the actual rename
+  content::DownloadInterruptReason rename_error =
+      download_file->Rename(new_path);
+  if (content::DOWNLOAD_INTERRUPT_REASON_NONE != rename_error) {
+    DownloadManager* download_manager = download_file->GetDownloadManager();
+    DCHECK(download_manager);
+
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&DownloadManager::OnDownloadInterrupted,
+                   download_manager,
+                   global_id.local(),
+                   download_file->BytesSoFar(),
+                   download_file->GetHashState(),
+                   rename_error));
+
+    new_path.clear();
+  }
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, new_path));
 }
 
 int DownloadFileManager::NumberOfActiveDownloads() const {
