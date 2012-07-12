@@ -428,7 +428,9 @@ void ProfileSyncService::StartUp() {
   InitializeBackend(!HasSyncSetupCompleted());
 
   if (!sync_global_error_.get()) {
+#if !defined(OS_ANDROID)
     sync_global_error_.reset(new SyncGlobalError(this, signin()));
+#endif
     GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
         sync_global_error_.get());
     AddObserver(sync_global_error_.get());

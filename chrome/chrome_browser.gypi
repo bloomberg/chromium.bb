@@ -4846,6 +4846,8 @@
             'browser/about_flags.h',
 
             'browser/jankometer.cc',
+            'browser/sync/sync_global_error.cc',
+            'browser/sync/sync_global_error.h',
 
             # There's no Browser/BrowserList on Android.
             'browser/lifetime/application_lifetime_stub.cc',
