@@ -20,6 +20,15 @@ const char kDataKey[] = "data";
 const char kBytesReadKey[] = "bytesRead";
 const char kBytesWrittenKey[] = "bytesWritten";
 const char kBitrateKey[] = "bitrate";
+const char kOptionsKey[] = "options";
+const char kSuccessKey[] = "success";
+const char kDtrKey[] = "dtr";
+const char kRtsKey[] = "rts";
+const char kDcdKey[] = "dcd";
+const char kCtsKey[] = "cts";
+
+const char kErrorGetControlSignalsFailed[] = "Failed to get control signals.";
+const char kErrorSetControlSignalsFailed[] = "Failed to set control signals.";
 
 SerialGetPortsFunction::SerialGetPortsFunction() {}
 
@@ -266,6 +275,89 @@ void SerialFlushFunction::Work() {
 }
 
 bool SerialFlushFunction::Respond() {
+  return true;
+}
+
+SerialGetControlSignalsFunction::SerialGetControlSignalsFunction()
+    : api_response_(false) {
+}
+
+SerialGetControlSignalsFunction::~SerialGetControlSignalsFunction() {
+}
+
+bool SerialGetControlSignalsFunction::Prepare() {
+  set_work_thread_id(BrowserThread::FILE);
+
+  params_ = api::experimental_serial::GetControlSignals::Params::Create(
+      *args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+  return true;
+}
+
+void SerialGetControlSignalsFunction::Work() {
+  DictionaryValue *result = new DictionaryValue();
+  SerialConnection* serial_connection =
+      controller()->GetSerialConnection(params_->connection_id);
+  if (serial_connection) {
+    SerialConnection::ControlSignals control_signals = { 0 };
+    if (serial_connection->GetControlSignals(control_signals)) {
+      api_response_ = true;
+      result->SetBoolean(kDcdKey, control_signals.dcd);
+      result->SetBoolean(kCtsKey, control_signals.cts);
+    } else {
+      error_ = kErrorGetControlSignalsFailed;
+    }
+  } else {
+    error_ = kSerialConnectionNotFoundError;
+    result->SetBoolean(kSuccessKey, false);
+  }
+
+  result_.reset(result);
+}
+
+bool SerialGetControlSignalsFunction::Respond() {
+  return api_response_;
+}
+
+SerialSetControlSignalsFunction::SerialSetControlSignalsFunction() {
+}
+
+SerialSetControlSignalsFunction::~SerialSetControlSignalsFunction() {
+}
+
+bool SerialSetControlSignalsFunction::Prepare() {
+  set_work_thread_id(BrowserThread::FILE);
+
+  params_ = api::experimental_serial::SetControlSignals::Params::Create(
+      *args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+  return true;
+}
+
+void SerialSetControlSignalsFunction::Work() {
+  SerialConnection* serial_connection =
+      controller()->GetSerialConnection(params_->connection_id);
+  if (serial_connection) {
+    SerialConnection::ControlSignals control_signals = { 0 };
+    control_signals.should_set_dtr = params_->options.dtr.get() != NULL;
+    if (control_signals.should_set_dtr)
+      control_signals.dtr = *(params_->options.dtr);
+    control_signals.should_set_rts = params_->options.rts.get() != NULL;
+    if (control_signals.should_set_rts)
+      control_signals.rts = *(params_->options.rts);
+    if (serial_connection->SetControlSignals(control_signals)) {
+      result_.reset(Value::CreateBooleanValue(true));
+    } else {
+      error_ = kErrorSetControlSignalsFailed;
+      result_.reset(Value::CreateBooleanValue(false));
+    }
+  } else {
+    error_ = kSerialConnectionNotFoundError;
+    result_.reset(Value::CreateBooleanValue(false));
+  }
+}
+
+bool SerialSetControlSignalsFunction::Respond() {
   return true;
 }
 

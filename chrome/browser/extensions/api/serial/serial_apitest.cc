@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/api_resource_event_notifier.h"
@@ -14,6 +15,10 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/public/browser/browser_thread.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+using testing::_;
+using testing::Return;
 
 using content::BrowserThread;
 
@@ -52,6 +57,9 @@ class FakeEchoSerialConnection : public SerialConnection {
         opened_(true) {
     Flush();
     opened_ = false;
+  }
+
+  virtual ~FakeEchoSerialConnection() {
   }
 
   virtual bool Open() {
@@ -95,6 +103,9 @@ class FakeEchoSerialConnection : public SerialConnection {
     return byte_count;
   }
 
+  MOCK_METHOD1(GetControlSignals, bool(ControlSignals &));
+  MOCK_METHOD1(SetControlSignals, bool(const ControlSignals &));
+
  private:
   enum { BUFFER_SIZE = 256 };
   bool opened_;
@@ -111,7 +122,13 @@ class FakeSerialOpenFunction : public SerialOpenFunction {
       const std::string& port,
       int bitrate,
       APIResourceEventNotifier* event_notifier) OVERRIDE {
-    return new FakeEchoSerialConnection(port, bitrate, event_notifier);
+    FakeEchoSerialConnection* serial_connection =
+        new FakeEchoSerialConnection(port, bitrate, event_notifier);
+    EXPECT_CALL(*serial_connection, GetControlSignals(_)).
+        Times(1).WillOnce(Return(true));
+    EXPECT_CALL(*serial_connection, SetControlSignals(_)).
+        Times(1).WillOnce(Return(true));
+    return serial_connection;
   }
   virtual bool DoesPortExist(const std::string& port) OVERRIDE {
     return true;
@@ -151,7 +168,7 @@ ExtensionFunction* FakeSerialOpenFunctionFactory() {
 // chrome/test/data/extensions/api_test/serial/api/serial_arduino_test.ino.
 //
 #define SIMULATE_SERIAL_PORTS (1)
-IN_PROC_BROWSER_TEST_F(SerialApiTest, SerialExtension) {
+IN_PROC_BROWSER_TEST_F(SerialApiTest, SerialFakeHardware) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
 
@@ -165,4 +182,11 @@ IN_PROC_BROWSER_TEST_F(SerialApiTest, SerialExtension) {
 #endif
 
   ASSERT_TRUE(RunExtensionTest("serial/api")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(SerialApiTest, SerialRealHardware) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  ASSERT_TRUE(RunExtensionTest("serial/real_hardware")) << message_;
 }

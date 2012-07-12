@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/serial/serial_connection.h"
 
+#include <sys/ioctl.h>
 #include <termios.h>
 
 namespace extensions {
@@ -35,6 +36,39 @@ bool SerialConnection::PostOpen() {
   tcsetattr(file_, TCSANOW, &options);
 
   return true;
+}
+
+bool SerialConnection::GetControlSignals(ControlSignals &control_signals) {
+  int status;
+  if (ioctl(file_, TIOCMGET, &status) == 0) {
+    control_signals.dcd = (status & TIOCM_CAR) != 0;
+    control_signals.cts = (status & TIOCM_CTS) != 0;
+    return true;
+  }
+  return false;
+}
+
+bool SerialConnection::
+SetControlSignals(const ControlSignals &control_signals) {
+  int status;
+
+  if (ioctl(file_, TIOCMGET, &status) != 0)
+    return false;
+
+  if (control_signals.should_set_dtr) {
+    if (control_signals.dtr)
+      status |= TIOCM_DTR;
+    else
+      status &= ~TIOCM_DTR;
+  }
+  if (control_signals.should_set_rts) {
+    if (control_signals.rts)
+      status |= TIOCM_RTS;
+    else
+      status &= !TIOCM_RTS;
+  }
+
+  return ioctl(file_, TIOCMSET, &status) == 0;
 }
 
 }  // namespace extensions

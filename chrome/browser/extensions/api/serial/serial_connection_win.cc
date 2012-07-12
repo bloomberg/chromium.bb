@@ -54,4 +54,26 @@ bool SerialConnection::PostOpen() {
   return true;
 }
 
+bool SerialConnection::GetControlSignals(ControlSignals &control_signals) {
+  DWORD dwModemStatus;
+  if (!GetCommModemStatus(file_, &dwModemStatus))
+    return false;
+  control_signals.dcd = (MS_RLSD_ON & dwModemStatus) != 0;
+  control_signals.cts = (MS_CTS_ON & dwModemStatus) != 0;
+  return true;
+}
+
+bool SerialConnection::
+SetControlSignals(const ControlSignals &control_signals) {
+  if (control_signals.should_set_dtr) {
+    if (!EscapeCommFunction(file_, control_signals.dtr ? SETDTR : CLRDTR))
+      return false;
+  }
+  if (control_signals.should_set_rts) {
+    if (!EscapeCommFunction(file_, control_signals.rts ? SETRTS : CLRRTS))
+      return false;
+  }
+  return true;
+}
+
 }  // namespace extensions

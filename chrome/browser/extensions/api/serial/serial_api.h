@@ -139,6 +139,43 @@ class SerialFlushFunction : public AsyncAPIFunction {
   scoped_ptr<api::experimental_serial::Flush::Params> params_;
 };
 
+class SerialGetControlSignalsFunction : public AsyncAPIFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.getControlSignals")
+
+  SerialGetControlSignalsFunction();
+
+ protected:
+  virtual ~SerialGetControlSignalsFunction();
+
+  // AsyncAPIFunction:
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
+
+ private:
+  scoped_ptr<api::experimental_serial::GetControlSignals::Params> params_;
+  bool api_response_;
+};
+
+class SerialSetControlSignalsFunction : public AsyncAPIFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.setControlSignals")
+
+  SerialSetControlSignalsFunction();
+
+ protected:
+  virtual ~SerialSetControlSignalsFunction();
+
+  // AsyncAPIFunction:
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
+
+ private:
+  scoped_ptr<api::experimental_serial::SetControlSignals::Params> params_;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_SERIAL_SERIAL_API_H_

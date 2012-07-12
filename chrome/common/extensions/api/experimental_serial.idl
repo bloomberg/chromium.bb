@@ -48,6 +48,34 @@ namespace experimental.serial {
   // Returns true if operation was successful.
   callback FlushCallback = void (boolean result);
 
+  // Boolean true = mark signal (negative serial voltage).
+  // Boolean false = space signal (positive serial voltage).
+  //
+  // For SetControlSignals, include the sendable signals that you wish to
+  // change. Signals not included in the dictionary will be left unchanged.
+  //
+  // GetControlSignals includes all receivable signals.
+  dictionary ControlSignalOptions {
+    // Serial control signals that your machine can send. Missing fields will
+    // be set to false.
+    boolean? dtr;
+    boolean? rts;
+
+    // Serial control signals that your machine can receive. If a get operation
+    // fails, success will be false, and these fields will be absent.
+    //
+    // DCD (Data Carrier Detect) is equivalent to RLSD (Receive Line Signal
+    // Detect) on some platforms.
+    boolean? dcd;
+    boolean? cts;
+  };
+
+  // Returns a snapshot of current control signals.
+  callback GetControlSignalsCallback = void (ControlSignalOptions options);
+
+  // Returns true if operation was successful.
+  callback SetControlSignalsCallback = void (boolean result);
+
   interface Functions {
     // Returns names of valid ports on this machine, each of which is likely to
     // be valid to pass as the port argument to open(). The list is regenerated
@@ -89,6 +117,13 @@ namespace experimental.serial {
     // |callback| : Called when the flush is complete.
     static void flush(long connectionId,
                       FlushCallback callback);
+
+    static void getControlSignals(long connectionId,
+                                  GetControlSignalsCallback callback);
+
+    static void setControlSignals(long connectionId,
+                                  ControlSignalOptions options,
+                                  SetControlSignalsCallback callback);
   };
 
 };

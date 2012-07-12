@@ -35,6 +35,24 @@ class SerialConnection : public APIResource {
   virtual int Read(uint8* byte);
   virtual int Write(scoped_refptr<net::IOBuffer> io_buffer, int byte_count);
 
+  struct ControlSignals {
+    // Sent from workstation to device. The should_set_ values indicate whether
+    // SetControlSignals should change the given signal (true) or else leave it
+    // as-is (false).
+    bool should_set_dtr;
+    bool dtr;
+    bool should_set_rts;
+    bool rts;
+
+    // Received by workstation from device. DCD (Data Carrier Detect) is
+    // equivalent to RLSD (Receive Line Signal Detect) on some platforms.
+    bool dcd;
+    bool cts;
+  };
+
+  virtual bool GetControlSignals(ControlSignals &control_signals);
+  virtual bool SetControlSignals(const ControlSignals &control_signals);
+
  protected:
   // Do platform-specific work after a successful Open().
   bool PostOpen();
