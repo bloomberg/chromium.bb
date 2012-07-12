@@ -78,6 +78,8 @@ class ASH_EXPORT Launcher : public internal::BackgroundAnimatorDelegate {
   // Returns true if the Launcher is showing a context menu.
   bool IsShowingMenu() const;
 
+  bool IsShowingOverflowBubble() const;
+
   views::View* GetAppListButtonView() const;
 
   // Only to be called for testing. Retrieves the LauncherView.

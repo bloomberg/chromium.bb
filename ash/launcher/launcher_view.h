@@ -41,6 +41,7 @@ namespace internal {
 class LauncherButton;
 class LauncherTooltipManager;
 class ShelfLayoutManager;
+class OverflowBubble;
 
 class ASH_EXPORT LauncherView : public views::View,
                                 public LauncherModelObserver,
@@ -71,6 +72,9 @@ class ASH_EXPORT LauncherView : public views::View,
   // Returns true if we're showing a menu.
   bool IsShowingMenu() const;
 
+  // Returns true if overflow bubble is shown.
+  bool IsShowingOverflowBubble() const;
+
   views::View* GetAppListButtonView() const;
 
   // Returns true if the mouse cursor exits the area for launcher tooltip.
@@ -78,6 +82,13 @@ class ASH_EXPORT LauncherView : public views::View,
   // in the gaps, but the tooltip should hide if the mouse moved totally outside
   // of the buttons area.
   bool ShouldHideTooltip(const gfx::Point& cursor_location);
+
+  void set_first_visible_index(int first_visible_index) {
+    first_visible_index_ = first_visible_index;
+  }
+
+  int leading_inset() const { return leading_inset_; }
+  void set_leading_inset(int leading_inset) { leading_inset_ = leading_inset; }
 
   // Overridden from FocusTraversable:
   virtual views::FocusSearch* GetFocusSearch() OVERRIDE;
@@ -101,6 +112,10 @@ class ASH_EXPORT LauncherView : public views::View,
 
   bool is_horizontal_alignment() const {
     return alignment_ == SHELF_ALIGNMENT_BOTTOM;
+  }
+
+  bool is_overflow_mode() const {
+    return first_visible_index_ > 0;
   }
 
   // Sets the bounds of each view to its ideal bounds.
@@ -148,7 +163,7 @@ class ASH_EXPORT LauncherView : public views::View,
   void GetOverflowItems(std::vector<LauncherItem>* items);
 
   // Shows the overflow menu.
-  void ShowOverflowMenu();
+  void ShowOverflowBubble();
 
   // Update first launcher button's padding. This method adds padding to the
   // first button to include the leading inset. It needs to be called once on
@@ -205,6 +220,11 @@ class ASH_EXPORT LauncherView : public views::View,
   // item in |model_|.
   scoped_ptr<views::ViewModel> view_model_;
 
+  // Index of first visible launcher item. When it it greater than 0,
+  // LauncherView is hosted in an overflow bubble. In this mode, it does not
+  // show browser, app list and overflow button.
+  int first_visible_index_;
+
   // Last index of a launcher button that is visible
   // (does not go into overflow).
   int last_visible_index_;
@@ -212,6 +232,8 @@ class ASH_EXPORT LauncherView : public views::View,
   scoped_ptr<views::BoundsAnimator> bounds_animator_;
 
   views::ImageButton* overflow_button_;
+
+  scoped_ptr<OverflowBubble> overflow_bubble_;
 
   scoped_ptr<LauncherTooltipManager> tooltip_;
 
@@ -235,14 +257,16 @@ class ASH_EXPORT LauncherView : public views::View,
   scoped_ptr<views::FocusSearch> focus_search_;
 
 #if !defined(OS_MACOSX)
-  scoped_ptr<views::MenuRunner> overflow_menu_runner_;
-
   scoped_ptr<views::MenuRunner> launcher_menu_runner_;
 #endif
 
   ObserverList<LauncherIconObserver> observers_;
 
   ShelfAlignment alignment_;
+
+  // Amount content is inset on the left edge (or top edge for vertical
+  // alignment).
+  int leading_inset_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherView);
 };

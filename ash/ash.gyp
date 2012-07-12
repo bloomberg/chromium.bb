@@ -94,6 +94,8 @@
         'launcher/launcher_types.h',
         'launcher/launcher_view.cc',
         'launcher/launcher_view.h',
+        'launcher/overflow_bubble.cc',
+        'launcher/overflow_bubble.h',
         'launcher/tabbed_launcher_button.cc',
         'launcher/tabbed_launcher_button.h',
         'magnifier/magnification_controller.cc',

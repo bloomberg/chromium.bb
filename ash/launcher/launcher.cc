@@ -4,6 +4,8 @@
 
 #include "ash/launcher/launcher.h"
 
+#include <algorithm>
+
 #include "ash/focus_cycler.h"
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_model.h"
@@ -33,7 +35,7 @@ const int kBackgroundAlpha = 128;
 // The contents view of the Widget. This view contains LauncherView and
 // sizes it to the width of the widget minus the size of the status area.
 class Launcher::DelegateView : public views::WidgetDelegate,
-                               public views::AccessiblePaneView{
+                               public views::AccessiblePaneView {
  public:
   explicit DelegateView(Launcher* launcher);
   virtual ~DelegateView();
@@ -209,6 +211,10 @@ void Launcher::RemoveIconObserver(LauncherIconObserver* observer) {
 
 bool Launcher::IsShowingMenu() const {
   return launcher_view_->IsShowingMenu();
+}
+
+bool Launcher::IsShowingOverflowBubble() const {
+  return launcher_view_->IsShowingOverflowBubble();
 }
 
 views::View* Launcher::GetAppListButtonView() const {

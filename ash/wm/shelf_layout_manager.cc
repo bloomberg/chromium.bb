@@ -542,6 +542,9 @@ ShelfLayoutManager::AutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (launcher_ && launcher_->IsShowingMenu())
     return AUTO_HIDE_SHOWN;
 
+  if (launcher_ && launcher_->IsShowingOverflowBubble())
+    return AUTO_HIDE_SHOWN;
+
   if (launcher_widget()->IsActive() || status_->IsActive())
     return AUTO_HIDE_SHOWN;
 
