@@ -65,6 +65,8 @@ class EventUnittest : public ModuleSystemTest {
         "exports.sendRequest = function() {};");
     OverrideNativeHandler("apiDefinitions",
         "exports.GetExtensionAPIDefinition = function() {};");
+    OverrideNativeHandler("logging",
+        "exports.DCHECK = function() {};");
   }
 };
 
@@ -148,7 +150,7 @@ TEST_F(EventUnittest, NamedEventDispatch) {
       "var e = new event.Event('myevent');"
       "var called = false;"
       "e.addListener(function() { called = true; });"
-      "chromeHidden.Event.dispatch('myevent', []);"
+      "chromeHidden.Event.dispatchJSON('myevent', []);"
       "assert.AssertTrue(called);");
   module_system_->Require("test");
 }
@@ -239,6 +241,30 @@ TEST_F(EventUnittest, AddingFilterWithUrlFieldNotAListThrowsException) {
       "var caught = false;"
       "try {"
       "  e.addListener(cb, filters);"
+      "} catch (e) {"
+      "  caught = true;"
+      "}"
+      "assert.AssertTrue(caught);");
+  module_system_->Require("test");
+}
+
+TEST_F(EventUnittest, MaxListeners) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
+  RegisterModule("test",
+      "var event = require('event');"
+      "var assert = requireNative('assert');"
+      "var eventOpts = {supportsListeners: true, maxListeners: 1};"
+      "var e = new event.Event('myevent', undefined, eventOpts);"
+      "var cb = function() {};"
+      "var caught = false;"
+      "try {"
+      "  e.addListener(cb);"
+      "} catch (e) {"
+      "  caught = true;"
+      "}"
+      "assert.AssertTrue(!caught);"
+      "try {"
+      "  e.addListener(cb);"
       "} catch (e) {"
       "  caught = true;"
       "}"

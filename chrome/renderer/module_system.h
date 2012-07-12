@@ -57,8 +57,8 @@ class ModuleSystem : public NativeHandler {
   // Returns true if the current context has a ModuleSystem installed in it.
   static bool IsPresentInCurrentContext();
 
-  // Dumps the given exception message to LOG(ERROR).
-  static void DumpException(v8::Handle<v8::Message> message);
+  // Dumps the debug info from |try_catch| to LOG(ERROR).
+  static void DumpException(const v8::TryCatch& try_catch);
 
   // Require the specified module. This is the equivalent of calling
   // require('module_name') from the loaded JS files.

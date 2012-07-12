@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+  var DCHECK = requireNative('logging').DCHECK;
   var eventBindingsNatives = requireNative('event_bindings');
   var AttachEvent = eventBindingsNatives.AttachEvent;
   var DetachEvent = eventBindingsNatives.DetachEvent;
@@ -208,10 +209,13 @@
 
   chromeHidden.Event = {};
 
-  chromeHidden.Event.registerArgumentMassager = function(name, fn) {
+  // callback is a function(args, dispatch). args are the args we receive from
+  // dispatchJSON(), and dispatch is a function(args) that dispatches args to
+  // its listeners.
+  chromeHidden.Event.registerArgumentMassager = function(name, callback) {
     if (eventArgumentMassagers[name])
       throw new Error("Massager already registered for event: " + name);
-    eventArgumentMassagers[name] = fn;
+    eventArgumentMassagers[name] = callback;
   };
 
   // Dispatches a named event with the given JSON array, which is deserialized
@@ -220,43 +224,29 @@
   chromeHidden.Event.dispatchJSON = function(name, args, filteringInfo) {
     var listenerIDs = null;
 
-    if (filteringInfo) {
+    if (filteringInfo)
       listenerIDs = MatchAgainstEventFilter(name, filteringInfo);
-    }
-    if (attachedNamedEvents[name]) {
-      if (args) {
-        // TODO(asargent): This is an antiquity. Until all callers of
-        // dispatchJSON use actual values, this must remain here to catch the
-        // cases where a caller has hard-coded a JSON string to pass in.
-        if (typeof(args) == "string") {
-          args = chromeHidden.JSON.parse(args);
-        }
-        if (eventArgumentMassagers[name])
-          eventArgumentMassagers[name](args);
-      }
 
-      var event = attachedNamedEvents[name];
-      var result;
-      // TODO(koz): We have to do this differently for unfiltered events (which
-      // have listenerIDs = null) because some bindings write over
-      // event.dispatch (eg: experimental.app.custom_bindings.js) and so expect
-      // events to go through it. These places need to be fixed so that they
-      // expect a listenerIDs parameter.
-      if (listenerIDs)
-        result = event.dispatch_(args, listenerIDs);
-      else
-        result = event.dispatch.apply(event, args);
-      if (result && result.validationErrors)
-        return result.validationErrors;
-    }
-  };
+    var event = attachedNamedEvents[name];
+    if (!event)
+      return;
 
-  // Dispatches a named event with the given arguments, supplied as an array.
-  chromeHidden.Event.dispatch = function(name, args) {
-    if (attachedNamedEvents[name]) {
-      attachedNamedEvents[name].dispatch.apply(
-          attachedNamedEvents[name], args);
-    }
+    // TODO(asargent): This is an antiquity. Until all callers of
+    // dispatchJSON use actual values, this must remain here to catch the
+    // cases where a caller has hard-coded a JSON string to pass in.
+    if (typeof(args) == "string")
+      args = chromeHidden.JSON.parse(args);
+
+    var dispatchArgs = function(args) {
+      result = event.dispatch_(args, listenerIDs);
+      if (result)
+        DCHECK(!result.validationErrors, result.validationErrors);
+    };
+
+    if (eventArgumentMassagers[name])
+      eventArgumentMassagers[name](args, dispatchArgs);
+    else
+      dispatchArgs(args);
   };
 
   // Test if a named event has any listeners.
@@ -269,6 +259,9 @@
   chrome.Event.prototype.addListener = function(cb, filters) {
     if (!this.eventOptions_.supportsListeners)
       throw new Error("This event does not support listeners.");
+    if (this.eventOptions_.maxListeners &&
+        this.getListenerCount() >= this.eventOptions_.maxListeners)
+      throw new Error("Too many listeners for " + this.eventName_);
     if (filters) {
       if (!this.eventOptions_.supportsFilters)
         throw new Error("This event does not support filters.");
@@ -333,9 +326,14 @@
 
   // Test if any callbacks are registered for this event.
   chrome.Event.prototype.hasListeners = function() {
+    return this.getListenerCount() > 0;
+  };
+
+  // Return the number of listeners on this event.
+  chrome.Event.prototype.getListenerCount = function() {
     if (!this.eventOptions_.supportsListeners)
       throw new Error("This event does not support listeners.");
-    return this.listeners_.length > 0;
+    return this.listeners_.length;
   };
 
   // Returns the index of the given callback if registered, or -1 if not
@@ -364,7 +362,7 @@
     var results = [];
     for (var i = 0; i < listeners.length; i++) {
       try {
-        var result = listeners[i].callback.apply(null, args);
+        var result = this.dispatchToListener(listeners[i].callback, args);
         if (result !== undefined)
           results.push(result);
       } catch (e) {
@@ -374,6 +372,11 @@
     }
     if (results.length)
       return {results: results};
+  }
+
+  // Can be overridden to support custom dispatching.
+  chrome.Event.prototype.dispatchToListener = function(callback, args) {
+    return callback.apply(null, args);
   }
 
   // Dispatches this event object to all listeners, passing all supplied

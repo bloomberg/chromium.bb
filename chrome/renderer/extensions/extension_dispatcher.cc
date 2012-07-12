@@ -211,6 +211,35 @@ class ChannelNativeHandler : public NativeHandler {
   chrome::VersionInfo::Channel channel_;
 };
 
+class LoggingNativeHandler : public NativeHandler {
+ public:
+  LoggingNativeHandler() {
+    RouteFunction("DCHECK",
+        base::Bind(&LoggingNativeHandler::Dcheck,
+                   base::Unretained(this)));
+  }
+
+  v8::Handle<v8::Value> Dcheck(const v8::Arguments& args) {
+    CHECK_LE(args.Length(), 2);
+    bool check_value = args[0]->BooleanValue();
+    std::string error_message;
+    if (args.Length() == 2)
+      error_message += "Error: " + std::string(*v8::String::AsciiValue(args[1]))
+          + "\n";
+
+    v8::Handle<v8::Array> stack_trace(
+        v8::StackTrace::CurrentStackTrace(10)->AsArray());
+    error_message += "Stack trace: {\n";
+    for (size_t i = 0; i < stack_trace->Length(); i++) {
+      error_message += "  "
+          + std::string(*v8::String::AsciiValue(stack_trace->Get(i))) + "\n";
+    }
+    error_message += "}";
+    DCHECK(check_value) << error_message;
+    return v8::Undefined();
+  }
+};
+
 void InstallAppBindings(ModuleSystem* module_system,
                         v8::Handle<v8::Object> chrome,
                         v8::Handle<v8::Object> chrome_hidden) {
@@ -229,7 +258,7 @@ void InstallWebstoreBindings(ModuleSystem* module_system,
                               "chromeHiddenWebstore");
 }
 
-}
+}  // namespace
 
 ExtensionDispatcher::ExtensionDispatcher()
     : is_webkit_initialized_(false),
@@ -690,6 +719,8 @@ void ExtensionDispatcher::DidCreateScriptContext(
   module_system->RegisterNativeHandler("channel",
       scoped_ptr<NativeHandler>(new ChannelNativeHandler(
           static_cast<chrome::VersionInfo::Channel>(chrome_channel_))));
+  module_system->RegisterNativeHandler("logging",
+      scoped_ptr<NativeHandler>(new LoggingNativeHandler()));
   // Create the 'chrome' variable if it doesn't already exist.
   {
     v8::HandleScope handle_scope;
