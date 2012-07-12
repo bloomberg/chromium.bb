@@ -467,7 +467,7 @@ bool SetCompositionFunction::RunImpl() {
       ExtensionInputImeEventRouter::GetInstance()->
           GetActiveEngine(extension_id());
   if (!engine) {
-    result_.reset(Value::CreateBooleanValue(false));
+    SetResult(Value::CreateBooleanValue(false));
     return true;
   }
 
@@ -531,9 +531,9 @@ bool SetCompositionFunction::RunImpl() {
 
   if (engine->SetComposition(context_id, text.c_str(), selection_start,
                              selection_end, cursor, segments, &error_)) {
-    result_.reset(Value::CreateBooleanValue(true));
+    SetResult(Value::CreateBooleanValue(true));
   } else {
-    result_.reset(Value::CreateBooleanValue(false));
+    SetResult(Value::CreateBooleanValue(false));
   }
   return true;
 }
@@ -543,7 +543,7 @@ bool ClearCompositionFunction::RunImpl() {
       ExtensionInputImeEventRouter::GetInstance()->
           GetActiveEngine(extension_id());
   if (!engine) {
-    result_.reset(Value::CreateBooleanValue(false));
+    SetResult(Value::CreateBooleanValue(false));
     return true;
   }
 
@@ -555,9 +555,9 @@ bool ClearCompositionFunction::RunImpl() {
                                                &context_id));
 
   if (engine->ClearComposition(context_id, &error_)) {
-    result_.reset(Value::CreateBooleanValue(true));
+    SetResult(Value::CreateBooleanValue(true));
   } else {
-    result_.reset(Value::CreateBooleanValue(false));
+    SetResult(Value::CreateBooleanValue(false));
   }
   return true;
 }
@@ -568,7 +568,7 @@ bool CommitTextFunction::RunImpl() {
       ExtensionInputImeEventRouter::GetInstance()->
           GetActiveEngine(extension_id());
   if (!engine) {
-    result_.reset(Value::CreateBooleanValue(false));
+    SetResult(Value::CreateBooleanValue(false));
     return true;
   }
 
@@ -582,9 +582,9 @@ bool CommitTextFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kTextKey, &text));
 
   if (engine->CommitText(context_id, text.c_str(), &error_)) {
-    result_.reset(Value::CreateBooleanValue(true));
+    SetResult(Value::CreateBooleanValue(true));
   } else {
-    result_.reset(Value::CreateBooleanValue(false));
+    SetResult(Value::CreateBooleanValue(false));
   }
   return true;
 }
@@ -600,7 +600,7 @@ bool SetCandidateWindowPropertiesFunction::RunImpl() {
       ExtensionInputImeEventRouter::GetInstance()->GetEngine(extension_id(),
                                                              engine_id);
   if (!engine) {
-    result_.reset(Value::CreateBooleanValue(false));
+    SetResult(Value::CreateBooleanValue(false));
     return true;
   }
 
@@ -613,7 +613,7 @@ bool SetCandidateWindowPropertiesFunction::RunImpl() {
     EXTENSION_FUNCTION_VALIDATE(properties->GetBoolean(keys::kVisibleKey,
                                                        &visible));
     if (!engine->SetCandidateWindowVisible(visible, &error_)) {
-      result_.reset(Value::CreateBooleanValue(false));
+      SetResult(Value::CreateBooleanValue(false));
       return true;
     }
   }
@@ -654,7 +654,7 @@ bool SetCandidateWindowPropertiesFunction::RunImpl() {
     engine->SetCandidateWindowAuxTextVisible(visible);
   }
 
-  result_.reset(Value::CreateBooleanValue(true));
+  SetResult(Value::CreateBooleanValue(true));
 
   return true;
 }
@@ -711,7 +711,7 @@ bool SetCandidatesFunction::RunImpl() {
       ExtensionInputImeEventRouter::GetInstance()->
           GetActiveEngine(extension_id());
   if (!engine) {
-    result_.reset(Value::CreateBooleanValue(false));
+    SetResult(Value::CreateBooleanValue(false));
     return true;
   }
 
@@ -734,9 +734,9 @@ bool SetCandidatesFunction::RunImpl() {
 
   std::string error;
   if (engine->SetCandidates(context_id, candidates, &error_)) {
-    result_.reset(Value::CreateBooleanValue(true));
+    SetResult(Value::CreateBooleanValue(true));
   } else {
-    result_.reset(Value::CreateBooleanValue(false));
+    SetResult(Value::CreateBooleanValue(false));
   }
   return true;
 }
@@ -746,7 +746,7 @@ bool SetCursorPositionFunction::RunImpl() {
       ExtensionInputImeEventRouter::GetInstance()->
           GetActiveEngine(extension_id());
   if (!engine) {
-    result_.reset(Value::CreateBooleanValue(false));
+    SetResult(Value::CreateBooleanValue(false));
     return true;
   }
 
@@ -761,9 +761,9 @@ bool SetCursorPositionFunction::RunImpl() {
                                                &candidate_id));
 
   if (engine->SetCursorPosition(context_id, candidate_id, &error_)) {
-    result_.reset(Value::CreateBooleanValue(true));
+    SetResult(Value::CreateBooleanValue(true));
   } else {
-    result_.reset(Value::CreateBooleanValue(false));
+    SetResult(Value::CreateBooleanValue(false));
   }
   return true;
 }

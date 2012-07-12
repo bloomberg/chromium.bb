@@ -294,7 +294,7 @@ bool GetFontFunction::RunImpl() {
   DictionaryValue* result = new DictionaryValue();
   result->SetString(kFontNameKey, font_name);
   result->SetString(kLevelOfControlKey, level_of_control);
-  result_.reset(result);
+  SetResult(result);
   return true;
 }
 
@@ -362,7 +362,7 @@ bool GetFontListFunction::CopyFontsToResult(ListValue* fonts) {
     result->Append(font_name);
   }
 
-  result_.reset(result.release());
+  SetResult(result.release());
   return true;
 }
 
@@ -398,7 +398,7 @@ bool GetFontPrefExtensionFunction::RunImpl() {
   DictionaryValue* result = new DictionaryValue();
   result->Set(GetKey(), pref->GetValue()->DeepCopy());
   result->SetString(kLevelOfControlKey, level_of_control);
-  result_.reset(result);
+  SetResult(result);
   return true;
 }
 

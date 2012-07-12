@@ -68,7 +68,7 @@ size_t PlatformAppBrowserTest::RunGetWindowsFunctionForExtension(
   GetAllWindowsFunction* function = new GetAllWindowsFunction();
   function->set_extension(extension);
   scoped_ptr<base::ListValue> result(utils::ToList(
-      utils::RunFunctionAndReturnResult(function, "[]", browser())));
+      utils::RunFunctionAndReturnSingleResult(function, "[]", browser())));
   return result->GetSize();
 }
 
@@ -82,7 +82,7 @@ bool PlatformAppBrowserTest::RunGetWindowFunctionForExtension(
           base::StringPrintf("[%u]", window_id),
           browser(),
           utils::NONE);
-  return function->GetResultValue() != NULL;
+  return function->GetResultList() != NULL;
 }
 
 size_t PlatformAppBrowserTest::GetShellWindowCount() {

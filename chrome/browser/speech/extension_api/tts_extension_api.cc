@@ -163,12 +163,12 @@ bool ExtensionTtsStopSpeakingFunction::RunImpl() {
 }
 
 bool ExtensionTtsIsSpeakingFunction::RunImpl() {
-  result_.reset(Value::CreateBooleanValue(
+  SetResult(Value::CreateBooleanValue(
       ExtensionTtsController::GetInstance()->IsSpeaking()));
   return true;
 }
 
 bool ExtensionTtsGetVoicesFunction::RunImpl() {
-  result_.reset(ExtensionTtsController::GetInstance()->GetVoices(profile()));
+  SetResult(ExtensionTtsController::GetInstance()->GetVoices(profile()));
   return true;
 }

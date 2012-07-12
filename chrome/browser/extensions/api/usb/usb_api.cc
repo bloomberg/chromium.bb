@@ -46,7 +46,7 @@ void UsbFindDeviceFunction::Work() {
   UsbDevice* const device = service->FindDevice(parameters_->vendor_id,
                                                 parameters_->product_id);
   if (!device) {
-    result_.reset(base::Value::CreateNullValue());
+    SetResult(base::Value::CreateNullValue());
     return;
   }
 
@@ -57,7 +57,7 @@ void UsbFindDeviceFunction::Work() {
   result.handle = controller()->AddAPIResource(resource);
   result.vendor_id = parameters_->vendor_id;
   result.product_id = parameters_->product_id;
-  result_ = result.ToValue();
+  SetResult(FindDevice::Result::Create(result));
 }
 
 bool UsbFindDeviceFunction::Respond() {

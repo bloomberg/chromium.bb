@@ -245,7 +245,7 @@ class ExtensionWebstoreGetWebGLStatusTest : public InProcessBrowserTest {
     static const char kEmptyArgs[] = "[]";
     static const char kWebGLStatusAllowed[] = "webgl_allowed";
     static const char kWebGLStatusBlocked[] = "webgl_blocked";
-    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnResult(
+    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
             new GetWebGLStatusFunction(), kEmptyArgs, browser()));
     EXPECT_EQ(base::Value::TYPE_STRING, result->GetType());
     StringValue* value = static_cast<StringValue*>(result.get());

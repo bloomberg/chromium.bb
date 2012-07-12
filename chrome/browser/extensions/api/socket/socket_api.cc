@@ -123,7 +123,7 @@ void SocketCreateFunction::Work() {
 
   DictionaryValue* result = new DictionaryValue();
   result->SetInteger(kSocketIdKey, controller()->AddAPIResource(socket));
-  result_.reset(result);
+  SetResult(result);
 }
 
 bool SocketDestroyFunction::Prepare() {
@@ -157,7 +157,7 @@ void SocketConnectFunction::AfterDnsLookup(int lookup_result) {
   if (lookup_result == net::OK) {
     StartConnect();
   } else {
-    result_.reset(Value::CreateIntegerValue(lookup_result));
+    SetResult(Value::CreateIntegerValue(lookup_result));
     AsyncWorkCompleted();
   }
 }
@@ -175,7 +175,7 @@ void SocketConnectFunction::StartConnect() {
 }
 
 void SocketConnectFunction::OnConnect(int result) {
-  result_.reset(Value::CreateIntegerValue(result));
+  SetResult(Value::CreateIntegerValue(result));
   AsyncWorkCompleted();
 }
 
@@ -190,7 +190,7 @@ void SocketDisconnectFunction::Work() {
     socket->Disconnect();
   else
     error_ = kSocketNotFoundError;
-  result_.reset(Value::CreateNullValue());
+  SetResult(Value::CreateNullValue());
 }
 
 bool SocketBindFunction::Prepare() {
@@ -208,7 +208,7 @@ void SocketBindFunction::Work() {
   else
     error_ = kSocketNotFoundError;
 
-  result_.reset(Value::CreateIntegerValue(result));
+  SetResult(Value::CreateIntegerValue(result));
 }
 
 SocketReadFunction::SocketReadFunction()
@@ -248,7 +248,7 @@ void SocketReadFunction::OnCompleted(int bytes_read,
     // http://crbug.com/127630
     result->Set(kDataKey, base::BinaryValue::Create(new char[1], 0));
   }
-  result_.reset(result);
+  SetResult(result);
 
   AsyncWorkCompleted();
 }
@@ -287,7 +287,7 @@ void SocketWriteFunction::AsyncWorkStart() {
 void SocketWriteFunction::OnCompleted(int bytes_written) {
   DictionaryValue* result = new DictionaryValue();
   result->SetInteger(kBytesWrittenKey, bytes_written);
-  result_.reset(result);
+  SetResult(result);
 
   AsyncWorkCompleted();
 }
@@ -333,7 +333,7 @@ void SocketRecvFromFunction::OnCompleted(int bytes_read,
   }
   result->SetString(kAddressKey, address);
   result->SetInteger(kPortKey, port);
-  result_.reset(result);
+  SetResult(result);
 
   AsyncWorkCompleted();
 }
@@ -366,7 +366,7 @@ void SocketSendToFunction::AfterDnsLookup(int lookup_result) {
   if (lookup_result == net::OK) {
     StartSendTo();
   } else {
-    result_.reset(Value::CreateIntegerValue(lookup_result));
+    SetResult(Value::CreateIntegerValue(lookup_result));
     AsyncWorkCompleted();
   }
 }
@@ -386,7 +386,7 @@ void SocketSendToFunction::StartSendTo() {
 void SocketSendToFunction::OnCompleted(int bytes_written) {
   DictionaryValue* result = new DictionaryValue();
   result->SetInteger(kBytesWrittenKey, bytes_written);
-  result_.reset(result);
+  SetResult(result);
 
   AsyncWorkCompleted();
 }
@@ -414,7 +414,7 @@ void SocketSetKeepAliveFunction::Work() {
   } else {
     error_ = kSocketNotFoundError;
   }
-  result_.reset(Value::CreateBooleanValue(result));
+  SetResult(Value::CreateBooleanValue(result));
 }
 
 SocketSetNoDelayFunction::SocketSetNoDelayFunction()
@@ -436,7 +436,7 @@ void SocketSetNoDelayFunction::Work() {
     result = socket->SetNoDelay(params_->no_delay);
   else
     error_ = kSocketNotFoundError;
-  result_.reset(Value::CreateBooleanValue(result));
+  SetResult(Value::CreateBooleanValue(result));
 }
 
 }  // namespace extensions

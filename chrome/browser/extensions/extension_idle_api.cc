@@ -155,7 +155,7 @@ bool ExtensionIdleQueryStateFunction::RunImpl() {
 
   IdleState state = ExtensionIdleCache::CalculateIdleState(threshold);
   if (state != IDLE_STATE_UNKNOWN) {
-    result_.reset(CreateIdleValue(state));
+    SetResult(CreateIdleValue(state));
     SendResponse(true);
     return true;
   }
@@ -175,7 +175,7 @@ void ExtensionIdleQueryStateFunction::IdleStateCallback(int threshold,
     ExtensionIdlePollingTask::CreateNewPollTask(threshold, state, profile_);
   }
 
-  result_.reset(CreateIdleValue(state));
+  SetResult(CreateIdleValue(state));
 
   ExtensionIdleCache::UpdateCache(threshold, state);
 

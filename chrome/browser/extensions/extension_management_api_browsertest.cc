@@ -101,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
   uninstall_function = new UninstallFunction();
   UninstallFunction::SetAutoConfirmForTest(true);
 
-  util::RunFunctionAndReturnResult(
+  util::RunFunctionAndReturnSingleResult(
       uninstall_function,
       base::StringPrintf("[\"%s\", {\"showConfirmDialog\": true}]", id.c_str()),
       browser());
@@ -170,10 +170,10 @@ const char ExtensionManagementApiEscalationTest::kId[] =
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
                        DisabledReason) {
-  scoped_ptr<base::Value> result(
-      util::RunFunctionAndReturnResult(new GetExtensionByIdFunction(),
-                                       base::StringPrintf("[\"%s\"]", kId),
-                                       browser()));
+  scoped_ptr<base::Value> result(util::RunFunctionAndReturnSingleResult(
+      new GetExtensionByIdFunction(),
+      base::StringPrintf("[\"%s\"]", kId),
+      browser()));
   ASSERT_TRUE(result.get() != NULL);
   ASSERT_TRUE(result->IsType(base::Value::TYPE_DICTIONARY));
   base::DictionaryValue* dict =

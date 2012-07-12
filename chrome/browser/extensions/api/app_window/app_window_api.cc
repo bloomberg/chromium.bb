@@ -110,7 +110,7 @@ bool AppWindowCreateFunction::RunImpl() {
   content::WebContents* created_contents = shell_window->web_contents();
   int view_id = created_contents->GetRenderViewHost()->GetRoutingID();
 
-  result_.reset(base::Value::CreateIntegerValue(view_id));
+  SetResult(base::Value::CreateIntegerValue(view_id));
   return true;
 }
 

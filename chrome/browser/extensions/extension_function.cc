@@ -93,8 +93,13 @@ void ExtensionFunction::SetArgs(const base::ListValue* args) {
   args_.reset(args->DeepCopy());
 }
 
-const Value* ExtensionFunction::GetResultValue() {
-  return result_.get();
+void ExtensionFunction::SetResult(base::Value* result) {
+  results_.reset(new base::ListValue());
+  results_->Append(result);
+}
+
+const ListValue* ExtensionFunction::GetResultList() {
+  return results_.get();
 }
 
 const std::string ExtensionFunction::GetError() {
@@ -129,14 +134,12 @@ void ExtensionFunction::SendResponseImpl(base::ProcessHandle process,
     return;
   }
 
-  // Value objects can't be directly serialized in our IPC code, so we wrap the
-  // result_ Value with a ListValue (also transferring ownership of result_).
-  base::ListValue result_wrapper;
-  if (result_.get())
-    result_wrapper.Append(result_.release());
+  // If results were never set, we send an empty argument list.
+  if (!results_.get())
+    results_.reset(new ListValue());
 
   ipc_sender->Send(new ExtensionMsg_Response(
-      routing_id, request_id_, success, result_wrapper, GetError()));
+      routing_id, request_id_, success, *results_.release(), GetError()));
 }
 
 void ExtensionFunction::HandleBadMessage(base::ProcessHandle process) {

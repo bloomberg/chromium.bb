@@ -107,7 +107,7 @@ bool TestSendMessageFunction::RunImpl() {
 TestSendMessageFunction::~TestSendMessageFunction() {}
 
 void TestSendMessageFunction::Reply(const std::string& message) {
-  result_.reset(Value::CreateStringValue(message));
+  SetResult(Value::CreateStringValue(message));
   SendResponse(true);
   Release();  // balanced in RunImpl
 }
@@ -138,7 +138,7 @@ bool TestGetConfigFunction::RunImpl() {
     return false;
   }
 
-  result_.reset(test_config_state->config_state()->DeepCopy());
+  SetResult(test_config_state->config_state()->DeepCopy());
   return true;
 }
 

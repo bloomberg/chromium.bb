@@ -162,7 +162,7 @@ static void AddExtensionInfo(ListValue* list,
 
 bool GetAllExtensionsFunction::RunImpl() {
   ListValue* result = new ListValue();
-  result_.reset(result);
+  SetResult(result);
 
   AddExtensionInfo(result, *service()->extensions(), service());
   AddExtensionInfo(result, *service()->disabled_extensions(), service());
@@ -180,7 +180,7 @@ bool GetExtensionByIdFunction::RunImpl() {
     return false;
   }
   DictionaryValue* result = CreateExtensionInfo(*extension, service());
-  result_.reset(result);
+  SetResult(result);
 
   return true;
 }
@@ -201,7 +201,7 @@ bool GetPermissionWarningsByIdFunction::RunImpl() {
   for (PermissionMessages::const_iterator i = warnings.begin();
        i < warnings.end(); ++i)
     result->Append(Value::CreateStringValue(i->message()));
-  result_.reset(result);
+  SetResult(result);
   return true;
 }
 
@@ -325,7 +325,7 @@ void GetPermissionWarningsByManifestFunction::OnParseSuccess(
   for (PermissionMessages::const_iterator i = warnings.begin();
        i < warnings.end(); ++i)
     result->Append(Value::CreateStringValue(i->message()));
-  result_.reset(result);
+  SetResult(result);
   SendResponse(true);
 
   // Matched with AddRef() in RunImpl().

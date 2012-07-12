@@ -78,7 +78,7 @@ bool AddRulesFunction::RunImplOnCorrectThread() {
   error_ = rules_registry_->AddRules(extension_id(), params->rules);
 
   if (error_.empty())
-    result_.reset(AddRules::Result::Create(params->rules));
+    SetResult(AddRules::Result::Create(params->rules));
 
   return error_.empty();
 }
@@ -111,7 +111,7 @@ bool GetRulesFunction::RunImplOnCorrectThread() {
   }
 
   if (error_.empty())
-    result_.reset(GetRules::Result::Create(rules));
+    SetResult(GetRules::Result::Create(rules));
 
   return error_.empty();
 }

@@ -484,8 +484,8 @@ void SendCommandDebuggerFunction::SendResponseBody(
 
   Value* result_body;
   if (dictionary->Get("result", &result_body))
-    result_.reset(result_body->DeepCopy());
+    SetResult(result_body->DeepCopy());
   else
-    result_.reset(new DictionaryValue());
+    SetResult(new DictionaryValue());
   SendResponse(true);
 }

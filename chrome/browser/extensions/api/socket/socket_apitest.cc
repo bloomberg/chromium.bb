@@ -63,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPCreateGood) {
   socket_create_function->set_extension(empty_extension.get());
   socket_create_function->set_has_callback(true);
 
-  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnResult(
+  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
       socket_create_function,
       "[\"udp\"]",
       browser(), utils::NONE));
@@ -82,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPCreateGood) {
   socket_create_function->set_extension(empty_extension.get());
   socket_create_function->set_has_callback(true);
 
-  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnResult(
+  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
       socket_create_function,
       "[\"tcp\"]",
       browser(), utils::NONE));

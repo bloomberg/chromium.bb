@@ -113,7 +113,7 @@ bool RlzGetAccessPointRlzFunction::RunImpl() {
 
   char rlz[rlz_lib::kMaxRlzLength + 1];
   rlz_lib::GetAccessPointRlz(access_point, rlz, rlz_lib::kMaxRlzLength);
-  result_.reset(Value::CreateStringValue(rlz));
+  SetResult(Value::CreateStringValue(rlz));
   return true;
 }
 
@@ -179,7 +179,7 @@ void RlzSendFinancialPingFunction::WorkOnWorkerThread() {
                                          id_.c_str(), lang_.c_str(),
                                          exclude_machine_id_);
 
-  result_.reset(Value::CreateBooleanValue(sent));
+  SetResult(Value::CreateBooleanValue(sent));
 
   bool post_task_result = content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,

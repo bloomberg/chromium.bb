@@ -513,7 +513,7 @@ bool CreateOffscreenTabFunction::RunImpl() {
   // TODO(alexbost): Maybe the callback is called too soon. It should probably
   // be called once we have navigated to the url.
   if (has_callback()) {
-    result_.reset(offscreen_tab.CreateValue());
+    SetResult(offscreen_tab.CreateValue());
     SendResponse(true);
   }
 
@@ -535,7 +535,7 @@ bool GetOffscreenTabFunction::RunImpl() {
     return false;
   }
 
-  result_.reset(offscreen_tab->CreateValue());
+  SetResult(offscreen_tab->CreateValue());
   return true;
 }
 
@@ -555,7 +555,7 @@ bool GetAllOffscreenTabFunction::RunImpl() {
       tab_list->Append((*i)->CreateValue());
   }
 
-  result_.reset(tab_list);
+  SetResult(tab_list);
   return true;
 }
 

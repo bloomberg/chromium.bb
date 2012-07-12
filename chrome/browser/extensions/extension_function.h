@@ -107,8 +107,11 @@ class ExtensionFunction
   // Specifies the raw arguments to the function, as a JSON value.
   virtual void SetArgs(const base::ListValue* args);
 
-  // Retrieves the results of the function as a Value.
-  const base::Value* GetResultValue();
+  // Sets a single Value as the results of the function.
+  void SetResult(base::Value* result);
+
+  // Retrieves the results of the function as a ListValue.
+  const base::ListValue* GetResultList();
 
   // Retrieves any error string from the function.
   virtual const std::string GetError();
@@ -206,9 +209,9 @@ class ExtensionFunction
   // The arguments to the API. Only non-null if argument were specified.
   scoped_ptr<base::ListValue> args_;
 
-  // The result of the API. This should be populated by the derived class before
-  // SendResponse() is called.
-  scoped_ptr<base::Value> result_;
+  // The results of the API. This should be populated by the derived class
+  // before SendResponse() is called.
+  scoped_ptr<base::ListValue> results_;
 
   // Any detailed error from the API. This should be populated by the derived
   // class before Run() returns.

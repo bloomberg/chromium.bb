@@ -48,7 +48,7 @@ void SerialGetPortsFunction::Work() {
     ports->Append(Value::CreateStringValue(*i++));
   }
 
-  result_.reset(ports);
+  SetResult(ports);
 }
 
 bool SerialGetPortsFunction::Respond() {
@@ -115,12 +115,12 @@ void SerialOpenFunction::Work() {
 
     DictionaryValue* result = new DictionaryValue();
     result->SetInteger(kConnectionIdKey, id);
-    result_.reset(result);
+    SetResult(result);
     AsyncWorkCompleted();
   } else {
     DictionaryValue* result = new DictionaryValue();
     result->SetInteger(kConnectionIdKey, -1);
-    result_.reset(result);
+    SetResult(result);
     AsyncWorkCompleted();
   }
 }
@@ -166,7 +166,7 @@ void SerialCloseFunction::Work() {
     close_result = true;
   }
 
-  result_.reset(Value::CreateBooleanValue(close_result));
+  SetResult(Value::CreateBooleanValue(close_result));
 }
 
 bool SerialCloseFunction::Respond() {
@@ -204,7 +204,7 @@ void SerialReadFunction::Work() {
   result->SetInteger(kBytesReadKey, bytes_read);
   result->Set(kDataKey, base::BinaryValue::CreateWithCopiedBuffer(
       reinterpret_cast<char*>(&byte), bytes_read));
-  result_.reset(result);
+  SetResult(result);
 }
 
 bool SerialReadFunction::Respond() {
@@ -241,7 +241,7 @@ void SerialWriteFunction::Work() {
 
   DictionaryValue* result = new DictionaryValue();
   result->SetInteger(kBytesWrittenKey, bytes_written);
-  result_.reset(result);
+  SetResult(result);
 }
 
 bool SerialWriteFunction::Respond() {
@@ -271,7 +271,7 @@ void SerialFlushFunction::Work() {
     flush_result = true;
   }
 
-  result_.reset(Value::CreateBooleanValue(flush_result));
+  SetResult(Value::CreateBooleanValue(flush_result));
 }
 
 bool SerialFlushFunction::Respond() {
@@ -312,7 +312,7 @@ void SerialGetControlSignalsFunction::Work() {
     result->SetBoolean(kSuccessKey, false);
   }
 
-  result_.reset(result);
+  SetResult(result);
 }
 
 bool SerialGetControlSignalsFunction::Respond() {
@@ -346,14 +346,14 @@ void SerialSetControlSignalsFunction::Work() {
     if (control_signals.should_set_rts)
       control_signals.rts = *(params_->options.rts);
     if (serial_connection->SetControlSignals(control_signals)) {
-      result_.reset(Value::CreateBooleanValue(true));
+      SetResult(Value::CreateBooleanValue(true));
     } else {
       error_ = kErrorSetControlSignalsFailed;
-      result_.reset(Value::CreateBooleanValue(false));
+      SetResult(Value::CreateBooleanValue(false));
     }
   } else {
     error_ = kSerialConnectionNotFoundError;
-    result_.reset(Value::CreateBooleanValue(false));
+    SetResult(Value::CreateBooleanValue(false));
   }
 }
 

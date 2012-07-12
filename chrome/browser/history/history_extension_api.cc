@@ -265,7 +265,7 @@ void GetVisitsHistoryFunction::QueryComplete(
       AddVisitNode(*iterator, list);
     }
   }
-  result_.reset(list);
+  SetResult(list);
   SendAsyncResponse();
 }
 
@@ -318,7 +318,7 @@ void SearchHistoryFunction::SearchComplete(
       AddHistoryNode(**iterator, list);
     }
   }
-  result_.reset(list);
+  SetResult(list);
   SendAsyncResponse();
 }
 

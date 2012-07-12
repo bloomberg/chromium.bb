@@ -75,7 +75,7 @@ class IsRecordingSpeechInputFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.speechInput.isRecording");
 
   // Called back from SpeechInputExtensionManager in the UI thread.
-  void SetResult(bool result);
+  void SetIsRecordingResult(bool result);
 
  protected:
   // ExtensionFunction:

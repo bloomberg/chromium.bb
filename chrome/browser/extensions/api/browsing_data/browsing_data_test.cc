@@ -21,7 +21,7 @@
 #include "content/public/browser/notification_service.h"
 
 using extension_function_test_utils::RunFunctionAndReturnError;
-using extension_function_test_utils::RunFunctionAndReturnResult;
+using extension_function_test_utils::RunFunctionAndReturnSingleResult;
 
 namespace {
 
@@ -76,8 +76,10 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
       const std::string& key,
       int expected_mask) {
     SCOPED_TRACE(key);
-    EXPECT_EQ(NULL, RunFunctionAndReturnResult(new RemoveBrowsingDataFunction(),
-        std::string("[{\"since\": 1}, {\"") + key + "\": true}]", browser()));
+    EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
+        new RemoveBrowsingDataFunction(),
+        std::string("[{\"since\": 1}, {\"") + key + "\": true}]",
+        browser()));
     EXPECT_EQ(expected_mask, GetRemovalMask());
     EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   }
@@ -86,7 +88,8 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
       const std::string& protectedStr,
       int expected_mask) {
     SCOPED_TRACE(protectedStr);
-    EXPECT_EQ(NULL, RunFunctionAndReturnResult(new RemoveBrowsingDataFunction(),
+    EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
+        new RemoveBrowsingDataFunction(),
         "[{\"originType\": " + protectedStr + "}, {\"cookies\": true}]",
         browser()));
     EXPECT_EQ(expected_mask, GetOriginSetMask());
@@ -116,8 +119,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, OneAtATime) {
 // Use-after-free, see http://crbug.com/116522
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest,
                        DISABLED_RemoveBrowsingDataAll) {
-  EXPECT_EQ(NULL, RunFunctionAndReturnResult(new RemoveBrowsingDataFunction(),
-      kRemoveEverythingArguments, browser()));
+  EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
+      new RemoveBrowsingDataFunction(),
+      kRemoveEverythingArguments,
+      browser()));
 
   EXPECT_EQ(base::Time::FromDoubleT(1.0), GetBeginTime());
   EXPECT_EQ((BrowsingDataRemover::REMOVE_SITE_DATA |

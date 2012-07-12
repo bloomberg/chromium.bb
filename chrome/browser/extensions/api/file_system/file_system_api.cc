@@ -150,7 +150,7 @@ bool FileSystemGetDisplayPathFunction::RunImpl() {
     return false;
 
   file_path = PrettifyPath(file_path);
-  result_.reset(base::Value::CreateStringValue(file_path.value()));
+  SetResult(base::Value::CreateStringValue(file_path.value()));
   return true;
 }
 
@@ -202,7 +202,7 @@ void FileSystemEntryFunction::RegisterFileSystemAndSendResponse(
     policy->GrantReadFile(renderer_id, path);
 
   DictionaryValue* dict = new DictionaryValue();
-  result_.reset(dict);
+  SetResult(dict);
   dict->SetString("fileSystemId", filesystem_id);
   dict->SetString("baseName", registered_name);
   SendResponse(true);

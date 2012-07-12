@@ -53,7 +53,7 @@ bool RunPageCyclerFunction::RunImpl() {
   // parameter parsing) then return a list of such errors, else perform
   // RunTestBrowser on the BlockingPool.
   if (!errors_.empty()) {
-    result_.reset(record::CaptureURLs::Result::Create(errors_));
+    SetResult(record::CaptureURLs::Result::Create(errors_));
     SendResponse(true);
   } else {
     content::BrowserThread::PostBlockingPoolTask(FROM_HERE,
@@ -180,7 +180,7 @@ void CaptureURLsFunction::AddSwitches(CommandLine* line) {
 }
 
 void CaptureURLsFunction::Finish() {
-  result_.reset(record::CaptureURLs::Result::Create(errors_));
+  SetResult(record::CaptureURLs::Result::Create(errors_));
   SendResponse(true);
 }
 
@@ -247,7 +247,7 @@ void ReplayURLsFunction::Finish() {
   result.stats = stats_;
   result.errors = errors_;
 
-  result_.reset(record::ReplayURLs::Result::Create(result));
+  SetResult(record::ReplayURLs::Result::Create(result));
   SendResponse(true);
 }
 

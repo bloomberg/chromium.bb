@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,8 @@ bool GetAcceptLanguagesFunction::RunImpl() {
   // of the language code) on accept-languages set through editing preference
   // file directly. So, here, we're adding extra checks to be resistant to
   // crashes caused by data corruption.
-  result_.reset(new ListValue());
+  ListValue* result_languages = new ListValue();
+  SetResult(result_languages);
   if (acceptLanguages.empty()) {
     error_ = kEmptyAcceptLanguagesError;
     return false;
@@ -38,8 +39,7 @@ bool GetAcceptLanguagesFunction::RunImpl() {
     if (end > begin) {
       // Guard against a malformed value with multiple "," in a row.
       string16 acceptLang = acceptLanguages.substr(begin, end - begin);
-      static_cast<ListValue*>(result_.get())->
-          Append(Value::CreateStringValue(acceptLang));
+      result_languages->Append(Value::CreateStringValue(acceptLang));
     }
     begin = end + 1;
     // 'begin >= acceptLanguages.length()' to guard against a value
@@ -47,7 +47,7 @@ bool GetAcceptLanguagesFunction::RunImpl() {
     if (end == string16::npos || begin >= acceptLanguages.length())
       break;
   }
-  if (static_cast<ListValue*>(result_.get())->GetSize() == 0) {
+  if (result_languages->GetSize() == 0) {
     error_ = kEmptyAcceptLanguagesError;
     return false;
   }

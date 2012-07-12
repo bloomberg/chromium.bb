@@ -41,6 +41,6 @@ void GetTopSitesFunction::OnMostVisitedURLsAvailable(
     }
   }
 
-  result_.reset(pages_value.release());
+  SetResult(pages_value.release());
   SendResponse(true);
 }

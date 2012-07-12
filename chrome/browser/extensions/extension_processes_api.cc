@@ -568,11 +568,11 @@ void GetProcessIdForTabFunction::GetProcessIdForTab() {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         extensions::tabs_constants::kTabNotFoundError,
         base::IntToString(tab_id_));
-    result_.reset(Value::CreateIntegerValue(-1));
+    SetResult(Value::CreateIntegerValue(-1));
     SendResponse(false);
   } else {
     int process_id = contents->web_contents()->GetRenderProcessHost()->GetID();
-    result_.reset(Value::CreateIntegerValue(process_id));
+    SetResult(Value::CreateIntegerValue(process_id));
     SendResponse(true);
   }
 
@@ -644,7 +644,7 @@ void TerminateFunction::TerminateProcess() {
         base::IntToString(process_id_));
     SendResponse(false);
   } else {
-    result_.reset(Value::CreateBooleanValue(killed));
+    SetResult(Value::CreateBooleanValue(killed));
     SendResponse(true);
   }
 
@@ -744,7 +744,7 @@ void GetProcessInfoFunction::GatherProcessInfo() {
     DCHECK(process_ids_.size() == 0);
   }
 
-  result_.reset(processes);
+  SetResult(processes);
   SendResponse(true);
 
   // Balance the AddRef in the RunImpl.

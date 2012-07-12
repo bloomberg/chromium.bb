@@ -163,7 +163,7 @@ bool GetContentSettingFunction::RunImpl() {
   result->SetString(keys::kContentSettingKey,
                     helpers::ContentSettingToString(setting));
 
-  result_.reset(result);
+  SetResult(result);
 
   return true;
 }
@@ -283,7 +283,7 @@ void GetResourceIdentifiersFunction::OnGotPluginGroups(
     dict->SetString(keys::kDescriptionKey, it->GetGroupName());
     list->Append(dict);
   }
-  result_.reset(list);
+  SetResult(list);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE, base::Bind(
           &GetResourceIdentifiersFunction::SendResponse, this, true));

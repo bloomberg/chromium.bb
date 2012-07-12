@@ -173,7 +173,7 @@ void PageCaptureSaveAsMHTMLFunction::ReturnSuccess(int64 file_size) {
       child_id, mhtml_path_);
 
   DictionaryValue* dict = new DictionaryValue();
-  result_.reset(dict);
+  SetResult(dict);
   dict->SetString("mhtmlFilePath", mhtml_path_.value());
   dict->SetInteger("mhtmlFileLength", file_size);
 

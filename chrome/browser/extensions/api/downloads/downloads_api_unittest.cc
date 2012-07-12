@@ -496,7 +496,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
   base::Value* RunFunctionAndReturnResult(UIThreadExtensionFunction* function,
                                           const std::string& args) {
     SetUpExtensionFunction(function);
-    return extension_function_test_utils::RunFunctionAndReturnResult(
+    return extension_function_test_utils::RunFunctionAndReturnSingleResult(
         function, args, browser(), GetFlags());
   }
 

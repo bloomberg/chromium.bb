@@ -368,7 +368,7 @@ bool GetPreferenceFunction::RunImpl() {
                        ep->HasIncognitoPrefValue(browser_pref));
   }
 
-  result_.reset(result.release());
+  SetResult(result.release());
   return true;
 }
 

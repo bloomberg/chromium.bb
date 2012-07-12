@@ -58,7 +58,7 @@ bool GetPlaylistMediaplayerFunction::RunImpl() {
   result->Set(kPropertyItems, GetPlaylistItems());
   result->SetInteger(kPropertyPosition, player->GetPlaylistPosition());
 
-  result_.reset(result);
+  SetResult(result);
   return true;
 }
 

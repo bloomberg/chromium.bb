@@ -324,7 +324,7 @@ bool GetBookmarksFunction::RunImpl() {
     bookmark_extension_helpers::AddNode(node, json.get(), false);
   }
 
-  result_.reset(json.release());
+  SetResult(json.release());
   return true;
 }
 
@@ -347,7 +347,7 @@ bool GetBookmarkChildrenFunction::RunImpl() {
     bookmark_extension_helpers::AddNode(child, json.get(), false);
   }
 
-  result_.reset(json.release());
+  SetResult(json.release());
   return true;
 }
 
@@ -366,7 +366,7 @@ bool GetBookmarkRecentFunction::RunImpl() {
     const BookmarkNode* node = *i;
     bookmark_extension_helpers::AddNode(node, json, false);
   }
-  result_.reset(json);
+  SetResult(json);
   return true;
 }
 
@@ -375,7 +375,7 @@ bool GetBookmarkTreeFunction::RunImpl() {
   scoped_ptr<ListValue> json(new ListValue());
   const BookmarkNode* node = model->root_node();
   bookmark_extension_helpers::AddNode(node, json.get(), true);
-  result_.reset(json.release());
+  SetResult(json.release());
   return true;
 }
 
@@ -395,7 +395,7 @@ bool GetBookmarkSubTreeFunction::RunImpl() {
     return false;
   }
   bookmark_extension_helpers::AddNode(node, json.get(), true);
-  result_.reset(json.release());
+  SetResult(json.release());
   return true;
 }
 
@@ -416,7 +416,7 @@ bool SearchBookmarksFunction::RunImpl() {
     bookmark_extension_helpers::AddNode(node, json, false);
   }
 
-  result_.reset(json);
+  SetResult(json);
   return true;
 }
 
@@ -522,7 +522,7 @@ bool CreateBookmarkFunction::RunImpl() {
 
   DictionaryValue* ret =
       bookmark_extension_helpers::GetNodeDictionary(node, false, false);
-  result_.reset(ret);
+  SetResult(ret);
 
   return true;
 }
@@ -601,7 +601,7 @@ bool MoveBookmarkFunction::RunImpl() {
 
   DictionaryValue* ret =
       bookmark_extension_helpers::GetNodeDictionary(node, false, false);
-  result_.reset(ret);
+  SetResult(ret);
 
   return true;
 }
@@ -659,7 +659,7 @@ bool UpdateBookmarkFunction::RunImpl() {
 
   DictionaryValue* ret =
       bookmark_extension_helpers::GetNodeDictionary(node, false, false);
-  result_.reset(ret);
+  SetResult(ret);
 
   return true;
 }

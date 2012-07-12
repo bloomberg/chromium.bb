@@ -95,7 +95,7 @@ void WebSocketProxyPrivate::ResolveHostIOPart(IOThread* io_thread) {
 
 bool WebSocketProxyPrivate::RunImpl() {
   AddRef();
-  result_.reset(Value::CreateStringValue(""));
+  SetResult(Value::CreateStringValue(""));
 
 #if defined(OS_CHROMEOS)
   bool delay_response = false;
@@ -165,7 +165,7 @@ void WebSocketProxyPrivateGetURLForTCPFunction::CustomFinalize() {
   StringValue* url = Value::CreateStringValue(std::string(
       "ws://127.0.0.1:" + base::IntToString(listening_port_) +
       "/tcpproxy?" + query));
-  result_.reset(url);
+  SetResult(url);
 #endif
 }
 
@@ -201,7 +201,7 @@ void WebSocketProxyPrivateGetPassportForTCPFunction::CustomFinalize() {
       "web_socket_proxy", map_) + std::string(":");
   if (ContainsKey(map_, "addr"))
     passport += map_["addr"];
-  result_.reset(Value::CreateStringValue(passport));
+  SetResult(Value::CreateStringValue(passport));
 #endif
 }
 

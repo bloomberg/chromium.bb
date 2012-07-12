@@ -73,8 +73,7 @@ bool GetIncognitoModeAvailabilityFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(
       value >= 0 &&
       value < static_cast<int>(arraysize(kIncognitoModeAvailabilityStrings)));
-  result_.reset(
-      Value::CreateStringValue(kIncognitoModeAvailabilityStrings[value]));
+  SetResult(Value::CreateStringValue(kIncognitoModeAvailabilityStrings[value]));
   return true;
 }
 
@@ -134,7 +133,7 @@ bool GetUpdateStatusFunction::RunImpl() {
   DictionaryValue* dict = new DictionaryValue();
   dict->SetString(kStateKey, state);
   dict->SetDouble(kDownloadProgressKey, download_progress);
-  result_.reset(dict);
+  SetResult(dict);
 
   return true;
 }

@@ -131,7 +131,7 @@ class BeginInstallWithManifestFunction
   virtual bool RunImpl() OVERRIDE;
 
   // Sets the result_ as a string based on |code|.
-  void SetResult(ResultCode code);
+  void SetResultCode(ResultCode code);
 
  private:
   // These store the input parameters to the function.

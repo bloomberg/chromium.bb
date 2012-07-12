@@ -27,7 +27,7 @@ bool GetInputMethodFunction::RunImpl() {
       chromeos::input_method::InputMethodManager::GetInstance();
   const std::string input_method =
       router->GetInputMethodForXkb(manager->GetCurrentInputMethod().id());
-  result_.reset(Value::CreateStringValue(input_method));
+  SetResult(Value::CreateStringValue(input_method));
   return true;
 #endif
 }

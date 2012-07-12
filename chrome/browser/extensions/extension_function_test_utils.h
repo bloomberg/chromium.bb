@@ -72,13 +72,15 @@ std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
 // Run |function| with |args| and return the result. Adds an error to the
 // current test if |function| returns an error. The caller takes ownership of
 // the result.
-base::Value* RunFunctionAndReturnResult(UIThreadExtensionFunction* function,
-                                        const std::string& args,
-                                        Browser* browser,
-                                        RunFunctionFlags flags);
-base::Value* RunFunctionAndReturnResult(UIThreadExtensionFunction* function,
-                                        const std::string& args,
-                                        Browser* browser);
+base::Value* RunFunctionAndReturnSingleResult(
+    UIThreadExtensionFunction* function,
+    const std::string& args,
+    Browser* browser,
+    RunFunctionFlags flags);
+base::Value* RunFunctionAndReturnSingleResult(
+    UIThreadExtensionFunction* function,
+    const std::string& args,
+    Browser* browser);
 
 // Create and run |function| with |args|. Works with both synchronous and async
 // functions.

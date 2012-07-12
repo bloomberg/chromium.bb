@@ -185,9 +185,9 @@ bool GetFocusedControlFunction::RunImpl() {
   DictionaryValue *last_focused_control_dict =
       accessibility_event_router->last_focused_control_dict();
   if (last_focused_control_dict->size()) {
-    result_.reset(last_focused_control_dict->DeepCopyWithoutEmptyChildren());
+    SetResult(last_focused_control_dict->DeepCopyWithoutEmptyChildren());
   } else {
-    result_.reset(Value::CreateNullValue());
+    SetResult(Value::CreateNullValue());
   }
   return true;
 }
@@ -223,6 +223,6 @@ bool GetAlertsForTabFunction::RunImpl() {
     }
   }
 
-  result_.reset(alerts_value);
+  SetResult(alerts_value);
   return true;
 }

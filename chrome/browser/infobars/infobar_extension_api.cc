@@ -74,7 +74,7 @@ bool ShowInfoBarFunction::RunImpl() {
 
   // TODO(finnur): Return the actual DOMWindow object. Bug 26463.
   DCHECK(browser->extension_window_controller());
-  result_.reset(browser->extension_window_controller()->CreateWindowValue());
+  SetResult(browser->extension_window_controller()->CreateWindowValue());
 
   return true;
 }

@@ -166,15 +166,15 @@ bool StopSpeechInputFunction::RunImpl() {
       profile())->Stop(extension_id(), &error_);
 }
 
-void IsRecordingSpeechInputFunction::SetResult(bool result) {
+void IsRecordingSpeechInputFunction::SetIsRecordingResult(bool result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  result_.reset(Value::CreateBooleanValue(result));
+  SetResult(Value::CreateBooleanValue(result));
   SendResponse(true);
 }
 
 void IsRecordingSpeechInputFunction::Run() {
   SpeechInputExtensionManager::GetForProfile(profile())->IsRecording(
-      base::Bind(&IsRecordingSpeechInputFunction::SetResult, this));
+      base::Bind(&IsRecordingSpeechInputFunction::SetIsRecordingResult, this));
 }
 
 bool IsRecordingSpeechInputFunction::RunImpl() {

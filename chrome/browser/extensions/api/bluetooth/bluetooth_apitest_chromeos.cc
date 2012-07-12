@@ -46,7 +46,7 @@ class BluetoothApiTest : public PlatformAppApiTest {
                            UIThreadExtensionFunction* function,
                            const std::string& args) {
     scoped_ptr<base::Value> result(
-        utils::RunFunctionAndReturnResult(function, args, browser()));
+        utils::RunFunctionAndReturnSingleResult(function, args, browser()));
     ASSERT_TRUE(result.get() != NULL);
     ASSERT_EQ(base::Value::TYPE_BOOLEAN, result->GetType());
     bool boolean_value;
@@ -151,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevices) {
   scoped_refptr<api::BluetoothGetDevicesFunction> get_devices;
 
   get_devices = setupFunction(new api::BluetoothGetDevicesFunction);
-  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnResult(
+  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
         get_devices,
         "[{\"uuid\":\"foo\"}]",
         browser()));
@@ -190,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevices) {
 
   get_devices = setupFunction(new api::BluetoothGetDevicesFunction);
   result.reset(
-      utils::RunFunctionAndReturnResult(get_devices, "[{}]", browser()));
+      utils::RunFunctionAndReturnSingleResult(get_devices, "[{}]", browser()));
 
   ASSERT_EQ(base::Value::TYPE_LIST, result->GetType());
   ASSERT_TRUE(result->GetAsList(&list));
@@ -208,8 +208,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetLocalOutOfBandPairingData) {
       get_oob_function(setupFunction(
             new api::BluetoothGetLocalOutOfBandPairingDataFunction));
 
-  scoped_ptr<base::Value> result(
-      utils::RunFunctionAndReturnResult(get_oob_function, "[]", browser()));
+  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+      get_oob_function, "[]", browser()));
 
   base::DictionaryValue* dict;
   EXPECT_TRUE(result->GetAsDictionary(&dict));
@@ -254,7 +254,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, SetOutOfBandPairingData) {
   set_oob_function = setupFunction(
       new api::BluetoothSetOutOfBandPairingDataFunction);
   // There isn't actually a result.
-  (void)utils::RunFunctionAndReturnResult(set_oob_function, params, browser());
+  (void)utils::RunFunctionAndReturnSingleResult(
+      set_oob_function, params, browser());
 
   // Try again with an error
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
@@ -306,7 +307,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
                              testing::_));
   scoped_refptr<api::BluetoothStopDiscoveryFunction> stop_function;
   stop_function = setupFunction(new api::BluetoothStopDiscoveryFunction);
-  (void)utils::RunFunctionAndReturnResult(stop_function, "[]", browser());
+  (void)utils::RunFunctionAndReturnSingleResult(stop_function, "[]", browser());
 
   // Reset to try stopping with an error
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);

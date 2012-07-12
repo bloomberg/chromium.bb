@@ -490,8 +490,8 @@ void RequestLocalFileSystemFunction::RespondSuccessOnUIThread(
   // proper authentication.
   if (gdata::util::IsGDataAvailable(profile_))
     AddGDataMountPoint(profile_, extension_id(), render_view_host());
-  result_.reset(new DictionaryValue());
-  DictionaryValue* dict = reinterpret_cast<DictionaryValue*>(result_.get());
+  DictionaryValue* dict = new DictionaryValue();
+  SetResult(dict);
   dict->SetString("name", name);
   dict->SetString("path", root_path.spec());
   dict->SetInteger("error", base::PLATFORM_FILE_OK);
@@ -531,7 +531,7 @@ bool FileWatchBrowserFunctionBase::GetLocalFilePath(
 }
 
 void FileWatchBrowserFunctionBase::RespondOnUIThread(bool success) {
-  result_.reset(Value::CreateBooleanValue(success));
+  SetResult(Value::CreateBooleanValue(success));
   SendResponse(success);
 }
 
@@ -672,7 +672,7 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
   }
 
   ListValue* result_list = new ListValue();
-  result_.reset(result_list);
+  SetResult(result_list);
 
   file_handler_util::LastUsedHandlerList common_tasks;
   if (!file_handler_util::FindCommonTasks(profile_, file_urls, &common_tasks))
@@ -772,7 +772,7 @@ bool ExecuteTasksFileBrowserFunction::RunImpl() {
       base::Bind(&ExecuteTasksFileBrowserFunction::OnTaskExecuted, this)))
     return false;
 
-  result_.reset(new base::FundamentalValue(true));
+  SetResult(new base::FundamentalValue(true));
   return true;
 }
 
@@ -792,7 +792,7 @@ bool SetDefaultTaskFileBrowserFunction::RunImpl() {
             &file_handler_util::UpdateFileHandlerUsageStats,
             profile_, task_id));
 
-  result_.reset(new base::FundamentalValue(true));
+  SetResult(new base::FundamentalValue(true));
   return true;
 }
 
@@ -1009,7 +1009,7 @@ void ViewFilesFunction::GetLocalPathsResponseOnUIThread(
     if (!handled && files.size() == 1)
       success = false;
   }
-  result_.reset(Value::CreateBooleanValue(success));
+  SetResult(Value::CreateBooleanValue(success));
   SendResponse(true);
 }
 
@@ -1082,7 +1082,7 @@ bool AddMountFunction::RunImpl() {
   }
 
   // Set default return source path to the empty string.
-  result_.reset(Value::CreateStringValue(""));
+  SetResult(Value::CreateStringValue(""));
 
   chromeos::MountType mount_type =
       DiskMountManager::MountTypeFromString(mount_type_str);
@@ -1128,7 +1128,7 @@ void AddMountFunction::RaiseGDataMountEvent(gdata::GDataErrorCode error) {
   }
   // Pass back the gdata mount point path as source path.
   const std::string& gdata_path = gdata::util::GetGDataMountPointPathAsString();
-  result_.reset(Value::CreateStringValue(gdata_path));
+  SetResult(Value::CreateStringValue(gdata_path));
   DiskMountManager::MountPointInfo mount_info(
       gdata_path,
       gdata_path,
@@ -1180,7 +1180,7 @@ void AddMountFunction::OnMountedStateSet(const std::string& mount_type,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
   // Pass back the actual source path of the mount point.
-  result_.reset(Value::CreateStringValue(file_path.value()));
+  SetResult(Value::CreateStringValue(file_path.value()));
   SendResponse(true);
   // MountPath() takes a std::string.
   disk_mount_manager->MountPath(file_path.AsUTF8Unsafe(),
@@ -1236,7 +1236,7 @@ bool GetMountPointsFunction::RunImpl() {
     return false;
 
   base::ListValue *mounts = new base::ListValue();
-  result_.reset(mounts);
+  SetResult(mounts);
 
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
   DiskMountManager::MountPointMap mount_points =
@@ -1347,7 +1347,7 @@ void GetSizeStatsFunction::GetSizeStatsCallbackOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   base::DictionaryValue* sizes = new base::DictionaryValue();
-  result_.reset(sizes);
+  SetResult(sizes);
 
   sizes->SetInteger("totalSizeKB", total_size_kb);
   sizes->SetInteger("remainingSizeKB", remaining_size_kb);
@@ -1433,14 +1433,14 @@ void GetVolumeMetadataFunction::GetLocalPathsResponseOnUIThread(
     return;
   }
 
-  result_.reset();
+  results_.reset();
 
   const DiskMountManager::Disk* volume = GetVolumeAsDisk(
       files[0].path.value());
   if (volume) {
     DictionaryValue* volume_info =
         CreateValueFromDisk(profile_, volume);
-    result_.reset(volume_info);
+    SetResult(volume_info);
   }
 
   SendResponse(true);
@@ -1457,14 +1457,14 @@ bool ToggleFullscreenFunction::RunImpl() {
 
 bool IsFullscreenFunction::RunImpl() {
   Browser* browser = GetCurrentBrowser();
-  result_.reset(Value::CreateBooleanValue(
+  SetResult(Value::CreateBooleanValue(
       browser && browser->window() && browser->window()->IsFullscreen()));
   return true;
 }
 
 bool FileDialogStringsFunction::RunImpl() {
-  result_.reset(new DictionaryValue());
-  DictionaryValue* dict = reinterpret_cast<DictionaryValue*>(result_.get());
+  DictionaryValue* dict = new DictionaryValue();
+  SetResult(dict);
 
 #define SET_STRING(ns, id) \
   dict->SetString(#id, l10n_util::GetStringUTF16(ns##_##id))
@@ -1768,7 +1768,7 @@ void GetGDataFilePropertiesFunction::PrepareResults() {
 void GetGDataFilePropertiesFunction::GetNextFileProperties() {
   if (current_index_ >= path_list_->GetSize()) {
     // Exit of asynchronous look and return the result.
-    result_.reset(file_properties_.release());
+    SetResult(file_properties_.release());
     SendResponse(true);
     return;
   }
@@ -1983,7 +1983,7 @@ void GetFileLocationsFunction::GetLocalPathsResponseOnUIThread(
     }
   }
 
-  result_.reset(locations);
+  SetResult(locations);
   SendResponse(true);
 }
 
@@ -2032,7 +2032,7 @@ void GetGDataFilesFunction::GetLocalPathsResponseOnUIThread(
 void GetGDataFilesFunction::GetFileOrSendResponse() {
   // Send the response if all files are obtained.
   if (remaining_gdata_paths_.empty()) {
-    result_.reset(local_paths_);
+    SetResult(local_paths_);
     SendResponse(true);
     return;
   }
@@ -2102,7 +2102,7 @@ bool GetFileTransfersFunction::RunImpl() {
     return false;
   }
 
-  result_.reset(progress_status_list.release());
+  SetResult(progress_status_list.release());
   SendResponse(true);
   return true;
 }
@@ -2166,7 +2166,7 @@ void CancelFileTransfersFunction::GetLocalPathsResponseOnUIThread(
 
     responses->Append(result.release());
   }
-  result_.reset(responses.release());
+  SetResult(responses.release());
   SendResponse(true);
 }
 
@@ -2267,7 +2267,7 @@ bool GetGDataPreferencesFunction::RunImpl() {
   value->SetBoolean("hostedFilesDisabled",
                     service->GetBoolean(prefs::kDisableGDataHostedFiles));
 
-  result_.reset(value.release());
+  SetResult(value.release());
   return true;
 }
 
@@ -2319,7 +2319,7 @@ void GetPathForDriveSearchResultFunction::OnEntryFound(
     return;
   }
 
-  result_.reset(Value::CreateStringValue(entry_path.value()));
+  SetResult(Value::CreateStringValue(entry_path.value()));
   SendResponse(true);
 }
 
@@ -2379,7 +2379,7 @@ void SearchDriveFunction::OnSearch(
     entries->Append(entry);
   }
 
-  result_.reset(entries);
+  SetResult(entries);
   SendResponse(true);
 }
 
@@ -2403,7 +2403,7 @@ bool GetNetworkConnectionStateFunction::RunImpl() {
     type_string = "ethernet";  // Currently we do not care about other types.
 
   value->SetString("type", type_string);
-  result_.reset(value.release());
+  SetResult(value.release());
 
   return true;
 }

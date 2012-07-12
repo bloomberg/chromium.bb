@@ -280,7 +280,7 @@ bool CanPasteBookmarkManagerFunction::RunImpl() {
     return false;
   }
   bool can_paste = bookmark_utils::CanPasteFromClipboard(parent_node);
-  result_.reset(Value::CreateBooleanValue(can_paste));
+  SetResult(Value::CreateBooleanValue(can_paste));
   return true;
 }
 
@@ -371,7 +371,7 @@ bool BookmarkManagerGetStringsFunction::RunImpl() {
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(localized_strings);
 
-  result_.reset(localized_strings);
+  SetResult(localized_strings);
 
   // This is needed because unlike the rest of these functions, this class
   // inherits from AsyncFunction directly, rather than BookmarkFunction.
@@ -490,12 +490,12 @@ bool GetSubtreeBookmarkManagerFunction::RunImpl() {
   } else {
     bookmark_extension_helpers::AddNode(node, json.get(), true);
   }
-  result_.reset(json.release());
+  SetResult(json.release());
   return true;
 }
 
 bool CanEditBookmarkManagerFunction::RunImpl() {
-  result_.reset(Value::CreateBooleanValue(
+  SetResult(Value::CreateBooleanValue(
       profile_->GetPrefs()->GetBoolean(prefs::kEditBookmarksEnabled)));
   return true;
 }
@@ -513,6 +513,6 @@ bool CanOpenNewWindowsBookmarkFunction::RunImpl() {
     can_open_new_windows = false;
 #endif  // OS_WIN
 
-  result_.reset(Value::CreateBooleanValue(can_open_new_windows));
+  SetResult(Value::CreateBooleanValue(can_open_new_windows));
   return true;
 }

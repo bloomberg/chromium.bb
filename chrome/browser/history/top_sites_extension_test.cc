@@ -60,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(TopSitesExtensionTest, GetTopSites) {
   // Without a callback the function will not generate a result.
   get_top_sites_function->set_has_callback(true);
 
-  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnResult(
+  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
       get_top_sites_function.get(), "[]", browser()));
   base::ListValue* list;
   ASSERT_TRUE(result->GetAsList(&list));

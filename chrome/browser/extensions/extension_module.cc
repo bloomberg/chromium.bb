@@ -26,7 +26,7 @@ bool IsAllowedIncognitoAccessFunction::RunImpl() {
   ExtensionService* ext_service = profile()->GetExtensionService();
   const extensions::Extension* extension = GetExtension();
 
-  result_.reset(Value::CreateBooleanValue(
+  SetResult(Value::CreateBooleanValue(
       ext_service->IsIncognitoEnabled(extension->id())));
   return true;
 }
@@ -35,7 +35,7 @@ bool IsAllowedFileSchemeAccessFunction::RunImpl() {
   ExtensionService* ext_service = profile()->GetExtensionService();
   const extensions::Extension* extension = GetExtension();
 
-  result_.reset(Value::CreateBooleanValue(
-        ext_service->AllowFileAccess(extension)));
+  SetResult(Value::CreateBooleanValue(
+      ext_service->AllowFileAccess(extension)));
   return true;
 }

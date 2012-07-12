@@ -24,14 +24,14 @@ ListValue* CopyBinaryValueToIntegerList(const BinaryValue* input) {
 bool IdltestSendArrayBufferFunction::RunImpl() {
   BinaryValue* input = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_ != NULL && args_->GetBinary(0, &input));
-  result_.reset(CopyBinaryValueToIntegerList(input));
+  SetResult(CopyBinaryValueToIntegerList(input));
   return true;
 }
 
 bool IdltestSendArrayBufferViewFunction::RunImpl() {
   BinaryValue* input = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_ != NULL && args_->GetBinary(0, &input));
-  result_.reset(CopyBinaryValueToIntegerList(input));
+  SetResult(CopyBinaryValueToIntegerList(input));
   return true;
 }
 
@@ -39,6 +39,6 @@ bool IdltestGetArrayBufferFunction::RunImpl() {
   std::string hello = "hello world";
   BinaryValue* output =
       BinaryValue::CreateWithCopiedBuffer(hello.c_str(), hello.size());
-  result_.reset(output);
+  SetResult(output);
   return true;
 }

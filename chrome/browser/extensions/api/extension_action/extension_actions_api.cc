@@ -281,19 +281,18 @@ bool ExtensionActionSetBadgeBackgroundColorFunction::RunExtensionAction() {
 }
 
 bool ExtensionActionGetTitleFunction::RunExtensionAction() {
-  result_.reset(Value::CreateStringValue(extension_action_->GetTitle(tab_id_)));
+  SetResult(Value::CreateStringValue(extension_action_->GetTitle(tab_id_)));
   return true;
 }
 
 bool ExtensionActionGetPopupFunction::RunExtensionAction() {
-  result_.reset(Value::CreateStringValue(
-                    extension_action_->GetPopupUrl(tab_id_).spec()));
+  SetResult(
+      Value::CreateStringValue(extension_action_->GetPopupUrl(tab_id_).spec()));
   return true;
 }
 
 bool ExtensionActionGetBadgeTextFunction::RunExtensionAction() {
-  result_.reset(Value::CreateStringValue(
-                    extension_action_->GetBadgeText(tab_id_)));
+  SetResult(Value::CreateStringValue(extension_action_->GetBadgeText(tab_id_)));
   return true;
 }
 
@@ -304,6 +303,6 @@ bool ExtensionActionGetBadgeBackgroundColorFunction::RunExtensionAction() {
   list->Append(Value::CreateIntegerValue(SkColorGetG(color)));
   list->Append(Value::CreateIntegerValue(SkColorGetB(color)));
   list->Append(Value::CreateIntegerValue(SkColorGetA(color)));
-  result_.reset(list);
+  SetResult(list);
   return true;
 }

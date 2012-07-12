@@ -39,7 +39,7 @@ class FakeSerialGetPortsFunction : public AsyncExtensionFunction {
     ListValue* ports = new ListValue();
     ports->Append(Value::CreateStringValue("/dev/fakeserial"));
     ports->Append(Value::CreateStringValue("\\\\COM800\\"));
-    result_.reset(ports);
+    SetResult(ports);
     SendResponse(true);
     return true;
   }

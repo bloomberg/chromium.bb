@@ -34,7 +34,7 @@ bool SetCloudPrintCredentialsFunction::RunImpl() {
     std::string test_response = user_email;
     test_response.append(robot_email);
     test_response.append(credentials);
-    result_.reset(Value::CreateStringValue(test_response));
+    SetResult(Value::CreateStringValue(test_response));
   } else {
     CloudPrintProxyServiceFactory::GetForProfile(profile_)->
         EnableForUserWithRobot(credentials, robot_email, user_email);

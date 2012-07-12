@@ -52,7 +52,7 @@ bool GetAuthTokenFunction::RunImpl() {
 }
 
 void GetAuthTokenFunction::OnMintTokenSuccess(const std::string& access_token) {
-  result_.reset(Value::CreateStringValue(access_token));
+  SetResult(Value::CreateStringValue(access_token));
   SendResponse(true);
   Release();  // Balanced in RunImpl.
 }
@@ -147,7 +147,7 @@ bool LaunchWebAuthFlowFunction::RunImpl() {
 
 void LaunchWebAuthFlowFunction::OnAuthFlowSuccess(
     const std::string& redirect_url) {
-  result_.reset(Value::CreateStringValue(redirect_url));
+  SetResult(Value::CreateStringValue(redirect_url));
   SendResponse(true);
   Release();  // Balanced in RunImpl.
 }

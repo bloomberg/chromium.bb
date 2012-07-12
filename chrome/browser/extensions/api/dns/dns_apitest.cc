@@ -14,7 +14,7 @@
 #include "net/base/net_util.h"
 
 using extension_function_test_utils::CreateEmptyExtension;
-using extension_function_test_utils::RunFunctionAndReturnResult;
+using extension_function_test_utils::RunFunctionAndReturnSingleResult;
 
 namespace {
 
@@ -54,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveIPLiteral) {
   resolve_function->set_extension(empty_extension.get());
   resolve_function->set_has_callback(true);
 
-  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+  scoped_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
       resolve_function, "[\"127.0.0.1\"]", browser()));
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
   DictionaryValue *value = static_cast<DictionaryValue*>(result.get());
@@ -80,8 +80,8 @@ IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveHostname) {
   function_arguments += extensions::MockHostResolverCreator::kHostname;
   function_arguments += "\"]";
   scoped_ptr<base::Value> result(
-      RunFunctionAndReturnResult(resolve_function.get(),
-                                 function_arguments, browser()));
+      RunFunctionAndReturnSingleResult(resolve_function.get(),
+                                       function_arguments, browser()));
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
   DictionaryValue *value = static_cast<DictionaryValue*>(result.get());
 

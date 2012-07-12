@@ -231,7 +231,7 @@ class RecordApiTest : public InProcessBrowserTest {
         &escaped_user_data_dir);
 
     out_list->reset(utils::ToList(
-        utils::RunFunctionAndReturnResult(capture_function.get(),
+        utils::RunFunctionAndReturnSingleResult(capture_function.get(),
         base::StringPrintf(kCaptureArgs1, escaped_user_data_dir.c_str()),
         browser())));
 
@@ -315,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(RecordApiTest, MAYBE_CheckPlayback) {
   scoped_refptr<ReplayURLsFunction> playback_function(new ReplayURLsFunction(
       new TestProcessStrategy(&temp_files_)));
   scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
-      utils::RunFunctionAndReturnResult(playback_function,
+      utils::RunFunctionAndReturnSingleResult(playback_function,
       base::StringPrintf(kPlaybackArgs1, escaped_user_data_dir.c_str()),
       browser())));
 

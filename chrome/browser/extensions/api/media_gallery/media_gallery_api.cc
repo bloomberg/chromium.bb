@@ -59,7 +59,7 @@ bool GetMediaFileSystemsFunction::RunImpl() {
     policy->GrantReadFileSystem(child_id, fsid);
   }
 
-  result_.reset(list);
+  SetResult(list);
   return true;
 }
 
@@ -67,7 +67,7 @@ OpenMediaGalleryManagerFunction::~OpenMediaGalleryManagerFunction() {}
 
 bool OpenMediaGalleryManagerFunction::RunImpl() {
   // TODO(vandebo) Open the Media Gallery Manager UI.
-  result_.reset(Value::CreateNullValue());
+  SetResult(Value::CreateNullValue());
   return true;
 }
 
@@ -75,7 +75,7 @@ AssembleMediaFileFunction::~AssembleMediaFileFunction() {}
 
 bool AssembleMediaFileFunction::RunImpl() {
   // TODO(vandebo) Update the metadata and return the new file.
-  result_.reset(Value::CreateNullValue());
+  SetResult(Value::CreateNullValue());
   return true;
 }
 

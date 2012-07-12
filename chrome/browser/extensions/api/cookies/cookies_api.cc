@@ -230,15 +230,14 @@ void GetCookieFunction::GetCookieCallback(const net::CookieList& cookie_list) {
     // CookieMonster returns them in canonical order (longest path, then
     // earliest creation time).
     if (it->Name() == name_) {
-      result_.reset(
-          cookies_helpers::CreateCookieValue(*it, store_id_));
+      SetResult(cookies_helpers::CreateCookieValue(*it, store_id_));
       break;
     }
   }
 
   // The cookie doesn't exist; return null.
   if (it == cookie_list.end())
-    result_.reset(Value::CreateNullValue());
+    SetResult(Value::CreateNullValue());
 
   bool rv = BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -296,7 +295,7 @@ void GetAllCookiesFunction::GetAllCookiesCallback(
     cookies_helpers::AppendMatchingCookiesToList(
         cookie_list, store_id_, url_, details_,
         GetExtension(), matching_list);
-    result_.reset(matching_list);
+    SetResult(matching_list);
   }
   bool rv = BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -408,8 +407,7 @@ void SetCookieFunction::PullCookieCallback(const net::CookieList& cookie_list) {
     // CookieMonster returns them in canonical order (longest path, then
     // earliest creation time).
     if (it->Name() == name_) {
-      result_.reset(
-          cookies_helpers::CreateCookieValue(*it, store_id_));
+      SetResult(cookies_helpers::CreateCookieValue(*it, store_id_));
       break;
     }
   }
@@ -481,7 +479,7 @@ void RemoveCookieFunction::RemoveCookieCallback() {
   resultDictionary->SetString(keys::kNameKey, name_);
   resultDictionary->SetString(keys::kUrlKey, url_.spec());
   resultDictionary->SetString(keys::kStoreIdKey, store_id_);
-  result_.reset(resultDictionary);
+  SetResult(resultDictionary);
 
   // Return to UI thread
   bool rv = BrowserThread::PostTask(
@@ -536,7 +534,7 @@ bool GetAllCookieStoresFunction::RunImpl() {
         cookies_helpers::CreateCookieStoreValue(
             incognito_profile, incognito_tab_ids.release()));
   }
-  result_.reset(cookie_store_list);
+  SetResult(cookie_store_list);
   return true;
 }
 

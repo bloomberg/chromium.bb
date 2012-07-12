@@ -73,17 +73,17 @@ namespace api {
 #if defined(OS_CHROMEOS)
 
 bool BluetoothIsAvailableFunction::RunImpl() {
-  result_.reset(Value::CreateBooleanValue(GetAdapter(profile())->IsPresent()));
+  SetResult(Value::CreateBooleanValue(GetAdapter(profile())->IsPresent()));
   return true;
 }
 
 bool BluetoothIsPoweredFunction::RunImpl() {
-  result_.reset(Value::CreateBooleanValue(GetAdapter(profile())->IsPowered()));
+  SetResult(Value::CreateBooleanValue(GetAdapter(profile())->IsPowered()));
   return true;
 }
 
 bool BluetoothGetAddressFunction::RunImpl() {
-  result_.reset(Value::CreateStringValue(GetAdapter(profile())->address()));
+  SetResult(Value::CreateStringValue(GetAdapter(profile())->address()));
   return true;
 }
 
@@ -112,7 +112,7 @@ bool BluetoothGetDevicesFunction::RunImpl() {
   const experimental_bluetooth::GetDevicesOptions& options = params->options;
 
   ListValue* matches = new ListValue;
-  result_.reset(matches);
+  SetResult(matches);
 
   CHECK_EQ(0, callbacks_pending_);
 
@@ -185,7 +185,7 @@ bool BluetoothGetServicesFunction::RunImpl() {
   }
 
   ListValue* services = new ListValue;
-  result_.reset(services);
+  SetResult(services);
 
   device->GetServiceRecords(
       base::Bind(&BluetoothGetServicesFunction::GetServiceRecordsCallback,
@@ -209,7 +209,7 @@ void BluetoothConnectFunction::ConnectToServiceCallback(
         *device, &result_socket.device);
     result_socket.service_uuid = service_uuid;
     result_socket.id = socket_id;
-    result_.reset(result_socket.ToValue().release());
+    SetResult(result_socket.ToValue().release());
     SendResponse(true);
   } else {
     SetError(kFailedToConnect);
@@ -285,7 +285,7 @@ void BluetoothReadFunction::Work() {
 
   if (total_bytes_read > 0) {
     success_ = true;
-    result_.reset(base::BinaryValue::Create(all_bytes, total_bytes_read));
+    SetResult(base::BinaryValue::Create(all_bytes, total_bytes_read));
   } else {
     success_ = (errsv == EAGAIN || errsv == EWOULDBLOCK);
     free(all_bytes);
@@ -332,10 +332,10 @@ void BluetoothWriteFunction::Work() {
   int errsv = errno;
 
   if (bytes_written > 0) {
-    result_.reset(Value::CreateIntegerValue(bytes_written));
+    SetResult(Value::CreateIntegerValue(bytes_written));
     success_ = true;
   } else {
-    result_.reset(0);
+    results_.reset();
     success_ = (errsv == EAGAIN || errsv == EWOULDBLOCK);
   }
 
@@ -425,7 +425,7 @@ void BluetoothGetLocalOutOfBandPairingDataFunction::ReadCallback(
   result->Set("hash", hash);
   result->Set("randomizer", randomizer);
 
-  result_.reset(result);
+  SetResult(result);
 
   SendResponse(true);
 }

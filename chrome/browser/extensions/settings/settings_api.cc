@@ -78,7 +78,7 @@ bool SettingsFunction::UseReadResult(ValueStore::ReadResult result) {
     return false;
   }
 
-  result_ = result->settings().Pass();
+  SetResult(result->settings().release());
   return true;
 }
 
@@ -223,7 +223,7 @@ bool GetBytesInUseSettingsFunction::RunWithStorage(ValueStore* storage) {
       return false;
   }
 
-  result_.reset(Value::CreateIntegerValue(bytes_in_use));
+  SetResult(Value::CreateIntegerValue(bytes_in_use));
   return true;
 }
 

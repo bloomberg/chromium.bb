@@ -261,9 +261,9 @@ bool GetWindowFunction::RunImpl() {
     return false;
 
   if (populate_tabs)
-    result_.reset(controller->CreateWindowValueWithTabs());
+    SetResult(controller->CreateWindowValueWithTabs());
   else
-    result_.reset(controller->CreateWindowValue());
+    SetResult(controller->CreateWindowValue());
   return true;
 }
 
@@ -282,9 +282,9 @@ bool GetCurrentWindowFunction::RunImpl() {
     return false;
   }
   if (populate_tabs)
-    result_.reset(controller->CreateWindowValueWithTabs());
+    SetResult(controller->CreateWindowValueWithTabs());
   else
-    result_.reset(controller->CreateWindowValue());
+    SetResult(controller->CreateWindowValue());
   return true;
 }
 
@@ -309,9 +309,9 @@ bool GetLastFocusedWindowFunction::RunImpl() {
   ExtensionWindowController* controller =
       browser->extension_window_controller();
   if (populate_tabs)
-    result_.reset(controller->CreateWindowValueWithTabs());
+    SetResult(controller->CreateWindowValueWithTabs());
   else
-    result_.reset(controller->CreateWindowValue());
+    SetResult(controller->CreateWindowValue());
   return true;
 }
 
@@ -336,7 +336,7 @@ bool GetAllWindowsFunction::RunImpl() {
     else
       window_list->Append((*iter)->CreateWindowValue());
   }
-  result_.reset(window_list);
+  SetResult(window_list);
   return true;
 }
 
@@ -584,8 +584,8 @@ bool CreateWindowFunction::RunImpl() {
       else
         panel->Show();
 
-    result_.reset(
-          panel->extension_window_controller()->CreateWindowValueWithTabs());
+    SetResult(
+        panel->extension_window_controller()->CreateWindowValueWithTabs());
     return true;
   }
 #endif
@@ -635,9 +635,9 @@ bool CreateWindowFunction::RunImpl() {
 
   if (new_window->profile()->IsOffTheRecord() && !include_incognito()) {
     // Don't expose incognito windows if the extension isn't allowed.
-    result_.reset(Value::CreateNullValue());
+    SetResult(Value::CreateNullValue());
   } else {
-    result_.reset(
+    SetResult(
         new_window->extension_window_controller()->CreateWindowValueWithTabs());
   }
 
@@ -775,7 +775,7 @@ bool UpdateWindowFunction::RunImpl() {
     controller->window()->FlashFrame(draw_attention);
   }
 
-  result_.reset(controller->CreateWindowValue());
+  SetResult(controller->CreateWindowValue());
 
   return true;
 }
@@ -817,9 +817,9 @@ bool GetSelectedTabFunction::RunImpl() {
     error_ = keys::kNoSelectedTabError;
     return false;
   }
-  result_.reset(ExtensionTabUtil::CreateTabValue(contents->web_contents(),
-      tab_strip,
-      tab_strip->active_index()));
+  SetResult(ExtensionTabUtil::CreateTabValue(contents->web_contents(),
+                                             tab_strip,
+                                             tab_strip->active_index()));
   return true;
 }
 
@@ -833,7 +833,7 @@ bool GetAllTabsInWindowFunction::RunImpl() {
   if (!GetBrowserFromWindowID(this, window_id, &browser))
     return false;
 
-  result_.reset(ExtensionTabUtil::CreateTabList(browser));
+  SetResult(ExtensionTabUtil::CreateTabList(browser));
 
   return true;
 }
@@ -948,7 +948,7 @@ bool QueryTabsFunction::RunImpl() {
     }
   }
 
-  result_.reset(result);
+  SetResult(result);
   return true;
 }
 
@@ -1079,7 +1079,7 @@ bool CreateTabFunction::RunImpl() {
 
   // Return data about the newly created tab.
   if (has_callback()) {
-    result_.reset(ExtensionTabUtil::CreateTabValue(
+    SetResult(ExtensionTabUtil::CreateTabValue(
         params.target_contents->web_contents(),
         tab_strip, new_index));
   }
@@ -1098,9 +1098,9 @@ bool GetTabFunction::RunImpl() {
                   NULL, &tab_strip, &contents, &tab_index, &error_))
     return false;
 
-  result_.reset(ExtensionTabUtil::CreateTabValue(contents->web_contents(),
-      tab_strip,
-      tab_index));
+  SetResult(ExtensionTabUtil::CreateTabValue(contents->web_contents(),
+                                             tab_strip,
+                                             tab_index));
   return true;
 }
 
@@ -1109,7 +1109,7 @@ bool GetCurrentTabFunction::RunImpl() {
 
   WebContents* contents = dispatcher()->delegate()->GetAssociatedWebContents();
   if (contents)
-    result_.reset(ExtensionTabUtil::CreateTabValue(contents));
+    SetResult(ExtensionTabUtil::CreateTabValue(contents));
 
   return true;
 }
@@ -1165,7 +1165,7 @@ bool HighlightTabsFunction::RunImpl() {
 
   selection.set_active(active_index);
   browser->tab_strip_model()->SetSelectionFromModel(selection);
-  result_.reset(
+  SetResult(
       browser->extension_window_controller()->CreateWindowValueWithTabs());
   return true;
 }
@@ -1339,10 +1339,9 @@ void UpdateTabFunction::PopulateResult() {
     return;
 
   if (GetExtension()->HasAPIPermission(extensions::APIPermission::kTab)) {
-    result_.reset(
-        ExtensionTabUtil::CreateTabValue(tab_contents_->web_contents()));
+    SetResult(ExtensionTabUtil::CreateTabValue(tab_contents_->web_contents()));
   } else {
-    result_.reset(Value::CreateNullValue());
+    SetResult(Value::CreateNullValue());
   }
 }
 
@@ -1465,11 +1464,11 @@ bool MoveTabsFunction::RunImpl() {
 
   // Only return the results as an array if there are multiple tabs.
   if (tab_ids.size() > 1) {
-    result_.reset(tab_values.DeepCopy());
+    SetResult(tab_values.DeepCopy());
   } else if (tab_ids.size() == 1) {
     Value* value = NULL;
     CHECK(tab_values.Get(0, &value));
-    result_.reset(value->DeepCopy());
+    SetResult(value->DeepCopy());
   }
   return true;
 }
@@ -1736,7 +1735,7 @@ void CaptureVisibleTabFunction::SendResultFromBitmap(
   base::Base64Encode(stream_as_string, &base64_result);
   base64_result.insert(0, base::StringPrintf("data:%s;base64,",
                                              mime_type.c_str()));
-  result_.reset(new StringValue(base64_result));
+  SetResult(new StringValue(base64_result));
   SendResponse(true);
 }
 
@@ -1812,7 +1811,7 @@ void DetectTabLanguageFunction::Observe(
 }
 
 void DetectTabLanguageFunction::GotLanguage(const std::string& language) {
-  result_.reset(Value::CreateStringValue(language.c_str()));
+  SetResult(Value::CreateStringValue(language.c_str()));
   SendResponse(true);
 
   Release();  // Balanced in Run()

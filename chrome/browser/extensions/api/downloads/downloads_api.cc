@@ -556,7 +556,7 @@ void DownloadsDownloadFunction::OnStarted(DownloadId dl_id, net::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << __FUNCTION__ << " " << dl_id << " " << error;
   if (dl_id.local() >= 0) {
-    result_.reset(base::Value::CreateIntegerValue(dl_id.local()));
+    SetResult(base::Value::CreateIntegerValue(dl_id.local()));
   } else {
     error_ = net::ErrorToString(error);
   }
@@ -581,7 +581,7 @@ bool DownloadsSearchFunction::RunImpl() {
     scoped_ptr<base::DictionaryValue> item(DownloadItemToJSON(*it));
     json_results->Append(item.release());
   }
-  result_.reset(json_results);
+  SetResult(json_results);
   RecordApiFunctions(DOWNLOADS_FUNCTION_SEARCH);
   return true;
 }
@@ -781,7 +781,7 @@ void DownloadsGetFileIconFunction::OnIconURLExtracted(const std::string& url) {
     error_ = download_extension_errors::kIconNotFoundError;
   } else {
     RecordApiFunctions(DOWNLOADS_FUNCTION_GET_FILE_ICON);
-    result_.reset(base::Value::CreateStringValue(url));
+    SetResult(base::Value::CreateStringValue(url));
   }
   SendResponse(error_.empty());
 }

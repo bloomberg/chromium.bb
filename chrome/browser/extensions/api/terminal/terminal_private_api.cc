@@ -117,7 +117,7 @@ void OpenTerminalProcessFunction::OpenOnFileThread() {
 SendInputToTerminalProcessFunction::~SendInputToTerminalProcessFunction() {}
 
 void OpenTerminalProcessFunction::RespondOnUIThread(pid_t pid) {
-  result_.reset(new base::FundamentalValue(pid));
+  SetResult(new base::FundamentalValue(pid));
   SendResponse(true);
 }
 
@@ -147,7 +147,7 @@ void SendInputToTerminalProcessFunction::SendInputOnFileThread(pid_t pid,
 }
 
 void SendInputToTerminalProcessFunction::RespondOnUIThread(bool success) {
-  result_.reset(new base::FundamentalValue(success));
+  SetResult(new base::FundamentalValue(success));
   SendResponse(true);
 }
 
@@ -176,7 +176,7 @@ void CloseTerminalProcessFunction::CloseOnFileThread(pid_t pid) {
 }
 
 void CloseTerminalProcessFunction::RespondOnUIThread(bool success) {
-  result_.reset(new base::FundamentalValue(success));
+  SetResult(new base::FundamentalValue(success));
   SendResponse(true);
 }
 
@@ -217,6 +217,6 @@ void OnTerminalResizeFunction::OnResizeOnFileThread(pid_t pid,
 }
 
 void OnTerminalResizeFunction::RespondOnUIThread(bool success) {
-  result_.reset(new base::FundamentalValue(success));
+  SetResult(new base::FundamentalValue(success));
   SendResponse(true);
 }

@@ -309,7 +309,7 @@ void FileHandlerSelectFileFunction::Respond(
     result->entry->file_is_directory = false;
   }
 
-  result_.reset(SelectFile::Result::Create(*result));
+  SetResult(SelectFile::Result::Create(*result));
   SendResponse(true);
 }
 

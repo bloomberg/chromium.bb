@@ -85,7 +85,7 @@ void DnsResolveFunction::OnLookupFinished(int resolve_result) {
     resolve_info->address.reset(
         new std::string(addresses_->front().ToStringWithoutPort()));
   }
-  result_.reset(Resolve::Result::Create(*resolve_info));
+  SetResult(Resolve::Result::Create(*resolve_info));
   response_ = true;
 
   bool post_task_result = BrowserThread::PostTask(

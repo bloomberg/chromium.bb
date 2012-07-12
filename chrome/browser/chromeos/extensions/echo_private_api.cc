@@ -44,6 +44,6 @@ GetRegistrationCodeFunction::~GetRegistrationCodeFunction() {
 bool GetRegistrationCodeFunction::RunImpl() {
   std::string type;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &type));
-  result_.reset(GetValueForRegistrationCodeType(type));
+  SetResult(GetValueForRegistrationCodeType(type));
   return true;
 }

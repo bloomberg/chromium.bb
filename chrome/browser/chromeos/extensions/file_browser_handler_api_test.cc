@@ -196,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserHandlerTest, SelectionFailed) {
   select_file_function->set_user_gesture(true);
 
   scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
-      utils::RunFunctionAndReturnResult(
+      utils::RunFunctionAndReturnSingleResult(
           select_file_function.get(),
           "[{\"suggestedName\": \"some_file_name.txt\"}]",
           browser())));
@@ -223,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserHandlerTest, SuggestedFullPath) {
   select_file_function->set_user_gesture(true);
 
   scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
-      utils::RunFunctionAndReturnResult(
+      utils::RunFunctionAndReturnSingleResult(
           select_file_function.get(),
           "[{\"suggestedName\": \"/path_to_file/some_file_name.txt\"}]",
           browser())));

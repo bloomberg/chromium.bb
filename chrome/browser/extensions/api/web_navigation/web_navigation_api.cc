@@ -791,7 +791,7 @@ bool GetFrameFunction::RunImpl() {
   int tab_id = params->details.tab_id;
   int frame_id = params->details.frame_id;
 
-  result_.reset(Value::CreateNullValue());
+  SetResult(Value::CreateNullValue());
 
   TabContents* tab_contents;
   if (!ExtensionTabUtil::GetTabById(tab_id,
@@ -825,7 +825,7 @@ bool GetFrameFunction::RunImpl() {
   frame_details.url = frame_url.spec();
   frame_details.error_occurred =
       frame_navigation_state.GetErrorOccurredInFrame(frame_id);
-  result_.reset(GetFrame::Result::Create(frame_details));
+  SetResult(GetFrame::Result::Create(frame_details));
   return true;
 }
 
@@ -834,7 +834,7 @@ bool GetAllFramesFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   int tab_id = params->details.tab_id;
 
-  result_.reset(Value::CreateNullValue());
+  SetResult(Value::CreateNullValue());
 
   TabContents* tab_contents;
   if (!ExtensionTabUtil::GetTabById(tab_id,
@@ -870,7 +870,7 @@ bool GetAllFramesFunction::RunImpl() {
     frame->error_occurred = navigation_state.GetErrorOccurredInFrame(frame_id);
     result_list.push_back(frame);
   }
-  result_.reset(GetAllFrames::Result::Create(result_list));
+  SetResult(GetAllFrames::Result::Create(result_list));
   return true;
 }
 

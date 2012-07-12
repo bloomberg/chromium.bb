@@ -78,7 +78,7 @@ bool GetManagedModeFunction::RunImpl() {
 
   scoped_ptr<DictionaryValue> result(new DictionaryValue);
   result->SetBoolean(keys::kValue, in_managed_mode);
-  result_.reset(result.release());
+  SetResult(result.release());
   return true;
 }
 
@@ -94,7 +94,7 @@ bool EnterManagedModeFunction::RunImpl() {
 void EnterManagedModeFunction::SendResult(bool success) {
   scoped_ptr<DictionaryValue> result(new DictionaryValue);
   result->SetBoolean(kEnterSuccessKey, success);
-  result_.reset(result.release());
+  SetResult(result.release());
   SendResponse(true);
 }
 
@@ -108,7 +108,7 @@ bool GetPolicyFunction::RunImpl() {
       ManagedModePolicyProviderFactory::GetForProfile(profile_);
   const base::Value* policy = policy_provider->GetPolicy(key);
   if (policy)
-    result_.reset(policy->DeepCopy());
+    SetResult(policy->DeepCopy());
 #endif
   return true;
 }
