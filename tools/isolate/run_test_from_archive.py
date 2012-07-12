@@ -452,7 +452,13 @@ def main():
   if options.hash:
     # First calculate the reference to it.
     options.manifest = posixpath.join(options.remote, options.hash)
-  manifest = json.load(open_remote(options.manifest))
+  try:
+    manifest = json.load(open_remote(options.manifest))
+  except IOError as e:
+    parser.error(
+        'Failed to read manifest %s; remote:%s; %s' %
+        (options.manifest, options.remote, str(e)))
+
   return run_tha_test(
       manifest, os.path.abspath(options.cache), options.remote,
       options.max_cache_size, options.min_free_space)
