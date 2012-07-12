@@ -172,9 +172,11 @@ class CBuildBotTest(mox.MoxTestBase):
     """Verify ARM builds don't get VMTests turned on by accident"""
 
     for build_name, config in cbuildbot_config.config.iteritems():
-      if build_name.startswith('arm-'):
+      if build_name.startswith('arm-') or config['arm']:
         self.assertTrue(config['vm_tests'] is None,
                         "ARM builder %s can't run vm tests!" % build_name)
+        self.assertTrue(config['chrome_tests'] is False,
+                        "ARM builder %s can't run chrome tests!" % build_name)
 
   def testImportantMattersToChrome(self):
     # TODO(ferringb): Decorate this as a network test.
@@ -279,6 +281,15 @@ class CBuildBotTest(mox.MoxTestBase):
         for flag in ('vm_tests', 'hw_tests', 'upload_hw_test_artifacts'):
           self.assertFalse(config[flag],
               'Config %s set %s without build_tests.' % (build_name, flag))
+
+  def testChromeTestsImpliesVMTests(self):
+    """Verify that all bots with Chrome tests also have VM tests."""
+
+    for build_name, config in cbuildbot_config.config.iteritems():
+      if not config['vm_tests']:
+        self.assertFalse(config['chrome_tests'],
+           'chrome_tests is enabled for %s without vm_tests' % (build_name,))
+
 
 if __name__ == '__main__':
   unittest.main()

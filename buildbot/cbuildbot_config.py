@@ -396,6 +396,7 @@ arm = _config(
   arm=True,
   # VM/tests are broken on arm.
   unittests=False,
+  chrome_tests=False,
   vm_tests=None,
 )
 
@@ -525,7 +526,6 @@ paladin.add_config('amd64-generic-paladin',
 chromium_pfq = _config(
   build_type=constants.CHROME_PFQ_TYPE,
   important=True,
-  chrome_tests=True,
   uprev=False,
   overlays=constants.PUBLIC_OVERLAYS,
   manifest_version=True,
@@ -540,7 +540,6 @@ internal_chromium_pfq.add_config('x86-generic-chromium-pfq',
   boards=['x86-generic'],
   master=True,
   push_overlays=constants.PUBLIC_OVERLAYS,
-  chrome_tests=False, # TODO(build-team): Use chrome tests
 )
 
 internal_chromium_pfq.add_config('tegra2-chromium-pfq',
@@ -556,14 +555,11 @@ internal_chromium_pfq.add_config('daisy-chromium-pfq',
 internal_chromium_pfq.add_config('amd64-generic-chromium-pfq',
   amd64,
   boards=['amd64-generic'],
-  # This builder runs on a VM, so it can't run VM tests.
-  vm_tests=None,
 )
 
 chrome_pfq = internal_chromium_pfq.derive(
   official,
   important=False, # for now...
-  chrome_tests=False, # TODO(build-team): Use chrome tests
   overlays=constants.BOTH_OVERLAYS,
   prebuilts=False,
   useflags=official['useflags'] + ['pgo_generate'],
@@ -599,7 +595,6 @@ chromium_pfq_info = chromium_pfq.derive(
 # TODO(petermayo): We may want to update the -chrome-pfq-i... as above.
 chromium_pfq_info.add_config('x86-generic-tot-chrome-pfq-informational',
   boards=['x86-generic'],
-  chrome_tests=False,
 )
 
 cpfq_arm = \
@@ -624,6 +619,7 @@ chromium_pfq_info.add_config('amd64-corei7-tot-chrome-pfq-informational',
 chromium_pfq_info.add_config('amd64-generic-tot-chrome-pfq-informational',
   amd64,
   boards=['amd64-generic'],
+  chrome_tests=True,
 )
 
 arm_generic_full = \
