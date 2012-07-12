@@ -409,7 +409,6 @@
         '../third_party/skia/src/gpu/GrStencilAndCoverPathRenderer.h',
         '../third_party/skia/src/gpu/GrStencilBuffer.cpp',
         '../third_party/skia/src/gpu/GrStencilBuffer.h',
-        '../third_party/skia/src/gpu/GrStringBuilder.h',
         '../third_party/skia/src/gpu/GrSurface.cpp',
         '../third_party/skia/src/gpu/GrTBSearch.h',
         '../third_party/skia/src/gpu/GrTDArray.h',
