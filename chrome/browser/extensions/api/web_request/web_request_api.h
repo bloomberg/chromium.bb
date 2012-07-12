@@ -341,6 +341,14 @@ class ExtensionWebRequestEventRouter
       extensions::RequestStages request_stage,
       net::HttpResponseHeaders* original_response_headers);
 
+  // Called when the RulesRegistry is ready to unblock a request that was
+  // waiting for said event.
+  void OnRulesRegistryReady(
+      void* profile,
+      const std::string& event_name,
+      uint64 request_id,
+      extensions::RequestStages request_stage);
+
   // Sets the flag that |event_type| has been signaled for |request_id|.
   // Returns the value of the flag before setting it.
   bool GetAndSetSignaled(uint64 request_id, EventTypes event_type);

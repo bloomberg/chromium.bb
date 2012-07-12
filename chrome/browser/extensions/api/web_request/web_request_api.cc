@@ -1414,14 +1414,15 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
   if (!rules_registry_->IsReady()) {
     // The rules registry is still loading. Block this request until it
     // finishes.
-    EventResponse* response = NULL;
     rules_registry_->AddReadyCallback(
-        base::Bind(&ExtensionWebRequestEventRouter::DecrementBlockCount,
-                   AsWeakPtr(), profile, std::string(), event_name,
-                   request->identifier(), response));
+        base::Bind(&ExtensionWebRequestEventRouter::OnRulesRegistryReady,
+                   AsWeakPtr(), profile, event_name, request->identifier(),
+                   request_stage));
     blocked_requests_[request->identifier()].num_handlers_blocking++;
     blocked_requests_[request->identifier()].request = request;
     blocked_requests_[request->identifier()].blocking_time = base::Time::Now();
+    blocked_requests_[request->identifier()].original_response_headers =
+        original_response_headers;
     return true;
   }
 #endif
@@ -1447,9 +1448,25 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
 
   helpers::EventResponseDeltas& deltas =
       blocked_requests_[request->identifier()].response_deltas;
-  CHECK(deltas.empty());
-  deltas.swap(result);
+  deltas.insert(deltas.end(), result.begin(), result.end());
   return true;
+}
+
+void ExtensionWebRequestEventRouter::OnRulesRegistryReady(
+    void* profile,
+    const std::string& event_name,
+    uint64 request_id,
+    extensions::RequestStages request_stage) {
+  // It's possible that this request was deleted, or cancelled by a previous
+  // event handler. If so, ignore this response.
+  if (blocked_requests_.find(request_id) == blocked_requests_.end())
+    return;
+
+  BlockedRequest& blocked_request = blocked_requests_[request_id];
+  ProcessDeclarativeRules(profile, event_name, blocked_request.request,
+                          request_stage,
+                          blocked_request.original_response_headers);
+  DecrementBlockCount(profile, std::string(), event_name, request_id, NULL);
 }
 
 bool ExtensionWebRequestEventRouter::GetAndSetSignaled(uint64 request_id,
