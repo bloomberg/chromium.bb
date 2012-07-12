@@ -5,6 +5,7 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 
 #include "chrome/browser/favicon/favicon_handler.h"
+#include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -139,10 +140,10 @@ NavigationEntry* FaviconTabHelper::GetActiveEntry() {
   return web_contents()->GetController().GetActiveEntry();
 }
 
-void FaviconTabHelper::StartDownload(int id, const GURL& url, int image_size) {
+int FaviconTabHelper::StartDownload(const GURL& url, int image_size) {
   content::RenderViewHost* host = web_contents()->GetRenderViewHost();
-  host->Send(new IconMsg_DownloadFavicon(
-                 host->GetRoutingID(), id, url, image_size));
+  int id = FaviconUtil::DownloadFavicon(host, url, image_size);
+  return id;
 }
 
 void FaviconTabHelper::NotifyFaviconUpdated() {

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/ash/launcher/launcher_favicon_loader.h"
 
 #include "base/logging.h"
+#include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/ui/views/ash/launcher/browser_launcher_item_controller.h"
 #include "chrome/common/favicon_url.h"
 #include "chrome/common/icon_messages.h"
@@ -106,12 +107,9 @@ void FaviconBitmapHandler::OnUpdateFaviconURL(
 
 void FaviconBitmapHandler::DownloadFavicon(const GURL& image_url) {
   int image_size = 0;  // Request the full sized image.
-  static int next_id = 1;
-  int id = next_id++;
   pending_requests_.insert(image_url);
   content::RenderViewHost* host = web_contents_->GetRenderViewHost();
-  host->Send(new IconMsg_DownloadFavicon(
-      host->GetRoutingID(), id, image_url, image_size));
+  FaviconUtil::DownloadFavicon(host, image_url, image_size);
 }
 
 void FaviconBitmapHandler::OnDidDownloadFavicon(int id,

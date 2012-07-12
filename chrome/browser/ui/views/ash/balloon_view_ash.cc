@@ -8,6 +8,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "base/logging.h"
+#include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/notification.h"
@@ -46,10 +47,9 @@ class BalloonViewAsh::IconFetcher : public content::WebContentsObserver {
         icon_url_(icon_url) {
     Observe(web_contents);
     content::RenderViewHost* host = web_contents->GetRenderViewHost();
-    host->Send(new IconMsg_DownloadFavicon(host->GetRoutingID(),
-                                           ++request_id_,
-                                           icon_url,
-                                           kNotificationIconImageSize));
+    request_id_ = FaviconUtil::DownloadFavicon(host,
+                                               icon_url,
+                                               kNotificationIconImageSize);
   }
 
   // content::WebContentsObserver override.

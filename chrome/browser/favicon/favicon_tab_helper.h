@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,7 +73,7 @@ class FaviconTabHelper : public content::WebContentsObserver,
 
   // FaviconHandlerDelegate methods.
   virtual content::NavigationEntry* GetActiveEntry() OVERRIDE;
-  virtual void StartDownload(int id, const GURL& url, int image_size) OVERRIDE;
+  virtual int StartDownload(const GURL& url, int image_size) OVERRIDE;
   virtual void NotifyFaviconUpdated() OVERRIDE;
 
  private:

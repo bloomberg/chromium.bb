@@ -346,9 +346,7 @@ int FaviconHandler::DownloadFavicon(const GURL& image_url, int image_size) {
     NOTREACHED();
     return 0;
   }
-  static int next_id = 1;
-  int id = next_id++;
-  delegate_->StartDownload(id, image_url, image_size);
+  int id = delegate_->StartDownload(image_url, image_size);
   return id;
 }
 

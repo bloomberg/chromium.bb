@@ -152,9 +152,10 @@ class TestFaviconHandlerDelegate : public FaviconHandlerDelegate {
     return NULL;
   }
 
-  virtual void StartDownload(int id, const GURL& url, int image_size) {
+  virtual int StartDownload(const GURL& url, int image_size) {
     ADD_FAILURE() << "TestFaviconHandlerDelegate::StartDownload() "
                   << "should never be called in tests.";
+    return -1;
   }
 
   virtual void NotifyFaviconUpdated() {
