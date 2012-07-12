@@ -90,39 +90,6 @@ void RemoveAllFiles(const FilePath& directory) {
   }
 }
 
-// Converts system error to file platform error code.
-// This is copied and modified from base/platform_file_posix.cc.
-// TODO(satorux): Remove this copy-pasted function. crbug.com/132656
-base::PlatformFileError SystemToPlatformError(int error) {
-  switch (error) {
-    case 0:
-      return base::PLATFORM_FILE_OK;
-    case EACCES:
-    case EISDIR:
-    case EROFS:
-    case EPERM:
-      return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
-    case ETXTBSY:
-      return base::PLATFORM_FILE_ERROR_IN_USE;
-    case EEXIST:
-      return base::PLATFORM_FILE_ERROR_EXISTS;
-    case ENOENT:
-      return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-    case EMFILE:
-      return base::PLATFORM_FILE_ERROR_TOO_MANY_OPENED;
-    case ENOMEM:
-      return base::PLATFORM_FILE_ERROR_NO_MEMORY;
-    case ENOSPC:
-      return base::PLATFORM_FILE_ERROR_NO_SPACE;
-    case ENOTDIR:
-      return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
-    case EINTR:
-      return base::PLATFORM_FILE_ERROR_ABORT;
-    default:
-      return base::PLATFORM_FILE_ERROR_FAILED;
-  }
-}
-
 // Modifies cache state of file on blocking pool, which involves:
 // - moving or copying file (per |file_operation_type|) from |source_path| to
 //  |dest_path| if they're different
@@ -143,13 +110,12 @@ base::PlatformFileError ModifyCacheState(
     else if (file_operation_type == GDataCache::FILE_OPERATION_COPY)
       success = file_util::CopyFile(source_path, dest_path);
     if (!success) {
-      base::PlatformFileError error = SystemToPlatformError(errno);
-      PLOG(ERROR) << "Error "
-                  << (file_operation_type == GDataCache::FILE_OPERATION_MOVE ?
-                      "moving " : "copying ")
-                  << source_path.value()
-                  << " to " << dest_path.value();
-      return error;
+      LOG(ERROR) << "Failed to "
+                 << (file_operation_type == GDataCache::FILE_OPERATION_MOVE ?
+                     "move " : "copy ")
+                 << source_path.value()
+                 << " to " << dest_path.value();
+      return base::PLATFORM_FILE_ERROR_FAILED;
     } else {
       DVLOG(1) << (file_operation_type == GDataCache::FILE_OPERATION_MOVE ?
                    "Moved " : "Copied ")
@@ -168,28 +134,16 @@ base::PlatformFileError ModifyCacheState(
   // We try to save one file operation by not checking if link exists before
   // deleting it, so unlink may return error if link doesn't exist, but it
   // doesn't really matter to us.
-  bool deleted = file_util::Delete(symlink_path, false);
-  if (deleted) {
-    DVLOG(1) << "Deleted symlink " << symlink_path.value();
-  } else {
-    // Since we didn't check if symlink exists before deleting it, don't log
-    // if symlink doesn't exist.
-    if (errno != ENOENT)
-      PLOG(WARNING) << "Error deleting symlink " << symlink_path.value();
-  }
+  file_util::Delete(symlink_path, false);
 
   if (!create_symlink)
     return base::PLATFORM_FILE_OK;
 
   // Create new symlink to |dest_path|.
   if (!file_util::CreateSymbolicLink(dest_path, symlink_path)) {
-    base::PlatformFileError error = SystemToPlatformError(errno);
-    PLOG(ERROR) << "Error creating symlink " << symlink_path.value()
-                << " for " << dest_path.value();
-    return error;
-  } else {
-    DVLOG(1) << "Created symlink " << symlink_path.value()
-             << " to " << dest_path.value();
+    LOG(ERROR) << "Failed to create a symlink from " << symlink_path.value()
+               << " to " << dest_path.value();
+    return base::PLATFORM_FILE_ERROR_FAILED;
   }
 
   return base::PLATFORM_FILE_OK;
