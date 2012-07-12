@@ -151,6 +151,16 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * @param {string} query Selector query to select an element starting from
+     *     the component's root element using a depth first search for the first
+     *     element that matches the query.
+     * @return {HTMLElement} Element selected by the given query.
+     */
+    getChildElement: function(query) {
+      return this.element_.querySelector(query);
+    },
+
+    /**
      * Sets the component's element.
      * @param {Element} element HTML element to set as the component's element.
      * @protected

@@ -55,10 +55,7 @@ cr.define('print_preview', function() {
      * @type {!print_preview.DestinationList}
      * @private
      */
-    this.recentList_ = new print_preview.DestinationList(
-        this,
-        localStrings.getString('recentDestinationsTitle'),
-        3 /*opt_maxSize*/);
+    this.recentList_ = new print_preview.RecentDestinationList(this);
     this.addChild(this.recentList_);
 
     /**
@@ -69,7 +66,6 @@ cr.define('print_preview', function() {
     this.localList_ = new print_preview.DestinationList(
         this,
         localStrings.getString('localDestinationsTitle'),
-        0 /*opt_maxSize*/,
         cr.isChromeOS ? null : localStrings.getString('manage'));
     this.addChild(this.localList_);
 
@@ -80,13 +76,6 @@ cr.define('print_preview', function() {
      */
     this.cloudList_ = new print_preview.CloudDestinationList(this);
     this.addChild(this.cloudList_);
-
-    /**
-     * Page element of the overlay.
-     * @type {HTMLElement}
-     * @private
-     */
-    this.pageEl_ = null;
   };
 
   /**
@@ -106,52 +95,27 @@ cr.define('print_preview', function() {
     SIGN_IN: 'print_preview.DestinationSearch.SIGN_IN'
   },
 
-  /**
-   * CSS classes used by the component.
-   * @enum {string}
-   * @private
-   */
-  DestinationSearch.Classes_ = {
-    CLOSE_BUTTON: 'destination-search-close-button',
-    CLOUDPRINT_PROMO: 'destination-search-cloudprint-promo',
-    CLOUDPRINT_PROMO_CLOSE_BUTTON:
-        'destination-search-cloudprint-promo-close-button',
-    CLOUD_LIST: 'destination-search-cloud-list',
-    LOCAL_LIST: 'destination-search-local-list',
-    PAGE: 'destination-search-page',
-    PROMO_TEXT: 'destination-search-cloudprint-promo-text',
-    PULSE: 'pulse',
-    RECENT_LIST: 'destination-search-recent-list',
-    SEARCH_BOX_CONTAINER: 'destination-search-search-box-container',
-    SIGN_IN: 'destination-search-sign-in',
-    TRANSPARENT: 'transparent',
-    USER_EMAIL: 'destination-search-user-email',
-    USER_INFO: 'destination-search-user-info'
-  };
-
   DestinationSearch.prototype = {
     __proto__: print_preview.Component.prototype,
 
     /** @return {boolean} Whether the component is visible. */
     getIsVisible: function() {
-      return !this.getElement().classList.contains(
-          DestinationSearch.Classes_.TRANSPARENT);
+      return !this.getElement().classList.contains('transparent');
     },
 
     /** @param {boolean} isVisible Whether the component is visible. */
     setIsVisible: function(isVisible) {
       if (isVisible) {
         this.searchBox_.focus();
-        this.getElement().classList.remove(
-            DestinationSearch.Classes_.TRANSPARENT);
-        var promoEl = this.getElement().getElementsByClassName(
-            DestinationSearch.Classes_.CLOUDPRINT_PROMO)[0];
+        this.getElement().classList.remove('transparent');
+        var promoEl = this.getChildElement('.cloudprint-promo');
         if (getIsVisible(promoEl)) {
           this.metrics_.increment(
               print_preview.Metrics.Bucket.CLOUDPRINT_PROMO_SHOWN);
         }
+        this.reflowLists_();
       } else {
-        this.getElement().classList.add(DestinationSearch.Classes_.TRANSPARENT);
+        this.getElement().classList.add('transparent');
         // Collapse all destination lists
         this.localList_.setIsShowAll(false);
         this.cloudList_.setIsShowAll(false);
@@ -162,53 +126,40 @@ cr.define('print_preview', function() {
 
     /** @param {string} email Email of the logged-in user. */
     setCloudPrintEmail: function(email) {
-      var userEmailEl = this.getElement().getElementsByClassName(
-          DestinationSearch.Classes_.USER_EMAIL)[0];
-      userEmailEl.textContent = email;
-      var userInfoEl = this.getElement().getElementsByClassName(
-          DestinationSearch.Classes_.USER_INFO)[0];
+      var userInfoEl = this.getChildElement('.user-info');
+      userInfoEl.textContent = localStrings.getStringF('userInfo', email);
+      userInfoEl.title = localStrings.getStringF('userInfo', email);
       setIsVisible(userInfoEl, true);
-      var cloudListEl = this.getElement().getElementsByClassName(
-          DestinationSearch.Classes_.CLOUD_LIST)[0];
-      setIsVisible(cloudListEl, true);
-      var promoEl = this.getElement().getElementsByClassName(
-          DestinationSearch.Classes_.CLOUDPRINT_PROMO)[0];
-      setIsVisible(promoEl, false);
+      setIsVisible(this.getChildElement('.cloud-list'), true);
+      setIsVisible(this.getChildElement('.cloudprint-promo'), false);
+      this.reflowLists_();
     },
 
     /** Shows the Google Cloud Print promotion banner. */
     showCloudPrintPromo: function() {
-      var promoEl = this.getElement().getElementsByClassName(
-          DestinationSearch.Classes_.CLOUDPRINT_PROMO)[0];
-      setIsVisible(promoEl, true);
+      setIsVisible(this.getChildElement('.cloudprint-promo'), true);
       if (this.getIsVisible()) {
         this.metrics_.increment(
             print_preview.Metrics.Bucket.CLOUDPRINT_PROMO_SHOWN);
       }
+      this.reflowLists_();
     },
 
     /** @override */
     enterDocument: function() {
       print_preview.Component.prototype.enterDocument.call(this);
-      var closeButtonEl = this.getElement().getElementsByClassName(
-          DestinationSearch.Classes_.CLOSE_BUTTON)[0];
-      var signInButton = this.getElement().getElementsByClassName(
-          DestinationSearch.Classes_.SIGN_IN)[0];
-      var cloudprintPromoCloseButton = this.getElement().getElementsByClassName(
-          DestinationSearch.Classes_.CLOUDPRINT_PROMO_CLOSE_BUTTON)[0];
+      this.tracker.add(
+          this.getChildElement('.page > .close-button'),
+          'click',
+          this.onCloseClick_.bind(this));
 
       this.tracker.add(
-          closeButtonEl, 'click', this.onCloseClick_.bind(this));
-
-      var promoTextEl = this.getElement().getElementsByClassName(
-          DestinationSearch.Classes_.PROMO_TEXT)[0];
-      var signInEl = promoTextEl.getElementsByClassName(
-          DestinationSearch.Classes_.SIGN_IN)[0];
-      this.tracker.add(
-          signInEl, 'click', this.onSignInActivated_.bind(this));
+          this.getChildElement('.sign-in'),
+          'click',
+          this.onSignInActivated_.bind(this));
 
       this.tracker.add(
-          cloudprintPromoCloseButton,
+          this.getChildElement('.cloudprint-promo > .close-button'),
           'click',
           this.onCloudprintPromoCloseButtonClick_.bind(this));
       this.tracker.add(
@@ -223,7 +174,7 @@ cr.define('print_preview', function() {
       this.tracker.add(
           this.destinationStore_,
           print_preview.DestinationStore.EventType.DESTINATIONS_INSERTED,
-          this.renderDestinations_.bind(this));
+          this.onDestinationsInserted_.bind(this));
       this.tracker.add(
           this.destinationStore_,
           print_preview.DestinationStore.EventType.DESTINATION_SELECT,
@@ -241,48 +192,44 @@ cr.define('print_preview', function() {
       this.tracker.add(
           this.getElement(), 'click', this.onClick_.bind(this));
       this.tracker.add(
-          this.pageEl_, 'webkitAnimationEnd', this.onAnimationEnd_.bind(this));
+          this.getChildElement('.page'),
+          'webkitAnimationEnd',
+          this.onAnimationEnd_.bind(this));
 
       this.tracker.add(
           this.userInfo_,
           print_preview.UserInfo.EventType.EMAIL_CHANGE,
           this.onEmailChange_.bind(this));
 
+      this.tracker.add(window, 'resize', this.onWindowResize_.bind(this));
+
       // Render any destinations already in the store.
       this.renderDestinations_();
     },
 
     /** @override */
-    exitDocument: function() {
-      print_preview.Component.prototype.exitDocument.call(this);
-      this.pageEl_ = null;
-    },
-
-    /** @override */
     decorateInternal: function() {
       this.searchBox_.decorate($('search-box'));
-
-      var recentListEl = this.getElement().getElementsByClassName(
-          DestinationSearch.Classes_.RECENT_LIST)[0];
-      this.recentList_.render(recentListEl);
-
-      var localListEl = this.getElement().getElementsByClassName(
-          DestinationSearch.Classes_.LOCAL_LIST)[0];
-      this.localList_.render(localListEl);
-
-      var cloudListEl = this.getElement().getElementsByClassName(
-          DestinationSearch.Classes_.CLOUD_LIST)[0];
-      this.cloudList_.render(cloudListEl);
-
-      this.pageEl_ = this.getElement().getElementsByClassName(
-          DestinationSearch.Classes_.PAGE)[0];
-
-      var promoTextEl = this.getElement().getElementsByClassName(
-          DestinationSearch.Classes_.PROMO_TEXT)[0];
-      promoTextEl.innerHTML = localStrings.getStringF(
+      this.recentList_.render(this.getChildElement('.recent-list'));
+      this.localList_.render(this.getChildElement('.local-list'));
+      this.cloudList_.render(this.getChildElement('.cloud-list'));
+      this.getChildElement('.promo-text').innerHTML = localStrings.getStringF(
           'cloudPrintPromotion',
-          '<span class="destination-search-sign-in link-button">',
+          '<span class="sign-in link-button">',
           '</span>');
+    },
+
+    /**
+     * @return {number} Height available for destination lists, in pixels.
+     * @private
+     */
+    getAvailableListsHeight_: function() {
+      var elStyle = window.getComputedStyle(this.getElement());
+      return this.getElement().offsetHeight -
+          parseInt(elStyle.getPropertyValue('padding-top')) -
+          parseInt(elStyle.getPropertyValue('padding-bottom')) -
+          this.getChildElement('.lists').offsetTop -
+          this.getChildElement('.cloudprint-promo').offsetHeight;
     },
 
     /**
@@ -291,9 +238,9 @@ cr.define('print_preview', function() {
      * @private
      */
     filterLists_: function(query) {
-      this.recentList_.filter(query);
-      this.localList_.filter(query);
-      this.cloudList_.filter(query);
+      this.recentList_.updateSearchQuery(query);
+      this.localList_.updateSearchQuery(query);
+      this.cloudList_.updateSearchQuery(query);
     },
 
     /**
@@ -326,6 +273,42 @@ cr.define('print_preview', function() {
       this.recentList_.updateDestinations(recentDestinations);
       this.localList_.updateDestinations(localDestinations);
       this.cloudList_.updateDestinations(cloudDestinations);
+    },
+
+    /**
+     * Reflows the destination lists according to the available height.
+     * @private
+     */
+    reflowLists_: function() {
+      if (!this.getIsVisible()) {
+        return;
+      }
+
+      var hasCloudList = getIsVisible(this.getChildElement('.cloud-list'));
+      var lists = [this.recentList_, this.localList_];
+      if (hasCloudList) {
+        lists.push(this.cloudList_);
+      }
+
+      var availableHeight = this.getAvailableListsHeight_();
+      this.getChildElement('.lists').style.maxHeight = availableHeight + 'px';
+
+      var maxListLength = lists.reduce(function(prevCount, list) {
+        return Math.max(prevCount, list.getDestinationsCount());
+      }, 0);
+      for (var i = 1; i <= maxListLength; i++) {
+        var listsHeight = lists.reduce(function(sum, list) {
+          return sum + list.getEstimatedHeightInPixels(i) + 18 /*padding*/;
+        }, 0);
+        if (listsHeight > availableHeight) {
+          i -= 1;
+          break;
+        }
+      }
+
+      lists.forEach(function(list) {
+        list.updateShortListSize(i);
+      });
     },
 
     /**
@@ -377,6 +360,17 @@ cr.define('print_preview', function() {
         }
       });
       this.recentList_.updateDestinations(recentDestinations);
+      this.reflowLists_();
+    },
+
+    /**
+     * Called when destinations are inserted into the store. Rerenders
+     * destinations.
+     * @private
+     */
+    onDestinationsInserted_: function() {
+      this.renderDestinations_();
+      this.reflowLists_();
     },
 
     /**
@@ -415,9 +409,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onCloudprintPromoCloseButtonClick_: function() {
-      var promoEl = this.getElement().getElementsByClassName(
-          DestinationSearch.Classes_.CLOUDPRINT_PROMO)[0];
-      setIsVisible(promoEl, false);
+      setIsVisible(this.getChildElement('.cloudprint-promo'), false);
     },
 
     /**
@@ -427,7 +419,7 @@ cr.define('print_preview', function() {
      */
     onClick_: function(event) {
       if (event.target == this.getElement()) {
-        this.pageEl_.classList.add(DestinationSearch.Classes_.PULSE);
+        this.getChildElement('.page').classList.add('pulse');
       }
     },
 
@@ -436,7 +428,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onAnimationEnd_: function() {
-      this.pageEl_.classList.remove(DestinationSearch.Classes_.PULSE);
+      this.getChildElement('.page').classList.remove('pulse');
     },
 
     /**
@@ -448,6 +440,14 @@ cr.define('print_preview', function() {
       if (userEmail) {
         this.setCloudPrintEmail(userEmail);
       }
+    },
+
+    /**
+     * Called when the window is resized. Reflows layout of destination lists.
+     * @private
+     */
+    onWindowResize_: function() {
+      this.reflowLists_();
     }
   };
 

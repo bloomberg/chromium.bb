@@ -2,94 +2,86 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.destination-search {
+#destination-search {
   z-index: 3;
 }
 
-.destination-search.transparent {
+#destination-search.transparent {
   opacity: 0;
   pointer-events: none;
 }
 
-.destination-search-page {
-  height: 560px;
-  width: 700px;
+#destination-search .page {
+  width: 640px;
 }
 
-.destination-search-user-info {
+#destination-search .user-info {
   -webkit-user-select: none;
+  overflow: hidden;
   position: absolute;
-  right: 80px;
+  right: 40px;
+  text-align: right;
+  text-overflow: ellipsis;
   top: 14px;
   white-space: nowrap;
+  width: 350px;
 }
 
-#destination-search .close-button {
-  top: 9px;
-}
-
-[dir='rtl'] .destination-search-user-info {
-  left: 80px;
+[dir='rtl'] #destination-search .user-info {
+  left: 40px;
   right: auto;
 }
 
-.destination-search-search-box-container {
+#destination-search > .page > .close-button {
+  top: 9px;
+}
+
+#destination-search .search-box {
   -webkit-user-select: none;
   margin: 14px;
 }
 
-.destination-search-lists {
+#destination-search .lists {
   -webkit-box-flex: 1;
   overflow-y: auto;
 }
 
-.destination-search-recent-list,
-.destination-search-local-list,
-.destination-search-cloud-list {
+#destination-search .lists > * {
   -webkit-user-select: none;
   padding: 0 14px 18px;
 }
 
-.destination-search-cloudprint-promo {
-  -webkit-padding-end: 44px;
-  -webkit-padding-start: 12px;
+#destination-search .cloudprint-promo {
+  -webkit-box-align: center;
   -webkit-user-select: none;
   background-color: rgb(249, 237, 190);
-  padding-bottom: 12px;
-  padding-top: 12px;
-  position: relative;
+  display: -webkit-box;
+  padding: 12px;
 }
 
-.destination-search-cloudprint-promo > * {
-  vertical-align: middle;
-}
-
-.destination-search-sign-in.link-button {
+#destination-search .cloudprint-promo .sign-in.link-button {
   padding: inherit;
 }
 
-.destination-search-cloud-icon {
-  -webkit-margin-end: 4px;
-  display: inline-block;
+#destination-search .cloudprint-promo .icon {
+  -webkit-margin-end: 12px;
+  display: block;
   height: 24px;
   width: 24px;
 }
 
-.destination-search-cloudprint-promo-close-button {
+#destination-search .cloudprint-promo .promo-text {
+  -webkit-box-flex: 1;
+}
+
+#destination-search .cloudprint-promo .close-button {
+  -webkit-margin-start: 12px;
   background-image: url(chrome://resources/images/x.png);
-  height: 24px;
-  margin-top: -9px;
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  width: 24px;
+  background-position: -2px -1px;
+  height: 18px;
+  width: 18px;
 }
 
-[dir='rtl'] .destination-search-cloudprint-promo-close-button {
-  left: 10px;
-  right: auto;
-}
-
-.destination-search-cloudprint-promo-close-button:hover {
+#destination-search .cloudprint-promo .close-button:hover {
   background-image: url(chrome://resources/images/x-hover.png);
 }

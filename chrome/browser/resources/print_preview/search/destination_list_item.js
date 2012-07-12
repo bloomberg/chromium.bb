@@ -75,6 +75,7 @@ cr.define('print_preview', function() {
       var nameEl = this.getElement().getElementsByClassName(
           DestinationListItem.Classes_.NAME)[0];
       nameEl.textContent = this.destination_.displayName;
+      nameEl.title = this.destination_.displayName;
 
       this.initializeOfflineStatusElement_();
     },

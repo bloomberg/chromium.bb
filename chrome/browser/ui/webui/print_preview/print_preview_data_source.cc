@@ -135,7 +135,7 @@ void PrintPreviewDataSource::Init() {
   AddLocalizedString("right", IDS_PRINT_PREVIEW_RIGHT_MARGIN_LABEL);
   AddLocalizedString("destinationSearchTitle",
                      IDS_PRINT_PREVIEW_DESTINATION_SEARCH_TITLE);
-  AddLocalizedString("signedInAsPrefix", IDS_PRINT_PREVIEW_SIGNED_IN_AS_PREFIX);
+  AddLocalizedString("userInfo", IDS_PRINT_PREVIEW_USER_INFO);
   AddLocalizedString("cloudPrintPromotion",
                      IDS_PRINT_PREVIEW_CLOUD_PRINT_PROMOTION);
   AddLocalizedString("searchBoxPlaceholder",

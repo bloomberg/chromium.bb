@@ -805,6 +805,7 @@ cr.define('print_preview', function() {
 
 <include src="search/destination_list.js"/>
 <include src="search/cloud_destination_list.js"/>
+<include src="search/recent_destination_list.js"/>
 <include src="search/destination_list_item.js"/>
 <include src="search/destination_search.js"/>
 <include src="search/search_box.js"/>

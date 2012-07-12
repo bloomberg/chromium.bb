@@ -12,15 +12,12 @@ cr.define('print_preview', function() {
    * @param {!cr.EventTarget} eventTarget Event target to pass to destination
    *     items for dispatching SELECT events.
    * @param {string} title Title of the destination list.
-   * @param {number=} opt_maxSize Maximum size of the list. If not specified,
-   *     defaults to no max.
    * @param {string=} opt_actionLinkLabel Optional label of the action link. If
    *     no label is provided, the action link will not be shown.
    * @constructor
    * @extends {print_preview.Component}
    */
-  function DestinationList(
-      eventTarget, title, opt_maxSize, opt_actionLinkLabel) {
+  function DestinationList(eventTarget, title, opt_actionLinkLabel) {
     print_preview.Component.call(this);
 
     /**
@@ -36,16 +33,6 @@ cr.define('print_preview', function() {
      * @private
      */
     this.title_ = title;
-
-    /**
-     * Maximum size of the destination list.
-     * @type {number}
-     * @private
-     */
-    this.maxSize_ = opt_maxSize || 0;
-    assert(this.maxSize_ <= DestinationList.SHORT_LIST_SIZE_,
-           'Max size must be less than or equal to ' +
-               DestinationList.SHORT_LIST_SIZE_);
 
     /**
      * Label of the action link.
@@ -76,25 +63,11 @@ cr.define('print_preview', function() {
     this.isShowAll_ = false;
 
     /**
-     * Message to show when no destinations are available.
-     * @type {HTMLElement}
+     * Maximum number of destinations before showing the "Show All..." button.
+     * @type {number}
      * @private
      */
-    this.noDestinationsMessageEl_ = null;
-
-    /**
-     * Footer of the list.
-     * @type {HTMLElement}
-     * @private
-     */
-    this.footerEl_ = null;
-
-    /**
-     * Container for the destination list items.
-     * @type {HTMLElement}
-     * @private
-     */
-    this.destinationListItemContainer_ = null;
+    this.shortListSize_ = DestinationList.DEFAULT_SHORT_LIST_SIZE_;
   };
 
   /**
@@ -107,27 +80,21 @@ cr.define('print_preview', function() {
   };
 
   /**
-   * Classes used by the destination list.
-   * @enum {string}
-   * @private
-   */
-  DestinationList.Classes_ = {
-    ACTION_LINK: 'destination-list-action-link',
-    FOOTER: 'destination-list-footer',
-    NO_PRINTERS_MESSAGE: 'destination-list-no-destinations-message',
-    PRINTER_ITEM_CONTAINER: 'destination-list-destination-list-item-container',
-    SHOW_ALL_BUTTON: 'destination-list-show-all-button',
-    TITLE: 'destination-list-title',
-    TOTAL: 'destination-list-total'
-  };
-
-  /**
-   * Maximum number of destinations before showing the "Show All..." button.
+   * Default maximum number of destinations before showing the "Show All..."
+   * button.
    * @type {number}
    * @const
    * @private
    */
-  DestinationList.SHORT_LIST_SIZE_ = 4;
+  DestinationList.DEFAULT_SHORT_LIST_SIZE_ = 4;
+
+  /**
+   * Height of a destination list item in pixels.
+   * @type {number}
+   * @const
+   * @private
+   */
+  DestinationList.HEIGHT_OF_ITEM_ = 30;
 
   DestinationList.prototype = {
     __proto__: print_preview.Component.prototype,
@@ -138,51 +105,70 @@ cr.define('print_preview', function() {
       this.renderDestinations_();
     },
 
+    /**
+     * @return {number} Size of list when destination list is in collapsed
+     *     mode (a.k.a non-show-all mode).
+     */
+    getShortListSize: function() {
+      return this.shortListSize_;
+    },
+
+    /** @return {number} Count of the destinations in the list. */
+    getDestinationsCount: function() {
+      return this.destinations_.length;
+    },
+
+    /**
+     * Gets estimated height of the destination list for the given number of
+     * items.
+     * @param {number} Number of items to render in the destination list.
+     * @return {number} Height (in pixels) of the destination list.
+     */
+    getEstimatedHeightInPixels: function(numItems) {
+      numItems = Math.min(numItems, this.destinations_.length);
+      var headerHeight =
+          this.getChildElement('.destination-list > header').offsetHeight;
+      return headerHeight + numItems * DestinationList.HEIGHT_OF_ITEM_;
+    },
+
+    /**
+     * @param {number} size Size of list when destination list is in collapsed
+     *     mode (a.k.a non-show-all mode).
+     */
+    updateShortListSize: function(size) {
+      size = Math.max(1, Math.min(size, this.destinations_.length));
+      if (size == 1 && this.destinations_.length > 1) {
+        // If this is the case, we will only show the "Show All" button and
+        // nothing else. Increment the short list size by one so that we can see
+        // at least one print destination.
+        size++;
+      }
+      this.setShortListSizeInternal(size);
+    },
+
     /** @override */
     createDom: function() {
       this.setElementInternal(this.cloneTemplateInternal(
           'destination-list-template'));
-
-      var titleEl = this.getElement().getElementsByClassName(
-          DestinationList.Classes_.TITLE)[0];
-      titleEl.textContent = this.title_;
-
-      var actionLinkEl = this.getElement().getElementsByClassName(
-            DestinationList.Classes_.ACTION_LINK)[0];
+      this.getChildElement('.title').textContent = this.title_;
       if (this.actionLinkLabel_) {
+        var actionLinkEl = this.getChildElement('.action-link');
         actionLinkEl.textContent = this.actionLinkLabel_;
-      } else {
-        setIsVisible(actionLinkEl, false);
+        setIsVisible(actionLinkEl, true);
       }
-
-      this.noDestinationsMessageEl_ = this.getElement().getElementsByClassName(
-          DestinationList.Classes_.NO_PRINTERS_MESSAGE)[0];
-      this.footerEl_ = this.getElement().getElementsByClassName(
-          DestinationList.Classes_.FOOTER)[0];
-      this.destinationListItemContainer_ =
-          this.getElement().getElementsByClassName(
-              DestinationList.Classes_.PRINTER_ITEM_CONTAINER)[0];
     },
 
     /** @override */
     enterDocument: function() {
       print_preview.Component.prototype.enterDocument.call(this);
-      var actionLinkEl = this.getElement().getElementsByClassName(
-          DestinationList.Classes_.ACTION_LINK)[0];
-      var showAllButton = this.getElement().getElementsByClassName(
-          DestinationList.Classes_.SHOW_ALL_BUTTON)[0];
       this.tracker.add(
-          actionLinkEl, 'click', this.onActionLinkClick_.bind(this));
+          this.getChildElement('.action-link'),
+          'click',
+          this.onActionLinkClick_.bind(this));
       this.tracker.add(
-          showAllButton, 'click', this.setIsShowAll.bind(this, true));
-    },
-
-    /** @override */
-    exitDocument: function() {
-      print_preview.Component.prototype.exitDocument.call(this);
-      this.noDestinationsMessageEl_ = null;
-      this.footerEl_ = null;
-      this.destinationListItemContainer_ = null;
+          this.getChildElement('.show-all-button'),
+          'click',
+          this.setIsShowAll.bind(this, true));
     },
 
     /**
@@ -195,11 +181,8 @@ cr.define('print_preview', function() {
       this.renderDestinations_();
     },
 
-    /**
-     * Filters the destination list with the given query.
-     * @param {?string} query Query to filter the list with.
-     */
-    filter: function(query) {
+    /** @param {?string} query Query to update the filter with. */
+    updateSearchQuery: function(query) {
       this.query_ = query;
       this.renderDestinations_();
     },
@@ -210,9 +193,41 @@ cr.define('print_preview', function() {
      */
     setActionLinkTextInternal: function(text) {
       this.actionLinkLabel_ = text;
-      var actionLinkEl = this.getElement().getElementsByClassName(
-            DestinationList.Classes_.ACTION_LINK)[0];
-      actionLinkEl.textContent = this.actionLinkLabel_;
+      this.getChildElement('.action-link').textContent = text;
+    },
+
+    /**
+     * Sets the short list size without constraints.
+     * @protected
+     */
+    setShortListSizeInternal: function(size) {
+      this.shortListSize_ = size;
+      this.renderDestinations_();
+    },
+
+    /**
+     * Renders all destinations in the given list.
+     * @param {!Array.<print_preview.Destination>} destinations List of
+     *     destinations to render.
+     * @protected
+     */
+    renderListInternal: function(destinations) {
+      setIsVisible(this.getChildElement('.no-destinations-message'),
+                   destinations.length == 0);
+      setIsVisible(this.getChildElement('.destination-list > footer'), false);
+      var numItems = destinations.length;
+      if (destinations.length > this.shortListSize_ && !this.isShowAll_) {
+        numItems = this.shortListSize_ - 1;
+        this.getChildElement('.total').textContent =
+            localStrings.getStringF('destinationCount', destinations.length);
+        setIsVisible(this.getChildElement('.destination-list > footer'), true);
+      }
+      for (var i = 0; i < numItems; i++) {
+        var destListItem = new print_preview.DestinationListItem(
+            this.eventTarget_, destinations[i]);
+        this.addChild(destListItem);
+        destListItem.render(this.getChildElement('.destination-list > ul'));
+      }
     },
 
     /**
@@ -230,75 +245,7 @@ cr.define('print_preview', function() {
         }
       }, this);
 
-      // TODO(rltoscano): Sort filtered list?
-
-      if (filteredDests.length == 0) {
-        this.renderEmptyList_();
-      } else if (this.maxSize_) {
-        this.renderListWithMaxSize_(filteredDests);
-      } else {
-        this.renderListWithNoMaxSize_(filteredDests);
-      }
-    },
-
-    /**
-     * Renders a "No destinations found" element.
-     * @private
-     */
-    renderEmptyList_: function() {
-      setIsVisible(this.noDestinationsMessageEl_, true);
-      setIsVisible(this.footerEl_, false);
-    },
-
-    /**
-     * Renders the list of destinations up to the maximum size.
-     * @param {!Array.<print_preview.Destination>} filteredDests Filtered list
-     *     of print destinations to render.
-     * @private
-     */
-    renderListWithMaxSize_: function(filteredDests) {
-      setIsVisible(this.noDestinationsMessageEl_, false);
-      setIsVisible(this.footerEl_, false);
-      for (var dest, i = 0;
-           i < this.maxSize_ && (dest = filteredDests[i]);
-           i++) {
-        var destListItem = new print_preview.DestinationListItem(
-            this.eventTarget_, dest);
-        this.addChild(destListItem);
-        destListItem.render(this.destinationListItemContainer_);
-      }
-    },
-
-    /**
-     * Renders all destinations in the given list.
-     * @param {!Array.<print_preview.Destination>} filteredDests Filtered list
-     *     of print destinations to render.
-     * @private
-     */
-    renderListWithNoMaxSize_: function(filteredDests) {
-      setIsVisible(this.noDestinationsMessageEl_, false);
-      if (filteredDests.length <= DestinationList.SHORT_LIST_SIZE_ ||
-          this.isShowAll_) {
-        filteredDests.forEach(function(dest) {
-          var destListItem = new print_preview.DestinationListItem(
-              this.eventTarget_, dest);
-          this.addChild(destListItem);
-          destListItem.render(this.destinationListItemContainer_);
-        }, this);
-        setIsVisible(this.footerEl_, false);
-      } else {
-        for (var dest, i = 0; i < DestinationList.SHORT_LIST_SIZE_ - 1; i++) {
-          var destListItem = new print_preview.DestinationListItem(
-              this.eventTarget_, filteredDests[i]);
-          this.addChild(destListItem);
-          destListItem.render(this.destinationListItemContainer_);
-        }
-        setIsVisible(this.footerEl_, true);
-        var totalCountEl = this.getElement().getElementsByClassName(
-            DestinationList.Classes_.TOTAL)[0];
-        totalCountEl.textContent =
-            localStrings.getStringF('destinationCount', filteredDests.length);
-      }
+      this.renderListInternal(filteredDests);
     },
 
     /**
@@ -307,8 +254,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onActionLinkClick_: function() {
-      cr.dispatchSimpleEvent(
-          this, DestinationList.EventType.ACTION_LINK_ACTIVATED);
+      cr.dispatchSimpleEvent(this,
+                             DestinationList.EventType.ACTION_LINK_ACTIVATED);
     }
   };
 

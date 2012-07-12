@@ -2,32 +2,41 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.destination-list-header {
+.destination-list > header {
   -webkit-padding-start: 0;
   background-color: transparent;
+  padding-bottom: 8px;
 }
 
-.destination-list-title {
+.destination-list .title {
   -webkit-padding-end: 8px;
+  -webkit-padding-start: 4px;
   display: inline;
+  vertical-align: middle;
 }
 
-.destination-list-destination-list-item-container {
-  -webkit-padding-start: 0;
+.destination-list .action-link {
+  vertical-align: middle;
+}
+
+.destination-list > ul {
   list-style-type: none;
-  margin-bottom: 0;
+  margin: 0;
+  padding: 0;
 }
 
-.destination-list-no-destinations-message {
+.destination-list .no-destinations-message {
   -webkit-padding-start: 18px;
   color: #999;
-}
-
-.destination-list-footer {
-  -webkit-padding-start: 18px;
+  padding-bottom: 8px;
   padding-top: 8px;
 }
 
-.destination-list-total {
+.destination-list > footer {
+  -webkit-padding-start: 18px;
+  padding-top: 6px;
+}
+
+.destination-list .total {
   color: #999;
 }

@@ -134,12 +134,8 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterList', function() {
   localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
   this.nativeLayer_.dispatchEvent(localDestsSetEvent);
 
-  var recentList = $('destination-search').querySelector(
-      '.destination-search-recent-list ' +
-      '.destination-list-destination-list-item-container');
-  var localList = $('destination-search').querySelector(
-      '.destination-search-local-list ' +
-      '.destination-list-destination-list-item-container');
+  var recentList = $('destination-search').querySelector('.recent-list ul');
+  var localList = $('destination-search').querySelector('.local-list ul');
   assertNotEquals(null, recentList);
   assertEquals(1, recentList.childNodes.length);
   assertEquals('FooName',
@@ -184,15 +180,9 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterListCloudEmpty', function() {
   searchDoneEvent.email = 'foo@chromium.org';
   printPreview.cloudPrintInterface_.dispatchEvent(searchDoneEvent);
 
-  var recentList = $('destination-search').querySelector(
-      '.destination-search-recent-list ' +
-      '.destination-list-destination-list-item-container');
-  var localList = $('destination-search').querySelector(
-      '.destination-search-local-list ' +
-      '.destination-list-destination-list-item-container');
-  var cloudList = $('destination-search').querySelector(
-      '.destination-search-cloud-list ' +
-      '.destination-list-destination-list-item-container');
+  var recentList = $('destination-search').querySelector('.recent-list ul');
+  var localList = $('destination-search').querySelector('.local-list ul');
+  var cloudList = $('destination-search').querySelector('.cloud-list ul');
 
   assertNotEquals(null, recentList);
   assertEquals(1, recentList.childNodes.length);

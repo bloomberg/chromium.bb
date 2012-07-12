@@ -17,7 +17,6 @@ cr.define('print_preview', function() {
         this,
         eventTarget,
         localStrings.getString('cloudDestinationsTitle'),
-        0 /*opt_maxSize*/,
         localStrings.getString('manage'));
   };
 

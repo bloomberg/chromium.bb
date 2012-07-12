@@ -103,6 +103,7 @@ cr.define('print_preview', function() {
       var nameEl = this.getElement().getElementsByClassName(
           DestinationSettings.Classes_.NAME)[0];
       nameEl.textContent = destination.displayName;
+      nameEl.title = destination.displayName;
 
       var iconEl = this.getElement().getElementsByClassName(
           DestinationSettings.Classes_.ICON)[0];
@@ -111,6 +112,7 @@ cr.define('print_preview', function() {
       var locationEl = this.getElement().getElementsByClassName(
           DestinationSettings.Classes_.LOCATION)[0];
       locationEl.textContent = destination.location;
+      locationEl.title = destination.location;
 
       setIsVisible(this.getElement().querySelector('.throbber'), false);
       setIsVisible(
