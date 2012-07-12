@@ -16,8 +16,8 @@
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "grit/locale_settings.h"
@@ -214,7 +214,9 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
     // Add the extension title.
     NSRect frame = NSMakeRect(kTitleX, 0, 0, 0);
 
-    NSString* string = base::SysUTF16ToNSString(extension->title);
+    const string16 elidedTitle = ui::ElideText(
+        extension->title, gfx::Font(), kTitleLinkMaxWidth, ui::ELIDE_AT_END);
+    NSString* string = base::SysUTF16ToNSString(elidedTitle);
     cwsButton_.reset(CreateHyperlinkButton(string, frame));
     [cwsButton_ setAlignment:NSLeftTextAlignment];
     [cwsButton_ setTarget:controller];
