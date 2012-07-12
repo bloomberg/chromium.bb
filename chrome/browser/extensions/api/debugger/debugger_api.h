@@ -5,8 +5,8 @@
 // Defines the Chrome Extensions Debugger API functions for attaching debugger
 // to the page.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_DEBUGGER_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_DEBUGGER_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_DEBUGGER_DEBUGGER_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_DEBUGGER_DEBUGGER_API_H_
 
 #include <string>
 
@@ -80,4 +80,4 @@ class SendCommandDebuggerFunction : public DebuggerFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_DEBUGGER_API_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_DEBUGGER_DEBUGGER_API_H_

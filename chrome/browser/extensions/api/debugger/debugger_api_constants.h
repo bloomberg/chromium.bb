@@ -1,13 +1,13 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Constants used for the Cookies API.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_DEBUGGER_API_CONSTANTS_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_DEBUGGER_API_CONSTANTS_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_DEBUGGER_DEBUGGER_API_CONSTANTS_H_
+#define CHROME_BROWSER_EXTENSIONS_API_DEBUGGER_DEBUGGER_API_CONSTANTS_H_
 
-namespace extension_debugger_api_constants {
+namespace debugger_api_constants {
 
 // Keys.
 extern const char kCommandKey[];
@@ -28,6 +28,6 @@ extern const char kNotAttachedError[];
 extern const char kPermissionError[];
 extern const char kProtocolVersionNotSupportedError[];
 
-}  // namespace extension_debugger_api_constants
+}  // namespace debugger_api_constants
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_DEBUGGER_API_CONSTANTS_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_DEBUGGER_DEBUGGER_API_CONSTANTS_H_

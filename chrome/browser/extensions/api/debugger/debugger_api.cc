@@ -4,7 +4,7 @@
 
 // Implements the Chrome Extensions Debugger API.
 
-#include "chrome/browser/extensions/extension_debugger_api.h"
+#include "chrome/browser/extensions/api/debugger/debugger_api.h"
 
 #include <map>
 #include <set>
@@ -15,7 +15,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_debugger_api_constants.h"
+#include "chrome/browser/extensions/api/debugger/debugger_api_constants.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/infobars/infobar.h"
@@ -45,8 +45,7 @@ using content::DevToolsClientHost;
 using content::DevToolsManager;
 using content::WebContents;
 
-namespace keys = extension_debugger_api_constants;
-
+namespace keys = debugger_api_constants;
 
 class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:

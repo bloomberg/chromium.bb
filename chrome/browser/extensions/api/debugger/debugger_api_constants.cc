@@ -1,10 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_debugger_api_constants.h"
+#include "chrome/browser/extensions/api/debugger/debugger_api_constants.h"
 
-namespace extension_debugger_api_constants {
+namespace debugger_api_constants {
 
 const char kCommandKey[] = "command";
 const char kDataKey[] = "data";
@@ -26,4 +26,4 @@ const char kPermissionError[] = "You do not have permission to debug pages.";
 const char kProtocolVersionNotSupportedError[] =
     "Requested protocol version is not supported: *.";
 
-}  // namespace extension_debugger_api_constants
+}  // namespace debugger_api_constants
