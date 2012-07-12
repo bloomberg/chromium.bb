@@ -1342,6 +1342,8 @@ weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 			resource =
 				find_resource_for_client(&output->resource_list,
 							 client);
+		if (resource == NULL)
+			continue;
 		if (1 << output->id & entered)
 			wl_surface_send_enter(&es->surface.resource, resource);
 		if (1 << output->id & left)
