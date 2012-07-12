@@ -40,7 +40,7 @@ WebDataServiceFactory* WebDataServiceFactory::GetInstance() {
 }
 
 bool WebDataServiceFactory::ServiceRedirectedInIncognito() {
-  return false;
+  return true;
 }
 
 scoped_refptr<RefcountedProfileKeyedService>
