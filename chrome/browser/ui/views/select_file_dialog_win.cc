@@ -89,10 +89,9 @@ bool CallGetSaveFileName(OPENFILENAME* ofn) {
 // '*.something', for example '*.*' or it can be blank (which is treated as
 // *.*). |suggested_ext| should contain the extension without the dot (.) in
 // front, for example 'jpg'.
-extern std::wstring AppendExtensionIfNeeded(
-    const std::wstring& filename,
-    const std::wstring& filter_selected,
-    const std::wstring& suggested_ext) {
+std::wstring AppendExtensionIfNeeded(const std::wstring& filename,
+                                     const std::wstring& filter_selected,
+                                     const std::wstring& suggested_ext) {
   DCHECK(!filename.empty());
   std::wstring return_value = filename;
 

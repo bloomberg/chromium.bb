@@ -2,24 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/dialogs/select_file_dialog.h"
+#include "chrome/browser/ui/select_file_dialog.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/common/pref_names.h"
+#include "grit/generated_resources.h"
 #include "ui/base/dialogs/selected_file_info.h"
-#include "ui/base/dialogs/select_file_dialog_factory.h"
 #include "ui/base/dialogs/select_file_policy.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace {
-
-// Optional dialog factory. Leaked.
-ui::SelectFileDialogFactory* dialog_factory_ = NULL;
-
-}  // namespace
-
-namespace ui {
+using content::WebContents;
 
 SelectFileDialog::FileTypeInfo::FileTypeInfo() : include_all_files(false) {}
 
@@ -42,32 +41,14 @@ void SelectFileDialog::Listener::MultiFilesSelectedWithExtraInfo(
   MultiFilesSelected(file_paths, params);
 }
 
-// static
-void SelectFileDialog::SetFactory(ui::SelectFileDialogFactory* factory) {
-  delete dialog_factory_;
-  dialog_factory_ = factory;
+SelectFileDialog::SelectFileDialog(Listener* listener,
+                                   ui::SelectFilePolicy* policy)
+    : listener_(listener),
+      select_file_policy_(policy) {
+  DCHECK(listener_);
 }
 
-// TODO(erg): As each implementation moves into ui/base/dialogs, consolidate
-// the Create() methods into the following single method, which has to check
-// all options.
-#if defined(USE_AURA)
-// static
-SelectFileDialog* SelectFileDialog::Create(Listener* listener,
-                                           ui::SelectFilePolicy* policy) {
-  if (dialog_factory_) {
-    SelectFileDialog* dialog = dialog_factory_->Create(listener, policy);
-    if (dialog)
-      return dialog;
-  }
-
-  // TODO(erg): Proxy to LinuxUI here.
-
-  // TODO(erg): Add other OSs one by one here.
-
-  return NULL;
-}
-#endif
+SelectFileDialog::~SelectFileDialog() {}
 
 void SelectFileDialog::SelectFile(Type type,
                                   const string16& title,
@@ -101,18 +82,7 @@ bool SelectFileDialog::HasMultipleFileTypeChoices() {
   return HasMultipleFileTypeChoicesImpl();
 }
 
-SelectFileDialog::SelectFileDialog(Listener* listener,
-                                   ui::SelectFilePolicy* policy)
-    : listener_(listener),
-      select_file_policy_(policy) {
-  DCHECK(listener_);
-}
-
-SelectFileDialog::~SelectFileDialog() {}
-
 void SelectFileDialog::CancelFileSelection(void* params) {
   if (listener_)
     listener_->FileSelectionCanceled(params);
 }
-
-}  // namespace ui

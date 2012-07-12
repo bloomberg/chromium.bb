@@ -80,11 +80,20 @@ scoped_refptr<SelectFileDialogExtension> PendingDialog::Find(int32 tab_id) {
 
 }  // namespace
 
-/////////////////////////////////////////////////////////////////////////////
-
+// Linking this implementation of SelectFileDialog::Create into the target
+// selects FileManagerDialog as the dialog of choice.
 // TODO(jamescook): Move this into a new file shell_dialogs_chromeos.cc
 // TODO(jamescook): Change all instances of SelectFileDialog::Create to return
 // scoped_refptr<SelectFileDialog> as object is ref-counted.
+// static
+SelectFileDialog* SelectFileDialog::Create(Listener* listener,
+                                           ui::SelectFilePolicy* policy) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return SelectFileDialogExtension::Create(listener, policy);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
 // static
 SelectFileDialogExtension* SelectFileDialogExtension::Create(
     Listener* listener,

@@ -26,10 +26,6 @@ class DictionaryValue;
 class RefCountedBytes;
 }
 
-namespace content {
-class WebContents;
-}
-
 namespace printing {
 struct PageSizeMargins;
 class PrintBackend;

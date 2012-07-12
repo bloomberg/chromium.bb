@@ -19,7 +19,6 @@ class Profile;
 
 namespace content {
 class RenderViewHost;
-class WebContents;
 struct FileChooserParams;
 }
 

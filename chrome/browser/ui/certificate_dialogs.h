@@ -8,10 +8,6 @@
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "net/base/x509_certificate.h"
 
-namespace content {
-class WebContents;
-}
-
 void ShowCertSelectFileDialog(SelectFileDialog* select_file_dialog,
                               SelectFileDialog::Type type,
                               const FilePath& suggested_path,
