@@ -4,7 +4,6 @@
 
 #include "ash/wm/app_list_controller.h"
 
-#include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -251,13 +250,8 @@ void AppListController::OnWindowFocused(aura::Window* window) {
     aura::Window* applist_container = Shell::GetContainer(
         Shell::GetPrimaryRootWindow(),
         kShellWindowId_AppListContainer);
-    aura::Window* bubble_container = Shell::GetContainer(
-        Shell::GetPrimaryRootWindow(),
-        kShellWindowId_SettingBubbleContainer);
-    if (window->parent() != applist_container &&
-        window->parent() != bubble_container) {
+    if (window->parent() != applist_container)
       SetVisible(false);
-    }
   }
 }
 
