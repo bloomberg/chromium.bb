@@ -877,7 +877,8 @@ void MessageLoopRunner::Quit() {
 TestWebSocketServer::TestWebSocketServer()
     : started_(false),
       port_(kDefaultWsPort),
-      secure_(false) {
+      secure_(false),
+      client_authentication_(false) {
 #if defined(OS_POSIX)
   process_group_id_ = base::kNullProcessHandle;
 #endif
@@ -890,6 +891,10 @@ int TestWebSocketServer::UseRandomPort() {
 
 void TestWebSocketServer::UseTLS() {
   secure_ = true;
+}
+
+void TestWebSocketServer::UseClientAuthentication() {
+  client_authentication_ = true;
 }
 
 bool TestWebSocketServer::Start(const FilePath& root_directory) {
@@ -908,6 +913,13 @@ bool TestWebSocketServer::Start(const FilePath& root_directory) {
   if (!temp_dir_.CreateUniqueTempDir()) {
     LOG(ERROR) << "Unable to create a temporary directory.";
     return false;
+  }
+  if (client_authentication_) {
+    FilePath cacert_path(root_directory);
+    cmd_line->AppendArg("--ca-certificate");
+    cacert_path = cacert_path.Append(FILE_PATH_LITERAL("ssl"));
+    cacert_path = cacert_path.Append(FILE_PATH_LITERAL("cacert.pem"));
+    cmd_line->AppendArgNative(cacert_path.value());
   }
   cmd_line->AppendArgNative(FILE_PATH_LITERAL("--output-dir=") +
                             temp_dir_.path().value());
