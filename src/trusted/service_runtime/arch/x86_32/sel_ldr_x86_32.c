@@ -48,7 +48,7 @@ int NaClMakePcrelThunk(struct NaClApp *nap) {
     retval = 0;
     goto cleanup;
   }
-  NaClLog(LOG_INFO, "NaClMakePcrelThunk: got addr 0x%"NACL_PRIxPTR"\n",
+  NaClLog(2, "NaClMakePcrelThunk: got addr 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) thunk_addr);
 
   if (0 != (error = NaCl_mprotect(thunk_addr,
