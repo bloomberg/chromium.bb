@@ -13,7 +13,6 @@ import json
 import logging
 import optparse
 import os
-import posixpath
 import re
 import shutil
 import stat
@@ -451,13 +450,13 @@ def main():
 
   if options.hash:
     # First calculate the reference to it.
-    options.manifest = posixpath.join(options.remote, options.hash)
+    options.manifest = '%s/%s' % (options.remote.rstrip('/'), options.hash)
   try:
     manifest = json.load(open_remote(options.manifest))
   except IOError as e:
     parser.error(
-        'Failed to read manifest %s; remote:%s; %s' %
-        (options.manifest, options.remote, str(e)))
+        'Failed to read manifest %s; remote:%s; hash:%s; %s' %
+        (options.manifest, options.remote, options.hash, str(e)))
 
   return run_tha_test(
       manifest, os.path.abspath(options.cache), options.remote,
