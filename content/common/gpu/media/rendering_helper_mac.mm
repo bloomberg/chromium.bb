@@ -45,7 +45,9 @@ static void SetupGLViewPort(NSOpenGLView* gl_view, int width, int height) {
 }
 
 // Draw the given texture to the OpenGL view.
-static void DrawTexture(NSOpenGLView* gl_view, GLuint texture_id) {
+static void DrawTexture(NSOpenGLView* gl_view,
+                        GLuint texture_id,
+                        bool suppress_swap_to_display) {
   CGLContextObj cgl_ctx = GetCGLContext(gl_view);
   [gl_view lockFocus];
 
@@ -70,7 +72,8 @@ static void DrawTexture(NSOpenGLView* gl_view, GLuint texture_id) {
   glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
   glDisable(GL_TEXTURE_RECTANGLE_ARB);
 
-  [[gl_view openGLContext] flushBuffer];
+  if (!suppress_swap_to_display)
+    [[gl_view openGLContext] flushBuffer];
   [gl_view unlockFocus];
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
 }
@@ -102,6 +105,7 @@ class RenderingHelperMac : public RenderingHelper {
   MessageLoop* message_loop_;
   int width_;
   int height_;
+  bool suppress_swap_to_display_;
   scoped_nsobject<NSWindow> window_;
   scoped_nsobject<NSOpenGLView> gl_view_;
   base::mac::ScopedNSAutoreleasePool pool_;
@@ -122,7 +126,8 @@ void RenderingHelper::InitializePlatform() {
 RenderingHelperMac::RenderingHelperMac()
     : message_loop_(NULL),
       width_(0),
-      height_(0) {
+      height_(0),
+      suppress_swap_to_display_(false) {
 }
 
 RenderingHelperMac::~RenderingHelperMac() {
@@ -146,12 +151,9 @@ void RenderingHelperMac::Initialize(bool suppress_swap_to_display,
   // only supports a single instance only one window should be created.
   CHECK_EQ(num_windows, 1);
 
-  // Suppress swap is only used when multiple NALUs are sent to a single
-  // Decode() call. This is also not support by the Mac API.
-  CHECK(!suppress_swap_to_display);
-
   width_ = width;
   height_ = height;
+  suppress_swap_to_display_ = suppress_swap_to_display;
   message_loop_ = MessageLoop::current();
 
   // Create a window to host the OpenGL contents.
@@ -199,7 +201,7 @@ void RenderingHelperMac::CreateTexture(int window_id,
 
 void RenderingHelperMac::RenderTexture(GLuint texture_id) {
   CHECK_EQ(MessageLoop::current(), message_loop_);
-  DrawTexture(gl_view_, texture_id);
+  DrawTexture(gl_view_, texture_id, suppress_swap_to_display_);
 }
 
 void RenderingHelperMac::DeleteTexture(GLuint texture_id) {

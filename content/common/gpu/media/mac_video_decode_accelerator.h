@@ -123,6 +123,11 @@ class CONTENT_EXPORT MacVideoDecodeAccelerator
 
   // Utility to build the AVC configuration record.
   content::AVCConfigRecordBuilder config_record_builder_;
+
+  // Maps a bitstream ID to the number of NALUs that are being decoded for
+  // that bitstream. This is used to ensure that NotifyEndOfBitstreamBuffer()
+  // is called after all NALUs contained in a bitstream have been decoded.
+  std::map<int32, int> bitstream_nalu_count_;
 };
 
 #endif  // CONTENT_COMMON_GPU_MEDIA_VIDEO_DECODE_ACCELERATOR_MAC_H_

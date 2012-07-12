@@ -95,7 +95,8 @@ static bool BindImageToTexture(CGLContextObj context,
 MacVideoDecodeAccelerator::MacVideoDecodeAccelerator(
     media::VideoDecodeAccelerator::Client* client)
     : client_(client),
-      cgl_context_(NULL) {
+      cgl_context_(NULL),
+      did_build_config_record_(false) {
 }
 
 void MacVideoDecodeAccelerator::SetCGLContext(CGLContextObj cgl_context) {
@@ -131,9 +132,11 @@ void MacVideoDecodeAccelerator::Decode(
     content::H264NALU nalu;
     content::H264Parser::Result result = h264_parser_.AdvanceToNextNALU(&nalu);
     if (result == content::H264Parser::kEOStream) {
-      MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-          &MacVideoDecodeAccelerator::NotifyInputBufferRead, this,
-          bitstream_buffer.id()));
+      if (bitstream_nalu_count_.count(bitstream_buffer.id()) == 0) {
+        MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+            &MacVideoDecodeAccelerator::NotifyInputBufferRead, this,
+            bitstream_buffer.id()));
+      }
       return;
     }
     RETURN_ON_FAILURE(result == content::H264Parser::kOk,
@@ -154,6 +157,7 @@ void MacVideoDecodeAccelerator::Decode(
     // to the decoder.
     if (vda_support_.get() && nalu.nal_unit_type >= 1 &&
         nalu.nal_unit_type <= 5) {
+      bitstream_nalu_count_[bitstream_buffer.id()]++;
       DecodeNALU(nalu, bitstream_buffer.id());
     }
   }
@@ -238,10 +242,14 @@ void MacVideoDecodeAccelerator::OnFrameReady(
     decoded_images_.push_back(info);
     SendImages();
   }
-  // TODO(sail): this assumes Decode() is handed a single NALU at a time. Make
-  // that assumption go away. See VideoDecodeAcceleratorTest.DecodeVariations
-  // for an example of a test the fails due to this assumption.
-  client_->NotifyEndOfBitstreamBuffer(bitstream_buffer_id);
+  std::map<int32, int>::iterator bitstream_count_it =
+      bitstream_nalu_count_.find(bitstream_buffer_id);
+  if (--bitstream_count_it->second == 0) {
+    bitstream_nalu_count_.erase(bitstream_count_it);
+    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+        &MacVideoDecodeAccelerator::NotifyInputBufferRead, this,
+        bitstream_buffer_id));
+  }
 }
 
 void MacVideoDecodeAccelerator::SendImages() {

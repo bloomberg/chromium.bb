@@ -73,7 +73,7 @@ namespace {
 // An empty value for a numeric field means "ignore".
 #if defined(OS_MACOSX)
 const FilePath::CharType* test_video_data =
-    FILE_PATH_LITERAL("test-25fps_high.h264:1280:720:249:252:50:175:4");
+    FILE_PATH_LITERAL("test-25fps_high.h264:1280:720:250:252:50:100:4");
 #else
 const FilePath::CharType* test_video_data =
     FILE_PATH_LITERAL("test-25fps.h264:320:240:250:258:50:175:1");
@@ -590,7 +590,11 @@ static void AssertWaitForStateOrDeleted(ClientStateNotification* note,
 // We assert a minimal number of concurrent decoders we expect to succeed.
 // Different platforms can support more concurrent decoders, so we don't assert
 // failure above this.
+#if defined(OS_MACOSX)
+enum { kMinSupportedNumConcurrentDecoders = 1 };
+#else
 enum { kMinSupportedNumConcurrentDecoders = 3 };
+#endif
 
 // Test the most straightforward case possible: data is decoded from a single
 // chunk and rendered to the screen.
@@ -789,7 +793,9 @@ INSTANTIATE_TEST_CASE_P(
         MakeTuple(1, 1, 10, 1, END_OF_STREAM_RESET, CS_RESET),
         // Tests queuing.
         MakeTuple(1, 1, 15, 1, END_OF_STREAM_RESET, CS_RESET),
-        MakeTuple(1, 3, 1, 1, END_OF_STREAM_RESET, CS_RESET),
+        // +0 hack below to promote enum to int.
+        MakeTuple(1, kMinSupportedNumConcurrentDecoders + 0, 1, 1,
+                  END_OF_STREAM_RESET, CS_RESET),
         MakeTuple(2, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET),
         MakeTuple(3, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET),
         MakeTuple(5, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET),
