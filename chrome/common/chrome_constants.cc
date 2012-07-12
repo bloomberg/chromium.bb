@@ -193,8 +193,6 @@ const FilePath::CharType kGDataCacheDirname[] = FPL("GCache");
 
 const bool kRecordModeEnabled = true;
 
-const int kHistogramSynchronizerReservedSequenceNumber = 0;
-
 const char* const kUnknownLanguageCode = "und";
 
 const int kJavascriptMessageExpectedDelay = 1000;

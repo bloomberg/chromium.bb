@@ -8,6 +8,7 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
+#include "content/browser/histogram_internals_request_job.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/browser/net/view_blob_internals_job_factory.h"
@@ -118,6 +119,12 @@ class DeveloperProtocolHandler
       return new TcmallocInternalsRequestJob(request);
     }
 #endif
+
+    // Next check for chrome://histograms/, which uses its own job type.
+    if (request->url().SchemeIs(chrome::kChromeUIScheme) &&
+        request->url().host() == chrome::kChromeUIHistogramHost) {
+      return new HistogramInternalsRequestJob(request);
+    }
 
     return NULL;
   }

@@ -19,7 +19,6 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor.h"
@@ -76,8 +75,6 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_LaunchNaCl, OnLaunchNaCl)
 #endif
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DnsPrefetch, OnDnsPrefetch)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RendererHistograms,
-                        OnRendererHistograms)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ResourceTypeStats,
                         OnResourceTypeStats)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_UpdatedCacheStats,
@@ -178,12 +175,6 @@ void ChromeRenderMessageFilter::OnDnsPrefetch(
     const std::vector<std::string>& hostnames) {
   if (profile_->GetNetworkPredictor())
     profile_->GetNetworkPredictor()->DnsPrefetchList(hostnames);
-}
-
-void ChromeRenderMessageFilter::OnRendererHistograms(
-    int sequence_number,
-    const std::vector<std::string>& histograms) {
-  HistogramSynchronizer::DeserializeHistogramList(sequence_number, histograms);
 }
 
 void ChromeRenderMessageFilter::OnResourceTypeStats(

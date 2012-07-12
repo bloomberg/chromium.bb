@@ -100,13 +100,6 @@ extern const FilePath::CharType kGDataCacheDirname[];
 
 extern const bool kRecordModeEnabled;
 
-// Most sequence numbers are used by a renderer when responding to a browser
-// request for histogram data.  This reserved number is used when a renderer
-// sends an unprovoked update, such as after a page has been loaded.  Using
-// this reserved constant avoids any chance of confusion with a response having
-// a browser-supplied sequence number.
-extern const int kHistogramSynchronizerReservedSequenceNumber;
-
 // The language code used when the language of a page could not be detected.
 // (Matches what the CLD -Compact Language Detection- library reports.)
 extern const char* const kUnknownLanguageCode;

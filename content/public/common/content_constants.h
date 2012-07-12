@@ -46,6 +46,13 @@ extern const char kStatsFilename[];
 extern const int kStatsMaxThreads;
 extern const int kStatsMaxCounters;
 
+// Most sequence numbers are used by a renderer when responding to a browser
+// request for histogram data.  This reserved number is used when a renderer
+// sends an unprovoked update, such as after a page has been loaded.  Using
+// this reserved constant avoids any chance of confusion with a response having
+// a browser-supplied sequence number.
+CONTENT_EXPORT extern const int kHistogramSynchronizerReservedSequenceNumber;
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_CONTENT_CONSTANTS_H_

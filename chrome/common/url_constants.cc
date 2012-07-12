@@ -157,7 +157,6 @@ const char kChromeUIGpuInternalsHost[] = "gpu-internals";
 const char kChromeUIHangHost[] = "hang";
 const char kChromeUIHelpFrameHost[] = "help-frame";
 const char kChromeUIHelpHost[] = "help";
-const char kChromeUIHistogramsHost[] = "histograms";
 const char kChromeUIHistoryHost[] = "history";
 const char kChromeUIHistoryFrameHost[] = "history-frame";
 const char kChromeUIInputWindowDialogHost[] = "input-window-dialog";

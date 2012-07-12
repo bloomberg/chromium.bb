@@ -14,6 +14,7 @@
 #include "base/process_util.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "content/browser/histogram_message_filter.h"
 #include "content/browser/profiler_message_filter.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/browser/trace_message_filter.h"
@@ -85,6 +86,7 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
   child_process_host_.reset(ChildProcessHost::Create(this));
   child_process_host_->AddFilter(new TraceMessageFilter);
   child_process_host_->AddFilter(new content::ProfilerMessageFilter(type));
+  child_process_host_->AddFilter(new content::HistogramMessageFilter());
 
   g_child_process_list.Get().push_back(this);
   content::GetContentClient()->browser()->BrowserChildProcessHostCreated(this);

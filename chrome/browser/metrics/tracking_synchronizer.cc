@@ -86,7 +86,6 @@ class TrackingSynchronizer::RequestContext {
       RequestContext::Unregister(sequence_number_);
   }
 
-
   // Register |callback_object| in |outstanding_requests_| map for the given
   // |sequence_number|.
   static RequestContext* Register(
@@ -116,7 +115,7 @@ class TrackingSynchronizer::RequestContext {
     return request;
   }
 
-  // Delete the entry for the given sequence_number| from
+  // Delete the entry for the given |sequence_number| from
   // |outstanding_requests_| map. This method is called when all changes have
   // been acquired, or when the wait time expires (whichever is sooner).
   static void Unregister(int sequence_number) {
@@ -144,7 +143,6 @@ class TrackingSynchronizer::RequestContext {
                          unresponsive_processes);
   }
 
-
   // Delete all the entries in |outstanding_requests_| map.
   static void OnShutdown() {
     // Just in case we have any pending tasks, clear them out.
@@ -171,13 +169,14 @@ class TrackingSynchronizer::RequestContext {
 
   // Map of all outstanding RequestContexts, from sequence_number_ to
   // RequestContext.
-  static base::LazyInstance<RequestContextMap> outstanding_requests_;
+  static base::LazyInstance<RequestContextMap>::Leaky outstanding_requests_;
 };
 
 // static
-base::LazyInstance<TrackingSynchronizer::RequestContext::RequestContextMap>
-    TrackingSynchronizer::RequestContext::outstanding_requests_ =
-        LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance
+    <TrackingSynchronizer::RequestContext::RequestContextMap>::Leaky
+        TrackingSynchronizer::RequestContext::outstanding_requests_ =
+            LAZY_INSTANCE_INITIALIZER;
 
 // TrackingSynchronizer methods and members.
 

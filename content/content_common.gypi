@@ -122,6 +122,8 @@
     'common/appcache/appcache_dispatcher.h',
     'common/appcache_messages.h',
     'common/browser_plugin_messages.h',
+    'common/child_histogram_message_filter.cc',
+    'common/child_histogram_message_filter.h',
     'common/child_process.cc',
     'common/child_process.h',
     'common/child_process_host_impl.cc',

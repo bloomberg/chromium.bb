@@ -227,8 +227,6 @@
         'renderer/print_web_view_helper_linux.cc',
         'renderer/print_web_view_helper_mac.mm',
         'renderer/print_web_view_helper_win.cc',
-        'renderer/renderer_histogram_snapshots.cc',
-        'renderer/renderer_histogram_snapshots.h',
         'renderer/safe_browsing/feature_extractor_clock.cc',
         'renderer/safe_browsing/feature_extractor_clock.h',
         'renderer/safe_browsing/features.cc',

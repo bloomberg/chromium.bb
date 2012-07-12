@@ -167,7 +167,6 @@
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/memory_details.h"
-#include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_log_serializer.h"
 #include "chrome/browser/metrics/metrics_reporting_scheduler.h"
@@ -188,6 +187,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/child_process_data.h"
+#include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
@@ -1210,9 +1210,9 @@ void MetricsService::OnMemoryDetailCollectionDone() {
   base::StatisticsRecorder::CollectHistogramStats("Browser");
 
   // Set up the callback to task to call after we receive histograms from all
-  // renderer processes. Wait time specifies how long to wait before absolutely
+  // child processes. Wait time specifies how long to wait before absolutely
   // calling us back on the task.
-  HistogramSynchronizer::FetchRendererHistogramsAsynchronously(
+  content::FetchHistogramsAsynchronously(
       MessageLoop::current(), callback,
       base::TimeDelta::FromMilliseconds(kMaxHistogramGatheringWaitDuration));
 }

@@ -18,7 +18,6 @@
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
-#include "base/metrics/histogram.h"
 #include "base/metrics/stats_table.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
@@ -33,7 +32,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/memory_details.h"
-#include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/plugin_prefs.h"
@@ -800,34 +798,6 @@ class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
   DISALLOW_COPY_AND_ASSIGN(AboutDnsHandler);
 };
 
-std::string AboutHistograms(const std::string& query) {
-  TimeDelta wait_time = TimeDelta::FromMilliseconds(10000);
-
-#ifndef NDEBUG
-  base::StatisticsRecorder::CollectHistogramStats("Browser");
-#endif
-
-  HistogramSynchronizer* current_synchronizer =
-      HistogramSynchronizer::CurrentSynchronizer();
-  DCHECK(current_synchronizer != NULL);
-  current_synchronizer->FetchRendererHistogramsSynchronously(wait_time);
-
-  std::string unescaped_query;
-  std::string unescaped_title("About Histograms");
-  if (!query.empty()) {
-    unescaped_query = net::UnescapeURLComponent(query,
-                                                net::UnescapeRule::NORMAL);
-    unescaped_title += " - " + unescaped_query;
-  }
-
-  std::string data;
-  AppendHeader(&data, 0, unescaped_title);
-  AppendBody(&data);
-  base::StatisticsRecorder::WriteHTMLGraph(unescaped_query, &data);
-  AppendFooter(&data);
-  return data;
-}
-
 void FinishMemoryDataRequest(const std::string& path,
                              AboutUIHTMLSource* source,
                              int request_id) {
@@ -1406,8 +1376,6 @@ void AboutUIHTMLSource::StartDataRequest(const std::string& path,
   } else if (host == chrome::kChromeUIDNSHost) {
     AboutDnsHandler::Start(this, request_id);
     return;
-  } else if (host == chrome::kChromeUIHistogramsHost) {
-    response = AboutHistograms(path);
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   } else if (host == chrome::kChromeUILinuxProxyConfigHost) {
     response = AboutLinuxProxyConfig();

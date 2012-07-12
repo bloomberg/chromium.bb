@@ -20,6 +20,7 @@ class QuotaDispatcher;
 class SocketStreamDispatcher;
 
 namespace content {
+class ChildHistogramMessageFilter;
 class ResourceDispatcher;
 }
 
@@ -80,6 +81,10 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   // Safe to call on any thread, as long as it's guaranteed that the thread's
   // lifetime is less than the main thread.
   IPC::SyncMessageFilter* sync_message_filter();
+
+  content::ChildHistogramMessageFilter* child_histogram_message_filter() const {
+    return histogram_message_filter_.get();
+  }
 
   MessageLoop* message_loop();
 
@@ -145,6 +150,8 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   scoped_ptr<FileSystemDispatcher> file_system_dispatcher_;
 
   scoped_ptr<QuotaDispatcher> quota_dispatcher_;
+
+  scoped_refptr<content::ChildHistogramMessageFilter> histogram_message_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildThread);
 };

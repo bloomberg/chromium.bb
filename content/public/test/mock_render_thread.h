@@ -73,6 +73,7 @@ class MockRenderThread : public RenderThread {
   virtual void PreCacheFont(const LOGFONT& log_font) OVERRIDE;
   virtual void ReleaseCachedFonts() OVERRIDE;
 #endif
+  virtual void UpdateHistograms(int sequence_number) OVERRIDE;
 
   //////////////////////////////////////////////////////////////////////////
   // The following functions are called by the test itself.

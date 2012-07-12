@@ -35,6 +35,7 @@ const char kChromeUIBlobInternalsHost[] = "blob-internals";
 const char kChromeUIBrowserCrashHost[] = "inducebrowsercrashforrealz";
 const char kChromeUINetworkViewCacheHost[] = "view-http-cache";
 const char kChromeUITcmallocHost[] = "tcmalloc";
+const char kChromeUIHistogramHost[] = "histograms";
 const char kChromeUICrashURL[] = "chrome://crash";
 const char kChromeUIGpuCleanURL[] = "chrome://gpuclean";
 const char kChromeUIGpuCrashURL[] = "chrome://gpucrash";

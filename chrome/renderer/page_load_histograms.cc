@@ -8,12 +8,12 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
-#include "chrome/renderer/renderer_histogram_snapshots.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/renderer/document_state.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -118,13 +118,10 @@ enum AbandonType {
 
 }  // namespace
 
-PageLoadHistograms::PageLoadHistograms(
-    content::RenderView* render_view,
-    RendererHistogramSnapshots* histogram_snapshots)
+PageLoadHistograms::PageLoadHistograms(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       cross_origin_access_count_(0),
-      same_origin_access_count_(0),
-      histogram_snapshots_(histogram_snapshots) {
+      same_origin_access_count_(0) {
 }
 
 void PageLoadHistograms::Dump(WebFrame* frame) {
@@ -942,8 +939,8 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   // TODO(jar) BUG=33233: This needs to be moved to a PostDelayedTask, and it
   // should post when the onload is complete, so that it doesn't interfere with
   // the next load.
-  histogram_snapshots_->SendHistograms(
-      chrome::kHistogramSynchronizerReservedSequenceNumber);
+  content::RenderThread::Get()->UpdateHistograms(
+      content::kHistogramSynchronizerReservedSequenceNumber);
 }
 
 void PageLoadHistograms::ResetCrossFramePropertyAccess() {

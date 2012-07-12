@@ -21,7 +21,6 @@
 class BrowserProcessImpl;
 class ChromeBrowserMainExtraParts;
 class FieldTrialSynchronizer;
-class HistogramSynchronizer;
 class MetricsService;
 class PrefService;
 class Profile;
@@ -195,7 +194,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   scoped_ptr<StartupBrowserCreator> browser_creator_;
   scoped_ptr<BrowserProcessImpl> browser_process_;
-  scoped_refptr<HistogramSynchronizer> histogram_synchronizer_;
   scoped_refptr<chrome_browser_metrics::TrackingSynchronizer>
       tracking_synchronizer_;
   scoped_ptr<ProcessSingleton> process_singleton_;

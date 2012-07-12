@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,12 +12,9 @@ namespace content {
 class DocumentState;
 }
 
-class RendererHistogramSnapshots;
-
 class PageLoadHistograms : public content::RenderViewObserver {
  public:
-  PageLoadHistograms(content::RenderView* render_view,
-                     RendererHistogramSnapshots* histogram_snapshots);
+  explicit PageLoadHistograms(content::RenderView* render_view);
 
  private:
   // RenderViewObserver implementation.
@@ -54,8 +51,6 @@ class PageLoadHistograms : public content::RenderViewObserver {
   // These are per-page-load counts, reset to 0 after they are dumped.
   int cross_origin_access_count_;
   int same_origin_access_count_;
-
-  RendererHistogramSnapshots* histogram_snapshots_;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadHistograms);
 };

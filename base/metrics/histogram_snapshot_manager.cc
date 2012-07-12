@@ -2,31 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/metrics/histogram_sender.h"
+#include "base/metrics/histogram_snapshot_manager.h"
 
 using base::Histogram;
 using base::StatisticsRecorder;
 
-HistogramSender::HistogramSender() {}
+namespace base {
 
-HistogramSender::~HistogramSender() {}
+HistogramSnapshotManager::HistogramSnapshotManager(
+    HistogramFlattener* histogram_flattener)
+    : histogram_flattener_(histogram_flattener) {
+  DCHECK(histogram_flattener_);
+}
 
-void HistogramSender::TransmitAllHistograms(Histogram::Flags flag_to_set,
-                                            bool send_only_uma) {
+HistogramSnapshotManager::~HistogramSnapshotManager() {}
+
+void HistogramSnapshotManager::PrepareDeltas(Histogram::Flags flag_to_set,
+                                             bool record_only_uma) {
   StatisticsRecorder::Histograms histograms;
   StatisticsRecorder::GetHistograms(&histograms);
   for (StatisticsRecorder::Histograms::const_iterator it = histograms.begin();
        histograms.end() != it;
        ++it) {
     (*it)->SetFlags(flag_to_set);
-    if (send_only_uma &&
+    if (record_only_uma &&
         0 == ((*it)->flags() & Histogram::kUmaTargetedHistogramFlag))
       continue;
-    TransmitHistogram(**it);
+    PrepareDelta(**it);
   }
 }
 
-void HistogramSender::TransmitHistogram(const Histogram& histogram) {
+void HistogramSnapshotManager::PrepareDelta(const Histogram& histogram) {
+  DCHECK(histogram_flattener_);
+
   // Get up-to-date snapshot of sample stats.
   Histogram::SampleSet snapshot;
   histogram.SnapshotSample(&snapshot);
@@ -47,20 +55,20 @@ void HistogramSender::TransmitHistogram(const Histogram& histogram) {
 
   if (corruption) {
     NOTREACHED();
-    InconsistencyDetected(corruption);
-    // Don't send corrupt data to metrics survices.
+    histogram_flattener_->InconsistencyDetected(corruption);
+    // Don't record corrupt data to metrics survices.
     if (NULL == inconsistencies_.get())
       inconsistencies_.reset(new ProblemMap);
     int old_corruption = (*inconsistencies_)[histogram_name];
     if (old_corruption == (corruption | old_corruption))
       return;  // We've already seen this corruption for this histogram.
     (*inconsistencies_)[histogram_name] |= corruption;
-    UniqueInconsistencyDetected(corruption);
+    histogram_flattener_->UniqueInconsistencyDetected(corruption);
     return;
   }
 
-  // Find the already sent stats, or create an empty set.  Remove from our
-  // snapshot anything that we've already sent.
+  // Find the already recorded stats, or create an empty set. Remove from our
+  // snapshot anything that we've already recorded.
   LoggedSampleMap::iterator it = logged_samples_.find(histogram_name);
   Histogram::SampleSet* already_logged;
   if (logged_samples_.end() == it) {
@@ -70,14 +78,14 @@ void HistogramSender::TransmitHistogram(const Histogram& histogram) {
   } else {
     already_logged = &(it->second);
     int64 discrepancy(already_logged->TotalCount() -
-                    already_logged->redundant_count());
+                      already_logged->redundant_count());
     if (discrepancy) {
       NOTREACHED();  // Already_logged has become corrupt.
       int problem = static_cast<int>(discrepancy);
       if (problem != discrepancy)
         problem = INT_MAX;
-      SnapshotProblemResolved(problem);
-      // With no valid baseline, we'll act like we've sent everything in our
+      histogram_flattener_->SnapshotProblemResolved(problem);
+      // With no valid baseline, we'll act like we've recorded everything in our
       // snapshot.
       already_logged->Subtract(*already_logged);
       already_logged->Add(snapshot);
@@ -88,8 +96,9 @@ void HistogramSender::TransmitHistogram(const Histogram& histogram) {
 
   // Snapshot now contains only a delta to what we've already_logged.
   if (snapshot.redundant_count() > 0) {
-    TransmitHistogramDelta(histogram, snapshot);
+    histogram_flattener_->RecordDelta(histogram, snapshot);
     // Add new data into our running total.
     already_logged->Add(snapshot);
   }
 }
+}  // namespace base

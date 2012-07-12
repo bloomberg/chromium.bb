@@ -238,10 +238,6 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_LoadBlockedPlugins,
 // resource types.
 IPC_MESSAGE_CONTROL0(ChromeViewMsg_GetCacheResourceStats)
 
-// Asks the renderer to send back Histograms.
-IPC_MESSAGE_CONTROL1(ChromeViewMsg_GetRendererHistograms,
-                     int /* sequence number of Renderer Histograms. */)
-
 // Tells the renderer to create a FieldTrial, and by using a 100% probability
 // for the FieldTrial, forces the FieldTrial to have assigned group name.
 IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetFieldTrialGroup,

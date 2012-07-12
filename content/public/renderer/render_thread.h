@@ -104,6 +104,8 @@ class CONTENT_EXPORT RenderThread : public IPC::Sender {
   virtual void SetIdleNotificationDelayInMs(
       int64 idle_notification_delay_in_ms) = 0;
 
+  virtual void UpdateHistograms(int sequence_number) = 0;
+
 #if defined(OS_WIN)
   // Request that the given font be loaded by the browser so it's cached by the
   // OS. Please see ChildProcessHost::PreCacheFont for details.

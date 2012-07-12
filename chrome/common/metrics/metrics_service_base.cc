@@ -10,7 +10,8 @@
 
 using base::Histogram;
 
-MetricsServiceBase::MetricsServiceBase() {
+MetricsServiceBase::MetricsServiceBase()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(histogram_snapshot_manager_(this)) {
 }
 
 MetricsServiceBase::~MetricsServiceBase() {
@@ -31,10 +32,10 @@ const char MetricsServiceBase::kMimeTypeProto[] =
 
 void MetricsServiceBase::RecordCurrentHistograms() {
   DCHECK(log_manager_.current_log());
-  TransmitAllHistograms(base::Histogram::kNoFlags, true);
+  histogram_snapshot_manager_.PrepareDeltas(base::Histogram::kNoFlags, true);
 }
 
-void MetricsServiceBase::TransmitHistogramDelta(
+void MetricsServiceBase::RecordDelta(
     const base::Histogram& histogram,
     const base::Histogram::SampleSet& snapshot) {
   log_manager_.current_log()->RecordHistogramDelta(histogram, snapshot);

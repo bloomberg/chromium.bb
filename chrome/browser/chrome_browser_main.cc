@@ -52,7 +52,6 @@
 #include "chrome/browser/language_usage_metrics.h"
 #include "chrome/browser/managed_mode.h"
 #include "chrome/browser/metrics/field_trial_synchronizer.h"
-#include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/thread_watcher.h"
@@ -1402,11 +1401,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
   InitializeNetworkOptions(parsed_command_line());
 
-  // Initialize histogram synchronizer system. This is a singleton and is used
-  // for posting tasks via base::Bind. Its deleted when it goes out of scope.
-  // Even though base::Bind does AddRef and Release, the object will not
-  // be deleted after the Task is executed.
-  histogram_synchronizer_ = new HistogramSynchronizer();
+  // Initialize tracking synchronizer system.
   tracking_synchronizer_ = new chrome_browser_metrics::TrackingSynchronizer();
 
   // Now that all preferences have been registered, set the install date

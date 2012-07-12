@@ -174,6 +174,9 @@ void MockRenderThread::ReleaseCachedFonts() {
 
 #endif  // OS_WIN
 
+void MockRenderThread::UpdateHistograms(int sequence_number) {
+}
+
 void MockRenderThread::SendCloseMessage() {
   ViewMsg_Close msg(routing_id_);
   widget_->OnMessageReceived(msg);

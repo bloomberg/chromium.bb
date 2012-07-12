@@ -55,7 +55,6 @@
 #include "chrome/renderer/prerender/prerender_webmediaplayer.h"
 #include "chrome/renderer/prerender/prerenderer_client.h"
 #include "chrome/renderer/print_web_view_helper.h"
-#include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "chrome/renderer/safe_browsing/malware_dom_details.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/search_extension.h"
@@ -155,7 +154,6 @@ ChromeContentRendererClient::~ChromeContentRendererClient() {
 void ChromeContentRendererClient::RenderThreadStarted() {
   chrome_observer_.reset(new ChromeRenderProcessObserver(this));
   extension_dispatcher_.reset(new ExtensionDispatcher());
-  histogram_snapshots_.reset(new RendererHistogramSnapshots());
   net_predictor_.reset(new RendererNetPredictor());
   spellcheck_.reset(new SpellCheck());
   visited_link_slave_.reset(new VisitedLinkSlave());
@@ -168,7 +166,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   thread->AddObserver(chrome_observer_.get());
   thread->AddObserver(extension_dispatcher_.get());
-  thread->AddObserver(histogram_snapshots_.get());
 #if defined(ENABLE_SAFE_BROWSING)
   thread->AddObserver(phishing_classifier_.get());
 #endif
@@ -253,7 +250,7 @@ void ChromeContentRendererClient::RenderViewCreated(
         chrome_observer_->content_setting_rules());
   }
   new ExtensionHelper(render_view, extension_dispatcher_.get());
-  new PageLoadHistograms(render_view, histogram_snapshots_.get());
+  new PageLoadHistograms(render_view);
 #if defined(ENABLE_PRINTING)
   new PrintWebViewHelper(render_view);
 #endif

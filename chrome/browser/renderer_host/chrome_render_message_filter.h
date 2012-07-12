@@ -78,8 +78,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
                     IPC::Message* reply_msg);
 #endif
   void OnDnsPrefetch(const std::vector<std::string>& hostnames);
-  void OnRendererHistograms(int sequence_number,
-                            const std::vector<std::string>& histogram_info);
   void OnResourceTypeStats(const WebKit::WebCache::ResourceTypeStats& stats);
   void OnUpdatedCacheStats(const WebKit::WebCache::UsageStats& stats);
   void OnFPS(int routing_id, float fps);

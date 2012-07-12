@@ -129,6 +129,7 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   virtual void PreCacheFont(const LOGFONT& log_font) OVERRIDE;
   virtual void ReleaseCachedFonts() OVERRIDE;
 #endif
+  virtual void UpdateHistograms(int sequence_number) OVERRIDE;
 
   // content::ChildThread:
   virtual bool IsWebFrameValid(WebKit::WebFrame* frame) OVERRIDE;

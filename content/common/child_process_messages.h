@@ -5,6 +5,9 @@
 // Common IPC messages used for child processes.
 // Multiply-included message file, hence no include guard.
 
+#include <string>
+#include <vector>
+
 #include "base/shared_memory.h"
 #include "base/tracked_objects.h"
 #include "base/values.h"
@@ -87,7 +90,11 @@ IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetProfilerStatus,
 // Send to all the child processes to send back profiler data (ThreadData in
 // tracked_objects).
 IPC_MESSAGE_CONTROL1(ChildProcessMsg_GetChildProfilerData,
-                     int /* sequence number */)
+                     int /* sequence_number */)
+
+// Send to all the child processes to send back histogram data.
+IPC_MESSAGE_CONTROL1(ChildProcessMsg_GetChildHistogramData,
+                     int /* sequence_number */)
 
 // Sent to child processes to dump their handle table.
 IPC_MESSAGE_CONTROL0(ChildProcessMsg_DumpHandles)
@@ -122,8 +129,13 @@ IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TraceBufferPercentFullReply,
 
 // Send back profiler data (ThreadData in tracked_objects).
 IPC_MESSAGE_CONTROL2(ChildProcessHostMsg_ChildProfilerData,
-                     int, /* sequence number */
-                     tracked_objects::ProcessDataSnapshot /* profiler data */)
+                     int, /* sequence_number */
+                     tracked_objects::ProcessDataSnapshot /* profiler_data */)
+
+// Send back histograms as vector of pickled-histogram strings.
+IPC_MESSAGE_CONTROL2(ChildProcessHostMsg_ChildHistogramData,
+                     int, /* sequence_number */
+                     std::vector<std::string> /* histogram_data */)
 
 // Reply to ChildProcessMsg_DumpHandles when handle table dump is complete.
 IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_DumpHandlesDone)

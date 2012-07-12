@@ -54,6 +54,7 @@
 #include "content/browser/geolocation/geolocation_dispatcher_host.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/histogram_message_filter.h"
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 #include "content/browser/mime_registry_message_filter.h"
@@ -603,6 +604,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetContentClient()->browser()->CreateQuotaPermissionContext()));
   channel_->AddFilter(new GamepadBrowserMessageFilter(this));
   channel_->AddFilter(new ProfilerMessageFilter(PROCESS_TYPE_RENDERER));
+  channel_->AddFilter(new content::HistogramMessageFilter());
 }
 
 int RenderProcessHostImpl::GetNextRoutingID() {

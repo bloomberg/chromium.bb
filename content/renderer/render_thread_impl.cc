@@ -25,6 +25,7 @@
 #include "base/values.h"
 #include "base/win/scoped_com_initializer.h"
 #include "content/common/appcache/appcache_dispatcher.h"
+#include "content/common/child_histogram_message_filter.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/database_messages.h"
 #include "content/common/db_message_filter.h"
@@ -758,6 +759,10 @@ void RenderThreadImpl::ReleaseCachedFonts() {
 }
 
 #endif  // OS_WIN
+
+void RenderThreadImpl::UpdateHistograms(int sequence_number) {
+  child_histogram_message_filter()->SendHistograms(sequence_number);
+}
 
 bool RenderThreadImpl::IsWebFrameValid(WebKit::WebFrame* web_frame) {
   if (!web_frame)
