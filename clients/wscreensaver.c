@@ -181,7 +181,11 @@ create_wscreensaver_instance(struct wscreensaver *screensaver,
 	if (!mi)
 		return NULL;
 
-	mi->window = window_create_custom(screensaver->display);
+	if (demo_mode)
+		mi->window = window_create(screensaver->display);
+	else
+		mi->window = window_create_custom(screensaver->display);
+
 	if (!mi->window) {
 		fprintf(stderr, "%s: creating a window failed.\n", progname);
 		free(mi);
@@ -190,7 +194,7 @@ create_wscreensaver_instance(struct wscreensaver *screensaver,
 
 	window_set_title(mi->window, progname);
 
-	if (screensaver->interface) {
+	if (screensaver->interface && !demo_mode) {
 		window_set_custom(mi->window);
 		mi->widget = window_add_widget(mi->window, mi);
 		screensaver_set_surface(screensaver->interface,
