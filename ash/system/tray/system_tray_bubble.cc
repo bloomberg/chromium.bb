@@ -255,6 +255,13 @@ void SystemTrayBubble::UpdateView(
   items_ = items;
   bubble_type_ = bubble_type;
   CreateItemViews(Shell::GetInstance()->tray_delegate()->GetUserLoginStatus());
+
+  // Close bubble view if we failed to create the item view.
+  if (!bubble_view_->has_children()) {
+    Close();
+    return;
+  }
+
   bubble_widget_->GetContentsView()->Layout();
   // Make sure that the bubble is large enough for the default view.
   if (bubble_type_ == BUBBLE_TYPE_DEFAULT) {
