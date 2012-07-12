@@ -576,7 +576,7 @@
                 '--strip-unneeded',  # All symbols not needed for relocation.
                 '<@(_inputs)',
                 '-o',
-                '<@(_outputs)' 
+                '<@(_outputs)',
               ],
             },
             {
@@ -597,7 +597,7 @@
                 # Release mode.  I don't think it matters (e.g. we're
                 # probably happy to not codesign) but naming should be
                 # fixed.
-                '<(PRODUCT_DIR)/ContentShell-debug.apk',
+                '<(PRODUCT_DIR)/content_shell/ContentShell-debug.apk',
               ],
               'action': [
                 'ant',
@@ -605,6 +605,32 @@
                 '-DAPP_ABI=<(android_app_abi)',
                 '-buildfile',
                 '<(DEPTH)/content/shell/android/java/content_shell_apk.xml',
+              ]
+            }
+          ],
+        },
+        {
+          'target_name': 'content_shell_test_apk',
+          'type': 'none',
+          'dependencies': [
+            'content_shell_apk',
+          ],
+          'actions': [
+            {
+              'action_name': 'content_shell_test_generate_apk',
+              'inputs': [
+                '<(DEPTH)/content/shell/android/javatests/content_shell_test_apk.xml',
+                '<(DEPTH)/content/shell/android/javatests/AndroidManifest.xml',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/content_shell_test/ContentShellTest-debug.apk',
+              ],
+              'action': [
+                'ant',
+                '-DPRODUCT_DIR=<(ant_build_out)',
+                '-DAPP_ABI=<(android_app_abi)',
+                '-buildfile',
+                '<(DEPTH)/content/shell/android/javatests/content_shell_test_apk.xml',
               ]
             }
           ],
