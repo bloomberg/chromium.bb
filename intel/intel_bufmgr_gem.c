@@ -2851,8 +2851,8 @@ drm_intel_gem_context_create(drm_intel_bufmgr *bufmgr)
 
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_CONTEXT_CREATE, &create);
 	if (ret != 0) {
-		fprintf(stderr, "DRM_IOCTL_I915_GEM_CONTEXT_CREATE failed: %s\n",
-			strerror(errno));
+		DBG("DRM_IOCTL_I915_GEM_CONTEXT_CREATE failed: %s\n",
+		    strerror(errno));
 		return NULL;
 	}
 
