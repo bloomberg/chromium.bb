@@ -10,6 +10,8 @@
 #include <Vssym32.h>
 #endif
 
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/native_theme/native_theme.h"
 #include "ui/gfx/canvas.h"
@@ -93,13 +95,28 @@ class MenuScrollButton : public View {
     // Then the arrow.
     int x = width() / 2;
     int y = (height() - config.scroll_arrow_height) / 2;
-    int delta_y = 1;
+
+    int x_left = x - config.scroll_arrow_height;
+    int x_right = x + config.scroll_arrow_height;
+    int y_bottom;
+
     if (!is_up_) {
-      delta_y = -1;
-      y += config.scroll_arrow_height;
+      y_bottom = y;
+      y = y_bottom + config.scroll_arrow_height;
+    } else {
+      y_bottom = y + config.scroll_arrow_height;
     }
-    for (int i = 0; i < config.scroll_arrow_height; ++i, --x, y += delta_y)
-      canvas->FillRect(gfx::Rect(x, y, (i * 2) + 1, 1), arrow_color);
+    SkPath path;
+    path.setFillType(SkPath::kWinding_FillType);
+    path.moveTo(SkIntToScalar(x), SkIntToScalar(y));
+    path.lineTo(SkIntToScalar(x_left), SkIntToScalar(y_bottom));
+    path.lineTo(SkIntToScalar(x_right), SkIntToScalar(y_bottom));
+    path.lineTo(SkIntToScalar(x), SkIntToScalar(y));
+    SkPaint paint;
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setAntiAlias(true);
+    paint.setColor(arrow_color);
+    canvas->DrawPath(path, paint);
   }
 
  private:

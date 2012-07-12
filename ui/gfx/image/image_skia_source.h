@@ -6,12 +6,13 @@
 #define UI_GFX_IMAGE_IMAGE_SKIA_SOURCE_H_
 
 #include "ui/base/layout.h"
+#include "ui/base/ui_export.h"
 
 namespace gfx {
 
 class ImageSkiaRep;
 
-class ImageSkiaSource {
+class UI_EXPORT ImageSkiaSource {
  public:
   virtual ~ImageSkiaSource() {}
 

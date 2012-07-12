@@ -10,6 +10,7 @@
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_source.h"
@@ -32,20 +33,17 @@ const SkColor kRadioButtonIndicatorGradient0 = SkColorSetRGB(0, 0, 0);
 const SkColor kRadioButtonIndicatorGradient1 = SkColorSetRGB(0x83, 0x83, 0x83);
 const SkColor kIndicatorStroke = SkColorSetRGB(0, 0, 0);
 
-class RadioButtonImageSource : public gfx::ImageSkiaSource {
+class RadioButtonImageSource : public gfx::CanvasImageSource {
  public:
-  explicit RadioButtonImageSource(bool selected) : selected_(selected) {
+  explicit RadioButtonImageSource(bool selected)
+      : CanvasImageSource(gfx::Size(kIndicatorSize + 2, kIndicatorSize + 2),
+                          false),
+        selected_(selected) {
   }
   virtual ~RadioButtonImageSource() {}
 
-  virtual gfx::ImageSkiaRep GetImageForScale(
-      ui::ScaleFactor scale_factor) OVERRIDE {
-    float scale = GetScaleFactorScale(scale_factor);
-    // + 2 (1px on each side) to cover rounding error.
-    gfx::Size size(kIndicatorSize + 2, kIndicatorSize + 2);
-    gfx::Canvas canvas(size.Scale(scale), false);
-    canvas.Scale(scale, scale);
-    canvas.Translate(gfx::Point(1, 1));
+  virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
+    canvas->Translate(gfx::Point(1, 1));
 
     SkPoint gradient_points[3];
     gradient_points[0].iset(0, 0);
@@ -62,12 +60,12 @@ class RadioButtonImageSource : public gfx::ImageSkiaSource {
     paint.setShader(shader);
     shader->unref();
     int radius = kIndicatorSize / 2;
-    canvas.sk_canvas()->drawCircle(radius, radius, radius, paint);
+    canvas->sk_canvas()->drawCircle(radius, radius, radius, paint);
     paint.setStrokeWidth(SkIntToScalar(0));
     paint.setShader(NULL);
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setColor(kBaseStroke);
-    canvas.sk_canvas()->drawCircle(radius, radius, radius, paint);
+    canvas->sk_canvas()->drawCircle(radius, radius, radius, paint);
 
     if (selected_) {
       SkPoint selected_gradient_points[2];
@@ -81,18 +79,16 @@ class RadioButtonImageSource : public gfx::ImageSkiaSource {
       paint.setShader(shader);
       shader->unref();
       paint.setStyle(SkPaint::kFill_Style);
-      canvas.sk_canvas()->drawCircle(radius, radius,
-                                     kSelectedIndicatorSize / 2, paint);
+      canvas->sk_canvas()->drawCircle(radius, radius,
+                                      kSelectedIndicatorSize / 2, paint);
 
       paint.setStrokeWidth(SkIntToScalar(0));
       paint.setShader(NULL);
       paint.setStyle(SkPaint::kStroke_Style);
       paint.setColor(kIndicatorStroke);
-      canvas.sk_canvas()->drawCircle(radius, radius,
-                                     kSelectedIndicatorSize / 2, paint);
+      canvas->sk_canvas()->drawCircle(radius, radius,
+                                      kSelectedIndicatorSize / 2, paint);
     }
-    LOG(ERROR) << "Generating:" << selected_;
-    return gfx::ImageSkiaRep(canvas.ExtractBitmap(), scale_factor);
   }
 
  private:
@@ -102,19 +98,38 @@ class RadioButtonImageSource : public gfx::ImageSkiaSource {
 };
 
 gfx::ImageSkia* CreateRadioButtonImage(bool selected) {
-  return new gfx::ImageSkia(new RadioButtonImageSource(selected),
-                            gfx::Size(kIndicatorSize + 2, kIndicatorSize + 2));
+  RadioButtonImageSource* source = new RadioButtonImageSource(selected);
+  return new gfx::ImageSkia(source, source->size());
 }
+
+class SubmenuArrowImageSource : public gfx::CanvasImageSource {
+ public:
+  SubmenuArrowImageSource()
+      : gfx::CanvasImageSource(GetSubmenuArrowSize(), false) {
+  }
+  virtual ~SubmenuArrowImageSource() {}
+
+  virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    const gfx::ImageSkia* r = rb.GetImageNamed(IDR_MENU_ARROW).ToImageSkia();
+    canvas->Scale(-1, 1);
+    canvas->DrawImageInt(*r, - r->width(), 0);
+  }
+
+ private:
+  static gfx::Size GetSubmenuArrowSize() {
+    return ui::ResourceBundle::GetSharedInstance()
+        .GetImageNamed(IDR_MENU_ARROW).ToImageSkia()->size();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(SubmenuArrowImageSource);
+};
 
 gfx::ImageSkia* GetRtlSubmenuArrowImage() {
   static gfx::ImageSkia* kRtlArrow = NULL;
   if (!kRtlArrow) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    const gfx::ImageSkia* r = rb.GetImageNamed(IDR_MENU_ARROW).ToImageSkia();
-    gfx::Canvas canvas(gfx::Size(r->width(), r->height()), false);
-    canvas.Scale(-1, 1);
-    canvas.DrawImageInt(*r, - r->width(), 0);
-    kRtlArrow = new gfx::ImageSkia(canvas.ExtractBitmap());
+    SubmenuArrowImageSource* source = new SubmenuArrowImageSource();
+    kRtlArrow = new gfx::ImageSkia(source, source->size());
   }
   return kRtlArrow;
 }
