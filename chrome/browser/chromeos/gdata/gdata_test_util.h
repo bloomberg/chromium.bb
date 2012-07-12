@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_TEST_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_TEST_UTIL_H_
 
+#include "chrome/browser/chromeos/gdata/gdata_cache_entry.h"
+
 namespace gdata {
 namespace test_util {
 
@@ -16,6 +18,12 @@ namespace test_util {
 // post a task to the blocking pool. This function processes these tasks
 // repeatedly.
 void RunBlockingPoolTask();
+
+// Converts |cache_state| to a GDataCacheEntry.
+GDataCacheEntry ToCacheEntry(int cache_state);
+
+// Returns true if the cache state of the given two cache entries are equal.
+bool CacheStatesEqual(const GDataCacheEntry& a, const GDataCacheEntry& b);
 
 }  // namespace test_util
 }  // namespace gdata

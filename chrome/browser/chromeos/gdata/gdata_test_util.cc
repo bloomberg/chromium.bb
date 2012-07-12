@@ -44,5 +44,17 @@ void RunBlockingPoolTask() {
   }
 }
 
+GDataCacheEntry ToCacheEntry(int cache_state) {
+  return GDataCacheEntry("dummy_md5", cache_state);
+}
+
+bool CacheStatesEqual(const GDataCacheEntry& a, const GDataCacheEntry& b) {
+  return (a.IsPresent() == b.IsPresent() &&
+          a.IsPinned() == b.IsPinned() &&
+          a.IsDirty() == b.IsDirty() &&
+          a.IsMounted() == b.IsMounted() &&
+          a.IsPersistent() == b.IsPersistent());
+}
+
 }  // namespace test_util
 }  // namespace gdata

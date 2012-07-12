@@ -10,6 +10,7 @@
 namespace gdata {
 
 // This is used as a bitmask for the cache state.
+// TODO(satorux): Remove this: crrev.com/136921
 enum GDataCacheState {
   CACHE_STATE_NONE       = 0x0,
   CACHE_STATE_PINNED     = 0x1 << 0,
@@ -25,6 +26,7 @@ class GDataCacheEntry {
  public:
   GDataCacheEntry() : cache_state_(CACHE_STATE_NONE) {}
 
+  // TODO(satorux): Remove this: crrev.com/136921
   GDataCacheEntry(const std::string& md5,
                   int cache_state)
       : md5_(md5),
@@ -35,10 +37,6 @@ class GDataCacheEntry {
   // locally modified.
   const std::string& md5() const { return md5_; }
   void set_md5(const std::string& md5) { md5_ = md5; }
-
-  // The cache state represented as a bitmask of GDataCacheState.
-  // TODO(satorux): Remove this: crrev.com/136921
-  int cache_state() const { return cache_state_; }
 
   // Returns true if the file is present locally.
   bool IsPresent() const { return cache_state_ & CACHE_STATE_PRESENT; }
@@ -88,6 +86,7 @@ class GDataCacheEntry {
   }
 
   // For debugging purposes.
+  // TODO(satorux): Remove this: crrev.com/136921
   std::string ToString() const;
 
  private:
