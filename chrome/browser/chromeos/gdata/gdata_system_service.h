@@ -6,7 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_SYSTEM_SERVICE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
+#include "base/memory/singleton.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
@@ -14,6 +15,7 @@ namespace gdata {
 
 class DocumentsServiceInterface;
 class DriveWebAppsRegistry;
+class GDataCache;
 class GDataDownloadObserver;
 class GDataFileSystem;
 class GDataSyncClient;

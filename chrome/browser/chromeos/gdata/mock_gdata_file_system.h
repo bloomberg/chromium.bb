@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace gdata {

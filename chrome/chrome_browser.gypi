@@ -547,6 +547,7 @@
         'browser/chromeos/gdata/gdata_errorcode.h',
         'browser/chromeos/gdata/gdata_file_system.cc',
         'browser/chromeos/gdata/gdata_file_system.h',
+        'browser/chromeos/gdata/gdata_file_system_interface.h',
         'browser/chromeos/gdata/gdata_file_system_proxy.cc',
         'browser/chromeos/gdata/gdata_file_system_proxy.h',
         'browser/chromeos/gdata/gdata_files.cc',
