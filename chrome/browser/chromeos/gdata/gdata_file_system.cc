@@ -599,6 +599,32 @@ void PostBlockingPoolSequencedTaskAndReply(
 }  // namespace
 
 // GDataFileSystem::GetDocumentsParams struct implementation.
+struct GDataFileSystem::GetDocumentsParams {
+  GetDocumentsParams(int start_changestamp,
+                     int root_feed_changestamp,
+                     std::vector<DocumentFeed*>* feed_list,
+                     bool should_fetch_multiple_feeds,
+                     const FilePath& search_file_path,
+                     const std::string& search_query,
+                     const std::string& directory_resource_id,
+                     const FindEntryCallback& callback);
+  ~GetDocumentsParams();
+
+  // Changestamps are positive numbers in increasing order. The difference
+  // between two changestamps is proportional equal to number of items in
+  // delta feed between them - bigger the difference, more likely bigger
+  // number of items in delta feeds.
+  int start_changestamp;
+  int root_feed_changestamp;
+  scoped_ptr<std::vector<DocumentFeed*> > feed_list;
+  // Should we stop after getting first feed chunk, even if there is more
+  // data.
+  bool should_fetch_multiple_feeds;
+  FilePath search_file_path;
+  std::string search_query;
+  std::string directory_resource_id;
+  FindEntryCallback callback;
+};
 
 GDataFileSystem::GetDocumentsParams::GetDocumentsParams(
     int start_changestamp,
@@ -624,6 +650,20 @@ GDataFileSystem::GetDocumentsParams::~GetDocumentsParams() {
 }
 
 // GDataFileSystem::CreateDirectoryParams struct implementation.
+struct GDataFileSystem::CreateDirectoryParams {
+  CreateDirectoryParams(const FilePath& created_directory_path,
+                        const FilePath& target_directory_path,
+                        bool is_exclusive,
+                        bool is_recursive,
+                        const FileOperationCallback& callback);
+  ~CreateDirectoryParams();
+
+  const FilePath created_directory_path;
+  const FilePath target_directory_path;
+  const bool is_exclusive;
+  const bool is_recursive;
+  FileOperationCallback callback;
+};
 
 GDataFileSystem::CreateDirectoryParams::CreateDirectoryParams(
     const FilePath& created_directory_path,
@@ -638,11 +678,17 @@ GDataFileSystem::CreateDirectoryParams::CreateDirectoryParams(
       callback(callback) {
 }
 
-
 GDataFileSystem::CreateDirectoryParams::~CreateDirectoryParams() {
 }
 
 // GDataFileSystem::GetFileCompleteForOpenParams struct implementation.
+struct GDataFileSystem::GetFileCompleteForOpenParams {
+  GetFileCompleteForOpenParams(const std::string& resource_id,
+                               const std::string& md5);
+  ~GetFileCompleteForOpenParams();
+  std::string resource_id;
+  std::string md5;
+};
 
 GDataFileSystem::GetFileCompleteForOpenParams::GetFileCompleteForOpenParams(
     const std::string& resource_id,
@@ -654,7 +700,28 @@ GDataFileSystem::GetFileCompleteForOpenParams::GetFileCompleteForOpenParams(
 GDataFileSystem::GetFileCompleteForOpenParams::~GetFileCompleteForOpenParams() {
 }
 
-//=================== GetFileFromCacheParams implementation ===================
+// GDataFileSystem::GetFileFromCacheParams struct implementation.
+struct GDataFileSystem::GetFileFromCacheParams {
+  GetFileFromCacheParams(
+      const FilePath& virtual_file_path,
+      const FilePath& local_tmp_path,
+      const GURL& content_url,
+      const std::string& resource_id,
+      const std::string& md5,
+      const std::string& mime_type,
+      const GetFileCallback& get_file_callback,
+      const GetDownloadDataCallback& get_download_data_callback);
+  ~GetFileFromCacheParams();
+
+  FilePath virtual_file_path;
+  FilePath local_tmp_path;
+  GURL content_url;
+  std::string resource_id;
+  std::string md5;
+  std::string mime_type;
+  const GetFileCallback get_file_callback;
+  const GetDownloadDataCallback get_download_data_callback;
+};
 
 GDataFileSystem::GetFileFromCacheParams::GetFileFromCacheParams(
     const FilePath& virtual_file_path,
