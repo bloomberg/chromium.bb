@@ -365,7 +365,7 @@ void PyUITestBase::ErrorResponse(
     const std::string& request,
     std::string* response) {
   base::DictionaryValue error_dict;
-  LOG(ERROR) << "Error during automation: " << response;
+  LOG(ERROR) << "Error during automation: " << *response;
   error_dict.SetString("error",
                        StringPrintf("%s for %s",
                                     error_string.c_str(),
