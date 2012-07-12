@@ -19,6 +19,8 @@
 #include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/message_pump_aurax11.h"
+#include "base/metrics/histogram.h"
+#include "base/perftimer.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
@@ -536,7 +538,15 @@ bool OutputConfigurator::RecacheAndUseDefaultState() {
   CHECK(display != NULL);
   XGrabServer(display);
   Window window = DefaultRootWindow(display);
+  // This call to XRRGetScreenResources is implicated in a hang bug so
+  // instrument it to see its typical running time (crbug.com/134449).
+  // TODO(disher): Remove these UMA calls once crbug.com/134449 is resolved.
+  UMA_HISTOGRAM_BOOLEAN("Display.XRRGetScreenResources_completed", false);
+  PerfTimer histogram_timer;
   XRRScreenResources* screen = XRRGetScreenResources(display, window);
+  base::TimeDelta duration = histogram_timer.Elapsed();
+  UMA_HISTOGRAM_BOOLEAN("Display.XRRGetScreenResources_completed", true);
+  UMA_HISTOGRAM_LONG_TIMES("Display.XRRGetScreenResources_duration", duration);
   CHECK(screen != NULL);
 
   bool did_detect_change = TryRecacheOutputs(display, screen);
