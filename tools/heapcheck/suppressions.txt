@@ -1496,3 +1496,11 @@
    fun:std::vector::push_back
    fun:IPC::ChannelProxy::Context::OnAddFilter
 }
+{
+   bug_136936
+   Heapcheck:Leak
+   ...
+   fun:std::basic_string::_Rep::_S_create
+   ...
+   fun:base::PlatformThread::SetName
+}
