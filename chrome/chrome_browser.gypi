@@ -97,6 +97,7 @@
         # * code below browser/extensions
         'browser/about_flags.cc',
         'browser/about_flags.h',
+        'browser/about_flags_android.cc',
         'browser/accessibility/accessibility_extension_api_constants.cc',
         'browser/accessibility/accessibility_extension_api_constants.h',
         'browser/accessibility/accessibility_events.cc',

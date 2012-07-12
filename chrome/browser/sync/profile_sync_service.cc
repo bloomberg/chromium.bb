@@ -737,7 +737,6 @@ void ProfileSyncService::OnExperimentsChanged(
     // Received notice to enable experimental type. Check if the type is
     // registered, and if not register a new datatype controller.
     RegisterNewDataType(it.Get());
-#if !defined(OS_ANDROID)
     // Enable the about:flags switch for the experimental type so we don't have
     // to always perform this reconfiguration. Once we set this, the type will
     // remain registered on restart, so we will no longer go down this code
@@ -748,7 +747,6 @@ void ProfileSyncService::OnExperimentsChanged(
     about_flags::SetExperimentEnabled(g_browser_process->local_state(),
                                       experiment_name,
                                       true);
-#endif  // !defined(OS_ANDROID)
   }
 
   // Check if the user has "Keep Everything Synced" enabled. If so, we want
