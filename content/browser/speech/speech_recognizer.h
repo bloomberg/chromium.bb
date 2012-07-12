@@ -38,6 +38,8 @@ class CONTENT_EXPORT SpeechRecognizer
   static const int kNoSpeechTimeoutMs;
   static const int kEndpointerEstimationTimeMs;
 
+  static void SetAudioManagerForTests(media::AudioManager* audio_manager);
+
   SpeechRecognizer(
       content::SpeechRecognitionEventListener* listener,
       int session_id,
@@ -122,7 +124,6 @@ class CONTENT_EXPORT SpeechRecognizer
   void UpdateSignalAndNoiseLevels(const float& rms, bool clip_detected);
 
   void CloseAudioControllerAsynchronously();
-  void SetAudioManagerForTesting(media::AudioManager* audio_manager);
 
   // Callback called on IO thread by audio_controller->Close().
   void OnAudioClosed(media::AudioInputController*);
@@ -141,8 +142,9 @@ class CONTENT_EXPORT SpeechRecognizer
   virtual void OnSpeechRecognitionEngineError(
       const content::SpeechRecognitionError& error) OVERRIDE;
 
+  static media::AudioManager* audio_manager_for_tests_;
+
   content::SpeechRecognitionEventListener* listener_;
-  media::AudioManager* testing_audio_manager_;
   scoped_ptr<SpeechRecognitionEngine> recognition_engine_;
   Endpointer endpointer_;
   scoped_refptr<media::AudioInputController> audio_controller_;

@@ -8,7 +8,7 @@
 #include "content/browser/speech/google_one_shot_remote_engine.h"
 #include "content/browser/speech/speech_recognizer.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
-#include "media/audio/audio_manager.h"
+#include "media/audio/mock_audio_manager.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/audio/fake_audio_output_stream.h"
 #include "media/audio/test_audio_input_controller_factory.h"
@@ -28,68 +28,6 @@ using media::AudioParameters;
 using media::TestAudioInputController;
 using media::TestAudioInputControllerFactory;
 
-namespace {
-
-class MockAudioManager : public media::AudioManagerBase {
- public:
-  MockAudioManager() {
-    audio_thread_.reset(new base::Thread("MockAudioThread"));
-    CHECK(audio_thread_->Start());
-  }
-  virtual bool HasAudioOutputDevices() OVERRIDE { return true; }
-  virtual bool HasAudioInputDevices() OVERRIDE { return true; }
-  virtual string16 GetAudioInputDeviceModel() OVERRIDE { return string16(); }
-  virtual bool CanShowAudioInputSettings() OVERRIDE { return false; }
-  virtual void ShowAudioInputSettings() OVERRIDE {}
-  virtual void GetAudioInputDeviceNames(
-      media::AudioDeviceNames* device_names) OVERRIDE {}
-  virtual AudioOutputStream* MakeAudioOutputStream(
-        const AudioParameters& params) OVERRIDE {
-    return media::FakeAudioOutputStream::MakeFakeStream(this, params);
-  }
-  virtual AudioOutputStream* MakeAudioOutputStreamProxy(
-        const AudioParameters& params) OVERRIDE {
-    NOTREACHED();
-    return NULL;
-  }
-  virtual AudioInputStream* MakeAudioInputStream(
-        const AudioParameters& params, const std::string& device_id) OVERRIDE {
-    return media::FakeAudioInputStream::MakeFakeStream(this, params);
-  }
-  virtual AudioOutputStream* MakeLinearOutputStream(
-      const AudioParameters& params) OVERRIDE {
-    NOTREACHED();
-    return NULL;
-  }
-  virtual AudioOutputStream* MakeLowLatencyOutputStream(
-      const AudioParameters& params) OVERRIDE {
-    NOTREACHED();
-    return NULL;
-  }
-  virtual AudioInputStream* MakeLinearInputStream(
-      const AudioParameters& params, const std::string& device_id) OVERRIDE {
-    NOTREACHED();
-    return NULL;
-  }
-  virtual AudioInputStream* MakeLowLatencyInputStream(
-      const AudioParameters& params, const std::string& device_id) OVERRIDE {
-    NOTREACHED();
-    return NULL;
-  }
-  virtual void MuteAll() OVERRIDE {}
-  virtual void UnMuteAll() OVERRIDE {}
-  virtual bool IsRecordingInProcess() OVERRIDE { return false; }
-  virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoop() OVERRIDE {
-    return audio_thread_->message_loop_proxy();
-  }
-  virtual void Init() OVERRIDE {};
- private:
-  scoped_ptr<base::Thread> audio_thread_;
-  DISALLOW_COPY_AND_ASSIGN(MockAudioManager);
-};
-}  // namespace
-
-
 namespace speech {
 
 class SpeechRecognizerTest : public content::SpeechRecognitionEventListener,
@@ -97,7 +35,6 @@ class SpeechRecognizerTest : public content::SpeechRecognitionEventListener,
  public:
   SpeechRecognizerTest()
       : io_thread_(BrowserThread::IO, &message_loop_),
-        audio_manager_(new MockAudioManager()),
         recognition_started_(false),
         recognition_ended_(false),
         result_received_(false),
@@ -120,7 +57,9 @@ class SpeechRecognizerTest : public content::SpeechRecognitionEventListener,
     const bool kOneShotMode = true;
     recognizer_ = new SpeechRecognizer(
         this, kTestingSessionId, kOneShotMode, sr_engine);
-    recognizer_->SetAudioManagerForTesting(audio_manager_.get());
+    audio_manager_.reset(new media::MockAudioManager(
+        MessageLoop::current()->message_loop_proxy()));
+    recognizer_->SetAudioManagerForTests(audio_manager_.get());
 
     int audio_packet_length_bytes =
         (SpeechRecognizer::kAudioSampleRate *

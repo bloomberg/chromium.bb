@@ -73,6 +73,7 @@ const ChannelLayout SpeechRecognizer::kChannelLayout = CHANNEL_LAYOUT_MONO;
 const int SpeechRecognizer::kNumBitsPerAudioSample = 16;
 const int SpeechRecognizer::kNoSpeechTimeoutMs = 8000;
 const int SpeechRecognizer::kEndpointerEstimationTimeMs = 300;
+media::AudioManager* SpeechRecognizer::audio_manager_for_tests_ = NULL;
 
 COMPILE_ASSERT(SpeechRecognizer::kNumBitsPerAudioSample % 8 == 0,
                kNumBitsPerAudioSample_must_be_a_multiple_of_8);
@@ -83,7 +84,6 @@ SpeechRecognizer::SpeechRecognizer(
     bool is_single_shot,
     SpeechRecognitionEngine* engine)
     : listener_(listener),
-      testing_audio_manager_(NULL),
       recognition_engine_(engine),
       endpointer_(kAudioSampleRate),
       session_id_(session_id),
@@ -242,7 +242,6 @@ void SpeechRecognizer::DispatchEvent(const FSMEventArgs& event_args) {
   // The audio pipeline must be processed before the event dispatch, otherwise
   // it would take actions according to the future state instead of the current.
   state_ = ExecuteTransitionAndGetNextState(event_args);
-
   is_dispatching_event_ = false;
 }
 
@@ -393,8 +392,8 @@ SpeechRecognizer::FSMState
 SpeechRecognizer::StartRecording(const FSMEventArgs&) {
   DCHECK(recognition_engine_.get() != NULL);
   DCHECK(!IsCapturingAudio());
-  AudioManager* audio_manager = (testing_audio_manager_ != NULL) ?
-                                 testing_audio_manager_ :
+  AudioManager* audio_manager = (audio_manager_for_tests_ != NULL) ?
+                                 audio_manager_for_tests_ :
                                  BrowserMainLoop::GetAudioManager();
   DCHECK(audio_manager != NULL);
 
@@ -649,9 +648,9 @@ void SpeechRecognizer::UpdateSignalAndNoiseLevels(const float& rms,
       session_id_, clip_detected ? 1.0f : audio_level_, noise_level);
 }
 
-void SpeechRecognizer::SetAudioManagerForTesting(
+void SpeechRecognizer::SetAudioManagerForTests(
     AudioManager* audio_manager) {
-  testing_audio_manager_ = audio_manager;
+  audio_manager_for_tests_ = audio_manager;
 }
 
 SpeechRecognizer::FSMEventArgs::FSMEventArgs(FSMEvent event_value)
