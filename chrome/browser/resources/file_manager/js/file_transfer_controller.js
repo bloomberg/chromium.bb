@@ -14,25 +14,18 @@ var DRAG_AND_DROP_GLOBAL_DATA = '__drag_and_drop_global_data';
 
 /**
  * @constructor
- * @param {cr.ui.ArrayDataModel} fileList Files in the current directory.
- * @param {cr.ui.ListSelectionModel} fileListSelection Selection in the
- *     fileList.
  * @param {function} dragNodeConstructor Constructor for draggable node.
  * @param {FileCopyManager} copyManager Copy manager instance.
  * @param {DirectoryModel} directoryModel Directory model instance.
  */
-function FileTransferController(fileList,
-                                fileListSelection,
-                                dragNodeConstructor,
+function FileTransferController(dragNodeConstructor,
                                 copyManager,
                                 directoryModel) {
-  this.fileList_ = fileList;
-  this.fileListSelection_ = fileListSelection;
   this.dragNodeConstructor_ = dragNodeConstructor;
   this.copyManager_ = copyManager;
   this.directoryModel_ = directoryModel;
 
-  this.fileListSelection_.addEventListener('change',
+  this.directoryModel_.getFileListSelection().addEventListener('change',
       this.onSelectionChanged_.bind(this));
 
   /**
@@ -142,7 +135,7 @@ FileTransferController.prototype = {
   getSourceRoot_: function(dataTransfer) {
     var sourceDir = dataTransfer.getData('fs/sourceDir');
     if (sourceDir)
-      return DirectoryModel.getRootPath(sourceDir);
+      return PathUtil.getRootPath(sourceDir);
 
     // For drive search, sourceDir will be set to null, so we should double
     // check that we are not on drive.
@@ -193,8 +186,8 @@ FileTransferController.prototype = {
     };
 
     if (!toMove || operationInfo.sourceDir != destinationPath) {
-      var targetOnGData = DirectoryModel.getRootType(destinationPath) ==
-          DirectoryModel.RootType.GDATA;
+      var targetOnGData = (PathUtil.getRootType(destinationPath) ===
+                           RootType.GDATA);
       this.copyManager_.paste(operationInfo,
                               destinationPath,
                               targetOnGData);
@@ -541,7 +534,7 @@ FileTransferController.prototype = {
   },
 
   get isOnGData() {
-    return this.directoryModel_.getRootType() == DirectoryModel.RootType.GDATA;
+    return this.directoryModel_.getCurrentRootType() === RootType.GDATA;
   },
 
   notify_: function(eventName) {
@@ -556,8 +549,9 @@ FileTransferController.prototype = {
    * @type {Array.<Entry>}
    */
   get selectedEntries_() {
-    var list = this.fileList_;
-    var selectedIndexes = this.fileListSelection_.selectedIndexes;
+    var list = this.directoryModel_.getFileList();
+    var selectedIndexes = this.directoryModel_.getFileListSelection().
+                               selectedIndexes;
     var entries = selectedIndexes.map(function(index) {
       return list.item(index);
     });
@@ -579,7 +573,7 @@ FileTransferController.prototype = {
       return 'none';
     if (event.dataTransfer.effectAllowed == 'copyMove' &&
         this.getSourceRoot_(event.dataTransfer) ==
-            DirectoryModel.getRootPath(destinationPath) &&
+            PathUtil.getRootPath(destinationPath) &&
         !event.ctrlKey) {
       return 'move';
     }

@@ -404,8 +404,8 @@ FileCopyManager.prototype.paste = function(clipboard, targetPath,
 FileCopyManager.prototype.isOnSameRoot = function(sourceEntry,
                                                   targetDirEntry,
                                                   targetOnGData) {
-  return DirectoryModel.getRootPath(sourceEntry.fullPath) ==
-         DirectoryModel.getRootPath(targetDirEntry.fullPath);
+  return PathUtil.getRootPath(sourceEntry.fullPath) ==
+         PathUtil.getRootPath(targetDirEntry.fullPath);
 };
 
 /**

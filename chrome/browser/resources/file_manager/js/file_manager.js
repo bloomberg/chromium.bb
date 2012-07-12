@@ -330,8 +330,7 @@ FileManager.prototype = {
         'thumbnail',
         this.thumbnailChangeHandler_);
 
-    if (DirectoryModel.getRootType(entry.fullPath) ==
-        DirectoryModel.RootType.GDATA) {
+    if (PathUtil.getRootType(entry.fullPath) === RootType.GDATA) {
       this.gdataObserverId_ = this.metadataCache_.addObserver(
           entry,
           MetadataCache.CHILDREN,
@@ -548,8 +547,6 @@ FileManager.prototype = {
         this.onCopyManagerOperationComplete_.bind(this));
 
     var controller = this.fileTransferController_ = new FileTransferController(
-        this.directoryModel_.getFileList(),
-        this.directoryModel_.getFileListSelection(),
         GridItem.bind(null, this, false /* no checkbox */),
         this.copyManager_,
         this.directoryModel_);
@@ -799,7 +796,7 @@ FileManager.prototype = {
 
     var self = this;
     this.rootsList_.itemConstructor = function(entry) {
-      return self.renderRoot_(entry);
+      return self.renderRoot_(entry.fullPath);
     };
 
     this.rootsList_.selectionModel =
@@ -1103,10 +1100,7 @@ FileManager.prototype = {
         return true;
 
       case 'format':
-        var entry = this.directoryModel_.getCurrentRootDirEntry();
-
-        return entry && DirectoryModel.getRootType(entry.fullPath) ==
-                        DirectoryModel.RootType.REMOVABLE;
+        return this.directoryModel_.getCurrentRootType() == RootType.REMOVABLE;
 
       case 'gdata-help':
       case 'gdata-buy-more-space':
@@ -1463,15 +1457,14 @@ FileManager.prototype = {
         return;
 
       case 'unmount':
-        this.unmountVolume_(
-            this.directoryModel_.getCurrentRootDirEntry());
+        this.unmountVolume_(this.directoryModel_.getCurrentRootPath());
         return;
 
       case 'format':
-        var entry = this.directoryModel_.getCurrentRootDirEntry();
-        this.confirm.show(str('FORMATTING_WARNING'), function() {
-          chrome.fileBrowserPrivate.formatDevice(entry.toURL());
-        });
+        var url = this.directoryModel_.getCurrentRootURL();
+        this.confirm.show(
+            str('FORMATTING_WARNING'),
+            chrome.fileBrowserPrivate.formatDevice.bind(null, url));
         return;
 
       case 'gdata-buy-more-space':
@@ -1562,7 +1555,7 @@ FileManager.prototype = {
         this.dialogType_ == FileManager.DialogType.FULL_PAGE &&
         !!location.hash;
 
-    if (DirectoryModel.getRootType(path) == DirectoryModel.RootType.GDATA) {
+    if (PathUtil.getRootType(path) === RootType.GDATA) {
       var tracker = this.directoryModel_.createDirectoryChangeTracker();
       // Expected finish of setupPath to GData.
       tracker.exceptInitialChange = true;
@@ -1573,7 +1566,7 @@ FileManager.prototype = {
         this.directoryModel_.setupDefaultPath();
         return;
       }
-      var gdataPath = '/' + DirectoryModel.GDATA_DIRECTORY;
+      var gdataPath = RootDirectory.GDATA;
       if (this.volumeManager_.isMounted(gdataPath)) {
         this.finishSetupCurrentDirectory_(path, invokeHandlers);
         return;
@@ -1891,57 +1884,55 @@ FileManager.prototype = {
    * @return {string} The localized name.
    */
   FileManager.prototype.getRootLabel_ = function(path) {
-    if (path == '/' + DirectoryModel.DOWNLOADS_DIRECTORY)
+    if (path === RootDirectory.DOWNLOADS)
       return str('DOWNLOADS_DIRECTORY_LABEL');
 
-    if (path == '/' + DirectoryModel.ARCHIVE_DIRECTORY)
+    if (path === RootDirectory.ARCHIVE)
       return str('ARCHIVE_DIRECTORY_LABEL');
-    if (isParentPath('/' + DirectoryModel.ARCHIVE_DIRECTORY, path))
-      return path.substring(DirectoryModel.ARCHIVE_DIRECTORY.length + 2);
+    if (isParentPath(RootDirectory.ARCHIVE, path))
+      return path.substring(RootDirectory.ARCHIVE.length + 1);
 
-    if (path == '/' + DirectoryModel.REMOVABLE_DIRECTORY)
+    if (path === RootDirectory.REMOVABLE)
       return str('REMOVABLE_DIRECTORY_LABEL');
-    if (isParentPath('/' + DirectoryModel.REMOVABLE_DIRECTORY, path))
-      return path.substring(DirectoryModel.REMOVABLE_DIRECTORY.length + 2);
+    if (isParentPath(RootDirectory.REMOVABLE, path))
+      return path.substring(RootDirectory.REMOVABLE.length + 1);
 
-    if (path == '/' + DirectoryModel.GDATA_DIRECTORY)
+    if (path === RootDirectory.GDATA)
       return str('GDATA_DIRECTORY_LABEL');
 
     return path;
   };
 
-  FileManager.prototype.renderRoot_ = function(entry) {
+  FileManager.prototype.renderRoot_ = function(path) {
     var li = this.document_.createElement('li');
     li.className = 'root-item';
     var dm = this.directoryModel_;
     var handleClick = function() {
       if (li.selected) {
-        dm.changeDirectory(entry.fullPath);
+        dm.changeDirectory(path);
       }
     };
     li.addEventListener('mousedown', handleClick);
     li.addEventListener(cr.ui.TouchHandler.EventType.TOUCH_START, handleClick);
 
-    var rootType = DirectoryModel.getRootType(entry.fullPath);
+    var rootType = PathUtil.getRootType(path);
 
     var div = this.document_.createElement('div');
     div.className = 'root-label';
 
     div.setAttribute('type', rootType);
-    if (rootType == DirectoryModel.RootType.REMOVABLE)
-      div.setAttribute('subType',
-          this.volumeManager_.getDeviceType(entry.fullPath));
+    if (rootType === RootType.REMOVABLE)
+      div.setAttribute('subType', this.volumeManager_.getDeviceType(path));
 
-    div.textContent = this.getRootLabel_(entry.fullPath);
+    div.textContent = this.getRootLabel_(path);
     li.appendChild(div);
 
-    if (rootType == DirectoryModel.RootType.ARCHIVE ||
-        rootType == DirectoryModel.RootType.REMOVABLE) {
+    if (rootType === RootType.ARCHIVE || rootType === RootType.REMOVABLE) {
       var eject = this.document_.createElement('div');
       eject.className = 'root-eject';
       eject.addEventListener('click', function(event) {
         event.stopPropagation();
-        this.unmountVolume_(entry);
+        this.unmountVolume_(path);
       }.bind(this));
       // Block other mouse handlers.
       eject.addEventListener('mouseup', function(e) { e.stopPropagation() });
@@ -1955,7 +1946,7 @@ FileManager.prototype = {
     cr.defineProperty(li, 'selected', cr.PropertyKind.BOOL_ATTR);
 
     var icon = rootType;
-    if (this.volumeManager_.isUnreadable(entry.fullPath)) {
+    if (this.volumeManager_.isUnreadable(path)) {
       icon = 'unreadable';
     }
     div.setAttribute('icon', icon);
@@ -1965,19 +1956,19 @@ FileManager.prototype = {
 
   /**
    * Unmounts device.
-   * @param {Entry} entry The entry to unmount.
+   * @param {string} path Path to a volume to unmount.
    */
-  FileManager.prototype.unmountVolume_ = function(entry) {
-    listItem = this.rootsList_.getListItem(entry);
+  FileManager.prototype.unmountVolume_ = function(path) {
+    listItem = this.rootsList_.getItemByIndex(
+        this.directoryModel_.findRootsListIndex(path));
     if (listItem)
       listItem.setAttribute('disabled', '');
-    var self = this;
-    this.volumeManager_.unmount(entry.fullPath, function() {},
-                                function(error) {
+    var onError = function(error) {
       if (listItem)
         listItem.removeAttribute('disabled');
-      self.alert.show(strf('UNMOUNT_FAILED', error.message));
-    });
+      this.alert.show(strf('UNMOUNT_FAILED', error.message));
+    };
+    this.volumeManager_.unmount(path, function() {}, onError.bind(this));
   };
 
   FileManager.prototype.updateGDataStyle_ = function(
@@ -2031,7 +2022,6 @@ FileManager.prototype = {
     // work of inplace renaming.
     var fileName = this.document_.createElement('div');
     fileName.className = 'filename-label';
-
     fileName.textContent = entry.name;
 
     return fileName;
@@ -2567,8 +2557,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.isOnGData = function() {
-    return this.directoryModel_.getCurrentRootType() ==
-           DirectoryModel.RootType.GDATA;
+    return this.directoryModel_.getCurrentRootType() === RootType.GDATA;
   };
 
   /**
@@ -3108,7 +3097,7 @@ FileManager.prototype = {
             readonly ?
                 (self.isOnGData() ?
                     self.getRootLabel_(
-                        DirectoryModel.getRootPath(currentDir.fullPath)) :
+                        PathUtil.getRootPath(currentDir.fullPath)) :
                     self.directoryModel_.getRootName()) :
                 null,
         saveDirEntry: readonly ? downloadsDir : currentDir,
@@ -3579,7 +3568,7 @@ FileManager.prototype = {
    */
   FileManager.prototype.onDirectoryAction = function(entry) {
     var mountError = this.volumeManager_.getMountError(
-        DirectoryModel.getRootPath(entry.fullPath));
+        PathUtil.getRootPath(entry.fullPath));
     if (mountError == VolumeManager.Error.UNKNOWN_FILESYSTEM) {
       return this.showButter(str('UNKNOWN_FILESYSTEM_WARNING'));
     } else if (mountError == VolumeManager.Error.UNSUPPORTED_FILESYSTEM) {
@@ -3634,8 +3623,8 @@ FileManager.prototype = {
    * Update the tab title.
    */
   FileManager.prototype.updateTitle_ = function() {
-    this.document_.title = this.getCurrentDirectory().substr(1).replace(
-        new RegExp('^' + DirectoryModel.GDATA_DIRECTORY),
+    this.document_.title = this.getCurrentDirectory().replace(
+        new RegExp('^' + RootDirectory.GDATA),
         str('GDATA_DIRECTORY_LABEL'));
   },
 
@@ -3664,8 +3653,8 @@ FileManager.prototype = {
     this.checkFreeSpace_(this.getCurrentDirectory());
 
     if (this.closeOnUnmount_ && !event.initial &&
-          DirectoryModel.getRootPath(event.previousDirEntry.fullPath) !=
-          DirectoryModel.getRootPath(event.newDirEntry.fullPath)) {
+          PathUtil.getRootPath(event.previousDirEntry.fullPath) !=
+          PathUtil.getRootPath(event.newDirEntry.fullPath)) {
       this.closeOnUnmount_ = false;
     }
 
@@ -3771,7 +3760,7 @@ FileManager.prototype = {
 
     function onError(err) {
       this.alert.show(strf('ERROR_RENAMING', entry.name,
-                           getFileErrorString(err.code)));
+                      getFileErrorString(err.code)));
     }
 
     this.cancelRename_();
@@ -4001,7 +3990,7 @@ FileManager.prototype = {
       case '8':  // Backspace => Up one directory.
         event.preventDefault();
         var path = this.getCurrentDirectory();
-        if (path && !DirectoryModel.isRootPath(path)) {
+        if (path && !PathUtil.isRootPath(path)) {
           var path = path.replace(/\/[^\/]+$/, '');
           this.directoryModel_.changeDirectory(path);
         }
@@ -4413,7 +4402,7 @@ FileManager.prototype = {
    * @param {string} currentPath New path to the current directory.
    */
   FileManager.prototype.checkFreeSpace_ = function(currentPath) {
-    var dir = DirectoryModel.DOWNLOADS_DIRECTORY;
+    var dir = RootDirectory.DOWNLOADS;
 
     var scheduleCheck = function(timeout) {
       if (this.checkFreeSpaceTimer_) {
@@ -4432,7 +4421,7 @@ FileManager.prototype = {
       var selfTimer = this.checkFreeSpaceTimer_;
 
       chrome.fileBrowserPrivate.getSizeStats(
-          util.makeFilesystemUrl('/' + dir),
+          util.makeFilesystemUrl(dir),
           function(sizeStats) {
             // If new check started while we were in async getSizeStats call,
             // then we shouldn't do anything.
@@ -4452,7 +4441,7 @@ FileManager.prototype = {
           }.bind(this));
     }.bind(this);
 
-    if (currentPath.substr(1, dir.length) == dir) {
+    if (PathUtil.getRootPath(currentPath) === dir) {
       // Setup short timeout if currentPath just changed.
       scheduleCheck(500);
     } else {
