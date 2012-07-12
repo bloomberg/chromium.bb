@@ -595,6 +595,7 @@
             'browser/chromeos/cros/cros_mock.h',
             'browser/chromeos/login/mock_authenticator.cc',
             'browser/chromeos/login/mock_authenticator.h',
+            'browser/chromeos/login/screen_locker_browsertest.cc',
             'browser/chromeos/login/screen_locker_tester.cc',
             'browser/chromeos/login/screen_locker_tester.h',
           ],
