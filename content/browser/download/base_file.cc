@@ -189,7 +189,7 @@ net::Error RenameFileAndResetSecurityDescriptor(
   int result = SHFileOperation(&move_info);
 
   if (result == 0)
-    return net::OK;
+    return (move_info.fAnyOperationsAborted) ? net::ERR_ABORTED : net::OK;
 
   return MapShFileOperationCodes(result);
 }

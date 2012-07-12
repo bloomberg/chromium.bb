@@ -465,6 +465,27 @@ TEST_F(BaseFileTest, RenameWhileInProgress) {
   base_file_->Finish();
 }
 
+// Test that a failed rename reports the correct error.
+TEST_F(BaseFileTest, RenameWithError) {
+  ASSERT_EQ(net::OK, base_file_->Initialize());
+
+  // TestDir is a subdirectory in |temp_dir_| that we will make read-only so
+  // that the rename will fail.
+  FilePath test_dir(temp_dir_.path().AppendASCII("TestDir"));
+  ASSERT_TRUE(file_util::CreateDirectory(test_dir));
+
+  FilePath new_path(test_dir.AppendASCII("TestFile"));
+  EXPECT_FALSE(file_util::PathExists(new_path));
+
+  {
+    file_util::PermissionRestorer restore_permissions_for(test_dir);
+    ASSERT_TRUE(file_util::MakeFileUnwritable(test_dir));
+    EXPECT_EQ(net::ERR_ACCESS_DENIED, base_file_->Rename(new_path));
+  }
+
+  base_file_->Finish();
+}
+
 // Write data to the file multiple times.
 TEST_F(BaseFileTest, MultipleWritesWithError) {
   ASSERT_TRUE(OpenMockFileStream());
@@ -539,6 +560,9 @@ TEST_F(BaseFileTest, AppendToBaseFile) {
 TEST_F(BaseFileTest, ReadonlyBaseFile) {
   // Create a new file.
   FilePath readonly_file_name = CreateTestFile();
+
+  // Restore permissions to the file when we are done with this test.
+  file_util::PermissionRestorer restore_permissions(readonly_file_name);
 
   // Make it read-only.
   EXPECT_TRUE(file_util::MakeFileUnwritable(readonly_file_name));
