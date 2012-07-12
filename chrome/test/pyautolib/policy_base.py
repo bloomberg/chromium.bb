@@ -11,35 +11,41 @@ The current implementation depends on the platform. The implementations might
 change in the future, but tests relying on the above calls will keep working.
 """
 
-# On ChromeOS, both user and device policies are supported. Chrome is set up to
-# fetch user policy from a TestServer. A call to SetUserPolicy triggers an
-# immediate policy refresh, allowing the effects of user policy changes on a
-# running session to be tested.
+# On ChromeOS, a mock DMServer is started and enterprise enrollment faked
+# against it. The mock DMServer then serves user and device policy to Chrome.
 #
-# Device policy is injected by stopping Chrome and the session manager, writing
-# a new device policy blob and starting Chrome and the session manager again.
-# This means that setting device policy always logs out the current user. It is
-# *not* possible to test the effects on a running session. These limitations
-# stem from the fact that Chrome will only fetch device policy from a TestServer
-# if the device is enterprise owned. Enterprise ownership, in turn, requires
-# ownership of the TPM which can only be undone by reboothing the device (and
-# hence is not possible in a client test).
+# For this setup to work, the DNS, GAIA and TPM (if present) are mocked as well:
+#
+# * The mock DNS resolves all addresses to 127.0.0.1. This allows the mock GAIA
+#   to handle all login attempts. It also eliminates the impact of flaky network
+#   connections on tests. Beware though that no cloud services can be accessed
+#   due to this DNS redirect.
+#
+# * The mock GAIA permits login with arbitrary credentials and accepts any OAuth
+#   tokens sent to it for verification as valid.
+#
+# * When running on a real device, its TPM is disabled. If the TPM were enabled,
+#   enrollment could not be undone without a reboot. Disabling the TPM makes
+#   cryptohomed behave as if no TPM was present, allowing enrollment to be
+#   undone by removing the install attributes.
+#
+# To disable the TPM, 0 must be written to /sys/class/misc/tpm0/device/enabled.
+# Since this file is not writeable, a tpmfs is mounted that shadows the file
+# with a writeable copy.
 
 import json
 import logging
 import os
 import subprocess
-import tempfile
 
-import asn1der
 import pyauto
-import pyauto_paths
-import pyauto_utils
-
 
 if pyauto.PyUITest.IsChromeOS():
   import sys
   import warnings
+
+  import pyauto_paths
+
   # Ignore deprecation warnings, they make our output more cluttered.
   warnings.filterwarnings('ignore', category=DeprecationWarning)
 
@@ -52,11 +58,15 @@ if pyauto.PyUITest.IsChromeOS():
                                   'proto')] + sys.path
       break
   sys.path.append('/usr/local')  # to import autotest libs.
-  sys.path.append(os.path.join(pyauto_paths.GetThirdPartyDir(), 'tlslite'))
 
-  import chrome_device_policy_pb2 as dp
+  import dbus
   import device_management_backend_pb2 as dm
-  import tlslite.api
+  import pyauto_utils
+  import string
+  import tempfile
+  import urllib
+  import urllib2
+  import uuid
   from autotest.cros import auth_server
   from autotest.cros import constants
   from autotest.cros import cros_ui
@@ -70,6 +80,9 @@ elif pyauto.PyUITest.IsMac():
 # ASN.1 object identifier for PKCS#1/RSA.
 PKCS1_RSA_OID = '\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01'
 
+TPM_SYSFS_PATH = '/sys/class/misc/tpm0'
+TPM_SYSFS_ENABLED_FILE = os.path.join(TPM_SYSFS_PATH, 'device/enabled')
+
 
 class PolicyTestBase(pyauto.PyUITest):
   """A base class for tests that need to set up and modify policies.
@@ -78,24 +91,25 @@ class PolicyTestBase(pyauto.PyUITest):
   SetDevicePolicy (ChromeOS only) to set the policies seen by Chrome.
   """
 
-  def _StartAuthServerOnChromeOS(self):
-    """Starts a mock GAIA server and makes Chrome authenticate against it.
+  if pyauto.PyUITest.IsChromeOS():
+    # TODO(bartfab): Extend the C++ wrapper that starts the mock DMServer so
+    # that an owner can be passed in. Without this, the server will assume that
+    # the owner is user@example.com and for consistency, so must we.
+    owner = 'user@example.com'
+    # Subclasses may override these credentials to fake enrollment into another
+    # mode or use different device and machine IDs.
+    mode = 'enterprise'
+    device_id = string.upper(str(uuid.uuid4()))
+    machine_id = 'CROSTEST'
 
-    A mock GAIA server and a mock DNS server are started. The DNS server
-    redirects all network traffic to localhost, making Chrome authenticate
-    against the mock GAIA and isolating the test from any other network flakes.
-    """
-    assert self.IsChromeOS()
-    self._auth_server = auth_server.GoogleAuthServer()
-    self._auth_server.run()
-    self._dns_server = dns_server.LocalDns()
-    self._dns_server.run()
-
-  def _StopAuthServerOnChromeOS(self):
-    """Tears down the mock GAIA server and fake DNS server."""
-    assert self.IsChromeOS()
-    self._auth_server.stop()
-    self._dns_server.stop()
+  @staticmethod
+  def _Call(command, check=False):
+    """Invokes a subprocess and optionally asserts the return value is zero."""
+    with open(os.devnull, 'w') as devnull:
+      if check:
+        return subprocess.check_call(command.split(' '), stdout=devnull)
+      else:
+        return subprocess.call(command.split(' '), stdout=devnull)
 
   def _WriteFile(self, path, content):
     """Writes content to path, creating any intermediary directories."""
@@ -115,19 +129,16 @@ class PolicyTestBase(pyauto.PyUITest):
     assert self.IsChromeOS()
     return self._http_server.GetURL('device_management').spec()
 
-  def _WriteDevicePolicyWithSessionManagerStopped(self):
-    """Writes the device policy blob while the session manager is stopped.
+  def _RemoveIfExists(self, filename):
+    """Removes a file if it exists."""
+    if os.path.exists(filename):
+      os.remove(filename)
 
-    Updates the files holding the device policy blob and the public key need to
-    verify its signature.
+  def _StartSessionManagerAndChrome(self):
+    """Starts the session manager and Chrome.
+
+    Requires that the session manager be stopped already.
     """
-    assert self.IsChromeOS()
-    logging.debug('Stopping session manager')
-    cros_ui.stop(allow_fail=True)
-    logging.debug('Writing device policy blob')
-    self._WriteFile(constants.SIGNED_POLICY_FILE, self._device_policy_blob)
-    self._WriteFile(constants.OWNER_KEY_FILE, self._public_key)
-
     # Ugly hack: session manager will not spawn Chrome if this file exists. That
     # is usually a good thing (to keep the automation channel open), but in this
     # case we really want to restart chrome. PyUITest.setUp() will be called
@@ -150,6 +161,83 @@ class PolicyTestBase(pyauto.PyUITest):
       open(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE, 'w').close()
       assert os.path.exists(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE)
 
+  def _WritePolicyOnChromeOS(self):
+    """Updates the mock DMServer's input file with current policy."""
+    assert self.IsChromeOS()
+    policy_dict = {
+      'google/chromeos/device': self._device_policy,
+      'google/chromeos/user': {
+        'mandatory': self._user_policy,
+        'recommended': {},
+      },
+      'managed_users': ['*'],
+    }
+    self._WriteFile(self._GetTestServerPoliciesFilePath(),
+                    json.dumps(policy_dict, sort_keys=True, indent=2) + '\n')
+
+  @staticmethod
+  def _IsCryptohomedReadyOnChromeOS():
+    """Checks whether cryptohomed is running and ready to accept DBus calls."""
+    assert pyauto.PyUITest.IsChromeOS()
+    try:
+      bus = dbus.SystemBus()
+      proxy = bus.get_object('org.chromium.Cryptohome',
+                             '/org/chromium/Cryptohome')
+      dbus.Interface(proxy, 'org.chromium.CryptohomeInterface')
+    except dbus.DBusException:
+      return False
+    return True
+
+  def _ClearInstallAttributesOnChromeOS(self):
+    """Resets the install attributes."""
+    assert self.IsChromeOS()
+    self._RemoveIfExists('/home/.shadow/install_attributes.pb')
+    self._Call('restart cryptohomed', check=True)
+    assert self.WaitUntil(self._IsCryptohomedReadyOnChromeOS)
+
+  def _DMPostRequest(self, request_type, request, headers):
+    """Posts a request to the mock DMServer."""
+    assert self.IsChromeOS()
+    url = self._GetHttpURLForDeviceManagement()
+    url += '?' + urllib.urlencode({
+      'deviceid': self.device_id,
+      'oauth_token': 'dummy_oauth_token_that_is_not_checked_anyway',
+      'request': request_type,
+      'devicetype': 2,
+      'apptype': 'Chrome',
+      'agent': 'Chrome',
+    })
+    response = dm.DeviceManagementResponse()
+    response.ParseFromString(urllib2.urlopen(urllib2.Request(
+        url, request.SerializeToString(), headers)).read())
+    return response
+
+  def _DMRegisterDevice(self):
+    """Registers with the mock DMServer and returns the DMToken."""
+    assert self.IsChromeOS()
+    dm_request = dm.DeviceManagementRequest()
+    request = dm_request.register_request
+    request.type = dm.DeviceRegisterRequest.DEVICE
+    request.machine_id = self.machine_id
+    dm_response = self._DMPostRequest('register', dm_request, {})
+    return dm_response.register_response.device_management_token
+
+  def _DMFetchPolicy(self, dm_token):
+    """Fetches device policy from the mock DMServer."""
+    assert self.IsChromeOS()
+    dm_request = dm.DeviceManagementRequest()
+    policy_request = dm_request.policy_request
+    request = policy_request.request.add()
+    request.policy_type = 'google/chromeos/device'
+    request.signature_type = dm.PolicyFetchRequest.SHA1_RSA
+    headers = {'Authorization': 'GoogleDMToken token=' + dm_token}
+    dm_response = self._DMPostRequest('policy', dm_request, headers)
+    response = dm_response.policy_response.response[0]
+    assert response.policy_data
+    assert response.policy_data_signature
+    assert response.new_public_key
+    return response
+
   def ExtraChromeFlags(self):
     """Sets up Chrome to use cloud policies on ChromeOS."""
     flags = pyauto.PyUITest.ExtraChromeFlags(self)
@@ -161,63 +249,130 @@ class PolicyTestBase(pyauto.PyUITest):
       flags.append('--disable-sync')
     return flags
 
+  def _SetUpWithSessionManagerStopped(self):
+    """Sets up the test environment after stopping the session manager."""
+    assert self.IsChromeOS()
+    logging.debug('Stopping session manager')
+    cros_ui.stop(allow_fail=True)
+
+    # Start mock GAIA server.
+    self._auth_server = auth_server.GoogleAuthServer()
+    self._auth_server.run()
+
+    # Disable TPM if present.
+    if os.path.exists(TPM_SYSFS_PATH):
+      self._Call('mount -t tmpfs -o size=1k tmpfs %s'
+          % os.path.realpath(TPM_SYSFS_PATH), check=True)
+      self._WriteFile(TPM_SYSFS_ENABLED_FILE, '0')
+
+    # Clear install attributes and restart cryptohomed to pick up the change.
+    self._ClearInstallAttributesOnChromeOS()
+
+    # Set install attributes to mock enterprise enrollment.
+    bus = dbus.SystemBus()
+    proxy = bus.get_object('org.chromium.Cryptohome',
+                            '/org/chromium/Cryptohome')
+    install_attributes = {
+      'enterprise.device_id': self.device_id,
+      'enterprise.domain': string.split(self.owner, '@')[-1],
+      'enterprise.mode': self.mode,
+      'enterprise.owned': 'true',
+      'enterprise.user': self.owner
+    }
+    interface = dbus.Interface(proxy, 'org.chromium.CryptohomeInterface')
+    for name, value in install_attributes.iteritems():
+      interface.InstallAttributesSet(name, '%s\0' % value)
+    interface.InstallAttributesFinalize()
+
+    # Start mock DNS server that redirects all traffic to 127.0.0.1.
+    self._dns_server = dns_server.LocalDns()
+    self._dns_server.run()
+
+    # Start mock DMServer.
+    source_dir = os.path.normpath(pyauto_paths.GetSourceDir())
+    self._temp_data_dir = tempfile.mkdtemp(dir=source_dir)
+    logging.debug('TestServer input path: %s' % self._temp_data_dir)
+    relative_temp_data_dir = os.path.basename(self._temp_data_dir)
+    self._http_server = self.StartHTTPServer(relative_temp_data_dir)
+
+    # Initialize the policy served.
+    self._device_policy = {}
+    self._user_policy = {}
+    self._WritePolicyOnChromeOS()
+
+    # Register with mock DMServer and retrieve initial device policy blob.
+    dm_token = self._DMRegisterDevice()
+    policy = self._DMFetchPolicy(dm_token)
+
+    # Write the initial device policy blob.
+    self._WriteFile(constants.OWNER_KEY_FILE, policy.new_public_key)
+    self._WriteFile(constants.SIGNED_POLICY_FILE, policy.SerializeToString())
+
+    # Remove any existing vaults.
+    self.RemoveAllCryptohomeVaultsOnChromeOS()
+
+    # Restart session manager and Chrome.
+    self._StartSessionManagerAndChrome()
+
+  def _tearDownWithSessionManagerStopped(self):
+    """Resets the test environment after stopping the session manager."""
+    assert self.IsChromeOS()
+    logging.debug('Stopping session manager')
+    cros_ui.stop(allow_fail=True)
+
+    # Stop mock GAIA server.
+    self._auth_server.stop()
+
+    # Reenable TPM if present.
+    if os.path.exists(TPM_SYSFS_PATH):
+      self._Call('umount %s' % os.path.realpath(TPM_SYSFS_PATH))
+
+    # Clear install attributes and restart cryptohomed to pick up the change.
+    self._ClearInstallAttributesOnChromeOS()
+
+    # Stop mock DNS server.
+    self._dns_server.stop()
+
+    # Stop mock DMServer.
+    self.StopHTTPServer(self._http_server)
+
+    # Clear the policy served.
+    pyauto_utils.RemovePath(self._temp_data_dir)
+
+    # Remove the device policy blob.
+    self._RemoveIfExists(constants.OWNER_KEY_FILE)
+    self._RemoveIfExists(constants.SIGNED_POLICY_FILE)
+
+    # Remove any existing vaults.
+    self.RemoveAllCryptohomeVaultsOnChromeOS()
+
+    # Restart session manager and Chrome.
+    self._StartSessionManagerAndChrome()
+
   def setUp(self):
     """Sets up the platform for policy testing.
 
     On ChromeOS, part of the setup involves restarting the session manager to
-    inject a device policy blob.
+    inject an initial device policy blob.
     """
     if self.IsChromeOS():
-      # Spin up a mock GAIA server.
-      self._StartAuthServerOnChromeOS()
+      # Perform the remainder of the setup with the device manager stopped.
+      self.WaitForSessionManagerRestart(
+          self._SetUpWithSessionManagerStopped)
 
-      # Set up a temporary data dir and a TestServer serving files from there.
-      # The TestServer makes its document root relative to the src dir.
-      source_dir = os.path.normpath(pyauto_paths.GetSourceDir())
-      self._temp_data_dir = tempfile.mkdtemp(dir=source_dir)
-      relative_temp_data_dir = os.path.basename(self._temp_data_dir)
-      self._http_server = self.StartHTTPServer(relative_temp_data_dir)
-
-      # Set up an empty user policy so that the TestServer can start replying.
-      self._SetUserPolicyChromeOS()
-
-      # Generate a key pair for signing device policy.
-      self._private_key = tlslite.api.generateRSAKey(1024)
-      algorithm = asn1der.Sequence(
-          [asn1der.Data(asn1der.OBJECT_IDENTIFIER, PKCS1_RSA_OID),
-           asn1der.Data(asn1der.NULL, '')])
-      rsa_pubkey = asn1der.Sequence([asn1der.Integer(self._private_key.n),
-                                     asn1der.Integer(self._private_key.e)])
-      self._public_key = asn1der.Sequence(
-          [algorithm, asn1der.Bitstring(rsa_pubkey)])
-
-      # Clear device policy. This also invokes pyauto.PyUITest.setUp(self).
-      self.SetDevicePolicy()
-
-      # Remove any existing vaults.
-      self.RemoveAllCryptohomeVaultsOnChromeOS()
-    else:
-      pyauto.PyUITest.setUp(self)
+    pyauto.PyUITest.setUp(self)
     self._branding = self.GetBrowserInfo()['properties']['branding']
 
   def tearDown(self):
     """Cleans up the policies and related files created in tests."""
     if self.IsChromeOS():
-      # On ChromeOS, clearing device policy logs out the current user so that
-      # no policy is in force. User policy is then permanently cleared at the
-      # end of the method after stopping the TestServer.
-      self.SetDevicePolicy()
+      # Perform the cleanup with the device manager stopped.
+      self.WaitForSessionManagerRestart(self._tearDownWithSessionManagerStopped)
     else:
       # On other platforms, there is only user policy to clear.
       self.SetUserPolicy(refresh=False)
 
     pyauto.PyUITest.tearDown(self)
-
-    if self.IsChromeOS():
-      self.StopHTTPServer(self._http_server)
-      pyauto_utils.RemovePath(self._temp_data_dir)
-      self.RemoveAllCryptohomeVaultsOnChromeOS()
-      self._StopAuthServerOnChromeOS()
 
   def LoginWithTestAccount(self, account='prod_enterprise_test_user'):
     """Convenience method for logging in with one of the test accounts."""
@@ -226,19 +381,40 @@ class PolicyTestBase(pyauto.PyUITest):
     self.Login(credentials['username'], credentials['password'])
     assert self.GetLoginInfo()['is_logged_in']
 
+  def _GetCurrentLoginScreenId(self):
+    return self.ExecuteJavascriptInOOBEWebUI(
+        """window.domAutomationController.send(
+               String(cr.ui.Oobe.getInstance().currentScreen.id));
+        """)
+
+  def _WaitForLoginScreenId(self, id):
+    self.assertTrue(
+        self.WaitUntil(function=self._GetCurrentLoginScreenId,
+                       expect_retval=id),
+                       msg='Expected login screen "%s" to be visible.' % id)
+
+  def _CheckLoginFormLoading(self):
+    return self.ExecuteJavascriptInOOBEWebUI(
+        """window.domAutomationController.send(
+               cr.ui.Oobe.getInstance().currentScreen.loading);
+        """)
+
+  def _WaitForLoginFormReload(self):
+    self.assertEqual('gaia-signin',
+                     self._GetCurrentLoginScreenId(),
+                     msg='Expected the login form to be visible.')
+    self.assertTrue(
+        self.WaitUntil(function=self._CheckLoginFormLoading),
+                       msg='Expected the login form to start reloading.')
+    self.assertTrue(
+        self.WaitUntil(function=self._CheckLoginFormLoading,
+                       expect_retval=False),
+                       msg='Expected the login form to finish reloading.')
+
   def _SetUserPolicyChromeOS(self, user_policy=None):
-    """Writes the given user policy to the TestServer's input file."""
-    assert self.IsChromeOS()
-    policy_dict = {
-      'google/chromeos/device': {},
-      'google/chromeos/user': {
-        'mandatory': user_policy or {},
-        'recommended': {},
-      },
-      'managed_users': ['*'],
-    }
-    self._WriteFile(self._GetTestServerPoliciesFilePath(),
-                    json.dumps(policy_dict, sort_keys=True, indent=2) + '\n')
+    """Writes the given user policy to the mock DMServer's input file."""
+    self._user_policy = user_policy or {}
+    self._WritePolicyOnChromeOS()
 
   def _SetUserPolicyWin(self, user_policy=None):
     """Writes the given user policy to the Windows registry."""
@@ -336,8 +512,8 @@ class PolicyTestBase(pyauto.PyUITest):
 
     Args:
       user_policy: The user policy to set. None clears it.
-      refresh: If True, chrome will refresh and apply the new policy.
-               Requires chrome to be alive for it.
+      refresh: If True, Chrome will refresh and apply the new policy.
+               Requires Chrome to be alive for it.
     """
     if self.IsChromeOS():
       self._SetUserPolicyChromeOS(user_policy=user_policy)
@@ -353,86 +529,16 @@ class PolicyTestBase(pyauto.PyUITest):
     if refresh:
       self.RefreshPolicies()
 
-  def _SetProtobufMessageField(self, group_message, field, field_value):
-    """Sets the given field in a protobuf to the given value."""
-    if field.label == field.LABEL_REPEATED:
-      assert type(field_value) == list
-      entries = group_message.__getattribute__(field.name)
-      for list_item in field_value:
-        entries.append(list_item)
-      return
-    elif field.type == field.TYPE_BOOL:
-      assert type(field_value) == bool
-    elif field.type == field.TYPE_STRING:
-      assert type(field_value) == str or type(field_value) == unicode
-    elif field.type == field.TYPE_INT64:
-      assert type(field_value) == int
-    elif (field.type == field.TYPE_MESSAGE and
-          field.message_type.name == 'StringList'):
-      assert type(field_value) == list
-      entries = group_message.__getattribute__(field.name).entries
-      for list_item in field_value:
-        entries.append(list_item)
-      return
-    else:
-      raise Exception('Unknown field type %s' % field.type)
-    group_message.__setattr__(field.name, field_value)
+  def SetDevicePolicy(self, device_policy=None, refresh=True):
+    """Sets the device policy provided as a dict.
 
-  def _GenerateDevicePolicyBlob(self, device_policy=None, owner=None):
-    """Generates a signed device policy blob."""
-
-    # Fill in the device settings protobuf.
-    device_policy = device_policy or {}
-    owner = owner or constants.CREDENTIALS['$mockowner'][0]
-    settings = dp.ChromeDeviceSettingsProto()
-    for group in settings.DESCRIPTOR.fields:
-      # Create protobuf message for group.
-      group_message = eval('dp.' + group.message_type.name + '()')
-      # Indicates if at least one field was set in |group_message|.
-      got_fields = False
-      # Iterate over fields of the message and feed them from the policy dict.
-      for field in group_message.DESCRIPTOR.fields:
-        field_value = None
-        if field.name in device_policy:
-          got_fields = True
-          field_value = device_policy[field.name]
-          self._SetProtobufMessageField(group_message, field, field_value)
-      if got_fields:
-        settings.__getattribute__(group.name).CopyFrom(group_message)
-
-    # Fill in the policy data protobuf.
-    policy_data = dm.PolicyData()
-    policy_data.policy_type = 'google/chromeos/device'
-    policy_data.policy_value = settings.SerializeToString()
-    policy_data.username = owner
-    serialized_policy_data = policy_data.SerializeToString()
-
-    # Fill in the device management response protobuf.
-    response = dm.DeviceManagementResponse()
-    fetch_response = response.policy_response.response.add()
-    fetch_response.policy_data = serialized_policy_data
-    fetch_response.policy_data_signature = (
-        self._private_key.hashAndSign(serialized_policy_data).tostring())
-
-    self._device_policy_blob = fetch_response.SerializeToString()
-
-  def _RefreshDevicePolicy(self):
-    """Refreshes the device policy in force on ChromeOS."""
+    Args:
+      device_policy: The device policy to set. None clears it.
+      refresh: If True, Chrome will refresh and apply the new policy.
+               Requires Chrome to be alive for it.
+    """
     assert self.IsChromeOS()
-    # The device policy blob is only picked up by the session manager on
-    # startup, and is overwritten on shutdown. So the blob has to be written
-    # while the session manager is stopped.
-    self.WaitForSessionManagerRestart(
-        self._WriteDevicePolicyWithSessionManagerStopped)
-    logging.debug('Session manager restarted with device policy ready')
-    pyauto.PyUITest.setUp(self)
-
-  def SetDevicePolicy(self, device_policy=None, owner=None):
-    """Sets the device policy provided as a dict and the owner on ChromeOS.
-
-    Passing a value of None as the device policy clears it."""
-    if not self.IsChromeOS():
-      raise NotImplementedError('Device policy is only available on ChromeOS.')
-
-    self._GenerateDevicePolicyBlob(device_policy, owner)
-    self._RefreshDevicePolicy()
+    self._device_policy = device_policy or {}
+    self._WritePolicyOnChromeOS()
+    if refresh:
+      self.RefreshPolicies()

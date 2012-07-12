@@ -11,9 +11,6 @@ import policy_base
 class ChromeosDevicePolicy(policy_base.PolicyTestBase):
   """Tests various ChromeOS device policies."""
 
-  def _SetDevicePolicyAndOwner(self, policy):
-    self.SetDevicePolicy(device_policy=policy, owner=self._usernames[0])
-
   def LoginAsGuest(self):
     self.assertFalse(self.GetLoginInfo()['is_logged_in'],
                      msg='Expected to be logged out.')
@@ -81,28 +78,24 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
   def _CheckGuestModeAvailableInLoginWindow(self):
     return self.ExecuteJavascriptInOOBEWebUI(
         """window.domAutomationController.send(
-               !document.getElementById('guestSignin').hidden);""")
+               !document.getElementById('guestSignin').hidden);
+        """)
 
   def _CheckGuestModeAvailableInAccountPicker(self):
     return self.ExecuteJavascriptInOOBEWebUI(
         """window.domAutomationController.send(
                !!document.getElementById('pod-row').getPodWithUsername_(''));
-               """)
-
-  def _GetCurrentLoginScreenId(self):
-    return self.ExecuteJavascriptInOOBEWebUI(
-        """window.domAutomationController.send(
-               String(cr.ui.Oobe.getInstance().currentScreen.id));""")
+        """)
 
   def testGuestModeEnabled(self):
     """Checks that guest mode login can be enabled/disabled."""
-    self._SetDevicePolicyAndOwner({'guest_mode_enabled': True})
+    self.SetDevicePolicy({'guest_mode_enabled': True})
     self.assertTrue(self._CheckGuestModeAvailableInLoginWindow(),
                     msg='Expected guest mode to be available.')
     self.LoginAsGuest()
     self.Logout()
 
-    self._SetDevicePolicyAndOwner({'guest_mode_enabled': False})
+    self.SetDevicePolicy({'guest_mode_enabled': False})
     self.assertFalse(self._CheckGuestModeAvailableInLoginWindow(),
                      msg='Expected guest mode to not be available.')
 
@@ -118,13 +111,13 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
     self.Login(user_index=0, expect_success=True)
     self.Logout()
 
-    self._SetDevicePolicyAndOwner({'guest_mode_enabled': True})
+    self.SetDevicePolicy({'guest_mode_enabled': True})
     self.assertTrue(self._CheckGuestModeAvailableInAccountPicker(),
                     msg='Expected guest mode to be available.')
     self.LoginAsGuest()
     self.Logout()
 
-    self._SetDevicePolicyAndOwner({'guest_mode_enabled': False})
+    self.SetDevicePolicy({'guest_mode_enabled': False})
     self.assertFalse(self._CheckGuestModeAvailableInAccountPicker(),
                      msg='Expected guest mode to not be available.')
 
@@ -141,15 +134,11 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
     self.Login(user_index=0, expect_success=True)
     self.Logout()
 
-    self._SetDevicePolicyAndOwner({'show_user_names': True})
-    self.assertEquals('account-picker',
-                      self._GetCurrentLoginScreenId(),
-                      msg='Expected the account picker to be visible.')
+    self.SetDevicePolicy({'show_user_names': True})
+    self._WaitForLoginScreenId('account-picker')
 
-    self._SetDevicePolicyAndOwner({'show_user_names': False})
-    self.assertEquals('gaia-signin',
-                     self._GetCurrentLoginScreenId(),
-                     msg='Expected the account picker to not be visible.')
+    self.SetDevicePolicy({'show_user_names': False})
+    self._WaitForLoginScreenId('gaia-signin')
 
   def testUserWhitelistAndAllowNewUsers(self):
     """Checks that login can be (dis)allowed by whitelist and allow-new-users.
@@ -161,35 +150,36 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
     tests.
     """
     # No whitelist
-    self._SetDevicePolicyAndOwner({'allow_new_users': True})
+    self.SetDevicePolicy({'allow_new_users': True})
     self.Login(user_index=0, expect_success=True)
     self.Logout()
 
     # Empty whitelist
-    self._SetDevicePolicyAndOwner({'user_whitelist': []})
+    self.SetDevicePolicy({'user_whitelist': []})
     self.Login(user_index=0, expect_success=True)
     self.Logout()
 
-    self._SetDevicePolicyAndOwner({'allow_new_users': True,
-                                   'user_whitelist': []})
+    self.SetDevicePolicy({'allow_new_users': True,
+                          'user_whitelist': []})
     self.Login(user_index=0, expect_success=True)
     self.Logout()
 
     # Populated whitelist
-    self._SetDevicePolicyAndOwner({'user_whitelist': [self._usernames[0]]})
+    self.SetDevicePolicy({'user_whitelist': [self._usernames[0]]})
     self.Login(user_index=0, expect_success=True)
     self.Logout()
     self.Login(user_index=1, expect_success=False)
 
-    self._SetDevicePolicyAndOwner({'allow_new_users': True,
-                                   'user_whitelist': [self._usernames[0]]})
+    self.SetDevicePolicy({'allow_new_users': True,
+                          'user_whitelist': [self._usernames[0]]})
     self.Login(user_index=0, expect_success=True)
     self.Logout()
     self.Login(user_index=1, expect_success=True)
+    self.Logout()
 
     # New users not allowed, populated whitelist
-    self._SetDevicePolicyAndOwner({'allow_new_users': False,
-                                   'user_whitelist': [self._usernames[0]]})
+    self.SetDevicePolicy({'allow_new_users': False,
+                          'user_whitelist': [self._usernames[0]]})
     self.Login(user_index=0, expect_success=True)
     self.Logout()
     self.Login(user_index=1, expect_success=False)

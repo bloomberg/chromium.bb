@@ -15,25 +15,23 @@ from autotest.cros import cryptohome
 
 
 class ChromeosEphemeral(policy_base.PolicyTestBase):
-  """Tests a policy that makes all users except the owner ephemeral.
+  """Tests a policy that makes users ephemeral.
 
   When this policy is enabled, no persistent information in the form of
   cryptohome shadow directories or local state prefs should be created for
   users. Additionally, any persistent information previously accumulated should
   be cleared when a user first logs in after enabling the policy."""
 
-  def _SetDevicePolicyAndOwner(self, ephemeral_users_enabled, owner_index):
-    """Sets device policy and owner.
+  def _SetEphemeralUsersEnabled(self, enabled):
+    """Sets the ephemeral users device policy.
 
     TODO(bartfab): Ensure Login still works after crosbug.com/20709 is fixed.
     The show_user_names policy is set to False to ensure that even if the local
     state is not being automatically cleared, the login screen never shows user
     pods. This is required by the Login browser automation call.
     """
-    self.SetDevicePolicy(
-        device_policy={'ephemeral_users_enabled': ephemeral_users_enabled,
-                       'show_user_names': False},
-        owner=self._usernames[owner_index])
+    self.SetDevicePolicy({'ephemeral_users_enabled': enabled,
+                          'show_user_names': False})
 
   def _DoesVaultDirectoryExist(self, user_index):
     user_hash = cryptohome.get_user_hash(self._usernames[user_index])
@@ -88,7 +86,7 @@ class ChromeosEphemeral(policy_base.PolicyTestBase):
                      msg='Expected to be logged out.')
     policy_base.PolicyTestBase.Login(self,
                                      self._usernames[user_index],
-                                     self._passwords[user_index])
+                                     'dummy_password')
     self.assertTrue(self.GetLoginInfo()['is_logged_in'],
                     msg='Expected to be logged in.')
 
@@ -115,11 +113,7 @@ class ChromeosEphemeral(policy_base.PolicyTestBase):
       # as this also clears the local state.
       self.set_clear_profile(False)
 
-    credentials = (self.GetPrivateInfo()['prod_enterprise_test_user'],
-                   self.GetPrivateInfo()['prod_enterprise_executive_user'],
-                   self.GetPrivateInfo()['prod_enterprise_sales_user'])
-    self._usernames = [credential['username'] for credential in credentials]
-    self._passwords = [credential['password'] for credential in credentials]
+    self._usernames = ('alice@example.com', 'bob@example.com')
 
   def tearDown(self):
     # TODO(bartfab): Remove this after crosbug.com/20709 is fixed.
@@ -129,44 +123,61 @@ class ChromeosEphemeral(policy_base.PolicyTestBase):
       self.set_clear_profile(True)
     policy_base.PolicyTestBase.tearDown(self)
 
-  def testLoginAsOwnerIsNotEphemeral(self):
-    """Checks that the owner does not become ephemeral."""
-    self._SetDevicePolicyAndOwner(ephemeral_users_enabled=True, owner_index=0)
+  def testEnablingBeforeSession(self):
+    """Checks that a new session can be made ephemeral."""
+    self._SetEphemeralUsersEnabled(True)
+    self._WaitForLoginFormReload()
+
+    self.Login(user_index=0)
+    self._AssertLocalStatePrefsEmpty()
+    self._AssertVaultMounted(user_index=0, ephemeral=True)
+    self.Logout()
+
+    self._AssertLocalStatePrefsEmpty()
+    self._AssertNoVaultMounted()
+    self._AssertVaultDirectoryDoesNotExist(user_index=0)
+
+  def testEnablingDuringSession(self):
+    """Checks that an existing non-ephemeral session is not made ephemeral."""
+    self._SetEphemeralUsersEnabled(False)
+    self._WaitForLoginFormReload()
+
+    self.Login(user_index=0)
+    self._AssertLocalStatePrefsSet(user_indexes=[0])
+    self._AssertVaultMounted(user_index=0, ephemeral=False)
+    self._SetEphemeralUsersEnabled(True)
+    self._AssertLocalStatePrefsSet(user_indexes=[0])
+    self._AssertVaultMounted(user_index=0, ephemeral=False)
+    self.Logout()
+
+    self._AssertLocalStatePrefsEmpty()
+    self._AssertNoVaultMounted()
+    self._AssertVaultDirectoryDoesNotExist(user_index=0)
+
+  def testDisablingDuringSession(self):
+    """Checks that an existing ephemeral session is not made non-ephemeral."""
+    self._SetEphemeralUsersEnabled(True)
+    self._WaitForLoginFormReload()
 
     self.Login(user_index=0)
     # TODO(bartfab): Remove this when crosbug.com/20709 is fixed.
     if self._local_state_auto_clearing:
-      self._AssertLocalStatePrefsSet(user_indexes=[0])
-    self._AssertVaultDirectoryExists(user_index=0)
-    self._AssertVaultMounted(user_index=0, ephemeral=False)
-    self.Logout()
-    # TODO(bartfab): Make this unconditional when crosbug.com/20709 is fixed.
-    if not self._local_state_auto_clearing:
-      self._AssertLocalStatePrefsSet(user_indexes=[0])
-    self._AssertVaultDirectoryExists(user_index=0)
-    self._AssertNoVaultMounted()
-
-  def testLoginAsNonOwnerIsEphemeral(self):
-    """Checks that a non-owner user does become ephemeral."""
-    self._SetDevicePolicyAndOwner(ephemeral_users_enabled=True, owner_index=0)
-
-    self.Login(user_index=1)
-    # TODO(bartfab): Remove this when crosbug.com/20709 is fixed.
-    if self._local_state_auto_clearing:
       self._AssertLocalStatePrefsEmpty()
-    self._AssertVaultDirectoryDoesNotExist(user_index=1)
-    self._AssertVaultMounted(user_index=1, ephemeral=True)
+    self._AssertVaultMounted(user_index=0, ephemeral=True)
+    self._SetEphemeralUsersEnabled(False)
+    self._AssertVaultMounted(user_index=0, ephemeral=True)
     self.Logout()
+
     # TODO(bartfab): Make this unconditional when crosbug.com/20709 is fixed.
     if not self._local_state_auto_clearing:
       self._AssertLocalStatePrefsEmpty()
-
-    self._AssertVaultDirectoryDoesNotExist(user_index=1)
     self._AssertNoVaultMounted()
+    self._AssertVaultDirectoryDoesNotExist(user_index=0)
 
   def testEnablingEphemeralUsersCleansUp(self):
     """Checks that persistent information is cleared."""
-    self._SetDevicePolicyAndOwner(ephemeral_users_enabled=False, owner_index=0)
+    self._SetEphemeralUsersEnabled(False)
+    self._WaitForLoginFormReload()
 
     self.Login(user_index=0)
     # TODO(bartfab): Remove this when crosbug.com/20709 is fixed.
@@ -186,35 +197,20 @@ class ChromeosEphemeral(policy_base.PolicyTestBase):
     if not self._local_state_auto_clearing:
       self._AssertLocalStatePrefsSet(user_indexes=[0, 1])
 
-    self.Login(user_index=2)
-    # TODO(bartfab): Remove this when crosbug.com/20709 is fixed.
-    if self._local_state_auto_clearing:
-      self._AssertLocalStatePrefsSet(user_indexes=[2])
-    self.Logout()
-    # TODO(bartfab): Make this unconditional when crosbug.com/20709 is fixed.
-    if not self._local_state_auto_clearing:
-      self._AssertLocalStatePrefsSet(user_indexes=[0, 1, 2])
-
     self._AssertVaultDirectoryExists(user_index=0)
     self._AssertVaultDirectoryExists(user_index=1)
-    self._AssertVaultDirectoryExists(user_index=2)
 
-    self._SetDevicePolicyAndOwner(ephemeral_users_enabled=True, owner_index=0)
+    self._SetEphemeralUsersEnabled(True)
 
-    self.Login(user_index=1)
+    self.Login(user_index=0)
     # TODO(bartfab): Remove this when crosbug.com/20709 is fixed.
     if self._local_state_auto_clearing:
       self._AssertLocalStatePrefsEmpty()
-    self._AssertVaultMounted(user_index=1, ephemeral=True)
+    self._AssertVaultMounted(user_index=0, ephemeral=True)
     self.Logout()
 
-    # TODO(bartfab): Make this unconditional when crosbug.com/20709 is fixed.
-    if not self._local_state_auto_clearing:
-      self._AssertLocalStatePrefsSet(user_indexes=[0])
-
-    self._AssertVaultDirectoryExists(user_index=0)
+    self._AssertVaultDirectoryDoesNotExist(user_index=0)
     self._AssertVaultDirectoryDoesNotExist(user_index=1)
-    self._AssertVaultDirectoryDoesNotExist(user_index=2)
 
 
 if __name__ == '__main__':
