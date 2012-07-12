@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -207,13 +207,6 @@ class ChromeosFileBrowserTest(pyauto.PyUITest):
     self.assertTrue(file_browser, msg='File browser failed to initialize.')
     self._CopyFolder(file_browser)
 
-  def testCopyFolderInDialog(self):
-    """Test we can copy and paste a folder in a save-as file browser dialog."""
-    self.NavigateToURL('chrome://version')
-    file_browser = self._GetSaveAsDialogFileBrowser()
-    self.assertTrue(file_browser, msg='File browser failed to initialize.')
-    self._CopyFolder(file_browser)
-
   def _CutFolder(self, file_browser):
     """Create two folders and cut and paste one inside the other."""
     top_directory = file_browser.CurrentDirectory()
@@ -230,13 +223,6 @@ class ChromeosFileBrowserTest(pyauto.PyUITest):
   def testCutFolderInFullPage(self):
     """Test we can cut and paste a folder in the full page file browser."""
     file_browser = self._GetFullPageFileBrowser()
-    self.assertTrue(file_browser, msg='File browser failed to initialize.')
-    self._CutFolder(file_browser)
-
-  def testCutFolderInDialog(self):
-    """Test we can cut and paste a folder in a save-as file browser dialog."""
-    self.NavigateToURL('chrome://version')
-    file_browser = self._GetSaveAsDialogFileBrowser()
     self.assertTrue(file_browser, msg='File browser failed to initialize.')
     self._CutFolder(file_browser)
 
