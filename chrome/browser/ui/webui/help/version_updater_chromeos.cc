@@ -4,14 +4,19 @@
 
 #include "chrome/browser/ui/webui/help/version_updater_chromeos.h"
 
+#include <cmath>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/google/google_update.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using chromeos::CrosSettings;
 using chromeos::DBusThreadManager;
@@ -64,7 +69,10 @@ void VersionUpdaterCros::GetReleaseChannel(const ChannelCallback& cb) {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-VersionUpdaterCros::VersionUpdaterCros() : weak_ptr_factory_(this) {}
+VersionUpdaterCros::VersionUpdaterCros()
+    : last_operation_(UpdateEngineClient::UPDATE_STATUS_IDLE),
+      weak_ptr_factory_(this) {
+}
 
 VersionUpdaterCros::~VersionUpdaterCros() {
   UpdateEngineClient* update_engine_client =
@@ -76,21 +84,39 @@ void VersionUpdaterCros::UpdateStatusChanged(
     const UpdateEngineClient::Status& status) {
   Status my_status = UPDATED;
   int progress = 0;
+  string16 message;
 
-  switch (status.status) {
+  // If the updater is currently idle, just show the last operation (unless it
+  // was previously checking for an update -- in that case, the system is
+  // up-to-date now).  See http://crbug.com/120063 for details.
+  UpdateEngineClient::UpdateStatusOperation operation_to_show = status.status;
+  if (status.status == UpdateEngineClient::UPDATE_STATUS_IDLE &&
+      last_operation_ !=
+      UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE) {
+    operation_to_show = last_operation_;
+  }
+
+  switch (operation_to_show) {
+    case UpdateEngineClient::UPDATE_STATUS_ERROR:
+    case UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT:
+      my_status = FAILED;
+      // TODO(derat): More-detailed error info if UpdateEngineClient exposes it.
+      message = l10n_util::GetStringFUTF16Int(IDS_UPGRADE_ERROR,
+                                              GOOGLE_UPDATE_ERROR_UPDATING);
+      break;
     case UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE:
       my_status = CHECKING;
       break;
     case UpdateEngineClient::UPDATE_STATUS_DOWNLOADING:
-      progress = static_cast<int>(status.download_progress * 100.0);
+      progress = static_cast<int>(round(status.download_progress * 100));
       // Fall through.
     case UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE:
       my_status = UPDATING;
       break;
     case UpdateEngineClient::UPDATE_STATUS_VERIFYING:
     case UpdateEngineClient::UPDATE_STATUS_FINALIZING:
-      // Once download is finished progress is at 100%, is should no go down
-      // while status is the same.
+      // Once the download is finished, keep the progress at 100; it shouldn't
+      // go down while the status is the same.
       progress = 100;
       my_status = UPDATING;
       break;
@@ -98,11 +124,11 @@ void VersionUpdaterCros::UpdateStatusChanged(
       my_status = NEARLY_UPDATED;
       break;
     default:
-      // TODO(jhawkins): Handle error conditions.
       break;
   }
 
-  callback_.Run(my_status, progress, string16());
+  callback_.Run(my_status, progress, message);
+  last_operation_ = status.status;
 }
 
 void VersionUpdaterCros::OnUpdateCheck(

@@ -43,6 +43,9 @@ class VersionUpdaterCros : public VersionUpdater,
   // Callback used to communicate current channel to the client.
   ChannelCallback channel_callback_;
 
+  // Last state received via UpdateStatusChanged().
+  chromeos::UpdateEngineClient::UpdateStatusOperation last_operation_;
+
   base::WeakPtrFactory<VersionUpdaterCros> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VersionUpdaterCros);

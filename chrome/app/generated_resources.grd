@@ -7179,7 +7179,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Installing new version...
       </message>
       <message name="IDS_UPGRADE_ERROR" desc="Status label: Error occurred during upgrade">
-        Update server not available (error: <ph name="ERROR_NUMBER">$1<ex>1</ex></ph>)
+        Update failed (error: <ph name="ERROR_NUMBER">$1<ex>1</ex></ph>)
       </message>
       <message name="IDS_UPGRADE_DISABLED_BY_POLICY" desc="Status label: Upgrades disabled by policy">
         Updates are disabled by the administrator
