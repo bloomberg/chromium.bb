@@ -38,7 +38,7 @@ if env.AllBits('windows', 'debug'):
 if env.Bit('windows'):
   syscall_impl = 'win/nacl_syscall_impl.c'
 else:
-  syscall_impl = 'linux/nacl_syscall_impl.c'
+  syscall_impl = 'posix/nacl_syscall_impl.c'
 
 
 # TODO GENERATED CODE
@@ -177,23 +177,23 @@ elif env.Bit('mac'):
     'osx/nacl_ldt.c',
     'osx/nacl_oop_debugger_hooks.c',
     'osx/nacl_thread_nice.c',
-    'linux/sel_memory.c',
-    'linux/x86/sel_segments.c',
     'osx/outer_sandbox.c',
     'posix/addrspace_teardown.c',
+    'posix/sel_memory.c',
+    'posix/x86/sel_segments.c',
   ]
 elif env.Bit('linux'):
   ldr_inputs += [
-    'linux/sel_memory.c',
     'linux/nacl_oop_debugger_hooks.c',
     'linux/nacl_thread_nice.c',
     'linux/reserved_at_zero.c',
     'posix/addrspace_teardown.c',
+    'posix/sel_memory.c',
   ]
   if env.Bit('build_x86'):
     ldr_inputs += [
       'linux/x86/nacl_ldt.c',
-      'linux/x86/sel_segments.c',
+      'posix/x86/sel_segments.c',
     ]
   elif env.Bit('build_arm'):
     ldr_inputs += [

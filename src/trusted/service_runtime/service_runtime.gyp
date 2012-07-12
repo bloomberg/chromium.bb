@@ -8,12 +8,12 @@
     'conditions': [
       ['OS=="linux"', {
         'syscall_handler': [
-          'linux/nacl_syscall_impl.c'
+          'posix/nacl_syscall_impl.c'
         ],
       }],
       ['OS=="mac"', {
         'syscall_handler': [
-          'linux/nacl_syscall_impl.c'
+          'posix/nacl_syscall_impl.c'
         ],
       }],
       ['OS=="win"', {
@@ -107,11 +107,11 @@
                 'osx/nacl_ldt.c',
                 'osx/nacl_oop_debugger_hooks.c',
                 'osx/nacl_thread_nice.c',
-                'osx/thread_suspension.c',
-                'linux/sel_memory.c',
-                'linux/x86/sel_segments.c',
                 'osx/outer_sandbox.c',
+                'osx/thread_suspension.c',
                 'posix/addrspace_teardown.c',
+                'posix/sel_memory.c',
+                'posix/x86/sel_segments.c',
               ],
               'actions': [
                 {
@@ -169,19 +169,19 @@
             }],
             ['OS=="linux"', {
               'sources': [
-                'linux/reserved_at_zero.c',
-                'linux/sel_memory.c',
                 'linux/nacl_oop_debugger_hooks.c',
                 'linux/nacl_thread_nice.c',
                 'linux/r_debug.c',
+                'linux/reserved_at_zero.c',
                 'linux/thread_suspension.c',
                 'posix/addrspace_teardown.c',
+                'posix/sel_memory.c',
               ],
               'conditions': [
                 ['target_arch=="ia32" or target_arch=="x64"', {
                   'sources': [
                     'linux/x86/nacl_ldt.c',
-                    'linux/x86/sel_segments.c',
+                    'posix/x86/sel_segments.c',
                   ],
                 }],
                 ['target_arch=="arm"', {

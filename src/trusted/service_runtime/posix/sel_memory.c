@@ -87,8 +87,8 @@ int NaCl_page_alloc_intern(void   **p,
   map_flags |= MAP_NORESERVE;
 #elif NACL_OSX
   /*
-   * TODO(cbiffle): Contrary to its name, this file is used by Mac OS X as well
-   * as Linux.  An equivalent fix may require this to stop, since we might have
+   * TODO(cbiffle): This file is used by Mac OS X as well as Linux.
+   * An equivalent fix may require this to stop, since we might have
    * to drop to the xnu layer and use vm_allocate.
    *
    * Currently this code is not guaranteed to work for non-x86-32 Mac OS X.
