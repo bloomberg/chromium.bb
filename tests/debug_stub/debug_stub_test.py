@@ -199,12 +199,10 @@ class DebugStubTest(unittest.TestCase):
     regs[reg_name] += 1
     new_value = regs[reg_name]
 
-    # Write registers. Check for a new value in reply.
-    regs = DecodeRegs(connection.RspRequest('G' + EncodeRegs(regs)))
-    self.assertEquals(regs[reg_name], new_value)
+    # Write registers.
+    self.assertEquals(connection.RspRequest('G' + EncodeRegs(regs)), 'OK')
 
-    # Read registers again. Check for a new value.
-    # This is needed in case 'G' packet reply does not correspond to reality :)
+    # Read registers. Check for a new value.
     regs = DecodeRegs(connection.RspRequest('g'))
     self.assertEquals(regs[reg_name], new_value)
 

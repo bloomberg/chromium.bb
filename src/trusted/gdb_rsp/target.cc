@@ -418,7 +418,7 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
         thread->SetRegister(a, &ctx_[def->offset_], def->bytes_);
       }
 
-      pktOut->AddBlock(ctx_, abi_->GetContextSize());
+      pktOut->AddString("OK");
       break;
     }
 
