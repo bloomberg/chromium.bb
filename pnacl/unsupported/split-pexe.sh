@@ -14,7 +14,7 @@ split-pexe() {
   local rem=$3
   local div=$4
 
-  ${EXTRACT} -delete  -remainder ${rem} -divisor ${div} ${in} -o ${out}
+  ${EXTRACT} -remainder ${rem} -divisor ${div} ${in} -o ${out}
 }
 
 
