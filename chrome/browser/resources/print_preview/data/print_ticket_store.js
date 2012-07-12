@@ -250,6 +250,7 @@ cr.define('print_preview', function() {
      * Initializes the print ticket store. Dispatches an INITIALIZE event.
      * @param {boolean} isDocumentModifiable Whether the document to print is
      *     modifiable (i.e. can be re-flowed by Chromium).
+     * @param {string} documentTitle Title of the document to print.
      * @param {?boolean} isDuplexEnabled Previous duplex setting.
      * @param {?boolean} isHeaderFooterEnabled Previous header-footer setting.
      * @param {print_preview.ticket_items.MarginsType.Value} marginsType
@@ -262,6 +263,7 @@ cr.define('print_preview', function() {
      */
     initialize: function(
         isDocumentModifiable,
+        documentTitle,
         isDuplexEnabled,
         isHeaderFooterEnabled,
         marginsType,
@@ -271,6 +273,7 @@ cr.define('print_preview', function() {
         unitType) {
 
       this.documentInfo_.isModifiable = isDocumentModifiable;
+      this.documentInfo_.title = documentTitle;
       this.measurementSystem_.setSystem(
           thousandsDelimeter, decimalDelimeter, unitType);
 

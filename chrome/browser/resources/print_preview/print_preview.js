@@ -445,8 +445,10 @@ cr.define('print_preview', function() {
           event.initialSettings.isInKioskAutoPrintMode;
       this.destinationStore_.setInitialDestinationId(
           event.initialSettings.initialDestinationId);
+      document.title = event.initialSettings.documentTitle;
       this.printTicketStore_.initialize(
           event.initialSettings.isDocumentModifiable,
+          event.initialSettings.documentTitle,
           event.initialSettings.isDuplexEnabled,
           event.initialSettings.isHeaderFooterEnabled,
           event.initialSettings.marginsType,
