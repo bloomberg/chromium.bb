@@ -87,6 +87,20 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
                !!document.getElementById('pod-row').getPodWithUsername_(''));
         """)
 
+  def _CheckPodVisible(self, username):
+    javascript = """
+        var pod = document.getElementById('pod-row').getPodWithUsername_('%s');
+        window.domAutomationController.send(!!pod && !pod.hidden);
+        """
+    return self.ExecuteJavascriptInOOBEWebUI(javascript % username)
+
+  def _WaitForPodVisibility(self, username, visible):
+    self.assertTrue(
+        self.WaitUntil(function=lambda: self._CheckPodVisible(username),
+                       expect_retval=visible),
+        msg='Expected pod for user %s to %s be visible.' %
+            (username, '' if visible else 'not'))
+
   def testGuestModeEnabled(self):
     """Checks that guest mode login can be enabled/disabled."""
     self.SetDevicePolicy({'guest_mode_enabled': True})
@@ -183,6 +197,42 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
     self.Login(user_index=0, expect_success=True)
     self.Logout()
     self.Login(user_index=1, expect_success=False)
+
+  def testUserWhitelistInAccountPicker(self):
+    """Checks that setting a whitelist removes non-whitelisted user pods."""
+    # TODO(bartfab): Remove this after crosbug.com/20709 is fixed.
+    self.TryToDisableLocalStateAutoClearing()
+    if self._local_state_auto_clearing:
+      logging.warn('Unable to disable local state clearing. Skipping test.')
+      return
+
+    # Disable the account picker so that the login form is shown and the Login()
+    # automation call can be used.
+    self.SetDevicePolicy({'show_user_names': False})
+    self._WaitForLoginFormReload()
+
+    # Log in to populate the list of existing users.
+    self.Login(user_index=0, expect_success=True)
+    self.Logout()
+    self.Login(user_index=1, expect_success=True)
+    self.Logout()
+
+    # Enable the account picker.
+    self.SetDevicePolicy({'show_user_names': True})
+    self._WaitForLoginScreenId('account-picker')
+
+    # Check pod visibility with and without a whitelist.
+    self._WaitForPodVisibility(username=self._usernames[0], visible=True)
+    self._WaitForPodVisibility(username=self._usernames[1], visible=True)
+
+    self.SetDevicePolicy({'show_user_names': True,
+                          'user_whitelist': [self._usernames[1]]})
+    self._WaitForPodVisibility(username=self._usernames[0], visible=False)
+    self._WaitForPodVisibility(username=self._usernames[1], visible=True)
+
+    self.SetDevicePolicy({'show_user_names': True})
+    self._WaitForPodVisibility(username=self._usernames[0], visible=True)
+    self._WaitForPodVisibility(username=self._usernames[1], visible=True)
 
 
 if __name__ == '__main__':
