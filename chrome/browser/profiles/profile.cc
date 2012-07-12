@@ -60,6 +60,9 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kSafeBrowsingReportingEnabled,
                              false,
                              PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kSafeBrowsingProceedAnywayDisabled,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kDisableExtensions,
                              false,
                              PrefService::UNSYNCABLE_PREF);

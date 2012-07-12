@@ -145,6 +145,10 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   // enabled, the report is scheduled to be sent on the |sb_service_|.
   void FinishMalwareDetails(int64 delay_ms);
 
+  // Returns the boolean value of the given |pref| from the PrefService of the
+  // Profile associated with |web_contents_|.
+  bool IsPrefEnabled(const char* pref);
+
   // A list of SafeBrowsingService::UnsafeResource for a tab that the user
   // should be warned about.  They are queued when displaying more than one
   // interstitial at a time.

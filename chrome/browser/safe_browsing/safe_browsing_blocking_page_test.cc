@@ -8,6 +8,8 @@
 // they work.
 
 #include "base/bind.h"
+#include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,6 +26,7 @@
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/test/test_browser_thread.h"
@@ -369,6 +372,34 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
     SendCommand("\"proceed\"");
   }
 
+  bool GetProceedLinkIsHidden(bool* result) {
+    InterstitialPage* interstitial = InterstitialPage::GetInterstitialPage(
+        chrome::GetActiveWebContents(browser()));
+    if (!interstitial)
+      return false;
+    content::RenderViewHost* rvh = interstitial->GetRenderViewHostForTesting();
+    if (!rvh)
+      return false;
+    scoped_ptr<base::Value> value(rvh->ExecuteJavascriptAndGetValue(
+        string16(),
+        ASCIIToUTF16(
+            // Make sure jstemplate has processed the page.
+            // TODO(joaodasilva): it would be better to make sure all the
+            // <script> tags have executed before injecting more javascript.
+            "var root = document.getElementById('template_root');\n"
+            "jstProcess(new JsEvalContext(templateData), root);\n"
+            // Now inspect the "proceed anyway" <div>.
+            "var list = document.querySelectorAll("
+            "    'div[jsdisplay=\"!proceedDisabled\"]');\n"
+            "if (list.length == 1)\n"
+            "  list[0].style.display === 'none';\n"
+            "else\n"
+            "  'Fail with non-boolean result value';\n")));
+    if (!value.get())
+      return false;
+    return value->GetAsBoolean(result);
+  }
+
  protected:
   TestMalwareDetailsFactory details_factory_;
 
@@ -405,6 +436,10 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareDontProceed) {
   AddURLResult(url, SafeBrowsingService::URL_MALWARE);
 
   ui_test_utils::NavigateToURL(browser(), url);
+
+  bool hidden = false;
+  EXPECT_TRUE(GetProceedLinkIsHidden(&hidden));
+  EXPECT_FALSE(hidden);
 
   SendCommand("\"takeMeBack\"");   // Simulate the user clicking "back"
   AssertNoInterstitial(false);   // Assert the interstitial is gone
@@ -561,4 +596,29 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
 
   EXPECT_EQ(url, chrome::GetActiveWebContents(browser())->GetURL());
   AssertReportSent();
+}
+
+// Verifies that the "proceed anyway" link isn't available when it is disabled
+// by the corresponding policy. Also verifies that sending the "proceed"
+// command anyway doesn't advance to the malware site.
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, ProceedDisabled) {
+  // Simulate a policy disabling the "proceed anyway" link.
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingProceedAnywayDisabled, true);
+
+  GURL url = test_server()->GetURL(kEmptyPage);
+  AddURLResult(url, SafeBrowsingService::URL_MALWARE);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // The "proceed anyway" link should be hidden.
+  bool hidden = false;
+  EXPECT_TRUE(GetProceedLinkIsHidden(&hidden));
+  EXPECT_TRUE(hidden);
+
+  // The "proceed" command should go back instead, if proceeding is disabled.
+  SendCommand("\"proceed\"");
+  AssertNoInterstitial(true);
+  EXPECT_EQ(
+      GURL(chrome::kAboutBlankURL),   // Back to "about:blank"
+      chrome::GetActiveWebContents(browser())->GetURL());
 }
