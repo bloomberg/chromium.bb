@@ -182,7 +182,9 @@ int SpdySM::SpdyHandleNewStream(
 }
 
 void SpdySM::OnStreamFrameData(SpdyStreamId stream_id,
-                               const char* data, size_t len) {
+                               const char* data,
+                               size_t len,
+                               SpdyDataFlags flags) {
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: StreamData(" << stream_id
           << ", [" << len << "])";
   StreamToSmif::iterator it = stream_to_smif_.find(stream_id);

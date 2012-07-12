@@ -87,7 +87,8 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface,
   // this method will be called with a zero-length buffer.
   virtual void OnStreamFrameData(SpdyStreamId stream_id,
                                  const char* data,
-                                 size_t len) OVERRIDE;
+                                 size_t len,
+                                 SpdyDataFlags flags) OVERRIDE;
 
   // Called when an individual setting within a SETTINGS frame has been parsed
   // and validated.
