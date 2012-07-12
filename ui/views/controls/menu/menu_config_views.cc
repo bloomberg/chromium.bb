@@ -32,7 +32,7 @@ MenuConfig* MenuConfig::Create() {
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
     config->separator_height = 1;
     config->item_min_height = 40;
-    config->item_left_margin = 0;
+    config->item_left_margin = 4;
   } else {
     config->separator_height = 5;
     config->item_min_height = 30;
