@@ -961,6 +961,43 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NoDownload) {
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 }
 
+IN_PROC_BROWSER_TEST_F(DownloadTest, MimeTypesToShowNotDownload) {
+  ASSERT_TRUE(test_server()->Start());
+
+  // These files should all be displayed in the browser.
+  const char* mime_types[] = {
+    // It is unclear whether to display text/css or download it.
+    //   Firefox 3: Display
+    //   Internet Explorer 7: Download
+    //   Safari 3.2: Download
+    // We choose to match Firefox due to the lot of complains
+    // from the users if css files are downloaded:
+    // http://code.google.com/p/chromium/issues/detail?id=7192
+    "text/css",
+    "text/javascript",
+    "text/plain",
+    "application/x-javascript",
+    "text/html",
+    "text/xml",
+    "text/xsl",
+    "application/xhtml+xml",
+    "image/png",
+    "image/gif",
+    "image/jpeg",
+    "image/bmp",
+  };
+  for (size_t i = 0; i < arraysize(mime_types); ++i) {
+    const char* mime_type = mime_types[i];
+    std::string path("contenttype?");
+    GURL url(test_server()->GetURL(path + mime_type));
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    // Check state.
+    EXPECT_EQ(1, browser()->tab_count());
+    EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
+  }
+}
+
 // Verify that when the DownloadResourceThrottle cancels a download, the
 // download never makes it to the downloads system.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {

@@ -368,7 +368,6 @@
         '../../glue/dom_operations_unittest.cc',
         '../../glue/dom_serializer_unittest.cc',
         '../../glue/glue_serialize_unittest.cc',
-        '../../glue/mimetype_unittest.cc',
         '../../glue/multipart_response_delegate_unittest.cc',
         '../../glue/regular_expression_unittest.cc',
         '../../glue/resource_fetcher_unittest.cc',
