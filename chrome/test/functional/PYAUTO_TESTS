@@ -849,6 +849,15 @@
       '-plugins',
       '-omnibox',
       '-special_tabs',
+      '-youtube.YoutubeTest.testPlayerStatus',
+      '-translate.TranslateTest.testSeveralLanguages',
+      '-translate.TranslateTest.testBarNotVisibleOnSSLErrorPage',
+      '-ntp.NTPTest.testLaunchAppFullScreen',
+      '-https.SSLTest.testSSLCertOK',
+      '-https.SSLTest.testSSLCertAuthorityOK',
+      '-media.media_basic_playback.MediaConstrainedNetworkPerfTest.testBasicPlaybackMatrix'
+      '-policy_prefs_ui.PolicyPrefsUITest.testNoUserPoliciesNoBanner',
+      '-policy_prefs_ui.PolicyPrefsUITest.testToggleUserPolicyTogglesBanner',
     ],
   },
 }
