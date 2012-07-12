@@ -12,6 +12,7 @@ body {
   -webkit-box-orient: vertical;
   -webkit-transition: opacity 70ms linear;
   -webkit-user-select: none;
+  cursor: default;
   display: -webkit-box;
   height: 100%;
   margin: 0;
@@ -875,7 +876,7 @@ input.rename {
   color: #888;
   content: '\00a0';
   position: relative;
-  top: 0;
+  top: 1px;
 }
 
 .table-header-sort-image-asc::after {
@@ -886,7 +887,7 @@ input.rename {
   color: #888;
   content: '\00a0';
   position: relative;
-  top: 0;
+  top: -1px;
 }
 
 
@@ -1470,4 +1471,12 @@ body:not([type='saveas-file']):not([type='full-page'])
   box-sizing: border-box;
   height: 100%;
   width: 50%;
+}
+
+#list-container .table-header-inner {
+  height: 100%;
+}
+
+#list-container .table-header-cell:hover {
+  background-color: #f2f2f2;
 }

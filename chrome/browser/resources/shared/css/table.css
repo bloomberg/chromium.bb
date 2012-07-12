@@ -65,6 +65,8 @@ list > [selected]:hover {
 }
 
 .table-header-inner {
+  -webkit-user-select: none;
+  cursor: default;
   display: -webkit-box;
   position: relative;
   text-align: start;
