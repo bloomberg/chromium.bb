@@ -64,6 +64,10 @@ class ActiveTabTest : public TabContentsTestHarness {
         extension_without_active_tab(
             CreateTestExtension("without activeTab", false)),
         ui_thread_(BrowserThread::UI, MessageLoop::current()) {
+  }
+
+  virtual void SetUp() {
+    TabContentsTestHarness::SetUp();
     Feature::SetChannelForTesting(chrome::VersionInfo::CHANNEL_UNKNOWN);
   }
 
