@@ -147,8 +147,13 @@ void ResourceLoader::MarkAsTransferring() {
   handler_.reset(new DoomedResourceHandler(handler_.Pass()));
 }
 
+void ResourceLoader::WillCompleteTransfer() {
+  handler_.reset();
+}
+
 void ResourceLoader::CompleteTransfer(scoped_ptr<ResourceHandler> new_handler) {
   DCHECK_EQ(DEFERRED_REDIRECT, deferred_stage_);
+  DCHECK(!handler_.get());
 
   handler_ = new_handler.Pass();
   handler_->SetController(this);

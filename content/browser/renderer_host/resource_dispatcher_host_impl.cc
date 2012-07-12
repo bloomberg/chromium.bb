@@ -934,6 +934,10 @@ void ResourceDispatcherHostImpl::BeginRequest(
   net::URLRequest* request;
   if (deferred_loader.get()) {
     request = deferred_loader->request();
+
+    // Give the ResourceLoader (or any of the ResourceHandlers held by it) a
+    // chance to reset some state before we complete the transfer.
+    deferred_loader->WillCompleteTransfer();
   } else {
     new_request.reset(new net::URLRequest(
         request_data.url,

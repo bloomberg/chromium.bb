@@ -26,6 +26,7 @@
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/test/test_content_browser_client.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_util.h"
@@ -133,21 +134,24 @@ class ResourceIPCAccumulator {
 // only for tests!
 void ResourceIPCAccumulator::GetClassifiedMessages(ClassifiedMessages* msgs) {
   while (!messages_.empty()) {
-    std::vector<IPC::Message> cur_requests;
-    cur_requests.push_back(messages_[0]);
+    // Ignore unknown message types as it is valid for code to generated other
+    // IPCs as side-effects that we are not testing here.
     int cur_id = RequestIDForMessage(messages_[0]);
-
-    // find all other messages with this ID
-    for (int i = 1; i < static_cast<int>(messages_.size()); i++) {
-      int id = RequestIDForMessage(messages_[i]);
-      if (id == cur_id) {
-        cur_requests.push_back(messages_[i]);
-        messages_.erase(messages_.begin() + i);
-        i--;
+    if (cur_id != -1) {
+      std::vector<IPC::Message> cur_requests;
+      cur_requests.push_back(messages_[0]);
+      // find all other messages with this ID
+      for (int i = 1; i < static_cast<int>(messages_.size()); i++) {
+        int id = RequestIDForMessage(messages_[i]);
+        if (id == cur_id) {
+          cur_requests.push_back(messages_[i]);
+          messages_.erase(messages_.begin() + i);
+          i--;
+        }
       }
+      msgs->push_back(cur_requests);
     }
     messages_.erase(messages_.begin());
-    msgs->push_back(cur_requests);
   }
 }
 
@@ -356,6 +360,16 @@ class TestUserData : public base::SupportsUserData::Data {
   bool* was_deleted_;
 };
 
+class TransfersAllNavigationsContentBrowserClient
+    : public TestContentBrowserClient {
+ public:
+  virtual bool ShouldSwapProcessesForRedirect(ResourceContext* resource_context,
+                                              const GURL& current_url,
+                                              const GURL& new_url) {
+    return true;
+  }
+};
+
 enum {
   DEFER_NONE                = 0,
   DEFER_STARTING_REQUEST    = 1 << 0,
@@ -503,6 +517,7 @@ class ResourceDispatcherHostTest : public testing::Test,
   void CancelRequest(int request_id);
 
   void CompleteStartRequest(int request_id);
+  void CompleteStartRequest(ResourceMessageFilter* filter, int request_id);
 
   void EnsureSchemeIsAllowed(const std::string& scheme) {
     ChildProcessSecurityPolicyImpl* policy =
@@ -519,8 +534,12 @@ class ResourceDispatcherHostTest : public testing::Test,
   // the default bahavior, pass an empty |headers|. |headers| should be raw-
   // formatted (NULLs instead of EOLs).
   void SetResponse(const std::string& headers, const std::string& data) {
-    response_headers_ = headers;
+    response_headers_ = net::HttpUtil::AssembleRawHeaders(headers.data(),
+                                                          headers.size());
     response_data_ = data;
+  }
+  void SetResponse(const std::string& headers) {
+    SetResponse(headers, std::string());
   }
 
   // Sets a particular resource type for any request from now on.
@@ -641,7 +660,13 @@ void ResourceDispatcherHostTest::CancelRequest(int request_id) {
 }
 
 void ResourceDispatcherHostTest::CompleteStartRequest(int request_id) {
-  GlobalRequestID gid(filter_->child_id(), request_id);
+  CompleteStartRequest(filter_, request_id);
+}
+
+void ResourceDispatcherHostTest::CompleteStartRequest(
+    ResourceMessageFilter* filter,
+    int request_id) {
+  GlobalRequestID gid(filter->child_id(), request_id);
   net::URLRequest* req = host_.GetURLRequest(gid);
   EXPECT_TRUE(req);
   if (req)
@@ -1198,9 +1223,7 @@ TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
 TEST_F(ResourceDispatcherHostTest, MimeSniffed) {
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
-  std::string response("HTTP/1.1 200 OK\n\n");
-  std::string raw_headers(net::HttpUtil::AssembleRawHeaders(response.data(),
-                                                            response.size()));
+  std::string raw_headers("HTTP/1.1 200 OK\n\n");
   std::string response_data("<html><title>Test One</title></html>");
   SetResponse(raw_headers, response_data);
 
@@ -1226,10 +1249,8 @@ TEST_F(ResourceDispatcherHostTest, MimeSniffed) {
 TEST_F(ResourceDispatcherHostTest, MimeNotSniffed) {
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
-  std::string response("HTTP/1.1 200 OK\n"
-                       "Content-type: image/jpeg\n\n");
-  std::string raw_headers(net::HttpUtil::AssembleRawHeaders(response.data(),
-                                                            response.size()));
+  std::string raw_headers("HTTP/1.1 200 OK\n"
+                          "Content-type: image/jpeg\n\n");
   std::string response_data("<html><title>Test One</title></html>");
   SetResponse(raw_headers, response_data);
 
@@ -1256,11 +1277,7 @@ TEST_F(ResourceDispatcherHostTest, MimeNotSniffed2) {
 
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
-  std::string response("HTTP/1.1 304 Not Modified\n\n");
-  std::string raw_headers(net::HttpUtil::AssembleRawHeaders(response.data(),
-                                                            response.size()));
-  std::string response_data;
-  SetResponse(raw_headers, response_data);
+  SetResponse("HTTP/1.1 304 Not Modified\n\n");
 
   HandleScheme("http");
   MakeTestRequest(0, 1, GURL("http:bla"));
@@ -1283,11 +1300,7 @@ TEST_F(ResourceDispatcherHostTest, MimeNotSniffed2) {
 TEST_F(ResourceDispatcherHostTest, MimeSniff204) {
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
-  std::string response("HTTP/1.1 204 No Content\n\n");
-  std::string raw_headers(net::HttpUtil::AssembleRawHeaders(response.data(),
-                                                            response.size()));
-  std::string response_data;
-  SetResponse(raw_headers, response_data);
+  SetResponse("HTTP/1.1 204 No Content\n\n");
 
   HandleScheme("http");
   MakeTestRequest(0, 1, GURL("http:bla"));
@@ -1310,11 +1323,7 @@ TEST_F(ResourceDispatcherHostTest, MimeSniff204) {
 TEST_F(ResourceDispatcherHostTest, MimeSniffEmpty) {
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
-  std::string response("HTTP/1.1 200 OK\n\n");
-  std::string raw_headers(net::HttpUtil::AssembleRawHeaders(response.data(),
-                                                            response.size()));
-  std::string response_data;
-  SetResponse(raw_headers, response_data);
+  SetResponse("HTTP/1.1 200 OK\n\n");
 
   HandleScheme("http");
   MakeTestRequest(0, 1, GURL("http:bla"));
@@ -1338,11 +1347,9 @@ TEST_F(ResourceDispatcherHostTest, MimeSniffEmpty) {
 TEST_F(ResourceDispatcherHostTest, ForbiddenDownload) {
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
-  std::string response("HTTP/1.1 403 Forbidden\n"
-                       "Content-disposition: attachment; filename=blah\n"
-                       "Content-type: application/octet-stream\n\n");
-  std::string raw_headers(net::HttpUtil::AssembleRawHeaders(response.data(),
-                                                            response.size()));
+  std::string raw_headers("HTTP/1.1 403 Forbidden\n"
+                          "Content-disposition: attachment; filename=blah\n"
+                          "Content-type: application/octet-stream\n\n");
   std::string response_data("<html><title>Test One</title></html>");
   SetResponse(raw_headers, response_data);
 
@@ -1388,10 +1395,8 @@ TEST_F(ResourceDispatcherHostTest, IgnoreCancelForDownloads) {
   int render_view_id = 0;
   int request_id = 1;
 
-  std::string response("HTTP\n"
-                       "Content-disposition: attachment; filename=foo\n\n");
-  std::string raw_headers(net::HttpUtil::AssembleRawHeaders(response.data(),
-                                                            response.size()));
+  std::string raw_headers("HTTP\n"
+                          "Content-disposition: attachment; filename=foo\n\n");
   std::string response_data("01234567890123456789\x01foobar");
 
   // Get past sniffing metrics in the BufferedResourceHandler.  Note that
@@ -1431,10 +1436,8 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContext) {
   int render_view_id = 0;
   int request_id = 1;
 
-  std::string response("HTTP\n"
-                       "Content-disposition: attachment; filename=foo\n\n");
-  std::string raw_headers(net::HttpUtil::AssembleRawHeaders(response.data(),
-                                                            response.size()));
+  std::string raw_headers("HTTP\n"
+                          "Content-disposition: attachment; filename=foo\n\n");
   std::string response_data("01234567890123456789\x01foobar");
   // Get past sniffing metrics.
   response_data.resize(1025, ' ');
@@ -1476,10 +1479,8 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContextTransferred) {
   int render_view_id = 0;
   int request_id = 1;
 
-  std::string response("HTTP/1.1 200 OK\n"
-                       "Content-Type: text/html; charset=utf-8\n\n");
-  std::string raw_headers(net::HttpUtil::AssembleRawHeaders(response.data(),
-                                                            response.size()));
+  std::string raw_headers("HTTP/1.1 200 OK\n"
+                          "Content-Type: text/html; charset=utf-8\n\n");
   std::string response_data("<html>foobar</html>");
 
   SetResponse(raw_headers, response_data);
@@ -1508,6 +1509,150 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContextTransferred) {
   // Cancelling by context should work.
   host_.CancelRequestsForContext(filter_->resource_context());
   EXPECT_EQ(0, host_.pending_requests());
+}
+
+TEST_F(ResourceDispatcherHostTest, TransferNavigation) {
+  EXPECT_EQ(0, host_.pending_requests());
+
+  int render_view_id = 0;
+  int request_id = 1;
+
+  // Configure initial request.
+  SetResponse("HTTP/1.1 302 Found\n"
+              "Location: http://other.com/blech\n\n");
+
+  SetResourceType(ResourceType::MAIN_FRAME);
+  HandleScheme("http");
+
+  // Temporarily replace ContentBrowserClient with one that will trigger the
+  // transfer navigation code paths.
+  ContentBrowserClient* old_client = GetContentClient()->browser();
+  TransfersAllNavigationsContentBrowserClient new_client;
+  GetContentClient()->set_browser_for_testing(&new_client);
+
+  MakeTestRequest(render_view_id, request_id, GURL("http://example.com/blah"));
+
+  // Restore.
+  GetContentClient()->set_browser_for_testing(old_client);
+
+  // This second filter is used to emulate a second process.
+  scoped_refptr<ForwardingFilter> second_filter = new ForwardingFilter(
+      this, browser_context_->GetResourceContext());
+
+  int new_render_view_id = 1;
+  int new_request_id = 2;
+
+  const std::string kResponseBody = "hello world";
+  SetResponse("HTTP/1.1 200 OK\n"
+              "Content-Type: text/plain\n\n",
+              kResponseBody);
+
+  ResourceHostMsg_Request request =
+      CreateResourceRequest("GET", ResourceType::MAIN_FRAME,
+                            GURL("http://other.com/blech"));
+  request.transferred_request_child_id = filter_->child_id();
+  request.transferred_request_request_id = request_id;
+
+  ResourceHostMsg_RequestResource transfer_request_msg(
+      new_render_view_id, new_request_id, request);
+  bool msg_was_ok;
+  host_.OnMessageReceived(transfer_request_msg, second_filter, &msg_was_ok);
+  MessageLoop::current()->RunAllPending();
+
+  // Flush all the pending requests.
+  while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
+
+  // Check generated messages.
+  ResourceIPCAccumulator::ClassifiedMessages msgs;
+  accum_.GetClassifiedMessages(&msgs);
+
+  ASSERT_EQ(1U, msgs.size());
+  CheckSuccessfulRequest(msgs[0], kResponseBody);
+}
+
+TEST_F(ResourceDispatcherHostTest, TransferNavigationAndThenRedirect) {
+  EXPECT_EQ(0, host_.pending_requests());
+
+  int render_view_id = 0;
+  int request_id = 1;
+
+  // Configure initial request.
+  SetResponse("HTTP/1.1 302 Found\n"
+              "Location: http://other.com/blech\n\n");
+
+  SetResourceType(ResourceType::MAIN_FRAME);
+  HandleScheme("http");
+
+  // Temporarily replace ContentBrowserClient with one that will trigger the
+  // transfer navigation code paths.
+  ContentBrowserClient* old_client = GetContentClient()->browser();
+  TransfersAllNavigationsContentBrowserClient new_client;
+  GetContentClient()->set_browser_for_testing(&new_client);
+
+  MakeTestRequest(render_view_id, request_id, GURL("http://example.com/blah"));
+
+  // Restore.
+  GetContentClient()->set_browser_for_testing(old_client);
+
+  // This second filter is used to emulate a second process.
+  scoped_refptr<ForwardingFilter> second_filter = new ForwardingFilter(
+      this, browser_context_->GetResourceContext());
+
+  int new_render_view_id = 1;
+  int new_request_id = 2;
+
+  // Delay the start of the next request so that we can setup the response for
+  // the next URL.
+  SetDelayedStartJobGeneration(true);
+
+  SetResponse("HTTP/1.1 302 Found\n"
+              "Location: http://other.com/blerg\n\n");
+
+  ResourceHostMsg_Request request =
+      CreateResourceRequest("GET", ResourceType::MAIN_FRAME,
+                            GURL("http://other.com/blech"));
+  request.transferred_request_child_id = filter_->child_id();
+  request.transferred_request_request_id = request_id;
+
+  ResourceHostMsg_RequestResource transfer_request_msg(
+      new_render_view_id, new_request_id, request);
+  bool msg_was_ok;
+  host_.OnMessageReceived(transfer_request_msg, second_filter, &msg_was_ok);
+  MessageLoop::current()->RunAllPending();
+
+  // Response data for "http://other.com/blerg":
+  const std::string kResponseBody = "hello world";
+  SetResponse("HTTP/1.1 200 OK\n"
+              "Content-Type: text/plain\n\n",
+              kResponseBody);
+
+  // OK, let the redirect happen.
+  SetDelayedStartJobGeneration(false);
+  CompleteStartRequest(second_filter, new_request_id);
+  MessageLoop::current()->RunAllPending();
+
+  // Flush all the pending requests.
+  while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
+
+  // Now, simulate the renderer choosing to follow the redirect.
+  ResourceHostMsg_FollowRedirect redirect_msg(
+      new_render_view_id, new_request_id, false, GURL());
+  host_.OnMessageReceived(redirect_msg, second_filter, &msg_was_ok);
+  MessageLoop::current()->RunAllPending();
+
+  // Flush all the pending requests.
+  while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
+
+  // Check generated messages.
+  ResourceIPCAccumulator::ClassifiedMessages msgs;
+  accum_.GetClassifiedMessages(&msgs);
+
+  ASSERT_EQ(1U, msgs.size());
+
+  // We should have received a redirect followed by a "normal" payload.
+  EXPECT_EQ(ResourceMsg_ReceivedRedirect::ID, msgs[0][0].type());
+  msgs[0].erase(msgs[0].begin());
+  CheckSuccessfulRequest(msgs[0], kResponseBody);
 }
 
 TEST_F(ResourceDispatcherHostTest, UnknownURLScheme) {

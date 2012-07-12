@@ -39,6 +39,7 @@ class ResourceLoader : public net::URLRequest::Delegate,
 
   bool is_transferring() const { return is_transferring_; }
   void MarkAsTransferring();
+  void WillCompleteTransfer();
   void CompleteTransfer(scoped_ptr<ResourceHandler> new_handler);
 
   net::URLRequest* request() { return request_.get(); }
