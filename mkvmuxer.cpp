@@ -1912,8 +1912,8 @@ bool Segment::UpdateChunkName(const char* ext, char** name) const {
   strcpy_s(str, length-strlen(ext_chk), chunking_base_name_);
   strcat_s(str, length, ext_chk);
 #else
-  strcpy(chunk_name_, chunking_base_name_);
-  strcat(chunk_name_, ext_chk);
+  strcpy(str, chunking_base_name_);
+  strcat(str, ext_chk);
 #endif
 
   delete [] *name;
