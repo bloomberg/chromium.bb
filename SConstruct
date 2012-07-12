@@ -2966,7 +2966,7 @@ def SetupLinuxEnvArm(env):
                 AR='true', RANLIB='true', INSTALL=FakeInstall)
     # Allow emulation on x86 hosts for testing built_elsewhere flag
     if not platform.machine().startswith('arm'):
-      linux_env.Replace(EMULATOR=jail + '/run_under_qemu_arm')
+      env.Replace(EMULATOR=jail + '/run_under_qemu_arm')
   else:
     if not which('arm-linux-gnueabi-g++-4.5'):
       print ("\nERRROR: arm trusted TC is not installed - try running:\n"
