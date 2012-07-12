@@ -33,7 +33,7 @@ uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
                          void                 *base_addr) {
   UNREFERENCED_PARAMETER(natp);
   return (uint32_t) NaClLdtAllocateByteSelector(NACL_LDT_DESCRIPTOR_DATA,
-                                                0,
+                                                /* read_exec_only= */ 1,
                                                 base_addr,
                                                 4);
 }
@@ -48,7 +48,7 @@ uint32_t NaClTlsChange(struct NaClAppThread *natp,
                        void                 *base_addr) {
   return (uint32_t)NaClLdtChangeByteSelector(natp->user.gs >> 3,
                                              NACL_LDT_DESCRIPTOR_DATA,
-                                             0,
+                                             /* read_exec_only= */ 1,
                                              base_addr,
                                              4);
 }
