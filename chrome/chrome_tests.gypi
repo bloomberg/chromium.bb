@@ -2434,6 +2434,7 @@
             ['exclude', '^browser/chrome_to_mobile'],
             ['exclude', '^browser/themes/'],
             ['exclude', '^browser/ui/intents/'],
+            ['exclude', '^browser/ui/omnibox/'],
             ['exclude', '^browser/ui/panels'],
             ['exclude', '^browser/ui/tabs/'],
             ['exclude', '^browser/ui/toolbar/'],
