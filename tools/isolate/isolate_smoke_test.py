@@ -198,11 +198,11 @@ class IsolateModeBase(IsolateBase):
         # Used the skip recalculating the hash. Use the most recent update
         # time.
         v[u'timestamp'] = int(round(filestats.st_mtime))
-
-      if self.LEVEL >= isolate.WITH_HASH:
         if is_link:
           v['link'] = os.readlink(filepath)
-        else:
+
+      if self.LEVEL >= isolate.WITH_HASH:
+        if not is_link:
           # Upgrade the value to unicode so diffing the structure in case of
           # test failure is easier, since the basestring type must match,
           # str!=unicode.

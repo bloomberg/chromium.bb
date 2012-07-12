@@ -141,8 +141,10 @@ def expand_directories_and_symlinks(indir, infiles, blacklist):
 def replace_variable(part, variables):
   m = re.match(r'<\(([A-Z_]+)\)', part)
   if m:
-    assert m.group(1) in variables, (
-        '%s was not found in %s' % (m.group(1), variables))
+    if m.group(1) not in variables:
+      raise ExecutionError(
+        'Variable "%s" was not found in %s.\nDid you forget to specify '
+        '--variable?' % (m.group(1), variables))
     return variables[m.group(1)]
   return part
 
@@ -193,6 +195,13 @@ def process_input(filepath, prevdict, level, read_only):
                one of 4 modes: 0755 (rwx), 0644 (rw), 0555 (rx), 0444 (r). On
                windows, mode is not set since all files are 'executable' by
                default.
+
+  Behaviors:
+  - NO_INFO retrieves no information.
+  - STATS_ONLY retrieves the file mode, file size, file timestamp, file link
+    destination if it is a file link.
+  - WITH_HASH retrieves all of STATS_ONLY plus the sha-1 of the content of the
+    file.
   """
   assert level in (NO_INFO, STATS_ONLY, WITH_HASH)
   out = {}
@@ -223,12 +232,12 @@ def process_input(filepath, prevdict, level, read_only):
       if 'link' in prevdict:
         # Reuse the previous link destination.
         out['link'] = prevdict['link']
+    if is_link and not 'link' in out:
+      # A symlink, store the link destination.
+      out['link'] = os.readlink(filepath)
 
   if level >= WITH_HASH and not out.get('sha-1') and not out.get('link'):
-    if is_link:
-      # A symlink, store the link destination instead.
-      out['link'] = os.readlink(filepath)
-    else:
+    if not is_link:
       with open(filepath, 'rb') as f:
         out['sha-1'] = hashlib.sha1(f.read()).hexdigest()
   return out
@@ -240,11 +249,11 @@ def recreate_tree(outdir, indir, infiles, action):
   Arguments:
     outdir:    Output directory to create the files in.
     indir:     Root directory the infiles are based in.
-    infiles:   List of files to map from |indir| to |outdir|.
+    infiles:   dict of files to map from |indir| to |outdir|.
     action:    See assert below.
   """
   logging.debug(
-      'recreate_tree(%s, %s, %s, %s)' % (outdir, indir, infiles, action))
+      'recreate_tree(%s, %s, %s, %s)' % (outdir, indir, len(infiles), action))
   logging.info('Mapping from %s to %s' % (indir, outdir))
 
   assert action in (
@@ -258,14 +267,14 @@ def recreate_tree(outdir, indir, infiles, action):
   # Do not call abspath until the directory exists.
   outdir = os.path.abspath(outdir)
 
-  for relfile in infiles:
+  for relfile, metadata in infiles.iteritems():
     infile = os.path.join(indir, relfile)
     outfile = os.path.join(outdir, relfile)
     outsubdir = os.path.dirname(outfile)
     if not os.path.isdir(outsubdir):
       os.makedirs(outsubdir)
-    if os.path.islink(infile):
-      pointed = os.readlink(infile)
+    if 'link' in metadata:
+      pointed = metadata['link']
       logging.debug('Symlink: %s -> %s' % (outfile, pointed))
       os.symlink(pointed, outfile)
     else:
@@ -761,7 +770,7 @@ def CMDremap(args):
   recreate_tree(
       options.outdir,
       complete_state.root_dir,
-      complete_state.result.files.keys(),
+      complete_state.result.files,
       run_test_from_archive.HARDLINK)
   if complete_state.result.read_only:
     run_test_from_archive.make_writable(options.outdir, True)
@@ -799,7 +808,7 @@ def CMDrun(args):
     recreate_tree(
         options.outdir,
         complete_state.root_dir,
-        complete_state.result.files.keys(),
+        complete_state.result.files,
         run_test_from_archive.HARDLINK)
     cwd = os.path.normpath(
         os.path.join(options.outdir, complete_state.result.relative_cwd))
@@ -944,7 +953,7 @@ class OptionParserIsolate(OptionParserWithLogging):
 
     if self.require_result and not options.result:
       self.error('--result is required.')
-    if not options.result.endswith('.results'):
+    if options.result and not options.result.endswith('.results'):
       self.error('--result value must end with \'.results\'')
 
     if options.result:
