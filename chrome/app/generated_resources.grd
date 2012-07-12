@@ -5867,6 +5867,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_VIEWS_TEXTFIELD_DESCRIPTION" desc="Description of the flag to use NativeTextfieldViews instead of NativeTextfieldWin.">
         Enables an experimental textfield for application UI; does not effect web content.
       </message>
+      <message name="IDS_FLAGS_ENABLE_FRAMELESS_DIALOG_NAME" desc="Name of the flag to use when drawing constrained dialogs using the new frameless style.">
+        Enable Experimental Frameless Dialogs.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_FRAMELESS_DIALOG_DESCRIPTION" desc="Description of the flag to use NativeTextfieldViews instead of NativeTextfieldWin.">
+        Enables an experimental frame treatment on certain dialogs.
+      </message>
 
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_FLAGS_ALLOW_TOUCHPAD_THREE_FINGER_CLICK_NAME" desc="Name for the flag to enable touchpad three finger click as middle button.">

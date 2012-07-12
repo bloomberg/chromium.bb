@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
@@ -13,8 +14,10 @@
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "chrome/browser/ui/views/constrained_window_frame_simple.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -50,7 +53,6 @@
 #include "ash/shell.h"
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/visibility_controller.h"
-#include "base/command_line.h"
 #include "ui/aura/window.h"
 #endif
 
@@ -632,15 +634,19 @@ gfx::NativeWindow ConstrainedWindowViews::GetNativeWindow() {
 // ConstrainedWindowViews, views::Widget overrides:
 
 views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
-#if defined(USE_ASH)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(ash::switches::kAuraGoogleDialogFrames))
-    return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(this);
-  ConstrainedWindowFrameViewAsh* frame = new ConstrainedWindowFrameViewAsh;
-  frame->Init(this);
-  return frame;
+  if (command_line->HasSwitch(switches::kEnableFramelessConstrainedDialogs)) {
+    return new ConstrainedWindowFrameSimple(this);
+  } else {
+#if defined(USE_ASH)
+    if (command_line->HasSwitch(ash::switches::kAuraGoogleDialogFrames))
+      return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(this);
+    ConstrainedWindowFrameViewAsh* frame = new ConstrainedWindowFrameViewAsh;
+    frame->Init(this);
+    return frame;
 #endif
-  return new ConstrainedWindowFrameView(this);
+    return new ConstrainedWindowFrameView(this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

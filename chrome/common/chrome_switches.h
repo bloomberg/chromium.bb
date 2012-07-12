@@ -147,6 +147,7 @@ extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableExtensionActivityLogging[];
 extern const char kEnableExtensionActivityUI[];
 extern const char kEnableExtensionTimelineApi[];
+extern const char kEnableFramelessConstrainedDialogs[];
 extern const char kEnableFileCookies[];
 extern const char kEnableHttpPipelining[];
 extern const char kEnableHtml5Camera[];

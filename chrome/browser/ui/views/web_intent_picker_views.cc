@@ -26,6 +26,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
+#include "grit/shared_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "ipc/ipc_message.h"
@@ -52,11 +53,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/views/window/non_client_view.h"
-
-// TODO(binji): The current constrained dialog implementation already has a
-// close button. Remove this define and the #if checks below when we switch to
-// the new implementation.
-// #define USE_CLOSE_BUTTON
 
 using content::WebContents;
 using views::GridLayout;
@@ -720,10 +716,8 @@ class WebIntentPickerViews : public views::ButtonListener,
   // Resize the constrained window to the size of its contents.
   void SizeToContents();
 
-#if defined(USE_CLOSE_BUTTON)
   // Returns a new close button.
   views::ImageButton* CreateCloseButton();
-#endif
 
   // A weak pointer to the WebIntentPickerDelegate to notify when the user
   // chooses a service or cancels.
@@ -823,9 +817,7 @@ WebIntentPickerViews::~WebIntentPickerViews() {
 
 void WebIntentPickerViews::ButtonPressed(views::Button* sender,
                                          const views::Event& event) {
-#if defined(USE_CLOSE_BUTTON)
-  delegate_->OnPickerCancelled();
-#endif
+  delegate_->OnPickerClosed();
 }
 
 void WebIntentPickerViews::WindowClosing() {
@@ -961,10 +953,8 @@ void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
   header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
                        GridLayout::USE_PREF, 0, 0);  // Link.
   header_cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
-#if defined(USE_CLOSE_BUTTON)
   header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
                        GridLayout::USE_PREF, 0, 0);  // Close Button.
-#endif
 
   views::ColumnSet* full_cs = grid_layout->AddColumnSet(1);
   full_cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0,
@@ -993,9 +983,7 @@ void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
     choose_another_service_link_->set_listener(this);
   }
 
-#if defined(USE_CLOSE_BUTTON)
   grid_layout->AddView(CreateCloseButton());
-#endif
 
   // Inline web contents row.
   grid_layout->StartRow(0, 1);
@@ -1112,10 +1100,8 @@ void WebIntentPickerViews::InitContents() {
   header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
                        GridLayout::USE_PREF, 0, 0);  // Title.
   header_cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
-#if defined(USE_CLOSE_BUTTON)
   header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
                        GridLayout::USE_PREF, 0, 0);  // Close Button.
-#endif
 
   views::ColumnSet* full_cs = grid_layout->AddColumnSet(kFullWidthColumnSet);
   full_cs->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
@@ -1136,9 +1122,7 @@ void WebIntentPickerViews::InitContents() {
   action_label_->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
   grid_layout->AddView(action_label_);
 
-#if defined(USE_CLOSE_BUTTON)
   grid_layout->AddView(CreateCloseButton());
-#endif
 
   // Padding row.
   grid_layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
@@ -1203,16 +1187,14 @@ void WebIntentPickerViews::SizeToContents() {
   window_->CenterWindow(new_window_bounds.size());
 }
 
-#if defined(USE_CLOSE_BUTTON)
 views::ImageButton* WebIntentPickerViews::CreateCloseButton() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   views::ImageButton* close_button = new views::ImageButton(this);
   close_button->SetImage(views::CustomButton::BS_NORMAL,
-                          rb.GetImageSkiaNamed(IDR_CLOSE_BAR));
+                          rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X));
   close_button->SetImage(views::CustomButton::BS_HOT,
-                          rb.GetImageSkiaNamed(IDR_CLOSE_BAR_H));
+                          rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X_HOVER));
   close_button->SetImage(views::CustomButton::BS_PUSHED,
-                          rb.GetImageSkiaNamed(IDR_CLOSE_BAR_P));
+                          rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X_HOVER));
   return close_button;
 }
-#endif
