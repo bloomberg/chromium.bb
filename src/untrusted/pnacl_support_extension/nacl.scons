@@ -22,9 +22,7 @@ lib_override = ''
 if arch == 'x86-64':
   lib_override = ('--lib_override=%s,${LIB_DIR}/libpnacl_irt_shim.a ' % arch)
 
-# The generator creates a 'pnacl_all' subdir, so we need to go
-# one level up from that.
-output_dir = os.path.dirname(env.GetPnaclExtensionNode().abspath)
+output_dir = env.GetPnaclExtensionRootNode().abspath
 
 generated_crx = env.Command(
     # Output (a directory with a bunch of files, like manifest.json)
@@ -40,8 +38,7 @@ generated_crx = env.Command(
      lib_override +
      # Build only the unpacked extension, not zipped up files, etc.
      '-u ' +
-     # Dummy version number that's probably newer than anything.
-     '9999.9.9.9'))
+     env.GetPnaclExtensionDummyVersion()))
 
 # NOTE: Toolchain directory dependencies don't seem to work in SCons, so we
 # end up setting this to 'AlwaysBuild'.

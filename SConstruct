@@ -1577,12 +1577,27 @@ def GeneratedManifestNode(env, manifest):
   return result
 
 
-def GetPnaclExtensionNode(env):
-  """Get the scons node representing the pnacl support files.
+def GetPnaclExtensionRootNode(env):
+  """Get the scons node representing the root directory of pnacl support files.
   """
   # This is "built" by src/untrusted/pnacl_support_extension/nacl.scons.
-  return env.Dir(os.path.join('${DESTINATION_ROOT}', 'pnacl_support',
-                              'pnacl_all'))
+  return env.Dir('${DESTINATION_ROOT}/pnacl_support')
+
+pre_base_env.AddMethod(GetPnaclExtensionRootNode)
+
+def GetPnaclExtensionDummyVersion(env):
+  """ We supply a dummy version number when packaging the test-extension
+  that is probably newer than all other versions. """
+  return '9999.9.9.9'
+
+pre_base_env.AddMethod(GetPnaclExtensionDummyVersion)
+
+def GetPnaclExtensionNode(env):
+  """Get the scons node representing a specific version of pnacl support files.
+  """
+  # This is "built" by src/untrusted/pnacl_support_extension/nacl.scons.
+  return env.Dir('${DESTINATION_ROOT}/pnacl_support/' +
+                 env.GetPnaclExtensionDummyVersion())
 
 pre_base_env.AddMethod(GetPnaclExtensionNode)
 
@@ -1635,7 +1650,7 @@ def PPAPIBrowserTester(env,
                        # list of key/value pairs that are passed to the test
                        test_args=(),
                        # list of "--flag=value" pairs (no spaces!)
-                       browser_flags=(),
+                       browser_flags=None,
                        # redirect streams of NaCl program to files
                        nacl_exe_stdin=None,
                        nacl_exe_stdout=None,
@@ -1649,6 +1664,10 @@ def PPAPIBrowserTester(env,
   # Bug http://code.google.com/p/nativeclient/issues/detail?id=2224
   if env.Bit('target_arm_thumb2'):
     return []
+
+  # Handle issues with mutating any python default arg lists.
+  if browser_flags is None:
+    browser_flags = []
 
   if env.Bit('pnacl_generate_pexe'):
     # We likely prefer to choose the 'portable' field in nmfs in this mode.
@@ -1696,8 +1715,13 @@ def PPAPIBrowserTester(env,
   for extension in extensions:
     command.extend(['--extension', extension])
   if env.Bit('bitcode'):
-    pnacl_extension = env.GetPnaclExtensionNode()
-    command.extend(['--extension', pnacl_extension])
+    # TODO(jvoung): remove this --extension once we have --pnacl-dir working.
+    command.extend(['--extension', env.GetPnaclExtensionNode().abspath])
+    # Enable the installed version of pnacl, and point to a custom install
+    # directory for testing purposes.
+    browser_flags.append('--enable-pnacl')
+    browser_flags.append('--pnacl-dir=%s' %
+                         env.GetPnaclExtensionRootNode().abspath)
   for dest_path, dep_file in map_files:
     command.extend(['--map_file', dest_path, dep_file])
   for file_ext, mime_type in mime_types:
@@ -1774,6 +1798,9 @@ def PPAPIBrowserTester(env,
                          size='huge',
                          capture_output=capture_output,
                          **extra)
+  # Also indicate that we depend on the layed-out pnacl translator.
+  if env.Bit('bitcode'):
+    env.Depends(node, env.GetPnaclExtensionNode())
   for side_effect in side_effects:
     env.SideEffect(side_effect, node)
   # We can't check output if the test is not run.

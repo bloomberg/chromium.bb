@@ -243,8 +243,8 @@ class PnaclDirs(object):
     return PnaclDirs.output_dir
 
   @staticmethod
-  def OutputAllDir():
-    return J(PnaclDirs.OutputDir(), 'pnacl_all')
+  def OutputAllDir(version_quad):
+    return J(PnaclDirs.OutputDir(), version_quad)
 
   @staticmethod
   def OutputArchBase(arch):
@@ -371,9 +371,9 @@ def BuildArchCRX(version_quad, arch, lib_overrides, options):
   CRXGen.RunCRXGen(parent_dir, options.prev_priv_key)
 
 
-def LayoutAllDir():
+def LayoutAllDir(version_quad):
   StepBanner("Layout All Dir", "Copying Arch specific to Arch-independent.")
-  target_dir = PnaclDirs.OutputAllDir()
+  target_dir = PnaclDirs.OutputAllDir(version_quad)
   for arch in ARCHES:
     arch_parent, arch_dir = PnaclDirs.OutputArchDir(arch)
     # NOTE: The arch_parent contains the arch-specific manifest.json files.
@@ -390,7 +390,7 @@ def BuildCWSZip(version_quad):
   versions were built.
   """
   StepBanner("CWS ZIP", "Making a zip with all architectures.")
-  target_dir = PnaclDirs.OutputAllDir()
+  target_dir = PnaclDirs.OutputAllDir(version_quad)
 
   web_accessible = GetWebAccessibleResources(target_dir)
 
@@ -411,7 +411,7 @@ def BuildUnpacked(version_quad):
   """
   StepBanner("UNPACKED CRX", "Making an unpacked CRX of all architectures.")
 
-  target_dir = PnaclDirs.OutputAllDir()
+  target_dir = PnaclDirs.OutputAllDir(version_quad)
   web_accessible = GetWebAccessibleResources(target_dir)
   # Overwrite the manifest file (if there was one already).
   PnaclPackaging.GenerateManifests(target_dir,
@@ -430,7 +430,7 @@ def BuildAll(version_quad, lib_overrides, options):
   StepBanner("BUILD_ALL", "Packaging for version: %s" % version_quad)
   for arch in ARCHES:
     BuildArchCRX(version_quad, arch, lib_overrides, options)
-  LayoutAllDir()
+  LayoutAllDir(version_quad)
   if not options.unpacked_only:
     BuildCWSZip(version_quad)
   BuildUnpacked(version_quad)
