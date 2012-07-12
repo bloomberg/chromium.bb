@@ -472,6 +472,10 @@ ProfileImplIOData::InitializeAppRequestContext(
     const std::string& app_id) const {
   AppRequestContext* context = new AppRequestContext;
 
+  // If this is for a guest process, we should not persist cookies and http
+  // cache.
+  bool guest_process = (app_id.find("guest-") != std::string::npos);
+
   // Copy most state from the main context.
   context->CopyFrom(main_context);
 
@@ -490,19 +494,25 @@ ProfileImplIOData::InitializeAppRequestContext(
   bool playback_mode = command_line.HasSwitch(switches::kPlaybackMode);
 
   // Use a separate HTTP disk cache for isolated apps.
-  net::HttpCache::DefaultBackend* app_backend =
-      new net::HttpCache::DefaultBackend(
-          net::DISK_CACHE,
-          cache_path,
-          cache_max_size,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
+  net::HttpCache::BackendFactory* app_backend = NULL;
+  if (guest_process) {
+    app_backend = net::HttpCache::DefaultBackend::InMemory(0);
+  } else {
+    app_backend = new net::HttpCache::DefaultBackend(
+        net::DISK_CACHE,
+        cache_path,
+        cache_max_size,
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
+  }
   net::HttpNetworkSession* main_network_session =
       main_http_factory_->GetSession();
   net::HttpCache* app_http_cache =
       new net::HttpCache(main_network_session, app_backend);
 
   scoped_refptr<net::CookieStore> cookie_store = NULL;
-  if (record_mode || playback_mode) {
+  if (guest_process) {
+    cookie_store = new net::CookieMonster(NULL, NULL);
+  } else if (record_mode || playback_mode) {
     // Don't use existing cookies and use an in-memory store.
     // TODO(creis): We should have a cookie delegate for notifying the cookie
     // extensions API, but we need to update it to understand isolated apps

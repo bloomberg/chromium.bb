@@ -12,6 +12,7 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -82,6 +83,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -722,6 +724,19 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContextForRenderProcess(
       return GetRequestContextForIsolatedApp(installed_app->id());
     }
   }
+
+  content::RenderProcessHost* rph = content::RenderProcessHost::FromID(
+      renderer_child_id);
+  if (rph && rph->IsGuest()) {
+    // For guest processes (used by the browser tag), we need to isolate the
+    // storage.
+    // TODO(nasko): Until we have proper storage partitions, create a
+    // non-persistent context using the RPH's id.
+    std::string id("guest-");
+    id.append(base::IntToString(renderer_child_id));
+    return GetRequestContextForIsolatedApp(id);
+  }
+
   return GetRequestContext();
 }
 
