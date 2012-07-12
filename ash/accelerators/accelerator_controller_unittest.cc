@@ -957,30 +957,15 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
 }
 
 TEST_F(AcceleratorControllerTest, ReservedAccelerators) {
-  // (Shift+)Alt+Tab and Chrome OS top-row keys are reserved.
-  EXPECT_TRUE(GetController()->IsReservedAccelerator(
-      ui::Accelerator(ui::VKEY_TAB, ui::EF_ALT_DOWN)));
-  EXPECT_TRUE(GetController()->IsReservedAccelerator(
-      ui::Accelerator(ui::VKEY_TAB, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)));
-  EXPECT_TRUE(GetController()->IsReservedAccelerator(
+  // (Shift+)Alt+Tab is reserved, while (Shift+)F5 is not.
+  EXPECT_FALSE(GetController()->IsReservedAccelerator(
       ui::Accelerator(ui::VKEY_F5, ui::EF_NONE)));
   EXPECT_TRUE(GetController()->IsReservedAccelerator(
-      ui::Accelerator(ui::VKEY_F6, ui::EF_NONE)));
-  EXPECT_TRUE(GetController()->IsReservedAccelerator(
-      ui::Accelerator(ui::VKEY_F7, ui::EF_NONE)));
-  EXPECT_TRUE(GetController()->IsReservedAccelerator(
-      ui::Accelerator(ui::VKEY_F8, ui::EF_NONE)));
-  EXPECT_TRUE(GetController()->IsReservedAccelerator(
-      ui::Accelerator(ui::VKEY_F9, ui::EF_NONE)));
-  EXPECT_TRUE(GetController()->IsReservedAccelerator(
-      ui::Accelerator(ui::VKEY_F10, ui::EF_NONE)));
-  // Others are not reserved.
+      ui::Accelerator(ui::VKEY_TAB, ui::EF_ALT_DOWN)));
   EXPECT_FALSE(GetController()->IsReservedAccelerator(
-      ui::Accelerator(ui::VKEY_PRINT, ui::EF_NONE)));
-  EXPECT_FALSE(GetController()->IsReservedAccelerator(
-      ui::Accelerator(ui::VKEY_TAB, ui::EF_NONE)));
-  EXPECT_FALSE(GetController()->IsReservedAccelerator(
-      ui::Accelerator(ui::VKEY_A, ui::EF_NONE)));
+      ui::Accelerator(ui::VKEY_F5, ui::EF_SHIFT_DOWN)));
+  EXPECT_TRUE(GetController()->IsReservedAccelerator(
+      ui::Accelerator(ui::VKEY_TAB, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)));
 }
 
 }  // namespace test
