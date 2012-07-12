@@ -46,20 +46,20 @@ void RunBlockingPoolTask() {
 
 GDataCacheEntry ToCacheEntry(int cache_state) {
   GDataCacheEntry cache_entry;
-  cache_entry.SetPresent(cache_state & CACHE_STATE_PRESENT);
-  cache_entry.SetPinned(cache_state & CACHE_STATE_PINNED);
-  cache_entry.SetDirty(cache_state & CACHE_STATE_DIRTY);
-  cache_entry.SetMounted(cache_state & CACHE_STATE_MOUNTED);
-  cache_entry.SetPersistent(cache_state & CACHE_STATE_PERSISTENT);
+  cache_entry.set_is_present(cache_state & TEST_CACHE_STATE_PRESENT);
+  cache_entry.set_is_pinned(cache_state & TEST_CACHE_STATE_PINNED);
+  cache_entry.set_is_dirty(cache_state & TEST_CACHE_STATE_DIRTY);
+  cache_entry.set_is_mounted(cache_state & TEST_CACHE_STATE_MOUNTED);
+  cache_entry.set_is_persistent(cache_state & TEST_CACHE_STATE_PERSISTENT);
   return cache_entry;
 }
 
 bool CacheStatesEqual(const GDataCacheEntry& a, const GDataCacheEntry& b) {
-  return (a.IsPresent() == b.IsPresent() &&
-          a.IsPinned() == b.IsPinned() &&
-          a.IsDirty() == b.IsDirty() &&
-          a.IsMounted() == b.IsMounted() &&
-          a.IsPersistent() == b.IsPersistent());
+  return (a.is_present() == b.is_present() &&
+          a.is_pinned() == b.is_pinned() &&
+          a.is_dirty() == b.is_dirty() &&
+          a.is_mounted() == b.is_mounted() &&
+          a.is_persistent() == b.is_persistent());
 }
 
 }  // namespace test_util

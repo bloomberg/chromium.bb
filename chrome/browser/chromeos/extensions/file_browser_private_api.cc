@@ -1880,11 +1880,11 @@ void GetGDataFilePropertiesFunction::CacheStateReceived(
     base::DictionaryValue* property_dict,
     bool /* success */,
     const gdata::GDataCacheEntry& cache_entry) {
-  // In case of an error (i.e. success is false), cache_entry.cache_state is
-  // set to CACHE_STATE_NONE.
-  property_dict->SetBoolean("isPinned", cache_entry.IsPinned());
-  property_dict->SetBoolean("isPresent", cache_entry.IsPresent());
-  property_dict->SetBoolean("isDirty", cache_entry.IsDirty());
+  // In case of an error (i.e. success is false), cache_entry.is_*() all
+  // returns false.
+  property_dict->SetBoolean("isPinned", cache_entry.is_pinned());
+  property_dict->SetBoolean("isPresent", cache_entry.is_present());
+  property_dict->SetBoolean("isDirty", cache_entry.is_dirty());
 
   CompleteGetFileProperties();
 }

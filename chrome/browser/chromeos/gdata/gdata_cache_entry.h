@@ -9,22 +9,17 @@
 
 namespace gdata {
 
-// This is used as a bitmask for the cache state.
-// TODO(satorux): Remove this: crrev.com/136921
-enum GDataCacheState {
-  CACHE_STATE_NONE       = 0x0,
-  CACHE_STATE_PINNED     = 0x1 << 0,
-  CACHE_STATE_PRESENT    = 0x1 << 1,
-  CACHE_STATE_DIRTY      = 0x1 << 2,
-  CACHE_STATE_MOUNTED    = 0x1 << 3,
-  CACHE_STATE_PERSISTENT = 0x1 << 4,
-};
-
 // Structure to store information of an existing cache file.
 // Cache files are stored in 'tmp' or 'persistent' directory.
 class GDataCacheEntry {
  public:
-  GDataCacheEntry() : cache_state_(CACHE_STATE_NONE) {}
+  GDataCacheEntry()
+      : is_present_(false),
+        is_pinned_(false),
+        is_dirty_(false),
+        is_mounted_(false),
+        is_persistent_(false) {
+  }
 
   // The MD5 of the cache file. This can be "local" if the file is
   // locally modified.
@@ -32,55 +27,36 @@ class GDataCacheEntry {
   void set_md5(const std::string& md5) { md5_ = md5; }
 
   // Returns true if the file is present locally.
-  bool IsPresent() const { return cache_state_ & CACHE_STATE_PRESENT; }
+  bool is_present() const { return is_present_; }
 
   // Returns true if the file is pinned (i.e. available offline).
-  bool IsPinned() const { return cache_state_ & CACHE_STATE_PINNED; }
+  bool is_pinned() const { return is_pinned_; }
 
   // Returns true if the file is dirty (i.e. modified locally).
-  bool IsDirty() const { return cache_state_ & CACHE_STATE_DIRTY; }
+  bool is_dirty() const { return is_dirty_; }
 
   // Returns true if the file is a mounted archive file.
-  bool IsMounted() const { return cache_state_ & CACHE_STATE_MOUNTED; }
+  bool is_mounted() const { return is_mounted_; }
 
   // Returns true if the file is in the persistent directory.
-  bool IsPersistent() const { return cache_state_ & CACHE_STATE_PERSISTENT; }
+  bool is_persistent() const { return is_persistent_; }
 
   // Setters for the states describe above.
-  void SetPresent(bool value) {
-    if (value)
-      cache_state_ |= CACHE_STATE_PRESENT;
-    else
-      cache_state_ &= ~CACHE_STATE_PRESENT;
-  }
-  void SetPinned(bool value) {
-    if (value)
-      cache_state_ |= CACHE_STATE_PINNED;
-    else
-      cache_state_ &= ~CACHE_STATE_PINNED;
-  }
-  void SetDirty(bool value) {
-    if (value)
-      cache_state_ |= CACHE_STATE_DIRTY;
-    else
-      cache_state_ &= ~CACHE_STATE_DIRTY;
-  }
-  void SetMounted(bool value) {
-    if (value)
-      cache_state_ |= CACHE_STATE_MOUNTED;
-    else
-      cache_state_ &= ~CACHE_STATE_MOUNTED;
-  }
-  void SetPersistent(bool value) {
-    if (value)
-      cache_state_ |= CACHE_STATE_PERSISTENT;
-    else
-      cache_state_ &= ~CACHE_STATE_PERSISTENT;
-  }
+  void set_is_present(bool value) { is_present_ = value; }
+  void set_is_pinned(bool value) { is_pinned_ = value; }
+  void set_is_dirty(bool value) { is_dirty_ = value; }
+  void set_is_mounted(bool value) { is_mounted_ = value; }
+  void set_is_persistent(bool value) { is_persistent_ = value; }
 
  private:
   std::string md5_;
-  int cache_state_;
+  bool is_present_;
+  bool is_pinned_;
+  bool is_dirty_;
+  bool is_mounted_;
+  bool is_persistent_;
+  // When adding a new state, be sure to update TestGDataCacheState and test
+  // functions defined in gdata_test_util.cc.
 };
 
 }  // namespace gdata

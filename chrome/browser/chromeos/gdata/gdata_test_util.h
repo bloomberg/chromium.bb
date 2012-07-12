@@ -19,7 +19,18 @@ namespace test_util {
 // repeatedly.
 void RunBlockingPoolTask();
 
-// Converts |cache_state| to a GDataCacheEntry.
+// This is a bitmask of cache states in GDataCacheEntry. Used only in tests.
+enum TestGDataCacheState {
+  TEST_CACHE_STATE_NONE       = 0,
+  TEST_CACHE_STATE_PINNED     = 1 << 0,
+  TEST_CACHE_STATE_PRESENT    = 1 << 1,
+  TEST_CACHE_STATE_DIRTY      = 1 << 2,
+  TEST_CACHE_STATE_MOUNTED    = 1 << 3,
+  TEST_CACHE_STATE_PERSISTENT = 1 << 4,
+};
+
+// Converts |cache_state| which is a bit mask of TestGDataCacheState, to a
+// GDataCacheEntry.
 GDataCacheEntry ToCacheEntry(int cache_state);
 
 // Returns true if the cache state of the given two cache entries are equal.

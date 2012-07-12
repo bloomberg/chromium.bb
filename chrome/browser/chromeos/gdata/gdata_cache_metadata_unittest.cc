@@ -140,8 +140,8 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   {
     GDataCacheEntry new_cache_entry;
     new_cache_entry.set_md5(test_file_md5);
-    new_cache_entry.SetPresent(true);
-    new_cache_entry.SetPersistent(true);
+    new_cache_entry.set_is_present(true);
+    new_cache_entry.set_is_persistent(true);
     metadata_->AddOrUpdateCacheEntry(test_resource_id, new_cache_entry);
   }
 
@@ -150,8 +150,8 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   ASSERT_TRUE(metadata_->GetCacheEntry(
       test_resource_id, test_file_md5, &cache_entry));
   EXPECT_EQ(test_file_md5, cache_entry.md5());
-  EXPECT_TRUE(cache_entry.IsPresent());
-  EXPECT_TRUE(cache_entry.IsPersistent());
+  EXPECT_TRUE(cache_entry.is_present());
+  EXPECT_TRUE(cache_entry.is_persistent());
 
   // Empty md5 should also work.
   ASSERT_TRUE(metadata_->GetCacheEntry(
@@ -171,7 +171,7 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   {
     GDataCacheEntry updated_cache_entry;
     updated_cache_entry.set_md5(test_file_md5);
-    updated_cache_entry.SetPinned(true);
+    updated_cache_entry.set_is_pinned(true);
     metadata_->AddOrUpdateCacheEntry(test_resource_id, updated_cache_entry);
   }
 
@@ -179,7 +179,7 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   ASSERT_TRUE(metadata_->GetCacheEntry(
       test_resource_id, test_file_md5, &cache_entry));
   EXPECT_EQ(test_file_md5, cache_entry.md5());
-  EXPECT_TRUE(cache_entry.IsPinned());
+  EXPECT_TRUE(cache_entry.is_pinned());
 
   // Empty m5 should work.
   ASSERT_TRUE(metadata_->GetCacheEntry(
@@ -191,7 +191,7 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   {
     GDataCacheEntry new_cache_entry;
     new_cache_entry.set_md5(test_file_md5);
-    new_cache_entry.SetDirty(true);
+    new_cache_entry.set_is_dirty(true);
     metadata_->AddOrUpdateCacheEntry(test_resource_id, new_cache_entry);
   }
 
@@ -199,7 +199,7 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   ASSERT_TRUE(metadata_->GetCacheEntry(
       test_resource_id, test_file_md5, &cache_entry));
   EXPECT_EQ(test_file_md5, cache_entry.md5());
-  EXPECT_TRUE(cache_entry.IsDirty());
+  EXPECT_TRUE(cache_entry.is_dirty());
 
   // Empty md5 should work.
   ASSERT_TRUE(metadata_->GetCacheEntry(
@@ -222,7 +222,7 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   {
     GDataCacheEntry new_cache_entry;
     new_cache_entry.set_md5(test_file_md5);
-    new_cache_entry.SetPresent(true);
+    new_cache_entry.set_is_present(true);
     metadata_->AddOrUpdateCacheEntry(test_resource_id, new_cache_entry);
   }
 
@@ -230,7 +230,7 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   ASSERT_TRUE(metadata_->GetCacheEntry(
       test_resource_id, test_file_md5, &cache_entry));
   EXPECT_EQ(test_file_md5, cache_entry.md5());
-  EXPECT_TRUE(cache_entry.IsPresent());
+  EXPECT_TRUE(cache_entry.is_present());
 }
 
 TEST_F(GDataCacheMetadataMapTest, Initialization) {
@@ -261,9 +261,9 @@ TEST_F(GDataCacheMetadataMapTest, Initialization) {
   EXPECT_EQ(GDataCache::CACHE_TYPE_PERSISTENT,
             GDataCache::GetSubDirectoryType(cache_entry));
   EXPECT_TRUE(test_util::CacheStatesEqual(
-      test_util::ToCacheEntry(CACHE_STATE_PRESENT |
-                              CACHE_STATE_PINNED |
-                              CACHE_STATE_PERSISTENT),
+      test_util::ToCacheEntry(test_util::TEST_CACHE_STATE_PRESENT |
+                              test_util::TEST_CACHE_STATE_PINNED |
+                              test_util::TEST_CACHE_STATE_PERSISTENT),
       cache_entry));
   EXPECT_TRUE(PathExists(persistent_directory_.AppendASCII("id_foo.md5foo")));
   EXPECT_TRUE(PathExists(pinned_directory_.AppendASCII("id_foo")));
@@ -276,9 +276,9 @@ TEST_F(GDataCacheMetadataMapTest, Initialization) {
   EXPECT_EQ(GDataCache::CACHE_TYPE_PERSISTENT,
             GDataCache::GetSubDirectoryType(cache_entry));
   EXPECT_TRUE(test_util::CacheStatesEqual(
-      test_util::ToCacheEntry(CACHE_STATE_PRESENT |
-                              CACHE_STATE_DIRTY |
-                              CACHE_STATE_PERSISTENT),
+      test_util::ToCacheEntry(test_util::TEST_CACHE_STATE_PRESENT |
+                              test_util::TEST_CACHE_STATE_DIRTY |
+                              test_util::TEST_CACHE_STATE_PERSISTENT),
       cache_entry));
   EXPECT_TRUE(PathExists(persistent_directory_.AppendASCII("id_bar.local")));
   EXPECT_TRUE(PathExists(outgoing_directory_.AppendASCII("id_bar")));
@@ -303,7 +303,7 @@ TEST_F(GDataCacheMetadataMapTest, Initialization) {
   EXPECT_EQ(GDataCache::CACHE_TYPE_TMP,
             GDataCache::GetSubDirectoryType(cache_entry));
   EXPECT_TRUE(test_util::CacheStatesEqual(
-      test_util::ToCacheEntry(CACHE_STATE_PRESENT),
+      test_util::ToCacheEntry(test_util::TEST_CACHE_STATE_PRESENT),
       cache_entry));
   EXPECT_TRUE(PathExists(tmp_directory_.AppendASCII("id_qux.md5qux")));
 
@@ -321,7 +321,7 @@ TEST_F(GDataCacheMetadataMapTest, Initialization) {
   ASSERT_TRUE(metadata_->GetCacheEntry("id_corge", "", &cache_entry));
   EXPECT_EQ("", cache_entry.md5());
   EXPECT_TRUE(test_util::CacheStatesEqual(
-      test_util::ToCacheEntry(CACHE_STATE_PINNED),
+      test_util::ToCacheEntry(test_util::TEST_CACHE_STATE_PINNED),
       cache_entry));
   EXPECT_TRUE(IsLink(pinned_directory_.AppendASCII("id_corge")));
 
@@ -346,27 +346,27 @@ TEST_F(GDataCacheMetadataMapTest, RemoveTemporaryFilesTest) {
   {
     GDataCacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
-    cache_entry.SetPresent(true);
+    cache_entry.set_is_present(true);
     InsertIntoMap(&cache_map, "<resource_id_1>", cache_entry);
   }
   {
     GDataCacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
-    cache_entry.SetPresent(true);
-    cache_entry.SetPersistent(true);
+    cache_entry.set_is_present(true);
+    cache_entry.set_is_persistent(true);
     InsertIntoMap(&cache_map, "<resource_id_2>", cache_entry);
   }
   {
     GDataCacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
-    cache_entry.SetPresent(true);
-    cache_entry.SetPersistent(true);
+    cache_entry.set_is_present(true);
+    cache_entry.set_is_persistent(true);
     InsertIntoMap(&cache_map, "<resource_id_3>", cache_entry);
   }
   {
     GDataCacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
-    cache_entry.SetPresent(true);
+    cache_entry.set_is_present(true);
     InsertIntoMap(&cache_map, "<resource_id_4>", cache_entry);
   }
 

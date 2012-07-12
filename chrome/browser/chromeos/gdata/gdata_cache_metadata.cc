@@ -69,12 +69,13 @@ void RemoveInvalidFilesFromPersistentDirectory(
     if (cache_map_iter != cache_map->end()) {
       const GDataCacheEntry& cache_entry = cache_map_iter->second;
       // If the file is dirty but not committed, remove it.
-      if (cache_entry.IsDirty() && outgoing_file_map.count(resource_id) == 0) {
+      if (cache_entry.is_dirty() &&
+          outgoing_file_map.count(resource_id) == 0) {
         LOG(WARNING) << "Removing dirty-but-not-committed file: "
                      << file_path.value();
         file_util::Delete(file_path, false);
         cache_map->erase(cache_map_iter);
-      } else if (!cache_entry.IsDirty() && !cache_entry.IsPinned()) {
+      } else if (!cache_entry.is_dirty() && !cache_entry.is_pinned()) {
         // If the file is neither dirty nor pinned, remove it.
         LOG(WARNING) << "Removing persistent-but-dangling file: "
                      << file_path.value();
@@ -224,7 +225,7 @@ void GDataCacheMetadataMap::RemoveTemporaryFiles() {
 
   CacheMap::iterator iter = cache_map_.begin();
   while (iter != cache_map_.end()) {
-    if (!iter->second.IsPersistent()) {
+    if (!iter->second.is_persistent()) {
       // Post-increment the iterator to avoid iterator invalidation.
       cache_map_.erase(iter++);
     } else {
@@ -282,7 +283,7 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
 
       CacheMap::iterator iter = cache_map->find(resource_id);
       if (iter != cache_map->end()) {  // Entry exists, update pinned state.
-        iter->second.SetPinned(true);
+        iter->second.set_is_pinned(true);
 
         processed_file_map->insert(std::make_pair(resource_id, current));
         continue;
@@ -290,7 +291,7 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
       // Entry doesn't exist, this is a special symlink that refers to
       // /dev/null; follow through to create an entry with the PINNED but not
       // PRESENT state.
-      cache_entry.SetPinned(true);
+      cache_entry.set_is_pinned(true);
     } else if (sub_dir_type == GDataCache::CACHE_TYPE_OUTGOING) {
       std::string reason;
       if (!IsValidSymbolicLink(current, sub_dir_type, cache_paths, &reason)) {
@@ -304,7 +305,7 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
       // Otherwise, it's a logic error from previous execution, remove this
       // outgoing symlink and move on.
       CacheMap::iterator iter = cache_map->find(resource_id);
-      if (iter == cache_map->end() || !iter->second.IsDirty()) {
+      if (iter == cache_map->end() || !iter->second.is_dirty()) {
         LOG(WARNING) << "Removing an symlink to a non-dirty file: "
                      << current.value();
         file_util::Delete(current, false);
@@ -316,7 +317,7 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
     } else if (sub_dir_type == GDataCache::CACHE_TYPE_PERSISTENT ||
                sub_dir_type == GDataCache::CACHE_TYPE_TMP) {
       if (sub_dir_type == GDataCache::CACHE_TYPE_PERSISTENT)
-        cache_entry.SetPersistent(true);
+        cache_entry.set_is_persistent(true);
 
       if (file_util::IsLink(current)) {
         LOG(WARNING) << "Removing a symlink in persistent/tmp directory"
@@ -332,13 +333,13 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
         file_util::Delete(current, false);
       } else {
         // The cache file is present.
-        cache_entry.SetPresent(true);
+        cache_entry.set_is_present(true);
 
         // Adds the dirty bit if |md5| indicates that the file is dirty, and
         // the file is in the persistent directory.
         if (md5 == util::kLocallyModifiedFileExtension) {
           if (sub_dir_type == GDataCache::CACHE_TYPE_PERSISTENT) {
-            cache_entry.SetDirty(true);
+            cache_entry.set_is_dirty(true);
           } else {
             LOG(WARNING) << "Removing a dirty file in tmp directory: "
                          << current.value();
@@ -361,11 +362,11 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
 bool GDataCacheMetadataMap::CheckIfMd5Matches(
     const std::string& md5,
     const GDataCacheEntry& cache_entry) {
-  if (cache_entry.IsDirty()) {
+  if (cache_entry.is_dirty()) {
     // If the entry is dirty, its MD5 may have been replaced by "local"
     // during cache initialization, so we don't compare MD5.
     return true;
-  } else if (cache_entry.IsPinned() && cache_entry.md5().empty()) {
+  } else if (cache_entry.is_pinned() && cache_entry.md5().empty()) {
     // If the entry is pinned, it's ok for the entry to have an empty
     // MD5. This can happen if the pinned file is not fetched. MD5 for pinned
     // files are collected from files in "persistent" directory, but the

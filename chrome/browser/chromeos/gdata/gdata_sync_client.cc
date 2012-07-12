@@ -356,7 +356,7 @@ void GDataSyncClient::OnGetCacheEntry(
   // If MD5s don't match, it indicates the local cache file is stale, unless
   // the file is dirty (the MD5 is "local"). We should never re-fetch the
   // file when we have a locally modified version.
-  if (latest_md5 != cache_entry.md5() && !cache_entry.IsDirty()) {
+  if (latest_md5 != cache_entry.md5() && !cache_entry.is_dirty()) {
     cache_->RemoveOnUIThread(
         resource_id,
         base::Bind(&GDataSyncClient::OnRemove,

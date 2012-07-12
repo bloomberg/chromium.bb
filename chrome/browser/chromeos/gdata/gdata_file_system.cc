@@ -3044,7 +3044,7 @@ void GDataFileSystem::UnpinIfPinned(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // TODO(hshi): http://crbug.com/127138 notify when file properties change.
   // This allows file manager to clear the "Available offline" checkbox.
-  if (success && cache_entry.IsPinned())
+  if (success && cache_entry.is_pinned())
     cache_->UnpinOnUIThread(resource_id, md5, CacheOperationCallback());
 }
 

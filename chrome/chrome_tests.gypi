@@ -1099,7 +1099,6 @@
         'browser/chromeos/extensions/file_browser_notifications_unittest.cc',
         'browser/chromeos/external_metrics_unittest.cc',
         'browser/chromeos/gdata/drive_webapps_registry_unittest.cc',
-        'browser/chromeos/gdata/gdata_cache_entry_unittest.cc',
         'browser/chromeos/gdata/gdata_cache_metadata_unittest.cc',
         'browser/chromeos/gdata/gdata_cache_unittest.cc',
         'browser/chromeos/gdata/gdata_db_unittest.cc',

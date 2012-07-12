@@ -52,7 +52,7 @@ typedef base::Callback<void(const std::vector<std::string>& resource_ids)>
 // Callback for GetCacheEntryOnUIThread.
 // |success| indicates if the operation was successful.
 // |cache_entry| is the obtained cache entry. On failure, |cache_state| is
-// set to CACHE_STATE_NONE.
+// set to TEST_CACHE_STATE_NONE.
 typedef base::Callback<void(bool success, const GDataCacheEntry& cache_entry)>
     GetCacheEntryCallback;
 
