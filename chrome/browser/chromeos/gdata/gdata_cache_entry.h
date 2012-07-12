@@ -34,12 +34,11 @@ class GDataCacheEntry {
   // The MD5 of the cache file. This can be "local" if the file is
   // locally modified.
   const std::string& md5() const { return md5_; }
+  void set_md5(const std::string& md5) { md5_ = md5; }
 
   // The cache state represented as a bitmask of GDataCacheState.
+  // TODO(satorux): Remove this: crrev.com/136921
   int cache_state() const { return cache_state_; }
-
-  void set_md5(const std::string& md5) { md5_ = md5; }
-  void set_cache_state(int cache_state) { cache_state_ = cache_state; }
 
   // Returns true if the file is present locally.
   bool IsPresent() const { return cache_state_ & CACHE_STATE_PRESENT; }

@@ -812,7 +812,6 @@ void GDataCache::Store(const std::string& resource_id,
 
   FilePath dest_path;
   FilePath symlink_path;
-  GDataCacheEntry new_cache_entry(md5, CACHE_STATE_NONE);
   CacheSubDirectoryType sub_dir_type = CACHE_TYPE_TMP;
 
   scoped_ptr<GDataCacheEntry> cache_entry = GetCacheEntry(resource_id, md5);
@@ -830,8 +829,6 @@ void GDataCache::Store(const std::string& resource_id,
       return;
     }
 
-    new_cache_entry.set_cache_state(cache_entry->cache_state());
-
     // If file is pinned, determines destination path.
     if (cache_entry->IsPinned()) {
       sub_dir_type = CACHE_TYPE_PERSISTENT;
@@ -841,6 +838,9 @@ void GDataCache::Store(const std::string& resource_id,
           resource_id, std::string(), CACHE_TYPE_PINNED,
           CACHED_FILE_FROM_SERVER);
     }
+  } else {
+    // The file does not exist in the cache. Create a new entry.
+    cache_entry.reset(new GDataCacheEntry);
   }
 
   // File wasn't pinned or doesn't exist in cache, store in tmp dir.
@@ -880,9 +880,10 @@ void GDataCache::Store(const std::string& resource_id,
 
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
-    new_cache_entry.SetPresent(true);
-    new_cache_entry.SetPersistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
-    metadata_->AddOrUpdateCacheEntry(resource_id, new_cache_entry);
+    cache_entry->set_md5(md5);
+    cache_entry->SetPresent(true);
+    cache_entry->SetPersistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
+    metadata_->AddOrUpdateCacheEntry(resource_id, *cache_entry);
   }
 }
 
@@ -897,7 +898,6 @@ void GDataCache::Pin(const std::string& resource_id,
   FilePath dest_path;
   FilePath symlink_path;
   bool create_symlink = true;
-  GDataCacheEntry new_cache_entry(md5, CACHE_STATE_NONE);
   CacheSubDirectoryType sub_dir_type = CACHE_TYPE_PERSISTENT;
 
   scoped_ptr<GDataCacheEntry> cache_entry = GetCacheEntry(resource_id, md5);
@@ -914,9 +914,10 @@ void GDataCache::Pin(const std::string& resource_id,
     // Set sub_dir_type to TMP. The file will be first downloaded in 'tmp',
     // then moved to 'persistent'.
     sub_dir_type = CACHE_TYPE_TMP;
-  } else {  // File exists in cache, determines destination path.
-    new_cache_entry.set_cache_state(cache_entry->cache_state());
 
+    // We'll add a new cache entry.
+    cache_entry.reset(new GDataCacheEntry);
+  } else {  // File exists in cache, determines destination path.
     // Determine source and destination paths.
 
     // If file is dirty or mounted, don't move it, so determine |dest_path| and
@@ -969,9 +970,10 @@ void GDataCache::Pin(const std::string& resource_id,
 
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
-    new_cache_entry.SetPinned(true);
-    new_cache_entry.SetPersistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
-    metadata_->AddOrUpdateCacheEntry(resource_id, new_cache_entry);
+    cache_entry->set_md5(md5);
+    cache_entry->SetPinned(true);
+    cache_entry->SetPersistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
+    metadata_->AddOrUpdateCacheEntry(resource_id, *cache_entry);
   }
 }
 

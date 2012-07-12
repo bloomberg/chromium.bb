@@ -185,10 +185,9 @@ void GDataCacheMetadataMap::AddOrUpdateCacheEntry(
     DVLOG(1) << "Added resource_id=" << resource_id
              << ", " << cache_entry.ToString();
   } else {  // Resource exists.
-    iter->second.set_md5(cache_entry.md5());
-    iter->second.set_cache_state(cache_entry.cache_state());
+    cache_map_[resource_id] = cache_entry;
     DVLOG(1) << "Updated resource_id=" << resource_id
-             << ", " << iter->second.ToString();
+             << ", " << cache_entry.ToString();
   }
 }
 
