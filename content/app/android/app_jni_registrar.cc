@@ -9,11 +9,13 @@
 #include "content/app/android/content_main.h"
 #include "content/app/android/sandboxed_process_service.h"
 #include "content/app/android/user_agent.h"
+#include "content/browser/android/remote_debugging_controller.h"
 
 namespace {
 
 base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "ContentMain", content::RegisterContentMain },
+  { "RemoteDebuggingController", content::RegisterRemoteDebuggingController },
   { "SandboxedProcessService", content::RegisterSandboxedProcessService },
   { "UserAgent", content::RegisterUserAgent },
 };
