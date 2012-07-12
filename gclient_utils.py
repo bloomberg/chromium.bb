@@ -80,7 +80,11 @@ def FileRead(filename, mode='rU'):
   with open(filename, mode=mode) as f:
     # codecs.open() has different behavior than open() on python 2.6 so use
     # open() and decode manually.
-    return f.read().decode('utf-8')
+    s = f.read()
+    try:
+      return s.decode('utf-8')
+    except UnicodeDecodeError:
+      return s
 
 
 def FileWrite(filename, content, mode='w'):
