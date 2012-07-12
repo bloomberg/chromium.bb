@@ -17,7 +17,11 @@ import trace_inputs
 
 PATH_VARIABLES = ('DEPTH', 'PRODUCT_DIR')
 
+# Files that should be 0-length when mapped.
+KEY_TOUCHED = 'isolate_dependency_touched'
+# Files that should be tracked by the build tool.
 KEY_TRACKED = 'isolate_dependency_tracked'
+# Files that should not be tracked by the build tool.
 KEY_UNTRACKED = 'isolate_dependency_untracked'
 
 _GIT_PATH = os.path.sep + '.git'
@@ -114,7 +118,8 @@ def classify_files(root_dir, tracked, untracked):
   return variables
 
 
-def generate_simplified(tracked, untracked, root_dir, variables, relative_cwd):
+def generate_simplified(
+    tracked, untracked, touched, root_dir, variables, relative_cwd):
   """Generates a clean and complete .isolate 'variables' dictionary.
 
   Cleans up and extracts only files from within root_dir then processes
@@ -122,7 +127,8 @@ def generate_simplified(tracked, untracked, root_dir, variables, relative_cwd):
   """
   logging.info(
       'generate_simplified(%d files, %s, %s, %s)' %
-      (len(tracked) + len(untracked), root_dir, variables, relative_cwd))
+      (len(tracked) + len(untracked) + len(touched),
+        root_dir, variables, relative_cwd))
   # Constants.
   # Skip log in PRODUCT_DIR. Note that these are applied on '/' style path
   # separator.
@@ -147,6 +153,8 @@ def generate_simplified(tracked, untracked, root_dir, variables, relative_cwd):
       root_dir, tracked, default_blacklist)
   untracked = trace_inputs.extract_directories(
       root_dir, untracked, default_blacklist)
+  # touched is not compressed, otherwise it would result in files to be archived
+  # that we don't need.
 
   def fix(f):
     """Bases the file on the most restrictive variable."""
@@ -196,13 +204,18 @@ def generate_simplified(tracked, untracked, root_dir, variables, relative_cwd):
 
   tracked = set(filter(None, (fix(f.path) for f in tracked)))
   untracked = set(filter(None, (fix(f.path) for f in untracked)))
-  return classify_files(root_dir, tracked, untracked)
+  touched = set(filter(None, (fix(f.path) for f in touched)))
+  out = classify_files(root_dir, tracked, untracked)
+  if touched:
+    out[KEY_TOUCHED] = sorted(touched)
+  return out
 
 
-def generate_isolate(tracked, untracked, root_dir, variables, relative_cwd):
+def generate_isolate(
+    tracked, untracked, touched, root_dir, variables, relative_cwd):
   """Generates a clean and complete .isolate file."""
   result = generate_simplified(
-      tracked, untracked, root_dir, variables, relative_cwd)
+      tracked, untracked, touched, root_dir, variables, relative_cwd)
   return {
     'conditions': [
       ['OS=="%s"' % get_flavor(), {
@@ -210,6 +223,18 @@ def generate_isolate(tracked, untracked, root_dir, variables, relative_cwd):
       }],
     ],
   }
+
+
+def split_touched(files):
+  """Splits files that are touched vs files that are read."""
+  tracked = []
+  touched = []
+  for f in files:
+    if f.size:
+      tracked.append(f)
+    else:
+      touched.append(f)
+  return tracked, touched
 
 
 def pretty_print(variables, stdout):

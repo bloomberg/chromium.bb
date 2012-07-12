@@ -17,7 +17,7 @@ import optparse
 import re
 import sys
 
-from isolate_common import pretty_print, KEY_TRACKED, KEY_UNTRACKED
+from isolate_common import pretty_print, KEY_TOUCHED, KEY_TRACKED, KEY_UNTRACKED
 
 DEFAULT_OSES = ['linux', 'mac', 'win']
 
@@ -65,6 +65,7 @@ def eval_content(content):
 def verify_variables(variables):
   """Verifies the |variables| dictionary is in the expected format."""
   VALID_VARIABLES = [
+    KEY_TOUCHED,
     KEY_TRACKED,
     KEY_UNTRACKED,
     'command',
@@ -109,6 +110,7 @@ class OSSettings(object):
   def __init__(self, name, values):
     self.name = name
     verify_variables(values)
+    self.touched = sorted(values.get(KEY_TOUCHED, []))
     self.tracked = sorted(values.get(KEY_TRACKED, []))
     self.untracked = sorted(values.get(KEY_UNTRACKED, []))
     self.command = values.get('command', [])[:]
@@ -118,6 +120,7 @@ class OSSettings(object):
     assert self.name == rhs.name
     assert not (self.command and rhs.command)
     var = {
+      KEY_TOUCHED: sorted(self.touched + rhs.touched),
       KEY_TRACKED: sorted(self.tracked + rhs.tracked),
       KEY_UNTRACKED: sorted(self.untracked + rhs.untracked),
       'command': self.command or rhs.command,
@@ -129,6 +132,8 @@ class OSSettings(object):
     out = {}
     if self.command:
       out['command'] = self.command
+    if self.touched:
+      out[KEY_TOUCHED] = self.touched
     if self.tracked:
       out[KEY_TRACKED] = self.tracked
     if self.untracked:
@@ -192,6 +197,7 @@ def invert_map(variables):
     2. All the OSes found as a set.
   """
   KEYS = (
+    KEY_TOUCHED,
     KEY_TRACKED,
     KEY_UNTRACKED,
     'command',
@@ -199,7 +205,7 @@ def invert_map(variables):
   )
   out = dict((key, {}) for key in KEYS)
   for os_name, values in variables.iteritems():
-    for key in (KEY_TRACKED, KEY_UNTRACKED):
+    for key in (KEY_TOUCHED, KEY_TRACKED, KEY_UNTRACKED):
       for item in values.get(key, []):
         out[key].setdefault(item, set()).add(os_name)
 
@@ -225,6 +231,7 @@ def reduce_inputs(values, oses):
     2. oses passed through as-is.
   """
   KEYS = (
+    KEY_TOUCHED,
     KEY_TRACKED,
     KEY_UNTRACKED,
     'command',

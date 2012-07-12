@@ -7,7 +7,7 @@ import unittest
 
 import merge_isolate
 # Create shortcuts.
-from merge_isolate import KEY_TRACKED, KEY_UNTRACKED
+from merge_isolate import KEY_TOUCHED, KEY_TRACKED, KEY_UNTRACKED
 
 
 class MergeGyp(unittest.TestCase):
@@ -60,12 +60,14 @@ class MergeGyp(unittest.TestCase):
       'variables': {
         KEY_TRACKED: ['a'],
         KEY_UNTRACKED: ['b'],
+        KEY_TOUCHED: ['touched'],
       },
       'conditions': [
         ['OS=="atari"', {
           'variables': {
             KEY_TRACKED: ['c', 'x'],
             KEY_UNTRACKED: ['d'],
+            KEY_TOUCHED: ['touched_a'],
             'command': ['echo', 'Hello World'],
             'read_only': True,
           },
@@ -73,6 +75,7 @@ class MergeGyp(unittest.TestCase):
           'variables': {
             KEY_TRACKED: ['e', 'x'],
             KEY_UNTRACKED: ['f'],
+            KEY_TOUCHED: ['touched_e'],
             'command': ['echo', 'You should get an Atari'],
           },
         }],
@@ -96,23 +99,27 @@ class MergeGyp(unittest.TestCase):
     expected = {
       'amiga': {
         'command': ['echo', 'You should get an Atari'],
+        KEY_TOUCHED: ['touched', 'touched_e'],
         KEY_TRACKED: ['a', 'e', 'g', 'x'],
         KEY_UNTRACKED: ['b', 'f', 'h'],
         'read_only': False,
       },
       'atari': {
         'command': ['echo', 'Hello World'],
+        KEY_TOUCHED: ['touched', 'touched_a'],
         KEY_TRACKED: ['a', 'c', 'x'],
         KEY_UNTRACKED: ['b', 'd', 'h'],
         'read_only': True,
       },
       'coleco': {
         'command': ['echo', 'You should get an Atari'],
+        KEY_TOUCHED: ['touched', 'touched_e'],
         KEY_TRACKED: ['a', 'e', 'x'],
         KEY_UNTRACKED: ['b', 'f'],
       },
       'dendy': {
         'command': ['echo', 'You should get an Atari'],
+        KEY_TOUCHED: ['touched', 'touched_e'],
         KEY_TRACKED: ['a', 'e', 'x'],
         KEY_UNTRACKED: ['b', 'f', 'h'],
       },
@@ -161,23 +168,27 @@ class MergeGyp(unittest.TestCase):
     value = {
       'amiga': {
         'command': ['echo', 'You should get an Atari'],
+        KEY_TOUCHED: ['touched', 'touched_e'],
         KEY_TRACKED: ['a', 'e', 'g', 'x'],
         KEY_UNTRACKED: ['b', 'f', 'h'],
         'read_only': False,
       },
       'atari': {
         'command': ['echo', 'Hello World'],
+        KEY_TOUCHED: ['touched', 'touched_a'],
         KEY_TRACKED: ['a', 'c', 'x'],
         KEY_UNTRACKED: ['b', 'd', 'h'],
         'read_only': True,
       },
       'coleco': {
         'command': ['echo', 'You should get an Atari'],
+        KEY_TOUCHED: ['touched', 'touched_e'],
         KEY_TRACKED: ['a', 'e', 'x'],
         KEY_UNTRACKED: ['b', 'f'],
       },
       'dendy': {
         'command': ['echo', 'You should get an Atari'],
+        KEY_TOUCHED: ['touched', 'touched_e'],
         KEY_TRACKED: ['a', 'e', 'x'],
         KEY_UNTRACKED: ['b', 'f', 'h'],
       },
@@ -199,6 +210,11 @@ class MergeGyp(unittest.TestCase):
         'd': set(['atari']),
         'f': set(['amiga', 'coleco', 'dendy']),
         'h': set(['amiga', 'atari', 'dendy']),
+      },
+      KEY_TOUCHED: {
+        'touched': set(['amiga', 'atari', 'coleco', 'dendy']),
+        'touched_a': set(['atari']),
+        'touched_e': set(['amiga', 'coleco', 'dendy']),
       },
       'read_only': {
         None: set(['coleco', 'dendy']),
@@ -230,6 +246,11 @@ class MergeGyp(unittest.TestCase):
         'f': set(['amiga', 'coleco', 'dendy']),
         'h': set(['amiga', 'atari', 'dendy']),
       },
+      KEY_TOUCHED: {
+        'touched': set(['amiga', 'atari', 'coleco', 'dendy']),
+        'touched_a': set(['atari']),
+        'touched_e': set(['amiga', 'coleco', 'dendy']),
+      },
       'read_only': {
         None: set(['coleco', 'dendy']),
         False: set(['amiga']),
@@ -254,6 +275,11 @@ class MergeGyp(unittest.TestCase):
         'd': set(['atari']),
         'f': set(['!atari']),
         'h': set(['!coleco']),
+      },
+      KEY_TOUCHED: {
+        'touched': set([None]),
+        'touched_a': set(['atari']),
+        'touched_e': set(['!atari']),
       },
       'read_only': {
         None: set(['coleco', 'dendy']),
@@ -284,6 +310,11 @@ class MergeGyp(unittest.TestCase):
         'f': set(['!atari']),
         'h': set(['!coleco']),
       },
+      KEY_TOUCHED: {
+        'touched': set([None]),
+        'touched_a': set(['atari']),
+        'touched_e': set(['!atari']),
+      },
       'read_only': {
         None: set(['coleco', 'dendy']),
         False: set(['amiga']),
@@ -295,6 +326,7 @@ class MergeGyp(unittest.TestCase):
       'variables': {
         KEY_TRACKED: ['a', 'x'],
         KEY_UNTRACKED: ['b'],
+        KEY_TOUCHED: ['touched'],
       },
       'conditions': [
         ['OS=="amiga"', {
@@ -308,6 +340,7 @@ class MergeGyp(unittest.TestCase):
             'command': ['echo', 'Hello World'],
             KEY_TRACKED: ['c'],
             KEY_UNTRACKED: ['d'],
+            KEY_TOUCHED: ['touched_a'],
             'read_only': True,
           },
         }, {
@@ -315,6 +348,7 @@ class MergeGyp(unittest.TestCase):
             'command': ['echo', 'You should get an Atari'],
             KEY_TRACKED: ['e'],
             KEY_UNTRACKED: ['f'],
+            KEY_TOUCHED: ['touched_e'],
           },
         }],
         ['OS=="coleco"', {

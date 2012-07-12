@@ -28,6 +28,7 @@ import run_test_from_archive
 
 # Used by process_input().
 NO_INFO, STATS_ONLY, WITH_HASH = range(56, 59)
+SHA_1_NULL = hashlib.sha1().hexdigest()
 
 
 class ExecutionError(Exception):
@@ -180,7 +181,8 @@ def load_isolate(content):
   dependencies = [
     f.replace('/', os.path.sep) for f in config.tracked + config.untracked
   ]
-  return config.command, dependencies, config.read_only
+  touched = [f.replace('/', os.path.sep) for f in config.touched]
+  return config.command, dependencies, touched, config.read_only
 
 
 def process_input(filepath, prevdict, level, read_only):
@@ -205,6 +207,15 @@ def process_input(filepath, prevdict, level, read_only):
   """
   assert level in (NO_INFO, STATS_ONLY, WITH_HASH)
   out = {}
+  if prevdict.get('touched_only') == True:
+    # The file's content is ignored. Skip the time and hard code mode.
+    if isolate_common.get_flavor() != 'win':
+      out['mode'] = stat.S_IRUSR | stat.S_IRGRP
+    out['size'] = 0
+    out['sha-1'] = SHA_1_NULL
+    out['touched_only'] = True
+    return out
+
   if level >= STATS_ONLY:
     filestats = os.lstat(filepath)
     is_link = stat.S_ISLNK(filestats.st_mode)
@@ -273,7 +284,9 @@ def recreate_tree(outdir, indir, infiles, action):
     outsubdir = os.path.dirname(outfile)
     if not os.path.isdir(outsubdir):
       os.makedirs(outsubdir)
-    if 'link' in metadata:
+    if metadata.get('touched_only') == True:
+      open(outfile, 'ab').close()
+    elif 'link' in metadata:
       pointed = metadata['link']
       logging.debug('Symlink: %s -> %s' % (outfile, pointed))
       os.symlink(pointed, outfile)
@@ -388,14 +401,16 @@ class Result(Flattenable):
     self.read_only = None
     self.relative_cwd = None
 
-  def update(self, command, infiles, read_only, relative_cwd):
+  def update(self, command, infiles, touched, read_only, relative_cwd):
     """Updates the result state with new information."""
     self.command = command
     # Add new files.
     for f in infiles:
       self.files.setdefault(f, {})
+    for f in touched:
+      self.files.setdefault(f, {})['touched_only'] = True
     # Prune extraneous files that are not a dependency anymore.
-    for f in set(self.files).difference(infiles):
+    for f in set(self.files).difference(set(infiles).union(touched)):
       del self.files[f]
     if read_only is not None:
       self.read_only = read_only
@@ -491,12 +506,13 @@ class CompleteState(object):
     with open(isolate_file, 'r') as f:
       # At that point, variables are not replaced yet in command and infiles.
       # infiles may contain directory entries and is in posix style.
-      command, infiles, read_only = load_isolate(f.read())
+      command, infiles, touched, read_only = load_isolate(f.read())
     command = [eval_variables(i, self.saved_state.variables) for i in command]
     infiles = [eval_variables(f, self.saved_state.variables) for f in infiles]
+    touched = [eval_variables(f, self.saved_state.variables) for f in touched]
     # root_dir is automatically determined by the deepest root accessed with the
     # form '../../foo/bar'.
-    root_dir = determine_root_dir(relative_base_dir, infiles)
+    root_dir = determine_root_dir(relative_base_dir, infiles + touched)
     # The relative directory is automatically determined by the relative path
     # between root_dir and the directory containing the .isolate file,
     # isolate_base_dir.
@@ -507,8 +523,12 @@ class CompleteState(object):
       relpath(normpath(os.path.join(relative_base_dir, f)), root_dir)
       for f in infiles
     ]
+    touched = [
+      relpath(normpath(os.path.join(relative_base_dir, f)), root_dir)
+      for f in touched
+    ]
     # Expand the directories by listing each file inside. Up to now, trailing
-    # os.path.sep must be kept.
+    # os.path.sep must be kept. Do not expand 'touched'.
     infiles = expand_directories_and_symlinks(
         root_dir,
         infiles,
@@ -516,7 +536,7 @@ class CompleteState(object):
 
     # Finally, update the new stuff in the foo.result file, the file that is
     # used by run_test_from_archive.py.
-    self.result.update(command, infiles, read_only, relative_cwd)
+    self.result.update(command, infiles, touched, read_only, relative_cwd)
     logging.debug(self)
 
   def process_inputs(self, level):
@@ -610,9 +630,11 @@ def read(complete_state):
   try:
     results = trace_inputs.load_trace(
         logfile, complete_state.root_dir, api, isolate_common.default_blacklist)
+    tracked, touched = isolate_common.split_touched(results.existent)
     value = isolate_common.generate_isolate(
-        results.existent,
+        tracked,
         [],
+        touched,
         complete_state.root_dir,
         complete_state.saved_state.variables,
         complete_state.result.relative_cwd)

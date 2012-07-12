@@ -151,6 +151,7 @@ def trace_test_cases(
         tracename = test_case.replace('/', '-')
         flattened[test_case] = results_processed[tracename].copy()
         item_results = flattened[test_case]['results']
+        tracked, touched = isolate_common.split_touched(item_results.existent)
         flattened[test_case].update({
             'processes': len(list(item_results.process.all)),
             'results': item_results.flatten(),
@@ -159,8 +160,9 @@ def trace_test_cases(
             'valid': item['valid'],
             'variables':
               isolate_common.generate_simplified(
-                  item_results.existent,
+                  tracked,
                   [],
+                  touched,
                   root_dir,
                   variables,
                   cwd_dir),
@@ -182,10 +184,11 @@ def trace_test_cases(
     files.update((f.full_path, f) for f in item['results'].existent)
   # Convert back to a list, discard the keys.
   files = files.values()
-
+  tracked, touched = isolate_common.split_touched(files)
   value = isolate_common.generate_isolate(
-      files,
+      tracked,
       [],
+      touched,
       root_dir,
       variables,
       cwd_dir)
