@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/h264_bitstream_converter.h"
+#include "media/filters/h264_to_annex_b_bitstream_converter.h"
 
 #include "base/logging.h"
 
@@ -25,15 +25,15 @@ static bool IsAccessUnitBoundaryNal(int nal_unit_type) {
   return false;
 }
 
-H264BitstreamConverter::H264BitstreamConverter()
+H264ToAnnexBBitstreamConverter::H264ToAnnexBBitstreamConverter()
     : configuration_processed_(false),
       first_nal_unit_in_access_unit_(true),
       nal_unit_length_field_width_(0) {
 }
 
-H264BitstreamConverter::~H264BitstreamConverter() {}
+H264ToAnnexBBitstreamConverter::~H264ToAnnexBBitstreamConverter() {}
 
-uint32 H264BitstreamConverter::ParseConfigurationAndCalculateSize(
+uint32 H264ToAnnexBBitstreamConverter::ParseConfigurationAndCalculateSize(
     const uint8* configuration_record,
     uint32 configuration_record_size) {
   // FFmpeg's AVCodecContext's extradata field contains the Decoder Specific
@@ -94,7 +94,7 @@ uint32 H264BitstreamConverter::ParseConfigurationAndCalculateSize(
   return parameter_set_size_bytes;
 }
 
-uint32 H264BitstreamConverter::CalculateNeededOutputBufferSize(
+uint32 H264ToAnnexBBitstreamConverter::CalculateNeededOutputBufferSize(
     const uint8* input,
     uint32 input_size) const {
   uint32 output_size = 0;
@@ -147,7 +147,7 @@ uint32 H264BitstreamConverter::CalculateNeededOutputBufferSize(
   return output_size;
 }
 
-bool H264BitstreamConverter::ConvertAVCDecoderConfigurationRecordToByteStream(
+bool H264ToAnnexBBitstreamConverter::ConvertAVCDecoderConfigToByteStream(
     const uint8* input,
     uint32 input_size,
     uint8* output,
@@ -226,7 +226,7 @@ bool H264BitstreamConverter::ConvertAVCDecoderConfigurationRecordToByteStream(
   return true;
 }
 
-bool H264BitstreamConverter::ConvertNalUnitStreamToByteStream(
+bool H264ToAnnexBBitstreamConverter::ConvertNalUnitStreamToByteStream(
     const uint8* input, uint32 input_size,
     uint8* output, uint32* output_size) {
   const uint8* inscan = input;  // We read the input from here progressively

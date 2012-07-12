@@ -2,27 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/filters/ffmpeg_h264_bitstream_converter.h"
+#include "media/filters/ffmpeg_h264_to_annex_b_bitstream_converter.h"
 
 #include "base/logging.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 
 namespace media {
 
-FFmpegH264BitstreamConverter::FFmpegH264BitstreamConverter(
+FFmpegH264ToAnnexBBitstreamConverter::FFmpegH264ToAnnexBBitstreamConverter(
     AVCodecContext* stream_context)
     : configuration_processed_(false),
       stream_context_(stream_context) {
   CHECK(stream_context_);
 }
 
-FFmpegH264BitstreamConverter::~FFmpegH264BitstreamConverter() {}
+FFmpegH264ToAnnexBBitstreamConverter::~FFmpegH264ToAnnexBBitstreamConverter() {}
 
-bool FFmpegH264BitstreamConverter::Initialize() {
-  return true;
-}
-
-bool FFmpegH264BitstreamConverter::ConvertPacket(AVPacket* packet) {
+bool FFmpegH264ToAnnexBBitstreamConverter::ConvertPacket(AVPacket* packet) {
   uint32 output_packet_size = 0;
   uint32 configuration_size = 0;
   uint32 io_size = 0;
@@ -73,7 +69,7 @@ bool FFmpegH264BitstreamConverter::ConvertPacket(AVPacket* packet) {
 
   // Process the configuration if not done earlier.
   if (!configuration_processed_) {
-    if (!converter_.ConvertAVCDecoderConfigurationRecordToByteStream(
+    if (!converter_.ConvertAVCDecoderConfigToByteStream(
             stream_context_->extradata, stream_context_->extradata_size,
             dest_packet.data, &configuration_size)) {
       return false;  // Failed to convert the buffer.

@@ -1,22 +1,22 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_H264_BITSTREAM_CONVERTER_H_
-#define MEDIA_BASE_H264_BITSTREAM_CONVERTER_H_
+#ifndef MEDIA_FILTERS_H264_TO_ANNEX_B_BITSTREAM_CONVERTER_H_
+#define MEDIA_FILTERS_H264_TO_ANNEX_B_BITSTREAM_CONVERTER_H_
 
 #include "base/basictypes.h"
 #include "media/base/media_export.h"
 
 namespace media {
 
-// H264BitstreamConverter is a class to convert H.264 bitstream from
+// H264ToAnnexBBitstreamConverter is a class to convert H.264 bitstream from
 // MP4 format (as specified in ISO/IEC 14496-15) into H.264 bytestream
 // (as specified in ISO/IEC 14496-10 Annex B).
-class MEDIA_EXPORT H264BitstreamConverter {
+class MEDIA_EXPORT H264ToAnnexBBitstreamConverter {
  public:
-  H264BitstreamConverter();
-  ~H264BitstreamConverter();
+  H264ToAnnexBBitstreamConverter();
+  ~H264ToAnnexBBitstreamConverter();
 
   // Parses the global AVCDecoderConfigurationRecord from the file format's
   // headers. Converter will remember the field length from the configuration
@@ -51,7 +51,7 @@ class MEDIA_EXPORT H264BitstreamConverter {
   uint32 CalculateNeededOutputBufferSize(const uint8* input,
                                          uint32 input_size) const;
 
-  // ConvertParameterSetsToByteStream converts the
+  // ConvertAVCDecoderConfigToByteStream converts the
   // AVCDecoderConfigurationRecord from the MP4 headers to bytestream format.
   // Client is responsible for making sure the output buffer is large enough
   // to hold the output data. Client can precalculate the needed output buffer
@@ -76,10 +76,10 @@ class MEDIA_EXPORT H264BitstreamConverter {
   //    true  if successful conversion
   //    false if conversion not successful (poutput_size will hold the amount
   //          of converted data)
-  bool ConvertAVCDecoderConfigurationRecordToByteStream(const uint8* input,
-                                                        uint32 input_size,
-                                                        uint8* output,
-                                                        uint32* output_size);
+  bool ConvertAVCDecoderConfigToByteStream(const uint8* input,
+                                           uint32 input_size,
+                                           uint8* output,
+                                           uint32* output_size);
 
   // ConvertNalUnitStreamToByteStream converts the NAL unit from MP4 format
   // to bytestream format. Client is responsible for making sure the output
@@ -116,10 +116,10 @@ class MEDIA_EXPORT H264BitstreamConverter {
   // Variable to hold interleaving field's length in bytes.
   uint8 nal_unit_length_field_width_;
 
-  DISALLOW_COPY_AND_ASSIGN(H264BitstreamConverter);
+  DISALLOW_COPY_AND_ASSIGN(H264ToAnnexBBitstreamConverter);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_H264_BITSTREAM_CONVERTER_H_
+#endif  // MEDIA_FILTERS_H264_TO_ANNEX_B_BITSTREAM_CONVERTER_H_
 
