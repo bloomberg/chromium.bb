@@ -30,6 +30,8 @@ class URLFetcher;
 class URLRequestContextGetter;
 }
 
+namespace extensions {
+
 // This is a class to help dealing with webstore-provided data. It manages
 // sending work to the utility process for parsing manifests and
 // fetching/decoding icon data. Clients must implement the
@@ -131,5 +133,7 @@ class WebstoreInstallHelper : public content::UtilityProcessHostClient,
   // manifest.
   Delegate::InstallHelperResultCode parse_error_;
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_WEBSTORE_INSTALL_HELPER_H_

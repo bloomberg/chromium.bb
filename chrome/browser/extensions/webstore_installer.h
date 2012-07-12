@@ -26,6 +26,8 @@ namespace content {
 class NavigationController;
 }
 
+namespace extensions {
+
 // Downloads and installs extensions from the web store.
 class WebstoreInstaller : public content::NotificationObserver,
                           public content::DownloadItem::Observer,
@@ -158,5 +160,7 @@ class WebstoreInstaller : public content::NotificationObserver,
   scoped_ptr<Approval> approval_;
   GURL download_url_;
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_WEBSTORE_INSTALLER_H_

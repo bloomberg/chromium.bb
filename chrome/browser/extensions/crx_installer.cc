@@ -78,13 +78,14 @@ scoped_refptr<CrxInstaller> CrxInstaller::Create(
 scoped_refptr<CrxInstaller> CrxInstaller::Create(
     ExtensionService* frontend,
     ExtensionInstallPrompt* client,
-    const WebstoreInstaller::Approval* approval) {
+    const extensions::WebstoreInstaller::Approval* approval) {
   return new CrxInstaller(frontend->AsWeakPtr(), client, approval);
 }
 
-CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
-                           ExtensionInstallPrompt* client,
-                           const WebstoreInstaller::Approval* approval)
+CrxInstaller::CrxInstaller(
+    base::WeakPtr<ExtensionService> frontend_weak,
+    ExtensionInstallPrompt* client,
+    const extensions::WebstoreInstaller::Approval* approval)
     : install_directory_(frontend_weak->install_directory()),
       install_source_(Extension::INTERNAL),
       approved_(false),

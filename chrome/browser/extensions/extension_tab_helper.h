@@ -38,7 +38,7 @@ class ExtensionTabHelper
     : public content::WebContentsObserver,
       public ExtensionFunctionDispatcher::Delegate,
       public ImageLoadingTracker::Observer,
-      public WebstoreInlineInstaller::Delegate,
+      public extensions::WebstoreInlineInstaller::Delegate,
       public AppNotifyChannelSetup::Delegate,
       public base::SupportsWeakPtr<ExtensionTabHelper>,
       public content::NotificationObserver {
@@ -170,7 +170,7 @@ class ExtensionTabHelper
                              const std::string& extension_id,
                              int index) OVERRIDE;
 
-  // WebstoreInlineInstaller::Delegate.
+  // extensions::WebstoreInlineInstaller::Delegate.
   virtual void OnInlineInstallSuccess(int install_id,
                                       int return_route_id) OVERRIDE;
   virtual void OnInlineInstallFailure(int install_id,

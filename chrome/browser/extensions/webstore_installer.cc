@@ -52,8 +52,6 @@ using content::DownloadUrlParameters;
 
 namespace {
 
-using extensions::Extension;
-
 // Key used to attach the Approval to the DownloadItem.
 const char kApprovalKey[] = "extensions.webstore_installer";
 
@@ -134,6 +132,8 @@ void GetDownloadFilePath(
 }
 
 }  // namespace
+
+namespace extensions {
 
 WebstoreInstaller::Approval::Approval()
     : profile(NULL),
@@ -358,3 +358,5 @@ void WebstoreInstaller::ReportSuccess() {
 
   Release();  // Balanced in Start().
 }
+
+}  // namespace extensions

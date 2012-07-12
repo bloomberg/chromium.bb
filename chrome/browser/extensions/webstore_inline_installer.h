@@ -18,15 +18,14 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-class SafeWebstoreResponseParser;
-
-namespace extensions {
-class Extension;
-}
 
 namespace net {
 class URLFetcher;
 }
+
+namespace extensions {
+class Extension;
+class SafeWebstoreResponseParser;
 
 // Manages inline installs requested by a page (downloads and parses metadata
 // from the webstore, shows the install UI, starts the download once the user
@@ -134,10 +133,12 @@ class WebstoreInlineInstaller
   int rating_count_;
   scoped_ptr<DictionaryValue> webstore_data_;
   scoped_ptr<DictionaryValue> manifest_;
-  scoped_refptr<extensions::Extension> dummy_extension_;
+  scoped_refptr<Extension> dummy_extension_;
   SkBitmap icon_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebstoreInlineInstaller);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_WEBSTORE_INLINE_INSTALLER_H_

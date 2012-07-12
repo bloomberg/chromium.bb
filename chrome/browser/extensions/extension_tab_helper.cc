@@ -253,13 +253,14 @@ void ExtensionTabHelper::OnInlineWebstoreInstall(
     int return_route_id,
     const std::string& webstore_item_id,
     const GURL& requestor_url) {
-  scoped_refptr<WebstoreInlineInstaller> installer(new WebstoreInlineInstaller(
-      web_contents(),
-      install_id,
-      return_route_id,
-      webstore_item_id,
-      requestor_url,
-      this));
+  scoped_refptr<extensions::WebstoreInlineInstaller> installer(
+      new extensions::WebstoreInlineInstaller(
+          web_contents(),
+          install_id,
+          return_route_id,
+          webstore_item_id,
+          requestor_url,
+          this));
   installer->BeginInstall();
 }
 

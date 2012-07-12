@@ -510,7 +510,7 @@ bool ChromeDownloadManagerDelegate::IsDangerousFile(
   // will not offer to install the extension.
   if (extensions::switch_utils::IsEasyOffStoreInstallEnabled() &&
       download_crx_util::IsExtensionDownload(download) &&
-      !WebstoreInstaller::GetAssociatedApproval(download)) {
+      !extensions::WebstoreInstaller::GetAssociatedApproval(download)) {
     return true;
   }
 

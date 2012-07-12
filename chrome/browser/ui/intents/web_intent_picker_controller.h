@@ -40,9 +40,10 @@ struct WebIntentServiceData;
 
 // Controls the creation of the WebIntentPicker UI and forwards the user's
 // intent handler choice back to the WebContents object.
-class WebIntentPickerController : public content::NotificationObserver,
-                                  public WebIntentPickerDelegate,
-                                  public WebstoreInstaller::Delegate {
+class WebIntentPickerController
+    : public content::NotificationObserver,
+      public WebIntentPickerDelegate,
+      public extensions::WebstoreInstaller::Delegate {
  public:
   explicit WebIntentPickerController(TabContents* tab_contents);
   virtual ~WebIntentPickerController();
@@ -74,7 +75,7 @@ class WebIntentPickerController : public content::NotificationObserver,
   virtual void OnChooseAnotherService() OVERRIDE;
   virtual void OnClosing() OVERRIDE;
 
-  // WebstoreInstaller::Delegate implementation.
+  // extensions::WebstoreInstaller::Delegate implementation.
   virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
   virtual void OnExtensionInstallFailure(const std::string& id,
                                          const std::string& error) OVERRIDE;

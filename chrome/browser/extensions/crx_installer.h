@@ -75,7 +75,7 @@ class CrxInstaller
   static scoped_refptr<CrxInstaller> Create(
       ExtensionService* frontend,
       ExtensionInstallPrompt* client,
-      const WebstoreInstaller::Approval* approval);
+      const extensions::WebstoreInstaller::Approval* approval);
 
   // Install the crx in |source_file|.
   void InstallCrx(const FilePath& source_file);
@@ -176,7 +176,7 @@ class CrxInstaller
 
   CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
                ExtensionInstallPrompt* client,
-               const WebstoreInstaller::Approval* approval);
+               const extensions::WebstoreInstaller::Approval* approval);
   virtual ~CrxInstaller();
 
   // Converts the source user script to an extension.

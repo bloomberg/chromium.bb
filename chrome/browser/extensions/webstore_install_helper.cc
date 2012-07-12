@@ -25,6 +25,8 @@ const char kImageDecodeError[] = "Image decode failed";
 
 }  // namespace
 
+namespace extensions {
+
 WebstoreInstallHelper::WebstoreInstallHelper(
     Delegate* delegate,
     const std::string& id,
@@ -195,3 +197,5 @@ void WebstoreInstallHelper::ReportResultFromUIThread() {
   else
     delegate_->OnWebstoreParseFailure(id_, parse_error_, error_);
 }
+
+}  // namespace extensions

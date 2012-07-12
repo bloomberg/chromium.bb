@@ -92,12 +92,13 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
     if (!parsed_manifest)
       return scoped_refptr<CrxInstaller>();
 
-    scoped_ptr<WebstoreInstaller::Approval> approval;
+    scoped_ptr<extensions::WebstoreInstaller::Approval> approval;
     if (!id.empty()) {
-      approval = WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
-          browser()->profile(),
-          id,
-          scoped_ptr<base::DictionaryValue>(parsed_manifest));
+      approval =
+          extensions::WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
+              browser()->profile(),
+              id,
+              scoped_ptr<base::DictionaryValue>(parsed_manifest));
     }
 
     scoped_refptr<CrxInstaller> installer(

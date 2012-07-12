@@ -48,6 +48,8 @@
 #include "ui/gfx/image/image.h"
 #include "webkit/glue/web_intent_service_data.h"
 
+using extensions::WebstoreInstaller;
+
 namespace {
 
 const char kShareActionURL[] = "http://webintents.org/share";

@@ -6,6 +6,8 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace extensions {
+
 // A macro, so that the IsRequestorURLInVerifiedSite calls are inside of the
 // the test, which is marked as a friend of WebstoreInlineInstaller.
 #define IsVerified(requestor_url, verified_site) \
@@ -69,3 +71,5 @@ TEST(WebstoreInlineInstallerTest, DomainVerification) {
   EXPECT_TRUE(IsVerified(
       "http://example.com:123/path/page.html", "example.com:123/path"));
 }
+
+}  // namespace extensions

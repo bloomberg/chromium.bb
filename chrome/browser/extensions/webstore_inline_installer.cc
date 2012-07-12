@@ -34,6 +34,8 @@ using content::UtilityProcessHost;
 using content::UtilityProcessHostClient;
 using content::WebContents;
 
+namespace extensions {
+
 const char kManifestKey[] = "manifest";
 const char kIconUrlKey[] = "icon_url";
 const char kLocalizedNameKey[] = "localized_name";
@@ -164,7 +166,7 @@ WebstoreInlineInstaller::WebstoreInlineInstaller(WebContents* web_contents,
 void WebstoreInlineInstaller::BeginInstall() {
   AddRef(); // Balanced in CompleteInstall or WebContentsDestroyed.
 
-  if (!extensions::Extension::IdIsValid(id_)) {
+  if (!Extension::IdIsValid(id_)) {
     CompleteInstall(kInvalidWebstoreItemId);
     return;
   }
@@ -455,3 +457,5 @@ bool WebstoreInlineInstaller::IsRequestorURLInVerifiedSite(
 
   return verified_site_pattern.MatchesURL(requestor_url);
 }
+
+}  // namespace extensions

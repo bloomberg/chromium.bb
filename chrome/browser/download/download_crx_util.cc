@@ -19,6 +19,7 @@
 
 using content::BrowserThread;
 using content::DownloadItem;
+using extensions::WebstoreInstaller;
 
 namespace download_crx_util {
 
