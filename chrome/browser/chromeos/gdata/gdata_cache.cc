@@ -335,22 +335,6 @@ void RunGetCacheEntryCallback(
 
 }  // namespace
 
-std::string GDataCacheEntry::ToString() const {
-  std::vector<std::string> cache_states;
-  if (IsPresent())
-    cache_states.push_back("present");
-  if (IsPinned())
-    cache_states.push_back("pinned");
-  if (IsDirty())
-    cache_states.push_back("dirty");
-  if (IsPersistent())
-    cache_states.push_back("persistent");
-
-  return base::StringPrintf("md5=%s, cache_state=%s",
-                            md5_.c_str(),
-                            JoinString(cache_states, ',').c_str());
-}
-
 GDataCache::GDataCache(
     const FilePath& cache_root_path,
     base::SequencedWorkerPool* pool,

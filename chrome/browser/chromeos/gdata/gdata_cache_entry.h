@@ -78,10 +78,6 @@ class GDataCacheEntry {
       cache_state_ &= ~CACHE_STATE_PERSISTENT;
   }
 
-  // For debugging purposes.
-  // TODO(satorux): Remove this: crrev.com/136921
-  std::string ToString() const;
-
  private:
   std::string md5_;
   int cache_state_;

@@ -182,12 +182,8 @@ void GDataCacheMetadataMap::AddOrUpdateCacheEntry(
   CacheMap::iterator iter = cache_map_.find(resource_id);
   if (iter == cache_map_.end()) {  // New resource, create new entry.
     cache_map_.insert(std::make_pair(resource_id, cache_entry));
-    DVLOG(1) << "Added resource_id=" << resource_id
-             << ", " << cache_entry.ToString();
   } else {  // Resource exists.
     cache_map_[resource_id] = cache_entry;
-    DVLOG(1) << "Updated resource_id=" << resource_id
-             << ", " << cache_entry.ToString();
   }
 }
 
@@ -216,15 +212,8 @@ bool GDataCacheMetadataMap::GetCacheEntry(const std::string& resource_id,
   const GDataCacheEntry& cache_entry = iter->second;
 
   if (!CheckIfMd5Matches(md5, cache_entry)) {
-    DVLOG(1) << "Non-matching md5: want=" << md5
-             << ", found=[res_id=" << resource_id
-             << ", " << cache_entry.ToString()
-             << "]";
     return false;
   }
-
-  DVLOG(1) << "Found entry for res_id=" << resource_id
-           << ", " << cache_entry.ToString();
 
   *entry = cache_entry;
   return true;
