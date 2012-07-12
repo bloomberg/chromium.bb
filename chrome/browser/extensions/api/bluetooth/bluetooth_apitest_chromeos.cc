@@ -33,6 +33,13 @@ class BluetoothApiTest : public PlatformAppApiTest {
     // The browser will clean this up when it is torn down
     mock_adapter_ = new testing::StrictMock<chromeos::MockBluetoothAdapter>;
     event_router()->SetAdapterForTest(mock_adapter_);
+
+    device1_.reset(new testing::NiceMock<chromeos::MockBluetoothDevice>(
+        mock_adapter_, "d1", "11:12:13:14:15:16",
+        true /* paired */, false /* bonded */, true /* connected */));
+    device2_.reset(new testing::NiceMock<chromeos::MockBluetoothDevice>(
+        mock_adapter_, "d2", "21:22:23:24:25:26",
+        false /* paired */, true /* bonded */, false /* connected */));
   }
 
   void expectBooleanResult(bool expected,
@@ -56,6 +63,8 @@ class BluetoothApiTest : public PlatformAppApiTest {
 
  protected:
   testing::StrictMock<chromeos::MockBluetoothAdapter>* mock_adapter_;
+  scoped_ptr<testing::NiceMock<chromeos::MockBluetoothDevice> > device1_;
+  scoped_ptr<testing::NiceMock<chromeos::MockBluetoothDevice> > device2_;
 
   chromeos::ExtensionBluetoothEventRouter* event_router() {
     return browser()->profile()->GetExtensionService()->
@@ -127,19 +136,13 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, IsPowered) {
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevices) {
-  testing::NiceMock<chromeos::MockBluetoothDevice> device1(
-      mock_adapter_, "d1", "11:12:13:14:15:16",
-      true /* paired */, false /* bonded */, true /* connected */);
-  testing::NiceMock<chromeos::MockBluetoothDevice> device2(
-      mock_adapter_, "d2", "21:22:23:24:25:26",
-      false /* paired */, true /* bonded */, false /* connected */);
   chromeos::BluetoothAdapter::ConstDeviceList devices;
-  devices.push_back(&device1);
-  devices.push_back(&device2);
+  devices.push_back(device1_.get());
+  devices.push_back(device2_.get());
 
-  EXPECT_CALL(device1, ProvidesServiceWithUUID("foo"))
+  EXPECT_CALL(*device1_, ProvidesServiceWithUUID("foo"))
       .WillOnce(testing::Return(false));
-  EXPECT_CALL(device2, ProvidesServiceWithUUID("foo"))
+  EXPECT_CALL(*device2_, ProvidesServiceWithUUID("foo"))
       .WillOnce(testing::Return(true));
 
   EXPECT_CALL(*mock_adapter_, GetDevices())
@@ -236,12 +239,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetLocalOutOfBandPairingData) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, SetOutOfBandPairingData) {
   std::string device_address("11:12:13:14:15:16");
-  testing::NiceMock<chromeos::MockBluetoothDevice> device(
-      mock_adapter_, "d1", device_address,
-      true /* paired */, false /* bonded */, true /* connected */);
   EXPECT_CALL(*mock_adapter_, GetDevice(device_address))
-      .WillOnce(testing::Return(&device));
-  EXPECT_CALL(device,
+      .WillOnce(testing::Return(device1_.get()));
+  EXPECT_CALL(*device1_,
               ClearOutOfBandPairingData(testing::Truly(CallClosure),
                                         testing::_));
 
@@ -258,10 +258,10 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, SetOutOfBandPairingData) {
 
   // Try again with an error
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
-  testing::Mock::VerifyAndClearExpectations(&device);
+  testing::Mock::VerifyAndClearExpectations(device1_.get());
   EXPECT_CALL(*mock_adapter_, GetDevice(device_address))
-      .WillOnce(testing::Return(&device));
-  EXPECT_CALL(device,
+      .WillOnce(testing::Return(device1_.get()));
+  EXPECT_CALL(*device1_,
               ClearOutOfBandPairingData(testing::_,
                                         testing::Truly(CallClosure)));
 
@@ -277,8 +277,6 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, SetOutOfBandPairingData) {
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
-  // TODO(bryeung): test that no events are sent now (crbug.com/132616)
-
   // Try with a failure to start
   EXPECT_CALL(*mock_adapter_,
               SetDiscovering(true,
@@ -300,8 +298,6 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
   start_function = setupFunction(new api::BluetoothStartDiscoveryFunction);
   (void)utils::RunFunctionAndReturnError(start_function, "[]", browser());
 
-  // TODO(bryeung): test that events are sent now (crbug.com/132616)
-
   // Reset to try stopping
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
   EXPECT_CALL(*mock_adapter_,
@@ -312,8 +308,6 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
   stop_function = setupFunction(new api::BluetoothStopDiscoveryFunction);
   (void)utils::RunFunctionAndReturnResult(stop_function, "[]", browser());
 
-  // TODO(bryeung): test that no events are sent now (crbug.com/132616)
-
   // Reset to try stopping with an error
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
   EXPECT_CALL(*mock_adapter_,
@@ -323,6 +317,34 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
   stop_function = setupFunction(new api::BluetoothStopDiscoveryFunction);
   error = utils::RunFunctionAndReturnError(stop_function, "[]", browser());
   ASSERT_TRUE(!error.empty());
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DiscoveryCallback) {
+  EXPECT_CALL(*mock_adapter_,
+              SetDiscovering(true, testing::Truly(CallClosure), testing::_));
+  EXPECT_CALL(*mock_adapter_,
+              SetDiscovering(false, testing::Truly(CallClosure), testing::_));
+
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  ExtensionTestMessageListener discovery_started("ready", true);
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("bluetooth"));
+  GURL page_url = extension->GetResourceURL("test_discovery.html");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  EXPECT_TRUE(discovery_started.WaitUntilSatisfied());
+
+  event_router()->DeviceAdded(mock_adapter_, device1_.get());
+
+  discovery_started.Reply("go");
+  ExtensionTestMessageListener discovery_stopped("ready", true);
+  EXPECT_TRUE(discovery_stopped.WaitUntilSatisfied());
+
+  event_router()->DeviceAdded(mock_adapter_, device2_.get());
+  discovery_stopped.Reply("go");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Events) {
