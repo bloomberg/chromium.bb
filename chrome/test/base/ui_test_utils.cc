@@ -397,12 +397,13 @@ Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
   return new_browser;
 }
 
-void OpenURLOffTheRecord(Profile* profile, const GURL& url) {
+Browser* OpenURLOffTheRecord(Profile* profile, const GURL& url) {
   chrome::OpenURLOffTheRecord(profile, url);
   Browser* browser = browser::FindTabbedBrowser(
       profile->GetOffTheRecordProfile(), false);
   WaitForNavigations(&chrome::GetActiveWebContents(browser)->GetController(),
                      1);
+  return browser;
 }
 
 void NavigateToURL(chrome::NavigateParams* params) {

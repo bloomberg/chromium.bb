@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/lazy_background_page_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -261,11 +260,8 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForRequest) {
 // and they each load and unload at the proper times.
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, IncognitoSplitMode) {
   // Open incognito window.
-  ui_test_utils::OpenURLOffTheRecord(
+  Browser* incognito_browser = ui_test_utils::OpenURLOffTheRecord(
       browser()->profile(), GURL("about:blank"));
-  Browser* incognito_browser = browser::FindTabbedBrowser(
-      browser()->profile()->GetOffTheRecordProfile(), false);
-  ASSERT_TRUE(incognito_browser);
 
   // Load the extension with incognito enabled.
   {

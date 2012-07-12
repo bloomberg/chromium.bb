@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -314,9 +313,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationTargetBlankIncognito) {
   GURL url = test_server()->GetURL(
       "files/extensions/api_test/webnavigation/targetBlank/a.html");
 
-  ui_test_utils::OpenURLOffTheRecord(browser()->profile(), url);
-  WebContents* tab = chrome::GetActiveWebContents(browser::FindTabbedBrowser(
-      browser()->profile()->GetOffTheRecordProfile(), false));
+  Browser* otr_browser = ui_test_utils::OpenURLOffTheRecord(
+      browser()->profile(), url);
+  WebContents* tab = chrome::GetActiveWebContents(otr_browser);
 
   // There's a link with target=_blank on a.html. Click on it to open it in a
   // new tab.

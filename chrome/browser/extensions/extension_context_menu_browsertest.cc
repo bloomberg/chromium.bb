@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -454,7 +453,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, MAYBE_IncognitoSplit) {
                                                  false);
 
   // Open an incognito window.
-  ui_test_utils::OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
+  Browser* browser_incognito = ui_test_utils::OpenURLOffTheRecord(
+      browser()->profile(), GURL("about:blank"));
 
   ASSERT_TRUE(LoadContextMenuExtensionIncognito("incognito"));
 
@@ -465,9 +465,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, MAYBE_IncognitoSplit) {
   GURL page_url("http://www.google.com");
 
   // Create and build our test context menu.
-  Browser* browser_incognito = browser::FindTabbedBrowser(
-      browser()->profile()->GetOffTheRecordProfile(), false);
-  ASSERT_TRUE(browser_incognito);
   scoped_ptr<TestRenderViewContextMenu> menu(
       CreateMenu(browser(), page_url, GURL(), GURL()));
   scoped_ptr<TestRenderViewContextMenu> menu_incognito(

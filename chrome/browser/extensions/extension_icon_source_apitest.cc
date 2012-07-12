@@ -7,7 +7,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -62,11 +61,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, IconsLoadedIncognito) {
 
   // Test that the icons are loaded and that the chrome://extension-icon
   // parameters work correctly.
-  ui_test_utils::OpenURLOffTheRecord(
+  Browser* otr_browser = ui_test_utils::OpenURLOffTheRecord(
       browser()->profile(),
       GURL("chrome-extension://gbmgkahjioeacddebbnengilkgbkhodg/index.html"));
-  Browser* otr_browser = browser::FindTabbedBrowser(
-      browser()->profile()->GetOffTheRecordProfile(), false);
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
       chrome::GetActiveWebContents(otr_browser)->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",

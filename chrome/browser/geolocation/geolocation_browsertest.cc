@@ -17,7 +17,6 @@
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -239,9 +238,8 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     current_url_ = test_server()->GetURL(html_for_tests_);
     LOG(WARNING) << "before navigate";
     if (options == INITIALIZATION_OFFTHERECORD) {
-      ui_test_utils::OpenURLOffTheRecord(browser()->profile(), current_url_);
-      current_browser_ = browser::FindTabbedBrowser(
-          browser()->profile()->GetOffTheRecordProfile(), false);
+      current_browser_ = ui_test_utils::OpenURLOffTheRecord(
+          browser()->profile(), current_url_);
     } else if (options == INITIALIZATION_NEWTAB) {
       current_browser_ = browser();
       chrome::NewTab(current_browser_);
