@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,9 +68,13 @@ function checkExpectations() {
 }
 
 function captureEvent(name, details) {
-  // Skip about:blank navigations
-  if ('url' in details && details.url == 'about:blank') {
-    return;
+  if ('url' in details) {
+    // Skip about:blank navigations
+    if (details.url == 'about:blank') {
+      return;
+    }
+    // Strip query parameter as it is hard to predict.
+    details.url = details.url.replace(new RegExp('\\?.*'), '');
   }
   // normalize details.
   if ('timeStamp' in details) {
@@ -99,6 +103,12 @@ function captureEvent(name, details) {
       tabIds[details.sourceTabId] = nextTabId++;
     }
     details.sourceTabId = tabIds[details.sourceTabId];
+  }
+  if ('replacedTabId' in details) {
+    if (tabIds[details.replacedTabId] === undefined) {
+      tabIds[details.replacedTabId] = nextTabId++;
+    }
+    details.replacedTabId = tabIds[details.replacedTabId];
   }
 
   // find |details| in expectedEventData
@@ -152,6 +162,10 @@ function initListeners() {
   chrome.webNavigation.onErrorOccurred.addListener(
       function(details) {
     captureEvent("onErrorOccurred", details);
+  });
+  chrome.webNavigation.onTabReplaced.addListener(
+      function(details) {
+    captureEvent("onTabReplaced", details);
   });
 }
 

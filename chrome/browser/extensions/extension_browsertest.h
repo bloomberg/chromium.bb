@@ -24,8 +24,8 @@ class Extension;
 
 // Base class for extension browser tests. Provides utilities for loading,
 // unloading, and installing extensions.
-class ExtensionBrowserTest
-    : public InProcessBrowserTest, public content::NotificationObserver {
+class ExtensionBrowserTest : virtual public InProcessBrowserTest,
+                             public content::NotificationObserver {
  protected:
   ExtensionBrowserTest();
   virtual ~ExtensionBrowserTest();

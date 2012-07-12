@@ -14,6 +14,8 @@
 #include "chrome/browser/browsing_data_helper.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
+#include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_contents.h"
@@ -474,7 +476,7 @@ class RestorePrerenderMode {
 
 }  // namespace
 
-class PrerenderBrowserTest : public InProcessBrowserTest {
+class PrerenderBrowserTest : virtual public InProcessBrowserTest {
  public:
   PrerenderBrowserTest()
       : prerender_contents_factory_(NULL),
@@ -2255,6 +2257,56 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLReferrerPolicy) {
                    FINAL_STATUS_USED,
                    1);
   NavigateToDestURL();
+}
+
+// Test interaction of the webNavigation API with prerender.
+class PrerenderBrowserTestWithExtensions : public PrerenderBrowserTest,
+                                           public ExtensionApiTest {
+ public:
+  PrerenderBrowserTestWithExtensions() {}
+  virtual ~PrerenderBrowserTestWithExtensions() {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    PrerenderBrowserTest::SetUpCommandLine(command_line);
+    ExtensionApiTest::SetUpCommandLine(command_line);
+  }
+
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    PrerenderBrowserTest::SetUpInProcessBrowserTestFixture();
+    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+  }
+
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+    PrerenderBrowserTest::TearDownInProcessBrowserTestFixture();
+    ExtensionApiTest::TearDownInProcessBrowserTestFixture();
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    PrerenderBrowserTest::SetUpOnMainThread();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, WebNavigation) {
+  // PrerenderBrowserTest automatically started a test server. Restart it, so
+  // ExtensionApiTest can register its test parameters.
+  test_server()->Stop();
+  ASSERT_TRUE(StartTestServer());
+  extensions::FrameNavigationState::set_allow_extension_scheme(true);
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
+
+  // Wait for the extension to set itself up and return control to us.
+  ASSERT_TRUE(
+      RunExtensionSubtest("webnavigation", "test_prerender.html")) << message_;
+
+  ResultCatcher catcher;
+
+  PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
+  NavigateToDestURL();
+  ASSERT_TRUE(IsEmptyPrerenderLinkManager());
+
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 }  // namespace prerender
