@@ -13,11 +13,11 @@
 #@ So there is a one-time step required for all machines using this TC.
 #@ Which is especially true for build-bots:
 #@
-#@  tools/llvm/trusted-toolchain-creator2.sh  InstallCrossArmBasePackagesManual
+#@  tools/llvm/trusted-toolchain-creator.armel.lucid.sh  InstallCrossArmBasePackagesManual
 #@
 #@
 #@  Generally this script is invoked as:
-#@  tools/llvm/trusted-toolchain-creator2.sh <mode> <args>*
+#@  tools/llvm/trusted-toolchain-creator.armel.lucid.sh <mode> <args>*
 #@  Available modes are shown below.
 #@
 #@
@@ -106,7 +106,8 @@ else
   exit -1
 fi
 
-# These are good enough for native client
+
+ # Jail packages: these are good enough for native client
 readonly ARMEL_BASE_PACKAGES="\
   libssl-dev \
   libssl0.9.8 \
@@ -122,7 +123,7 @@ readonly ARMEL_BASE_PACKAGES="\
   zlib1g \
   zlib1g-dev"
 
-# These are needed for chrome
+# Additional jail packages needed to build chrome
 # NOTE: the package listing here should be updated using the
 # GeneratePackageListXXX() functions below
 readonly ARMEL_BASE_DEP_FILES="$(cat ${SCRIPT_DIR}/packagelist.natty.armel.base)"

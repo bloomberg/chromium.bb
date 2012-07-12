@@ -1,4 +1,0 @@
-This directory is used by the git gclient script
-as a fake checkout location.
-
-Don't delete it until this mechanism has been replaced.

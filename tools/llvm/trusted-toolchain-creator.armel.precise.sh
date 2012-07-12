@@ -13,11 +13,11 @@
 #@ So there is a one-time step required for all machines using this TC.
 #@ Which is especially true for build-bots:
 #@
-#@  tools/llvm/trusted-toolchain-creator-precise.sh  InstallCrossArmBasePackagesManual
+#@  tools/llvm/trusted-toolchain-creator.armel.precise.sh  InstallCrossArmBasePackages
 #@
 #@
 #@  Generally this script is invoked as:
-#@  tools/llvm/trusted-toolchain-creator-precise.sh <mode> <args>*
+#@  tools/llvm/trusted-toolchain-creator.armel.precise.sh <mode> <args>*
 #@  Available modes are shown below.
 #@
 #@
@@ -82,28 +82,9 @@ readonly CROSS_ARM_TC_PACKAGES="\
   libmudflap0-dbg-armel-cross
 "
 
+# Jail packages: these are good enough for native client
 # NOTE: the package listing here should be updated using the
 # GeneratePackageListXXX() functions below
-readonly CROSS_ARM_TC_DEP_FILES_64="$(cat ${SCRIPT_DIR}/packagelist.amd64.crosstool)"
-
-readonly CROSS_ARM_TC_DEP_FILES_32="\
-${CROSS_ARM_TC_DEP_FILES_64//_amd64.deb/_i386.deb}"
-
-readonly BUILD_ARCH=$(uname -m)
-if [ "${BUILD_ARCH}" == "i386" ] ||
-   [ "${BUILD_ARCH}" == "i686" ] ; then
-  readonly CROSS_ARM_TC_DEP_FILES="${CROSS_ARM_TC_DEP_FILES_32}"
-  readonly EXTRA_PACKAGES="make"
-elif [ "${BUILD_ARCH}" == "x86_64" ] ; then
-  readonly CROSS_ARM_TC_DEP_FILES="${CROSS_ARM_TC_DEP_FILES_64}"
-  # 32bit compatibility TCs
-  readonly EXTRA_PACKAGES="make ia32-libs libc6-i386"
-else
-  echo "Unknown build arch '${BUILD_ARCH}'"
-  exit -1
-fi
-
-# Jail packages: these are good enough for native client
 readonly ARMEL_BASE_PACKAGES="\
   libssl-dev \
   libssl1.0.0 \
@@ -302,47 +283,6 @@ CreateTarBall() {
 #@
 InstallCrossArmBasePackages() {
   sudo apt-get install ${CROSS_ARM_TC_PACKAGES}
-}
-
-
-#@
-#@ InstallCrossArmBasePackagesManual
-#@
-#@     This should work even for 64bit ubuntu lucid machine.
-#@     The download part is more or less idem-potent, run it until
-#@     all files have been downloaded.
-InstallCrossArmBasePackagesManual() {
-  Banner "Install arm cross TC semi-automatically"
-
-  local dest=${TMP}/manual-tc-packages
-  mkdir -p ${dest}
-
-  SubBanner "Download packages"
-  for i in ${CROSS_ARM_TC_DEP_FILES} ; do
-    echo $i
-    url=${CROSS_ARM_TC_REPO}/pool/$i
-    file=${dest}/$(basename $i)
-    DownloadOrCopy ${url} ${file}
-  done
-
-  SubBanner "Package Sanity Check"
-
-  for i in ${dest}/*.deb ; do
-    ls -l $i
-    if [[ ! -s $i ]] ; then
-      echo
-      echo "ERROR: bad package $i"
-      exit -1
-    fi
-  done
-
-  SubBanner "Possibly install additional standard packages"
-  # these are needed for the TC packages we are about to install
-  sudo apt-get install libelfg0 libgmpxx4ldbl libmpc2 libppl7 libppl-c2
-  sudo apt-get install ${EXTRA_PACKAGES}
-
-  SubBanner "Install cross arm TC packages"
-  sudo dpkg -i ${dest}/*.deb
 }
 
 ######################################################################
