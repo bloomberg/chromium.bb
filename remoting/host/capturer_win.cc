@@ -12,6 +12,7 @@
 #include "base/scoped_native_library.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_gdi_object.h"
+#include "base/win/scoped_hdc.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/host/capturer_helper.h"
 #include "remoting/host/desktop_win.h"
@@ -75,20 +76,21 @@ class CapturerGdi : public Capturer {
     SkISize size;
     int bytes_per_pixel;
     int bytes_per_row;
+    int resource_generation;
   };
 
-  // Make sure that the current buffer has the same size as the screen.
-  void UpdateBufferCapture(const SkISize& size);
+  // Make sure that the device contexts and the current bufffer match the screen
+  // configuration.
+  void PrepareCaptureResources();
 
-  // Allocate memory for a buffer of a given size, freeing any memory previously
-  // allocated for that buffer.
-  void ReallocateBuffer(int buffer_index, const SkISize& size);
+  // Allocates the specified capture buffer using the current device contexts
+  // and desktop dimensions, releasing any pre-existing buffer.
+  void AllocateBuffer(int buffer_index);
 
   void CalculateInvalidRegion();
   void CaptureRegion(const SkRegion& region,
                      const CaptureCompletedCallback& callback);
 
-  void ReleaseBuffers();
   // Generates an image in the current buffer.
   void CaptureImage();
 
@@ -98,9 +100,6 @@ class CapturerGdi : public Capturer {
 
   // Capture the current cursor shape.
   void CaptureCursor();
-
-  // Gets the screen size.
-  SkISize GetScreenSize();
 
   // A thread-safe list of invalid rectangles, and the size of the most
   // recently captured screen.
@@ -121,15 +120,14 @@ class CapturerGdi : public Capturer {
 
   ScopedThreadDesktopWin desktop_;
 
-  // Gdi specific information about screen.
-  HWND desktop_window_;
-  HDC desktop_dc_;
-  HDC memory_dc_;
-  HBITMAP target_bitmap_[kNumBuffers];
+  // GDI resources used for screen capture.
+  scoped_ptr<base::win::ScopedGetDC> desktop_dc_;
+  base::win::ScopedCreateDC memory_dc_;
+  base::win::ScopedBitmap target_bitmap_[kNumBuffers];
+  int resource_generation_;
 
-  // The screen size attached to the device contexts through which the screen
-  // is captured.
-  SkISize dc_size_;
+  // Rectangle describing the bounds of the desktop device context.
+  SkIRect desktop_dc_rect_;
 
   // The current buffer with valid data for reading.
   int current_buffer_;
@@ -153,20 +151,15 @@ static const int kBytesPerPixel = 4;
 
 CapturerGdi::CapturerGdi()
     : last_cursor_size_(SkISize::Make(0, 0)),
-      desktop_window_(NULL),
-      desktop_dc_(NULL),
-      memory_dc_(NULL),
-      dc_size_(SkISize::Make(0, 0)),
+      desktop_dc_rect_(SkIRect::MakeEmpty()),
+      resource_generation_(0),
       current_buffer_(0),
       pixel_format_(media::VideoFrame::RGB32),
       composition_func_(NULL) {
-  memset(target_bitmap_, 0, sizeof(target_bitmap_));
-  memset(buffers_, 0, sizeof(buffers_));
   ScreenConfigurationChanged();
 }
 
 CapturerGdi::~CapturerGdi() {
-  ReleaseBuffers();
 }
 
 media::VideoFrame::Format CapturerGdi::pixel_format() const {
@@ -208,30 +201,6 @@ const SkISize& CapturerGdi::size_most_recent() const {
   return helper_.size_most_recent();
 }
 
-void CapturerGdi::ReleaseBuffers() {
-  for (int i = kNumBuffers - 1; i >= 0; i--) {
-    if (target_bitmap_[i]) {
-      DeleteObject(target_bitmap_[i]);
-      target_bitmap_[i] = NULL;
-    }
-    if (buffers_[i].data) {
-      DeleteObject(buffers_[i].data);
-      buffers_[i].data = NULL;
-    }
-  }
-
-  if (desktop_dc_) {
-    ReleaseDC(desktop_window_, desktop_dc_);
-    desktop_window_ = NULL;
-    desktop_dc_ = NULL;
-  }
-
-  if (memory_dc_) {
-    DeleteDC(memory_dc_);
-    memory_dc_ = NULL;
-  }
-}
-
 void CapturerGdi::Start(
     const CursorShapeChangedCallback& callback) {
   cursor_shape_changed_callback_ = callback;
@@ -266,97 +235,78 @@ void CapturerGdi::ScreenConfigurationChanged() {
   // We poll for screen configuration changes, so ignore notifications.
 }
 
-void CapturerGdi::UpdateBufferCapture(const SkISize& size) {
+void CapturerGdi::PrepareCaptureResources() {
   // Switch to the desktop receiving user input if different from the current
   // one.
   scoped_ptr<DesktopWin> input_desktop = DesktopWin::GetInputDesktop();
   if (input_desktop.get() != NULL && !desktop_.IsSame(*input_desktop)) {
     // Release GDI resources otherwise SetThreadDesktop will fail.
-    if (desktop_dc_) {
-      ReleaseDC(desktop_window_, desktop_dc_);
-      desktop_window_ = NULL;
-      desktop_dc_ = NULL;
-    }
-
-    if (memory_dc_) {
-      DeleteDC(memory_dc_);
-      memory_dc_ = NULL;
-    }
-
-    ReleaseBuffers();
+    desktop_dc_.reset();
+    memory_dc_.Set(NULL);
 
     // If SetThreadDesktop() fails, the thread is still assigned a desktop.
-    // So we can continue capture screen bits, just from a diffented desktop.
+    // So we can continue capture screen bits, just from the wrong desktop.
     desktop_.SetThreadDesktop(input_desktop.Pass());
   }
 
-  // Make sure the DCs have the correct dimensions.
-  if (size != dc_size_) {
-    // TODO(simonmorris): screen dimensions changing isn't equivalent to needing
-    // a new DC, but it's good enough for now.
-    if (desktop_dc_) {
-      ReleaseDC(desktop_window_, desktop_dc_);
-      desktop_window_ = NULL;
-      desktop_dc_ = NULL;
-    }
-
-    if (memory_dc_) {
-      DeleteDC(memory_dc_);
-      memory_dc_ = NULL;
-    }
+  // If the display bounds have changed then recreate GDI resources.
+  // TODO(wez): Also check for pixel format changes.
+  SkIRect screen_rect(SkIRect::MakeXYWH(
+      GetSystemMetrics(SM_XVIRTUALSCREEN),
+      GetSystemMetrics(SM_YVIRTUALSCREEN),
+      GetSystemMetrics(SM_CXVIRTUALSCREEN),
+      GetSystemMetrics(SM_CYVIRTUALSCREEN)));
+  if (screen_rect != desktop_dc_rect_) {
+    desktop_dc_.reset();
+    memory_dc_.Set(NULL);
+    desktop_dc_rect_.setEmpty();
   }
 
-  if (desktop_dc_ == NULL) {
-    DCHECK(desktop_window_ == NULL);
-    DCHECK(memory_dc_ == NULL);
+  // Create GDI device contexts to capture from the desktop into memory, and
+  // allocate buffers to capture into.
+  if (desktop_dc_.get() == NULL) {
+    DCHECK(memory_dc_.Get() == NULL);
 
-    desktop_window_ = GetDesktopWindow();
-    desktop_dc_ = GetDC(desktop_window_);
-    memory_dc_ = CreateCompatibleDC(desktop_dc_);
-    dc_size_ = size;
+    desktop_dc_.reset(new base::win::ScopedGetDC(NULL));
+    memory_dc_.Set(CreateCompatibleDC(*desktop_dc_));
+    desktop_dc_rect_ = screen_rect;
+
+    ++resource_generation_;
   }
 
-  // Make sure the current bitmap has the correct dimensions.
-  if (buffers_[current_buffer_].data == NULL ||
-      size != buffers_[current_buffer_].size) {
-    ReallocateBuffer(current_buffer_, size);
+  // If the current buffer is from an older generation then allocate a new one.
+  // Note that we can't reallocate other buffers at this point, since the caller
+  // may still be reading from them.
+  if (resource_generation_ != buffers_[current_buffer_].resource_generation) {
+    AllocateBuffer(current_buffer_);
     InvalidateFullScreen();
   }
 }
 
-void CapturerGdi::ReallocateBuffer(int buffer_index, const SkISize& size) {
-  // Delete any previously constructed bitmap.
-  if (target_bitmap_[buffer_index]) {
-    DeleteObject(target_bitmap_[buffer_index]);
-    target_bitmap_[buffer_index] = NULL;
-  }
-  if (buffers_[buffer_index].data) {
-    DeleteObject(buffers_[buffer_index].data);
-    buffers_[buffer_index].data = NULL;
-  }
+void CapturerGdi::AllocateBuffer(int buffer_index) {
+  DCHECK(desktop_dc_.get() != NULL);
+  DCHECK(memory_dc_.Get() != NULL);
 
-  // Create a bitmap to keep the desktop image.
-  int rounded_width = (size.width() + 3) & (~3);
+  // Windows requires DIB sections' rows to start DWORD-aligned, which is
+  // implicit when working with RGB32 pixels.
+  DCHECK_EQ(pixel_format_, media::VideoFrame::RGB32);
 
-  // Dimensions of screen.
-  pixel_format_ = media::VideoFrame::RGB32;
-  int bytes_per_row = rounded_width * kBytesPerPixel;
-
-  // Create a device independent bitmap (DIB) that is the same size.
+  // Describe a device independent bitmap (DIB) that is the size of the desktop.
   BITMAPINFO bmi;
   memset(&bmi, 0, sizeof(bmi));
-  bmi.bmiHeader.biHeight = -size.height();
-  bmi.bmiHeader.biWidth = rounded_width;
+  bmi.bmiHeader.biHeight = -desktop_dc_rect_.height();
+  bmi.bmiHeader.biWidth = desktop_dc_rect_.width();
   bmi.bmiHeader.biPlanes = 1;
   bmi.bmiHeader.biBitCount = kBytesPerPixel * 8;
   bmi.bmiHeader.biSize = sizeof(bmi.bmiHeader);
-  bmi.bmiHeader.biSizeImage = bytes_per_row * size.height();
+  int bytes_per_row = desktop_dc_rect_.width() * kBytesPerPixel;
+  bmi.bmiHeader.biSizeImage = bytes_per_row * desktop_dc_rect_.height();
   bmi.bmiHeader.biXPelsPerMeter = kPixelsPerMeter;
   bmi.bmiHeader.biYPelsPerMeter = kPixelsPerMeter;
 
-  // Create memory for the buffers.
+  // Create the DIB, and store a pointer to its pixel buffer.
   target_bitmap_[buffer_index] =
-      CreateDIBSection(desktop_dc_, &bmi, DIB_RGB_COLORS,
+      CreateDIBSection(*desktop_dc_, &bmi, DIB_RGB_COLORS,
                        static_cast<void**>(&buffers_[buffer_index].data),
                        NULL, 0);
   buffers_[buffer_index].size = SkISize::Make(bmi.bmiHeader.biWidth,
@@ -423,15 +373,16 @@ void CapturerGdi::CaptureRegion(const SkRegion& region,
 }
 
 void CapturerGdi::CaptureImage() {
-  // Make sure the structures we use to capture the image have the correct size.
-  UpdateBufferCapture(GetScreenSize());
+  // Make sure the GDI capture resources are up-to-date.
+  PrepareCaptureResources();
 
   // Select the target bitmap into the memory dc.
   SelectObject(memory_dc_, target_bitmap_[current_buffer_]);
 
   // And then copy the rect from desktop to memory.
   BitBlt(memory_dc_, 0, 0, buffers_[current_buffer_].size.width(),
-      buffers_[current_buffer_].size.height(), desktop_dc_, 0, 0,
+      buffers_[current_buffer_].size.height(), *desktop_dc_,
+      desktop_dc_rect_.x(), desktop_dc_rect_.y(),
       SRCCOPY | CAPTUREBLT);
 }
 
@@ -606,11 +557,6 @@ void CapturerGdi::CaptureCursor() {
   last_cursor_size_ = SkISize::Make(width, height);
 
   cursor_shape_changed_callback_.Run(cursor_proto.Pass());
-}
-
-SkISize CapturerGdi::GetScreenSize() {
-  return SkISize::Make(GetSystemMetrics(SM_CXSCREEN),
-                       GetSystemMetrics(SM_CYSCREEN));
 }
 
 }  // namespace
