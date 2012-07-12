@@ -149,7 +149,8 @@ class TestEnvironment {
 #endif
 
   TestEnvironment(bool unit_test_mode,
-                  base::AtExitManager* existing_at_exit_manager) {
+                  base::AtExitManager* existing_at_exit_manager,
+                  WebKit::Platform* shadow_platform_delegate) {
     if (unit_test_mode) {
       logging::SetLogAssertHandler(UnitTestAssertHandler);
     } else {
@@ -158,9 +159,11 @@ class TestEnvironment {
       InitLogging();
     }
     main_message_loop_.reset(new MessageLoopType);
+
     // TestWebKitPlatformSupport must be instantiated after MessageLoopType.
     webkit_platform_support_.reset(
-      new TestWebKitPlatformSupport(unit_test_mode));
+        new TestWebKitPlatformSupport(unit_test_mode,
+                                      shadow_platform_delegate));
 
 #if defined(OS_ANDROID)
     media_player_manager_.reset(
@@ -278,7 +281,8 @@ webkit_support::GraphicsContext3DImplementation
 
 TestEnvironment* test_environment;
 
-void SetUpTestEnvironmentImpl(bool unit_test_mode) {
+void SetUpTestEnvironmentImpl(bool unit_test_mode,
+                              WebKit::Platform* shadow_platform_delegate) {
   base::EnableInProcessStackDumping();
   base::EnableTerminationOnHeapCorruption();
 
@@ -307,7 +311,8 @@ void SetUpTestEnvironmentImpl(bool unit_test_mode) {
     at_exit_manager = new base::AtExitManager;
 #endif
   webkit_support::BeforeInitialize(unit_test_mode);
-  test_environment = new TestEnvironment(unit_test_mode, at_exit_manager);
+  test_environment = new TestEnvironment(unit_test_mode, at_exit_manager,
+                                         shadow_platform_delegate);
   webkit_support::AfterInitialize(unit_test_mode);
   if (!unit_test_mode) {
     // Load ICU data tables.  This has to run after TestEnvironment is created
@@ -323,11 +328,20 @@ void SetUpTestEnvironmentImpl(bool unit_test_mode) {
 namespace webkit_support {
 
 void SetUpTestEnvironment() {
-  SetUpTestEnvironmentImpl(false);
+  SetUpTestEnvironment(NULL);
 }
 
 void SetUpTestEnvironmentForUnitTests() {
-  SetUpTestEnvironmentImpl(true);
+  SetUpTestEnvironmentForUnitTests(NULL);
+}
+
+void SetUpTestEnvironment(WebKit::Platform* shadow_platform_delegate) {
+  SetUpTestEnvironmentImpl(false, shadow_platform_delegate);
+}
+
+void SetUpTestEnvironmentForUnitTests(
+    WebKit::Platform* shadow_platform_delegate) {
+  SetUpTestEnvironmentImpl(true, shadow_platform_delegate);
 }
 
 void TearDownTestEnvironment() {

@@ -29,7 +29,8 @@ namespace WebKit {
 class TestWebKitPlatformSupport :
     public webkit_glue::WebKitPlatformSupportImpl {
  public:
-  explicit TestWebKitPlatformSupport(bool unit_test_mode);
+  TestWebKitPlatformSupport(bool unit_test_mode,
+                            WebKit::Platform* shadow_platform_delegate);
   virtual ~TestWebKitPlatformSupport();
 
   virtual WebKit::WebMimeRegistry* mimeRegistry() OVERRIDE;
@@ -123,6 +124,9 @@ class TestWebKitPlatformSupport :
       WebKit::WebSocketStreamHandle* handle,
       webkit_glue::WebSocketStreamHandleDelegate* delegate) OVERRIDE;
 
+  virtual WebKit::WebMediaStreamCenter* createMediaStreamCenter(
+      WebKit::WebMediaStreamCenterClient* client) OVERRIDE;
+
  private:
   TestShellWebMimeRegistryImpl mime_registry_;
   MockWebClipboardImpl mock_clipboard_;
@@ -138,6 +142,7 @@ class TestWebKitPlatformSupport :
   WebURLLoaderMockFactory url_loader_factory_;
   bool unit_test_mode_;
   WebKit::WebGamepads gamepad_data_;
+  WebKit::Platform* shadow_platform_delegate_;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   WebKit::WebThemeEngine* active_theme_engine_;

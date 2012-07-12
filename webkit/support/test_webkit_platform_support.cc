@@ -68,8 +68,10 @@
 
 using WebKit::WebScriptController;
 
-TestWebKitPlatformSupport::TestWebKitPlatformSupport(bool unit_test_mode)
-      : unit_test_mode_(unit_test_mode) {
+TestWebKitPlatformSupport::TestWebKitPlatformSupport(bool unit_test_mode,
+    WebKit::Platform* shadow_platform_delegate)
+    : unit_test_mode_(unit_test_mode),
+      shadow_platform_delegate_(shadow_platform_delegate) {
   v8::V8::SetCounterFunction(base::StatsTable::FindLocation);
 
   WebKit::initialize(this);
@@ -496,4 +498,14 @@ TestWebKitPlatformSupport::CreateWebSocketBridge(
     WebKit::WebSocketStreamHandle* handle,
     webkit_glue::WebSocketStreamHandleDelegate* delegate) {
   return SimpleSocketStreamBridge::Create(handle, delegate);
+}
+
+WebKit::WebMediaStreamCenter*
+TestWebKitPlatformSupport::createMediaStreamCenter(
+    WebKit::WebMediaStreamCenterClient* client) {
+  if (shadow_platform_delegate_)
+    return shadow_platform_delegate_->createMediaStreamCenter(client);
+  else
+    return webkit_glue::WebKitPlatformSupportImpl::createMediaStreamCenter(
+        client);
 }

@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgentClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
@@ -60,6 +61,9 @@ namespace webkit_support {
 // initialized (as it is already done by the TestSuite).
 void SetUpTestEnvironment();
 void SetUpTestEnvironmentForUnitTests();
+void SetUpTestEnvironment(WebKit::Platform* shadow_platform_delegate);
+void SetUpTestEnvironmentForUnitTests(
+    WebKit::Platform* shadow_platform_delegate);
 void TearDownTestEnvironment();
 
 // Returns a pointer to a WebKitPlatformSupport implementation for
