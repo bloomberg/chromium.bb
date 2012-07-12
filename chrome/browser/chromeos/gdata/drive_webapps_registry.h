@@ -11,7 +11,7 @@
 
 #include "base/file_path.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/chromeos/gdata/gdata_parser.h"
+#include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "googleurl/src/gurl.h"
 
 namespace gdata {

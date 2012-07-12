@@ -11,7 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
-#include "chrome/browser/chromeos/gdata/gdata_parser.h"
+#include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"

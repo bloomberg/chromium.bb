@@ -6,13 +6,13 @@
 
 #include <vector>
 
-#include "base/utf_string_conversions.h"
 #include "base/platform_file.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
-#include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "net/base/escape.h"
 
 namespace gdata {

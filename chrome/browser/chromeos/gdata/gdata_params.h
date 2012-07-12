@@ -16,10 +16,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
-#include "net/base/io_buffer.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/io_buffer.h"
 
 namespace gdata {
 

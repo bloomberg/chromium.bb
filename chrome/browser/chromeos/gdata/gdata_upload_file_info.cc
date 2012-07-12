@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 
 #include "base/string_number_conversions.h"
-#include "chrome/browser/chromeos/gdata/gdata_parser.h"
+#include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 
 namespace gdata {
 

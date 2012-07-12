@@ -10,7 +10,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/gdata/gdata_parser.h"
+#include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
@@ -29,7 +29,7 @@ using base::ListValue;
 
 namespace gdata {
 
-class GDataParserTest : public testing::Test {
+class GDataWAPIParserTest : public testing::Test {
  protected:
   static Value* LoadJSONFile(const std::string& filename) {
     FilePath path;
@@ -78,7 +78,7 @@ class GDataParserTest : public testing::Test {
 };
 
 // Test document feed parsing.
-TEST_F(GDataParserTest, DocumentFeedJsonParser) {
+TEST_F(GDataWAPIParserTest, DocumentFeedJsonParser) {
   std::string error;
   scoped_ptr<Value> document(LoadJSONFile("basic_feed.json"));
   ASSERT_TRUE(document.get());
@@ -220,7 +220,7 @@ TEST_F(GDataParserTest, DocumentFeedJsonParser) {
 
 
 // Test document feed parsing.
-TEST_F(GDataParserTest, DocumentEntryXmlParser) {
+TEST_F(GDataWAPIParserTest, DocumentEntryXmlParser) {
   scoped_ptr<DocumentEntry> entry(LoadDocumentEntryFromXml("entry.xml"));
   ASSERT_TRUE(entry.get());
 
@@ -308,7 +308,7 @@ TEST_F(GDataParserTest, DocumentEntryXmlParser) {
   EXPECT_EQ(26562560, entry->file_size());
 }
 
-TEST_F(GDataParserTest, AccountMetadataFeedParser) {
+TEST_F(GDataWAPIParserTest, AccountMetadataFeedParser) {
   scoped_ptr<Value> document(LoadJSONFile("account_metadata.json"));
   ASSERT_TRUE(document.get());
   ASSERT_EQ(Value::TYPE_DICTIONARY, document->GetType());
@@ -378,7 +378,7 @@ TEST_F(GDataParserTest, AccountMetadataFeedParser) {
 }
 
 // Test file extension checking in DocumentEntry::HasDocumentExtension().
-TEST_F(GDataParserTest, DocumentEntryHasDocumentExtension) {
+TEST_F(GDataWAPIParserTest, DocumentEntryHasDocumentExtension) {
   EXPECT_TRUE(DocumentEntry::HasHostedDocumentExtension(
       FilePath(FILE_PATH_LITERAL("Test.gdoc"))));
   EXPECT_TRUE(DocumentEntry::HasHostedDocumentExtension(
