@@ -359,9 +359,6 @@ class TestWebSocketServer {
   // Serves with TLS.
   void UseTLS();
 
-  // Requests client cert authentication.
-  void UseClientAuthentication();
-
   // Starts the python websocket server using |root_directory|. Returns whether
   // the server was successfully started.
   bool Start(const FilePath& root_directory);
@@ -399,9 +396,6 @@ class TestWebSocketServer {
 
   // If the python websocket server serves with TLS.
   bool secure_;
-
-  // If the python websocket server requests client cert authentication.
-  bool client_authentication_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebSocketServer);
 };

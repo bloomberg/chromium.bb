@@ -9,8 +9,6 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -33,10 +31,7 @@
 #include "content/public/common/security_style.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/test/test_renderer_host.h"
-#include "net/base/cert_database.h"
 #include "net/base/cert_status_flags.h"
-#include "net/base/crypto_module.h"
-#include "net/base/net_errors.h"
 #include "net/test/test_server.h"
 
 using content::InterstitialPage;
@@ -603,70 +598,6 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndGoForward) {
   const string16 result = watcher.WaitAndGetTitle();
   EXPECT_TRUE(LowerCaseEqualsASCII(result, "pass"));
 }
-
-#if defined(USE_NSS)
-// Visit a HTTPS page which requires client cert authentication. The client
-// cert will be selected automatically, then a test which uses WebSocket runs.
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSClientCert) {
-  // Import client cert for test. These interfaces require NSS.
-  net::CertDatabase cert_db;
-  scoped_refptr<net::CryptoModule> crypt_module = cert_db.GetPublicModule();
-  std::string pkcs12_data;
-  FilePath cert_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &cert_path));
-  cert_path = cert_path.Append(FILE_PATH_LITERAL("ssl"));
-  cert_path = cert_path.Append(FILE_PATH_LITERAL("client_cert.p12"));
-  EXPECT_TRUE(file_util::ReadFileToString(cert_path, &pkcs12_data));
-  EXPECT_EQ(net::OK, cert_db.ImportFromPKCS12(crypt_module,
-                                              pkcs12_data,
-                                              string16(),
-                                              true,
-                                              NULL));
-
-  // Start pywebsocket with TLS and client cert authentication.
-  ui_test_utils::TestWebSocketServer wss_server;
-  int port = wss_server.UseRandomPort();
-  wss_server.UseTLS();
-  wss_server.UseClientAuthentication();
-  FilePath wss_root_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &wss_root_dir));
-  ASSERT_TRUE(wss_server.Start(wss_root_dir));
-  std::string urlPath =
-      StringPrintf("%s%d%s", "https://localhost:", port, "/wss.html");
-  GURL url(urlPath);
-
-  // Setup page title observer.
-  WebContents* tab = chrome::GetActiveWebContents(browser());
-  ui_test_utils::TitleWatcher watcher(tab, ASCIIToUTF16("PASS"));
-  watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
-
-  // Add an entry into AutoSelectCertificateForUrls policy for automatic client
-  // cert selection.
-  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  DCHECK(profile);
-  scoped_ptr<DictionaryValue> dict(new DictionaryValue());
-  dict->SetString("ISSUER.CN", "pywebsocket");
-  profile->GetHostContentSettingsMap()->SetWebsiteSetting(
-      ContentSettingsPattern::FromURL(url),
-      ContentSettingsPattern::FromURL(url),
-      CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
-      std::string(),
-      dict.release());
-
-  // Visit a HTTPS page which requires client certs.
-  ui_test_utils::NavigateToURL(browser(), url);
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
-                                 false, true);  // Interstitial showing
-
-  // Proceed anyway.
-  ProceedThroughInterstitial(tab);
-
-  // Test page runs a WebSocket wss connection test. The result will be shown
-  // as page title.
-  const string16 result = watcher.WaitAndGetTitle();
-  EXPECT_TRUE(LowerCaseEqualsASCII(result, "pass"));
-}
-#endif  // defined(USE_NSS)
 
 // Flaky on CrOS http://crbug.com/92292
 #if defined(OS_CHROMEOS)
