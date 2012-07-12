@@ -114,6 +114,8 @@ CoreChromeOSOptionsHandler::~CoreChromeOSOptionsHandler() {
 }
 
 void CoreChromeOSOptionsHandler::InitializeHandler() {
+  CoreOptionsHandler::InitializeHandler();
+
   proxy_prefs_.reset(PrefSetObserver::CreateProxyPrefSetObserver(
     Profile::FromWebUI(web_ui())->GetPrefs(), this));
   // Observe the chromeos::ProxyConfigServiceImpl for changes from the UI.
@@ -122,11 +124,6 @@ void CoreChromeOSOptionsHandler::InitializeHandler() {
   proxy_tracker->AddNotificationCallback(
       base::Bind(&CoreChromeOSOptionsHandler::NotifyProxyPrefsChanged,
                  pointer_factory_.GetWeakPtr()));
-}
-
-void CoreChromeOSOptionsHandler::InitializePage() {
-  // NOTE: Don't remove this, we're intentionally ignoring the base class'
-  // implementation of InitializePage.
 }
 
 base::Value* CoreChromeOSOptionsHandler::FetchPref(
