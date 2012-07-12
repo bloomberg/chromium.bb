@@ -1062,6 +1062,100 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       raise JSONInterfaceError(ret_dict['error'])
     return ret_dict
 
+  def NavigateToURL(self, url, windex=0, tab_index=0, navigation_count=1):
+    """Navigate the given tab to the given URL.
+
+    Note that this method also activates the corresponding tab/window
+    if it's not active already. Blocks until page has loaded.
+
+    Args:
+      url: The URL to which to navigate.
+      windex: The index of the browser window to work on. Defaults to the first
+          window.
+      tab_index: The index of the tab to work on. Defaults to the first tab.
+      navigation_count: the number of navigations to wait for. Defaults to 1.
+    """
+    cmd_dict = {
+        'command': 'NavigateToURL',
+        'url': url,
+        'windex': windex,
+        'tab_index': tab_index,
+        'navigation_count': navigation_count,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def ReloadTab(self, tab_index=0, windex=0):
+    """Reload the given tab.
+
+    Blocks until the page has reloaded.
+
+    Args:
+      tab_index: The index of the tab to reload. Defaults to the first tab.
+      windex: The index of the browser window to work on. Defaults to the first
+          window.
+    """
+    cmd_dict = {
+        'command': 'Reload',
+        'tab_index': tab_index,
+        'windex': windex,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def ReloadActiveTab(self, windex=0):
+    """Reload an active tab.
+
+    Warning: Depending on the concept of an active tab is dangerous as it can
+    change during the test. Use ReloadTab and supply a tab_index explicitly.
+
+    Args:
+      windex: The index of the browser window to work on. Defaults to the first
+          window.
+    """
+    self.ReloadTab(windex, self.GetActiveTabIndex(windex))
+
+  def GetActiveTabIndex(self, windex=0):
+    """Get the index of the currently active tab in the given browser window.
+
+    Warning: Depending on the concept of an active tab is dangerous as it can
+    change during the test. Supply the tab_index explicitly, if possible.
+
+    Args:
+      windex: The index of the browser window to work on. Defaults to the first
+          window.
+
+    Returns:
+      An integer index for the currently active tab.
+    """
+    cmd_dict = {
+        'command': 'GetActiveTabIndex',
+        'windex': windex,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict,
+                                          windex=None).get('tab_index')
+
+  def AppendTab(self, url, windex=0):
+    """Append a new tab.
+
+    Creates a new tab at the end of given browser window and activates
+    it. Blocks until the specified |url| is loaded.
+
+    Args:
+      url: The url to load, can be string or a GURL object.
+      windex: The index of the browser window to work on. Defaults to the first
+          window.
+
+    Returns:
+      True if the url loads successfully in the new tab. False otherwise.
+    """
+    if isinstance(url, GURL):
+      url = url.spec()
+    cmd_dict = {
+        'command': 'AppendTab',
+        'url': url,
+        'windex': windex,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None).get('result')
+
   def GetBookmarkModel(self, windex=0):
     """Return the bookmark model as a BookmarkModel object.
 
@@ -3165,25 +3259,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'command': 'ClearEventQueue',
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=None)
-
-  def AppendTab(self, url, windex=0):
-    """Create a new tab.
-
-    Create a new tab at the end of given or first browser window
-    and activate it. Blocks until the url is loaded.
-
-    Args:
-      url: The url to load, can be string or a GURL object.
-      windex: Index of the window to open a tab in. Default 0 - first window.
-
-    Returns:
-      True on success.
-    """
-    if type(url) is GURL:
-      gurl = url
-    else:
-      gurl = GURL(url)
-    return pyautolib.PyUITestBase.AppendTab(self, gurl, windex)
 
   def WaitUntilNavigationCompletes(self, tab_index=0, windex=0):
     """Wait until the specified tab is done navigating.

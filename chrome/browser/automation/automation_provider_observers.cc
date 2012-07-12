@@ -397,19 +397,22 @@ void TabStripNotificationObserver::Observe(
 }
 
 TabAppendedNotificationObserver::TabAppendedNotificationObserver(
-    Browser* parent, AutomationProvider* automation,
-    IPC::Message* reply_message)
+    Browser* parent,
+    AutomationProvider* automation,
+    IPC::Message* reply_message,
+    bool use_json_interface)
     : TabStripNotificationObserver(chrome::NOTIFICATION_TAB_PARENTED,
                                    automation),
       parent_(parent),
-      reply_message_(reply_message) {
+      reply_message_(reply_message),
+      use_json_interface_(use_json_interface) {
 }
 
 TabAppendedNotificationObserver::~TabAppendedNotificationObserver() {}
 
 void TabAppendedNotificationObserver::ObserveTab(
     NavigationController* controller) {
-  if (!automation_)
+  if (!automation_ || !reply_message_.get())
     return;
 
   if (automation_->GetIndexForNavigationController(controller, parent_) ==
@@ -420,7 +423,11 @@ void TabAppendedNotificationObserver::ObserveTab(
 
   new NavigationNotificationObserver(controller, automation_,
                                      reply_message_.release(),
-                                     1, false, false);
+                                     1, false, use_json_interface_);
+}
+
+IPC::Message* TabAppendedNotificationObserver::ReleaseReply() {
+  return reply_message_.release();
 }
 
 TabClosedNotificationObserver::TabClosedNotificationObserver(
@@ -3100,4 +3107,3 @@ void BrowserOpenedWithExistingProfileNotificationObserver::Observe(
     NOTREACHED();
   }
 }
-

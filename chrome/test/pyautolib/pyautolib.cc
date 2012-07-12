@@ -99,34 +99,6 @@ void PyUITestBase::SetLaunchSwitches() {
   // However, we *do* want the --homepage switch.
   std::swap(homepage_original, homepage_);
   launch_arguments_.AppendSwitchASCII(switches::kHomePage, homepage_);
-
-}
-
-void PyUITestBase::NavigateToURL(const char* url_string) {
-  GURL url(url_string);
-  UITestBase::NavigateToURL(url);
-}
-
-void PyUITestBase::NavigateToURL(const char* url_string, int window_index) {
-  GURL url(url_string);
-  UITestBase::NavigateToURL(url, window_index);
-}
-
-void PyUITestBase::NavigateToURL(
-    const char* url_string, int window_index, int tab_index) {
-  GURL url(url_string);
-  UITestBase::NavigateToURL(url, window_index, tab_index);
-}
-
-void PyUITestBase::ReloadActiveTab(int window_index) {
-  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
-  ASSERT_TRUE(tab_proxy.get());
-  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab_proxy->Reload());
-}
-
-bool PyUITestBase::AppendTab(const GURL& tab_url, int window_index) {
-  scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
-  return browser_proxy->AppendTab(tab_url);
 }
 
 bool PyUITestBase::ApplyAccelerator(int id, int window_index) {
