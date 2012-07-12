@@ -71,14 +71,14 @@ FileManager.prototype = {
   /**
    * Location of the FAQ about the downloads directory.
    */
-  var DOWNLOADS_FAQ_URL = 'http://www.google.com/support/chromeos/bin/' +
-      'answer.py?hl=en&answer=1061547';
+  var DOWNLOADS_FAQ_URL =
+      'http://support.google.com/chromeos/bin/answer.py?answer=1061547';
 
   /**
    * Location of the FAQ about Google Drive.
    */
   var GOOGLE_DRIVE_FAQ_URL =
-      'https://support.google.com/chromeos/?hl=en&p=filemanager_drive';
+      'https://support.google.com/chromeos/?p=filemanager_drive';
 
   /**
    * Location of the page to buy more storage for Google Drive.
@@ -102,7 +102,7 @@ FileManager.prototype = {
   * Location of the FAQ about the file actions.
   */
   var NO_ACTION_FOR_FILE_URL = 'http://support.google.com/chromeos/bin/' +
-      'answer.py?hl=en&answer=1700055&topic=29026&ctx=topic';
+      'answer.py?answer=1700055&topic=29026&ctx=topic';
 
   /**
    * Maximum amount of thumbnails in the preview pane.
