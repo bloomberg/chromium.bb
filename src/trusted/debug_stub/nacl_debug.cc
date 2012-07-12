@@ -152,7 +152,8 @@ void NaClDebugThreadStopDebugging(struct NaClAppThread *natp) throw() {
   uint32_t id = IPlatform::GetCurrentThread();
   IThread* thread = IThread::Acquire(id);
   g_nacl_debug_state->target_->IgnoreThread(thread);
-  IThread::Release(thread);
+  IThread::Release(thread);  /* for Acquire */
+  IThread::Release(thread);  /* for Create at NaClDebugThreadPrepDebugging */
 }
 
 int NaClDebugStart(void) throw() {
