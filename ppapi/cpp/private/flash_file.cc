@@ -28,6 +28,11 @@ template <> const char* interface_name<PPB_Flash_File_ModuleLocal_2_0>() {
 
 namespace flash {
 
+static FileModuleLocal::DirEntry ConvertDirEntry(const PP_DirEntry_Dev& entry) {
+  FileModuleLocal::DirEntry rv = { entry.name, PP_ToBool(entry.is_dir) };
+  return rv;
+}
+
 // static
 bool FileModuleLocal::IsAvailable() {
   return has_interface<PPB_Flash_File_ModuleLocal_3_0>() ||
@@ -141,7 +146,7 @@ bool FileModuleLocal::QueryFile(const InstanceHandle& instance,
 bool FileModuleLocal::GetDirContents(
     const InstanceHandle& instance,
     const std::string& path,
-    std::vector<PP_DirEntry_Dev>* dir_contents) {
+    std::vector<DirEntry>* dir_contents) {
   dir_contents->clear();
 
   int32_t result = PP_ERROR_FAILED;
@@ -151,7 +156,7 @@ bool FileModuleLocal::GetDirContents(
         GetDirContents(instance.pp_instance(), path.c_str(), &contents);
     if (result == PP_OK && contents) {
       for (int32_t i = 0; i < contents->count; i++)
-        dir_contents->push_back(contents->entries[i]);
+        dir_contents->push_back(ConvertDirEntry(contents->entries[i]));
     }
     if (contents) {
         get_interface<PPB_Flash_File_ModuleLocal_3_0>()->
@@ -163,7 +168,7 @@ bool FileModuleLocal::GetDirContents(
         GetDirContents(instance.pp_instance(), path.c_str(), &contents);
     if (result == PP_OK && contents) {
       for (int32_t i = 0; i < contents->count; i++)
-        dir_contents->push_back(contents->entries[i]);
+        dir_contents->push_back(ConvertDirEntry(contents->entries[i]));
     }
     if (contents) {
         get_interface<PPB_Flash_File_ModuleLocal_2_0>()->

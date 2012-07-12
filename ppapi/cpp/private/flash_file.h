@@ -43,9 +43,13 @@ class FileModuleLocal {
                         const std::string& path,
                         PP_FileInfo* info);
   // Note that, unlike the C interface, no |FreeDirContents()| is needed.
+  struct DirEntry {
+    std::string name;
+    bool is_dir;
+  };
   static bool GetDirContents(const InstanceHandle& instance,
                              const std::string& path,
-                             std::vector<PP_DirEntry_Dev>* dir_contents);
+                             std::vector<DirEntry>* dir_contents);
 
   // Returns true if |CreateTemporaryFile()| is supported.
   // TODO(viettrungluu): Remove this sometime after M21 ships to Stable?

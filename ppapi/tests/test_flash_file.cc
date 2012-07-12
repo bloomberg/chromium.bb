@@ -122,7 +122,7 @@ std::string TestFlashFile::TestCreateTemporaryFile() {
 
 std::string TestFlashFile::GetItemCountUnderModuleLocalRoot(
     size_t* item_count) {
-  std::vector<PP_DirEntry_Dev> contents;
+  std::vector<FileModuleLocal::DirEntry> contents;
   ASSERT_TRUE(FileModuleLocal::GetDirContents(instance_, "", &contents));
   *item_count = contents.size();
   PASS();
