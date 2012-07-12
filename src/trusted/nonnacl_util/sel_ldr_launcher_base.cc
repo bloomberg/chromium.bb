@@ -73,20 +73,20 @@ bool SelLdrLauncherBase::SetupCommandAndLoad(NaClSrpcChannel* command,
   // Get the socket address from the descriptor.
   socket_addr_.reset(GetSockAddr(bootstrap_socket_.get()));
   if (socket_addr_ == NULL) {
-    NaClLog(4, "SelLdrLauncher::SetupCommandAndLoad: "
+    NaClLog(0, "SelLdrLauncher::SetupCommandAndLoad: "
             "getting sel_ldr socket address failed\n");
     return false;
   }
   // The first connection goes to the trusted command channel.
   scoped_ptr<DescWrapper> command_desc(socket_addr_->Connect());
   if (command_desc == NULL) {
-    NaClLog(4, "SelLdrLauncher::SetupCommandAndLoad: Connect failed\n");
+    NaClLog(0, "SelLdrLauncher::SetupCommandAndLoad: Connect failed\n");
     return false;
   }
   // Start the SRPC client to communicate with the trusted command channel.
   // SRPC client takes an additional reference to command_desc.
   if (!NaClSrpcClientCtor(command, command_desc->desc())) {
-    NaClLog(4, "SelLdrLauncher::SetupCommandAndLoad: "
+    NaClLog(0, "SelLdrLauncher::SetupCommandAndLoad: "
             "NaClSrpcClientCtor failed\n");
     return false;
   }
@@ -99,7 +99,7 @@ bool SelLdrLauncherBase::SetupCommandAndLoad(NaClSrpcChannel* command,
                                   nexe->desc(),
                                   kLoadModulePlaceHolderString);
     if (NACL_SRPC_RESULT_OK != rpc_result) {
-      NaClLog(4, "SelLdrLauncher::SetupCommandAndLoad: "
+      NaClLog(0, "SelLdrLauncher::SetupCommandAndLoad: "
               "rpc_result= %d is not successful\n",
               static_cast<int>(rpc_result));
       NaClSrpcDtor(command);
