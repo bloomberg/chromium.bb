@@ -120,7 +120,8 @@ class MockCallback : public base::RefCountedThreadSafe<MockCallback> {
 
 class ManagedModeTest : public ::testing::Test {
  public:
-  ManagedModeTest() : ui_thread_(content::BrowserThread::UI, &message_loop_) {
+  ManagedModeTest() : message_loop_(MessageLoop::TYPE_UI),
+                      ui_thread_(content::BrowserThread::UI, &message_loop_) {
   }
 
   scoped_refptr<MockCallback> CreateCallback() {
