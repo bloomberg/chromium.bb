@@ -45,8 +45,8 @@ class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
       ModelTypeSet types_to_add,
       ModelTypeSet types_to_remove,
       NigoriState nigori_state,
-      base::Callback<void(ModelTypeSet)> ready_task,
-      base::Callback<void()> retry_callback) OVERRIDE {
+      const base::Callback<void(ModelTypeSet)>& ready_task,
+      const base::Callback<void()>& retry_callback) OVERRIDE {
     last_nigori_state_ = nigori_state;
     last_ready_task_ = ready_task;
   }

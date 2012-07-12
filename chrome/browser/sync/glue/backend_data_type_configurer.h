@@ -36,8 +36,8 @@ class BackendDataTypeConfigurer {
       syncer::ModelTypeSet types_to_add,
       syncer::ModelTypeSet types_to_remove,
       NigoriState nigori_state,
-      base::Callback<void(syncer::ModelTypeSet)> ready_task,
-      base::Callback<void()> retry_callback) = 0;
+      const base::Callback<void(syncer::ModelTypeSet)>& ready_task,
+      const base::Callback<void()>& retry_callback) = 0;
 
  protected:
   virtual ~BackendDataTypeConfigurer() {}
