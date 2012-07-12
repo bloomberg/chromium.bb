@@ -164,8 +164,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
         base::Bind(&ProfileSyncServicePasswordTest::SignalEvent, &done));
-    done.TimedWait(base::TimeDelta::FromMilliseconds(
-        TestTimeouts::action_timeout_ms()));
+    done.TimedWait(TestTimeouts::action_timeout());
   }
 
   void StartSyncService(const base::Closure& root_callback,

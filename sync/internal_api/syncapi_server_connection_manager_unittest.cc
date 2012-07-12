@@ -36,8 +36,7 @@ class BlockingHttpPost : public HttpPostProviderInterface {
                               const char* content) OVERRIDE {}
   virtual bool MakeSynchronousPost(int* error_code, int* response_code)
       OVERRIDE {
-    wait_for_abort_.TimedWait(TimeDelta::FromMilliseconds(
-        TestTimeouts::action_max_timeout_ms()));
+    wait_for_abort_.TimedWait(TestTimeouts::action_max_timeout());
     *error_code = net::ERR_ABORTED;
     return false;
   }

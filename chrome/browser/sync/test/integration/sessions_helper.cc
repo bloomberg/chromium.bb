@@ -121,10 +121,8 @@ bool OpenMultipleTabs(int index, const std::vector<GURL>& urls) {
 
 bool WaitForTabsToLoad(int index, const std::vector<GURL>& urls) {
   DVLOG(1) << "Waiting for session to propagate to associator.";
-  static const int timeout_milli = TestTimeouts::action_max_timeout_ms();
   base::TimeTicks start_time = base::TimeTicks::Now();
-  base::TimeTicks end_time = start_time +
-                             base::TimeDelta::FromMilliseconds(timeout_milli);
+  base::TimeTicks end_time = start_time + TestTimeouts::action_max_timeout();
   bool found;
   for (std::vector<GURL>::const_iterator it = urls.begin();
        it != urls.end(); ++it) {
@@ -132,14 +130,15 @@ bool WaitForTabsToLoad(int index, const std::vector<GURL>& urls) {
     while (!found) {
       found = ModelAssociatorHasTabWithUrl(index, *it);
       if (base::TimeTicks::Now() >= end_time) {
-        LOG(ERROR) << "Failed to find all tabs after " << timeout_milli/1000.0
+        LOG(ERROR) << "Failed to find all tabs after "
+                   << TestTimeouts::action_max_timeout().InSecondsF()
                    << " seconds.";
         return false;
       }
       if (!found) {
         ProfileSyncServiceFactory::GetInstance()->GetForProfile(
             test()->GetProfile(index))->GetSessionModelAssociator()->
-            BlockUntilLocalChangeForTest(timeout_milli);
+            BlockUntilLocalChangeForTest(TestTimeouts::action_max_timeout());
         ui_test_utils::RunMessageLoop();
       }
     }

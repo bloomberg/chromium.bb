@@ -180,8 +180,7 @@ class SyncNewNonFrontendDataTypeControllerTest : public testing::Test {
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
        base::Bind(&SyncNewNonFrontendDataTypeControllerTest::SignalDone,
                   &done));
-    done.TimedWait(base::TimeDelta::FromMilliseconds(
-        TestTimeouts::action_timeout_ms()));
+    done.TimedWait(TestTimeouts::action_timeout());
     if (!done.IsSignaled()) {
       ADD_FAILURE() << "Timed out waiting for DB thread to finish.";
     }

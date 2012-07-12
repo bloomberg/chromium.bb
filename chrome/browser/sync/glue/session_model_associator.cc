@@ -1567,7 +1567,7 @@ void SessionModelAssociator::QuitLoopForSubtleTesting() {
 }
 
 void SessionModelAssociator::BlockUntilLocalChangeForTest(
-    int64 timeout_milliseconds) {
+    base::TimeDelta timeout) {
   if (test_weak_factory_.HasWeakPtrs())
     return;
   waiting_for_change_ = true;
@@ -1575,7 +1575,7 @@ void SessionModelAssociator::BlockUntilLocalChangeForTest(
       FROM_HERE,
       base::Bind(&SessionModelAssociator::QuitLoopForSubtleTesting,
                  test_weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(timeout_milliseconds));
+      timeout);
 }
 
 bool SessionModelAssociator::CryptoReadyIfNecessary() {

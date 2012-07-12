@@ -76,8 +76,7 @@ class TestTypedUrlModelAssociator : public TypedUrlModelAssociator {
     // Let the main thread know that we've been started up, and block until
     // they've called Abort().
     startup_->Signal();
-    EXPECT_TRUE(aborted_->TimedWait(base::TimeDelta::FromMilliseconds(
-      TestTimeouts::action_timeout_ms())));
+    EXPECT_TRUE(aborted_->TimedWait(TestTimeouts::action_timeout()));
     return TypedUrlModelAssociator::IsAbortPending();
   }
  private:
@@ -437,13 +436,11 @@ TEST_F(SyncTypedUrlModelAssociatorTest, TestAbort) {
       &CreateModelAssociator, &startup, &aborted, &done, &associator);
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, callback);
   // Wait for the model associator to get created and start assocation.
-  ASSERT_TRUE(startup.TimedWait(base::TimeDelta::FromMilliseconds(
-      TestTimeouts::action_timeout_ms())));
+  ASSERT_TRUE(startup.TimedWait(TestTimeouts::action_timeout()));
   // Abort the model assocation - this should be callable from any thread.
   associator->AbortAssociation();
   // Tell the remote thread to continue.
   aborted.Signal();
   // Block until CreateModelAssociator() exits.
-  ASSERT_TRUE(done.TimedWait(base::TimeDelta::FromMilliseconds(
-      TestTimeouts::action_timeout_ms())));
+  ASSERT_TRUE(done.TimedWait(TestTimeouts::action_timeout()));
 }

@@ -220,9 +220,9 @@ class SessionModelAssociator
   static syncer::ModelType model_type() { return syncer::SESSIONS; }
 
   // Testing only. Will cause the associator to call MessageLoop::Quit()
-  // when a local change is made, or when timeout_milli occurs, whichever is
+  // when a local change is made, or when timeout occurs, whichever is
   // first.
-  void BlockUntilLocalChangeForTest(int64 timeout_milli);
+  void BlockUntilLocalChangeForTest(base::TimeDelta timeout);
 
   // Callback for when the session name has been computed.
   void OnSessionNameInitialized(const std::string& name);

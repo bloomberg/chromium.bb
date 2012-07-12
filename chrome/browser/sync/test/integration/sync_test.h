@@ -274,11 +274,11 @@ class SyncTest : public InProcessBrowserTest {
   // created. Returns true if successful.
   bool TearDownLocalTestServer();
 
-  // Helper method that waits for up to |time_ms| milliseconds for the test
-  // server to start. Splits the time into |intervals| intervals, and polls the
+  // Helper method that waits for up to |wait| for the test server
+  // to start. Splits the time into |intervals| intervals, and polls the
   // server after each interval to see if it has started. Returns true if
   // successful.
-  bool WaitForTestServerToStart(int time_ms, int intervals);
+  bool WaitForTestServerToStart(base::TimeDelta wait, int intervals);
 
   // Helper method used to check if the test server is up and running.
   bool IsTestServerRunning();

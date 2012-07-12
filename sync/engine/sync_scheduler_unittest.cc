@@ -133,7 +133,7 @@ class SyncSchedulerTest : public testing::Test {
   MockConnectionManager* connection() { return connection_.get(); }
   TimeDelta zero() { return TimeDelta::FromSeconds(0); }
   TimeDelta timeout() {
-    return TimeDelta::FromMilliseconds(TestTimeouts::action_timeout_ms());
+    return TestTimeouts::action_timeout();
   }
 
   virtual void TearDown() {

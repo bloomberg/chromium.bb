@@ -515,7 +515,7 @@ bool SyncTest::SetUpLocalTestServer() {
   if (!base::LaunchProcess(server_cmdline, options, &test_server_handle_))
     LOG(ERROR) << "Could not launch local test server.";
 
-  const int kMaxWaitTime = TestTimeouts::action_max_timeout_ms();
+  const base::TimeDelta kMaxWaitTime = TestTimeouts::action_max_timeout();
   const int kNumIntervals = 15;
   if (WaitForTestServerToStart(kMaxWaitTime, kNumIntervals)) {
     DVLOG(1) << "Started local test server at "
@@ -547,12 +547,11 @@ bool SyncTest::TearDownLocalTestServer() {
   return true;
 }
 
-bool SyncTest::WaitForTestServerToStart(int time_ms, int intervals) {
+bool SyncTest::WaitForTestServerToStart(base::TimeDelta wait, int intervals) {
   for (int i = 0; i < intervals; ++i) {
     if (IsTestServerRunning())
       return true;
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(
-        time_ms / intervals));
+    base::PlatformThread::Sleep(wait / intervals);
   }
   return false;
 }
