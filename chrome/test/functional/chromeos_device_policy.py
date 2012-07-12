@@ -134,11 +134,11 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
     self.Login(user_index=0, expect_success=True)
     self.Logout()
 
-    self.SetDevicePolicy({'show_user_names': True})
-    self._WaitForLoginScreenId('account-picker')
-
     self.SetDevicePolicy({'show_user_names': False})
     self._WaitForLoginScreenId('gaia-signin')
+
+    self.SetDevicePolicy({'show_user_names': True})
+    self._WaitForLoginScreenId('account-picker')
 
   def testUserWhitelistAndAllowNewUsers(self):
     """Checks that login can be (dis)allowed by whitelist and allow-new-users.

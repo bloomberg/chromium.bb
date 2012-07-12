@@ -535,10 +535,12 @@ void SigninScreenHandler::OnUserImageChanged(const User& user) {
 }
 
 void SigninScreenHandler::OnPreferencesChanged() {
-  if (delegate_ && !delegate_->IsShowUsers())
+  if (delegate_ && !delegate_->IsShowUsers()) {
     HandleShowAddUser(NULL);
-  else
+  } else {
     SendUserList(false);
+    ShowScreen(kAccountPickerScreen, NULL);
+  }
 }
 
 void SigninScreenHandler::ShowError(int login_attempts,
