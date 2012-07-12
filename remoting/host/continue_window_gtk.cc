@@ -74,7 +74,7 @@ void ContinueWindowGtk::CreateWindow(const UiStrings& ui_strings) {
   GtkWidget* text_label =
       gtk_label_new(UTF16ToUTF8(ui_strings.continue_prompt).c_str());
   gtk_label_set_line_wrap(GTK_LABEL(text_label), TRUE);
-  // TODO(lambroslambrou): Fix magic numbers, as in disconnect_window_linux.cc.
+  // TODO(lambroslambrou): Fix magic numbers, as in disconnect_window_gtk.cc.
   gtk_misc_set_padding(GTK_MISC(text_label), 12, 12);
   gtk_container_add(GTK_CONTAINER(content_area), text_label);
 
