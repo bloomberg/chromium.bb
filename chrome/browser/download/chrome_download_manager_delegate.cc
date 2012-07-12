@@ -118,8 +118,10 @@ void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
   download_history_->Load(
       base::Bind(&DownloadManager::OnPersistentStoreQueryComplete,
                  base::Unretained(dm)));
+#if !defined(OS_ANDROID)
   extension_event_router_.reset(new ExtensionDownloadsEventRouter(
       profile_, download_manager_));
+#endif
 }
 
 void ChromeDownloadManagerDelegate::Shutdown() {

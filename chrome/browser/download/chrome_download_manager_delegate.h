@@ -203,6 +203,11 @@ class ChromeDownloadManagerDelegate
 
   content::NotificationRegistrar registrar_;
 
+  // On Android, GET downloads are not handled by the DownloadManager.
+  // Once we have extensions on android, we probably need the EventRouter
+  // in ContentViewDownloadDelegate which knows about both GET and POST
+  // downloads.
+#if !defined(OS_ANDROID)
   // The ExtensionDownloadsEventRouter dispatches download creation, change, and
   // erase events to extensions. Like ChromeDownloadManagerDelegate, it's a
   // chrome-level concept and its lifetime should match DownloadManager. There
@@ -210,6 +215,7 @@ class ChromeDownloadManagerDelegate
   // There does not appear to be a separate ExtensionSystem for on-record and
   // off-record profiles, so ExtensionSystem cannot own the EDER.
   scoped_ptr<ExtensionDownloadsEventRouter> extension_event_router_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDownloadManagerDelegate);
 };

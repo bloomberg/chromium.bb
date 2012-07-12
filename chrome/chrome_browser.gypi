@@ -992,6 +992,7 @@
         'browser/download/download_completion_blocker.h',
         'browser/download/download_crx_util.cc',
         'browser/download/download_crx_util.h',
+        'browser/download/download_crx_util_android.cc',
         'browser/download/download_extensions.cc',
         'browser/download/download_extensions.h',
         'browser/download/download_file_picker.cc',
@@ -4850,6 +4851,7 @@
             'browser/sync/sync_global_error.h',
 
             # There's no Browser/BrowserList on Android.
+            'browser/download/download_crx_util.cc',
             'browser/lifetime/application_lifetime_stub.cc',
             'browser/managed_mode.cc',
             'browser/managed_mode.h',
