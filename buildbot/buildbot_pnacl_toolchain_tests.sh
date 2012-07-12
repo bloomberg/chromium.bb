@@ -25,7 +25,7 @@ set -o errexit
 ARCHIVED_PEXE_SCONS_REV=8918
 # This hopefully needs to be updated rarely, it contains pexe from
 # the sandboxed llc/gold builds
-ARCHIVED_PEXE_TRANSLATOR_REV=9019
+ARCHIVED_PEXE_TRANSLATOR_REV=9103
 
 
 readonly PNACL_BUILD="pnacl/build.sh"
@@ -203,6 +203,7 @@ archived-pexe-translator-test() {
   fi
   local fast_trans_flags="${flags} -translate-fast"
 
+  echo "=== Translating the archived translator."
   ${sb_translator} ${flags} ${dir}/ld-new${ext} \
       -o ${dir}/ld-new-${arch}.nexe
   ${sb_translator} ${fast_trans_flags} ${dir}/ld-new${ext} \
@@ -219,6 +220,7 @@ archived-pexe-translator-test() {
   ls -l ${dir}
   file ${dir}/*
 
+  echo "=== Running the translated archived translator to test."
   # now actually run the two new translator nexes on the ld-new pexe
   driver_flags="--pnacl-driver-set-LLC_SB=${dir}/llc-${arch}.nexe \
                 --pnacl-driver-set-LD_SB=${dir}/ld-new-${arch}.nexe"
