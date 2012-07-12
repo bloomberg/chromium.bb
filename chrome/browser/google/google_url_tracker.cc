@@ -352,21 +352,29 @@ void GoogleURLTracker::Observe(int type,
     case content::NOTIFICATION_NAV_ENTRY_PENDING: {
       content::NavigationController* controller =
           content::Source<content::NavigationController>(source).ptr();
+      // Because we're listening to all sources, there may be no TabContents for
+      // some notifications, e.g. navigations in bubbles/balloons etc.  See
+      // comments in tab_contents.h.
       TabContents* tab_contents =
           TabContents::FromWebContents(controller->GetWebContents());
-      OnNavigationPending(source, content::Source<TabContents>(tab_contents),
-                          tab_contents->infobar_tab_helper(),
-                          controller->GetPendingEntry()->GetUniqueID());
+      if (tab_contents) {
+        OnNavigationPending(source, content::Source<TabContents>(tab_contents),
+                            tab_contents->infobar_tab_helper(),
+                            controller->GetPendingEntry()->GetUniqueID());
+      }
       break;
     }
 
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
       content::NavigationController* controller =
           content::Source<content::NavigationController>(source).ptr();
-      OnNavigationCommittedOrTabClosed(
-          TabContents::FromWebContents(controller->GetWebContents())->
-              infobar_tab_helper(),
-          controller->GetActiveEntry()->GetURL());
+      // Here we're only listening to notifications where we already know
+      // there's an associated TabContents.
+      TabContents* tab_contents =
+          TabContents::FromWebContents(controller->GetWebContents());
+      DCHECK(tab_contents);
+      OnNavigationCommittedOrTabClosed(tab_contents->infobar_tab_helper(),
+                                       controller->GetActiveEntry()->GetURL());
       break;
     }
 
