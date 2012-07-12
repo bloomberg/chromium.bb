@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -77,7 +77,13 @@ def RunWithCorrectPythonIfNecessary():
     RunAgain()
 
 
-RunWithCorrectPythonIfNecessary()
+# Do not attempt to figure out python versions if
+# DO_NOT_RESTART_PYTHON_FOR_PYAUTO is set.
+if os.getenv('DO_NOT_RESTART_PYTHON_FOR_PYAUTO') is None:
+  RunWithCorrectPythonIfNecessary()
+else:
+  print 'Will not try to restart with the correct version of python '\
+        'as DO_NOT_RESTART_PYTHON_FOR_PYAUTO is set.'
 
 
 try:
