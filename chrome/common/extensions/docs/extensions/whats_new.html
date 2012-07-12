@@ -199,6 +199,7 @@ This page lists the API and manifest changes
 made in recent releases.
 </p>
 <ul>
+  <li> <a href="#20">Google Chrome 20</a> </li>
   <li> <a href="#19">Google Chrome 19</a> </li>
   <li> <a href="#18">Google Chrome 18</a> </li>
   <li> <a href="#17">Google Chrome 17</a> </li>
@@ -214,11 +215,55 @@ made in recent releases.
   <li> <a href="#7">Google Chrome 7</a> </li>
   <li> <a href="#6">Google Chrome 6</a> </li>
 </ul>
+<p class="note">
+  <strong>New version of packaged apps:</strong><br>
+  There's a new version of
+  <a href="http://developer.chrome.com/trunk/apps/about_apps.html">packaged apps</a>
+  in the <a href="http://dev.chromium.org/getting-involved/dev-channel?">dev channel</a>.
+</p>
 <p>
 In addition to the changes listed below,
 check out the
 <a href="experimental.html">experimental APIs</a>.
 </p>
+<h2 id="20"> Google Chrome 20 </h2>
+<h4> New APIs </h4>
+  <ul>
+    <li>The
+      <a href="storage.html">storage API</a>
+      lets you store, retrieve, and
+      track changes to user data.</li>
+  </ul>
+<h4> Manifest changes </h4>
+  <ul>
+    <li>Manifest version 1 was deprecated in Chrome 18
+      and will be phased out according to the
+      <a href="manifestVersion.html">Manifest version 1 support schedule</a>.</li>
+  </ul>
+<h4> Additions to existing APIs </h4>
+  <ul>
+    <li>The <code>chrome.contextMenus</code>
+      <a href="contextMenus.html#method-create">create()</a> and
+      <a href="contextMenus.html#method-update">update()</a>
+      methods now have an <code>enabled</code> parameter.</li>
+    <li>The privacy API's <a href="privacy.html#property-services">services</a> object
+      now has a <code>spellingServiceEnabled</code> setting.</li>
+    <li>The <code>chrome.tabs</code>
+      <a href="tabs.html#method-executeScript">executeScript()</a> and
+      <a href="tabs.html#method-insertCSS">insertCSS()</a>
+      now accept a <code>runAt</code> parameter.</li>
+  </ul>
+<h4> Changes to existing APIs </h4>
+  <ul>
+    <li>The <code>sendRequest()</code> method
+      has been deprecated in favor of the
+      <code>sendMessage()</code> method for both the
+      <a href="extension.html#method-sendMessage">extension API</a> and
+      <a href="tabs.html#method-sendMessage">tabs API</a>.</li>
+    <li>The <a href="external_extensions.html">external_extensions.json file</a>
+      has been deprecated in favor of individual
+      <code>&lt;extension-id&gt;.json</code> files.</li>
+  </ul>
 <h2 id="19"> Google Chrome 19 </h2>
 <h4> New APIs </h4>
    <ul>
@@ -292,6 +337,10 @@ check out the
       you can use the new
       <a href="background_pages.html">background.scripts</a> property
       and Chrome will generate a background page for you.
+    </li><li>The new
+      <a href="manifest.html#web_accessible_resources">web_accessible_resources</a>
+      field specifies the paths of packaged resources
+      that are expected to be usable in the context of a web page.
   </li></ul>
 <h4> Additions to existing APIs </h4>
   <ul>

@@ -129,7 +129,6 @@
     "chrome.experimental.bluetooth.isAvailable": "experimental.bluetooth.html#method-isAvailable",
     "chrome.experimental.bluetooth.isPowered": "experimental.bluetooth.html#method-isPowered",
     "chrome.experimental.bluetooth.onAvailabilityChanged": "experimental.bluetooth.html#event-onAvailabilityChanged",
-    "chrome.experimental.bluetooth.onDeviceDiscovered_": "experimental.bluetooth.html#event-onDeviceDiscovered_",
     "chrome.experimental.bluetooth.onPowerChanged": "experimental.bluetooth.html#event-onPowerChanged",
     "chrome.experimental.bluetooth.read": "experimental.bluetooth.html#method-read",
     "chrome.experimental.bluetooth.setOutOfBandPairingData": "experimental.bluetooth.html#method-setOutOfBandPairingData",
