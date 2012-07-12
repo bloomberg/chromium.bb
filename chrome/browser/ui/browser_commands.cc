@@ -11,6 +11,8 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data_helper.h"
+#include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_util.h"
@@ -50,6 +52,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/page_navigator.h"
@@ -904,6 +907,21 @@ void ToggleSpeechInput(Browser* browser) {
 
 void ToggleFullscreenMode(Browser* browser) {
   browser->fullscreen_controller()->ToggleFullscreenMode();
+}
+
+void ClearCache(Browser* browser) {
+  BrowsingDataRemover* remover = new BrowsingDataRemover(browser->profile(),
+      BrowsingDataRemover::EVERYTHING,
+      base::Time());
+  remover->Remove(BrowsingDataRemover::REMOVE_CACHE,
+                  BrowsingDataHelper::UNPROTECTED_WEB);
+  // BrowsingDataRemover takes care of deleting itself when done.
+}
+
+bool IsDebuggerAttachedToCurrentTab(Browser* browser) {
+  WebContents* contents = chrome::GetActiveWebContents(browser);
+  return contents ?
+      content::DevToolsAgentHostRegistry::IsDebuggerAttached(contents) : false;
 }
 
 void ViewSource(Browser* browser, TabContents* contents) {

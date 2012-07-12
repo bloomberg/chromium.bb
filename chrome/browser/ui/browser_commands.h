@@ -132,6 +132,8 @@ void ShowAvatarMenu(Browser* browser);
 void OpenUpdateChromeDialog(Browser* browser);
 void ToggleSpeechInput(Browser* browser);
 void ToggleFullscreenMode(Browser* browser);
+void ClearCache(Browser* browser);
+bool IsDebuggerAttachedToCurrentTab(Browser* browser);
 
 // Opens view-source tab for given tab contents.
 void ViewSource(Browser* browser, TabContents* tab);

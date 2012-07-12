@@ -3939,6 +3939,17 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
         "<ph name="CLIENT_NAME">$1<ex>Extension Foo</ex></ph>" is debugging this tab.
       </message>
 
+      <!-- Advanced reload button menu -->
+      <message name="IDS_RELOAD_MENU_NORMAL_RELOAD_ITEM" desc="Menu item displayed in the Reload dropdown menu when in dev mode">
+        Normal Reload
+      </message>
+      <message name="IDS_RELOAD_MENU_HARD_RELOAD_ITEM" desc="Menu item displayed in the Reload dropdown menu when in dev mode">
+        Hard Reload
+      </message>
+      <message name="IDS_RELOAD_MENU_EMPTY_AND_HARD_RELOAD_ITEM" desc="Menu item displayed in the Reload dropdown menu when in dev mode">
+        Empty Cache and Hard Reload
+      </message>
+
       <!-- Basic Auth Dialog -->
       <message name="IDS_LOGIN_DIALOG_TITLE" desc="String to be displayed in the title bar of the login prompt dialog">
         Authentication Required
@@ -6363,6 +6374,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_TOOLTIP_RELOAD" desc="The tooltip for reload button">
         Reload this page
+      </message>
+      <message name="IDS_TOOLTIP_RELOAD_WITH_MENU" desc="The tooltip for reload button with menu in DevTools mode">
+        Reload this page, hold to see more options
       </message>
       <message name="IDS_TOOLTIP_STOP" desc="The tooltip for the stop button">
         Stop loading this page

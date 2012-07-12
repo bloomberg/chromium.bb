@@ -11,6 +11,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/gtk/accelerators_gtk.h"
 #include "chrome/browser/ui/gtk/event_utils.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
@@ -20,12 +21,23 @@
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/accelerators/accelerator_gtk.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // The width of this button in GTK+ theme mode. The Stop and Refresh stock icons
 // can be different sizes; this variable is used to make sure that the button
 // doesn't change sizes when switching between the two.
 static int GtkButtonWidth = 0;
+
+// The time in milliseconds between when the user clicks and the menu appears.
+static const int kReloadMenuTimerDelay = 500;
+
+// Content of the Reload drop-down menu.
+static const int kReloadMenuItems[]  = {
+  IDS_RELOAD_MENU_NORMAL_RELOAD_ITEM,
+  IDS_RELOAD_MENU_HARD_RELOAD_ITEM,
+  IDS_RELOAD_MENU_EMPTY_AND_HARD_RELOAD_ITEM,
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // ReloadButton, public:
@@ -42,8 +54,15 @@ ReloadButtonGtk::ReloadButtonGtk(LocationBarViewGtk* location_bar,
       stop_(theme_service_, IDR_STOP, IDR_STOP_P, IDR_STOP_H, IDR_STOP_D),
       widget_(gtk_chrome_button_new()),
       stop_to_reload_timer_delay_(base::TimeDelta::FromMilliseconds(1350)),
+      weak_factory_(this),
+      menu_visible_(false),
       testing_mouse_hovered_(false),
       testing_reload_count_(0) {
+  menu_model_.reset(new ui::SimpleMenuModel(this));
+  for (size_t i = 0; i < arraysize(kReloadMenuItems); i++) {
+    menu_model_->AddItemWithStringId(kReloadMenuItems[i], kReloadMenuItems[i]);
+  }
+
   gtk_widget_set_size_request(widget(), reload_.Width(), reload_.Height());
 
   gtk_widget_set_app_paintable(widget(), TRUE);
@@ -57,6 +76,17 @@ ReloadButtonGtk::ReloadButtonGtk(LocationBarViewGtk* location_bar,
   gtk_widget_set_has_tooltip(widget(), TRUE);
   g_signal_connect(widget(), "query-tooltip", G_CALLBACK(OnQueryTooltipThunk),
                    this);
+
+  g_signal_connect(widget(), "button-press-event",
+                   G_CALLBACK(OnButtonPressThunk), this);
+  gtk_widget_add_events(widget(), GDK_POINTER_MOTION_MASK);
+  g_signal_connect(widget(), "motion-notify-event",
+                   G_CALLBACK(OnMouseMoveThunk), this);
+
+  // Popup the menu as left-aligned relative to this widget rather than the
+  // default of right aligned.
+  g_object_set_data(G_OBJECT(widget()), "left-align-popup",
+                    reinterpret_cast<void*>(true));
 
   hover_controller_.Init(widget());
   gtk_util::SetButtonTriggersNavigation(widget());
@@ -93,8 +123,11 @@ void ReloadButtonGtk::ChangeMode(Mode mode, bool force) {
     stop_to_reload_timer_.Stop();
     visible_mode_ = mode;
 
-    stop_.set_paint_override(-1);
-    gtk_chrome_button_unset_paint_state(GTK_CHROME_BUTTON(widget_.get()));
+    // Do not change the state of the button if menu is currently visible.
+    if (!menu_visible_) {
+      stop_.set_paint_override(-1);
+      gtk_chrome_button_unset_paint_state(GTK_CHROME_BUTTON(widget_.get()));
+    }
 
     UpdateThemeButtons();
     gtk_widget_queue_draw(widget());
@@ -143,9 +176,80 @@ void ReloadButtonGtk::Observe(int type,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// ReloadButtonGtk, MenuGtk::Delegate implementation:
+
+void ReloadButtonGtk::StoppedShowing() {
+  menu_visible_ = false;
+  ChangeMode(intended_mode_, true);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ReloadButtonGtk, SimpleMenuModel::Delegate implementation:
+
+bool ReloadButtonGtk::IsCommandIdChecked(int command_id) const {
+  return false;
+}
+
+bool ReloadButtonGtk::IsCommandIdEnabled(int command_id) const {
+  return true;
+}
+
+bool ReloadButtonGtk::IsCommandIdVisible(int command_id) const {
+  return true;
+}
+
+bool ReloadButtonGtk::GetAcceleratorForCommandId(int command_id,
+                                                 ui::Accelerator* accelerator) {
+  int command = 0;
+  switch (command_id) {
+    case IDS_RELOAD_MENU_NORMAL_RELOAD_ITEM:
+      command = IDC_RELOAD;
+      break;
+    case IDS_RELOAD_MENU_HARD_RELOAD_ITEM:
+      command = IDC_RELOAD_IGNORING_CACHE;
+      break;
+    case IDS_RELOAD_MENU_EMPTY_AND_HARD_RELOAD_ITEM:
+      // No accelerator.
+      break;
+    default:
+      LOG(ERROR) << "Unknown reload menu command";
+  }
+
+  bool accelerator_set = false;
+  if (command) {
+    const ui::AcceleratorGtk* accelerator_gtk =
+        AcceleratorsGtk::GetInstance()->
+            GetPrimaryAcceleratorForCommand(command);
+    if (accelerator_gtk) {
+      *accelerator = *accelerator_gtk;
+      accelerator_set = true;
+    }
+  }
+  return accelerator_set;
+}
+
+void ReloadButtonGtk::ExecuteCommand(int command_id) {
+  switch (command_id) {
+    case IDS_RELOAD_MENU_NORMAL_RELOAD_ITEM:
+      DoReload(IDC_RELOAD);
+      break;
+    case IDS_RELOAD_MENU_HARD_RELOAD_ITEM:
+      DoReload(IDC_RELOAD_IGNORING_CACHE);
+      break;
+    case IDS_RELOAD_MENU_EMPTY_AND_HARD_RELOAD_ITEM:
+      ClearCache();
+      DoReload(IDC_RELOAD_IGNORING_CACHE);
+      break;
+    default:
+      LOG(ERROR) << "Unknown reload menu command";
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ReloadButtonGtk, private:
 
 void ReloadButtonGtk::OnClicked(GtkWidget* /* sender */) {
+  weak_factory_.InvalidateWeakPtrs();
   if (visible_mode_ == MODE_STOP) {
     // Do nothing if Stop was disabled due to an attempt to change back to
     // RELOAD mode while hovered.
@@ -159,40 +263,7 @@ void ReloadButtonGtk::OnClicked(GtkWidget* /* sender */) {
     // even if the mouse is still hovering.
     ChangeMode(MODE_RELOAD, true);
   } else if (!double_click_timer_.IsRunning()) {
-    // Shift-clicking or Ctrl-clicking the reload button means we should ignore
-    // any cached content.
-    int command;
-    GdkModifierType modifier_state;
-    gtk_get_current_event_state(&modifier_state);
-    guint modifier_state_uint = modifier_state;
-    if (modifier_state_uint & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) {
-      command = IDC_RELOAD_IGNORING_CACHE;
-      // Mask off Shift and Control so they don't affect the disposition below.
-      modifier_state_uint &= ~(GDK_SHIFT_MASK | GDK_CONTROL_MASK);
-    } else {
-      command = IDC_RELOAD;
-    }
-
-    WindowOpenDisposition disposition =
-        event_utils::DispositionFromGdkState(modifier_state_uint);
-    if ((disposition == CURRENT_TAB) && location_bar_) {
-      // Forcibly reset the location bar, since otherwise it won't discard any
-      // ongoing user edits, since it doesn't realize this is a user-initiated
-      // action.
-      location_bar_->Revert();
-    }
-
-    // Start a timer - while this timer is running, the reload button cannot be
-    // changed to a stop button.  We do not set |intended_mode_| to MODE_STOP
-    // here as the browser will do that when it actually starts loading (which
-    // may happen synchronously, thus the need to do this before telling the
-    // browser to execute the reload command).
-    double_click_timer_.Start(FROM_HERE, double_click_timer_delay_, this,
-                              &ReloadButtonGtk::OnDoubleClickTimer);
-
-    if (browser_)
-      chrome::ExecuteCommandWithDisposition(browser_, command, disposition);
-    ++testing_reload_count_;
+    DoReload(0);
   }
 }
 
@@ -220,10 +291,53 @@ gboolean ReloadButtonGtk::OnQueryTooltip(GtkWidget* /* sender */,
   if (!location_bar_)
     return FALSE;
 
+  int reload_tooltip = ReloadMenuEnabled() ?
+      IDS_TOOLTIP_RELOAD_WITH_MENU : IDS_TOOLTIP_RELOAD;
   gtk_tooltip_set_text(tooltip, l10n_util::GetStringUTF8(
       (visible_mode_ == MODE_RELOAD) ?
-      IDS_TOOLTIP_RELOAD : IDS_TOOLTIP_STOP).c_str());
+      reload_tooltip : IDS_TOOLTIP_STOP).c_str());
   return TRUE;
+}
+
+gboolean ReloadButtonGtk::OnButtonPress(GtkWidget* widget,
+                                        GdkEventButton* event) {
+  if (!ReloadMenuEnabled() || visible_mode_ == MODE_STOP)
+    return FALSE;
+
+  if (event->button == 3)
+    ShowReloadMenu(event->button, event->time);
+
+  if (event->button != 1)
+    return FALSE;
+
+  y_position_of_last_press_ = static_cast<int>(event->y);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&ReloadButtonGtk::ShowReloadMenu,
+                 weak_factory_.GetWeakPtr(),
+                 event->button,
+                 event->time),
+      base::TimeDelta::FromMilliseconds(kReloadMenuTimerDelay));
+  return FALSE;
+}
+
+gboolean ReloadButtonGtk::OnMouseMove(GtkWidget* widget,
+                                      GdkEventMotion* event) {
+  // If we aren't waiting to show the back forward menu, do nothing.
+  if (!weak_factory_.HasWeakPtrs())
+    return FALSE;
+
+  // We only count moves about a certain threshold.
+  GtkSettings* settings = gtk_widget_get_settings(widget);
+  int drag_min_distance;
+  g_object_get(settings, "gtk-dnd-drag-threshold", &drag_min_distance, NULL);
+  if (event->y - y_position_of_last_press_ < drag_min_distance)
+    return FALSE;
+
+  // We will show the menu now. Cancel the delayed event.
+  weak_factory_.InvalidateWeakPtrs();
+  ShowReloadMenu(/* button */ 1, event->time);
+  return FALSE;
 }
 
 void ReloadButtonGtk::UpdateThemeButtons() {
@@ -282,3 +396,68 @@ void ReloadButtonGtk::OnDoubleClickTimer() {
 void ReloadButtonGtk::OnStopToReloadTimer() {
   ChangeMode(intended_mode_, true);
 }
+
+void ReloadButtonGtk::ShowReloadMenu(int button, guint32 event_time) {
+  if (!ReloadMenuEnabled() || visible_mode_ == MODE_STOP)
+    return;
+
+  menu_visible_ = true;
+  menu_.reset(new MenuGtk(this, menu_model_.get()));
+  reload_.set_paint_override(GTK_STATE_ACTIVE);
+  gtk_chrome_button_set_paint_state(GTK_CHROME_BUTTON(widget_.get()),
+                                    GTK_STATE_ACTIVE);
+  gtk_widget_queue_draw(widget());
+  menu_->PopupForWidget(widget(), button, event_time);
+}
+
+void ReloadButtonGtk::DoReload(int command) {
+  // Shift-clicking or Ctrl-clicking the reload button means we should ignore
+  // any cached content.
+  GdkModifierType modifier_state;
+  gtk_get_current_event_state(&modifier_state);
+  guint modifier_state_uint = modifier_state;
+
+  // Default reload behaviour.
+  if (command == 0) {
+    if (modifier_state_uint & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) {
+      command = IDC_RELOAD_IGNORING_CACHE;
+      // Mask off Shift and Control so they don't affect the disposition below.
+      modifier_state_uint &= ~(GDK_SHIFT_MASK | GDK_CONTROL_MASK);
+    } else {
+      command = IDC_RELOAD;
+    }
+  }
+
+  WindowOpenDisposition disposition =
+      event_utils::DispositionFromGdkState(modifier_state_uint);
+  if ((disposition == CURRENT_TAB) && location_bar_) {
+    // Forcibly reset the location bar, since otherwise it won't discard any
+    // ongoing user edits, since it doesn't realize this is a user-initiated
+    // action.
+    location_bar_->Revert();
+  }
+
+  // Start a timer - while this timer is running, the reload button cannot be
+  // changed to a stop button.  We do not set |intended_mode_| to MODE_STOP
+  // here as the browser will do that when it actually starts loading (which
+  // may happen synchronously, thus the need to do this before telling the
+  // browser to execute the reload command).
+  double_click_timer_.Start(FROM_HERE, double_click_timer_delay_, this,
+                            &ReloadButtonGtk::OnDoubleClickTimer);
+
+  if (browser_)
+    chrome::ExecuteCommandWithDisposition(browser_, command, disposition);
+  ++testing_reload_count_;
+}
+
+bool ReloadButtonGtk::ReloadMenuEnabled() {
+  if (!browser_)
+    return false;
+  return chrome::IsDebuggerAttachedToCurrentTab(browser_);
+}
+
+void ReloadButtonGtk::ClearCache() {
+  if (browser_)
+    chrome::ClearCache(browser_);
+}
+
