@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,30 @@
 #include "base/logging.h"
 #include "sandbox/src/nt_internals.h"
 #include "sandbox/src/win_utils.h"
+
+namespace {
+
+// Returns type infomation for an NT object. This routine is expected to be
+// called for invalid handles so it catches STATUS_INVALID_HANDLE exceptions
+// that can be generated when handle tracing is enabled.
+NTSTATUS QueryObjectTypeInformation(HANDLE handle,
+                                    void* buffer,
+                                    ULONG* size) {
+  static NtQueryObject QueryObject = NULL;
+  if (!QueryObject)
+    ResolveNTFunctionPtr("NtQueryObject", &QueryObject);
+
+  NTSTATUS status = STATUS_UNSUCCESSFUL;
+  __try {
+    status = QueryObject(handle, ObjectTypeInformation, buffer, *size, size);
+  } __except(GetExceptionCode() == STATUS_INVALID_HANDLE ?
+                 EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
+    status = STATUS_INVALID_HANDLE;
+  }
+  return status;
+}
+
+}  // namespace
 
 namespace sandbox {
 
@@ -59,10 +83,6 @@ bool HandleCloserAgent::CloseHandles() {
   if (!::GetProcessHandleCount(::GetCurrentProcess(), &handle_count))
     return false;
 
-  static NtQueryObject QueryObject = NULL;
-  if (!QueryObject)
-    ResolveNTFunctionPtr("NtQueryObject", &QueryObject);
-
   // Set up buffers for the type info and the name.
   std::vector<BYTE> type_info_buffer(sizeof(OBJECT_TYPE_INFORMATION) +
                                      32 * sizeof(wchar_t));
@@ -81,13 +101,13 @@ bool HandleCloserAgent::CloseHandles() {
 
     // Get the type name, reusing the buffer.
     ULONG size = static_cast<ULONG>(type_info_buffer.size());
-    rc = QueryObject(handle, ObjectTypeInformation, type_info, size, &size);
+    rc = QueryObjectTypeInformation(handle, type_info, &size);
     while (rc == STATUS_INFO_LENGTH_MISMATCH ||
            rc == STATUS_BUFFER_OVERFLOW) {
       type_info_buffer.resize(size + sizeof(wchar_t));
       type_info = reinterpret_cast<OBJECT_TYPE_INFORMATION*>(
           &(type_info_buffer[0]));
-      rc = QueryObject(handle, ObjectTypeInformation, type_info, size, &size);
+      rc = QueryObjectTypeInformation(handle, type_info, &size);
       // Leave padding for the nul terminator.
       if (NT_SUCCESS(0) && size == type_info_buffer.size())
         rc = STATUS_INFO_LENGTH_MISMATCH;
