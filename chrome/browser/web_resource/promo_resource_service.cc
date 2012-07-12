@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_resource/promo_resource_service.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/threading/thread_restrictions.h"
@@ -23,9 +24,9 @@ namespace {
 // Delay on first fetch so we don't interfere with startup.
 static const int kStartResourceFetchDelay = 5000;
 
-// Delay between calls to update the cache (12 hours), and 3 min in debug mode.
+// Delay between calls to update the cache (12h), and 10s in debug mode.
 static const int kCacheUpdateDelay = 12 * 60 * 60 * 1000;
-static const int kTestCacheUpdateDelay = 3 * 60 * 1000;
+static const int kTestCacheUpdateDelay = 10 * 1000;
 
 // The version of the service (used to expire the cache when upgrading Chrome
 // to versions with different types of promos).
@@ -81,8 +82,7 @@ PromoResourceService::PromoResourceService(Profile* profile)
                          GetCacheUpdateDelay()),
                          profile_(profile),
                          ALLOW_THIS_IN_INITIALIZER_LIST(
-                             weak_ptr_factory_(this)),
-                         web_resource_update_scheduled_(false) {
+                             weak_ptr_factory_(this)) {
   ScheduleNotificationOnInit();
 }
 
@@ -103,12 +103,18 @@ void PromoResourceService::ScheduleNotification(double promo_start,
       PostNotification(ms_until_start);
     } else if (ms_until_end > 0) {
       if (ms_until_start <= 0) {
-        // Notify immediately if time is between start and end.
+        // The promo is active.  Notify immediately.
         PostNotification(0);
       }
       // Schedule the next notification to happen at the end of promotion.
       PostNotification(ms_until_end);
+    } else {
+      // The promo (if any) has finished.  Notify immediately.
+      PostNotification(0);
     }
+  } else {
+      // The promo (if any) was apparently cancelled.  Notify immediately.
+      PostNotification(0);
   }
 }
 
@@ -136,12 +142,13 @@ void PromoResourceService::ScheduleNotificationOnInit() {
 }
 
 void PromoResourceService::PostNotification(int64 delay_ms) {
-  if (web_resource_update_scheduled_)
-    return;
+  // Note that this could cause re-issuing a notification every time
+  // we receive an update from a server if something goes wrong.
+  // Given that this couldn't happen more frequently than every
+  // kCacheUpdateDelay milliseconds, we should be fine.
   // TODO(achuith): This crashes if we post delay_ms = 0 to the message loop.
   // during startup.
   if (delay_ms > 0) {
-    web_resource_update_scheduled_ = true;
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&PromoResourceService::PromoResourceStateChange,
@@ -153,7 +160,6 @@ void PromoResourceService::PostNotification(int64 delay_ms) {
 }
 
 void PromoResourceService::PromoResourceStateChange() {
-  web_resource_update_scheduled_ = false;
   content::NotificationService* service =
       content::NotificationService::current();
   service->Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,

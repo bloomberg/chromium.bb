@@ -74,10 +74,6 @@ class PromoResourceService : public WebResourceService {
   // Notification type when an update is done.
   int notification_type_;
 
-  // True if a task has been set to update the cache when a new web resource
-  // becomes available.
-  bool web_resource_update_scheduled_;
-
   DISALLOW_COPY_AND_ASSIGN(PromoResourceService);
 };
 
