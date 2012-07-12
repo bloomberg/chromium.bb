@@ -47,8 +47,7 @@ function FileTransferController(fileList,
    * @type {Array.<File>}
    * @private
    */
-  this.files_ = [];
-
+  this.selectedFileObjects_ = [];
 }
 
 FileTransferController.prototype = {
@@ -111,7 +110,7 @@ FileTransferController.prototype = {
    * @param {string} effectAllowed Value must be valid for the
    *     |dataTransfer.effectAllowed| property ('move', 'copy', 'copyMove').
    */
-  cutOrCopy: function(dataTransfer, effectAllowed) {
+  cutOrCopy_: function(dataTransfer, effectAllowed) {
     var directories = [];
     var files = [];
     var entries = this.selectedEntries_;
@@ -130,8 +129,8 @@ FileTransferController.prototype = {
     dataTransfer.effectAllowed = effectAllowed;
     dataTransfer.setData('fs/effectallowed', effectAllowed);
 
-    for (var i = 0; i < this.files_.length; i++) {
-      dataTransfer.items.add(this.files_[i]);
+    for (var i = 0; i < this.selectedFileObjects_.length; i++) {
+      dataTransfer.items.add(this.selectedFileObjects_[i]);
     }
   },
 
@@ -221,9 +220,9 @@ FileTransferController.prototype = {
 
     if (this.canCopyOrDrag_(dt)) {
       if (this.canCutOrDrag_(dt))
-        this.cutOrCopy(dt, 'copyMove');
+        this.cutOrCopy_(dt, 'copyMove');
       else
-        this.cutOrCopy(dt, 'copy');
+        this.cutOrCopy_(dt, 'copy');
     } else {
       event.preventDefault();
     }
@@ -361,7 +360,7 @@ FileTransferController.prototype = {
       return;
     }
     event.preventDefault();
-    this.cutOrCopy(event.clipboardData, 'copy');
+    this.cutOrCopy_(event.clipboardData, 'copy');
     this.notify_('selection-copied');
   },
 
@@ -387,7 +386,7 @@ FileTransferController.prototype = {
       return;
     }
     event.preventDefault();
-    this.cutOrCopy(event.clipboardData, 'move');
+    this.cutOrCopy_(event.clipboardData, 'move');
     this.notify_('selection-cut');
   },
 
@@ -486,22 +485,28 @@ FileTransferController.prototype = {
   onSelectionChanged_: function(event) {
     var entries = this.selectedEntries_;
     var dragNodes = this.dragNodes_ = [];
-    var files = this.files_ = [];
+    var files = this.selectedFileObjects_ = [];
 
+    var fileEntries = [];
     for (var i = 0; i < entries.length; i++) {
-      // File object must be prepeared in advance for clipboard operations
-      // (copy, paste and drag). DataTransfer object closes for write after
-      // returning control from that handlers so they may not have
-      // asynchronous operations.
-      if (!this.isOnGData && entries[i].isFile)
-        entries[i].file(function(file) { files.push(file); });
-
+      if (entries[i].isFile)
+        fileEntries.push(entries[i]);
       // Items to drag are created in advance. Images must be loaded
       // at the time the 'dragstart' event comes. Otherwise draggable
       // image will be rendered without IMG tags.
       if (dragNodes.length < MAX_DRAG_THUMBAIL_COUNT)
         dragNodes.push(new this.dragNodeConstructor_(entries[i]));
     }
+
+    // File object must be prepeared in advance for clipboard operations
+    // (copy, paste and drag). DataTransfer object closes for write after
+    // returning control from that handlers so they may not have
+    // asynchronous operations.
+    function prepareFileObjects() {
+      for (var i = 0; i < fileEntries.length; i++) {
+        fileEntries[i].file(function(file) { files.push(file); });
+      }
+    };
 
     if (this.isOnGData) {
       this.allGDataFilesAvailable = false;
@@ -516,7 +521,12 @@ FileTransferController.prototype = {
         // |Copy| is the only menu item affected by allGDataFilesAvailable.
         // It could be open right now, update its UI.
         this.copyCommand_.disabled = !this.canCopyOrDrag_();
+
+        if (this.allGDataFilesAvailable)
+          prepareFileObjects();
       }.bind(this));
+    } else {
+      prepareFileObjects();
     }
   },
 
