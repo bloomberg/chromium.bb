@@ -7,6 +7,7 @@ import logging
 import os
 import subprocess
 import sys
+import time
 
 import pyauto_functional
 import pyauto
@@ -74,6 +75,13 @@ class AccessibilityTest(pyauto.PyUITest):
     self.NavigateToURL(url)
     self.assertEqual(1, self.FindInPage('title')['match_count'],
         msg='Failed to load the page or find the page contents.')
+    # crbug.com/129218: adding a volume change functionality to automate this
+    # issue. Please note that we don't verify any functionality here.
+    default_volume = self.GetVolumeInfo()
+    for test_volume in (50.00, 77.00, 85.00, 20.00):
+      self.SetVolume(test_volume)
+      time.sleep(1)
+    self.SetVolume(default_volume.get('volume'))
 
   def testAccessibilityBeforeLogin(self):
     """Test Accessibility before login."""
