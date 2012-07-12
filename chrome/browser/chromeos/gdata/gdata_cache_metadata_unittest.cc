@@ -111,8 +111,7 @@ class GDataCacheMetadataMapTest : public testing::Test {
 
  protected:
   // Helper function to insert an item with key |resource_id| into |cache_map|.
-  // |md5|, |sub_dir_type|, |cache_state| are used to create the value
-  // CacheEntry.
+  // |md5| and |cache_state| are used to create the value CacheEntry.
   void InsertIntoMap(GDataCacheMetadataMap::CacheMap* cache_map,
                      const std::string& resource_id,
                      const std::string& md5,
@@ -140,35 +139,31 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   std::string test_file_md5("test_file_md5");
   GDataCache::CacheSubDirectoryType test_sub_dir_type =
       GDataCache::CACHE_TYPE_PERSISTENT;
-  int test_cache_state = (CACHE_STATE_PRESENT |
-                          CACHE_STATE_PERSISTENT);
+  int test_cache_state = (CACHE_STATE_PRESENT | CACHE_STATE_PERSISTENT);
   metadata_->AddOrUpdateCacheEntry(
       test_resource_id,
       GDataCacheEntry(test_file_md5, test_cache_state));
 
   // Test that the entry can be retrieved.
-  scoped_ptr<GDataCacheEntry> cache_entry =
-      metadata_->GetCacheEntry(test_resource_id, test_file_md5);
-  ASSERT_TRUE(cache_entry.get());
-  EXPECT_EQ(test_file_md5, cache_entry->md5());
-  EXPECT_EQ(test_sub_dir_type, GDataCache::GetSubDirectoryType(*cache_entry));
-  EXPECT_EQ(test_cache_state, cache_entry->cache_state());
+  GDataCacheEntry cache_entry;
+  ASSERT_TRUE(metadata_->GetCacheEntry(
+      test_resource_id, test_file_md5, &cache_entry));
+  EXPECT_EQ(test_file_md5, cache_entry.md5());
+  EXPECT_EQ(test_sub_dir_type, GDataCache::GetSubDirectoryType(cache_entry));
+  EXPECT_EQ(test_cache_state, cache_entry.cache_state());
 
   // Empty md5 should also work.
-  cache_entry =
-      metadata_->GetCacheEntry(test_resource_id, std::string()).Pass();
-  ASSERT_TRUE(cache_entry.get());
-  EXPECT_EQ(test_file_md5, cache_entry->md5());
+  ASSERT_TRUE(metadata_->GetCacheEntry(
+      test_resource_id, std::string(), &cache_entry));
+  EXPECT_EQ(test_file_md5, cache_entry.md5());
 
   // resource_id doesn't exist.
-  cache_entry = metadata_->GetCacheEntry("not_found_resource_id",
-                                         std::string()).Pass();
-  EXPECT_FALSE(cache_entry.get());
+  EXPECT_FALSE(metadata_->GetCacheEntry(
+      "not_found_resource_id", std::string(), &cache_entry));
 
   // md5 doesn't match.
-  cache_entry =
-      metadata_->GetCacheEntry(test_resource_id, "mismatch_md5").Pass();
-  EXPECT_FALSE(cache_entry.get());
+  EXPECT_FALSE(metadata_->GetCacheEntry(
+      test_resource_id, "mismatch_md5", &cache_entry));
 
   // Update all attributes.
   test_file_md5 = "test_file_md5_2";
@@ -179,18 +174,16 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
       GDataCacheEntry(test_file_md5, test_cache_state));
 
   // Make sure the values took.
-  cache_entry =
-      metadata_->GetCacheEntry(test_resource_id, test_file_md5).Pass();
-  ASSERT_TRUE(cache_entry.get());
-  EXPECT_EQ(test_file_md5, cache_entry->md5());
-  EXPECT_EQ(test_sub_dir_type, GDataCache::GetSubDirectoryType(*cache_entry));
-  EXPECT_EQ(test_cache_state, cache_entry->cache_state());
+  ASSERT_TRUE(metadata_->GetCacheEntry(
+      test_resource_id, test_file_md5, &cache_entry));
+  EXPECT_EQ(test_file_md5, cache_entry.md5());
+  EXPECT_EQ(test_sub_dir_type, GDataCache::GetSubDirectoryType(cache_entry));
+  EXPECT_EQ(test_cache_state, cache_entry.cache_state());
 
   // Empty m5 should work.
-  cache_entry =
-      metadata_->GetCacheEntry(test_resource_id, std::string()).Pass();
-  ASSERT_TRUE(cache_entry.get());
-  EXPECT_EQ(test_file_md5, cache_entry->md5());
+  ASSERT_TRUE(metadata_->GetCacheEntry(
+      test_resource_id, std::string(), &cache_entry));
+  EXPECT_EQ(test_file_md5, cache_entry.md5());
 
   // Test dirty cache.
   test_file_md5 = "test_file_md5_3";
@@ -201,30 +194,26 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
       GDataCacheEntry(test_file_md5, test_cache_state));
 
   // Make sure the values took.
-  cache_entry =
-      metadata_->GetCacheEntry(test_resource_id, test_file_md5).Pass();
-  ASSERT_TRUE(cache_entry.get());
-  EXPECT_EQ(test_file_md5, cache_entry->md5());
-  EXPECT_EQ(test_sub_dir_type, GDataCache::GetSubDirectoryType(*cache_entry));
-  EXPECT_EQ(test_cache_state, cache_entry->cache_state());
+  ASSERT_TRUE(metadata_->GetCacheEntry(
+      test_resource_id, test_file_md5, &cache_entry));
+  EXPECT_EQ(test_file_md5, cache_entry.md5());
+  EXPECT_EQ(test_sub_dir_type, GDataCache::GetSubDirectoryType(cache_entry));
+  EXPECT_EQ(test_cache_state, cache_entry.cache_state());
 
   // Empty md5 should work.
-  cache_entry =
-      metadata_->GetCacheEntry(test_resource_id, std::string()).Pass();
-  ASSERT_TRUE(cache_entry.get());
-  EXPECT_EQ(test_file_md5, cache_entry->md5());
+  ASSERT_TRUE(metadata_->GetCacheEntry(
+      test_resource_id, std::string(), &cache_entry));
+  EXPECT_EQ(test_file_md5, cache_entry.md5());
 
   // Mismatched md5 should also work for dirty entries.
-  cache_entry =
-      metadata_->GetCacheEntry(test_resource_id, "mismatch_md5").Pass();
-  ASSERT_TRUE(cache_entry.get());
-  EXPECT_EQ(test_file_md5, cache_entry->md5());
+  ASSERT_TRUE(metadata_->GetCacheEntry(
+      test_resource_id, "mismatch_md5", &cache_entry));
+  EXPECT_EQ(test_file_md5, cache_entry.md5());
 
   // Remove the entry.
   metadata_->RemoveCacheEntry(test_resource_id);
-  cache_entry =
-      metadata_->GetCacheEntry(test_resource_id, std::string()).Pass();
-  EXPECT_FALSE(cache_entry.get());
+  EXPECT_FALSE(metadata_->GetCacheEntry(
+      test_resource_id, std::string(), &cache_entry));
 
   // Add another one.
   test_resource_id = "test_resource_id_2";
@@ -236,12 +225,11 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
       GDataCacheEntry(test_file_md5, test_cache_state));
 
   // Make sure the values took.
-  cache_entry =
-      metadata_->GetCacheEntry(test_resource_id, test_file_md5).Pass();
-  ASSERT_TRUE(cache_entry.get());
-  EXPECT_EQ(test_file_md5, cache_entry->md5());
-  EXPECT_EQ(test_sub_dir_type, GDataCache::GetSubDirectoryType(*cache_entry));
-  EXPECT_EQ(test_cache_state, cache_entry->cache_state());
+  ASSERT_TRUE(metadata_->GetCacheEntry(
+      test_resource_id, test_file_md5, &cache_entry));
+  EXPECT_EQ(test_file_md5, cache_entry.md5());
+  EXPECT_EQ(test_sub_dir_type, GDataCache::GetSubDirectoryType(cache_entry));
+  EXPECT_EQ(test_cache_state, cache_entry.cache_state());
 }
 
 TEST_F(GDataCacheMetadataMapTest, Initialization) {
@@ -266,90 +254,76 @@ TEST_F(GDataCacheMetadataMapTest, Initialization) {
   // Check contents in "persistent" directory.
   //
   // "id_foo" is present and pinned.
-  scoped_ptr<GDataCacheEntry> cache_entry;
-  cache_entry = metadata_->GetCacheEntry("id_foo", "md5foo");
-  ASSERT_TRUE(cache_entry.get());
-  EXPECT_EQ("md5foo", cache_entry->md5());
+  GDataCacheEntry cache_entry;
+  ASSERT_TRUE(metadata_->GetCacheEntry("id_foo", "md5foo", &cache_entry));
+  EXPECT_EQ("md5foo", cache_entry.md5());
   EXPECT_EQ(GDataCache::CACHE_TYPE_PERSISTENT,
-            GDataCache::GetSubDirectoryType(*cache_entry));
-  EXPECT_EQ(CACHE_STATE_PRESENT | CACHE_STATE_PINNED |
-            CACHE_STATE_PERSISTENT,
-            cache_entry->cache_state());
+            GDataCache::GetSubDirectoryType(cache_entry));
+  EXPECT_EQ(CACHE_STATE_PRESENT | CACHE_STATE_PINNED | CACHE_STATE_PERSISTENT,
+            cache_entry.cache_state());
   EXPECT_TRUE(PathExists(persistent_directory_.AppendASCII("id_foo.md5foo")));
   EXPECT_TRUE(PathExists(pinned_directory_.AppendASCII("id_foo")));
   // The invalid symlink in "outgoing" should be removed.
   EXPECT_FALSE(PathExists(outgoing_directory_.AppendASCII("id_foo")));
 
   // "id_bar" is present and dirty.
-  cache_entry = metadata_->GetCacheEntry("id_bar", "");
-  ASSERT_TRUE(cache_entry.get());
-  EXPECT_EQ("local", cache_entry->md5());
+  ASSERT_TRUE(metadata_->GetCacheEntry("id_bar", "", &cache_entry));
+  EXPECT_EQ("local", cache_entry.md5());
   EXPECT_EQ(GDataCache::CACHE_TYPE_PERSISTENT,
-            GDataCache::GetSubDirectoryType(*cache_entry));
-  EXPECT_EQ(CACHE_STATE_PRESENT | CACHE_STATE_DIRTY |
-            CACHE_STATE_PERSISTENT,
-            cache_entry->cache_state());
+            GDataCache::GetSubDirectoryType(cache_entry));
+  EXPECT_EQ(CACHE_STATE_PRESENT | CACHE_STATE_DIRTY | CACHE_STATE_PERSISTENT,
+            cache_entry.cache_state());
   EXPECT_TRUE(PathExists(persistent_directory_.AppendASCII("id_bar.local")));
   EXPECT_TRUE(PathExists(outgoing_directory_.AppendASCII("id_bar")));
 
   // "id_baz" should be removed during cache initialization.
-  cache_entry = metadata_->GetCacheEntry("id_baz", "");
-  EXPECT_FALSE(cache_entry.get());
+  EXPECT_FALSE(metadata_->GetCacheEntry("id_baz", "", &cache_entry));
   EXPECT_FALSE(PathExists(persistent_directory_.AppendASCII("id_baz.local")));
 
   // "id_bad" should be removed during cache initialization.
-  cache_entry = metadata_->GetCacheEntry("id_bad", "md5bad");
-  EXPECT_FALSE(cache_entry.get());
+  EXPECT_FALSE(metadata_->GetCacheEntry("id_bad", "md5bad", &cache_entry));
   EXPECT_FALSE(PathExists(persistent_directory_.AppendASCII("id_bad.md5bad")));
 
   // "id_symlink" should be removed during cache initialization.
-  cache_entry = metadata_->GetCacheEntry("id_symlink", "");
-  EXPECT_FALSE(cache_entry.get());
+  EXPECT_FALSE(metadata_->GetCacheEntry("id_symlink", "", &cache_entry));
   EXPECT_FALSE(PathExists(persistent_directory_.AppendASCII("id_symlink")));
 
   // Check contents in "tmp" directory.
   //
   // "id_qux" is just present in tmp directory.
-  cache_entry = metadata_->GetCacheEntry("id_qux", "md5qux");
-  ASSERT_TRUE(cache_entry.get());
-  EXPECT_EQ("md5qux", cache_entry->md5());
+  ASSERT_TRUE(metadata_->GetCacheEntry("id_qux", "md5qux", &cache_entry));
+  EXPECT_EQ("md5qux", cache_entry.md5());
   EXPECT_EQ(GDataCache::CACHE_TYPE_TMP,
-            GDataCache::GetSubDirectoryType(*cache_entry));
-  EXPECT_EQ(CACHE_STATE_PRESENT, cache_entry->cache_state());
+            GDataCache::GetSubDirectoryType(cache_entry));
+  EXPECT_EQ(CACHE_STATE_PRESENT, cache_entry.cache_state());
   EXPECT_TRUE(PathExists(tmp_directory_.AppendASCII("id_qux.md5qux")));
 
   // "id_quux" should be removed during cache initialization.
-  cache_entry = metadata_->GetCacheEntry("id_quux", "md5qux");
-  EXPECT_FALSE(cache_entry.get());
+  EXPECT_FALSE(metadata_->GetCacheEntry("id_quux", "md5qux", &cache_entry));
   EXPECT_FALSE(PathExists(pinned_directory_.AppendASCII("id_quux.local")));
 
   // "id_symlink_tmp" should be removed during cache initialization.
-  cache_entry = metadata_->GetCacheEntry("id_symlink_tmp", "");
-  EXPECT_FALSE(cache_entry.get());
+  EXPECT_FALSE(metadata_->GetCacheEntry("id_symlink_tmp", "", &cache_entry));
   EXPECT_FALSE(PathExists(pinned_directory_.AppendASCII("id_symlink_tmp")));
 
   // Check contents in "pinned" directory.
   //
   // "id_corge" is pinned but not present.
-  cache_entry = metadata_->GetCacheEntry("id_corge", "");
-  ASSERT_TRUE(cache_entry.get());
-  EXPECT_EQ("", cache_entry->md5());
-  EXPECT_EQ(CACHE_STATE_PINNED, cache_entry->cache_state());
+  ASSERT_TRUE(metadata_->GetCacheEntry("id_corge", "", &cache_entry));
+  EXPECT_EQ("", cache_entry.md5());
+  EXPECT_EQ(CACHE_STATE_PINNED, cache_entry.cache_state());
   EXPECT_TRUE(IsLink(pinned_directory_.AppendASCII("id_corge")));
 
   // "id_dangling" should be removed during cache initialization.
-  cache_entry = metadata_->GetCacheEntry("id_dangling", "");
-  EXPECT_FALSE(cache_entry.get());
+  EXPECT_FALSE(metadata_->GetCacheEntry("id_dangling", "", &cache_entry));
   EXPECT_FALSE(IsLink(pinned_directory_.AppendASCII("id_dangling")));
 
   // "id_outside" should be removed during cache initialization.
-  cache_entry = metadata_->GetCacheEntry("id_outside", "");
-  EXPECT_FALSE(cache_entry.get());
+  EXPECT_FALSE(metadata_->GetCacheEntry("id_outside", "", &cache_entry));
   EXPECT_FALSE(IsLink(pinned_directory_.AppendASCII("id_outside")));
 
   // "id_not_symlink" should be removed during cache initialization.
-  cache_entry = metadata_->GetCacheEntry("id_not_symlink", "");
-  EXPECT_FALSE(cache_entry.get());
+  EXPECT_FALSE(metadata_->GetCacheEntry("id_not_symlink", "", &cache_entry));
   EXPECT_FALSE(IsLink(pinned_directory_.AppendASCII("id_not_symlink")));
 }
 
@@ -365,13 +339,11 @@ TEST_F(GDataCacheMetadataMapTest, RemoveTemporaryFilesTest) {
   InsertIntoMap(&cache_map,
                 "<resource_id_2>",
                 "<md5>",
-                CACHE_STATE_PRESENT |
-                CACHE_STATE_PERSISTENT);
+                CACHE_STATE_PRESENT | CACHE_STATE_PERSISTENT);
   InsertIntoMap(&cache_map,
                 "<resource_id_3>",
                 "<md5>",
-                CACHE_STATE_PRESENT |
-                CACHE_STATE_PERSISTENT);
+                CACHE_STATE_PRESENT | CACHE_STATE_PERSISTENT);
   InsertIntoMap(&cache_map,
                 "<resource_id_4>",
                 "<md5>",
@@ -380,10 +352,11 @@ TEST_F(GDataCacheMetadataMapTest, RemoveTemporaryFilesTest) {
   metadata_->cache_map_ = cache_map;
   metadata_->RemoveTemporaryFiles();
   // resource 1 and 4 should be gone, as these are temporary.
-  EXPECT_FALSE(metadata_->GetCacheEntry("<resource_id_1>", "").get());
-  EXPECT_TRUE(metadata_->GetCacheEntry("<resource_id_2>", "").get());
-  EXPECT_TRUE(metadata_->GetCacheEntry("<resource_id_3>", "").get());
-  EXPECT_FALSE(metadata_->GetCacheEntry("<resource_id_4>", "").get());
+  GDataCacheEntry cache_entry;
+  EXPECT_FALSE(metadata_->GetCacheEntry("<resource_id_1>", "", &cache_entry));
+  EXPECT_TRUE(metadata_->GetCacheEntry("<resource_id_2>", "", &cache_entry));
+  EXPECT_TRUE(metadata_->GetCacheEntry("<resource_id_3>", "", &cache_entry));
+  EXPECT_FALSE(metadata_->GetCacheEntry("<resource_id_4>", "", &cache_entry));
 }
 
 }  // namespace gdata

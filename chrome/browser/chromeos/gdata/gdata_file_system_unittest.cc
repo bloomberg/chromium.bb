@@ -420,10 +420,10 @@ class GDataFileSystemTest : public testing::Test {
   }
 
   // Helper function to call GetCacheEntry from origin thread.
-  scoped_ptr<GDataCacheEntry> GetCacheEntryFromOriginThread(
-      const std::string& resource_id,
-      const std::string& md5) {
-    scoped_ptr<GDataCacheEntry> cache_entry;
+  bool GetCacheEntryFromOriginThread(const std::string& resource_id,
+                                     const std::string& md5,
+                                     GDataCacheEntry* cache_entry) {
+    bool result = false;
     content::BrowserThread::GetBlockingPool()
         ->GetSequencedTaskRunner(sequence_token_)->PostTask(
             FROM_HERE,
@@ -432,23 +432,26 @@ class GDataFileSystemTest : public testing::Test {
                 base::Unretained(this),
                 resource_id,
                 md5,
-                &cache_entry));
+                cache_entry,
+                &result));
     test_util::RunBlockingPoolTask();
-    return cache_entry.Pass();
+    return result;
   }
 
   // Used to implement GetCacheEntry.
   void GetCacheEntryFromOriginThreadInternal(
       const std::string& resource_id,
       const std::string& md5,
-      scoped_ptr<GDataCacheEntry>* cache_entry) {
-    cache_entry->reset(cache_->GetCacheEntry(resource_id, md5).release());
+      GDataCacheEntry* cache_entry,
+      bool* result) {
+    *result = cache_->GetCacheEntry(resource_id, md5, cache_entry);
   }
 
   // Returns true if the cache entry exists for the given resource ID and MD5.
   bool CacheEntryExists(const std::string& resource_id,
                         const std::string& md5) {
-    return GetCacheEntryFromOriginThread(resource_id, md5).get();
+    GDataCacheEntry cache_entry;
+    return GetCacheEntryFromOriginThread(resource_id, md5, &cache_entry);
   }
 
   // Returns true if the cache file exists for the given resource ID and MD5.
@@ -595,16 +598,17 @@ class GDataFileSystemTest : public testing::Test {
     EXPECT_EQ(expected_error_, error);
 
     // Verify cache map.
-    scoped_ptr<GDataCacheEntry> cache_entry =
-        GetCacheEntryFromOriginThread(resource_id, md5);
+    GDataCacheEntry cache_entry;
+    const bool cache_entry_found =
+        GetCacheEntryFromOriginThread(resource_id, md5, &cache_entry);
     if (ToCacheEntry(expected_cache_state_).IsPresent() ||
         ToCacheEntry(expected_cache_state_).IsPinned()) {
-      ASSERT_TRUE(cache_entry.get());
-      EXPECT_EQ(expected_cache_state_, cache_entry->cache_state());
+      ASSERT_TRUE(cache_entry_found);
+      EXPECT_EQ(expected_cache_state_, cache_entry.cache_state());
       EXPECT_EQ(expected_sub_dir_type_,
-                GDataCache::GetSubDirectoryType(*cache_entry));
+                GDataCache::GetSubDirectoryType(cache_entry));
     } else {
-      EXPECT_FALSE(cache_entry.get());
+      EXPECT_FALSE(cache_entry_found);
     }
 
     // Verify actual cache file.

@@ -201,32 +201,33 @@ void GDataCacheMetadataMap::RemoveCacheEntry(const std::string& resource_id) {
   }
 }
 
-scoped_ptr<GDataCacheEntry> GDataCacheMetadataMap::GetCacheEntry(
-    const std::string& resource_id,
-    const std::string& md5) {
+bool GDataCacheMetadataMap::GetCacheEntry(const std::string& resource_id,
+                                          const std::string& md5,
+                                          GDataCacheEntry* entry) {
+  DCHECK(entry);
   AssertOnSequencedWorkerPool();
 
   CacheMap::iterator iter = cache_map_.find(resource_id);
   if (iter == cache_map_.end()) {
     DVLOG(1) << "Can't find " << resource_id << " in cache map";
-    return scoped_ptr<GDataCacheEntry>();
+    return false;
   }
 
-  scoped_ptr<GDataCacheEntry> cache_entry(
-      new GDataCacheEntry(iter->second));
+  const GDataCacheEntry& cache_entry = iter->second;
 
-  if (!CheckIfMd5Matches(md5, *cache_entry)) {
+  if (!CheckIfMd5Matches(md5, cache_entry)) {
     DVLOG(1) << "Non-matching md5: want=" << md5
              << ", found=[res_id=" << resource_id
-             << ", " << cache_entry->ToString()
+             << ", " << cache_entry.ToString()
              << "]";
-    return scoped_ptr<GDataCacheEntry>();
+    return false;
   }
 
   DVLOG(1) << "Found entry for res_id=" << resource_id
-           << ", " << cache_entry->ToString();
+           << ", " << cache_entry.ToString();
 
-  return cache_entry.Pass();
+  *entry = cache_entry;
+  return true;
 }
 
 void GDataCacheMetadataMap::RemoveTemporaryFiles() {

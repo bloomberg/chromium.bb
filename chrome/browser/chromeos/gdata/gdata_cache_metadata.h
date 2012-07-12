@@ -43,14 +43,14 @@ class GDataCacheMetadata {
   // Removes entry corresponding to |resource_id| from cache map.
   virtual void RemoveCacheEntry(const std::string& resource_id) = 0;
 
-  // Returns the cache entry for file corresponding to |resource_id| and |md5|
-  // if entry exists in cache map.  Otherwise, returns NULL.
+  // Gets the cache entry for file corresponding to |resource_id| and |md5|
+  // and returns true if entry exists in cache map.  Otherwise, returns false.
   // |md5| can be empty if only matching |resource_id| is desired, which may
   // happen when looking for pinned entries where symlinks' filenames have no
   // extension and hence no md5.
-  virtual scoped_ptr<GDataCacheEntry> GetCacheEntry(
-      const std::string& resource_id,
-      const std::string& md5) = 0;
+  virtual bool GetCacheEntry(const std::string& resource_id,
+                             const std::string& md5,
+                             GDataCacheEntry* entry) = 0;
 
   // Removes temporary files (files in CACHE_TYPE_TMP) from the cache map.
   virtual void RemoveTemporaryFiles() = 0;
@@ -87,9 +87,9 @@ class GDataCacheMetadataMap : public GDataCacheMetadata {
       const std::string& resource_id,
       const GDataCacheEntry& cache_entry) OVERRIDE;
   virtual void RemoveCacheEntry(const std::string& resource_id) OVERRIDE;
-  virtual scoped_ptr<GDataCacheEntry> GetCacheEntry(
-      const std::string& resource_id,
-      const std::string& md5) OVERRIDE;
+  virtual bool GetCacheEntry(const std::string& resource_id,
+                             const std::string& md5,
+                             GDataCacheEntry* cache_entry) OVERRIDE;
   virtual void RemoveTemporaryFiles() OVERRIDE;
   virtual void Iterate(const IterateCallback& callback) OVERRIDE;
 

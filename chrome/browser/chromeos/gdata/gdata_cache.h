@@ -251,13 +251,14 @@ class GDataCache {
   // Utility method to call Initialize on UI thread.
   void RequestInitializeOnUIThread();
 
-  // Returns the cache entry for file corresponding to |resource_id| and |md5|
-  // if entry exists in cache map.  Otherwise, returns NULL.
+  // Gets the cache entry for file corresponding to |resource_id| and |md5|
+  // and returns true if entry exists in cache map.  Otherwise, returns false.
   // |md5| can be empty if only matching |resource_id| is desired, which may
   // happen when looking for pinned entries where symlinks' filenames have no
   // extension and hence no md5.
-  scoped_ptr<GDataCacheEntry> GetCacheEntry(const std::string& resource_id,
-                                            const std::string& md5);
+  bool GetCacheEntry(const std::string& resource_id,
+                     const std::string& md5,
+                     GDataCacheEntry* entry);
 
   // Factory methods for GDataCache.
   // |pool| and |sequence_token| are used to assert that the functions are
