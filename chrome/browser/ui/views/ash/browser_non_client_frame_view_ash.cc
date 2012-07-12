@@ -519,8 +519,10 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(
   // The content area line has a shadow that extends a couple of pixels above
   // the toolbar bounds.
   const int kContentShadowHeight = 2;
-  gfx::ImageSkia* toolbar_top =
-      tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_TOP);
+  gfx::ImageSkia* toolbar_top = tp->GetImageSkiaNamed(
+      chrome::search::IsInstantExtendedAPIEnabled(
+          browser_view()->browser()->profile()) ?
+              IDR_TOOLBAR_SHADE_TOP_SEARCH : IDR_TOOLBAR_SHADE_TOP);
   canvas->TileImageInt(*toolbar_top,
                        0, 0,
                        x, y - kContentShadowHeight,

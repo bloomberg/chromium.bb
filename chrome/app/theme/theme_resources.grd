@@ -790,6 +790,7 @@
         <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_LEFT" file="ash/toolbar_shade_left.png" />
         <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_RIGHT" file="ash/toolbar_shade_right.png" />
         <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_TOP" file="ash/toolbar_shade_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_TOP_SEARCH" file="ash/toolbar_shade_top_search.png" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_TOOLS" file="tools.png" />
