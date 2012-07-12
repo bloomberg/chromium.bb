@@ -55,8 +55,8 @@ function populateLists(fonts) {
 
     for (var j = 0; j < fonts.length; j++) {
       var item = document.createElement('option');
-      item.value = fonts[j].fontId;
-      item.text = fonts[j].displayName;
+      item.value = fonts[j].fontName;
+      item.text = fonts[j].localizedName;
       list.add(item);
     }
   }
@@ -74,25 +74,25 @@ function getFontChangeHandler(fontList, genericFamily) {
 
     var details = {};
     details.genericFamily = genericFamily;
-    details.fontId = font;
+    details.fontName = font;
     details.script = script;
 
     chrome.experimental.fontSettings.setFont(details);
   };
 }
 
-// Sets the selected value of |fontList| to |fontId|.
-function setSelectedFont(fontList, fontId) {
+// Sets the selected value of |fontList| to |fontName|.
+function setSelectedFont(fontList, fontName) {
   var script = getSelectedScript();
   var i;
   for (i = 0; i < fontList.length; i++) {
-    if (fontId == fontList.options[i].value) {
+    if (fontName == fontList.options[i].value) {
       fontList.selectedIndex = i;
       break;
     }
   }
   if (i == fontList.length) {
-    console.warn("font '" + fontId + "' for " + fontList.id + ' for ' +
+    console.warn("font '" + fontName + "' for " + fontList.id + ' for ' +
         script + ' is not on the system');
   }
 }
@@ -101,7 +101,7 @@ function setSelectedFont(fontList, fontId) {
 // font returned from |chrome.experimental.fontSettings.getFont|.
 function getFontHandler(list) {
   return function(details) {
-    setSelectedFont(list, details.fontId);
+    setSelectedFont(list, details.fontName);
     list.disabled = !isControllableLevel(details.levelOfControl);
   };
 }

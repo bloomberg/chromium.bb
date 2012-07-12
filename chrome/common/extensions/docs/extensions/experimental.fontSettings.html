@@ -320,12 +320,12 @@ font covers, such as Latin.</p>
 <p>The following code gets the standard font for Arabic.</p>
 <pre>chrome.experimental.fontSettings.getFont(
   { genericFamily: 'standard', script: 'Arab' },
-  function(details) { console.log(details.fontId); }
+  function(details) { console.log(details.fontName); }
 );
 </pre>
 <p>The next snippet sets the sans-serif font for Japanese.</p>
 <pre>chrome.experimental.fontSettings.setFont(
-  { genericFamily: 'sansserif', script: 'Jpan', fontId: 'MS PGothic' }
+  { genericFamily: 'sansserif', script: 'Jpan', fontName: 'MS PGothic' }
 );
 </pre>
 <p>You can find a sample extension using the Font Settings API in the
@@ -1234,7 +1234,7 @@ directory. For other examples and for help in viewing the source code, see
               <div>
                 <div>
           <dt>
-            <var>fontId</var>
+            <var>fontName</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -1248,7 +1248,7 @@ directory. For other examples and for help in viewing the source code, see
                 </div>
               </em>
           </dt>
-          <dd>The font ID. Rather than the literal font ID preference value, this may be the ID of the font that the system resolves the preference value to. So, <var>fontId</var> can differ from the font passed to <code>setFont</code>, if, for example, the font is not available on the system. The empty string signifies fallback to the global script font setting.</dd>
+          <dd>The font name. Rather than the literal font name preference value, this may be the name of the font that the system resolves the preference value to. The empty string signifies fallback to the global script font setting.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1857,7 +1857,7 @@ directory. For other examples and for help in viewing the source code, see
               </div><div>
                 <div>
           <dt>
-            <var>fontId</var>
+            <var>fontName</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -1871,7 +1871,7 @@ directory. For other examples and for help in viewing the source code, see
                 </div>
               </em>
           </dt>
-          <dd>The font ID. The empty string means to fallback to the global script font setting.</dd>
+          <dd>The font name. If a script is specified, the empty string means to fallback to the global script font setting.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -2286,7 +2286,7 @@ directory. For other examples and for help in viewing the source code, see
               <div>
                 <div>
           <dt>
-            <var>fontId</var>
+            <var>fontName</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -2300,7 +2300,9 @@ directory. For other examples and for help in viewing the source code, see
                 </div>
               </em>
           </dt>
-          <dd>The font ID. See the description in <code>getFont</code>.</dd>
+          <dd class="todo">
+            Undocumented.
+          </dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -2522,7 +2524,7 @@ directory. For other examples and for help in viewing the source code, see
               <div>
                 <div>
           <dt>
-            <var>fontId</var>
+            <var>fontName</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -2536,7 +2538,7 @@ directory. For other examples and for help in viewing the source code, see
                 </div>
               </em>
           </dt>
-          <dd>The font ID.</dd>
+          <dd>The font name.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -2545,7 +2547,7 @@ directory. For other examples and for help in viewing the source code, see
               </div><div>
                 <div>
           <dt>
-            <var>diplayName</var>
+            <var>localizedName</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -2559,7 +2561,7 @@ directory. For other examples and for help in viewing the source code, see
                 </div>
               </em>
           </dt>
-          <dd>The display name of the font.</dd>
+          <dd>The font name localized for the current locale.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->

@@ -36,10 +36,10 @@ namespace fonts = extensions::api::experimental_font_settings;
 
 namespace {
 
-const char kFontIdKey[] = "fontId";
+const char kFontNameKey[] = "fontName";
 const char kGenericFamilyKey[] = "genericFamily";
 const char kLevelOfControlKey[] = "levelOfControl";
-const char kDisplayNameKey[] = "displayName";
+const char kLocalizedNameKey[] = "localizedName";
 const char kPixelSizeKey[] = "pixelSize";
 const char kScriptKey[] = "script";
 
@@ -204,7 +204,7 @@ void ExtensionFontSettingsEventRouter::OnFontNamePrefChanged(
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
   args.Append(dict);
-  dict->SetString(kFontIdKey, font_name);
+  dict->SetString(kFontNameKey, font_name);
   dict->SetString(kGenericFamilyKey, generic_family);
   dict->SetString(kScriptKey, script);
 
@@ -292,7 +292,7 @@ bool GetFontFunction::RunImpl() {
                                                       kIncognito);
 
   DictionaryValue* result = new DictionaryValue();
-  result->SetString(kFontIdKey, font_name);
+  result->SetString(kFontNameKey, font_name);
   result->SetString(kLevelOfControlKey, level_of_control);
   result_.reset(result);
   return true;
@@ -320,7 +320,7 @@ bool SetFontFunction::RunImpl() {
       extension_id(),
       pref_path.c_str(),
       extensions::kExtensionPrefsScopeRegular,
-      Value::CreateStringValue(params->details.font_id));
+      Value::CreateStringValue(params->details.font_name));
   return true;
 }
 
@@ -357,8 +357,8 @@ bool GetFontListFunction::CopyFontsToResult(ListValue* fonts) {
     }
 
     DictionaryValue* font_name = new DictionaryValue();
-    font_name->Set(kFontIdKey, Value::CreateStringValue(name));
-    font_name->Set(kDisplayNameKey, Value::CreateStringValue(localized_name));
+    font_name->Set(kFontNameKey, Value::CreateStringValue(name));
+    font_name->Set(kLocalizedNameKey, Value::CreateStringValue(localized_name));
     result->Append(font_name);
   }
 

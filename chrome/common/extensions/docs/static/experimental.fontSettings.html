@@ -40,14 +40,14 @@ font covers, such as Latin.</p>
 <pre>
 chrome.experimental.fontSettings.getFont(
   { genericFamily: 'standard', script: 'Arab' },
-  function(details) { console.log(details.fontId); }
+  function(details) { console.log(details.fontName); }
 );
 </pre>
 
 <p>The next snippet sets the sans-serif font for Japanese.</p>
 <pre>
 chrome.experimental.fontSettings.setFont(
-  { genericFamily: 'sansserif', script: 'Jpan', fontId: 'MS PGothic' }
+  { genericFamily: 'sansserif', script: 'Jpan', fontName: 'MS PGothic' }
 );
 </pre>
 
