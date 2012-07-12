@@ -26,13 +26,6 @@ class GDataCacheEntry {
  public:
   GDataCacheEntry() : cache_state_(CACHE_STATE_NONE) {}
 
-  // TODO(satorux): Remove this: crrev.com/136921
-  GDataCacheEntry(const std::string& md5,
-                  int cache_state)
-      : md5_(md5),
-        cache_state_(cache_state) {
-  }
-
   // The MD5 of the cache file. This can be "local" if the file is
   // locally modified.
   const std::string& md5() const { return md5_; }

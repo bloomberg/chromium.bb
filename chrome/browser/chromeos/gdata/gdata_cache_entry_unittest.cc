@@ -8,7 +8,7 @@
 namespace gdata {
 
 TEST(GDataCacheEntryTest, CacheStateChanges) {
-  GDataCacheEntry cache_entry("dummy_md5", CACHE_STATE_NONE);
+  GDataCacheEntry cache_entry;
   EXPECT_FALSE(cache_entry.IsPresent());
   EXPECT_FALSE(cache_entry.IsPinned());
   EXPECT_FALSE(cache_entry.IsDirty());

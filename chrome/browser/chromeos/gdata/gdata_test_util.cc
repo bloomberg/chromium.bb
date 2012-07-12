@@ -45,7 +45,13 @@ void RunBlockingPoolTask() {
 }
 
 GDataCacheEntry ToCacheEntry(int cache_state) {
-  return GDataCacheEntry("dummy_md5", cache_state);
+  GDataCacheEntry cache_entry;
+  cache_entry.SetPresent(cache_state & CACHE_STATE_PRESENT);
+  cache_entry.SetPinned(cache_state & CACHE_STATE_PINNED);
+  cache_entry.SetDirty(cache_state & CACHE_STATE_DIRTY);
+  cache_entry.SetMounted(cache_state & CACHE_STATE_MOUNTED);
+  cache_entry.SetPersistent(cache_state & CACHE_STATE_PERSISTENT);
+  return cache_entry;
 }
 
 bool CacheStatesEqual(const GDataCacheEntry& a, const GDataCacheEntry& b) {

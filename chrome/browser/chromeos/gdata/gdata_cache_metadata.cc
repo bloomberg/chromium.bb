@@ -278,7 +278,8 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
     util::ParseCacheFilePath(current, &resource_id, &md5, &extra_extension);
 
     // Determine cache state.
-    GDataCacheEntry cache_entry(md5, CACHE_STATE_NONE);
+    GDataCacheEntry cache_entry;
+    cache_entry.set_md5(md5);
     // If we're scanning pinned directory and if entry already exists, just
     // update its pinned state.
     if (sub_dir_type == GDataCache::CACHE_TYPE_PINNED) {

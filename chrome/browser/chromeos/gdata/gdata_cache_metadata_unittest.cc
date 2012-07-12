@@ -115,10 +115,9 @@ class GDataCacheMetadataMapTest : public testing::Test {
   // |md5| and |cache_state| are used to create the value CacheEntry.
   void InsertIntoMap(GDataCacheMetadataMap::CacheMap* cache_map,
                      const std::string& resource_id,
-                     const std::string& md5,
-                     int cache_state) {
+                     const GDataCacheEntry& cache_entry) {
     cache_map->insert(std::make_pair(
-        resource_id, GDataCacheEntry(md5, cache_state)));
+        resource_id, cache_entry));
   }
 
   ScopedTempDir temp_dir_;
@@ -344,22 +343,32 @@ TEST_F(GDataCacheMetadataMapTest, RemoveTemporaryFilesTest) {
   SetUpCacheMetadata();
 
   GDataCacheMetadataMap::CacheMap cache_map;
-  InsertIntoMap(&cache_map,
-                "<resource_id_1>",
-                "<md5>",
-                CACHE_STATE_PRESENT);
-  InsertIntoMap(&cache_map,
-                "<resource_id_2>",
-                "<md5>",
-                CACHE_STATE_PRESENT | CACHE_STATE_PERSISTENT);
-  InsertIntoMap(&cache_map,
-                "<resource_id_3>",
-                "<md5>",
-                CACHE_STATE_PRESENT | CACHE_STATE_PERSISTENT);
-  InsertIntoMap(&cache_map,
-                "<resource_id_4>",
-                "<md5>",
-                CACHE_STATE_PRESENT);
+  {
+    GDataCacheEntry cache_entry;
+    cache_entry.set_md5("<md5>");
+    cache_entry.SetPresent(true);
+    InsertIntoMap(&cache_map, "<resource_id_1>", cache_entry);
+  }
+  {
+    GDataCacheEntry cache_entry;
+    cache_entry.set_md5("<md5>");
+    cache_entry.SetPresent(true);
+    cache_entry.SetPersistent(true);
+    InsertIntoMap(&cache_map, "<resource_id_2>", cache_entry);
+  }
+  {
+    GDataCacheEntry cache_entry;
+    cache_entry.set_md5("<md5>");
+    cache_entry.SetPresent(true);
+    cache_entry.SetPersistent(true);
+    InsertIntoMap(&cache_map, "<resource_id_3>", cache_entry);
+  }
+  {
+    GDataCacheEntry cache_entry;
+    cache_entry.set_md5("<md5>");
+    cache_entry.SetPresent(true);
+    InsertIntoMap(&cache_map, "<resource_id_4>", cache_entry);
+  }
 
   metadata_->cache_map_ = cache_map;
   metadata_->RemoveTemporaryFiles();
