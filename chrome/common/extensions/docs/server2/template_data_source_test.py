@@ -17,6 +17,7 @@ class TemplateDataSourceTest(unittest.TestCase):
     self._base_path = os.path.join('test_data', 'template_data_source')
     self._fake_api_data_source = {}
     self._fake_intro_data_source = {}
+    self._fake_samples_data_source = {}
 
   def _ReadLocalFile(self, filename):
     with open(os.path.join(self._base_path, filename), 'r') as f:
@@ -33,6 +34,7 @@ class TemplateDataSourceTest(unittest.TestCase):
     return TemplateDataSource('fake_branch',
                               input_dict,
                               self._fake_intro_data_source,
+                              self._fake_samples_data_source,
                               cache_builder,
                               ['./'])
 

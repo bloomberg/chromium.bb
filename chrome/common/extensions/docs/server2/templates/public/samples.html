@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    {{+partials.header_head}}
+  </head>
+  <body>
+    {{+partials.header_body}}
+    <div id="gc-container">
+      {{+partials.sidenav}}
+      <div id="gc-pagecontent">
+        <h1>Samples</h1>
+        {{#samples.samples}}
+          <h2><a href="{{path}}.zip">{{name}}</a></h2>
+          {{description}}
+          <div>
+            <strong>Calls:</strong>
+            <ul>
+              {{#api_calls}}
+              <li><code><a href="{{link}}">{{name}}</a></code></li>
+              {{/}}
+            </ul>
+          </div>
+          <div>
+            <strong>Source Files:</strong>
+            <ul>
+              {{#files}}
+              <li><code><a href="{{path}}/{{@}}">{{@}}</a></code></li>
+              {{/}}
+            </ul>
+          </div>
+        {{/samples.samples}}
+      </div>
+    </div>
+  </body>
+  {{+partials.footer}}
+</html>

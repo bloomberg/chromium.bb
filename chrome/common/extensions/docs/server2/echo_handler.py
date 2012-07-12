@@ -22,9 +22,11 @@ from api_data_source import APIDataSource
 from fetcher_cache import FetcherCache
 from intro_data_source import IntroDataSource
 from local_fetcher import LocalFetcher
+from samples_data_source import SamplesDataSource
 from server_instance import ServerInstance
 from subversion_fetcher import SubversionFetcher
 from template_data_source import TemplateDataSource
+from example_zipper import ExampleZipper
 
 EXTENSIONS_PATH = 'chrome/common/extensions'
 DOCS_PATH = 'docs'
@@ -32,6 +34,8 @@ API_PATH = 'api'
 INTRO_PATH = DOCS_PATH + '/server2/templates/intros'
 PUBLIC_TEMPLATE_PATH = DOCS_PATH + '/server2/templates/public'
 PRIVATE_TEMPLATE_PATH = DOCS_PATH + '/server2/templates/private'
+EXAMPLES_PATH = 'examples'
+FULL_EXAMPLES_PATH = DOCS_PATH + '/' + EXAMPLES_PATH
 
 # The branch that the server will default to when no branch is specified in the
 # URL. This is necessary because it is not possible to pass flags to the script
@@ -55,14 +59,23 @@ class Server(webapp.RequestHandler):
     cache_builder = FetcherCache.Builder(fetcher, cache_timeout_seconds)
     api_data_source = APIDataSource(cache_builder, API_PATH)
     intro_data_source = IntroDataSource(cache_builder, INTRO_PATH)
+    samples_data_source = SamplesDataSource(fetcher,
+                                            cache_builder,
+                                            EXAMPLES_PATH)
     template_data_source = TemplateDataSource(
         branch,
         api_data_source,
         intro_data_source,
+        samples_data_source,
         cache_builder,
         [PUBLIC_TEMPLATE_PATH, PRIVATE_TEMPLATE_PATH])
+    example_zipper = ExampleZipper(fetcher,
+                                   cache_builder,
+                                   DOCS_PATH,
+                                   EXAMPLES_PATH)
     SERVER_INSTANCES[branch] = ServerInstance(
         template_data_source,
+        example_zipper,
         cache_builder)
     return SERVER_INSTANCES[branch]
 

@@ -11,10 +11,7 @@ from subversion_fetcher import SubversionFetcher
 
 class TestSubversionFetcher(SubversionFetcher):
   def _GetURLFromBranch(self, branch):
-    if branch == 'trunk':
-      return os.path.join('subversion_fetcher', 'trunk')
     return os.path.join('subversion_fetcher', branch)
-
 
 class SubversionFetcherTest(unittest.TestCase):
   def testFetchResource(self):
@@ -27,6 +24,18 @@ class SubversionFetcherTest(unittest.TestCase):
         fetcher_b1.FetchResource('/test.txt').content)
     self.assertEquals('branch2 test\n',
         fetcher_b2.FetchResource('/test.txt').content)
+
+  def testListDirectory(self):
+    fetcher = TestSubversionFetcher('trunk', '', test_urlfetch)
+    expected = ['file%d.html' % i for i in range(7)]
+    self.assertEquals(
+        expected,
+        fetcher.ListDirectory('recursive_list/list').content)
+    expected2 = ['recursive_list.html/' + x for x in expected]
+    expected2.extend(['recursive_list.html/list/' + x for x in expected])
+    self.assertEquals(
+        expected2,
+        fetcher.ListDirectory('recursive_list.html', recursive=True).content)
 
 if __name__ == '__main__':
   unittest.main()

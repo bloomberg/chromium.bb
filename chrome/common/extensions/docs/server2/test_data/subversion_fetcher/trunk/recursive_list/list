@@ -1,0 +1,14 @@
+<html><head><title>Test</title></head>
+<body>
+ <h2>Test</h2>
+ <ul>
+  <li><a href="../">..</a></li>
+  <li><a href="file0.html">file0.html</a></li>
+  <li><a href="file1.html">file1.html</a></li>
+  <li><a href="file2.html">file2.html</a></li>
+  <li><a href="file3.html">file3.html</a></li>
+  <li><a href="file4.html">file4.html</a></li>
+  <li><a href="file5.html">file5.html</a></li>
+  <li><a href="file6.html">file6.html</a></li>
+ </ul>
+</body></html>

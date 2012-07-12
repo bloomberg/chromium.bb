@@ -2,17 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from fnmatch import fnmatch
 import mimetypes
 import os
 
-STATIC_DIR_PREFIX = 'docs/server2/'
+STATIC_DIR_PREFIX = 'docs/server2'
+DOCS_PREFIX = 'docs'
 
 class ServerInstance(object):
   """This class is used to hold a data source and fetcher for an instance of a
   server. Each new branch will get its own ServerInstance.
   """
-  def __init__(self, template_data_source, cache_builder):
+  def __init__(self, template_data_source, example_zipper, cache_builder):
     self._template_data_source = template_data_source
+    self._example_zipper = example_zipper
     self._cache = cache_builder.build(lambda x: x)
     mimetypes.init()
 
@@ -20,7 +23,7 @@ class ServerInstance(object):
     """Fetch a resource in the 'static' directory.
     """
     try:
-      result = self._cache.get(STATIC_DIR_PREFIX + path)
+      result = self._cache.getFromFile(STATIC_DIR_PREFIX + '/' + path)
       base, ext = os.path.splitext(path)
       request_handler.response.headers['content-type'] = (
           mimetypes.types_map[ext])
@@ -29,7 +32,14 @@ class ServerInstance(object):
       return ''
 
   def Get(self, path, request_handler):
-    if path.startswith('static'):
+    if fnmatch(path, 'examples/*.zip'):
+      content = self._example_zipper.create(path[:-4])
+      request_handler.response.headers['content-type'] = (
+          mimetypes.types_map['.zip'])
+    elif path.startswith('examples/'):
+      content = self._cache.getFromFile(DOCS_PREFIX + '/' + path)
+      request_handler.response.headers['content-type'] = 'text/plain'
+    elif path.startswith('static/'):
       content = self._FetchStaticResource(path, request_handler)
     else:
       content = self._template_data_source.Render(path)

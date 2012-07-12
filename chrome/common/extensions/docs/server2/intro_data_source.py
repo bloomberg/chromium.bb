@@ -7,8 +7,8 @@ from path_utils import FormatKey
 from third_party.handlebar import Handlebar
 
 class IntroDataSource(object):
-  """This class fetches and loads JSON APIs with the fetcher passed in with
-  |cache_builder|, so the APIs can be plugged into templates.
+  """This class fetches the intros for a given API. From this intro, a table
+  of contents dictionary is created, which contains the headings in the intro.
   """
   def __init__(self, cache_builder, base_path):
     self._cache = cache_builder.build(self._MakeIntroDict)
@@ -31,7 +31,7 @@ class IntroDataSource(object):
   def get(self, key):
     real_path = FormatKey(key)
     try:
-      return self._cache.get(self._base_path + '/' + real_path)
+      return self._cache.getFromFile(self._base_path + '/' + real_path)
     except:
       pass
     return None

@@ -11,8 +11,13 @@ def _ReadFile(filename):
 class _MockResponse(object):
   def __init__(self):
     self.content = ''
+    self.headers = { 'content-type': 'none' }
 
 def fetch(url):
   result = _MockResponse()
+  # If a test needs to go into a directory that needs to have the same name as
+  # a file, such as the recursive directory listing subversion_fetcher_test,
+  # remove all .html's not at the end of the path.
+  url = url[:-5].replace('.html', '') + url[-5:]
   result.content = _ReadFile(os.path.join('test_data', url))
   return result

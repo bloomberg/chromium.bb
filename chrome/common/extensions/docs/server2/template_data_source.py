@@ -15,6 +15,7 @@ class TemplateDataSource(object):
                branch,
                api_data_source,
                intro_data_source,
+               samples_data_source,
                cache_builder,
                base_paths):
     self._branch_info = self._MakeBranchDict(branch)
@@ -22,6 +23,7 @@ class TemplateDataSource(object):
                               '/static')
     self._api_data_source = api_data_source
     self._intro_data_source = intro_data_source
+    self._samples_data_source = samples_data_source
     self._cache = cache_builder.build(self._LoadTemplate)
     self._base_paths = base_paths
 
@@ -54,6 +56,7 @@ class TemplateDataSource(object):
       'branchInfo': self._branch_info,
       'intros': self._intro_data_source,
       'partials': self,
+      'samples': self._samples_data_source,
       'static': self._static_resources
     }).text
 
@@ -64,7 +67,7 @@ class TemplateDataSource(object):
     real_path = FormatKey(key)
     for base_path in self._base_paths:
       try:
-        return self._cache.get(base_path + '/' + real_path)
+        return self._cache.getFromFile(base_path + '/' + real_path)
       except:
         pass
     return None

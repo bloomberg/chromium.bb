@@ -25,6 +25,24 @@ class LocalFetcher(object):
     with open(path, 'r') as f:
       return f.read()
 
+  def ListDirectory(self, directory, recursive=False):
+    """Returns a list of files in the directory with |_base_path| removed.
+    """
+    all_files = []
+    if recursive:
+      for path, subdirs, files in os.walk(
+          os.path.join(self._base_path, self._ConvertToFilepath(directory))):
+        for filename in files:
+          full_path = os.path.join(path, filename)
+          if os.path.isdir(full_path):
+            all_files.append(full_path + '/')
+          else:
+            all_files.append(full_path)
+    else:
+      all_files.extend(os.listdir(os.path.join(self._base_path, directory)))
+    return self._Response(
+        [x.replace(self._base_path + os.sep, '') for x in all_files])
+
   def FetchResource(self, path):
     # A response object is returned to match the behavior of urlfetch.
     # See: developers.google.com/appengine/docs/python/urlfetch/responseobjects

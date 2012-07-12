@@ -34,13 +34,22 @@ class FetcherCache(object):
     self._populate_function = populate_function
     self._cache = {}
 
-  def get(self, key):
+  def _Fetch(self, fetch_func, key, optional_params=None):
     if key in self._cache:
       if self._cache[key].HasExpired():
         self._cache.pop(key)
       else:
         return self._cache[key]._cache_data
-    cache_data = self._fetcher.FetchResource(key).content
+    if optional_params != None:
+      cache_data = fetch_func(key, optional_params).content
+    else:
+      cache_data = fetch_func(key).content
     self._cache[key] = self._CacheEntry(self._populate_function(cache_data),
                                         time.time() + self._timeout_seconds)
     return self._cache[key]._cache_data
+
+  def getFromFileListing(self, path, recursive=False):
+    return self._Fetch(self._fetcher.ListDirectory, path, recursive)
+
+  def getFromFile(self, key):
+    return self._Fetch(self._fetcher.FetchResource, key)
