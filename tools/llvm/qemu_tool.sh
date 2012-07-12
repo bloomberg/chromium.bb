@@ -1,9 +1,8 @@
 #!/bin/bash
 #
-# Copyright 2009 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
-# Copyright 2009, Google Inc.
+# Copyright (c) 2012 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 set -o nounset
 set -o errexit
@@ -13,11 +12,12 @@ set -o errexit
 #@ Note: this script is not meant to be run as
 #@     tools/llvm/qemu_tool.sh
 #@ but rather as:
-#@     toolchain/linux_arm-trusted/qemu-arm
+#@     toolchain/linux_arm-trusted/qemu_tool.sh
 
 # From a qemu build based on qemu-0.10.1.tar.gz
 readonly SDK_ROOT=$(dirname $0)
 readonly QEMU=${SDK_ROOT}/qemu-arm
+readonly QEMU_STOCK=/usr/bin/qemu-arm
 readonly QEMU_JAIL=${SDK_ROOT}
 # NOTE: some useful debugging options for qemu:
 #       env vars:
@@ -73,16 +73,24 @@ help () {
 #@
 #@ run
 #@
-#@   run stuff
+#@   run emulation using a locally patched qemu
 run() {
   CheckPrerequisites
   exec ${QEMU} -L ${QEMU_JAIL} ${QEMU_ARGS} "$@"
 }
 
 #@
+#@ run_stock
+#@
+#@   run emulation using the stock qemu
+run_stock() {
+  exec ${QEMU_STOCK} -L ${QEMU_JAIL} ${QEMU_ARGS} "$@"
+}
+
+#@
 #@ run_debug
 #@
-#@   run stuff but also generate trace in /tmp
+#@   run emulation but also generate trace in /tmp
 run_debug() {
   Hints
   CheckPrerequisites
@@ -92,11 +100,19 @@ run_debug() {
 #@
 #@ run_debug_service_runtime
 #@
-#@   run stuff but also generate trace in /tmp even for service_runtime
+#@   run emulation but also generate trace in /tmp even for service_runtime
 run_debug_service_runtime() {
   Hints
   CheckPrerequisites
   exec ${QEMU} -L ${QEMU_JAIL} ${QEMU_ARGS} ${QEMU_ARGS_DEBUG_SR} "$@"
+}
+
+#@
+#@ install_stock
+#@
+#@   install stock qemu emulator (for user mode)
+install_stock_qemu() {
+    sudo apt-get install qemu-user
 }
 
 ######################################################################
