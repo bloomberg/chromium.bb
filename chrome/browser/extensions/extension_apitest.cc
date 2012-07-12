@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/api/test/test_api.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_notification_types.h"

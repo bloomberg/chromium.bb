@@ -5,11 +5,23 @@
 var mediaGalleries = chrome.experimental.mediaGalleries;
 var mediaFileSystemsListCallback = function(results) {
   // There should be a "Pictures" directory on all desktop platforms.
-  chrome.test.assertEq(1, results.length);
+  var expectedFileSystems = 1;
+  // But not on Android and ChromeOS.
+  if (/Android/.test(navigator.userAgent) || /CrOS/.test(navigator.userAgent)) {
+    expectedFileSystems = 0;
+  }
+  chrome.test.assertEq(expectedFileSystems, results.length);
 };
 var nullCallback = function(result) {
   chrome.test.assertEq(null, result);
 };
+
+function runTests(tests) {
+  chrome.test.getConfig(function(config) {
+    operatingSystem = config.osName;
+    chrome.test.runTests(tests);
+  });
+}
 
 chrome.test.runTests([
   function getGalleries() {
