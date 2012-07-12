@@ -36,6 +36,7 @@ class PepperFlashSettingsManager::Core
   Core(PepperFlashSettingsManager* manager,
        content::BrowserContext* browser_context);
 
+  void Initialize();
   // Stops sending notifications to |manager_| and sets it to NULL.
   void Detach();
 
@@ -94,9 +95,9 @@ class PepperFlashSettingsManager::Core
 
   virtual ~Core();
 
-  void Initialize();
   void ConnectToChannel(bool success, const IPC::ChannelHandle& handle);
 
+  void InitializeOnIOThread();
   void DeauthorizeContentLicensesOnIOThread(uint32 request_id);
   void GetPermissionSettingsOnIOThread(
       uint32 request_id,
@@ -179,13 +180,16 @@ PepperFlashSettingsManager::Core::Core(PepperFlashSettingsManager* manager,
       plugin_prefs_(PluginPrefs::GetForProfile(
           Profile::FromBrowserContext(browser_context))) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&Core::Initialize, this));
 }
 
 PepperFlashSettingsManager::Core::~Core() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+}
+
+void PepperFlashSettingsManager::Core::Initialize() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&Core::InitializeOnIOThread, this));
 }
 
 void PepperFlashSettingsManager::Core::Detach() {
@@ -272,32 +276,6 @@ void PepperFlashSettingsManager::Core::OnChannelError() {
   NotifyErrorFromIOThread();
 }
 
-void PepperFlashSettingsManager::Core::Initialize() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!detached_);
-  DCHECK(!initialized_);
-
-  webkit::WebPluginInfo plugin_info;
-  if (!PepperFlashSettingsManager::IsPepperFlashInUse(plugin_prefs_.get(),
-                                                      &plugin_info)) {
-    NotifyErrorFromIOThread();
-    return;
-  }
-
-  FilePath profile_path =
-      browser_context_path_.Append(content::kPepperDataDirname);
-#if defined(OS_WIN)
-  plugin_data_path_ = profile_path.Append(plugin_info.name);
-#else
-  plugin_data_path_ = profile_path.Append(UTF16ToUTF8(plugin_info.name));
-#endif
-
-  helper_ = content::PepperFlashSettingsHelper::Create();
-  content::PepperFlashSettingsHelper::OpenChannelCallback callback =
-      base::Bind(&Core::ConnectToChannel, this);
-  helper_->OpenChannelToBroker(plugin_info.path, callback);
-}
-
 void PepperFlashSettingsManager::Core::ConnectToChannel(
     bool success,
     const IPC::ChannelHandle& handle) {
@@ -348,6 +326,34 @@ void PepperFlashSettingsManager::Core::ConnectToChannel(
         break;
     }
   }
+}
+
+void PepperFlashSettingsManager::Core::InitializeOnIOThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!initialized_);
+
+  if (detached_)
+    return;
+
+  webkit::WebPluginInfo plugin_info;
+  if (!PepperFlashSettingsManager::IsPepperFlashInUse(plugin_prefs_.get(),
+                                                      &plugin_info)) {
+    NotifyErrorFromIOThread();
+    return;
+  }
+
+  FilePath profile_path =
+      browser_context_path_.Append(content::kPepperDataDirname);
+#if defined(OS_WIN)
+  plugin_data_path_ = profile_path.Append(plugin_info.name);
+#else
+  plugin_data_path_ = profile_path.Append(UTF16ToUTF8(plugin_info.name));
+#endif
+
+  helper_ = content::PepperFlashSettingsHelper::Create();
+  content::PepperFlashSettingsHelper::OpenChannelCallback callback =
+      base::Bind(&Core::ConnectToChannel, this);
+  helper_->OpenChannelToBroker(plugin_info.path, callback);
 }
 
 void PepperFlashSettingsManager::Core::DeauthorizeContentLicensesOnIOThread(
@@ -764,8 +770,10 @@ uint32 PepperFlashSettingsManager::GetNextRequestId() {
 }
 
 void PepperFlashSettingsManager::EnsureCoreExists() {
-  if (!core_.get())
+  if (!core_.get()) {
     core_ = new Core(this, browser_context_);
+    core_->Initialize();
+  }
 }
 
 void PepperFlashSettingsManager::OnError() {
