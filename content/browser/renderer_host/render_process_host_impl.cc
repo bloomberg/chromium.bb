@@ -540,7 +540,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new ClipboardMessageFilter());
   channel_->AddFilter(new DOMStorageMessageFilter(GetID(),
       static_cast<DOMStorageContextImpl*>(
-          BrowserContext::GetDOMStorageContext(browser_context))));
+          BrowserContext::GetDOMStorageContext(browser_context, GetID()))));
   channel_->AddFilter(new IndexedDBDispatcherHost(GetID(),
       static_cast<IndexedDBContextImpl*>(
           BrowserContext::GetIndexedDBContext(browser_context))));

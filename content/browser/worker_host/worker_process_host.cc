@@ -622,7 +622,8 @@ bool WorkerProcessHost::WorkerInstance::Matches(
   if (closed_)
     return false;
 
-  // Have to match the same ResourceContext.
+  // ResourceContext equivalence is being used as a proxy to ensure we only
+  // matched shared workers within the same BrowserContext.
   if (resource_context_ != resource_context)
     return false;
 

@@ -49,8 +49,10 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
  public:
   static DownloadManager* GetDownloadManager(BrowserContext* browser_context);
   static quota::QuotaManager* GetQuotaManager(BrowserContext* browser_context);
-  static DOMStorageContext* GetDOMStorageContext(
+  static DOMStorageContext* GetDefaultDOMStorageContext(
       BrowserContext* browser_context);
+  static DOMStorageContext* GetDOMStorageContext(
+      BrowserContext* browser_context, int renderer_child_id);
   static IndexedDBContext* GetIndexedDBContext(BrowserContext* browser_context);
   static webkit_database::DatabaseTracker* GetDatabaseTracker(
       BrowserContext* browser_context);

@@ -23,8 +23,17 @@
 
 using content::NavigationController;
 using content::WebContents;
+using content::RenderViewHost;
+using ui_test_utils::ExecuteJavaScript;
+using ui_test_utils::ExecuteJavaScriptAndExtractString;
 
 namespace {
+
+std::wstring WrapForJavascriptAndExtract(
+    const wchar_t* javascript_expression) {
+  return std::wstring(L"window.domAutomationController.send(") +
+      javascript_expression + L")";
+}
 
 class IsolatedAppTest : public ExtensionBrowserTest {
  public:
@@ -60,6 +69,16 @@ class IsolatedAppTest : public ExtensionBrowserTest {
 
 // Tests that cookies set within an isolated app are not visible to normal
 // pages or other apps.
+//
+// TODO(ajwong): Also test what happens if an app spans multiple sites in its
+// extent.  These origins should also be isolated, but still have origin-based
+// separation as you would expect.
+//
+// TODO(ajwong): Add test for session storage. In one tab, navigate to a
+// normal page and set X=ss_normal. Then navigate to an isolated URL in the
+// same origin and verify X does not exist.  Set X=ss_isolated. Navigate back to
+// a normal webpage, and verify X is still ss_normal. Navigate to the isolate
+// URL and verify that X is ss_isolated.
 IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CookieIsolation) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
@@ -120,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CookieIsolation) {
   EXPECT_FALSE(HasCookie(tab3, "nonAppFrame"));
 
   // Check that isolation persists even if the tab crashes and is reloaded.
-  chrome::SelectNumberedTab(browser(), 1);
+  chrome::SelectNumberedTab(browser(), 0);
   ui_test_utils::CrashTab(tab1);
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
@@ -131,6 +150,35 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CookieIsolation) {
   EXPECT_TRUE(HasCookie(tab1, "app1=3"));
   EXPECT_FALSE(HasCookie(tab1, "app2"));
   EXPECT_FALSE(HasCookie(tab1, "normalPage"));
+
+  // Check that tabs see cannot each other's localStorage even though they are
+  // in the same origin.
+  RenderViewHost* app1_rvh = tab1->GetRenderViewHost();
+  RenderViewHost* app2_rvh = tab2->GetRenderViewHost();
+  RenderViewHost* non_app_rvh = tab3->GetRenderViewHost();
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+      app1_rvh, L"", L"window.localStorage.setItem('testdata', 'ls_app1');"));
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+      app2_rvh, L"", L"window.localStorage.setItem('testdata', 'ls_app2');"));
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+      non_app_rvh, L"",
+      L"window.localStorage.setItem('testdata', 'ls_normal');"));
+
+  ASSERT_TRUE(ExecuteJavaScript(
+      app1_rvh, L"", L"window.localStorage.getItem('testdata');"));
+
+  const std::wstring& kRetrieveLocalStorage =
+      WrapForJavascriptAndExtract(L"window.localStorage.getItem('testdata')");
+  std::string result;
+  ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
+      app1_rvh, L"", kRetrieveLocalStorage.c_str(), &result));
+  EXPECT_EQ("ls_app1", result);
+  ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
+      app2_rvh, L"", kRetrieveLocalStorage.c_str(), &result));
+  EXPECT_EQ("ls_app2", result);
+  ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
+      non_app_rvh, L"", kRetrieveLocalStorage.c_str(), &result));
+  EXPECT_EQ("ls_normal", result);
 }
 
 // Ensure that cookies are not isolated if the isolated apps are not installed.
@@ -159,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, NoCookieIsolationWithoutApp) {
 
   ASSERT_EQ(3, browser()->tab_count());
 
-  // Check that tabs see each others' cookies.
+  // Check that tabs see each other's cookies.
   EXPECT_TRUE(HasCookie(chrome::GetWebContentsAt(browser(), 0), "app2=4"));
   EXPECT_TRUE(HasCookie(chrome::GetWebContentsAt(browser(), 0), "normalPage=5"));
   EXPECT_TRUE(HasCookie(chrome::GetWebContentsAt(browser(), 0), "nonAppFrame=6"));
@@ -169,6 +217,35 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, NoCookieIsolationWithoutApp) {
   EXPECT_TRUE(HasCookie(chrome::GetWebContentsAt(browser(), 2), "app1=3"));
   EXPECT_TRUE(HasCookie(chrome::GetWebContentsAt(browser(), 2), "app2=4"));
   EXPECT_TRUE(HasCookie(chrome::GetWebContentsAt(browser(), 2), "nonAppFrame=6"));
+
+  // Check that all tabs share the same localStorage if they have the same
+  // origin.
+  RenderViewHost* app1_rvh =
+      chrome::GetWebContentsAt(browser(), 0)->GetRenderViewHost();
+  RenderViewHost* app2_rvh =
+      chrome::GetWebContentsAt(browser(), 1)->GetRenderViewHost();
+  RenderViewHost* non_app_rvh =
+      chrome::GetWebContentsAt(browser(), 2)->GetRenderViewHost();
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+      app1_rvh, L"", L"window.localStorage.setItem('testdata', 'ls_app1');"));
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+      app2_rvh, L"", L"window.localStorage.setItem('testdata', 'ls_app2');"));
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+      non_app_rvh, L"",
+      L"window.localStorage.setItem('testdata', 'ls_normal');"));
+
+  const std::wstring& kRetrieveLocalStorage =
+      WrapForJavascriptAndExtract(L"window.localStorage.getItem('testdata')");
+  std::string result;
+  ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
+      app1_rvh, L"", kRetrieveLocalStorage.c_str(), &result));
+  EXPECT_EQ("ls_normal", result);
+  ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
+      app2_rvh, L"", kRetrieveLocalStorage.c_str(), &result));
+  EXPECT_EQ("ls_normal", result);
+  ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
+      non_app_rvh, L"", kRetrieveLocalStorage.c_str(), &result));
+  EXPECT_EQ("ls_normal", result);
 }
 
 // Tests that isolated apps processes do not render top-level non-app pages.

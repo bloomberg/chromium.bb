@@ -878,7 +878,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
     scoped_refptr<content::SessionStorageNamespace> session_storage_namespace;
     if (!tab.session_storage_persistent_id.empty()) {
       session_storage_namespace =
-          content::BrowserContext::GetDOMStorageContext(profile_)->
+          content::BrowserContext::GetDefaultDOMStorageContext(profile_)->
           RecreateSessionStorage(tab.session_storage_persistent_id);
     }
 

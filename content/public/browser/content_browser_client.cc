@@ -147,6 +147,12 @@ net::URLRequestContext* ContentBrowserClient::OverrideRequestContextForURL(
   return NULL;
 }
 
+std::string ContentBrowserClient::GetStoragePartitionIdForChildProcess(
+    content::BrowserContext* browser_context,
+    int child_process_id) {
+  return std::string();
+}
+
 MediaObserver* ContentBrowserClient::GetMediaObserver() {
   return NULL;
 }

@@ -5,119 +5,78 @@
 #include "content/public/browser/browser_context.h"
 
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "webkit/database/database_tracker.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_manager_impl.h"
-#include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
-#include "content/browser/resource_context_impl.h"
+#include "content/public/browser/resource_context.h"
+#include "content/browser/storage_partition.h"
+#include "content/browser/storage_partition_map.h"
+#include "content/common/child_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/common/content_constants.h"
 #include "net/base/server_bound_cert_service.h"
 #include "net/base/server_bound_cert_store.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
-#include "webkit/database/database_tracker.h"
-#include "webkit/quota/quota_manager.h"
 
-using appcache::AppCacheService;
 using base::UserDataAdapter;
-using content::BrowserThread;
-using fileapi::FileSystemContext;
-using quota::QuotaManager;
-using webkit_database::DatabaseTracker;
 
 // Key names on BrowserContext.
-static const char* kAppCacheServicKeyName = "content_appcache_service_tracker";
-static const char* kDatabaseTrackerKeyName = "content_database_tracker";
-static const char* kDOMStorageContextKeyName = "content_dom_storage_context";
 static const char* kDownloadManagerKeyName = "download_manager";
-static const char* kFileSystemContextKeyName = "content_file_system_context";
-static const char* kIndexedDBContextKeyName = "content_indexed_db_context";
-static const char* kQuotaManagerKeyName = "content_quota_manager";
+static const char* kStorageParitionMapKeyName = "content_storage_partition_map";
 
 namespace content {
 
 namespace {
 
-void CreateQuotaManagerAndClients(BrowserContext* context) {
-  // Ensure that these methods are called on the UI thread, except for unittests
-  // where a UI thread might not have been created.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         !BrowserThread::IsMessageLoopValid(BrowserThread::UI));
-  if (context->GetUserData(kQuotaManagerKeyName)) {
-    DCHECK(context->GetUserData(kDatabaseTrackerKeyName));
-    DCHECK(context->GetUserData(kDOMStorageContextKeyName));
-    DCHECK(context->GetUserData(kFileSystemContextKeyName));
-    DCHECK(context->GetUserData(kIndexedDBContextKeyName));
+StoragePartition* GetStoragePartition(BrowserContext* browser_context,
+                                      int renderer_child_id) {
+  StoragePartitionMap* partition_map = static_cast<StoragePartitionMap*>(
+      browser_context->GetUserData(kStorageParitionMapKeyName));
+  if (!partition_map) {
+    partition_map = new StoragePartitionMap(browser_context);
+    browser_context->SetUserData(kStorageParitionMapKeyName, partition_map);
+  }
+
+  const std::string& partition_id =
+      GetContentClient()->browser()->GetStoragePartitionIdForChildProcess(
+          browser_context,
+          renderer_child_id);
+
+  return partition_map->Get(partition_id);
+}
+
+// Run |callback| on each storage partition in |browser_context|.
+void ForEachStoragePartition(
+    BrowserContext* browser_context,
+    const base::Callback<void(StoragePartition*)>& callback) {
+  StoragePartitionMap* partition_map = static_cast<StoragePartitionMap*>(
+      browser_context->GetUserData(kStorageParitionMapKeyName));
+  if (!partition_map) {
     return;
   }
 
-  // All of the clients have to be created and registered with the
-  // QuotaManager prior to the QuotaManger being used. So we do them
-  // all together here prior to handing out a reference to anything
-  // that utlizes the QuotaManager.
-  scoped_refptr<QuotaManager> quota_manager = new quota::QuotaManager(
-    context->IsOffTheRecord(), context->GetPath(),
-    BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-    BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-    context->GetSpecialStoragePolicy());
-  context->SetUserData(kQuotaManagerKeyName,
-                       new UserDataAdapter<QuotaManager>(quota_manager));
+  partition_map->ForEach(callback);
+}
 
-  // Each consumer is responsible for registering its QuotaClient during
-  // its construction.
-  scoped_refptr<FileSystemContext> filesystem_context = CreateFileSystemContext(
-      context->GetPath(), context->IsOffTheRecord(),
-      context->GetSpecialStoragePolicy(), quota_manager->proxy());
-  context->SetUserData(
-      kFileSystemContextKeyName,
-      new UserDataAdapter<FileSystemContext>(filesystem_context));
+// Used to convert a callback meant to take a DOMStorageContextImpl* into one
+// that can take a StoragePartition*.
+void ProcessDOMStorageContext(
+    const base::Callback<void(DOMStorageContextImpl*)>& callback,
+    StoragePartition* partition) {
+  callback.Run(partition->dom_storage_context());
+}
 
-  scoped_refptr<DatabaseTracker> db_tracker = new DatabaseTracker(
-      context->GetPath(), context->IsOffTheRecord(),
-      context->GetSpecialStoragePolicy(), quota_manager->proxy(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
-  context->SetUserData(kDatabaseTrackerKeyName,
-                       new UserDataAdapter<DatabaseTracker>(db_tracker));
-
-  FilePath path = context->IsOffTheRecord() ? FilePath() : context->GetPath();
-  scoped_refptr<DOMStorageContextImpl> dom_storage_context =
-      new DOMStorageContextImpl(path, context->GetSpecialStoragePolicy());
-  context->SetUserData(
-      kDOMStorageContextKeyName,
-      new UserDataAdapter<DOMStorageContextImpl>(dom_storage_context));
-
-  scoped_refptr<IndexedDBContext> indexed_db_context = new IndexedDBContextImpl(
-      path, context->GetSpecialStoragePolicy(), quota_manager->proxy(),
-      BrowserThread::GetMessageLoopProxyForThread(
-          BrowserThread::WEBKIT_DEPRECATED));
-  context->SetUserData(
-      kIndexedDBContextKeyName,
-      new UserDataAdapter<IndexedDBContext>(indexed_db_context));
-
-  scoped_refptr<ChromeAppCacheService> appcache_service =
-      new ChromeAppCacheService(quota_manager->proxy());
-  context->SetUserData(
-      kAppCacheServicKeyName,
-      new UserDataAdapter<ChromeAppCacheService>(appcache_service));
-
-  InitializeResourceContext(context);
-
-  // Check first to avoid memory leak in unittests.
-  if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&ChromeAppCacheService::InitializeOnIOThread,
-                   appcache_service,
-                   context->IsOffTheRecord() ? FilePath() :
-                       context->GetPath().Append(content::kAppCacheDirname),
-                   context->GetResourceContext(),
-                   make_scoped_refptr(context->GetSpecialStoragePolicy())));
-  }
+// Run |callback| on each DOMStorageContextImpl in |browser_context|.
+void ForEachDOMStorageContext(
+      BrowserContext* browser_context,
+      const base::Callback<void(DOMStorageContextImpl*)>& callback) {
+  ForEachStoragePartition(browser_context,
+                          base::Bind(&ProcessDOMStorageContext, callback));
 }
 
 void SaveSessionStateOnIOThread(ResourceContext* resource_context) {
@@ -138,9 +97,10 @@ void PurgeMemoryOnIOThread(ResourceContext* resource_context) {
   ResourceContext::GetAppCacheService(resource_context)->PurgeMemory();
 }
 
-DOMStorageContextImpl* GetDOMStorageContextImpl(BrowserContext* context) {
+DOMStorageContextImpl* GetDefaultDOMStorageContextImpl(
+    BrowserContext* context) {
   return static_cast<DOMStorageContextImpl*>(
-      BrowserContext::GetDOMStorageContext(context));
+      BrowserContext::GetDefaultDOMStorageContext(context));
 }
 
 }  // namespace
@@ -170,42 +130,71 @@ DownloadManager* BrowserContext::GetDownloadManager(
       context, kDownloadManagerKeyName);
 }
 
-QuotaManager* BrowserContext::GetQuotaManager(BrowserContext* context) {
-  CreateQuotaManagerAndClients(context);
-  return UserDataAdapter<QuotaManager>::Get(context, kQuotaManagerKeyName);
+quota::QuotaManager* BrowserContext::GetQuotaManager(
+    BrowserContext* browser_context) {
+  // TODO(ajwong): Change this API to require a process id instead of using
+  // kInvalidChildProcessId.
+  StoragePartition* partition =
+      GetStoragePartition(browser_context,
+                          ChildProcessHostImpl::kInvalidChildProcessId);
+  return partition->quota_manager();
+}
+
+DOMStorageContext* BrowserContext::GetDefaultDOMStorageContext(
+    BrowserContext* browser_context) {
+  // TODO(ajwong): Force all users to know which process id they are performing
+  // actions on behalf of, migrate them to GetDOMStorageContext(), and then
+  // delete this function.
+  return GetDOMStorageContext(browser_context,
+                              ChildProcessHostImpl::kInvalidChildProcessId);
 }
 
 DOMStorageContext* BrowserContext::GetDOMStorageContext(
-    BrowserContext* context) {
-  CreateQuotaManagerAndClients(context);
-  return UserDataAdapter<DOMStorageContextImpl>::Get(
-      context, kDOMStorageContextKeyName);
+    BrowserContext* browser_context,
+    int render_child_id) {
+  StoragePartition* partition =
+      GetStoragePartition(browser_context, render_child_id);
+  return partition->dom_storage_context();
 }
 
-IndexedDBContext* BrowserContext::GetIndexedDBContext(BrowserContext* context) {
-  CreateQuotaManagerAndClients(context);
-  return UserDataAdapter<IndexedDBContext>::Get(
-      context, kIndexedDBContextKeyName);
-}
-
-DatabaseTracker* BrowserContext::GetDatabaseTracker(BrowserContext* context) {
-  CreateQuotaManagerAndClients(context);
-  return UserDataAdapter<DatabaseTracker>::Get(
-      context, kDatabaseTrackerKeyName);
-}
-
-AppCacheService* BrowserContext::GetAppCacheService(
+IndexedDBContext* BrowserContext::GetIndexedDBContext(
     BrowserContext* browser_context) {
-  CreateQuotaManagerAndClients(browser_context);
-  return UserDataAdapter<ChromeAppCacheService>::Get(
-      browser_context, kAppCacheServicKeyName);
+  // TODO(ajwong): Change this API to require a process id instead of using
+  // kInvalidChildProcessId.
+  StoragePartition* partition =
+      GetStoragePartition(browser_context,
+                          ChildProcessHostImpl::kInvalidChildProcessId);
+  return partition->indexed_db_context();
 }
 
-FileSystemContext* BrowserContext::GetFileSystemContext(
+webkit_database::DatabaseTracker* BrowserContext::GetDatabaseTracker(
     BrowserContext* browser_context) {
-  CreateQuotaManagerAndClients(browser_context);
-  return UserDataAdapter<FileSystemContext>::Get(
-      browser_context, kFileSystemContextKeyName);
+  // TODO(ajwong): Change this API to require a process id instead of using
+  // kInvalidChildProcessId.
+  StoragePartition* partition =
+      GetStoragePartition(browser_context,
+                          ChildProcessHostImpl::kInvalidChildProcessId);
+  return partition->database_tracker();
+}
+
+appcache::AppCacheService* BrowserContext::GetAppCacheService(
+    BrowserContext* browser_context) {
+  // TODO(ajwong): Change this API to require a process id instead of using
+  // kInvalidChildProcessId.
+  StoragePartition* partition =
+      GetStoragePartition(browser_context,
+                          ChildProcessHostImpl::kInvalidChildProcessId);
+  return partition->appcache_service();
+}
+
+fileapi::FileSystemContext* BrowserContext::GetFileSystemContext(
+    BrowserContext* browser_context) {
+  // TODO(ajwong): Change this API to require a process id instead of using
+  // kInvalidChildProcessId.
+  StoragePartition* partition =
+      GetStoragePartition(browser_context,
+                          ChildProcessHostImpl::kInvalidChildProcessId);
+  return partition->filesystem_context();
 }
 
 void BrowserContext::EnsureResourceContextInitialized(BrowserContext* context) {
@@ -213,9 +202,9 @@ void BrowserContext::EnsureResourceContextInitialized(BrowserContext* context) {
   // necessary, which initializes ResourceContext. The reason we don't call
   // ResourceContext::InitializeResourceContext directly here is that if
   // ResourceContext ends up initializing it will call back into BrowserContext
-  // and when that call return it'll end rewriting its UserData map (with the
+  // and when that call returns it'll end rewriting its UserData map (with the
   // same value) but this causes a race condition. See http://crbug.com/115678.
-  CreateQuotaManagerAndClients(context);
+  GetStoragePartition(context, ChildProcessHostImpl::kInvalidChildProcessId);
 }
 
 void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
@@ -228,7 +217,10 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
                    browser_context->GetResourceContext()));
   }
 
-  GetDOMStorageContextImpl(browser_context)->SetForceKeepSessionState();
+  // TODO(ajwong): This is the only usage of GetDefaultDOMStorageContextImpl().
+  // After we migrate this to support multiple DOMStorageContexts, don't forget
+  // to remove the GetDefaultDOMStorageContextImpl() function as well.
+  GetDefaultDOMStorageContextImpl(browser_context)->SetForceKeepSessionState();
 
   if (BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT_DEPRECATED)) {
     IndexedDBContextImpl* indexed_db = static_cast<IndexedDBContextImpl*>(
@@ -248,22 +240,11 @@ void BrowserContext::PurgeMemory(BrowserContext* browser_context) {
                    browser_context->GetResourceContext()));
   }
 
-  GetDOMStorageContextImpl(browser_context)->PurgeMemory();
+  ForEachDOMStorageContext(browser_context,
+                           base::Bind(&DOMStorageContextImpl::PurgeMemory));
 }
 
 BrowserContext::~BrowserContext() {
-  // These message loop checks are just to avoid leaks in unittests.
-  if (GetUserData(kDatabaseTrackerKeyName) &&
-      BrowserThread::IsMessageLoopValid(BrowserThread::FILE)) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&webkit_database::DatabaseTracker::Shutdown,
-                   GetDatabaseTracker(this)));
-  }
-
-  if (GetUserData(kDOMStorageContextKeyName))
-    GetDOMStorageContextImpl(this)->Shutdown();
-
   if (GetUserData(kDownloadManagerKeyName))
     GetDownloadManager(this)->Shutdown();
 }

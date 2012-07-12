@@ -174,7 +174,8 @@ RenderViewHostImpl::RenderViewHostImpl(
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING) {
   if (!session_storage_namespace_) {
     DOMStorageContext* dom_storage_context =
-        BrowserContext::GetDOMStorageContext(GetProcess()->GetBrowserContext());
+        BrowserContext::GetDOMStorageContext(GetProcess()->GetBrowserContext(),
+                                             instance->GetProcess()->GetID());
     session_storage_namespace_ = new SessionStorageNamespaceImpl(
         static_cast<DOMStorageContextImpl*>(dom_storage_context));
   }

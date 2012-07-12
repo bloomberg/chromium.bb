@@ -239,12 +239,25 @@ class CONTENT_EXPORT ContentBrowserClient {
       ResourceContext* context,
       const std::vector<std::pair<int, int> >& render_views);
 
-  // Allows the embedder to override the request context based on the URL for
+  // Allow the embedder to override the request context based on the URL for
   // certain operations, like cookie access. Returns NULL to indicate the
   // regular request context should be used.
   // This is called on the IO thread.
   virtual net::URLRequestContext* OverrideRequestContextForURL(
       const GURL& url, ResourceContext* context);
+
+  // Allow the embedder to specify storage parititon id associated with a child
+  // process.
+  //
+  // Child processes that have different storage partition identifiers will
+  // behave as if they belong to different web browsers and not be able to
+  // access each other's cookies, local storage, etc.  IDs must only fit the
+  // pattern [a-z0-9]* (lowercase letters or digits).
+  //
+  // Returns the empty string for the regular storage partition.
+  virtual std::string GetStoragePartitionIdForChildProcess(
+      content::BrowserContext* browser_context,
+      int child_process_id);
 
   // Create and return a new quota permission context.
   virtual QuotaPermissionContext* CreateQuotaPermissionContext();

@@ -77,6 +77,8 @@ FilePath TransformPathForFeature(const FilePath& path,
 
 namespace content {
 
+int ChildProcessHostImpl::kInvalidChildProcessId = -1;
+
 // static
 ChildProcessHost* ChildProcessHost::Create(ChildProcessHostDelegate* delegate) {
   return new ChildProcessHostImpl(delegate);
@@ -208,8 +210,14 @@ void ChildProcessHostImpl::AllocateSharedMemory(
 
 int ChildProcessHostImpl::GenerateChildProcessUniqueId() {
   // This function must be threadsafe.
+  //
+  // TODO(ajwong): Why not StaticAtomicSequenceNumber?
   static base::subtle::Atomic32 last_unique_child_id = 0;
-  return base::subtle::NoBarrier_AtomicIncrement(&last_unique_child_id, 1);
+  int id = base::subtle::NoBarrier_AtomicIncrement(&last_unique_child_id, 1);
+
+  CHECK_NE(kInvalidChildProcessId, id);
+
+  return id;
 }
 
 bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {

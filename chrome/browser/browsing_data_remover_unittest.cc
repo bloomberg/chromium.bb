@@ -314,7 +314,7 @@ class RemoveLocalStorageTester : public BrowsingDataRemoverTester {
   explicit RemoveLocalStorageTester(TestingProfile* profile)
       : profile_(profile), dom_storage_context_(NULL) {
     dom_storage_context_ =
-        content::BrowserContext::GetDOMStorageContext(profile);
+        content::BrowserContext::GetDefaultDOMStorageContext(profile);
   }
 
   // Returns true, if the given origin URL exists.

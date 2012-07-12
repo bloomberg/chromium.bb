@@ -404,6 +404,25 @@ content::WebContentsView*
   return NULL;
 }
 
+std::string ChromeContentBrowserClient::GetStoragePartitionIdForChildProcess(
+    content::BrowserContext* browser_context,
+    int child_process_id) {
+  // In chrome, we use the extension ID as the partition ID. This works well
+  // because the extension ID fits the partition ID pattern and currently only
+  // apps can designate that storage should be isolated.
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  if (extension_service) {
+    const extensions::Extension* installed_app = extension_service->
+        GetInstalledAppForRenderer(child_process_id);
+    if (installed_app && installed_app->is_storage_isolated()) {
+      return installed_app->id();
+    }
+  }
+  return std::string();
+}
+
 content::WebContentsViewDelegate*
     ChromeContentBrowserClient::GetWebContentsViewDelegate(
         content::WebContents* web_contents) {

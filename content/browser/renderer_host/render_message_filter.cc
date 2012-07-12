@@ -286,7 +286,8 @@ RenderMessageFilter::RenderMessageFilter(
       render_widget_helper_(render_widget_helper),
       incognito_(browser_context->IsOffTheRecord()),
       dom_storage_context_(static_cast<DOMStorageContextImpl*>(
-          BrowserContext::GetDOMStorageContext(browser_context))),
+          BrowserContext::GetDOMStorageContext(browser_context,
+                                               render_process_id_))),
       render_process_id_(render_process_id),
       cpu_usage_(0),
       media_observer_(media_observer) {

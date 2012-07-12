@@ -34,6 +34,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::WebContents* web_contents,
       content::RenderViewHostDelegateView** render_view_host_delegate_view)
           OVERRIDE;
+  virtual std::string GetStoragePartitionIdForChildProcess(
+      content::BrowserContext* browser_context,
+      int child_process_id) OVERRIDE;
   virtual content::WebContentsViewDelegate* GetWebContentsViewDelegate(
       content::WebContents* web_contents) OVERRIDE;
   virtual void RenderViewHostCreated(

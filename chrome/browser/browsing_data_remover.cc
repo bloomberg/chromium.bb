@@ -356,7 +356,8 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
   if (remove_mask & REMOVE_LOCAL_STORAGE) {
     waiting_for_clear_local_storage_ = true;
     if (!dom_storage_context_)
-      dom_storage_context_ = BrowserContext::GetDOMStorageContext(profile_);
+      dom_storage_context_ =
+          BrowserContext::GetDefaultDOMStorageContext(profile_);
     ClearLocalStorageOnUIThread();
   }
 
