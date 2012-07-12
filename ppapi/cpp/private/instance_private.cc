@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,10 @@ namespace {
 
 template <> const char* interface_name<PPB_Instance_Private>() {
   return PPB_INSTANCE_PRIVATE_INTERFACE;
+}
+
+template <> const char* interface_name<PPB_Console_Dev_0_1>() {
+  return PPB_CONSOLE_DEV_INTERFACE_0_1;
 }
 
 PP_Var GetInstanceObject(PP_Instance pp_instance) {
@@ -66,10 +70,26 @@ VarPrivate InstancePrivate::ExecuteScript(const Var& script, Var* exception) {
   if (!has_interface<PPB_Instance_Private>())
     return VarPrivate();
   return VarPrivate(PASS_REF,
-             get_interface<PPB_Instance_Private>()->ExecuteScript(
-                 pp_instance(),
-                 script.pp_var(),
-                 VarPrivate::OutException(exception).get()));
+      get_interface<PPB_Instance_Private>()->ExecuteScript(
+          pp_instance(),
+          script.pp_var(),
+          VarPrivate::OutException(exception).get()));
+}
+
+void InstancePrivate::LogToConsole(PP_LogLevel_Dev level, const Var& value) {
+  if (!has_interface<PPB_Console_Dev_0_1>())
+    return;
+  get_interface<PPB_Console_Dev_0_1>()->Log(
+      pp_instance(), level, value.pp_var());
+}
+
+void InstancePrivate::LogToConsoleWithSource(PP_LogLevel_Dev level,
+                                             const Var& source,
+                                             const Var& value) {
+  if (!has_interface<PPB_Console_Dev_0_1>())
+    return;
+  get_interface<PPB_Console_Dev_0_1>()->LogWithSource(
+      pp_instance(), level, source.pp_var(), value.pp_var());
 }
 
 }  // namespace pp

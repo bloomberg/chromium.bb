@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,11 +13,13 @@
  * @{
  */
 
+#include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/cpp/instance.h"
 
 /** The C++ interface to the Pepper API. */
 namespace pp {
 
+class Var;
 class VarPrivate;
 
 class InstancePrivate : public Instance {
@@ -44,6 +46,19 @@ class InstancePrivate : public Instance {
 
   /// See PPB_Instance.ExecuteScript.
   VarPrivate ExecuteScript(const Var& script, Var* exception = NULL);
+
+  // @}
+
+  // @{
+  /// @name PPB_Console_Dev methods for logging to the console:
+
+  /// See PPB_Console_Dev.Log.
+  void LogToConsole(PP_LogLevel_Dev level, const Var& value);
+
+  /// See PPB_Console_Dev.LogWithSource.
+  void LogToConsoleWithSource(PP_LogLevel_Dev level,
+                              const Var& source,
+                              const Var& value);
 
   // @}
 };
