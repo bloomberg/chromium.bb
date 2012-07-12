@@ -2866,7 +2866,6 @@
         'browser/prefs/pref_service_browsertest.cc',
         'browser/prerender/prefetch_browsertest.cc',
         'browser/prerender/prerender_browsertest.cc',
-        'browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc',
         'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',
         'browser/printing/printing_layout_browsertest.cc',
         'browser/printing/print_preview_tab_controller_browsertest.cc',
@@ -3298,9 +3297,6 @@
             'browser/spellchecker/spellcheck_host_browsertest.cc',
             # ProcessSingletonMac doesn't do anything.
             'browser/process_singleton_browsertest.cc',
-            # This test depends on GetCommandLineForRelaunch, which is not
-            # available on Mac.
-            'browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc',
           ],
         }],
         ['os_posix == 0 or chromeos == 1', {
