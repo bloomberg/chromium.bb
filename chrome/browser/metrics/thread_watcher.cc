@@ -39,36 +39,40 @@ namespace {
 MSVC_PUSH_DISABLE_WARNING(4748)
 #endif
 
+int* NullPointer() {
+  return reinterpret_cast<int*>(NULL);
+}
+
 void ThreadUnresponsive_UI() {
-  CHECK(false);
+  *NullPointer() = __LINE__;
 }
 
 void ThreadUnresponsive_DB() {
-  CHECK(false);
+  *NullPointer() = __LINE__;
 }
 
 void ThreadUnresponsive_WEBKIT() {
-  CHECK(false);
+  *NullPointer() = __LINE__;
 }
 
 void ThreadUnresponsive_FILE() {
-  CHECK(false);
+  *NullPointer() = __LINE__;
 }
 
 void ThreadUnresponsive_FILE_USER_BLOCKING() {
-  CHECK(false);
+  *NullPointer() = __LINE__;
 }
 
 void ThreadUnresponsive_PROCESS_LAUNCHER() {
-  CHECK(false);
+  *NullPointer() = __LINE__;
 }
 
 void ThreadUnresponsive_CACHE() {
-  CHECK(false);
+  *NullPointer() = __LINE__;
 }
 
 void ThreadUnresponsive_IO() {
-  CHECK(false);
+  *NullPointer() = __LINE__;
 }
 
 #if defined(COMPILER_MSVC)
@@ -104,7 +108,7 @@ void CrashBecauseThreadWasUnresponsive(BrowserThread::ID thread_id) {
     // should warn if our switch becomes outdated.
   }
 
-  CHECK(false);  // Shouldn't be reached.
+  CHECK(false) << "Unknown thread was unresponsive.";  // Shouldn't be reached.
 }
 
 }  // namespace
