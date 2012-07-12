@@ -2725,12 +2725,6 @@ window_schedule_redraw(struct window *window)
 }
 
 void
-window_set_custom(struct window *window)
-{
-	window->type = TYPE_CUSTOM;
-}
-
-void
 window_set_fullscreen(struct window *window, int fullscreen)
 {
 	if (!window->display->shell)

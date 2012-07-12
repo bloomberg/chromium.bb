@@ -195,7 +195,6 @@ create_wscreensaver_instance(struct wscreensaver *screensaver,
 	window_set_title(mi->window, progname);
 
 	if (screensaver->interface && !demo_mode) {
-		window_set_custom(mi->window);
 		mi->widget = window_add_widget(mi->window, mi);
 		screensaver_set_surface(screensaver->interface,
 					window_get_wl_surface(mi->window),

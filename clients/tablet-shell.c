@@ -233,10 +233,9 @@ homescreen_create(struct tablet *tablet)
 	homescreen = malloc (sizeof *homescreen);
 	memset(homescreen, 0, sizeof *homescreen);
 
-	homescreen->window = window_create(tablet->display);
+	homescreen->window = window_create_custom(tablet->display);
 	homescreen->widget =
 		window_add_widget(homescreen->window, homescreen);
-	window_set_custom(homescreen->window);
 	window_set_user_data(homescreen->window, homescreen);
 	window_set_title(homescreen->window, "homescreen");
 	widget_set_redraw_handler(homescreen->widget, homescreen_draw);
@@ -252,12 +251,11 @@ lockscreen_create(struct tablet *tablet)
 	lockscreen = malloc (sizeof *lockscreen);
 	memset(lockscreen, 0, sizeof *lockscreen);
 
-	lockscreen->window = window_create(tablet->display);
+	lockscreen->window = window_create_custom(tablet->display);
 	lockscreen->widget =
 		window_add_widget(lockscreen->window, lockscreen);
 	window_set_user_data(lockscreen->window, lockscreen);
 	window_set_title(lockscreen->window, "lockscreen");
-	window_set_custom(lockscreen->window);
 	widget_set_redraw_handler(lockscreen->widget, lockscreen_draw);
 	widget_set_button_handler(lockscreen->widget,
 				  lockscreen_button_handler);
@@ -284,9 +282,8 @@ show_switcher(void *data, struct tablet_shell *tablet_shell)
 {
 	struct tablet *tablet = data;
 
-	tablet->switcher = window_create(tablet->display);
+	tablet->switcher = window_create_custom(tablet->display);
 	window_set_user_data(tablet->switcher, tablet);
-	window_set_custom(tablet->switcher);
 	tablet_shell_set_switcher(tablet->tablet_shell,
 				  window_get_wl_surface(tablet->switcher));
 }

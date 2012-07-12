@@ -279,9 +279,6 @@ void
 window_set_maximized(struct window *window, int maximized);
 
 void
-window_set_custom(struct window *window);
-
-void
 window_set_user_data(struct window *window, void *data);
 
 void *
