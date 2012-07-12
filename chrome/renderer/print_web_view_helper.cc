@@ -44,6 +44,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/skia_util.h"
 #include "webkit/glue/webpreferences.h"
 
 #if defined(OS_POSIX)
@@ -51,9 +52,13 @@
 #endif
 
 #if defined(OS_WIN)  // Currently Windows only
+#define USE_RENDER_TEXT
+#endif
+
+#if defined(USE_RENDER_TEXT)
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/render_text.h"
-#endif  // defined(OS_WIN)
+#endif
 
 using printing::ConvertPixelsToPoint;
 using printing::ConvertPixelsToPointDouble;
@@ -77,7 +82,11 @@ using WebKit::WebView;
 
 namespace {
 
+#if defined(USE_RENDER_TEXT)
+typedef gfx::RenderText* HeaderFooterPaint;
+#else
 typedef SkPaint HeaderFooterPaint;
+#endif
 
 const double kMinDpi = 1.0;
 
@@ -415,67 +424,6 @@ SkPoint GetHeaderFooterPosition(
   return point;
 }
 
-#if defined(OS_WIN)
-void PrintHeaderFooterByRenderText(
-    const string16& text,
-    WebKit::WebCanvas* canvas,
-    HeaderFooterPaint paint,
-    float webkit_scale_factor,
-    const PageSizeMargins& page_layout,
-    printing::HorizontalHeaderFooterPosition horizontal_position,
-    printing::VerticalHeaderFooterPosition vertical_position,
-    double offset_to_baseline) {
-  // TODO(arthurhsu): Following code works on Windows only so far.
-  // See crbug.com/108599 and its blockers for more information.
-  scoped_ptr<gfx::RenderText> render_text(gfx::RenderText::CreateInstance());
-  // TODO(asvitkine): The below line is to workaround http://crbug.com/133548.
-  // Remove it when the underlying Skia bug has been fixed.
-  render_text->set_clip_to_display_rect(false);
-  render_text->SetText(text);
-  int font_size = printing::kSettingHeaderFooterFontSize / webkit_scale_factor;
-  render_text->SetFontSize(font_size);
-  gfx::Size text_size = render_text->GetStringSize();
-  // Text height includes the configured gap between header/footer and the
-  // context, plus the 1 point that we later substracted for ensuring the
-  // overlapping between RenderText rect and the content area.
-  int text_height = text_size.height() + 1 +
-                    printing::kSettingHeaderFooterInterstice;
-  SkScalar margin_left = page_layout.margin_left / webkit_scale_factor;
-  SkScalar margin_top = page_layout.margin_top / webkit_scale_factor;
-  SkScalar content_height = page_layout.content_height / webkit_scale_factor;
-
-  int text_width = text_size.width();
-  SkPoint point = GetHeaderFooterPosition(webkit_scale_factor, page_layout,
-                                          horizontal_position,
-                                          vertical_position, offset_to_baseline,
-                                          SkScalarToDouble(text_width));
-  // Workaround clipping issue of RenderText to make sure that display rect
-  // overlaps with content area.
-  int rect_y;
-  if (vertical_position == printing::TOP) {
-    // Bottom of display rect must overlap with content.
-    rect_y = margin_top - text_height + 1;
-  } else {  // BOTTOM
-    // Top of display rect must overlap with content.
-    rect_y = margin_top + content_height - 1;
-  }
-
-  gfx::Rect rect(point.x() + margin_left, rect_y, text_width, text_height);
-  render_text->SetDisplayRect(rect);
-
-  int save_count = canvas->save();
-  canvas->translate(-margin_left, -margin_top);
-  {
-    SkMatrix m = canvas->getTotalMatrix();
-    ui::ScaleFactor device_scale_factor = ui::GetScaleFactorFromScale(
-        SkScalarAbs(m.getScaleX()));
-    gfx::Canvas gfx_canvas(canvas, device_scale_factor, false);
-    render_text->Draw(&gfx_canvas);
-  }
-  canvas->restoreToCount(save_count);
-}
-#endif
-
 // Given a text, the positions, and the paint object, this method gets the
 // coordinates and prints the text at those coordinates on the canvas.
 void PrintHeaderFooterText(
@@ -487,9 +435,27 @@ void PrintHeaderFooterText(
     printing::HorizontalHeaderFooterPosition horizontal_position,
     printing::VerticalHeaderFooterPosition vertical_position,
     double offset_to_baseline) {
-#if defined(OS_WIN)
-  PrintHeaderFooterByRenderText(text, canvas, paint, webkit_scale_factor,
-      page_layout, horizontal_position, vertical_position, offset_to_baseline);
+#if defined(USE_RENDER_TEXT)
+  paint->SetText(text);
+  paint->SetFontSize(printing::kSettingHeaderFooterFontSize);
+  double text_width_in_points = paint->GetStringSize().width();
+  SkPoint point = GetHeaderFooterPosition(webkit_scale_factor, page_layout,
+                                          horizontal_position,
+                                          vertical_position, offset_to_baseline,
+                                          text_width_in_points);
+  paint->SetFontSize(printing::kSettingHeaderFooterFontSize /
+                     webkit_scale_factor);
+  gfx::Size size(paint->GetStringSize());
+  gfx::Rect rect(point.x(), point.y() - paint->GetBaseline(),
+                 size.width(), size.height());
+  paint->SetDisplayRect(rect);
+  {
+    SkMatrix m = canvas->getTotalMatrix();
+    ui::ScaleFactor device_scale_factor = ui::GetScaleFactorFromScale(
+        SkScalarAbs(m.getScaleX()));
+    gfx::Canvas gfx_canvas(canvas, device_scale_factor, false);
+    paint->Draw(&gfx_canvas);
+  }
 #else
   // TODO(arthurhsu): following code has issues with i18n BiDi, see
   //                  crbug.com/108599.
@@ -504,7 +470,7 @@ void PrintHeaderFooterText(
       paint.getTextSize() / webkit_scale_factor));
   canvas->drawText(text.c_str(), text_byte_length, point.x(), point.y(),
                    paint);
-#endif  // OS_WIN
+#endif
 }
 
 PrintMsg_Print_Params CalculatePrintParamsForCss(
@@ -569,12 +535,23 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
       static_cast<skia::VectorPlatformDeviceSkia*>(canvas->getTopDevice());
   device->setDrawingArea(SkPDFDevice::kMargin_DrawingArea);
 
+#if defined(USE_RENDER_TEXT)
+  scoped_ptr<gfx::RenderText> render_text(gfx::RenderText::CreateInstance());
+  // TODO(asvitkine): The below line is to workaround http://crbug.com/133548.
+  //                  Remove it when the underlying Skia bug has been fixed.
+  render_text->set_clip_to_display_rect(false);
+  gfx::FontList font_list(
+      gfx::Font(printing::kSettingHeaderFooterFontFamilyName,
+                printing::kSettingHeaderFooterFontSize));
+  gfx::RenderText* paint = render_text.get();
+#else
   SkPaint paint;
   paint.setColor(SK_ColorBLACK);
   paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
   paint.setTextSize(SkDoubleToScalar(printing::kSettingHeaderFooterFontSize));
   paint.setTypeface(SkTypeface::CreateFromName(
       printing::kSettingHeaderFooterFontFamilyName, SkTypeface::kNormal));
+#endif
 
   // Print the headers onto the |canvas| if there is enough space to print
   // them.
@@ -590,8 +567,19 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
 
   // Used for height calculations. Note that the width may be undefined.
   SkRect header_vertical_bounds;
+#if defined(USE_RENDER_TEXT)
+  paint->SetFontList(font_list);
+  paint->SetText(header_text);
+  {
+    gfx::Rect rect(gfx::Point(), paint->GetStringSize());
+    header_vertical_bounds = gfx::RectToSkRect(rect);
+    header_vertical_bounds.offset(0, -render_text->GetBaseline());
+  }
+#else
   paint.measureText(header_text.c_str(), header_text.length() * sizeof(char16),
                     &header_vertical_bounds, 0);
+#endif
+
   double text_height = printing::kSettingHeaderFooterInterstice +
                        header_vertical_bounds.height();
   if (text_height <= page_layout.margin_top) {
@@ -617,8 +605,19 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
 
   // Used for height calculations. Note that the width may be undefined.
   SkRect footer_vertical_bounds;
+#if defined(USE_RENDER_TEXT)
+  paint->SetFontList(font_list);
+  paint->SetText(footer_text);
+  {
+    gfx::Rect rect(gfx::Point(), paint->GetStringSize());
+    footer_vertical_bounds = gfx::RectToSkRect(rect);
+    footer_vertical_bounds.offset(0, -paint->GetBaseline());
+  }
+#else
   paint.measureText(footer_text.c_str(), footer_text.length() * sizeof(char16),
                     &footer_vertical_bounds, 0);
+#endif
+
   text_height = printing::kSettingHeaderFooterInterstice +
                 footer_vertical_bounds.height();
   if (text_height <= page_layout.margin_bottom) {
