@@ -4901,6 +4901,7 @@
             ['exclude', '^browser/ui/webui/options'],
             ['exclude', '^browser/ui/webui/options2'],
             ['exclude', '^browser/ui/webui/signin/'],
+            ['exclude', '^browser/ui/webui/suggestions_internals'],
             ['exclude', '^browser/ui/webui/sync_promo'],
             ['exclude', '^browser/usb/'],
           ],

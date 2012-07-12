@@ -212,8 +212,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<ProfilerUI>;
   if (url.host() == chrome::kChromeUIQuotaInternalsHost)
     return &NewWebUI<QuotaInternalsUI>;
-  if (url.host() == chrome::kChromeUISuggestionsInternalsHost)
-    return &NewWebUI<SuggestionsInternalsUI>;
   if (url.host() == chrome::kChromeUISyncInternalsHost)
     return &NewWebUI<SyncInternalsUI>;
   if (url.host() == chrome::kChromeUISyncResourcesHost)
@@ -238,6 +236,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<HelpUI>;
   if (url.host() == chrome::kChromeUISettingsFrameHost)
     return &NewWebUI<options2::OptionsUI>;
+  if (url.host() == chrome::kChromeUISuggestionsInternalsHost)
+    return &NewWebUI<SuggestionsInternalsUI>;
   // chrome://flags is currently unsupported on Android.
   if (url.host() == chrome::kChromeUIFlagsHost)
     return &NewWebUI<FlagsUI>;
