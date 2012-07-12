@@ -11,10 +11,10 @@
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/engine/syncer_util.h"
-#include "sync/engine/syncproto.h"
 #include "sync/sessions/sync_session.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/syncable_proto_util.h"
 #include "sync/syncable/syncable_util.h"
 #include "sync/syncable/write_transaction.h"
 #include "sync/util/cryptographer.h"
@@ -72,12 +72,13 @@ SyncerError ProcessUpdatesCommand::ModelChangingExecuteImpl(
 
 namespace {
 // Returns true if the entry is still ok to process.
-bool ReverifyEntry(syncable::WriteTransaction* trans, const SyncEntity& entry,
+bool ReverifyEntry(syncable::WriteTransaction* trans,
+                   const sync_pb::SyncEntity& entry,
                    syncable::MutableEntry* same_id) {
 
   const bool deleted = entry.has_deleted() && entry.deleted();
-  const bool is_directory = entry.IsFolder();
-  const syncer::ModelType model_type = entry.GetModelType();
+  const bool is_directory = IsFolder(entry);
+  const syncer::ModelType model_type = GetModelType(entry);
 
   return VERIFY_SUCCESS == VerifyUpdateConsistency(trans,
                                                    entry,
@@ -90,12 +91,10 @@ bool ReverifyEntry(syncable::WriteTransaction* trans, const SyncEntity& entry,
 
 // Process a single update. Will avoid touching global state.
 ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
-    const sync_pb::SyncEntity& proto_update,
+    const sync_pb::SyncEntity& update,
     const Cryptographer* cryptographer,
     syncable::WriteTransaction* const trans) {
-
-  const SyncEntity& update = *static_cast<const SyncEntity*>(&proto_update);
-  syncable::Id server_id = update.id();
+  const syncable::Id& server_id = SyncableIdFromProto(update.id_string());
   const std::string name = SyncerProtoUtil::NameFromSyncEntity(update);
 
   // Look to see if there's a local item that should recieve this update,
@@ -150,7 +149,8 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
   // overwrite SERVER_SPECIFICS.
   // MTIME, CTIME, and NON_UNIQUE_NAME are not enforced.
   if (!update.deleted() && !target_entry.Get(syncable::SERVER_IS_DEL) &&
-      (update.parent_id() == target_entry.Get(syncable::SERVER_PARENT_ID)) &&
+      (SyncableIdFromProto(update.parent_id_string()) ==
+          target_entry.Get(syncable::SERVER_PARENT_ID)) &&
       (update.position_in_parent() ==
           target_entry.Get(syncable::SERVER_POSITION_IN_PARENT)) &&
       update.has_specifics() && update.specifics().has_encrypted() &&

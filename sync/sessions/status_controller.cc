@@ -161,7 +161,8 @@ void StatusController::reset_conflicts_resolved() {
 
 // Returns the number of updates received from the sync server.
 int64 StatusController::CountUpdates() const {
-  const ClientToServerResponse& updates = model_neutral_.updates_response;
+  const sync_pb::ClientToServerResponse& updates =
+      model_neutral_.updates_response;
   if (updates.has_get_updates()) {
     return updates.get_updates().entries().size();
   } else {

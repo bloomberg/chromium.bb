@@ -6,7 +6,6 @@
 
 #include "base/string_split.h"
 #include "base/values.h"
-#include "sync/engine/syncproto.h"
 #include "sync/protocol/app_notification_specifics.pb.h"
 #include "sync/protocol/app_setting_specifics.pb.h"
 #include "sync/protocol/app_specifics.pb.h"
@@ -22,6 +21,7 @@
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/theme_specifics.pb.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
+#include "sync/syncable/syncable_proto_util.h"
 
 namespace syncer {
 
@@ -145,10 +145,8 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
 }
 
 // Note: keep this consistent with GetModelType in syncable.cc!
-ModelType GetModelType(const sync_pb::SyncEntity& sync_pb_entity) {
-  const syncer::SyncEntity& sync_entity =
-      static_cast<const syncer::SyncEntity&>(sync_pb_entity);
-  DCHECK(!sync_entity.id().IsRoot());  // Root shouldn't ever go over the wire.
+ModelType GetModelType(const sync_pb::SyncEntity& sync_entity) {
+  DCHECK(!IsRoot(sync_entity));  // Root shouldn't ever go over the wire.
 
   if (sync_entity.deleted())
     return UNSPECIFIED;
@@ -164,7 +162,7 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_pb_entity) {
   // Loose check for server-created top-level folders that aren't
   // bound to a particular model type.
   if (!sync_entity.server_defined_unique_tag().empty() &&
-      sync_entity.IsFolder()) {
+      IsFolder(sync_entity)) {
     return TOP_LEVEL_FOLDER;
   }
 

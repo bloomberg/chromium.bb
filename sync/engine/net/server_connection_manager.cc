@@ -16,7 +16,6 @@
 #include "net/http/http_status_code.h"
 #include "sync/engine/net/url_translator.h"
 #include "sync/engine/syncer.h"
-#include "sync/engine/syncproto.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/directory.h"
 

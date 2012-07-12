@@ -17,7 +17,6 @@
 #include "base/test/values_test_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
-#include "sync/engine/syncproto.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/syncable/directory_backing_store.h"
 #include "sync/syncable/directory_change_delegate.h"
@@ -26,6 +25,7 @@
 #include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/on_disk_directory_backing_store.h"
 #include "sync/syncable/read_transaction.h"
+#include "sync/syncable/syncable_proto_util.h"
 #include "sync/syncable/syncable_util.h"
 #include "sync/syncable/write_transaction.h"
 #include "sync/test/engine/test_id_factory.h"
@@ -1152,19 +1152,19 @@ TEST_F(SyncableDirectoryTest, GetModelType) {
     server_item.Put(SERVER_IS_DEL, false);
     ASSERT_EQ(datatype, server_item.GetServerModelType());
 
-    syncer::SyncEntity folder_entity;
-    folder_entity.set_id(id_factory.NewServerId());
+    sync_pb::SyncEntity folder_entity;
+    folder_entity.set_id_string(SyncableIdToProto(id_factory.NewServerId()));
     folder_entity.set_deleted(false);
     folder_entity.set_folder(true);
     folder_entity.mutable_specifics()->CopyFrom(specifics);
-    ASSERT_EQ(datatype, folder_entity.GetModelType());
+    ASSERT_EQ(datatype, GetModelType(folder_entity));
 
-    syncer::SyncEntity item_entity;
-    item_entity.set_id(id_factory.NewServerId());
+    sync_pb::SyncEntity item_entity;
+    item_entity.set_id_string(SyncableIdToProto(id_factory.NewServerId()));
     item_entity.set_deleted(false);
     item_entity.set_folder(false);
     item_entity.mutable_specifics()->CopyFrom(specifics);
-    ASSERT_EQ(datatype, item_entity.GetModelType());
+    ASSERT_EQ(datatype, GetModelType(item_entity));
   }
 }
 

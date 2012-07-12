@@ -15,16 +15,20 @@
 #include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/read_transaction.h"
 #include "sync/syncable/syncable_id.h"
+#include "sync/syncable/syncable_proto_util.h"
 #include "sync/syncable/write_transaction.h"
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/syncer_command_test.h"
 #include "sync/test/engine/test_id_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using std::string;
+using sync_pb::ClientToServerMessage;
+using sync_pb::CommitResponse;
+
 namespace syncer {
 
 using sessions::SyncSession;
-using std::string;
 using syncable::BASE_VERSION;
 using syncable::Entry;
 using syncable::IS_DIR;
@@ -118,8 +122,8 @@ class ProcessCommitResponseCommandTest : public SyncerCommandTest {
       const string& name,
       syncer::ModelType model_type,
       sessions::OrderedCommitSet *commit_set,
-      syncer::ClientToServerMessage *commit,
-      syncer::ClientToServerResponse *response) {
+      sync_pb::ClientToServerMessage *commit,
+      sync_pb::ClientToServerResponse *response) {
     bool is_folder = true;
     int64 metahandle = 0;
     CreateUnsyncedItem(item_id, parent_id, name, is_folder, model_type,
@@ -136,14 +140,13 @@ class ProcessCommitResponseCommandTest : public SyncerCommandTest {
 
     // Add to the commit message.
     commit->set_message_contents(ClientToServerMessage::COMMIT);
-    SyncEntity* entity = static_cast<SyncEntity*>(
-        commit->mutable_commit()->add_entries());
+    sync_pb::SyncEntity* entity = commit->mutable_commit()->add_entries();
     entity->set_non_unique_name(name);
     entity->set_folder(is_folder);
-    entity->set_parent_id(parent_id);
+    entity->set_parent_id_string(SyncableIdToProto(parent_id));
     entity->set_version(entry.Get(syncable::BASE_VERSION));
     entity->mutable_specifics()->CopyFrom(entry.Get(syncable::SPECIFICS));
-    entity->set_id(item_id);
+    entity->set_id_string(SyncableIdToProto(item_id));
 
     // Add to the response message.
     response->set_error_code(sync_pb::SyncEnums::SUCCESS);
@@ -172,7 +175,7 @@ class ProcessCommitResponseCommandTest : public SyncerCommandTest {
     }
   }
 
-  void SetLastErrorCode(CommitResponse::ResponseType error_code,
+  void SetLastErrorCode(sync_pb::CommitResponse::ResponseType error_code,
                         sync_pb::ClientToServerResponse* response) {
     sync_pb::CommitResponse_EntryResponse* entry_response =
         response->mutable_commit()->mutable_entryresponse(
@@ -190,8 +193,8 @@ class ProcessCommitResponseCommandTest : public SyncerCommandTest {
 
 TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
   sessions::OrderedCommitSet commit_set(session()->routing_info());
-  syncer::ClientToServerMessage request;
-  syncer::ClientToServerResponse response;
+  sync_pb::ClientToServerMessage request;
+  sync_pb::ClientToServerResponse response;
 
   Id bookmark_folder_id = id_factory_.NewLocalId();
   Id bookmark_id1 = id_factory_.NewLocalId();
@@ -274,8 +277,8 @@ TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
 // of the children.
 TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
   sessions::OrderedCommitSet commit_set(session()->routing_info());
-  syncer::ClientToServerMessage request;
-  syncer::ClientToServerResponse response;
+  sync_pb::ClientToServerMessage request;
+  sync_pb::ClientToServerResponse response;
 
   // Create the parent folder, a new item whose ID will change on commit.
   Id folder_id = id_factory_.NewLocalId();
@@ -402,8 +405,8 @@ INSTANTIATE_TEST_CASE_P(ProcessCommitResponse,
 // depending on the test parameter.
 TEST_P(MixedResult, ExtensionActivity) {
   sessions::OrderedCommitSet commit_set(session()->routing_info());
-  syncer::ClientToServerMessage request;
-  syncer::ClientToServerResponse response;
+  sync_pb::ClientToServerMessage request;
+  sync_pb::ClientToServerResponse response;
 
   EXPECT_NE(routing_info().find(syncer::BOOKMARKS)->second,
             routing_info().find(syncer::AUTOFILL)->second)

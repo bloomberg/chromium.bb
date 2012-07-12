@@ -82,7 +82,7 @@ TEST_F(StatusControllerTest, HasConflictingUpdates_NonBlockingUpdates) {
 TEST_F(StatusControllerTest, CountUpdates) {
   StatusController status(routes_);
   EXPECT_EQ(0, status.CountUpdates());
-  ClientToServerResponse* response(status.mutable_updates_response());
+  sync_pb::ClientToServerResponse* response(status.mutable_updates_response());
   sync_pb::SyncEntity* entity1 = response->mutable_get_updates()->add_entries();
   sync_pb::SyncEntity* entity2 = response->mutable_get_updates()->add_entries();
   ASSERT_TRUE(entity1 != NULL && entity2 != NULL);

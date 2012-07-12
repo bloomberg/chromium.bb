@@ -13,11 +13,11 @@
 #include "base/location.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/engine/syncer_util.h"
-#include "sync/engine/syncproto.h"
 #include "sync/sessions/sync_session.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/read_transaction.h"
+#include "sync/syncable/syncable_proto_util.h"
 #include "sync/syncable/syncable_util.h"
 #include "sync/syncable/write_transaction.h"
 #include "sync/util/time.h"
@@ -25,6 +25,7 @@
 using std::set;
 using std::string;
 using std::vector;
+using sync_pb::CommitResponse;
 
 namespace syncer {
 
@@ -52,8 +53,8 @@ using syncable::SYNCING;
 
 ProcessCommitResponseCommand::ProcessCommitResponseCommand(
       const sessions::OrderedCommitSet& commit_set,
-      const ClientToServerMessage& commit_message,
-      const ClientToServerResponse& commit_response)
+      const sync_pb::ClientToServerMessage& commit_message,
+      const sync_pb::ClientToServerResponse& commit_response)
   : commit_set_(commit_set),
     commit_message_(commit_message),
     commit_response_(commit_response) {
@@ -189,7 +190,7 @@ SyncerError ProcessCommitResponseCommand::ProcessCommitResponse(
   }
 }
 
-void LogServerError(const CommitResponse_EntryResponse& res) {
+void LogServerError(const sync_pb::CommitResponse_EntryResponse& res) {
   if (res.has_error_message())
     LOG(WARNING) << "  " << res.error_message();
   else
@@ -199,13 +200,11 @@ void LogServerError(const CommitResponse_EntryResponse& res) {
 CommitResponse::ResponseType
 ProcessCommitResponseCommand::ProcessSingleCommitResponse(
     syncable::WriteTransaction* trans,
-    const sync_pb::CommitResponse_EntryResponse& pb_server_entry,
+    const sync_pb::CommitResponse_EntryResponse& server_entry,
     const sync_pb::SyncEntity& commit_request_entry,
     const syncable::Id& pre_commit_id,
     set<syncable::Id>* deleted_folders) {
 
-  const CommitResponse_EntryResponse& server_entry =
-      *static_cast<const CommitResponse_EntryResponse*>(&pb_server_entry);
   MutableEntry local_entry(trans, GET_BY_ID, pre_commit_id);
   CHECK(local_entry.good());
   bool syncing_was_set = local_entry.Get(SYNCING);
@@ -249,8 +248,10 @@ ProcessCommitResponseCommand::ProcessSingleCommitResponse(
   DCHECK_EQ(CommitResponse::SUCCESS, response) << response;
   // Check to see if we've been given the ID of an existing entry. If so treat
   // it as an error response and retry later.
-  if (pre_commit_id != server_entry.id()) {
-    Entry e(trans, GET_BY_ID, server_entry.id());
+  const syncable::Id& server_entry_id =
+      SyncableIdFromProto(server_entry.id_string());
+  if (pre_commit_id != server_entry_id) {
+    Entry e(trans, GET_BY_ID, server_entry_id);
     if (e.good()) {
       LOG(ERROR) << "Got duplicate id when commiting id: " << pre_commit_id <<
                  ". Treating as an error return";
@@ -269,7 +270,7 @@ ProcessCommitResponseCommand::ProcessSingleCommitResponse(
 
 const string& ProcessCommitResponseCommand::GetResultingPostCommitName(
     const sync_pb::SyncEntity& committed_entry,
-    const CommitResponse_EntryResponse& entry_response) {
+    const sync_pb::CommitResponse_EntryResponse& entry_response) {
   const string& response_name =
       SyncerProtoUtil::NameFromCommitEntryResponse(entry_response);
   if (!response_name.empty())
@@ -279,7 +280,7 @@ const string& ProcessCommitResponseCommand::GetResultingPostCommitName(
 
 bool ProcessCommitResponseCommand::UpdateVersionAfterCommit(
     const sync_pb::SyncEntity& committed_entry,
-    const CommitResponse_EntryResponse& entry_response,
+    const sync_pb::CommitResponse_EntryResponse& entry_response,
     const syncable::Id& pre_commit_id,
     syncable::MutableEntry* local_entry) {
   int64 old_version = local_entry->Get(BASE_VERSION);
@@ -299,8 +300,8 @@ bool ProcessCommitResponseCommand::UpdateVersionAfterCommit(
   }
   if (bad_commit_version) {
     LOG(ERROR) << "Bad version in commit return for " << *local_entry
-               << " new_id:" << entry_response.id() << " new_version:"
-               << entry_response.version();
+               << " new_id:" << SyncableIdFromProto(entry_response.id_string())
+               << " new_version:" << entry_response.version();
     return false;
   }
 
@@ -315,33 +316,35 @@ bool ProcessCommitResponseCommand::UpdateVersionAfterCommit(
 }
 
 bool ProcessCommitResponseCommand::ChangeIdAfterCommit(
-    const CommitResponse_EntryResponse& entry_response,
+    const sync_pb::CommitResponse_EntryResponse& entry_response,
     const syncable::Id& pre_commit_id,
     syncable::MutableEntry* local_entry) {
   syncable::WriteTransaction* trans = local_entry->write_transaction();
-  if (entry_response.id() != pre_commit_id) {
+  const syncable::Id& entry_response_id =
+      SyncableIdFromProto(entry_response.id_string());
+  if (entry_response_id != pre_commit_id) {
     if (pre_commit_id.ServerKnows()) {
       // The server can sometimes generate a new ID on commit; for example,
       // when committing an undeletion.
       DVLOG(1) << " ID changed while committing an old entry. "
-               << pre_commit_id << " became " << entry_response.id() << ".";
+               << pre_commit_id << " became " << entry_response_id << ".";
     }
-    MutableEntry same_id(trans, GET_BY_ID, entry_response.id());
+    MutableEntry same_id(trans, GET_BY_ID, entry_response_id);
     // We should trap this before this function.
     if (same_id.good()) {
-      LOG(ERROR) << "ID clash with id " << entry_response.id()
+      LOG(ERROR) << "ID clash with id " << entry_response_id
                  << " during commit " << same_id;
       return false;
     }
-    ChangeEntryIDAndUpdateChildren(trans, local_entry, entry_response.id());
-    DVLOG(1) << "Changing ID to " << entry_response.id();
+    ChangeEntryIDAndUpdateChildren(trans, local_entry, entry_response_id);
+    DVLOG(1) << "Changing ID to " << entry_response_id;
   }
   return true;
 }
 
 void ProcessCommitResponseCommand::UpdateServerFieldsAfterCommit(
     const sync_pb::SyncEntity& committed_entry,
-    const CommitResponse_EntryResponse& entry_response,
+    const sync_pb::CommitResponse_EntryResponse& entry_response,
     syncable::MutableEntry* local_entry) {
 
   // We just committed an entry successfully, and now we want to make our view
@@ -392,7 +395,7 @@ void ProcessCommitResponseCommand::UpdateServerFieldsAfterCommit(
 
 void ProcessCommitResponseCommand::OverrideClientFieldsAfterCommit(
     const sync_pb::SyncEntity& committed_entry,
-    const CommitResponse_EntryResponse& entry_response,
+    const sync_pb::CommitResponse_EntryResponse& entry_response,
     syncable::MutableEntry* local_entry) {
   if (committed_entry.deleted()) {
     // If an entry's been deleted, nothing else matters.
@@ -432,7 +435,7 @@ void ProcessCommitResponseCommand::OverrideClientFieldsAfterCommit(
 
 void ProcessCommitResponseCommand::ProcessSuccessfulCommitResponse(
     const sync_pb::SyncEntity& committed_entry,
-    const CommitResponse_EntryResponse& entry_response,
+    const sync_pb::CommitResponse_EntryResponse& entry_response,
     const syncable::Id& pre_commit_id, syncable::MutableEntry* local_entry,
     bool syncing_was_set, set<syncable::Id>* deleted_folders) {
   DCHECK(local_entry->Get(IS_UNSYNCED));
@@ -441,8 +444,8 @@ void ProcessCommitResponseCommand::ProcessSuccessfulCommitResponse(
   if (!UpdateVersionAfterCommit(committed_entry, entry_response, pre_commit_id,
                                 local_entry)) {
     LOG(ERROR) << "Bad version in commit return for " << *local_entry
-               << " new_id:" << entry_response.id() << " new_version:"
-               << entry_response.version();
+               << " new_id:" << SyncableIdFromProto(entry_response.id_string())
+               << " new_version:" << entry_response.version();
     return;
   }
 

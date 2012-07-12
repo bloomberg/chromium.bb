@@ -19,6 +19,7 @@
 
 using std::map;
 using std::string;
+using sync_pb::ClientToServerMessage;
 using sync_pb::CommitMessage;
 using sync_pb::CommitResponse;
 using sync_pb::GetUpdatesMessage;
@@ -81,7 +82,7 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
   CHECK(post.has_protocol_version());
   last_request_.CopyFrom(post);
   client_stuck_ = post.sync_problem_detected();
-  ClientToServerResponse response;
+  sync_pb::ClientToServerResponse response;
   response.Clear();
 
   if (directory_) {

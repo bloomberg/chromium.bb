@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_proto_util.h"
-#include "sync/engine/syncproto.h"
 #include "sync/internal_api/public/base/model_type_payload_map.h"
 #include "sync/syncable/directory.h"
 
@@ -27,13 +26,13 @@ DownloadUpdatesCommand::DownloadUpdatesCommand(
 DownloadUpdatesCommand::~DownloadUpdatesCommand() {}
 
 SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
-  ClientToServerMessage client_to_server_message;
-  ClientToServerResponse update_response;
+  sync_pb::ClientToServerMessage client_to_server_message;
+  sync_pb::ClientToServerResponse update_response;
 
   client_to_server_message.set_share(session->context()->account_name());
   client_to_server_message.set_message_contents(
-      ClientToServerMessage::GET_UPDATES);
-  GetUpdatesMessage* get_updates =
+      sync_pb::ClientToServerMessage::GET_UPDATES);
+  sync_pb::GetUpdatesMessage* get_updates =
       client_to_server_message.mutable_get_updates();
   get_updates->set_create_mobile_bookmarks_folder(
       create_mobile_bookmarks_folder_);
@@ -74,6 +73,7 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
   get_updates->mutable_caller_info()->set_notifications_enabled(
       session->context()->notifications_enabled());
 
+  SyncerProtoUtil::SetProtocolVersion(&client_to_server_message);
   SyncerProtoUtil::AddRequestBirthday(dir, &client_to_server_message);
 
   DebugInfo* debug_info = client_to_server_message.mutable_debug_info();

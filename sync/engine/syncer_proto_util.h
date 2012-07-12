@@ -15,17 +15,17 @@
 #include "sync/syncable/blob.h"
 
 namespace sync_pb {
+class ClientToServerMessage;
 class ClientToServerResponse;
+class CommitResponse_EntryResponse;
 class EntitySpecifics;
+class SyncEntity;
 }
 
 namespace syncer {
 
-class ClientToServerMessage;
 class ThrottledDataTypeTracker;
 class ServerConnectionManager;
-class SyncEntity;
-class CommitResponse_EntryResponse;
 
 namespace sessions {
 class SyncProtocolError;
@@ -43,7 +43,7 @@ class SyncerProtoUtil {
   // Returns true on success.  Also handles store birthday verification: will
   // produce a SyncError if the birthday is incorrect.
   static SyncerError PostClientToServerMessage(
-      const ClientToServerMessage& msg,
+      const sync_pb::ClientToServerMessage& msg,
       sync_pb::ClientToServerResponse* response,
       sessions::SyncSession* session);
 
@@ -55,7 +55,7 @@ class SyncerProtoUtil {
   // local and server values diverge. However, this almost always indicates a
   // sync bug somewhere earlier in the sync cycle.
   static bool Compare(const syncable::Entry& local_entry,
-                      const SyncEntity& server_entry);
+                      const sync_pb::SyncEntity& server_entry);
 
   // Utility methods for converting between syncable::Blobs and protobuf byte
   // fields.
@@ -72,7 +72,7 @@ class SyncerProtoUtil {
 
   // Extract the name field from a commit entry response.
   static const std::string& NameFromCommitEntryResponse(
-      const CommitResponse_EntryResponse& entry);
+      const sync_pb::CommitResponse_EntryResponse& entry);
 
   // EntitySpecifics is used as a filter for the GetUpdates message to tell
   // the server which datatypes to send back.  This adds a datatype so that
@@ -90,7 +90,10 @@ class SyncerProtoUtil {
 
   // Pull the birthday from the dir and put it into the msg.
   static void AddRequestBirthday(syncable::Directory* dir,
-                                 ClientToServerMessage* msg);
+                                 sync_pb::ClientToServerMessage* msg);
+
+  // Set the protocol version field in the outgoing message.
+  static void SetProtocolVersion(sync_pb::ClientToServerMessage* msg);
 
  private:
   SyncerProtoUtil() {}
@@ -112,7 +115,7 @@ class SyncerProtoUtil {
   // headers. Decode the server response.
   static bool PostAndProcessHeaders(syncer::ServerConnectionManager* scm,
                                     sessions::SyncSession* session,
-                                    const ClientToServerMessage& msg,
+                                    const sync_pb::ClientToServerMessage& msg,
                                     sync_pb::ClientToServerResponse* response);
 
   static base::TimeDelta GetThrottleDelay(

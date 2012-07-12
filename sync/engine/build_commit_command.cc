@@ -12,11 +12,13 @@
 #include "base/string_util.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
+#include "sync/protocol/sync.pb.h"
 #include "sync/sessions/ordered_commit_set.h"
 #include "sync/sessions/sync_session.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/syncable_changes_version.h"
+#include "sync/syncable/syncable_proto_util.h"
 #include "sync/syncable/write_transaction.h"
 #include "sync/util/time.h"
 
@@ -54,14 +56,14 @@ int64 BuildCommitCommand::GetGap() {
 
 BuildCommitCommand::BuildCommitCommand(
     const sessions::OrderedCommitSet& batch_commit_set,
-    ClientToServerMessage* commit_message)
+    sync_pb::ClientToServerMessage* commit_message)
   : batch_commit_set_(batch_commit_set), commit_message_(commit_message) {
 }
 
 BuildCommitCommand::~BuildCommitCommand() {}
 
 void BuildCommitCommand::AddExtensionsActivityToMessage(
-    SyncSession* session, CommitMessage* message) {
+    SyncSession* session, sync_pb::CommitMessage* message) {
   // We only send ExtensionsActivity to the server if bookmarks are being
   // committed.
   ExtensionsActivityMonitor* monitor = session->context()->extensions_monitor();
@@ -92,23 +94,25 @@ void BuildCommitCommand::AddExtensionsActivityToMessage(
 }
 
 namespace {
-void SetEntrySpecifics(MutableEntry* meta_entry, SyncEntity* sync_entry) {
+void SetEntrySpecifics(MutableEntry* meta_entry,
+                       sync_pb::SyncEntity* sync_entry) {
   // Add the new style extension and the folder bit.
   sync_entry->mutable_specifics()->CopyFrom(meta_entry->Get(SPECIFICS));
   sync_entry->set_folder(meta_entry->Get(syncable::IS_DIR));
 
-  DCHECK(meta_entry->GetModelType() == sync_entry->GetModelType());
+  DCHECK_EQ(meta_entry->GetModelType(), GetModelType(*sync_entry));
 }
 }  // namespace
 
 SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
   commit_message_->set_share(session->context()->account_name());
-  commit_message_->set_message_contents(ClientToServerMessage::COMMIT);
+  commit_message_->set_message_contents(sync_pb::ClientToServerMessage::COMMIT);
 
-  CommitMessage* commit_message = commit_message_->mutable_commit();
+  sync_pb::CommitMessage* commit_message = commit_message_->mutable_commit();
   commit_message->set_cache_guid(
       session->write_transaction()->directory()->cache_guid());
   AddExtensionsActivityToMessage(session, commit_message);
+  SyncerProtoUtil::SetProtocolVersion(commit_message_);
   SyncerProtoUtil::AddRequestBirthday(
       session->write_transaction()->directory(), commit_message_);
 
@@ -122,9 +126,8 @@ SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
 
   for (size_t i = 0; i < batch_commit_set_.Size(); i++) {
     Id id = batch_commit_set_.GetCommitIdAt(i);
-    SyncEntity* sync_entry =
-        static_cast<SyncEntity*>(commit_message->add_entries());
-    sync_entry->set_id(id);
+    sync_pb::SyncEntity* sync_entry = commit_message->add_entries();
+    sync_entry->set_id_string(SyncableIdToProto(id));
     MutableEntry meta_entry(session->write_transaction(),
                             syncable::GET_BY_ID, id);
     CHECK(meta_entry.good());
@@ -157,7 +160,7 @@ SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
     } else {
       new_parent_id = meta_entry.Get(syncable::PARENT_ID);
     }
-    sync_entry->set_parent_id(new_parent_id);
+    sync_entry->set_parent_id_string(SyncableIdToProto(new_parent_id));
 
     // If our parent has changed, send up the old one so the server
     // can correctly deal with multiple parents.
@@ -167,7 +170,8 @@ SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
     if (new_parent_id != meta_entry.Get(syncable::SERVER_PARENT_ID) &&
         0 != meta_entry.Get(syncable::BASE_VERSION) &&
         syncable::CHANGES_VERSION != meta_entry.Get(syncable::BASE_VERSION)) {
-      sync_entry->set_old_parent_id(meta_entry.Get(syncable::SERVER_PARENT_ID));
+      sync_entry->set_old_parent_id(
+          SyncableIdToProto(meta_entry.Get(syncable::SERVER_PARENT_ID)));
     }
 
     int64 version = meta_entry.Get(syncable::BASE_VERSION);

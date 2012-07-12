@@ -73,10 +73,10 @@ class StatusController {
   void set_updates_request_types(syncer::ModelTypeSet value) {
     model_neutral_.updates_request_types = value;
   }
-  const ClientToServerResponse& updates_response() const {
+  const sync_pb::ClientToServerResponse& updates_response() const {
     return model_neutral_.updates_response;
   }
-  ClientToServerResponse* mutable_updates_response() {
+  sync_pb::ClientToServerResponse* mutable_updates_response() {
     return &model_neutral_.updates_response;
   }
 

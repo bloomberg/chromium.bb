@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/time.h"
-#include "sync/engine/syncproto.h"
 #include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/internal_api/public/base/model_type_test_util.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
@@ -26,6 +25,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+
+using sync_pb::ClientToServerMessage;
+using sync_pb::CommitResponse_EntryResponse;
+using sync_pb::SyncEntity;
 
 namespace syncer {
 
@@ -172,7 +175,7 @@ class SyncerProtoUtilTest : public testing::Test {
 TEST_F(SyncerProtoUtilTest, VerifyResponseBirthday) {
   // Both sides empty
   EXPECT_TRUE(directory()->store_birthday().empty());
-  ClientToServerResponse response;
+  sync_pb::ClientToServerResponse response;
   EXPECT_FALSE(SyncerProtoUtil::VerifyResponseBirthday(directory(), &response));
 
   // Remote set, local empty
@@ -219,7 +222,7 @@ class DummyConnectionManager : public syncer::ServerConnectionManager {
       return false;
     }
 
-    ClientToServerResponse response;
+    sync_pb::ClientToServerResponse response;
     if (access_denied_) {
       response.set_error_code(sync_pb::SyncEnums::ACCESS_DENIED);
     }
@@ -244,9 +247,10 @@ class DummyConnectionManager : public syncer::ServerConnectionManager {
 TEST_F(SyncerProtoUtilTest, PostAndProcessHeaders) {
   DummyConnectionManager dcm;
   ClientToServerMessage msg;
+  SyncerProtoUtil::SetProtocolVersion(&msg);
   msg.set_share("required");
   msg.set_message_contents(ClientToServerMessage::GET_UPDATES);
-  ClientToServerResponse response;
+  sync_pb::ClientToServerResponse response;
 
   dcm.set_send_error(true);
   EXPECT_FALSE(SyncerProtoUtil::PostAndProcessHeaders(&dcm, NULL,

@@ -14,7 +14,6 @@
 #include "sync/engine/conflict_resolver.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/engine/syncer_types.h"
-#include "sync/engine/syncproto.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/protocol/nigori_specifics.pb.h"
@@ -26,6 +25,7 @@
 #include "sync/syncable/nigori_util.h"
 #include "sync/syncable/read_transaction.h"
 #include "sync/syncable/syncable_changes_version.h"
+#include "sync/syncable/syncable_proto_util.h"
 #include "sync/syncable/syncable_util.h"
 #include "sync/syncable/write_transaction.h"
 #include "sync/util/cryptographer.h"
@@ -71,13 +71,14 @@ using syncable::WriteTransaction;
 
 syncable::Id FindLocalIdToUpdate(
     syncable::BaseTransaction* trans,
-    const SyncEntity& update) {
+    const sync_pb::SyncEntity& update) {
   // Expected entry points of this function:
   // SyncEntity has NOT been applied to SERVER fields.
   // SyncEntity has NOT been applied to LOCAL fields.
   // DB has not yet been modified, no entries created for this update.
 
   const std::string& client_id = trans->directory()->cache_guid();
+  const syncable::Id& update_id = SyncableIdFromProto(update.id_string());
 
   if (update.has_client_defined_unique_tag() &&
       !update.client_defined_unique_tag().empty()) {
@@ -106,10 +107,10 @@ syncable::Id FindLocalIdToUpdate(
     // TODO(chron): Unit test the case with IS_DEL and make sure.
     if (local_entry.good()) {
       if (local_entry.Get(ID).ServerKnows()) {
-        if (local_entry.Get(ID) != update.id()) {
+        if (local_entry.Get(ID) != update_id) {
           // Case 2.
           LOG(WARNING) << "Duplicated client tag.";
-          if (local_entry.Get(ID) < update.id()) {
+          if (local_entry.Get(ID) < update_id) {
             // Signal an error; drop this update on the floor.  Note that
             // we don't server delete the item, because we don't allow it to
             // exist locally at all.  So the item will remain orphaned on
@@ -118,7 +119,7 @@ syncable::Id FindLocalIdToUpdate(
           }
         }
         // Target this change to the existing local entry; later,
-        // we'll change the ID of the local entry to update.id()
+        // we'll change the ID of the local entry to update_id
         // if needed.
         return local_entry.Get(ID);
       } else {
@@ -172,14 +173,14 @@ syncable::Id FindLocalIdToUpdate(
       DCHECK(!local_entry.Get(ID).ServerKnows());
 
       DVLOG(1) << "Reuniting lost commit response IDs. server id: "
-               << update.id() << " local id: " << local_entry.Get(ID)
+               << update_id << " local id: " << local_entry.Get(ID)
                << " new version: " << new_version;
 
       return local_entry.Get(ID);
     }
   }
   // Fallback: target an entry having the server ID, creating one if needed.
-  return update.id();
+  return update_id;
 }
 
 UpdateAttemptResponse AttemptToUpdateEntry(
@@ -341,7 +342,7 @@ void UpdateBookmarkSpecifics(const std::string& singleton_tag,
 // Pass in name and checksum because of UTF8 conversion.
 void UpdateServerFieldsFromUpdate(
     MutableEntry* target,
-    const SyncEntity& update,
+    const sync_pb::SyncEntity& update,
     const std::string& name) {
   if (update.deleted()) {
     if (target->Get(SERVER_IS_DEL)) {
@@ -368,14 +369,14 @@ void UpdateServerFieldsFromUpdate(
     return;
   }
 
-  DCHECK(target->Get(ID) == update.id())
+  DCHECK_EQ(target->Get(ID), SyncableIdFromProto(update.id_string()))
       << "ID Changing not supported here";
-  target->Put(SERVER_PARENT_ID, update.parent_id());
+  target->Put(SERVER_PARENT_ID, SyncableIdFromProto(update.parent_id_string()));
   target->Put(SERVER_NON_UNIQUE_NAME, name);
   target->Put(SERVER_VERSION, update.version());
   target->Put(SERVER_CTIME, ProtoTimeToTime(update.ctime()));
   target->Put(SERVER_MTIME, ProtoTimeToTime(update.mtime()));
-  target->Put(SERVER_IS_DIR, update.IsFolder());
+  target->Put(SERVER_IS_DIR, IsFolder(update));
   if (update.has_server_defined_unique_tag()) {
     const std::string& tag = update.server_defined_unique_tag();
     target->Put(UNIQUE_SERVER_TAG, tag);
@@ -386,12 +387,12 @@ void UpdateServerFieldsFromUpdate(
   }
   // Store the datatype-specific part as a protobuf.
   if (update.has_specifics()) {
-    DCHECK(update.GetModelType() != syncer::UNSPECIFIED)
+    DCHECK_NE(GetModelType(update), UNSPECIFIED)
         << "Storing unrecognized datatype in sync database.";
     target->Put(SERVER_SPECIFICS, update.specifics());
   } else if (update.has_bookmarkdata()) {
     // Legacy protocol response for bookmark data.
-    const SyncEntity::BookmarkData& bookmark = update.bookmarkdata();
+    const sync_pb::SyncEntity::BookmarkData& bookmark = update.bookmarkdata();
     UpdateBookmarkSpecifics(update.server_defined_unique_tag(),
                             bookmark.bookmark_url(),
                             bookmark.bookmark_favicon(),
@@ -572,7 +573,7 @@ void MarkDeletedChildrenSynced(
 }
 
 VerifyResult VerifyNewEntry(
-    const SyncEntity& update,
+    const sync_pb::SyncEntity& update,
     syncable::Entry* target,
     const bool deleted) {
   if (target->good()) {
@@ -591,13 +592,14 @@ VerifyResult VerifyNewEntry(
 // consistency rules.
 VerifyResult VerifyUpdateConsistency(
     syncable::WriteTransaction* trans,
-    const SyncEntity& update,
+    const sync_pb::SyncEntity& update,
     syncable::MutableEntry* target,
     const bool deleted,
     const bool is_directory,
     syncer::ModelType model_type) {
 
   CHECK(target->good());
+  const syncable::Id& update_id = SyncableIdFromProto(update.id_string());
 
   // If the update is a delete, we don't really need to worry at this stage.
   if (deleted)
@@ -624,7 +626,7 @@ VerifyResult VerifyUpdateConsistency(
       }
     }
 
-    if (!deleted && (target->Get(ID) == update.id()) &&
+    if (!deleted && (target->Get(ID) == update_id) &&
         (target->Get(SERVER_IS_DEL) ||
          (!target->Get(IS_UNSYNCED) && target->Get(IS_DEL) &&
           target->Get(BASE_VERSION) > 0))) {
@@ -647,7 +649,7 @@ VerifyResult VerifyUpdateConsistency(
                  << SyncerProtoUtil::SyncEntityDebugString(update);
       return VERIFY_FAIL;
     }
-    if (target->Get(ID) == update.id()) {
+    if (target->Get(ID) == update_id) {
       if (target->Get(SERVER_VERSION) > update.version()) {
         LOG(WARNING) << "We've already seen a more recent version.";
         LOG(WARNING) << " Entry: " << *target;
@@ -663,7 +665,7 @@ VerifyResult VerifyUpdateConsistency(
 // Assumes we have an existing entry; verify an update that seems to be
 // expressing an 'undelete'
 VerifyResult VerifyUndelete(syncable::WriteTransaction* trans,
-                            const SyncEntity& update,
+                            const sync_pb::SyncEntity& update,
                             syncable::MutableEntry* target) {
   // TODO(nick): We hit this path for items deleted items that the server
   // tells us to re-create; only deleted items with positive base versions

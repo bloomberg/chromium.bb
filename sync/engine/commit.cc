@@ -63,14 +63,11 @@ void ClearSyncingBits(syncable::Directory* dir,
 // return value of this function is true.
 bool PrepareCommitMessage(sessions::SyncSession* session,
                           sessions::OrderedCommitSet* commit_set,
-                          ClientToServerMessage* commit_message) {
+                          sync_pb::ClientToServerMessage* commit_message) {
   TRACE_EVENT0("sync", "PrepareCommitMessage");
 
   commit_set->Clear();
   commit_message->Clear();
-
-  // TODO(134769): This is a temporary fix for crbug.com/134715.
-  commit_message->set_protocol_version(commit_message->protocol_version());
 
   WriteTransaction trans(FROM_HERE, SYNCER, session->context()->directory());
   sessions::ScopedSetSessionWriteTransaction set_trans(session, &trans);
@@ -96,10 +93,10 @@ bool PrepareCommitMessage(sessions::SyncSession* session,
 SyncerError BuildAndPostCommitsImpl(Syncer* syncer,
                                     sessions::SyncSession* session,
                                     sessions::OrderedCommitSet* commit_set) {
-  ClientToServerMessage commit_message;
+  sync_pb::ClientToServerMessage commit_message;
   while (!syncer->ExitRequested() &&
          PrepareCommitMessage(session, commit_set, &commit_message)) {
-    ClientToServerResponse commit_response;
+    sync_pb::ClientToServerResponse commit_response;
 
     DVLOG(1) << "Sending commit message.";
     TRACE_EVENT_BEGIN0("sync", "PostCommit");

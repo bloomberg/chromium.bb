@@ -18,7 +18,7 @@ SyncerError StoreTimestampsCommand::ExecuteImpl(
     sessions::SyncSession* session) {
   syncable::Directory* dir = session->context()->directory();
 
-  const GetUpdatesResponse& updates =
+  const sync_pb::GetUpdatesResponse& updates =
       session->status_controller().updates_response().get_updates();
 
   sessions::StatusController* status = session->mutable_status_controller();

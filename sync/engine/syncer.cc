@@ -22,7 +22,6 @@
 #include "sync/engine/resolve_conflicts_command.h"
 #include "sync/engine/store_timestamps_command.h"
 #include "sync/engine/syncer_types.h"
-#include "sync/engine/syncproto.h"
 #include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/engine/verify_updates_command.h"
 #include "sync/syncable/mutable_entry.h"
@@ -244,7 +243,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
 }
 
 void Syncer::ProcessClientCommand(sessions::SyncSession* session) {
-  const ClientToServerResponse& response =
+  const sync_pb::ClientToServerResponse& response =
       session->status_controller().updates_response();
   if (!response.has_client_command())
     return;

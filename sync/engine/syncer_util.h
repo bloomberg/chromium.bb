@@ -18,10 +18,12 @@
 #include "sync/syncable/metahandle_set.h"
 #include "sync/syncable/syncable_id.h"
 
-namespace syncer {
-
-class Cryptographer;
+namespace sync_pb {
 class SyncEntity;
+}
+
+namespace syncer {
+class Cryptographer;
 
 // If the server sent down a client-tagged entry, or an entry whose
 // commit response was lost, it is necessary to update a local entry
@@ -34,7 +36,7 @@ class SyncEntity;
 // ID.  This function does not alter the database.
 syncable::Id FindLocalIdToUpdate(
     syncable::BaseTransaction* trans,
-    const SyncEntity& server_entry);
+    const sync_pb::SyncEntity& server_entry);
 
 UpdateAttemptResponse AttemptToUpdateEntry(
     syncable::WriteTransaction* const trans,
@@ -45,7 +47,7 @@ UpdateAttemptResponse AttemptToUpdateEntry(
 // Pass in name to avoid redundant UTF8 conversion.
 void UpdateServerFieldsFromUpdate(
     syncable::MutableEntry* local_entry,
-    const SyncEntity& server_entry,
+    const sync_pb::SyncEntity& server_entry,
     const std::string& name);
 
 // Creates a new Entry iff no Entry exists with the given id.
@@ -63,14 +65,14 @@ void UpdateLocalDataFromServerData(syncable::WriteTransaction* trans,
 
 VerifyCommitResult ValidateCommitEntry(syncable::Entry* entry);
 
-VerifyResult VerifyNewEntry(const SyncEntity& update,
+VerifyResult VerifyNewEntry(const sync_pb::SyncEntity& update,
                             syncable::Entry* target,
                             const bool deleted);
 
 // Assumes we have an existing entry; check here for updates that break
 // consistency rules.
 VerifyResult VerifyUpdateConsistency(syncable::WriteTransaction* trans,
-                                     const SyncEntity& update,
+                                     const sync_pb::SyncEntity& update,
                                      syncable::MutableEntry* target,
                                      const bool deleted,
                                      const bool is_directory,
@@ -79,7 +81,7 @@ VerifyResult VerifyUpdateConsistency(syncable::WriteTransaction* trans,
 // Assumes we have an existing entry; verify an update that seems to be
 // expressing an 'undelete'
 VerifyResult VerifyUndelete(syncable::WriteTransaction* trans,
-                            const SyncEntity& update,
+                            const sync_pb::SyncEntity& update,
                             syncable::MutableEntry* target);
 
 // Append |item|, followed by a chain of its predecessors selected by

@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "sync/engine/model_changing_syncer_command.h"
-#include "sync/engine/syncproto.h"
+#include "sync/protocol/sync.pb.h"
 
 namespace syncer {
 
@@ -52,8 +52,8 @@ class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
   // or a serious error was encountered.
   ProcessCommitResponseCommand(
       const sessions::OrderedCommitSet& commit_set,
-      const ClientToServerMessage& commit_message,
-      const ClientToServerResponse& commit_response);
+      const sync_pb::ClientToServerMessage& commit_message,
+      const sync_pb::ClientToServerResponse& commit_response);
   virtual ~ProcessCommitResponseCommand();
 
  protected:
@@ -64,7 +64,7 @@ class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
       sessions::SyncSession* session) OVERRIDE;
 
  private:
-  CommitResponse::ResponseType ProcessSingleCommitResponse(
+  sync_pb::CommitResponse::ResponseType ProcessSingleCommitResponse(
       syncable::WriteTransaction* trans,
       const sync_pb::CommitResponse_EntryResponse& pb_commit_response,
       const sync_pb::SyncEntity& pb_committed_entry,
@@ -76,7 +76,7 @@ class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
 
   void ProcessSuccessfulCommitResponse(
       const sync_pb::SyncEntity& committed_entry,
-      const CommitResponse_EntryResponse& entry_response,
+      const sync_pb::CommitResponse_EntryResponse& entry_response,
       const syncable::Id& pre_commit_id, syncable::MutableEntry* local_entry,
       bool syncing_was_set, std::set<syncable::Id>* deleted_folders);
 
@@ -84,14 +84,14 @@ class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
   // Helper for ProcessSuccessfulCommitResponse.
   bool UpdateVersionAfterCommit(
       const sync_pb::SyncEntity& committed_entry,
-      const CommitResponse_EntryResponse& entry_response,
+      const sync_pb::CommitResponse_EntryResponse& entry_response,
       const syncable::Id& pre_commit_id,
       syncable::MutableEntry* local_entry);
 
   // If the server generated an ID for us during a commit, apply the new ID.
   // Helper for ProcessSuccessfulCommitResponse.
   bool ChangeIdAfterCommit(
-      const CommitResponse_EntryResponse& entry_response,
+      const sync_pb::CommitResponse_EntryResponse& entry_response,
       const syncable::Id& pre_commit_id,
       syncable::MutableEntry* local_entry);
 
@@ -99,7 +99,7 @@ class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
   // Helper for ProcessSuccessfulCommitResponse.
   void UpdateServerFieldsAfterCommit(
       const sync_pb::SyncEntity& committed_entry,
-      const CommitResponse_EntryResponse& entry_response,
+      const sync_pb::CommitResponse_EntryResponse& entry_response,
       syncable::MutableEntry* local_entry);
 
   // The server can override some values during a commit; the overridden values
@@ -110,13 +110,13 @@ class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
   // Helper for ProcessSuccessfulCommitResponse.
   void OverrideClientFieldsAfterCommit(
       const sync_pb::SyncEntity& committed_entry,
-      const CommitResponse_EntryResponse& entry_response,
+      const sync_pb::CommitResponse_EntryResponse& entry_response,
       syncable::MutableEntry* local_entry);
 
   // Helper to extract the final name from the protobufs.
   const std::string& GetResultingPostCommitName(
       const sync_pb::SyncEntity& committed_entry,
-      const CommitResponse_EntryResponse& entry_response);
+      const sync_pb::CommitResponse_EntryResponse& entry_response);
 
   // Helper to clean up in case of failure.
   void ClearSyncingBits(
@@ -124,8 +124,8 @@ class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
       const std::vector<syncable::Id>& commit_ids);
 
   const sessions::OrderedCommitSet& commit_set_;
-  const ClientToServerMessage& commit_message_;
-  const ClientToServerResponse& commit_response_;
+  const sync_pb::ClientToServerMessage& commit_message_;
+  const sync_pb::ClientToServerResponse& commit_response_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessCommitResponseCommand);
 };

@@ -19,10 +19,13 @@
 #include "sync/syncable/directory.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/syncable-inl.h"
+#include "sync/syncable/syncable_proto_util.h"
 #include "sync/util/time.h"
 
 using std::string;
 using std::stringstream;
+using sync_pb::ClientToServerMessage;
+using sync_pb::ClientToServerResponse;
 
 namespace syncer {
 
@@ -107,7 +110,7 @@ SyncerError ServerConnectionErrorAsSyncerError(
 
 // static
 void SyncerProtoUtil::HandleMigrationDoneResponse(
-  const sync_pb::ClientToServerResponse* response,
+  const ClientToServerResponse* response,
   sessions::SyncSession* session) {
   LOG_IF(ERROR, 0 >= response->migrated_data_type_id_size())
       << "MIGRATION_DONE but no types specified.";
@@ -160,11 +163,21 @@ void SyncerProtoUtil::AddRequestBirthday(syncable::Directory* dir,
 }
 
 // static
+void SyncerProtoUtil::SetProtocolVersion(ClientToServerMessage* msg) {
+  const int current_version =
+      ClientToServerMessage::default_instance().protocol_version();
+  msg->set_protocol_version(current_version);
+}
+
+// static
 bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
                                             sessions::SyncSession* session,
                                             const ClientToServerMessage& msg,
                                             ClientToServerResponse* response) {
   ServerConnectionManager::PostBufferParams params;
+  DCHECK(msg.has_protocol_version());
+  DCHECK_EQ(msg.protocol_version(),
+            ClientToServerMessage::default_instance().protocol_version());
   msg.SerializeToString(&params.buffer_in);
 
   ScopedServerStatusWatcher server_status_watcher(scm, &params.response);
@@ -199,7 +212,7 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
 }
 
 base::TimeDelta SyncerProtoUtil::GetThrottleDelay(
-    const sync_pb::ClientToServerResponse& response) {
+    const ClientToServerResponse& response) {
   base::TimeDelta throttle_delay =
       base::TimeDelta::FromSeconds(kSyncDelayAfterThrottled);
   if (response.has_client_command()) {
@@ -289,7 +302,7 @@ syncer::ClientAction ConvertClientActionPBToLocalClientAction(
 }
 
 syncer::SyncProtocolError ConvertErrorPBToLocalType(
-    const sync_pb::ClientToServerResponse::Error& error) {
+    const ClientToServerResponse::Error& error) {
   syncer::SyncProtocolError sync_protocol_error;
   sync_protocol_error.error_type = ConvertSyncProtocolErrorTypePBToLocalType(
       error.error_type());
@@ -415,15 +428,12 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
 
 // static
 bool SyncerProtoUtil::Compare(const syncable::Entry& local_entry,
-                              const SyncEntity& server_entry) {
+                              const sync_pb::SyncEntity& server_entry) {
   const std::string name = NameFromSyncEntity(server_entry);
 
-  CHECK(local_entry.Get(ID) == server_entry.id()) <<
-      " SyncerProtoUtil::Compare precondition not met.";
-  CHECK(server_entry.version() == local_entry.Get(BASE_VERSION)) <<
-      " SyncerProtoUtil::Compare precondition not met.";
-  CHECK(!local_entry.Get(IS_UNSYNCED)) <<
-      " SyncerProtoUtil::Compare precondition not met.";
+  CHECK_EQ(local_entry.Get(ID), SyncableIdFromProto(server_entry.id_string()));
+  CHECK_EQ(server_entry.version(), local_entry.Get(BASE_VERSION));
+  CHECK(!local_entry.Get(IS_UNSYNCED));
 
   if (local_entry.Get(IS_DEL) && server_entry.deleted())
     return true;
@@ -439,11 +449,12 @@ bool SyncerProtoUtil::Compare(const syncable::Entry& local_entry,
     LOG(WARNING) << "Client name mismatch";
     return false;
   }
-  if (local_entry.Get(PARENT_ID) != server_entry.parent_id()) {
+  if (local_entry.Get(PARENT_ID) !=
+      SyncableIdFromProto(server_entry.parent_id_string())) {
     LOG(WARNING) << "Parent ID mismatch";
     return false;
   }
-  if (local_entry.Get(IS_DIR) != server_entry.IsFolder()) {
+  if (local_entry.Get(IS_DIR) != IsFolder(server_entry)) {
     LOG(WARNING) << "Dir field mismatch";
     return false;
   }
@@ -492,7 +503,7 @@ const std::string& SyncerProtoUtil::NameFromSyncEntity(
 
 // static
 const std::string& SyncerProtoUtil::NameFromCommitEntryResponse(
-    const CommitResponse_EntryResponse& entry) {
+    const sync_pb::CommitResponse_EntryResponse& entry) {
   if (entry.has_non_unique_name())
     return entry.non_unique_name();
   return entry.name();
@@ -534,7 +545,7 @@ std::string GetUpdatesResponseString(
 }  // namespace
 
 std::string SyncerProtoUtil::ClientToServerResponseDebugString(
-    const sync_pb::ClientToServerResponse& response) {
+    const ClientToServerResponse& response) {
   // Add more handlers as needed.
   std::string output;
   if (response.has_get_updates())

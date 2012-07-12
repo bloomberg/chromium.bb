@@ -52,7 +52,7 @@ class VerifyUpdatesCommandTest : public SyncerCommandTest {
     entry.Put(syncable::SERVER_SPECIFICS, default_specifics);
   }
 
-  void AddUpdate(GetUpdatesResponse* updates,
+  void AddUpdate(sync_pb::GetUpdatesResponse* updates,
       const std::string& id, const std::string& parent,
       const syncer::ModelType& type) {
     sync_pb::SyncEntity* e = updates->add_entries();
@@ -77,7 +77,8 @@ TEST_F(VerifyUpdatesCommandTest, AllVerified) {
 
   ExpectNoGroupsToChange(command_);
 
-  GetUpdatesResponse* updates = session()->mutable_status_controller()->
+  sync_pb::GetUpdatesResponse* updates =
+      session()->mutable_status_controller()->
       mutable_updates_response()->mutable_get_updates();
   AddUpdate(updates, "b1", root, syncer::BOOKMARKS);
   AddUpdate(updates, "b2", root, syncer::BOOKMARKS);

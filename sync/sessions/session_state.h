@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "sync/engine/syncer_types.h"
-#include "sync/engine/syncproto.h"
+#include "sync/protocol/sync.pb.h"
 #include "sync/syncable/syncable_id.h"
 
 namespace syncer {

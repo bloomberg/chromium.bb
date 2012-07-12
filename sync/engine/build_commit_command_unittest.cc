@@ -17,7 +17,7 @@ class BuildCommitCommandTest : public SyncerCommandTest {
 
  private:
   sessions::OrderedCommitSet batch_commit_set_;
-  ClientToServerMessage commit_message_;
+  sync_pb::ClientToServerMessage commit_message_;
 
  protected:
   BuildCommitCommand command_;
