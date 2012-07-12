@@ -37,16 +37,6 @@ namespace {
 // is selected.
 const GdkColor kBackgroundColor = GDK_COLOR_RGB(0xff, 0xff, 0xff);
 
-std::string PermissionTypeToString(ContentSettingsType type) {
-  return l10n_util::GetStringUTF8(
-      WebsiteSettingsUI::PermissionTypeToUIStringID(type));
-}
-
-std::string PermissionValueToString(ContentSetting value) {
-  return l10n_util::GetStringUTF8(
-      WebsiteSettingsUI::PermissionValueToUIStringID(value));
-}
-
 }  // namespace
 
 // static
@@ -386,8 +376,8 @@ void WebsiteSettingsPopupGtk::SetPermissionInfo(
        permission != permission_info_list.end();
        ++permission) {
     // Add a label for the permission type.
-    GtkWidget* label =
-        CreateTextLabel(PermissionTypeToString(permission->type), 250);
+    GtkWidget* label = CreateTextLabel(UTF16ToUTF8(
+        WebsiteSettingsUI::PermissionTypeToUIString(permission->type)), 250);
     GtkWidget* hbox = gtk_hbox_new(FALSE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
 
@@ -395,16 +385,18 @@ void WebsiteSettingsPopupGtk::SetPermissionInfo(
         gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
     GtkTreeIter iter;
     // Add option for permission "Global Default" to the combobox model.
-    std::string setting_str =
-        l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_PERMISSION_DEFAULT);
-    setting_str += " (" + PermissionValueToString(permission->default_setting);
-    setting_str += ")";
+    std::string setting_str = l10n_util::GetStringFUTF8(
+        IDS_WEBSITE_SETTINGS_DEFAULT_PERMISSION_LABEL,
+        WebsiteSettingsUI::PermissionValueToUIString(
+            permission->default_setting));
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, setting_str.c_str(), 1,
                        CONTENT_SETTING_DEFAULT, 2, permission->type, -1);
     GtkWidget* combo_box = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
     // Add option for permission "Allow" to the combobox model.
-    setting_str = PermissionValueToString(CONTENT_SETTING_ALLOW);
+    setting_str = l10n_util::GetStringFUTF8(
+        IDS_WEBSITE_SETTINGS_PERMISSION_LABEL,
+        WebsiteSettingsUI::PermissionValueToUIString(CONTENT_SETTING_ALLOW));
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, setting_str.c_str(), 1,
                        CONTENT_SETTING_ALLOW, 2, permission->type, -1);
@@ -412,7 +404,9 @@ void WebsiteSettingsPopupGtk::SetPermissionInfo(
     // blocking.
     if (permission->type != CONTENT_SETTINGS_TYPE_FULLSCREEN) {
       // Add option for permission "BLOCK" to the combobox model.
-      setting_str = PermissionValueToString(CONTENT_SETTING_BLOCK);
+      setting_str = l10n_util::GetStringFUTF8(
+          IDS_WEBSITE_SETTINGS_PERMISSION_LABEL,
+          WebsiteSettingsUI::PermissionValueToUIString(CONTENT_SETTING_BLOCK));
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(store, &iter, 0, setting_str.c_str(), 1,
                          CONTENT_SETTING_BLOCK, 2, permission->type, -1);

@@ -12,7 +12,7 @@
 #include "ui/gfx/image/image.h"
 
 namespace {
-const int kInvalidRessourceID = -1;
+const int kInvalidResourceID = -1;
 }
 
 WebsiteSettingsUI::CookieInfo::CookieInfo()
@@ -44,60 +44,82 @@ WebsiteSettingsUI::~WebsiteSettingsUI() {
 }
 
 // static
-int WebsiteSettingsUI::PermissionTypeToUIStringID(ContentSettingsType type) {
+string16 WebsiteSettingsUI::PermissionTypeToUIString(
+      ContentSettingsType type) {
   switch (type) {
     case CONTENT_SETTINGS_TYPE_IMAGES:
-     return IDS_WEBSITE_SETTINGS_TYPE_IMAGES;
+     return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TYPE_IMAGES);
     case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
-     return IDS_WEBSITE_SETTINGS_TYPE_JAVASCRIPT;
+     return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TYPE_JAVASCRIPT);
     case CONTENT_SETTINGS_TYPE_POPUPS:
-      return IDS_WEBSITE_SETTINGS_TYPE_POPUPS;
+      return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TYPE_POPUPS);
     case CONTENT_SETTINGS_TYPE_PLUGINS:
-      return IDS_WEBSITE_SETTINGS_TYPE_PLUGINS;
+      return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TYPE_PLUGINS);
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      return IDS_WEBSITE_SETTINGS_TYPE_LOCATION;
+      return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TYPE_LOCATION);
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-      return IDS_WEBSITE_SETTINGS_TYPE_NOTIFICATIONS;
+      return l10n_util::GetStringUTF16(
+          IDS_WEBSITE_SETTINGS_TYPE_NOTIFICATIONS);
     case CONTENT_SETTINGS_TYPE_FULLSCREEN:
-      return IDS_WEBSITE_SETTINGS_TYPE_FULLSCREEN;
+      return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TYPE_FULLSCREEN);
     case CONTENT_SETTINGS_TYPE_MOUSELOCK:
-      return IDS_WEBSITE_SETTINGS_TYPE_MOUSELOCK;
+      return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TYPE_MOUSELOCK);
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
-      return IDS_WEBSITE_SETTINGS_TYPE_MEDIASTREAM;
+      return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TYPE_MEDIASTREAM);
     default:
       NOTREACHED();
-      return kInvalidRessourceID;
+      return string16();
   }
 }
 
 // static
-int WebsiteSettingsUI::PermissionValueToUIStringID(ContentSetting value) {
+string16 WebsiteSettingsUI::PermissionValueToUIString(ContentSetting value) {
   switch (value) {
     case CONTENT_SETTING_ALLOW:
-      return IDS_WEBSITE_SETTINGS_PERMISSION_ALLOW;
+      return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_PERMISSION_ALLOW);
     case CONTENT_SETTING_BLOCK:
-      return IDS_WEBSITE_SETTINGS_PERMISSION_BLOCK;
+      return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_PERMISSION_BLOCK);
     case CONTENT_SETTING_ASK:
-      return IDS_WEBSITE_SETTINGS_PERMISSION_ASK;
+      return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_PERMISSION_ASK);
     default:
       NOTREACHED();
-      return kInvalidRessourceID;
+      return string16();
   }
 }
 
 // static
-int WebsiteSettingsUI::PermissionActionUIStringID(ContentSetting value) {
-  switch (value) {
+string16 WebsiteSettingsUI::PermissionActionToUIString(
+      ContentSetting setting, ContentSetting default_setting) {
+  ContentSetting setting_value;
+  int setting_description_id = kInvalidResourceID;
+  int action_description_id = kInvalidResourceID;
+
+  // Check whether or not the default setting was used.
+  if (setting == CONTENT_SETTING_DEFAULT) {
+    setting_value = default_setting;
+    setting_description_id = IDS_WEBSITE_SETTINGS_DEFAULT_SETTING;
+  } else {
+    setting_value = setting;
+    setting_description_id = IDS_WEBSITE_SETTINGS_USER_SETTING;
+  }
+
+  // Determine the string to use to describe the action that was taken, e.g.
+  // "Allowed", "Blocked", "Ask".
+  switch (setting_value) {
     case CONTENT_SETTING_ALLOW:
-      return IDS_WEBSITE_SETTINGS_PERMISSION_ACTION_ALLOWED;
+      action_description_id = IDS_WEBSITE_SETTINGS_PERMISSION_ACTION_ALLOWED;
+      break;
     case CONTENT_SETTING_BLOCK:
-      return IDS_WEBSITE_SETTINGS_PERMISSION_ACTION_BLOCKED;
+      action_description_id = IDS_WEBSITE_SETTINGS_PERMISSION_ACTION_BLOCKED;
+      break;
     case CONTENT_SETTING_ASK:
-      return IDS_WEBSITE_SETTINGS_PERMISSION_ACTION_ASK;
+      action_description_id = IDS_WEBSITE_SETTINGS_PERMISSION_ACTION_ASK;
+      break;
     default:
       NOTREACHED();
-      return kInvalidRessourceID;
   }
+  return l10n_util::GetStringFUTF16(setting_description_id,
+      l10n_util::GetStringUTF16(action_description_id));
 }
 
 // static

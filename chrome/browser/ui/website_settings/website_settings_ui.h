@@ -71,7 +71,7 @@ class WebsiteSettingsUI {
     std::string site_identity;
     // Status of the site's identity.
     WebsiteSettings::SiteIdentityStatus identity_status;
-    // Helper to get the resource ID of the status text to display to the user.
+    // Helper to get the status text to display to the user.
     string16 GetIdentityStatusText() const;
     // Textual description of the site's identity status that is displayed to
     // the user.
@@ -87,17 +87,19 @@ class WebsiteSettingsUI {
 
   virtual ~WebsiteSettingsUI();
 
-  // Returns the resource ID of the UI string for the given permission |type|.
-  static int PermissionTypeToUIStringID(ContentSettingsType type);
+  // Returns the UI string for the given permission |type|.
+  static string16 PermissionTypeToUIString(ContentSettingsType type);
 
-  // Returns the resource ID of the UI string for the given permission |value|.
-  static int PermissionValueToUIStringID(ContentSetting value);
+  // Returns the UI string for the given permission |value|, used in the
+  // permission-changing menu. Generally this will be a verb in the imperative
+  // form, e.g. "ask", "allow", "block".
+  static string16 PermissionValueToUIString(ContentSetting value);
 
-  // Returns the resource ID of the UI string for the action that is performed
-  // for the given permission |value|. E.g. for the |value|
-  // CONTENT_SETTING_ALLOW content is "allowed" and for the |value|
-  // CONTENT_SETTING_BLOCK content is "blocked".
-  static int PermissionActionUIStringID(ContentSetting value);
+  // Returns the UI string describing the action taken for a permission,
+  // including why that action was taken. E.g. "Allowed by you",
+  // "Blocked by default".
+  static string16 PermissionActionToUIString(ContentSetting setting,
+                                             ContentSetting default_setting);
 
   // Returns the icon for the given permission |type| and |setting|.
   static const gfx::Image& GetPermissionIcon(ContentSettingsType type,

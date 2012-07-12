@@ -28,32 +28,6 @@ const int kPermissionIconColumnWidth = 20;
 // Left margin of the label that displays the permission types.
 const int kPermissionsRowLabelMarginLeft = 8;
 
-string16 GetPermissionTypeLabel(ContentSettingsType type) {
-  return l10n_util::GetStringUTF16(
-      WebsiteSettingsUI::PermissionTypeToUIStringID(type)) + ASCIIToUTF16(":");
-}
-
-string16 PermissionValueToString(ContentSetting value) {
-  return l10n_util::GetStringUTF16(
-      WebsiteSettingsUI::PermissionValueToUIStringID(value));
-}
-
-string16 GetPermissionActionDisplayString(ContentSetting value) {
-  return l10n_util::GetStringUTF16(
-      WebsiteSettingsUI::PermissionActionUIStringID(value));
-}
-
-string16 GetPermissionDisplayString(ContentSetting setting,
-                                    ContentSetting default_setting) {
-  if (setting == CONTENT_SETTING_DEFAULT) {
-    return l10n_util::GetStringFUTF16(
-        IDS_WEBSITE_SETTINGS_DEFAULT_SETTING,
-        GetPermissionActionDisplayString(default_setting));
-  }
-  return l10n_util::GetStringFUTF16(IDS_WEBSITE_SETTINGS_USER_SETTING,
-                                    GetPermissionActionDisplayString(setting));
-}
-
 // An array with |ContentSetting|s ordered by CommandID. The array is used to
 // lookup a content setting for a given command id.
 const ContentSetting kSettingsForCommandIDs[] = {
@@ -147,19 +121,21 @@ PermissionMenuModel::PermissionMenuModel(
       default_setting_(default_setting),
       current_setting_(current_setting),
       permission_selector_(parent) {
-  AddCheckItem(COMMAND_SET_TO_DEFAULT,
-               l10n_util::GetStringFUTF16(
-                   IDS_WEBSITE_SETTINGS_DEFAULT_PERMISSION_LABEL,
-                   PermissionValueToString(default_setting_)));
-  AddCheckItem(COMMAND_SET_TO_ALLOW,
-               l10n_util::GetStringFUTF16(
-                   IDS_WEBSITE_SETTINGS_PERMISSION_LABEL,
-                   PermissionValueToString(CONTENT_SETTING_ALLOW)));
+  string16 label = l10n_util::GetStringFUTF16(
+      IDS_WEBSITE_SETTINGS_DEFAULT_PERMISSION_LABEL,
+      WebsiteSettingsUI::PermissionValueToUIString(default_setting_));
+  AddCheckItem(COMMAND_SET_TO_DEFAULT, label);
+
+  label = l10n_util::GetStringFUTF16(
+      IDS_WEBSITE_SETTINGS_PERMISSION_LABEL,
+      WebsiteSettingsUI::PermissionValueToUIString(CONTENT_SETTING_ALLOW));
+  AddCheckItem(COMMAND_SET_TO_ALLOW, label);
+
   if (site_permission != CONTENT_SETTINGS_TYPE_FULLSCREEN) {
-    AddCheckItem(COMMAND_SET_TO_BLOCK,
-                 l10n_util::GetStringFUTF16(
-                     IDS_WEBSITE_SETTINGS_PERMISSION_LABEL,
-                     PermissionValueToString(CONTENT_SETTING_BLOCK)));
+    label = l10n_util::GetStringFUTF16(
+        IDS_WEBSITE_SETTINGS_PERMISSION_LABEL,
+        WebsiteSettingsUI::PermissionValueToUIString(CONTENT_SETTING_BLOCK));
+    AddCheckItem(COMMAND_SET_TO_BLOCK, label);
   }
 }
 
@@ -262,7 +238,10 @@ PermissionSelectorView::PermissionSelectorView(ContentSettingsType type,
                   views::GridLayout::CENTER,
                   views::GridLayout::CENTER);
   // Create the label that displays the permission type.
-  views::Label* label = new views::Label(GetPermissionTypeLabel(type));
+  views::Label* label = new views::Label(
+      l10n_util::GetStringFUTF16(
+          IDS_WEBSITE_SETTINGS_PERMISSION_TYPE,
+          WebsiteSettingsUI::PermissionTypeToUIString(type)));
   layout->AddView(label,
                   1,
                   1,
@@ -272,7 +251,8 @@ PermissionSelectorView::PermissionSelectorView(ContentSettingsType type,
   menu_button_model_.reset(new internal::PermissionMenuModel(
       type, default_setting, current_setting, this));
   menu_button_ = new internal::PermissionMenuButton(
-      GetPermissionDisplayString(current_setting, default_setting),
+      WebsiteSettingsUI::PermissionActionToUIString(current_setting,
+                                                    default_setting),
       menu_button_model_.get());
   layout->AddView(menu_button_);
 }
@@ -292,7 +272,7 @@ void PermissionSelectorView::SelectionChanged() {
   icon_->SetImage(image.ToImageSkia());
 
   // Update the menu button text to reflect the new setting.
-  menu_button_->SetText(GetPermissionDisplayString(
+  menu_button_->SetText(WebsiteSettingsUI::PermissionActionToUIString(
         menu_button_model_->current_setting(),
         menu_button_model_->default_setting()));
 

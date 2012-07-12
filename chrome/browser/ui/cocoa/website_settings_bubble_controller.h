@@ -25,6 +25,8 @@ class WebsiteSettingsUIBridge;
   // Display the identity status (e.g. verified, not verified).
   NSTextField* identityStatusField_;
 
+  NSView* permissionsContentView_;
+
   NSImageView* identityStatusIcon_;
   NSTextField* identityStatusDescriptionField_;
   NSView* separatorAfterIdentity_;

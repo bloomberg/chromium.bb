@@ -12,8 +12,10 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/cert_store.h"
 #include "grit/generated_resources.h"
+#include "grit/ui_resources.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 
@@ -47,6 +49,9 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 
 // The amount of padding given to tab view contents.
 const CGFloat kTabViewContentsPadding = kFramePadding;
+
+// The spacing between individual items in the Permissions tab.
+const CGFloat kPermissionsTabSpacing = 8;
 
 }  // namespace
 
@@ -127,7 +132,7 @@ const CGFloat kTabViewContentsPadding = kFramePadding;
   [tabView_ setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
   [contentView_ addSubview:tabView_.get()];
 
-  [self addPermissionsTabToTabView:tabView_];
+  permissionsContentView_ = [self addPermissionsTabToTabView:tabView_];
   [self addConnectionTabToTabView:tabView_];
 
   // Replace the window's content.
@@ -220,15 +225,15 @@ const CGFloat kTabViewContentsPadding = kFramePadding;
 // the content has changed.
 - (void)performLayout {
   // Place the identity status immediately below the identity.
-  [self adjustTextFieldHeight:identityField_];
-  [self adjustTextFieldHeight:identityStatusField_];
+  [self sizeTextFieldHeightToFit:identityField_];
+  [self sizeTextFieldHeightToFit:identityStatusField_];
   CGFloat yPos = NSMaxY([identityField_ frame]) + kHeadlineSpacing;
   yPos = [self setYPositionOfView:identityStatusField_ to:yPos];
 
   // Lay out the connection tab.
 
   // Lay out the identity status section.
-  [self adjustTextFieldHeight:identityStatusDescriptionField_];
+  [self sizeTextFieldHeightToFit:identityStatusDescriptionField_];
   yPos = std::max(NSMaxY([identityStatusDescriptionField_ frame]),
                   NSMaxY([identityStatusIcon_ frame]));
   yPos = [self setYPositionOfView:separatorAfterIdentity_
@@ -236,7 +241,7 @@ const CGFloat kTabViewContentsPadding = kFramePadding;
   yPos += kVerticalSpacing;
 
   // Lay out the connection status section.
-  [self adjustTextFieldHeight:connectionStatusDescriptionField_];
+  [self sizeTextFieldHeightToFit:connectionStatusDescriptionField_];
   [self setYPositionOfView:connectionStatusIcon_ to:yPos];
   [self setYPositionOfView:connectionStatusDescriptionField_ to:yPos];
   yPos = std::max(NSMaxY([connectionStatusDescriptionField_ frame]),
@@ -247,10 +252,10 @@ const CGFloat kTabViewContentsPadding = kFramePadding;
 
   // Lay out the last visit section.
   [self setYPositionOfView:firstVisitIcon_ to:yPos];
-  [self adjustTextFieldHeight:firstVisitHeaderField_];
+  [self sizeTextFieldHeightToFit:firstVisitHeaderField_];
   yPos = [self setYPositionOfView:firstVisitHeaderField_ to:yPos];
   yPos += kHeadlineSpacing;
-  [self adjustTextFieldHeight:firstVisitDescriptionField_];
+  [self sizeTextFieldHeightToFit:firstVisitDescriptionField_];
   [self setYPositionOfView:firstVisitDescriptionField_ to:yPos];
 
   // Adjust the tab view size and place it below the identity status.
@@ -321,7 +326,7 @@ const CGFloat kTabViewContentsPadding = kFramePadding;
 }
 
 // Adjust the height of the given text field to match its text.
-- (void)adjustTextFieldHeight:(NSTextField*)textField {
+- (void)sizeTextFieldHeightToFit:(NSTextField*)textField {
   NSRect frame = [textField frame];
   frame.size.height +=
      [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
@@ -347,7 +352,7 @@ const CGFloat kTabViewContentsPadding = kFramePadding;
   NSFont* font = bold ? [NSFont boldSystemFontOfSize:fontSize]
                       : [NSFont systemFontOfSize:fontSize];
   [textField setFont:font];
-  [self adjustTextFieldHeight:textField];
+  [self sizeTextFieldHeightToFit:textField];
   [view addSubview:textField.get()];
   return textField.get();
 }
@@ -374,6 +379,81 @@ const CGFloat kTabViewContentsPadding = kFramePadding;
       [self separatorWithFrame:NSMakeRect(kFramePadding, 0, width, 0)];
   [view addSubview:spacer];
   return spacer;
+}
+
+// Add a pop-up button for |permissionInfo| to the given view.
+- (NSPopUpButton*)addPopUpButtonForPermission:
+    (const WebsiteSettingsUI::PermissionInfo&)permissionInfo
+                                       toView:(NSView*)view
+                                      atPoint:(NSPoint)point {
+  // Use an arbitrary width and height; it will be sized to fit.
+  NSRect frame = NSMakeRect(point.x, point.y, 1, 1);
+  scoped_nsobject<NSPopUpButton> button(
+      [[NSPopUpButton alloc] initWithFrame:frame pullsDown:NO]);
+
+  [button setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+  [button setButtonType:NSMomentaryPushInButton];
+  [button setBezelStyle:NSRoundRectBezelStyle];
+  [button setShowsBorderOnlyWhileMouseInside:YES];
+  [[button cell] setHighlightsBy:NSCellLightsByGray];
+
+  // Set the button title.
+  [[button cell] setUsesItemFromMenu:NO];
+  scoped_nsobject<NSMenuItem> titleItem([[NSMenuItem alloc] init]);
+  [titleItem setTitle:base::SysUTF16ToNSString(
+      WebsiteSettingsUI::PermissionActionToUIString(
+          permissionInfo.setting, permissionInfo.default_setting))];
+  [[button cell] setMenuItem:titleItem.get()];
+  [button sizeToFit];
+
+  // Create the popup menu.
+  [button addItemWithTitle:l10n_util::GetNSStringF(
+      IDS_WEBSITE_SETTINGS_PERMISSION_LABEL,
+      WebsiteSettingsUI::PermissionValueToUIString(CONTENT_SETTING_ALLOW))];
+  [button addItemWithTitle:l10n_util::GetNSStringF(
+      IDS_WEBSITE_SETTINGS_PERMISSION_LABEL,
+      WebsiteSettingsUI::PermissionValueToUIString(CONTENT_SETTING_BLOCK))];
+  [button addItemWithTitle:l10n_util::GetNSStringF(
+      IDS_WEBSITE_SETTINGS_DEFAULT_PERMISSION_LABEL,
+      WebsiteSettingsUI::PermissionValueToUIString(
+          permissionInfo.default_setting))];
+
+  [view addSubview:button.get()];
+  return button.get();
+}
+
+// Adds a new row to the UI listing the permissions. Returns the amount of
+// vertical space that was taken up by the row.
+- (CGFloat)addPermission:
+    (const WebsiteSettingsUI::PermissionInfo&)permissionInfo
+                  toView:(NSView*)view
+                 atPoint:(NSPoint)point {
+  string16 labelText =
+      WebsiteSettingsUI::PermissionTypeToUIString(permissionInfo.type) +
+      ASCIIToUTF16(":");
+
+  NSTextField* label = [self addText:labelText
+                            withSize:[NSFont smallSystemFontSize]
+                                bold:NO
+                              toView:view
+                             atPoint:point];
+
+  // Shrink the label to fit the text width.
+  NSSize requiredSize = [[label cell] cellSizeForBounds:[label frame]];
+  [label setFrameSize:requiredSize];
+
+  NSPoint popUpPosition = NSMakePoint(NSMaxX([label frame]), point.y);
+  NSPopUpButton* button = [self addPopUpButtonForPermission:permissionInfo
+                                                     toView:view
+                                                    atPoint:popUpPosition];
+
+  // Adjust the vertical position of the button so that its title text is
+  // aligned with the label. Assumes that the text is the same size in both.
+  NSRect titleRect = [[button cell] titleRectForBounds:[button bounds]];
+  popUpPosition.y -= titleRect.origin.y;
+  [button setFrameOrigin:popUpPosition];
+
+  return std::max(NSHeight([label frame]), NSHeight([button frame]));
 }
 
 // Set the content of the identity and identity status fields.
@@ -405,6 +485,18 @@ const CGFloat kTabViewContentsPadding = kFramePadding;
 }
 
 - (void)setPermissionInfo:(const PermissionInfoList&)permissionInfoList {
+  [permissionsContentView_ setSubviews:[NSArray array]];
+  NSPoint controlOrigin = NSMakePoint(kFramePadding, kFramePadding);
+
+  for (PermissionInfoList::const_iterator permission =
+           permissionInfoList.begin();
+       permission != permissionInfoList.end();
+       ++permission) {
+    CGFloat rowHeight = [self addPermission:*permission
+                                     toView:permissionsContentView_
+                                    atPoint:controlOrigin];
+    controlOrigin.y += rowHeight + kPermissionsTabSpacing;
+  }
 }
 
 @end
