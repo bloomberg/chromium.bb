@@ -203,8 +203,11 @@ static base::ProcessId GetBrowserPid(const CommandLine& command_line) {
     // for a few files including process_util_linux.cc.
     LOG(ERROR) << "GetBrowserPid() not implemented for Android().";
 #elif defined(OS_POSIX)
-    // On linux, we're in the zygote here; so we need the parent process' id.
-    browser_pid = base::GetParentProcessId(base::GetCurrentProcId());
+    // On linux, we're in a process forked from the zygote here; so we need the
+    // parent's parent process' id.
+    browser_pid =
+        base::GetParentProcessId(
+            base::GetParentProcessId(base::GetCurrentProcId()));
 #endif
   }
   return browser_pid;

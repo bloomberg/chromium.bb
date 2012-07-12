@@ -51,7 +51,7 @@ function filterMatching(text, nodelist, functionToGetNameNode) {
 
 /* Hides or shows counters based on the user's current filter selection. */
 function doFilter() {
-  var filter = document.getElementById('filter');
+  var filter = $('filter');
   var text = filter.value.toLowerCase();
   var nodes = document.getElementsByName('counter');
   filterMatching(text, nodes, getCounterNameFromCounterNode);
@@ -108,7 +108,7 @@ function computeTimes() {
 function onLoadWork() {
   // This is the javascript code that processes the template:
   var input = new JsEvalContext(templateData);
-  var output = document.getElementById('t');
+  var output = $('t');
   jstProcess(input, output);
 
   // Add handlers to dynamically created HTML elements.
@@ -123,7 +123,10 @@ function onLoadWork() {
   doColor();
   removeNullValues();
   computeTimes();
-  document.getElementById('filter').focus();
+
+  var filter = $('filter');
+  filter.onkeyup = doFilter;
+  filter.focus();
 }
 
 // The function should only be used as the event handler
