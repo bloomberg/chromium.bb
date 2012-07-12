@@ -39,10 +39,7 @@ class JingleSession : public Session,
   virtual ~JingleSession();
 
   // Session interface.
-  virtual void SetStateChangeCallback(
-      const StateChangeCallback& callback) OVERRIDE;
-  virtual void SetRouteChangeCallback(
-      const RouteChangeCallback& callback) OVERRIDE;
+  virtual void SetEventHandler(Session::EventHandler* event_handler) OVERRIDE;
   virtual ErrorCode error() OVERRIDE;
   virtual void CreateStreamChannel(
       const std::string& name,
@@ -76,8 +73,7 @@ class JingleSession : public Session,
   // Start connection by sending session-initiate message.
   void StartConnection(const std::string& peer_jid,
                        scoped_ptr<Authenticator> authenticator,
-                       scoped_ptr<CandidateSessionConfig> config,
-                       const StateChangeCallback& state_change_callback);
+                       scoped_ptr<CandidateSessionConfig> config);
 
   // Called by JingleSessionManager for incoming connections.
   void InitializeIncomingConnection(const JingleMessage& initiate_message,
@@ -127,8 +123,7 @@ class JingleSession : public Session,
   JingleSessionManager* session_manager_;
   std::string peer_jid_;
   scoped_ptr<CandidateSessionConfig> candidate_config_;
-  StateChangeCallback state_change_callback_;
-  RouteChangeCallback route_change_callback_;
+  Session::EventHandler* event_handler_;
 
   std::string session_id_;
   State state_;

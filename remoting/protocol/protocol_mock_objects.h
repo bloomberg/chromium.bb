@@ -152,10 +152,7 @@ class MockSession : public Session {
   MockSession();
   virtual ~MockSession();
 
-  MOCK_METHOD1(SetStateChangeCallback,
-               void(const StateChangeCallback& callback));
-  MOCK_METHOD1(SetRouteChangeCallback,
-               void(const RouteChangeCallback& callback));
+  MOCK_METHOD1(SetEventHandler, void(Session::EventHandler* event_handler));
   MOCK_METHOD0(error, ErrorCode());
   MOCK_METHOD2(CreateStreamChannel, void(
       const std::string& name, const StreamChannelCallback& callback));
@@ -184,23 +181,18 @@ class MockSessionManager : public SessionManager {
   virtual ~MockSessionManager();
 
   MOCK_METHOD2(Init, void(SignalStrategy*, Listener*));
-  MOCK_METHOD4(ConnectPtr, Session*(
-      const std::string&,
-      Authenticator*,
-      CandidateSessionConfig*,
-      const Session::StateChangeCallback&));
+  MOCK_METHOD3(ConnectPtr, Session*(
+      const std::string& host_jid,
+      Authenticator* authenticator,
+      CandidateSessionConfig* config));
   MOCK_METHOD0(Close, void());
   MOCK_METHOD1(set_authenticator_factory_ptr, void(AuthenticatorFactory*));
   virtual scoped_ptr<Session> Connect(
       const std::string& host_jid,
       scoped_ptr<Authenticator> authenticator,
-      scoped_ptr<CandidateSessionConfig> config,
-      const Session::StateChangeCallback& state_change_callback) {
+      scoped_ptr<CandidateSessionConfig> config) {
     return scoped_ptr<Session>(ConnectPtr(
-        host_jid,
-        authenticator.get(),
-        config.get(),
-        state_change_callback));
+        host_jid, authenticator.get(), config.get()));
   };
   virtual void set_authenticator_factory(
       scoped_ptr<AuthenticatorFactory> authenticator_factory) {

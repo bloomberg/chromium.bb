@@ -33,7 +33,8 @@ class HostEventDispatcher;
 // This class represents a remote viewer connection to the chromoting
 // host. It sets up all protocol channels and connects them to the
 // stubs.
-class ConnectionToClient : public base::NonThreadSafe {
+class ConnectionToClient : public base::NonThreadSafe,
+                           public Session::EventHandler {
  public:
   class EventHandler {
    public:
@@ -97,13 +98,12 @@ class ConnectionToClient : public base::NonThreadSafe {
   virtual void set_host_stub(HostStub* host_stub);
   virtual void set_input_stub(InputStub* input_stub);
 
+  // Session::EventHandler interface.
+  virtual void OnSessionStateChange(Session::State state) OVERRIDE;
+  virtual void OnSessionRouteChange(const std::string& channel_name,
+                                    const TransportRoute& route) OVERRIDE;
+
  private:
-  // Callback for protocol Session.
-  void OnSessionStateChange(Session::State state);
-
-  void OnSessionRouteChange(const std::string& channel_name,
-                            const TransportRoute& route);
-
   // Callback for channel initialization.
   void OnChannelInitialized(bool successful);
 

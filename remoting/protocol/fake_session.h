@@ -135,9 +135,7 @@ class FakeSession : public Session {
   FakeSession();
   virtual ~FakeSession();
 
-  const StateChangeCallback& state_change_callback() {
-    return state_change_callback_;
-  }
+  EventHandler* event_handler() { return event_handler_; }
 
   void set_message_loop(MessageLoop* message_loop) {
     message_loop_ = message_loop;
@@ -151,11 +149,7 @@ class FakeSession : public Session {
   FakeUdpSocket* GetDatagramChannel(const std::string& name);
 
   // Session implementation.
-  virtual void SetStateChangeCallback(
-      const StateChangeCallback& callback) OVERRIDE;
-
-  virtual void SetRouteChangeCallback(
-      const RouteChangeCallback& callback) OVERRIDE;
+  virtual void SetEventHandler(EventHandler* event_handler) OVERRIDE;
 
   virtual ErrorCode error() OVERRIDE;
 
@@ -175,8 +169,7 @@ class FakeSession : public Session {
   virtual void Close() OVERRIDE;
 
  public:
-  StateChangeCallback state_change_callback_;
-  RouteChangeCallback route_change_callback_;
+  EventHandler* event_handler_;
   scoped_ptr<const CandidateSessionConfig> candidate_config_;
   SessionConfig config_;
   MessageLoop* message_loop_;

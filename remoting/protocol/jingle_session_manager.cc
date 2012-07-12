@@ -76,11 +76,9 @@ void JingleSessionManager::OnJingleInfo(
 scoped_ptr<Session> JingleSessionManager::Connect(
     const std::string& host_jid,
     scoped_ptr<Authenticator> authenticator,
-    scoped_ptr<CandidateSessionConfig> config,
-    const Session::StateChangeCallback& state_change_callback) {
+    scoped_ptr<CandidateSessionConfig> config) {
   scoped_ptr<JingleSession> session(new JingleSession(this));
-  session->StartConnection(host_jid, authenticator.Pass(), config.Pass(),
-                           state_change_callback);
+  session->StartConnection(host_jid, authenticator.Pass(), config.Pass());
   sessions_[session->session_id_] = session.get();
   return session.PassAs<Session>();
 }

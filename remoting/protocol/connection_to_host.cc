@@ -133,9 +133,8 @@ void ConnectionToHost::OnSessionManagerReady() {
   scoped_ptr<CandidateSessionConfig> candidate_config =
       CandidateSessionConfig::CreateDefault();
   session_ = session_manager_->Connect(
-      host_jid_, authenticator_.Pass(), candidate_config.Pass(),
-      base::Bind(&ConnectionToHost::OnSessionStateChange,
-                 base::Unretained(this)));
+      host_jid_, authenticator_.Pass(), candidate_config.Pass());
+  session_->SetEventHandler(this);
 }
 
 void ConnectionToHost::OnIncomingSession(
@@ -144,10 +143,6 @@ void ConnectionToHost::OnIncomingSession(
   DCHECK(CalledOnValidThread());
   // Client always rejects incoming sessions.
   *response = SessionManager::DECLINE;
-}
-
-ConnectionToHost::State ConnectionToHost::state() const {
-  return state_;
 }
 
 void ConnectionToHost::OnSessionStateChange(
@@ -206,6 +201,14 @@ void ConnectionToHost::OnSessionStateChange(
       }
       break;
   }
+}
+
+void ConnectionToHost::OnSessionRouteChange(const std::string& channel_name,
+                                            const TransportRoute& route) {
+}
+
+ConnectionToHost::State ConnectionToHost::state() const {
+  return state_;
 }
 
 void ConnectionToHost::OnChannelInitialized(bool successful) {

@@ -24,12 +24,7 @@ ConnectionToClient::ConnectionToClient(protocol::Session* session)
       host_stub_(NULL),
       input_stub_(NULL),
       session_(session) {
-  session_->SetStateChangeCallback(
-      base::Bind(&ConnectionToClient::OnSessionStateChange,
-                 base::Unretained(this)));
-  session_->SetRouteChangeCallback(
-      base::Bind(&ConnectionToClient::OnSessionRouteChange,
-                 base::Unretained(this)));
+  session_->SetEventHandler(this);
 }
 
 ConnectionToClient::~ConnectionToClient() {

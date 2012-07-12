@@ -61,8 +61,7 @@ class JingleSessionManager : public SessionManager,
   virtual scoped_ptr<Session> Connect(
       const std::string& host_jid,
       scoped_ptr<Authenticator> authenticator,
-      scoped_ptr<CandidateSessionConfig> config,
-      const Session::StateChangeCallback& state_change_callback) OVERRIDE;
+      scoped_ptr<CandidateSessionConfig> config) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void set_authenticator_factory(
       scoped_ptr<AuthenticatorFactory> authenticator_factory) OVERRIDE;

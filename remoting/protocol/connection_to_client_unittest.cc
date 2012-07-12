@@ -26,7 +26,7 @@ class ConnectionToClientTest : public testing::Test {
 
  protected:
   virtual void SetUp() OVERRIDE {
-    session_ = new protocol::FakeSession();
+    session_ = new FakeSession();
     session_->set_message_loop(&message_loop_);
 
     // Allocate a ClientConnection object with the mock objects.
@@ -37,10 +37,8 @@ class ConnectionToClientTest : public testing::Test {
     viewer_->SetEventHandler(&handler_);
     EXPECT_CALL(handler_, OnConnectionAuthenticated(viewer_.get()));
     EXPECT_CALL(handler_, OnConnectionChannelsConnected(viewer_.get()));
-    session_->state_change_callback().Run(
-        protocol::Session::CONNECTED);
-    session_->state_change_callback().Run(
-        protocol::Session::AUTHENTICATED);
+    session_->event_handler()->OnSessionStateChange(Session::CONNECTED);
+    session_->event_handler()->OnSessionStateChange(Session::AUTHENTICATED);
     message_loop_.RunAllPending();
   }
 
@@ -57,7 +55,7 @@ class ConnectionToClientTest : public testing::Test {
   scoped_ptr<ConnectionToClient> viewer_;
 
   // Owned by |viewer_|.
-  protocol::FakeSession* session_;
+  FakeSession* session_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConnectionToClientTest);
@@ -96,12 +94,12 @@ TEST_F(ConnectionToClientTest, NoWriteAfterDisconnect) {
 
 TEST_F(ConnectionToClientTest, StateChange) {
   EXPECT_CALL(handler_, OnConnectionClosed(viewer_.get(), OK));
-  session_->state_change_callback().Run(protocol::Session::CLOSED);
+  session_->event_handler()->OnSessionStateChange(Session::CLOSED);
   message_loop_.RunAllPending();
 
   EXPECT_CALL(handler_, OnConnectionClosed(viewer_.get(), SESSION_REJECTED));
   session_->set_error(SESSION_REJECTED);
-  session_->state_change_callback().Run(protocol::Session::FAILED);
+  session_->event_handler()->OnSessionStateChange(Session::FAILED);
   message_loop_.RunAllPending();
 }
 

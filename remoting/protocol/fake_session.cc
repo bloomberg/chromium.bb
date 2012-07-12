@@ -224,7 +224,8 @@ bool FakeUdpSocket::SetSendBufferSize(int32 size) {
 }
 
 FakeSession::FakeSession()
-    : candidate_config_(CandidateSessionConfig::CreateDefault()),
+    : event_handler_(NULL),
+      candidate_config_(CandidateSessionConfig::CreateDefault()),
       config_(SessionConfig::GetDefault()),
       message_loop_(NULL),
       jid_(kTestJid),
@@ -242,12 +243,8 @@ FakeUdpSocket* FakeSession::GetDatagramChannel(const std::string& name) {
   return datagram_channels_[name];
 }
 
-void FakeSession::SetStateChangeCallback(const StateChangeCallback& callback) {
-  state_change_callback_ = callback;
-}
-
-void FakeSession::SetRouteChangeCallback(const RouteChangeCallback& callback) {
-  route_change_callback_ = callback;
+void FakeSession::SetEventHandler(EventHandler* event_handler) {
+  event_handler_ = event_handler;
 }
 
 ErrorCode FakeSession::error() {

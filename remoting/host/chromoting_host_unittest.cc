@@ -127,23 +127,14 @@ class ChromotingHostTest : public testing::Test {
         .WillRepeatedly(ReturnRef(session_unowned_jid1_));
     EXPECT_CALL(*session_unowned2_, jid())
         .WillRepeatedly(ReturnRef(session_unowned_jid2_));
-    EXPECT_CALL(*session1_, SetStateChangeCallback(_))
+    EXPECT_CALL(*session1_, SetEventHandler(_))
         .Times(AnyNumber());
-    EXPECT_CALL(*session2_, SetStateChangeCallback(_))
+    EXPECT_CALL(*session2_, SetEventHandler(_))
         .Times(AnyNumber());
-    EXPECT_CALL(*session_unowned1_, SetStateChangeCallback(_))
+    EXPECT_CALL(*session_unowned1_, SetEventHandler(_))
         .Times(AnyNumber())
-        .WillRepeatedly(Invoke(
-            this, &ChromotingHostTest::SetSessionStateChangeCallback));
-    EXPECT_CALL(*session_unowned2_, SetStateChangeCallback(_))
-        .Times(AnyNumber());
-    EXPECT_CALL(*session1_, SetRouteChangeCallback(_))
-        .Times(AnyNumber());
-    EXPECT_CALL(*session2_, SetRouteChangeCallback(_))
-        .Times(AnyNumber());
-    EXPECT_CALL(*session_unowned1_, SetRouteChangeCallback(_))
-        .Times(AnyNumber());
-    EXPECT_CALL(*session_unowned2_, SetRouteChangeCallback(_))
+        .WillRepeatedly(Invoke(this, &ChromotingHostTest::SetEventHandler));
+    EXPECT_CALL(*session_unowned2_, SetEventHandler(_))
         .Times(AnyNumber());
     EXPECT_CALL(*session1_, config())
         .WillRepeatedly(ReturnRef(session_config1_));
@@ -253,14 +244,13 @@ class ChromotingHostTest : public testing::Test {
     host_->OnSessionClosed(get_client(connection_index));
   }
 
-  void SetSessionStateChangeCallback(
-      const protocol::Session::StateChangeCallback& callback) {
-    session_state_change_callback_ = callback;
+  void SetEventHandler(protocol::Session::EventHandler* event_handler) {
+    session_event_handler_ = event_handler;
   }
 
   void NotifyConnectionClosed() {
-    if (!session_state_change_callback_.is_null()) {
-      session_state_change_callback_.Run(protocol::Session::CLOSED);
+    if (session_event_handler_) {
+      session_event_handler_->OnSessionStateChange(protocol::Session::CLOSED);
     }
   }
 
@@ -402,7 +392,7 @@ class ChromotingHostTest : public testing::Test {
   scoped_ptr<MockSession> session_unowned2_;  // Not owned by a connection.
   SessionConfig session_unowned_config2_;
   std::string session_unowned_jid2_;
-  protocol::Session::StateChangeCallback session_state_change_callback_;
+  protocol::Session::EventHandler* session_event_handler_;
   scoped_ptr<protocol::CandidateSessionConfig> empty_candidate_config_;
   scoped_ptr<protocol::CandidateSessionConfig> default_candidate_config_;
 

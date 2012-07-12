@@ -27,11 +27,6 @@ struct TransportRoute;
 // Generic interface for Chromotocol connection used by both client and host.
 // Provides access to the connection channels, but doesn't depend on the
 // protocol used for each channel.
-//
-// Because libjingle's sigslot class doesn't handle deletion properly
-// while it is being invoked all Session instances must be deleted
-// with a clean stack, i.e. not from event handlers, when sigslot may
-// be present in the stack.
 class Session : public base::NonThreadSafe {
  public:
   enum State {
@@ -56,16 +51,22 @@ class Session : public base::NonThreadSafe {
     FAILED,
   };
 
-  // State change callbacks are called after session state has
-  // changed. It is not safe to destroy the session from within the
-  // handler unless |state| is CLOSED or FAILED.
-  typedef base::Callback<void(State state)> StateChangeCallback;
+  class EventHandler {
+   public:
+    EventHandler() {}
+    virtual ~EventHandler() {}
 
-  // TODO(lambroslambrou): Merge this together with StateChangeCallback into a
-  // single interface.
-  typedef base::Callback<void(
-      const std::string& channel_name,
-      const TransportRoute& route)> RouteChangeCallback;
+    // Called after session state has changed. It is safe to destroy
+    // the session from within the handler if |state| is CLOSED or
+    // FAILED.
+    virtual void OnSessionStateChange(State state) = 0;
+
+    // Called whenever route for the channel specified with
+    // |channel_name| changes. Session must not be destroyed by the
+    // handler of this event.
+    virtual void OnSessionRouteChange(const std::string& channel_name,
+                                      const TransportRoute& route) = 0;
+  };
 
   // TODO(sergeyu): Specify connection error code when channel
   // connection fails.
@@ -74,16 +75,12 @@ class Session : public base::NonThreadSafe {
   typedef base::Callback<void(scoped_ptr<net::Socket>)>
       DatagramChannelCallback;
 
-  Session() { }
-  virtual ~Session() { }
+  Session() {}
+  virtual ~Session() {}
 
-  // Set callback that is called when state of the connection is changed.
-  virtual void SetStateChangeCallback(const StateChangeCallback& callback) = 0;
-
-  // Set callback that is called when the route for a channel is changed.
-  // The callback must be registered immediately after
-  // JingleSessionManager::Connect() or from OnIncomingSession() callback.
-  virtual void SetRouteChangeCallback(const RouteChangeCallback& callback) = 0;
+  // Set event handler for this session. |event_handler| must outlive
+  // this object.
+  virtual void SetEventHandler(EventHandler* event_handler) = 0;
 
   // Returns error code for a failed session.
   virtual ErrorCode error() = 0;

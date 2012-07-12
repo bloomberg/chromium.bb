@@ -77,8 +77,7 @@ class ScreenRecorderTest : public testing::Test {
     encoder_ = new MockEncoder();
 
     session_ = new MockSession();
-    EXPECT_CALL(*session_, SetStateChangeCallback(_));
-    EXPECT_CALL(*session_, SetRouteChangeCallback(_));
+    EXPECT_CALL(*session_, SetEventHandler(_));
     EXPECT_CALL(*session_, Close())
         .Times(AnyNumber());
     connection_.reset(new MockConnectionToClient(

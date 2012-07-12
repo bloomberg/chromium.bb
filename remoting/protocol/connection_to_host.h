@@ -47,6 +47,7 @@ class VideoStub;
 
 class ConnectionToHost : public SignalStrategy::Listener,
                          public SessionManager::Listener,
+                         public Session::EventHandler,
                          public base::NonThreadSafe {
  public:
   enum State {
@@ -98,16 +99,15 @@ class ConnectionToHost : public SignalStrategy::Listener,
       Session* session,
       SessionManager::IncomingSessionResponse* response) OVERRIDE;
 
-  // Called when the host accepts the client authentication.
-  void OnClientAuthenticated();
+  // Session::EventHandler interface.
+  virtual void OnSessionStateChange(Session::State state) OVERRIDE;
+  virtual void OnSessionRouteChange(const std::string& channel_name,
+                                    const TransportRoute& route) OVERRIDE;
 
   // Return the current state of ConnectionToHost.
   State state() const;
 
  private:
-  // Callback for |session_|.
-  void OnSessionStateChange(Session::State state);
-
   // Callbacks for channel initialization
   void OnChannelInitialized(bool successful);
 

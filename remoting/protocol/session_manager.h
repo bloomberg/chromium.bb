@@ -131,12 +131,10 @@ class SessionManager : public base::NonThreadSafe {
   // |host_jid| is the full jid of the host to connect to.
   // |authenticator| is a client authenticator for the session.
   // |config| contains the session configurations that the client supports.
-  // |state_change_callback| is called when the connection state changes.
   virtual scoped_ptr<Session> Connect(
       const std::string& host_jid,
       scoped_ptr<Authenticator> authenticator,
-      scoped_ptr<CandidateSessionConfig> config,
-      const Session::StateChangeCallback& state_change_callback) = 0;
+      scoped_ptr<CandidateSessionConfig> config) = 0;
 
   // Close session manager. Can be called only after all corresponding
   // sessions are destroyed. No callbacks are called after this method

@@ -54,6 +54,7 @@ ErrorCode AuthRejectionReasonToErrorCode(
 
 JingleSession::JingleSession(JingleSessionManager* session_manager)
     : session_manager_(session_manager),
+      event_handler_(NULL),
       state_(INITIALIZING),
       error_(OK),
       config_is_set_(false) {
@@ -66,17 +67,10 @@ JingleSession::~JingleSession() {
   session_manager_->SessionDestroyed(this);
 }
 
-void JingleSession::SetStateChangeCallback(
-    const StateChangeCallback& callback) {
+void JingleSession::SetEventHandler(Session::EventHandler* event_handler) {
   DCHECK(CalledOnValidThread());
-  DCHECK(!callback.is_null());
-  state_change_callback_ = callback;
-}
-
-void JingleSession::SetRouteChangeCallback(
-    const RouteChangeCallback& callback) {
-  DCHECK(CalledOnValidThread());
-  route_change_callback_ = callback;
+  DCHECK(event_handler);
+  event_handler_ = event_handler;
 }
 
 ErrorCode JingleSession::error() {
@@ -87,8 +81,7 @@ ErrorCode JingleSession::error() {
 void JingleSession::StartConnection(
     const std::string& peer_jid,
     scoped_ptr<Authenticator> authenticator,
-    scoped_ptr<CandidateSessionConfig> config,
-    const StateChangeCallback& state_change_callback) {
+    scoped_ptr<CandidateSessionConfig> config) {
   DCHECK(CalledOnValidThread());
   DCHECK(authenticator.get());
   DCHECK_EQ(authenticator->state(), Authenticator::MESSAGE_READY);
@@ -96,7 +89,6 @@ void JingleSession::StartConnection(
   peer_jid_ = peer_jid;
   authenticator_ = authenticator.Pass();
   candidate_config_ = config.Pass();
-  state_change_callback_ = state_change_callback;
 
   // Generate random session ID. There are usually not more than 1
   // concurrent session per host, so a random 64-bit integer provides
@@ -258,8 +250,8 @@ void JingleSession::OnTransportCandidate(Transport* transport,
 
 void JingleSession::OnTransportRouteChange(Transport* transport,
                                            const TransportRoute& route) {
-  if (!route_change_callback_.is_null())
-    route_change_callback_.Run(transport->name(), route);
+  if (event_handler_)
+    event_handler_->OnSessionRouteChange(transport->name(), route);
 }
 
 void JingleSession::OnTransportDeleted(Transport* transport) {
@@ -580,8 +572,8 @@ void JingleSession::SetState(State new_state) {
     DCHECK_NE(state_, FAILED);
 
     state_ = new_state;
-    if (!state_change_callback_.is_null())
-      state_change_callback_.Run(new_state);
+    if (event_handler_)
+      event_handler_->OnSessionStateChange(new_state);
   }
 }
 
