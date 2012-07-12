@@ -2009,6 +2009,7 @@
         'service/cloud_print/cloud_print_token_store_unittest.cc',
         'service/cloud_print/cloud_print_url_fetcher_unittest.cc',
         'service/service_process_unittest.cc',
+        'service/service_process_prefs_unittest.cc',
         'test/base/browser_with_test_window_test.cc',
         'test/base/browser_with_test_window_test.h',
         'test/base/chrome_render_view_test.cc',
