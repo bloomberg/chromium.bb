@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
@@ -37,6 +38,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/content_switches.h"
+#include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebInputEventFactory.h"
@@ -778,7 +780,7 @@ void RenderWidgetHostViewGtk::ActiveWindowChanged(GdkWindow* window) {
 }
 
 bool RenderWidgetHostViewGtk::IsSurfaceAvailableForCopy() const {
-  return !!host_->GetBackingStore(false);
+  return true;
 }
 
 void RenderWidgetHostViewGtk::Show() {
@@ -1017,13 +1019,37 @@ BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(
                              depth);
 }
 
+// NOTE: |output| is initialized with the size of the view and |size| is
+// ignored on GTK.
 void RenderWidgetHostViewGtk::CopyFromCompositingSurface(
-    const gfx::Size& size,
+    const gfx::Size& /* size */,
     skia::PlatformCanvas* output,
     base::Callback<void(bool)> callback) {
-  // TODO(mazda): Implement this.
-  NOTIMPLEMENTED();
-  callback.Run(false);
+  base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
+
+  const gfx::Rect bounds = GetViewBounds();
+  XImage* image = XGetImage(ui::GetXDisplay(), ui::GetX11RootWindow(),
+                            bounds.x(), bounds.y(),
+                            bounds.width(), bounds.height(),
+                            AllPlanes, ZPixmap);
+  if (!image)
+    return;
+
+  if (!output->initialize(bounds.width(), bounds.height(), true)) {
+    XFree(image);
+    return;
+  }
+
+  const SkBitmap& bitmap = output->getTopDevice()->accessBitmap(true);
+  const size_t bitmap_size = bitmap.getSize();
+  DCHECK_EQ(bitmap_size,
+            static_cast<size_t>(image->height * image->bytes_per_line));
+  unsigned char* pixels = static_cast<unsigned char*>(bitmap.getPixels());
+  memcpy(pixels, image->data, bitmap_size);
+
+  XFree(image);
+  scoped_callback_runner.Release();
+  callback.Run(true);
 }
 
 void RenderWidgetHostViewGtk::AcceleratedSurfaceBuffersSwapped(

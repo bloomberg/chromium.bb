@@ -21,9 +21,6 @@ bool ShouldEnableInBrowserThumbnailing() {
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return false;
   return true;
-#elif defined(OS_LINUX) && !defined(USE_AURA)
-  // Disables in-browser thumbnailing on non-Aura Linux where not supported yet.
-  return false;
 #else
   return true;
 #endif
