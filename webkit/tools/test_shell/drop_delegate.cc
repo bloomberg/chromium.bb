@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,8 @@ DWORD TestDropDelegate::OnDragEnter(IDataObject* data_object,
       drop_data.ToDragData(),
       WebPoint(client_pt.x, client_pt.y),
       WebPoint(cursor_position.x, cursor_position.y),
-      WebDragOperationCopy);
+      WebDragOperationCopy,
+      0);
   // TODO(snej): Pass the real drag operation instead
   return op ? DROPEFFECT_COPY : DROPEFFECT_NONE;
   // TODO(snej): Return the real drop effect constant matching 'op'
@@ -47,7 +48,8 @@ DWORD TestDropDelegate::OnDragOver(IDataObject* data_object,
   WebDragOperation op = webview_->dragTargetDragOver(
       WebPoint(client_pt.x, client_pt.y),
       WebPoint(cursor_position.x, cursor_position.y),
-      WebDragOperationCopy);
+      WebDragOperationCopy,
+      0);
   // TODO(snej): Pass the real drag operation instead
   return op ? DROPEFFECT_COPY : DROPEFFECT_NONE;
   // TODO(snej): Return the real drop effect constant matching 'op'
@@ -65,7 +67,8 @@ DWORD TestDropDelegate::OnDrop(IDataObject* data_object,
   ScreenToClient(GetHWND(), &client_pt);
   webview_->dragTargetDrop(
       WebPoint(client_pt.x, client_pt.y),
-      WebPoint(cursor_position.x, cursor_position.y));
+      WebPoint(cursor_position.x, cursor_position.y),
+      0);
 
   // webkit win port always returns DROPEFFECT_NONE
   return DROPEFFECT_NONE;
