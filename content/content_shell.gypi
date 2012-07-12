@@ -531,6 +531,10 @@
             'shell/android/shell_view.cc',
             'shell/android/shell_view.h',
           ],
+          'sources!': [
+            'shell/shell_main.cc',
+            'shell/shell_main.h',
+          ],
           'conditions': [
             ['android_build_type==1', {
               'ldflags': [
@@ -590,6 +594,7 @@
                 '<(PRODUCT_DIR)/content_shell/java/libs/chromium_net.jar',
                 '<(PRODUCT_DIR)/content_shell/java/libs/chromium_media.jar',
                 '<(PRODUCT_DIR)/content_shell/java/libs/chromium_content.jar',
+                '<(PRODUCT_DIR)/content_shell/assets/content_shell.pak',
                 '<(PRODUCT_DIR)/content_shell/libs/<(android_app_abi)/libcontent_shell_content_view.so',
               ],
               'outputs': [

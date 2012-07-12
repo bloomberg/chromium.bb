@@ -33,6 +33,12 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   virtual AccessTokenStore* CreateAccessTokenStore() OVERRIDE;
   virtual std::string GetDefaultDownloadName() OVERRIDE;
 
+#if defined(OS_ANDROID)
+  virtual void GetAdditionalMappedFilesForChildProcess(
+      const CommandLine& command_line,
+      base::GlobalDescriptors::Mapping* mappings) OVERRIDE;
+#endif
+
   ShellBrowserContext* browser_context();
 
  private:

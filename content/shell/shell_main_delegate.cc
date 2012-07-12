@@ -18,6 +18,11 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
+#if defined(OS_ANDROID)
+#include "base/global_descriptors_posix.h"
+#include "content/shell/android/shell_descriptors.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "content/shell/paths_mac.h"
 #endif  // OS_MACOSX
@@ -88,6 +93,20 @@ int ShellMainDelegate::RunProcess(
 }
 
 void ShellMainDelegate::InitializeResourceBundle() {
+#if defined(OS_ANDROID)
+  // In the Android case, the renderer runs with a different UID and can never
+  // access the file system.  So we are passed a file descriptor to the
+  // ResourceBundle pak at launch time.
+  int pak_fd =
+      base::GlobalDescriptors::GetInstance()->MaybeGet(kShellPakDescriptor);
+  if (pak_fd != base::kInvalidPlatformFileValue) {
+    ui::ResourceBundle::InitSharedInstanceWithPakFile(pak_fd, false);
+    ResourceBundle::GetSharedInstance().AddDataPackFromFile(
+        pak_fd, ui::SCALE_FACTOR_100P);
+    return;
+  }
+#endif
+
   FilePath pak_file;
 #if defined(OS_MACOSX)
   pak_file = GetResourcesPakFilePath();

@@ -13,6 +13,7 @@ import org.chromium.content.app.AppResource;
 import org.chromium.content.app.ContentMain;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ResourceExtractor;
 import org.chromium.content.common.CommandLine;
 
 // NOTE: This file hasn't been fully upstreamed, please don't merge to downstream.
@@ -85,6 +86,13 @@ public class AndroidBrowserProcess {
         }
         sInitialized = true;
 
+        // Normally Main.java will have kicked this off asynchronously for Chrome. But
+        // other ContentView apps like tests also need them so we make sure we've
+        // extracted resources here. We can still make it a little async (wait until
+        // the library is loaded).
+        ResourceExtractor resourceExtractor = ResourceExtractor.get(context);
+        resourceExtractor.startExtractingResources();
+
         // Normally Main.java will have already loaded the library asynchronously, we only
         // need to load it here if we arrived via another flow, e.g. bookmark access & sync setup.
         LibraryLoader.loadAndInitSync();
@@ -111,6 +119,9 @@ public class AndroidBrowserProcess {
         int maxRenderers = normalizeMaxRendererProcesses(appContext, maxRendererProcesses);
         Log.i(TAG, "Initializing chromium process, renderers=" + maxRenderers +
                 " hostIsChrome=" + hostIsChrome);
+
+        // Now we really need to have the resources ready.
+        resourceExtractor.waitForCompletion();
 
         nativeSetCommandLineFlags(maxRenderers, getPlugins(context));
         ContentMain.initApplicationContext(appContext);
