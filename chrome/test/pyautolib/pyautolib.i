@@ -275,6 +275,21 @@ class PyUITestBase {
       set_clear_profile;
   void set_clear_profile(bool clear_profile);
 
+  // Navigation Methods
+  %feature("docstring", "Navigate to the given url in the given tab and given "
+           "window (or active tab in first window if indexes not given). "
+           "Note that this method also activates the corresponding tab/window "
+           "if it's not active already. Blocks until page has loaded.")
+      NavigateToURL;
+  void NavigateToURL(const char* url_string);
+  void NavigateToURL(const char* url_string, int window_index);
+  void NavigateToURL(const char* url_string, int window_index, int tab_index);
+
+  %feature("docstring", "Reload the active tab in the given window (or first "
+           "window if index not given). Blocks until page has reloaded.")
+      ReloadActiveTab;
+  void ReloadActiveTab(int window_index = 0);
+
   // BrowserProxy methods
   %feature("docstring", "Apply the accelerator with given id "
            "(IDC_BACK, IDC_NEWTAB ...) to the given or first window. "
@@ -379,6 +394,9 @@ class PyUITestBase {
       GetBrowserWindowCount;
   int GetBrowserWindowCount();
 
+  %feature("docstring", "Get the index of the active tab in the given or "
+           "first window. Indexes are zero-based.") GetActiveTabIndex;
+  int GetActiveTabIndex(int window_index=0);
   %feature("docstring", "Activate the tab at the given zero-based index in "
            "the given or first window.  Also brings the window to the front. "
            "Returns True on success.") ActivateTab;
@@ -395,6 +413,10 @@ class PyUITestBase {
   %feature("docstring", "Count of the number of tabs in the given or "
            "first window.") GetTabCount;
   int GetTabCount(int window_index=0);
+  %feature("docstring", "Create a new tab at the end of given or first browser "
+           "window and activate it. Blocks until the page is loaded. "
+           "Returns True on success.") AppendTab;
+  bool AppendTab(const GURL& tab_url, int window_index=0);
 
   %feature("docstring", "Set the value of the cookie at cookie_url to value "
            "for the given window index and tab index. "

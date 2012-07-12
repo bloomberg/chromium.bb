@@ -274,17 +274,14 @@ class TabAppendedNotificationObserver : public TabStripNotificationObserver {
  public:
   TabAppendedNotificationObserver(Browser* parent,
                                   AutomationProvider* automation,
-                                  IPC::Message* reply_message,
-                                  bool use_json_interface);
+                                  IPC::Message* reply_message);
   virtual ~TabAppendedNotificationObserver();
 
   virtual void ObserveTab(content::NavigationController* controller);
-  IPC::Message* ReleaseReply();
 
  protected:
   Browser* parent_;
   scoped_ptr<IPC::Message> reply_message_;
-  bool use_json_interface_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabAppendedNotificationObserver);

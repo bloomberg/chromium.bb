@@ -69,10 +69,27 @@ class PyUITestBase : public UITestBase {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
+  // Navigate to the given URL in the active tab. Blocks until page loaded.
+  void NavigateToURL(const char* url_string);
+
+  // Navigate to the given URL in the active tab in the given window.
+  void NavigateToURL(const char* url_string, int window_index);
+
+  // Navigate to the given URL in given tab in the given window.
+  // Blocks until page loaded.
+  void NavigateToURL(const char* url_string, int window_index, int tab_index);
+
+  // Reloads the active tab in the given window.
+  // Blocks until page reloaded.
+  void ReloadActiveTab(int window_index = 0);
+
   // Get the URL of the active tab.
   GURL GetActiveTabURL(int window_index = 0);
 
   int GetTabCount(int window_index = 0);
+
+  // Appends a new tab with the given URL in the given or first browser window.
+  bool AppendTab(const GURL& tab_url, int window_index = 0);
 
   // Activate the tab at the given zero-based index in the given or first
   // browser window.  Also brings the window to front.

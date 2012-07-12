@@ -861,24 +861,6 @@ class TestingAutomationProvider : public AutomationProvider,
   //   output: { "result": AUTOMATION_MSG_NAVIGATION_SUCCESS }
   void NavigateToURL(base::DictionaryValue* args, IPC::Message* reply_message);
 
-  // Get the index of the currently active tab. Uses the JSON interface.
-  // The integer |windex| must be given to specify the browser window.
-  // Example:
-  //   input: { "windex": 1 }
-  //   output: { "tab_index": 3 }
-  void GetActiveTabIndexJSON(DictionaryValue* args,
-                             IPC::Message* reply_message);
-
-  // Append a new tab. Uses the JSON interface.
-  // The integer |windex| must be given to specify the browser window. The tab
-  // is opened to |url| and blocks until the page loads.
-  // Example:
-  //   input: { "windex": 1,
-  //            "url": "http://google.com"
-  //          }
-  //   output: { "result": AUTOMATION_MSG_NAVIGATION_SUCCESS }
-  void AppendTabJSON(DictionaryValue* args, IPC::Message* reply_message);
-
   // Waits until any pending navigation completes in the specified tab.
   // The pair |windex| and |tab_index| or the single |auto_id| must be given
   // to specify the tab.
