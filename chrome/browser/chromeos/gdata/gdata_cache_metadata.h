@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_CACHE_METADATA_H_
 
 #include <map>
+#include <vector>
 #include <string>
 
 #include "base/file_path.h"
@@ -25,6 +26,9 @@ class GDataCacheMetadata {
                               const GDataCacheEntry& cache_entry)>
       IterateCallback;
 
+  // A map table of cache file's resource id to its CacheEntry* entry.
+  typedef std::map<std::string, GDataCacheEntry> CacheMap;
+
   // |pool| and |sequence_token| are used to assert that the functions are
   // called on the right sequenced worker pool with the right sequence token.
   //
@@ -35,6 +39,8 @@ class GDataCacheMetadata {
       const base::SequencedWorkerPool::SequenceToken& sequence_token);
   virtual ~GDataCacheMetadata();
 
+  // Initialize the cache metadata store.
+  virtual void Initialize(const std::vector<FilePath>& cache_paths) = 0;
   // Adds a new cache entry corresponding to |resource_id| if it doesn't
   // exist, otherwise update the existing entry.
   virtual void AddOrUpdateCacheEntry(const std::string& resource_id,
@@ -71,6 +77,7 @@ class GDataCacheMetadata {
   DISALLOW_COPY_AND_ASSIGN(GDataCacheMetadata);
 };
 
+// TODO(achuith,hashimoto,satorux): Move these implementations to cc file.
 // GDataCacheMetadata implementation with std::map;
 class GDataCacheMetadataMap : public GDataCacheMetadata {
  public:
@@ -79,10 +86,9 @@ class GDataCacheMetadataMap : public GDataCacheMetadata {
       const base::SequencedWorkerPool::SequenceToken& sequence_token);
   virtual ~GDataCacheMetadataMap();
 
-  // Initializes the data.
-  void Initialize(const std::vector<FilePath>& cache_paths);
 
   // GDataCacheMetadata overrides:
+  virtual void Initialize(const std::vector<FilePath>& cache_paths) OVERRIDE;
   virtual void AddOrUpdateCacheEntry(
       const std::string& resource_id,
       const GDataCacheEntry& cache_entry) OVERRIDE;
@@ -93,31 +99,9 @@ class GDataCacheMetadataMap : public GDataCacheMetadata {
   virtual void RemoveTemporaryFiles() OVERRIDE;
   virtual void Iterate(const IterateCallback& callback) OVERRIDE;
 
-  // A map table of cache file's resource id to its CacheEntry* entry.
-  typedef std::map<std::string, GDataCacheEntry> CacheMap;
-
-  // A map table of resource ID to file path.
-  typedef std::map<std::string, FilePath> ResourceIdToFilePathMap;
-
  private:
   friend class GDataCacheMetadataMapTest;
   FRIEND_TEST_ALL_PREFIXES(GDataCacheMetadataMapTest, RemoveTemporaryFilesTest);
-
-  // Scans cache subdirectory and build or update |cache_map|
-  // with found file blobs or symlinks.
-  //
-  // The resource IDs and file paths of discovered files are collected as a
-  // ResourceIdToFilePathMap, if these are processed properly.
-  static void ScanCacheDirectory(
-      const std::vector<FilePath>& cache_paths,
-      GDataCache::CacheSubDirectoryType sub_dir_type,
-      CacheMap* cache_map,
-      ResourceIdToFilePathMap* processed_file_map);
-
-  // Returns true if |md5| matches the one in |cache_entry| with some
-  // exceptions. See the function definition for details.
-  static bool CheckIfMd5Matches(const std::string& md5,
-                                const GDataCacheEntry& cache_entry);
 
   CacheMap cache_map_;
 
