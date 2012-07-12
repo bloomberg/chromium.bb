@@ -509,8 +509,7 @@ void BufferedResourceLoader::didFinishLoading(
     return;
   }
 
-  // If there is a pending read but the request has ended, return with what
-  // we have.
+  // Don't leave read callbacks hanging around.
   if (HasPendingRead()) {
     // Try to fulfill with what is in the buffer.
     if (CanFulfillRead())
@@ -518,9 +517,6 @@ void BufferedResourceLoader::didFinishLoading(
     else
       DoneRead(kCacheMiss, 0);
   }
-
-  // There must not be any outstanding read request.
-  DCHECK(!HasPendingRead());
 }
 
 void BufferedResourceLoader::didFail(

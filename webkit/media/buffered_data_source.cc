@@ -254,27 +254,6 @@ void BufferedDataSource::CleanupTask() {
   read_buffer_ = 0;
 }
 
-void BufferedDataSource::RestartLoadingTask() {
-  DCHECK(MessageLoop::current() == render_loop_);
-  if (stopped_on_render_loop_)
-    return;
-
-  {
-    // If there's no outstanding read then return early.
-    base::AutoLock auto_lock(lock_);
-    if (read_cb_.is_null())
-      return;
-  }
-
-  // Start reading from where we last left off until the end of the resource.
-  loader_.reset(CreateResourceLoader(last_read_start_, kPositionNotSpecified));
-  loader_->Start(
-      base::Bind(&BufferedDataSource::PartialReadStartCallback, this),
-      base::Bind(&BufferedDataSource::LoadingStateChangedCallback, this),
-      base::Bind(&BufferedDataSource::ProgressCallback, this),
-      frame_);
-}
-
 void BufferedDataSource::SetPlaybackRateTask(float playback_rate) {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(loader_.get());
@@ -437,8 +416,16 @@ void BufferedDataSource::ReadCallback(
     if (status == BufferedResourceLoader::kCacheMiss &&
         cache_miss_retries_left_ > 0) {
       cache_miss_retries_left_--;
-      render_loop_->PostTask(FROM_HERE,
-          base::Bind(&BufferedDataSource::RestartLoadingTask, this));
+
+      // Recreate a loader starting from where we last left off until the
+      // end of the resource.
+      loader_.reset(CreateResourceLoader(
+          last_read_start_, kPositionNotSpecified));
+      loader_->Start(
+          base::Bind(&BufferedDataSource::PartialReadStartCallback, this),
+          base::Bind(&BufferedDataSource::LoadingStateChangedCallback, this),
+          base::Bind(&BufferedDataSource::ProgressCallback, this),
+          frame_);
       return;
     }
 

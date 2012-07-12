@@ -95,13 +95,10 @@ class BufferedDataSource : public media::DataSource {
   // Task posted to perform actual reading on the render thread.
   void ReadTask(int64 position, int read_size, uint8* read_buffer);
 
-  // Task posted when Stop() is called. Stops |watch_dog_timer_| and
-  // |loader_|, reset Read() variables, and set |stopped_on_render_loop_|
-  // to signal any remaining tasks to stop.
+  // Task posted when Stop() is called. Stops |loader_|, resets Read()
+  // variables, and sets |stopped_on_render_loop_| to signal any remaining
+  // tasks to stop.
   void CleanupTask();
-
-  // Restart resource loading on render thread.
-  void RestartLoadingTask();
 
   // This task uses the current playback rate with the previous playback rate
   // to determine whether we are going from pause to play and play to pause,
