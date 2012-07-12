@@ -1400,7 +1400,7 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 	struct weston_output *output = shsurf->fullscreen_output;
 	struct weston_surface *surface = shsurf->surface;
 	struct weston_matrix *matrix;
-	float scale;
+	float scale, output_aspect, surface_aspect, x, y;
 
 	if (!shsurf->fullscreen.black_surface)
 		shsurf->fullscreen.black_surface =
@@ -1421,12 +1421,26 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 	case WL_SHELL_SURFACE_FULLSCREEN_METHOD_SCALE:
 		matrix = &shsurf->fullscreen.transform.matrix;
 		weston_matrix_init(matrix);
-		scale = (float)output->current->width/(float)surface->geometry.width;
+
+		output_aspect = (float) output->current->width /
+			(float) output->current->height;
+		surface_aspect = (float) surface->geometry.width /
+			(float) surface->geometry.height;
+		if (output_aspect < surface_aspect)
+			scale = (float) output->current->width /
+				(float) surface->geometry.width;
+		else
+			scale = (float) output->current->height /
+				(float) surface->geometry.height;
+
 		weston_matrix_scale(matrix, scale, scale, 1);
 		wl_list_remove(&shsurf->fullscreen.transform.link);
-		wl_list_insert(surface->geometry.transformation_list.prev,
+		wl_list_insert(&surface->geometry.transformation_list,
 			       &shsurf->fullscreen.transform.link);
-		weston_surface_set_position(surface, output->x, output->y);
+		x = output->x + (output->current->width - surface->geometry.width * scale) / 2;
+		y = output->y + (output->current->height - surface->geometry.height * scale) / 2;
+		weston_surface_set_position(surface, x, y);
+
 		break;
 	case WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER:
 		if (shell_surface_is_top_fullscreen(shsurf)) {
