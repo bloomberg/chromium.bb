@@ -112,6 +112,8 @@
       '-omnibox.OmniboxTest.testHistoryResult',
       # crbug.com/123019
       '-omnibox.OmniboxTest.testAutoCompleteForNonAsciiSearch',
+      # crbug.com/137041
+      '-omnibox.OmniboxTest.testDifferentTypesOfResults',
       # crbug.com/86524
       '-plugins.PluginsTest.testAllowPluginException',
       # crbug.com/97140
@@ -144,6 +146,12 @@
       '-infobars.OneClickInfobarTest.testNoSameIDSigninForTwoProfiles',
       # crbug.com/124280
       '-downloads.DownloadsTest.testPauseAndResume',
+      # crbug.com/137042
+      '-instant.InstantTest.testFindInCanDismissInstant',
+      '-instant.InstantTest.testInstantLoadsFor100CharsLongQuery',
+      '-instant.InstantTest.testInstantNavigation',
+      '-instant.InstantTest.testNTPCanDismissInstant',
+      '-instant.InstantTest.testNewWindowCanDismissInstant',
     ],
 
     'win': [
