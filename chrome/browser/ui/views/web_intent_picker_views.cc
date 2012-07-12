@@ -688,6 +688,7 @@ class WebIntentPickerViews : public views::ButtonListener,
   virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
   virtual void OnExtensionInstallFailure(const std::string& id) OVERRIDE;
   virtual void OnInlineDispositionAutoResize(const gfx::Size& size) OVERRIDE;
+  virtual void OnPendingAsyncCompleted() OVERRIDE;
   virtual void OnInlineDispositionWebContentsLoaded(
       content::WebContents* web_contents) OVERRIDE;
 
@@ -887,6 +888,51 @@ void WebIntentPickerViews::OnExtensionInstallFailure(const std::string& id) {
 void WebIntentPickerViews::OnInlineDispositionAutoResize(
     const gfx::Size& size) {
   webview_->SetPreferredSize(size);
+  contents_->Layout();
+  SizeToContents();
+}
+
+void WebIntentPickerViews::OnPendingAsyncCompleted() {
+  // Requests to both the WebIntentService and the Chrome Web Store have
+  // completed. If there are any services, installed or suggested, there's
+  // nothing to do.
+  if (model_->GetInstalledServiceCount() ||
+      model_->GetSuggestedExtensionCount())
+    return;
+
+  // If there are no installed or suggested services at this point,
+  // inform the user about it.
+  contents_->RemoveAllChildViews(true);
+  more_suggestions_link_ = NULL;
+
+  views::GridLayout* grid_layout = new views::GridLayout(contents_);
+  contents_->SetLayoutManager(grid_layout);
+
+  grid_layout->SetInsets(kContentAreaBorder, kContentAreaBorder,
+                         kContentAreaBorder, kContentAreaBorder);
+  views::ColumnSet* main_cs = grid_layout->AddColumnSet(0);
+  main_cs->AddColumn(GridLayout::FILL, GridLayout::LEADING, 1,
+                     GridLayout::USE_PREF, 0, 0);
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+
+  grid_layout->StartRow(0, 0);
+  views::Label* header = new views::Label();
+  header->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  header->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
+  header->SetText(l10n_util::GetStringUTF16(
+      IDS_INTENT_PICKER_NO_SERVICES_TITLE));
+  grid_layout->AddView(header);
+
+  grid_layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
+  grid_layout->StartRow(0, 0);
+  views::Label* body = new views::Label();
+  body->SetMultiLine(true);
+  body->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  body->SetText(l10n_util::GetStringUTF16(IDS_INTENT_PICKER_NO_SERVICES));
+  grid_layout->AddView(body);
+
   contents_->Layout();
   SizeToContents();
 }
