@@ -21,22 +21,22 @@ chrome.test.runTests([
   function setPerScriptFont() {
     var script = 'Hang';
     var genericFamily = 'standard';
-    var fontName = 'Verdana';
+    var fontId = 'Verdana';
 
     fs.setFont({
       script: script,
       genericFamily: genericFamily,
-      fontName: fontName
+      fontId: fontId
     }, chrome.test.callbackFail(SET_FROM_INCOGNITO_ERROR));
   },
 
   function setGlobalFontName() {
     var genericFamily = 'sansserif';
-    var fontName = 'Tahoma';
+    var fontId = 'Tahoma';
 
     fs.setFont({
       genericFamily: genericFamily,
-      fontName: fontName
+      fontId: fontId
     }, chrome.test.callbackFail(SET_FROM_INCOGNITO_ERROR));
   },
 
@@ -50,12 +50,12 @@ chrome.test.runTests([
 
   function getFontList() {
     var message = 'getFontList should return an array of objects with ' +
-        'fontName and localizedName properties.';
+        'fontId and displayName properties.';
     fs.getFontList(chrome.test.callbackPass(function(value) {
       chrome.test.assertTrue(value.length > 0,
                              "Font list is not expected to be empty.");
-      chrome.test.assertEq('string', typeof(value[0].fontName), message);
-      chrome.test.assertEq('string', typeof(value[0].localizedName), message);
+      chrome.test.assertEq('string', typeof(value[0].fontId), message);
+      chrome.test.assertEq('string', typeof(value[0].displayName), message);
     }));
   },
 
@@ -64,7 +64,7 @@ chrome.test.runTests([
       script: 'Hang',
       genericFamily: 'standard'
     }, expect({
-      fontName: 'Tahoma',
+      fontId: 'Tahoma',
       levelOfControl: CONTROLLABLE_BY_THIS_EXTENSION
     }));
   },
@@ -73,7 +73,7 @@ chrome.test.runTests([
     fs.getFont({
       genericFamily: 'sansserif'
     }, expect({
-      fontName: 'Arial',
+      fontId: 'Arial',
       levelOfControl: CONTROLLABLE_BY_THIS_EXTENSION
     }));
   },

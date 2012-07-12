@@ -217,6 +217,10 @@
             <a href="#types">Types</a>
             <ol>
               <li>
+                <a href="#type-experimental.serial.OpenOptions">OpenOptions</a>
+                <ol>
+                </ol>
+              </li><li>
                 <a href="#type-experimental.serial.OpenInfo">OpenInfo</a>
                 <ol>
                 </ol>
@@ -666,7 +670,8 @@
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.experimental.serial.open</span>(<span class="null"><span>string</span>
-                      <var><span>port</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>port</span></var></span><span class="optional"><span>, </span><span>experimental.serial.OpenOptions</span>
+                      <var><span>options</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>OpenCallback</span></var></span>)</div>
               <div class="description">
                 <p>Opens a connection to the given serial port.</p>
@@ -691,6 +696,30 @@
               </em>
           </dt>
           <dd>The name of the serial port to open.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>options</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.serial.html#type-experimental.serial.OpenOptions">experimental.serial.OpenOptions</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Connection options.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1117,6 +1146,60 @@
             <h3 id="types">Types</h3>
             <!-- iterates over all types -->
             <div class="apiItem">
+              <a name="type-experimental.serial.OpenOptions"></a>
+              <h4>experimental.serial.OpenOptions</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>bitrate</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The requested bitrate of the connection to be opened. For compatibility with the widest range of hardware, this number should match one of commonly-available bitrates, such as 110, 300, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200. There is no guarantee, of course, that the device connected to the serial port will support the requested bitrate, even if the port itself supports that bitrate.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
               <a name="type-experimental.serial.OpenInfo"></a>
               <h4>experimental.serial.OpenInfo</h4>
               <div>
