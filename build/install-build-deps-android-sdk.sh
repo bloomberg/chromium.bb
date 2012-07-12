@@ -126,10 +126,10 @@ fi
 # check whether current AVD has correct configuration and it takes almost no
 # time to create a new one.  Create one ARM AVD and one x86 AVD.
 "${ANDROID_SDK_ROOT}/tools/android" --silent create avd --name avd_armeabi \
-  --abi armeabi-v7a --target ${SDK_TARGET_ID} --force <<< "no"
+  --abi armeabi-v7a --target ${SDK_TARGET_ID} -c 64M --force <<< "no"
 
 "${ANDROID_SDK_ROOT}/tools/android" --silent create avd --name avd_x86 \
-  --abi x86 --target ${SDK_TARGET_ID} --force <<< "no"
+  --abi x86 --target ${SDK_TARGET_ID} -c 64M --force <<< "no"
 
 # Install Android NDK if it doesn't exist.
 if [[ ! -d "${ANDROID_NDK_ROOT}" ]]; then
