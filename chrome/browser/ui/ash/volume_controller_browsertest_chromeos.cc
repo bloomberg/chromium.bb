@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/ash/volume_controller_chromeos.h"
+#include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/audio/audio_mixer.h"
