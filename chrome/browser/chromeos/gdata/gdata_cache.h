@@ -14,12 +14,12 @@
 #include "base/observer_list.h"
 #include "base/platform_file.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chromeos/gdata/gdata_cache_entry.h"
 
 class Profile;
 
 namespace gdata {
 
+class GDataCacheEntry;
 class GDataCacheMetadata;
 
 // Callback for SetMountedStateOnUIThread.

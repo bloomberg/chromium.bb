@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_cache_metadata.h"
 
 #include "base/file_util.h"
+#include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 
 namespace gdata {

@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_TEST_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_TEST_UTIL_H_
 
-#include "chrome/browser/chromeos/gdata/gdata_cache_entry.h"
-
 namespace gdata {
+
+class GDataCacheEntry;
+
 namespace test_util {
 
 // Runs a task posted to the blocking pool, including subquent tasks posted

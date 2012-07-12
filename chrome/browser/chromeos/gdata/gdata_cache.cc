@@ -12,6 +12,7 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
+#include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache_metadata.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/profiles/profile.h"

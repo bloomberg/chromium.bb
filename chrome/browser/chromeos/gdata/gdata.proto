@@ -59,8 +59,35 @@ message GDataDirectoryProto {
   repeated GDataDirectoryProto child_directories = 7;
   repeated GDataFileProto child_files = 8;
 }
+
 // Represents GDataRootDirectory.
 message GDataRootDirectoryProto {
   optional GDataDirectoryProto gdata_directory = 1;
   optional int32 largest_changestamp = 2;
+}
+
+// Message to store information of an existing cache file.
+// Cache files are stored in 'tmp' or 'persistent' directory under the
+// root cache directory. See GDataCache::GetCacheRootPath().
+message GDataCacheEntry {
+  // MD5 of the cache file. "local" if the file is locally modified.
+  optional string md5 = 1;
+
+  // True if the file is present locally.
+  optional bool is_present = 2;
+
+  // True if the file is pinned (i.e. available offline).
+  optional bool is_pinned = 3;
+
+  // True if the file is dirty (i.e. modified locally).
+  optional bool is_dirty = 4;
+
+  // True if the file is a mounted archive file.
+  optional bool is_mounted = 5;
+
+  // True if the file is in the persistent directory.
+  optional bool is_persistent = 6;
+
+  // When adding a new state, be sure to update TestGDataCacheState and test
+  // functions defined in gdata_test_util.cc.
 }
