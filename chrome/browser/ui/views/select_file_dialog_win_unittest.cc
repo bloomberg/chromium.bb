@@ -1,9 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+// This function is declared extern such that it is accessible for unit tests
+// in /chrome/browser/ui/views/select_file_dialog_win_unittest.cc
+extern std::wstring AppendExtensionIfNeeded(const std::wstring& filename,
+                                            const std::wstring& filter_selected,
+                                            const std::wstring& suggested_ext);
 
 TEST(ShellDialogsWin, AppendExtensionIfNeeded) {
   struct AppendExtensionTestCase {
