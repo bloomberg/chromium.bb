@@ -1148,6 +1148,15 @@
    fun:_ZN7fileapi18FileWriterDelegate5WriteEv
 }
 {
+   # ditto, but for unit tests.
+   bug_16089h
+   Memcheck:Leak
+   ...
+   fun:_ZN4base22PosixDynamicThreadPool8PostTask*
+   ...
+   fun:_ZN3net17URLRequestFileJob5StartEv
+}
+{
    # very common in ui tests
    bug_16091
    Memcheck:Leak
