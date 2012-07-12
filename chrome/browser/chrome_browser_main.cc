@@ -85,6 +85,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_ui_prefs.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/uma_browsing_activity_observer.h"
 #include "chrome/browser/ui/user_data_dir_dialog.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/common/child_process_logging.h"
@@ -1292,6 +1293,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // These members must be initialized before returning from this function.
   master_prefs_.reset(new first_run::MasterPrefs);
   browser_creator_.reset(new StartupBrowserCreator);
+  chrome::UMABrowsingActivityObserver::Init();
 
   // Convert active labs into switches. This needs to be done before
   // ResourceBundle::InitSharedInstanceWithLocale as some loaded resources are

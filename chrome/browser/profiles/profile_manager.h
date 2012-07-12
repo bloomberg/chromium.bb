@@ -19,7 +19,7 @@
 #include "base/message_loop.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/startup/startup_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -315,12 +315,12 @@ class ProfileManager : public base::NonThreadSafe,
 #endif
 
 #if !defined(OS_ANDROID)
-  class BrowserListObserver : public BrowserList::Observer {
+  class BrowserListObserver : public chrome::BrowserListObserver {
    public:
     explicit BrowserListObserver(ProfileManager* manager);
     virtual ~BrowserListObserver();
 
-    // BrowserList::Observer implementation.
+    // chrome::BrowserListObserver implementation.
     virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
     virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
     virtual void OnBrowserSetLastActive(Browser* browser) OVERRIDE;

@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"

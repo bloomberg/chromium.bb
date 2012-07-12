@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
 #include "grit/generated_resources.h"
@@ -27,7 +28,7 @@
 
 namespace ProfileMenuControllerInternal {
 
-class Observer : public BrowserList::Observer,
+class Observer : public chrome::BrowserListObserver,
                  public AvatarMenuModelObserver {
  public:
   Observer(ProfileMenuController* controller) : controller_(controller) {
@@ -38,7 +39,7 @@ class Observer : public BrowserList::Observer,
     BrowserList::RemoveObserver(this);
   }
 
-  // BrowserList::Observer:
+  // chrome::BrowserListObserver:
   virtual void OnBrowserAdded(Browser* browser) {}
   virtual void OnBrowserRemoved(Browser* browser) {
     [controller_ activeBrowserChangedTo:browser::GetLastActiveBrowser()];

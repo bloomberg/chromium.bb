@@ -21,6 +21,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -34,12 +35,13 @@ const int kSilenceDurationDays = 100;
 // silent period starts.
 const int kMaxWarnings = 2;
 
-// Implementation of BrowserList::Observer used to wait for a browser window.
-class BrowserListObserver : public BrowserList::Observer {
+// Implementation of chrome::BrowserListObserver used to wait for a browser
+// window.
+class BrowserListObserver : public chrome::BrowserListObserver {
  private:
   virtual ~BrowserListObserver();
 
-  // Overridden from BrowserList::Observer:
+  // Overridden from chrome::BrowserListObserver:
   virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
   virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
   virtual void OnBrowserSetLastActive(Browser* browser) OVERRIDE;

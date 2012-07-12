@@ -24,6 +24,7 @@ class ExtensionInstallDialog;
 }
 
 namespace chrome {
+class BrowserListObserver;
 namespace internal {
 void NotifyNotDefaultBrowserCallback();
 }
@@ -51,31 +52,14 @@ class BrowserList {
   typedef BrowserVector::const_iterator const_iterator;
   typedef BrowserVector::const_reverse_iterator const_reverse_iterator;
 
-  // It is not allowed to change the global window list (add or remove any
-  // browser windows while handling observer callbacks.
-  class Observer {
-   public:
-    // Called immediately after a browser is added to the list
-    virtual void OnBrowserAdded(Browser* browser) {}
-
-    // Called immediately after a browser is removed from the list
-    virtual void OnBrowserRemoved(Browser* browser) {}
-
-    // Called immediately after a browser is set active (SetLastActive)
-    virtual void OnBrowserSetLastActive(Browser* browser) {}
-
-   protected:
-    virtual ~Observer() {}
-  };
-
   // Adds and removes browsers from the global list. The browser object should
   // be valid BEFORE these calls (for the benefit of observers), so notify and
   // THEN delete the object.
   static void AddBrowser(Browser* browser);
   static void RemoveBrowser(Browser* browser);
 
-  static void AddObserver(Observer* observer);
-  static void RemoveObserver(Observer* observer);
+  static void AddObserver(chrome::BrowserListObserver* observer);
+  static void RemoveObserver(chrome::BrowserListObserver* observer);
 
   // Called by Browser objects when their window is activated (focused).  This
   // allows us to determine what the last active Browser was.
@@ -142,9 +126,6 @@ class BrowserList {
   // THIS FUNCTION IS PRIVATE AND NOT TO BE USED AS A REPLACEMENT FOR RELEVANT
   // CONTEXT.
   static Browser* GetLastActive();
-
-  // Helper method to remove a browser instance from a list of browsers
-  static void RemoveBrowserFrom(Browser* browser, BrowserVector* browser_list);
 };
 
 #endif  // CHROME_BROWSER_UI_BROWSER_LIST_H_

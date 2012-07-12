@@ -13,7 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/extensions/management_policy.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -27,7 +27,7 @@ class Profile;
 // person by pre-configuring and then locking a managed User profile.
 // The ManagedMode class provides methods to check whether the browser is in
 // managed mode, and to attempt to enter or leave managed mode.
-class ManagedMode : public BrowserList::Observer,
+class ManagedMode : public chrome::BrowserListObserver,
                     public extensions::ManagementPolicy::Provider,
                     public content::NotificationObserver {
  public:
@@ -52,7 +52,7 @@ class ManagedMode : public BrowserList::Observer,
   virtual bool UserMayModifySettings(const extensions::Extension* extension,
                                      string16* error) const OVERRIDE;
 
-  // BrowserList::Observer implementation:
+  // chrome::BrowserListObserver implementation:
   virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
   virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
 

@@ -13,7 +13,7 @@
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/profile_writer.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
@@ -32,7 +32,7 @@ class ImporterProgressObserver;
 class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
                      public BaseBookmarkModelObserver,
                      public content::NotificationObserver,
-                     public BrowserList::Observer {
+                     public chrome::BrowserListObserver {
  public:
   ImporterHost();
 
@@ -142,7 +142,7 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // BrowserList::Observer
+  // chrome::BrowserListObserver
   virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
 
   // The task is the process of importing settings from other browsers.

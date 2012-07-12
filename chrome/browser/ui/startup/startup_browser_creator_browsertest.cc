@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -100,7 +101,7 @@ class StartupBrowserCreatorTest : public ExtensionBrowserTest {
   }
 };
 
-class OpenURLsPopupObserver : public BrowserList::Observer {
+class OpenURLsPopupObserver : public chrome::BrowserListObserver {
  public:
   OpenURLsPopupObserver() : added_browser_(NULL) { }
 

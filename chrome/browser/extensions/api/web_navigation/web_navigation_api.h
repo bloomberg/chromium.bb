@@ -14,7 +14,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -195,7 +195,7 @@ class WebNavigationTabObserver : public content::NotificationObserver,
 // Observes navigation notifications and routes them as events to the extension
 // system.
 class WebNavigationEventRouter : public TabStripModelObserver,
-                                 public BrowserList::Observer,
+                                 public chrome::BrowserListObserver,
                                  public content::NotificationObserver {
  public:
   explicit WebNavigationEventRouter(Profile* profile);
@@ -229,7 +229,7 @@ class WebNavigationEventRouter : public TabStripModelObserver,
                              TabContents* new_contents,
                              int index) OVERRIDE;
 
-  // BrowserList::Observer implementation.
+  // chrome::BrowserListObserver implementation.
   virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
   virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
 

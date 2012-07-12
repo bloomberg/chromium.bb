@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/api/tabs/tabs.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #if defined(TOOLKIT_VIEWS)
@@ -36,7 +36,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
 #elif defined(TOOLKIT_GTK)
                                     public ui::ActiveWindowWatcherXObserver,
 #endif
-                                    public BrowserList::Observer,
+                                    public chrome::BrowserListObserver,
                                     public content::NotificationObserver {
  public:
   explicit ExtensionBrowserEventRouter(Profile* profile);
@@ -45,7 +45,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   // Must be called once. Subsequent calls have no effect.
   void Init();
 
-  // BrowserList::Observer
+  // chrome::BrowserListObserver
   virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
   virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
   virtual void OnBrowserSetLastActive(Browser* browser) OVERRIDE;
@@ -58,7 +58,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
 #endif
 
   // Called from Observe() on BROWSER_WINDOW_READY (not a part of
-  // BrowserList::Observer).
+  // chrome::BrowserListObserver).
   void OnBrowserWindowReady(Browser* browser);
 
   // TabStripModelObserver

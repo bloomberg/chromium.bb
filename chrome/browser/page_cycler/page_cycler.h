@@ -7,10 +7,11 @@
 
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents_observer.h"
+
+class Browser;
 
 namespace content {
 class RenderViewHost;
@@ -25,7 +26,7 @@ class TimeTicks;
 // does most of its work there. However, some work happens on background threads
 // too; those are named with 'OnBackgroundThread'.
 class PageCycler : public base::RefCountedThreadSafe<PageCycler>,
-                   public BrowserList::Observer,
+                   public chrome::BrowserListObserver,
                    public content::WebContentsObserver {
  public:
   PageCycler(Browser* browser, const FilePath& urls_file);
@@ -101,7 +102,7 @@ class PageCycler : public base::RefCountedThreadSafe<PageCycler>,
   // PageCycler.
   void Abort();
 
-  // BrowserList::Observer
+  // chrome::BrowserListObserver
   virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
   virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
 

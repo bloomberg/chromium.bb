@@ -19,7 +19,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/importer/importer_list_observer.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/page_type.h"
 #include "content/public/common/security_style.h"
@@ -54,7 +54,7 @@ struct WebPluginInfo;
 
 // This is an automation provider containing testing calls.
 class TestingAutomationProvider : public AutomationProvider,
-                                  public BrowserList::Observer,
+                                  public chrome::BrowserListObserver,
                                   public importer::ImporterListObserver,
                                   public content::NotificationObserver {
  public:
@@ -78,7 +78,7 @@ class TestingAutomationProvider : public AutomationProvider,
 
   virtual ~TestingAutomationProvider();
 
-  // BrowserList::Observer:
+  // chrome::BrowserListObserver:
   virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
   virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
 
