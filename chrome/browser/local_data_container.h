@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_LOCAL_DATA_CONTAINER_H_
 #define CHROME_BROWSER_LOCAL_DATA_CONTAINER_H_
-#pragma once
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
