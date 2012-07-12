@@ -97,6 +97,9 @@ class FetchPrebuilt(object):
     else:
       self._pyautolib_so_name = '_pyautolib.so'
       self._chromedriver_name = 'chromedriver'
+    if self._options.platform == 'mac':
+      self._ffmpegsumo_so_name = 'ffmpegsumo.so'
+      self._ffmpegsumo_so_url = chrome_test_url + '/' + self._ffmpegsumo_so_name
     self._pyautolib_so_url = chrome_test_url + '/' + self._pyautolib_so_name
     self._chromedriver_url = chrome_test_url + '/' + self._chromedriver_name
 
@@ -156,6 +159,10 @@ class FetchPrebuilt(object):
     print 'Fetching', self._pyautolib_so_url
     pyautolib_so = urllib.urlretrieve(self._pyautolib_so_url)[0]
 
+    if self._options.platform == 'mac':
+      print 'Fetching', self._ffmpegsumo_so_url
+      ffmpegsumo_so = urllib.urlretrieve(self._ffmpegsumo_so_url)[0]
+
     print 'Fetching', self._chromedriver_url
     chromedriver = urllib.urlretrieve(self._chromedriver_url)[0]
 
@@ -176,6 +183,10 @@ class FetchPrebuilt(object):
       pyautolib_so: os.path.join(self._outdir, self._pyautolib_so_name),
       chromedriver: os.path.join(self._outdir, self._chromedriver_name)
     }
+    if self._options.platform == 'mac':
+      items_to_copy[ffmpegsumo_so] = \
+          os.path.join(self._outdir, self._ffmpegsumo_so_name)
+
     unzip_dir_contents = glob.glob(os.path.join(chrome_unzip_dir, '*'))
     for item in unzip_dir_contents:
       name = os.path.basename(item)
