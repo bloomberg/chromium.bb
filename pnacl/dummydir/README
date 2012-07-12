@@ -1,0 +1,8 @@
+This directory is used by the git gclient script
+as a fake checkout location.
+
+Don't delete it until this mechanism has been replaced.
+
+The checkout is placed in pnacl/git/dummydir/
+and this is guided by pnacl/gclient_template
+Also see: git-sync() in pnacl/build.sh
