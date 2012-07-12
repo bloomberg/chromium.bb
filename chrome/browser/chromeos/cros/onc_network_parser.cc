@@ -31,6 +31,7 @@
 #include "net/base/cert_database.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
+#include "net/base/pem_tokenizer.h"
 #include "net/base/x509_certificate.h"
 #include "net/proxy/proxy_bypass_rules.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -40,6 +41,11 @@ namespace chromeos {
 
 // Local constants.
 namespace {
+
+// The PEM block header used for DER certificates
+const char kCertificateHeader[] = "CERTIFICATE";
+// This is an older PEM marker for DER certificates.
+const char kX509CertificateHeader[] = "X509 CERTIFICATE";
 
 const base::Value::Type TYPE_BOOLEAN = base::Value::TYPE_BOOLEAN;
 const base::Value::Type TYPE_DICTIONARY = base::Value::TYPE_DICTIONARY;
@@ -854,13 +860,28 @@ OncNetworkParser::ParseServerOrCaCertificate(
     return NULL;
   }
 
+  // Parse PEM certificate, and get the decoded data for use in creating
+  // certificate below.
+  std::vector<std::string> pem_headers;
+  pem_headers.push_back(kCertificateHeader);
+  pem_headers.push_back(kX509CertificateHeader);
+
+  net::PEMTokenizer pem_tokenizer(x509_data, pem_headers);
   std::string decoded_x509;
-  if (!base::Base64Decode(x509_data, &decoded_x509)) {
-    LOG(WARNING) << "Unable to base64 decode X509 data: \""
-                 << x509_data << "\".";
-    parse_error_ = l10n_util::GetStringUTF8(
-        IDS_NETWORK_CONFIG_ERROR_CERT_DATA_MALFORMED);
-    return NULL;
+  if (!pem_tokenizer.GetNext()) {
+    // If we failed to read the data as a PEM file, then let's just try plain
+    // base64 decode: some versions of Spigots didn't apply the PEM marker
+    // strings. For this to work, there has to be no white space, and it has to
+    // only contain the base64-encoded data.
+    if (!base::Base64Decode(x509_data, &decoded_x509)) {
+      LOG(WARNING) << "Unable to base64 decode X509 data: \""
+                   << x509_data << "\".";
+      parse_error_ = l10n_util::GetStringUTF8(
+          IDS_NETWORK_CONFIG_ERROR_CERT_DATA_MALFORMED);
+      return NULL;
+    }
+  } else {
+    decoded_x509 = pem_tokenizer.data();
   }
 
   scoped_refptr<net::X509Certificate> x509_cert =
