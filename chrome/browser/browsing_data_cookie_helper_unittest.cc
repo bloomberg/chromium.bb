@@ -10,6 +10,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "net/cookies/parsed_cookie.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -195,7 +196,7 @@ TEST_F(BrowsingDataCookieHelperTest, CannedEmpty) {
   ASSERT_TRUE(helper->empty());
 
   net::CookieList cookies;
-  net::CookieMonster::ParsedCookie pc("a=1");
+  net::ParsedCookie pc("a=1");
   scoped_ptr<net::CookieMonster::CanonicalCookie> cookie(
       new net::CookieMonster::CanonicalCookie(url_google, pc));
   cookies.push_back(*cookie);

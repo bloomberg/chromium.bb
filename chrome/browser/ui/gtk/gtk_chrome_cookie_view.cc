@@ -7,6 +7,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
+#include "net/cookies/parsed_cookie.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
@@ -517,7 +518,7 @@ void gtk_chrome_cookie_view_display_cookie_string(
     GtkChromeCookieView* self,
     const GURL& url,
     const std::string& cookie_line) {
-  net::CookieMonster::ParsedCookie pc(cookie_line);
+  net::ParsedCookie pc(cookie_line);
   net::CookieMonster::CanonicalCookie cookie(url, pc);
 
   gtk_chrome_cookie_view_display_cookie(

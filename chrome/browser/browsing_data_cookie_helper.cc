@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/registry_controlled_domain.h"
+#include "net/cookies/parsed_cookie.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -131,7 +132,7 @@ void CannedBrowsingDataCookieHelper::AddChangedCookie(
     const GURL& url,
     const std::string& cookie_line,
     const net::CookieOptions& options) {
-  net::CookieMonster::ParsedCookie parsed_cookie(cookie_line);
+  net::ParsedCookie parsed_cookie(cookie_line);
   if (options.exclude_httponly() && parsed_cookie.IsHttpOnly()) {
     // Return if a Javascript cookie illegally specified the HTTP only flag.
     return;

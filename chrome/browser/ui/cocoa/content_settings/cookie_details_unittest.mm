@@ -6,6 +6,7 @@
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/content_settings/cookie_details.h"
 #include "googleurl/src/gurl.h"
+#include "net/cookies/parsed_cookie.h"
 #import "testing/gtest_mac.h"
 
 namespace {
@@ -25,7 +26,7 @@ TEST_F(CookiesDetailsTest, CreateForCookie) {
   GURL url("http://chromium.org");
   std::string cookieLine(
       "PHPSESSID=0123456789abcdef0123456789abcdef; path=/");
-  net::CookieMonster::ParsedCookie pc(cookieLine);
+  net::ParsedCookie pc(cookieLine);
   net::CookieMonster::CanonicalCookie cookie(url, pc);
   NSString* origin = base::SysUTF8ToNSString("http://chromium.org");
   details.reset([[CocoaCookieDetails alloc] initWithCookie:&cookie

@@ -20,7 +20,7 @@
 #include "chrome/common/net/url_util.h"
 #include "grit/chromium_strings.h"
 #include "net/base/load_flags.h"
-#include "net/cookies/cookie_monster.h"
+#include "net/cookies/parsed_cookie.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -418,7 +418,7 @@ void GaiaOAuthFetcher::OnGetOAuthTokenUrlFetched(
   if (status.is_success() && response_code == net::HTTP_OK) {
     for (net::ResponseCookies::const_iterator iter = cookies.begin();
         iter != cookies.end(); ++iter) {
-      net::CookieMonster::ParsedCookie cookie(*iter);
+      net::ParsedCookie cookie(*iter);
       if (cookie.Name() == kOAuthTokenCookie) {
         std::string token = cookie.Value();
         consumer_->OnGetOAuthTokenSuccess(token);

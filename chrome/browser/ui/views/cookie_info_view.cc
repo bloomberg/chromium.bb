@@ -14,6 +14,7 @@
 #include "chrome/browser/cookies_tree_model.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "net/cookies/parsed_cookie.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -95,7 +96,7 @@ void CookieInfoView::SetCookie(
 
 void CookieInfoView::SetCookieString(const GURL& url,
                                      const std::string& cookie_line) {
-  net::CookieMonster::ParsedCookie pc(cookie_line);
+  net::ParsedCookie pc(cookie_line);
   net::CookieMonster::CanonicalCookie cookie(url, pc);
   SetCookie(pc.HasDomain() ? pc.Domain() : url.host(), cookie);
 }

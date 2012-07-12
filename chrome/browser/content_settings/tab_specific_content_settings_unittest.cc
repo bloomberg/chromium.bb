@@ -9,6 +9,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/cookies/cookie_monster.h"
+#include "net/cookies/parsed_cookie.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -188,7 +189,7 @@ TEST_F(TabSpecificContentSettingsTest, SiteDataObserver) {
                                    net::CookieOptions(),
                                    blocked_by_policy);
   net::CookieList cookie_list;
-  net::CookieMonster::ParsedCookie parsed_cookie("CookieName=CookieValue");
+  net::ParsedCookie parsed_cookie("CookieName=CookieValue");
   scoped_ptr<net::CookieMonster::CanonicalCookie> cookie(
       net::CookieMonster::CanonicalCookie::Create(GURL("http://google.com"),
                                                   parsed_cookie));

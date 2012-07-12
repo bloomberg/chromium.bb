@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/content_settings/cookie_details.h"
 #include "chrome/browser/ui/cocoa/content_settings/cookie_details_view_controller.h"
+#include "net/cookies/parsed_cookie.h"
 
 namespace {
 
@@ -16,7 +17,7 @@ static CocoaCookieDetails* CreateTestCookieDetails(BOOL canEditExpiration) {
   GURL url("http://chromium.org");
   std::string cookieLine(
       "PHPSESSID=0123456789abcdef0123456789abcdef; path=/");
-  net::CookieMonster::ParsedCookie pc(cookieLine);
+  net::ParsedCookie pc(cookieLine);
   net::CookieMonster::CanonicalCookie cookie(url, pc);
   NSString* origin = base::SysUTF8ToNSString("http://chromium.org");
   CocoaCookieDetails* details = [CocoaCookieDetails alloc];
