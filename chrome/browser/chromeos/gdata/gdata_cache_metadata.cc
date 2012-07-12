@@ -174,36 +174,25 @@ void GDataCacheMetadataMap::Initialize(
   DVLOG(1) << "Directory scan finished";
 }
 
-void GDataCacheMetadataMap::UpdateCache(
+void GDataCacheMetadataMap::AddOrUpdateCacheEntry(
     const std::string& resource_id,
     const GDataCacheEntry& cache_entry) {
   AssertOnSequencedWorkerPool();
 
   CacheMap::iterator iter = cache_map_.find(resource_id);
   if (iter == cache_map_.end()) {  // New resource, create new entry.
-    // Makes no sense to create new entry if cache state is NONE.
-    DCHECK(cache_entry.cache_state() != CACHE_STATE_NONE);
-    if (cache_entry.cache_state() != CACHE_STATE_NONE) {
-      cache_map_.insert(std::make_pair(resource_id, cache_entry));
-      DVLOG(1) << "Added res_id=" << resource_id
-               << ", " << cache_entry.ToString();
-    }
+    cache_map_.insert(std::make_pair(resource_id, cache_entry));
+    DVLOG(1) << "Added resource_id=" << resource_id
+             << ", " << cache_entry.ToString();
   } else {  // Resource exists.
-    // If cache state is NONE, delete entry from cache map.
-    if (cache_entry.cache_state() == CACHE_STATE_NONE) {
-      DVLOG(1) << "Deleting res_id=" << resource_id
-               << ", " << iter->second.ToString();
-      cache_map_.erase(iter);
-    } else {  // Otherwise, update entry in cache map.
-      iter->second.set_md5(cache_entry.md5());
-      iter->second.set_cache_state(cache_entry.cache_state());
-      DVLOG(1) << "Updated res_id=" << resource_id
-               << ", " << iter->second.ToString();
-    }
+    iter->second.set_md5(cache_entry.md5());
+    iter->second.set_cache_state(cache_entry.cache_state());
+    DVLOG(1) << "Updated resource_id=" << resource_id
+             << ", " << iter->second.ToString();
   }
 }
 
-void GDataCacheMetadataMap::RemoveFromCache(const std::string& resource_id) {
+void GDataCacheMetadataMap::RemoveCacheEntry(const std::string& resource_id) {
   AssertOnSequencedWorkerPool();
 
   CacheMap::iterator iter = cache_map_.find(resource_id);

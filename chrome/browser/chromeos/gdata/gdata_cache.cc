@@ -882,7 +882,7 @@ void GDataCache::Store(const std::string& resource_id,
     // Now that file operations have completed, update cache map.
     new_cache_entry.SetPresent(true);
     new_cache_entry.SetPersistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
-    metadata_->UpdateCache(resource_id, new_cache_entry);
+    metadata_->AddOrUpdateCacheEntry(resource_id, new_cache_entry);
   }
 }
 
@@ -971,7 +971,7 @@ void GDataCache::Pin(const std::string& resource_id,
     // Now that file operations have completed, update cache map.
     new_cache_entry.SetPinned(true);
     new_cache_entry.SetPersistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
-    metadata_->UpdateCache(resource_id, new_cache_entry);
+    metadata_->AddOrUpdateCacheEntry(resource_id, new_cache_entry);
   }
 }
 
@@ -1049,10 +1049,15 @@ void GDataCache::Unpin(const std::string& resource_id,
 
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
-    GDataCacheEntry new_cache_entry(md5, cache_entry->cache_state());
-    new_cache_entry.SetPinned(false);
-    new_cache_entry.SetPersistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
-    metadata_->UpdateCache(resource_id, new_cache_entry);
+    if (cache_entry->IsPresent()) {
+      GDataCacheEntry new_cache_entry(md5, cache_entry->cache_state());
+      new_cache_entry.SetPinned(false);
+      new_cache_entry.SetPersistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
+      metadata_->AddOrUpdateCacheEntry(resource_id, new_cache_entry);
+    } else {
+      // Remove the existing entry if we are unpinning a non-present file.
+      metadata_->RemoveCacheEntry(resource_id);
+    }
   }
 }
 
@@ -1117,7 +1122,7 @@ void GDataCache::SetMountedState(const FilePath& file_path,
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that cache operation is complete, update cache map
     new_cache_entry.SetPersistent(dest_subdir == CACHE_TYPE_PERSISTENT);
-    metadata_->UpdateCache(resource_id, new_cache_entry);
+    metadata_->AddOrUpdateCacheEntry(resource_id, new_cache_entry);
   }
 }
 
@@ -1222,7 +1227,7 @@ void GDataCache::MarkDirty(const std::string& resource_id,
     GDataCacheEntry new_cache_entry(md5, cache_entry->cache_state());
     new_cache_entry.SetDirty(true);
     new_cache_entry.SetPersistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
-    metadata_->UpdateCache(resource_id, new_cache_entry);
+    metadata_->AddOrUpdateCacheEntry(resource_id, new_cache_entry);
   }
 }
 
@@ -1370,7 +1375,7 @@ void GDataCache::ClearDirty(const std::string& resource_id,
     GDataCacheEntry new_cache_entry(md5, cache_entry->cache_state());
     new_cache_entry.SetDirty(false);
     new_cache_entry.SetPersistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
-    metadata_->UpdateCache(resource_id, new_cache_entry);
+    metadata_->AddOrUpdateCacheEntry(resource_id, new_cache_entry);
   }
 }
 
@@ -1379,9 +1384,8 @@ void GDataCache::Remove(const std::string& resource_id,
   AssertOnSequencedWorkerPool();
   DCHECK(error);
 
-  // MD5 is not passed into RemoveFromCache and hence
-  // RemoveFromCacheOnBlockingPool, because we would delete all cache files
-  // corresponding to <resource_id> regardless of the md5.
+  // MD5 is not passed into RemoveCacheEntry because we would delete all
+  // cache files corresponding to <resource_id> regardless of the md5.
   // So, search for entry in cache without taking md5 into account.
   scoped_ptr<GDataCacheEntry> cache_entry =
       GetCacheEntry(resource_id, std::string());
@@ -1434,7 +1438,7 @@ void GDataCache::Remove(const std::string& resource_id,
   }
 
   // Now that all file operations have completed, remove from cache map.
-  metadata_->RemoveFromCache(resource_id);
+  metadata_->RemoveCacheEntry(resource_id);
 
   *error = base::PLATFORM_FILE_OK;
 }

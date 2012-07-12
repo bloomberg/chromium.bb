@@ -142,7 +142,7 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
       GDataCache::CACHE_TYPE_PERSISTENT;
   int test_cache_state = (CACHE_STATE_PRESENT |
                           CACHE_STATE_PERSISTENT);
-  metadata_->UpdateCache(
+  metadata_->AddOrUpdateCacheEntry(
       test_resource_id,
       GDataCacheEntry(test_file_md5, test_cache_state));
 
@@ -174,7 +174,7 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   test_file_md5 = "test_file_md5_2";
   test_sub_dir_type = GDataCache::CACHE_TYPE_TMP;
   test_cache_state = CACHE_STATE_PINNED;
-  metadata_->UpdateCache(
+  metadata_->AddOrUpdateCacheEntry(
       test_resource_id,
       GDataCacheEntry(test_file_md5, test_cache_state));
 
@@ -196,7 +196,7 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   test_file_md5 = "test_file_md5_3";
   test_sub_dir_type = GDataCache::CACHE_TYPE_TMP;
   test_cache_state = CACHE_STATE_DIRTY;
-  metadata_->UpdateCache(
+  metadata_->AddOrUpdateCacheEntry(
       test_resource_id,
       GDataCacheEntry(test_file_md5, test_cache_state));
 
@@ -221,7 +221,7 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   EXPECT_EQ(test_file_md5, cache_entry->md5());
 
   // Remove the entry.
-  metadata_->RemoveFromCache(test_resource_id);
+  metadata_->RemoveCacheEntry(test_resource_id);
   cache_entry =
       metadata_->GetCacheEntry(test_resource_id, std::string()).Pass();
   EXPECT_FALSE(cache_entry.get());
@@ -231,7 +231,7 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   test_file_md5 = "test_file_md5_4";
   test_sub_dir_type = GDataCache::CACHE_TYPE_TMP;
   test_cache_state = CACHE_STATE_PRESENT;
-  metadata_->UpdateCache(
+  metadata_->AddOrUpdateCacheEntry(
       test_resource_id,
       GDataCacheEntry(test_file_md5, test_cache_state));
 
@@ -242,18 +242,6 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   EXPECT_EQ(test_file_md5, cache_entry->md5());
   EXPECT_EQ(test_sub_dir_type, GDataCache::GetSubDirectoryType(*cache_entry));
   EXPECT_EQ(test_cache_state, cache_entry->cache_state());
-
-  // Update with CACHE_STATE_NONE should evict the entry.
-  test_file_md5 = "test_file_md5_5";
-  test_sub_dir_type = GDataCache::CACHE_TYPE_TMP;
-  test_cache_state = CACHE_STATE_NONE;
-  metadata_->UpdateCache(
-      test_resource_id,
-      GDataCacheEntry(test_file_md5, test_cache_state));
-
-  cache_entry =
-      metadata_->GetCacheEntry(test_resource_id, std::string()).Pass();
-  EXPECT_FALSE(cache_entry.get());
 }
 
 TEST_F(GDataCacheMetadataMapTest, Initialization) {

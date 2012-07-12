@@ -35,13 +35,13 @@ class GDataCacheMetadata {
       const base::SequencedWorkerPool::SequenceToken& sequence_token);
   virtual ~GDataCacheMetadata();
 
-  // Updates cache map with entry corresponding to |resource_id|.
-  // Creates new entry if it doesn't exist, otherwise update the entry.
-  virtual void UpdateCache(const std::string& resource_id,
-                           const GDataCacheEntry& cache_entry) = 0;
+  // Adds a new cache entry corresponding to |resource_id| if it doesn't
+  // exist, otherwise update the existing entry.
+  virtual void AddOrUpdateCacheEntry(const std::string& resource_id,
+                                     const GDataCacheEntry& cache_entry) = 0;
 
   // Removes entry corresponding to |resource_id| from cache map.
-  virtual void RemoveFromCache(const std::string& resource_id) = 0;
+  virtual void RemoveCacheEntry(const std::string& resource_id) = 0;
 
   // Returns the cache entry for file corresponding to |resource_id| and |md5|
   // if entry exists in cache map.  Otherwise, returns NULL.
@@ -83,10 +83,10 @@ class GDataCacheMetadataMap : public GDataCacheMetadata {
   void Initialize(const std::vector<FilePath>& cache_paths);
 
   // GDataCacheMetadata overrides:
-  virtual void UpdateCache(
+  virtual void AddOrUpdateCacheEntry(
       const std::string& resource_id,
       const GDataCacheEntry& cache_entry) OVERRIDE;
-  virtual void RemoveFromCache(const std::string& resource_id) OVERRIDE;
+  virtual void RemoveCacheEntry(const std::string& resource_id) OVERRIDE;
   virtual scoped_ptr<GDataCacheEntry> GetCacheEntry(
       const std::string& resource_id,
       const std::string& md5) OVERRIDE;
