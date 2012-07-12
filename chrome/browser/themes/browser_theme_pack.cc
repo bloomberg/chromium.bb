@@ -1014,7 +1014,7 @@ void BrowserThemePack::GenerateTabBackgroundImages(ImageCache* bitmaps) const {
             SkFloatToScalar(image_rep_to_tint.GetScale());
         canvas.sk_canvas()->scale(image_rep_to_tint_scale,
                                   image_rep_to_tint_scale);
-        canvas.TileImageInt(bg_tint, 0, vertical_offset,
+        canvas.TileImageInt(bg_tint, 0, vertical_offset, 0, 0,
             bg_tint_dip_size.width(), bg_tint_dip_size.height());
 
         // If they've provided a custom image, overlay it.
