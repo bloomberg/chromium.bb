@@ -1142,7 +1142,7 @@ void GDataFileSystem::TransferFileFromLocalToRemote(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Make sure the destination directory exists
+  // Make sure the destination directory exists.
   GDataEntry* dest_dir = GetGDataEntryByPath(
       remote_dest_file_path.DirName());
   if (!dest_dir || !dest_dir->AsGDataDirectory()) {
@@ -1241,6 +1241,15 @@ void GDataFileSystem::StartFileUploadOnUIThread(
     return;
   }
 
+  // Make sure the destination directory exists.
+  GDataEntry* dest_dir = GetGDataEntryByPath(remote_dest_file.DirName());
+  if (!dest_dir || !dest_dir->AsGDataDirectory()) {
+    if (!callback.is_null())
+      callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    NOTREACHED();
+    return;
+  }
+
   // Fill in values of UploadFileInfo.
   scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
   upload_file_info->file_path = local_file;
@@ -1251,6 +1260,8 @@ void GDataFileSystem::StartFileUploadOnUIThread(
   upload_file_info->content_length = *file_size;
   upload_file_info->all_bytes_present = true;
   upload_file_info->content_type = *content_type;
+  upload_file_info->initial_upload_location =
+      dest_dir->AsGDataDirectory()->upload_url();
 
   upload_file_info->completion_callback =
       base::Bind(&GDataFileSystem::OnTransferCompleted,

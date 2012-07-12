@@ -49,10 +49,6 @@ GDataSystemService::GDataSystemService(Profile* profile)
       download_observer_(new GDataDownloadObserver(uploader(), file_system())),
       sync_client_(new GDataSyncClient(profile, file_system(), cache())) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // TODO(satorux): The dependency to GDataFileSystem should be
-  // eliminated. http://crbug.com/133860
-  uploader_->set_file_system(file_system());
 }
 
 GDataSystemService::~GDataSystemService() {

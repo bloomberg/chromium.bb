@@ -34,19 +34,17 @@ const char kGDataPathKey[] = "GDataPath";
 // External Data stored in DownloadItem for ongoing uploads.
 class UploadingExternalData : public DownloadCompletionBlocker {
  public:
-  UploadingExternalData(GDataUploader* uploader,
-                        int upload_id,
-                        const FilePath& virtual_dir_path)
+  explicit UploadingExternalData(GDataUploader* uploader)
       : uploader_(uploader),
-        upload_id_(upload_id),
-        virtual_dir_path_(virtual_dir_path) {
+        upload_id_(-1) {
   }
   virtual ~UploadingExternalData() {}
 
-  int upload_id() const { return upload_id_; }
   GDataUploader* uploader() { return uploader_; }
+  void set_upload_id(int upload_id) { upload_id_ = upload_id; }
+  int upload_id() const { return upload_id_; }
+  void set_virtual_dir_path(const FilePath& path) { virtual_dir_path_ = path; }
   const FilePath& virtual_dir_path() const { return virtual_dir_path_; }
-
   void set_entry(scoped_ptr<DocumentEntry> entry) { entry_ = entry.Pass(); }
   scoped_ptr<DocumentEntry> entry_passed() { return entry_.Pass(); }
 
@@ -417,16 +415,12 @@ void GDataDownloadObserver::UploadDownloadItem(DownloadItem* download) {
   if (!ShouldUpload(download))
     return;
 
-  scoped_ptr<UploadFileInfo> upload_file_info = CreateUploadFileInfo(download);
-  const FilePath& virtual_dir_path = upload_file_info->gdata_path.DirName();
-  const int upload_id = gdata_uploader_->UploadNewFile(
-      upload_file_info.Pass());
-
-  // TODO(achuith): Fix this.
-  // We won't know the upload ID until the after the
-  // GDataUploader::UploadNewFile() call.
+  // Initialize uploading external data.
   download->SetExternalData(&kUploadingKey,
-      new UploadingExternalData(gdata_uploader_, upload_id, virtual_dir_path));
+                            new UploadingExternalData(gdata_uploader_));
+
+  // Create UploadFileInfo structure for the download item.
+  CreateUploadFileInfo(download);
 }
 
 void GDataDownloadObserver::UpdateUpload(DownloadItem* download) {
@@ -453,8 +447,9 @@ bool GDataDownloadObserver::ShouldUpload(DownloadItem* download) {
          (GetUploadingExternalData(download) == NULL);
 }
 
-scoped_ptr<UploadFileInfo> GDataDownloadObserver::CreateUploadFileInfo(
-    DownloadItem* download) {
+void GDataDownloadObserver::CreateUploadFileInfo(DownloadItem* download) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo());
 
   // GetFullPath will be a temporary location if we're streaming.
@@ -478,7 +473,56 @@ scoped_ptr<UploadFileInfo> GDataDownloadObserver::CreateUploadFileInfo(
                  weak_ptr_factory_.GetWeakPtr(),
                  download->GetId());
 
-  return upload_file_info.Pass();
+  // Get the GDataDirectory proto for the upload directory, then extract the
+  // initial upload URL in OnReadDirectoryByPath().
+  const FilePath upload_dir = upload_file_info->gdata_path.DirName();
+  file_system_->ReadDirectoryByPath(
+      upload_dir,
+      base::Bind(&GDataDownloadObserver::OnReadDirectoryByPath,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 download->GetId(),
+                 base::Passed(&upload_file_info)));
+}
+
+void GDataDownloadObserver::OnReadDirectoryByPath(
+    int32 download_id,
+    scoped_ptr<UploadFileInfo> upload_file_info,
+    base::PlatformFileError error,
+    bool /* hide_hosted_documents */,
+    scoped_ptr<GDataDirectoryProto> dir_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(upload_file_info.get());
+
+  // TODO(hshi): if the upload directory is no longer valid, use the root
+  // directory instead.
+  upload_file_info->initial_upload_location =
+      dir_proto.get() ? GURL(dir_proto->upload_url()) : GURL();
+
+  StartUpload(download_id, upload_file_info.Pass());
+}
+
+void GDataDownloadObserver::StartUpload(
+    int32 download_id,
+    scoped_ptr<UploadFileInfo> upload_file_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(upload_file_info.get());
+
+  // Look up the DownloadItem for the |download_id|.
+  DownloadMap::iterator iter = pending_downloads_.find(download_id);
+  if (iter == pending_downloads_.end()) {
+    DVLOG(1) << "Pending download not found" << download_id;
+    return;
+  }
+  DVLOG(1) << "Starting upload for download ID " << download_id;
+  DownloadItem* download_item = iter->second;
+
+  UploadingExternalData* upload_data = GetUploadingExternalData(download_item);
+  DCHECK(upload_data);
+  upload_data->set_virtual_dir_path(upload_file_info->gdata_path.DirName());
+
+  // Start upload and save the upload id for future reference.
+  const int upload_id = gdata_uploader_->UploadNewFile(upload_file_info.Pass());
+  upload_data->set_upload_id(upload_id);
 }
 
 void GDataDownloadObserver::OnUploadComplete(
@@ -513,14 +557,14 @@ void GDataDownloadObserver::OnUploadComplete(
 void GDataDownloadObserver::MoveFileToGDataCache(DownloadItem* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  UploadingExternalData* data = GetUploadingExternalData(download);
-  if (!data) {
+  UploadingExternalData* upload_data = GetUploadingExternalData(download);
+  if (!upload_data) {
     NOTREACHED();
     return;
   }
 
   // Pass ownership of the DocumentEntry object to AddUploadedFile().
-  scoped_ptr<DocumentEntry> entry = data->entry_passed();
+  scoped_ptr<DocumentEntry> entry = upload_data->entry_passed();
   if (!entry.get()) {
     NOTREACHED();
     return;
@@ -529,7 +573,7 @@ void GDataDownloadObserver::MoveFileToGDataCache(DownloadItem* download) {
   // Move downloaded file to gdata cache. Note that |content_file_path| should
   // use the final target path when the download item is in COMPLETE state.
   file_system_->AddUploadedFile(UPLOAD_NEW_FILE,
-                                data->virtual_dir_path(),
+                                upload_data->virtual_dir_path(),
                                 entry.Pass(),
                                 download->GetTargetFilePath(),
                                 GDataCache::FILE_OPERATION_MOVE,

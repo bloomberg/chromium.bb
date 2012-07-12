@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
@@ -33,8 +32,7 @@ const int kMaxFileOpenTries = 5;
 namespace gdata {
 
 GDataUploader::GDataUploader(DocumentsServiceInterface* documents_service)
-  : file_system_(NULL),
-    documents_service_(documents_service),
+  : documents_service_(documents_service),
     next_upload_id_(0),
     ALLOW_THIS_IN_INITIALIZER_LIST(uploader_factory_(this)) {
 }
@@ -50,6 +48,7 @@ int GDataUploader::UploadNewFile(scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(!upload_file_info->gdata_path.empty());
   DCHECK(!upload_file_info->title.empty());
   DCHECK(!upload_file_info->content_type.empty());
+  DCHECK(!upload_file_info->initial_upload_location.is_empty());
   DCHECK_EQ(UPLOAD_INVALID, upload_file_info->upload_mode);
 
   upload_file_info->upload_mode = UPLOAD_NEW_FILE;
@@ -236,49 +235,6 @@ void GDataUploader::OpenCompletionCallback(int upload_id, int result) {
 
   // Open succeeded, initiate the upload.
   upload_file_info->should_retry_file_open = false;
-
-  if (upload_file_info->upload_mode == UPLOAD_NEW_FILE) {
-    // For uploading new files, get the GDataDirectoryProto for the upload
-    // directory, then extract the initial upload URL in OnGetEntryInfoByPath().
-    file_system_->ReadDirectoryByPath(
-        upload_file_info->gdata_path.DirName(),
-        base::Bind(&GDataUploader::OnReadDirectoryByPath,
-                   uploader_factory_.GetWeakPtr(),
-                   upload_id));
-  } else {
-    // For uploading existing files, the initial upload URL is already set, so
-    // call InitiateUpload() immediately.
-    DCHECK(upload_file_info->upload_mode == UPLOAD_EXISTING_FILE);
-    InitiateUpload(upload_file_info);
-  }
-}
-
-void GDataUploader::OnReadDirectoryByPath(
-    int upload_id,
-    base::PlatformFileError error,
-    bool /* hide_hosted_documents */,
-    scoped_ptr<GDataDirectoryProto> dir_proto) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  UploadFileInfo* upload_file_info = GetUploadFileInfo(upload_id);
-  if (!upload_file_info)
-    return;
-
-  if (error != base::PLATFORM_FILE_OK || !dir_proto.get()) {
-    UploadFailed(scoped_ptr<UploadFileInfo>(upload_file_info),
-                 base::PLATFORM_FILE_ERROR_ABORT);
-    return;
-  }
-
-  // Extract the initial upload URL and initiate the upload.
-  upload_file_info->initial_upload_location = GURL(dir_proto->upload_url());
-  InitiateUpload(upload_file_info);
-}
-
-void GDataUploader::InitiateUpload(UploadFileInfo* upload_file_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(upload_file_info);
-
   if (upload_file_info->initial_upload_location.is_empty()) {
     UploadFailed(scoped_ptr<UploadFileInfo>(upload_file_info),
                  base::PLATFORM_FILE_ERROR_ABORT);

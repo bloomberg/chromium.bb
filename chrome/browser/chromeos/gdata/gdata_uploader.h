@@ -23,8 +23,6 @@ class DownloadItem;
 
 namespace gdata {
 
-class GDataFileSystem;
-class GDataDirectoryProto;
 class DocumentsServiceInterface;
 
 class GDataUploaderInterface {
@@ -63,15 +61,6 @@ class GDataUploader : public GDataUploaderInterface {
  public:
   explicit GDataUploader(DocumentsServiceInterface* documents_service);
   virtual ~GDataUploader();
-
-  // Sets the file system. This must be called before calling other member
-  // functions.
-  //
-  // TODO(satorux): The dependency to GDataFileSystem should be
-  // eliminated. http://crbug.com/133860
-  void set_file_system(GDataFileSystem* file_system) {
-    file_system_ = file_system;
-  }
 
   // GDataUploaderInterface overrides.
   virtual int UploadNewFile(
@@ -119,14 +108,6 @@ class GDataUploader : public GDataUploaderInterface {
                                       const ResumeUploadResponse& response,
                                       scoped_ptr<DocumentEntry> entry);
 
-  // Callback for handling results of ReadDirectoryByPath() initiated by
-  // OpenCompletionCallback(). This callback reads the directory entry to
-  // determine the upload path.
-  void OnReadDirectoryByPath(int upload_id,
-                             base::PlatformFileError error,
-                             bool hide_hosted_documents,
-                             scoped_ptr<GDataDirectoryProto> dir_proto);
-
   // Initiate the upload.
   void InitiateUpload(UploadFileInfo* uploader_file_info);
 
@@ -143,10 +124,9 @@ class GDataUploader : public GDataUploaderInterface {
   // ID assigned to |upload_file_info|.
   int StartUploadFile(scoped_ptr<UploadFileInfo> upload_file_info);
 
-  // Pointers to GDataFileSystem and DocumentsServiceInterface objects owned by
-  // GDataSystemService. The lifetime of these two objects is guaranteed to
-  // exceed that of the GDataUploader instance.
-  GDataFileSystem* file_system_;
+  // Pointers to DocumentsServiceInterface object owned by GDataSystemService.
+  // The lifetime of this object is guaranteed to exceed that of the
+  // GDataUploader instance.
   DocumentsServiceInterface* documents_service_;
 
   int next_upload_id_;  // id counter.
