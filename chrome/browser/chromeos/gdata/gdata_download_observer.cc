@@ -133,10 +133,7 @@ void OnEntryFound(Profile* profile,
     const FilePath& gdata_dir_path,
     const base::Closure& substitute_callback,
     base::PlatformFileError error,
-    const FilePath& entry_path,
     scoped_ptr<gdata::GDataEntryProto> entry_proto) {
-  DVLOG(1) << "GDataDownloadObserver OnEntryFound " << entry_path.value();
-
   if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND) {
     // Destination gdata directory doesn't exist, so create it.
     const bool is_exclusive = false, is_recursive = true;

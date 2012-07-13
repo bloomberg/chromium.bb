@@ -2150,7 +2150,7 @@ void GDataFileSystem::OnGetEntryInfo(const GetEntryInfoCallback& callback,
 
   if (error != base::PLATFORM_FILE_OK) {
     if (!callback.is_null())
-      callback.Run(error, FilePath(), scoped_ptr<GDataEntryProto>());
+      callback.Run(error, scoped_ptr<GDataEntryProto>());
     return;
   }
   DCHECK(entry);
@@ -2159,9 +2159,7 @@ void GDataFileSystem::OnGetEntryInfo(const GetEntryInfoCallback& callback,
   entry->ToProto(entry_proto.get());
 
   if (!callback.is_null())
-    callback.Run(base::PLATFORM_FILE_OK,
-                 entry->GetFilePath(),
-                 entry_proto.Pass());
+    callback.Run(base::PLATFORM_FILE_OK, entry_proto.Pass());
 }
 
 void GDataFileSystem::GetFileInfoByPath(const FilePath& file_path,

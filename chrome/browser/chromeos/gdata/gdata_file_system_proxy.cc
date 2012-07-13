@@ -428,13 +428,15 @@ void GDataFileSystemProxy::CreateSnapshotFile(
   file_system_->GetEntryInfoByPath(
       file_path,
       base::Bind(&GDataFileSystemProxy::OnGetEntryInfoByPath,
-                 this, callback));
+                 this,
+                 file_path,
+                 callback));
 }
 
 void GDataFileSystemProxy::OnGetEntryInfoByPath(
+    const FilePath& entry_path,
     const FileSystemOperationInterface::SnapshotFileCallback& callback,
     base::PlatformFileError error,
-    const FilePath& entry_path,
     scoped_ptr<GDataEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -503,7 +505,6 @@ void GDataFileSystemProxy::OnGetMetadata(
     const FilePath& file_path,
     const FileSystemOperationInterface::GetMetadataCallback& callback,
     base::PlatformFileError error,
-    const FilePath& entry_path,
     scoped_ptr<gdata::GDataEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
