@@ -9,7 +9,7 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-namespace browser {
+namespace chrome {
 
 content::WebContentsViewDelegate* CreateWebContentsViewDelegate(
     content::WebContents* web_contents) {
@@ -18,4 +18,4 @@ content::WebContentsViewDelegate* CreateWebContentsViewDelegate(
   return NULL;
 }
 
-}  // namespace browser
+}  // namespace chrome
