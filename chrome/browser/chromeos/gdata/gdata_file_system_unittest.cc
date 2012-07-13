@@ -317,6 +317,18 @@ class GDataFileSystemTest : public testing::Test {
                                     GDataCache::CACHED_FILE_FROM_SERVER);
   }
 
+  // Gets entry info by path synchronously.
+  scoped_ptr<GDataEntryProto> GetEntryInfoByPathSync(
+      const FilePath& file_path) {
+    file_system_->GetEntryInfoByPath(
+        file_path,
+        base::Bind(&CallbackHelper::GetEntryInfoCallback,
+                   callback_helper_.get()));
+    message_loop_.RunAllPending();
+
+    return callback_helper_->entry_proto_.Pass();
+  }
+
   GDataEntry* FindEntry(const FilePath& file_path) {
     return file_system_->GetGDataEntryByPath(file_path);
   }
@@ -329,82 +341,6 @@ class GDataFileSystemTest : public testing::Test {
 
   GDataEntry* FindEntryByResourceId(const std::string& resource_id) {
     return file_system_->root_->GetEntryByResourceId(resource_id);
-  }
-
-  // Gets the entry info for |file_path| and compares the contents against
-  // |entry|. Returns true if the entry info matches |entry|.
-  bool GetEntryInfoAndCompare(const FilePath& file_path,
-                              GDataEntry* entry) {
-    file_system_->GetEntryInfoByPath(
-        file_path,
-        base::Bind(&CallbackHelper::GetEntryInfoCallback,
-                   callback_helper_.get()));
-    message_loop_.RunAllPending();
-
-    if (entry == NULL) {
-      // Entry info is expected not to be found.
-      return (callback_helper_->last_error_ ==
-              base::PLATFORM_FILE_ERROR_NOT_FOUND &&
-              callback_helper_->entry_proto_ == NULL);
-    }
-
-    if (callback_helper_->last_error_ != base::PLATFORM_FILE_OK)
-      return false;
-
-    scoped_ptr<GDataEntryProto> entry_proto =
-        callback_helper_->entry_proto_.Pass();
-    return (entry->resource_id() == entry_proto->resource_id());
-  }
-
-  // Gets the file info for |file_path| and compares the contents against
-  // |file|. Returns true if the file info matches |file|.
-  bool GetFileInfoAndCompare(const FilePath& file_path,
-                             GDataFile* file) {
-    file_system_->GetFileInfoByPath(
-        file_path,
-        base::Bind(&CallbackHelper::GetFileInfoCallback,
-                   callback_helper_.get()));
-    message_loop_.RunAllPending();
-
-    if (file == NULL) {
-      // File info is expected not to be found.
-      return (callback_helper_->last_error_ ==
-              base::PLATFORM_FILE_ERROR_NOT_FOUND &&
-              callback_helper_->file_proto_ == NULL);
-    }
-
-    if (callback_helper_->last_error_ != base::PLATFORM_FILE_OK)
-      return false;
-
-    scoped_ptr<GDataFileProto> file_proto =
-        callback_helper_->file_proto_.Pass();
-    return (file->resource_id() == file_proto->gdata_entry().resource_id());
-  }
-
-  // Reads the directory at |file_path| and compares the contents against
-  // |directory|. Returns true if the file info matches |directory|.
-  bool ReadDirectoryAndCompare(const FilePath& file_path,
-                               GDataDirectory* directory) {
-    file_system_->ReadDirectoryByPath(
-        file_path,
-        base::Bind(&CallbackHelper::ReadDirectoryCallback,
-                   callback_helper_.get()));
-    message_loop_.RunAllPending();
-
-    if (directory == NULL) {
-      // Directory is expected not to be found.
-      return (callback_helper_->last_error_ ==
-              base::PLATFORM_FILE_ERROR_NOT_FOUND &&
-              callback_helper_->directory_proto_ == NULL);
-    }
-
-    if (callback_helper_->last_error_ != base::PLATFORM_FILE_OK)
-      return false;
-
-    scoped_ptr<GDataDirectoryProto> directory_proto =
-        callback_helper_->directory_proto_.Pass();
-    return (directory->resource_id() ==
-            directory_proto->gdata_entry().resource_id());
   }
 
   FilePath GetCacheFilePath(const std::string& resource_id,
@@ -965,11 +901,10 @@ TEST_F(GDataFileSystemTest, SearchRootDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
   const FilePath kFilePath = FilePath(FILE_PATH_LITERAL("drive"));
-  GDataEntry* entry = FindEntry(FilePath(FILE_PATH_LITERAL(kFilePath)));
-  ASSERT_TRUE(entry);
-  EXPECT_EQ(kFilePath, entry->GetFilePath());
-  EXPECT_TRUE(GetEntryInfoAndCompare(kFilePath, entry));
-  EXPECT_TRUE(ReadDirectoryAndCompare(kFilePath, entry->AsGDataDirectory()));
+  scoped_ptr<GDataEntryProto> entry = GetEntryInfoByPathSync(
+      FilePath(FILE_PATH_LITERAL(kFilePath)));
+  ASSERT_TRUE(entry.get());
+  EXPECT_EQ(kGDataRootDirectoryResourceId, entry->resource_id());
 }
 
 TEST_F(GDataFileSystemTest, SearchExistingFile) {
@@ -977,11 +912,9 @@ TEST_F(GDataFileSystemTest, SearchExistingFile) {
 
   const FilePath kFilePath = FilePath(
       FILE_PATH_LITERAL("drive/File 1.txt"));
-  GDataEntry* entry = FindEntry(kFilePath);
-  ASSERT_TRUE(entry);
-  EXPECT_EQ(kFilePath, entry->GetFilePath());
-  EXPECT_TRUE(GetEntryInfoAndCompare(kFilePath, entry));
-  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath, entry->AsGDataFile()));
+  scoped_ptr<GDataEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  ASSERT_TRUE(entry.get());
+  EXPECT_EQ("file:2_file_resource_id", entry->resource_id());
 }
 
 TEST_F(GDataFileSystemTest, SearchExistingDocument) {
@@ -989,11 +922,9 @@ TEST_F(GDataFileSystemTest, SearchExistingDocument) {
 
   const FilePath kFilePath = FilePath(
       FILE_PATH_LITERAL("drive/Document 1.gdoc"));
-  GDataEntry* entry = FindEntry(kFilePath);
-  ASSERT_TRUE(entry);
-  EXPECT_EQ(kFilePath, entry->GetFilePath());
-  EXPECT_TRUE(GetEntryInfoAndCompare(kFilePath, entry));
-  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath, entry->AsGDataFile()));
+  scoped_ptr<GDataEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  ASSERT_TRUE(entry.get());
+  EXPECT_EQ("document:5_document_resource_id", entry->resource_id());
 }
 
 TEST_F(GDataFileSystemTest, SearchNonExistingFile) {
@@ -1001,10 +932,8 @@ TEST_F(GDataFileSystemTest, SearchNonExistingFile) {
 
   const FilePath kFilePath = FilePath(
       FILE_PATH_LITERAL("drive/nonexisting.file"));
-  GDataEntry* entry = FindEntry(kFilePath);
-  ASSERT_FALSE(entry);
-  EXPECT_TRUE(GetEntryInfoAndCompare(kFilePath, entry));
-  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath, NULL));
+  scoped_ptr<GDataEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  ASSERT_FALSE(entry.get());
 }
 
 TEST_F(GDataFileSystemTest, SearchEncodedFileNames) {
@@ -1012,26 +941,20 @@ TEST_F(GDataFileSystemTest, SearchEncodedFileNames) {
 
   const FilePath kFilePath1 = FilePath(
       FILE_PATH_LITERAL("drive/Slash / in file 1.txt"));
-  GDataEntry* entry = FindEntry(kFilePath1);
-  ASSERT_FALSE(entry);
-  EXPECT_TRUE(GetEntryInfoAndCompare(kFilePath1, NULL));
-  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath1, NULL));
+  scoped_ptr<GDataEntryProto> entry = GetEntryInfoByPathSync(kFilePath1);
+  ASSERT_FALSE(entry.get());
 
   const FilePath kFilePath2 = FilePath::FromUTF8Unsafe(
       "drive/Slash \xE2\x88\x95 in file 1.txt");
-  entry = FindEntry(kFilePath2);
-  ASSERT_TRUE(entry);
-  EXPECT_EQ(kFilePath2, entry->GetFilePath());
-  EXPECT_TRUE(GetEntryInfoAndCompare(kFilePath2, entry));
-  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath2, entry->AsGDataFile()));
+  entry = GetEntryInfoByPathSync(kFilePath2);
+  ASSERT_TRUE(entry.get());
+  EXPECT_EQ("file:slash_file_resource_id", entry->resource_id());
 
   const FilePath kFilePath3 = FilePath::FromUTF8Unsafe(
       "drive/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt");
-  entry = FindEntry(kFilePath3);
-  ASSERT_TRUE(entry);
-  EXPECT_EQ(kFilePath3, entry->GetFilePath());
-  EXPECT_TRUE(GetEntryInfoAndCompare(kFilePath3, entry));
-  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath3, entry->AsGDataFile()));
+  entry = GetEntryInfoByPathSync(kFilePath3);
+  ASSERT_TRUE(entry.get());
+  EXPECT_EQ("file:slash_subdir_file", entry->resource_id());
 }
 
 TEST_F(GDataFileSystemTest, SearchEncodedFileNamesLoadingRoot) {
@@ -1039,26 +962,20 @@ TEST_F(GDataFileSystemTest, SearchEncodedFileNamesLoadingRoot) {
 
   const FilePath kFilePath1 = FilePath(
       FILE_PATH_LITERAL("drive/Slash / in file 1.txt"));
-  GDataEntry* entry = FindEntry(kFilePath1);
-  ASSERT_FALSE(entry);
-  EXPECT_TRUE(GetEntryInfoAndCompare(kFilePath1, NULL));
-  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath1, NULL));
+  scoped_ptr<GDataEntryProto> entry = GetEntryInfoByPathSync(kFilePath1);
+  ASSERT_FALSE(entry.get());
 
   const FilePath kFilePath2 = FilePath::FromUTF8Unsafe(
       "drive/Slash \xE2\x88\x95 in file 1.txt");
-  entry = FindEntry(kFilePath2);
-  ASSERT_TRUE(entry);
-  EXPECT_EQ(kFilePath2, entry->GetFilePath());
-  EXPECT_TRUE(GetEntryInfoAndCompare(kFilePath2, entry));
-  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath2, entry->AsGDataFile()));
+  entry = GetEntryInfoByPathSync(kFilePath2);
+  ASSERT_TRUE(entry.get());
+  EXPECT_EQ("file:slash_file_resource_id", entry->resource_id());
 
   const FilePath kFilePath3 = FilePath::FromUTF8Unsafe(
       "drive/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt");
-  entry = FindEntry(kFilePath3);
-  ASSERT_TRUE(entry);
-  EXPECT_EQ(kFilePath3, entry->GetFilePath());
-  EXPECT_TRUE(GetEntryInfoAndCompare(kFilePath3, entry));
-  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath3, entry->AsGDataFile()));
+  entry = GetEntryInfoByPathSync(kFilePath3);
+  ASSERT_TRUE(entry.get());
+  EXPECT_EQ("file:slash_subdir_file", entry->resource_id());
 }
 
 TEST_F(GDataFileSystemTest, SearchDuplicateNames) {
@@ -1066,19 +983,15 @@ TEST_F(GDataFileSystemTest, SearchDuplicateNames) {
 
   const FilePath kFilePath1 = FilePath(
       FILE_PATH_LITERAL("drive/Duplicate Name.txt"));
-  GDataEntry* entry = FindEntry(kFilePath1);
-  ASSERT_TRUE(entry);
-  EXPECT_EQ(kFilePath1, entry->GetFilePath());
-  EXPECT_TRUE(GetEntryInfoAndCompare(kFilePath1, entry));
-  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath1, entry->AsGDataFile()));
+  scoped_ptr<GDataEntryProto> entry = GetEntryInfoByPathSync(kFilePath1);
+  ASSERT_TRUE(entry.get());
+  EXPECT_EQ("file:3_file_resource_id", entry->resource_id());
 
   const FilePath kFilePath2 = FilePath(
       FILE_PATH_LITERAL("drive/Duplicate Name (2).txt"));
-  entry = FindEntry(kFilePath2);
-  ASSERT_TRUE(entry);
-  EXPECT_EQ(kFilePath2, entry->GetFilePath());
-  EXPECT_TRUE(GetEntryInfoAndCompare(kFilePath2, entry));
-  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath2, entry->AsGDataFile()));
+  entry = GetEntryInfoByPathSync(kFilePath2);
+  ASSERT_TRUE(entry.get());
+  EXPECT_EQ("file:4_file_resource_id", entry->resource_id());
 }
 
 TEST_F(GDataFileSystemTest, SearchExistingDirectory) {
@@ -1086,11 +999,9 @@ TEST_F(GDataFileSystemTest, SearchExistingDirectory) {
 
   const FilePath kFilePath = FilePath(
       FILE_PATH_LITERAL("drive/Directory 1"));
-  GDataEntry* entry = FindEntry(kFilePath);
-  ASSERT_TRUE(entry);
-  EXPECT_EQ(kFilePath, entry->GetFilePath());
-  EXPECT_TRUE(GetEntryInfoAndCompare(kFilePath, entry));
-  EXPECT_TRUE(ReadDirectoryAndCompare(kFilePath, entry->AsGDataDirectory()));
+  scoped_ptr<GDataEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  ASSERT_TRUE(entry.get());
+  ASSERT_EQ("folder:1_folder_resource_id", entry->resource_id());
 }
 
 TEST_F(GDataFileSystemTest, SearchInSubdir) {
@@ -1098,11 +1009,9 @@ TEST_F(GDataFileSystemTest, SearchInSubdir) {
 
   const FilePath kFilePath = FilePath(
       FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt"));
-  GDataEntry* entry = FindEntry(kFilePath);
-  ASSERT_TRUE(entry);
-  EXPECT_EQ(kFilePath, entry->GetFilePath());
-  EXPECT_TRUE(GetEntryInfoAndCompare(kFilePath, entry));
-  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath, entry->AsGDataFile()));
+  scoped_ptr<GDataEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  ASSERT_TRUE(entry.get());
+  ASSERT_EQ("file:subdirectory_file_1_id", entry->resource_id());
 }
 
 // Check the reconstruction of the directory structure from only the root feed.
@@ -1112,11 +1021,9 @@ TEST_F(GDataFileSystemTest, SearchInSubSubdir) {
   const FilePath kFilePath = FilePath(
       FILE_PATH_LITERAL("drive/Directory 1/Sub Directory Folder/"
                         "Sub Sub Directory Folder"));
-  GDataEntry* entry = FindEntry(kFilePath);
-  ASSERT_TRUE(entry);
-  EXPECT_EQ(kFilePath, entry->GetFilePath());
-  EXPECT_TRUE(GetEntryInfoAndCompare(kFilePath, entry));
-  EXPECT_TRUE(ReadDirectoryAndCompare(kFilePath, entry->AsGDataDirectory()));
+  scoped_ptr<GDataEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  ASSERT_TRUE(entry.get());
+  ASSERT_EQ("folder:sub_sub_directory_folder_id", entry->resource_id());
 }
 
 TEST_F(GDataFileSystemTest, FilePathTests) {
