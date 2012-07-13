@@ -128,10 +128,12 @@ void NotificationUIManagerMac::Add(const Notification& notification,
   if (notification.is_html()) {
     builtin_manager_->Add(notification, profile);
   } else {
-    id<CrUserNotification> replacee = FindNotificationWithReplacementId(
-        notification.replace_id());
-    if (replacee)
-      RemoveNotification(replacee);
+    if (!notification.replace_id().empty()) {
+      id<CrUserNotification> replacee = FindNotificationWithReplacementId(
+          notification.replace_id());
+      if (replacee)
+        RemoveNotification(replacee);
+    }
 
     // Owned by ControllerNotification.
     id<CrUserNotification> ns_notification =
