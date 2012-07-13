@@ -35,6 +35,9 @@ for (var i = 0; i < results.length; ++i) {
 window.domAutomationController.send(text);
 """
     self.NavigateToURL('about:histograms/%s' % path)
+    # about:histograms is now "as of last page load", so reload it to get the
+    # newest histograms.
+    self.NavigateToURL('about:histograms/%s' % path)
     data = self.ExecuteJavascript(js, 0, 0)
     return data.replace('<br>', '\n');
 
