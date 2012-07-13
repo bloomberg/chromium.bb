@@ -71,8 +71,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual void CancelDownload(int32 download_id) OVERRIDE;
   virtual void OnDownloadInterrupted(
       int32 download_id,
-      int64 size,
-      const std::string& hash_state,
       content::DownloadInterruptReason reason) OVERRIDE;
   virtual int RemoveDownloadsBetween(base::Time remove_begin,
                                      base::Time remove_end) OVERRIDE;

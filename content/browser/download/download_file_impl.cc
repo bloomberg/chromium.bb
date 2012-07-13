@@ -88,11 +88,41 @@ content::DownloadInterruptReason DownloadFileImpl::AppendDataToFile(
       content::DOWNLOAD_INTERRUPT_FROM_DISK);
 }
 
-content::DownloadInterruptReason DownloadFileImpl::Rename(
-    const FilePath& full_path) {
-  return content::ConvertNetErrorToInterruptReason(
-      file_.Rename(full_path),
-      content::DOWNLOAD_INTERRUPT_FROM_DISK);
+void DownloadFileImpl::Rename(const FilePath& full_path,
+                              bool overwrite_existing_file,
+                              const RenameCompletionCallback& callback) {
+  FilePath new_path(full_path);
+  if (!overwrite_existing_file) {
+    // Make the file unique if requested.
+    int uniquifier =
+        file_util::GetUniquePathNumber(new_path, FILE_PATH_LITERAL(""));
+    if (uniquifier > 0) {
+      new_path = new_path.InsertBeforeExtensionASCII(
+          StringPrintf(" (%d)", uniquifier));
+    }
+  }
+
+  net::Error rename_error = file_.Rename(new_path);
+  content::DownloadInterruptReason reason(
+      content::DOWNLOAD_INTERRUPT_REASON_NONE);
+  if (net::OK != rename_error) {
+    // Make sure our information is updated, since we're about to
+    // error out.
+    SendUpdate();
+
+    // Null out callback so that we don't do any more stream processing.
+    stream_reader_->RegisterCallback(base::Closure());
+
+    reason =
+        content::ConvertNetErrorToInterruptReason(
+            rename_error,
+            content::DOWNLOAD_INTERRUPT_FROM_DISK);
+    new_path.clear();
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(callback, reason, new_path));
 }
 
 void DownloadFileImpl::Detach() {
@@ -238,11 +268,11 @@ void DownloadFileImpl::StreamActive() {
     // Our controller will clean us up.
     stream_reader_->RegisterCallback(base::Closure());
     weak_factory_.InvalidateWeakPtrs();
+    SendUpdate();                       // Make info up to date before error.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&DownloadManager::OnDownloadInterrupted,
-                   download_manager_, id_.local(),
-                   BytesSoFar(), GetHashState(), reason));
+                   download_manager_, id_.local(), reason));
   } else if (state == content::ByteStreamReader::STREAM_COMPLETE) {
     // Signal successful completion and shut down processing.
     stream_reader_->RegisterCallback(base::Closure());

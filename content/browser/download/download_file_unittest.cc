@@ -5,6 +5,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
+#include "base/test/test_file_util.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/download/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
@@ -15,6 +16,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/test/mock_download_manager.h"
 #include "net/base/file_stream.h"
+#include "net/base/mock_file_stream.h"
 #include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,6 +29,7 @@ using content::DownloadManager;
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::DoAll;
+using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
@@ -44,6 +47,16 @@ class MockByteStreamReader : public content::ByteStreamReader {
   MOCK_CONST_METHOD0(GetStatus, content::DownloadInterruptReason());
   MOCK_METHOD1(RegisterCallback, void(const base::Closure&));
 };
+
+class LocalMockDownloadManager : public content::MockDownloadManager {
+ public:
+  MOCK_METHOD4(CurrentUpdateStatus,
+               void(int32, int64, int64, const std::string&));
+ protected:
+  virtual ~LocalMockDownloadManager() {}
+};
+
+MATCHER(IsNullCallback, "") { return (arg.is_null()); }
 
 }  // namespace
 
@@ -65,6 +78,10 @@ class DownloadFileTest : public testing::Test {
   // calling Release() on |download_manager_| won't ever result in its
   // destructor being called and we get a leak.
   DownloadFileTest() :
+      update_download_id_(-1),
+      bytes_(-1),
+      bytes_per_sec_(-1),
+      hash_state_("xyzzy"),
       ui_thread_(BrowserThread::UI, &loop_),
       file_thread_(BrowserThread::FILE, &loop_) {
   }
@@ -74,13 +91,19 @@ class DownloadFileTest : public testing::Test {
 
   void SetUpdateDownloadInfo(int32 id, int64 bytes, int64 bytes_per_sec,
                              const std::string& hash_state) {
+    update_download_id_ = id;
     bytes_ = bytes;
     bytes_per_sec_ = bytes_per_sec;
     hash_state_ = hash_state;
   }
 
+  void ConfirmUpdateDownloadInfo() {
+    download_manager_->CurrentUpdateStatus(
+        update_download_id_, bytes_, bytes_per_sec_, hash_state_);
+  }
+
   virtual void SetUp() {
-    download_manager_ = new StrictMock<content::MockDownloadManager>;
+    download_manager_ = new StrictMock<LocalMockDownloadManager>;
     EXPECT_CALL(*(download_manager_.get()),
                 UpdateDownload(
                     DownloadId(kValidIdDomain, kDummyDownloadId + 0).local(),
@@ -117,8 +140,8 @@ class DownloadFileTest : public testing::Test {
         .RetiresOnSaturation();
 
     DownloadCreateInfo info;
-    info.download_id = DownloadId(kValidIdDomain, kDummyDownloadId + offset);
     // info.request_handle default constructed to null.
+    info.download_id = DownloadId(kValidIdDomain, kDummyDownloadId + offset);
     info.save_info.file_stream = file_stream_;
     download_file_.reset(
         new DownloadFileImpl(
@@ -228,8 +251,28 @@ class DownloadFileTest : public testing::Test {
     }
   }
 
+  content::DownloadInterruptReason Rename(
+      const FilePath& full_path, bool overwrite_existing_file,
+      FilePath* result_path_p) {
+    base::WeakPtrFactory<DownloadFileTest> weak_ptr_factory(this);
+    content::DownloadInterruptReason result_reason(
+        content::DOWNLOAD_INTERRUPT_REASON_NONE);
+    bool callback_was_called(false);
+    FilePath result_path;
+
+    download_file_->Rename(full_path, overwrite_existing_file,
+                           base::Bind(&DownloadFileTest::SetRenameResult,
+                                      weak_ptr_factory.GetWeakPtr(),
+                                      &callback_was_called,
+                                      &result_reason, result_path_p));
+    loop_.RunAllPending();
+
+    EXPECT_TRUE(callback_was_called);
+    return result_reason;
+  }
+
  protected:
-  scoped_refptr<StrictMock<content::MockDownloadManager> > download_manager_;
+  scoped_refptr<StrictMock<LocalMockDownloadManager> > download_manager_;
 
   linked_ptr<net::FileStream> file_stream_;
 
@@ -244,6 +287,7 @@ class DownloadFileTest : public testing::Test {
   base::Closure sink_callback_;
 
   // Latest update sent to the download manager.
+  int32 update_download_id_;
   int64 bytes_;
   int64 bytes_per_sec_;
   std::string hash_state_;
@@ -251,6 +295,19 @@ class DownloadFileTest : public testing::Test {
   MessageLoop loop_;
 
  private:
+  void SetRenameResult(bool* called_p,
+                       content::DownloadInterruptReason* reason_p,
+                       FilePath* result_path_p,
+                       content::DownloadInterruptReason reason,
+                       const FilePath& result_path) {
+    if (called_p)
+      *called_p = true;
+    if (reason_p)
+      *reason_p = reason;
+    if (result_path_p)
+      *result_path_p = result_path;
+  }
+
   // UI thread.
   BrowserThreadImpl ui_thread_;
   // File thread to satisfy debug checks in DownloadFile.
@@ -281,12 +338,15 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   FilePath path_2(initial_path.InsertBeforeExtensionASCII("_2"));
   FilePath path_3(initial_path.InsertBeforeExtensionASCII("_3"));
   FilePath path_4(initial_path.InsertBeforeExtensionASCII("_4"));
+  FilePath path_5(initial_path.InsertBeforeExtensionASCII("_5"));
+  FilePath output_path;
 
   // Rename the file before downloading any data.
   EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE,
-            download_file_->Rename(path_1));
+            Rename(path_1, false, &output_path));
   FilePath renamed_path = download_file_->FullPath();
   EXPECT_EQ(path_1, renamed_path);
+  EXPECT_EQ(path_1, output_path);
 
   // Check the files.
   EXPECT_FALSE(file_util::PathExists(initial_path));
@@ -298,9 +358,10 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
 
   // Rename the file after downloading some data.
   EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE,
-            download_file_->Rename(path_2));
+            Rename(path_2, false, &output_path));
   renamed_path = download_file_->FullPath();
   EXPECT_EQ(path_2, renamed_path);
+  EXPECT_EQ(path_2, output_path);
 
   // Check the files.
   EXPECT_FALSE(file_util::PathExists(path_1));
@@ -311,9 +372,10 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
 
   // Rename the file after downloading all the data.
   EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE,
-            download_file_->Rename(path_3));
+            Rename(path_3, false, &output_path));
   renamed_path = download_file_->FullPath();
   EXPECT_EQ(path_3, renamed_path);
+  EXPECT_EQ(path_3, output_path);
 
   // Check the files.
   EXPECT_FALSE(file_util::PathExists(path_2));
@@ -327,9 +389,10 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
 
   // Rename the file after downloading all the data and closing the file.
   EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE,
-            download_file_->Rename(path_4));
+            Rename(path_4, false, &output_path));
   renamed_path = download_file_->FullPath();
   EXPECT_EQ(path_4, renamed_path);
+  EXPECT_EQ(path_4, output_path);
 
   // Check the files.
   EXPECT_FALSE(file_util::PathExists(path_3));
@@ -339,6 +402,80 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   EXPECT_TRUE(download_file_->GetHash(&hash));
   EXPECT_EQ(kDataHash, base::HexEncode(hash.data(), hash.size()));
 
+  // Check that a rename with overwrite to an existing file succeeds.
+  std::string file_contents;
+  ASSERT_FALSE(file_util::PathExists(path_5));
+  static const char file_data[] = "xyzzy";
+  ASSERT_EQ(static_cast<int>(sizeof(file_data) - 1),
+            file_util::WriteFile(path_5, file_data, sizeof(file_data) - 1));
+  ASSERT_TRUE(file_util::PathExists(path_5));
+  EXPECT_TRUE(file_util::ReadFileToString(path_5, &file_contents));
+  EXPECT_EQ(std::string(file_data), file_contents);
+
+  EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE,
+            Rename(path_5, true, &output_path));
+  EXPECT_EQ(path_5, output_path);
+
+  file_contents = "";
+  EXPECT_TRUE(file_util::ReadFileToString(path_5, &file_contents));
+  EXPECT_NE(std::string(file_data), file_contents);
+
+  DestroyDownloadFile(0);
+}
+
+// Test to make sure the rename uniquifies if we aren't overwriting
+// and there's a file where we're aiming.
+TEST_F(DownloadFileTest, RenameUniquifies) {
+  ASSERT_TRUE(CreateDownloadFile(0, true));
+  FilePath initial_path(download_file_->FullPath());
+  EXPECT_TRUE(file_util::PathExists(initial_path));
+  FilePath path_1(initial_path.InsertBeforeExtensionASCII("_1"));
+  FilePath path_1_suffixed(path_1.InsertBeforeExtensionASCII(" (1)"));
+
+  ASSERT_FALSE(file_util::PathExists(path_1));
+  static const char file_data[] = "xyzzy";
+  ASSERT_EQ(static_cast<int>(sizeof(file_data)),
+            file_util::WriteFile(path_1, file_data, sizeof(file_data)));
+  ASSERT_TRUE(file_util::PathExists(path_1));
+
+  EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE,
+            Rename(path_1, false, NULL));
+  EXPECT_TRUE(file_util::PathExists(path_1_suffixed));
+
+  FinishStream(content::DOWNLOAD_INTERRUPT_REASON_NONE, true);
+  loop_.RunAllPending();
+  DestroyDownloadFile(0);
+}
+
+// Test to make sure we get the proper error on failure.
+TEST_F(DownloadFileTest, RenameError) {
+  ASSERT_TRUE(CreateDownloadFile(0, true));
+  FilePath initial_path(download_file_->FullPath());
+
+  // Create a subdirectory.
+  FilePath tempdir(initial_path.DirName().Append(FILE_PATH_LITERAL("tempdir")));
+  ASSERT_TRUE(file_util::CreateDirectory(tempdir));
+  FilePath target_path(tempdir.Append(initial_path.BaseName()));
+
+  // Targets
+  FilePath target_path_suffixed(target_path.InsertBeforeExtensionASCII(" (1)"));
+  ASSERT_FALSE(file_util::PathExists(target_path));
+  ASSERT_FALSE(file_util::PathExists(target_path_suffixed));
+
+  // Make the directory unwritable and try to rename within it.
+  {
+    file_util::PermissionRestorer restorer(tempdir);
+    ASSERT_TRUE(file_util::MakeFileUnwritable(tempdir));
+
+    // Expect nulling out of further processing.
+    EXPECT_CALL(*input_stream_, RegisterCallback(IsNullCallback()));
+    EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED,
+              Rename(target_path, true, NULL));
+    EXPECT_FALSE(file_util::PathExists(target_path_suffixed));
+  }
+
+  FinishStream(content::DOWNLOAD_INTERRUPT_REASON_NONE, true);
+  loop_.RunAllPending();
   DestroyDownloadFile(0);
 }
 
@@ -380,9 +517,21 @@ TEST_F(DownloadFileTest, StreamEmptyError) {
   EXPECT_CALL(*(download_manager_.get()),
               OnDownloadInterrupted(
                   DownloadId(kValidIdDomain, kDummyDownloadId + 0).local(),
-                  0, _,
-                  content::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED));
+                  content::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED))
+      .WillOnce(InvokeWithoutArgs(
+          this, &DownloadFileTest::ConfirmUpdateDownloadInfo));
+
+  // If this next EXPECT_CALL fails flakily, it's probably a real failure.
+  // We'll be getting a stream of UpdateDownload calls from the timer, and
+  // the last one may have the correct information even if the failure
+  // doesn't produce an update, as the timer update may have triggered at the
+  // same time.
+  EXPECT_CALL(*(download_manager_.get()),
+              CurrentUpdateStatus(kDummyDownloadId + 0, 0, _, _));
+
   FinishStream(content::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED, false);
+
+  loop_.RunAllPending();
 
   DestroyDownloadFile(0);
 }
@@ -416,12 +565,26 @@ TEST_F(DownloadFileTest, StreamNonEmptyError) {
   SetupDataAppend(chunks1, 2, s1);
   SetupFinishStream(content::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED,
                     s1);
+
   EXPECT_CALL(*(download_manager_.get()),
               OnDownloadInterrupted(
                   DownloadId(kValidIdDomain, kDummyDownloadId + 0).local(),
-                  strlen(kTestData1) + strlen(kTestData2), _,
-                  content::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED));
+                  content::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED))
+      .WillOnce(InvokeWithoutArgs(
+          this, &DownloadFileTest::ConfirmUpdateDownloadInfo));
+
+  // If this next EXPECT_CALL fails flakily, it's probably a real failure.
+  // We'll be getting a stream of UpdateDownload calls from the timer, and
+  // the last one may have the correct information even if the failure
+  // doesn't produce an update, as the timer update may have triggered at the
+  // same time.
+  EXPECT_CALL(*(download_manager_.get()),
+              CurrentUpdateStatus(kDummyDownloadId + 0,
+                                  strlen(kTestData1) + strlen(kTestData2),
+                                  _, _));
+
   sink_callback_.Run();
+  loop_.RunAllPending();
   VerifyStreamAndSize();
   DestroyDownloadFile(0);
 }

@@ -428,7 +428,7 @@ content::DownloadId DownloadManagerImpl::StartDownload(
 void DownloadManagerImpl::OnDownloadFileCreated(
     int32 download_id, content::DownloadInterruptReason reason) {
   if (reason != content::DOWNLOAD_INTERRUPT_REASON_NONE) {
-    OnDownloadInterrupted(download_id, 0, "", reason);
+    OnDownloadInterrupted(download_id, reason);
     // TODO(rdsmith): It makes no sense to continue along the
     // regular download path after we've gotten an error.  But it's
     // the way the code has historically worked, and this allows us
@@ -769,17 +769,12 @@ void DownloadManagerImpl::DownloadStopped(DownloadItemImpl* download) {
 
 void DownloadManagerImpl::OnDownloadInterrupted(
     int32 download_id,
-    int64 size,
-    const std::string& hash_state,
     content::DownloadInterruptReason reason) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!ContainsKey(active_downloads_, download_id))
     return;
-
-  DownloadItemImpl* download = active_downloads_[download_id];
-  download->UpdateProgress(size, 0, hash_state);
-  download->Interrupt(reason);
+  active_downloads_[download_id]->Interrupt(reason);
 }
 
 void DownloadManagerImpl::RemoveFromActiveList(DownloadItemImpl* download) {

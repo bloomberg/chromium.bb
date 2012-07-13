@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/file_path.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_id.h"
@@ -23,6 +24,13 @@ class DownloadManager;
 // cancelled, the DownloadFile is destroyed.
 class CONTENT_EXPORT DownloadFile {
  public:
+  // Callback used with Rename().  On a successful rename |reason| will be
+  // DOWNLOAD_INTERRUPT_REASON_NONE and |path| the path the rename
+  // was done to.  On a failed rename, |reason| will contain the
+  // error.
+  typedef base::Callback<void(content::DownloadInterruptReason reason,
+                              const FilePath& path)> RenameCompletionCallback;
+
   virtual ~DownloadFile() {}
 
   // If calculate_hash is true, sha256 hash will be calculated.
@@ -30,9 +38,14 @@ class CONTENT_EXPORT DownloadFile {
   // error code on failure.
   virtual DownloadInterruptReason Initialize() = 0;
 
-  // Rename the download file.
-  // Returns net::OK on success, or a network error code on failure.
-  virtual DownloadInterruptReason Rename(const FilePath& full_path) = 0;
+  // Rename the download file to |full_path|.  If that file exists and
+  // |overwrite_existing_file| is false, |full_path| will be uniquified by
+  // suffixing " (<number>)" to the file name before the extension.
+  // Upon completion, |callback| will be called on the UI thread
+  // as per the comment above.
+  virtual void Rename(const FilePath& full_path,
+                      bool overwrite_existing_file,
+                      const RenameCompletionCallback& callback) = 0;
 
   // Detach the file so it is not deleted on destruction.
   virtual void Detach() = 0;
