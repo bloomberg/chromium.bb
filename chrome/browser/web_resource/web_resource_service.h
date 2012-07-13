@@ -79,7 +79,7 @@ class WebResourceService
   // The tool that fetches the url data from the server.
   scoped_ptr<net::URLFetcher> url_fetcher_;
 
-  // The tool that parses and transform the json data. Weak reference as it
+  // The tool that parses and transforms the json data. Weak reference as it
   // deletes itself once the unpack is done.
   JSONAsynchronousUnpacker* json_unpacker_;
 

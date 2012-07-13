@@ -97,7 +97,7 @@
 
 #if defined(ENABLE_PROMO_RESOURCE_SERVICE)
 #include "chrome/browser/web_resource/promo_resource_service.h"
-#endif  // ENABLE_PROMO_RESOURCE_SERVICE
+#endif  // defined(ENABLE_PROMO_RESOURCE_SERVICE)
 
 #if defined(OS_WIN)
 #include "chrome/installer/util/install_util.h"
