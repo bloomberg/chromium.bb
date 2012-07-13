@@ -2367,6 +2367,7 @@
         'browser/ui/android/infobar_stubs.cc',
         'browser/ui/android/javascript_app_modal_dialog_android.cc',
         'browser/ui/android/select_file_dialog_android.cc',
+        'browser/ui/android/simple_message_box_android.cc',
         'browser/ui/android/ssl_client_certificate_selector.cc',
         'browser/ui/android/tab_contents/chrome_web_contents_view_delegate_android.cc',
         'browser/ui/android/tab_restore_service_delegate_android.cc',
