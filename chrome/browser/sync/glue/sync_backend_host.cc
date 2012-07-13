@@ -1261,6 +1261,11 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
     initialization_state_ = DOWNLOADING_NIGORI;
   }
 
+  if (sync_prefs_->HasSyncSetupCompleted() &&
+      initialization_state_ < DOWNLOADING_NIGORI) {
+    initialization_state_ = DOWNLOADING_NIGORI;
+  }
+
   // Run initialization state machine.
   switch (initialization_state_) {
     case NOT_INITIALIZED:
