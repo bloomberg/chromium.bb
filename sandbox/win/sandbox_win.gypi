@@ -142,12 +142,12 @@
         'sandbox_windows_target': 1,
       },
       'dependencies': [
-        '../../testing/gtest.gyp:gtest',
-        '../../base/base.gyp:base',
-        '../../base/base.gyp:base_static',
+        '../testing/gtest.gyp:gtest',
+        '../base/base.gyp:base',
+        '../base/base.gyp:base_static',
       ],
       'export_dependent_settings': [
-        '../../base/base.gyp:base',
+        '../base/base.gyp:base',
       ],
       'sources': [
         # Files that are used by the 32-bit version of Windows sandbox only.
@@ -191,9 +191,9 @@
         'sandbox_windows_target': 1,
       },
       'dependencies': [
-        '../../testing/gtest.gyp:gtest',
-        '../../base/base.gyp:base_nacl_win64',
-        '../../base/base.gyp:base_static_win64',
+        '../testing/gtest.gyp:gtest',
+        '../base/base.gyp:base_nacl_win64',
+        '../base/base.gyp:base_static_win64',
       ],
       'configurations': {
         'Common_Base': {
@@ -226,7 +226,7 @@
       'type': 'executable',
       'dependencies': [
         'sandbox',
-        '../../testing/gtest.gyp:gtest',
+        '../testing/gtest.gyp:gtest',
       ],
       'sources': [
         'tests/common/controller.cc',
@@ -254,7 +254,7 @@
       'type': 'executable',
       'dependencies': [
         'sandbox',
-        '../../testing/gtest.gyp:gtest',
+        '../testing/gtest.gyp:gtest',
       ],
       'sources': [
         'tests/common/controller.cc',
@@ -270,7 +270,7 @@
       'type': 'executable',
       'dependencies': [
         'sandbox',
-        '../../testing/gtest.gyp:gtest',
+        '../testing/gtest.gyp:gtest',
       ],
       'sources': [
         'tests/common/test_utils.cc',
