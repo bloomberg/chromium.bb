@@ -29,6 +29,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
+#include "content/port/browser/smooth_scroll_gesture.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -73,6 +74,9 @@ static const int kPaintMsgTimeoutMS = 50;
 
 // How long to wait before we consider a renderer hung.
 static const int kHungRendererDelayMs = 30000;
+
+// How many milliseconds apart synthetic scroll messages should be sent.
+static const int kSyntheticScrollMessageIntervalMs = 8;
 
 // Returns |true| if the two wheel events should be coalesced.
 bool ShouldCoalesceMouseWheelEvents(const WebMouseWheelEvent& last_event,
@@ -280,6 +284,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnMsgUpdateRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateIsDelayed, OnMsgUpdateIsDelayed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnMsgInputEventAck)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_BeginSmoothScroll, OnMsgBeginSmoothScroll)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnMsgFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnMsgBlur)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeNumTouchEvents,
@@ -1471,6 +1476,36 @@ void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,
       NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
       Source<void>(this),
       Details<int>(&type));
+}
+
+void RenderWidgetHostImpl::OnMsgBeginSmoothScroll(
+    bool scroll_down, bool scroll_far) {
+  if (!view_)
+    return;
+  active_smooth_scroll_gesture_.reset(
+      view_->CreateSmoothScrollGesture(scroll_down, scroll_far));
+  TickActiveSmoothScrollGesture();
+}
+
+void RenderWidgetHostImpl::TickActiveSmoothScrollGesture() {
+  if (!active_smooth_scroll_gesture_.get())
+    return;
+
+  TimeTicks now = TimeTicks::HighResNow();
+
+  // Post the next tick right away so it is regular.
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&RenderWidgetHostImpl::TickActiveSmoothScrollGesture,
+                 weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(kSyntheticScrollMessageIntervalMs));
+
+
+  bool active = active_smooth_scroll_gesture_->ForwardInputEvents(now, this);
+  if (!active) {
+    active_smooth_scroll_gesture_.reset();
+    // TODO(nduca): send "smooth scroll done" event to RenderWidget.
+  }
 }
 
 void RenderWidgetHostImpl::ProcessWheelAck(bool processed) {

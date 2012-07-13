@@ -40,6 +40,8 @@ struct WebScreenInfo;
 
 namespace content {
 
+class SmoothScrollGesture;
+
 // This is the larger RenderWidgetHostView interface exposed only
 // within content/ and to embedders looking to port to new platforms.
 // RenderWidgetHostView class hierarchy described in render_widget_host_view.h.
@@ -247,6 +249,11 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   // processed (when |processed| is false) or ignored (when |processed| is true)
   virtual void ProcessTouchAck(WebKit::WebInputEvent::Type type,
                                bool processed) = 0;
+
+  // Asks the view to create a smooth scroll gesture that will be used to
+  // simulate a user-initiated scroll.
+  virtual SmoothScrollGesture* CreateSmoothScrollGesture(
+      bool scroll_down, bool scroll_far) = 0;
 
   virtual void SetHasHorizontalScrollbar(bool has_horizontal_scrollbar) = 0;
   virtual void SetScrollOffsetPinning(

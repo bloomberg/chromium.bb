@@ -1769,6 +1769,10 @@ void RenderWidget::CleanupWindowInPluginMoves(gfx::PluginWindowHandle window) {
   }
 }
 
+void RenderWidget::BeginSmoothScroll(bool down, bool scroll_far) {
+  Send(new ViewHostMsg_BeginSmoothScroll(routing_id_, down, scroll_far));
+}
+
 bool RenderWidget::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {
   return false;
 }

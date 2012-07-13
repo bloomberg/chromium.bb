@@ -49,6 +49,7 @@ namespace content {
 
 class RenderWidgetHostDelegate;
 class RenderWidgetHostViewPort;
+class SmoothScrollGesture;
 class TapSuppressionController;
 
 // This implements the RenderWidgetHost interface that is exposed to
@@ -490,6 +491,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void OnMsgUpdateIsDelayed();
   void OnMsgInputEventAck(WebKit::WebInputEvent::Type event_type,
                           bool processed);
+  void OnMsgBeginSmoothScroll(bool scroll_down, bool scroll_far);
   virtual void OnMsgFocus();
   virtual void OnMsgBlur();
   void OnMsgDidChangeNumTouchEvents(int count);
@@ -580,6 +582,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Called when there is a new auto resize (using a post to avoid a stack
   // which may get in recursive loops).
   void DelayedAutoResized();
+
+  // Called periodically to advance the active scroll gesture after being
+  // initiated by OnMsgBeginSmoothScroll.
+  void TickActiveSmoothScrollGesture();
 
   // Our delegate, which wants to know mainly about keyboard events.
   RenderWidgetHostDelegate* delegate_;
@@ -757,6 +763,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 
   scoped_ptr<TapSuppressionController> tap_suppression_controller_;
+
+  scoped_ptr<SmoothScrollGesture> active_smooth_scroll_gesture_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostImpl);
 };

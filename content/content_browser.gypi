@@ -28,6 +28,7 @@
   'sources': [
     'port/browser/render_view_host_delegate_view.h',
     'port/browser/render_widget_host_view_port.h',
+    'port/browser/smooth_scroll_gesture.h',
     'public/browser/access_token_store.h',
     'public/browser/android/content_view_core.h',
     'public/browser/android/devtools_server.h',
@@ -1000,4 +1001,3 @@
     }],
   ],
 }
-

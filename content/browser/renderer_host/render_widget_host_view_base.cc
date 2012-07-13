@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/port/browser/smooth_scroll_gesture.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -19,6 +20,12 @@
 #endif
 
 namespace content {
+
+// How long a smooth scroll gesture should run when it is a near scroll.
+static const double kDurationOfNearScrollGestureSec = 0.15;
+
+// How long a smooth scroll gesture should run when it is a far scroll.
+static const double kDurationOfFarScrollGestureSec = 0.5;
 
 // static
 RenderWidgetHostViewPort* RenderWidgetHostViewPort::FromRWHV(
@@ -110,6 +117,54 @@ void RenderWidgetHostViewBase::UpdateScreenInfo() {
         RenderWidgetHostImpl::From(GetRenderWidgetHost());
     impl->NotifyScreenInfoChanged();
   }
+}
+
+class BasicMouseWheelSmoothScrollGesture
+    : public SmoothScrollGesture {
+ public:
+  BasicMouseWheelSmoothScrollGesture(bool scroll_down, bool scroll_far)
+      : start_time_(base::TimeTicks::HighResNow()),
+        scroll_down_(scroll_down),
+        scroll_far_(scroll_far) { }
+
+  virtual bool ForwardInputEvents(base::TimeTicks now,
+                                  RenderWidgetHost* host) OVERRIDE {
+    double duration_in_seconds;
+    if (scroll_far_)
+      duration_in_seconds = kDurationOfFarScrollGestureSec;
+    else
+      duration_in_seconds = kDurationOfNearScrollGestureSec;
+
+    if (now - start_time_ > base::TimeDelta::FromSeconds(duration_in_seconds))
+      return false;
+
+    WebKit::WebMouseWheelEvent event;
+    event.type = WebKit::WebInputEvent::MouseWheel;
+    // TODO(nduca): Figure out plausible value.
+    event.deltaY = scroll_down_ ? -10 : 10;
+    event.wheelTicksY = scroll_down_ ? 1 : -1;
+    event.modifiers = 0;
+
+    // TODO(nduca): Figure out plausible x and y values.
+    event.globalX = 0;
+    event.globalY = 0;
+    event.x = 0;
+    event.y = 0;
+    event.windowX = event.x;
+    event.windowY = event.y;
+    host->ForwardWheelEvent(event);
+    return true;
+  }
+
+ private:
+  base::TimeTicks start_time_;
+  bool scroll_down_;
+  bool scroll_far_;
+};
+
+SmoothScrollGesture* RenderWidgetHostViewBase::CreateSmoothScrollGesture(
+    bool scroll_down, bool scroll_far) {
+  return new BasicMouseWheelSmoothScrollGesture(scroll_down, scroll_far);
 }
 
 }  // namespace content

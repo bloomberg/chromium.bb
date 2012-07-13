@@ -152,6 +152,10 @@ class CONTENT_EXPORT RenderWidget
   // pending moves don't try to reference it.
   void CleanupWindowInPluginMoves(gfx::PluginWindowHandle window);
 
+  // Directs the host to begin a smooth scroll. This scroll should have the same
+  // performance characteristics as a user-initiated scroll.
+  void BeginSmoothScroll(bool scroll_down, bool scroll_far);
+
   // Close the underlying WebWidget.
   virtual void Close();
 

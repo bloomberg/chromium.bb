@@ -1555,6 +1555,10 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_HandleInputEvent_ACK,
                     WebKit::WebInputEvent::Type,
                     bool /* processed */)
 
+IPC_MESSAGE_ROUTED2(ViewHostMsg_BeginSmoothScroll,
+                    bool /* scroll_down */,
+                    bool /* scroll_far */)
+
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Focus)
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Blur)
 
