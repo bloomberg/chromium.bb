@@ -577,9 +577,9 @@ bool Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
   return true;
 }
 
-bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet types) {
+void Directory::PurgeEntriesWithTypeIn(ModelTypeSet types) {
   if (types.Empty())
-    return true;
+    return;
 
   {
     WriteTransaction trans(FROM_HERE, PURGE_ENTRIES, this);
@@ -597,7 +597,7 @@ bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet types) {
         if ((IsRealDataType(local_type) && types.Has(local_type)) ||
             (IsRealDataType(server_type) && types.Has(server_type))) {
           if (!UnlinkEntryFromOrder(*it, &trans, &lock, DATA_TYPE_PURGE))
-            return false;
+            return;
 
           int64 handle = (*it)->ref(META_HANDLE);
           kernel_->metahandles_to_purge->insert(handle);
@@ -630,7 +630,6 @@ bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet types) {
       }
     }
   }
-  return true;
 }
 
 void Directory::HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot) {

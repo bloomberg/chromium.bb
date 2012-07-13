@@ -24,7 +24,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "sync/internal_api/public/base/model_type_test_util.h"
-#include "sync/engine/sync_scheduler.h"
 #include "sync/internal_api/public/change_record.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/engine/polling_constants.h"
@@ -58,7 +57,6 @@
 #include "sync/syncable/nigori_util.h"
 #include "sync/syncable/syncable_id.h"
 #include "sync/syncable/write_transaction.h"
-#include "sync/test/callback_counter.h"
 #include "sync/test/fake_encryptor.h"
 #include "sync/test/fake_extensions_activity_monitor.h"
 #include "sync/util/cryptographer.h"
@@ -72,10 +70,8 @@ using base::ExpectDictStringValue;
 using testing::_;
 using testing::AnyNumber;
 using testing::AtLeast;
-using testing::DoAll;
 using testing::InSequence;
 using testing::Invoke;
-using testing::Return;
 using testing::SaveArg;
 using testing::StrictMock;
 
@@ -908,10 +904,6 @@ class SyncManagerTest : public testing::Test,
       return false;
     entry.Put(IS_UNSYNCED, false);
     return true;
-  }
-
-  void SetScheduler(scoped_ptr<SyncScheduler> scheduler) {
-    sync_manager_.SetSyncSchedulerForTest(scheduler.Pass());
   }
 
  private:
@@ -2493,120 +2485,4 @@ TEST_F(SyncManagerTest, SetPreviouslyEncryptedSpecifics) {
   }
 }
 
-class MockSyncScheduler : public SyncScheduler {
- public:
-  MockSyncScheduler() : SyncScheduler("name", NULL, NULL) {}
-  virtual ~MockSyncScheduler() {}
-
-  MOCK_METHOD1(Start, void(SyncScheduler::Mode));
-  MOCK_METHOD1(ScheduleConfiguration, bool(const ConfigurationParams&));
-};
-
-// Test that the configuration params are properly created and sent to
-// ScheduleConfigure. No callback should be invoked.
-TEST_F(SyncManagerTest, BasicConfiguration) {
-  ConfigureReason reason = CONFIGURE_REASON_RECONFIGURATION;
-  syncer::ModelTypeSet types_to_download(syncer::BOOKMARKS,
-                                         syncer::PREFERENCES);
-  syncer::ModelSafeRoutingInfo new_routing_info;
-  GetModelSafeRoutingInfo(&new_routing_info);
-
-  scoped_ptr<MockSyncScheduler> scheduler(new MockSyncScheduler());
-  ConfigurationParams params;
-  EXPECT_CALL(*scheduler, Start(SyncScheduler::CONFIGURATION_MODE));
-  EXPECT_CALL(*scheduler, ScheduleConfiguration(_)).
-      WillOnce(DoAll(SaveArg<0>(&params), Return(true)));
-  SetScheduler(scheduler.PassAs<SyncScheduler>());
-
-  CallbackCounter ready_task_counter, retry_task_counter;
-  sync_manager_.ConfigureSyncer(
-      reason,
-      types_to_download,
-      new_routing_info,
-      base::Bind(&CallbackCounter::Callback,
-                 base::Unretained(&ready_task_counter)),
-      base::Bind(&CallbackCounter::Callback,
-                 base::Unretained(&retry_task_counter)));
-  EXPECT_EQ(0, ready_task_counter.times_called());
-  EXPECT_EQ(0, retry_task_counter.times_called());
-  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::RECONFIGURATION,
-            params.source);
-  EXPECT_TRUE(types_to_download.Equals(params.types_to_download));
-  EXPECT_EQ(new_routing_info, params.routing_info);
-}
-
-// Test that the retry callback is invoked on configuration failure.
-TEST_F(SyncManagerTest, ConfigurationRetry) {
-  ConfigureReason reason = CONFIGURE_REASON_RECONFIGURATION;
-  syncer::ModelTypeSet types_to_download(syncer::BOOKMARKS,
-                                         syncer::PREFERENCES);
-  syncer::ModelSafeRoutingInfo new_routing_info;
-  GetModelSafeRoutingInfo(&new_routing_info);
-
-  scoped_ptr<MockSyncScheduler> scheduler(new MockSyncScheduler());
-  ConfigurationParams params;
-  EXPECT_CALL(*scheduler, Start(SyncScheduler::CONFIGURATION_MODE));
-  EXPECT_CALL(*scheduler, ScheduleConfiguration(_)).
-      WillOnce(DoAll(SaveArg<0>(&params), Return(false)));
-  SetScheduler(scheduler.PassAs<SyncScheduler>());
-
-  CallbackCounter ready_task_counter, retry_task_counter;
-  sync_manager_.ConfigureSyncer(
-      reason,
-      types_to_download,
-      new_routing_info,
-      base::Bind(&CallbackCounter::Callback,
-                 base::Unretained(&ready_task_counter)),
-      base::Bind(&CallbackCounter::Callback,
-                 base::Unretained(&retry_task_counter)));
-  EXPECT_EQ(0, ready_task_counter.times_called());
-  EXPECT_EQ(1, retry_task_counter.times_called());
-  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::RECONFIGURATION,
-            params.source);
-  EXPECT_TRUE(types_to_download.Equals(params.types_to_download));
-  EXPECT_EQ(new_routing_info, params.routing_info);
-}
-
-// Test that PurgePartiallySyncedTypes purges only those types that don't
-// have empty progress marker and don't have initial sync ended set.
-TEST_F(SyncManagerTest, PurgePartiallySyncedTypes) {
-  UserShare* share = sync_manager_.GetUserShare();
-
-  // Set Nigori and Bookmarks to be partial types.
-  sync_pb::DataTypeProgressMarker nigori_marker;
-  nigori_marker.set_data_type_id(
-      GetSpecificsFieldNumberFromModelType(NIGORI));
-  nigori_marker.set_token("token");
-  sync_pb::DataTypeProgressMarker bookmark_marker;
-  bookmark_marker.set_data_type_id(
-      GetSpecificsFieldNumberFromModelType(BOOKMARKS));
-  bookmark_marker.set_token("token");
-  share->directory->SetDownloadProgress(NIGORI, nigori_marker);
-  share->directory->SetDownloadProgress(BOOKMARKS, bookmark_marker);
-
-  // Set Preferences to be a full type.
-  sync_pb::DataTypeProgressMarker pref_marker;
-  pref_marker.set_data_type_id(
-      GetSpecificsFieldNumberFromModelType(PREFERENCES));
-  pref_marker.set_token("token");
-  share->directory->SetDownloadProgress(PREFERENCES, pref_marker);
-  share->directory->set_initial_sync_ended_for_type(PREFERENCES, true);
-
-  ModelTypeSet partial_types =
-      sync_manager_.GetTypesWithEmptyProgressMarkerToken(ModelTypeSet::All());
-  EXPECT_FALSE(partial_types.Has(NIGORI));
-  EXPECT_FALSE(partial_types.Has(BOOKMARKS));
-  EXPECT_FALSE(partial_types.Has(PREFERENCES));
-
-  EXPECT_TRUE(sync_manager_.PurgePartiallySyncedTypes());
-
-  // Ensure only bookmarks and nigori lost their progress marker. Preferences
-  // should still have it.
-  partial_types =
-      sync_manager_.GetTypesWithEmptyProgressMarkerToken(ModelTypeSet::All());
-  EXPECT_TRUE(partial_types.Has(NIGORI));
-  EXPECT_TRUE(partial_types.Has(BOOKMARKS));
-  EXPECT_FALSE(partial_types.Has(PREFERENCES));
-}
-
-}  // namespace
+}  // namespace syncer

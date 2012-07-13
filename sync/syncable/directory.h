@@ -421,8 +421,7 @@ class Directory {
   // entries, which means something different in the syncable namespace.
   // WARNING! This can be real slow, as it iterates over all entries.
   // WARNING! Performs synchronous I/O.
-  // Returns: true on success, false if an error was encountered.
-  virtual bool PurgeEntriesWithTypeIn(ModelTypeSet types);
+  virtual void PurgeEntriesWithTypeIn(ModelTypeSet types);
 
  private:
   // A helper that implements the logic of checking tree invariants.

@@ -197,11 +197,6 @@ class SyncManager::SyncInternal
   // went wrong.
   bool SignIn(const SyncCredentials& credentials);
 
-  // Purge from the directory those types with non-empty progress markers
-  // but without initial synced ended set.
-  // Returns false if an error occurred, true otherwise.
-  bool PurgePartiallySyncedTypes();
-
   // Update tokens that we're using in Sync. Email must stay the same.
   void UpdateCredentials(const SyncCredentials& credentials);
 
@@ -362,21 +357,6 @@ class SyncManager::SyncInternal
   // Called only by our NetworkChangeNotifier.
   virtual void OnIPAddressChanged() OVERRIDE;
 
-  ModelTypeSet GetTypesWithEmptyProgressMarkerToken(ModelTypeSet types) {
-    DCHECK(initialized_);
-    syncer::ModelTypeSet result;
-    for (syncer::ModelTypeSet::Iterator i = types.First();
-         i.Good(); i.Inc()) {
-      sync_pb::DataTypeProgressMarker marker;
-      directory()->GetDownloadProgress(i.Get(), &marker);
-
-      if (marker.token().empty())
-        result.Put(i.Get());
-
-    }
-    return result;
-  }
-
   syncer::ModelTypeSet InitialSyncEndedTypes() {
     DCHECK(initialized_);
     return directory()->initial_sync_ended_types();
@@ -395,8 +375,6 @@ class SyncManager::SyncInternal
   virtual void ProcessJsMessage(
       const std::string& name, const JsArgList& args,
       const WeakHandle<JsReplyHandler>& reply_handler) OVERRIDE;
-
-  void SetSyncSchedulerForTest(scoped_ptr<SyncScheduler> scheduler);
 
  private:
   struct NotificationInfo {
@@ -771,15 +749,6 @@ syncer::ModelTypeSet SyncManager::InitialSyncEndedTypes() {
   return data_->InitialSyncEndedTypes();
 }
 
-syncer::ModelTypeSet SyncManager::GetTypesWithEmptyProgressMarkerToken(
-    syncer::ModelTypeSet types) {
-  return data_->GetTypesWithEmptyProgressMarkerToken(types);
-}
-
-bool SyncManager::PurgePartiallySyncedTypes() {
-  return data_->PurgePartiallySyncedTypes();
-}
-
 void SyncManager::StartSyncingNormally(
     const syncer::ModelSafeRoutingInfo& routing_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -824,39 +793,40 @@ bool SyncManager::IsUsingExplicitPassphrase() {
   return data_ && data_->IsUsingExplicitPassphrase();
 }
 
-void SyncManager::ConfigureSyncer(
-    ConfigureReason reason,
-    const syncer::ModelTypeSet& types_to_config,
-    const syncer::ModelSafeRoutingInfo& new_routing_info,
-    const base::Closure& ready_task,
-    const base::Closure& retry_task) {
+void SyncManager::RequestCleanupDisabledTypes(
+    const syncer::ModelSafeRoutingInfo& routing_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!ready_task.is_null());
-  DCHECK(!retry_task.is_null());
+  if (data_->scheduler()) {
+    data_->session_context()->set_routing_info(routing_info);
+    data_->scheduler()->CleanupDisabledTypes();
+  }
+}
 
-  // TODO(zea): set this based on whether cryptographer has keystore
-  // encryption key or not (requires opening a transaction). crbug.com/129665.
-  ConfigurationParams::KeystoreKeyStatus keystore_key_status =
-      ConfigurationParams::KEYSTORE_KEY_UNNECESSARY;
-
-  ConfigurationParams params(GetSourceFromReason(reason),
-                             types_to_config,
-                             new_routing_info,
-                             keystore_key_status,
-                             ready_task);
-
+void SyncManager::RequestConfig(
+    const syncer::ModelSafeRoutingInfo& routing_info,
+    const ModelTypeSet& types, ConfigureReason reason) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!data_->scheduler()) {
     LOG(INFO)
-        << "SyncManager::ConfigureSyncer: could not configure because "
-        << "scheduler is null";
-    params.ready_task.Run();
+        << "SyncManager::RequestConfig: bailing out because scheduler is "
+        << "null";
     return;
   }
+  StartConfigurationMode(base::Closure());
+  data_->session_context()->set_routing_info(routing_info);
+  data_->scheduler()->ScheduleConfiguration(types, GetSourceFromReason(reason));
+}
 
-  data_->scheduler()->Start(syncer::SyncScheduler::CONFIGURATION_MODE);
-  if (!data_->scheduler()->ScheduleConfiguration(params))
-    retry_task.Run();
-
+void SyncManager::StartConfigurationMode(const base::Closure& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!data_->scheduler()) {
+    LOG(INFO)
+        << "SyncManager::StartConfigurationMode: could not start "
+        << "configuration mode because because scheduler is null";
+    return;
+  }
+  data_->scheduler()->Start(
+      syncer::SyncScheduler::CONFIGURATION_MODE, callback);
 }
 
 bool SyncManager::SyncInternal::Init(
@@ -953,28 +923,15 @@ bool SyncManager::SyncInternal::Init(
     scheduler_.reset(new SyncScheduler(name_, session_context(), new Syncer()));
   }
 
-  bool success = SignIn(credentials);
+  bool signed_in = SignIn(credentials);
 
-  if (success) {
+  if (signed_in) {
     if (scheduler()) {
-      scheduler()->Start(syncer::SyncScheduler::CONFIGURATION_MODE);
+      scheduler()->Start(
+          syncer::SyncScheduler::CONFIGURATION_MODE, base::Closure());
     }
 
     initialized_ = true;
-
-    // Unapplied datatypes (those that do not have initial sync ended set) get
-    // re-downloaded during any configuration. But, it's possible for a datatype
-    // to have a progress marker but not have initial sync ended yet, making
-    // it a candidate for migration. This is a problem, as the DataTypeManager
-    // does not support a migration while it's already in the middle of a
-    // configuration. As a result, any partially synced datatype can stall the
-    // DTM, waiting for the configuration to complete, which it never will due
-    // to the migration error. In addition, a partially synced nigori will
-    // trigger the migration logic before the backend is initialized, resulting
-    // in crashes. We therefore detect and purge any partially synced types as
-    // part of initialization.
-    if (!PurgePartiallySyncedTypes())
-      success = false;
 
     // Cryptographer should only be accessed while holding a
     // transaction.  Grabbing the user share for the transaction
@@ -993,14 +950,14 @@ bool SyncManager::SyncInternal::Init(
   FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                     OnInitializationComplete(
                         MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()),
-                        success));
+                        signed_in));
 
-  if (!success && testing_mode_ == NON_TEST)
+  if (!signed_in && testing_mode_ == NON_TEST)
     return false;
 
   sync_notifier_->AddObserver(this);
 
-  return success;
+  return signed_in;
 }
 
 void SyncManager::SyncInternal::UpdateCryptographerAndNigori(
@@ -1145,13 +1102,9 @@ void SyncManager::SyncInternal::NotifyCryptographerState(
 void SyncManager::SyncInternal::StartSyncingNormally(
     const syncer::ModelSafeRoutingInfo& routing_info) {
   // Start the sync scheduler.
-  if (scheduler()) {  // NULL during certain unittests.
-    // TODO(sync): We always want the newest set of routes when we switch back
-    // to normal mode. Figure out how to enforce set_routing_info is always
-    // appropriately set and that it's only modified when switching to normal
-    // mode.
+  if (scheduler()) { // NULL during certain unittests.
     session_context()->set_routing_info(routing_info);
-    scheduler()->Start(SyncScheduler::NORMAL_MODE);
+    scheduler()->Start(SyncScheduler::NORMAL_MODE, base::Closure());
   }
 }
 
@@ -1203,20 +1156,6 @@ bool SyncManager::SyncInternal::SignIn(const SyncCredentials& credentials) {
 
   UpdateCredentials(credentials);
   return true;
-}
-
-bool SyncManager::SyncInternal::PurgePartiallySyncedTypes() {
-  syncer::ModelTypeSet partially_synced_types =
-      syncer::ModelTypeSet::All();
-  partially_synced_types.RemoveAll(InitialSyncEndedTypes());
-  partially_synced_types.RemoveAll(GetTypesWithEmptyProgressMarkerToken(
-      syncer::ModelTypeSet::All()));
-
-  UMA_HISTOGRAM_COUNTS("Sync.PartiallySyncedTypes",
-                       partially_synced_types.Size());
-  if (partially_synced_types.Empty())
-    return true;
-  return directory()->PurgeEntriesWithTypeIn(partially_synced_types);
 }
 
 void SyncManager::SyncInternal::UpdateCredentials(
@@ -2401,11 +2340,6 @@ void SyncManager::SyncInternal::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void SyncManager::SyncInternal::SetSyncSchedulerForTest(
-    scoped_ptr<SyncScheduler> sync_scheduler) {
-  scheduler_ = sync_scheduler.Pass();
-}
-
 SyncStatus SyncManager::GetDetailedStatus() const {
   return data_->GetStatus();
 }
@@ -2434,10 +2368,6 @@ void SyncManager::RefreshNigori(const std::string& chrome_version,
 TimeDelta SyncManager::GetNudgeDelayTimeDelta(
     const ModelType& model_type) {
   return data_->GetNudgeDelayTimeDelta(model_type);
-}
-
-void SyncManager::SetSyncSchedulerForTest(scoped_ptr<SyncScheduler> scheduler) {
-  data_->SetSyncSchedulerForTest(scheduler.Pass());
 }
 
 syncer::ModelTypeSet SyncManager::GetEncryptedDataTypesForTest() const {
@@ -2527,6 +2457,22 @@ bool InitialSyncEndedForTypes(syncer::ModelTypeSet types,
       return false;
   }
   return true;
+}
+
+syncer::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
+    syncer::ModelTypeSet types,
+    syncer::UserShare* share) {
+  syncer::ModelTypeSet result;
+  for (syncer::ModelTypeSet::Iterator i = types.First();
+       i.Good(); i.Inc()) {
+    sync_pb::DataTypeProgressMarker marker;
+    share->directory->GetDownloadProgress(i.Get(), &marker);
+
+    if (marker.token().empty())
+      result.Put(i.Get());
+
+  }
+  return result;
 }
 
 }  // namespace syncer

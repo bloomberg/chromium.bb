@@ -224,8 +224,12 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
       syncer::ModelTypeSet types_to_add,
       syncer::ModelTypeSet types_to_remove,
       NigoriState nigori_state,
-      const base::Callback<void(syncer::ModelTypeSet)>& ready_task,
-      const base::Callback<void()>& retry_callback) OVERRIDE;
+      base::Callback<void(syncer::ModelTypeSet)> ready_task,
+      base::Callback<void()> retry_callback) OVERRIDE;
+
+  // Makes an asynchronous call to syncer to switch to config mode. When done
+  // syncer will call us back on FinishConfigureDataTypes.
+  virtual void StartConfiguration(const base::Closure& callback);
 
   // Turns on encryption of all present and future sync data.
   virtual void EnableEncryptEverything();
@@ -323,20 +327,16 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Allows tests to perform alternate core initialization work.
   virtual void InitCore(const DoInitializeOptions& options);
 
-  // Request the syncer to reconfigure with the specfied params.
-  // Virtual for testing.
-  virtual void RequestConfigureSyncer(
-      syncer::ConfigureReason reason,
-      syncer::ModelTypeSet types_to_config,
-      const syncer::ModelSafeRoutingInfo& routing_info,
-      const base::Callback<void(syncer::ModelTypeSet)>& ready_task,
-      const base::Closure& retry_callback);
+  // Called from Core::OnSyncCycleCompleted to handle updating frontend
+  // thread components.
+  void HandleSyncCycleCompletedOnFrontendLoop(
+      const syncer::sessions::SyncSessionSnapshot& snapshot);
 
-  // Called when the syncer has finished performing a configuration.
-  void FinishConfigureDataTypesOnFrontendLoop(
-      const syncer::ModelTypeSet types_to_configure,
-      const syncer::ModelTypeSet configured_types,
-      const base::Callback<void(syncer::ModelTypeSet)>& ready_task);
+  // Called to finish the job of ConfigureDataTypes once the syncer is in
+  // configuration mode.
+  void FinishConfigureDataTypesOnFrontendLoop();
+
+  bool IsDownloadingNigoriForTest() const;
 
  private:
   // The real guts of SyncBackendHost, to keep the public client API clean.
@@ -359,30 +359,46 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
     INITIALIZED,            // Initialization is complete.
   };
 
+  struct PendingConfigureDataTypesState {
+    PendingConfigureDataTypesState();
+    ~PendingConfigureDataTypesState();
+
+    // The ready_task will be run when configuration is done with the
+    // set of all types that failed configuration (i.e., if its
+    // argument is non-empty, then an error was encountered).
+    base::Callback<void(syncer::ModelTypeSet)> ready_task;
+
+    // The retry callback will be run when the download failed due to a
+    // transient error. This is to notify DTM so it can apropriately inform
+    // the UI. Note: The retry_callback will be run only once and after
+    // that we will not notify DTM until the sync is successful or in a
+    // permanent error state.
+    base::Callback<void()> retry_callback;
+
+    // The set of types that we are waiting to be initially synced in a
+    // configuration cycle.
+    syncer::ModelTypeSet types_to_add;
+
+    // Additional details about which types were added.
+    syncer::ModelTypeSet added_types;
+    syncer::ConfigureReason reason;
+    bool retry_in_progress;
+  };
+
   // Checks if we have received a notice to turn on experimental datatypes
   // (via the nigori node) and informs the frontend if that is the case.
   // Note: it is illegal to call this before the backend is initialized.
   void AddExperimentalTypes();
 
   // Downloading of nigori failed and will be retried.
-  void OnNigoriDownloadRetry();
+  virtual void OnNigoriDownloadRetry();
 
   // InitializationComplete passes through the SyncBackendHost to forward
   // on to |frontend_|, and so that tests can intercept here if they need to
   // set up initial conditions.
-  void HandleInitializationCompletedOnFrontendLoop(
+  virtual void HandleInitializationCompletedOnFrontendLoop(
       const syncer::WeakHandle<syncer::JsBackend>& js_backend,
       bool success);
-
-  // Called from Core::OnSyncCycleCompleted to handle updating frontend
-  // thread components.
-  void HandleSyncCycleCompletedOnFrontendLoop(
-      const syncer::sessions::SyncSessionSnapshot& snapshot);
-
-  // Called when the syncer failed to perform a configuration and will
-  // eventually retry. FinishingConfigurationOnFrontendLoop(..) will be called
-  // on successful completion.
-  void RetryConfigurationOnFrontendLoop(const base::Closure& retry_callback);
 
   // Helpers to persist a token that can be used to bootstrap sync encryption
   // across browser restart to avoid requiring the user to re-enter their
@@ -482,6 +498,9 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
   // The frontend which we serve (and are owned by).
   SyncFrontend* frontend_;
+
+  scoped_ptr<PendingConfigureDataTypesState> pending_download_state_;
+  scoped_ptr<PendingConfigureDataTypesState> pending_config_mode_state_;
 
   // We cache the cryptographer's pending keys whenever NotifyPassphraseRequired
   // is called. This way, before the UI calls SetDecryptionPassphrase on the
