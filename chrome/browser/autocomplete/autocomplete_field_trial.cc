@@ -32,11 +32,11 @@ const base::FieldTrial::Probability
 // will decide what behavior (if any) to change based on the group.
 const int kSuggestFieldTrialNumberOfGroups = 20;
 
-// For History Quick Provider new scoring field trial, put 25% ( = 25/100 )
+// For History Quick Provider new scoring field trial, put 0% ( = 0/100 )
 // of the users in the new scoring experiment group.
 const base::FieldTrial::Probability kHQPNewScoringFieldTrialDivisor = 100;
 const base::FieldTrial::Probability
-    kHQPNewScoringFieldTrialExperimentFraction = 25;
+    kHQPNewScoringFieldTrialExperimentFraction = 0;
 
 // Field trial IDs.
 // Though they are not literally "const", they are set only once, in
