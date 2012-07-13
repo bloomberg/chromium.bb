@@ -62,6 +62,10 @@ bool ModuleSystem::IsPresentInCurrentContext() {
 // static
 void ModuleSystem::DumpException(const v8::TryCatch& try_catch) {
   v8::Handle<v8::Message> message(try_catch.Message());
+  if (message.IsEmpty()) {
+    LOG(ERROR) << "try_catch has no message";
+    return;
+  }
 
   LOG(ERROR) << "["
              << *v8::String::Utf8Value(
@@ -114,6 +118,7 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
   {
     WebKit::WebScopedMicrotaskSuppression suppression;
     v8::TryCatch try_catch;
+    try_catch.SetCaptureMessage(true);
     func->Call(global, 3, args);
     if (try_catch.HasCaught()) {
       DumpException(try_catch);
@@ -194,6 +199,7 @@ v8::Handle<v8::Value> ModuleSystem::RunString(v8::Handle<v8::String> code,
   WebKit::WebScopedMicrotaskSuppression suppression;
   v8::Handle<v8::Value> result;
   v8::TryCatch try_catch;
+  try_catch.SetCaptureMessage(true);
   v8::Handle<v8::Script> script(v8::Script::New(code, name));
   if (try_catch.HasCaught()) {
     DumpException(try_catch);
