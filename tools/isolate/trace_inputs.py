@@ -1015,15 +1015,38 @@ class Strace(ApiBase):
       # Happens when strace fails to even get the function name.
       UNNAMED_FUNCTION = '????'
 
-      # Arguments parsing.
-      RE_ACCESS = re.compile(r'^\"(.+?)\", R_[A-Z]+$')
-      RE_CHDIR = re.compile(r'^\"(.+?)\"$')
-      RE_EXECVE = re.compile(r'^\"(.+?)\", \[(.+)\], \[\/\* \d+ vars? \*\/\]$')
-      RE_OPEN2 = re.compile(r'^\"(.*?)\", ([A-Z\_\|]+)$')
-      RE_OPEN3 = re.compile(r'^\"(.*?)\", ([A-Z\_\|]+), (\d+)$')
-      RE_READLINK = re.compile(r'^\"(.+?)\", \".+?\"(\.\.\.)?, \d+$')
-      RE_RENAME = re.compile(r'^\"(.+?)\", \"(.+?)\"$')
-      RE_STAT = re.compile(r'\"(.+?)\", \{.+?, \.\.\.\}')
+      # Corner-case in python, a class member function decorator must not be
+      # @staticmethod.
+      def parse_args(regexp, expect_zero):  # pylint: disable=E0213
+        """Automatically convert the str 'args' into a list of processed
+        arguments.
+
+        Arguments:
+        - regexp is used to parse args.
+        - expect_zero: one of True, False or None.
+          - True: will check for result.startswith('0') first and will ignore
+            the trace line completely otherwise. This is important because for
+            many functions, the regexp will not process if the call failed.
+          - False: will check for not result.startswith(('?', '-1')) for the
+            same reason than with True.
+          - None: ignore result.
+        """
+        def meta_hook(function):
+          assert function.__name__.startswith('handle_')
+          def hook(self, args, result):
+            if expect_zero is True and not result.startswith('0'):
+              return
+            if expect_zero is False and result.startswith(('?', '-1')):
+              return
+            match = re.match(regexp, args)
+            if not match:
+              raise TracingFailure(
+                  'Failed to parse %s(%s) = %s' %
+                  (function.__name__[len('handle_'):], args, result),
+                  None, None, None)
+            return function(self, match.groups(), result)
+          return hook
+        return meta_hook
 
       class RelativePath(object):
         """A late-bound relative path."""
@@ -1126,12 +1149,11 @@ class Strace(ApiBase):
                 None, None, None)
           if match.group(1) == self.UNNAMED_FUNCTION:
             return
+
+          # It's a valid line, handle it.
           handler = getattr(self, 'handle_%s' % match.group(1), None)
           if not handler:
-            raise TracingFailure(
-                'Found a unhandled trace: %s' % match.group(1),
-                None, None, None)
-
+            self._handle_unknown(match.group(1), match.group(2), match.group(3))
           return handler(match.group(2), match.group(3))
         except TracingFailure, e:
           # Hack in the values since the handler could be a static function.
@@ -1149,18 +1171,14 @@ class Strace(ApiBase):
               line,
               e)
 
-      def handle_access(self, args, result):
-        if result.startswith('-1'):
-          return
-        match = self.RE_ACCESS.match(args)
-        self._handle_file(match.group(1), True)
+      @parse_args(r'^\"(.+?)\", [FRWX]_OK$', True)
+      def handle_access(self, args, _result):
+        self._handle_file(args[0], True)
 
-      def handle_chdir(self, args, result):
+      @parse_args(r'^\"(.+?)\"$', True)
+      def handle_chdir(self, args, _result):
         """Updates cwd."""
-        if not result.startswith('0'):
-          return
-        cwd = self.RE_CHDIR.match(args).group(1)
-        self.cwd = self.RelativePath(self, cwd)
+        self.cwd = self.RelativePath(self, args[0])
         logging.debug('handle_chdir(%d, %s)' % (self.pid, self.cwd))
 
       def handle_clone(self, _args, result):
@@ -1186,76 +1204,79 @@ class Strace(ApiBase):
       def handle_close(self, _args, _result):
         pass
 
-      def handle_execve(self, args, result):
-        if result != '0':
-          return
-        match = self.RE_EXECVE.match(args)
-        if not match:
-          raise TracingFailure(
-              'Failed to process execve(%s)' % args,
-              None, None, None)
-        filepath = match.group(1)
+      def handle_creat(self, _args, _result):
+        # Ignore files created, since they didn't need to exist.
+        pass
+
+      @parse_args(r'^\"(.+?)\", \[(.+)\], \[\/\* \d+ vars? \*\/\]$', True)
+      def handle_execve(self, args, _result):
+        # Even if in practice execve() doesn't returns when it succeeds, strace
+        # still prints '0' as the result.
+        filepath = args[0]
         self._handle_file(filepath, False)
         self.executable = self.RelativePath(self.get_cwd(), filepath)
-        self.command = process_quoted_arguments(match.group(2))
+        self.command = process_quoted_arguments(args[1])
 
       def handle_exit_group(self, _args, _result):
         """Removes cwd."""
         self.cwd = None
 
-      @staticmethod
-      def handle_fork(_args, _result):
-        raise NotImplementedError('Unexpected/unimplemented trace fork()')
+      def handle_fork(self, args, result):
+        self._handle_unknown('fork', args, result)
 
       def handle_getcwd(self, _args, _result):
         pass
 
-      def handle_lstat(self, args, result):
-        if result.startswith('-1'):
-          return
-        match = self.RE_STAT.match(args)
-        self._handle_file(match.group(1), True)
+      @parse_args(r'^\"(.+?)\", \"(.+?)\"$', True)
+      def handle_link(self, args, _result):
+        self._handle_file(args[0], False)
+        self._handle_file(args[1], False)
 
-      def handle_open(self, args, result):
-        if result.startswith('-1'):
-          return
-        args = (self.RE_OPEN3.match(args) or self.RE_OPEN2.match(args)).groups()
+      @parse_args(r'\"(.+?)\", \{.+?, \.\.\.\}', True)
+      def handle_lstat(self, args, _result):
+        self._handle_file(args[0], True)
+
+      def handle_mkdir(self, _args, _result):
+        pass
+
+      @parse_args(r'^\"(.*?)\", ([A-Z\_\|]+)(|, \d+)$', False)
+      def handle_open(self, args, _result):
         if 'O_DIRECTORY' in args[1]:
           return
         self._handle_file(args[0], False)
 
-      def handle_readlink(self, args, result):
-        if result.startswith('-1'):
-          return
-        match = self.RE_READLINK.match(args)
-        if not match:
-          raise TracingFailure(
-              'Failed to parse: readlink(%s) = %s' % (args, result),
-              None,
-              None,
-              None)
-        self._handle_file(match.group(1), False)
+      @parse_args(r'^\"(.+?)\", \".+?\"(\.\.\.)?, \d+$', False)
+      def handle_readlink(self, args, _result):
+        self._handle_file(args[0], False)
 
-      def handle_rename(self, args, result):
-        if result.startswith('-1'):
-          return
-        args = self.RE_RENAME.match(args).groups()
+      @parse_args(r'^\"(.+?)\", \"(.+?)\"$', True)
+      def handle_rename(self, args, _result):
         self._handle_file(args[0], False)
         self._handle_file(args[1], False)
 
-      def handle_stat(self, args, result):
-        if result.startswith('-1'):
-          return
-        match = self.RE_STAT.match(args)
-        self._handle_file(match.group(1), True)
+      def handle_rmdir(self, _args, _result):
+        pass
+
+      @parse_args(r'\"(.+?)\", \{.+?, \.\.\.\}', True)
+      def handle_stat(self, args, _result):
+        self._handle_file(args[0], True)
+
+      def handle_unlink(self, _args, _result):
+        # In theory, the file had to be created anyway.
+        pass
+
+      def handle_statfs(self, _args, _result):
+        pass
+
+      def handle_vfork(self, args, result):
+        self._handle_unknown('vfork', args, result)
 
       @staticmethod
-      def handle_stat64(_args, _result):
-        raise NotImplementedError('Unexpected/unimplemented trace stat64()')
-
-      @staticmethod
-      def handle_vfork(_args, _result):
-        raise NotImplementedError('Unexpected/unimplemented trace vfork()')
+      def _handle_unknown(function, args, result):
+        raise TracingFailure(
+            'Unexpected/unimplemented trace %s(%s)= %s' %
+            (function, args, result),
+            None, None, None)
 
       def _handle_file(self, filepath, touch_only):
         filepath = self.RelativePath(self.get_cwd(), filepath)
