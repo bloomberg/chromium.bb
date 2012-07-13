@@ -238,8 +238,8 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void CopyFromCompositingSurface(
       const gfx::Size& size,
-      skia::PlatformCanvas* output,
-      base::Callback<void(bool)> callback) OVERRIDE;
+      const base::Callback<void(bool)>& callback,
+      skia::PlatformCanvas* output) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
 
   virtual void OnAccessibilityNotifications(

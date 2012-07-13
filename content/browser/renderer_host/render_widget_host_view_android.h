@@ -84,8 +84,8 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
   virtual void CopyFromCompositingSurface(
       const gfx::Size& size,
-      skia::PlatformCanvas* output,
-      base::Callback<void(bool)> callback) OVERRIDE;
+      const base::Callback<void(bool)>& callback,
+      skia::PlatformCanvas* output) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;

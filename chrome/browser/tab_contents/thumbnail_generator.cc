@@ -518,11 +518,13 @@ void ThumbnailGenerator::AsyncUpdateThumbnail(
                               gfx::Size(kThumbnailWidth, kThumbnailHeight));
   skia::PlatformCanvas* temp_canvas = new skia::PlatformCanvas;
   render_widget_host->CopyFromBackingStore(
-      gfx::Rect(), copy_size, temp_canvas,
+      gfx::Rect(),
+      copy_size,
       base::Bind(&ThumbnailGenerator::UpdateThumbnailWithCanvas,
                  weak_factory_.GetWeakPtr(),
                  web_contents_weak_factory_->GetWeakPtr(),
-                 base::Owned(temp_canvas)));
+                 base::Owned(temp_canvas)),
+      temp_canvas);
 }
 
 void ThumbnailGenerator::UpdateThumbnailWithBitmap(

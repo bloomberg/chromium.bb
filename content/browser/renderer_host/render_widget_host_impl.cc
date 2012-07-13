@@ -490,16 +490,16 @@ void RenderWidgetHostImpl::SetIsLoading(bool is_loading) {
 void RenderWidgetHostImpl::CopyFromBackingStore(
     const gfx::Rect& src_rect,
     const gfx::Size& accelerated_dest_size,
-    skia::PlatformCanvas* output,
-    base::Callback<void(bool)> callback) {
+    const base::Callback<void(bool)>& callback,
+    skia::PlatformCanvas* output) {
   if (view_ && is_accelerated_compositing_active_) {
     TRACE_EVENT0("browser",
         "RenderWidgetHostImpl::CopyFromBackingStore::FromCompositingSurface");
     // TODO(mazda): Support partial copy with |src_rect|
     // (http://crbug.com/118571).
     view_->CopyFromCompositingSurface(accelerated_dest_size,
-                                      output,
-                                      callback);
+                                      callback,
+                                      output);
     return;
   }
 

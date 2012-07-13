@@ -1185,8 +1185,8 @@ BackingStore* RenderWidgetHostViewWin::AllocBackingStore(
 
 void RenderWidgetHostViewWin::CopyFromCompositingSurface(
     const gfx::Size& size,
-    skia::PlatformCanvas* output,
-    base::Callback<void(bool)> callback) {
+    const base::Callback<void(bool)>& callback,
+    skia::PlatformCanvas* output) {
   base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
   if (!accelerated_surface_.get())
     return;

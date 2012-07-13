@@ -180,8 +180,8 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // and synchronously on the other platforms.
   virtual void CopyFromBackingStore(const gfx::Rect& src_rect,
                                     const gfx::Size& accelerated_dest_size,
-                                    skia::PlatformCanvas* output,
-                                    base::Callback<void(bool)> callback) = 0;
+                                    const base::Callback<void(bool)>& callback,
+                                    skia::PlatformCanvas* output) = 0;
 #if defined(TOOLKIT_GTK)
   // Paint the backing store into the target's |dest_rect|.
   virtual bool CopyFromBackingStoreToGtkWindow(const gfx::Rect& dest_rect,

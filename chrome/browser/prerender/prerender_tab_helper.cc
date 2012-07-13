@@ -57,12 +57,14 @@ class PrerenderTabHelper::PixelStats {
 
     skia::PlatformCanvas* temp_canvas = new skia::PlatformCanvas;
     web_contents->GetRenderViewHost()->CopyFromBackingStore(
-        gfx::Rect(), gfx::Size(), temp_canvas,
+        gfx::Rect(),
+        gfx::Size(),
         base::Bind(&PrerenderTabHelper::PixelStats::HandleBitmapResult,
                    weak_factory_.GetWeakPtr(),
                    bitmap_type,
                    web_contents,
-                   base::Owned(temp_canvas)));
+                   base::Owned(temp_canvas)),
+        temp_canvas);
   }
 
  private:

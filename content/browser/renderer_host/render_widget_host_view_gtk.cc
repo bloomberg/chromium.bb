@@ -1023,8 +1023,8 @@ BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(
 // ignored on GTK.
 void RenderWidgetHostViewGtk::CopyFromCompositingSurface(
     const gfx::Size& /* size */,
-    skia::PlatformCanvas* output,
-    base::Callback<void(bool)> callback) {
+    const base::Callback<void(bool)>& callback,
+    skia::PlatformCanvas* output) {
   base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
 
   const gfx::Rect bounds = GetViewBounds();

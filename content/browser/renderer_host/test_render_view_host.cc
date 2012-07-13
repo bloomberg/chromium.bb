@@ -101,8 +101,8 @@ BackingStore* TestRenderWidgetHostView::AllocBackingStore(
 
 void TestRenderWidgetHostView::CopyFromCompositingSurface(
     const gfx::Size& size,
-    skia::PlatformCanvas* output,
-    base::Callback<void(bool)> callback) {
+    const base::Callback<void(bool)>& callback,
+    skia::PlatformCanvas* output) {
   callback.Run(false);
 }
 

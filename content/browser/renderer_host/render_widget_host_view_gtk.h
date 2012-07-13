@@ -100,8 +100,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void CopyFromCompositingSurface(
       const gfx::Size& size,
-      skia::PlatformCanvas* output,
-      base::Callback<void(bool)> callback) OVERRIDE;
+      const base::Callback<void(bool)>& callback,
+      skia::PlatformCanvas* output) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
   virtual void AcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,

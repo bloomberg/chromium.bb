@@ -84,8 +84,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void CopyFromBackingStore(
       const gfx::Rect& src_rect,
       const gfx::Size& accelerated_dest_size,
-      skia::PlatformCanvas* output,
-      base::Callback<void(bool)> callback) OVERRIDE;
+      const base::Callback<void(bool)>& callback,
+      skia::PlatformCanvas* output) OVERRIDE;
 #if defined(TOOLKIT_GTK)
   virtual bool CopyFromBackingStoreToGtkWindow(const gfx::Rect& dest_rect,
                                                GdkWindow* target) OVERRIDE;

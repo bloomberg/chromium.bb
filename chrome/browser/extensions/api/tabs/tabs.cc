@@ -1635,10 +1635,10 @@ bool CaptureVisibleTabFunction::RunImpl() {
   render_view_host->CopyFromBackingStore(
       gfx::Rect(),
       view->GetViewBounds().size(),
-      temp_canvas,
       base::Bind(&CaptureVisibleTabFunction::CopyFromBackingStoreComplete,
                  this,
-                 base::Owned(temp_canvas)));
+                 base::Owned(temp_canvas)),
+      temp_canvas);
   return true;
 }
 

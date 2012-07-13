@@ -152,8 +152,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   // other platforms.
   virtual void CopyFromCompositingSurface(
       const gfx::Size& size,
-      skia::PlatformCanvas* output,
-      base::Callback<void(bool)> callback) = 0;
+      const base::Callback<void(bool)>& callback,
+      skia::PlatformCanvas* output) = 0;
 
   // Called when accelerated compositing state changes.
   virtual void OnAcceleratedCompositingStateChange() = 0;
