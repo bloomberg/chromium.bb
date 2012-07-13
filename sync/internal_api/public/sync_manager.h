@@ -31,6 +31,7 @@ struct Experiments;
 class ExtensionsActivityMonitor;
 class JsBackend;
 class JsEventHandler;
+class SyncScheduler;
 
 namespace sessions {
 class SyncSessionSnapshot;
@@ -401,6 +402,16 @@ class SyncManager {
   // Returns the set of types for which we have stored some sync data.
   syncer::ModelTypeSet InitialSyncEndedTypes();
 
+  // Returns those types within |types| that have an empty progress marker
+  // token.
+  syncer::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
+      syncer::ModelTypeSet types);
+
+  // Purge from the directory those types with non-empty progress markers
+  // but without initial synced ended set.
+  // Returns false if an error occurred, true otherwise.
+  bool PurgePartiallySyncedTypes();
+
   // Update tokens that we're using in Sync. Email must stay the same.
   void UpdateCredentials(const SyncCredentials& credentials);
 
@@ -428,20 +439,20 @@ class SyncManager {
   // error to call this when we don't have pending keys.
   void SetDecryptionPassphrase(const std::string& passphrase);
 
-  // Puts the SyncScheduler into a mode where no normal nudge or poll traffic
-  // will occur, but calls to RequestConfig will be supported.  If |callback|
-  // is provided, it will be invoked (from the internal SyncScheduler) when
-  // the thread has changed to configuration mode.
-  void StartConfigurationMode(const base::Closure& callback);
-
-  // Switches the mode of operation to CONFIGURATION_MODE and
-  // schedules a config task to fetch updates for |types|.
-  void RequestConfig(const syncer::ModelSafeRoutingInfo& routing_info,
-                     const syncer::ModelTypeSet& types,
-                     syncer::ConfigureReason reason);
-
-  void RequestCleanupDisabledTypes(
-      const syncer::ModelSafeRoutingInfo& routing_info);
+  // Switches the mode of operation to CONFIGURATION_MODE and performs
+  // any configuration tasks needed as determined by the params. Once complete,
+  // syncer will remain in CONFIGURATION_MODE until StartSyncingNormally is
+  // called.
+  // |ready_task| is invoked when the configuration completes.
+  // |retry_task| is invoked if the configuration job could not immediately
+  //              execute. |ready_task| will still be called when it eventually
+  //              does finish.
+  void ConfigureSyncer(
+      ConfigureReason reason,
+      const syncer::ModelTypeSet& types_to_config,
+      const syncer::ModelSafeRoutingInfo& new_routing_info,
+      const base::Closure& ready_task,
+      const base::Closure& retry_task);
 
   // Adds a listener to be notified of sync events.
   // NOTE: It is OK (in fact, it's probably a good idea) to call this before
@@ -538,10 +549,16 @@ class SyncManager {
   static const FilePath::CharType kSyncDatabaseFilename[];
 
  private:
+  friend class SyncManagerTest;
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, NudgeDelayTest);
 
   // For unit tests.
   base::TimeDelta GetNudgeDelayTimeDelta(const syncer::ModelType& model_type);
+
+  // Set the internal scheduler for testing purposes.
+  // TODO(sync): Use dependency injection instead. crbug.com/133061
+  void SetSyncSchedulerForTest(
+      scoped_ptr<syncer::SyncScheduler> scheduler);
 
   base::ThreadChecker thread_checker_;
 
@@ -552,10 +569,6 @@ class SyncManager {
 };
 
 bool InitialSyncEndedForTypes(syncer::ModelTypeSet types, UserShare* share);
-
-syncer::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
-    syncer::ModelTypeSet types,
-    syncer::UserShare* share);
 
 const char* ConnectionStatusToString(ConnectionStatus status);
 

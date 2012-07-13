@@ -29,7 +29,7 @@ class MockDirectory : public Directory {
   MOCK_METHOD1(GetEntryByClientTag,
                syncable::EntryKernel*(const std::string&));
 
-  MOCK_METHOD1(PurgeEntriesWithTypeIn, void(syncer::ModelTypeSet));
+  MOCK_METHOD1(PurgeEntriesWithTypeIn, bool(syncer::ModelTypeSet));
 
  private:
   syncer::FakeEncryptor encryptor_;
