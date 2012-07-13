@@ -481,6 +481,10 @@
       'test/data/web_database/',
       'test/data/zip/test/foo/bar/',
     ],
+    'isolate_dependency_touched': [
+      'test/data/extensions/absolute_path/test.html',
+      'test/data/extensions/absolute_path/test.js',
+    ],
   },
   'conditions': [
     ['OS=="linux"', {
@@ -598,6 +602,7 @@
           'test/data/extensions/manifest_tests/sandboxed_pages_valid_4.json',
           'test/data/extensions/manifest_tests/sandboxed_pages_valid_5.json',
           'test/data/extensions/manifest_tests/script_badge_basic.json',
+          'test/data/extensions/manifest_tests/script_badge_only_use_icon16.json',
           'test/data/extensions/manifest_tests/script_badge_title_icons_ignored.json',
           'test/data/extensions/manifest_tests/web_accessible_resources_5.json',
           'test/data/extensions/manifest_tests/web_accessible_resources_6.json',
@@ -606,6 +611,7 @@
           'test/data/page_cycler/errors_expected',
         ],
         'isolate_dependency_untracked': [
+          'test/data/extensions/api_test/browser_action/synthesized/',
           'test/data/firefox2_nss/',
           'test/data/firefox2_profile/bookmarks.html',
           'test/data/firefox2_profile/cookies.txt',
@@ -751,7 +757,6 @@
           '<(PRODUCT_DIR)/icudt.dll',
           'browser/resources/software_rendering_list.json',
           'test/data/extensions/manifest_tests/offline_default_platform_app.json',
-          'test/data/extensions/manifest_tests/script_badge_only_use_icon16.json',
           'test/data/extensions/permissions/audio-video.json',
           'test/data/safe_browsing/download_protection/signed.exe',
           'test/data/safe_browsing/download_protection/unsigned.exe',
@@ -770,7 +775,6 @@
           '../third_party/python_26/Lib/xml/parsers/',
           '../ui/base/glib/',
           'test/data/components/flapper/windows/',
-          'test/data/extensions/api_test/browser_action/synthesized/',
         ],
       },
     }, {
