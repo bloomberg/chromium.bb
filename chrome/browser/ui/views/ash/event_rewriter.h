@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_ASH_KEY_REWRITER_H_
-#define CHROME_BROWSER_UI_VIEWS_ASH_KEY_REWRITER_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_ASH_EVENT_REWRITER_H_
+#define CHROME_BROWSER_UI_VIEWS_ASH_EVENT_REWRITER_H_
 
 #include <map>
 #include <string>
 
-#include "ash/key_rewriter_delegate.h"
+#include "ash/event_rewriter_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/root_window_observer.h"
@@ -32,10 +32,10 @@ class XKeyboard;
 }
 #endif
 
-class KeyRewriter : public ash::KeyRewriterDelegate,
-                    public aura::RootWindowObserver
+class EventRewriter : public ash::EventRewriterDelegate,
+                      public aura::RootWindowObserver
 #if defined(OS_CHROMEOS)
-                  , public chromeos::DeviceHierarchyObserver
+                    , public chromeos::DeviceHierarchyObserver
 #endif
 {
  public:
@@ -44,8 +44,8 @@ class KeyRewriter : public ash::KeyRewriterDelegate,
     kDeviceAppleKeyboard,
   };
 
-  KeyRewriter();
-  virtual ~KeyRewriter();
+  EventRewriter();
+  virtual ~EventRewriter();
 
   // Calls DeviceAddedInternal.
   DeviceType DeviceAddedForTesting(int device_id,
@@ -72,10 +72,10 @@ class KeyRewriter : public ash::KeyRewriterDelegate,
   static DeviceType GetDeviceType(const std::string& device_name);
 
  private:
-  // ash::KeyRewriterDelegate overrides:
-  virtual ash::KeyRewriterDelegate::Action RewriteOrFilterKeyEvent(
+  // ash::EventRewriterDelegate overrides:
+  virtual ash::EventRewriterDelegate::Action RewriteOrFilterKeyEvent(
       aura::KeyEvent* event) OVERRIDE;
-  virtual ash::KeyRewriterDelegate::Action RewriteOrFilterLocatedEvent(
+  virtual ash::EventRewriterDelegate::Action RewriteOrFilterLocatedEvent(
       aura::LocatedEvent* event) OVERRIDE;
 
   // aura::RootWindowObserver overrides:
@@ -173,7 +173,7 @@ class KeyRewriter : public ash::KeyRewriterDelegate,
 
   const PrefService* pref_service_;  // for testing.
 
-  DISALLOW_COPY_AND_ASSIGN(KeyRewriter);
+  DISALLOW_COPY_AND_ASSIGN(EventRewriter);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_ASH_KEY_REWRITER_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_ASH_EVENT_REWRITER_H_

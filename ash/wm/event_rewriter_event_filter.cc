@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/key_rewriter_event_filter.h"
+#include "ash/wm/event_rewriter_event_filter.h"
 
+#include "ash/event_rewriter_delegate.h"
 #include "base/logging.h"
-#include "ash/key_rewriter_delegate.h"
 #include "ui/aura/event.h"
 
 namespace ash {
 namespace internal {
 
-KeyRewriterEventFilter::KeyRewriterEventFilter() {}
+EventRewriterEventFilter::EventRewriterEventFilter() {}
 
-KeyRewriterEventFilter::~KeyRewriterEventFilter() {}
+EventRewriterEventFilter::~EventRewriterEventFilter() {}
 
-void KeyRewriterEventFilter::SetKeyRewriterDelegate(
-    scoped_ptr<KeyRewriterDelegate> delegate) {
+void EventRewriterEventFilter::SetEventRewriterDelegate(
+    scoped_ptr<EventRewriterDelegate> delegate) {
   delegate_.swap(delegate);
 }
 
-bool KeyRewriterEventFilter::PreHandleKeyEvent(
+bool EventRewriterEventFilter::PreHandleKeyEvent(
     aura::Window* target, aura::KeyEvent* event) {
   if (!delegate_.get())
     return false;
@@ -32,9 +32,9 @@ bool KeyRewriterEventFilter::PreHandleKeyEvent(
   }
 
   switch (delegate_->RewriteOrFilterKeyEvent(event)) {
-    case KeyRewriterDelegate::ACTION_REWRITE_EVENT:
+    case EventRewriterDelegate::ACTION_REWRITE_EVENT:
       return false;
-    case KeyRewriterDelegate::ACTION_DROP_EVENT:
+    case EventRewriterDelegate::ACTION_DROP_EVENT:
       return true;
   }
 
@@ -42,15 +42,15 @@ bool KeyRewriterEventFilter::PreHandleKeyEvent(
   return false;
 }
 
-bool KeyRewriterEventFilter::PreHandleMouseEvent(
+bool EventRewriterEventFilter::PreHandleMouseEvent(
     aura::Window* target, aura::MouseEvent* event) {
   if (!delegate_.get())
     return false;
 
   switch (delegate_->RewriteOrFilterLocatedEvent(event)) {
-    case KeyRewriterDelegate::ACTION_REWRITE_EVENT:
+    case EventRewriterDelegate::ACTION_REWRITE_EVENT:
       return false;
-    case KeyRewriterDelegate::ACTION_DROP_EVENT:
+    case EventRewriterDelegate::ACTION_DROP_EVENT:
       return true;
   }
 
@@ -58,12 +58,12 @@ bool KeyRewriterEventFilter::PreHandleMouseEvent(
   return false;
 }
 
-ui::TouchStatus KeyRewriterEventFilter::PreHandleTouchEvent(
+ui::TouchStatus EventRewriterEventFilter::PreHandleTouchEvent(
     aura::Window* target, aura::TouchEvent* event) {
   return ui::TOUCH_STATUS_UNKNOWN;  // Not handled.
 }
 
-ui::GestureStatus KeyRewriterEventFilter::PreHandleGestureEvent(
+ui::GestureStatus EventRewriterEventFilter::PreHandleGestureEvent(
     aura::Window* target, aura::GestureEvent* event) {
   return ui::GESTURE_STATUS_UNKNOWN;  // Not handled.
 }

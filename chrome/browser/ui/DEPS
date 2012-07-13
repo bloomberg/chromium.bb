@@ -4,8 +4,8 @@ include_rules = [
  # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
  "+chrome/browser/ui/views/ash/brightness_controller_chromeos.h",
  "+chrome/browser/ui/views/ash/chrome_shell_delegate.h",
+ "+chrome/browser/ui/views/ash/event_rewriter.h",
  "+chrome/browser/ui/views/ash/ime_controller_chromeos.h",
- "+chrome/browser/ui/views/ash/key_rewriter.h",
  "+chrome/browser/ui/views/ash/panel_view_aura.h",
  "+chrome/browser/ui/views/ash/screenshot_taker.h",
  "+chrome/browser/ui/views/find_bar_host.h",

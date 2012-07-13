@@ -9,14 +9,14 @@
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/shell.h"
-#include "ash/wm/key_rewriter_event_filter.h"
+#include "ash/wm/event_rewriter_event_filter.h"
 #include "ash/wm/property_util.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/caps_lock_handler.h"
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
-#include "chrome/browser/ui/views/ash/key_rewriter.h"
+#include "chrome/browser/ui/views/ash/event_rewriter.h"
 #include "chrome/browser/ui/views/ash/screenshot_taker.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/aura/aura_switches.h"
@@ -69,8 +69,8 @@ void OpenAsh() {
 
   // Shell takes ownership of ChromeShellDelegate.
   ash::Shell* shell = ash::Shell::CreateInstance(new ChromeShellDelegate);
-  shell->key_rewriter_filter()->SetKeyRewriterDelegate(
-      scoped_ptr<ash::KeyRewriterDelegate>(new KeyRewriter).Pass());
+  shell->event_rewriter_filter()->SetEventRewriterDelegate(
+      scoped_ptr<ash::EventRewriterDelegate>(new EventRewriter).Pass());
   shell->accelerator_controller()->SetScreenshotDelegate(
       scoped_ptr<ash::ScreenshotDelegate>(new ScreenshotTaker).Pass());
 #if defined(OS_CHROMEOS)

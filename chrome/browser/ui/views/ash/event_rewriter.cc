@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/ash/key_rewriter.h"
+#include "chrome/browser/ui/views/ash/event_rewriter.h"
 
 #include <vector>
 
@@ -116,7 +116,7 @@ const PrefService* GetPrefService() {
 
 }  // namespace
 
-KeyRewriter::KeyRewriter()
+EventRewriter::EventRewriter()
     : last_device_id_(kBadDeviceId),
 #if defined(OS_CHROMEOS)
       xkeyboard_(NULL),
@@ -134,7 +134,7 @@ KeyRewriter::KeyRewriter()
 #endif
 }
 
-KeyRewriter::~KeyRewriter() {
+EventRewriter::~EventRewriter() {
   if (ash::Shell::HasInstance())
     ash::Shell::GetPrimaryRootWindow()->RemoveRootWindowObserver(this);
 #if defined(OS_CHROMEOS)
@@ -145,14 +145,14 @@ KeyRewriter::~KeyRewriter() {
 #endif
 }
 
-KeyRewriter::DeviceType KeyRewriter::DeviceAddedForTesting(
+EventRewriter::DeviceType EventRewriter::DeviceAddedForTesting(
     int device_id,
     const std::string& device_name) {
   return DeviceAddedInternal(device_id, device_name);
 }
 
 // static
-KeyRewriter::DeviceType KeyRewriter::GetDeviceType(
+EventRewriter::DeviceType EventRewriter::GetDeviceType(
     const std::string& device_name) {
   std::vector<std::string> tokens;
   Tokenize(device_name, " .", &tokens);
@@ -173,32 +173,32 @@ KeyRewriter::DeviceType KeyRewriter::GetDeviceType(
   return kDeviceUnknown;
 }
 
-void KeyRewriter::RewriteForTesting(aura::KeyEvent* event) {
+void EventRewriter::RewriteForTesting(aura::KeyEvent* event) {
   Rewrite(event);
 }
 
-ash::KeyRewriterDelegate::Action KeyRewriter::RewriteOrFilterKeyEvent(
+ash::EventRewriterDelegate::Action EventRewriter::RewriteOrFilterKeyEvent(
     aura::KeyEvent* event) {
   if (event->HasNativeEvent())
     Rewrite(event);
-  return ash::KeyRewriterDelegate::ACTION_REWRITE_EVENT;
+  return ash::EventRewriterDelegate::ACTION_REWRITE_EVENT;
 }
 
-ash::KeyRewriterDelegate::Action KeyRewriter::RewriteOrFilterLocatedEvent(
+ash::EventRewriterDelegate::Action EventRewriter::RewriteOrFilterLocatedEvent(
     aura::LocatedEvent* event) {
   if (event->HasNativeEvent())
     RewriteLocatedEvent(event);
-  return ash::KeyRewriterDelegate::ACTION_REWRITE_EVENT;
+  return ash::EventRewriterDelegate::ACTION_REWRITE_EVENT;
 }
 
-void KeyRewriter::OnKeyboardMappingChanged(const aura::RootWindow* root) {
+void EventRewriter::OnKeyboardMappingChanged(const aura::RootWindow* root) {
 #if defined(OS_CHROMEOS)
   RefreshKeycodes();
 #endif
 }
 
 #if defined(OS_CHROMEOS)
-void KeyRewriter::DeviceAdded(int device_id) {
+void EventRewriter::DeviceAdded(int device_id) {
   DCHECK_NE(XIAllDevices, device_id);
   DCHECK_NE(XIAllMasterDevices, device_id);
   if (device_id == XIAllDevices || device_id == XIAllMasterDevices) {
@@ -228,11 +228,11 @@ void KeyRewriter::DeviceAdded(int device_id) {
   XIFreeDeviceInfo(device_info);
 }
 
-void KeyRewriter::DeviceRemoved(int device_id) {
+void EventRewriter::DeviceRemoved(int device_id) {
   device_id_to_type_.erase(device_id);
 }
 
-void KeyRewriter::DeviceKeyPressedOrReleased(int device_id) {
+void EventRewriter::DeviceKeyPressedOrReleased(int device_id) {
   std::map<int, DeviceType>::const_iterator iter =
       device_id_to_type_.find(device_id);
   if (iter == device_id_to_type_.end()) {
@@ -244,7 +244,7 @@ void KeyRewriter::DeviceKeyPressedOrReleased(int device_id) {
   last_device_id_ = device_id;
 }
 
-void KeyRewriter::RefreshKeycodes() {
+void EventRewriter::RefreshKeycodes() {
   Display* display = ui::GetXDisplay();
   control_l_xkeycode_ = XKeysymToKeycode(display, XK_Control_L);
   control_r_xkeycode_ = XKeysymToKeycode(display, XK_Control_R);
@@ -273,7 +273,7 @@ void KeyRewriter::RefreshKeycodes() {
   kp_decimal_xkeycode_ = XKeysymToKeycode(display, XK_KP_Decimal);
 }
 
-KeyCode KeyRewriter::NativeKeySymToNativeKeycode(KeySym keysym) {
+KeyCode EventRewriter::NativeKeySymToNativeKeycode(KeySym keysym) {
   switch (keysym) {
     case XK_Control_L:
       return control_l_xkeycode_;
@@ -332,14 +332,14 @@ KeyCode KeyRewriter::NativeKeySymToNativeKeycode(KeySym keysym) {
 }
 #endif
 
-void KeyRewriter::Rewrite(aura::KeyEvent* event) {
+void EventRewriter::Rewrite(aura::KeyEvent* event) {
   RewriteModifiers(event);
   RewriteNumPadKeys(event);
   RewriteBackspaceAndArrowKeys(event);
   // TODO(yusukes): Implement crosbug.com/27167 (allow sending function keys).
 }
 
-bool KeyRewriter::IsAppleKeyboard() const {
+bool EventRewriter::IsAppleKeyboard() const {
   if (last_device_id_ == kBadDeviceId)
     return false;
 
@@ -355,7 +355,7 @@ bool KeyRewriter::IsAppleKeyboard() const {
   return type == kDeviceAppleKeyboard;
 }
 
-void KeyRewriter::GetRemappedModifierMasks(
+void EventRewriter::GetRemappedModifierMasks(
     int original_flags,
     unsigned int original_native_modifiers,
     int* remapped_flags,
@@ -403,7 +403,7 @@ void KeyRewriter::GetRemappedModifierMasks(
 #endif
 }
 
-bool KeyRewriter::RewriteModifiers(aura::KeyEvent* event) {
+bool EventRewriter::RewriteModifiers(aura::KeyEvent* event) {
   // Do nothing if we have just logged in as guest but have not restarted chrome
   // process yet (so we are still on the login screen). In this situations we
   // have no user profile so can not do anything useful.
@@ -494,7 +494,7 @@ bool KeyRewriter::RewriteModifiers(aura::KeyEvent* event) {
 #endif
 }
 
-bool KeyRewriter::RewriteNumPadKeys(aura::KeyEvent* event) {
+bool EventRewriter::RewriteNumPadKeys(aura::KeyEvent* event) {
   bool rewritten = false;
 #if defined(OS_CHROMEOS)
   XEvent* xev = event->native_event();
@@ -576,7 +576,7 @@ bool KeyRewriter::RewriteNumPadKeys(aura::KeyEvent* event) {
   return rewritten;
 }
 
-bool KeyRewriter::RewriteBackspaceAndArrowKeys(aura::KeyEvent* event) {
+bool EventRewriter::RewriteBackspaceAndArrowKeys(aura::KeyEvent* event) {
   bool rewritten = false;
 #if defined(OS_CHROMEOS)
   XEvent* xev = event->native_event();
@@ -623,7 +623,7 @@ bool KeyRewriter::RewriteBackspaceAndArrowKeys(aura::KeyEvent* event) {
   return rewritten;
 }
 
-void KeyRewriter::RewriteLocatedEvent(aura::LocatedEvent* event) {
+void EventRewriter::RewriteLocatedEvent(aura::LocatedEvent* event) {
 #if defined(OS_CHROMEOS)
   XEvent* xevent = event->native_event();
   if (!xevent || xevent->type != GenericEvent)
@@ -659,11 +659,11 @@ void KeyRewriter::RewriteLocatedEvent(aura::LocatedEvent* event) {
 #endif
 }
 
-void KeyRewriter::OverwriteEvent(aura::KeyEvent* event,
-                                 unsigned int new_native_keycode,
-                                 unsigned int new_native_state,
-                                 ui::KeyboardCode new_keycode,
-                                 int new_flags) {
+void EventRewriter::OverwriteEvent(aura::KeyEvent* event,
+                                   unsigned int new_native_keycode,
+                                   unsigned int new_native_state,
+                                   ui::KeyboardCode new_keycode,
+                                   int new_flags) {
 #if defined(OS_CHROMEOS)
   XEvent* xev = event->native_event();
   XKeyEvent* xkey = &(xev->xkey);
@@ -678,10 +678,10 @@ void KeyRewriter::OverwriteEvent(aura::KeyEvent* event,
 #endif
 }
 
-KeyRewriter::DeviceType KeyRewriter::DeviceAddedInternal(
+EventRewriter::DeviceType EventRewriter::DeviceAddedInternal(
     int device_id,
     const std::string& device_name) {
-  const DeviceType type = KeyRewriter::GetDeviceType(device_name);
+  const DeviceType type = EventRewriter::GetDeviceType(device_name);
   if (type == kDeviceAppleKeyboard) {
     VLOG(1) << "Apple keyboard '" << device_name << "' connected: "
             << "id=" << device_id;

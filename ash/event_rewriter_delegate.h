@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_KEY_REWRITER_DELEGATE_H_
-#define ASH_KEY_REWRITER_DELEGATE_H_
+#ifndef ASH_EVENT_REWRITER_DELEGATE_H_
+#define ASH_EVENT_REWRITER_DELEGATE_H_
 
 namespace aura {
 class KeyEvent;
@@ -12,15 +12,15 @@ class LocatedEvent;
 
 namespace ash {
 
-// Delegate for rewriting or filtering a key event.
-class KeyRewriterDelegate {
+// Delegate for rewriting or filtering an event.
+class EventRewriterDelegate {
  public:
   enum Action {
     ACTION_REWRITE_EVENT,
     ACTION_DROP_EVENT,
   };
 
-  virtual ~KeyRewriterDelegate() {}
+  virtual ~EventRewriterDelegate() {}
 
   // A derived class can do either of the following:
   // 1) Just return ACTION_DROP_EVENT to drop the |event|.
@@ -31,4 +31,4 @@ class KeyRewriterDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_KEY_REWRITER_DELEGATE_H_
+#endif  // ASH_EVENT_REWRITER_DELEGATE_H_

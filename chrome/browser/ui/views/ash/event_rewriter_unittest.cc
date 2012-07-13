@@ -5,7 +5,7 @@
 #include "base/basictypes.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/ui/views/ash/key_rewriter.h"
+#include "chrome/browser/ui/views/ash/event_rewriter.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,7 +36,7 @@ void InitXKeyEvent(ui::KeyboardCode ui_keycode,
   event->xkey.state = x_state;
 }
 
-std::string GetRewrittenEventAsString(KeyRewriter* rewriter,
+std::string GetRewrittenEventAsString(EventRewriter* rewriter,
                                       ui::KeyboardCode ui_keycode,
                                       int ui_flags,
                                       ui::EventType ui_type,
@@ -63,9 +63,9 @@ std::string GetExpectedResultAsString(ui::KeyboardCode ui_keycode,
       ui_keycode, ui_flags, ui_type, x_keycode, x_state, x_type);
 }
 
-class KeyRewriterTest : public testing::Test {
+class EventRewriterTest : public testing::Test {
  public:
-  KeyRewriterTest()
+  EventRewriterTest()
       : display_(ui::GetXDisplay()),
         keycode_a_(XKeysymToKeycode(display_, XK_a)),
         keycode_alt_l_(XKeysymToKeycode(display_, XK_Alt_L)),
@@ -110,7 +110,7 @@ class KeyRewriterTest : public testing::Test {
         keycode_home_(XKeysymToKeycode(display_, XK_Home)),
         keycode_end_(XKeysymToKeycode(display_, XK_End)) {
   }
-  virtual ~KeyRewriterTest() {}
+  virtual ~EventRewriterTest() {}
   virtual void SetUp() {
     // Mocking user manager because the real one needs to be called on UI thread
     EXPECT_CALL(*user_manager_mock_.user_manager(), IsLoggedInAsGuest())
@@ -166,70 +166,71 @@ class KeyRewriterTest : public testing::Test {
 
 }  // namespace
 #else
-class KeyRewriterTest : public testing::Test {
+class EventRewriterTest : public testing::Test {
  public:
-  KeyRewriterTest() {}
-  virtual ~KeyRewriterTest() {}
+  EventRewriterTest() {}
+  virtual ~EventRewriterTest() {}
 };
 #endif
 
-TEST_F(KeyRewriterTest, TestGetDeviceType) {
+TEST_F(EventRewriterTest, TestGetDeviceType) {
   // This is the typical string which an Apple keyboard sends.
-  EXPECT_EQ(KeyRewriter::kDeviceAppleKeyboard,
-            KeyRewriter::GetDeviceType("Apple Inc. Apple Keyboard"));
+  EXPECT_EQ(EventRewriter::kDeviceAppleKeyboard,
+            EventRewriter::GetDeviceType("Apple Inc. Apple Keyboard"));
 
   // Other cases we accept.
-  EXPECT_EQ(KeyRewriter::kDeviceAppleKeyboard,
-            KeyRewriter::GetDeviceType("Apple Keyboard"));
-  EXPECT_EQ(KeyRewriter::kDeviceAppleKeyboard,
-            KeyRewriter::GetDeviceType("apple keyboard"));
-  EXPECT_EQ(KeyRewriter::kDeviceAppleKeyboard,
-            KeyRewriter::GetDeviceType("apple keyboard."));
-  EXPECT_EQ(KeyRewriter::kDeviceAppleKeyboard,
-            KeyRewriter::GetDeviceType("apple.keyboard."));
-  EXPECT_EQ(KeyRewriter::kDeviceAppleKeyboard,
-            KeyRewriter::GetDeviceType(".apple.keyboard."));
+  EXPECT_EQ(EventRewriter::kDeviceAppleKeyboard,
+            EventRewriter::GetDeviceType("Apple Keyboard"));
+  EXPECT_EQ(EventRewriter::kDeviceAppleKeyboard,
+            EventRewriter::GetDeviceType("apple keyboard"));
+  EXPECT_EQ(EventRewriter::kDeviceAppleKeyboard,
+            EventRewriter::GetDeviceType("apple keyboard."));
+  EXPECT_EQ(EventRewriter::kDeviceAppleKeyboard,
+            EventRewriter::GetDeviceType("apple.keyboard."));
+  EXPECT_EQ(EventRewriter::kDeviceAppleKeyboard,
+            EventRewriter::GetDeviceType(".apple.keyboard."));
 
   // Dell, Microsoft, Logitech, ... should be recognized as a kDeviceUnknown.
-  EXPECT_EQ(KeyRewriter::kDeviceUnknown,
-            KeyRewriter::GetDeviceType("Dell Dell USB Entry Keyboard"));
-  EXPECT_EQ(KeyRewriter::kDeviceUnknown,
-            KeyRewriter::GetDeviceType("Microsoft Natural Ergonomic Keyboard"));
-  EXPECT_EQ(KeyRewriter::kDeviceUnknown,
-            KeyRewriter::GetDeviceType("CHESEN USB Keyboard"));
+  EXPECT_EQ(EventRewriter::kDeviceUnknown,
+            EventRewriter::GetDeviceType("Dell Dell USB Entry Keyboard"));
+  EXPECT_EQ(EventRewriter::kDeviceUnknown,
+            EventRewriter::GetDeviceType(
+                "Microsoft Natural Ergonomic Keyboard"));
+  EXPECT_EQ(EventRewriter::kDeviceUnknown,
+            EventRewriter::GetDeviceType("CHESEN USB Keyboard"));
 
   // Some corner cases.
-  EXPECT_EQ(KeyRewriter::kDeviceUnknown, KeyRewriter::GetDeviceType(""));
-  EXPECT_EQ(KeyRewriter::kDeviceUnknown,
-            KeyRewriter::GetDeviceType("."));
-  EXPECT_EQ(KeyRewriter::kDeviceUnknown,
-            KeyRewriter::GetDeviceType(". "));
-  EXPECT_EQ(KeyRewriter::kDeviceUnknown,
-            KeyRewriter::GetDeviceType(" ."));
-  EXPECT_EQ(KeyRewriter::kDeviceUnknown,
-            KeyRewriter::GetDeviceType("not-an-apple keyboard"));
+  EXPECT_EQ(EventRewriter::kDeviceUnknown, EventRewriter::GetDeviceType(""));
+  EXPECT_EQ(EventRewriter::kDeviceUnknown,
+            EventRewriter::GetDeviceType("."));
+  EXPECT_EQ(EventRewriter::kDeviceUnknown,
+            EventRewriter::GetDeviceType(". "));
+  EXPECT_EQ(EventRewriter::kDeviceUnknown,
+            EventRewriter::GetDeviceType(" ."));
+  EXPECT_EQ(EventRewriter::kDeviceUnknown,
+            EventRewriter::GetDeviceType("not-an-apple keyboard"));
 }
 
-TEST_F(KeyRewriterTest, TestDeviceAddedOrRemoved) {
-  KeyRewriter rewriter;
+TEST_F(EventRewriterTest, TestDeviceAddedOrRemoved) {
+  EventRewriter rewriter;
   EXPECT_TRUE(rewriter.device_id_to_type_for_testing().empty());
-  EXPECT_EQ(KeyRewriter::kDeviceUnknown,
+  EXPECT_EQ(EventRewriter::kDeviceUnknown,
             rewriter.DeviceAddedForTesting(0, "PC Keyboard"));
   EXPECT_EQ(1U, rewriter.device_id_to_type_for_testing().size());
-  EXPECT_EQ(KeyRewriter::kDeviceAppleKeyboard,
+  EXPECT_EQ(EventRewriter::kDeviceAppleKeyboard,
             rewriter.DeviceAddedForTesting(1, "Apple Keyboard"));
   EXPECT_EQ(2U, rewriter.device_id_to_type_for_testing().size());
   // Try to reuse the first ID.
-  EXPECT_EQ(KeyRewriter::kDeviceAppleKeyboard,
+  EXPECT_EQ(EventRewriter::kDeviceAppleKeyboard,
             rewriter.DeviceAddedForTesting(0, "Apple Keyboard"));
   EXPECT_EQ(2U, rewriter.device_id_to_type_for_testing().size());
 }
 
 #if defined(OS_CHROMEOS)
-TEST_F(KeyRewriterTest, TestRewriteCommandToControl) {
+TEST_F(EventRewriterTest, TestRewriteCommandToControl) {
   // First, test with a PC keyboard.
   TestingPrefService prefs;
-  KeyRewriter rewriter;
+  EventRewriter rewriter;
   rewriter.DeviceAddedForTesting(0, "PC Keyboard");
   rewriter.set_last_device_id_for_testing(0);
   rewriter.set_pref_service_for_testing(&prefs);
@@ -380,7 +381,7 @@ TEST_F(KeyRewriterTest, TestRewriteCommandToControl) {
 }
 
 // For crbug.com/133896.
-TEST_F(KeyRewriterTest, TestRewriteCommandToControlWithControlRemapped) {
+TEST_F(EventRewriterTest, TestRewriteCommandToControlWithControlRemapped) {
   // Remap Control to Alt.
   TestingPrefService prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
@@ -388,7 +389,7 @@ TEST_F(KeyRewriterTest, TestRewriteCommandToControlWithControlRemapped) {
   control.Init(prefs::kLanguageXkbRemapControlKeyTo, &prefs, NULL);
   control.SetValue(chromeos::input_method::kAltKey);
 
-  KeyRewriter rewriter;
+  EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
   rewriter.DeviceAddedForTesting(0, "PC Keyboard");
   rewriter.set_last_device_id_for_testing(0);
@@ -442,9 +443,9 @@ TEST_F(KeyRewriterTest, TestRewriteCommandToControlWithControlRemapped) {
                                       Mod1Mask));
 }
 
-TEST_F(KeyRewriterTest, TestRewriteNumPadKeys) {
+TEST_F(EventRewriterTest, TestRewriteNumPadKeys) {
   TestingPrefService prefs;
-  KeyRewriter rewriter;
+  EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
 
   // XK_KP_Insert (= NumPad 0 without Num Lock), no modifier.
@@ -771,9 +772,9 @@ TEST_F(KeyRewriterTest, TestRewriteNumPadKeys) {
 }
 
 // Tests if the rewriter can handle a Command + Num Pad event.
-TEST_F(KeyRewriterTest, TestRewriteNumPadKeysOnAppleKeyboard) {
+TEST_F(EventRewriterTest, TestRewriteNumPadKeysOnAppleKeyboard) {
   TestingPrefService prefs;
-  KeyRewriter rewriter;
+  EventRewriter rewriter;
   rewriter.DeviceAddedForTesting(0, "Apple Keyboard");
   rewriter.set_last_device_id_for_testing(0);
   rewriter.set_pref_service_for_testing(&prefs);
@@ -809,9 +810,9 @@ TEST_F(KeyRewriterTest, TestRewriteNumPadKeysOnAppleKeyboard) {
                                       Mod4Mask));
 }
 
-TEST_F(KeyRewriterTest, TestRewriteModifiersNoRemap) {
+TEST_F(EventRewriterTest, TestRewriteModifiersNoRemap) {
   TestingPrefService prefs;
-  KeyRewriter rewriter;
+  EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
 
   // Press Search. Confirm the event is not rewritten.
@@ -900,9 +901,9 @@ TEST_F(KeyRewriterTest, TestRewriteModifiersNoRemap) {
                                       Mod4Mask));
 }
 
-TEST_F(KeyRewriterTest, TestRewriteModifiersNoRemapMultipleKeys) {
+TEST_F(EventRewriterTest, TestRewriteModifiersNoRemapMultipleKeys) {
   TestingPrefService prefs;
-  KeyRewriter rewriter;
+  EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
 
   // Press left Alt with Shift. Confirm the event is not rewritten.
@@ -980,7 +981,7 @@ TEST_F(KeyRewriterTest, TestRewriteModifiersNoRemapMultipleKeys) {
                                       Mod4Mask));
 }
 
-TEST_F(KeyRewriterTest, TestRewriteModifiersDisableSome) {
+TEST_F(EventRewriterTest, TestRewriteModifiersDisableSome) {
   // Disable Search and Control keys.
   TestingPrefService prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
@@ -991,7 +992,7 @@ TEST_F(KeyRewriterTest, TestRewriteModifiersDisableSome) {
   control.Init(prefs::kLanguageXkbRemapControlKeyTo, &prefs, NULL);
   control.SetValue(chromeos::input_method::kVoidKey);
 
-  KeyRewriter rewriter;
+  EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
 
   // Press left Alt with Shift. This key press shouldn't be affected by the
@@ -1118,7 +1119,7 @@ TEST_F(KeyRewriterTest, TestRewriteModifiersDisableSome) {
                                       Mod1Mask));
 }
 
-TEST_F(KeyRewriterTest, TestRewriteModifiersRemapToControl) {
+TEST_F(EventRewriterTest, TestRewriteModifiersRemapToControl) {
   // Remap Search to Control.
   TestingPrefService prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
@@ -1126,7 +1127,7 @@ TEST_F(KeyRewriterTest, TestRewriteModifiersRemapToControl) {
   search.Init(prefs::kLanguageXkbRemapSearchKeyTo, &prefs, NULL);
   search.SetValue(chromeos::input_method::kControlKey);
 
-  KeyRewriter rewriter;
+  EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
 
   // Press Search. Confirm the event is now VKEY_CONTROL + XK_Control_L.
@@ -1238,7 +1239,7 @@ TEST_F(KeyRewriterTest, TestRewriteModifiersRemapToControl) {
                                       ShiftMask | ControlMask | Mod1Mask));
 }
 
-TEST_F(KeyRewriterTest, TestRewriteModifiersRemapMany) {
+TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
   // Remap Search to Alt.
   TestingPrefService prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
@@ -1246,7 +1247,7 @@ TEST_F(KeyRewriterTest, TestRewriteModifiersRemapMany) {
   search.Init(prefs::kLanguageXkbRemapSearchKeyTo, &prefs, NULL);
   search.SetValue(chromeos::input_method::kAltKey);
 
-  KeyRewriter rewriter;
+  EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
 
   // Press Search. Confirm the event is now VKEY_MENU + XK_Alt_L.
@@ -1349,7 +1350,7 @@ TEST_F(KeyRewriterTest, TestRewriteModifiersRemapMany) {
                                       Mod4Mask));
 }
 
-TEST_F(KeyRewriterTest, TestRewriteModifiersRemapToCapsLock) {
+TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   // Remap Search to Caps Lock.
   TestingPrefService prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
@@ -1358,7 +1359,7 @@ TEST_F(KeyRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   search.SetValue(chromeos::input_method::kCapsLockKey);
 
   chromeos::input_method::MockXKeyboard xkeyboard;
-  KeyRewriter rewriter;
+  EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
   rewriter.set_xkeyboard_for_testing(&xkeyboard);
   EXPECT_FALSE(xkeyboard.caps_lock_is_enabled_);
@@ -1443,7 +1444,7 @@ TEST_F(KeyRewriterTest, TestRewriteModifiersRemapToCapsLock) {
 
   // Confirm that calling RewriteForTesting() does not change the state of
   // |xkeyboard|. In this case, X Window system itself should change the
-  // Caps Lock state, not ash::KeyRewriter.
+  // Caps Lock state, not ash::EventRewriter.
   EXPECT_FALSE(xkeyboard.caps_lock_is_enabled_);
 
   // Press Caps Lock (on an external keyboard).
@@ -1462,9 +1463,9 @@ TEST_F(KeyRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   EXPECT_FALSE(xkeyboard.caps_lock_is_enabled_);
 }
 
-TEST_F(KeyRewriterTest, TestRewriteBackspaceAndArrowKeys) {
+TEST_F(EventRewriterTest, TestRewriteBackspaceAndArrowKeys) {
   TestingPrefService prefs;
-  KeyRewriter rewriter;
+  EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
 
   // Alt+Backspace -> Delete
@@ -1567,7 +1568,7 @@ TEST_F(KeyRewriterTest, TestRewriteBackspaceAndArrowKeys) {
                                       ShiftMask | Mod1Mask | ControlMask));
 }
 
-TEST_F(KeyRewriterTest, TestRewriteBackspaceAndArrowKeysWithSearchRemapped) {
+TEST_F(EventRewriterTest, TestRewriteBackspaceAndArrowKeysWithSearchRemapped) {
   // Remap Search to Control.
   TestingPrefService prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
@@ -1575,7 +1576,7 @@ TEST_F(KeyRewriterTest, TestRewriteBackspaceAndArrowKeysWithSearchRemapped) {
   search.Init(prefs::kLanguageXkbRemapSearchKeyTo, &prefs, NULL);
   search.SetValue(chromeos::input_method::kControlKey);
 
-  KeyRewriter rewriter;
+  EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
 
   // Alt+Search+Down -> End

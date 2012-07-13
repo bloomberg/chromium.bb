@@ -38,7 +38,7 @@
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/dialog_frame_view.h"
 #include "ash/wm/event_client_impl.h"
-#include "ash/wm/key_rewriter_event_filter.h"
+#include "ash/wm/event_rewriter_event_filter.h"
 #include "ash/wm/panel_layout_manager.h"
 #include "ash/wm/panel_window_event_filter.h"
 #include "ash/wm/partial_screenshot_event_filter.h"
@@ -203,7 +203,7 @@ Shell::~Shell() {
 
   // Please keep in same order as in Init() because it's easy to miss one.
   RemoveEnvEventFilter(user_activity_detector_.get());
-  RemoveEnvEventFilter(key_rewriter_filter_.get());
+  RemoveEnvEventFilter(event_rewriter_filter_.get());
   RemoveEnvEventFilter(partial_screenshot_filter_.get());
   RemoveEnvEventFilter(input_method_filter_.get());
   RemoveEnvEventFilter(window_modality_controller_.get());
@@ -389,8 +389,8 @@ void Shell::Init() {
   AddEnvEventFilter(user_activity_detector_.get());
 
   DCHECK_EQ(1U, GetEnvEventFilterCount());
-  key_rewriter_filter_.reset(new internal::KeyRewriterEventFilter);
-  AddEnvEventFilter(key_rewriter_filter_.get());
+  event_rewriter_filter_.reset(new internal::EventRewriterEventFilter);
+  AddEnvEventFilter(event_rewriter_filter_.get());
 
   DCHECK_EQ(2U, GetEnvEventFilterCount());
   partial_screenshot_filter_.reset(new internal::PartialScreenshotEventFilter);

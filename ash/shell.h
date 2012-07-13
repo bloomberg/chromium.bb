@@ -79,8 +79,8 @@ class ActivationController;
 class AppListController;
 class CaptureController;
 class DragDropController;
+class EventRewriterEventFilter;
 class FocusCycler;
-class KeyRewriterEventFilter;
 class MagnificationController;
 class DisplayController;
 class MouseCursorEventFilter;
@@ -254,8 +254,8 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   internal::TooltipController* tooltip_controller() {
     return tooltip_controller_.get();
   }
-  internal::KeyRewriterEventFilter* key_rewriter_filter() {
-    return key_rewriter_filter_.get();
+  internal::EventRewriterEventFilter* event_rewriter_filter() {
+    return event_rewriter_filter_.get();
   }
   internal::PartialScreenshotEventFilter* partial_screenshot_filter() {
     return partial_screenshot_filter_.get();
@@ -435,8 +435,8 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   scoped_ptr<aura::client::UserActionClient> user_action_client_;
   scoped_ptr<internal::MouseCursorEventFilter> mouse_cursor_filter_;
 
-  // An event filter that rewrites or drops a key event.
-  scoped_ptr<internal::KeyRewriterEventFilter> key_rewriter_filter_;
+  // An event filter that rewrites or drops an event.
+  scoped_ptr<internal::EventRewriterEventFilter> event_rewriter_filter_;
 
   // An event filter that pre-handles key events while the partial
   // screenshot UI is active.

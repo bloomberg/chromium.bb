@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_KEY_REWRITER_EVENT_FILTER_
-#define ASH_WM_KEY_REWRITER_EVENT_FILTER_
+#ifndef ASH_WM_EVENT_REWRITER_EVENT_FILTER_
+#define ASH_WM_EVENT_REWRITER_EVENT_FILTER_
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
@@ -13,17 +13,17 @@
 
 namespace ash {
 
-class KeyRewriterDelegate;
+class EventRewriterDelegate;
 
 namespace internal {
 
-// An event filter that rewrites or drops a key event.
-class ASH_EXPORT KeyRewriterEventFilter : public aura::EventFilter {
+// An event filter that rewrites or drops an event.
+class ASH_EXPORT EventRewriterEventFilter : public aura::EventFilter {
  public:
-  KeyRewriterEventFilter();
-  virtual ~KeyRewriterEventFilter();
+  EventRewriterEventFilter();
+  virtual ~EventRewriterEventFilter();
 
-  void SetKeyRewriterDelegate(scoped_ptr<KeyRewriterDelegate> delegate);
+  void SetEventRewriterDelegate(scoped_ptr<EventRewriterDelegate> delegate);
 
  private:
   // Overridden from aura::EventFilter:
@@ -38,12 +38,12 @@ class ASH_EXPORT KeyRewriterEventFilter : public aura::EventFilter {
       aura::Window* target,
       aura::GestureEvent* event) OVERRIDE;
 
-  scoped_ptr<KeyRewriterDelegate> delegate_;
+  scoped_ptr<EventRewriterDelegate> delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(KeyRewriterEventFilter);
+  DISALLOW_COPY_AND_ASSIGN(EventRewriterEventFilter);
 };
 
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_WM_KEY_REWRITER_EVENT_FILTER_
+#endif  // ASH_WM_EVENT_REWRITER_EVENT_FILTER_
