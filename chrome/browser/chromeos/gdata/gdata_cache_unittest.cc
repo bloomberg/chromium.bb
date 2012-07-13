@@ -3,17 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
-#include "base/json/json_file_value_serializer.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
 #include "chrome/browser/chromeos/gdata/gdata_test_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
-#include "chrome/browser/chromeos/gdata/mock_gdata_documents_service.h"
-#include "chrome/browser/chromeos/gdata/mock_gdata_sync_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -92,47 +87,22 @@ struct PathToVerify {
   FilePath expected_existing_path;
 };
 
-}  // namespace
-
 class MockFreeDiskSpaceGetter : public FreeDiskSpaceGetterInterface {
  public:
   virtual ~MockFreeDiskSpaceGetter() {}
   MOCK_CONST_METHOD0(AmountOfFreeDiskSpace, int64());
 };
 
-class MockGDataUploader : public GDataUploaderInterface {
+class MockGDataCacheObserver : public GDataCache::Observer {
  public:
-  virtual ~MockGDataUploader() {}
-  // This function is not mockable by gmock.
-  virtual int UploadNewFile(
-      scoped_ptr<UploadFileInfo> upload_file_info) OVERRIDE {
-    return -1;
-  }
-
-  MOCK_METHOD6(UploadExistingFile,
-               int(const GURL& upload_location,
-               const FilePath& gdata_file_path,
-               const FilePath& local_file_path,
-               int64 file_size,
-               const std::string& content_type,
-               const UploadFileInfo::UploadCompletionCallback& callback));
-
-  MOCK_METHOD2(UpdateUpload, void(int upload_id,
-                                  content::DownloadItem* download));
-  MOCK_CONST_METHOD1(GetUploadedBytes, int64(int upload_id));
+  MOCK_METHOD2(OnCachePinned, void(const std::string& resource_id,
+                                   const std::string& md5));
+  MOCK_METHOD2(OnCacheUnpinned, void(const std::string& resource_id,
+                                     const std::string& md5));
+  MOCK_METHOD1(OnCacheCommitted, void(const std::string& resource_id));
 };
 
-class MockDriveWebAppsRegistry : public DriveWebAppsRegistryInterface {
- public:
-  virtual ~MockDriveWebAppsRegistry() {}
-
-  MOCK_METHOD3(GetWebAppsForFile, void(const FilePath& file,
-                                       const std::string& mime_type,
-                                       ScopedVector<DriveWebAppInfo>* apps));
-  MOCK_METHOD1(GetExtensionsForWebStoreApp,
-               std::set<std::string>(const std::string& web_store_id));
-  MOCK_METHOD1(UpdateFromFeed, void(AccountMetadataFeed* metadata));
-};
+}  // namespace
 
 class GDataCacheTest : public testing::Test {
  protected:
@@ -142,8 +112,6 @@ class GDataCacheTest : public testing::Test {
         sequence_token_(
             content::BrowserThread::GetBlockingPool()->GetSequenceToken()),
         cache_(NULL),
-        file_system_(NULL),
-        mock_doc_service_(NULL),
         num_callback_invocations_(0),
         expected_error_(base::PLATFORM_FILE_OK),
         expected_cache_state_(0),
@@ -154,18 +122,10 @@ class GDataCacheTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    chromeos::CrosLibrary::Initialize(true /* use_stub */);
     io_thread_.StartIOThread();
 
     profile_.reset(new TestingProfile);
 
-    // Allocate and keep a pointer to the mock, and inject it into the
-    // GDataFileSystem object, which will own the mock object.
-    mock_doc_service_ = new MockDocumentsService;
-
-    EXPECT_CALL(*mock_doc_service_, Initialize(profile_.get())).Times(1);
-
-    // Likewise, this will be owned by GDataFileSystem.
     mock_free_disk_space_checker_ = new MockFreeDiskSpaceGetter;
     SetFreeDiskSpaceGetterForTesting(mock_free_disk_space_checker_);
 
@@ -174,91 +134,33 @@ class GDataCacheTest : public testing::Test {
         content::BrowserThread::GetBlockingPool(),
         sequence_token_);
 
-    mock_uploader_.reset(new StrictMock<MockGDataUploader>);
-    mock_webapps_registry_.reset(new StrictMock<MockDriveWebAppsRegistry>);
+    mock_cache_observer_.reset(new StrictMock<MockGDataCacheObserver>);
+    cache_->AddObserver(mock_cache_observer_.get());
 
-    ASSERT_FALSE(file_system_);
-    file_system_ = new GDataFileSystem(profile_.get(),
-                                       cache_,
-                                       mock_doc_service_,
-                                       mock_uploader_.get(),
-                                       mock_webapps_registry_.get(),
-                                       sequence_token_);
-
-    mock_sync_client_.reset(new StrictMock<MockGDataSyncClient>);
-    cache_->AddObserver(mock_sync_client_.get());
-
-    file_system_->Initialize();
     cache_->RequestInitializeOnUIThread();
     test_util::RunBlockingPoolTask();
   }
 
   virtual void TearDown() OVERRIDE {
-    ASSERT_TRUE(file_system_);
-    EXPECT_CALL(*mock_doc_service_, CancelAll()).Times(1);
-    delete file_system_;
-    file_system_ = NULL;
-    delete mock_doc_service_;
-    mock_doc_service_ = NULL;
     SetFreeDiskSpaceGetterForTesting(NULL);
     cache_->DestroyOnUIThread();
     // The cache destruction requires to post a task to the blocking pool.
     test_util::RunBlockingPoolTask();
 
     profile_.reset(NULL);
-    chromeos::CrosLibrary::Shutdown();
-  }
-
-  // Loads test json file as root ("/drive") element.
-  void LoadRootFeedDocument(const std::string& filename) {
-    LoadChangeFeed(filename, 0);
-  }
-
-  void LoadChangeFeed(const std::string& filename,
-                      int largest_changestamp) {
-    std::string error;
-    scoped_ptr<Value> document(LoadJSONFile(filename));
-    ASSERT_TRUE(document.get());
-    ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
-    scoped_ptr<DocumentFeed> document_feed(
-        DocumentFeed::ExtractAndParse(*document));
-    ASSERT_TRUE(document_feed.get());
-    std::vector<DocumentFeed*> feed_list;
-    feed_list.push_back(document_feed.get());
-    ASSERT_TRUE(UpdateContent(feed_list, largest_changestamp));
-  }
-
-  // Updates the content of directory under |directory_path| with parsed feed
-  // |value|.
-  bool UpdateContent(const std::vector<DocumentFeed*>& list,
-                     int largest_changestamp) {
-    GURL unused;
-    return file_system_->UpdateFromFeed(
-        list,
-        FROM_SERVER,
-        largest_changestamp,
-        root_feed_changestamp_++) == base::PLATFORM_FILE_OK;
-  }
-
-  GDataEntry* FindEntry(const FilePath& file_path) {
-    return file_system_->GetGDataEntryByPath(file_path);
   }
 
   void PrepareForInitCacheTest() {
     DVLOG(1) << "PrepareForInitCacheTest start";
     // Create gdata cache sub directories.
     ASSERT_TRUE(file_util::CreateDirectory(
-        file_system_->cache_->GetCacheDirectoryPath(
-            GDataCache::CACHE_TYPE_PERSISTENT)));
+        cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_PERSISTENT)));
     ASSERT_TRUE(file_util::CreateDirectory(
-        file_system_->cache_->GetCacheDirectoryPath(
-            GDataCache::CACHE_TYPE_TMP)));
+        cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_TMP)));
     ASSERT_TRUE(file_util::CreateDirectory(
-        file_system_->cache_->GetCacheDirectoryPath(
-            GDataCache::CACHE_TYPE_PINNED)));
+        cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_PINNED)));
     ASSERT_TRUE(file_util::CreateDirectory(
-        file_system_->cache_->GetCacheDirectoryPath(
-            GDataCache::CACHE_TYPE_OUTGOING)));
+        cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_OUTGOING)));
 
     // Dump some files into cache dirs so that
     // GDataFileSystem::InitializeCacheOnBlockingPool would scan through them
@@ -547,34 +449,6 @@ class GDataCacheTest : public testing::Test {
     test_util::RunBlockingPoolTask();
   }
 
-  void TestGetCacheState(const std::string& resource_id,
-                         const std::string& md5,
-                         bool expected_success,
-                         int expected_cache_state,
-                         GDataFile* expected_file) {
-    expected_success_ = expected_success;
-    expected_cache_state_ = expected_cache_state;
-
-    cache_->GetCacheEntryOnUIThread(resource_id, md5,
-        base::Bind(&GDataCacheTest::VerifyGetCacheState,
-                   base::Unretained(this)));
-
-    test_util::RunBlockingPoolTask();
-  }
-
-  void VerifyGetCacheState(bool success,
-                           const GDataCacheEntry& cache_entry) {
-    ++num_callback_invocations_;
-
-    EXPECT_EQ(expected_success_, success);
-
-    if (success) {
-      EXPECT_TRUE(test_util::CacheStatesEqual(
-          test_util::ToCacheEntry(expected_cache_state_),
-          cache_entry));
-    }
-  }
-
   void TestMarkDirty(
       const std::string& resource_id,
       const std::string& md5,
@@ -818,7 +692,7 @@ class GDataCacheTest : public testing::Test {
         GDataCache::CACHE_TYPE_TMP,
         GDataCache::CACHED_FILE_FROM_SERVER);
     FilePath expected_path =
-        file_system_->cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_TMP);
+        cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_TMP);
     expected_path = expected_path.Append(expected_filename);
     EXPECT_EQ(expected_path, actual_path);
 
@@ -831,17 +705,6 @@ class GDataCacheTest : public testing::Test {
     std::string unescaped_resource_id = util::UnescapeCacheFileName(
         base_name.RemoveExtension().value());
     EXPECT_EQ(resource_id, unescaped_resource_id);
-  }
-
-  static Value* LoadJSONFile(const std::string& filename) {
-    FilePath path = GetTestFilePath(filename);
-
-    std::string error;
-    JSONFileValueSerializer serializer(path);
-    Value* value = serializer.Deserialize(NULL, &error);
-    EXPECT_TRUE(value) <<
-        "Parse error " << path.value() << ": " << error;
-    return value;
   }
 
   static FilePath GetTestFilePath(const FilePath::StringType& filename) {
@@ -864,12 +727,8 @@ class GDataCacheTest : public testing::Test {
   const base::SequencedWorkerPool::SequenceToken sequence_token_;
   scoped_ptr<TestingProfile> profile_;
   GDataCache* cache_;
-  scoped_ptr<StrictMock<MockGDataUploader> > mock_uploader_;
-  GDataFileSystem* file_system_;
-  MockDocumentsService* mock_doc_service_;
-  scoped_ptr<StrictMock<MockDriveWebAppsRegistry> > mock_webapps_registry_;
   MockFreeDiskSpaceGetter* mock_free_disk_space_checker_;
-  scoped_ptr<StrictMock<MockGDataSyncClient> > mock_sync_client_;
+  scoped_ptr<StrictMock<MockGDataCacheObserver> > mock_cache_observer_;
 
   int num_callback_invocations_;
   base::PlatformFileError expected_error_;
@@ -1019,8 +878,9 @@ TEST_F(GDataCacheTest, PinAndUnpin) {
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(2);
-  EXPECT_CALL(*mock_sync_client_, OnCacheUnpinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(2);
+  EXPECT_CALL(*mock_cache_observer_, OnCacheUnpinned(resource_id, md5))
+      .Times(1);
 
   // First store a file to cache.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
@@ -1054,8 +914,9 @@ TEST_F(GDataCacheTest, PinAndUnpin) {
 
   // Pin a non-existent file in cache.
   resource_id = "document:1a2b";
-  EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(1);
-  EXPECT_CALL(*mock_sync_client_, OnCacheUnpinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_cache_observer_, OnCacheUnpinned(resource_id, md5))
+      .Times(1);
 
   num_callback_invocations_ = 0;
   TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
@@ -1074,7 +935,8 @@ TEST_F(GDataCacheTest, PinAndUnpin) {
   // has zero knowledge of the file.
   resource_id = "not-in-cache:1a2b";
   // Because unpinning will fail, OnCacheUnpinned() won't be run.
-  EXPECT_CALL(*mock_sync_client_, OnCacheUnpinned(resource_id, md5)).Times(0);
+  EXPECT_CALL(*mock_cache_observer_, OnCacheUnpinned(resource_id, md5))
+      .Times(0);
 
   num_callback_invocations_ = 0;
   TestUnpin(resource_id, md5, base::PLATFORM_FILE_ERROR_NOT_FOUND,
@@ -1086,7 +948,7 @@ TEST_F(GDataCacheTest, PinAndUnpin) {
 TEST_F(GDataCacheTest, StoreToCachePinned) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
 
   // Pin a non-existent file.
   TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
@@ -1117,7 +979,7 @@ TEST_F(GDataCacheTest, StoreToCachePinned) {
 TEST_F(GDataCacheTest, GetFromCachePinned) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
 
   // Pin a non-existent file.
   TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
@@ -1149,7 +1011,7 @@ TEST_F(GDataCacheTest, RemoveFromCachePinned) {
   // Use alphanumeric characters for resource_id.
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
 
   // Store a file to cache, and pin it.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
@@ -1169,7 +1031,7 @@ TEST_F(GDataCacheTest, RemoveFromCachePinned) {
   // Repeat using non-alphanumeric characters for resource id, including '.'
   // which is an extension separator.
   resource_id = "pdf:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?";
-  EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
 
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
                    base::PLATFORM_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
@@ -1188,7 +1050,7 @@ TEST_F(GDataCacheTest, RemoveFromCachePinned) {
 TEST_F(GDataCacheTest, DirtyCacheSimple) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_sync_client_, OnCacheCommitted(resource_id)).Times(1);
+  EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(1);
 
   // First store a file to cache.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
@@ -1224,8 +1086,8 @@ TEST_F(GDataCacheTest, DirtyCacheSimple) {
 TEST_F(GDataCacheTest, DirtyCachePinned) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(1);
-  EXPECT_CALL(*mock_sync_client_, OnCacheCommitted(resource_id)).Times(1);
+  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(1);
 
   // First store a file to cache and pin it.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
@@ -1274,8 +1136,9 @@ TEST_F(GDataCacheTest, PinAndUnpinDirtyCache) {
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(1);
-  EXPECT_CALL(*mock_sync_client_, OnCacheUnpinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_cache_observer_, OnCacheUnpinned(resource_id, md5))
+      .Times(1);
 
   // First store a file to cache and mark it as dirty.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
@@ -1320,7 +1183,7 @@ TEST_F(GDataCacheTest, PinAndUnpinDirtyCache) {
 TEST_F(GDataCacheTest, DirtyCacheRepetitive) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_sync_client_, OnCacheCommitted(resource_id)).Times(3);
+  EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(3);
 
   // First store a file to cache.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
@@ -1462,8 +1325,8 @@ TEST_F(GDataCacheTest, DirtyCacheInvalid) {
 TEST_F(GDataCacheTest, RemoveFromDirtyCache) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(1);
-  EXPECT_CALL(*mock_sync_client_, OnCacheCommitted(resource_id)).Times(1);
+  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(1);
 
   // Store a file to cache, pin it, mark it dirty and commit it.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
@@ -1492,73 +1355,6 @@ TEST_F(GDataCacheTest, RemoveFromDirtyCache) {
   num_callback_invocations_ = 0;
   TestRemoveFromCache(resource_id, base::PLATFORM_FILE_OK);
   EXPECT_EQ(1, num_callback_invocations_);
-}
-
-TEST_F(GDataCacheTest, GetCacheState) {
-  // Populate gdata file system.
-  LoadRootFeedDocument("root_feed.json");
-
-  {  // Test cache state of an existing normal file.
-    // Retrieve resource id and md5 of a file from file system.
-    FilePath file_path(FILE_PATH_LITERAL("drive/File 1.txt"));
-    GDataEntry* entry = FindEntry(file_path);
-    ASSERT_TRUE(entry != NULL);
-    GDataFile* file = entry->AsGDataFile();
-    ASSERT_TRUE(file != NULL);
-    std::string resource_id = file->resource_id();
-    std::string md5 = file->file_md5();
-
-    // Store a file corresponding to |resource_id| and |md5| to cache.
-    TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
-                     base::PLATFORM_FILE_OK,
-                     test_util::TEST_CACHE_STATE_PRESENT,
-                     GDataCache::CACHE_TYPE_TMP);
-
-    // Get its cache state.
-    num_callback_invocations_ = 0;
-    TestGetCacheState(resource_id, md5, true,
-                      test_util::TEST_CACHE_STATE_PRESENT, file);
-    EXPECT_EQ(1, num_callback_invocations_);
-  }
-
-  {  // Test cache state of an existing pinned file.
-    // Retrieve resource id and md5 of a file from file system.
-    FilePath file_path(
-        FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt"));
-    GDataEntry* entry = FindEntry(file_path);
-    ASSERT_TRUE(entry != NULL);
-    GDataFile* file = entry->AsGDataFile();
-    ASSERT_TRUE(file != NULL);
-    std::string resource_id = file->resource_id();
-    std::string md5 = file->file_md5();
-
-    EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(1);
-
-    // Store a file corresponding to |resource_id| and |md5| to cache, and pin
-    // it.
-    int expected_cache_state = (test_util::TEST_CACHE_STATE_PRESENT |
-                                test_util::TEST_CACHE_STATE_PINNED |
-                                test_util::TEST_CACHE_STATE_PERSISTENT);
-    TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
-                     base::PLATFORM_FILE_OK,
-                     test_util::TEST_CACHE_STATE_PRESENT,
-                     GDataCache::CACHE_TYPE_TMP);
-    TestPin(resource_id, md5, base::PLATFORM_FILE_OK, expected_cache_state,
-            GDataCache::CACHE_TYPE_PERSISTENT);
-
-    // Get its cache state.
-    num_callback_invocations_ = 0;
-    TestGetCacheState(resource_id, md5, true,
-                      expected_cache_state, file);
-    EXPECT_EQ(1, num_callback_invocations_);
-  }
-
-  {  // Test cache state of a non-existent file.
-    num_callback_invocations_ = 0;
-    TestGetCacheState("pdf:12345", "abcd", false,
-                      0, NULL);
-    EXPECT_EQ(1, num_callback_invocations_);
-  }
 }
 
 TEST_F(GDataCacheTest, MountUnmount) {
