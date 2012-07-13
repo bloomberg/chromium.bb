@@ -115,7 +115,6 @@ class DriveDetailedView : public TrayDetailsView,
     AppendSettings();
     AppendHeaderEntry(list);
 
-    PreferredSizeChanged();
     SchedulePaint();
   }
 
