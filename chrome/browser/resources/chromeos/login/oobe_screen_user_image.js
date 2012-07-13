@@ -84,6 +84,8 @@ cr.define('oobe', function() {
       // Initialize profile image state.
       this.profileImageSelected = false;
       this.profileImageLoading = true;
+
+      this.updateLocalizedContent();
     },
 
     /**
@@ -388,6 +390,8 @@ cr.define('oobe', function() {
           'webkitTransitionEnd', function(e) {
             previewElement.classList.remove('animation');
           });
+
+      this.updateLocalizedContent();
     },
 
     /**
@@ -456,12 +460,13 @@ cr.define('oobe', function() {
      * @private
      */
     handleSelect_: function() {
-      if (this.selectionType == 'camera' && this.cameraLive) {
+      var imageGrid = $('user-image-grid');
+      if (imageGrid.selectionType == 'camera' && imageGrid.cameraLive) {
         // No current image selected.
         $('ok-button').disabled = true;
       } else {
         $('ok-button').disabled = false;
-        chrome.send('selectImage', [$('user-image-grid').selectedItemUrl]);
+        chrome.send('selectImage', [imageGrid.selectedItemUrl]);
       }
       this.updateCaption_();
     },
@@ -551,7 +556,8 @@ cr.define('oobe', function() {
      */
     updateCaption_: function() {
       $('user-image-preview-caption').textContent =
-          (this.selectionType == 'profile') ? this.profileImageCaption : '';
+          $('user-image-grid').selectionType == 'profile' ?
+          this.profileImageCaption : '';
     },
 
     /**

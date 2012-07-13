@@ -1593,6 +1593,13 @@ void UserManagerImpl::OnProfileDownloadSuccess(ProfileDownloader* downloader) {
   base::TimeDelta delta = base::Time::Now() - profile_image_load_start_time_;
   AddProfileImageTimeHistogram(result, profile_image_download_reason_, delta);
 
+  if (result == kDownloadDefault) {
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
+        content::Source<UserManagerImpl>(this),
+        content::NotificationService::NoDetails());
+  }
+
   // Nothing to do if picture is cached or the default avatar.
   if (result != kDownloadSuccess)
     return;
