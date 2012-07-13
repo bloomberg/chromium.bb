@@ -1886,16 +1886,9 @@ void WebContentsImpl::DidFailProvisionalLoadWithError(
       return;
     }
 
-    // Discard our pending entry if the load canceled (e.g. if we decided to
-    // download the file instead of load it).  We do not verify that the URL
-    // being canceled matches the pending entry's URL because they will not
-    // match if a redirect occurred (in which case we do not want to leave a
-    // stale redirect URL showing).  This means that we also cancel the pending
-    // entry if the user started a new navigation.  As a result, the navigation
-    // controller may not remember that a load is in progress, but the
-    // navigation will still commit even if there is no pending entry.
-    if (controller_.GetPendingEntry())
-      DidCancelLoading();
+    // Do not clear the pending entry if one exists, so that the user's typed
+    // URL is not lost when a navigation fails or is aborted.  We'll allow
+    // the view to clear the pending entry and typed URL if the user requests.
 
     render_manager_.RendererAbortedProvisionalLoad(render_view_host);
   }

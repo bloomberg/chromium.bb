@@ -443,7 +443,9 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
 }
 
 // Tests that the pending entry state is correct after an abort.
-TEST_F(NavigationControllerTest, LoadURL_AbortCancelsPending) {
+// We do not want to clear the pending entry, so that the user doesn't
+// lose a typed URL.  (See http://crbug.com/9682.)
+TEST_F(NavigationControllerTest, LoadURL_AbortDoesntCancelPending) {
   NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
   RegisterForAllNavNotifications(&notifications, &controller);
@@ -480,19 +482,19 @@ TEST_F(NavigationControllerTest, LoadURL_AbortCancelsPending) {
           ViewHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
                                                       params));
 
-  // This should clear the pending entry and notify of a navigation state
-  // change, so that we do not keep displaying kNewURL.
+  // This should not clear the pending entry or notify of a navigation state
+  // change, so that we keep displaying kNewURL (until the user clears it).
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
-  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(2, delegate->navigation_state_change_count());
+  EXPECT_EQ(1, delegate->navigation_state_change_count());
 
   contents()->SetDelegate(NULL);
 }
 
-// Tests that the pending entry state is correct after a redirect and abort.
-// http://crbug.com/83031.
-TEST_F(NavigationControllerTest, LoadURL_RedirectAbortCancelsPending) {
+// Tests that the pending URL is not visible during a renderer-initiated
+// redirect and abort.  See http://crbug.com/83031.
+TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
   RegisterForAllNavNotifications(&notifications, &controller);
@@ -505,9 +507,9 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortCancelsPending) {
   // Without any navigations, the renderer starts at about:blank.
   const GURL kExistingURL("about:blank");
 
-  // Now make a pending new navigation.
+  // Now make a pending new navigation, initiated by the renderer.
   const GURL kNewURL("http://eh");
-  controller.LoadURL(
+  controller.LoadURLFromRenderer(
       kNewURL, content::Referrer(), content::PAGE_TRANSITION_TYPED,
       std::string());
   EXPECT_EQ(0U, notifications.size());
@@ -515,6 +517,11 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortCancelsPending) {
   EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(1, delegate->navigation_state_change_count());
+
+  // There should be no visible entry (resulting in about:blank in the
+  // omnibox), because it was renderer-initiated and there's no last committed
+  // entry.
+  EXPECT_FALSE(controller.GetVisibleEntry());
 
   // Now the navigation redirects.
   const GURL kRedirectURL("http://bee");
@@ -542,12 +549,16 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortCancelsPending) {
           ViewHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
                                                       params));
 
-  // This should clear the pending entry and notify of a navigation state
-  // change, so that we do not keep displaying kNewURL.
+  // This should not clear the pending entry or notify of a navigation state
+  // change.
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
-  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(2, delegate->navigation_state_change_count());
+  EXPECT_EQ(1, delegate->navigation_state_change_count());
+
+  // There should be no visible entry (resulting in about:blank in the
+  // omnibox), ensuring no spoof is possible.
+  EXPECT_FALSE(controller.GetVisibleEntry());
 
   contents()->SetDelegate(NULL);
 }

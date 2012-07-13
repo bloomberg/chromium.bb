@@ -15,6 +15,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -776,12 +777,17 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ClickLinkAfter204Error) {
   // Load a cross-site page that fails with a 204 error.
   ui_test_utils::NavigateToURL(browser(), https_server.GetURL("nocontent"));
 
-  // We should still be looking at the normal page.
+  // We should still be looking at the normal page.  The typed URL will
+  // still be visible until the user clears it manually, but the last
+  // committed URL will be the previous page.
   scoped_refptr<SiteInstance> post_nav_site_instance(
       chrome::GetActiveWebContents(browser())->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, post_nav_site_instance);
-  EXPECT_EQ("/files/click-noreferrer-links.html",
+  EXPECT_EQ("/nocontent",
             chrome::GetActiveWebContents(browser())->GetURL().path());
+  EXPECT_EQ("/files/click-noreferrer-links.html",
+            chrome::GetActiveWebContents(browser())->GetController().
+                GetLastCommittedEntry()->GetVirtualURL().path());
 
   // Renderer-initiated navigations should work.
   bool success = false;
