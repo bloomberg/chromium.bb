@@ -122,8 +122,8 @@ class BasicTest(gtalk_base_test.GTalkBaseTest):
 
     self.WaitUntilResult(True,
         lambda: self.RunInRoster(
-        'window.document.getElementById(":rf") != null'),
-        msg='Timed out waiting for send message to label in roster DOM.')
+        'Boolean($FindByText($BODY(), "Send a message to..."))'),
+        msg='Timed out waiting for "Send a message to..." label in roster DOM.')
 
     # Wait for "chatpinger@appspot.com" to appear in the roster.
     self.WaitUntilResult(True,
