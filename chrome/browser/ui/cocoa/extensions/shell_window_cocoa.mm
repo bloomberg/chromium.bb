@@ -88,19 +88,29 @@ ShellWindowCocoa::ShellWindowCocoa(Profile* profile,
     : ShellWindow(profile, extension, url),
       attention_request_id_(0) {
   // Flip coordinates based on the primary screen.
-  NSRect mainScreenRect = [[[NSScreen screens] objectAtIndex:0] frame];
-  NSRect rect = NSMakeRect(params.bounds.x(),
-      NSHeight(mainScreenRect) - params.bounds.y() - params.bounds.height(),
+  NSRect main_screen_rect = [[[NSScreen screens] objectAtIndex:0] frame];
+  NSRect cocoa_bounds = NSMakeRect(params.bounds.x(),
+      NSHeight(main_screen_rect) - params.bounds.y() - params.bounds.height(),
       params.bounds.width(), params.bounds.height());
-  NSUInteger styleMask = NSTitledWindowMask | NSClosableWindowMask |
-                         NSMiniaturizableWindowMask | NSResizableWindowMask |
-                         NSTexturedBackgroundWindowMask;
+  NSUInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
+                          NSMiniaturizableWindowMask | NSResizableWindowMask |
+                          NSTexturedBackgroundWindowMask;
   scoped_nsobject<NSWindow> window([[ShellNSWindow alloc]
-      initWithContentRect:rect
-                styleMask:styleMask
+      initWithContentRect:cocoa_bounds
+                styleMask:style_mask
                   backing:NSBackingStoreBuffered
                     defer:NO]);
   [window setTitle:base::SysUTF8ToNSString(extension->name())];
+  gfx::Size min_size = params.maximum_size;
+  if (min_size.width() || min_size.height()) {
+    [window setContentMinSize:NSMakeSize(min_size.width(), min_size.height())];
+  }
+  gfx::Size max_size = params.maximum_size;
+  if (max_size.width() || max_size.height()) {
+    CGFloat max_width = max_size.width() ? max_size.width() : CGFLOAT_MAX;
+    CGFloat max_height = max_size.height() ? max_size.height() : CGFLOAT_MAX;
+    [window setContentMaxSize:NSMakeSize(max_width, max_height)];
+  }
 
   if (base::mac::IsOSSnowLeopardOrEarlier() &&
       [window respondsToSelector:@selector(setBottomCornerRounded:)])
@@ -147,11 +157,11 @@ void ShellWindowCocoa::SetFullscreen(bool fullscreen) {
 
   // Fade to black.
   const CGDisplayReservationInterval kFadeDurationSeconds = 0.6;
-  bool didFadeOut = false;
+  bool did_fade_out = false;
   CGDisplayFadeReservationToken token;
   if (CGAcquireDisplayFadeReservation(kFadeDurationSeconds, &token) ==
       kCGErrorSuccess) {
-    didFadeOut = true;
+    did_fade_out = true;
     CGDisplayFade(token, kFadeDurationSeconds / 2, kCGDisplayBlendNormal,
         kCGDisplayBlendSolidColor, 0.0, 0.0, 0.0, /*synchronous=*/true);
   }
@@ -171,7 +181,7 @@ void ShellWindowCocoa::SetFullscreen(bool fullscreen) {
   }
 
   // Fade back in.
-  if (didFadeOut) {
+  if (did_fade_out) {
     CGDisplayFade(token, kFadeDurationSeconds / 2, kCGDisplayBlendSolidColor,
         kCGDisplayBlendNormal, 0.0, 0.0, 0.0, /*synchronous=*/false);
     CGReleaseDisplayFadeReservation(token);
@@ -239,14 +249,19 @@ void ShellWindowCocoa::Restore() {
 }
 
 void ShellWindowCocoa::SetBounds(const gfx::Rect& bounds) {
-  // Enforce minimum bounds.
+  // Enforce minimum/maximum bounds.
   gfx::Rect checked_bounds = bounds;
 
   NSSize min_size = [window() minSize];
   if (bounds.width() < min_size.width)
-      checked_bounds.set_width(min_size.width);
+    checked_bounds.set_width(min_size.width);
   if (bounds.height() < min_size.height)
-      checked_bounds.set_height(min_size.height);
+    checked_bounds.set_height(min_size.height);
+  NSSize max_size = [window() maxSize];
+  if (checked_bounds.width() > max_size.width)
+    checked_bounds.set_width(max_size.width);
+  if (checked_bounds.height() > max_size.height)
+    checked_bounds.set_height(max_size.height);
 
   NSRect cocoa_bounds = NSMakeRect(checked_bounds.x(), 0,
                                    checked_bounds.width(),
