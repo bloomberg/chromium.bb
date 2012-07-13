@@ -86,5 +86,19 @@
         '..',
       ],
     },
+    {
+      'target_name': 'libc_urandom_override',
+      'type': 'static_library',
+      'sources': [
+        'linux/services/libc_urandom_override.cc',
+        'linux/services/libc_urandom_override.h',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+    },
   ],
 }

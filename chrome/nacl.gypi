@@ -141,6 +141,7 @@
               ],
               'dependencies': [
                 '../crypto/crypto.gyp:crypto',
+                '../sandbox/sandbox.gyp:libc_urandom_override',
                 'nacl',
               ],
               'sources': [

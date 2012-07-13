@@ -22,14 +22,7 @@ const char kValidationCacheSequenceName[] = "NaClValidationCache";
 const FilePath::CharType kValidationCacheFileName[] =
     FILE_PATH_LITERAL("nacl_validation_cache.bin");
 
-#if defined(OS_CHROMEOS)
-// TODO(ncbray) enable on ChromeOS.
-// http://code.google.com/p/chromium/issues/detail?id=131218
-const bool kValidationCacheEnabledByDefault = false;
-#else
 const bool kValidationCacheEnabledByDefault = true;
-#endif
-
 
 enum ValidationCacheStatus {
   CACHE_MISS = 0,

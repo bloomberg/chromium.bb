@@ -852,6 +852,7 @@
     ['OS=="linux"', {
       'dependencies': [
         '../build/linux/system.gyp:udev',
+        '../sandbox/sandbox.gyp:libc_urandom_override',
       ],
       # Set LINUX_SANDBOX_PATH for Linux, including Chrome OS
       'conditions': [

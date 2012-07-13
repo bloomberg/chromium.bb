@@ -29,6 +29,7 @@
 #include "crypto/nss_util.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
+#include "sandbox/linux/services/libc_urandom_override.h"
 
 namespace {
 
@@ -201,6 +202,10 @@ int main(int argc, char *argv[]) {
   CommandLine::Init(argc, argv);
   base::AtExitManager exit_manager;
   base::RandUint64();  // acquire /dev/urandom fd before sandbox is raised
+#if !defined(CHROMIUM_SELINUX)
+  // Allows NSS to fopen() /dev/urandom.
+  sandbox::InitLibcUrandomOverrides();
+#endif
 #if defined(USE_NSS)
   // Configure NSS for use inside the NaCl process.
   // The fork check has not caused problems for NaCl, but this appears to be

@@ -1,6 +1,7 @@
 include_rules = [
   "+chrome/app/breakpad_win.h",
   "+content/public/app/startup_helper_win.h",
+  "+sandbox/linux/services",
   "+sandbox/src",
   "+seccompsandbox",
   "+native_client/src",
