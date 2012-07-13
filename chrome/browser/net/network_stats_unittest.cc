@@ -103,6 +103,16 @@ TEST_F(NetworkStatsTestUDP, UDPEcho100BytesNoProxy) {
   RunUDPEchoTest(100, 1, false);
 }
 
+TEST_F(NetworkStatsTestUDP, UDPEcho500BytesHasProxy) {
+  ASSERT_TRUE(test_server_.Start());
+  RunUDPEchoTest(500, 1, true);
+}
+
+TEST_F(NetworkStatsTestUDP, UDPEcho500BytesNoProxy) {
+  ASSERT_TRUE(test_server_.Start());
+  RunUDPEchoTest(500, 1, false);
+}
+
 TEST_F(NetworkStatsTestUDP, UDPEcho1KBytesHasProxy) {
   ASSERT_TRUE(test_server_.Start());
   RunUDPEchoTest(1024, 1, true);

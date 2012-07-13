@@ -35,6 +35,10 @@ namespace chrome_browser_net {
 static const uint32 kSmallTestBytesToSend = 100;
 
 // This specifies the number of bytes to be sent to the TCP/UDP servers as part
+// of medium packet size test.
+static const uint32 kMediumTestBytesToSend = 500;
+
+// This specifies the number of bytes to be sent to the TCP/UDP servers as part
 // of large packet size test.
 static const uint32 kLargeTestBytesToSend = 1200;
 
@@ -617,10 +621,13 @@ void NetworkStats::RecordHistograms(const ProtocolValue& protocol,
                                     int result) {
   // Build <load_size> string.
   const char* kSmallLoadString = "100B";
+  const char* kMediumLoadString = "500B";
   const char* kLargeLoadString = "1K";
   const char* load_size_string;
   if (load_size_ == kSmallTestBytesToSend)
     load_size_string = kSmallLoadString;
+  else if (load_size_ == kMediumTestBytesToSend)
+    load_size_string = kMediumLoadString;
   else
     load_size_string = kLargeLoadString;
 
@@ -891,7 +898,7 @@ void StartNetworkStatsTest(net::HostResolver* host_resolver,
                            const net::HostPortPair& server_address,
                            NetworkStats::HistogramPortSelector histogram_port,
                            bool has_proxy_server) {
-  int experiment_to_run = base::RandInt(1, 2);
+  int experiment_to_run = base::RandInt(1, 4);
   switch (experiment_to_run) {
     case 1:
       {
@@ -908,6 +915,24 @@ void StartNetworkStatsTest(net::HostResolver* host_resolver,
         udp_stats_client->Start(
             host_resolver, server_address, histogram_port, has_proxy_server,
             kSmallTestBytesToSend, kMaximumSequentialPackets,
+            net::CompletionCallback());
+      }
+      break;
+    case 3:
+      {
+        UDPStatsClient* udp_stats_client = new UDPStatsClient();
+        udp_stats_client->Start(
+            host_resolver, server_address, histogram_port, has_proxy_server,
+            kMediumTestBytesToSend, kMaximumSequentialPackets,
+            net::CompletionCallback());
+      }
+      break;
+    case 4:
+      {
+        UDPStatsClient* udp_stats_client = new UDPStatsClient();
+        udp_stats_client->Start(
+            host_resolver, server_address, histogram_port, has_proxy_server,
+            kLargeTestBytesToSend, kMaximumSequentialPackets,
             net::CompletionCallback());
       }
       break;
