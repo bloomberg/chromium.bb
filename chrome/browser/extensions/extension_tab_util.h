@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "webkit/glue/window_open_disposition.h"
+
 class Browser;
 class GURL;
 class Profile;
@@ -24,6 +26,10 @@ class WebContents;
 
 namespace extensions {
 class Extension;
+}
+
+namespace gfx {
+class Rect;
 }
 
 // Provides various utility functions that help manipulate tabs.
@@ -74,6 +80,13 @@ class ExtensionTabUtil {
 
   // Returns true if |url| is used for testing crashes.
   static bool IsCrashURL(const GURL& url);
+
+  // Opens a tab for the specified |web_contents|.
+  static void CreateTab(content::WebContents* web_contents,
+                        const std::string& extension_id,
+                        WindowOpenDisposition disposition,
+                        const gfx::Rect& initial_pos,
+                        bool user_gesture);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TAB_UTIL_H__

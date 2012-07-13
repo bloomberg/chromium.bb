@@ -587,30 +587,8 @@ void ExtensionHost::AddNewContents(WebContents* source,
     }
   }
 
-  // Find a browser with a profile that matches the new tab. If none is found,
-  // NULL argument to NavigateParams is valid.
-  Profile* profile =
-      Profile::FromBrowserContext(new_contents->GetBrowserContext());
-  Browser* browser = browser::FindTabbedBrowser(
-      profile, false);  // Match incognito exactly.
-  TabContents* tab_contents = new TabContents(new_contents);
-  chrome::NavigateParams params(browser, tab_contents);
-
-  // The extension_app_id parameter ends up as app_name in the Browser
-  // which causes the Browser to return true for is_app().  This affects
-  // among other things, whether the location bar gets displayed.
-  // TODO(mpcomplete): This seems wrong. What if the extension content is hosted
-  // in a tab?
-  if (disposition == NEW_POPUP)
-    params.extension_app_id = extension_id_;
-
-  if (!browser)
-    params.profile = profile;
-  params.disposition = disposition;
-  params.window_bounds = initial_pos;
-  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-  params.user_gesture = user_gesture;
-  chrome::Navigate(&params);
+  ExtensionTabUtil::CreateTab(new_contents, extension_id_, disposition,
+                              initial_pos, user_gesture);
 }
 
 void ExtensionHost::RenderViewReady() {

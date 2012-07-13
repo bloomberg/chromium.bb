@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -218,4 +219,36 @@ bool ExtensionTabUtil::IsCrashURL(const GURL& url) {
   return (fixed_url.SchemeIs(chrome::kChromeUIScheme) &&
           (fixed_url.host() == chrome::kChromeUIBrowserCrashHost ||
            fixed_url.host() == chrome::kChromeUICrashHost));
+}
+
+void ExtensionTabUtil::CreateTab(WebContents* web_contents,
+                                 const std::string& extension_id,
+                                 WindowOpenDisposition disposition,
+                                 const gfx::Rect& initial_pos,
+                                 bool user_gesture) {
+  // Find a browser with a profile that matches the new tab. If none is found,
+  // NULL argument to NavigateParams is valid.
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+  Browser* browser = browser::FindTabbedBrowser(
+      profile, false);  // Match incognito exactly.
+  TabContents* tab_contents = new TabContents(web_contents);
+  chrome::NavigateParams params(browser, tab_contents);
+
+  // The extension_app_id parameter ends up as app_name in the Browser
+  // which causes the Browser to return true for is_app().  This affects
+  // among other things, whether the location bar gets displayed.
+  // TODO(mpcomplete): This seems wrong. What if the extension content is hosted
+  // in a tab?
+  if (disposition == NEW_POPUP)
+    params.extension_app_id = extension_id;
+
+  if (!browser)
+    params.profile = profile;
+  params.disposition = disposition;
+  params.window_bounds = initial_pos;
+  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  params.user_gesture = user_gesture;
+  chrome::Navigate(&params);
 }
