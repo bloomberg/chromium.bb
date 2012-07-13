@@ -125,7 +125,7 @@ TEST_F(GDataWAPIParserTest, DocumentFeedJsonParser) {
   ASSERT_TRUE(folder_entry);
   EXPECT_EQ(DocumentEntry::FOLDER, folder_entry->kind());
   EXPECT_EQ("\"HhMOFgcNHSt7ImBr\"", folder_entry->etag());
-  EXPECT_EQ("folder:1_folder_resouce_id", folder_entry->resource_id());
+  EXPECT_EQ("folder:sub_sub_directory_folder_id", folder_entry->resource_id());
   EXPECT_EQ("https://1_folder_id", folder_entry->id());
   EXPECT_EQ(ASCIIToUTF16("Entry 1 Title"), folder_entry->title());
   base::Time entry1_update_time;
@@ -226,7 +226,7 @@ TEST_F(GDataWAPIParserTest, DocumentEntryXmlParser) {
 
   EXPECT_EQ(DocumentEntry::FILE, entry->kind());
   EXPECT_EQ("\"HhMOFgcNHSt7ImBr\"", entry->etag());
-  EXPECT_EQ("file:xml_file_resouce_id", entry->resource_id());
+  EXPECT_EQ("file:xml_file_resource_id", entry->resource_id());
   EXPECT_EQ("https://xml_file_id", entry->id());
   EXPECT_EQ(ASCIIToUTF16("Xml Entry File Title.tar"), entry->title());
   base::Time entry1_update_time;

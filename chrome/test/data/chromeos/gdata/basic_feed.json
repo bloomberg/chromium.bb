@@ -63,7 +63,7 @@
             "$t": "0"
          },
          "gd$resourceId": {
-            "$t": "folder:1_folder_resouce_id"
+            "$t": "folder:sub_sub_directory_folder_id"
          },
          "id": {
             "$t": "https://1_folder_id"
@@ -148,7 +148,7 @@
             "$t": "892721"
          },
          "gd$resourceId": {
-            "$t": "file:2_file_resouce_id"
+            "$t": "file:subdirectory_file_1_id"
          },
          "id": {
             "$t": "2_file_id"
