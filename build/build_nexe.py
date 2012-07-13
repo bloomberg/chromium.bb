@@ -236,13 +236,13 @@ class Builder(object):
     """Compile the source with pre-determined options."""
 
     filename, ext = os.path.splitext(src)
-    if ext == '.c' or ext == '.S':
+    if ext in ['.c', '.S']:
       bin_name = self.GetCCompiler()
       extra = ['-std=gnu99']
       if self.pnacl and ext == '.S':
         extra.append('-arch')
         extra.append(self.arch)
-    elif ext == '.cc':
+    elif ext in ['.cc', '.cpp']:
       bin_name = self.GetCXXCompiler()
       extra = []
     else:
