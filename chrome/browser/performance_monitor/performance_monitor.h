@@ -38,10 +38,6 @@ class PerformanceMonitor : public content::NotificationObserver {
   // start collecting data.
   void Start();
 
-  // Check the previous Chrome version from the Database and determine if
-  // it has been updated. If it has, insert an event in the database.
-  void CheckForVersionUpdate();
-
   // content::NotificationObserver
   // Wait for various notifications; insert events into the database upon
   // occurance.
@@ -54,6 +50,7 @@ class PerformanceMonitor : public content::NotificationObserver {
 
  private:
   friend struct DefaultSingletonTraits<PerformanceMonitor>;
+  FRIEND_TEST_ALL_PREFIXES(PerformanceMonitorBrowserTest, NewVersionEvent);
 
   PerformanceMonitor();
   virtual ~PerformanceMonitor();
@@ -67,18 +64,23 @@ class PerformanceMonitor : public content::NotificationObserver {
   // Register for the appropriate notifications as a NotificationObserver.
   void RegisterForNotifications();
 
-  // Gets the corresponding value of |key| from the database, and then runs
-  // |callback| with that value as a parameter.
-  void GetStateValueOnBackgroundThread(
-      const std::string& key,
-      const StateValueCallback& callback);
-
-  void CheckForVersionUpdateHelper(const std::string& previous_version);
+  // Check the previous Chrome version from the Database and determine if
+  // it has been updated. If it has, insert an event in the database.
+  void CheckForVersionUpdateOnBackgroundThread();
 
   // Wrapper function for inserting events into the database.
   void AddEvent(scoped_ptr<Event> event);
 
   void AddEventOnBackgroundThread(scoped_ptr<Event> event);
+
+  // Gets the corresponding value of |key| from the database, and then runs
+  // |callback| on the UI thread with that value as a parameter.
+  void GetStateValueOnBackgroundThread(
+      const std::string& key,
+      const StateValueCallback& callback);
+
+  // Notify any listeners that PerformanceMonitor has finished the initializing.
+  void NotifyInitialized();
 
   // The location at which the database files are stored; if empty, the database
   // will default to '<user_data_dir>/performance_monitor_dbs'.

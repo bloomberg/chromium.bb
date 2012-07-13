@@ -7,8 +7,11 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
+#include "chrome/browser/performance_monitor/database.h"
 #include "chrome/browser/performance_monitor/events.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace performance_monitor {
 namespace util {
@@ -50,14 +53,22 @@ std::vector<MetricInfo> AggregateMetric(
   return results;
 }
 
-scoped_ptr<Event> CreateExtensionInstallEvent(
-    const base::Time& time,
-    const std::string& id,
-    const std::string& name,
-    const std::string& url,
-    const int& location,
-    const std::string& version,
-    const std::string& description) {
+bool PostTaskToDatabaseAndReply(const base::Closure& request,
+                                const base::Closure& reply) {
+  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
+  base::SequencedWorkerPool::SequenceToken token =
+      pool->GetNamedSequenceToken(Database::kDatabaseSequenceToken);
+  return pool->GetSequencedTaskRunner(token)->PostTaskAndReply(
+      FROM_HERE, request, reply);
+}
+
+scoped_ptr<Event> CreateExtensionInstallEvent(const base::Time& time,
+                                              const std::string& id,
+                                              const std::string& name,
+                                              const std::string& url,
+                                              const int& location,
+                                              const std::string& version,
+                                              const std::string& description) {
   events::ExtensionInstall event;
   event.event_type = EVENT_EXTENSION_INSTALL;
   event.time = static_cast<double>(time.ToInternalValue());
@@ -140,14 +151,13 @@ scoped_ptr<Event> CreateExtensionEnableEvent(
       EVENT_EXTENSION_ENABLE, time, value.Pass()));
 }
 
-scoped_ptr<Event> CreateExtensionUpdateEvent(
-    const base::Time& time,
-    const std::string& id,
-    const std::string& name,
-    const std::string& url,
-    const int& location,
-    const std::string& version,
-    const std::string& description) {
+scoped_ptr<Event> CreateExtensionUpdateEvent(const base::Time& time,
+                                             const std::string& id,
+                                             const std::string& name,
+                                             const std::string& url,
+                                             const int& location,
+                                             const std::string& version,
+                                             const std::string& description) {
   events::ExtensionUpdate event;
   event.event_type = EVENT_EXTENSION_UPDATE;
   event.time = static_cast<double>(time.ToInternalValue());
@@ -162,24 +172,24 @@ scoped_ptr<Event> CreateExtensionUpdateEvent(
       EVENT_EXTENSION_UPDATE, time, value.Pass()));
 }
 
-scoped_ptr<Event> CreateRendererFreezeEvent(
-    const base::Time& time,
-    const std::string& url) {
+scoped_ptr<Event> CreateRendererFreezeEvent(const base::Time& time,
+                                            const std::string& url) {
   events::RendererFreeze event;
   event.event_type = EVENT_RENDERER_FREEZE;
   event.time = static_cast<double>(time.ToInternalValue());
+  event.url = url;
   scoped_ptr<base::DictionaryValue> value = event.ToValue();
   return scoped_ptr<Event>(new Event(
       EVENT_RENDERER_FREEZE, time, value.Pass()));
 }
 
-scoped_ptr<Event> CreateCrashEvent(
-    const base::Time& time,
-    const EventType& type,
-    const std::string& url) {
+scoped_ptr<Event> CreateCrashEvent(const base::Time& time,
+                                   const EventType& type,
+                                   const std::string& url) {
   events::RendererFreeze event;
   event.event_type = type;
   event.time = static_cast<double>(time.ToInternalValue());
+  event.url = url;
   scoped_ptr<base::DictionaryValue> value = event.ToValue();
   return scoped_ptr<Event>(new Event(type, time, value.Pass()));
 }
@@ -193,10 +203,9 @@ scoped_ptr<Event> CreateUncleanShutdownEvent(const base::Time& time) {
       EVENT_UNCLEAN_SHUTDOWN, time, value.Pass()));
 }
 
-scoped_ptr<Event> CreateChromeUpdateEvent(
-    const base::Time& time,
-    const std::string& previous_version,
-    const std::string& current_version) {
+scoped_ptr<Event> CreateChromeUpdateEvent(const base::Time& time,
+                                          const std::string& previous_version,
+                                          const std::string& current_version) {
   events::ChromeUpdate event;
   event.event_type = EVENT_CHROME_UPDATE;
   event.time = static_cast<double>(time.ToInternalValue());

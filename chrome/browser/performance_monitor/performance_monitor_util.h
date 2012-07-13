@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MONITOR_UTIL_H_
 #define CHROME_BROWSER_PERFORMANCE_MONITOR_UTIL_H_
 
+#include "base/callback.h"
 #include "base/time.h"
 #include "chrome/browser/performance_monitor/event.h"
 #include "chrome/browser/performance_monitor/metric_info.h"
@@ -23,6 +24,11 @@ std::vector<MetricInfo> AggregateMetric(
     const std::vector<MetricInfo>& metric_infos,
     const base::Time& start,
     const base::TimeDelta& resolution);
+
+// Post a task to the database using the kDatabaseSequenceToken and reply; this
+// is useful in the absence of a PostBlockingPoolSequencedTaskAndReply method.
+bool PostTaskToDatabaseAndReply(const base::Closure& request,
+                                const base::Closure& reply);
 
 // These are a collection of methods designed to create an event to store the
 // pertinent information, given all the fields. Please use these methods to

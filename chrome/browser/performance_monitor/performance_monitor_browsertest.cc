@@ -28,7 +28,6 @@ using extensions::Extension;
 using performance_monitor::Event;
 
 namespace {
-
 // Helper struct to store the information of an extension; this is needed if the
 // pointer to the extension ever becomes invalid (e.g., if we uninstall the
 // extension).
@@ -79,13 +78,32 @@ void ValidateExtensionInfo(const ExtensionBasicInfo extension,
   ASSERT_EQ(extension.location, extension_location);
 }
 
+// Verify that a particular event has the proper type.
+void CheckEventType(int expected_event_type, const linked_ptr<Event>& event) {
+  int event_type = -1;
+  ASSERT_TRUE(event->data()->GetInteger("eventType", &event_type));
+  ASSERT_EQ(expected_event_type, event_type);
+  ASSERT_EQ(expected_event_type, event->type());
+}
+
+// Verify that we received the proper number of events, checking the type of
+// each one.
+void CheckEventTypes(const std::vector<int> expected_event_types,
+                 const std::vector<linked_ptr<Event> >& events) {
+  ASSERT_EQ(expected_event_types.size(), events.size());
+
+  for (size_t i = 0; i < expected_event_types.size(); ++i)
+    CheckEventType(expected_event_types[i], events[i]);
+}
+
 // Check that we received the proper number of events, that each event is of the
 // proper type, and that each event recorded the proper information about the
 // extension.
-void CheckExtensionEvents(std::vector<int> expected_event_types,
-                          std::vector<ExtensionBasicInfo> extension_infos,
-                          const std::vector<linked_ptr<Event> >& events) {
-  ASSERT_EQ(expected_event_types.size(), events.size());
+void CheckExtensionEvents(
+    const std::vector<int>& expected_event_types,
+    const std::vector<linked_ptr<Event> >& events,
+    const std::vector<ExtensionBasicInfo>& extension_infos) {
+  CheckEventTypes(expected_event_types, events);
 
   for (size_t i = 0; i < expected_event_types.size(); ++i) {
     ValidateExtensionInfo(extension_infos[i], events[i]->data());
@@ -101,24 +119,44 @@ namespace performance_monitor {
 
 class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
  public:
-  virtual void SetUpOnMainThread() {
+  virtual void SetUpOnMainThread() OVERRIDE {
     CHECK(db_dir_.CreateUniqueTempDir());
     performance_monitor_ = PerformanceMonitor::GetInstance();
     performance_monitor_->SetDatabasePath(db_dir_.path());
+
+    // PerformanceMonitor's initialization process involves a significant
+    // amount of thread-hopping between the UI thread and the background thread.
+    // If we begin the tests prior to full initialization, we cannot predict
+    // the behavior or mock synchronicity as we must. Wait for initialization
+    // to complete fully before proceeding with the test.
+    ui_test_utils::WindowedNotificationObserver windowed_observer(
+        chrome::NOTIFICATION_PERFORMANCE_MONITOR_INITIALIZED,
+        content::NotificationService::AllSources());
+
     performance_monitor_->Start();
 
-    // Wait for DB to finish setting up.
-    content::BrowserThread::GetBlockingPool()->FlushForTesting();
+    windowed_observer.Wait();
   }
 
   void GetEventsOnBackgroundThread(std::vector<linked_ptr<Event> >* events) {
-    *events = performance_monitor_->database()->GetEvents();
+    // base::Time is potentially flaky in that there is no guarantee that it
+    // won't actually decrease between successive calls. If we call GetEvents
+    // and the Database uses base::Time::Now() and gets a lesser time, then it
+    // will return 0 events. Thus, we use a time that is guaranteed to be in the
+    // future (for at least the next couple hundred thousand years).
+    *events = performance_monitor_->database()->GetEvents(
+        base::Time(), base::Time::FromInternalValue(kint64max));
   }
 
   // A handle for getting the events from the database, which must be done on
   // the background thread. Since we are testing, we can mock synchronicity
   // with FlushForTesting().
   std::vector<linked_ptr<Event> > GetEvents() {
+    // Ensure that any event insertions happen prior to getting events in order
+    // to avoid race conditions.
+    content::BrowserThread::GetBlockingPool()->FlushForTesting();
+    ui_test_utils::RunAllPendingInMessageLoop();
+
     std::vector<linked_ptr<Event> > events;
     content::BrowserThread::PostBlockingPoolSequencedTask(
         Database::kDatabaseSequenceToken,
@@ -129,6 +167,22 @@ class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
 
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
     return events;
+  }
+
+  // A handle for inserting a state value into the database, which must be done
+  // on the background thread. This is useful for mocking up a scenario in which
+  // the database has prior data stored. We mock synchronicity with
+  // FlushForTesting().
+  void AddStateValue(const std::string& key, const std::string& value) {
+    content::BrowserThread::PostBlockingPoolSequencedTask(
+        Database::kDatabaseSequenceToken,
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(&Database::AddStateValue),
+                   base::Unretained(performance_monitor()->database()),
+                   key,
+                   value));
+
+    content::BrowserThread::GetBlockingPool()->FlushForTesting();
   }
 
   PerformanceMonitor* performance_monitor() const {
@@ -157,19 +211,13 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, InstallExtensionEvent) {
   expected_event_types.push_back(EVENT_EXTENSION_INSTALL);
 
   std::vector<linked_ptr<Event> > events = GetEvents();
-  CheckExtensionEvents(expected_event_types, extension_infos, events);
+  CheckExtensionEvents(expected_event_types, events, extension_infos);
 }
 
 // Test that PerformanceMonitor will correctly record events as an extension is
 // disabled and enabled.
-// Test is flaky on Windows, see http://crbug.com/135037.
-#if defined(OS_WIN)
-#define MAYBE_DisableAndEnableExtensionEvent DISABLED_DisableAndEnableExtensionEvent
-#else
-#define MAYBE_DisableAndEnableExtensionEvent DisableAndEnableExtensionEvent
-#endif
 IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest,
-                       MAYBE_DisableAndEnableExtensionEvent) {
+                       DisableAndEnableExtensionEvent) {
   const int kNumEvents = 3;
 
   FilePath extension_path;
@@ -196,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest,
   expected_event_types.push_back(EVENT_EXTENSION_ENABLE);
 
   std::vector<linked_ptr<Event> > events = GetEvents();
-  CheckExtensionEvents(expected_event_types, extension_infos, events);
+  CheckExtensionEvents(expected_event_types, events, extension_infos);
 
   // There will be an additional field on the unload event: Unload Reason.
   int unload_reason = -1;
@@ -266,7 +314,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, UpdateExtensionEvent) {
 
   std::vector<linked_ptr<Event> > events = GetEvents();
 
-  CheckExtensionEvents(expected_event_types, extension_infos, events);
+  CheckExtensionEvents(expected_event_types, events, extension_infos);
 
   // There will be an additional field: The unload reason.
   int unload_reason = -1;
@@ -274,27 +322,21 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, UpdateExtensionEvent) {
   ASSERT_EQ(extension_misc::UNLOAD_REASON_UPDATE, unload_reason);
 }
 
-// Test is flaky on Windows, see http://crbug.com/135635
-#if defined(OS_WIN)
-#define MAYBE_NewVersionEvent DISABLED_NewVersionEvent
-#else
-#define MAYBE_NewVersionEvent NewVersionEvent
-#endif
-IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, MAYBE_NewVersionEvent) {
+IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, NewVersionEvent) {
   const char kOldVersion[] = "0.0";
+
+  // The version in the database right now will be the current version of chrome
+  // (gathered at initialization of PerformanceMonitor). Replace this with an
+  // older version so an event is generated.
+  AddStateValue(kStateChromeVersion, kOldVersion);
 
   content::BrowserThread::PostBlockingPoolSequencedTask(
       Database::kDatabaseSequenceToken,
       FROM_HERE,
-      base::Bind(base::IgnoreResult(&Database::AddStateValue),
-                 base::Unretained(performance_monitor()->database()),
-                 std::string(kStateChromeVersion),
-                 std::string(kOldVersion)));
+      base::Bind(&PerformanceMonitor::CheckForVersionUpdateOnBackgroundThread,
+                 base::Unretained(performance_monitor())));
 
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
-
-  performance_monitor()->CheckForVersionUpdate();
-
+  // Wait for event insertion.
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
 
   chrome::VersionInfo version;

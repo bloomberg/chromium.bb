@@ -236,7 +236,7 @@ Database::EventList Database::GetEvents(EventType type, const base::Time& start,
   CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   EventList events;
   std::string start_key = CreateEventKey(start, EVENT_UNDEFINED);
-  std::string end_key = CreateEventKey(end, EVENT_UNDEFINED);
+  std::string end_key = CreateEventKey(end, EVENT_NUMBER_OF_EVENTS);
   scoped_ptr<leveldb::Iterator> it(event_db_->NewIterator(read_options_));
   for (it->Seek(start_key);
        it->Valid() && it->key().ToString() <= end_key;
@@ -266,7 +266,7 @@ Database::EventTypeSet Database::GetEventTypes(const base::Time& start,
   CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   EventTypeSet results;
   std::string start_key = CreateEventKey(start, EVENT_UNDEFINED);
-  std::string end_key = CreateEventKey(end, EVENT_UNDEFINED);
+  std::string end_key = CreateEventKey(end, EVENT_NUMBER_OF_EVENTS);
   scoped_ptr<leveldb::Iterator> it(event_db_->NewIterator(read_options_));
   for (it->Seek(start_key);
        it->Valid() && it->key().ToString() <= end_key;

@@ -29,7 +29,7 @@ class TestingClock : public Database::Clock {
   }
   virtual ~TestingClock() {}
   base::Time GetTime() {
-    return base::Time::FromInternalValue(counter_++);
+    return base::Time::FromInternalValue(++counter_);
   }
  private:
   int64 counter_;
