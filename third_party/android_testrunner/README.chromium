@@ -9,9 +9,8 @@ This package is the scripts used to run the unit test for Android and from
 Android Gingerbread.
 
 Local Modifications:
-1. Added functions to start/kill/restart the adb server.
-2. Added function of WaitForSystemBootCompleted to wait for the flag of
-sys.boot_completed to be set.
+There are no local modifications, all files were copied from
+<android_gingerbread_tree>/development/testrunner/
 
 Here is the detail steps
 1. Checkout Android source code
