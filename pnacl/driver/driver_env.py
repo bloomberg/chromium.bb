@@ -114,6 +114,9 @@ INITIAL_ENV = {
   'SCONS_OS_darwin'     : 'mac',
   'SCONS_OS_windows'    : 'win',
 
+  # llvm goldplugin
+  'GOLD_PLUGIN_SO'  : '${BASE_LLVM}/${SO_DIR}/${SO_PREFIX}LLVMgold${SO_EXT}',
+
   'SCONS_STAGING'       : '${SCONS_STAGING_%ARCH%}',
   'SCONS_STAGING_X8632' : '${SCONS_OUT}/opt-${SCONS_OS}-x86-32/staging',
   'SCONS_STAGING_X8664' : '${SCONS_OUT}/opt-${SCONS_OS}-x86-64/staging',

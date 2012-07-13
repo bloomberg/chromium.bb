@@ -19,7 +19,7 @@ PATTERNS = [ ( '(.*)',  "env.append('ARGS', $0)") ]
 def main(argv):
   env.update(EXTRA_ENV)
   ParseArgs(argv, PATTERNS)
-  Run('"${NM}" --plugin=LLVMgold ${ARGS}')
+  Run('"${NM}" --plugin=${GOLD_PLUGIN_SO} ${ARGS}')
   # only reached in case of no errors
   return 0
 

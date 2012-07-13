@@ -24,7 +24,7 @@ def main(argv):
 
   env.update(EXTRA_ENV)
   ParseArgs(argv, PATTERNS)
-  Run('"${RANLIB}" --plugin=LLVMgold ${ARGS}')
+  Run('"${RANLIB}" --plugin=${GOLD_PLUGIN_SO} ${ARGS}')
   # only reached in case of no errors
   return 0
 

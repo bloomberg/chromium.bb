@@ -164,9 +164,6 @@ readonly BFD_PLUGIN_DIR="${BINUTILS_INSTALL_DIR}/lib/bfd-plugins"
 readonly SYSROOT_DIR="${INSTALL_NEWLIB}/sysroot"
 readonly FAKE_INSTALL_DIR="${INSTALL_PKG}/fake"
 
-readonly LLVM_GOLD_PLUGIN_DIR="${LLVM_INSTALL_DIR}"/plugin
-readonly LLVM_GOLD_PLUGIN="${LLVM_GOLD_PLUGIN_DIR}"/gold-plugin-static.o
-
 # TODO(pdox): Consider getting rid of pnacl-ld libmode bias,
 #             and merging these two.
 readonly PNACL_LD_NEWLIB="${INSTALL_NEWLIB_BIN}/pnacl-ld"
@@ -245,10 +242,10 @@ SBTC_PRODUCTION=${SBTC_PRODUCTION:-false}
 SBTC_BUILD_WITH_PNACL="armv7 i686 x86_64"
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-994a02ce6954}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-2dfee2424193}
 
 readonly NEWLIB_REV=346ea38d142f
-readonly BINUTILS_REV=5ccab9d0bb73
+readonly BINUTILS_REV=95a4e0cd6450
 readonly GOLD_REV=c136b51e9dcb
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 
@@ -735,8 +732,8 @@ everything-post-hg() {
 
   clean-logs
 
-  llvm
   binutils
+  llvm
   binutils-gold
 
   driver
@@ -1433,33 +1430,41 @@ llvm-install() {
            make ${MAKE_OPTS} install
   spopd
 
-  llvm-install-plugin
+  llvm-install-links
 }
 
-# Produces gold-plugin-static.o, which is the gold plugin
-# with all LLVM dependencies statically linked in.
-llvm-install-plugin() {
-  StepBanner "LLVM" "Installing plugin"
-  mkdir -p "${LLVM_GOLD_PLUGIN_DIR}"
+llvm-install-links() {
+  local makelink="ln -sf"
+   # On Windows, these can't be symlinks.
+  if ${BUILD_PLATFORM_WIN}; then
+    makelink="cp -a"
+  fi
+  mkdir -p "${BFD_PLUGIN_DIR}"
 
-  # This pulls every LLVM dependency needed for gold-plugin.o and libLTO.
-  local components="x86 arm linker analysis ipo bitwriter"
-  local libpath="${TC_BUILD_LLVM}"/Release+Asserts/lib
+  # TODO(pdox): These may no longer be necessary.
+  if [ -f "${BFD_PLUGIN_DIR}/../../../llvm/${SO_DIR}/LLVMgold${SO_EXT}" ]; then
+    # this is to make sure whatever name LLVMgold.so is, it is always
+    # libLLVMgold.so as far as PNaCl is concerned
 
-  ${CC} -r -nostdlib \
-         "${TC_BUILD_LLVM}"/tools/gold/Release+Asserts/gold-plugin.o \
-        "${libpath}"/libLTO.a \
-        $("${LLVM_INSTALL_DIR}"/bin/llvm-config --libfiles ${components}) \
-        -o "${LLVM_GOLD_PLUGIN}"
+    StepBanner "Symlinking LLVMgold.so to libLLVMgold.so in " \
+     "${BFD_PLUGIN_DIR}/../../../llvm/${SO_DIR}"
 
-  # Force re-link of ld, gold, ar, ranlib, nm
-  rm -f "${TC_BUILD_BINUTILS}"/binutils/ar
-  rm -f "${TC_BUILD_BINUTILS}"/binutils/nm-new
-  rm -f "${TC_BUILD_BINUTILS}"/binutils/ranlib
-  rm -f "${TC_BUILD_BINUTILS}"/gold/ld-new
-  rm -f "${TC_BUILD_BINUTILS}"/ld/ld-new
+    (cd "${BFD_PLUGIN_DIR}/../../../llvm/${SO_DIR}";
+      ${makelink} "LLVMgold${SO_EXT}" "${SO_PREFIX}LLVMgold${SO_EXT}";
+    )
+  fi
+
+  spushd "${BFD_PLUGIN_DIR}"
+
+  ${makelink} ../../../llvm/${SO_DIR}/${SO_PREFIX}LLVMgold${SO_EXT} .
+  ${makelink} ../../../llvm/${SO_DIR}/${SO_PREFIX}LTO${SO_EXT} .
+  spopd
+
+  spushd "${BINUTILS_INSTALL_DIR}/${SO_DIR}"
+  ${makelink} ../../llvm/${SO_DIR}/${SO_PREFIX}LTO${SO_EXT} .
+  ${makelink} ../../llvm/${SO_DIR}/${SO_PREFIX}LLVMgold${SO_EXT} .
+  spopd
 }
-
 #########################################################################
 #########################################################################
 #     < LIBGCC_EH >
@@ -1873,8 +1878,11 @@ binutils() {
     SkipBanner "BINUTILS" "configure"
   fi
 
-  binutils-dlwrap
-  binutils-make
+  if binutils-needs-make; then
+    binutils-make
+  else
+    SkipBanner "BINUTILS" "make"
+  fi
   binutils-install
 }
 
@@ -1883,23 +1891,6 @@ binutils-clean() {
   StepBanner "BINUTILS" "Clean"
   local objdir="${TC_BUILD_BINUTILS}"
   rm -rf ${objdir}
-}
-
-binutils-dlwrap() {
-  local srcdir="${TC_SRC_BINUTILS}"
-  local objdir="${TC_BUILD_BINUTILS}"
-
-  if ! [ -f "${LLVM_GOLD_PLUGIN}" ]; then
-    Fatal "LLVM must be installed before building binutils."
-  fi
-
-  # Build libdlwrap.a
-  mkdir -p "${objdir}/dlwrap"
-  spushd "${objdir}/dlwrap"
-  ${CC} -c "${srcdir}"/dlwrap/dlwrap.c -o dlwrap.o
-  cp "${LLVM_GOLD_PLUGIN}" gold_plugin_static.o
-  ${AR} crs libdlwrap.a dlwrap.o gold_plugin_static.o
-  spopd
 }
 
 #+ binutils-configure- Configure binutils for ARM
@@ -1922,14 +1913,12 @@ binutils-configure() {
   # TODO(pdox): Building binutils for nacl/nacl64 target currently requires
   # providing NACL_ALIGN_* defines. This should really be defined inside
   # binutils instead.
-  local flags="-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 \
-               -I${TC_SRC_BINUTILS}/dlwrap -DENABLE_DLWRAP"
+  local flags="-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5"
   RunWithLog binutils.configure \
     env -i \
     PATH="/usr/bin:/bin" \
     CC="${CC}" \
     CXX="${CXX}" \
-    LDFLAGS="-L${objdir}/dlwrap" \
     CFLAGS="${flags}" \
     CXXFLAGS="${flags}" \
     ${srcdir}/binutils-2.20/configure --prefix="${BINUTILS_INSTALL_DIR}" \
@@ -1953,6 +1942,16 @@ binutils-configure() {
 binutils-needs-configure() {
   [ ! -f "${TC_BUILD_BINUTILS}/config.status" ]
   return $?
+}
+
+binutils-needs-make() {
+  local srcdir="${TC_SRC_BINUTILS}"
+  local objdir="${TC_BUILD_BINUTILS}"
+  local ret=1
+  binutils-mess-hide
+  ts-modified "$srcdir" "$objdir" && ret=0
+  binutils-mess-unhide
+  return ${ret}
 }
 
 #+ binutils-make     - Make binutils for ARM

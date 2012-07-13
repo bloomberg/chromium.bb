@@ -35,7 +35,7 @@ def main(argv):
   command = args.pop(0)
   env.set('COMMAND', command)
   env.set('ARGS', *args)
-  driver_tools.Run('"${AR}" ${COMMAND} --plugin=LLVMgold ${ARGS}')
+  driver_tools.Run('"${AR}" ${COMMAND} --plugin=${GOLD_PLUGIN_SO} ${ARGS}')
   # only reached in case of no errors
   return 0
 
