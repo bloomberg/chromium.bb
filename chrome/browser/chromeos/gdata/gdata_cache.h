@@ -8,14 +8,20 @@
 #include <map>
 #include <string>
 
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/platform_file.h"
-#include "base/threading/sequenced_worker_pool.h"
 
 class Profile;
+
+namespace base {
+
+class SequencedTaskRunner;
+
+}  // namespace base
 
 namespace gdata {
 
@@ -268,8 +274,7 @@ class GDataCache {
   // the default value of SequenceToken.
   static GDataCache* CreateGDataCacheOnUIThread(
       const FilePath& cache_root_path,
-      base::SequencedWorkerPool* pool,
-      const base::SequencedWorkerPool::SequenceToken& sequence_token);
+      base::SequencedTaskRunner* blocking_task_runner);
 
   // Deletes the cache.
   void DestroyOnUIThread();
@@ -295,10 +300,8 @@ class GDataCache {
       const GDataCacheEntry& cache_entry);
 
  private:
-  GDataCache(
-      const FilePath& cache_root_path,
-      base::SequencedWorkerPool* pool_,
-      const base::SequencedWorkerPool::SequenceToken& sequence_token);
+  GDataCache(const FilePath& cache_root_path,
+             base::SequencedTaskRunner* blocking_task_runner);
   virtual ~GDataCache();
 
   // Checks whether the current thread is on the right sequenced worker pool
@@ -403,8 +406,7 @@ class GDataCache {
   // Paths for all subdirectories of GCache, one for each
   // GDataCache::CacheSubDirectoryType enum.
   const std::vector<FilePath> cache_paths_;
-  base::SequencedWorkerPool* pool_;
-  const base::SequencedWorkerPool::SequenceToken sequence_token_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   // The cache state data. This member must be access only on the blocking pool.
   scoped_ptr<GDataCacheMetadata> metadata_;

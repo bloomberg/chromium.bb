@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
@@ -55,8 +56,6 @@ class GDataSyncClientTest : public testing::Test {
   GDataSyncClientTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         io_thread_(content::BrowserThread::IO),
-        sequence_token_(
-            content::BrowserThread::GetBlockingPool()->GetSequenceToken()),
         profile_(new TestingProfile),
         mock_file_system_(new StrictMock<MockGDataFileSystem>),
         mock_network_library_(NULL) {
@@ -74,10 +73,11 @@ class GDataSyncClientTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     // Initialize the sync client.
+    scoped_refptr<base::SequencedWorkerPool> pool =
+        content::BrowserThread::GetBlockingPool();
     cache_ = GDataCache::CreateGDataCacheOnUIThread(
         temp_dir_.path(),
-        content::BrowserThread::GetBlockingPool(),
-        sequence_token_);
+        pool->GetSequencedTaskRunner(pool->GetSequenceToken()));
     sync_client_.reset(new GDataSyncClient(profile_.get(),
                                            mock_file_system_.get(),
                                            cache_));
@@ -277,7 +277,6 @@ class GDataSyncClientTest : public testing::Test {
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
-  const base::SequencedWorkerPool::SequenceToken sequence_token_;
   ScopedTempDir temp_dir_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<StrictMock<MockGDataFileSystem> > mock_file_system_;

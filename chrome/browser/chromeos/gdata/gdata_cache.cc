@@ -290,14 +290,11 @@ void RunGetCacheEntryCallback(
 
 }  // namespace
 
-GDataCache::GDataCache(
-    const FilePath& cache_root_path,
-    base::SequencedWorkerPool* pool,
-    const base::SequencedWorkerPool::SequenceToken& sequence_token)
+GDataCache::GDataCache(const FilePath& cache_root_path,
+                       base::SequencedTaskRunner* blocking_task_runner)
     : cache_root_path_(cache_root_path),
       cache_paths_(GetCachePaths(cache_root_path_)),
-      pool_(pool),
-      sequence_token_(sequence_token),
+      blocking_task_runner_(blocking_task_runner),
       ui_weak_ptr_factory_(this),
       ui_weak_ptr_(ui_weak_ptr_factory_.GetWeakPtr()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -343,7 +340,8 @@ FilePath GDataCache::GetCacheFilePath(const std::string& resource_id,
 }
 
 void GDataCache::AssertOnSequencedWorkerPool() {
-  DCHECK(!pool_ || pool_->IsRunningSequenceOnCurrentThread(sequence_token_));
+  DCHECK(!blocking_task_runner_ ||
+         blocking_task_runner_->RunsTasksOnCurrentThread());
 }
 
 bool GDataCache::IsUnderGDataCacheDirectory(const FilePath& path) const {
@@ -368,7 +366,7 @@ void GDataCache::GetCacheEntryOnUIThread(
 
   bool* success = new bool(false);
   GDataCacheEntry* cache_entry = new GDataCacheEntry;
-  pool_->GetSequencedTaskRunner(sequence_token_)->PostTaskAndReply(
+  blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GDataCache::GetCacheEntryHelper,
                  base::Unretained(this),
@@ -388,7 +386,7 @@ void GDataCache::GetResourceIdsOfBacklogOnUIThread(
 
   std::vector<std::string>* to_fetch = new std::vector<std::string>;
   std::vector<std::string>* to_upload = new std::vector<std::string>;
-  pool_->GetSequencedTaskRunner(sequence_token_)->PostTaskAndReply(
+  blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GDataCache::GetResourceIdsOfBacklog,
                  base::Unretained(this),
@@ -405,7 +403,7 @@ void GDataCache::GetResourceIdsOfExistingPinnedFilesOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::vector<std::string>* resource_ids = new std::vector<std::string>;
-  pool_->GetSequencedTaskRunner(sequence_token_)->PostTaskAndReply(
+  blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GDataCache::GetResourceIdsOfExistingPinnedFiles,
                  base::Unretained(this),
@@ -443,7 +441,7 @@ void GDataCache::GetFileOnUIThread(const std::string& resource_id,
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   FilePath* cache_file_path = new FilePath;
-  pool_->GetSequencedTaskRunner(sequence_token_)->PostTaskAndReply(
+  blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GDataCache::GetFile,
                  base::Unretained(this),
@@ -468,7 +466,7 @@ void GDataCache::StoreOnUIThread(const std::string& resource_id,
 
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
-  pool_->GetSequencedTaskRunner(sequence_token_)->PostTaskAndReply(
+  blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GDataCache::Store,
                  base::Unretained(this),
@@ -491,7 +489,7 @@ void GDataCache::PinOnUIThread(const std::string& resource_id,
 
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
-  pool_->GetSequencedTaskRunner(sequence_token_)->PostTaskAndReply(
+  blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GDataCache::Pin,
                  base::Unretained(this),
@@ -513,7 +511,7 @@ void GDataCache::UnpinOnUIThread(const std::string& resource_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
-  pool_->GetSequencedTaskRunner(sequence_token_)->PostTaskAndReply(
+  blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GDataCache::Unpin,
                  base::Unretained(this),
@@ -538,7 +536,7 @@ void GDataCache::SetMountedStateOnUIThread(
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   FilePath* cache_file_path = new FilePath;
-  pool_->GetSequencedTaskRunner(sequence_token_)->PostTaskAndReply(
+  blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GDataCache::SetMountedState,
                  base::Unretained(this),
@@ -560,7 +558,7 @@ void GDataCache::MarkDirtyOnUIThread(const std::string& resource_id,
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   FilePath* cache_file_path = new FilePath;
-  pool_->GetSequencedTaskRunner(sequence_token_)->PostTaskAndReply(
+  blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GDataCache::MarkDirty,
                  base::Unretained(this),
@@ -584,7 +582,7 @@ void GDataCache::CommitDirtyOnUIThread(const std::string& resource_id,
 
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
-  pool_->GetSequencedTaskRunner(sequence_token_)->PostTaskAndReply(
+  blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GDataCache::CommitDirty,
                  base::Unretained(this),
@@ -607,7 +605,7 @@ void GDataCache::ClearDirtyOnUIThread(const std::string& resource_id,
 
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
-  pool_->GetSequencedTaskRunner(sequence_token_)->PostTaskAndReply(
+  blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GDataCache::ClearDirty,
                  base::Unretained(this),
@@ -629,7 +627,7 @@ void GDataCache::RemoveOnUIThread(const std::string& resource_id,
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
 
-  pool_->GetSequencedTaskRunner(sequence_token_)->PostTaskAndReply(
+  blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GDataCache::Remove,
                  base::Unretained(this),
@@ -645,7 +643,7 @@ void GDataCache::RemoveOnUIThread(const std::string& resource_id,
 void GDataCache::RequestInitializeOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  pool_->GetSequencedTaskRunner(sequence_token_)->PostTask(
+  blocking_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&GDataCache::Initialize, base::Unretained(this)));
 }
@@ -661,10 +659,9 @@ bool GDataCache::GetCacheEntry(const std::string& resource_id,
 // static
 GDataCache* GDataCache::CreateGDataCacheOnUIThread(
     const FilePath& cache_root_path,
-    base::SequencedWorkerPool* pool,
-    const base::SequencedWorkerPool::SequenceToken& sequence_token) {
+    base::SequencedTaskRunner* blocking_task_runner) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return new GDataCache(cache_root_path, pool, sequence_token);
+  return new GDataCache(cache_root_path, blocking_task_runner);
 }
 
 void GDataCache::DestroyOnUIThread() {
@@ -674,7 +671,7 @@ void GDataCache::DestroyOnUIThread() {
   ui_weak_ptr_factory_.InvalidateWeakPtrs();
 
   // Destroy myself on the blocking pool.
-  pool_->GetSequencedTaskRunner(sequence_token_)->PostTask(
+  blocking_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&GDataCache::Destroy,
                  base::Unretained(this)));
@@ -684,7 +681,7 @@ void GDataCache::Initialize() {
   AssertOnSequencedWorkerPool();
 
   GDataCacheMetadataMap* cache_data =
-      new GDataCacheMetadataMap(pool_, sequence_token_);
+      new GDataCacheMetadataMap(blocking_task_runner_);
   cache_data->Initialize(cache_paths_);
   metadata_.reset(cache_data);
 }
@@ -1405,7 +1402,7 @@ void GDataCache::OnUnpinned(base::PlatformFileError* error,
   // Now the file is moved from "persistent" to "tmp" directory.
   // It's a chance to free up space if needed.
   bool* has_enough_space = new bool(false);
-  pool_->GetSequencedTaskRunner(sequence_token_)->PostTask(
+  blocking_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&GDataCache::FreeDiskSpaceIfNeededFor,
                  base::Unretained(this),

@@ -27,6 +27,16 @@
 using content::BrowserContext;
 using content::BrowserThread;
 
+namespace {
+
+scoped_refptr<base::SequencedTaskRunner> GetTaskRunner(
+    const base::SequencedWorkerPool::SequenceToken& sequence_token) {
+  return BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
+      sequence_token);
+}
+
+}  // nemaspace
+
 namespace gdata {
 
 //===================== GDataSystemService ====================================
@@ -35,8 +45,7 @@ GDataSystemService::GDataSystemService(Profile* profile)
       sequence_token_(BrowserThread::GetBlockingPool()->GetSequenceToken()),
       cache_(GDataCache::CreateGDataCacheOnUIThread(
           GDataCache::GetCacheRootPath(profile_),
-          BrowserThread::GetBlockingPool(),
-          sequence_token_)),
+          GetTaskRunner(sequence_token_))),
       documents_service_(new DocumentsService),
       uploader_(new GDataUploader(docs_service())),
       webapps_registry_(new DriveWebAppsRegistry),
@@ -45,7 +54,7 @@ GDataSystemService::GDataSystemService(Profile* profile)
                                        docs_service(),
                                        uploader(),
                                        webapps_registry(),
-                                       sequence_token_)),
+                                       GetTaskRunner(sequence_token_))),
       download_observer_(new GDataDownloadObserver(uploader(), file_system())),
       sync_client_(new GDataSyncClient(profile, file_system(), cache())) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

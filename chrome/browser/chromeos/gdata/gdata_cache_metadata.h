@@ -34,9 +34,7 @@ class GDataCacheMetadata {
   //
   // For testing, the thread assertion can be disabled by passing NULL and
   // the default value of SequenceToken.
-  GDataCacheMetadata(
-      base::SequencedWorkerPool* pool,
-      const base::SequencedWorkerPool::SequenceToken& sequence_token);
+  explicit GDataCacheMetadata(base::SequencedTaskRunner* blocking_task_runner);
   virtual ~GDataCacheMetadata();
 
   // Initialize the cache metadata store.
@@ -71,8 +69,7 @@ class GDataCacheMetadata {
   void AssertOnSequencedWorkerPool();
 
  private:
-  base::SequencedWorkerPool* pool_;
-  const base::SequencedWorkerPool::SequenceToken& sequence_token_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataCacheMetadata);
 };
@@ -81,11 +78,9 @@ class GDataCacheMetadata {
 // GDataCacheMetadata implementation with std::map;
 class GDataCacheMetadataMap : public GDataCacheMetadata {
  public:
-  GDataCacheMetadataMap(
-      base::SequencedWorkerPool* pool,
-      const base::SequencedWorkerPool::SequenceToken& sequence_token);
+  explicit GDataCacheMetadataMap(
+      base::SequencedTaskRunner* blocking_task_runner);
   virtual ~GDataCacheMetadataMap();
-
 
   // GDataCacheMetadata overrides:
   virtual void Initialize(const std::vector<FilePath>& cache_paths) OVERRIDE;

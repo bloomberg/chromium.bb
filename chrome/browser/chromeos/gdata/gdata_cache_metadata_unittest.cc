@@ -35,8 +35,7 @@ class GDataCacheMetadataMapTest : public testing::Test {
 
   // Sets up the GDataCacheMetadata object.
   void SetUpCacheMetadata() {
-    metadata_.reset(new GDataCacheMetadataMap(
-        NULL, base::SequencedWorkerPool::SequenceToken()));
+    metadata_.reset(new GDataCacheMetadataMap(NULL));
     metadata_->Initialize(cache_paths_);
   }
 

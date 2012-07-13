@@ -568,13 +568,11 @@ void ReadOnlyFindEntryCallback(GDataEntry** out,
 // pool with the given sequence token.
 void PostBlockingPoolSequencedTask(
     const tracked_objects::Location& from_here,
-    const base::SequencedWorkerPool::SequenceToken& sequence_token,
+    base::SequencedTaskRunner* blocking_task_runner,
     const base::Closure& task) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
-  const bool posted = pool->GetSequencedTaskRunner(sequence_token)->
-      PostTask(from_here, task);
+  const bool posted = blocking_task_runner->PostTask(from_here, task);
   DCHECK(posted);
 }
 
@@ -582,17 +580,13 @@ void PostBlockingPoolSequencedTask(
 // callback that runs on the calling thread.
 void PostBlockingPoolSequencedTaskAndReply(
     const tracked_objects::Location& from_here,
-    const base::SequencedWorkerPool::SequenceToken& sequence_token,
+    base::SequencedTaskRunner* blocking_task_runner,
     const base::Closure& request_task,
     const base::Closure& reply_task) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
-  const bool posted = pool->GetSequencedTaskRunner(sequence_token)->
-      PostTaskAndReply(
-          from_here,
-          request_task,
-          reply_task);
+  const bool posted = blocking_task_runner->PostTaskAndReply(
+      from_here, request_task, reply_task);
   DCHECK(posted);
 }
 
@@ -766,7 +760,7 @@ GDataFileSystem::GDataFileSystem(
     DocumentsServiceInterface* documents_service,
     GDataUploaderInterface* uploader,
     DriveWebAppsRegistryInterface* webapps_registry,
-    const base::SequencedWorkerPool::SequenceToken& sequence_token)
+    base::SequencedTaskRunner* blocking_task_runner)
     : profile_(profile),
       cache_(cache),
       uploader_(uploader),
@@ -776,7 +770,7 @@ GDataFileSystem::GDataFileSystem(
       hide_hosted_docs_(false),
       ui_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       ui_weak_ptr_(ui_weak_ptr_factory_.GetWeakPtr()),
-      sequence_token_(sequence_token) {
+      blocking_task_runner_(blocking_task_runner) {
   // Should be created from the file browser extension API on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -999,7 +993,7 @@ void GDataFileSystem::OnGetAccountMetadata(
             kAccountMetadataFile);
     PostBlockingPoolSequencedTask(
         FROM_HERE,
-        sequence_token_,
+        blocking_task_runner_,
         base::Bind(&SaveFeedOnBlockingPoolForDebugging,
                    path, base::Passed(&feed_data)));
 #endif
@@ -1155,7 +1149,7 @@ void GDataFileSystem::TransferFileFromLocalToRemote(
   std::string* resource_id = new std::string;
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      sequence_token_,
+      blocking_task_runner_,
       base::Bind(&GetDocumentResourceIdOnBlockingPool,
                  local_src_file_path,
                  resource_id),
@@ -1204,7 +1198,7 @@ void GDataFileSystem::TransferRegularFile(
   std::string* content_type = new std::string;
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      sequence_token_,
+      blocking_task_runner_,
       base::Bind(&GetLocalFileInfoOnBlockingPool,
                  local_file_path,
                  error,
@@ -1413,7 +1407,7 @@ void GDataFileSystem::OnGetFileCompleteForTransferFile(
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      sequence_token_,
+      blocking_task_runner_,
       base::Bind(&CopyLocalFileOnBlockingPool,
                  local_file_path,
                  local_dest_file_path,
@@ -1899,7 +1893,7 @@ void GDataFileSystem::GetResolvedFileByPath(
     GDataFileType* file_type = new GDataFileType(REGULAR_FILE);
     PostBlockingPoolSequencedTaskAndReply(
         FROM_HERE,
-        sequence_token_,
+        blocking_task_runner_,
         base::Bind(&CreateDocumentJsonFileOnBlockingPool,
                    cache_->GetCacheDirectoryPath(
                        GDataCache::CACHE_TYPE_TMP_DOCUMENTS),
@@ -2084,7 +2078,7 @@ void GDataFileSystem::OnGetDocumentEntry(const FilePath& cache_file_path,
   bool* has_enough_space = new bool(false);
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      sequence_token_,
+      blocking_task_runner_,
       base::Bind(&GDataCache::FreeDiskSpaceIfNeededFor,
                  base::Unretained(cache_),
                  file_size,
@@ -2725,7 +2719,7 @@ void GDataFileSystem::OnGetDocuments(ContentOrigin initial_origin,
                          params->start_changestamp);
   PostBlockingPoolSequencedTask(
       FROM_HERE,
-      sequence_token_,
+      blocking_task_runner_,
       base::Bind(&SaveFeedOnBlockingPoolForDebugging,
                  cache_->GetCacheDirectoryPath(
                      GDataCache::CACHE_TYPE_META).Append(file_name),
@@ -2870,7 +2864,7 @@ void GDataFileSystem::SaveFileSystemAsProto() {
   root_->set_serialized_size(serialized_proto->size());
   PostBlockingPoolSequencedTask(
       FROM_HERE,
-      sequence_token_,
+      blocking_task_runner_,
       base::Bind(&SaveProtoOnBlockingPool, path,
                  base::Passed(serialized_proto.Pass())));
 }
@@ -3022,7 +3016,7 @@ void GDataFileSystem::OnFileDownloaded(
   bool* has_enough_space = new bool(false);
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      sequence_token_,
+      blocking_task_runner_,
       base::Bind(&GDataCache::FreeDiskSpaceIfNeededFor,
                  base::Unretained(cache_),
                  0,
@@ -3075,7 +3069,7 @@ void GDataFileSystem::OnFileDownloadedAndSpaceChecked(
       // report "no space" error.
       PostBlockingPoolSequencedTask(
           FROM_HERE,
-          sequence_token_,
+          blocking_task_runner_,
           base::Bind(base::IgnoreResult(&file_util::Delete),
                      downloaded_file_path,
                      false /* recursive*/));
@@ -3908,7 +3902,7 @@ void GDataFileSystem::OnGetFileCompleteForCloseFile(
   bool* get_file_info_result = new bool(false);
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      sequence_token_,
+      blocking_task_runner_,
       base::Bind(&GetFileInfoOnBlockingPool,
                  local_cache_path,
                  base::Unretained(file_info),

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_cache_metadata.h"
 
 #include "base/file_util.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 
@@ -297,10 +298,8 @@ bool CheckIfMd5Matches(
 }  // namespace
 
 GDataCacheMetadata::GDataCacheMetadata(
-    base::SequencedWorkerPool* pool,
-    const base::SequencedWorkerPool::SequenceToken& sequence_token)
-    : pool_(pool),
-      sequence_token_(sequence_token) {
+    base::SequencedTaskRunner* blocking_task_runner)
+    : blocking_task_runner_(blocking_task_runner) {
   AssertOnSequencedWorkerPool();
 }
 
@@ -309,16 +308,16 @@ GDataCacheMetadata::~GDataCacheMetadata() {
 }
 
 void GDataCacheMetadata::AssertOnSequencedWorkerPool() {
-  DCHECK(!pool_ || pool_->IsRunningSequenceOnCurrentThread(sequence_token_));
+  DCHECK(!blocking_task_runner_ ||
+         blocking_task_runner_->RunsTasksOnCurrentThread());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // GDataCacheMetadataMap
 
 GDataCacheMetadataMap::GDataCacheMetadataMap(
-    base::SequencedWorkerPool* pool,
-    const base::SequencedWorkerPool::SequenceToken& sequence_token)
-    : GDataCacheMetadata(pool, sequence_token) {
+    base::SequencedTaskRunner* blocking_task_runner)
+    : GDataCacheMetadata(blocking_task_runner) {
   AssertOnSequencedWorkerPool();
 }
 

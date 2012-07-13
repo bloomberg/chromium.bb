@@ -169,8 +169,6 @@ class GDataFileSystemTest : public testing::Test {
   GDataFileSystemTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         io_thread_(content::BrowserThread::IO),
-        sequence_token_(
-            content::BrowserThread::GetBlockingPool()->GetSequenceToken()),
         cache_(NULL),
         file_system_(NULL),
         mock_doc_service_(NULL),
@@ -202,10 +200,13 @@ class GDataFileSystemTest : public testing::Test {
     mock_free_disk_space_checker_ = new MockFreeDiskSpaceGetter;
     SetFreeDiskSpaceGetterForTesting(mock_free_disk_space_checker_);
 
+    scoped_refptr<base::SequencedWorkerPool> pool =
+        content::BrowserThread::GetBlockingPool();
+    blocking_task_runner_ =
+        pool->GetSequencedTaskRunner(pool->GetSequenceToken());
+
     cache_ = GDataCache::CreateGDataCacheOnUIThread(
-        GDataCache::GetCacheRootPath(profile_.get()),
-        content::BrowserThread::GetBlockingPool(),
-        sequence_token_);
+        GDataCache::GetCacheRootPath(profile_.get()), blocking_task_runner_);
 
     mock_uploader_.reset(new StrictMock<MockGDataUploader>);
     mock_webapps_registry_.reset(new StrictMock<MockDriveWebAppsRegistry>);
@@ -216,7 +217,7 @@ class GDataFileSystemTest : public testing::Test {
                                        mock_doc_service_,
                                        mock_uploader_.get(),
                                        mock_webapps_registry_.get(),
-                                       sequence_token_);
+                                       blocking_task_runner_);
 
     mock_sync_client_.reset(new StrictMock<MockGDataSyncClient>);
     cache_->AddObserver(mock_sync_client_.get());
@@ -419,16 +420,14 @@ class GDataFileSystemTest : public testing::Test {
                                      const std::string& md5,
                                      GDataCacheEntry* cache_entry) {
     bool result = false;
-    content::BrowserThread::GetBlockingPool()
-        ->GetSequencedTaskRunner(sequence_token_)->PostTask(
-            FROM_HERE,
-            base::Bind(
-                &GDataFileSystemTest::GetCacheEntryFromOriginThreadInternal,
-                base::Unretained(this),
-                resource_id,
-                md5,
-                cache_entry,
-                &result));
+    blocking_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&GDataFileSystemTest::GetCacheEntryFromOriginThreadInternal,
+                   base::Unretained(this),
+                   resource_id,
+                   md5,
+                   cache_entry,
+                   &result));
     test_util::RunBlockingPoolTask();
     return result;
   }
@@ -897,7 +896,7 @@ class GDataFileSystemTest : public testing::Test {
   // See also content/browser/browser_thread_imple.cc.
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
-  const base::SequencedWorkerPool::SequenceToken sequence_token_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<CallbackHelper> callback_helper_;
   GDataCache* cache_;

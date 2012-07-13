@@ -15,12 +15,17 @@
 #include "base/observer_list.h"
 #include "base/platform_file.h"
 #include "base/timer.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
+
+namespace base {
+
+class SequencedTaskRunner;
+
+}  // namespace base
 
 namespace gdata {
 
@@ -37,13 +42,12 @@ struct LoadRootFeedParams;
 class GDataFileSystem : public GDataFileSystemInterface,
                         public content::NotificationObserver {
  public:
-  GDataFileSystem(
-      Profile* profile,
-      GDataCache* cache,
-      DocumentsServiceInterface* documents_service,
-      GDataUploaderInterface* uploader,
-      DriveWebAppsRegistryInterface* webapps_registry,
-      const base::SequencedWorkerPool::SequenceToken& sequence_token);
+  GDataFileSystem(Profile* profile,
+                  GDataCache* cache,
+                  DocumentsServiceInterface* documents_service,
+                  GDataUploaderInterface* uploader,
+                  DriveWebAppsRegistryInterface* webapps_registry,
+                  base::SequencedTaskRunner* blocking_task_runner);
   virtual ~GDataFileSystem();
 
   // GDataFileSystem overrides.
@@ -851,8 +855,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   ObserverList<Observer> observers_;
 
-  // The token is used to post tasks to the blocking pool in sequence.
-  const base::SequencedWorkerPool::SequenceToken sequence_token_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 };
 
 }  // namespace gdata
