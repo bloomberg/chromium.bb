@@ -547,6 +547,7 @@ class WebTouchState {
   }
 
   int GetNextTouchCount() {
+    DCHECK(!touch_count_.empty());
     int result = touch_count_.top();
     touch_count_.pop();
     return result;
@@ -2400,23 +2401,6 @@ LRESULT RenderWidgetHostViewWin::OnGestureEvent(
       render_widget_host_->ForwardWheelEvent(
           MakeFakeScrollWheelEvent(m_hWnd, start, delta));
     }
-  } else if (gi.dwID == GID_BEGIN) {
-    // Send a touch event at this location; if the touch start is handled
-    // then we switch to touch mode, rather than gesture mode (in the ACK).
-    TOUCHINPUT fake_touch;
-    fake_touch.x = gi.ptsLocation.x * 100;
-    fake_touch.y = gi.ptsLocation.y * 100;
-    fake_touch.cxContact = 100;
-    fake_touch.cyContact = 100;
-    fake_touch.dwMask = 0;
-    fake_touch.dwFlags = TOUCHEVENTF_DOWN | TOUCHEVENTF_PRIMARY;
-    fake_touch.dwID = gi.dwInstanceID;
-    touch_state_->UpdateTouchPoints(&fake_touch, 1);
-    if (touch_state_->is_changed())
-      render_widget_host_->ForwardTouchEvent(touch_state_->touch_event());
-  } else if (gi.dwID == GID_END) {
-    if (touch_state_->ReleaseTouchPoints())
-      render_widget_host_->ForwardTouchEvent(touch_state_->touch_event());
   }
   ::CloseGestureInfoHandle(gi_handle);
   return 0;
