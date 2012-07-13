@@ -682,9 +682,7 @@ def CMDhashtable(args):
       # Just do a quick check that the file size matches. No need to stat()
       # again the input file, grab the value from the dict.
       out_size = os.stat(outfile).st_size
-      in_size = (
-          complete_state.result.files[relfile].get('size') or
-          os.stat(infile).st_size)
+      in_size = complete_state.result.files[relfile]['size']
       if in_size == out_size:
         continue
       # Otherwise, an exception will be raised.
@@ -706,7 +704,7 @@ def CMDhashtable(args):
     out_size = os.stat(outfile).st_size
     in_size = os.stat(complete_state.result_file).st_size
     if in_size == out_size:
-      return
+      return 0
 
   run_test_from_archive.link_file(
       outfile, complete_state.result_file, run_test_from_archive.HARDLINK)

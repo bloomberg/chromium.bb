@@ -48,7 +48,9 @@ def link_file(outfile, infile, action):
   if action not in (HARDLINK, SYMLINK, COPY):
     raise ValueError('Unknown mapping action %s' % action)
   if os.path.isfile(outfile):
-    raise MappingError('%s already exist' % outfile)
+    raise MappingError(
+        '%s already exist; insize:%d; outsize:%d' %
+        (outfile, os.stat(infile).st_size, os.stat(outfile).st_size))
 
   if action == COPY:
     shutil.copy(infile, outfile)
