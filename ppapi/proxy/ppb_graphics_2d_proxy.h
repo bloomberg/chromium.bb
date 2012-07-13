@@ -13,7 +13,7 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/interface_proxy.h"
-#include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
+#include "ppapi/proxy/proxy_completion_callback_factory.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
@@ -66,8 +66,7 @@ class PPB_Graphics2D_Proxy : public InterfaceProxy {
   void SendFlushACKToPlugin(int32_t result,
                             const HostResource& graphics_2d);
 
-  pp::CompletionCallbackFactory<PPB_Graphics2D_Proxy,
-                                ProxyNonThreadSafeRefCount> callback_factory_;
+  ProxyCompletionCallbackFactory<PPB_Graphics2D_Proxy> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Graphics2D_Proxy);
 };

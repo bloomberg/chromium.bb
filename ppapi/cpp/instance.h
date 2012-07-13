@@ -17,6 +17,11 @@
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/view.h"
 
+// Windows defines 'PostMessage', so we have to undef it.
+#ifdef PostMessage
+#undef PostMessage
+#endif
+
 struct PP_InputEvent;
 
 /// The C++ interface to the Pepper API.

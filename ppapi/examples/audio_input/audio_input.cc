@@ -20,6 +20,12 @@
 #include "ppapi/cpp/size.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
+// When compiling natively on Windows, PostMessage can be #define-d to
+// something else.
+#ifdef PostMessage
+#undef PostMessage
+#endif
+
 class MyInstance : public pp::Instance {
  public:
   explicit MyInstance(PP_Instance instance)

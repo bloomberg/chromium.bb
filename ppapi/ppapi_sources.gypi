@@ -300,13 +300,15 @@
 
       # Utility sources.
       'utility/completion_callback_factory.h',
-      'utility/non_thread_safe_ref_count.h',
+      'utility/completion_callback_factory_thread_traits.h',
       'utility/graphics/paint_aggregator.cc',
       'utility/graphics/paint_aggregator.h',
       'utility/graphics/paint_manager.cc',
       'utility/graphics/paint_manager.h',
       'utility/private/network_list_observer_private.cc',
       'utility/private/network_list_observer_private.h',
+      'utility/threading/lock.cc',
+      'utility/threading/lock.h',
       'utility/threading/simple_thread.cc',
       'utility/threading/simple_thread.h',
       'utility/websocket/websocket_api.cc',

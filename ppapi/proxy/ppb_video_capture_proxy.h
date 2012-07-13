@@ -10,7 +10,7 @@
 
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
-#include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
+#include "ppapi/proxy/proxy_completion_callback_factory.h"
 #include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
 #include "ppapi/utility/completion_callback_factory.h"
@@ -64,8 +64,7 @@ class PPB_VideoCapture_Proxy : public InterfaceProxy {
                                  const ppapi::HostResource& resource);
   void OpenACKInHost(int32_t result, const ppapi::HostResource& resource);
 
-  pp::CompletionCallbackFactory<PPB_VideoCapture_Proxy,
-                                ProxyNonThreadSafeRefCount> callback_factory_;
+  ProxyCompletionCallbackFactory<PPB_VideoCapture_Proxy> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_VideoCapture_Proxy);
 };

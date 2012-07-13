@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/proxy/interface_proxy.h"
-#include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
+#include "ppapi/proxy/proxy_completion_callback_factory.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 namespace ppapi {
@@ -82,8 +82,7 @@ class PPB_FileIO_Proxy : public InterfaceProxy {
   void ReadCallbackCompleteInHost(int32_t pp_error,
                                   const HostResource& host_resource,
                                   std::string* data);
-  pp::CompletionCallbackFactory<PPB_FileIO_Proxy,
-                                ProxyNonThreadSafeRefCount> callback_factory_;
+  ProxyCompletionCallbackFactory<PPB_FileIO_Proxy> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_FileIO_Proxy);
 };

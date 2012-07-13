@@ -25,6 +25,12 @@
 #include "ppapi/lib/gl/include/GLES2/gl2.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
+// When compiling natively on Windows, PostMessage can be #define-d to
+// something else.
+#ifdef PostMessage
+#undef PostMessage
+#endif
+
 // Assert |context_| isn't holding any GL Errors.  Done as a macro instead of a
 // function to preserve line number information in the failure message.
 #define assertNoGLError() \

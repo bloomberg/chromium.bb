@@ -6,7 +6,7 @@
 #define PPAPI_UTILITY_COMPLETION_CALLBACK_FACTORY_H_
 
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/utility/non_thread_safe_ref_count.h"
+#include "ppapi/utility/completion_callback_factory_thread_traits.h"
 
 /// @file
 /// This file defines the API to create CompletionCallback objects that are
@@ -43,8 +43,8 @@ template <typename T> struct TypeUnwrapper<const T&> {
 /// factory.
 ///
 /// <strong>Note: </strong><code>CompletionCallbackFactory<T></code> isn't
-/// thread safe, but you can make it more thread-friendly by passing a
-/// thread-safe refcounting class as the second template element. However, it
+/// thread safe, but it is somewhat thread-friendly when used with a
+/// thread-safe traits class as the second template element. However, it
 /// only guarantees safety for creating a callback from another thread, the
 /// callback itself needs to execute on the same thread as the thread that
 /// creates/destroys the factory. With this restriction, it is safe to create
@@ -185,7 +185,7 @@ template <typename T> struct TypeUnwrapper<const T&> {
 /// is to accept your output argument as a non-const reference and to swap()
 /// the argument with a vector of your own to store it. This means you don't
 /// have to copy the buffer to consume it.
-template <typename T, typename RefCount = NonThreadSafeRefCount>
+template <typename T, typename ThreadTraits = ThreadSafeThreadTraits>
 class CompletionCallbackFactory {
  public:
 
@@ -200,25 +200,34 @@ class CompletionCallbackFactory {
   /// parameter is <code>NULL</code>.
   explicit CompletionCallbackFactory(T* object = NULL)
       : object_(object) {
+    // Assume that we don't need to lock since construction should be complete
+    // before the pointer is used on another thread.
     InitBackPointer();
   }
 
   /// Destructor.
   ~CompletionCallbackFactory() {
+    // Assume that we don't need to lock since this object should not be used
+    // from multiple threads during destruction.
     ResetBackPointer();
   }
 
   /// CancelAll() cancels all <code>CompletionCallbacks</code> allocated from
   /// this factory.
   void CancelAll() {
+    typename ThreadTraits::AutoLock lock(lock_);
+
     ResetBackPointer();
     InitBackPointer();
   }
+
   /// Initialize() binds the <code>CallbackFactory</code> to a particular
   /// object. Use this when the object is not available at
   /// <code>CallbackFactory</code> creation, and the <code>NULL</code> default
   /// is passed to the constructor. The object may only be initialized once,
   /// either by the constructor, or by a call to Initialize().
+  ///
+  /// This class may not be used on any thread until initialization is complete.
   ///
   /// @param[in] object The object whose member functions are to be bound to
   /// the <code>CompletionCallback</code> created by this
@@ -247,7 +256,6 @@ class CompletionCallbackFactory {
   /// @return A <code>CompletionCallback</code>.
   template <typename Method>
   CompletionCallback NewCallback(Method method) {
-    PP_DCHECK(object_);
     return NewCallbackHelper(new Dispatcher0<Method>(method));
   }
 
@@ -302,7 +310,6 @@ class CompletionCallbackFactory {
   /// @return A <code>CompletionCallback</code>.
   template <typename Method, typename A>
   CompletionCallback NewCallback(Method method, const A& a) {
-    PP_DCHECK(object_);
     return NewCallbackHelper(new Dispatcher1<Method, A>(method, a));
   }
 
@@ -369,7 +376,6 @@ class CompletionCallbackFactory {
   /// @return A <code>CompletionCallback</code>.
   template <typename Method, typename A, typename B>
   CompletionCallback NewCallback(Method method, const A& a, const B& b) {
-    PP_DCHECK(object_);
     return NewCallbackHelper(new Dispatcher2<Method, A, B>(method, a, b));
   }
 
@@ -451,7 +457,6 @@ class CompletionCallbackFactory {
   template <typename Method, typename A, typename B, typename C>
   CompletionCallback NewCallback(Method method, const A& a, const B& b,
                                  const C& c) {
-    PP_DCHECK(object_);
     return NewCallbackHelper(new Dispatcher3<Method, A, B, C>(method, a, b, c));
   }
 
@@ -522,7 +527,7 @@ class CompletionCallbackFactory {
  private:
   class BackPointer {
    public:
-    typedef CompletionCallbackFactory<T, RefCount> FactoryType;
+    typedef CompletionCallbackFactory<T, ThreadTraits> FactoryType;
 
     explicit BackPointer(FactoryType* factory)
         : factory_(factory) {
@@ -546,7 +551,7 @@ class CompletionCallbackFactory {
     }
 
    private:
-    RefCount ref_;
+    typename ThreadTraits::RefCount ref_;
     FactoryType* factory_;
   };
 
@@ -817,19 +822,26 @@ class CompletionCallbackFactory {
     typename Traits::StorageType output_;
   };
 
+  // Creates the back pointer object and takes a reference to it. This assumes
+  // either that the lock is held or that it is not needed.
   void InitBackPointer() {
     back_pointer_ = new BackPointer(this);
     back_pointer_->AddRef();
   }
 
+  // Releases our reference to the back pointer object and clears the pointer.
+  // This assumes either that the lock is held or that it is not needed.
   void ResetBackPointer() {
     back_pointer_->DropFactory();
     back_pointer_->Release();
+    back_pointer_ = NULL;
   }
 
   // Takes ownership of the dispatcher pointer, which should be heap allocated.
   template <typename Dispatcher>
   CompletionCallback NewCallbackHelper(Dispatcher* dispatcher) {
+    typename ThreadTraits::AutoLock lock(lock_);
+
     PP_DCHECK(object_);  // Expects a non-null object!
     return CompletionCallback(
         &CallbackData<Dispatcher>::Thunk,
@@ -841,6 +853,8 @@ class CompletionCallbackFactory {
       typename internal::TypeUnwrapper<
           typename Dispatcher::OutputType>::StorageType>
   NewCallbackWithOutputHelper(Dispatcher* dispatcher) {
+    typename ThreadTraits::AutoLock lock(lock_);
+
     PP_DCHECK(object_);  // Expects a non-null object!
     CallbackData<Dispatcher>* data =
         new CallbackData<Dispatcher>(back_pointer_, dispatcher);
@@ -855,7 +869,14 @@ class CompletionCallbackFactory {
   CompletionCallbackFactory(const CompletionCallbackFactory&);
   CompletionCallbackFactory& operator=(const CompletionCallbackFactory&);
 
+  // Never changed once initialized so does not need protection by the lock.
   T* object_;
+
+  // Protects the back pointer.
+  typename ThreadTraits::Lock lock_;
+
+  // Protected by the lock. This will get reset when you do CancelAll, for
+  // example.
   BackPointer* back_pointer_;
 };
 

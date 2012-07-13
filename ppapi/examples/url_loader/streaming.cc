@@ -18,6 +18,12 @@
 #include "ppapi/cpp/url_response_info.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
+// When compiling natively on Windows, PostMessage can be #define-d to
+// something else.
+#ifdef PostMessage
+#undef PostMessage
+#endif
+
 // Buffer size for reading network data.
 const int kBufSize = 1024;
 

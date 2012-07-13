@@ -16,7 +16,7 @@
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/proxy/interface_proxy.h"
-#include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
+#include "ppapi/proxy/proxy_completion_callback_factory.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 namespace ppapi {
@@ -85,8 +85,7 @@ class PPB_AudioInput_Proxy : public InterfaceProxy {
       base::SharedMemoryHandle* foreign_shared_memory_handle,
       uint32_t* shared_memory_length);
 
-  pp::CompletionCallbackFactory<PPB_AudioInput_Proxy,
-                                ProxyNonThreadSafeRefCount> callback_factory_;
+  ProxyCompletionCallbackFactory<PPB_AudioInput_Proxy> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_AudioInput_Proxy);
 };

@@ -7,7 +7,7 @@
 
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
-#include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
+#include "ppapi/proxy/proxy_completion_callback_factory.h"
 #include "ppapi/shared_impl/ppb_video_decoder_shared.h"
 #include "ppapi/thunk/ppb_video_decoder_api.h"
 #include "ppapi/utility/completion_callback_factory.h"
@@ -67,8 +67,7 @@ class PPB_VideoDecoder_Proxy : public InterfaceProxy {
   void OnMsgFlushACK(const ppapi::HostResource& decoder, int32_t result);
   void OnMsgResetACK(const ppapi::HostResource& decoder, int32_t result);
 
-  pp::CompletionCallbackFactory<PPB_VideoDecoder_Proxy,
-                                ProxyNonThreadSafeRefCount> callback_factory_;
+  ProxyCompletionCallbackFactory<PPB_VideoDecoder_Proxy> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_VideoDecoder_Proxy);
 };

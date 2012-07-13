@@ -6,7 +6,7 @@
 #define PPAPI_PPB_FLASH_MENU_PROXY_H_
 
 #include "ppapi/proxy/interface_proxy.h"
-#include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
+#include "ppapi/proxy/proxy_completion_callback_factory.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 struct PP_Flash_Menu;
@@ -46,8 +46,7 @@ class PPB_Flash_Menu_Proxy : public InterfaceProxy {
                     int32_t result);
   void SendShowACKToPlugin(int32_t result, ShowRequest* request);
 
-  pp::CompletionCallbackFactory<PPB_Flash_Menu_Proxy,
-                                ProxyNonThreadSafeRefCount> callback_factory_;
+  ProxyCompletionCallbackFactory<PPB_Flash_Menu_Proxy> callback_factory_;
 };
 
 }  // namespace proxy

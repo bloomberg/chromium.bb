@@ -12,7 +12,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_array_output.h"
-#include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
+#include "ppapi/proxy/proxy_completion_callback_factory.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/thunk/ppb_file_chooser_api.h"
 #include "ppapi/cpp/output_traits.h"
@@ -64,8 +64,7 @@ class PPB_FileChooser_Proxy : public InterfaceProxy {
       scoped_refptr<RefCountedArrayOutputAdapter<PP_Resource> > output,
       HostResource chooser);
 
-  pp::CompletionCallbackFactory<PPB_FileChooser_Proxy,
-                                ProxyNonThreadSafeRefCount> callback_factory_;
+  ProxyCompletionCallbackFactory<PPB_FileChooser_Proxy> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_FileChooser_Proxy);
 };

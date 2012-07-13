@@ -143,6 +143,7 @@
           'proxy/proxy_array_output.h',
           'proxy/proxy_channel.cc',
           'proxy/proxy_channel.h',
+          'proxy/proxy_completion_callback_factory.h',
           'proxy/proxy_module.cc',
           'proxy/proxy_module.h',
           'proxy/proxy_object_var.cc',

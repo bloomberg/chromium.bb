@@ -10,7 +10,7 @@
 #include "ppapi/c/pp_time.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/interface_proxy.h"
-#include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
+#include "ppapi/proxy/proxy_completion_callback_factory.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/ppb_instance_shared.h"
 #include "ppapi/thunk/ppb_instance_api.h"
@@ -194,8 +194,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
 
   void MouseLockCompleteInHost(int32_t result, PP_Instance instance);
 
-  pp::CompletionCallbackFactory<PPB_Instance_Proxy,
-                                ProxyNonThreadSafeRefCount> callback_factory_;
+  ProxyCompletionCallbackFactory<PPB_Instance_Proxy> callback_factory_;
 };
 
 }  // namespace proxy

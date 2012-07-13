@@ -39,26 +39,6 @@ class Plugin;
 class PnaclCoordinator;
 class PnaclTranslateThread;
 
-// A thread safe reference counting class Needed for CompletionCallbackFactory
-// in PnaclCoordinator.
-class PnaclRefCount {
- public:
-  PnaclRefCount() : ref_(0) { NaClXMutexCtor(&mu_); }
-  ~PnaclRefCount() { NaClMutexDtor(&mu_); }
-  int32_t AddRef() {
-    nacl::MutexLocker ml(&mu_);
-    return ++ref_;
-  }
-  int32_t Release() {
-    nacl::MutexLocker ml(&mu_);
-    return --ref_;
-  }
-
- private:
-  int32_t ref_;
-  struct NaClMutex mu_;
-};
-
 // A class invoked by Plugin to handle PNaCl client-side translation.
 // Usage:
 // (1) Invoke the factory method, e.g.,
@@ -205,10 +185,9 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   Plugin* plugin_;
 
   pp::CompletionCallback translate_notify_callback_;
-  // PnaclRefCount is only needed to support file lookups.
-  // TODO(sehr): remove this when file lookup is through ReverseService.
+  // Threadsafety is required to support file lookups.
   pp::CompletionCallbackFactory<PnaclCoordinator,
-                                PnaclRefCount> callback_factory_;
+                                pp::ThreadSafeThreadTraits> callback_factory_;
 
   // Nexe from the final native Link.
   nacl::scoped_ptr<nacl::DescWrapper> translated_fd_;

@@ -66,8 +66,11 @@
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/cpp/websocket.h"
+#include "ppapi/utility/completion_callback_factory.h"
+#include "ppapi/utility/completion_callback_factory_thread_traits.h"
 #include "ppapi/utility/graphics/paint_aggregator.h"
 #include "ppapi/utility/graphics/paint_manager.h"
-#include "ppapi/utility/non_thread_safe_ref_count.h"
+#include "ppapi/utility/threading/lock.h"
+#include "ppapi/utility/threading/simple_thread.h"
 
 #endif  // PPAPI_TESTS_ALL_CPP_INCLUDES_H_

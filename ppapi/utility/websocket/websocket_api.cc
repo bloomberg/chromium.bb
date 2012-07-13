@@ -13,6 +13,10 @@
 #include "ppapi/cpp/websocket.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
+#ifdef SendMessage
+#undef SendMessage
+#endif
+
 namespace pp {
 
 class WebSocketAPI::Implement : public WebSocket {

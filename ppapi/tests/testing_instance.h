@@ -15,6 +15,11 @@
 #include "ppapi/cpp/private/instance_private.h"
 #endif
 
+// Windows defines 'PostMessage', so we have to undef it.
+#ifdef PostMessage
+#undef PostMessage
+#endif
+
 class TestCase;
 
 // How signaling works:

@@ -12,7 +12,7 @@
 #include "ppapi/c/pp_graphics_3d.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
-#include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
+#include "ppapi/proxy/proxy_completion_callback_factory.h"
 #include "ppapi/shared_impl/ppb_graphics_3d_shared.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/utility/completion_callback_factory.h"
@@ -106,8 +106,7 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
   void SendSwapBuffersACKToPlugin(int32_t result,
                                   const HostResource& context);
 
-  pp::CompletionCallbackFactory<PPB_Graphics3D_Proxy,
-                                ProxyNonThreadSafeRefCount> callback_factory_;
+  ProxyCompletionCallbackFactory<PPB_Graphics3D_Proxy> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Graphics3D_Proxy);
 };

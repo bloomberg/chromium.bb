@@ -14,7 +14,7 @@
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/proxy/interface_proxy.h"
-#include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
+#include "ppapi/proxy/proxy_completion_callback_factory.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
@@ -86,8 +86,7 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
   // Handles callback for everything but reads.
   void OnCallback(int32_t result, const HostResource& resource);
 
-  pp::CompletionCallbackFactory<PPB_URLLoader_Proxy,
-                                ProxyNonThreadSafeRefCount> callback_factory_;
+  ProxyCompletionCallbackFactory<PPB_URLLoader_Proxy> callback_factory_;
 
   // Valid only in the host, this lazily-initialized pointer indicates the
   // URLLoaderTrusted interface.

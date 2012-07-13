@@ -12,6 +12,11 @@
 /// This file defines the WebSocket interface providing bi-directional,
 /// full-duplex, communications over a single TCP socket.
 
+// Windows headers will redefine SendMessage.
+#ifdef SendMessage
+#undef SendMessage
+#endif
+
 namespace pp {
 
 class CompletionCallback;
