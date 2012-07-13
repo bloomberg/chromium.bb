@@ -156,13 +156,13 @@ void RegisterLocalState(PrefService* local_state) {
   RegisterTabStripLayoutTypePrefs(local_state);
 #endif
 
+  PromoResourceService::RegisterPrefs(local_state);
 #if !defined(OS_ANDROID)
   AppsPromo::RegisterPrefs(local_state);
   BackgroundModeManager::RegisterPrefs(local_state);
   RegisterBrowserPrefs(local_state);
   FlagsUI::RegisterPrefs(local_state);
   ManagedMode::RegisterPrefs(local_state);
-  PromoResourceService::RegisterPrefs(local_state);
   UpgradeDetector::RegisterPrefs(local_state);
 #endif
 
@@ -233,6 +233,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   ash::RegisterChromeLauncherUserPrefs(user_prefs);
 #endif
 
+  PromoResourceService::RegisterUserPrefs(user_prefs);
 #if !defined(OS_ANDROID)
   AppsPromo::RegisterUserPrefs(user_prefs);
   extensions::CommandService::RegisterUserPrefs(user_prefs);
@@ -246,7 +247,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   PepperFlashSettingsManager::RegisterUserPrefs(user_prefs);
   PinnedTabCodec::RegisterUserPrefs(user_prefs);
   PluginsUI::RegisterUserPrefs(user_prefs);
-  PromoResourceService::RegisterUserPrefs(user_prefs);
   SyncPromoUI::RegisterUserPrefs(user_prefs);
 #endif
 

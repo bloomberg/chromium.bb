@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -21,6 +22,11 @@
 #include "content/public/browser/user_metrics.h"
 #include "googleurl/src/gurl.h"
 
+#if defined(OS_ANDROID)
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
+#endif  // defined(OS_ANDROID)
+
 using content::UserMetricsAction;
 
 namespace {
@@ -29,22 +35,32 @@ const int kDefaultGroupSize = 100;
 
 const char promo_server_url[] = "https://clients3.google.com/crsignal/client";
 
+#if defined(OS_ANDROID)
+const int kCurrentMobilePayloadFormatVersion = 3;
+#endif  // defined(OS_ANDROID)
+
 double GetTimeFromPrefs(PrefService* prefs, const char* pref) {
   return prefs->HasPrefPath(pref) ? prefs->GetDouble(pref) : 0.0;
 }
 
 // Returns a string suitable for the Promo Server URL 'osname' value.
-const char* PlatformString() {
+std::string PlatformString() {
 #if defined(OS_WIN)
   return "win";
 #elif defined(OS_IOS)
-  return "ios";
+  // TODO(noyau): add iOS-specific implementation
+  const bool isTablet = false;
+  return std::string("ios-") + (isTablet ? "tablet" : "phone");
 #elif defined(OS_MACOSX)
   return "mac";
 #elif defined(OS_CHROMEOS)
   return "chromeos";
 #elif defined(OS_LINUX)
   return "linux";
+#elif defined(OS_ANDROID)
+  const bool isTablet =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kTabletUi);
+  return std::string("android-") + (isTablet ? "tablet" : "phone");
 #else
   return "none";
 #endif
@@ -78,6 +94,9 @@ const char* ChannelString() {
 NotificationPromo::NotificationPromo(Profile* profile)
     : profile_(profile),
       prefs_(profile_->GetPrefs()),
+#if defined(OS_ANDROID)
+      promo_action_args_(new base::ListValue),
+#endif  // defined(OS_ANDROID)
       start_(0.0),
       end_(0.0),
       num_groups_(kDefaultGroupSize),
@@ -99,8 +118,15 @@ NotificationPromo::~NotificationPromo() {}
 
 void NotificationPromo::InitFromJson(const DictionaryValue& json) {
   ListValue* promo_list = NULL;
+#if !defined(OS_ANDROID)
   if (!json.GetList("ntp_notification_promo", &promo_list))
     return;
+#else
+  if (!json.GetList("mobile_ntp_sync_promo", &promo_list)) {
+    LOG(ERROR) << "Malfromed JSON: not a mobile_ntp_sync_promo";
+    return;
+  }
+#endif  // !defined(OS_ANDROID)
 
   // No support for multiple promos yet. Only consider the first one.
   DictionaryValue* promo = NULL;
@@ -108,15 +134,17 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json) {
     return;
 
   // Strings. Assume the first one is the promo text.
-  DictionaryValue* strings;
+  DictionaryValue* strings = NULL;
   if (promo->GetDictionary("strings", &strings)) {
+#if !defined(OS_ANDROID)
     DictionaryValue::Iterator iter(*strings);
     iter.value().GetAsString(&promo_text_);
     DVLOG(1) << "promo_text_=" << promo_text_;
+#endif  // defined(OS_ANDROID)
   }
 
   // Date.
-  ListValue* date_list;
+  ListValue* date_list = NULL;
   if (promo->GetList("date", &date_list)) {
     DictionaryValue* date;
     if (date_list->GetDictionary(0, &date)) {
@@ -138,7 +166,7 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json) {
   }
 
   // Grouping.
-  DictionaryValue* grouping;
+  DictionaryValue* grouping = NULL;
   if (promo->GetDictionary("grouping", &grouping)) {
     grouping->GetInteger("buckets", &num_groups_);
     grouping->GetInteger("segment", &initial_segment_);
@@ -154,7 +182,7 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json) {
   }
 
   // Payload.
-  DictionaryValue* payload;
+  DictionaryValue* payload = NULL;
   if (promo->GetDictionary("payload", &payload)) {
     payload->GetBoolean("gplus_required", &gplus_required_);
 
@@ -164,14 +192,65 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json) {
   promo->GetInteger("max_views", &max_views_);
   DVLOG(1) << "max_views_ " << max_views_;
 
+#if defined(OS_ANDROID)
+  int payload_version = 0;
+  if (!payload) {
+    LOG(ERROR) << "Malformed JSON: no payload";
+    return;
+  }
+  if (!strings) {
+    LOG(ERROR) << "Malformed JSON: no strings";
+    return;
+  }
+  if (!payload->GetInteger("payload_format_version", &payload_version) ||
+      payload_version != kCurrentMobilePayloadFormatVersion) {
+    LOG(ERROR) << "Unsupported promo payload_format_version " << payload_version
+               << "; expected " << kCurrentMobilePayloadFormatVersion;
+    return;
+  }
+  std::string promo_key_short;
+  std::string promo_key_long;
+  if (!payload->GetString("promo_message_short", &promo_key_short) ||
+      !payload->GetString("promo_message_long", &promo_key_long) ||
+      !strings->GetString(promo_key_short, &promo_text_) ||
+      !strings->GetString(promo_key_long, &promo_text_long_)) {
+    LOG(ERROR) << "Malformed JSON: no promo_message_short or _long";
+    return;
+  }
+  payload->GetString("promo_action_type", &promo_action_type_);
+  // We need to be idempotent as the tests call us more than once.
+  promo_action_args_.reset(new base::ListValue);
+  ListValue* args;
+  if (payload->GetList("promo_action_args", &args)) {
+    // JSON format for args: "promo_action_args" : [ "<arg1>", "<arg2>"... ]
+    // Every value comes from "strings" dictionary, either directly or not.
+    // Every arg is either directly a key into "strings" dictionary,
+    // or a key into "payload" dictionary with the value that is a key into
+    // "strings" dictionary.
+    for (std::size_t i = 0; i < args->GetSize(); ++i) {
+      std::string name, key, value;
+      if (!args->GetString(i, &name) ||
+          !(strings->GetString(name, &value) ||
+          (payload->GetString(name, &key) &&
+              strings->GetString(key, &value)))) {
+        LOG(ERROR) << "Malformed JSON: failed to parse promo_action_args";
+        return;
+      }
+      promo_action_args_->Append(base::Value::CreateStringValue(value));
+    }
+  }
+#endif  // defined(OS_ANDROID)
+
   CheckForNewNotification();
 }
 
 void NotificationPromo::CheckForNewNotification() {
   const double old_start = GetTimeFromPrefs(prefs_, prefs::kNtpPromoStart);
   const double old_end = GetTimeFromPrefs(prefs_, prefs::kNtpPromoEnd);
+  const std::string old_promo_text = prefs_->GetString(prefs::kNtpPromoLine);
 
-  new_notification_ = old_start != start_ || old_end != end_;
+  new_notification_ =
+      old_start != start_ || old_end != end_ || old_promo_text != promo_text_;
   if (new_notification_)
     OnNewNotification();
 }
@@ -187,6 +266,17 @@ void NotificationPromo::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kNtpPromoLine,
                             std::string(),
                             PrefService::UNSYNCABLE_PREF);
+#if defined(OS_ANDROID)
+  prefs->RegisterStringPref(prefs::kNtpPromoLineLong,
+                            std::string(),
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kNtpPromoActionType,
+                            std::string(),
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kNtpPromoActionArgs,
+                          new base::ListValue,
+                          PrefService::UNSYNCABLE_PREF);
+#endif  // defined(OS_ANDROID)
 
   prefs->RegisterDoublePref(prefs::kNtpPromoStart,
                             0,
@@ -242,6 +332,12 @@ void NotificationPromo::RegisterUserPrefs(PrefService* prefs) {
 
 void NotificationPromo::WritePrefs() {
   prefs_->SetString(prefs::kNtpPromoLine, promo_text_);
+#if defined(OS_ANDROID)
+  prefs_->SetString(prefs::kNtpPromoLineLong, promo_text_long_);
+  prefs_->SetString(prefs::kNtpPromoActionType, promo_action_type_);
+  DCHECK(promo_action_args_.get() != NULL);
+  prefs_->Set(prefs::kNtpPromoActionArgs, *promo_action_args_.get());
+#endif  // defined(OS_ANDROID)
 
   prefs_->SetDouble(prefs::kNtpPromoStart, start_);
   prefs_->SetDouble(prefs::kNtpPromoEnd, end_);
@@ -263,6 +359,13 @@ void NotificationPromo::WritePrefs() {
 
 void NotificationPromo::InitFromPrefs() {
   promo_text_ = prefs_->GetString(prefs::kNtpPromoLine);
+#if defined(OS_ANDROID)
+  promo_text_long_ = prefs_->GetString(prefs::kNtpPromoLineLong);
+  promo_action_type_ = prefs_->GetString(prefs::kNtpPromoActionType);
+  const base::ListValue* lv = prefs_->GetList(prefs::kNtpPromoActionArgs);
+  DCHECK(lv != NULL);
+  promo_action_args_.reset(lv->DeepCopy());
+#endif  // defined(OS_ANDROID)
 
   start_ = prefs_->GetDouble(prefs::kNtpPromoStart);
   end_ = prefs_->GetDouble(prefs::kNtpPromoEnd);

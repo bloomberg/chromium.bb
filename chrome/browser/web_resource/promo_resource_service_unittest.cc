@@ -58,6 +58,12 @@ class NotificationPromoTest {
 
   void Init(const std::string& json,
             const std::string& promo_text,
+#if defined(OS_ANDROID)
+            const std::string& promo_text_long,
+            const std::string& promo_action_type,
+            const std::string& promo_action_arg0,
+            const std::string& promo_action_arg1,
+#endif  // defined(OS_ANDROID)
             double start, double end,
             int num_groups, int initial_segment, int increment,
             int time_slice, int max_group, int max_views,
@@ -70,6 +76,13 @@ class NotificationPromoTest {
     test_json_.reset(dict);
 
     promo_text_ = promo_text;
+
+#if defined(OS_ANDROID)
+    promo_text_long_ = promo_text_long;
+    promo_action_type_ = promo_action_type;
+    promo_action_args_.push_back(promo_action_arg0);
+    promo_action_args_.push_back(promo_action_arg1);
+#endif  // defined(OS_ANDROID)
 
     start_ = start;
     end_ = end;
@@ -102,6 +115,20 @@ class NotificationPromoTest {
     // Check values.
     EXPECT_EQ(notification_promo_.promo_text_, promo_text_);
 
+#if defined(OS_ANDROID)
+    EXPECT_EQ(notification_promo_.promo_text_long_, promo_text_long_);
+    EXPECT_EQ(notification_promo_.promo_action_type_, promo_action_type_);
+    EXPECT_TRUE(notification_promo_.promo_action_args_.get() != NULL);
+    EXPECT_EQ(std::size_t(2), promo_action_args_.size());
+    EXPECT_EQ(notification_promo_.promo_action_args_->GetSize(),
+              promo_action_args_.size());
+    for (std::size_t i = 0; i < promo_action_args_.size(); ++i) {
+      std::string value;
+      EXPECT_TRUE(notification_promo_.promo_action_args_->GetString(i, &value));
+      EXPECT_EQ(value, promo_action_args_[i]);
+    }
+#endif  // defined(OS_ANDROID)
+
     EXPECT_EQ(notification_promo_.start_, start_);
     EXPECT_EQ(notification_promo_.end_, end_);
 
@@ -126,6 +153,19 @@ class NotificationPromoTest {
 
   void TestPrefs() {
     EXPECT_EQ(prefs_->GetString(prefs::kNtpPromoLine), promo_text_);
+#if defined(OS_ANDROID)
+    EXPECT_EQ(prefs_->GetString(prefs::kNtpPromoLineLong), promo_text_long_);
+    EXPECT_EQ(prefs_->GetString(prefs::kNtpPromoActionType),
+                                promo_action_type_);
+    const base::ListValue* lv = prefs_->GetList(prefs::kNtpPromoActionArgs);
+    EXPECT_TRUE(lv != NULL);
+    EXPECT_EQ(lv->GetSize(), promo_action_args_.size());
+    for (std::size_t i = 0; i < lv->GetSize(); ++i) {
+      std::string value;
+      EXPECT_TRUE(lv->GetString(i, &value));
+      EXPECT_EQ(value, promo_action_args_[i]);
+    }
+#endif  // defined(OS_ANDROID)
 
     EXPECT_EQ(prefs_->GetDouble(prefs::kNtpPromoStart), start_);
     EXPECT_EQ(prefs_->GetDouble(prefs::kNtpPromoEnd), end_);
@@ -158,6 +198,27 @@ class NotificationPromoTest {
               prefs_notification_promo.prefs_);
     EXPECT_EQ(notification_promo_.promo_text_,
               prefs_notification_promo.promo_text_);
+#if defined(OS_ANDROID)
+    EXPECT_EQ(notification_promo_.promo_text_long_,
+              prefs_notification_promo.promo_text_long_);
+    EXPECT_EQ(notification_promo_.promo_action_type_,
+              prefs_notification_promo.promo_action_type_);
+    EXPECT_TRUE(prefs_notification_promo.promo_action_args_.get() != NULL);
+    EXPECT_EQ(notification_promo_.promo_action_args_->GetSize(),
+              prefs_notification_promo.promo_action_args_->GetSize());
+    for (std::size_t i = 0;
+         i < notification_promo_.promo_action_args_->GetSize();
+         ++i) {
+      std::string promo_value;
+      std::string prefs_value;
+      EXPECT_TRUE(
+          notification_promo_.promo_action_args_->GetString(i, &promo_value));
+      EXPECT_TRUE(
+          prefs_notification_promo.promo_action_args_->GetString(
+              i, &prefs_value));
+      EXPECT_EQ(promo_value, prefs_value);
+    }
+#endif  // defined(OS_ANDROID)
     EXPECT_EQ(notification_promo_.start_,
               prefs_notification_promo.start_);
     EXPECT_EQ(notification_promo_.end_,
@@ -331,6 +392,11 @@ class NotificationPromoTest {
   scoped_ptr<DictionaryValue> test_json_;
 
   std::string promo_text_;
+#if defined(OS_ANDROID)
+  std::string promo_text_long_;
+  std::string promo_action_type_;
+  std::vector<std::string> promo_action_args_;
+#endif  // defined(OS_ANDROID)
 
   double start_;
   double end_;
@@ -360,6 +426,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
 
   // Set up start and end dates and promo line in a Dictionary as if parsed
   // from the service.
+#if !defined(OS_ANDROID)
   promo_test.Init("{"
                   "  \"ntp_notification_promo\": ["
                   "    {"
@@ -397,6 +464,58 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
                   1326653485,  // unix epoch for 15 Jan 2012 10:50:85 PST.
                   1357566075,  // unix epoch for 7 Jan 2013 5:40:75 PST.
                   1000, 200, 100, 3600, 400, 30, false);
+#else
+  promo_test.Init(
+      "{"
+      "  \"mobile_ntp_sync_promo\": ["
+      "    {"
+      "      \"date\":"
+      "        ["
+      "          {"
+      "            \"start\":\"15 Jan 2012 10:50:85 PST\","
+      "            \"end\":\"7 Jan 2013 5:40:75 PST\""
+      "          }"
+      "        ],"
+      "      \"strings\":"
+      "        {"
+      "          \"MOBILE_PROMO_CHROME_SHORT_TEXT\":"
+      "          \"Like Chrome? Go http://www.google.com/chrome/\","
+      "          \"MOBILE_PROMO_CHROME_LONG_TEXT\":"
+      "          \"It\'s simple. Go http://www.google.com/chrome/\","
+      "          \"MOBILE_PROMO_EMAIL_BODY\":\"This is the body.\","
+      "          \"XXX_VALUE\":\"XXX value\""
+      "        },"
+      "      \"grouping\":"
+      "        {"
+      "          \"buckets\":1000,"
+      "          \"segment\":200,"
+      "          \"increment\":100,"
+      "          \"increment_frequency\":3600,"
+      "          \"increment_max\":400"
+      "        },"
+      "      \"payload\":"
+      "        {"
+      "          \"payload_format_version\":3,"
+      "          \"gplus_required\":false,"
+      "          \"promo_message_long\":"
+      "              \"MOBILE_PROMO_CHROME_LONG_TEXT\","
+      "          \"promo_message_short\":"
+      "              \"MOBILE_PROMO_CHROME_SHORT_TEXT\","
+      "          \"promo_action_type\":\"ACTION_EMAIL\","
+      "          \"promo_action_args\":[\"MOBILE_PROMO_EMAIL_BODY\",\"XXX\"],"
+      "          \"XXX\":\"XXX_VALUE\""
+      "        },"
+      "      \"max_views\":30"
+      "    }"
+      "  ]"
+      "}",
+      "Like Chrome? Go http://www.google.com/chrome/",
+      "It\'s simple. Go http://www.google.com/chrome/",
+      "ACTION_EMAIL", "This is the body.", "XXX value",
+      1326653485,  // unix epoch for 15 Jan 2012 10:50:85 PST.
+      1357566075,  // unix epoch for 7 Jan 2013 5:40:75 PST.
+      1000, 200, 100, 3600, 400, 30, false);
+#endif  // !defined(OS_ANDROID)
 
   promo_test.InitPromoFromJson(true);
 

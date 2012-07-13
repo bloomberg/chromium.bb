@@ -10,10 +10,12 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 
 namespace base {
 class DictionaryValue;
+class ListValue;
 }
 
 class PrefService;
@@ -78,6 +80,11 @@ class NotificationPromo {
   PrefService* prefs_;
 
   std::string promo_text_;
+#if defined(OS_ANDROID)
+  std::string promo_text_long_;
+  std::string promo_action_type_;
+  scoped_ptr<base::ListValue> promo_action_args_;
+#endif
 
   double start_;
   double end_;

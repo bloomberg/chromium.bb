@@ -1497,6 +1497,15 @@ const char kNtpPromoPlatform[] = "ntp.promo_platform";
 // Promo line from server.
 const char kNtpPromoLine[] = "ntp.promo_line";
 
+#if defined(OS_ANDROID)
+// Promo line from server (long).
+const char kNtpPromoLineLong[] = "ntp.promo_line_long";
+// Promo action that needs to be triggered
+const char kNtpPromoActionType[] = "ntp.promo_action_type";
+// Promo action arguments
+const char kNtpPromoActionArgs[] = "ntp.promo_action_args";
+#endif  // defined(OS_ANDROID)
+
 // Dates between which the NTP should show a promotional line downloaded
 // from the promo server.
 const char kNtpPromoStart[] = "ntp.promo_start";
