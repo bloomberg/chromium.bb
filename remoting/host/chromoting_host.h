@@ -32,6 +32,7 @@ class SessionConfig;
 class CandidateSessionConfig;
 }  // namespace protocol
 
+class AudioScheduler;
 class Capturer;
 class ChromotingHostContext;
 class DesktopEnvironment;
@@ -168,7 +169,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   virtual ~ChromotingHost();
 
   void StopScreenRecorder();
-  void OnScreenRecorderStopped();
+  void StopAudioScheduler();
+  void OnRecorderStopped();
 
   // Called from Shutdown() or OnScreenRecorderStopped() to finish shutdown.
   void ShutdownFinish();
@@ -190,14 +192,14 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // The connections to remote clients.
   ClientList clients_;
 
-  // Session manager for the host process.
-  // TODO(sergeyu): Do we need to have one screen recorder per client?
+  // Schedulers for audio and video capture.
+  // TODO(sergeyu): Do we need to have one set of schedulers per client?
   scoped_refptr<ScreenRecorder> recorder_;
+  scoped_refptr<AudioScheduler> audio_scheduler_;
 
-  // Number of screen recorders that are currently being
-  // stopped. Normally set to 0 or 1, but in some cases it may be
-  // greater than 1, particularly if when second client can connect
-  // immediately after previous one disconnected.
+  // Number of screen recorders and audio schedulers that are currently being
+  // stopped. Used to delay shutdown if one or more recorders/schedulers are
+  // asynchronously shutting down.
   int stopping_recorders_;
 
   // Tracks the internal state of the host.

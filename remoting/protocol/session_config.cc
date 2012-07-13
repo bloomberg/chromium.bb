@@ -46,7 +46,7 @@ SessionConfig SessionConfig::GetDefault() {
   result.set_video_config(ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                                         kDefaultStreamVersion,
                                         ChannelConfig::CODEC_VP8));
-  result.set_audio_config(ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
+  result.set_audio_config(ChannelConfig(ChannelConfig::TRANSPORT_NONE,
                                         kDefaultStreamVersion,
                                         ChannelConfig::CODEC_VERBATIM));
   return result;

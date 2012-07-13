@@ -6,6 +6,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "remoting/jingle_glue/mock_objects.h"
+#include "remoting/host/audio_capturer.h"
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -83,11 +84,13 @@ class ChromotingHostTest : public testing::Test {
         .WillRepeatedly(Return(message_loop_proxy_.get()));
 
     scoped_ptr<Capturer> capturer(new CapturerFake());
+    scoped_ptr<AudioCapturer> audio_capturer(NULL);
     event_executor_ = new MockEventExecutor();
     desktop_environment_ = DesktopEnvironment::CreateFake(
         &context_,
         capturer.Pass(),
-        scoped_ptr<EventExecutor>(event_executor_));
+        scoped_ptr<EventExecutor>(event_executor_),
+        audio_capturer.Pass());
     session_manager_ = new protocol::MockSessionManager();
 
     host_ = new ChromotingHost(

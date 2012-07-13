@@ -1106,6 +1106,10 @@
         '../crypto/crypto.gyp:crypto',
       ],
       'sources': [
+        'host/audio_capturer.cc',
+        'host/audio_capturer.h',
+        'host/audio_scheduler.cc',
+        'host/audio_scheduler.h',
         'host/capturer.h',
         'host/capturer_helper.cc',
         'host/capturer_helper.h',

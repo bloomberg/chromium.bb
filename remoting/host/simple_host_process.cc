@@ -33,6 +33,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/socket/ssl_server_socket.h"
 #include "remoting/base/constants.h"
+#include "remoting/host/audio_capturer.h"
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -228,8 +229,12 @@ class SimpleHost : public HeartbeatSender::Listener {
       scoped_ptr<EventExecutor> event_executor = EventExecutor::Create(
           context_.desktop_task_runner(),
           context_.ui_task_runner(), capturer.get());
+      scoped_ptr<AudioCapturer> audio_capturer(NULL);
       desktop_environment_ = DesktopEnvironment::CreateFake(
-          &context_, capturer.Pass(), event_executor.Pass());
+          &context_,
+          capturer.Pass(),
+          event_executor.Pass(),
+          audio_capturer.Pass());
     } else {
       desktop_environment_ = DesktopEnvironment::Create(&context_);
     }
