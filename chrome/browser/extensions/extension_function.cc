@@ -139,7 +139,7 @@ void ExtensionFunction::SendResponseImpl(base::ProcessHandle process,
     results_.reset(new ListValue());
 
   ipc_sender->Send(new ExtensionMsg_Response(
-      routing_id, request_id_, success, *results_.release(), GetError()));
+      routing_id, request_id_, success, *results_, GetError()));
 }
 
 void ExtensionFunction::HandleBadMessage(base::ProcessHandle process) {

@@ -78,7 +78,7 @@ class ExtensionFunction
 
   // Execute the API. Clients should initialize the ExtensionFunction using
   // SetArgs(), set_request_id(), and the other setters before calling this
-  // method. Derived classes should be ready to return GetResultValue() and
+  // method. Derived classes should be ready to return GetResultList() and
   // GetError() before returning from this function.
   // Note that once Run() returns, dispatcher() can be NULL, so be sure to
   // NULL-check.
