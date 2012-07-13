@@ -115,5 +115,8 @@ aura::client::UserActionClient* TestShellDelegate::CreateUserActionClient() {
   return NULL;
 }
 
+void TestShellDelegate::OpenFeedbackPage() {
+}
+
 }  // namespace test
 }  // namespace ash

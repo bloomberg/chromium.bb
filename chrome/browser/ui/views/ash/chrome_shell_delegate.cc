@@ -324,6 +324,10 @@ aura::client::UserActionClient* ChromeShellDelegate::CreateUserActionClient() {
   return new UserActionHandler;
 }
 
+void ChromeShellDelegate::OpenFeedbackPage() {
+  chrome::OpenFeedbackDialog(GetTargetBrowser());
+}
+
 void ChromeShellDelegate::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {

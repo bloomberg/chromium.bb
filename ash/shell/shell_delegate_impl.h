@@ -48,6 +48,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
       ash::SystemTray* tray) OVERRIDE;
   virtual ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() OVERRIDE;
   virtual aura::client::UserActionClient* CreateUserActionClient() OVERRIDE;
+  virtual void OpenFeedbackPage() OVERRIDE;
 
  private:
   // Used to update Launcher. Owned by main.

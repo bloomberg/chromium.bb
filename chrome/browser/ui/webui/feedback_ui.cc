@@ -386,7 +386,7 @@ bool FeedbackHandler::Init() {
 
   // If we don't have a page url specified, get it from the tab index.
   if (custom_page_url.empty()) {
-    if (session_id == -1 || index == -1)
+    if (session_id == -1)
       return false;
 
     Browser* browser = browser::FindBrowserWithID(session_id);
@@ -394,9 +394,11 @@ bool FeedbackHandler::Init() {
     if (!browser || index >= browser->tab_count())
       return false;
 
-    WebContents* target_tab = chrome::GetWebContentsAt(browser, index);
-    if (target_tab)
-      target_tab_url_ = target_tab->GetURL().spec();
+    if (index >= 0) {
+      WebContents* target_tab = chrome::GetWebContentsAt(browser, index);
+      if (target_tab)
+        target_tab_url_ = target_tab->GetURL().spec();
+    }
 
     // Note: We don't need to setup a screenshot source if we're using a
     // custom page URL since we were invoked from JS/an extension, in which

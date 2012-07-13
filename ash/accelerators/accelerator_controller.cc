@@ -400,6 +400,9 @@ bool AcceleratorController::PerformAction(int action,
       ash::Shell::GetInstance()->output_configurator()->CycleDisplayMode();
       return true;
 #endif
+    case OPEN_FEEDBACK_PAGE:
+      ash::Shell::GetInstance()->delegate()->OpenFeedbackPage();
+      return true;
     case EXIT:
       return HandleExit();
     case NEW_INCOGNITO_WINDOW:

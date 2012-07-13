@@ -43,6 +43,7 @@ class TestShellDelegate : public ShellDelegate {
   virtual SystemTrayDelegate* CreateSystemTrayDelegate(SystemTray* t) OVERRIDE;
   virtual UserWallpaperDelegate* CreateUserWallpaperDelegate() OVERRIDE;
   virtual aura::client::UserActionClient* CreateUserActionClient() OVERRIDE;
+  virtual void OpenFeedbackPage() OVERRIDE;
 
  private:
   bool locked_;

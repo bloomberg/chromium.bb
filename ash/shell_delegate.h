@@ -120,6 +120,9 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates a user action client. Shell takes ownership of the object.
   virtual aura::client::UserActionClient* CreateUserActionClient() = 0;
+
+  // Opens the feedback page for "Report Issue".
+  virtual void OpenFeedbackPage() = 0;
 };
 
 }  // namespace ash
