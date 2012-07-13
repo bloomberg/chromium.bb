@@ -25,7 +25,20 @@ scoped_refptr<HistoryService> HistoryServiceFactory::GetForProfile(
 
 // static
 scoped_refptr<HistoryService>
-HistoryServiceFactory::GetForProfileIfExists(Profile* profile) {
+HistoryServiceFactory::GetForProfileIfExists(
+    Profile* profile, Profile::ServiceAccessType sat) {
+  // If saving history is disabled, only allow explicit access.
+  if (profile->GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled) &&
+      sat != Profile::EXPLICIT_ACCESS)
+    return NULL;
+
+  return static_cast<HistoryService*>(
+      GetInstance()->GetServiceForProfile(profile, false).get());
+}
+
+// static
+scoped_refptr<HistoryService>
+HistoryServiceFactory::GetForProfileWithoutCreating(Profile* profile) {
   return static_cast<HistoryService*>(
       GetInstance()->GetServiceForProfile(profile, false).get());
 }

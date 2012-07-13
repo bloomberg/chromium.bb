@@ -807,7 +807,7 @@ HistoryService* ProfileImpl::GetHistoryService(ServiceAccessType sat) {
 }
 
 HistoryService* ProfileImpl::GetHistoryServiceWithoutCreating() {
-  return HistoryServiceFactory::GetForProfileIfExists(this).get();
+  return HistoryServiceFactory::GetForProfileWithoutCreating(this).get();
 }
 
 DownloadManagerDelegate* ProfileImpl::GetDownloadManagerDelegate() {
