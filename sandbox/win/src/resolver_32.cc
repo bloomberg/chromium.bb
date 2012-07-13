@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/src/resolver.h"
+#include "sandbox/win/src/resolver.h"
 
-#include "sandbox/src/sandbox_nt_util.h"
+#include "sandbox/win/src/sandbox_nt_util.h"
 
 namespace {
 

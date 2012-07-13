@@ -13,13 +13,13 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "sandbox/src/crosscall_server.h"
-#include "sandbox/src/handle_closer.h"
-#include "sandbox/src/ipc_tags.h"
-#include "sandbox/src/policy_engine_opcodes.h"
-#include "sandbox/src/policy_engine_params.h"
-#include "sandbox/src/sandbox_policy.h"
-#include "sandbox/src/win_utils.h"
+#include "sandbox/win/src/crosscall_server.h"
+#include "sandbox/win/src/handle_closer.h"
+#include "sandbox/win/src/ipc_tags.h"
+#include "sandbox/win/src/policy_engine_opcodes.h"
+#include "sandbox/win/src/policy_engine_params.h"
+#include "sandbox/win/src/sandbox_policy.h"
+#include "sandbox/win/src/win_utils.h"
 
 namespace sandbox {
 

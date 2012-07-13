@@ -6,7 +6,7 @@
 #define SANDBOX_SRC_JOB_H_
 
 #include "base/basictypes.h"
-#include "sandbox/src/restricted_token_utils.h"
+#include "sandbox/win/src/restricted_token_utils.h"
 
 namespace sandbox {
 

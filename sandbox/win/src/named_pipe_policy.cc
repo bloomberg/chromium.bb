@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/src/named_pipe_policy.h"
+#include "sandbox/win/src/named_pipe_policy.h"
 
 #include <string>
 
-#include "sandbox/src/ipc_tags.h"
-#include "sandbox/src/policy_engine_opcodes.h"
-#include "sandbox/src/policy_params.h"
-#include "sandbox/src/sandbox_types.h"
+#include "sandbox/win/src/ipc_tags.h"
+#include "sandbox/win/src/policy_engine_opcodes.h"
+#include "sandbox/win/src/policy_params.h"
+#include "sandbox/win/src/sandbox_types.h"
 
 namespace {
 

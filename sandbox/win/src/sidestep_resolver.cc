@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/src/sidestep_resolver.h"
+#include "sandbox/win/src/sidestep_resolver.h"
 
 #include "base/win/pe_image.h"
-#include "sandbox/src/sandbox_nt_util.h"
-#include "sandbox/src/sidestep/preamble_patcher.h"
+#include "sandbox/win/src/sandbox_nt_util.h"
+#include "sandbox/win/src/sidestep/preamble_patcher.h"
 
 namespace {
 

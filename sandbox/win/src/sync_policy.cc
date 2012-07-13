@@ -4,14 +4,14 @@
 
 #include <string>
 
-#include "sandbox/src/sync_policy.h"
+#include "sandbox/win/src/sync_policy.h"
 
 #include "base/logging.h"
-#include "sandbox/src/ipc_tags.h"
-#include "sandbox/src/policy_engine_opcodes.h"
-#include "sandbox/src/policy_params.h"
-#include "sandbox/src/sandbox_types.h"
-#include "sandbox/src/sandbox_utils.h"
+#include "sandbox/win/src/ipc_tags.h"
+#include "sandbox/win/src/policy_engine_opcodes.h"
+#include "sandbox/win/src/policy_params.h"
+#include "sandbox/win/src/sandbox_types.h"
+#include "sandbox/win/src/sandbox_utils.h"
 
 namespace sandbox {
 

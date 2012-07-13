@@ -10,8 +10,8 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/win/windows_version.h"
-#include "sandbox/src/dep.h"
-#include "sandbox/src/sandbox_factory.h"
+#include "sandbox/win/src/dep.h"
+#include "sandbox/win/src/sandbox_factory.h"
 
 namespace {
 

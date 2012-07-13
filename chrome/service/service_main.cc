@@ -12,7 +12,7 @@
 
 #if defined(OS_WIN)
 #include "content/public/common/sandbox_init.h"
-#include "sandbox/src/sandbox_types.h"
+#include "sandbox/win/src/sandbox_types.h"
 #elif defined(OS_MACOSX)
 #include "chrome/service/chrome_service_application_mac.h"
 #endif  // defined(OS_WIN)

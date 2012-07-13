@@ -6,8 +6,8 @@
 #define SANDBOX_SRC_SANDBOX_NT_UTIL_H_
 
 #include "base/basictypes.h"
-#include "sandbox/src/nt_internals.h"
-#include "sandbox/src/sandbox_nt_types.h"
+#include "sandbox/win/src/nt_internals.h"
+#include "sandbox/win/src/sandbox_nt_types.h"
 
 // Placement new and delete to be used from ntdll interception code.
 void* __cdecl operator new(size_t size, sandbox::AllocationType type,

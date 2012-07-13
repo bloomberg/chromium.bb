@@ -6,16 +6,16 @@
 #include <sddl.h>
 #include <vector>
 
-#include "sandbox/src/restricted_token_utils.h"
+#include "sandbox/win/src/restricted_token_utils.h"
 
 #include "base/logging.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "base/win/windows_version.h"
-#include "sandbox/src/job.h"
-#include "sandbox/src/restricted_token.h"
-#include "sandbox/src/security_level.h"
-#include "sandbox/src/sid.h"
+#include "sandbox/win/src/job.h"
+#include "sandbox/win/src/restricted_token.h"
+#include "sandbox/win/src/security_level.h"
+#include "sandbox/win/src/sid.h"
 
 namespace sandbox {
 

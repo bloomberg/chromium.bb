@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/src/interceptors_64.h"
+#include "sandbox/win/src/interceptors_64.h"
 
-#include "sandbox/src/interceptors.h"
-#include "sandbox/src/filesystem_interception.h"
-#include "sandbox/src/named_pipe_interception.h"
-#include "sandbox/src/policy_target.h"
-#include "sandbox/src/process_thread_interception.h"
-#include "sandbox/src/registry_interception.h"
-#include "sandbox/src/sandbox_nt_types.h"
-#include "sandbox/src/sandbox_types.h"
-#include "sandbox/src/sync_interception.h"
-#include "sandbox/src/target_interceptions.h"
+#include "sandbox/win/src/interceptors.h"
+#include "sandbox/win/src/filesystem_interception.h"
+#include "sandbox/win/src/named_pipe_interception.h"
+#include "sandbox/win/src/policy_target.h"
+#include "sandbox/win/src/process_thread_interception.h"
+#include "sandbox/win/src/registry_interception.h"
+#include "sandbox/win/src/sandbox_nt_types.h"
+#include "sandbox/win/src/sandbox_types.h"
+#include "sandbox/win/src/sync_interception.h"
+#include "sandbox/win/src/target_interceptions.h"
 
 namespace sandbox {
 

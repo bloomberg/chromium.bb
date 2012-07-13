@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/src/wow64.h"
+#include "sandbox/win/src/wow64.h"
 
 #include <sstream>
 
@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_process_information.h"
 #include "base/win/windows_version.h"
-#include "sandbox/src/target_process.h"
+#include "sandbox/win/src/target_process.h"
 
 namespace {
 

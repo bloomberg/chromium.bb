@@ -8,7 +8,7 @@
 #include <windows.h>
 
 #include "base/memory/scoped_ptr.h"
-#include "sandbox/src/sid.h"
+#include "sandbox/win/src/sid.h"
 
 namespace sandbox {
 

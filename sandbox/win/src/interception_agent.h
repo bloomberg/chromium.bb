@@ -10,8 +10,8 @@
 #define SANDBOX_SRC_INTERCEPTION_AGENT_H__
 
 #include "base/basictypes.h"
-#include "sandbox/src/nt_internals.h"
-#include "sandbox/src/sandbox_types.h"
+#include "sandbox/win/src/nt_internals.h"
+#include "sandbox/win/src/sandbox_types.h"
 
 namespace sandbox {
 

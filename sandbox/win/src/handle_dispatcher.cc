@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/src/handle_dispatcher.h"
+#include "sandbox/win/src/handle_dispatcher.h"
 
 #include "base/win/scoped_handle.h"
-#include "sandbox/src/handle_interception.h"
-#include "sandbox/src/handle_policy.h"
-#include "sandbox/src/ipc_tags.h"
-#include "sandbox/src/policy_broker.h"
-#include "sandbox/src/policy_params.h"
-#include "sandbox/src/sandbox.h"
-#include "sandbox/src/sandbox_nt_util.h"
-#include "sandbox/src/sandbox_types.h"
-#include "sandbox/src/sandbox_utils.h"
+#include "sandbox/win/src/handle_interception.h"
+#include "sandbox/win/src/handle_policy.h"
+#include "sandbox/win/src/ipc_tags.h"
+#include "sandbox/win/src/policy_broker.h"
+#include "sandbox/win/src/policy_params.h"
+#include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/sandbox_nt_util.h"
+#include "sandbox/win/src/sandbox_types.h"
+#include "sandbox/win/src/sandbox_utils.h"
 
 namespace sandbox {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/src/acl.h"
+#include "sandbox/win/src/acl.h"
 
 #include <aclapi.h>
 #include <sddl.h>

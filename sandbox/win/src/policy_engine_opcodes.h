@@ -5,7 +5,7 @@
 #ifndef SANDBOX_SRC_POLICY_ENGINE_OPCODES_H__
 #define SANDBOX_SRC_POLICY_ENGINE_OPCODES_H__
 
-#include "sandbox/src/policy_engine_params.h"
+#include "sandbox/win/src/policy_engine_params.h"
 #include "base/basictypes.h"
 
 // The low-level policy is implemented using the concept of policy 'opcodes'.

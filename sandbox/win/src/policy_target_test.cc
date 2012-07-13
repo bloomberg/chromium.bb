@@ -4,10 +4,10 @@
 
 #include "base/win/scoped_process_information.h"
 #include "base/win/windows_version.h"
-#include "sandbox/src/sandbox.h"
-#include "sandbox/src/sandbox_factory.h"
-#include "sandbox/src/sandbox_utils.h"
-#include "sandbox/src/target_services.h"
+#include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/sandbox_factory.h"
+#include "sandbox/win/src/sandbox_utils.h"
+#include "sandbox/win/src/target_services.h"
 #include "sandbox/tests/common/controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

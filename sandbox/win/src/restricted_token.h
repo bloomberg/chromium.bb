@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "sandbox/src/restricted_token_utils.h"
-#include "sandbox/src/security_level.h"
-#include "sandbox/src/sid.h"
+#include "sandbox/win/src/restricted_token_utils.h"
+#include "sandbox/win/src/security_level.h"
+#include "sandbox/win/src/sid.h"
 
 // Flags present in the Group SID list. These 2 flags are new in Windows Vista
 #ifndef SE_GROUP_INTEGRITY

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "sandbox/src/nt_internals.h"
+#include "sandbox/win/src/nt_internals.h"
 
 namespace sandbox {
 

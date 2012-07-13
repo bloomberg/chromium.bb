@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "sandbox/src/crosscall_client.h"
-#include "sandbox/src/crosscall_server.h"
-#include "sandbox/src/sharedmem_ipc_client.h"
-#include "sandbox/src/sharedmem_ipc_server.h"
+#include "sandbox/win/src/crosscall_client.h"
+#include "sandbox/win/src/crosscall_server.h"
+#include "sandbox/win/src/sharedmem_ipc_client.h"
+#include "sandbox/win/src/sharedmem_ipc_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {

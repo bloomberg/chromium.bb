@@ -7,20 +7,20 @@
 
 #include <set>
 
-#include "sandbox/src/interception.h"
+#include "sandbox/win/src/interception.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/pe_image.h"
 #include "base/win/windows_version.h"
-#include "sandbox/src/interception_internal.h"
-#include "sandbox/src/interceptors.h"
-#include "sandbox/src/sandbox.h"
-#include "sandbox/src/sandbox_utils.h"
-#include "sandbox/src/service_resolver.h"
-#include "sandbox/src/target_interceptions.h"
-#include "sandbox/src/target_process.h"
-#include "sandbox/src/wow64.h"
+#include "sandbox/win/src/interception_internal.h"
+#include "sandbox/win/src/interceptors.h"
+#include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/sandbox_utils.h"
+#include "sandbox/win/src/service_resolver.h"
+#include "sandbox/win/src/target_interceptions.h"
+#include "sandbox/win/src/target_process.h"
+#include "sandbox/win/src/wow64.h"
 
 namespace {
 

@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "sandbox/src/crosscall_server.h"
-#include "sandbox/src/policy_low_level.h"
-#include "sandbox/src/sandbox_policy.h"
+#include "sandbox/win/src/crosscall_server.h"
+#include "sandbox/win/src/policy_low_level.h"
+#include "sandbox/win/src/sandbox_policy.h"
 
 namespace sandbox {
 

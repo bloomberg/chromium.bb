@@ -4,10 +4,10 @@
 
 #include <stdio.h>
 #include <windows.h>
-#include "sandbox/src/sandbox.h"
-#include "sandbox/src/sandbox_factory.h"
-#include "sandbox/src/broker_services.h"
-#include "sandbox/src/target_services.h"
+#include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/sandbox_factory.h"
+#include "sandbox/win/src/broker_services.h"
+#include "sandbox/win/src/target_services.h"
 
 #if defined(_WIN64) && !defined(NACL_WIN64)
 // We allow building this code for Win64 as part of NaCl to enable development

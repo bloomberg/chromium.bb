@@ -8,8 +8,8 @@
 #include "sandbox/sandbox_poc/sandbox.h"
 #include "base/logging.h"
 #include "sandbox/sandbox_poc/main_ui_window.h"
-#include "sandbox/src/sandbox.h"
-#include "sandbox/src/sandbox_factory.h"
+#include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/sandbox_factory.h"
 
 // Prototype allowed for functions to be called in the POC
 typedef void(__cdecl *lpfnInit)(HANDLE);

@@ -5,7 +5,7 @@
 #ifndef SANDBOX_SRC_POLICY_PARAMS_H__
 #define SANDBOX_SRC_POLICY_PARAMS_H__
 
-#include "sandbox/src/policy_engine_params.h"
+#include "sandbox/win/src/policy_engine_params.h"
 
 namespace sandbox {
 

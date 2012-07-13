@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/src/restricted_token.h"
-#include "sandbox/src/restricted_token_utils.h"
+#include "sandbox/win/src/restricted_token.h"
+#include "sandbox/win/src/restricted_token_utils.h"
 #include "sandbox/tools/finder/finder.h"
 
 DWORD Finder::ParseFileSystem(ATL::CString directory) {

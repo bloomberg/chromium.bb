@@ -9,11 +9,11 @@
 #include <winioctl.h>
 
 #include "base/win/scoped_handle.h"
-#include "sandbox/src/nt_internals.h"
-#include "sandbox/src/sandbox.h"
-#include "sandbox/src/sandbox_factory.h"
-#include "sandbox/src/sandbox_policy.h"
-#include "sandbox/src/win_utils.h"
+#include "sandbox/win/src/nt_internals.h"
+#include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/sandbox_factory.h"
+#include "sandbox/win/src/sandbox_policy.h"
+#include "sandbox/win/src/win_utils.h"
 #include "sandbox/tests/common/controller.h"
 #include "sandbox/tests/common/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"

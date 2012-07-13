@@ -5,9 +5,9 @@
 #include <string>
 #include <vector>
 
-#include "sandbox/src/crosscall_server.h"
-#include "sandbox/src/crosscall_params.h"
-#include "sandbox/src/crosscall_client.h"
+#include "sandbox/win/src/crosscall_server.h"
+#include "sandbox/win/src/crosscall_params.h"
+#include "sandbox/win/src/crosscall_client.h"
 #include "base/logging.h"
 
 // This code performs the ipc message validation. Potential security flaws

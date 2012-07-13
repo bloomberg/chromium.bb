@@ -7,9 +7,9 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/windows_version.h"
-#include "sandbox/src/resolver.h"
-#include "sandbox/src/sandbox_utils.h"
-#include "sandbox/src/service_resolver.h"
+#include "sandbox/win/src/resolver.h"
+#include "sandbox/win/src/sandbox_utils.h"
+#include "sandbox/win/src/service_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

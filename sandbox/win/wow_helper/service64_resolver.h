@@ -5,8 +5,8 @@
 #ifndef SANDBOX_WOW_HELPER_SERVICE64_RESOLVER_H__
 #define SANDBOX_WOW_HELPER_SERVICE64_RESOLVER_H__
 
-#include "sandbox/src/nt_internals.h"
-#include "sandbox/src/resolver.h"
+#include "sandbox/win/src/nt_internals.h"
+#include "sandbox/win/src/resolver.h"
 
 namespace sandbox {
 

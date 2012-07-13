@@ -5,7 +5,7 @@
 #ifndef SANDBOX_SRC_POLICY_BROKER_H_
 #define SANDBOX_SRC_POLICY_BROKER_H_
 
-#include "sandbox/src/interception.h"
+#include "sandbox/win/src/interception.h"
 
 namespace sandbox {
 

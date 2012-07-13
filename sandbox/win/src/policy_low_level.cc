@@ -5,7 +5,7 @@
 #include <string>
 #include <map>
 
-#include "sandbox/src/policy_low_level.h"
+#include "sandbox/win/src/policy_low_level.h"
 #include "base/basictypes.h"
 
 namespace {

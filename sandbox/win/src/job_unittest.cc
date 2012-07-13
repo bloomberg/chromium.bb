@@ -5,7 +5,7 @@
 // This file contains unit tests for the job object.
 
 #include "base/win/scoped_process_information.h"
-#include "sandbox/src/job.h"
+#include "sandbox/win/src/job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {

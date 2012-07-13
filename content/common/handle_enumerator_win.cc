@@ -15,7 +15,7 @@
 #include "base/win/windows_version.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
-#include "sandbox/src/handle_table.h"
+#include "sandbox/win/src/handle_table.h"
 
 namespace {
 

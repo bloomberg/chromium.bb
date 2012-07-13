@@ -7,7 +7,7 @@
 // http://dev.chromium.org/developers/design-documents/sandbox .
 
 #include "base/basictypes.h"
-#include "sandbox/src/nt_internals.h"
+#include "sandbox/win/src/nt_internals.h"
 
 #ifndef SANDBOX_SRC_RESOLVER_H__
 #define SANDBOX_SRC_RESOLVER_H__

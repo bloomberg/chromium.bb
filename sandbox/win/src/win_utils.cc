@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/src/win_utils.h"
+#include "sandbox/win/src/win_utils.h"
 
 #include <map>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "sandbox/src/internal_types.h"
-#include "sandbox/src/nt_internals.h"
+#include "sandbox/win/src/internal_types.h"
+#include "sandbox/win/src/nt_internals.h"
 
 namespace {
 

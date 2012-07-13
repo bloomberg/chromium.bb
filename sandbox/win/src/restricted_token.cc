@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/src/restricted_token.h"
+#include "sandbox/win/src/restricted_token.h"
 
 #include <vector>
 
 #include "base/logging.h"
-#include "sandbox/src/acl.h"
-#include "sandbox/src/win_utils.h"
+#include "sandbox/win/src/acl.h"
+#include "sandbox/win/src/win_utils.h"
 
 
 namespace sandbox {

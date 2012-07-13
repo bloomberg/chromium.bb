@@ -7,7 +7,7 @@
 #ifndef SANDBOX_SRC_SIDESTEP_MINI_DISASSEMBLER_H__
 #define SANDBOX_SRC_SIDESTEP_MINI_DISASSEMBLER_H__
 
-#include "sandbox/src/sidestep/mini_disassembler_types.h"
+#include "sandbox/win/src/sidestep/mini_disassembler_types.h"
 
 namespace sidestep {
 

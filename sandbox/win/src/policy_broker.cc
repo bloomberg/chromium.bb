@@ -4,20 +4,20 @@
 
 #include <map>
 
-#include "sandbox/src/policy_broker.h"
+#include "sandbox/win/src/policy_broker.h"
 
 #include "base/logging.h"
 #include "base/win/pe_image.h"
 #include "base/win/windows_version.h"
-#include "sandbox/src/interception.h"
-#include "sandbox/src/interceptors.h"
-#include "sandbox/src/policy_target.h"
-#include "sandbox/src/process_thread_interception.h"
-#include "sandbox/src/sandbox.h"
-#include "sandbox/src/sandbox_nt_types.h"
-#include "sandbox/src/sandbox_types.h"
-#include "sandbox/src/sandbox_utils.h"
-#include "sandbox/src/target_process.h"
+#include "sandbox/win/src/interception.h"
+#include "sandbox/win/src/interceptors.h"
+#include "sandbox/win/src/policy_target.h"
+#include "sandbox/win/src/process_thread_interception.h"
+#include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/sandbox_nt_types.h"
+#include "sandbox/win/src/sandbox_types.h"
+#include "sandbox/win/src/sandbox_utils.h"
+#include "sandbox/win/src/target_process.h"
 
 // This code executes on the broker side, as a callback from the policy on the
 // target side (the child).

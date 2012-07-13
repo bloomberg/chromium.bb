@@ -7,7 +7,7 @@
 // for how to lay out the tables in memory taken from the implementation
 // in the Bastard disassembly environment.
 
-#include "sandbox/src/sidestep/mini_disassembler.h"
+#include "sandbox/win/src/sidestep/mini_disassembler.h"
 
 namespace sidestep {
 

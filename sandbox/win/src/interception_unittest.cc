@@ -9,10 +9,10 @@
 #include <windows.h>
 
 #include "base/memory/scoped_ptr.h"
-#include "sandbox/src/interception.h"
-#include "sandbox/src/interceptors.h"
-#include "sandbox/src/interception_internal.h"
-#include "sandbox/src/target_process.h"
+#include "sandbox/win/src/interception.h"
+#include "sandbox/win/src/interceptors.h"
+#include "sandbox/win/src/interception_internal.h"
+#include "sandbox/win/src/target_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {

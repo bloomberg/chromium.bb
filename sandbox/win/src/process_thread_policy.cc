@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/src/process_thread_policy.h"
+#include "sandbox/win/src/process_thread_policy.h"
 
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "sandbox/src/ipc_tags.h"
-#include "sandbox/src/nt_internals.h"
-#include "sandbox/src/policy_engine_opcodes.h"
-#include "sandbox/src/policy_params.h"
-#include "sandbox/src/sandbox_types.h"
-#include "sandbox/src/win_utils.h"
+#include "sandbox/win/src/ipc_tags.h"
+#include "sandbox/win/src/nt_internals.h"
+#include "sandbox/win/src/policy_engine_opcodes.h"
+#include "sandbox/win/src/policy_params.h"
+#include "sandbox/win/src/sandbox_types.h"
+#include "sandbox/win/src/win_utils.h"
 
 namespace {
 

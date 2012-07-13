@@ -6,8 +6,8 @@
 #define SANDBOX_SRC_FILESYSTEM_DISPATCHER_H__
 
 #include "base/basictypes.h"
-#include "sandbox/src/crosscall_server.h"
-#include "sandbox/src/sandbox_policy_base.h"
+#include "sandbox/win/src/crosscall_server.h"
+#include "sandbox/win/src/sandbox_policy_base.h"
 
 namespace sandbox {
 

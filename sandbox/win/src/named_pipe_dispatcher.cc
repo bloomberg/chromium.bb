@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/src/named_pipe_dispatcher.h"
+#include "sandbox/win/src/named_pipe_dispatcher.h"
 
 #include "base/basictypes.h"
 
-#include "sandbox/src/crosscall_client.h"
-#include "sandbox/src/interception.h"
-#include "sandbox/src/interceptors.h"
-#include "sandbox/src/ipc_tags.h"
-#include "sandbox/src/named_pipe_interception.h"
-#include "sandbox/src/named_pipe_policy.h"
-#include "sandbox/src/policy_broker.h"
-#include "sandbox/src/policy_params.h"
-#include "sandbox/src/sandbox.h"
+#include "sandbox/win/src/crosscall_client.h"
+#include "sandbox/win/src/interception.h"
+#include "sandbox/win/src/interceptors.h"
+#include "sandbox/win/src/ipc_tags.h"
+#include "sandbox/win/src/named_pipe_interception.h"
+#include "sandbox/win/src/named_pipe_policy.h"
+#include "sandbox/win/src/policy_broker.h"
+#include "sandbox/win/src/policy_params.h"
+#include "sandbox/win/src/sandbox.h"
 
 
 namespace sandbox {

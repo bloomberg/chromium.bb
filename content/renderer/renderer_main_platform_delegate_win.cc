@@ -13,7 +13,7 @@
 #include "content/common/injection_test_dll.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_thread.h"
-#include "sandbox/src/sandbox.h"
+#include "sandbox/win/src/sandbox.h"
 #include "skia/ext/skia_sandbox_support_win.h"
 #include "unicode/timezone.h"
 

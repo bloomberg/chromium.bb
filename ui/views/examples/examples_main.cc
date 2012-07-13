@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/public/app/content_main.h"
-#include "sandbox/src/sandbox_types.h"
+#include "sandbox/win/src/sandbox_types.h"
 #include "ui/views/examples/content_client/examples_main_delegate.h"
 
 #if defined(OS_WIN)

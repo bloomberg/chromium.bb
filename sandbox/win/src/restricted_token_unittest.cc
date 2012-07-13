@@ -8,8 +8,8 @@
 #include <atlbase.h>
 #include <atlsecurity.h>
 #include <vector>
-#include "sandbox/src/restricted_token.h"
-#include "sandbox/src/sid.h"
+#include "sandbox/win/src/restricted_token.h"
+#include "sandbox/win/src/sid.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {

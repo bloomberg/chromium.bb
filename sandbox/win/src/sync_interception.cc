@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/src/sync_interception.h"
+#include "sandbox/win/src/sync_interception.h"
 
-#include "sandbox/src/crosscall_client.h"
-#include "sandbox/src/ipc_tags.h"
-#include "sandbox/src/policy_params.h"
-#include "sandbox/src/policy_target.h"
-#include "sandbox/src/sandbox_factory.h"
-#include "sandbox/src/sandbox_nt_util.h"
-#include "sandbox/src/sharedmem_ipc_client.h"
-#include "sandbox/src/target_services.h"
+#include "sandbox/win/src/crosscall_client.h"
+#include "sandbox/win/src/ipc_tags.h"
+#include "sandbox/win/src/policy_params.h"
+#include "sandbox/win/src/policy_target.h"
+#include "sandbox/win/src/sandbox_factory.h"
+#include "sandbox/win/src/sandbox_nt_util.h"
+#include "sandbox/win/src/sharedmem_ipc_client.h"
+#include "sandbox/win/src/target_services.h"
 
 namespace sandbox {
 

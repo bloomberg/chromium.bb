@@ -22,8 +22,8 @@
 #include <windows.h>
 
 #include "base/basictypes.h"
-#include "sandbox/src/sandbox_policy.h"
-#include "sandbox/src/sandbox_types.h"
+#include "sandbox/win/src/sandbox_policy.h"
+#include "sandbox/win/src/sandbox_types.h"
 
 // sandbox: Google User-Land Application Sandbox
 namespace sandbox {

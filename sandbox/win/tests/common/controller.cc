@@ -10,8 +10,8 @@
 #include "base/process_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/win/windows_version.h"
-#include "sandbox/src/sandbox_factory.h"
-#include "sandbox/src/sandbox_utils.h"
+#include "sandbox/win/src/sandbox_factory.h"
+#include "sandbox/win/src/sandbox_utils.h"
 
 namespace {
 

@@ -9,7 +9,7 @@
 #ifndef SANDBOX_SRC_INTERCEPTION_INTERNAL_H_
 #define SANDBOX_SRC_INTERCEPTION_INTERNAL_H_
 
-#include "sandbox/src/sandbox_types.h"
+#include "sandbox/win/src/sandbox_types.h"
 
 namespace sandbox {
 

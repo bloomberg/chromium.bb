@@ -5,12 +5,12 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "sandbox/src/sharedmem_ipc_server.h"
-#include "sandbox/src/sharedmem_ipc_client.h"
-#include "sandbox/src/sandbox.h"
-#include "sandbox/src/sandbox_types.h"
-#include "sandbox/src/crosscall_params.h"
-#include "sandbox/src/crosscall_server.h"
+#include "sandbox/win/src/sharedmem_ipc_server.h"
+#include "sandbox/win/src/sharedmem_ipc_client.h"
+#include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/sandbox_types.h"
+#include "sandbox/win/src/crosscall_params.h"
+#include "sandbox/win/src/crosscall_server.h"
 
 namespace sandbox {
 

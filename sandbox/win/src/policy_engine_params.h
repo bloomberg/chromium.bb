@@ -6,9 +6,9 @@
 #define SANDBOX_SRC_POLICY_ENGINE_PARAMS_H__
 
 #include "base/basictypes.h"
-#include "sandbox/src/internal_types.h"
-#include "sandbox/src/nt_internals.h"
-#include "sandbox/src/sandbox_nt_util.h"
+#include "sandbox/win/src/internal_types.h"
+#include "sandbox/win/src/nt_internals.h"
+#include "sandbox/win/src/sandbox_nt_util.h"
 
 // This header defines the classes that allow the low level policy to select
 // the input parameters. In order to better make sense of this header is

@@ -63,7 +63,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "net/base/net_util.h"
-#include "sandbox/src/sandbox_types.h"
+#include "sandbox/win/src/sandbox_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"

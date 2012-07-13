@@ -5,7 +5,7 @@
 #ifndef SANDBOX_WOW_HELPER_TARGET_CODE_H__
 #define SANDBOX_WOW_HELPER_TARGET_CODE_H__
 
-#include "sandbox/src/nt_internals.h"
+#include "sandbox/win/src/nt_internals.h"
 
 namespace sandbox {
 
@@ -13,7 +13,7 @@ extern "C" {
 
 // Holds the information needed for the interception of NtMapViewOfSection.
 // Changes of this structure must be synchronized with changes of PatchInfo32
-// on sandbox/src/wow64.cc.
+// on sandbox/win/src/wow64.cc.
 struct PatchInfo {
   HANDLE dll_load;  // Event to signal the broker.
   HANDLE continue_load;  // Event to wait for the broker.

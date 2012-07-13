@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "content/public/common/main_function_params.h"
-#include "sandbox/src/dep.h"
+#include "sandbox/win/src/dep.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"

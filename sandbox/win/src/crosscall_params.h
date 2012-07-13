@@ -11,8 +11,8 @@
 #include <memory>
 
 #include "base/basictypes.h"
-#include "sandbox/src/internal_types.h"
-#include "sandbox/src/sandbox_types.h"
+#include "sandbox/win/src/internal_types.h"
+#include "sandbox/win/src/sandbox_types.h"
 
 namespace {
 

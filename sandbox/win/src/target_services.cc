@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/src/target_services.h"
+#include "sandbox/win/src/target_services.h"
 
 #include <process.h>
 
 #include "base/basictypes.h"
-#include "sandbox/src/crosscall_client.h"
-#include "sandbox/src/handle_closer_agent.h"
-#include "sandbox/src/handle_interception.h"
-#include "sandbox/src/ipc_tags.h"
-#include "sandbox/src/restricted_token_utils.h"
-#include "sandbox/src/sandbox.h"
-#include "sandbox/src/sandbox_types.h"
-#include "sandbox/src/sharedmem_ipc_client.h"
-#include "sandbox/src/sandbox_nt_util.h"
+#include "sandbox/win/src/crosscall_client.h"
+#include "sandbox/win/src/handle_closer_agent.h"
+#include "sandbox/win/src/handle_interception.h"
+#include "sandbox/win/src/ipc_tags.h"
+#include "sandbox/win/src/restricted_token_utils.h"
+#include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/sandbox_types.h"
+#include "sandbox/win/src/sharedmem_ipc_client.h"
+#include "sandbox/win/src/sandbox_nt_util.h"
 
 namespace {
 

@@ -8,7 +8,7 @@
 #include <atlbase.h>
 #include <atlsecurity.h>
 
-#include "sandbox/src/sid.h"
+#include "sandbox/win/src/sid.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {

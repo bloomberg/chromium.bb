@@ -5,7 +5,7 @@
 #ifndef SANDBOX_SRC_SANDBOX_NT_TYPES_H__
 #define SANDBOX_SRC_SANDBOX_NT_TYPES_H__
 
-#include "sandbox/src/nt_internals.h"
+#include "sandbox/win/src/nt_internals.h"
 
 namespace sandbox {
 

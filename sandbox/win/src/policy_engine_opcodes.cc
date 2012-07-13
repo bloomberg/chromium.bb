@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/src/policy_engine_opcodes.h"
+#include "sandbox/win/src/policy_engine_opcodes.h"
 
 #include "base/basictypes.h"
-#include "sandbox/src/sandbox_nt_types.h"
-#include "sandbox/src/sandbox_types.h"
+#include "sandbox/win/src/sandbox_nt_types.h"
+#include "sandbox/win/src/sandbox_types.h"
 
 namespace {
 const unsigned short kMaxUniStrSize = 0xfffc;

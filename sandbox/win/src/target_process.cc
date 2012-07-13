@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/src/target_process.h"
+#include "sandbox/win/src/target_process.h"
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/pe_image.h"
 #include "base/win/windows_version.h"
-#include "sandbox/src/crosscall_server.h"
-#include "sandbox/src/crosscall_client.h"
-#include "sandbox/src/policy_low_level.h"
-#include "sandbox/src/sandbox_types.h"
-#include "sandbox/src/sharedmem_ipc_server.h"
+#include "sandbox/win/src/crosscall_server.h"
+#include "sandbox/win/src/crosscall_client.h"
+#include "sandbox/win/src/policy_low_level.h"
+#include "sandbox/win/src/sandbox_types.h"
+#include "sandbox/win/src/sharedmem_ipc_server.h"
 
 namespace {
 

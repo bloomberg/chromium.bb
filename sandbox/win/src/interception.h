@@ -14,7 +14,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "sandbox/src/sandbox_types.h"
+#include "sandbox/win/src/sandbox_types.h"
 
 namespace sandbox {
 

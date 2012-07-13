@@ -5,13 +5,13 @@
 // For information about interceptions as a whole see
 // http://dev.chromium.org/developers/design-documents/sandbox .
 
-#include "sandbox/src/interception_agent.h"
+#include "sandbox/win/src/interception_agent.h"
 
-#include "sandbox/src/interception_internal.h"
-#include "sandbox/src/interceptors.h"
-#include "sandbox/src/eat_resolver.h"
-#include "sandbox/src/sidestep_resolver.h"
-#include "sandbox/src/sandbox_nt_util.h"
+#include "sandbox/win/src/interception_internal.h"
+#include "sandbox/win/src/interceptors.h"
+#include "sandbox/win/src/eat_resolver.h"
+#include "sandbox/win/src/sidestep_resolver.h"
+#include "sandbox/win/src/sandbox_nt_util.h"
 
 namespace {
 

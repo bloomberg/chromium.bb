@@ -5,7 +5,7 @@
 #include <windows.h>
 
 #include "base/win/scoped_handle.h"
-#include "sandbox/src/win_utils.h"
+#include "sandbox/win/src/win_utils.h"
 #include "sandbox/tests/common/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

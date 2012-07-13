@@ -5,7 +5,7 @@
 #ifndef SANDBOX_TOOLS_FINDER_FINDER_H__
 #define SANDBOX_TOOLS_FINDER_FINDER_H__
 
-#include "sandbox/src/restricted_token_utils.h"
+#include "sandbox/win/src/restricted_token_utils.h"
 #include "sandbox/tools/finder/ntundoc.h"
 
 // Type of stats that we calculate during the Scan operation

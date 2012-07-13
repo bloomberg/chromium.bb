@@ -1,5 +1,5 @@
 include_rules = [
   # For generated headers.
   "+grit",
-  "+sandbox/src/sandbox_types.h",
+  "+sandbox/win/src/sandbox_types.h",
 ]

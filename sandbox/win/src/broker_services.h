@@ -10,12 +10,12 @@
 #include <set>
 #include "base/basictypes.h"
 #include "base/win/scoped_handle.h"
-#include "sandbox/src/crosscall_server.h"
-#include "sandbox/src/job.h"
-#include "sandbox/src/sandbox.h"
-#include "sandbox/src/sharedmem_ipc_server.h"
-#include "sandbox/src/win2k_threadpool.h"
-#include "sandbox/src/win_utils.h"
+#include "sandbox/win/src/crosscall_server.h"
+#include "sandbox/win/src/job.h"
+#include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/sharedmem_ipc_server.h"
+#include "sandbox/win/src/win2k_threadpool.h"
+#include "sandbox/win/src/win_utils.h"
 
 namespace {
 

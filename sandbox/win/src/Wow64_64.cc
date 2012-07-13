@@ -4,7 +4,7 @@
 
 // Wow64 implementation for native 64-bit Windows (in other words, never WOW).
 
-#include "sandbox/src/wow64.h"
+#include "sandbox/win/src/wow64.h"
 
 namespace sandbox {
 

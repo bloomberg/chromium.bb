@@ -16,7 +16,7 @@ include_rules = [
   "+ppapi/shared_impl/ppp_flash_browser_operations_shared.h",
   "+rlz",
   "+sandbox/linux",
-  "+sandbox/src",  # The path doesn't say it, but this is the Windows sandbox.
+  "+sandbox/win/src",  # The path doesn't say it, but this is the Windows sandbox.
   "+skia/ext",
   "+skia/include",
   "+sync/api",  # Sync API files.

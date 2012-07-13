@@ -4,15 +4,15 @@
 
 #include <string>
 
-#include "sandbox/src/registry_policy.h"
+#include "sandbox/win/src/registry_policy.h"
 
 #include "base/logging.h"
-#include "sandbox/src/ipc_tags.h"
-#include "sandbox/src/policy_engine_opcodes.h"
-#include "sandbox/src/policy_params.h"
-#include "sandbox/src/sandbox_utils.h"
-#include "sandbox/src/sandbox_types.h"
-#include "sandbox/src/win_utils.h"
+#include "sandbox/win/src/ipc_tags.h"
+#include "sandbox/win/src/policy_engine_opcodes.h"
+#include "sandbox/win/src/policy_params.h"
+#include "sandbox/win/src/sandbox_utils.h"
+#include "sandbox/win/src/sandbox_types.h"
+#include "sandbox/win/src/win_utils.h"
 
 namespace {
 

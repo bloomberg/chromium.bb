@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "sandbox/src/handle_closer.h"
-#include "sandbox/src/sandbox_types.h"
+#include "sandbox/win/src/handle_closer.h"
+#include "sandbox/win/src/sandbox_types.h"
 
 namespace sandbox {
 

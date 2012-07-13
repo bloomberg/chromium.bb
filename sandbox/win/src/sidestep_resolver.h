@@ -6,8 +6,8 @@
 #define SANDBOX_SRC_SIDESTEP_RESOLVER_H__
 
 #include "base/basictypes.h"
-#include "sandbox/src/nt_internals.h"
-#include "sandbox/src/resolver.h"
+#include "sandbox/win/src/nt_internals.h"
+#include "sandbox/win/src/resolver.h"
 
 namespace sandbox {
 

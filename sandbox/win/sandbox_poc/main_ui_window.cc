@@ -15,9 +15,9 @@
 #include "sandbox/sandbox_poc/main_ui_window.h"
 #include "base/logging.h"
 #include "sandbox/sandbox_poc/resource.h"
-#include "sandbox/src/acl.h"
-#include "sandbox/src/sandbox.h"
-#include "sandbox/src/win_utils.h"
+#include "sandbox/win/src/acl.h"
+#include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/win_utils.h"
 
 HWND MainUIWindow::list_view_ = NULL;
 

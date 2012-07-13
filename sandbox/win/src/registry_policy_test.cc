@@ -5,12 +5,12 @@
 #include <shlobj.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "sandbox/src/registry_policy.h"
-#include "sandbox/src/sandbox.h"
-#include "sandbox/src/sandbox_policy.h"
-#include "sandbox/src/sandbox_factory.h"
-#include "sandbox/src/nt_internals.h"
-#include "sandbox/src/win_utils.h"
+#include "sandbox/win/src/registry_policy.h"
+#include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/sandbox_policy.h"
+#include "sandbox/win/src/sandbox_factory.h"
+#include "sandbox/win/src/nt_internals.h"
+#include "sandbox/win/src/win_utils.h"
 #include "sandbox/tests/common/controller.h"
 
 namespace {

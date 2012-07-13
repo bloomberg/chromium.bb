@@ -5,8 +5,8 @@
 #ifndef SANDBOX_SRC_CROSSCALL_CLIENT_H_
 #define SANDBOX_SRC_CROSSCALL_CLIENT_H_
 
-#include "sandbox/src/crosscall_params.h"
-#include "sandbox/src/sandbox.h"
+#include "sandbox/win/src/crosscall_params.h"
+#include "sandbox/win/src/sandbox.h"
 
 // This header defines the CrossCall(..) family of templated functions
 // Their purpose is to simulate the syntax of regular call but to generate

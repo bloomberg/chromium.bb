@@ -7,9 +7,9 @@
 
 #include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "sandbox/src/sandbox.h"
-#include "sandbox/src/sandbox_policy.h"
-#include "sandbox/src/sandbox_factory.h"
+#include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/sandbox_policy.h"
+#include "sandbox/win/src/sandbox_factory.h"
 #include "sandbox/tests/common/controller.h"
 
 namespace sandbox {

@@ -4,10 +4,10 @@
 
 // Implementation of PreamblePatcher
 
-#include "sandbox/src/sidestep/preamble_patcher.h"
+#include "sandbox/win/src/sidestep/preamble_patcher.h"
 
-#include "sandbox/src/sandbox_nt_util.h"
-#include "sandbox/src/sidestep/mini_disassembler.h"
+#include "sandbox/win/src/sandbox_nt_util.h"
+#include "sandbox/win/src/sidestep/mini_disassembler.h"
 
 // Definitions of assembly statements we need
 #define ASM_JMP32REL 0xE9

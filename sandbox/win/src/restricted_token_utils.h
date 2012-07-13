@@ -8,8 +8,8 @@
 #include <accctrl.h>
 #include <windows.h>
 
-#include "sandbox/src/restricted_token.h"
-#include "sandbox/src/security_level.h"
+#include "sandbox/win/src/restricted_token.h"
+#include "sandbox/win/src/security_level.h"
 
 // Contains the utility functions to be able to create restricted tokens based
 // on a security profiles.

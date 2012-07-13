@@ -6,7 +6,7 @@
 #define SANDBOX_SRC_INTERCEPTORS_H_
 
 #if defined(_WIN64)
-#include "sandbox/src/interceptors_64.h"
+#include "sandbox/win/src/interceptors_64.h"
 #endif
 
 namespace sandbox {

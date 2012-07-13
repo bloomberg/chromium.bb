@@ -11,8 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
-#include "sandbox/src/crosscall_server.h"
-#include "sandbox/src/sandbox_types.h"
+#include "sandbox/win/src/crosscall_server.h"
+#include "sandbox/win/src/sandbox_types.h"
 
 namespace sandbox {
 

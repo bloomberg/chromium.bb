@@ -9,9 +9,9 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "sandbox/src/crosscall_params.h"
-#include "sandbox/src/crosscall_server.h"
-#include "sandbox/src/sharedmem_ipc_client.h"
+#include "sandbox/win/src/crosscall_params.h"
+#include "sandbox/win/src/crosscall_server.h"
+#include "sandbox/win/src/sharedmem_ipc_client.h"
 
 // IPC transport implementation that uses shared memory.
 // This is the server side

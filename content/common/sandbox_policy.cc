@@ -25,9 +25,9 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/sandbox_init.h"
-#include "sandbox/src/sandbox.h"
-#include "sandbox/src/sandbox_nt_util.h"
-#include "sandbox/src/win_utils.h"
+#include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/sandbox_nt_util.h"
+#include "sandbox/win/src/win_utils.h"
 #include "ui/gl/gl_switches.h"
 
 static sandbox::BrokerServices* g_broker_services = NULL;

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/win/scoped_handle.h"
-#include "sandbox/src/sandbox.h"
+#include "sandbox/win/src/sandbox.h"
 
 namespace sandbox {
 

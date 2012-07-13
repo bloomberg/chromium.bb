@@ -6,8 +6,8 @@
 // Based on information in the IA-32 Intel Architecture
 // Software Developer's Manual Volume 2: Instruction Set Reference.
 
-#include "sandbox/src/sidestep/mini_disassembler.h"
-#include "sandbox/src/sidestep/mini_disassembler_types.h"
+#include "sandbox/win/src/sidestep/mini_disassembler.h"
+#include "sandbox/win/src/sidestep/mini_disassembler_types.h"
 
 namespace sidestep {
 

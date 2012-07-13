@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/src/broker_services.h"
+#include "sandbox/win/src/broker_services.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
-#include "sandbox/src/sandbox_policy_base.h"
-#include "sandbox/src/sandbox.h"
-#include "sandbox/src/target_process.h"
-#include "sandbox/src/win2k_threadpool.h"
-#include "sandbox/src/win_utils.h"
+#include "sandbox/win/src/sandbox_policy_base.h"
+#include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/target_process.h"
+#include "sandbox/win/src/win2k_threadpool.h"
+#include "sandbox/win/src/win_utils.h"
 
 namespace {
 

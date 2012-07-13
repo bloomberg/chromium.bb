@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/src/job.h"
+#include "sandbox/win/src/job.h"
 
 #include "base/win/windows_version.h"
-#include "sandbox/src/restricted_token.h"
+#include "sandbox/win/src/restricted_token.h"
 
 namespace sandbox {
 

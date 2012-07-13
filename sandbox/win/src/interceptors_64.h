@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/src/nt_internals.h"
-#include "sandbox/src/sandbox_types.h"
+#include "sandbox/win/src/nt_internals.h"
+#include "sandbox/win/src/sandbox_types.h"
 
 #ifndef SANDBOX_SRC_INTERCEPTORS_64_H_
 #define SANDBOX_SRC_INTERCEPTORS_64_H_

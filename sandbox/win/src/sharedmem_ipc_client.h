@@ -5,8 +5,8 @@
 #ifndef SANDBOX_SRC_SHAREDMEM_IPC_CLIENT_H__
 #define SANDBOX_SRC_SHAREDMEM_IPC_CLIENT_H__
 
-#include "sandbox/src/crosscall_params.h"
-#include "sandbox/src/sandbox.h"
+#include "sandbox/win/src/crosscall_params.h"
+#include "sandbox/win/src/sandbox.h"
 
 // IPC transport implementation that uses shared memory.
 // This is the client side
