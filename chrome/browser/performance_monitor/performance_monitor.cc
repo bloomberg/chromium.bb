@@ -76,7 +76,7 @@ void PerformanceMonitor::FinishInit() {
   // Important! Make sure that methods in FinishInit() only rely on posting
   // to the background thread, and do not rely upon a reply from the background
   // thread; this is necessary for this notification to be valid.
-  util::PostTaskToDatabaseAndReply(
+  util::PostTaskToDatabaseThreadAndReply(
       base::Bind(&base::DoNothing),
       base::Bind(&PerformanceMonitor::NotifyInitialized,
                  base::Unretained(this)));

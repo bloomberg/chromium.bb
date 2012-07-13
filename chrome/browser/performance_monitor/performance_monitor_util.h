@@ -25,10 +25,11 @@ std::vector<MetricInfo> AggregateMetric(
     const base::Time& start,
     const base::TimeDelta& resolution);
 
-// Post a task to the database using the kDatabaseSequenceToken and reply; this
-// is useful in the absence of a PostBlockingPoolSequencedTaskAndReply method.
-bool PostTaskToDatabaseAndReply(const base::Closure& request,
-                                const base::Closure& reply);
+// Posts |request| to the performance monitor database's sequenced thread. On
+// completion |reply| is posted to the thread that called
+// PostTaskToDatabaseThreadAndReply.
+bool PostTaskToDatabaseThreadAndReply(const base::Closure& request,
+                                      const base::Closure& reply);
 
 // These are a collection of methods designed to create an event to store the
 // pertinent information, given all the fields. Please use these methods to

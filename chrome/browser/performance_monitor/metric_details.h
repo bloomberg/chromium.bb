@@ -9,6 +9,13 @@
 
 namespace performance_monitor {
 
+enum MetricType {
+  METRIC_SAMPLE,
+  METRIC_NUMBER_OF_METRICS
+};
+
+const char* MetricTypeToString(MetricType event_type);
+
 struct MetricDetails {
   MetricDetails();
   MetricDetails(const std::string& metric_name,

@@ -53,8 +53,8 @@ std::vector<MetricInfo> AggregateMetric(
   return results;
 }
 
-bool PostTaskToDatabaseAndReply(const base::Closure& request,
-                                const base::Closure& reply) {
+bool PostTaskToDatabaseThreadAndReply(const base::Closure& request,
+                                      const base::Closure& reply) {
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
   base::SequencedWorkerPool::SequenceToken token =
       pool->GetNamedSequenceToken(Database::kDatabaseSequenceToken);

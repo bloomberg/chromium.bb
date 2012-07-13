@@ -14,8 +14,9 @@ extern const char kMetricNotFoundError[];
 // its activity.
 extern const char kProcessChromeAggregate[];
 
-// When you add a metric type, make sure to edit CPMDatabase::InitMetricDetails
-// TODO(mtytel): When you make real metrics, delete the sample metric.
+// When you add a metric type, make sure to edit Database::InitMetricDetails
+// and add an entry to the MericType enum.
+// TODO(mwrosen): When you make real metrics, delete the sample metric.
 extern const char kSampleMetricDescription[];
 extern const char kSampleMetricName[];
 extern const char kStateChromeVersion[];
