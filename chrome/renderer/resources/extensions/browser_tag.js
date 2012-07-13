@@ -9,25 +9,25 @@
 
 var BROWSER_TAG_ATTRIBUTES = ['src', 'width', 'height'];
 
-// Handle <browser> tags already in the document.
 window.addEventListener('DOMContentLoaded', function() {
+  // Handle <browser> tags already in the document.
   var browserNodes = document.body.querySelectorAll('browser');
   for (var i = 0, browserNode; browserNode = browserNodes[i]; i++) {
     new BrowserTag(browserNode);
   }
-});
 
-// Handle <browser> tags added later.
-var observer = new WebKitMutationObserver(function(mutations) {
-  mutations.forEach(function(mutation) {
-    for (var i = 0, addedNode; addedNode = mutation.addedNodes[i]; i++) {
-      if (addedNode.tagName == 'BROWSER') {
-        new BrowserTag(addedNode);
+  // Handle <browser> tags added later.
+  var documentObserver = new WebKitMutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      for (var i = 0, addedNode; addedNode = mutation.addedNodes[i]; i++) {
+        if (addedNode.tagName == 'BROWSER') {
+          new BrowserTag(addedNode);
+        }
       }
-    }
+    });
   });
+  documentObserver.observe(document, {subtree: true, childList: true});
 });
-observer.observe(document, {subtree: true, childList: true});
 
 /**
  * @constructor

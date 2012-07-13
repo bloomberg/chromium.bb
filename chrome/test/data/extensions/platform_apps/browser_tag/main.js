@@ -33,7 +33,19 @@ onload = function() {
           chrome.test.assertEq(320, browserTag.offsetWidth);
           chrome.test.assertEq(220, browserTag.offsetHeight);
 
-          chrome.test.succeed();
+          var dynamicBrowserTag = document.createElement('browser');
+          dynamicBrowserTag.setAttribute(
+              'src', 'data:text/html,dynamic browser');
+          dynamicBrowserTag.setAttribute('width', '330');
+          dynamicBrowserTag.setAttribute('height', '230');
+          document.body.appendChild(dynamicBrowserTag);
+
+          setTimeout(function() {
+            chrome.test.assertEq(330, dynamicBrowserTag.offsetWidth);
+            chrome.test.assertEq(230, dynamicBrowserTag.offsetHeight);
+
+            chrome.test.succeed();
+          }, 0);
         }, 0);
       }, 0);
     }
