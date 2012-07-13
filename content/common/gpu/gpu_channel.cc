@@ -30,6 +30,10 @@
 #include "ipc/ipc_channel_posix.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "content/common/gpu/stream_texture_manager_android.h"
+#endif
+
 namespace {
 // This filter does two things:
 // - it counts the number of messages coming in on the channel
@@ -162,6 +166,9 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
   log_messages_ = command_line->HasSwitch(switches::kLogPluginMessages);
   disallowed_features_.multisampling =
       command_line->HasSwitch(switches::kDisableGLMultisampling);
+#if defined(OS_ANDROID)
+  stream_texture_manager_.reset(new content::StreamTextureManagerAndroid(this));
+#endif
 }
 
 
@@ -387,6 +394,12 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
                                     OnCreateOffscreenCommandBuffer)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuChannelMsg_DestroyCommandBuffer,
                                     OnDestroyCommandBuffer)
+#if defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_RegisterStreamTextureProxy,
+                        OnRegisterStreamTextureProxy)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_EstablishStreamTexture,
+                        OnEstablishStreamTexture)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << msg.type();
@@ -504,4 +517,23 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id,
   if (reply_message)
     Send(reply_message);
 }
+
+#if defined(OS_ANDROID)
+void GpuChannel::OnRegisterStreamTextureProxy(
+    int32 stream_id,  const gfx::Size& initial_size, int32* route_id) {
+  // Note that route_id is only used for notifications sent out from here.
+  // StreamTextureManager owns all texture objects and for incoming messages
+  // it finds the correct object based on stream_id.
+  *route_id = GenerateRouteID();
+  stream_texture_manager_->RegisterStreamTextureProxy(
+      stream_id, initial_size, *route_id);
+}
+
+void GpuChannel::OnEstablishStreamTexture(
+    int32 stream_id, content::SurfaceTexturePeer::SurfaceTextureTarget type,
+    int32 primary_id, int32 secondary_id) {
+  stream_texture_manager_->EstablishStreamTexture(
+      stream_id, type, primary_id, secondary_id);
+}
+#endif
 

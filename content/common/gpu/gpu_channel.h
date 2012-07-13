@@ -23,6 +23,10 @@
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gpu_preference.h"
 
+#if defined(OS_ANDROID)
+#include "content/common/android/surface_texture_peer.h"
+#endif
+
 class GpuChannelManager;
 struct GPUCreateCommandBufferConfig;
 class GpuWatchdog;
@@ -35,6 +39,12 @@ class WaitableEvent;
 namespace gpu {
 struct RefCountedCounter;
 }
+
+#if defined(OS_ANDROID)
+namespace content {
+class StreamTextureManagerAndroid;
+}
+#endif
 
 // Encapsulates an IPC channel between the GPU process and one renderer
 // process. On the renderer side there's a corresponding GpuChannelHost.
@@ -133,6 +143,19 @@ class GpuChannel : public IPC::Listener,
       IPC::Message* reply_message);
   void OnDestroyCommandBuffer(int32 route_id, IPC::Message* reply_message);
 
+#if defined(OS_ANDROID)
+  // Register the StreamTextureProxy class with the gpu process so that all
+  // the callbacks will be correctly forwarded to the renderer.
+  void OnRegisterStreamTextureProxy(
+      int32 stream_id, const gfx::Size& initial_size, int32* route_id);
+
+  // Create a java surface texture object and send it to the renderer process
+  // through binder thread.
+  void OnEstablishStreamTexture(
+      int32 stream_id, content::SurfaceTexturePeer::SurfaceTextureTarget type,
+      int32 primary_id, int32 secondary_id);
+#endif
+
   // The lifetime of objects of this class is managed by a GpuChannelManager.
   // The GpuChannelManager destroy all the GpuChannels that they own when they
   // are destroyed. So a raw pointer is safe.
@@ -176,6 +199,10 @@ class GpuChannel : public IPC::Listener,
   bool software_;
   bool handle_messages_scheduled_;
   bool processed_get_state_fast_;
+
+#if defined(OS_ANDROID)
+  scoped_ptr<content::StreamTextureManagerAndroid> stream_texture_manager_;
+#endif
 
   base::WeakPtrFactory<GpuChannel> weak_factory_;
 

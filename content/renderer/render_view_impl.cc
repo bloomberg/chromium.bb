@@ -189,6 +189,7 @@
 #include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
 
 #if defined(OS_ANDROID)
+#include "content/renderer/media/stream_texture_factory_impl_android.h"
 #include "webkit/media/android/webmediaplayer_android.h"
 #include "webkit/media/android/webmediaplayer_manager_android.h"
 #elif defined(OS_WIN)
@@ -2338,10 +2339,11 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
       RenderViewObserver, observers_, WillCreateMediaPlayer(frame, client));
 
 #if defined(OS_ANDROID)
-  // TODO(qinmin): upstream the implementation of StreamTextureFactoryImpl
-  // to replace the NULL param here.
+  // TODO(qinmin): upstream the implementation of getting WebGraphicsContext3D
+  // and GpuChannelHost here to replace the NULL params.
   return new webkit_media::WebMediaPlayerAndroid(
-      frame, client, cookieJar(frame), media_player_manager_.get(), NULL);
+      frame, client, cookieJar(frame), media_player_manager_.get(),
+      new content::StreamTextureFactoryImpl(NULL, NULL, routing_id_));
 #endif
 
   media::MessageLoopFactory* message_loop_factory =
