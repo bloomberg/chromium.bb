@@ -79,7 +79,7 @@ public class ShellView extends LinearLayout {
                 }
                 loadUrl(mUrlTextView.getText().toString());
                 setKeyboardVisibilityForUrl(false);
-                mUrlTextView.clearFocus();
+                mContentView.requestFocus();
                 return true;
             }
         });
@@ -89,6 +89,9 @@ public class ShellView extends LinearLayout {
                 setKeyboardVisibilityForUrl(hasFocus);
                 mNextButton.setVisibility(hasFocus ? GONE : VISIBLE);
                 mPrevButton.setVisibility(hasFocus ? GONE : VISIBLE);
+                if (!hasFocus) {
+                    mUrlTextView.setText(mContentView.getUrl());
+                }
             }
         });
     }
@@ -153,6 +156,7 @@ public class ShellView extends LinearLayout {
                 new FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT));
+        mContentView.requestFocus();
     }
 
     /**

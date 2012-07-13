@@ -26,6 +26,7 @@
             android:autoText="true"
             android:capitalize="sentences"
             android:singleLine="true"
+            android:selectAllOnFocus="true"
             android:hint="@string/url_hint"
             android:inputType="textUri"
             android:imeOptions="actionGo" />
