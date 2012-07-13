@@ -49,7 +49,8 @@ enum AcceleratorAction {
   SHOW_TASK_MANAGER,
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
   TAKE_PARTIAL_SCREENSHOT,
-  TAKE_SCREENSHOT,
+  TAKE_SCREENSHOT,  // Control+F5
+  TAKE_SCREENSHOT_BY_PRTSCN_KEY,  // PrtScn
   TOGGLE_APP_LIST,
   TOGGLE_CAPS_LOCK,
   TOGGLE_SPOKEN_FEEDBACK,

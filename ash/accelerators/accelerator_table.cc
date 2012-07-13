@@ -74,7 +74,7 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_F5, ui::EF_CONTROL_DOWN, TAKE_SCREENSHOT },
   { true, ui::VKEY_F5, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     TAKE_PARTIAL_SCREENSHOT },
-  { true, ui::VKEY_PRINT, ui::EF_NONE, TAKE_SCREENSHOT },
+  { true, ui::VKEY_PRINT, ui::EF_NONE, TAKE_SCREENSHOT_BY_PRTSCN_KEY },
   // On Chrome OS, Search key is mapped to LWIN.
   { true, ui::VKEY_LWIN, ui::EF_NONE, TOGGLE_APP_LIST },
   { true, ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_NONE, TOGGLE_APP_LIST },
@@ -142,15 +142,39 @@ const AcceleratorData kAcceleratorData[] = {
     PRINT_WINDOW_HIERARCHY },
 #endif
 
-  // TODO(yusukes): Handle VKEY_MEDIA_STOP, VKEY_MEDIA_PLAY_PAUSE,
-  // VKEY_MEDIA_LAUNCH_MAIL, and VKEY_MEDIA_LAUNCH_APP2 (aka Calculator button).
+  // TODO(yusukes): Handle VKEY_MEDIA_STOP, VKEY_MEDIA_PLAY_PAUSE, and
+  // VKEY_MEDIA_LAUNCH_MAIL.
 };
 
 const size_t kAcceleratorDataLength = arraysize(kAcceleratorData);
 
 const AcceleratorAction kReservedActions[] = {
-  CYCLE_BACKWARD_MRU,
-  CYCLE_FORWARD_MRU,
+  // Window cycling accelerators.
+  CYCLE_BACKWARD_MRU,  // Shift+Alt+Tab
+  CYCLE_FORWARD_MRU,  // Alt+Tab
+
+#if defined(OS_CHROMEOS)
+  // Chrome OS top-row keys.
+  FOCUS_PREVIOUS_PANE,  // Control+F1
+  FOCUS_NEXT_PANE,  // Control+F2
+  CYCLE_DISPLAY_MODE,  // Control+F4
+  DISPLAY_ADD_REMOVE,  // Shift+F4
+  DISPLAY_CYCLE,  // Shift+Control+F4
+  CYCLE_FORWARD_LINEAR,  // F5
+  CYCLE_BACKWARD_LINEAR,  // Shift+F5
+  TAKE_SCREENSHOT,  // Control+F5
+  TAKE_PARTIAL_SCREENSHOT,  // Shift+Control+F5
+  BRIGHTNESS_DOWN,  // F6
+  KEYBOARD_BRIGHTNESS_DOWN,  // Alt+F6
+  MAGNIFY_SCREEN_ZOOM_OUT,  // Control+F6
+  BRIGHTNESS_UP,  // F7
+  KEYBOARD_BRIGHTNESS_UP,  // Alt+F7
+  MAGNIFY_SCREEN_ZOOM_IN,  // Control+F7
+  VOLUME_MUTE,  // F8
+  VOLUME_DOWN,  // F9
+  VOLUME_UP  // F10
+  // TODO(yusukes): Handle F1, F2, F3, and F4 without modifiers in BrowserView.
+#endif
 };
 
 const size_t kReservedActionsLength = arraysize(kReservedActions);
