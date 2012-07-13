@@ -66,7 +66,7 @@ readonly SCONS_OUT="${NACL_ROOT}/scons-out"
 readonly TC_ROOT="${NACL_ROOT}/toolchain"
 
 readonly ARM_TRUSTED_TC="${TC_ROOT}/linux_arm-trusted"
-readonly QEMU_TOOL="${ARM_TRUSTED_TC}/qemu_tool.sh"
+readonly QEMU_TOOL="${ARM_TRUSTED_TC}/run_under_qemu_arm"
 
 readonly PNACL_TC=\
 "${TC_ROOT}/pnacl_${BUILD_PLATFORM}_${BUILD_ARCH}/${PNACL_LIBMODE}"
@@ -329,13 +329,13 @@ SetupPnaclTranslatorX8632Opt() {
 #@ SetupGccArm
 #@   use CS cross compiler
 SetupGccArm() {
-  PREFIX="${QEMU_TOOL} run"
+  PREFIX="${QEMU_TOOL}"
   SUFFIX=gcc.arm
 }
 
 
 SetupPnaclArmCommon() {
-  SetupSelLdr arm "${QEMU_TOOL} run" "-Q"
+  SetupSelLdr arm "${QEMU_TOOL}" "-Q"
 }
 
 #@

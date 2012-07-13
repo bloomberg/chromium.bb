@@ -57,7 +57,7 @@ class ToolchainConfig(object):
 
 LOCAL_GCC = '/usr/bin/gcc'
 
-EMU_SCRIPT = 'toolchain/linux_arm-trusted/qemu_tool.sh'
+EMU_SCRIPT = 'toolchain/linux_arm-trusted/run_under_qemu_arm'
 
 BOOTSTRAP_ARM = 'scons-out/opt-linux-arm/staging/nacl_helper_bootstrap'
 SEL_LDR_ARM = 'scons-out/opt-linux-arm/staging/sel_ldr'
@@ -147,7 +147,7 @@ COMMANDS_gcc_cs_arm = [
      '%(CC)s %(src)s %(CFLAGS)s -Wl,-Ttext-segment=20000  -o %(tmp)s.exe',
      ),
     ('emu',
-     '%(EMU_SCRIPT)s run %(tmp)s.exe',
+     '%(EMU_SCRIPT)s %(tmp)s.exe',
      )
     ]
 
@@ -242,7 +242,7 @@ COMMANDS_llvm_pnacl_arm = [
      '%(LD)s %(tmp)s.pexe -o %(tmp)s.nexe',
      ),
     ('qemu-sel_ldr',
-     '%(EMU)s run %(SEL_LDR)s -B %(IRT)s -Q %(tmp)s.nexe',
+     '%(EMU)s %(SEL_LDR)s -B %(IRT)s -Q %(tmp)s.nexe',
      )
   ]
 
