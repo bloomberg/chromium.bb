@@ -16,6 +16,7 @@ import time
 import urllib
 from xml.dom import minidom
 
+from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
 from chromite.buildbot import gerrit_helper
 from chromite.buildbot import lkgm_manager
@@ -1121,7 +1122,7 @@ class ValidationPool(object):
       self._helper_pool.ForChange(change).RemoveCommitReady(
           change, dryrun=self.dryrun)
 
-  def GetValidationFailedMessage(self, failed_stage=None, exception=None):
+  def GetValidationFailedMessage(self):
     """Returns message indicating these changes failed to be validated.
 
     Args:
@@ -1130,13 +1131,13 @@ class ValidationPool(object):
       exception: The exception object thrown by the first failure.
     """
     logging.info('Validation failed for all changes.')
-    if failed_stage and exception:
-      detail = 'The %s stage failed %s' % (failed_stage, exception)
-    else:
-      detail = 'Failed to build %s' % self._builder_name
-
-    return '%(detail)s in %(build_log)s' % dict(build_log=self.build_log,
-                                                detail=detail)
+    details = []
+    for failed_stage, exception, _ in results_lib.Results.GetTracebacks():
+      details.append('The %s stage failed: %s' % (failed_stage, exception))
+    if not details:
+      details = ['cbuildbot failed']
+    details.append('in %s' % (self.build_log,))
+    return ' '.join(details)
 
   def HandleCouldNotApply(self, change):
     """Handler for when Paladin fails to apply a change.

@@ -715,11 +715,9 @@ class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
 
   def _PerformStage(self):
     if not self.success and self._build_config['important']:
-      stage, exception, _traceback = results_lib.Results.GetFirstTraceback()
       # This message is sent along with the failed status to the master to
       # indicate a failure.
-      self.message = CommitQueueSyncStage.pool.GetValidationFailedMessage(
-          stage, exception)
+      self.message = CommitQueueSyncStage.pool.GetValidationFailedMessage()
 
     super(CommitQueueCompletionStage, self)._PerformStage()
 

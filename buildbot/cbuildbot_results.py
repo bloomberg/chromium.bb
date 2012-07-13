@@ -220,13 +220,11 @@ class _Results(object):
 
       self._previous[record[0]] = record
 
-  def GetFirstTraceback(self):
-    """Get the first exception that failed the build.
-
-    If no exceptions occurred, returns (None, None, None).
+  def GetTracebacks(self):
+    """Get a list of the exceptions that failed the build.
 
     Returns:
-       (failed_stage, exception, traceback)
+       A list of (failed_stage, exception, traceback) tuples.
        failed_stage: The name of the first stage that failed.
        exception: The exception object thrown by the failure.
        traceback: The full traceback for the failure.
@@ -236,8 +234,7 @@ class _Results(object):
       # result is the exception object and description is a string containing
       # the full traceback.
       if result not in (self.SUCCESS, self.FORGIVEN):
-        return name, result, description
-    return None, None, None
+        yield name, result, description
 
   def Report(self, out, archive_urls=None, current_version=None):
     """Generate a user friendly text display of the results data."""
@@ -291,12 +288,10 @@ class _Results(object):
         out.write('@@@STEP_LINK@Artifacts[%s]@%s@@@\n' % (board, url))
       out.write(line)
 
-    failed_stage, _, first_traceback = self.GetFirstTraceback()
-    if first_traceback:
-      out.write('\n')
-      out.write('Failed in stage %s:\n' % failed_stage)
-      out.write('\n')
-      out.write(first_traceback)
-      out.write('\n')
+    for failed_stage, _, traceback in self.GetTracebacks():
+      if failed_stage and traceback:
+        out.write('\nFailed in stage %s:\n\n' % failed_stage)
+        out.write(traceback)
+        out.write('\n')
 
 Results = _Results()

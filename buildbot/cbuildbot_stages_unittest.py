@@ -1356,13 +1356,13 @@ class BuildStagesResultsTest(unittest.TestCase):
 
     # Store off a known set of results and generate a report
     results_lib.Results.Clear()
-    results_lib.Results.Record('Pass', results_lib.Results.SUCCESS, time=1)
-    results_lib.Results.Record('Pass2', results_lib.Results.SUCCESS, time=2)
-    results_lib.Results.Record('Fail', self.failException, time=3)
+    results_lib.Results.Record('Sync', results_lib.Results.SUCCESS, time=1)
+    results_lib.Results.Record('Build', results_lib.Results.SUCCESS, time=2)
+    results_lib.Results.Record('Test', self.failException, time=3)
     result = cros_build_lib.CommandResult(cmd=['/bin/false', '/nosuchdir'],
                                           returncode=2)
     results_lib.Results.Record(
-        'FailRunCommand',
+        'Archive',
         cros_build_lib.RunCommandError(
             'Command "/bin/false /nosuchdir" failed.\n',
             result), time=4)
@@ -1375,20 +1375,21 @@ class BuildStagesResultsTest(unittest.TestCase):
         "************************************************************\n"
         "** Stage Results\n"
         "************************************************************\n"
-        "** PASS Pass (0:00:01)\n"
+        "** PASS Sync (0:00:01)\n"
         "************************************************************\n"
-        "** PASS Pass2 (0:00:02)\n"
+        "** PASS Build (0:00:02)\n"
         "************************************************************\n"
-        "** FAIL Fail (0:00:03) with Exception\n"
+        "** FAIL Test (0:00:03) with Exception\n"
         "************************************************************\n"
-        "** FAIL FailRunCommand (0:00:04) in /bin/false\n"
-        "************************************************************\n")
+        "** FAIL Archive (0:00:04) in /bin/false\n"
+        "************************************************************\n"
+    )
 
     expectedLines = expectedResults.split('\n')
     actualLines = results.getvalue().split('\n')
 
     # Break out the asserts to be per item to make debugging easier
-    for i in xrange(len(expectedLines)):
+    for i in xrange(min(len(actualLines), len(expectedLines))):
       self.assertEqual(expectedLines[i], actualLines[i])
     self.assertEqual(len(expectedLines), len(actualLines))
 
@@ -1432,13 +1433,18 @@ class BuildStagesResultsTest(unittest.TestCase):
         "Failed in stage Test:\n"
         "\n"
         "failException Msg\n"
-        "Line 2\n")
+        "Line 2\n"
+        "\n"
+        "Failed in stage Archive:\n"
+        "\n"
+        "FailRunCommand msg\n"
+   )
 
     expectedLines = expectedResults.split('\n')
     actualLines = results.getvalue().split('\n')
 
     # Break out the asserts to be per item to make debugging easier
-    for i in xrange(len(expectedLines)):
+    for i in xrange(min(len(actualLines), len(expectedLines))):
       self.assertEqual(expectedLines[i], actualLines[i])
     self.assertEqual(len(expectedLines), len(actualLines))
 
