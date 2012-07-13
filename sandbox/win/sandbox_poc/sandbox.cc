@@ -5,9 +5,9 @@
 #include <windows.h>
 #include <tchar.h>
 #include <shellapi.h>
-#include "sandbox/sandbox_poc/sandbox.h"
+#include "sandbox/win/sandbox_poc/sandbox.h"
 #include "base/logging.h"
-#include "sandbox/sandbox_poc/main_ui_window.h"
+#include "sandbox/win/sandbox_poc/main_ui_window.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_factory.h"
 

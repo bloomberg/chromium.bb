@@ -5,6 +5,6 @@
 #ifndef SANDBOX_SANDBOX_POC_SANDBOX_H__
 #define SANDBOX_SANDBOX_POC_SANDBOX_H__
 
-#include "sandbox/sandbox_poc/resource.h"
+#include "sandbox/win/sandbox_poc/resource.h"
 
 #endif  // SANDBOX_SANDBOX_POC_SANDBOX_H__

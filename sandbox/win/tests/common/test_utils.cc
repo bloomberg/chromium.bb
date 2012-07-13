@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/tests/common/test_utils.h"
+#include "sandbox/win/tests/common/test_utils.h"
 
 #include <winioctl.h>
 

@@ -9,7 +9,7 @@
 #include "sandbox/win/src/sandbox_factory.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/win_utils.h"
-#include "sandbox/tests/common/controller.h"
+#include "sandbox/win/tests/common/controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {

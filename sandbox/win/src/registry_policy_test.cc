@@ -11,7 +11,7 @@
 #include "sandbox/win/src/sandbox_factory.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/win_utils.h"
-#include "sandbox/tests/common/controller.h"
+#include "sandbox/win/tests/common/controller.h"
 
 namespace {
 

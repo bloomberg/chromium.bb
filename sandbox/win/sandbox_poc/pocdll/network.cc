@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/sandbox_poc/pocdll/exports.h"
-#include "sandbox/sandbox_poc/pocdll/utils.h"
+#include "sandbox/win/sandbox_poc/pocdll/exports.h"
+#include "sandbox/win/sandbox_poc/pocdll/utils.h"
 
 // This file contains the tests used to verify the security of the network.
 

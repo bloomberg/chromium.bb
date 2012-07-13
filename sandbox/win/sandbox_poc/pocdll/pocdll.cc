@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 
-#include "sandbox/sandbox_poc/pocdll/exports.h"
-#include "sandbox/sandbox_poc/pocdll/utils.h"
+#include "sandbox/win/sandbox_poc/pocdll/exports.h"
+#include "sandbox/win/sandbox_poc/pocdll/utils.h"
 
 BOOL APIENTRY DllMain(HMODULE module,
                       DWORD reason_for_call,

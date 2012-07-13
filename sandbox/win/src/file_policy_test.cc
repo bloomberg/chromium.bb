@@ -14,8 +14,8 @@
 #include "sandbox/win/src/sandbox_factory.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/win_utils.h"
-#include "sandbox/tests/common/controller.h"
-#include "sandbox/tests/common/test_utils.h"
+#include "sandbox/win/tests/common/controller.h"
+#include "sandbox/win/tests/common/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #define BINDNTDLL(name) \

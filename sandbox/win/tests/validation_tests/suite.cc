@@ -10,7 +10,7 @@
 
 #include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "sandbox/tests/common/controller.h"
+#include "sandbox/win/tests/common/controller.h"
 
 #pragma comment(lib, "shlwapi.lib")
 

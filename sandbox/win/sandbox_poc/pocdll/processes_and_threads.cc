@@ -4,8 +4,8 @@
 
 #include <windows.h>
 #include <Tlhelp32.h>
-#include "sandbox/sandbox_poc/pocdll/exports.h"
-#include "sandbox/sandbox_poc/pocdll/utils.h"
+#include "sandbox/win/sandbox_poc/pocdll/exports.h"
+#include "sandbox/win/sandbox_poc/pocdll/utils.h"
 
 // This file contains the tests used to verify the security of threads and
 // processes.

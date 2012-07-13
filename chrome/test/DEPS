@@ -20,7 +20,7 @@ include_rules = [
   "+grit",  # For generated headers
   "+media/audio",
   "+sandbox/win/src",
-  "+sandbox/tests",
+  "+sandbox/win/tests",
   "+webkit/glue",
   "+webkit/plugins",
 ]

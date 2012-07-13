@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "sandbox/tests/common/controller.h"
+#include "sandbox/win/tests/common/controller.h"
 
 int wmain(int argc, wchar_t **argv) {
   if (argc >= 2) {

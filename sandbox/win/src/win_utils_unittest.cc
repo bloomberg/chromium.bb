@@ -6,7 +6,7 @@
 
 #include "base/win/scoped_handle.h"
 #include "sandbox/win/src/win_utils.h"
-#include "sandbox/tests/common/test_utils.h"
+#include "sandbox/win/tests/common/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(WinUtils, IsReparsePoint) {

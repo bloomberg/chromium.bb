@@ -8,7 +8,7 @@
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/target_services.h"
 #include "sandbox/win/src/sandbox_factory.h"
-#include "sandbox/tests/common/controller.h"
+#include "sandbox/win/tests/common/controller.h"
 
 namespace sandbox {
 

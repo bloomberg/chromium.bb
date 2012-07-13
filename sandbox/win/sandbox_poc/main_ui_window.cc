@@ -12,9 +12,9 @@
 #include <algorithm>
 #include <sstream>
 
-#include "sandbox/sandbox_poc/main_ui_window.h"
+#include "sandbox/win/sandbox_poc/main_ui_window.h"
 #include "base/logging.h"
-#include "sandbox/sandbox_poc/resource.h"
+#include "sandbox/win/sandbox_poc/resource.h"
 #include "sandbox/win/src/acl.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/win_utils.h"

@@ -5,7 +5,7 @@
 #include "sandbox/win/src/dep.h"
 
 #include "sandbox/win/src/sandbox_utils.h"
-#include "sandbox/tests/common/controller.h"
+#include "sandbox/win/tests/common/controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {

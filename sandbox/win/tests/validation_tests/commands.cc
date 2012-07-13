@@ -5,9 +5,9 @@
 #include <windows.h>
 #include <string>
 
-#include "sandbox/tests/validation_tests/commands.h"
+#include "sandbox/win/tests/validation_tests/commands.h"
 
-#include "sandbox/tests/common/controller.h"
+#include "sandbox/win/tests/common/controller.h"
 
 namespace {
 

@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include <malloc.h>
-#include "sandbox/sandbox_poc/pocdll/exports.h"
-#include "sandbox/sandbox_poc/pocdll/utils.h"
+#include "sandbox/win/sandbox_poc/pocdll/exports.h"
+#include "sandbox/win/sandbox_poc/pocdll/utils.h"
 
 // This file contains the tests used to verify if it's possible to DOS or crash
 // the machine. All tests that can impact the stability of the machine should
