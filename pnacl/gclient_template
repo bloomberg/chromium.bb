@@ -1,6 +1,6 @@
 solutions = [
   { "name": "dummydir",
-    "url" : "http://src.chromium.org/native_client/trunk/src/native_client/tools/llvm/dummydir",
+    "url" : "http://src.chromium.org/native_client/trunk/src/native_client/pnacl/dummydir",
   },
 ]
 
