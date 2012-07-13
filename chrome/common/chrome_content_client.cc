@@ -40,7 +40,7 @@
 #if defined(OS_WIN)
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
-#include "sandbox/win/src/sandbox.h"
+#include "sandbox/src/sandbox.h"
 #elif defined(OS_MACOSX)
 #include "chrome/common/chrome_sandbox_type_mac.h"
 #endif

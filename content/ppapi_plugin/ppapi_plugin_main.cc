@@ -14,7 +14,7 @@
 #include "ppapi/proxy/proxy_module.h"
 
 #if defined(OS_WIN)
-#include "sandbox/win/src/sandbox.h"
+#include "sandbox/src/sandbox.h"
 #endif
 
 #if defined(OS_LINUX)

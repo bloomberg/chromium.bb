@@ -37,7 +37,7 @@
 #include "crypto/nss_util.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media.h"
-#include "sandbox/win/src/sandbox_types.h"
+#include "sandbox/src/sandbox_types.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/win/dpi.h"

@@ -9,7 +9,7 @@
   'conditions': [
     [ 'OS=="win"', {
       'includes': [
-        'win/sandbox_win.gypi',
+        'sandbox_win.gypi',
       ],
     }],
     [ 'OS=="linux"', {

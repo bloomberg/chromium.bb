@@ -318,7 +318,7 @@ BOOL LowIntegrityToken::Impersonate() {
     return ok;
   }
 
-  // TODO(stoyan): sandbox/win/src/restricted_token_utils.cc has
+  // TODO(stoyan): sandbox/src/restricted_token_utils.cc has
   // SetTokenIntegrityLevel function already.
   base::win::ScopedHandle impersonation_token(impersonation_token_handle);
   PSID integrity_sid = NULL;

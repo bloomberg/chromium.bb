@@ -15,7 +15,7 @@
 #include "content/worker/worker_thread.h"
 
 #if defined(OS_WIN)
-#include "sandbox/win/src/sandbox.h"
+#include "sandbox/src/sandbox.h"
 #endif
 
 // Mainline routine for running as the worker process.

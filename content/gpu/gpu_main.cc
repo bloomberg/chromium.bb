@@ -30,7 +30,7 @@
 
 #if defined(OS_WIN)
 #include "content/common/gpu/media/dxva_video_decode_accelerator.h"
-#include "sandbox/win/src/sandbox.h"
+#include "sandbox/src/sandbox.h"
 #endif
 
 #if defined(USE_X11)

@@ -1,5 +1,5 @@
 include_rules = [
   "+content/public/utility",
-  "+sandbox/win/src",
+  "+sandbox/src",
   "+webkit/glue",
 ]

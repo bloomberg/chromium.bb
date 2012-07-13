@@ -9,7 +9,7 @@ include_rules = [
   "+ppapi/c",
   "+ppapi/proxy",
   "+ppapi/shared_impl",
-  "+sandbox/win/src",
+  "+sandbox/src",
   "+skia",
   "+webkit/extensions",
   "+webkit/forms",  # Defines some types that are marshalled over IPC.

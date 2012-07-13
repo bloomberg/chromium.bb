@@ -13,7 +13,7 @@
 #include "content/utility/utility_thread_impl.h"
 
 #if defined(OS_WIN)
-#include "sandbox/win/src/sandbox.h"
+#include "sandbox/src/sandbox.h"
 #endif
 
 // Mainline routine for running as the utility process.

@@ -12,7 +12,7 @@
 #include "chrome/app/metro_driver_win.h"
 #include "content/public/app/startup_helper_win.h"
 #include "content/public/common/result_codes.h"
-#include "sandbox/win/src/sandbox_factory.h"
+#include "sandbox/src/sandbox_factory.h"
 
 int RunChrome(HINSTANCE instance) {
   bool exit_now = true;

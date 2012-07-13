@@ -20,7 +20,7 @@
 
 #if defined(OS_WIN)
 #include "content/public/app/startup_helper_win.h"
-#include "sandbox/win/src/sandbox_types.h"
+#include "sandbox/src/sandbox_types.h"
 #endif  // defined(OS_WIN)
 
 class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {

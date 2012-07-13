@@ -6,7 +6,7 @@ include_rules = [
   "+ppapi/proxy",
   "+ppapi/shared_impl",
   "+remoting/client/plugin",
-  "+sandbox/win/src",
+  "+sandbox/src",
   "+skia",
   "+webkit/forms",  # Defines some types that are marshalled over IPC.
   "+webkit/glue",
