@@ -833,7 +833,7 @@
             '../ui/views/views.gyp:views',
           ],
         }],
-        ['os_posix == 1 and OS != "mac"', {
+        ['os_posix == 1 and OS != "mac" and OS != "android"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {
               'dependencies': [
@@ -2266,7 +2266,7 @@
             '../ui/aura/aura.gyp:test_support_aura',
           ],
         }],
-        ['os_posix == 1 and OS != "mac"', {
+        ['os_posix == 1 and OS != "mac" and OS != "android"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {
               'dependencies': [
@@ -3312,7 +3312,7 @@
             'common/time_format_browsertest.cc',
           ],
         }],
-        ['os_posix == 1 and OS != "mac"', {
+        ['os_posix == 1 and OS != "mac" and OS != "android"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {
               'dependencies': [
@@ -3556,7 +3556,7 @@
             'chrome'
           ],
         }],
-        ['os_posix == 1 and OS != "mac"', {
+        ['os_posix == 1 and OS != "mac" and OS != "android"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {
               'dependencies': [
@@ -3763,7 +3763,7 @@
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
-        ['os_posix == 1 and OS != "mac"', {
+        ['os_posix == 1 and OS != "mac" and OS != "android"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {
               'dependencies': [
@@ -4281,7 +4281,7 @@
                 '../ui/views/views.gyp:views',
               ],
             }],
-            ['os_posix == 1 and OS != "mac"', {
+            ['os_posix == 1 and OS != "mac" and OS != "android"', {
               'conditions': [
                 ['linux_use_tcmalloc==1', {
                   'dependencies': [

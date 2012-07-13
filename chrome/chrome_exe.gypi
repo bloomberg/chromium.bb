@@ -68,7 +68,7 @@
           # Don't put the 'chrome' target in 'all' on android
           'suppress_wildcard': 1,
         }],
-        ['os_posix == 1 and OS != "mac"', {
+        ['os_posix == 1 and OS != "mac" and OS != "android"', {
           'actions': [
             {
               'action_name': 'manpage',

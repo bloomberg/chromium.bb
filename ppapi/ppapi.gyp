@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -17,7 +17,7 @@
       # TODO(ajwong): For internal pepper plugins, which are statically linked
       # into chrome, do we want to build w/o -fPIC?  If so, how can we express
       # that in the build system?
-      ['os_posix == 1 and OS != "mac"', {
+      ['os_posix == 1 and OS != "mac" and OS != "android"', {
         'cflags': ['-fPIC', '-fvisibility=hidden'],
 
         # This is needed to make the Linux shlib build happy. Without this,
