@@ -4527,6 +4527,42 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
 
     return panels
 
+  def RestoreOnline(self):
+    """Returns the device from offline mode if GoOffline was used."""
+
+    assert PyUITest.IsChromeOS()
+
+    # Restores etherent connection
+    stdout, stderr = self.RunSuperuserActionOnChromeOS('TeardownBackchannel')
+
+    if hasattr(self, 'bc_cellular_enabled') and self.bc_cellular_enabled:
+      self.ToggleNetworkDevice('cellular', True)
+    if hasattr(self, 'bc_wifi_enabled') and self.bc_wifi_enabled:
+      self.ToggleNetworkDevice('wifi', True)
+
+    assert 'RuntimeError' not in stderr, stderr
+
+  def GoOffline(self):
+    """Puts device in offline mode.
+
+    The device is put into offline mode by disabling all network interfaces
+    but keeping the the wired ethernet interface up and faking shill/flimflam
+    into thinking there is no ethernet interface by renaming the interface.
+    This is so we can keep ssh connections over the wired connection alive.
+    """
+    assert PyUITest.IsChromeOS()
+    net_info = self.GetNetworkInfo()
+    self.bc_wifi_enabled = net_info.get('wifi_enabled')
+    self.bc_cellular_enabled = net_info.get('cellular_enabled')
+
+    if self.bc_cellular_enabled:
+      self.ToggleNetworkDevice('cellular', False)
+    if self.bc_wifi_enabled:
+      self.ToggleNetworkDevice('wifi', False)
+
+    stdout, stderr = self.RunSuperuserActionOnChromeOS('SetupBackchannel')
+    assert 'RuntimeError' not in stderr, stderr
+
   def GetNetworkInfo(self):
     """Get details about ethernet, wifi, and cellular networks on chromeos.
 

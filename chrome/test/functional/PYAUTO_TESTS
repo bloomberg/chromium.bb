@@ -295,6 +295,7 @@
       'chromeos_browser',
       'chromeos_crosh',
       'chromeos_file_browser',
+      'chromeos_offline',
       'chromeos_power',
       'chromeos_prefs',
       'chromeos_security',

@@ -16,6 +16,7 @@ import logging
 import optparse
 import os
 import shutil
+import subprocess
 import sys
 import time
 
@@ -27,6 +28,7 @@ from autotest.cros import cryptohome
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 from pyauto import AUTO_CLEAR_LOCAL_STATE_MAGIC_FILE
 
+TEMP_BACKCHANNEL_FILE = '/tmp/pyauto_network_backchannel_file'
 
 class SuidAction(object):
   """Helper to perform some super-user actions on ChromeOS."""
@@ -118,6 +120,69 @@ class SuidAction(object):
     else:
       logging.debug('Failed to create %s. Session manager will not clear local '
                     'state on startup.' % AUTO_CLEAR_LOCAL_STATE_MAGIC_FILE)
+
+  def _GetEthInterfaces(self):
+    """Returns a list of the eth* interfaces detected by the device."""
+    # Assumes ethernet interfaces all have "eth" in the name.
+    import pyudev
+    return sorted([iface.sys_name for iface in
+                   pyudev.Context().list_devices(subsystem='net')
+                   if 'eth' in iface.sys_name])
+
+  def _Renameif(self, old_iface, new_iface, mac_address):
+    """Renames the interface with mac_address from old_iface to new_iface.
+
+    Args:
+      old_iface: The name of the interface you want to change.
+      new_iface: The name of the interface you want to change to.
+      mac_address:  The mac address of the interface being changed.
+    """
+    subprocess.call(['stop', 'flimflam'])
+    subprocess.call(['ifconfig', old_iface, 'down'])
+    subprocess.call(['nameif', new_iface, mac_address])
+    subprocess.call(['ifconfig', new_iface, 'up'])
+    subprocess.call(['start', 'flimflam'])
+
+    # Check and make sure interfaces have been renamed
+    eth_ifaces = self._GetEthInterfaces()
+    if new_iface not in eth_ifaces:
+      raise RuntimeError('Interface %s was not renamed to %s' %
+                         (old_iface, new_iface))
+    elif old_iface in eth_ifaces:
+      raise RuntimeError('Old iface %s is still present' % old_iface)
+
+  def SetupBackchannel(self):
+    """Renames the connected ethernet interface to eth_test for offline mode
+       testing.  Does nothing if no connected interface is found.
+    """
+    # Return the interface with ethernet connected or returns if none found.
+    for iface in self._GetEthInterfaces():
+      with open('/sys/class/net/%s/operstate' % iface, 'r') as fp:
+        if 'up' in fp.read():
+          eth_iface = iface
+          break
+    else:
+      return
+
+    # Write backup file to be used by TeardownBackchannel to restore the
+    # interface names.
+    with open(TEMP_BACKCHANNEL_FILE, 'w') as fpw:
+      with open('/sys/class/net/%s/address' % eth_iface) as fp:
+        mac_address = fp.read().strip()
+        fpw.write('%s, %s' % (eth_iface, mac_address))
+
+    self._Renameif(eth_iface, 'eth_test', mac_address)
+
+  def TeardownBackchannel(self):
+    """Restores the eth interface names if SetupBackchannel was called."""
+    if not os.path.isfile(TEMP_BACKCHANNEL_FILE):
+      return
+
+    with open(TEMP_BACKCHANNEL_FILE, 'r') as fp:
+      eth_iface, mac_address = fp.read().split(',')
+
+    self._Renameif('eth_test', eth_iface, mac_address)
+    os.remove(TEMP_BACKCHANNEL_FILE)
 
 
 if __name__ == '__main__':
