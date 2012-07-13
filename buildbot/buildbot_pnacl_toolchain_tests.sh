@@ -25,7 +25,7 @@ set -o errexit
 # We could try to check out an old frontend to rebuild the pexes
 # to avoid rolling the archive REV for such cases.
 # http://code.google.com/p/nativeclient/issues/detail?id=2899
-ARCHIVED_PEXE_SCONS_REV=9129
+ARCHIVED_PEXE_SCONS_REV=9132
 # This hopefully needs to be updated rarely, it contains pexe from
 # the sandboxed llc/gold builds
 ARCHIVED_PEXE_TRANSLATOR_REV=9103
