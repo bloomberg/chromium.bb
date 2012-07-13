@@ -313,13 +313,6 @@ PP_Bool PPB_Flash_Proxy::SetCrashData(PP_Instance instance,
                                       PP_Var value) {
   switch (key) {
     case PP_FLASHCRASHKEY_URL:
-#if defined(OS_WIN)
-      // TODO(raymes): This may be breaking crash reporting on Windows, see:
-      // See https://code.google.com/p/chromium/issues/detail?id=135480.
-      // Disable temporarily.
-      return PP_FALSE;
-#endif
-
       StringVar *url_string_var(StringVar::FromPPVar(value));
       if (!url_string_var)
         return PP_FALSE;

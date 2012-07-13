@@ -622,6 +622,8 @@ TEST_PPAPI_OUT_OF_PROCESS(Flash_GetCommandLineArgs)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetDeviceID)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetSettingInt)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetSetting)
+// No in-process test for SetCrashData.
+TEST_PPAPI_OUT_OF_PROCESS(Flash_SetCrashData)
 
 TEST_PPAPI_IN_PROCESS(WebSocket_IsWebSocket)
 TEST_PPAPI_IN_PROCESS(WebSocket_UninitializedPropertiesAccess)

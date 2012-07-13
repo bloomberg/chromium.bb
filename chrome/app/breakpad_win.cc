@@ -42,6 +42,9 @@
 
 namespace breakpad_win {
 
+// TODO(raymes): Modify the way custom crash info is stored. g_custom_entries
+// is way too too fragile. See
+// https://code.google.com/p/chromium/issues/detail?id=137062.
 std::vector<google_breakpad::CustomInfoEntry>* g_custom_entries = NULL;
 size_t g_num_of_experiments_offset = 0;
 size_t g_experiment_chunks_offset = 0;
@@ -373,7 +376,8 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
       CommandLine::ForCurrentProcess()->argv(), &switches);
   SetCommandLine2(&switches[0], switches.size());
 
-  if (type == L"renderer" || type == L"plugin" || type == L"gpu-process") {
+  if (type == L"renderer" || type == L"plugin" || type == L"ppapi" ||
+      type == L"gpu-process") {
     g_num_of_views_offset = g_custom_entries->size();
     g_custom_entries->push_back(
         google_breakpad::CustomInfoEntry(L"num-views", L""));
@@ -387,7 +391,7 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
           base::StringPrintf(L"url-chunk-%i", i).c_str(), L""));
     }
 
-    if (type == L"plugin") {
+    if (type == L"plugin" || type == L"ppapi") {
       std::wstring plugin_path =
           CommandLine::ForCurrentProcess()->GetSwitchValueNative("plugin-path");
       if (!plugin_path.empty())
