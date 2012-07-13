@@ -4,7 +4,12 @@
 
 #include "content/public/common/sandbox_init.h"
 
-#if defined(OS_LINUX) && defined(__x86_64__)
+#if defined(__i386__) || defined(__x86_64__)
+
+// This is an assert for GYP
+#if !defined(OS_LINUX)
+  #error "Linux specific file compiled on non Linux OS!"
+#endif
 
 #include <asm/unistd.h>
 #include <errno.h>
@@ -28,12 +33,26 @@
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 
 // These are fairly new and not defined in all headers yet.
+#if defined(__x86_64__)
+
 #ifndef __NR_process_vm_readv
   #define __NR_process_vm_readv 310
 #endif
 
 #ifndef __NR_process_vm_writev
   #define __NR_process_vm_writev 311
+#endif
+
+#elif defined(__i386__)
+
+#ifndef __NR_process_vm_readv
+  #define __NR_process_vm_readv 347
+#endif
+
+#ifndef __NR_process_vm_writev
+  #define __NR_process_vm_writev 348
+#endif
+
 #endif
 
 namespace {
@@ -116,7 +135,9 @@ bool IsFileSystemSyscall(int sysno) {
   }
 }
 
-playground2::Sandbox::ErrorCode GpuProcessPolicy(int sysno) {
+#if defined(__x86_64__)
+// x86_64 only because it references system calls that are multiplexed on IA32.
+playground2::Sandbox::ErrorCode GpuProcessPolicy_x86_64(int sysno) {
   switch(sysno) {
     case __NR_read:
     case __NR_ioctl:
@@ -184,7 +205,8 @@ playground2::Sandbox::ErrorCode GpuProcessPolicy(int sysno) {
   }
 }
 
-playground2::Sandbox::ErrorCode FlashProcessPolicy(int sysno) {
+// x86_64 only because it references system calls that are multiplexed on IA32.
+playground2::Sandbox::ErrorCode FlashProcessPolicy_x86_64(int sysno) {
   switch (sysno) {
     case __NR_futex:
     case __NR_write:
@@ -244,15 +266,16 @@ playground2::Sandbox::ErrorCode FlashProcessPolicy(int sysno) {
       if (IsFileSystemSyscall(sysno)) {
         return ENOENT;
       }
-      // In any other case crash the program with our SIGSYS handler
+      // In any other case crash the program with our SIGSYS handler.
       return playground2::Sandbox::ErrorCode(CrashSIGSYS_Handler, NULL);
   }
 }
+#endif
 
 playground2::Sandbox::ErrorCode BlacklistPtracePolicy(int sysno) {
   if (sysno < static_cast<int>(MIN_SYSCALL) ||
       sysno > static_cast<int>(MAX_SYSCALL)) {
-    // TODO(jln) we should not have to do that in a trivial policy
+    // TODO(jln) we should not have to do that in a trivial policy.
     return ENOSYS;
   }
   switch (sysno) {
@@ -267,49 +290,95 @@ playground2::Sandbox::ErrorCode BlacklistPtracePolicy(int sysno) {
   }
 }
 
-bool ShouldEnableGPUSandbox() {
-  // Default setting is: enabled for Linux, disabled for Chrome OS.
-  // '--disable-gpu-sandbox' takes precedence over '--enable-gpu-sandbox'.
-#if defined(OS_CHROMEOS)
-  bool res = false;
-#else
-  bool res = true;
-#endif
-
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
-  if (command_line.HasSwitch(switches::kEnableGpuSandbox)) {
-    res = true;
+// Allow all syscalls.
+// This will still deny x32 or IA32 calls in 64 bits mode or
+// 64 bits system calls in compatibility mode.
+playground2::Sandbox::ErrorCode AllowAllPolicy(int sysno) {
+  if (sysno < static_cast<int>(MIN_SYSCALL) ||
+      sysno > static_cast<int>(MAX_SYSCALL)) {
+    // TODO(jln) we should not have to do that in a trivial policy.
+    return ENOSYS;
+  } else {
+    return playground2::Sandbox::SB_ALLOWED;
   }
-  if (command_line.HasSwitch(switches::kDisableGpuSandbox)) {
-    res = false;
-  }
-
-  return res;
 }
 
-}  // anonymous namespace
-
-namespace content {
-
-void InitializeSandbox() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
-
+// Is the sandbox fully disabled for this process?
+bool ShouldDisableSandbox(const CommandLine& command_line,
+                          const std::string& process_type) {
   if (command_line.HasSwitch(switches::kNoSandbox) ||
-      command_line.HasSwitch(switches::kDisableSeccompFilterSandbox))
-    return;
+      command_line.HasSwitch(switches::kDisableSeccompFilterSandbox)) {
+    return true;
+  }
 
 #if !defined(OS_CHROMEOS)
+  // On non ChromeOS we never enable the sandbox AT ALL unless
+  // CHROME_ENABLE_SECCOMP is in the environment.
   // TODO(jorgelo): remove this when seccomp BPF is included
   // in an upstream release Linux kernel.
   static const char kEnableSeccomp[] = "CHROME_ENABLE_SECCOMP";
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
   if (!env->HasVar(kEnableSeccomp))
-    return;
+    return true;
 #endif
+
+  if (process_type == switches::kGpuProcess) {
+  // The GPU sandbox is disabled by default in ChromeOS, enabled by default on
+  // generic Linux.
+  // TODO(jorgelo): when we feel comfortable, make this a policy decision
+  // instead. (i.e. move this to GetProcessSyscallPolicy) and return an
+  // AllowAllPolicy for lack of "--enable-gpu-sandbox".
+#if defined(OS_CHROMEOS)
+    bool should_disable = true;
+#else
+    bool should_disable = false;
+#endif
+    if (command_line.HasSwitch(switches::kEnableGpuSandbox))
+      should_disable = false;
+    if (command_line.HasSwitch(switches::kDisableGpuSandbox))
+      should_disable = true;
+    return should_disable;
+  }
+
+  return false;
+}
+
+playground2::Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
+    const CommandLine& command_line,
+    const std::string& process_type) {
+#if defined(__x86_64__)
+  if (process_type == switches::kGpuProcess) {
+    return GpuProcessPolicy_x86_64;
+  }
+
+  if (process_type == switches::kPpapiPluginProcess) {
+    // TODO(jln): figure out what to do with non-Flash PPAPI
+    // out-of-process plug-ins.
+    return FlashProcessPolicy_x86_64;
+  }
+
+  if (process_type == switches::kRendererProcess ||
+      process_type == switches::kWorkerProcess) {
+    return BlacklistPtracePolicy;
+  }
+  NOTREACHED();
+  // This will be our default if we need one.
+  return AllowAllPolicy;
+#else
+  // On IA32, we only have a small blacklist at the moment.
+  (void) process_type;
+  return BlacklistPtracePolicy;
+#endif  // __x86_64__
+}
+
+void InitializeSandbox_x86() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+
+  if (ShouldDisableSandbox(command_line, process_type))
+    return;
 
   // No matter what, InitializeSandbox() should always be called before threads
   // are started.
@@ -340,10 +409,6 @@ void InitializeSandbox() {
     return;
   }
 
-  if (process_type == switches::kGpuProcess &&
-      !ShouldEnableGPUSandbox())
-    return;
-
   // TODO(jln): find a way for the Zygote processes under the setuid sandbox to
   // have a /proc fd and pass it here.
   // Passing -1 as the /proc fd since we have no special way to have it for
@@ -353,20 +418,8 @@ void InitializeSandbox() {
     return;
   }
 
-  playground2::Sandbox::EvaluateSyscall SyscallPolicy = NULL;
-
-  if (process_type == switches::kGpuProcess) {
-    SyscallPolicy = GpuProcessPolicy;
-  } else if (process_type == switches::kPpapiPluginProcess) {
-    // TODO(jln): figure out what to do with non-Flash PPAPI
-    // out-of-process plug-ins.
-    SyscallPolicy = FlashProcessPolicy;
-  } else if (process_type == switches::kRendererProcess ||
-             process_type == switches::kWorkerProcess) {
-    SyscallPolicy = BlacklistPtracePolicy;
-  } else {
-    NOTREACHED();
-  }
+  playground2::Sandbox::EvaluateSyscall SyscallPolicy =
+      GetProcessSyscallPolicy(command_line, process_type);
 
   playground2::Sandbox::setSandboxPolicy(SyscallPolicy, NULL);
   playground2::Sandbox::startSandbox();
@@ -383,15 +436,16 @@ void InitializeSandbox() {
 #endif
 }
 
-}  // namespace content
+}  // anonymous namespace
 
-#else
+#endif  // defined(__i386__) || defined(__x86_64__)
 
 namespace content {
 
 void InitializeSandbox() {
+#if defined(__i386__) || defined(__x86_64__)
+  InitializeSandbox_x86();
+#endif
 }
 
 }  // namespace content
-
-#endif
