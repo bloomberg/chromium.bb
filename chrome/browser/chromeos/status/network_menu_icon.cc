@@ -155,7 +155,7 @@ const gfx::ImageSkia* BadgeForNetworkTechnology(
   if (id == kUnknownBadgeType)
     return NULL;
   else
-    return ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
+    return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
 }
 
 const SkBitmap GetEmptyBitmapOfSameSize(const gfx::ImageSkiaRep& reference) {
@@ -271,7 +271,7 @@ class NetworkMenuIconSource : public gfx::ImageSkiaSource {
     if (type_ == NetworkMenuIcon::ARCS) {
       if (index_ >= kNumArcsImages)
         return gfx::ImageSkiaRep();
-      images = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      images = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           color_ == NetworkMenuIcon::COLOR_DARK ?
           IDR_STATUSBAR_NETWORK_ARCS_DARK : IDR_STATUSBAR_NETWORK_ARCS_LIGHT);
       width = images->width();
@@ -280,7 +280,7 @@ class NetworkMenuIconSource : public gfx::ImageSkiaSource {
       if (index_ >= kNumBarsImages)
         return gfx::ImageSkiaRep();
 
-      images = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      images = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           color_ == NetworkMenuIcon::COLOR_DARK ?
           IDR_STATUSBAR_NETWORK_BARS_DARK : IDR_STATUSBAR_NETWORK_BARS_LIGHT);
       width = images->width();
@@ -300,13 +300,14 @@ class NetworkMenuIconSource : public gfx::ImageSkiaSource {
   }
 
   gfx::Size size() const {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     // NeworkMenuIcons all have the same size in DIP for arc/bars.
     if (type_ == NetworkMenuIcon::ARCS) {
-      gfx::Size size = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      gfx::Size size = rb.GetImageSkiaNamed(
           IDR_STATUSBAR_NETWORK_ARCS_DARK)->size();
       return gfx::Size(size.width(), size.height() / kNumArcsImages);
     } else {
-      gfx::Size size = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      gfx::Size size = rb.GetImageSkiaNamed(
           IDR_STATUSBAR_NETWORK_BARS_DARK)->size();
       return gfx::Size(size.width(), size.height() / kNumBarsImages);
     }
@@ -332,266 +333,44 @@ gfx::ImageSkia CreateVpnImage() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkIcon
-// TODO(stevenjb): Separate class implementation from the definition.
 
 // Sets up and generates an ImageSkia for a Network icon.
 class NetworkIcon {
  public:
   // Default constructor is used by the status bar icon (NetworkMenuIcon).
-  explicit NetworkIcon(NetworkMenuIcon::ResourceColorTheme color)
-      : state_(STATE_UNKNOWN),
-        resource_color_theme_(color),
-        strength_index_(-1),
-        top_left_badge_(NULL),
-        top_right_badge_(NULL),
-        bottom_left_badge_(NULL),
-        bottom_right_badge_(NULL),
-        is_status_bar_(true),
-        connected_network_(NULL),
-        roaming_state_(ROAMING_STATE_UNKNOWN) {
-  }
+  explicit NetworkIcon(NetworkMenuIcon::ResourceColorTheme color);
 
   // Service path constructor for cached network service icons.
   NetworkIcon(const std::string& service_path,
-              NetworkMenuIcon::ResourceColorTheme color)
-      : service_path_(service_path),
-        state_(STATE_UNKNOWN),
-        resource_color_theme_(color),
-        strength_index_(-1),
-        top_left_badge_(NULL),
-        top_right_badge_(NULL),
-        bottom_left_badge_(NULL),
-        bottom_right_badge_(NULL),
-        is_status_bar_(false),
-        connected_network_(NULL),
-        roaming_state_(ROAMING_STATE_UNKNOWN) {
-  }
+              NetworkMenuIcon::ResourceColorTheme color);
 
-  ~NetworkIcon() {
-  }
+  ~NetworkIcon();
 
   // Resets the icon state.
-  void ClearIconAndBadges() {
-    icon_ = gfx::ImageSkia();
-    top_left_badge_ = NULL;
-    top_right_badge_ = NULL;
-    bottom_left_badge_ = NULL;
-    bottom_right_badge_ = NULL;
-  }
+  void ClearIconAndBadges();
 
   // Resets the saved state to force an update.
-  void SetDirty() {
-    state_ = STATE_UNKNOWN;
-    strength_index_ = -1;
-  }
+  void SetDirty();
 
   // Determines whether or not the associated network might be dirty and if so
   // updates and generates the icon. Does nothing if network no longer exists.
-  void Update() {
-    chromeos::NetworkLibrary* cros =
-        chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-    // First look for a visible network.
-    const Network* network = cros->FindNetworkByPath(service_path_);
-    if (!network) {
-      // If not a visible network, check for a remembered network.
-      network = cros->FindRememberedNetworkByPath(service_path_);
-      if (!network) {
-        LOG(WARNING) << "Unable to find network:" << service_path_;
-        return;
-      }
-    }
-
-    // Determine whether or not we need to update the icon.
-    bool dirty = image_.empty();
-
-    // If the network state has changed, the icon needs updating.
-    if (state_ != network->state()) {
-      state_ = network->state();
-      dirty = true;
-    }
-
-    ConnectionType type = network->type();
-    if (type == TYPE_WIFI || type == TYPE_WIMAX || type == TYPE_CELLULAR) {
-      if (UpdateWirelessStrengthIndex(network))
-        dirty = true;
-    }
-
-    if (type == TYPE_CELLULAR) {
-      if (UpdateCellularState(network))
-        dirty = true;
-    }
-
-    if (type == TYPE_VPN) {
-      if (cros->connected_network() != connected_network_) {
-        connected_network_ = cros->connected_network();
-        dirty = true;
-      }
-    }
-
-    if (dirty) {
-      // Set the icon and badges based on the network.
-      UpdateIcon(network);
-      // Generate the image from the icon.
-      GenerateImage();
-    }
-  }
+  void Update();
 
   // Sets up the base icon image.
-  void SetIcon(const Network* network) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-
-    switch (network->type()) {
-      case TYPE_ETHERNET: {
-        icon_ = *rb.GetImageSkiaNamed(IDR_STATUSBAR_WIRED);
-        break;
-      }
-      case TYPE_WIFI: {
-        const WifiNetwork* wifi =
-            static_cast<const WifiNetwork*>(network);
-        if (strength_index_ == -1)
-          strength_index_ = WifiStrengthIndex(wifi);
-        icon_ = NetworkMenuIcon::GetImage(
-            NetworkMenuIcon::ARCS, strength_index_, resource_color_theme_);
-        break;
-      }
-      case TYPE_WIMAX: {
-        const WimaxNetwork* wimax =
-            static_cast<const WimaxNetwork*>(network);
-        if (strength_index_ == -1)
-          strength_index_ =  WimaxStrengthIndex(wimax);
-        icon_ = NetworkMenuIcon::GetImage(
-            NetworkMenuIcon::BARS, strength_index_, resource_color_theme_);
-        break;
-      }
-      case TYPE_CELLULAR: {
-        const CellularNetwork* cellular =
-            static_cast<const CellularNetwork*>(network);
-        if (strength_index_ == -1)
-          strength_index_ = CellularStrengthIndex(cellular);
-        icon_ = NetworkMenuIcon::GetImage(
-            NetworkMenuIcon::BARS, strength_index_, resource_color_theme_);
-        break;
-      }
-      case TYPE_VPN: {
-        icon_ = *rb.GetImageSkiaNamed(IDR_STATUSBAR_VPN);
-        break;
-      }
-      default: {
-        LOG(WARNING) << "Request for icon for unsupported type: "
-                     << network->type();
-        icon_ = *rb.GetImageSkiaNamed(IDR_STATUSBAR_WIRED);
-        break;
-      }
-    }
-  }
+  void SetIcon(const Network* network);
 
   // Sets up the various badges:
   // top_left: cellular roaming
   // top_right: libcros warning
   // bottom_left: VPN
   // bottom_right: disconnected / secure / technology / warning
-  void SetBadges(const Network* network) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    chromeos::NetworkLibrary* cros =
-        chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-
-    bool use_dark_icons = resource_color_theme_ == NetworkMenuIcon::COLOR_DARK;
-    switch (network->type()) {
-      case TYPE_ETHERNET: {
-        if (network->disconnected()) {
-          bottom_right_badge_ =
-              rb.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
-        }
-        break;
-      }
-      case TYPE_WIFI: {
-        const WifiNetwork* wifi =
-            static_cast<const WifiNetwork*>(network);
-        if (wifi->encrypted() && use_dark_icons)
-          bottom_right_badge_ = rb.GetImageSkiaNamed(
-              IDR_STATUSBAR_NETWORK_SECURE_DARK);
-        break;
-      }
-      case TYPE_WIMAX: {
-        top_left_badge_ = rb.GetImageSkiaNamed(use_dark_icons ?
-             IDR_STATUSBAR_NETWORK_4G_DARK : IDR_STATUSBAR_NETWORK_4G_LIGHT);
-        break;
-      }
-      case TYPE_CELLULAR: {
-        const CellularNetwork* cellular =
-            static_cast<const CellularNetwork*>(network);
-        if (cellular->roaming_state() == ROAMING_STATE_ROAMING &&
-            !cros->IsCellularAlwaysInRoaming()) {
-          // For cellular that always in roaming don't show roaming badge.
-          bottom_right_badge_ = rb.GetImageSkiaNamed(use_dark_icons ?
-              IDR_STATUSBAR_NETWORK_ROAMING_DARK :
-              IDR_STATUSBAR_NETWORK_ROAMING_LIGHT);
-        }
-        if (!cellular->connecting())
-          top_left_badge_ = BadgeForNetworkTechnology(cellular,
-                                                      resource_color_theme_);
-        break;
-      }
-      default:
-        break;
-    }
-    // Display the VPN badge too.
-    if (resource_color_theme_ == NetworkMenuIcon::COLOR_DARK &&
-        cros->virtual_network() &&
-        (cros->virtual_network()->connected() ||
-         cros->virtual_network()->connecting())) {
-      bottom_left_badge_ = rb.GetImageSkiaNamed(kVpnBadgeId);
-    }
-  }
+  void SetBadges(const Network* network);
 
   // Clears any previous state then sets the base icon and badges.
-  void UpdateIcon(const Network* network) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    chromeos::NetworkLibrary* cros =
-        chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-
-    ClearIconAndBadges();
-
-    if (network->type() != TYPE_VPN) {
-      SetIcon(network);
-      SetBadges(network);
-      return;
-    }
-
-    // VPN should never be the primiary active network. This is used for
-    // the icon next to a connected or disconnected VPN.
-    const Network* connected_network = cros->connected_network();
-    if (connected_network && connected_network->type() != TYPE_VPN) {
-      // Set the icon and badges for the connected network.
-      SetIcon(connected_network);
-      SetBadges(connected_network);
-    } else {
-      // Use the ethernet icon for VPN when not connected.
-      icon_ = *rb.GetImageSkiaNamed(IDR_STATUSBAR_WIRED);
-      // We can be connected to a VPN, even when there is no connected
-      // underlying network. In that case, for the status bar, show the
-      // disconnected badge.
-      if (is_status_bar_) {
-        bottom_right_badge_ =
-            rb.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
-      }
-    }
-    // Overlay the VPN badge.
-    bottom_left_badge_ = rb.GetImageSkiaNamed(kVpnBadgeId);
-  }
+  void UpdateIcon(const Network* network);
 
   // Generates the image. Call after setting the icon and badges.
-  void GenerateImage() {
-    if (icon_.empty())
-      return;
-
-    image_ = NetworkMenuIcon::GenerateImageFromComponents(
-        icon_,
-        top_left_badge_,
-        top_right_badge_,
-        bottom_left_badge_,
-        bottom_right_badge_);
-  }
+  void GenerateImage();
 
   const gfx::ImageSkia GetImage() const { return image_; }
 
@@ -611,46 +390,11 @@ class NetworkIcon {
 
  private:
   // Updates strength_index_ for wifi or cellular networks.
-  // Returns true if strength_index_ changed.
-  bool UpdateWirelessStrengthIndex(const Network* network) {
-    bool dirty = false;
-    ConnectionType type = network->type();
-    int index = 0;
-    if (type == TYPE_WIFI) {
-      index = WifiStrengthIndex(
-          static_cast<const WifiNetwork*>(network));
-    } else if (type == TYPE_WIMAX) {
-        index = WimaxStrengthIndex(
-            static_cast<const WimaxNetwork*>(network));
-    } else if (type == TYPE_CELLULAR) {
-      index = CellularStrengthIndex(
-          static_cast<const CellularNetwork*>(network));
-    }
-    if (index != strength_index_) {
-      strength_index_ = index;
-      dirty = true;
-    }
-    return dirty;
-  }
+  // Returns true if |strength_index_| changed.
+  bool UpdateWirelessStrengthIndex(const Network* network);
 
   // Updates the local state for cellular networks.
-  bool UpdateCellularState(const Network* network) {
-    if (network->type() != TYPE_CELLULAR)
-      return false;
-    bool dirty = false;
-    const CellularNetwork* cellular =
-        static_cast<const CellularNetwork*>(network);
-    const gfx::ImageSkia* technology_badge = BadgeForNetworkTechnology(
-        cellular, resource_color_theme_);
-    if (technology_badge != top_left_badge_) {
-      dirty = true;
-    }
-    if (cellular->roaming_state() != roaming_state_) {
-      roaming_state_ = cellular->roaming_state();
-      dirty = true;
-    }
-    return dirty;
-  }
+  bool UpdateCellularState(const Network* network);
 
   std::string service_path_;
   ConnectionState state_;
@@ -668,6 +412,282 @@ class NetworkIcon {
 
   DISALLOW_COPY_AND_ASSIGN(NetworkIcon);
 };
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkIcon
+
+NetworkIcon::NetworkIcon(NetworkMenuIcon::ResourceColorTheme color)
+    : state_(STATE_UNKNOWN),
+      resource_color_theme_(color),
+      strength_index_(-1),
+      top_left_badge_(NULL),
+      top_right_badge_(NULL),
+      bottom_left_badge_(NULL),
+      bottom_right_badge_(NULL),
+      is_status_bar_(true),
+      connected_network_(NULL),
+      roaming_state_(ROAMING_STATE_UNKNOWN) {
+}
+
+NetworkIcon::NetworkIcon(const std::string& service_path,
+                         NetworkMenuIcon::ResourceColorTheme color)
+    : service_path_(service_path),
+      state_(STATE_UNKNOWN),
+      resource_color_theme_(color),
+      strength_index_(-1),
+      top_left_badge_(NULL),
+      top_right_badge_(NULL),
+      bottom_left_badge_(NULL),
+      bottom_right_badge_(NULL),
+      is_status_bar_(false),
+      connected_network_(NULL),
+      roaming_state_(ROAMING_STATE_UNKNOWN) {
+}
+
+NetworkIcon::~NetworkIcon() {
+}
+
+void NetworkIcon::ClearIconAndBadges() {
+  icon_ = gfx::ImageSkia();
+  top_left_badge_ = NULL;
+  top_right_badge_ = NULL;
+  bottom_left_badge_ = NULL;
+  bottom_right_badge_ = NULL;
+}
+
+void NetworkIcon::SetDirty() {
+  state_ = STATE_UNKNOWN;
+  strength_index_ = -1;
+}
+
+void NetworkIcon::Update() {
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  // First look for a visible network.
+  const Network* network = cros->FindNetworkByPath(service_path_);
+  if (!network) {
+    // If not a visible network, check for a remembered network.
+    network = cros->FindRememberedNetworkByPath(service_path_);
+    if (!network) {
+      LOG(WARNING) << "Unable to find network:" << service_path_;
+      return;
+    }
+  }
+
+  // Determine whether or not we need to update the icon.
+  bool dirty = image_.empty();
+
+  // If the network state has changed, the icon needs updating.
+  if (state_ != network->state()) {
+    state_ = network->state();
+    dirty = true;
+  }
+
+  ConnectionType type = network->type();
+  if (type == TYPE_WIFI || type == TYPE_WIMAX || type == TYPE_CELLULAR) {
+    if (UpdateWirelessStrengthIndex(network))
+      dirty = true;
+  }
+
+  if (type == TYPE_CELLULAR) {
+    if (UpdateCellularState(network))
+      dirty = true;
+  }
+
+  if (type == TYPE_VPN) {
+    if (cros->connected_network() != connected_network_) {
+      connected_network_ = cros->connected_network();
+      dirty = true;
+    }
+  }
+
+  if (dirty) {
+    // Set the icon and badges based on the network.
+    UpdateIcon(network);
+    // Generate the image from the icon.
+    GenerateImage();
+  }
+}
+
+void NetworkIcon::SetIcon(const Network* network) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+
+  switch (network->type()) {
+    case TYPE_ETHERNET: {
+      icon_ = *rb.GetImageSkiaNamed(IDR_STATUSBAR_WIRED);
+      break;
+    }
+    case TYPE_WIFI: {
+      const WifiNetwork* wifi = static_cast<const WifiNetwork*>(network);
+      if (strength_index_ == -1)
+        strength_index_ = WifiStrengthIndex(wifi);
+      icon_ = NetworkMenuIcon::GetImage(
+          NetworkMenuIcon::ARCS, strength_index_, resource_color_theme_);
+      break;
+    }
+    case TYPE_WIMAX: {
+      const WimaxNetwork* wimax = static_cast<const WimaxNetwork*>(network);
+      if (strength_index_ == -1)
+        strength_index_ =  WimaxStrengthIndex(wimax);
+      icon_ = NetworkMenuIcon::GetImage(
+          NetworkMenuIcon::BARS, strength_index_, resource_color_theme_);
+      break;
+    }
+    case TYPE_CELLULAR: {
+      const CellularNetwork* cellular =
+          static_cast<const CellularNetwork*>(network);
+      if (strength_index_ == -1)
+        strength_index_ = CellularStrengthIndex(cellular);
+      icon_ = NetworkMenuIcon::GetImage(
+          NetworkMenuIcon::BARS, strength_index_, resource_color_theme_);
+      break;
+    }
+    case TYPE_VPN: {
+      icon_ = *rb.GetImageSkiaNamed(IDR_STATUSBAR_VPN);
+      break;
+    }
+    default: {
+      LOG(WARNING) << "Request for icon for unsupported type: "
+                   << network->type();
+      icon_ = *rb.GetImageSkiaNamed(IDR_STATUSBAR_WIRED);
+      break;
+    }
+  }
+}
+
+void NetworkIcon::SetBadges(const Network* network) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+
+  bool use_dark_icons = resource_color_theme_ == NetworkMenuIcon::COLOR_DARK;
+  switch (network->type()) {
+    case TYPE_ETHERNET: {
+      if (network->disconnected()) {
+        bottom_right_badge_ =
+            rb.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
+      }
+      break;
+    }
+    case TYPE_WIFI: {
+      const WifiNetwork* wifi = static_cast<const WifiNetwork*>(network);
+      if (wifi->encrypted() && use_dark_icons) {
+        bottom_right_badge_ = rb.GetImageSkiaNamed(
+            IDR_STATUSBAR_NETWORK_SECURE_DARK);
+      }
+      break;
+    }
+    case TYPE_WIMAX: {
+      top_left_badge_ = rb.GetImageSkiaNamed(use_dark_icons ?
+          IDR_STATUSBAR_NETWORK_4G_DARK : IDR_STATUSBAR_NETWORK_4G_LIGHT);
+      break;
+    }
+    case TYPE_CELLULAR: {
+      const CellularNetwork* cellular =
+            static_cast<const CellularNetwork*>(network);
+      if (cellular->roaming_state() == ROAMING_STATE_ROAMING &&
+          !cros->IsCellularAlwaysInRoaming()) {
+        // For cellular that always in roaming don't show roaming badge.
+        bottom_right_badge_ = rb.GetImageSkiaNamed(use_dark_icons ?
+            IDR_STATUSBAR_NETWORK_ROAMING_DARK :
+            IDR_STATUSBAR_NETWORK_ROAMING_LIGHT);
+      }
+      if (!cellular->connecting()) {
+        top_left_badge_ = BadgeForNetworkTechnology(cellular,
+                                                    resource_color_theme_);
+      }
+      break;
+    }
+    default:
+      break;
+  }
+  // Display the VPN badge too.
+  if (resource_color_theme_ == NetworkMenuIcon::COLOR_DARK &&
+      cros->virtual_network() &&
+      (cros->virtual_network()->connected() ||
+       cros->virtual_network()->connecting())) {
+    bottom_left_badge_ = rb.GetImageSkiaNamed(kVpnBadgeId);
+  }
+}
+
+void NetworkIcon::UpdateIcon(const Network* network) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+
+  ClearIconAndBadges();
+
+  if (network->type() != TYPE_VPN) {
+    SetIcon(network);
+    SetBadges(network);
+    return;
+  }
+
+  // VPN should never be the primiary active network. This is used for
+  // the icon next to a connected or disconnected VPN.
+  const Network* connected_network = cros->connected_network();
+  if (connected_network && connected_network->type() != TYPE_VPN) {
+    // Set the icon and badges for the connected network.
+    SetIcon(connected_network);
+    SetBadges(connected_network);
+  } else {
+    // Use the ethernet icon for VPN when not connected.
+    icon_ = *rb.GetImageSkiaNamed(IDR_STATUSBAR_WIRED);
+    // We can be connected to a VPN, even when there is no connected
+    // underlying network. In that case, for the status bar, show the
+    // disconnected badge.
+    if (is_status_bar_) {
+      bottom_right_badge_ =
+        rb.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
+    }
+  }
+  // Overlay the VPN badge.
+  bottom_left_badge_ = rb.GetImageSkiaNamed(kVpnBadgeId);
+}
+
+void NetworkIcon::GenerateImage() {
+  if (icon_.empty())
+    return;
+
+  image_ = NetworkMenuIcon::GenerateImageFromComponents(icon_, top_left_badge_,
+      top_right_badge_, bottom_left_badge_, bottom_right_badge_);
+}
+
+bool NetworkIcon::UpdateWirelessStrengthIndex(const Network* network) {
+  bool dirty = false;
+  ConnectionType type = network->type();
+  int index = 0;
+  if (type == TYPE_WIFI) {
+    index = WifiStrengthIndex(static_cast<const WifiNetwork*>(network));
+  } else if (type == TYPE_WIMAX) {
+    index = WimaxStrengthIndex(static_cast<const WimaxNetwork*>(network));
+  } else if (type == TYPE_CELLULAR) {
+    index = CellularStrengthIndex(static_cast<const CellularNetwork*>(network));
+  }
+  if (index != strength_index_) {
+    strength_index_ = index;
+    dirty = true;
+  }
+  return dirty;
+}
+
+bool NetworkIcon::UpdateCellularState(const Network* network) {
+  if (network->type() != TYPE_CELLULAR)
+    return false;
+  bool dirty = false;
+  const CellularNetwork* cellular =
+    static_cast<const CellularNetwork*>(network);
+  const gfx::ImageSkia* technology_badge = BadgeForNetworkTechnology(
+      cellular, resource_color_theme_);
+  if (technology_badge != top_left_badge_) {
+    dirty = true;
+  }
+  if (cellular->roaming_state() != roaming_state_) {
+    roaming_state_ = cellular->roaming_state();
+    dirty = true;
+  }
+  return dirty;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuIcon
@@ -817,7 +837,7 @@ void NetworkMenuIcon::SetIconAndText() {
 
 void NetworkMenuIcon::SetActiveNetworkIconAndText(const Network* network) {
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   bool animating = false;
   last_network_type_ = network->type();
 
@@ -863,7 +883,7 @@ void NetworkMenuIcon::SetActiveNetworkIconAndText(const Network* network) {
 }
 
 void NetworkMenuIcon::SetDisconnectedIconAndText() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   switch (last_network_type_) {
     case TYPE_ETHERNET:
       icon_->set_icon(*rb.GetImageSkiaNamed(IDR_STATUSBAR_WIRED));
