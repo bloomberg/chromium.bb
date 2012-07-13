@@ -219,10 +219,11 @@ string16 NativeTextfieldWin::GetSelectedText() const {
   return str;
 }
 
-void NativeTextfieldWin::SelectAll() {
-  // Select from the end to the front so that the first part of the text is
-  // always visible.
-  SetSel(GetTextLength(), 0);
+void NativeTextfieldWin::SelectAll(bool reversed) {
+  if (reversed)
+    SetSel(GetTextLength(), 0);
+  else
+    SetSel(0, GetTextLength());
 }
 
 void NativeTextfieldWin::ClearSelection() {
@@ -449,12 +450,12 @@ void NativeTextfieldWin::ExecuteCommand(int command_id) {
   ScopedFreeze freeze(this, GetTextObjectModel());
   OnBeforePossibleChange();
   switch (command_id) {
-    case IDS_APP_UNDO:       Undo();       break;
-    case IDS_APP_CUT:        Cut();        break;
-    case IDS_APP_COPY:       Copy();       break;
-    case IDS_APP_PASTE:      Paste();      break;
-    case IDS_APP_SELECT_ALL: SelectAll();  break;
-    default:                 NOTREACHED(); break;
+    case IDS_APP_UNDO:       Undo();           break;
+    case IDS_APP_CUT:        Cut();            break;
+    case IDS_APP_COPY:       Copy();           break;
+    case IDS_APP_PASTE:      Paste();          break;
+    case IDS_APP_SELECT_ALL: SelectAll(false); break;
+    default:                 NOTREACHED();     break;
   }
   OnAfterPossibleChange(true);
 }
@@ -1095,7 +1096,7 @@ void NativeTextfieldWin::OnAfterPossibleChange(bool should_redraw_text) {
       string16 text(GetText());
       ScopedSuspendUndo suspend_undo(GetTextObjectModel());
 
-      SelectAll();
+      SelectAll(true);
       ReplaceSel(reinterpret_cast<LPCTSTR>(text.c_str()), true);
       SetSel(original_sel);
     }

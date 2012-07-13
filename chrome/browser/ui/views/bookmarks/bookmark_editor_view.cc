@@ -120,7 +120,7 @@ bool BookmarkEditorView::Accept() {
   if (!IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK)) {
     if (details_.GetNodeType() != BookmarkNode::FOLDER) {
       // The url is invalid, focus the url field.
-      url_tf_->SelectAll();
+      url_tf_->SelectAll(true);
       url_tf_->RequestFocus();
     }
     return false;
@@ -259,7 +259,7 @@ void BookmarkEditorView::Show(gfx::NativeWindow parent_window) {
     ExpandAndSelect();
   GetWidget()->Show();
   // Select all the text in the name Textfield.
-  title_tf_->SelectAll();
+  title_tf_->SelectAll(true);
   // Give focus to the name Textfield.
   title_tf_->RequestFocus();
 }

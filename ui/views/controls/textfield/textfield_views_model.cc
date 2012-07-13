@@ -317,7 +317,7 @@ bool TextfieldViewsModel::SetText(const string16& text) {
     size_t old_cursor = GetCursorPosition();
     // SetText moves the cursor to the end.
     size_t new_cursor = text.length();
-    SelectAll();
+    SelectAll(false);
     // If there is a composition text, don't merge with previous edit.
     // Otherwise, force merge the edits.
     ExecuteAndRecordReplace(
@@ -439,10 +439,10 @@ void TextfieldViewsModel::SelectSelectionModel(const gfx::SelectionModel& sel) {
   render_text_->MoveCursorTo(sel);
 }
 
-void TextfieldViewsModel::SelectAll() {
+void TextfieldViewsModel::SelectAll(bool reversed) {
   if (HasCompositionText())
     ConfirmCompositionText();
-  render_text_->SelectAll();
+  render_text_->SelectAll(reversed);
 }
 
 void TextfieldViewsModel::SelectWord() {

@@ -107,6 +107,6 @@ void LoginView::OnAutofillDataAvailable(const string16& username,
   if (username_field_->text().empty()) {
     username_field_->SetText(username);
     password_field_->SetText(password);
-    username_field_->SelectAll();
+    username_field_->SelectAll(true);
   }
 }

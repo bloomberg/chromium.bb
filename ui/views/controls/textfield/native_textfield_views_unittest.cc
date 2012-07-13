@@ -352,7 +352,7 @@ TEST_F(NativeTextfieldViewsTest, ModelChangesTest) {
   EXPECT_TRUE(last_contents_.empty());
 
   EXPECT_EQ(string16(), textfield_->GetSelectedText());
-  textfield_->SelectAll();
+  textfield_->SelectAll(false);
   EXPECT_STR_EQ("this is a test", textfield_->GetSelectedText());
   EXPECT_TRUE(last_contents_.empty());
 }
@@ -523,7 +523,7 @@ TEST_F(NativeTextfieldViewsTest, InsertionDeletionTest) {
   EXPECT_STR_EQ("this is ", textfield_->text());
 
   // Select all and replace with "k".
-  textfield_->SelectAll();
+  textfield_->SelectAll(false);
   SendKeyEvent(ui::VKEY_K);
   EXPECT_STR_EQ("k", textfield_->text());
 
@@ -573,7 +573,7 @@ TEST_F(NativeTextfieldViewsTest, PasswordTest) {
   EXPECT_TRUE(last_contents_.empty());
 
   // Cut and copy should be disabled in the context menu.
-  model_->SelectAll();
+  model_->SelectAll(false);
   EXPECT_FALSE(IsCommandIdEnabled(IDS_APP_CUT));
   EXPECT_FALSE(IsCommandIdEnabled(IDS_APP_COPY));
 
@@ -756,7 +756,7 @@ TEST_F(NativeTextfieldViewsTest, ContextMenuDisplayTest) {
   EXPECT_TRUE(GetContextMenuModel());
   VerifyTextfieldContextMenuContents(false, GetContextMenuModel());
 
-  textfield_->SelectAll();
+  textfield_->SelectAll(false);
   VerifyTextfieldContextMenuContents(true, GetContextMenuModel());
 }
 
@@ -1075,7 +1075,7 @@ TEST_F(NativeTextfieldViewsTest, ReadOnlyTest) {
   EXPECT_EQ(5U, textfield_->GetCursorPosition());
   EXPECT_STR_EQ("two ", textfield_->GetSelectedText());
 
-  textfield_->SelectAll();
+  textfield_->SelectAll(false);
   EXPECT_STR_EQ(" one two three ", textfield_->GetSelectedText());
 
   // CUT&PASTE does not work, but COPY works
@@ -1099,7 +1099,7 @@ TEST_F(NativeTextfieldViewsTest, ReadOnlyTest) {
   EXPECT_STR_EQ(" four five six ", textfield_->text());
   EXPECT_TRUE(textfield_->GetSelectedText().empty());
 
-  textfield_->SelectAll();
+  textfield_->SelectAll(false);
   EXPECT_STR_EQ(" four five six ", textfield_->GetSelectedText());
 
   // Text field is unmodifiable and selection shouldn't change.

@@ -159,7 +159,7 @@ ui::GestureStatus NativeTextfieldViews::OnGestureEvent(
       OnAfterUserAction();
       return ui::GESTURE_STATUS_CONSUMED;
     case ui::ET_GESTURE_DOUBLE_TAP:
-      SelectAll();
+      SelectAll(false);
       return ui::GESTURE_STATUS_CONSUMED;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       OnBeforeUserAction();
@@ -370,9 +370,9 @@ string16 NativeTextfieldViews::GetSelectedText() const {
   return model_->GetSelectedText();
 }
 
-void NativeTextfieldViews::SelectAll() {
+void NativeTextfieldViews::SelectAll(bool reversed) {
   OnBeforeUserAction();
-  model_->SelectAll();
+  model_->SelectAll(reversed);
   OnCaretBoundsChanged();
   SchedulePaint();
   OnAfterUserAction();
@@ -618,7 +618,7 @@ void NativeTextfieldViews::ExecuteCommand(int command_id) {
       text_changed = model_->Delete();
       break;
     case IDS_APP_SELECT_ALL:
-      SelectAll();
+      SelectAll(false);
       break;
     default:
       textfield_->GetController()->ExecuteCommand(command_id);
@@ -927,7 +927,7 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
         break;
       case ui::VKEY_A:
         if (control) {
-          model_->SelectAll();
+          model_->SelectAll(false);
           cursor_changed = true;
         }
         break;
@@ -1177,7 +1177,7 @@ void NativeTextfieldViews::HandleMousePressEvent(const MouseEvent& event) {
         OnCaretBoundsChanged();
         break;
       case 2:
-        model_->SelectAll();
+        model_->SelectAll(false);
         OnCaretBoundsChanged();
         break;
       default:

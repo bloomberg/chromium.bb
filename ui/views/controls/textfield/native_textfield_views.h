@@ -94,7 +94,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   virtual void UpdateText() OVERRIDE;
   virtual void AppendText(const string16& text) OVERRIDE;
   virtual string16 GetSelectedText() const OVERRIDE;
-  virtual void SelectAll() OVERRIDE;
+  virtual void SelectAll(bool reversed) OVERRIDE;
   virtual void ClearSelection() OVERRIDE;
   virtual void UpdateBorder() OVERRIDE;
   virtual void UpdateTextColor() OVERRIDE;

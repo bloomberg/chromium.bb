@@ -125,7 +125,7 @@ void MessageBoxView::ViewHierarchyChanged(bool is_add,
                                           View* child) {
   if (child == this && is_add) {
     if (prompt_field_)
-      prompt_field_->SelectAll();
+      prompt_field_->SelectAll(true);
 
     GetWidget()->NotifyAccessibilityEvent(
         this, ui::AccessibilityTypes::EVENT_ALERT, true);

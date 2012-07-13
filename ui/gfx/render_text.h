@@ -226,9 +226,15 @@ class UI_EXPORT RenderText {
   // Returns true if the local point is over selected text.
   bool IsPointInSelection(const Point& point);
 
-  // Selects no text, all text, or the word at the current cursor position.
+  // Selects no text, keeping the current cursor position and caret affinity.
   void ClearSelection();
-  void SelectAll();
+
+  // Select the entire text range. If |reversed| is true, the range will end at
+  // the logical beginning of the text; this generally shows the leading portion
+  // of text that overflows its display area.
+  void SelectAll(bool reversed);
+
+  // Selects the word at the current cursor position.
   void SelectWord();
 
   const ui::Range& GetCompositionRange() const;

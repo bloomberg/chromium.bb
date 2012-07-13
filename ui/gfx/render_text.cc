@@ -521,18 +521,16 @@ void RenderText::ClearSelection() {
                                    selection_model_.caret_affinity()));
 }
 
-void RenderText::SelectAll() {
-  SelectionModel all;
-  if (GetTextDirection() == base::i18n::LEFT_TO_RIGHT)
-    all = SelectionModel(ui::Range(0, text().length()), CURSOR_FORWARD);
-  else
-    all = SelectionModel(ui::Range(text().length(), 0), CURSOR_BACKWARD);
-  SetSelectionModel(all);
+void RenderText::SelectAll(bool reversed) {
+  const size_t length = text().length();
+  const ui::Range all = reversed ? ui::Range(length, 0) : ui::Range(0, length);
+  const bool success = SelectRange(all);
+  DCHECK(success);
 }
 
 void RenderText::SelectWord() {
   if (obscured_) {
-    SelectAll();
+    SelectAll(false);
     return;
   }
 

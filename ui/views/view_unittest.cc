@@ -1044,7 +1044,7 @@ TEST_F(ViewTest, Textfield) {
   // Test selection related methods.
   textfield->SetText(kText);
   EXPECT_EQ(kEmptyString, textfield->GetSelectedText());
-  textfield->SelectAll();
+  textfield->SelectAll(false);
   EXPECT_EQ(kText, textfield->text());
   textfield->ClearSelection();
   EXPECT_EQ(kEmptyString, textfield->GetSelectedText());
@@ -1085,7 +1085,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   // Test cut.
   //
   ASSERT_TRUE(normal->GetTestingHandle());
-  normal->SelectAll();
+  normal->SelectAll(false);
   ::SendMessage(normal->GetTestingHandle(), WM_CUT, 0, 0);
 
   string16 result;
@@ -1094,7 +1094,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   normal->SetText(kNormalText);  // Let's revert to the original content.
 
   ASSERT_TRUE(read_only->GetTestingHandle());
-  read_only->SelectAll();
+  read_only->SelectAll(false);
   ::SendMessage(read_only->GetTestingHandle(), WM_CUT, 0, 0);
   result.clear();
   clipboard.ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
@@ -1102,7 +1102,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   EXPECT_EQ(kNormalText, result);
 
   ASSERT_TRUE(password->GetTestingHandle());
-  password->SelectAll();
+  password->SelectAll(false);
   ::SendMessage(password->GetTestingHandle(), WM_CUT, 0, 0);
   result.clear();
   clipboard.ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
@@ -1115,19 +1115,19 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
 
   // Let's start with read_only as the clipboard already contains the content
   // of normal.
-  read_only->SelectAll();
+  read_only->SelectAll(false);
   ::SendMessage(read_only->GetTestingHandle(), WM_COPY, 0, 0);
   result.clear();
   clipboard.ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
   EXPECT_EQ(kReadOnlyText, result);
 
-  normal->SelectAll();
+  normal->SelectAll(false);
   ::SendMessage(normal->GetTestingHandle(), WM_COPY, 0, 0);
   result.clear();
   clipboard.ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
   EXPECT_EQ(kNormalText, result);
 
-  password->SelectAll();
+  password->SelectAll(false);
   ::SendMessage(password->GetTestingHandle(), WM_COPY, 0, 0);
   result.clear();
   clipboard.ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
@@ -1143,22 +1143,22 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   // WM_KEYDOWN messages that we are not simulating here.
 
   // Attempting to copy kNormalText in a read-only text-field should fail.
-  read_only->SelectAll();
+  read_only->SelectAll(false);
   ::SendMessage(read_only->GetTestingHandle(), WM_KEYDOWN, 0, 0);
   wchar_t buffer[1024] = { 0 };
   ::GetWindowText(read_only->GetTestingHandle(), buffer, 1024);
   EXPECT_EQ(kReadOnlyText, string16(buffer));
 
-  password->SelectAll();
+  password->SelectAll(false);
   ::SendMessage(password->GetTestingHandle(), WM_PASTE, 0, 0);
   ::GetWindowText(password->GetTestingHandle(), buffer, 1024);
   EXPECT_EQ(kNormalText, string16(buffer));
 
   // Copy from read_only so the string we are pasting is not the same as the
   // current one.
-  read_only->SelectAll();
+  read_only->SelectAll(false);
   ::SendMessage(read_only->GetTestingHandle(), WM_COPY, 0, 0);
-  normal->SelectAll();
+  normal->SelectAll(false);
   ::SendMessage(normal->GetTestingHandle(), WM_PASTE, 0, 0);
   ::GetWindowText(normal->GetTestingHandle(), buffer, 1024);
   EXPECT_EQ(kReadOnlyText, string16(buffer));

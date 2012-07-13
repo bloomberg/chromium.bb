@@ -614,10 +614,7 @@ void OmniboxViewViews::GetSelectionBounds(string16::size_type* start,
 }
 
 void OmniboxViewViews::SelectAll(bool reversed) {
-  if (reversed)
-    textfield_->SelectRange(ui::Range(GetTextLength(), 0));
-  else
-    textfield_->SelectRange(ui::Range(0, GetTextLength()));
+  textfield_->SelectAll(reversed);
 }
 
 void OmniboxViewViews::RevertAll() {

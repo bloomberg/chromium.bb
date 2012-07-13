@@ -159,9 +159,9 @@ void Textfield::AppendText(const string16& text) {
     native_wrapper_->AppendText(text);
 }
 
-void Textfield::SelectAll() {
+void Textfield::SelectAll(bool reversed) {
   if (native_wrapper_)
-    native_wrapper_->SelectAll();
+    native_wrapper_->SelectAll(reversed);
 }
 
 string16 Textfield::GetSelectedText() const {
@@ -370,7 +370,7 @@ gfx::Size Textfield::GetPreferredSize() {
 }
 
 void Textfield::AboutToRequestFocusFromTabTraversal(bool reverse) {
-  SelectAll();
+  SelectAll(false);
 }
 
 bool Textfield::SkipDefaultKeyEventProcessing(const KeyEvent& e) {

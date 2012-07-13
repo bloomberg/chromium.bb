@@ -62,7 +62,7 @@ void EditSearchEngineDialog::Show(gfx::NativeWindow parent,
   views::Widget::CreateWindowWithParent(contents, parent);
   contents->GetWidget()->Show();
   contents->GetDialogClientView()->UpdateDialogButtons();
-  contents->title_tf_->SelectAll();
+  contents->title_tf_->SelectAll(true);
   contents->title_tf_->RequestFocus();
 }
 

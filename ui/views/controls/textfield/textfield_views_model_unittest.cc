@@ -276,12 +276,19 @@ TEST_F(TextfieldViewsModelTest, Selection) {
   EXPECT_STR_EQ("ELLO", model.GetSelectedText());
   model.ClearSelection();
   EXPECT_EQ(string16(), model.GetSelectedText());
-  model.SelectAll();
+
+  // SelectAll(false) selects towards the end.
+  model.SelectAll(false);
   EXPECT_STR_EQ("HELLO", model.GetSelectedText());
-  // SelectAll should select towards the end.
   gfx::SelectionModel sel;
   model.GetSelectionModel(&sel);
   EXPECT_EQ(ui::Range(0, 5), sel.selection());
+
+  // SelectAll(true) selects towards the beginning.
+  model.SelectAll(true);
+  EXPECT_STR_EQ("HELLO", model.GetSelectedText());
+  model.GetSelectionModel(&sel);
+  EXPECT_EQ(ui::Range(5, 0), sel.selection());
 
   // Select and move cursor
   model.SelectRange(ui::Range(1U, 3U));
@@ -293,10 +300,10 @@ TEST_F(TextfieldViewsModelTest, Selection) {
   EXPECT_EQ(3U, model.GetCursorPosition());
 
   // Select all and move cursor
-  model.SelectAll();
+  model.SelectAll(false);
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_LEFT, false);
   EXPECT_EQ(0U, model.GetCursorPosition());
-  model.SelectAll();
+  model.SelectAll(false);
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, false);
   EXPECT_EQ(5U, model.GetCursorPosition());
 }
@@ -337,7 +344,7 @@ TEST_F(TextfieldViewsModelTest, Selection_BidiWithNonSpacingMarks) {
 
   model.ClearSelection();
   EXPECT_EQ(string16(), model.GetSelectedText());
-  model.SelectAll();
+  model.SelectAll(false);
   EXPECT_EQ(WideToUTF16(L"abc\x05E9\x05BC\x05C1\x05B8\x05E0\x05B8"L"def"),
             model.GetSelectedText());
 #endif
@@ -380,7 +387,7 @@ TEST_F(TextfieldViewsModelTest, Selection_BidiWithNonSpacingMarks) {
 
   model.ClearSelection();
   EXPECT_EQ(string16(), model.GetSelectedText());
-  model.SelectAll();
+  model.SelectAll(false);
   EXPECT_EQ(WideToUTF16(L"a\x05E9"L"b"), model.GetSelectedText());
 }
 
@@ -468,7 +475,7 @@ TEST_F(TextfieldViewsModelTest, SetText) {
   EXPECT_STR_EQ("GOODBYE", model.GetText());
   // SetText move the cursor to the end of the new text.
   EXPECT_EQ(7U, model.GetCursorPosition());
-  model.SelectAll();
+  model.SelectAll(false);
   EXPECT_STR_EQ("GOODBYE", model.GetSelectedText());
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
   EXPECT_EQ(7U, model.GetCursorPosition());
@@ -515,7 +522,7 @@ TEST_F(TextfieldViewsModelTest, MAYBE_Clipboard) {
 
   // Cut on obscured (password) text should do nothing.
   model.render_text()->SetObscured(true);
-  model.SelectAll();
+  model.SelectAll(false);
   EXPECT_FALSE(model.Cut());
   clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &clipboard_text);
   EXPECT_EQ(initial_clipboard_text, clipboard_text);
@@ -523,7 +530,7 @@ TEST_F(TextfieldViewsModelTest, MAYBE_Clipboard) {
   EXPECT_STR_EQ("HELLO WORLD", model.GetSelectedText());
 
   // Copy on obscured text should do nothing.
-  model.SelectAll();
+  model.SelectAll(false);
   EXPECT_FALSE(model.Copy());
   clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &clipboard_text);
   EXPECT_EQ(initial_clipboard_text, clipboard_text);
@@ -542,7 +549,7 @@ TEST_F(TextfieldViewsModelTest, MAYBE_Clipboard) {
 
   // Copy with non-empty selection.
   model.Append(ASCIIToUTF16("HELLO WORLD"));
-  model.SelectAll();
+  model.SelectAll(false);
   model.Copy();
   clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &clipboard_text);
   EXPECT_STR_EQ("HELLO HELLO WORLD", clipboard_text);
@@ -975,7 +982,7 @@ TEST_F(TextfieldViewsModelTest, CompositionTextTest) {
   EXPECT_STR_EQ("678", model.GetText());
 
   model.SetCompositionText(composition);
-  model.SelectAll();
+  model.SelectAll(false);
   EXPECT_TRUE(composition_text_confirmed_or_cleared_);
   composition_text_confirmed_or_cleared_ = false;
   EXPECT_STR_EQ("678", model.GetText());

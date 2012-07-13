@@ -143,7 +143,7 @@ void TreeView::StartEditing(TreeModelNode* node) {
   LayoutEditor();
   SchedulePaintForNode(selected_node_);
   editor_->RequestFocus();
-  editor_->SelectAll();
+  editor_->SelectAll(false);
 
   // Listen for focus changes so that we can cancel editing.
   focus_manager_ = GetFocusManager();

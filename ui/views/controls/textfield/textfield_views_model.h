@@ -151,9 +151,11 @@ class VIEWS_EXPORT TextfieldViewsModel {
   // render_text_'s selection model is set to |sel|.
   void SelectSelectionModel(const gfx::SelectionModel& sel);
 
-  // Selects all text.
+  // Select the entire text range. If |reversed| is true, the range will end at
+  // the logical beginning of the text; this generally shows the leading portion
+  // of text that overflows its display area.
   // The current composition text will be confirmed.
-  void SelectAll();
+  void SelectAll(bool reversed);
 
   // Selects the word at which the cursor is currently positioned.
   // The current composition text will be confirmed.

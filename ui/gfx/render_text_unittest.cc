@@ -727,7 +727,38 @@ TEST_F(RenderTextTest, EdgeSelectionModels) {
   }
 }
 
-TEST_F(RenderTextTest, MoveCursorLeftRightWithSelection) {
+TEST_F(RenderTextTest, SelectAll) {
+  const wchar_t* const cases[] = {
+    L"abc",
+    L"a"L"\x5d0\x5d1",
+    L"a"L"\x5d1"L"b",
+    L"\x5d0\x5d1\x5d2",
+    L"\x5d0\x5d1"L"a",
+    L"\x5d0"L"a"L"\x5d1",
+  };
+
+  // Ensure that SelectAll respects the |reversed| argument regardless of
+  // application locale and text content directionality.
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  const SelectionModel expected_reversed(ui::Range(3, 0), CURSOR_FORWARD);
+  const SelectionModel expected_forwards(ui::Range(0, 3), CURSOR_BACKWARD);
+  const bool was_rtl = base::i18n::IsRTL();
+
+  for (size_t i = 0; i < 2; ++i) {
+    SetRTL(!base::i18n::IsRTL());
+    for (size_t j = 0; j < ARRAYSIZE_UNSAFE(cases); j++) {
+      render_text->SetText(WideToUTF16(cases[j]));
+      render_text->SelectAll(false);
+      EXPECT_EQ(render_text->selection_model(), expected_forwards);
+      render_text->SelectAll(true);
+      EXPECT_EQ(render_text->selection_model(), expected_reversed);
+    }
+  }
+
+  EXPECT_EQ(was_rtl, base::i18n::IsRTL());
+}
+
+  TEST_F(RenderTextTest, MoveCursorLeftRightWithSelection) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(WideToUTF16(L"abc\x05d0\x05d1\x05d2"));
   // Left arrow on select ranging (6, 4).
