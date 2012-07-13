@@ -190,8 +190,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<DevToolsUI>;
   if (url.host() == chrome::kChromeUIDialogHost)
     return &NewWebUI<ConstrainedWebDialogUI>;
-  if (url.host() == chrome::kChromeUIExtensionsFrameHost)
-    return &NewWebUI<ExtensionsUI>;
   if (url.host() == chrome::kChromeUIFlashHost)
     return &NewWebUI<FlashUI>;
   if (url.host() == chrome::kChromeUIGpuInternalsHost)
@@ -249,6 +247,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // Android does not support plugins for now.
   if (url.host() == chrome::kChromeUIPluginsHost)
     return &NewWebUI<PluginsUI>;
+#endif
+#if defined(ENABLE_EXTENSIONS)
+  if (url.host() == chrome::kChromeUIExtensionsFrameHost)
+    return &NewWebUI<ExtensionsUI>;
 #endif
 #if defined(ENABLE_PRINTING)
   if (url.host() == chrome::kChromeUIPrintHost &&

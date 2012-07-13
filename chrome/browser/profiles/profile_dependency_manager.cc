@@ -205,9 +205,11 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   DesktopNotificationServiceFactory::GetInstance();
 #endif
   DownloadServiceFactory::GetInstance();
+#if defined(ENABLE_EXTENSIONS)
   extensions::CommandServiceFactory::GetInstance();
   extensions::SuggestedLinksRegistryFactory::GetInstance();
   extensions::ExtensionSystemFactory::GetInstance();
+#endif
   FindBarStateFactory::GetInstance();
 #if defined(USE_AURA)
   GesturePrefsObserverFactoryAura::GetInstance();
