@@ -1,0 +1,2 @@
+# Dereferences NULL.
+CompositeFilterDeathTest.TestAddFilterFailCases
