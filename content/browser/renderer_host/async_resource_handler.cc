@@ -10,6 +10,7 @@
 #include "base/debug/alias.h"
 #include "base/hash_tables.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/shared_memory.h"
 #include "content/browser/debugger/devtools_netlog_observer.h"
 #include "content/browser/host_zoom_map_impl.h"
@@ -47,6 +48,11 @@ const int kMaxReadBufSize = 524288;
 // Maximum number of pending data messages sent to the renderer at any
 // given time for a given request.
 const int kMaxPendingDataMessages = 20;
+
+int CalcUsedPercentage(int bytes_read, int buffer_size) {
+  double ratio = static_cast<double>(bytes_read) / buffer_size;
+  return static_cast<int>(ratio * 100.0 + 0.5);  // Round to nearest integer.
+}
 
 }  // namespace
 
@@ -142,7 +148,6 @@ bool AsyncResourceHandler::OnRequestRedirected(int request_id,
     rdh_->delegate()->OnRequestRedirected(request_, filter_->resource_context(),
                                           response);
   }
-  *defer = true;
 
   DevToolsNetLogObserver::PopulateResponseInfo(request_, response);
   response->head.request_start = request_->creation_time();
@@ -224,6 +229,10 @@ bool AsyncResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
     DCHECK(read_buffer_->data());
     *buf = read_buffer_.get();
     *buf_size = next_buffer_size_;
+
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Net.AsyncResourceHandler_SharedIOBuffer_Alloc",
+        next_buffer_size_, kInitialReadBufSize, kMaxReadBufSize, 16);
   }
 
   return true;
@@ -234,6 +243,13 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int bytes_read,
   if (!bytes_read)
     return true;
   DCHECK(read_buffer_.get());
+
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Net.AsyncResourceHandler_SharedIOBuffer_Used",
+      bytes_read, 0, kMaxReadBufSize, 100);
+  UMA_HISTOGRAM_PERCENTAGE(
+      "Net.AsyncResourceHandler_SharedIOBuffer_UsedPercentage",
+      CalcUsedPercentage(bytes_read, read_buffer_->buffer_size()));
 
   if (read_buffer_->buffer_size() == bytes_read) {
     // The network layer has saturated our buffer. Next time, we should give it
@@ -329,6 +345,10 @@ void AsyncResourceHandler::WillSendData(bool* defer) {
     // the renderer to start processing them before resuming it.
     *defer = did_defer_ = true;
   }
+
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Net.AsyncResourceHandler_PendingDataCount",
+      pending_data_count_, 0, kMaxPendingDataMessages, kMaxPendingDataMessages);
 }
 
 void AsyncResourceHandler::ResumeIfDeferred() {
