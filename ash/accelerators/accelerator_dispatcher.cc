@@ -15,8 +15,10 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
+#include "ash/wm/event_rewriter_event_filter.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
+#include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/events.h"
@@ -33,15 +35,9 @@ bool IsKeyEvent(const MSG& msg) {
       msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN ||
       msg.message == WM_KEYUP || msg.message == WM_SYSKEYUP;
 }
-bool IsKeyRelease(const MSG& msg) {
-  return msg.message == WM_KEYUP || msg.message == WM_SYSKEYUP;
-}
 #elif defined(USE_X11)
 bool IsKeyEvent(const XEvent* xev) {
   return xev->type == KeyPress || xev->type == KeyRelease;
-}
-bool IsKeyRelease(const XEvent* xev) {
-  return xev->type == KeyRelease;
 }
 #endif
 
@@ -72,16 +68,27 @@ bool AcceleratorDispatcher::Dispatch(const base::NativeEvent& event) {
     return aura::Env::GetInstance()->GetDispatcher()->Dispatch(event);
 
   if (IsKeyEvent(event)) {
+    // Modifiers can be changed by the user preference, so we need to rewrite
+    // the event explicitly.
+    aura::KeyEvent key_event(event, false);
+    aura::EventFilter* event_rewriter =
+        ash::Shell::GetInstance()->event_rewriter_filter();
+    DCHECK(event_rewriter);
+    if (event_rewriter->PreHandleKeyEvent(associated_window_, &key_event))
+      return true;
+
     ash::AcceleratorController* accelerator_controller =
         ash::Shell::GetInstance()->accelerator_controller();
     if (accelerator_controller) {
-      ui::Accelerator accelerator(ui::KeyboardCodeFromNative(event),
-          ui::EventFlagsFromNative(event) & kModifierMask);
-      if (IsKeyRelease(event))
+      ui::Accelerator accelerator(key_event.key_code(),
+                                  key_event.flags() & kModifierMask);
+      if (key_event.type() == ui::ET_KEY_RELEASED)
         accelerator.set_type(ui::ET_KEY_RELEASED);
       if (accelerator_controller->Process(accelerator))
         return true;
     }
+
+    return nested_dispatcher_->Dispatch(key_event.native_event());
   }
 
   return nested_dispatcher_->Dispatch(event);
