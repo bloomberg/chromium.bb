@@ -134,7 +134,7 @@ class ChromeFrameAutomationProxyImpl::CFMsgDispatcher
 
 ChromeFrameAutomationProxyImpl::ChromeFrameAutomationProxyImpl(
     AutomationProxyCacheEntry* entry,
-    std::string channel_id, base::TimeDelta launch_timeout)
+    std::string channel_id, int launch_timeout)
     : AutomationProxy(launch_timeout, false), proxy_entry_(entry) {
   TRACE_EVENT_BEGIN_ETW("chromeframe.automationproxy", this, "");
 
@@ -251,10 +251,8 @@ void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
   // At same time we must destroy/stop the thread from another thread.
   std::string channel_id = AutomationProxy::GenerateChannelID();
   ChromeFrameAutomationProxyImpl* proxy =
-      new ChromeFrameAutomationProxyImpl(
-          this,
-          channel_id,
-          base::TimeDelta::FromMilliseconds(params->launch_timeout()));
+      new ChromeFrameAutomationProxyImpl(this, channel_id,
+                                         params->launch_timeout());
 
   // Ensure that the automation proxy actually respects our choice on whether
   // or not to check the version.

@@ -97,7 +97,7 @@ class AutomationMessageFilter : public IPC::ChannelProxy::MessageFilter {
 }  // anonymous namespace
 
 
-AutomationProxy::AutomationProxy(base::TimeDelta action_timeout,
+AutomationProxy::AutomationProxy(int action_timeout_ms,
                                  bool disconnect_on_failure)
     : app_launched_(true, false),
       initial_loads_complete_(true, false),
@@ -106,12 +106,13 @@ AutomationProxy::AutomationProxy(base::TimeDelta action_timeout,
       perform_version_check_(false),
       disconnect_on_failure_(disconnect_on_failure),
       channel_disconnected_on_failure_(false),
-      action_timeout_(action_timeout),
+      action_timeout_(
+          TimeDelta::FromMilliseconds(action_timeout_ms)),
       listener_thread_id_(0) {
   // base::WaitableEvent::TimedWait() will choke if we give it a negative value.
   // Zero also seems unreasonable, since we need to wait for IPC, but at
   // least it is legal... ;-)
-  DCHECK_GE(action_timeout.InMilliseconds(), 0);
+  DCHECK_GE(action_timeout_ms, 0);
   listener_thread_id_ = base::PlatformThread::CurrentId();
   InitializeHandleTracker();
   InitializeThread();

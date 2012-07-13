@@ -213,7 +213,7 @@ class StartupTest : public UIPerfTest {
         ASSERT_TRUE(browser_proxy.get());
 
         if (browser_proxy->GetInitialLoadTimes(
-              TestTimeouts::action_max_timeout(),
+              TestTimeouts::action_max_timeout_ms(),
               &min_start,
               &max_stop,
               &times) &&

@@ -56,8 +56,7 @@ class DOMAutomationTest : public InProcessBrowserTest {
  public:
   DOMAutomationTest() {
     EnableDOMAutomation();
-    JavaScriptExecutionController::set_timeout(
-        base::TimeDelta::FromSeconds(30));
+    JavaScriptExecutionController::set_timeout(30000);
   }
 
   GURL GetTestURL(const char* path) {

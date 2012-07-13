@@ -191,7 +191,7 @@ class FrameRateTest
     // that flag kHasRedirect is enabled for the current test.
     ASSERT_TRUE(WaitUntilJavaScriptCondition(
       tab, L"", L"window.domAutomationController.send(__initialized);",
-      TestTimeouts::large_test_timeout()));
+      TestTimeouts::large_test_timeout_ms()));
 
     if (HasFlag(kForceGpuComposited)) {
       ASSERT_TRUE(tab->NavigateToURLAsync(
@@ -204,7 +204,7 @@ class FrameRateTest
     // Block until the tests completes.
     ASSERT_TRUE(WaitUntilJavaScriptCondition(
         tab, L"", L"window.domAutomationController.send(!__running_all);",
-        TestTimeouts::large_test_timeout()));
+        TestTimeouts::large_test_timeout_ms()));
 
     // TODO(jbates): remove this check when ref builds are updated.
     if (!HasFlag(kUseReferenceBuild)) {

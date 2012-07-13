@@ -60,13 +60,14 @@ bool IsAudioOutputAvailable() {
 
 PPAPITestBase::TestFinishObserver::TestFinishObserver(
     RenderViewHost* render_view_host,
-    base::TimeDelta timeout)
+    int timeout_s)
     : finished_(false),
       waiting_(false),
-      timeout_(timeout) {
+      timeout_s_(timeout_s) {
   registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
                  content::Source<RenderViewHost>(render_view_host));
-  timer_.Start(FROM_HERE, timeout, this, &TestFinishObserver::OnTimeout);
+  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(timeout_s),
+               this, &TestFinishObserver::OnTimeout);
 }
 
 bool PPAPITestBase::TestFinishObserver::WaitForFinish() {
@@ -90,7 +91,8 @@ void PPAPITestBase::TestFinishObserver::Observe(
   TrimString(dom_op_details->json, "\"", &response);
   if (response == "...") {
     timer_.Stop();
-    timer_.Start(FROM_HERE, timeout_, this, &TestFinishObserver::OnTimeout);
+    timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(timeout_s_),
+                 this, &TestFinishObserver::OnTimeout);
   } else {
     result_ = response;
     finished_ = true;
@@ -230,8 +232,7 @@ void PPAPITestBase::RunTestURL(const GURL& test_url) {
   // any other value indicates completion (in this case it will start with
   // "PASS" or "FAIL"). This keeps us from timing out on waits for long tests.
   TestFinishObserver observer(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      base::TimeDelta::FromMilliseconds(kTimeoutMs));
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost(), kTimeoutMs);
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 

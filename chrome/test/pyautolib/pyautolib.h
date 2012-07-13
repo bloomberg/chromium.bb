@@ -179,20 +179,12 @@ class PyUITestBase : public UITestBase {
   std::string GetCookie(const GURL& cookie_url, int window_index = 0,
                         int tab_index = 0);
 
-  base::TimeDelta action_max_timeout() const {
-    return TestTimeouts::action_max_timeout();
-  }
-
   int action_max_timeout_ms() const {
-    return action_max_timeout().InMilliseconds();
-  }
-
-  base::TimeDelta large_test_timeout() const {
-    return TestTimeouts::large_test_timeout();
+    return TestTimeouts::action_max_timeout_ms();
   }
 
   int large_test_timeout_ms() const {
-    return large_test_timeout().InMilliseconds();
+    return TestTimeouts::large_test_timeout_ms();
   }
 
  protected:

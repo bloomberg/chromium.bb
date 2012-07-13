@@ -313,9 +313,7 @@ class TestChromeFrameAutomationProxyImpl
   TestChromeFrameAutomationProxyImpl()
         // 1 is an unneeded timeout.
       : ChromeFrameAutomationProxyImpl(
-          NULL,
-          AutomationProxy::GenerateChannelID(),
-          base::TimeDelta::FromMilliseconds(1)) {
+          NULL, AutomationProxy::GenerateChannelID(), 1) {
   }
   MOCK_METHOD3(
       SendAsAsync,

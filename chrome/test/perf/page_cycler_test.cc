@@ -201,7 +201,7 @@ class PageCyclerTest : public UIPerfTest {
     // Wait for the test to finish.
     ASSERT_TRUE(WaitUntilCookieValue(
         tab.get(), test_url, "__pc_done",
-        TestTimeouts::large_test_timeout(), "1"));
+        TestTimeouts::large_test_timeout_ms(), "1"));
 
     std::string cookie;
     ASSERT_TRUE(tab->GetCookieByName(test_url, "__pc_pages", &cookie));
@@ -211,7 +211,7 @@ class PageCyclerTest : public UIPerfTest {
     // Wait for the report.html to be loaded.
     ASSERT_TRUE(WaitUntilCookieValue(
         tab.get(), test_url, "__navigated_to_report",
-        TestTimeouts::action_max_timeout(), "1"));
+        TestTimeouts::action_max_timeout_ms(), "1"));
 
     // Get the timing cookie value from the DOM automation.
     std::wstring wcookie;

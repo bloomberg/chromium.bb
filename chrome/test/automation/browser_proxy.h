@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,9 +106,7 @@ class BrowserProxy : public AutomationResourceProxy {
   // Block the thread until the specified tab is the active tab.
   // |wait_timeout| is the timeout, in milliseconds, for waiting.
   // Returns false if the tab does not become active.
-  bool WaitForTabToBecomeActive(
-      int tab,
-      base::TimeDelta wait_timeout) WARN_UNUSED_RESULT;
+  bool WaitForTabToBecomeActive(int tab, int wait_timeout) WARN_UNUSED_RESULT;
 
   // Opens the FindInPage box. Note: If you just want to search within a tab
   // you don't need to call this function, just use FindInPage(...) directly.
@@ -182,7 +180,7 @@ class BrowserProxy : public AutomationResourceProxy {
   // the delay that WaitForInitialLoads waits for), and a list of all
   // finished timestamps into |stop_times|. Returns true on success.
   bool GetInitialLoadTimes(
-      base::TimeDelta timeout,
+      int timeout_ms,
       float* min_start_time,
       float* max_stop_time,
       std::vector<float>* stop_times);

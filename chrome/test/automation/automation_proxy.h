@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,7 @@ class AutomationMessageSender : public IPC::Sender {
 // a running instance of the app.
 class AutomationProxy : public IPC::Listener, public AutomationMessageSender {
  public:
-  AutomationProxy(base::TimeDelta action_timeout, bool disconnect_on_failure);
+  AutomationProxy(int action_timeout_ms, bool disconnect_on_failure);
   virtual ~AutomationProxy();
 
   // Creates a previously unused channel id.
@@ -192,16 +192,15 @@ class AutomationProxy : public IPC::Listener, public AutomationMessageSender {
       gfx::NativeWindow* external_tab_container,
       gfx::NativeWindow* tab);
 
-  base::TimeDelta action_timeout() const {
-    return action_timeout_;
+  int action_timeout_ms() const {
+    return static_cast<int>(action_timeout_.InMilliseconds());
   }
 
   // Sets the timeout for subsequent automation calls.
-  void set_action_timeout(base::TimeDelta timeout) {
-    DCHECK(timeout <= base::TimeDelta::FromMinutes(10))
-        << "10+ min of automation timeout "
-           "can make the test hang and be killed by buildbot";
-    action_timeout_ = timeout;
+  void set_action_timeout_ms(int timeout_ms) {
+    DCHECK(timeout_ms <= 10 * 60 * 1000 ) << "10+ min of automation timeout "
+        "can make the test hang and be killed by buildbot";
+    action_timeout_ = base::TimeDelta::FromMilliseconds(timeout_ms);
   }
 
   // Returns the server version of the server connected. You may only call this

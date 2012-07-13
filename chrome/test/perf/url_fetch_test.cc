@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ class UrlFetchTest : public UIPerfTest {
                const char* var_to_fetch,
                const std::string& wait_js_expr,
                const std::string& wait_js_frame_xpath,
-               base::TimeDelta wait_js_timeout,
+               int wait_js_timeout_ms,
                UrlFetchTestResult* result) {
     scoped_refptr<TabProxy> tab(GetActiveTab());
     ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(url));
@@ -54,13 +54,13 @@ class UrlFetchTest : public UIPerfTest {
       if (wait_cookie_value) {
         bool completed = WaitUntilCookieValue(
             tab.get(), url, wait_cookie_name,
-            TestTimeouts::large_test_timeout(),
+            TestTimeouts::large_test_timeout_ms(),
             wait_cookie_value);
         ASSERT_TRUE(completed);
       } else {
         result->cookie_value = WaitUntilCookieNonEmpty(
             tab.get(), url, wait_cookie_name,
-            TestTimeouts::large_test_timeout());
+            TestTimeouts::large_test_timeout_ms());
         ASSERT_TRUE(result->cookie_value.length());
       }
     } else if (!wait_js_expr.empty()) {
@@ -68,7 +68,7 @@ class UrlFetchTest : public UIPerfTest {
           tab.get(),
           UTF8ToWide(wait_js_frame_xpath),
           UTF8ToWide(wait_js_expr),
-          wait_js_timeout);
+          wait_js_timeout_ms);
       ASSERT_TRUE(completed);
     }
     if (var_to_fetch) {
@@ -161,7 +161,7 @@ TEST_F(UrlFetchTest, UrlFetch) {
           jsvar.length() > 0 ? jsvar.c_str() : NULL,
           js_expr,
           js_frame_xpath,
-          base::TimeDelta::FromMilliseconds(js_timeout_ms),
+          js_timeout_ms,
           &result);
 
   // Write out the cookie if requested

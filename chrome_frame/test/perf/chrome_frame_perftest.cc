@@ -1498,17 +1498,17 @@ bool RunSingleTestOutOfProc(const std::string& test_name) {
   if (!base::LaunchProcess(cmd_line, base::LaunchOptions(), &process_handle))
     return false;
 
-  base::TimeDelta test_terminate_timeout = base::TimeDelta::FromMinutes(1);
+  int test_terminate_timeout_ms = 60 * 1000;
   int exit_code = 0;
   if (!base::WaitForExitCodeWithTimeout(process_handle, &exit_code,
-                                        test_terminate_timeout)) {
-    LOG(ERROR) << "Test timeout (" << test_terminate_timeout.InMilliseconds()
-               << " ms) exceeded for " << test_name;
+    test_terminate_timeout_ms)) {
+      LOG(ERROR) << "Test timeout (" << test_terminate_timeout_ms
+        << " ms) exceeded for " << test_name;
 
-    exit_code = -1;  // Set a non-zero exit code to signal a failure.
+      exit_code = -1;  // Set a non-zero exit code to signal a failure.
 
-    // Ensure that the process terminates.
-    base::KillProcess(process_handle, -1, true);
+      // Ensure that the process terminates.
+      base::KillProcess(process_handle, -1, true);
   }
 
   base::CloseProcessHandle(process_handle);

@@ -56,7 +56,7 @@ class KrakenBenchmarkTest : public UIPerfTest {
  private:
   bool WaitUntilTestCompletes(TabProxy* tab, const GURL& test_url) {
     return WaitUntilCookieValue(tab, test_url, "__done",
-                                TestTimeouts::large_test_timeout(), "1");
+                                TestTimeouts::large_test_timeout_ms(), "1");
   }
 
   bool GetResults(TabProxy* tab, ResultsMap* results) {

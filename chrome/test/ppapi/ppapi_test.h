@@ -44,7 +44,7 @@ class PPAPITestBase : public InProcessBrowserTest {
   class TestFinishObserver : public content::NotificationObserver {
    public:
     TestFinishObserver(content::RenderViewHost* render_view_host,
-                       base::TimeDelta timeout);
+                       int timeout_s);
 
     bool WaitForFinish();
 
@@ -61,7 +61,7 @@ class PPAPITestBase : public InProcessBrowserTest {
 
     bool finished_;
     bool waiting_;
-    base::TimeDelta timeout_;
+    int timeout_s_;
     std::string result_;
     content::NotificationRegistrar registrar_;
     base::RepeatingTimer<TestFinishObserver> timer_;
