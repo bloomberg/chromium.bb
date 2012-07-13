@@ -946,6 +946,10 @@ enum NotificationType {
   // notification.
   NOTIFICATION_LOGIN_WEBUI_LOADED,
 
+  // Sent when the login screen has loaded in retail mode. The first paint event
+  // after this fires NOTIFICATION_LOGIN_WEBUI_VISIBLE.
+  NOTIFICATION_DEMO_WEBUI_LOADED,
+
   // Sent when the user images on the WebUI login screen have all been loaded.
   // "Normal boot" i.e. for the device with at least one user would generate
   // this one on boot.
@@ -967,6 +971,7 @@ enum NotificationType {
   // 2. NOTIFICATION_LOGIN_WEBUI_LOADED
   // 3. NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN
   // 4. NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN
+  // 5. NOTIFICATION_DEMO_WEBUI_LOADED
   //
   // Possible series of notifications:
   // 1. Boot into fresh OOBE
@@ -980,6 +985,9 @@ enum NotificationType {
   //    (NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN +
   //     NOTIFICATION_LOGIN_WEBUI_VISIBLE)
   //    NOTIFICATION_LOGIN_WEBUI_LOADED
+  //    NOTIFICATION_LOGIN_WEBUI_VISIBLE
+  // 4. Boot into retail mode
+  //    NOTIFICATION_DEMO_WEBUI_LOADED
   //    NOTIFICATION_LOGIN_WEBUI_VISIBLE
   NOTIFICATION_LOGIN_WEBUI_VISIBLE,
 

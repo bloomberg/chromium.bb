@@ -490,6 +490,9 @@ void SigninScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("loginRemoveNetworkStateObserver",
       base::Bind(&SigninScreenHandler::HandleLoginRemoveNetworkStateObserver,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("demoWebuiReady",
+      base::Bind(&SigninScreenHandler::HandleDemoWebuiReady,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("signOutUser",
       base::Bind(&SigninScreenHandler::HandleSignOutUser,
                  base::Unretained(this)));
@@ -997,6 +1000,13 @@ void SigninScreenHandler::HandleLoginRemoveNetworkStateObserver(
     return;
   }
   network_state_informer_->RemoveObserver(callback);
+}
+
+void SigninScreenHandler::HandleDemoWebuiReady(const base::ListValue* args) {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_DEMO_WEBUI_LOADED,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
 }
 
 void SigninScreenHandler::HandleSignOutUser(const base::ListValue* args) {

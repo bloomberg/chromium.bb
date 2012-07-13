@@ -755,6 +755,7 @@
       'chromeos_ephemeral',
       'chromeos_device_policy',
       'chromeos_onc',
+      'chromeos_retail_mode',
       'policy',
       'policy_prefs_ui',
       # crbug.com/115427

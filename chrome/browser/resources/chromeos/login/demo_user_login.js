@@ -23,6 +23,11 @@ onClick = function(e) {
 initialize = function() {
   $('page').style.opacity = 1;
   document.addEventListener('click', onClick);
+  chrome.send('demoWebuiReady');
+  // Report back sign in UI being painted.
+  window.webkitRequestAnimationFrame(function() {
+    chrome.send('loginVisible');
+  });
 };
 
 disableTextSelectAndDrag();

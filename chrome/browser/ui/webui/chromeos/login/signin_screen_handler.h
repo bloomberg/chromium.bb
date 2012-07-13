@@ -209,6 +209,7 @@ class SigninScreenHandler : public BaseScreenHandler,
   void HandleLoginRequestNetworkState(const base::ListValue* args);
   void HandleLoginAddNetworkStateObserver(const base::ListValue* args);
   void HandleLoginRemoveNetworkStateObserver(const base::ListValue* args);
+  void HandleDemoWebuiReady(const base::ListValue* args);
   void HandleSignOutUser(const base::ListValue* args);
   void HandleUserImagesLoaded(const base::ListValue* args);
   void HandleNetworkErrorShown(const base::ListValue* args);
