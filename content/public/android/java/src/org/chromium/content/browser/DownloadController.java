@@ -8,12 +8,14 @@ import android.content.Context;
 import android.webkit.DownloadListener;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
 
 /**
  * Java counterpart of android DownloadController.
  *
  * Its a singleton class instantiated by the C++ DownloadController.
  */
+@JNINamespace("content")
 class DownloadController {
     private static final String LOGTAG = "DownloadController";
     private static DownloadController sInstance;

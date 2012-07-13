@@ -31,17 +31,17 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::GetClass;
 using base::android::ScopedJavaLocalRef;
 
-// JNI methods
-static void Init(JNIEnv* env, jobject obj) {
-  content::DownloadController::GetInstance()->Init(env, obj);
-}
-
 namespace {
-const char* kDownloadControllerClassPathName =
+const char kDownloadControllerClassPathName[] =
     "org/chromium/content/browser/DownloadController";
 }  // namespace
 
 namespace content {
+
+// JNI methods
+static void Init(JNIEnv* env, jobject obj) {
+  DownloadController::GetInstance()->Init(env, obj);
+}
 
 struct DownloadController::JavaObject {
   ScopedJavaLocalRef<jobject> Controller(JNIEnv* env) {

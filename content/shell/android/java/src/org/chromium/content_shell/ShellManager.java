@@ -10,10 +10,12 @@ import android.view.LayoutInflater;
 import android.widget.FrameLayout;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
 
 /**
  * Container and generator of ShellViews.
  */
+@JNINamespace("content")
 public class ShellManager extends FrameLayout {
 
     private ShellView mActiveShellView;

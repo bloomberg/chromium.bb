@@ -28,9 +28,9 @@ LazyInstance<scoped_ptr<ContentMainDelegate> > g_content_main_delegate =
 
 }  // namespace
 
-static void InitApplicationContext(JNIEnv* env,
-                                   jclass clazz,
-                                   jobject context) {
+namespace content {
+
+static void InitApplicationContext(JNIEnv* env, jclass clazz, jobject context) {
   base::android::ScopedJavaLocalRef<jobject> scoped_context(env, context);
   base::android::InitApplicationContext(scoped_context);
 }
@@ -55,8 +55,6 @@ static jint Start(JNIEnv* env, jclass clazz) {
                                      g_content_main_delegate.Get().get());
   return g_content_runner.Get()->Run();
 }
-
-namespace content {
 
 void SetContentMainDelegate(ContentMainDelegate* delegate) {
   DCHECK(!g_content_main_delegate.Get().get());

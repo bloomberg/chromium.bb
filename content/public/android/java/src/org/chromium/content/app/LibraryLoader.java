@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.chromium.base.JNINamespace;
 import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.TraceEvent;
 
@@ -18,6 +19,7 @@ import org.chromium.content.common.TraceEvent;
 // - asynchronously load and register the native library. This is used by callers
 // that can do more work in the java-side, and let a separate thread do all the
 // file IO and library loading.
+@JNINamespace("content")
 public class LibraryLoader {
     private static final String TAG = "LibraryLoader";
 

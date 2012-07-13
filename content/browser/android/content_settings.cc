@@ -284,9 +284,8 @@ void ContentSettings::RenderViewCreated(RenderViewHost* render_view_host) {
     SyncToNativeImpl();
 }
 
-jint Init(
-    JNIEnv* env, jobject obj, jint nativeContentViewCore,
-    jboolean is_master_mode) {
+static jint Init(JNIEnv* env, jobject obj, jint nativeContentViewCore,
+                 jboolean is_master_mode) {
   WebContents* web_contents =
       reinterpret_cast<ContentViewCoreImpl*>(nativeContentViewCore)
           ->web_contents();
@@ -295,7 +294,7 @@ jint Init(
   return reinterpret_cast<jint>(content_settings);
 }
 
-jstring GetDefaultUserAgent(JNIEnv* env, jclass clazz) {
+static jstring GetDefaultUserAgent(JNIEnv* env, jclass clazz) {
   // "Version/4.0" had been hardcoded in the legacy WebView.
   std::string ua = webkit_glue::BuildUserAgentFromProduct("Version/4.0");
   return base::android::ConvertUTF8ToJavaString(env, ua).Release();

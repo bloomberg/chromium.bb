@@ -16,6 +16,8 @@ using base::android::ScopedJavaLocalRef;
 using base::GlobalDescriptors;
 using content::StartSandboxedProcessCallback;
 
+namespace content {
+
 // Called from SandboxedProcessLauncher.java when the SandboxedProcess was
 // started.
 // |client_context| is the pointer to StartSandboxedProcessCallback which was
@@ -30,8 +32,6 @@ static void OnSandboxedProcessStarted(JNIEnv*,
   callback->Run(static_cast<base::ProcessHandle>(handle));
   delete callback;
 }
-
-namespace content {
 
 void StartSandboxedProcess(
     const CommandLine::StringVector& argv,

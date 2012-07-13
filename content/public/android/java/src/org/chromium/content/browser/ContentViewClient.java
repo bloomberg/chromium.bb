@@ -14,6 +14,8 @@ import android.view.KeyEvent;
 
 import org.chromium.base.AccessedByNative;
 import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
+import org.chromium.content.browser.ContentHttpAuthHandler;
 
 import java.net.URISyntaxException;
 

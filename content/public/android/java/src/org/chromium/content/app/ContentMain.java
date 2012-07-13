@@ -6,6 +6,8 @@ package org.chromium.content.app;
 
 import android.content.Context;
 
+import org.chromium.base.JNINamespace;
+
 /**
  * This class is used to initialize all types of process. It corresponds to
  * content/public/app/content_main.h which is not used in Android as it has
@@ -16,6 +18,7 @@ import android.content.Context;
  * specific initialization code in ContentMainRunner::Initialize.
  *
  **/
+@JNINamespace("content")
 public class ContentMain {
     /**
      * Initialize application context in native side.

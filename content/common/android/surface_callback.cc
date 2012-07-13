@@ -23,6 +23,8 @@ using base::android::GetMethodID;
 using base::WaitableEvent;
 using content::SurfaceTexturePeer;
 
+namespace content {
+
 namespace {
 
 struct GlobalState {
@@ -34,8 +36,8 @@ struct GlobalState {
   // and gpu thread, so we need to store the msg loops separately.
   scoped_refptr<base::MessageLoopProxy> native_window_loop;
   scoped_refptr<base::MessageLoopProxy> video_surface_loop;
-  content::NativeWindowCallback native_window_callback;
-  content::VideoSurfaceCallback video_surface_callback;
+  NativeWindowCallback native_window_callback;
+  VideoSurfaceCallback video_surface_callback;
 };
 
 base::LazyInstance<GlobalState>::Leaky g_state = LAZY_INSTANCE_INITIALIZER;
@@ -66,9 +68,6 @@ static void SetSurface(JNIEnv* env, jclass clazz,
                   static_cast<SurfaceTexturePeer::SurfaceTextureTarget>(type),
                   primaryID, secondaryID, NULL);
 }
-
-
-namespace content {
 
 void ReleaseSurface(jobject surface) {
   if (surface == NULL)

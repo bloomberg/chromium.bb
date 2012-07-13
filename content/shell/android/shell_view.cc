@@ -28,13 +28,8 @@ bool ShellView::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-}  // namespace content
-
-// ----------------------------------------------------------------------------
-// Native JNI methods
-// ----------------------------------------------------------------------------
-
 static jint Init(JNIEnv* env, jobject obj) {
-  content::ShellView* shell_view = new content::ShellView(env, obj);
-  return reinterpret_cast<jint>(shell_view);
+  return reinterpret_cast<jint>(new ShellView(env, obj));
 }
+
+}  // namespace content

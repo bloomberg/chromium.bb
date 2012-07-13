@@ -30,8 +30,10 @@ namespace {
 base::AtExitManager* g_at_exit_manager = NULL;
 }
 
-jboolean LibraryLoadedOnMainThread(JNIEnv* env, jclass clazz,
-                                   jobjectArray init_command_line) {
+namespace content {
+
+static jboolean LibraryLoadedOnMainThread(JNIEnv* env, jclass clazz,
+                                          jobjectArray init_command_line) {
   InitNativeCommandLineFromJavaArray(env, init_command_line);
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -77,8 +79,6 @@ jboolean LibraryLoadedOnMainThread(JNIEnv* env, jclass clazz,
 
   return JNI_TRUE;
 }
-
-namespace content {
 
 void LibraryLoaderExitHook() {
   if (g_at_exit_manager) {

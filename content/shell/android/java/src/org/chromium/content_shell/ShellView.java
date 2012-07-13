@@ -20,12 +20,14 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 
 /**
  * Container for the various UI components that make up a shell window.
  */
+@JNINamespace("content")
 public class ShellView extends LinearLayout {
 
     private static final long COMPLETED_PROGRESS_TIMEOUT_MS = 200;

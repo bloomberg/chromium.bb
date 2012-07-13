@@ -6,9 +6,12 @@ package org.chromium.content.common;
 
 import android.view.Surface;
 
+import org.chromium.base.JNINamespace;
+
 /* This implements the entry point for passing a Surface handle received through Binder
  * back to the native code.
  */
+@JNINamespace("content")
 public class SurfaceCallback {
     // Calling setSurface passes ownership to the callee and calls release() on the passed in
     // object.

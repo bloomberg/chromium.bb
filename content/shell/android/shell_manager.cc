@@ -28,13 +28,9 @@ bool RegisterShellManager(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-}  // namespace content
-
-// ----------------------------------------------------------------------------
-// Native JNI methods
-// ----------------------------------------------------------------------------
-
-void Init(JNIEnv* env, jclass clazz, jobject obj) {
+static void Init(JNIEnv* env, jclass clazz, jobject obj) {
   g_content_shell_manager.Get().Reset(
       base::android::ScopedJavaLocalRef<jobject>(env, obj));
 }
+
+}  // namespace content

@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.util.Log;
 
+import org.chromium.base.JNINamespace;
 import org.chromium.content.app.AppResource;
 import org.chromium.content.app.ContentMain;
 import org.chromium.content.app.LibraryLoader;
@@ -17,6 +18,7 @@ import org.chromium.content.browser.ResourceExtractor;
 import org.chromium.content.common.CommandLine;
 
 // NOTE: This file hasn't been fully upstreamed, please don't merge to downstream.
+@JNINamespace("content")
 public class AndroidBrowserProcess {
 
     private static final String TAG = "BrowserProcessMain";

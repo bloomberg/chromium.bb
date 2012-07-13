@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.common.CommandLine;
@@ -23,6 +24,7 @@ import org.chromium.content.common.ISandboxedProcessService;
  * This class provides the method to start/stop SandboxedProcess called by
  * native.
  */
+@JNINamespace("content")
 public class SandboxedProcessLauncher {
     private static String TAG = "SandboxedProcessLauncher";
 
