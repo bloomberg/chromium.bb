@@ -45,27 +45,29 @@ class WebIntentPickerSheetControllerTest : public CocoaTest {
     // |row_count| buttons, and a CWS link.
     ASSERT_EQ(3U + row_count, [views count]);
 
+    const NSUInteger kFirstButton = 1;
     ASSERT_TRUE([[views objectAtIndex:0] isKindOfClass:[NSTextField class]]);
-    ASSERT_TRUE([[views objectAtIndex:1] isKindOfClass:
-        [HoverCloseButton class]]);
     for(NSUInteger i = 0; i < row_count; ++i) {
-      ASSERT_TRUE([[views objectAtIndex:2 + i] isKindOfClass:
+      ASSERT_TRUE([[views objectAtIndex:kFirstButton + i] isKindOfClass:
           [NSButton class]]);
     }
+    ASSERT_TRUE([[views lastObject] isKindOfClass:
+        [HoverCloseButton class]]);
 
     // Verify the close button
-    NSButton* close_button = static_cast<NSButton*>([views objectAtIndex:1]);
+    NSButton* close_button = static_cast<NSButton*>([views lastObject]);
     CheckButton(close_button, @selector(cancelOperation:));
 
     // Verify the Chrome Web Store button.
-    NSButton* button = static_cast<NSButton*>([views lastObject]);
+    NSButton* button = static_cast<NSButton*>(
+        [views objectAtIndex:kFirstButton + row_count]);
     ASSERT_TRUE([button isKindOfClass:[NSButton class]]);
     EXPECT_TRUE([[button cell] isKindOfClass:[HyperlinkButtonCell class]]);
     CheckButton(button, @selector(showChromeWebStore:));
 
     // Verify buttons pointing to services.
     for(NSUInteger i = 0; i < row_count; ++i) {
-      NSButton* button = [views objectAtIndex:2 + i];
+      NSButton* button = [views objectAtIndex:kFirstButton + i];
       CheckServiceButton(button, i);
     }
   }
@@ -117,10 +119,10 @@ TEST_F(WebIntentPickerSheetControllerTest, SuggestionView) {
   NSArray* flip_views = [[window_ contentView] subviews];
   NSArray* main_views = [[flip_views objectAtIndex:0] subviews];
 
-  // 3rd object should be the suggestion view.
+  // 2nd object should be the suggestion view, 3rd one is close button.
   ASSERT_TRUE([main_views count] > 2);
-  ASSERT_TRUE([[main_views objectAtIndex:2] isKindOfClass:[NSView class]]);
-  NSView* suggest_view = [main_views objectAtIndex:2];
+  ASSERT_TRUE([[main_views objectAtIndex:1] isKindOfClass:[NSView class]]);
+  NSView* suggest_view = [main_views objectAtIndex:1];
 
   // There are two subviews - label & suggested items.
   ASSERT_EQ(2U, [[suggest_view subviews] count]);
@@ -148,4 +150,35 @@ TEST_F(WebIntentPickerSheetControllerTest, SuggestionView) {
   // Verify we have a throbber.
   ASSERT_TRUE([[[item_view subviews] objectAtIndex:4]
       isKindOfClass:[NSProgressIndicator class]]);
+}
+
+TEST_F(WebIntentPickerSheetControllerTest, EmptyView) {
+  WebIntentPickerModel model;
+  [controller_ performLayoutWithModel:&model];
+  [controller_ pendingAsyncCompleted];
+
+  ASSERT_TRUE(window_);
+
+  // Get subviews.
+  NSArray* flip_views = [[window_ contentView] subviews];
+  ASSERT_TRUE(flip_views);
+
+  NSArray* main_views = [[flip_views objectAtIndex:0] subviews];
+  ASSERT_TRUE(main_views);
+
+  // Should have two subviews - the empty picker dialog and the close button.
+  ASSERT_EQ(2U, [main_views count]);
+
+  // Extract empty picker dialog.
+  ASSERT_TRUE([[main_views objectAtIndex:0] isKindOfClass:[NSView class]]);
+  NSView* empty_dialog = [main_views objectAtIndex:0];
+
+  // Empty picker dialog has two elements, title and body.
+  ASSERT_EQ(2U, [[empty_dialog subviews] count]);
+
+  // Both title and body are NSTextFields.
+  ASSERT_TRUE([[[empty_dialog subviews] objectAtIndex:0]
+      isKindOfClass:[NSTextField class]]);
+  ASSERT_TRUE([[[empty_dialog subviews] objectAtIndex:1]
+      isKindOfClass:[NSTextField class]]);
 }

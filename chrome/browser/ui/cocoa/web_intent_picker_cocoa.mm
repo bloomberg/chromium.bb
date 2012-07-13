@@ -222,6 +222,11 @@ void WebIntentPickerCocoa::OnInlineDispositionAutoResize(
   [sheet_controller_ setInlineDispositionFrameSize:inline_content_size];
 }
 
+void WebIntentPickerCocoa::OnPendingAsyncCompleted() {
+  DCHECK(sheet_controller_);
+  [sheet_controller_ pendingAsyncCompleted];
+}
+
 void WebIntentPickerCocoa::OnExtensionLinkClicked(const std::string& id) {
   DCHECK(delegate_);
   delegate_->OnExtensionLinkClicked(id);

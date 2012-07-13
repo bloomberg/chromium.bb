@@ -467,7 +467,6 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
                                   styleMask:NSTitledWindowMask
                                     backing:NSBackingStoreBuffered
                                       defer:YES]);
-
   if ((self = [super initWithWindow:window.get()])) {
     picker_ = picker;
     if (picker)
@@ -763,23 +762,72 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   return NSHeight([button frame]);
 }
 
+- (NSView*)createEmptyView {
+  NSMutableArray* subviews = [NSMutableArray array];
+
+  NSRect titleFrame = NSMakeRect(kFramePadding, kFramePadding,
+                                 kTextWidth, 1);
+  scoped_nsobject<NSTextField> title(
+      [[NSTextField alloc] initWithFrame:titleFrame]);
+  ConfigureTextFieldAsLabel(title);
+  [title setFont:[NSFont systemFontOfSize:kHeaderFontSize]];
+  [title setStringValue:
+      l10n_util::GetNSStringWithFixup(IDS_INTENT_PICKER_NO_SERVICES_TITLE)];
+  titleFrame.size.height +=
+      [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:title];
+
+  NSRect bodyFrame = titleFrame;
+  bodyFrame.origin.y += NSHeight(titleFrame) + kFramePadding;
+
+  scoped_nsobject<NSTextField> body(
+      [[NSTextField alloc] initWithFrame:bodyFrame]);
+  ConfigureTextFieldAsLabel(body);
+  [body setStringValue:
+      l10n_util::GetNSStringWithFixup(IDS_INTENT_PICKER_NO_SERVICES)];
+  bodyFrame.size.height +=
+      [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:body];
+  NSRect viewFrame = NSMakeRect(
+      0,
+      kFramePadding,
+      std::max(NSWidth(bodyFrame), NSWidth(titleFrame)) + 2 * kFramePadding,
+      NSHeight(titleFrame) + NSHeight(bodyFrame) + kVerticalSpacing);
+
+  titleFrame.origin.y = NSHeight(viewFrame) - NSHeight(titleFrame);
+  bodyFrame.origin.y = 0;
+
+  [title setFrame:titleFrame];
+  [body setFrame: bodyFrame];
+
+  [subviews addObject:title];
+  [subviews addObject:body];
+
+  NSView* view = [[NSView alloc] initWithFrame:viewFrame];
+  [view setAutoresizingMask:NSViewMinYMargin ];
+  [view setSubviews:subviews];
+
+  return view;
+}
+
 - (void)performLayoutWithModel:(WebIntentPickerModel*)model {
   model_ = model;
+
   // |offset| is the Y position that should be drawn at next.
   CGFloat offset = kFramePadding;
 
   // Keep the new subviews in an array that gets replaced at the end.
   NSMutableArray* subviews = [NSMutableArray array];
 
-  if (contents_) {
+  if (isEmpty_) {
+    scoped_nsobject<NSView> emptyView([self createEmptyView]);
+    [subviews addObject:emptyView];
+    offset += NSHeight([emptyView frame]);
+  } else if (contents_) {
     offset += [self addAnotherServiceLinkToSubviews:subviews
                                            atOffset:offset];
     offset += kFramePadding;
     offset += [self addInlineHtmlToSubviews:subviews atOffset:offset];
-    [self addCloseButtonToSubviews:subviews];
   } else {
     offset += [self addHeaderToSubviews:subviews atOffset:offset];
-    [self addCloseButtonToSubviews:subviews];
 
     offset += kVerticalSpacing;
 
@@ -807,6 +855,7 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
     }
     offset += [self addCwsButtonToSubviews:subviews atOffset:offset];
   }
+  [self addCloseButtonToSubviews:subviews];
 
   // Add the bottom padding.
   offset += kVerticalSpacing;
@@ -857,4 +906,15 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
 - (void)closeSheet {
   [NSApp endSheet:[self window]];
 }
+
+- (void)pendingAsyncCompleted {
+  // Requests to both the WebIntentService and the Chrome Web Store have
+  // completed. If there are any services, installed or suggested, there's
+  // nothing to do.
+  DCHECK(model_);
+  isEmpty_ = !model_->GetInstalledServiceCount() &&
+      !model_->GetSuggestedExtensionCount();
+  [self performLayoutWithModel:model_];
+}
+
 @end  // WebIntentPickerSheetController

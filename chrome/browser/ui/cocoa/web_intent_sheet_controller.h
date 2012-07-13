@@ -29,6 +29,9 @@ class WebIntentPickerModel;
   // The intent picker data to be rendered. Weak reference.
   WebIntentPickerModel* model_;
 
+  // Indicator that we have neither suggested nor installed services.
+  BOOL isEmpty_;
+
   scoped_nsobject<NSTextField> actionTextField_;
   scoped_nsobject<SuggestionView> suggestionView_;
   scoped_nsobject<NSButton> closeButton_;
@@ -61,6 +64,9 @@ class WebIntentPickerModel;
 
 // Close the current sheet (and by extension, the constrained dialog).
 - (void)closeSheet;
+
+// List of extensions/suggestions has been retrieved.
+- (void)pendingAsyncCompleted;
 
 // Notification handler - called when sheet has been closed.
 - (void)sheetDidEnd:(NSWindow*)sheet
