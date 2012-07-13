@@ -84,6 +84,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/cros_settings.h"
+#include "chrome/browser/chromeos/extensions/wallpaper_manager_api.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/chromeos/system_settings_provider.h"
@@ -519,6 +520,10 @@ void BrowserOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
 #endif
 #if defined(OS_CHROMEOS)
+  web_ui()->RegisterMessageCallback(
+      "openWallpaperManager",
+      base::Bind(&BrowserOptionsHandler::HandleOpenWallpaperManager,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "spokenFeedbackChange",
       base::Bind(&BrowserOptionsHandler::SpokenFeedbackChangeCallback,
@@ -1277,6 +1282,11 @@ void BrowserOptionsHandler::RemoveCloudPrintConnectorSection() {
 #endif
 
 #if defined(OS_CHROMEOS)
+void BrowserOptionsHandler::HandleOpenWallpaperManager(
+    const ListValue* args) {
+  wallpaper_manager_util::OpenWallpaperManager();
+}
+
 void BrowserOptionsHandler::SpokenFeedbackChangeCallback(
     const ListValue* args) {
   bool enabled = false;

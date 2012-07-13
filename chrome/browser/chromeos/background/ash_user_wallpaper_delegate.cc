@@ -8,6 +8,7 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_resources.h"
 #include "base/logging.h"
+#include "chrome/browser/chromeos/extensions/wallpaper_manager_api.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -33,9 +34,7 @@ class UserWallpaperDelegate: public ash::UserWallpaperDelegate {
   }
 
   virtual void OpenSetWallpaperPage() OVERRIDE {
-    Browser* browser = browser::FindOrCreateTabbedBrowser(
-        ProfileManager::GetDefaultProfileOrOffTheRecord());
-    chrome::ShowSettingsSubPage(browser, "setWallpaper");
+    wallpaper_manager_util::OpenWallpaperManager();
   }
 
   virtual bool CanOpenSetWallpaperPage() OVERRIDE {

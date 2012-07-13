@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<!--
+------
+Copyright (c) 2012 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<html i18n-values="dir:textdirection;">
+<head>
+  <title>Wallpaper Manager Test Harness</title>
+  <style>
+    #dialog {
+      position: absolute;
+      width: 800px;
+      height: 640px;
+      border: none;
+      -webkit-box-shadow: 0px 0px 20px rgba(0, 0, 0, 1);
+    }
+    #title-bar {
+      background-color: gray;
+      width: 800px;
+      height: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div id=screen>
+    <div id=container>
+      <div id=title-bar>
+      </div>
+      <iframe id=dialog src="main.html"></iframe>
+    </div>
+  </div>
+  <script src="js/mock_chrome.js"></script>
+</body>
+</html>

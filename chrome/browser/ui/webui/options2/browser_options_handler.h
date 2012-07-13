@@ -228,6 +228,9 @@ class BrowserOptionsHandler
 #endif
 
 #if defined(OS_CHROMEOS)
+  // Opens the wallpaper manager component extension.
+  void HandleOpenWallpaperManager(const base::ListValue* args);
+
   // Called when the accessibility checkbox values are changed.
   // |args| will contain the checkbox checked state as a string
   // ("true" or "false").

@@ -140,7 +140,7 @@ cr.define('options', function() {
 
       if ($('set-wallpaper')) {
         $('set-wallpaper').onclick = function(event) {
-          OptionsPage.navigateToPage('setWallpaper');
+          chrome.send('openWallpaperManager');
         };
       }
 

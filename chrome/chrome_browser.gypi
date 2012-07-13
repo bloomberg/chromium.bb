@@ -4312,6 +4312,8 @@
             'browser/chromeos/extensions/file_browser_handler_api.h',
             'browser/chromeos/extensions/file_browser_private_api.cc',
             'browser/chromeos/extensions/file_browser_private_api.h',
+            'browser/chromeos/extensions/wallpaper_manager_api.cc',
+            'browser/chromeos/extensions/wallpaper_manager_api.h',
             'browser/chromeos/media/media_player_extension_api.cc',
             'browser/chromeos/media/media_player_extension_api.h',
             'browser/history/history_extension_api.cc',
