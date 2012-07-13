@@ -426,6 +426,8 @@ PluginModule::PluginModule(const std::string& name,
 
   memset(&entry_points_, 0, sizeof(entry_points_));
   pp_module_ = HostGlobals::Get()->AddModule(this);
+  // Initialize the main thread message loop.
+  PpapiGlobals::Get()->GetMainThreadMessageLoop();
   GetLivePluginSet()->insert(this);
 }
 

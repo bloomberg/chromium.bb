@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "base/threading/thread_local.h"  // For testing purposes only.
 #include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/pp_instance.h"
@@ -126,8 +125,6 @@ class PPAPI_SHARED_EXPORT PpapiGlobals {
   static PpapiGlobals* GetThreadLocalPointer();
 
   static PpapiGlobals* ppapi_globals_;
-
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiGlobals);
 };
