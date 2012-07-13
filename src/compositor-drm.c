@@ -481,8 +481,30 @@ drm_surface_format_supported(struct drm_sprite *s, uint32_t format)
 static int
 drm_surface_transform_supported(struct weston_surface *es)
 {
-	if (es->transform.enabled)
-		return 0;
+	struct weston_matrix *matrix = &es->transform.matrix;
+	int i;
+
+	if (!es->transform.enabled)
+		return 1;
+
+	for (i = 0; i < 16; i++) {
+		switch (i) {
+		case 10:
+		case 15:
+			if (matrix->d[i] != 1.0)
+				return 0;
+			break;
+		case 0:
+		case 5:
+		case 12:
+		case 13:
+			break;
+		default:
+			if (matrix->d[i] != 0.0)
+				return 0;
+			break;
+		}
+	}
 
 	return 1;
 }
@@ -553,6 +575,7 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	pixman_region32_t dest_rect, src_rect;
 	pixman_box32_t *box;
 	uint32_t format;
+	wl_fixed_t sx1, sy1, sx2, sy2;
 
 	if (c->sprites_are_broken)
 		return -1;
@@ -647,16 +670,35 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	pixman_region32_init(&src_rect);
 	pixman_region32_intersect(&src_rect, &es->transform.boundingbox,
 				  &output_base->region);
-	pixman_region32_translate(&src_rect, -es->geometry.x, -es->geometry.y);
 	box = pixman_region32_extents(&src_rect);
-	s->src_x = box->x1 << 16;
-	s->src_y = box->y1 << 16;
-	s->src_w = (box->x2 - box->x1) << 16;
-	s->src_h = (box->y2 - box->y1) << 16;
+
+	weston_surface_from_global_fixed(es,
+					 wl_fixed_from_int(box->x1),
+					 wl_fixed_from_int(box->y1),
+					 &sx1, &sy1);
+	weston_surface_from_global_fixed(es,
+					 wl_fixed_from_int(box->x2),
+					 wl_fixed_from_int(box->y2),
+					 &sx2, &sy2);
+
+	if (sx1 < 0)
+		sx1 = 0;
+	if (sy1 < 0)
+		sy1 = 0;
+	if (sx2 > wl_fixed_from_int(es->geometry.width))
+		sx2 = wl_fixed_from_int(es->geometry.width);
+	if (sy2 > wl_fixed_from_int(es->geometry.height))
+		sy2 = wl_fixed_from_int(es->geometry.height);
+
+	s->src_x = sx1 << 8;
+	s->src_y = sy1 << 8;
+	s->src_w = (sx2 - sx1) << 8;
+	s->src_h = (sy2 - sy1) << 8;
 	pixman_region32_fini(&src_rect);
 
 	wl_signal_add(&es->buffer->resource.destroy_signal,
 		      &s->pending_destroy_listener);
+
 	return 0;
 }
 
