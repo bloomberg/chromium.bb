@@ -362,8 +362,8 @@ bool LaunchAppFunction::RunImpl() {
   extension_misc::LaunchContainer launch_container =
       service()->extension_prefs()->GetLaunchContainer(
           extension, extensions::ExtensionPrefs::LAUNCH_DEFAULT);
-  application_launch::OpenApplication(profile(), extension, launch_container,
-                                      GURL(), NEW_FOREGROUND_TAB, NULL);
+  application_launch::OpenApplication(application_launch::LaunchParams(
+          profile(), extension, launch_container, NEW_FOREGROUND_TAB));
 #if !defined(OS_ANDROID)
   AppLauncherHandler::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_EXTENSION_API);

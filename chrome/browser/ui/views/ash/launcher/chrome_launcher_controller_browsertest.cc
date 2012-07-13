@@ -66,14 +66,8 @@ class LauncherAppBrowserTest : public ExtensionBrowserTest {
         service->GetExtensionById(last_loaded_extension_id_, false);
     EXPECT_TRUE(extension);
 
-    application_launch::OpenApplication(
-        browser()->profile(),
-        extension,
-        // Overriding manifest to open in a panel.
-        container,
-        GURL(),
-        disposition,
-        NULL);
+    application_launch::OpenApplication(application_launch::LaunchParams(
+            browser()->profile(), extension, container, disposition));
     return extension;
   }
 

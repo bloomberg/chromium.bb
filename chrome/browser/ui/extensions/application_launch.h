@@ -23,50 +23,43 @@ class Extension;
 
 namespace application_launch {
 
-// Open |extension| in |container|, using |disposition| if container type is
-// TAB. Returns the WebContents* that was created or NULL. If non-empty,
-// |override_url| is used in place of the app launch url. Pass relevant
-// information in |command_line| onto platform app as launch data.
-// |command_line| can be NULL, indicating there is no launch data to pass on.
-// TODO(benwells): Put the parameters to this into an ApplicationLaunchParams
-// struct.
-content::WebContents* OpenApplication(Profile* profile,
-                                      const extensions::Extension* extension,
-                                      extension_misc::LaunchContainer container,
-                                      const GURL& override_url,
-                                      WindowOpenDisposition disposition,
-                                      const CommandLine* command_line);
+struct LaunchParams {
+  LaunchParams(Profile* profile,
+               const extensions::Extension* extension,
+               extension_misc::LaunchContainer container,
+               WindowOpenDisposition disposition);
 
-// Opens a new application window for the specified url. If |as_panel| is true,
-// the application will be opened as a Browser::Type::APP_PANEL in app panel
-// window, otherwise it will be opened as as either Browser::Type::APP a.k.a.
-// "thin frame" (if |extension| is NULL) or Browser::Type::EXTENSION_APP (if
-// |extension| is non-NULL)./ If |app_browser| is not NULL, it is set to the
-// browser that hosts the returned tab.
-content::WebContents* OpenApplicationWindow(
-    Profile* profile,
-    const extensions::Extension* extension,
-    extension_misc::LaunchContainer container,
-    const GURL& url,
-    Browser** app_browser);
+  // The profile to load the application from.
+  Profile* profile;
+
+  // The extension to load.
+  const extensions::Extension* extension;
+
+  // The container type to launch the application in.
+  extension_misc::LaunchContainer container;
+
+  // If container is TAB, this field controls how the tab is opened.
+  WindowOpenDisposition disposition;
+
+  // If non-empty, use override_url in place of the application's launch url.
+  GURL override_url;
+
+  // If non-NULL, information from the command line may be passed on to the
+  // application.
+  const CommandLine* command_line;
+};
+
+// Open the application in a way specified by |params|.
+content::WebContents* OpenApplication(const LaunchParams& params);
 
 // Open |url| in an app shortcut window.  If |update_shortcut| is true,
 // update the name, description, and favicon of the shortcut.
 // There are two kinds of app shortcuts: Shortcuts to a URL,
 // and shortcuts that open an installed application.  This function
 // is used to open the former.  To open the latter, use
-// Browser::OpenApplicationWindow().
+// application_launch::OpenApplication().
 content::WebContents* OpenAppShortcutWindow(Profile* profile,
-                                            const GURL& url,
-                                            bool update_shortcut);
-
-// Open an application for |extension| using |disposition|.  Returns NULL if
-// there are no appropriate existing browser windows for |profile|. If
-// non-empty, |override_url| is used in place of the app launch url.
-content::WebContents* OpenApplicationTab(Profile* profile,
-                                         const extensions::Extension* extension,
-                                         const GURL& override_url,
-                                         WindowOpenDisposition disposition);
+                                            const GURL& url);
 
 }  // namespace application_launch
 

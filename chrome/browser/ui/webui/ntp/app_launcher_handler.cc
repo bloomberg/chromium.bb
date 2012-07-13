@@ -53,6 +53,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
 
+using application_launch::LaunchParams;
+using application_launch::OpenApplication;
 using content::WebContents;
 using extensions::Extension;
 using extensions::ExtensionPrefs;
@@ -534,16 +536,16 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
     RecordWebStoreLaunch(url.find("chrome-ntp-promo") != std::string::npos);
   }
 
-  if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {
+  if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB ||
+      disposition == NEW_WINDOW) {
     // TODO(jamescook): Proper support for background tabs.
-    application_launch::OpenApplication(
-        profile, extension, extension_misc::LAUNCH_TAB, GURL(url), disposition,
-        NULL);
-  } else if (disposition == NEW_WINDOW) {
-    // Force a new window open.
-    application_launch::OpenApplication(
-        profile, extension, extension_misc::LAUNCH_WINDOW, GURL(url),
-        disposition, NULL);
+    LaunchParams params(profile, extension,
+                        disposition == NEW_WINDOW ?
+                            extension_misc::LAUNCH_WINDOW :
+                            extension_misc::LAUNCH_TAB,
+                        disposition);
+    params.override_url = GURL(url);
+    OpenApplication(params);
   } else {
     // Look at preference to find the right launch container.  If no preference
     // is set, launch as a regular tab.
@@ -559,9 +561,10 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
     if (browser)
       old_contents = chrome::GetActiveWebContents(browser);
 
-    WebContents* new_contents = application_launch::OpenApplication(
-        profile, extension, launch_container, GURL(url),
-        old_contents ? CURRENT_TAB : NEW_FOREGROUND_TAB, NULL);
+    LaunchParams params(profile, extension, launch_container,
+                        old_contents ? CURRENT_TAB : NEW_FOREGROUND_TAB);
+    params.override_url = GURL(url);
+    WebContents* new_contents = OpenApplication(params);
 
     // This will also destroy the handler, so do not perform any actions after.
     if (new_contents != old_contents && browser && browser->tab_count() > 1)

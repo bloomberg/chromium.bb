@@ -5735,8 +5735,8 @@ void TestingAutomationProvider::LaunchApp(
   // This observer will delete itself.
   new AppLaunchObserver(&old_contents->GetController(), this, reply_message,
                         launch_container);
-  application_launch::OpenApplication(profile(), extension, launch_container,
-                                      GURL(), CURRENT_TAB, NULL);
+  application_launch::OpenApplication(application_launch::LaunchParams(
+          profile(), extension, launch_container, CURRENT_TAB));
 }
 
 // Sample JSON input: { "command": "SetAppLaunchType",

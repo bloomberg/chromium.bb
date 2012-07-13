@@ -1000,13 +1000,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
   const Extension* extension_app = GetExtension();
 
   // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
-  WebContents* app_window =
-      application_launch::OpenApplication(browser()->profile(),
-                                          extension_app,
-                                          extension_misc::LAUNCH_WINDOW,
-                                          GURL(),
-                                          NEW_WINDOW,
-                                          NULL);
+  WebContents* app_window = application_launch::OpenApplication(
+      application_launch::LaunchParams(browser()->profile(), extension_app,
+                                       extension_misc::LAUNCH_WINDOW,
+                                       NEW_WINDOW));
   ASSERT_TRUE(app_window);
 
   // Apps launched in a window from the NTP do not have extension_app set in

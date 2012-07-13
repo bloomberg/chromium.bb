@@ -61,8 +61,8 @@ void ExtensionAppProvider::LaunchAppFromOmnibox(
       service->extension_prefs()->GetLaunchContainer(
           extension, extensions::ExtensionPrefs::LAUNCH_REGULAR);
 
-  application_launch::OpenApplication(profile, extension, launch_container,
-                                      GURL(), disposition, NULL);
+  application_launch::OpenApplication(application_launch::LaunchParams(
+          profile, extension, launch_container, disposition));
 }
 
 void ExtensionAppProvider::AddExtensionAppForTesting(

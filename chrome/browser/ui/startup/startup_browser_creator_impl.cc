@@ -432,8 +432,9 @@ bool StartupBrowserCreatorImpl::OpenApplicationTab(Profile* profile) {
 
   RecordCmdLineAppHistogram();
 
-  WebContents* app_tab = application_launch::OpenApplicationTab(
-      profile, extension, GURL(), NEW_FOREGROUND_TAB);
+  WebContents* app_tab = application_launch::OpenApplication(
+      application_launch::LaunchParams(profile, extension,
+          extension_misc::LAUNCH_TAB, NEW_FOREGROUND_TAB));
   return (app_tab != NULL);
 }
 
@@ -467,9 +468,11 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(
 
     RecordCmdLineAppHistogram();
 
+    application_launch::LaunchParams params(profile, extension,
+                                            launch_container, NEW_WINDOW);
+    params.command_line = &command_line_;
     WebContents* tab_in_app_window = application_launch::OpenApplication(
-        profile, extension, launch_container, GURL(), NEW_WINDOW,
-        &command_line_);
+        params);
 
     if (out_app_contents)
       *out_app_contents = tab_in_app_window;
@@ -501,8 +504,7 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(
 
       WebContents* app_tab = application_launch::OpenAppShortcutWindow(
           profile,
-          url,
-          true);  // Update app info.
+          url);
 
       if (out_app_contents)
         *out_app_contents = app_tab;

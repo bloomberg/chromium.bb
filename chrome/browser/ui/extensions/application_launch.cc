@@ -79,53 +79,6 @@ bool AllowPanels(const std::string& app_name) {
       web_app::GetExtensionIdFromApplicationName(app_name));
 }
 
-}  // namespace
-
-namespace application_launch {
-
-WebContents* OpenApplication(Profile* profile,
-                             const Extension* extension,
-                             extension_misc::LaunchContainer container,
-                             const GURL& override_url,
-                             WindowOpenDisposition disposition,
-                             const CommandLine* command_line) {
-  WebContents* tab = NULL;
-  ExtensionPrefs* prefs = profile->GetExtensionService()->extension_prefs();
-  prefs->SetActiveBit(extension->id(), true);
-
-  UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunchContainer", container, 100);
-#if defined(OS_CHROMEOS)
-  if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
-    chromeos::KioskModeMetrics::Get()->UserOpenedApp();
-#endif
-
-  if (extension->is_platform_app()) {
-    extensions::LaunchPlatformApp(profile, extension, command_line);
-    return NULL;
-  }
-
-  switch (container) {
-    case extension_misc::LAUNCH_NONE: {
-      NOTREACHED();
-      break;
-    }
-    case extension_misc::LAUNCH_PANEL:
-    case extension_misc::LAUNCH_WINDOW:
-      tab = OpenApplicationWindow(profile, extension, container,
-                                  override_url, NULL);
-      break;
-    case extension_misc::LAUNCH_TAB: {
-      tab = OpenApplicationTab(profile, extension, override_url,
-                               disposition);
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
-  }
-  return tab;
-}
-
 WebContents* OpenApplicationWindow(
     Profile* profile,
     const Extension* extension,
@@ -195,34 +148,6 @@ WebContents* OpenApplicationWindow(
   //                focus explicitly.
   contents->GetView()->SetInitialFocus();
   return contents;
-}
-
-WebContents* OpenAppShortcutWindow(Profile* profile,
-                                   const GURL& url,
-                                   bool update_shortcut) {
-  Browser* app_browser;
-  WebContents* tab = OpenApplicationWindow(
-      profile,
-      NULL,  // this is a URL app.  No extension.
-      extension_misc::LAUNCH_WINDOW,
-      url,
-      &app_browser);
-
-  if (!tab)
-    return NULL;
-
-  if (update_shortcut) {
-    TabContents* tab_contents = TabContents::FromWebContents(tab);
-    // Set UPDATE_SHORTCUT as the pending web app action. This action is picked
-    // up in LoadingStateChanged to schedule a GetApplicationInfo. And when
-    // the web app info is available, ExtensionTabHelper notifies Browser via
-    // OnDidGetApplicationInfo, which calls
-    // web_app::UpdateShortcutForTabContents when it sees UPDATE_SHORTCUT as
-    // pending web app action.
-    tab_contents->extension_tab_helper()->set_pending_web_app_action(
-        ExtensionTabHelper::UPDATE_SHORTCUT);
-  }
-  return tab;
 }
 
 WebContents* OpenApplicationTab(Profile* profile,
@@ -314,6 +239,112 @@ WebContents* OpenApplicationTab(Profile* profile,
 #endif
 
   return contents;
+}
+
+WebContents* OpenApplicationPanel(
+    Profile* profile,
+    const Extension* extension,
+    const GURL& url_input) {
+  GURL url = UrlForExtension(extension, url_input);
+  std::string app_name =
+      web_app::GenerateApplicationNameFromExtensionId(extension->id());
+  gfx::Rect panel_bounds;
+  panel_bounds.set_width(extension->launch_width());
+  panel_bounds.set_height(extension->launch_height());
+#if defined(USE_ASH)
+  PanelViewAura* panel_view = new PanelViewAura(app_name);
+  panel_view->Init(profile, url, panel_bounds);
+  return panel_view->WebContents();
+#else
+  Panel* panel = PanelManager::GetInstance()->CreatePanel(
+      app_name, profile, url, panel_bounds.size());
+  panel->Show();
+  return panel->GetWebContents();
+#endif
+}
+
+}  // namespace
+
+namespace application_launch {
+
+LaunchParams::LaunchParams(Profile* profile,
+                           const extensions::Extension* extension,
+                           extension_misc::LaunchContainer container,
+                           WindowOpenDisposition disposition)
+    : profile(profile),
+      extension(extension),
+      container(container),
+      disposition(disposition),
+      override_url(),
+      command_line(NULL) {}
+
+WebContents* OpenApplication(const LaunchParams& params) {
+  Profile* profile = params.profile;
+  const extensions::Extension* extension = params.extension;
+  extension_misc::LaunchContainer container = params.container;
+  const GURL& override_url = params.override_url;
+
+  WebContents* tab = NULL;
+  ExtensionPrefs* prefs = profile->GetExtensionService()->extension_prefs();
+  prefs->SetActiveBit(extension->id(), true);
+
+  UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunchContainer", container, 100);
+#if defined(OS_CHROMEOS)
+  if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
+    chromeos::KioskModeMetrics::Get()->UserOpenedApp();
+#endif
+
+  if (extension->is_platform_app()) {
+    extensions::LaunchPlatformApp(profile, extension, params.command_line);
+    return NULL;
+  }
+
+  switch (container) {
+    case extension_misc::LAUNCH_NONE: {
+      NOTREACHED();
+      break;
+    }
+    case extension_misc::LAUNCH_PANEL:
+    case extension_misc::LAUNCH_WINDOW:
+      tab = OpenApplicationWindow(profile, extension, container,
+                                  override_url, NULL);
+      break;
+    case extension_misc::LAUNCH_TAB: {
+      tab = OpenApplicationTab(profile, extension, override_url,
+                               params.disposition);
+      break;
+    }
+    default:
+      NOTREACHED();
+      break;
+  }
+  return tab;
+}
+
+WebContents* OpenAppShortcutWindow(Profile* profile,
+                                   const GURL& url) {
+  Browser* app_browser;
+  WebContents* tab = OpenApplicationWindow(
+      profile,
+      NULL,  // this is a URL app.  No extension.
+      extension_misc::LAUNCH_WINDOW,
+      url,
+      &app_browser);
+
+  if (!tab)
+    return NULL;
+
+  TabContents* tab_contents = TabContents::FromWebContents(tab);
+  // Set UPDATE_SHORTCUT as the pending web app action. This action is picked
+  // up in LoadingStateChanged to schedule a GetApplicationInfo. And when
+  // the web app info is available, ExtensionTabHelper notifies Browser via
+  // OnDidGetApplicationInfo, which calls
+  // web_app::UpdateShortcutForTabContents when it sees UPDATE_SHORTCUT as
+  // pending web app action.
+  tab_contents->extension_tab_helper()->set_pending_web_app_action(
+      ExtensionTabHelper::UPDATE_SHORTCUT);
+
+  return tab;
 }
 
 }  // namespace application_launch

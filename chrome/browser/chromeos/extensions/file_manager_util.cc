@@ -452,8 +452,11 @@ void OpenFileBrowser(const FilePath& path,
     return;
 
   content::RecordAction(UserMetricsAction("ShowFileBrowserFullTab"));
-  application_launch::OpenApplication(profile, extension,
-      extension_misc::LAUNCH_WINDOW, GURL(url), NEW_FOREGROUND_TAB, NULL);
+  application_launch::LaunchParams params(profile, extension,
+                                          extension_misc::LAUNCH_WINDOW,
+                                          NEW_FOREGROUND_TAB);
+  params.override_url = GURL(url);
+  application_launch::OpenApplication(params);
 }
 
 void ViewRemovableDrive(const FilePath& path) {
@@ -647,9 +650,11 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
     if (!extension)
       return false;
 
-    application_launch::OpenApplication(
-        profile, extension, extension_misc::LAUNCH_WINDOW,
-        GetVideoPlayerUrl(url), NEW_FOREGROUND_TAB, NULL);
+    application_launch::LaunchParams params(profile, extension,
+                                            extension_misc::LAUNCH_WINDOW,
+                                            NEW_FOREGROUND_TAB);
+    params.override_url = GetVideoPlayerUrl(url);
+    application_launch::OpenApplication(params);
     return true;
   }
 

@@ -59,12 +59,9 @@ IN_PROC_BROWSER_TEST_F(AppNotificationTest, SaveClientId) {
       LoadExtension(test_data_dir_.AppendASCII("app_notifications"));
   ASSERT_TRUE(app != NULL);
 
-  application_launch::OpenApplication(browser()->profile(),
-                                      app,
-                                      extension_misc::LAUNCH_TAB,
-                                      GURL(),
-                                      NEW_FOREGROUND_TAB,
-                                      NULL);
+  application_launch::OpenApplication(application_launch::LaunchParams(
+          browser()->profile(), app, extension_misc::LAUNCH_TAB,
+          NEW_FOREGROUND_TAB));
   if (!interceptor.was_called())
     ui_test_utils::RunMessageLoop();
   EXPECT_TRUE(interceptor.was_called());
