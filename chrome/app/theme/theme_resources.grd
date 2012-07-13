@@ -63,6 +63,7 @@
       <if expr="pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_BRIGHTNESS_BUBBLE_ICON" file="brightness_icon.png" />
         <structure type="chrome_scaled_image" name="IDR_BUTTON_USER_IMAGE_CHOOSE_FILE" file="choose_file.png" />
+        <structure type="chrome_scaled_image" name="IDR_BUTTON_USER_IMAGE_RECORD_VIDEO" file="record_video.png" />
         <structure type="chrome_scaled_image" name="IDR_BUTTON_USER_IMAGE_TAKE_PHOTO" file="take_photo.png" />
         <structure type="chrome_scaled_image" name="IDR_CAPS_LOCK_ICON" file="caps_lock_icon.png" />
       </if>
