@@ -139,6 +139,8 @@ const AcceleratorData kAcceleratorData[] = {
 #if !defined(NDEBUG)
   { true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     PRINT_LAYER_HIERARCHY },
+  { true, ui::VKEY_V, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+    PRINT_VIEW_HIERARCHY },
   { true, ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     PRINT_WINDOW_HIERARCHY },
 #endif
@@ -201,6 +203,7 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   ROTATE_WINDOWS,
 #if !defined(NDEBUG)
   PRINT_LAYER_HIERARCHY,
+  PRINT_VIEW_HIERARCHY,
   PRINT_WINDOW_HIERARCHY,
   ROTATE_SCREEN,
 #endif

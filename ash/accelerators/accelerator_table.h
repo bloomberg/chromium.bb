@@ -78,6 +78,7 @@ enum AcceleratorAction {
 #endif
 #if !defined(NDEBUG)
   PRINT_LAYER_HIERARCHY,
+  PRINT_VIEW_HIERARCHY,
   PRINT_WINDOW_HIERARCHY,
 #endif
 };

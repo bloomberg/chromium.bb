@@ -43,6 +43,8 @@
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/oak/oak.h"
+#include "ui/views/debug_utils.h"
+#include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/display/output_configurator.h"
@@ -244,6 +246,19 @@ bool HandlePrintLayerHierarchy() {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
   ui::PrintLayerHierarchy(root_window->layer(),
                           root_window->last_mouse_location());
+  return true;
+}
+
+bool HandlePrintViewHierarchy() {
+  aura::Window* default_container =
+      Shell::GetPrimaryRootWindowController()->GetContainer(
+          internal::kShellWindowId_DefaultContainer);
+  if (default_container->children().empty())
+    return true;
+  aura::Window* browser_frame = default_container->children()[0];
+  views::Widget* browser_widget =
+      views::Widget::GetWidgetForNativeWindow(browser_frame);
+  views::PrintViewHierarchy(browser_widget->GetRootView());
   return true;
 }
 
@@ -621,6 +636,8 @@ bool AcceleratorController::PerformAction(int action,
 #if !defined(NDEBUG)
     case PRINT_LAYER_HIERARCHY:
       return HandlePrintLayerHierarchy();
+    case PRINT_VIEW_HIERARCHY:
+      return HandlePrintViewHierarchy();
     case PRINT_WINDOW_HIERARCHY:
       return HandlePrintWindowHierarchy();
 #endif
