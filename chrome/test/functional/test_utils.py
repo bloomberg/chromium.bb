@@ -17,13 +17,20 @@ import types
 import pyauto_functional
 import pyauto
 import pyauto_utils
+import pyauto_errors
 
 
 """Commonly used functions for PyAuto tests."""
 
 def CrashBrowser(test):
   """Crashes the browser by navigating to special URL."""
-  test.NavigateToURL('chrome://inducebrowsercrashforrealz')
+  try:
+    test.NavigateToURL('chrome://inducebrowsercrashforrealz')
+  except pyauto_errors.JSONInterfaceError:
+    pass
+  else:
+    raise RuntimeError(
+        'Browser did not crash at chrome://inducebrowsercrashforrealz')
 
 
 def CopyFileFromDataDirToDownloadDir(test, file_path):

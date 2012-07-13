@@ -503,9 +503,10 @@ void TestingAutomationProvider::AppendTab(int handle,
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
     observer = new TabAppendedNotificationObserver(browser, this,
-                                                   reply_message);
-    TabContents* contents = chrome::AddSelectedTabWithURL(
-        browser, url, content::PAGE_TRANSITION_TYPED);
+                                                   reply_message, false);
+    TabContents* contents =
+        chrome::AddSelectedTabWithURL(browser, url,
+                                      content::PAGE_TRANSITION_TYPED);
     if (contents) {
       append_tab_response = GetIndexForNavigationController(
           &contents->web_contents()->GetController(), browser);
@@ -1658,6 +1659,10 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::GetIndicesFromTab;
   handler_map_["NavigateToURL"] =
       &TestingAutomationProvider::NavigateToURL;
+  handler_map_["GetActiveTabIndex"] =
+      &TestingAutomationProvider::GetActiveTabIndexJSON;
+  handler_map_["AppendTab"] =
+      &TestingAutomationProvider::AppendTabJSON;
   handler_map_["WaitUntilNavigationCompletes"] =
       &TestingAutomationProvider::WaitUntilNavigationCompletes;
   handler_map_["GetLocalStatePrefsInfo"] =
@@ -6129,6 +6134,56 @@ void TestingAutomationProvider::NavigateToURL(
           content::PAGE_TRANSITION_FROM_ADDRESS_BAR),
       false);
   browser->OpenURLFromTab(web_contents, params);
+}
+
+void TestingAutomationProvider::GetActiveTabIndexJSON(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  Browser* browser;
+  std::string error_msg;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
+    reply.SendError(error_msg);
+    return;
+  }
+  int tab_index = browser->active_index();
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  return_value->SetInteger("tab_index", tab_index);
+  reply.SendSuccess(return_value.get());
+}
+
+void TestingAutomationProvider::AppendTabJSON(DictionaryValue* args,
+                                              IPC::Message* reply_message) {
+  TabAppendedNotificationObserver* observer = NULL;
+  int append_tab_response = -1;
+  Browser* browser;
+  std::string error_msg, url;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
+    AutomationJSONReply(this, reply_message).SendError(error_msg);
+    return;
+  }
+  if (!args->GetString("url", &url)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("'url' missing or invalid");
+    return;
+  }
+  observer = new TabAppendedNotificationObserver(browser, this, reply_message,
+                                                 true);
+  TabContents* contents =
+      chrome::AddSelectedTabWithURL(browser, GURL(url),
+                                    content::PAGE_TRANSITION_TYPED);
+  if (contents) {
+    append_tab_response = GetIndexForNavigationController(
+        &contents->web_contents()->GetController(), browser);
+  }
+
+  if (!contents || append_tab_response < 0) {
+    if (observer) {
+      observer->ReleaseReply();
+      delete observer;
+    }
+    AutomationJSONReply(this, reply_message).SendError("Failed to append tab.");
+  }
 }
 
 void TestingAutomationProvider::WaitUntilNavigationCompletes(
