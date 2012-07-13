@@ -30,9 +30,15 @@
 namespace {
 
 // Tray constants
-const int kTrayBorder = 4;
+const int kTrayContainerVeritcalPaddingBottomAlignment = 3;
+const int kTrayContainerHorizontalPaddingBottomAlignment = 1;
+const int kTrayContainerVerticalPaddingVerticalAlignment = 1;
+const int kTrayContainerHorizontalPaddingVerticalAlignment = 0;
+const int kPaddingFromLeftEdgeOfSystemTrayBottomAlignment = 8;
+const int kPaddingFromTopEdgeOfSystemTrayVerticalAlignment = 10;
 const int kNotificationImageIconWidth = 40;
 const int kNotificationImageIconHeight = 25;
+const int kNotificationImageIconInset = 4;
 
 // Web Notification Bubble constants
 const int kWebNotificationBubbleMinHeight = 80;
@@ -60,9 +66,13 @@ SkBitmap GetNotificationImage(int notification_count) {
       IDR_AURA_UBER_TRAY_WEB_NOTIFICATON);
   int image_index = notification_count - 1;
   image_index = std::max(0, std::min(image_index, 2));
+  // The original width of the image looks too big, so we need to inset
+  // it somewhat.
   SkIRect region = SkIRect::MakeXYWH(
-      0, image_index * kNotificationImageIconHeight,
-      kNotificationImageIconWidth, kNotificationImageIconHeight);
+      kNotificationImageIconInset, image_index * kNotificationImageIconHeight,
+      kNotificationImageIconWidth - 2 * kNotificationImageIconInset,
+      kNotificationImageIconHeight);
+
   all.ToSkBitmap()->extractSubset(&image, region);
   return image;
 }
@@ -670,8 +680,6 @@ WebNotificationTray::WebNotificationTray(
       delegate_(NULL),
       show_bubble_on_unlock_(false) {
   tray_container_ = new views::View;
-  tray_container_->set_border(views::Border::CreateEmptyBorder(
-      kTrayBorder, kTrayBorder, kTrayBorder, kTrayBorder));
   SetShelfAlignment(shelf_alignment());
 
   icon_ = new views::ImageView;
@@ -804,6 +812,8 @@ void WebNotificationTray::OnClicked(const std::string& id) {
 
 void WebNotificationTray::SetShelfAlignment(ShelfAlignment alignment) {
   internal::TrayBackgroundView::SetShelfAlignment(alignment);
+  SetTrayContainerBorder();
+  SetBorder();
   tray_container_->SetLayoutManager(new views::BoxLayout(
       alignment == SHELF_ALIGNMENT_BOTTOM ?
           views::BoxLayout::kHorizontal : views::BoxLayout::kVertical,
@@ -818,6 +828,44 @@ bool WebNotificationTray::PerformAction(const views::Event& event) {
         internal::StatusAreaWidget::USER_ACTION);
   }
   return true;
+}
+
+void WebNotificationTray::SetBorder() {
+  // Change the border padding for different shelf alignment.
+  // This affects the position of the web notification tray.
+  if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
+    set_border(views::Border::CreateEmptyBorder(0, 0,
+        kPaddingFromBottomOfScreenBottomAlignment,
+        kPaddingFromLeftEdgeOfSystemTrayBottomAlignment));
+  } else if (shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
+    set_border(views::Border::CreateEmptyBorder(0,
+        kPaddingFromOuterEdgeOfLauncherVerticalAlignment,
+        kPaddingFromTopEdgeOfSystemTrayVerticalAlignment,
+        kPaddingFromInnerEdgeOfLauncherVerticalAlignment));
+  } else {
+    set_border(views::Border::CreateEmptyBorder(0,
+        kPaddingFromInnerEdgeOfLauncherVerticalAlignment,
+        kPaddingFromTopEdgeOfSystemTrayVerticalAlignment,
+        kPaddingFromOuterEdgeOfLauncherVerticalAlignment));
+  }
+}
+
+void WebNotificationTray::SetTrayContainerBorder() {
+  // Adjust the size of web notification tray dark background by adding
+  // additional empty border.
+  if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
+    tray_container_->set_border(views::Border::CreateEmptyBorder(
+        kTrayContainerVeritcalPaddingBottomAlignment,
+        kTrayContainerHorizontalPaddingBottomAlignment,
+        kTrayContainerVeritcalPaddingBottomAlignment,
+        kTrayContainerHorizontalPaddingBottomAlignment));
+  } else {
+    tray_container_->set_border(views::Border::CreateEmptyBorder(
+        kTrayContainerVerticalPaddingVerticalAlignment,
+        kTrayContainerHorizontalPaddingVerticalAlignment,
+        kTrayContainerVerticalPaddingVerticalAlignment,
+        kTrayContainerHorizontalPaddingVerticalAlignment));
+  }
 }
 
 int WebNotificationTray::GetNotificationCount() const {

@@ -134,6 +134,8 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView {
   class BubbleContentsView;
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, WebNotifications);
 
+  void SetBorder();
+  void SetTrayContainerBorder();
   int GetNotificationCount() const;
   void UpdateIcon();
   void UpdateBubbleAndIcon();
