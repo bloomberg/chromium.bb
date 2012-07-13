@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,13 +97,7 @@ TEST_F(AppNotificationManagerTest, Simple) {
 
 // Test that AppNotificationManager correctly listens to EXTENSION_UNINSTALLED
 // notifications and removes associated data when that happens.
-#ifdef ADDRESS_SANITIZER
-// This test crashes under ASan, see http://crbug.com/100156
-#define MAYBE_ExtensionUninstall DISABLED_ExtensionUninstall
-#else
-#define MAYBE_ExtensionUninstall ExtensionUninstall
-#endif
-TEST_F(AppNotificationManagerTest, MAYBE_ExtensionUninstall) {
+TEST_F(AppNotificationManagerTest, ExtensionUninstall) {
   // Add some items from two test extension ids.
   std::string id1 = extension_test_util::MakeId("id1");
   std::string id2 = extension_test_util::MakeId("id2");
