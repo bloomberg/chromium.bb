@@ -174,6 +174,9 @@ static void CreateFrameBuffer(Display* display,
     const RRMode kMode = None;
     const RROutput kOutput = None;
 
+    // We don't worry about the cached state of the outputs here since we are
+    // not interested in the state we are setting - it is just to get the CRTCs
+    // off the screen so we can rebuild the frame buffer.
     ConfigureCrtc(display,
                   screen,
                   screen->crtcs[i],
@@ -482,11 +485,14 @@ void OutputConfigurator::UpdateCacheAndXrandrToState(
   const int y = 0;
   switch (new_state) {
     case STATE_SINGLE:
+      // Update cache to reflect new x/y.
+      output_cache_[primary_output_index_].x = x;
+      output_cache_[primary_output_index_].y = y;
       ConfigureCrtc(display,
                     screen,
                     output_cache_[primary_output_index_].crtc,
-                    x,
-                    y,
+                    output_cache_[primary_output_index_].x,
+                    output_cache_[primary_output_index_].y,
                     output_cache_[primary_output_index_].ideal_mode,
                     output_cache_[primary_output_index_].output);
       break;
@@ -508,18 +514,23 @@ void OutputConfigurator::UpdateCacheAndXrandrToState(
       if (new_state == STATE_DUAL_SECONDARY_ONLY)
         primary_y = y + secondary_height + vertical_gap;
 
+      // Make sure that the caches are up-to-date with this change to x/y.
+      output_cache_[primary_output_index_].x = x;
+      output_cache_[primary_output_index_].y = primary_y;
       ConfigureCrtc(display,
                     screen,
                     output_cache_[primary_output_index_].crtc,
-                    x,
-                    primary_y,
+                    output_cache_[primary_output_index_].x,
+                    output_cache_[primary_output_index_].y,
                     primary_mode,
                     output_cache_[primary_output_index_].output);
+      output_cache_[secondary_output_index_].x = x;
+      output_cache_[secondary_output_index_].y = secondary_y;
       ConfigureCrtc(display,
                     screen,
                     output_cache_[secondary_output_index_].crtc,
-                    x,
-                    secondary_y,
+                    output_cache_[secondary_output_index_].x,
+                    output_cache_[secondary_output_index_].y,
                     secondary_mode,
                     output_cache_[secondary_output_index_].output);
       }
@@ -712,6 +723,8 @@ bool OutputConfigurator::ScreenPowerSet(bool power_on, bool all_displays) {
                 << ", output " << output
                 << ", x " << x
                 << ", y " << y;
+        // The values we are setting are already from the cache so no update
+        // required.
         ConfigureCrtc(display,
                       screen,
                       crtc,
