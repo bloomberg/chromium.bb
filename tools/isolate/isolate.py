@@ -876,6 +876,7 @@ def CMDtrace(args):
   logging.info('Running %s, cwd=%s' % (cmd, cwd))
   api = trace_inputs.get_api()
   logfile = complete_state.result_file + '.log'
+  api.clean_trace(logfile)
   try:
     with api.get_tracer(logfile) as tracer:
       result, _ = tracer.trace(
