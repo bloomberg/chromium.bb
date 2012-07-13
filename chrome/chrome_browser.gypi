@@ -4846,9 +4846,17 @@
 
             # Android uses native UI for sync setup.
             'browser/ui/webui/ntp/new_tab_page_sync_handler.cc',
+            'browser/ui/webui/ntp/new_tab_page_sync_handler.h',
             'browser/ui/webui/ntp/new_tab_sync_setup_handler.cc',
+            'browser/ui/webui/ntp/new_tab_sync_setup_handler.h',
             'browser/ui/webui/ntp/ntp_login_handler.cc',
+            'browser/ui/webui/ntp/ntp_login_handler.h',
+            'browser/ui/webui/ntp/suggestions_combiner.cc',
+            'browser/ui/webui/ntp/suggestions_combiner.h',
+            'browser/ui/webui/ntp/suggestions_page_handler.cc',
+            'browser/ui/webui/ntp/suggestions_page_handler.h',
             'browser/ui/webui/sync_setup_handler.cc',
+            'browser/ui/webui/sync_setup_handler.h',
 
             # about:flags is unsupported.
             'browser/about_flags.cc',

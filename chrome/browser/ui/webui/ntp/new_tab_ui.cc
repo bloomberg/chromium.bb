@@ -32,11 +32,9 @@
 #include "chrome/browser/ui/webui/ntp/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
-#include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/ui/webui/ntp/recently_closed_tabs_handler.h"
-#include "chrome/browser/ui/webui/ntp/suggestions_page_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -59,6 +57,8 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_sync_handler.h"
+#include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
+#include "chrome/browser/ui/webui/ntp/suggestions_page_handler.h"
 #endif
 
 using content::BrowserThread;
@@ -104,11 +104,11 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
   if (!GetProfile()->IsOffTheRecord()) {
     web_ui->AddMessageHandler(new browser_sync::ForeignSessionHandler());
     web_ui->AddMessageHandler(new MostVisitedHandler());
-    if (NewTabUI::IsSuggestionsPageEnabled())
-      web_ui->AddMessageHandler(new SuggestionsHandler());
     web_ui->AddMessageHandler(new RecentlyClosedTabsHandler());
     web_ui->AddMessageHandler(new MetricsHandler());
 #if !defined(OS_ANDROID)
+    if (NewTabUI::IsSuggestionsPageEnabled())
+      web_ui->AddMessageHandler(new SuggestionsHandler());
     // Android doesn't have a sync promo/username on NTP.
     if (GetProfile()->IsSyncAccessible())
       web_ui->AddMessageHandler(new NewTabPageSyncHandler());
@@ -269,10 +269,10 @@ void NewTabUI::RegisterUserPrefs(PrefService* prefs) {
   NewTabPageHandler::RegisterUserPrefs(prefs);
 #if !defined(OS_ANDROID)
   AppLauncherHandler::RegisterUserPrefs(prefs);
-#endif
-  MostVisitedHandler::RegisterUserPrefs(prefs);
   if (NewTabUI::IsSuggestionsPageEnabled())
     SuggestionsHandler::RegisterUserPrefs(prefs);
+#endif
+  MostVisitedHandler::RegisterUserPrefs(prefs);
   browser_sync::ForeignSessionHandler::RegisterUserPrefs(prefs);
 }
 

@@ -2421,6 +2421,7 @@
             'browser/ui/tab_contents/tab_contents_iterator_unittest.cc',
             'browser/ui/toolbar/toolbar_model_unittest.cc',
             'browser/ui/toolbar/wrench_menu_model_unittest.cc',
+            'browser/ui/webui/ntp/suggestions_combiner_unittest.cc',
             'browser/ui/webui/web_dialog_web_contents_delegate_unittest.cc',
             'browser/ui/window_sizer/window_sizer_unittest.cc',
             'test/base/browser_with_test_window_test.cc',
