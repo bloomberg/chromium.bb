@@ -1083,7 +1083,7 @@ void WrenchMenu::CreateBookmarkMenu() {
       browser_->window()->GetNativeWindow());
   bookmark_menu_delegate_.reset(
       new BookmarkMenuDelegate(browser_,
-                               NULL,
+                               browser_,
                                parent,
                                first_bookmark_command_id_));
   bookmark_menu_delegate_->Init(
