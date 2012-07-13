@@ -920,7 +920,7 @@ TEST_F(GDataCacheTest, StoreToCacheSimple) {
   // Store a non-existent file to the same |resource_id| and |md5|.
   num_callback_invocations_ = 0;
   TestStoreToCache(resource_id, md5, FilePath("./non_existent.json"),
-                   base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                   base::PLATFORM_FILE_ERROR_FAILED,
                    test_util::TEST_CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
@@ -1106,7 +1106,7 @@ TEST_F(GDataCacheTest, StoreToCachePinned) {
   // Store a non-existent file to a previously pinned and stored file.
   num_callback_invocations_ = 0;
   TestStoreToCache(resource_id, md5, FilePath("./non_existent.json"),
-                   base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                   base::PLATFORM_FILE_ERROR_FAILED,
                    test_util::TEST_CACHE_STATE_PRESENT |
                    test_util::TEST_CACHE_STATE_PINNED |
                    test_util::TEST_CACHE_STATE_PERSISTENT,
