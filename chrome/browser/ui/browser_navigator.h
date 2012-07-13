@@ -15,7 +15,6 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class Browser;
-class Profile;
 class TabContents;
 
 namespace chrome {
@@ -167,8 +166,7 @@ struct NavigateParams {
 
   // [in]  Specifies a Browser object where the navigation could occur or the
   //       tab could be added. Navigate() is not obliged to use this Browser if
-  //       it is not compatible with the operation being performed. If NULL,
-  //       |profile| should be specified to find or create a matching Browser.
+  //       it is not compatible with the operation being performed.
   // [out] Specifies the Browser object where the navigation occurred or the
   //       tab was added. Guaranteed non-NULL unless the disposition did not
   //       require a navigation, in which case this is set to NULL
@@ -178,10 +176,6 @@ struct NavigateParams {
   //       window can assume responsibility for the Browser's lifetime (Browser
   //       objects are deleted when the user closes a visible browser window).
   Browser* browser;
-
-  // If |browser| == NULL, specifies a Profile to use when finding or
-  // creating a Browser.
-  Profile* profile;
 
   // Refers to a navigation that was parked in the browser in order to be
   // transferred to another RVH. Only used in case of a redirection of a request

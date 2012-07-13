@@ -301,7 +301,6 @@ void WebIntentPickerController::OnServiceChosen(const GURL& url,
                                     content::PAGE_TRANSITION_AUTO_BOOKMARK);
       params.target_contents = contents;
       params.disposition = NEW_FOREGROUND_TAB;
-      params.profile = tab_contents_->profile();
       chrome::Navigate(&params);
 
       service_tab_->GetController().LoadURL(

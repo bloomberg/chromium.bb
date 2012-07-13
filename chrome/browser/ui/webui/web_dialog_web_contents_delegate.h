@@ -18,11 +18,11 @@ class Profile;
 // behave consistently.
 class WebDialogWebContentsDelegate : public content::WebContentsDelegate {
  public:
-  // Opens a new URL inside |source| (if source is NULL open in the current
-  // front-most tab). |profile| is the profile that the browser should be owened
-  // by. |params| contains the URL to open and various attributes such as
-  // disposition. On return |out_new_contents| contains the WebContents the
-  // URL is opened in. Returns the browser spawned by the operation.
+  // Opens a new URL inside |source|. |profile| is the profile that the browser
+  // should be owned by. |params| contains the URL to open and various
+  // attributes such as disposition. On return |out_new_contents| contains the
+  // WebContents the URL is opened in. Returns the browser spawned by the
+  // operation.
   static Browser* StaticOpenURLFromTab(Profile* profile,
                                        content::WebContents* source,
                                        const content::OpenURLParams& params,

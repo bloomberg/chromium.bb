@@ -74,8 +74,7 @@ bool AdjustNavigateParamsForURL(chrome::NavigateParams* params) {
     return true;
   }
 
-  Profile* profile =
-      params->browser ? params->browser->profile() : params->profile;
+  Profile* profile = params->browser->profile();
 
   if (profile->IsOffTheRecord() || params->disposition == OFF_THE_RECORD) {
     profile = profile->GetOriginalProfile();
@@ -88,7 +87,6 @@ bool AdjustNavigateParamsForURL(chrome::NavigateParams* params) {
     }
 
     params->disposition = SINGLETON_TAB;
-    params->profile = profile;
     params->browser = browser::FindOrCreateTabbedBrowser(profile);
     params->window_action = chrome::NavigateParams::SHOW_WINDOW;
   }
@@ -104,72 +102,58 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
   // the target browser. This must happen first, before
   // GetBrowserForDisposition() has a chance to replace |params->browser| with
   // another one.
-  if (!params->source_contents && params->browser)
+  if (!params->source_contents)
     params->source_contents = chrome::GetActiveTabContents(params->browser);
 
-  Profile* profile =
-      params->browser ? params->browser->profile() : params->profile;
+  Profile* profile = params->browser->profile();
 
   switch (params->disposition) {
     case CURRENT_TAB:
-      if (!params->browser && profile) {
-        // We specified a profile instead of a browser; find or create one.
-        params->browser = browser::FindOrCreateTabbedBrowser(profile);
-      }
       return params->browser;
     case SINGLETON_TAB:
     case NEW_FOREGROUND_TAB:
     case NEW_BACKGROUND_TAB:
       // See if we can open the tab in the window this navigator is bound to.
-      if (params->browser && WindowCanOpenTabs(params->browser))
+      if (WindowCanOpenTabs(params->browser))
         return params->browser;
       // Find a compatible window and re-execute this command in it. Otherwise
       // re-run with NEW_WINDOW.
-      if (profile)
-        return GetOrCreateBrowser(profile);
-      return NULL;
+      return GetOrCreateBrowser(profile);
     case NEW_POPUP: {
       // Make a new popup window.
-      if (profile) {
-        // Coerce app-style if |params->browser| or |source| represents an app.
-        std::string app_name;
-        if (!params->extension_app_id.empty()) {
-          app_name = web_app::GenerateApplicationNameFromExtensionId(
-              params->extension_app_id);
-        } else if (params->browser && !params->browser->app_name().empty()) {
-          app_name = params->browser->app_name();
-        } else if (params->source_contents &&
-                   params->source_contents->extension_tab_helper()->is_app()) {
-          app_name = web_app::GenerateApplicationNameFromExtensionId(
-              params->source_contents->extension_tab_helper()->
-                  extension_app()->id());
-        }
-        if (app_name.empty()) {
-          Browser::CreateParams browser_params(Browser::TYPE_POPUP, profile);
-          browser_params.initial_bounds = params->window_bounds;
-          return Browser::CreateWithParams(browser_params);
-        } else {
-          return Browser::CreateWithParams(
-              Browser::CreateParams::CreateForApp(
-                  Browser::TYPE_POPUP, app_name, params->window_bounds,
-                  profile));
-        }
+      // Coerce app-style if |source| represents an app.
+      std::string app_name;
+      if (!params->extension_app_id.empty()) {
+        app_name = web_app::GenerateApplicationNameFromExtensionId(
+            params->extension_app_id);
+      } else if (!params->browser->app_name().empty()) {
+        app_name = params->browser->app_name();
+      } else if (params->source_contents &&
+                 params->source_contents->extension_tab_helper()->is_app()) {
+        app_name = web_app::GenerateApplicationNameFromExtensionId(
+            params->source_contents->extension_tab_helper()->
+                extension_app()->id());
       }
-      return NULL;
+      if (app_name.empty()) {
+        Browser::CreateParams browser_params(Browser::TYPE_POPUP, profile);
+        browser_params.initial_bounds = params->window_bounds;
+        return Browser::CreateWithParams(browser_params);
+      }
+
+      return Browser::CreateWithParams(
+          Browser::CreateParams::CreateForApp(
+              Browser::TYPE_POPUP, app_name, params->window_bounds,
+              profile));
     }
-    case NEW_WINDOW:
+    case NEW_WINDOW: {
       // Make a new normal browser window.
-      if (profile) {
-        Browser* browser = new Browser(Browser::TYPE_TABBED, profile);
-        browser->InitBrowserWindow();
-        return browser;
-      }
-      return NULL;
+      Browser* browser = new Browser(Browser::TYPE_TABBED, profile);
+      browser->InitBrowserWindow();
+      return browser;
+    }
     case OFF_THE_RECORD:
       // Make or find an incognito window.
-      if (profile)
-        return GetOrCreateBrowser(profile->GetOffTheRecordProfile());
-      return NULL;
+      return GetOrCreateBrowser(profile->GetOffTheRecordProfile());
     // The following types all result in no navigation.
     case SUPPRESS_OPEN:
     case SAVE_TO_DISK:
@@ -231,15 +215,7 @@ Profile* GetSourceProfile(chrome::NavigateParams* params,
   if (params->source_contents)
     return params->source_contents->profile();
 
-  if (source_browser)
-    return source_browser->profile();
-
-  if (params->profile)
-    return params->profile;
-
-  // We couldn't find one in any of the source metadata, so we'll fall back to
-  // the profile associated with the target browser.
-  return params->browser->profile();
+  return source_browser->profile();
 }
 
 void LoadURLInContents(WebContents* target_contents,
@@ -323,9 +299,6 @@ void InitializeExtraHeaders(chrome::NavigateParams* params,
                             Profile* profile,
                             std::string* extra_headers) {
 #if defined(ENABLE_RLZ)
-  if (!profile)
-    profile = params->profile;
-
   // If this is a home page navigation, check to see if the home page is
   // set to Google and add RLZ HTTP headers to the request.  This is only
   // done if Google was the original home page, and not changed afterwards by
@@ -381,8 +354,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
       user_gesture(true),
       path_behavior(RESPECT),
       ref_behavior(IGNORE_REF),
-      browser(a_browser),
-      profile(NULL) {
+      browser(a_browser) {
 }
 
 NavigateParams::NavigateParams(Browser* a_browser,
@@ -398,8 +370,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
       user_gesture(true),
       path_behavior(RESPECT),
       ref_behavior(IGNORE_REF),
-      browser(a_browser),
-      profile(NULL) {
+      browser(a_browser) {
 }
 
 NavigateParams::~NavigateParams() {
@@ -412,8 +383,7 @@ void Navigate(NavigateParams* params) {
     return;
 
   // The browser window may want to adjust the disposition.
-  if (params->disposition == NEW_POPUP &&
-      (source_browser && source_browser->window())) {
+  if (params->disposition == NEW_POPUP && source_browser->window()) {
     params->disposition =
         source_browser->window()->GetDispositionForPopupBounds(
             params->window_bounds);
@@ -592,7 +562,8 @@ void Navigate(NavigateParams* params) {
       target->GetController().Reload(true);
     } else if (params->path_behavior == NavigateParams::IGNORE_AND_NAVIGATE &&
         target->GetURL() != params->url) {
-      InitializeExtraHeaders(params, NULL, &extra_headers);
+      TabContents* target_tab = TabContents::FromWebContents(target);
+      InitializeExtraHeaders(params, target_tab->profile(), &extra_headers);
       LoadURLInContents(target, params->url, params, extra_headers);
     }
 

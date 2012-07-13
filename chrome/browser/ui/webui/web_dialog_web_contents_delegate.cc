@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -48,11 +49,8 @@ Browser* WebDialogWebContentsDelegate::StaticOpenURLFromTab(
   if (!profile)
     return NULL;
 
-  // Specify a NULL browser for navigation. This will cause Navigate()
-  // to find a browser matching params.profile or create a new one.
-  Browser* browser = NULL;
+  Browser* browser = browser::FindOrCreateTabbedBrowser(profile);
   chrome::NavigateParams nav_params(browser, params.url, params.transition);
-  nav_params.profile = profile;
   nav_params.referrer = params.referrer;
   if (source && source->IsCrashed() &&
       params.disposition == CURRENT_TAB &&
@@ -88,13 +86,9 @@ Browser* WebDialogWebContentsDelegate::StaticAddNewContents(
   if (!profile)
     return NULL;
 
-  // Specify a NULL browser for navigation. This will cause Navigate()
-  // to find a browser matching params.profile or create a new one.
-  Browser* browser = NULL;
-
+  Browser* browser = browser::FindOrCreateTabbedBrowser(profile);
   TabContents* tab_contents = new TabContents(new_contents);
   chrome::NavigateParams params(browser, tab_contents);
-  params.profile = profile;
   // TODO(pinkerton): no way to get a TabContents for this.
   // params.source_contents = source;
   params.disposition = disposition;

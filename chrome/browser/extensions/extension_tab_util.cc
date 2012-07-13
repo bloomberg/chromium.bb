@@ -226,13 +226,9 @@ void ExtensionTabUtil::CreateTab(WebContents* web_contents,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
                                  bool user_gesture) {
-  // Find a browser with a profile that matches the new tab. If none is found,
-  // NULL argument to NavigateParams is valid.
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-
-  Browser* browser = browser::FindTabbedBrowser(
-      profile, false);  // Match incognito exactly.
+  Browser* browser = browser::FindOrCreateTabbedBrowser(profile);
   TabContents* tab_contents = new TabContents(web_contents);
   chrome::NavigateParams params(browser, tab_contents);
 
@@ -244,8 +240,6 @@ void ExtensionTabUtil::CreateTab(WebContents* web_contents,
   if (disposition == NEW_POPUP)
     params.extension_app_id = extension_id;
 
-  if (!browser)
-    params.profile = profile;
   params.disposition = disposition;
   params.window_bounds = initial_pos;
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
