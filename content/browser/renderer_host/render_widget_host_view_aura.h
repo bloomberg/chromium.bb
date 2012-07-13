@@ -36,13 +36,12 @@ class Canvas;
 
 namespace ui {
 class InputMethod;
+class Texture;
 }
 
 namespace WebKit {
 class WebTouchEvent;
 }
-
-class ImageTransportClient;
 
 // RenderWidgetHostView class hierarchy described in render_widget_host_view.h.
 class RenderWidgetHostViewAura
@@ -194,6 +193,7 @@ class RenderWidgetHostViewAura
   friend class WindowObserver;
 
   // Overridden from ui::CompositorObserver:
+  virtual void OnCompositingDidCommit(ui::Compositor* compositor) OVERRIDE;
   virtual void OnCompositingWillStart(ui::Compositor* compositor) OVERRIDE;
   virtual void OnCompositingStarted(ui::Compositor* compositor) OVERRIDE;
   virtual void OnCompositingEnded(ui::Compositor* compositor) OVERRIDE;
@@ -228,11 +228,14 @@ class RenderWidgetHostViewAura
   bool ShouldMoveToCenter();
 
   // Run the compositing callbacks.
-  void RunCompositingCallbacks();
+  void RunCompositingDidCommitCallbacks(ui::Compositor* compositor);
+  void RunCompositingWillStartCallbacks(ui::Compositor* compositor);
 
   // Insert a sync point into the compositor's command stream and acknowledge
   // that we have presented the accelerated surface buffer.
-  void InsertSyncPointAndACK(int32 route_id, int gpu_host_id);
+  static void InsertSyncPointAndACK(int32 route_id,
+                                    int gpu_host_id,
+                                    ui::Compositor* compositor);
 
   // Called when window_ is removed from the window tree.
   void RemovingFromRootWindow();
@@ -294,10 +297,13 @@ class RenderWidgetHostViewAura
   // Current tooltip text.
   string16 tooltip_;
 
-  std::vector< base::Callback<void(void)> >
+  std::vector< base::Callback<void(ui::Compositor*)> >
+      on_compositing_did_commit_callbacks_;
+
+  std::vector< base::Callback<void(ui::Compositor*)> >
       on_compositing_will_start_callbacks_;
 
-  std::map<uint64, scoped_refptr<ImageTransportClient> >
+  std::map<uint64, scoped_refptr<ui::Texture> >
       image_transport_clients_;
 
   uint64 current_surface_;

@@ -16,6 +16,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/gl_implementation.h"
 
 ImageTransportSurface::ImageTransportSurface() {}
 
@@ -112,6 +113,10 @@ void ImageTransportHelper::SendAcceleratedSurfaceNew(
 
 void ImageTransportHelper::SendAcceleratedSurfaceBuffersSwapped(
     GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params) {
+  // TRACE_EVENT for gpu tests:
+  TRACE_EVENT_INSTANT2("test_gpu", "SwapBuffers",
+                       "GLImpl", static_cast<int>(gfx::GetGLImplementation()),
+                       "width", surface_->GetSize().width());
   params.surface_id = stub_->surface_id();
   params.route_id = route_id_;
 #if defined(OS_MACOSX)
@@ -324,6 +329,10 @@ void PassThroughImageTransportSurface::OnResize(gfx::Size size) {
   } else {
     Resize(new_size_);
   }
+}
+
+gfx::Size PassThroughImageTransportSurface::GetSize() {
+  return GLSurfaceAdapter::GetSize();
 }
 
 PassThroughImageTransportSurface::~PassThroughImageTransportSurface() {}

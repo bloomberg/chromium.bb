@@ -247,6 +247,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   virtual void ScheduleDraw() OVERRIDE;
 
   // Overridden from ui::CompositorObserver:
+  virtual void OnCompositingDidCommit(ui::Compositor*) OVERRIDE;
   virtual void OnCompositingWillStart(ui::Compositor*) OVERRIDE;
   virtual void OnCompositingStarted(ui::Compositor*) OVERRIDE;
   virtual void OnCompositingEnded(ui::Compositor*) OVERRIDE;

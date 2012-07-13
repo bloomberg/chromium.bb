@@ -13,7 +13,6 @@
 #include "base/observer_list.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
-#include "content/browser/renderer_host/image_transport_client.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
@@ -23,6 +22,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_setup.h"
+#include "ui/compositor/test_web_graphics_context_3d.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/scoped_make_current.h"
@@ -55,9 +55,10 @@ class DefaultTransportFactory
       gfx::GLSurfaceHandle surface) OVERRIDE {
   }
 
-  virtual scoped_refptr<ImageTransportClient> CreateTransportClient(
+  virtual scoped_refptr<ui::Texture> CreateTransportClient(
       const gfx::Size& size,
-      uint64* transport_handle) OVERRIDE {
+      uint64* transport_handle,
+      ui::Compositor* compositor) OVERRIDE {
     return NULL;
   }
 
@@ -67,10 +68,6 @@ class DefaultTransportFactory
 
   virtual uint32 InsertSyncPoint(ui::Compositor* compositor) OVERRIDE {
     return 0;
-  }
-
-  virtual gfx::ScopedMakeCurrent* GetScopedMakeCurrent() OVERRIDE {
-    return NULL;
   }
 
   // We don't generate lost context events, so we don't need to keep track of
@@ -86,55 +83,30 @@ class DefaultTransportFactory
   DISALLOW_COPY_AND_ASSIGN(DefaultTransportFactory);
 };
 
-class TestTransportFactory : public DefaultTransportFactory {
+class ImageTransportClientTexture : public ui::Texture {
  public:
-  TestTransportFactory() {}
-
-  virtual gfx::GLSurfaceHandle CreateSharedSurfaceHandle(
-      ui::Compositor* compositor) OVERRIDE {
-    return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, true);
-  }
-
-  virtual scoped_refptr<ImageTransportClient> CreateTransportClient(
+  ImageTransportClientTexture(
+      WebKit::WebGraphicsContext3D* host_context,
       const gfx::Size& size,
-      uint64* transport_handle) OVERRIDE {
-#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-    scoped_refptr<ImageTransportClient> surface(
-        ImageTransportClient::Create(this, size));
-    if (!surface || !surface->Initialize(transport_handle)) {
-      LOG(ERROR) << "Failed to create ImageTransportClient";
-      return NULL;
-    }
-    return surface;
-#else
-    return NULL;
-#endif
+      uint64 surface_id)
+          : ui::Texture(true, size),
+            host_context_(host_context) {
+    set_texture_id(surface_id);
   }
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestTransportFactory);
-};
-
-class ImageTransportClientTexture : public ImageTransportClient {
- public:
-  explicit ImageTransportClientTexture(const gfx::Size& size)
-      : ImageTransportClient(true, size) {
-  }
-
-  virtual bool Initialize(uint64* surface_id) OVERRIDE {
-    set_texture_id(*surface_id);
-    return true;
-  }
-
-  virtual void Update() OVERRIDE {}
-  virtual TransportDIB::Handle Handle() const OVERRIDE {
-    return TransportDIB::DefaultHandleValue();
+  virtual WebKit::WebGraphicsContext3D* HostContext3D() {
+    return host_context_;
   }
 
  protected:
   virtual ~ImageTransportClientTexture() {}
 
  private:
+  // A raw pointer. This |ImageTransportClientTexture| will be destroyed
+  // before the |host_context_| via
+  // |ImageTransportFactoryObserver::OnLostContext()| handlers.
+  WebKit::WebGraphicsContext3D* host_context_;
+
   DISALLOW_COPY_AND_ASSIGN(ImageTransportClientTexture);
 };
 
@@ -247,12 +219,15 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
     }
   }
 
-  virtual scoped_refptr<ImageTransportClient> CreateTransportClient(
+  virtual scoped_refptr<ui::Texture> CreateTransportClient(
       const gfx::Size& size,
-      uint64* transport_handle) {
+      uint64* transport_handle,
+      ui::Compositor* compositor) {
+    PerCompositorData* data = per_compositor_data_[compositor];
+    DCHECK(data);
     scoped_refptr<ImageTransportClientTexture> image(
-        new ImageTransportClientTexture(size));
-    image->Initialize(transport_handle);
+        new ImageTransportClientTexture(data->shared_context.get(),
+                                        size, *transport_handle));
     return image;
   }
 
@@ -277,8 +252,6 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
       data = CreatePerCompositorData(compositor);
     return data->shared_context->insertSyncPoint();
   }
-
-  virtual gfx::ScopedMakeCurrent* GetScopedMakeCurrent() { return NULL; }
 
   virtual void AddObserver(ImageTransportFactoryObserver* observer) {
     observer_list_.AddObserver(observer);
@@ -412,7 +385,7 @@ void ImageTransportFactory::Initialize() {
     ui::SetupTestCompositor();
   }
   if (ui::IsTestCompositorEnabled()) {
-    g_factory = new TestTransportFactory();
+    g_factory = new DefaultTransportFactory();
   } else {
 #if defined(OS_WIN)
     g_factory = new DefaultTransportFactory();

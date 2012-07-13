@@ -51,6 +51,7 @@ class PbufferImageTransportSurface
   virtual void OnBufferPresented(uint32 sync_point) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
+  virtual gfx::Size GetSize() OVERRIDE;
 
  private:
   virtual ~PbufferImageTransportSurface();
@@ -228,6 +229,10 @@ void PbufferImageTransportSurface::OnResize(gfx::Size size) {
   DestroySurface();
 
   visible_size_ = size;
+}
+
+gfx::Size PbufferImageTransportSurface::GetSize() {
+  return GLSurfaceAdapter::GetSize();
 }
 
 }  // namespace anonymous

@@ -71,6 +71,8 @@ class ImageTransportSurface {
                     GpuCommandBufferStub* stub,
                     const gfx::GLSurfaceHandle& handle);
 
+  virtual gfx::Size GetSize() = 0;
+
  protected:
   // Used by certain implements of PostSubBuffer to determine
   // how much needs to be copied between frames.
@@ -177,6 +179,7 @@ class PassThroughImageTransportSurface
   virtual void OnBufferPresented(uint32 sync_point) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
+  virtual gfx::Size GetSize() OVERRIDE;
 
  protected:
   virtual ~PassThroughImageTransportSurface();

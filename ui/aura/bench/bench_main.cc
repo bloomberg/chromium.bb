@@ -91,6 +91,9 @@ class BenchCompositorObserver : public ui::CompositorObserver {
         frames_(0),
         max_frames_(max_frames) {
   }
+
+  virtual void OnCompositingDidCommit(ui::Compositor* compositor) OVERRIDE {}
+
   virtual void OnCompositingWillStart(Compositor* compositor) OVERRIDE {}
 
   virtual void OnCompositingStarted(Compositor* compositor) OVERRIDE {}
@@ -142,6 +145,10 @@ class WebGLTexture : public ui::Texture {
     context_->texImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                          size.width(), size.height(), 0,
                          GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  }
+
+  virtual WebGraphicsContext3D* HostContext3D() OVERRIDE {
+    return context_;
   }
 
  private:

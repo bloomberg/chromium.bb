@@ -170,6 +170,11 @@ Compositor::~Compositor() {
   host_.setRootLayer(NULL);
   if (root_layer_)
     root_layer_->SetCompositor(NULL);
+
+  // Stop all outstanding draws before telling the ContextFactory to tear
+  // down any contexts that the |host_| may rely upon.
+  host_.reset();
+
   if (!test_compositor_enabled)
     ContextFactory::GetInstance()->RemoveCompositor(this);
 }
@@ -292,6 +297,10 @@ bool Compositor::HasObserver(CompositorObserver* observer) {
   return observer_list_.HasObserver(observer);
 }
 
+bool Compositor::IsThreaded() const {
+  return g_compositor_thread != NULL;
+}
+
 void Compositor::OnSwapBuffersPosted() {
   swap_posted_ = true;
 }
@@ -340,6 +349,14 @@ WebKit::WebGraphicsContext3D* Compositor::createContext3D() {
 }
 
 void Compositor::didRebindGraphicsContext(bool success) {
+}
+
+// Called once per draw in single-threaded compositor mode and potentially
+// many times between draws in the multi-threaded compositor mode.
+void Compositor::didCommit() {
+  FOR_EACH_OBSERVER(CompositorObserver,
+                    observer_list_,
+                    OnCompositingDidCommit(this));
 }
 
 void Compositor::didCommitAndDrawFrame() {

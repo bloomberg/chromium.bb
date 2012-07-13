@@ -560,6 +560,9 @@ void RootWindow::ScheduleDraw() {
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, ui::CompositorObserver implementation:
 
+void RootWindow::OnCompositingDidCommit(ui::Compositor*) {
+}
+
 void RootWindow::OnCompositingWillStart(ui::Compositor*) {
 }
 

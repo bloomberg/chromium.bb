@@ -337,6 +337,9 @@ class TestCompositorObserver : public CompositorObserver {
   }
 
  private:
+  virtual void OnCompositingDidCommit(Compositor* compositor) OVERRIDE {
+  }
+
   virtual void OnCompositingWillStart(Compositor* compositor) OVERRIDE {
     will_start_ = true;
   }

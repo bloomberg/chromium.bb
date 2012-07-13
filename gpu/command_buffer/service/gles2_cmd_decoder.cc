@@ -8233,11 +8233,6 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
   }
 
   int this_frame_number = frame_number_++;
-  // TRACE_EVENT for gpu tests:
-  TRACE_EVENT_INSTANT2("test_gpu", "SwapBuffers",
-                       "GLImpl", static_cast<int>(gfx::GetGLImplementation()),
-                       "width", (is_offscreen ? offscreen_size_.width() :
-                                 surface_->GetSize().width()));
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::HandleSwapBuffers",
                "offscreen", is_offscreen,
                "frame", this_frame_number);

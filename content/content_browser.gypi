@@ -525,9 +525,6 @@
     'browser/renderer_host/gtk_key_bindings_handler.h',
     'browser/renderer_host/gtk_window_utils.cc',
     'browser/renderer_host/gtk_window_utils.h',
-    'browser/renderer_host/image_transport_client.cc',
-    'browser/renderer_host/image_transport_client.h',
-    'browser/renderer_host/image_transport_client_linux.cc',
     'browser/renderer_host/image_transport_factory.cc',
     'browser/renderer_host/image_transport_factory.h',
     'browser/renderer_host/java/java_bound_object.cc',
@@ -983,10 +980,6 @@
       },
       'include_dirs': [
         '../third_party/angle/include',
-      ],
-    }, {
-      'sources/': [
-        ['exclude', '^browser/renderer_host/image_transport_client_linux.cc'],
       ],
     }],
     ['java_bridge==1', {

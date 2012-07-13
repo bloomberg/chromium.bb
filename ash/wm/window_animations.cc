@@ -566,6 +566,8 @@ class CrossFadeObserver : public ui::CompositorObserver,
   }
 
   // ui::CompositorObserver overrides:
+  virtual void OnCompositingDidCommit(ui::Compositor* compositor) OVERRIDE {
+  }
   virtual void OnCompositingWillStart(ui::Compositor* compositor) OVERRIDE {
   }
   virtual void OnCompositingStarted(ui::Compositor* compositor) OVERRIDE {
