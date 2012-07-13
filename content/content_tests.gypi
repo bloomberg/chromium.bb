@@ -323,6 +323,7 @@
         'renderer/android/email_detector_unittest.cc',
         'renderer/android/phone_number_detector_unittest.cc',
         'renderer/gpu/input_event_filter_unittest.cc',
+        'renderer/media/audio_device_unittest.cc',
         'renderer/media/audio_message_filter_unittest.cc',
         'renderer/media/capture_video_decoder_unittest.cc',
         'renderer/media/video_capture_impl_unittest.cc',

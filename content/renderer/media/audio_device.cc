@@ -8,7 +8,6 @@
 #include "base/message_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
-#include "content/common/child_process.h"
 #include "content/common/media/audio_messages.h"
 #include "content/common/view_messages.h"
 #include "media/audio/audio_output_controller.h"
@@ -38,8 +37,9 @@ class AudioDevice::AudioThreadCallback
   DISALLOW_COPY_AND_ASSIGN(AudioThreadCallback);
 };
 
-AudioDevice::AudioDevice()
-    : ScopedLoopObserver(ChildProcess::current()->io_message_loop()),
+AudioDevice::AudioDevice(
+    const scoped_refptr<base::MessageLoopProxy>& io_loop)
+    : ScopedLoopObserver(io_loop),
       callback_(NULL),
       volume_(1.0),
       stream_id_(0),

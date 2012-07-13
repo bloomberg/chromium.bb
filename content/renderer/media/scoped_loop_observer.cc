@@ -7,8 +7,9 @@
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 
-ScopedLoopObserver::ScopedLoopObserver(MessageLoop* loop)
-    : loop_(loop->message_loop_proxy()) {
+ScopedLoopObserver::ScopedLoopObserver(
+    const scoped_refptr<base::MessageLoopProxy>& loop)
+    : loop_(loop) {
   ObserveLoopDestruction(true, NULL);
 }
 

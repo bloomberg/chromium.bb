@@ -79,16 +79,16 @@ namespace media {
 class AudioParameters;
 }
 
+namespace content {
+class AudioDeviceFactory;
+}
+
 class CONTENT_EXPORT AudioDevice
     : NON_EXPORTED_BASE(public media::AudioRendererSink),
       public AudioMessageFilter::Delegate,
       NON_EXPORTED_BASE(public ScopedLoopObserver) {
  public:
   // Methods called on main render thread -------------------------------------
-
-  // Creates an uninitialized AudioDevice. Clients must call Initialize()
-  // before using.
-  AudioDevice();
 
   // AudioRendererSink implementation.
   virtual void Initialize(const media::AudioParameters& params,
@@ -107,12 +107,24 @@ class CONTENT_EXPORT AudioDevice
                                base::SyncSocket::Handle socket_handle,
                                uint32 length) OVERRIDE;
 
- private:
+ protected:
+  friend class content::AudioDeviceFactory;
+
+  // Creates an uninitialized AudioDevice. Clients must call Initialize()
+  // before using.  The constructor is protected to ensure that the
+  // AudioDeviceFactory is always used for construction in Chrome.
+  // Tests should use a test class that inherits from AudioDevice to gain
+  // access to the constructor.
+  // TODO(tommi): When all dependencies on |content| have been removed
+  // from AudioDevice, move this class over to media/audio.
+  explicit AudioDevice(const scoped_refptr<base::MessageLoopProxy>& io_loop);
+
   // Magic required by ref_counted.h to avoid any code deleting the object
   // accidentally while there are references to it.
   friend class base::RefCountedThreadSafe<AudioDevice>;
   virtual ~AudioDevice();
 
+ private:
   // Methods called on IO thread ----------------------------------------------
   // The following methods are tasks posted on the IO thread that needs to
   // be executed on that thread. They interact with AudioMessageFilter and

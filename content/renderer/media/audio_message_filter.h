@@ -48,7 +48,8 @@ class CONTENT_EXPORT AudioMessageFilter
   void RemoveDelegate(int32 id);
 
   // Sends an IPC message using |channel_|.
-  bool Send(IPC::Message* message);
+  // This method is virtual so that it can be overridden in tests.
+  virtual bool Send(IPC::Message* message);
 
   // IPC::ChannelProxy::MessageFilter override. Called on IO thread.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

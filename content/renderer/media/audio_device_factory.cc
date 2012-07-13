@@ -5,6 +5,7 @@
 #include "content/renderer/media/audio_device_factory.h"
 
 #include "base/logging.h"
+#include "content/common/child_process.h"
 #include "content/renderer/media/audio_device.h"
 
 namespace content {
@@ -17,7 +18,8 @@ media::AudioRendererSink* AudioDeviceFactory::Create() {
   if (factory_) {
     return factory_->CreateAudioDevice();
   }
-  return new AudioDevice();
+  return new AudioDevice(
+      ChildProcess::current()->io_message_loop()->message_loop_proxy());
 }
 
 AudioDeviceFactory::AudioDeviceFactory() {

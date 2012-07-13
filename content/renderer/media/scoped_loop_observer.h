@@ -22,13 +22,14 @@ class WaitableEvent;
 class ScopedLoopObserver
     : public MessageLoop::DestructionObserver {
  public:
-  explicit ScopedLoopObserver(MessageLoop* message_loop);
+  explicit ScopedLoopObserver(
+      const scoped_refptr<base::MessageLoopProxy>& message_loop);
 
  protected:
   virtual ~ScopedLoopObserver();
 
   // Accessor to the loop that's used by the derived class.
-  base::MessageLoopProxy* message_loop() { return loop_; }
+  const scoped_refptr<base::MessageLoopProxy>& message_loop() { return loop_; }
 
  private:
   // Call to add or remove ourselves from the list of destruction observers for

@@ -40,7 +40,8 @@ class AudioInputDevice::AudioThreadCallback
 AudioInputDevice::AudioInputDevice(const media::AudioParameters& params,
                                    CaptureCallback* callback,
                                    CaptureEventHandler* event_handler)
-    : ScopedLoopObserver(ChildProcess::current()->io_message_loop()),
+    : ScopedLoopObserver(
+          ChildProcess::current()->io_message_loop()->message_loop_proxy()),
       audio_parameters_(params),
       callback_(callback),
       event_handler_(event_handler),
