@@ -144,8 +144,14 @@ class ThumbnailGenerator : public content::NotificationObserver,
 
   // Called when the bitmap for generating a thumbnail is ready after the
   // AsyncUpdateThumbnail invocation. This runs on the UI thread.
-  void AsyncUpdateThumbnailFinish(
-      base::WeakPtr<content::WebContents> web_contents,
+  void UpdateThumbnailWithBitmap(
+      const base::WeakPtr<content::WebContents>& web_contents,
+      const SkBitmap& bitmap);
+
+  // Called when the canvas for generating a thumbnail is ready after the
+  // AsyncUpdateThumbnail invocation. This runs on the UI thread.
+  void UpdateThumbnailWithCanvas(
+      const base::WeakPtr<content::WebContents>& web_contents,
       skia::PlatformCanvas* temp_canvas,
       bool result);
 

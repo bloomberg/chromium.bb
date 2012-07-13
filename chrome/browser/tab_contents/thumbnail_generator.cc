@@ -32,6 +32,10 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skbitmap_operations.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 // Overview
 // --------
 // This class provides current thumbnails for tabs. The simplest operation is
@@ -185,6 +189,8 @@ void ThumbnailGenerator::StartThumbnailing(WebContents* web_contents) {
                    content::Source<WebContents>(web_contents));
     registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
                    content::Source<WebContents>(web_contents));
+    web_contents_weak_factory_.reset(
+        new base::WeakPtrFactory<WebContents>(web_contents));
   }
 }
 
@@ -439,13 +445,6 @@ SkBitmap ThumbnailGenerator::GetClippedBitmap(const SkBitmap& bitmap,
 
 void ThumbnailGenerator::UpdateThumbnailIfNecessary(
     WebContents* web_contents) {
-  content::RenderWidgetHostView* view = web_contents->GetRenderWidgetHostView();
-  if (!view)
-    return;
-  bool surface_available = view->IsSurfaceAvailableForCopy();
-  // Skip if we can't update the thumbnail.
-  if (!surface_available)
-    return;
   // Skip if a pending entry exists. WidgetHidden can be called while navigaing
   // pages and this is not a timing when thumbnails should be generated.
   if (web_contents->GetController().GetPendingEntry())
@@ -495,27 +494,63 @@ void ThumbnailGenerator::AsyncUpdateThumbnail(
   content::RenderWidgetHostView* view = render_widget_host->GetView();
   if (!view)
     return;
+  if (!view->IsSurfaceAvailableForCopy()) {
+#if defined(OS_WIN)
+    // On Windows XP, neither the backing store nor the compositing surface is
+    // available in the browser when accelerated compositing is active, so ask
+    // the renderer to send a snapshot for creating the thumbnail.
+    if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+      gfx::Size view_size =
+          render_widget_host->GetView()->GetViewBounds().size();
+      AskForSnapshot(render_widget_host,
+                     base::Bind(&ThumbnailGenerator::UpdateThumbnailWithBitmap,
+                                weak_factory_.GetWeakPtr(),
+                                web_contents_weak_factory_->GetWeakPtr()),
+                     view_size,
+                     view_size);
+    }
+#endif
+    return;
+  }
 
-  const gfx::Size copy_size =
+  gfx::Size copy_size =
       GetCopySizeForThumbnail(view->GetViewBounds().size(),
                               gfx::Size(kThumbnailWidth, kThumbnailHeight));
   skia::PlatformCanvas* temp_canvas = new skia::PlatformCanvas;
-  web_contents_weak_factory_.reset(
-      new base::WeakPtrFactory<WebContents>(web_contents));
   render_widget_host->CopyFromBackingStore(
       gfx::Rect(), copy_size, temp_canvas,
-      base::Bind(&ThumbnailGenerator::AsyncUpdateThumbnailFinish,
+      base::Bind(&ThumbnailGenerator::UpdateThumbnailWithCanvas,
                  weak_factory_.GetWeakPtr(),
                  web_contents_weak_factory_->GetWeakPtr(),
                  base::Owned(temp_canvas)));
 }
 
-void ThumbnailGenerator::AsyncUpdateThumbnailFinish(
-    base::WeakPtr<WebContents> web_contents,
+void ThumbnailGenerator::UpdateThumbnailWithBitmap(
+    const base::WeakPtr<WebContents>& web_contents,
+    const SkBitmap& bitmap) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  // The weak pointer is invalidated when the web contens is disconnected.
+  if (!web_contents.get())
+    return;
+
+  if (bitmap.isNull() || bitmap.empty())
+    return;
+
+  ClipResult clip_result;
+  SkBitmap thumbnail = CreateThumbnail(bitmap,
+                                       kThumbnailWidth,
+                                       kThumbnailHeight,
+                                       ThumbnailGenerator::kClippedThumbnail,
+                                       &clip_result);
+  UpdateThumbnail(web_contents.get(), thumbnail, clip_result);
+}
+
+void ThumbnailGenerator::UpdateThumbnailWithCanvas(
+    const base::WeakPtr<WebContents>& web_contents,
     skia::PlatformCanvas* temp_canvas,
     bool succeeded) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  // The weak pointer can be invalidated by the subsequent AsyncUpdateThumbnail.
+  // The weak pointer is invalidated when the web contens is disconnected.
   if (!web_contents.get())
     return;
 
@@ -524,13 +559,7 @@ void ThumbnailGenerator::AsyncUpdateThumbnailFinish(
 
   SkBitmap bmp_with_scrollbars =
       skia::GetTopDevice(*temp_canvas)->accessBitmap(false);
-  ClipResult clip_result;
-  SkBitmap thumbnail = CreateThumbnail(bmp_with_scrollbars,
-                                       kThumbnailWidth,
-                                       kThumbnailHeight,
-                                       ThumbnailGenerator::kClippedThumbnail,
-                                       &clip_result);
-  UpdateThumbnail(web_contents.get(), thumbnail, clip_result);
+  UpdateThumbnailWithBitmap(web_contents, bmp_with_scrollbars);
 }
 
 bool ThumbnailGenerator::ShouldUpdateThumbnail(Profile* profile,
