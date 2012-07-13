@@ -332,9 +332,6 @@
 #define IPC_SYNC_MESSAGE_CONTROL5_3(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out) \
   IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 5, 3, (type1_in, type2_in, type3_in, type4_in, type5_in), (type1_out, type2_out, type3_out))
 
-#define IPC_SYNC_MESSAGE_CONTROL5_4(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out, type4_out) \
-  IPC_MESSAGE_DECL(SYNC, CONTROL, msg_class, 5, 4, (type1_in, type2_in, type3_in, type4_in, type5_in), (type1_out, type2_out, type3_out, type4_out))
-
 #define IPC_SYNC_MESSAGE_ROUTED0_0(msg_class) \
   IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 0, 0, (), ())
 
@@ -421,9 +418,6 @@
 
 #define IPC_SYNC_MESSAGE_ROUTED5_3(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out) \
   IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 5, 3, (type1_in, type2_in, type3_in, type4_in, type5_in), (type1_out, type2_out, type3_out))
-
-#define IPC_SYNC_MESSAGE_ROUTED5_4(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out, type4_out) \
-  IPC_MESSAGE_DECL(SYNC, ROUTED, msg_class, 5, 4, (type1_in, type2_in, type3_in, type4_in, type5_in), (type1_out, type2_out, type3_out, type4_out))
 
 // The following macros define the common set of methods provided by ASYNC
 // message classes.
