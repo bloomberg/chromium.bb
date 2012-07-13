@@ -195,9 +195,11 @@
     "chrome.experimental.record.replayURLs": "experimental.record.html#method-replayURLs",
     "chrome.experimental.serial.close": "experimental.serial.html#method-close",
     "chrome.experimental.serial.flush": "experimental.serial.html#method-flush",
+    "chrome.experimental.serial.getControlSignals": "experimental.serial.html#method-getControlSignals",
     "chrome.experimental.serial.getPorts": "experimental.serial.html#method-getPorts",
     "chrome.experimental.serial.open": "experimental.serial.html#method-open",
     "chrome.experimental.serial.read": "experimental.serial.html#method-read",
+    "chrome.experimental.serial.setControlSignals": "experimental.serial.html#method-setControlSignals",
     "chrome.experimental.serial.write": "experimental.serial.html#method-write",
     "chrome.experimental.socket.bind": "experimental.socket.html#method-bind",
     "chrome.experimental.socket.connect": "experimental.socket.html#method-connect",
@@ -1290,7 +1292,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "5f8cd1998d10e9a0a7f1712fa46396c4dcdc910a",
+      "source_hash": "b96589beb7a63c47869a425de932b171853cc2c3",
       "zip_path": "examples/api/fontSettings.zip"
     },
     {

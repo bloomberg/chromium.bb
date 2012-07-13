@@ -11,13 +11,13 @@
         "type": "object",
         "description": "Represents a font name.",
         "properties": {
-          "fontName": {
+          "fontId": {
             "type": "string",
-            "description": "The font name."
+            "description": "The font ID."
           },
-          "localizedName": {
+          "displayName": {
             "type": "string",
-            "description": "The font name localized for the current locale."
+            "description": "The display name of the font."
           }
         }
       },
@@ -112,9 +112,9 @@
                 "name": "details",
                 "type": "object",
                 "properties": {
-                  "fontName": {
+                  "fontId": {
                     "type": "string",
-                    "description": "The font name. Rather than the literal font name preference value, this may be the name of the font that the system resolves the preference value to. The empty string signifies fallback to the global script font setting."
+                    "description": "The font ID. Rather than the literal font ID preference value, this may be the ID of the font that the system resolves the preference value to. So, <var>fontId</var> can differ from the font passed to <code>setFont</code>, if, for example, the font is not available on the system. The empty string signifies fallback to the global script font setting."
                   },
                   "levelOfControl": {
                     "$ref": "LevelOfControl",
@@ -143,9 +143,9 @@
                 "$ref": "GenericFamily",
                 "description": "The generic font family for which the font should be set."
               },
-              "fontName": {
+              "fontId": {
                 "type": "string",
-                "description": "The font name. If a script is specified, the empty string means to fallback to the global script font setting."
+                "description": "The font ID. The empty string means to fallback to the global script font setting."
               }
             }
           },
@@ -409,7 +409,10 @@
             "type": "object",
             "name": "details",
             "properties": {
-              "fontName": { "type": "string" },
+              "fontId": {
+                "type": "string",
+                "description": "The font ID. See the description in <code>getFont</code>."
+              },
               "script": {
                 "$ref": "ScriptCode",
                 "description": "The script code for which the font setting has changed.",
