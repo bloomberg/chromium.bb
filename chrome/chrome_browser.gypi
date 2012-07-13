@@ -575,6 +575,8 @@
         'browser/chromeos/gdata/gdata_util.h',
         'browser/chromeos/gdata/gdata_wapi_parser.cc',
         'browser/chromeos/gdata/gdata_wapi_parser.h',
+        'browser/chromeos/gdata/operations_base.cc',
+        'browser/chromeos/gdata/operations_base.h',
         'browser/chromeos/gview_request_interceptor.cc',
         'browser/chromeos/gview_request_interceptor.h',
         'browser/chromeos/imageburner/burn_controller.cc',
