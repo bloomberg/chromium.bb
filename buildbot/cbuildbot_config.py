@@ -972,11 +972,11 @@ _arm_release.add_config('arm-tegra2_kaen-release',
   hw_tests=['kaen_bvt'],
 )
 
-_arm_release.add_config('arm-daisy-release',
+_arm_release.add_config('daisy-release',
   boards=['daisy'],
 )
 
-_arm_release.add_config('arm-ironhide-release',
+_arm_release.add_config('ironhide-release',
   boards=['ironhide'],
 )
 
