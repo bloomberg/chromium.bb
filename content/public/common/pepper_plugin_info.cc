@@ -9,7 +9,8 @@ namespace content {
 PepperPluginInfo::PepperPluginInfo()
     : is_internal(false),
       is_out_of_process(false),
-      is_sandboxed(true) {
+      is_sandboxed(true),
+      permissions(0) {
 }
 
 PepperPluginInfo::~PepperPluginInfo() {

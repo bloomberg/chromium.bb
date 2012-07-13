@@ -11,6 +11,7 @@
     '../ipc/ipc.gyp:ipc',
     '../media/media.gyp:media',
     '../net/net.gyp:net',
+    '../ppapi/ppapi_internal.gyp:ppapi_shared',
     '../skia/skia.gyp:skia',
     '../third_party/icu/icu.gyp:icuuc',
     '../third_party/npapi/npapi.gyp:npapi',

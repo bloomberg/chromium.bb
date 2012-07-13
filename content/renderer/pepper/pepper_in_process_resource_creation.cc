@@ -13,6 +13,7 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 
 // Note that the code in the creation functions in this file should generally
@@ -25,7 +26,8 @@ class PepperInProcessResourceCreation::PluginToHostRouter
     : public IPC::Sender {
  public:
   PluginToHostRouter(RenderViewImpl* render_view,
-                     IPC::Sender* host_to_plugin_sender);
+                     IPC::Sender* host_to_plugin_sender,
+                     const ppapi::PpapiPermissions& perms);
   virtual ~PluginToHostRouter() {}
 
   // Sender implementation.
@@ -44,10 +46,11 @@ class PepperInProcessResourceCreation::PluginToHostRouter
 
 PepperInProcessResourceCreation::PluginToHostRouter::PluginToHostRouter(
     RenderViewImpl* render_view,
-    IPC::Sender* host_to_plugin_sender)
+    IPC::Sender* host_to_plugin_sender,
+    const ppapi::PpapiPermissions& perms)
     : weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       factory_(render_view),
-      host_(host_to_plugin_sender, &factory_) {
+      host_(host_to_plugin_sender, &factory_, perms) {
 }
 
 bool PepperInProcessResourceCreation::PluginToHostRouter::Send(
@@ -130,11 +133,13 @@ void PepperInProcessResourceCreation::HostToPluginRouter::OnMsgResourceReply(
 
 PepperInProcessResourceCreation::PepperInProcessResourceCreation(
     RenderViewImpl* render_view,
-    webkit::ppapi::PluginInstance* instance)
+    webkit::ppapi::PluginInstance* instance,
+    const ppapi::PpapiPermissions& perms)
     : ResourceCreationImpl(instance),
       host_to_plugin_router_(new HostToPluginRouter),
       plugin_to_host_router_(
-          new PluginToHostRouter(render_view, host_to_plugin_router_.get())) {
+          new PluginToHostRouter(render_view, host_to_plugin_router_.get(),
+                                 perms)) {
 }
 
 PepperInProcessResourceCreation::~PepperInProcessResourceCreation() {

@@ -43,6 +43,9 @@ struct CONTENT_EXPORT PepperPluginInfo {
   // When is_internal is set, this contains the function pointers to the
   // entry points for the internal plugins.
   webkit::ppapi::PluginModule::EntryPoints internal_entry_points;
+
+  // Permission bits from ppapi::Permission.
+  uint32 permissions;
 };
 
 }  // namespace content

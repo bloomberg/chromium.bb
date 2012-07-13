@@ -145,6 +145,9 @@ bool MakePepperFlashPluginInfo(const FilePath& flash_path,
   plugin_info->is_out_of_process = out_of_process;
   plugin_info->path = flash_path;
   plugin_info->name = kFlashPluginName;
+  plugin_info->permissions = ppapi::PERMISSION_DEV |
+                             ppapi::PERMISSION_PRIVATE |
+                             ppapi::PERMISSION_BYPASS_USER_GESTURE;
 
   // The description is like "Shockwave Flash 10.2 r154".
   plugin_info->description = StringPrintf("%s %d.%d r%d",

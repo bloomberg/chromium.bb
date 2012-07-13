@@ -26,6 +26,7 @@
 #include "content/public/common/pepper_plugin_info.h"
 #include "content/public/common/url_constants.h"
 #include "grit/common_resources.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
@@ -52,11 +53,15 @@ const char kPDFPluginExtension[] = "pdf";
 const char kPDFPluginDescription[] = "Portable Document Format";
 const char kPDFPluginPrintPreviewMimeType
    [] = "application/x-google-chrome-print-preview-pdf";
+const uint32 kPDFPluginPermissions = ppapi::PERMISSION_PRIVATE |
+                                     ppapi::PERMISSION_DEV;
 
 const char kNaClPluginName[] = "Native Client";
 const char kNaClPluginMimeType[] = "application/x-nacl";
 const char kNaClPluginExtension[] = "nexe";
 const char kNaClPluginDescription[] = "Native Client Executable";
+const uint32 kNaClPluginPermissions = ppapi::PERMISSION_PRIVATE |
+                                      ppapi::PERMISSION_DEV;
 
 const char kNaClOldPluginName[] = "Chrome NaCl";
 
@@ -107,6 +112,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
           kPDFPluginDescription);
       pdf.mime_types.push_back(pdf_mime_type);
       pdf.mime_types.push_back(print_preview_pdf_mime_type);
+      pdf.permissions = kPDFPluginPermissions;
       plugins->push_back(pdf);
 
       skip_pdf_file_check = true;
@@ -127,6 +133,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
                                                kNaClPluginExtension,
                                                kNaClPluginDescription);
       nacl.mime_types.push_back(nacl_mime_type);
+      nacl.permissions = kNaClPluginPermissions;
       plugins->push_back(nacl);
 
       skip_nacl_file_check = true;

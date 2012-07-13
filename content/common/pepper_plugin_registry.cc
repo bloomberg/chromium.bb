@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
 namespace {
@@ -68,6 +69,11 @@ void ComputePluginsFromCommandLine(
                                           plugin.description);
       plugin.mime_types.push_back(mime_type);
     }
+
+    // Command-line plugins get full permissions.
+    plugin.permissions = ppapi::PERMISSION_DEV |
+                         ppapi::PERMISSION_PRIVATE |
+                         ppapi::PERMISSION_BYPASS_USER_GESTURE;
 
     plugins->push_back(plugin);
   }
@@ -217,7 +223,8 @@ PepperPluginRegistry::PepperPluginRegistry() {
       continue;  // Out of process plugins need no special pre-initialization.
 
     scoped_refptr<webkit::ppapi::PluginModule> module =
-        new webkit::ppapi::PluginModule(current.name, current.path, this);
+        new webkit::ppapi::PluginModule(current.name, current.path, this,
+            ppapi::PpapiPermissions(current.permissions));
     AddLiveModule(current.path, module);
     if (current.is_internal) {
       if (!module->InitAsInternalPlugin(current.internal_entry_points)) {

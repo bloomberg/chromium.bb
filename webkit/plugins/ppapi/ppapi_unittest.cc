@@ -6,6 +6,7 @@
 
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
 #include "webkit/plugins/ppapi/mock_plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
@@ -75,7 +76,8 @@ void PpapiUnittest::SetUp() {
   delegate_.reset(NewPluginDelegate());
 
   // Initialize the mock module.
-  module_ = new PluginModule("Mock plugin", FilePath(), this);
+  module_ = new PluginModule("Mock plugin", FilePath(), this,
+                             ::ppapi::PpapiPermissions());
   PluginModule::EntryPoints entry_points;
   entry_points.get_interface = &MockGetInterface;
   entry_points.initialize_module = &MockInitializeModule;

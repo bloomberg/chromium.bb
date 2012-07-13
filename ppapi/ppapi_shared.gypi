@@ -35,6 +35,8 @@
           'shared_impl/platform_file.h',
           'shared_impl/ppapi_globals.cc',
           'shared_impl/ppapi_globals.h',
+          'shared_impl/ppapi_permissions.cc',
+          'shared_impl/ppapi_permissions.h',
           'shared_impl/ppapi_preferences.cc',
           'shared_impl/ppapi_preferences.h',
           'shared_impl/ppb_audio_config_shared.cc',

@@ -14,6 +14,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/host/ppapi_host_export.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
 
 namespace ppapi {
 
@@ -35,8 +36,12 @@ class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
   // The sender is the channel to the plugin for outgoing messages. The factory
   // will be used to receive resource creation messages from the plugin. Both
   // pointers are owned by the caller and must outlive this class.
-  PpapiHost(IPC::Sender* sender, HostFactory* host_factory);
+  PpapiHost(IPC::Sender* sender,
+            HostFactory* host_factory,
+            const PpapiPermissions& perms);
   virtual ~PpapiHost();
+
+  const PpapiPermissions& permissions() const { return permissions_; }
 
   // Sender implementation. Forwards to the sender_.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
@@ -65,6 +70,8 @@ class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
 
   // Non-owning pointer.
   HostFactory* host_factory_;
+
+  PpapiPermissions permissions_;
 
   typedef std::map<PP_Resource, linked_ptr<ResourceHost> > ResourceMap;
   ResourceMap resources_;

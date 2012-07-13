@@ -68,6 +68,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/file_path.h"
 #include "ppapi/shared_impl/platform_file.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
 #include "ppapi/thunk/enter.h"
@@ -300,6 +301,7 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
     // In-process plugin not preloaded, it probably couldn't be initialized.
     return scoped_refptr<webkit::ppapi::PluginModule>();
   }
+  ppapi::PpapiPermissions permissions(info->permissions);
 
   // Out of process: have the browser start the plugin process for us.
   IPC::ChannelHandle channel_handle;
@@ -318,8 +320,10 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
   // Create a new HostDispatcher for the proxying, and hook it to a new
   // PluginModule. Note that AddLiveModule must be called before any early
   // returns since the module's destructor will remove itself.
-  module = new webkit::ppapi::PluginModule(info->name, path,
-                                           PepperPluginRegistry::GetInstance());
+  module = new webkit::ppapi::PluginModule(
+      info->name, path,
+      PepperPluginRegistry::GetInstance(),
+      permissions);
   PepperPluginRegistry::GetInstance()->AddLiveModule(path, module);
   scoped_ptr<HostDispatcherWrapper> dispatcher(new HostDispatcherWrapper);
   if (!dispatcher->Init(
@@ -353,7 +357,8 @@ scoped_refptr<webkit::ppapi::PluginModule>
   // PluginModule.
   module = new webkit::ppapi::PluginModule(kBrowserPluginName,
                                            path,
-                                           registry);
+                                           registry,
+                                           ppapi::PpapiPermissions());
   RenderThreadImpl::current()->browser_plugin_registry()->AddModule(
       guest_process_id, module);
   scoped_ptr<HostDispatcherWrapper> dispatcher(new HostDispatcherWrapper);
@@ -666,7 +671,8 @@ scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
 PepperPluginDelegateImpl::CreateResourceCreationAPI(
     webkit::ppapi::PluginInstance* instance) {
   return scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>(
-      new PepperInProcessResourceCreation(render_view_, instance));
+      new PepperInProcessResourceCreation(render_view_, instance,
+                                          instance->module()->permissions()));
 }
 
 SkBitmap* PepperPluginDelegateImpl::GetSadPluginBitmap() {

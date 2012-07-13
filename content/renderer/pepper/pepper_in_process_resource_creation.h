@@ -11,6 +11,10 @@
 
 class RenderViewImpl;
 
+namespace ppapi {
+class PpapiPermissions;
+}
+
 namespace content {
 
 // This class provides creation functions for the new resources with IPC
@@ -34,7 +38,8 @@ class PepperInProcessResourceCreation
     : public webkit::ppapi::ResourceCreationImpl {
  public:
   PepperInProcessResourceCreation(RenderViewImpl* render_view,
-                                  webkit::ppapi::PluginInstance* instance);
+                                  webkit::ppapi::PluginInstance* instance,
+                                  const ppapi::PpapiPermissions& perms);
   virtual ~PepperInProcessResourceCreation();
 
  private:

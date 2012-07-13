@@ -407,7 +407,8 @@ PluginModule::EntryPoints::EntryPoints()
 
 PluginModule::PluginModule(const std::string& name,
                            const FilePath& path,
-                           PluginDelegate::ModuleLifetime* lifetime_delegate)
+                           PluginDelegate::ModuleLifetime* lifetime_delegate,
+                           const ::ppapi::PpapiPermissions& perms)
     : lifetime_delegate_(lifetime_delegate),
       callback_tracker_(new ::ppapi::CallbackTracker),
       is_in_destructor_(false),
@@ -416,6 +417,7 @@ PluginModule::PluginModule(const std::string& name,
       library_(NULL),
       name_(name),
       path_(path),
+      permissions_(perms),
       reserve_instance_id_(NULL),
       nacl_ipc_proxy_(false) {
   // Ensure the globals object is created.

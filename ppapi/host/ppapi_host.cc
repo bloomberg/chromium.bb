@@ -24,9 +24,12 @@ const size_t kMaxResourcesPerPlugin = 1 << 14;
 
 }  // namespace
 
-PpapiHost::PpapiHost(IPC::Sender* sender, HostFactory* host_factory)
+PpapiHost::PpapiHost(IPC::Sender* sender,
+                     HostFactory* host_factory,
+                     const PpapiPermissions& perms)
     : sender_(sender),
-      host_factory_(host_factory) {
+      host_factory_(host_factory),
+      permissions_(perms) {
 }
 
 PpapiHost::~PpapiHost() {
