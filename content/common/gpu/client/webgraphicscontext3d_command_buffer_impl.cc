@@ -1475,13 +1475,14 @@ WebGraphicsContext3DCommandBufferImpl::CreateViewContext(
 WebGraphicsContext3DCommandBufferImpl*
 WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
     GpuChannelHostFactory* factory,
-    const WebGraphicsContext3D::Attributes& attributes) {
+    const WebGraphicsContext3D::Attributes& attributes,
+    const GURL& active_url) {
   if (!factory)
     return NULL;
   base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> null_client;
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       new WebGraphicsContext3DCommandBufferImpl(
-          0, GURL(), factory, null_client));
+          0, active_url, factory, null_client));
   content::CauseForGpuLaunch cause =
       content::CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
   if (context->Initialize(attributes, false, cause))

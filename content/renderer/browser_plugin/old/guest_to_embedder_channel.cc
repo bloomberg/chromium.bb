@@ -18,6 +18,8 @@
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "webkit/plugins/ppapi/event_conversion.h"
 
 namespace content {
@@ -93,9 +95,16 @@ WebGraphicsContext3DCommandBufferImpl*
         RenderViewImpl* render_view,
         const WebKit::WebGraphicsContext3D::Attributes& attributes,
         bool offscreen) {
+  GURL url;
+  if (render_view->webview()->mainFrame()) {
+    url = GURL(render_view->webview()->mainFrame()->document().url());
+  } else {
+    url =
+        GURL("chrome://gpu/GuestToEmbedderChannel::CreateWebGraphicsContext3D");
+  }
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       new WebGraphicsContext3DCommandBufferImpl(
-          0, GURL(), NULL,
+          0, url, NULL,
           render_view->AsWeakPtr()));
 
   // Special case: RenderView initialization has not yet completed.

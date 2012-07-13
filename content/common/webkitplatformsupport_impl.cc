@@ -62,8 +62,10 @@ WebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
     return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
             attributes, false);
   } else {
+    // Intentionally blank URL provided for offscreen contexts -- blank URLs are
+    // ignored in the GPU process for crash reporting.
     return WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-        GetGpuChannelHostFactory(), attributes);
+        GetGpuChannelHostFactory(), attributes, GURL());
   }
 }
 

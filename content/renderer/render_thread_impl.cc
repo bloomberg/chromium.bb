@@ -744,7 +744,8 @@ RenderThreadImpl::GetGpuVDAContext3D() {
   if (!gpu_vda_context3d_.get()) {
     gpu_vda_context3d_.reset(
         WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-            this, WebKit::WebGraphicsContext3D::Attributes()));
+            this, WebKit::WebGraphicsContext3D::Attributes(),
+            GURL("chrome://gpu/RenderThreadImpl::GetGpuVDAContext3D")));
   }
   return gpu_vda_context3d_->AsWeakPtr();
 }

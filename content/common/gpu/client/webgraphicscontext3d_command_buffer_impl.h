@@ -132,7 +132,8 @@ class WebGraphicsContext3DCommandBufferImpl
   // on any failure.
   static WebGraphicsContext3DCommandBufferImpl* CreateOffscreenContext(
       GpuChannelHostFactory* factory,
-      const WebGraphicsContext3D::Attributes& attributes);
+      const WebGraphicsContext3D::Attributes& attributes,
+      const GURL& active_url);
 
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods

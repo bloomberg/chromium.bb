@@ -346,10 +346,11 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
     WebKit::WebGraphicsContext3D::Attributes attrs;
     attrs.shareResources = true;
     GpuChannelHostFactory* factory = BrowserGpuChannelHostFactory::instance();
+    GURL url("chrome://gpu/GpuProcessTransportFactory::CreateContextCommon");
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
         new WebGraphicsContext3DCommandBufferImpl(
             offscreen ? 0 : data->surface_id,
-            GURL(),
+            url,
             factory,
             data->swap_client->AsWeakPtr()));
     if (!context->Initialize(
@@ -369,9 +370,10 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
     GpuChannelHostFactory* factory = BrowserGpuChannelHostFactory::instance();
     WebKit::WebGraphicsContext3D::Attributes attrs;
     attrs.shareResources = true;
+    GURL url("chrome://gpu/GpuProcessTransportFactory::CreateSharedContext");
     data->shared_context.reset(new WebGraphicsContext3DCommandBufferImpl(
           0,
-          GURL(),
+          url,
           factory,
           data->swap_client->AsWeakPtr()));
     if (!data->shared_context->Initialize(

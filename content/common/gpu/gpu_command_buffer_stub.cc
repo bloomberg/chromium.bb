@@ -20,8 +20,10 @@
 #include "content/common/gpu/image_transport_surface.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "content/common/gpu/sync_point_manager.h"
+#include "content/public/common/content_client.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "net/disk_cache/hash.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_switches.h"
 
@@ -30,12 +32,30 @@
 #endif
 
 namespace {
+
+// FastSetActiveURL will shortcut the expensive call to SetActiveURL when the
+// url_hash matches.
+void FastSetActiveURL(const GURL& url, size_t url_hash) {
+  // Leave the previously set URL in the empty case -- empty URLs are given by
+  // WebKitPlatformSupportImpl::createOffscreenGraphicsContext3D. Hopefully the
+  // onscreen context URL was set previously and will show up even when a crash
+  // occurs during offscreen command processing.
+  if (url.is_empty())
+    return;
+  static size_t g_last_url_hash = 0;
+  if (url_hash != g_last_url_hash) {
+    g_last_url_hash = url_hash;
+    content::GetContentClient()->SetActiveURL(url);
+  }
+}
+
 // The first time polling a fence, delay some extra time to allow other
 // stubs to process some work, or else the timing of the fences could
 // allow a pattern of alternating fast and slow frames to occur.
 const int64 kHandleMoreWorkPeriodMs = 2;
 const int64 kHandleMoreWorkPeriodBusyMs = 1;
-}
+
+}  // namespace
 
 GpuCommandBufferStub::SurfaceState::SurfaceState(int32 surface_id,
                                                  bool visible,
@@ -58,7 +78,8 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     int32 route_id,
     int32 surface_id,
     GpuWatchdog* watchdog,
-    bool software)
+    bool software,
+    const GURL& active_url)
     : channel_(channel),
       handle_(handle),
       initial_size_(size),
@@ -74,7 +95,11 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       parent_texture_for_initialization_(0),
       watchdog_(watchdog),
       sync_point_wait_count_(0),
-      delayed_work_scheduled_(false) {
+      delayed_work_scheduled_(false),
+      active_url_(active_url) {
+  active_url_hash_ =
+      disk_cache::Hash(active_url.possibly_invalid_spec());
+  FastSetActiveURL(active_url_, active_url_hash_);
   if (share_group) {
     context_group_ = share_group->context_group_;
   } else {
@@ -95,6 +120,8 @@ GpuCommandBufferStub::~GpuCommandBufferStub() {
 }
 
 bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
+  FastSetActiveURL(active_url_, active_url_hash_);
+
   // Ensure the appropriate GL context is current before handling any IPC
   // messages directed at the command buffer. This ensures that the message
   // handler can assume that the context is current (not necessary for
@@ -371,8 +398,7 @@ void GpuCommandBufferStub::OnInitialize(
                  base::Unretained(this)));
 
   command_buffer_->SetPutOffsetChangeCallback(
-      base::Bind(&gpu::GpuScheduler::PutChanged,
-                 base::Unretained(scheduler_.get())));
+      base::Bind(&GpuCommandBufferStub::PutChanged, base::Unretained(this)));
   command_buffer_->SetGetBufferChangeCallback(
       base::Bind(&gpu::GpuScheduler::SetGetBuffer,
                  base::Unretained(scheduler_.get())));
@@ -606,6 +632,11 @@ void GpuCommandBufferStub::ReportState() {
   } else {
     command_buffer_->UpdateState();
   }
+}
+
+void GpuCommandBufferStub::PutChanged() {
+  FastSetActiveURL(active_url_, active_url_hash_);
+  scheduler_->PutChanged();
 }
 
 void GpuCommandBufferStub::OnCreateVideoDecoder(

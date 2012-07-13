@@ -18,7 +18,6 @@
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/sync_point_manager.h"
-#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
@@ -306,7 +305,6 @@ void GpuChannel::CreateViewCommandBuffer(
                surface_id);
 
   *route_id = MSG_ROUTING_NONE;
-  content::GetContentClient()->SetActiveURL(init_params.active_url);
 
 #if defined(ENABLE_GPU)
 
@@ -326,7 +324,8 @@ void GpuChannel::CreateViewCommandBuffer(
       *route_id,
       surface_id,
       watchdog_,
-      software_));
+      software_,
+      init_params.active_url));
   if (preempt_by_counter_.get())
     stub->SetPreemptByCounter(preempt_by_counter_);
   router_.AddRoute(*route_id, stub.get());
@@ -453,7 +452,6 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
 
   int32 route_id = MSG_ROUTING_NONE;
 
-  content::GetContentClient()->SetActiveURL(init_params.active_url);
 #if defined(ENABLE_GPU)
   GpuCommandBufferStub* share_group = stubs_.Lookup(init_params.share_group_id);
 
@@ -471,7 +469,8 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
       init_params.gpu_preference,
       route_id,
       0, watchdog_,
-      software_));
+      software_,
+      init_params.active_url));
   if (preempt_by_counter_.get())
     stub->SetPreemptByCounter(preempt_by_counter_);
   router_.AddRoute(route_id, stub.get());

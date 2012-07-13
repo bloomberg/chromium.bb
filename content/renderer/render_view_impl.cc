@@ -1743,6 +1743,8 @@ WebGraphicsContext3D* RenderViewImpl::createGraphicsContext3D(
     GURL url;
     if (webview()->mainFrame())
       url = GURL(webview()->mainFrame()->document().url());
+    else
+      url = GURL("chrome://gpu/RenderViewImpl::createGraphicsContext3D");
 
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
         new WebGraphicsContext3DCommandBufferImpl(

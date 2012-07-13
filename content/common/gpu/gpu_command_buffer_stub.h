@@ -15,6 +15,7 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
+#include "googleurl/src/gurl.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -103,7 +104,8 @@ class GpuCommandBufferStub
       int32 route_id,
       int32 surface_id,
       GpuWatchdog* watchdog,
-      bool software);
+      bool software,
+      const GURL& active_url);
 
   virtual ~GpuCommandBufferStub();
 
@@ -222,6 +224,9 @@ class GpuCommandBufferStub
 
   void ReportState();
 
+  // Wrapper for GpuScheduler::PutChanged that sets the crash report URL.
+  void PutChanged();
+
   // Poll the command buffer to execute work.
   void PollWork();
 
@@ -278,6 +283,9 @@ class GpuCommandBufferStub
   bool delayed_work_scheduled_;
 
   scoped_refptr<gpu::RefCountedCounter> preempt_by_counter_;
+
+  GURL active_url_;
+  size_t active_url_hash_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferStub);
 };
