@@ -329,16 +329,24 @@ class GDataFileSystemTest : public testing::Test {
     return callback_helper_->entry_proto_.Pass();
   }
 
+  // Returns true if an entry exists at |file_path|.
+  bool EntryExists(const FilePath& file_path) {
+    return GetEntryInfoByPathSync(file_path).get();
+  }
+
+  // TODO(satorux): Remove this. crbug.com/137234
   GDataEntry* FindEntry(const FilePath& file_path) {
     return file_system_->GetGDataEntryByPath(file_path);
   }
 
+  // TODO(satorux): Remove this. crbug.com/137234
   void FindAndTestFilePath(const FilePath& file_path) {
     GDataEntry* entry = FindEntry(file_path);
     ASSERT_TRUE(entry) << "Entry can't be found " << file_path.value();
     EXPECT_EQ(entry->GetFilePath(), file_path);
   }
 
+  // TODO(satorux): Remove this. crbug.com/137234
   GDataEntry* FindEntryByResourceId(const std::string& resource_id) {
     return file_system_->root_->GetEntryByResourceId(resource_id);
   }
@@ -1043,10 +1051,12 @@ TEST_F(GDataFileSystemTest, ChangeFeed_AddAndDeleteFileInRoot) {
       Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(2);
 
   LoadChangeFeed("delta_file_added_in_root.json", ++latest_changelog);
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL("drive/Added file.gdoc"))));
+  EXPECT_TRUE(
+      EntryExists(FilePath(FILE_PATH_LITERAL("drive/Added file.gdoc"))));
 
   LoadChangeFeed("delta_file_deleted_in_root.json", ++latest_changelog);
-  EXPECT_FALSE(FindEntry(FilePath(FILE_PATH_LITERAL("drive/Added file.gdoc"))));
+  EXPECT_FALSE(
+      EntryExists(FilePath(FILE_PATH_LITERAL("drive/Added file.gdoc"))));
 }
 
 
@@ -1054,7 +1064,7 @@ TEST_F(GDataFileSystemTest, ChangeFeed_AddAndDeleteFileFromExistingDirectory) {
   int latest_changelog = 0;
   LoadRootFeedDocument("root_feed.json");
 
-  EXPECT_TRUE(FindEntry(FilePath(
+  EXPECT_TRUE(EntryExists(FilePath(
       FILE_PATH_LITERAL("drive/Directory 1"))));
 
   // Add file to an existing directory.
@@ -1063,16 +1073,16 @@ TEST_F(GDataFileSystemTest, ChangeFeed_AddAndDeleteFileFromExistingDirectory) {
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
   LoadChangeFeed("delta_file_added_in_directory.json", ++latest_changelog);
-  EXPECT_TRUE(FindEntry(FilePath(
+  EXPECT_TRUE(EntryExists(FilePath(
       FILE_PATH_LITERAL("drive/Directory 1/Added file.gdoc"))));
 
   // Remove that file from the directory.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
   LoadChangeFeed("delta_file_deleted_in_directory.json", ++latest_changelog);
-  EXPECT_TRUE(FindEntry(FilePath(
+  EXPECT_TRUE(EntryExists(FilePath(
       FILE_PATH_LITERAL("drive/Directory 1"))));
-  EXPECT_FALSE(FindEntry(FilePath(
+  EXPECT_FALSE(EntryExists(FilePath(
       FILE_PATH_LITERAL("drive/Directory 1/Added file.gdoc"))));
 }
 
@@ -1087,9 +1097,9 @@ TEST_F(GDataFileSystemTest, ChangeFeed_AddFileToNewDirectory) {
 
   LoadChangeFeed("delta_file_added_in_new_directory.json", ++latest_changelog);
 
-  EXPECT_TRUE(FindEntry(FilePath(
+  EXPECT_TRUE(EntryExists(FilePath(
       FILE_PATH_LITERAL("drive/New Directory"))));
-  EXPECT_TRUE(FindEntry(FilePath(
+  EXPECT_TRUE(EntryExists(FilePath(
       FILE_PATH_LITERAL("drive/New Directory/File in new dir.gdoc"))));
 }
 
@@ -1109,15 +1119,15 @@ TEST_F(GDataFileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
   int latest_changelog = 0;
   LoadRootFeedDocument("root_feed.json");
 
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 2"))));
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 1"))));
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 1/SubDirectory File 1.txt"))));
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 1/Sub Directory Folder"))));
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 1/Sub Directory Folder/Sub Sub Directory Folder"))));
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
@@ -1130,17 +1140,17 @@ TEST_F(GDataFileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
   LoadChangeFeed("delta_dir_moved_from_root_to_directory.json",
                  ++latest_changelog);
 
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 2"))));
-  EXPECT_FALSE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_FALSE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 1"))));
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 2/Directory 1"))));
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 2/Directory 1/SubDirectory File 1.txt"))));
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 2/Directory 1/Sub Directory Folder"))));
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 2/Directory 1/Sub Directory Folder/"
       "Sub Sub Directory Folder"))));
 }
@@ -1149,13 +1159,13 @@ TEST_F(GDataFileSystemTest, ChangeFeed_FileMovedFromDirectoryToRoot) {
   int latest_changelog = 0;
   LoadRootFeedDocument("root_feed.json");
 
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 1"))));
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 1/Sub Directory Folder"))));
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 1/Sub Directory Folder/Sub Sub Directory Folder"))));
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 1/SubDirectory File 1.txt"))));
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
@@ -1165,15 +1175,15 @@ TEST_F(GDataFileSystemTest, ChangeFeed_FileMovedFromDirectoryToRoot) {
   LoadChangeFeed("delta_file_moved_from_directory_to_root.json",
                  ++latest_changelog);
 
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 1"))));
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 1/Sub Directory Folder"))));
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 1/Sub Directory Folder/Sub Sub Directory Folder"))));
-  EXPECT_FALSE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_FALSE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 1/SubDirectory File 1.txt"))));
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/SubDirectory File 1.txt"))));
 }
 
@@ -1181,9 +1191,9 @@ TEST_F(GDataFileSystemTest, ChangeFeed_FileRenamedInDirectory) {
   int latest_changelog = 0;
   LoadRootFeedDocument("root_feed.json");
 
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 1"))));
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 1/SubDirectory File 1.txt"))));
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
@@ -1193,11 +1203,11 @@ TEST_F(GDataFileSystemTest, ChangeFeed_FileRenamedInDirectory) {
   LoadChangeFeed("delta_file_renamed_in_directory.json",
                  ++latest_changelog);
 
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 1"))));
-  EXPECT_FALSE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_FALSE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 1/SubDirectory File 1.txt"))));
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 1/New SubDirectory File 1.txt"))));
 }
 
@@ -1303,8 +1313,8 @@ TEST_F(GDataFileSystemTest, CopyNotExistingFile) {
   message_loop_.RunAllPending();  // Wait to get our result
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
 
-  EXPECT_FALSE(FindEntry(src_file_path));
-  EXPECT_FALSE(FindEntry(dest_file_path));
+  EXPECT_FALSE(EntryExists(src_file_path));
+  EXPECT_FALSE(EntryExists(dest_file_path));
 }
 
 TEST_F(GDataFileSystemTest, CopyFileToNonExistingDirectory) {
@@ -1321,7 +1331,7 @@ TEST_F(GDataFileSystemTest, CopyFileToNonExistingDirectory) {
   EXPECT_EQ(src_file, FindEntryByResourceId(src_file_path_resource));
   EXPECT_FALSE(src_file->edit_url().is_empty());
 
-  EXPECT_FALSE(FindEntry(dest_parent_path));
+  EXPECT_FALSE(EntryExists(dest_parent_path));
 
   FileOperationCallback callback =
       base::Bind(&CallbackHelper::FileOperationCallback,
@@ -1334,8 +1344,8 @@ TEST_F(GDataFileSystemTest, CopyFileToNonExistingDirectory) {
   EXPECT_EQ(src_file, FindEntry(src_file_path));
   EXPECT_EQ(src_file, FindEntryByResourceId(src_file_path_resource));
 
-  EXPECT_FALSE(FindEntry(dest_parent_path));
-  EXPECT_FALSE(FindEntry(dest_file_path));
+  EXPECT_FALSE(EntryExists(dest_parent_path));
+  EXPECT_FALSE(EntryExists(dest_file_path));
 }
 
 // Test the case where the parent of |dest_file_path| is a existing file,
@@ -1372,7 +1382,7 @@ TEST_F(GDataFileSystemTest, CopyFileToInvalidPath) {
   EXPECT_EQ(src_file, FindEntryByResourceId(src_file_path_resource));
   EXPECT_EQ(dest_parent, FindEntry(dest_parent_path));
 
-  EXPECT_FALSE(FindEntry(dest_file_path));
+  EXPECT_FALSE(EntryExists(dest_file_path));
 }
 
 TEST_F(GDataFileSystemTest, RenameFile) {
@@ -1405,7 +1415,7 @@ TEST_F(GDataFileSystemTest, RenameFile) {
   message_loop_.RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
 
-  EXPECT_FALSE(FindEntry(src_file_path));
+  EXPECT_FALSE(EntryExists(src_file_path));
 
   GDataEntry* dest_file = FindEntry(dest_file_path);
   EXPECT_TRUE(dest_file != NULL);
@@ -1453,7 +1463,7 @@ TEST_F(GDataFileSystemTest, MoveFileFromRootToSubDirectory) {
   message_loop_.RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
 
-  EXPECT_FALSE(FindEntry(src_file_path));
+  EXPECT_FALSE(EntryExists(src_file_path));
 
   GDataEntry* dest_file = FindEntry(dest_file_path);
   ASSERT_TRUE(dest_file);
@@ -1503,7 +1513,7 @@ TEST_F(GDataFileSystemTest, MoveFileFromSubDirectoryToRoot) {
   message_loop_.RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
 
-  EXPECT_FALSE(FindEntry(src_file_path));
+  EXPECT_FALSE(EntryExists(src_file_path));
 
   GDataEntry* dest_file = FindEntry(dest_file_path);
   ASSERT_TRUE(dest_file);
@@ -1543,7 +1553,7 @@ TEST_F(GDataFileSystemTest, MoveFileBetweenSubDirectories) {
   EXPECT_TRUE(dest_parent->AsGDataDirectory() != NULL);
   EXPECT_FALSE(dest_parent->content_url().is_empty());
 
-  EXPECT_FALSE(FindEntry(interim_file_path));
+  EXPECT_FALSE(EntryExists(interim_file_path));
 
   EXPECT_CALL(*mock_doc_service_,
               RenameResource(src_file->edit_url(),
@@ -1573,8 +1583,8 @@ TEST_F(GDataFileSystemTest, MoveFileBetweenSubDirectories) {
   message_loop_.RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
 
-  EXPECT_FALSE(FindEntry(src_file_path));
-  EXPECT_FALSE(FindEntry(interim_file_path));
+  EXPECT_FALSE(EntryExists(src_file_path));
+  EXPECT_FALSE(EntryExists(interim_file_path));
 
   GDataEntry* dest_file = FindEntry(dest_file_path);
   ASSERT_TRUE(dest_file);
@@ -1599,8 +1609,8 @@ TEST_F(GDataFileSystemTest, MoveNotExistingFile) {
   message_loop_.RunAllPending();  // Wait to get our result
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
 
-  EXPECT_FALSE(FindEntry(src_file_path));
-  EXPECT_FALSE(FindEntry(dest_file_path));
+  EXPECT_FALSE(EntryExists(src_file_path));
+  EXPECT_FALSE(EntryExists(dest_file_path));
 }
 
 TEST_F(GDataFileSystemTest, MoveFileToNonExistingDirectory) {
@@ -1617,7 +1627,7 @@ TEST_F(GDataFileSystemTest, MoveFileToNonExistingDirectory) {
   EXPECT_EQ(src_file, FindEntryByResourceId(src_file_path_resource));
   EXPECT_FALSE(src_file->edit_url().is_empty());
 
-  EXPECT_FALSE(FindEntry(dest_parent_path));
+  EXPECT_FALSE(EntryExists(dest_parent_path));
 
   FileOperationCallback callback =
       base::Bind(&CallbackHelper::FileOperationCallback,
@@ -1630,8 +1640,8 @@ TEST_F(GDataFileSystemTest, MoveFileToNonExistingDirectory) {
   EXPECT_EQ(src_file, FindEntry(src_file_path));
   EXPECT_EQ(src_file, FindEntryByResourceId(src_file_path_resource));
 
-  EXPECT_FALSE(FindEntry(dest_parent_path));
-  EXPECT_FALSE(FindEntry(dest_file_path));
+  EXPECT_FALSE(EntryExists(dest_parent_path));
+  EXPECT_FALSE(EntryExists(dest_file_path));
 }
 
 // Test the case where the parent of |dest_file_path| is a existing file,
@@ -1668,7 +1678,7 @@ TEST_F(GDataFileSystemTest, MoveFileToInvalidPath) {
   EXPECT_EQ(src_file, FindEntryByResourceId(src_file_path_resource));
   EXPECT_EQ(dest_parent, FindEntry(dest_parent_path));
 
-  EXPECT_FALSE(FindEntry(dest_file_path));
+  EXPECT_FALSE(EntryExists(dest_file_path));
 }
 
 TEST_F(GDataFileSystemTest, RemoveEntries) {
@@ -1686,7 +1696,7 @@ TEST_F(GDataFileSystemTest, RemoveEntries) {
   std::string file_in_root_resource = entry->AsGDataFile()->resource_id();
   EXPECT_EQ(entry, FindEntryByResourceId(file_in_root_resource));
 
-  EXPECT_TRUE(FindEntry(dir_in_root));
+  EXPECT_TRUE(EntryExists(dir_in_root));
 
   entry = FindEntry(file_in_subdir);
   ASSERT_TRUE(entry);
@@ -1700,19 +1710,19 @@ TEST_F(GDataFileSystemTest, RemoveEntries) {
 
   // Remove first file in root.
   EXPECT_TRUE(RemoveEntry(file_in_root));
-  EXPECT_FALSE(FindEntry(file_in_root));
+  EXPECT_FALSE(EntryExists(file_in_root));
   EXPECT_EQ(NULL, FindEntryByResourceId(file_in_root_resource));
-  EXPECT_TRUE(FindEntry(dir_in_root));
+  EXPECT_TRUE(EntryExists(dir_in_root));
   entry = FindEntry(file_in_subdir);
   ASSERT_TRUE(entry);
   EXPECT_EQ(entry, FindEntryByResourceId(file_in_subdir_resource));
 
   // Remove directory.
   EXPECT_TRUE(RemoveEntry(dir_in_root));
-  EXPECT_FALSE(FindEntry(file_in_root));
+  EXPECT_FALSE(EntryExists(file_in_root));
   EXPECT_EQ(NULL, FindEntryByResourceId(file_in_root_resource));
-  EXPECT_FALSE(FindEntry(dir_in_root));
-  EXPECT_FALSE(FindEntry(file_in_subdir));
+  EXPECT_FALSE(EntryExists(dir_in_root));
+  EXPECT_FALSE(EntryExists(file_in_subdir));
   EXPECT_EQ(NULL, FindEntryByResourceId(file_in_subdir_resource));
 
   // Try removing file in already removed subdirectory.
@@ -1736,18 +1746,18 @@ TEST_F(GDataFileSystemTest, CreateDirectory) {
 
   // Create directory in root.
   FilePath dir_path(FILE_PATH_LITERAL("drive/New Folder 1"));
-  EXPECT_FALSE(FindEntry(dir_path));
+  EXPECT_FALSE(EntryExists(dir_path));
   AddDirectoryFromFile(dir_path, "directory_entry_atom.json");
-  EXPECT_TRUE(FindEntry(dir_path));
+  EXPECT_TRUE(EntryExists(dir_path));
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive/New Folder 1"))))).Times(1);
 
   // Create directory in a sub dirrectory.
   FilePath subdir_path(FILE_PATH_LITERAL("drive/New Folder 1/New Folder 2"));
-  EXPECT_FALSE(FindEntry(subdir_path));
+  EXPECT_FALSE(EntryExists(subdir_path));
   AddDirectoryFromFile(subdir_path, "directory_entry_atom.json");
-  EXPECT_TRUE(FindEntry(subdir_path));
+  EXPECT_TRUE(EntryExists(subdir_path));
 }
 
 TEST_F(GDataFileSystemTest, FindFirstMissingParentDirectory) {
