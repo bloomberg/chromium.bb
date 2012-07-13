@@ -6,6 +6,7 @@
 A library to generate and store the manifests for cros builders to use.
 """
 
+import cPickle
 import fnmatch
 import logging
 import os
@@ -312,7 +313,7 @@ class BuilderStatus():
   STATUS_PASSED = 'pass'
   STATUS_INFLIGHT = 'inflight'
   STATUS_COMPLETED = [STATUS_PASSED, STATUS_FAILED]
-  MESSAGE_FILE_SUFFIX = '_message.txt'
+  MESSAGE_FILE_SUFFIX = '_message.pck'
 
   def __init__(self, status, message):
     self.status = status
@@ -528,7 +529,8 @@ class BuildSpecsManager(object):
       message: Message to store along.
     """
     message_file = self._GetPathToStatusMessage(status_path)
-    osutils.WriteFile(message_file, message)
+    with open(message_file, 'w') as f:
+      cPickle.dump(message, f, protocol=cPickle.HIGHEST_PROTOCOL)
 
   def _GetAdditionalStatusMessage(self, status_path):
     """Returns a string containing any additional message for the status
@@ -545,7 +547,8 @@ class BuildSpecsManager(object):
     """
     message_file = self._GetPathToStatusMessage(status_path)
     if os.path.exists(message_file):
-      return open(message_file).read()
+      with open(message_file) as f:
+        return cPickle.load(f)
 
   def GetBuildStatus(self, builder, version_info):
     """Returns a BuilderStatus instance for the given the builder.
@@ -675,11 +678,7 @@ class BuildSpecsManager(object):
     logging.debug('Setting build to failed  %s: %s', src_file, dest_file)
     CreateSymlink(src_file, dest_file, remove_file)
     if failure_message:
-      failure_file = '%s%s' % (os.path.join(self.fail_dir,
-                                            self.current_version),
-                               BuilderStatus.MESSAGE_FILE_SUFFIX)
-      with open(failure_file, 'w') as failure_file_handle:
-        failure_file_handle.write(failure_message)
+      self._SetAdditionalStatusMessage(dest_file, failure_message)
 
   def _SetPassed(self):
     """Marks the buildspec as passed by creating a symlink in passed dir."""
