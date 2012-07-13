@@ -70,7 +70,11 @@ public class ShellView extends LinearLayout {
         mUrlTextView.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId != EditorInfo.IME_ACTION_GO) return false;
+                if ((actionId != EditorInfo.IME_ACTION_GO) && (event == null ||
+                        event.getKeyCode() != KeyEvent.KEYCODE_ENTER ||
+                        event.getAction() != KeyEvent.ACTION_UP)) {
+                    return false;
+                }
                 loadUrl(mUrlTextView.getText().toString());
                 setKeyboardVisibilityForUrl(false);
                 mUrlTextView.clearFocus();
