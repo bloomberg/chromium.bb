@@ -117,7 +117,7 @@ bool Target::AddTemporaryBreakpoint(uint64_t address) {
 
 bool Target::RemoveTemporaryBreakpoints(IThread *thread) {
   const Abi::BPDef *bp_def = abi_->GetBreakpointDef();
-  const Abi::RegDef *ip_def = abi_->GetRegisterType(Abi::INST_PTR);
+  const Abi::RegDef *ip_def = abi_->GetInstPtrDef();
   uint64_t new_ip = 0;
 
   // If this ABI does not support breakpoints then fail.

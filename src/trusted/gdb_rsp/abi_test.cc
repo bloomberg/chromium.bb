@@ -58,7 +58,7 @@ int VerifyAbi(const char *name, uint32_t regs) {
       }
 
       if ((1 > def->bytes_) || (def->bytes_ > byteCnt)) {
-        printf("Index mismatch for ABI %s, reg %d.\n", name, loop);
+        printf("Bad register size for ABI %s, reg %d.\n", name, loop);
         errs++;
         break;
       }
@@ -83,12 +83,7 @@ int VerifyAbi(const char *name, uint32_t regs) {
       errs++;
     }
 
-    if (abi->GetRegisterType(Abi::GENERAL) == NULL) {
-      printf("Missing general registers for ABI %s.\n", name);
-      errs++;
-    }
-
-    if (abi->GetRegisterType(Abi::INST_PTR) == NULL) {
+    if (abi->GetInstPtrDef() == NULL) {
       printf("Missing instruction pointer for ABI %s.\n", name);
       errs++;
     }
@@ -112,22 +107,6 @@ int TestAbi() {
   if (NULL == abi) {
     printf("Failed to get default ABI.\n");
     errs++;
-  }
-
-  // Get a generic register
-  const Abi::RegDef *def = abi->GetRegisterType(Abi::GENERAL);
-  if (NULL == def) {
-    printf("Failed to get a generic register on the default ABI %s.\n",
-            abi->GetName());
-    errs++;
-  } else {
-    if (def->bytes_ != sizeof(intptr_t)) {
-      printf("Generic register %d != %d pointer size for %s\n",
-             static_cast<int>(def->bytes_),
-             static_cast<int>(sizeof(intptr_t)),
-             abi->GetName());
-      errs++;
-    }
   }
 
   if (NULL != Abi::Find("non-existant")) {

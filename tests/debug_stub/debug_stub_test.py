@@ -210,6 +210,31 @@ class DebugStubTest(unittest.TestCase):
     # influenced the program's execution. This would require changing
     # debugger_test.c.
 
+  def CheckReadOnlyRegisters(self, connection):
+    if ARCH == 'x86-32':
+      sample_read_only_regs = ['cs', 'ds']
+    elif ARCH == 'x86-64':
+      sample_read_only_regs = ['r15', 'cs', 'ds']
+    elif ARCH == 'arm':
+      sample_read_only_regs = []
+    else:
+      raise AssertionError('Unknown architecture')
+
+    for reg_name in sample_read_only_regs:
+      # Read registers.
+      regs = DecodeRegs(connection.RspRequest('g'))
+
+      # Change a register.
+      old_value = regs[reg_name]
+      regs[reg_name] += 1
+
+      # Write registers.
+      self.assertEquals(connection.RspRequest('G' + EncodeRegs(regs)), 'OK')
+
+      # Read registers. Check for an old value.
+      regs = DecodeRegs(connection.RspRequest('g'))
+      self.assertEquals(regs[reg_name], old_value)
+
   # Test that we can read from memory by reading from the stack.
   # This check corresponds to the last instruction of debugger_test.c
   def CheckReadMemory(self, connection):
@@ -240,6 +265,7 @@ class DebugStubTest(unittest.TestCase):
 
       self.CheckReadRegisters(connection)
       self.CheckWriteRegisters(connection)
+      self.CheckReadOnlyRegisters(connection)
       self.CheckReadMemory(connection)
       self.CheckReadMemoryAtInvalidAddr(connection)
 

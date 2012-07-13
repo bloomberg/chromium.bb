@@ -35,15 +35,15 @@ static Abi::RegDef RegsX86_64[] = {
   MINIDEF(uint64_t, r12, GENERAL),
   MINIDEF(uint64_t, r13, GENERAL),
   MINIDEF(uint64_t, r14, GENERAL),
-  MINIDEF(uint64_t, r15, GENERAL),
-  MINIDEF(uint64_t, rip, INST_PTR),
-  MINIDEF(uint32_t, eflags, FLAGS),
-  MINIDEF(uint32_t, cs, SEGMENT),
-  MINIDEF(uint32_t, ss, SEGMENT),
-  MINIDEF(uint32_t, ds, SEGMENT),
-  MINIDEF(uint32_t, es, SEGMENT),
-  MINIDEF(uint32_t, fs, SEGMENT),
-  MINIDEF(uint32_t, gs, SEGMENT),
+  MINIDEF(uint64_t, r15, READ_ONLY),
+  MINIDEF(uint64_t, rip, GENERAL),
+  MINIDEF(uint32_t, eflags, GENERAL),
+  MINIDEF(uint32_t, cs, READ_ONLY),
+  MINIDEF(uint32_t, ss, READ_ONLY),
+  MINIDEF(uint32_t, ds, READ_ONLY),
+  MINIDEF(uint32_t, es, READ_ONLY),
+  MINIDEF(uint32_t, fs, READ_ONLY),
+  MINIDEF(uint32_t, gs, READ_ONLY),
 };
 
 static Abi::RegDef RegsX86_32[] = {
@@ -55,14 +55,14 @@ static Abi::RegDef RegsX86_32[] = {
   MINIDEF(uint32_t, ebp, GENERAL),
   MINIDEF(uint32_t, esi, GENERAL),
   MINIDEF(uint32_t, edi, GENERAL),
-  MINIDEF(uint32_t, eip, INST_PTR),
-  MINIDEF(uint32_t, eflags, FLAGS),
-  MINIDEF(uint32_t, cs, SEGMENT),
-  MINIDEF(uint32_t, ss, SEGMENT),
-  MINIDEF(uint32_t, ds, SEGMENT),
-  MINIDEF(uint32_t, es, SEGMENT),
-  MINIDEF(uint32_t, fs, SEGMENT),
-  MINIDEF(uint32_t, gs, SEGMENT),
+  MINIDEF(uint32_t, eip, GENERAL),
+  MINIDEF(uint32_t, eflags, GENERAL),
+  MINIDEF(uint32_t, cs, READ_ONLY),
+  MINIDEF(uint32_t, ss, READ_ONLY),
+  MINIDEF(uint32_t, ds, READ_ONLY),
+  MINIDEF(uint32_t, es, READ_ONLY),
+  MINIDEF(uint32_t, fs, READ_ONLY),
+  MINIDEF(uint32_t, gs, READ_ONLY),
 };
 
 static Abi::RegDef RegsArm[] = {
@@ -79,9 +79,9 @@ static Abi::RegDef RegsArm[] = {
   MINIDEF(uint32_t, r10, GENERAL),
   MINIDEF(uint32_t, r11, GENERAL),
   MINIDEF(uint32_t, r12, GENERAL),
-  MINIDEF(uint32_t, sp, STACK_PTR),
-  MINIDEF(uint32_t, lr, LINK_PTR),
-  MINIDEF(uint32_t, pc, INST_PTR),
+  MINIDEF(uint32_t, sp, GENERAL),
+  MINIDEF(uint32_t, lr, GENERAL),
+  MINIDEF(uint32_t, pc, GENERAL),
 };
 
 static uint8_t breakpoint_code_x86[] = { 0xcc };
@@ -109,11 +109,17 @@ static AbiMap_t *GetAbis() {
 // dependant functions should call AbiIsAvailable to ensure
 // the module is ready.
 static bool AbiInit() {
-  Abi::Register("i386", RegsX86_32, sizeof(RegsX86_32), &breakpoint_x86);
-  Abi::Register("i386:x86-64", RegsX86_64, sizeof(RegsX86_64), &breakpoint_x86);
+  Abi::Register("i386",
+                RegsX86_32, sizeof(RegsX86_32), 8 /* eip */,
+                &breakpoint_x86);
+  Abi::Register("i386:x86-64",
+                RegsX86_64, sizeof(RegsX86_64), 16 /* rip */,
+                &breakpoint_x86);
 
   // TODO(cbiffle) Figure out how to REALLY detect ARM
-  Abi::Register("iwmmxt", RegsArm, sizeof(RegsArm), &breakpoint_arm);
+  Abi::Register("iwmmxt",
+                RegsArm, sizeof(RegsArm), 15 /* pc */,
+                &breakpoint_arm);
 
   return true;
 }
@@ -129,7 +135,7 @@ Abi::Abi() {}
 Abi::~Abi() {}
 
 void Abi::Register(const char *name, RegDef *regs,
-                   uint32_t bytes, const BPDef *bp) {
+                   uint32_t bytes, uint32_t ip, const BPDef *bp) {
   uint32_t offs = 0;
   const uint32_t cnt = bytes / sizeof(RegDef);
 
@@ -147,6 +153,7 @@ void Abi::Register(const char *name, RegDef *regs,
   abi->regDefs_= regs;
   abi->ctxSize_ = offs;
   abi->bpDef_ = bp;
+  abi->ipIndex_ = ip;
 
   AbiMap_t *abis = GetAbis();
   (*abis)[name] = abi;
@@ -206,19 +213,8 @@ const Abi::RegDef *Abi::GetRegisterDef(uint32_t index) const {
   return &regDefs_[index];
 }
 
-const Abi::RegDef *Abi::GetRegisterType(RegType rtype, uint32_t nth) const {
-  uint32_t typeNum = 0;
-
-  // Scan for the "nth" register of rtype;
-  for (uint32_t regNum = 0; regNum < regCnt_; regNum++) {
-    if (rtype == regDefs_[regNum].type_) {
-      if (typeNum == nth) return &regDefs_[regNum];
-      typeNum++;
-    }
-  }
-
-  // Otherwise we failed to find it
-  return NULL;
+const Abi::RegDef *Abi::GetInstPtrDef() const {
+  return GetRegisterDef(ipIndex_);
 }
 
 }  // namespace gdb_rsp

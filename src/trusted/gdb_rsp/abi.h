@@ -29,17 +29,10 @@ namespace gdb_rsp {
 
 class Abi {
  public:
+  // Defines how a register is exposed to the debugger.
   enum RegType {
     GENERAL,
-    LINK_PTR,
-    INST_PTR,
-    STACK_PTR,
-    FRAME_PTR,
-    BASE_PTR,
-    SEGMENT,
-    TLS,
-    FLAGS,
-    CONTROL,
+    READ_ONLY,
     REG_TYPE_CNT
   };
 
@@ -80,14 +73,13 @@ class Abi {
   // NULL if it does not exist.
   const RegDef *GetRegisterDef(uint32_t index) const;
 
-  // Returns the 'nth' register of the type specified or NULL if it
-  // does not exist.
-  const RegDef *GetRegisterType(RegType rt, uint32_t index = 0) const;
+  // Returns a definition of the instruction pointer.
+  const RegDef *GetInstPtrDef() const;
 
   // Called to assign a set of register definitions to an ABI.
   // This function is non-reentrant.
   static void Register(const char *name, RegDef *defs,
-                       uint32_t cnt, const BPDef *bp);
+                       uint32_t cnt, uint32_t ip, const BPDef *bp);
 
   // Called to search the map for a matching Abi by name.
   // This function is reentrant.
@@ -102,6 +94,7 @@ class Abi {
   uint32_t regCnt_;
   uint32_t ctxSize_;
   const BPDef *bpDef_;
+  uint32_t ipIndex_;
 
  private:
   Abi();
