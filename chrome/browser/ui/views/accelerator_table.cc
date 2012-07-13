@@ -98,7 +98,6 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_F1, ui::EF_NONE, IDC_BACK },
   { ui::VKEY_BACK, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_CLEAR_BROWSING_DATA },
-  { ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FEEDBACK },
   { ui::VKEY_BROWSER_FORWARD, ui::EF_NONE, IDC_FORWARD },
   { ui::VKEY_F2, ui::EF_NONE, IDC_FORWARD },
   { ui::VKEY_F4, ui::EF_NONE, IDC_FULLSCREEN },
@@ -136,6 +135,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_M, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_SHOW_AVATAR_MENU},
 #endif  // OS_CHROMEOS
 #if !defined(USE_ASH)
+  { ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FEEDBACK },
   { ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_EXIT },
   { ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_NEW_INCOGNITO_WINDOW },
