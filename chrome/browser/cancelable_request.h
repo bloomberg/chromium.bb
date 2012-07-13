@@ -403,7 +403,7 @@ void CancelableRequestConsumerTSimple<T>::GetAllClientData(
 
 template<class T>
 T CancelableRequestConsumerTSimple<T>::get_initial_t() const {
-  return 0;
+  return T();
 }
 
 template<class T>

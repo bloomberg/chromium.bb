@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "ui/base/layout.h"
 
 namespace gfx {
 class Image;
@@ -41,11 +42,22 @@ class FileIconSource : public ChromeURLDataManager::DataSource {
   // function is called to perform the actual fetch. Declared as virtual for
   // testing.
   virtual void FetchFileIcon(const FilePath& path,
+                             ui::ScaleFactor scale_factor,
                              IconLoader::IconSize icon_size,
                              int request_id);
 
  private:
-  CancelableRequestConsumerT<int, 0> cancelable_consumer_;
+  // Contains the necessary information for completing an icon fetch request.
+  struct IconRequestDetails {
+    // The request id corresponding to these details.
+    int request_id;
+
+    // The requested scale factor to respond with.
+    ui::ScaleFactor scale_factor;
+  };
+
+  // Consumer for requesting file icons.
+  CancelableRequestConsumerTSimple<IconRequestDetails> cancelable_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(FileIconSource);
 };

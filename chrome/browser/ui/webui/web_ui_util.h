@@ -7,8 +7,12 @@
 
 #include <string>
 
+#include "base/string_piece.h"
 #include "base/values.h"
+#include "ui/base/layout.h"
 #include "webkit/glue/window_open_disposition.h"
+
+class GURL;
 
 namespace gfx {
 class ImageSkia;
@@ -33,6 +37,16 @@ std::string GetImageDataUrlFromResource(int resource_id);
 // (in that order), starting at |start_index|.
 WindowOpenDisposition GetDispositionFromClick(const ListValue* args,
                                               int start_index);
+
+// Given a scale factor such as "1x" or "2x" returns the ScaleFactor enum
+// value for this scale factor.
+ui::ScaleFactor ParseScaleFactor(const base::StringPiece& identifier);
+
+// Parses a URL containing some path @{scale}x. If it does not contain a scale
+// factor then the default scale factor is returned.
+void ParsePathAndScale(const GURL& url,
+                       std::string* path,
+                       ui::ScaleFactor* scale_factor);
 
 }  // namespace web_ui_util
 

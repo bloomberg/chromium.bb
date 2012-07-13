@@ -13,6 +13,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -24,49 +25,14 @@ using content::BrowserThread;
 
 namespace {
 
+std::string GetThemePath() {
+  return std::string(chrome::kChromeUIScheme) +
+      "://" + std::string(chrome::kChromeUIThemePath) + "/";
+}
+
 // use a resource map rather than hard-coded strings.
 static const char* kNewTabCSSPath = "css/new_tab_theme.css";
 static const char* kNewIncognitoTabCSSPath = "css/incognito_new_tab_theme.css";
-
-struct ScaleFactorMap {
-  const char* name;
-  ui::ScaleFactor scale_factor;
-};
-
-const ScaleFactorMap kScaleFactorMap[] = {
-  { "1x", ui::SCALE_FACTOR_100P },
-  { "2x", ui::SCALE_FACTOR_200P },
-};
-
-std::string StripQueryParams(const std::string& path) {
-  GURL path_url = GURL(std::string(chrome::kChromeUIScheme) + "://" +
-                       std::string(chrome::kChromeUIThemePath) + "/" + path);
-  return path_url.path().substr(1);  // path() always includes a leading '/'.
-}
-
-std::string ParsePathAndScale(const std::string& path,
-                              ui::ScaleFactor* scale_factor) {
-  // Our path may include cachebuster arguments, so trim them off.
-  std::string uncached_path = StripQueryParams(path);
-  if (scale_factor)
-    *scale_factor = ui::SCALE_FACTOR_100P;
-
-  // Detect and parse resource string ending in @<scale>x.
-  std::size_t pos = uncached_path.rfind('@');
-  if (pos != std::string::npos) {
-    if (scale_factor) {
-      for (size_t i = 0; i < arraysize(kScaleFactorMap); i++) {
-        if (uncached_path.compare(pos + 1, uncached_path.length() - pos - 1,
-            kScaleFactorMap[i].name) == 0) {
-          *scale_factor = kScaleFactorMap[i].scale_factor;
-        }
-      }
-    }
-    // Strip scale factor specification from path.
-    uncached_path = uncached_path.substr(0, pos);
-  }
-  return uncached_path;
-}
 
 }  // namespace
 
@@ -88,7 +54,10 @@ void ThemeSource::StartDataRequest(const std::string& path,
                                    int request_id) {
   // Default scale factor if not specified.
   ui::ScaleFactor scale_factor;
-  std::string uncached_path = ParsePathAndScale(path, &scale_factor);
+  std::string uncached_path;
+  web_ui_util::ParsePathAndScale(GURL(GetThemePath() + path),
+                                 &uncached_path,
+                                 &scale_factor);
 
   if (uncached_path == kNewTabCSSPath ||
       uncached_path == kNewIncognitoTabCSSPath) {
@@ -110,7 +79,9 @@ void ThemeSource::StartDataRequest(const std::string& path,
 }
 
 std::string ThemeSource::GetMimeType(const std::string& path) const {
-  std::string uncached_path = ParsePathAndScale(path, NULL);
+  std::string uncached_path;
+  web_ui_util::ParsePathAndScale(GURL(GetThemePath() + path),
+                                 &uncached_path, NULL);
 
   if (uncached_path == kNewTabCSSPath ||
       uncached_path == kNewIncognitoTabCSSPath) {
@@ -122,7 +93,9 @@ std::string ThemeSource::GetMimeType(const std::string& path) const {
 
 MessageLoop* ThemeSource::MessageLoopForRequestPath(
     const std::string& path) const {
-  std::string uncached_path = ParsePathAndScale(path, NULL);
+  std::string uncached_path;
+  web_ui_util::ParsePathAndScale(GURL(GetThemePath() + path),
+                                 &uncached_path, NULL);
 
   if (uncached_path == kNewTabCSSPath ||
       uncached_path == kNewIncognitoTabCSSPath) {

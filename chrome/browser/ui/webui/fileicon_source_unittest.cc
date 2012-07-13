@@ -20,7 +20,8 @@ class TestFileIconSource : public FileIconSource {
  public:
   explicit TestFileIconSource() {}
 
-  MOCK_METHOD3(FetchFileIcon, void(const FilePath& path,
+  MOCK_METHOD4(FetchFileIcon, void(const FilePath& path,
+                                   ui::ScaleFactor scale_factor,
                                    IconLoader::IconSize icon_size,
                                    int request_id));
 
@@ -48,43 +49,64 @@ class FileIconSourceTest : public testing::Test {
 const struct FetchFileIconExpectation {
   const char* request_path;
   const FilePath::CharType* unescaped_path;
+  ui::ScaleFactor scale_factor;
   IconLoader::IconSize size;
 } kBasicExpectations[] = {
-  { "foo?bar", FILE_PATH_LITERAL("foo"), IconLoader::NORMAL },
-  { "foo?iconsize=small", FILE_PATH_LITERAL("foo"), IconLoader::SMALL },
-  { "foo?iconsize=normal", FILE_PATH_LITERAL("foo"), IconLoader::NORMAL },
-  { "foo?iconsize=large", FILE_PATH_LITERAL("foo"), IconLoader::LARGE },
-  { "foo?iconsize=asdf", FILE_PATH_LITERAL("foo"), IconLoader::NORMAL },
-  { "foo?blah=b&iconsize=small", FILE_PATH_LITERAL("foo"), IconLoader::SMALL },
-  { "foo?blah&iconsize=small", FILE_PATH_LITERAL("foo"), IconLoader::SMALL },
-  { "a%3Fb%26c%3Dd.txt?iconsize=small", FILE_PATH_LITERAL("a?b&c=d.txt"),
+  { "foo?bar", FILE_PATH_LITERAL("foo"), ui::SCALE_FACTOR_100P,
+    IconLoader::NORMAL },
+  { "foo?bar&scale=2x", FILE_PATH_LITERAL("foo"), ui::SCALE_FACTOR_200P,
+    IconLoader::NORMAL },
+  { "foo?iconsize=small", FILE_PATH_LITERAL("foo"), ui::SCALE_FACTOR_100P,
     IconLoader::SMALL },
+  { "foo?iconsize=normal", FILE_PATH_LITERAL("foo"), ui::SCALE_FACTOR_100P,
+    IconLoader::NORMAL },
+  { "foo?iconsize=large", FILE_PATH_LITERAL("foo"), ui::SCALE_FACTOR_100P,
+    IconLoader::LARGE },
+  { "foo?iconsize=asdf", FILE_PATH_LITERAL("foo"), ui::SCALE_FACTOR_100P,
+    IconLoader::NORMAL },
+  { "foo?blah=b&iconsize=small", FILE_PATH_LITERAL("foo"),
+    ui::SCALE_FACTOR_100P, IconLoader::SMALL },
+  { "foo?blah&iconsize=small", FILE_PATH_LITERAL("foo"), ui::SCALE_FACTOR_100P,
+    IconLoader::SMALL },
+  { "a%3Fb%26c%3Dd.txt?iconsize=small", FILE_PATH_LITERAL("a?b&c=d.txt"),
+    ui::SCALE_FACTOR_100P, IconLoader::SMALL },
   { "a%3Ficonsize%3Dsmall?iconsize=large",
-    FILE_PATH_LITERAL("a?iconsize=small"), IconLoader::LARGE },
+    FILE_PATH_LITERAL("a?iconsize=small"), ui::SCALE_FACTOR_100P,
+    IconLoader::LARGE },
   { "o%40%23%24%25%26*()%20%2B%3D%3F%2C%3A%3B%22.jpg",
-    FILE_PATH_LITERAL("o@#$%&*() +=?,:;\".jpg"), IconLoader::NORMAL },
+    FILE_PATH_LITERAL("o@#$%&*() +=?,:;\".jpg"), ui::SCALE_FACTOR_100P,
+    IconLoader::NORMAL },
 #if defined(OS_WIN)
   { "c:/foo/bar/baz", FILE_PATH_LITERAL("c:\\foo\\bar\\baz"),
+    ui::SCALE_FACTOR_100P, IconLoader::NORMAL },
+  { "/foo?bar=asdf&asdf", FILE_PATH_LITERAL("\\foo"), ui::SCALE_FACTOR_100P,
     IconLoader::NORMAL },
-  { "/foo?bar=asdf&asdf", FILE_PATH_LITERAL("\\foo"), IconLoader::NORMAL },
   { "c%3A%2Fusers%2Ffoo%20user%2Fbar.txt",
-    FILE_PATH_LITERAL("c:\\users\\foo user\\bar.txt"), IconLoader::NORMAL },
+    FILE_PATH_LITERAL("c:\\users\\foo user\\bar.txt"), ui::SCALE_FACTOR_100P,
+    IconLoader::NORMAL },
   { "c%3A%2Fusers%2F%C2%A9%202000.pdf",
-    FILE_PATH_LITERAL("c:\\users\\\xa9 2000.pdf"), IconLoader::NORMAL },
+    FILE_PATH_LITERAL("c:\\users\\\xa9 2000.pdf"), ui::SCALE_FACTOR_100P,
+    IconLoader::NORMAL },
   { "%E0%B6%9A%E0%B6%BB%E0%B7%9D%E0%B6%B8%E0%B7%8A",
-    FILE_PATH_LITERAL("\x0d9a\x0dbb\x0ddd\x0db8\x0dca"), IconLoader::NORMAL },
-  { "%2Ffoo%2Fbar", FILE_PATH_LITERAL("\\foo\\bar"), IconLoader::NORMAL },
+    FILE_PATH_LITERAL("\x0d9a\x0dbb\x0ddd\x0db8\x0dca"), ui::SCALE_FACTOR_100P,
+    IconLoader::NORMAL },
+  { "%2Ffoo%2Fbar", FILE_PATH_LITERAL("\\foo\\bar"), ui::SCALE_FACTOR_100P,
+    IconLoader::NORMAL },
   { "%2Fbaz%20(1).txt?iconsize=small", FILE_PATH_LITERAL("\\baz (1).txt"),
-    IconLoader::SMALL },
+    ui::SCALE_FACTOR_100P, IconLoader::SMALL },
 #else
-  { "/foo/bar/baz", FILE_PATH_LITERAL("/foo/bar/baz"), IconLoader::NORMAL },
-  { "/foo?bar", FILE_PATH_LITERAL("/foo"), IconLoader::NORMAL },
+  { "/foo/bar/baz", FILE_PATH_LITERAL("/foo/bar/baz"), ui::SCALE_FACTOR_100P,
+    IconLoader::NORMAL },
+  { "/foo?bar", FILE_PATH_LITERAL("/foo"), ui::SCALE_FACTOR_100P,
+    IconLoader::NORMAL },
   { "%2Ffoo%2f%E0%B6%9A%E0%B6%BB%E0%B7%9D%E0%B6%B8%E0%B7%8A",
     FILE_PATH_LITERAL("/foo/\xe0\xb6\x9a\xe0\xb6\xbb\xe0\xb7\x9d")
-    FILE_PATH_LITERAL("\xe0\xb6\xb8\xe0\xb7\x8a"), IconLoader::NORMAL },
-  { "%2Ffoo%2Fbar", FILE_PATH_LITERAL("/foo/bar"), IconLoader::NORMAL },
+    FILE_PATH_LITERAL("\xe0\xb6\xb8\xe0\xb7\x8a"), ui::SCALE_FACTOR_100P,
+    IconLoader::NORMAL },
+  { "%2Ffoo%2Fbar", FILE_PATH_LITERAL("/foo/bar"), ui::SCALE_FACTOR_100P,
+    IconLoader::NORMAL },
   { "%2Fbaz%20(1).txt?iconsize=small", FILE_PATH_LITERAL("/baz (1).txt"),
-    IconLoader::SMALL },
+    ui::SCALE_FACTOR_100P, IconLoader::SMALL },
 #endif
 };
 
@@ -95,6 +117,7 @@ TEST_F(FileIconSourceTest, FileIconSource_Parse) {
     scoped_refptr<TestFileIconSource> source(CreateFileIconSource());
     EXPECT_CALL(*source.get(),
                 FetchFileIcon(FilePath(kBasicExpectations[i].unescaped_path),
+                              kBasicExpectations[i].scale_factor,
                               kBasicExpectations[i].size, i));
     source->StartDataRequest(kBasicExpectations[i].request_path, false, i);
   }

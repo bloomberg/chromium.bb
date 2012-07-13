@@ -11,6 +11,7 @@
 #include "base/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/time_format.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -18,6 +19,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace {
 
@@ -29,6 +31,9 @@ const char kFileIconPath[] = "fileicon";
 // URL parameter specifying icon size.
 const char kIconSize[] = "iconsize";
 
+// URL parameter specifying scale factor.
+const char kScaleFactor[] = "scale";
+
 // Assuming the url is of the form '/path?query', convert the path portion into
 // a FilePath and return the resulting |file_path| and |query|.  The path
 // portion may have been encoded using encodeURIComponent().
@@ -37,10 +42,10 @@ void GetFilePathAndQuery(const std::string& url,
                          std::string* query) {
   // We receive the url with chrome://fileicon/ stripped but GURL expects it.
   const GURL gurl("chrome://fileicon/" + url);
-  std::string path =
-      net::UnescapeURLComponent(gurl.path().substr(1),
-                                (net::UnescapeRule::URL_SPECIAL_CHARS |
-                                 net::UnescapeRule::SPACES));
+  std::string path = net::UnescapeURLComponent(
+      gurl.path().substr(1), (net::UnescapeRule::URL_SPECIAL_CHARS |
+                              net::UnescapeRule::SPACES));
+
 #if defined(OS_WIN)
   // The path we receive has the wrong slashes and escaping for what we need;
   // this only appears to matter for getting icons from .exe files.
@@ -62,16 +67,23 @@ IconLoader::IconSize SizeStringToIconSize(const std::string& size_string) {
 }
 
 // Simple parser for data on the query.
-IconLoader::IconSize QueryToIconSize(const std::string& query) {
+void ParseQueryParams(const std::string& query,
+                      ui::ScaleFactor* scale_factor,
+                      IconLoader::IconSize* icon_size) {
   typedef std::pair<std::string, std::string> KVPair;
   std::vector<KVPair> parameters;
+  if (icon_size)
+    *icon_size = IconLoader::NORMAL;
+  if (scale_factor)
+    *scale_factor = ui::SCALE_FACTOR_NONE;
   base::SplitStringIntoKeyValuePairs(query, '=', '&', &parameters);
   for (std::vector<KVPair>::const_iterator iter = parameters.begin();
        iter != parameters.end(); ++iter) {
-    if (iter->first == kIconSize)
-      return SizeStringToIconSize(iter->second);
+    if (icon_size && iter->first == kIconSize)
+      *icon_size = SizeStringToIconSize(iter->second);
+    else if (scale_factor && iter->first == kScaleFactor)
+      *scale_factor = web_ui_util::ParseScaleFactor(iter->second);
   }
-  return IconLoader::NORMAL;
 }
 
 }  // namespace
@@ -84,6 +96,7 @@ FileIconSource::~FileIconSource() {
 }
 
 void FileIconSource::FetchFileIcon(const FilePath& path,
+                                   ui::ScaleFactor scale_factor,
                                    IconLoader::IconSize icon_size,
                                    int request_id) {
   IconManager* im = g_browser_process->icon_manager();
@@ -91,8 +104,9 @@ void FileIconSource::FetchFileIcon(const FilePath& path,
 
   if (icon) {
     scoped_refptr<base::RefCountedBytes> icon_data(new base::RefCountedBytes);
-    gfx::PNGCodec::EncodeBGRASkBitmap(*icon->ToSkBitmap(), false,
-                                      &icon_data->data());
+    gfx::PNGCodec::EncodeBGRASkBitmap(
+        icon->ToImageSkia()->GetRepresentation(scale_factor).sk_bitmap(),
+        false, &icon_data->data());
 
     SendResponse(request_id, icon_data);
   } else {
@@ -103,7 +117,10 @@ void FileIconSource::FetchFileIcon(const FilePath& path,
                    base::Unretained(this)));
 
     // Attach the ChromeURLDataManager request ID to the history request.
-    cancelable_consumer_.SetClientData(im, h, request_id);
+    IconRequestDetails details;
+    details.request_id = request_id;
+    details.scale_factor = scale_factor;
+    cancelable_consumer_.SetClientData(im, h, details);
   }
 }
 
@@ -112,8 +129,11 @@ void FileIconSource::StartDataRequest(const std::string& url_path,
                                       int request_id) {
   std::string query;
   FilePath file_path;
+  ui::ScaleFactor scale_factor;
+  IconLoader::IconSize icon_size;
   GetFilePathAndQuery(url_path, &file_path, &query);
-  FetchFileIcon(file_path, QueryToIconSize(query), request_id);
+  ParseQueryParams(query, &scale_factor, &icon_size);
+  FetchFileIcon(file_path, scale_factor, icon_size, request_id);
 }
 
 std::string FileIconSource::GetMimeType(const std::string&) const {
@@ -124,16 +144,18 @@ std::string FileIconSource::GetMimeType(const std::string&) const {
 void FileIconSource::OnFileIconDataAvailable(IconManager::Handle handle,
                                              gfx::Image* icon) {
   IconManager* im = g_browser_process->icon_manager();
-  int request_id = cancelable_consumer_.GetClientData(im, handle);
+  IconRequestDetails details = cancelable_consumer_.GetClientData(im, handle);
 
   if (icon) {
     scoped_refptr<base::RefCountedBytes> icon_data(new base::RefCountedBytes);
-    gfx::PNGCodec::EncodeBGRASkBitmap(*icon->ToSkBitmap(), false,
-                                      &icon_data->data());
+    gfx::PNGCodec::EncodeBGRASkBitmap(
+        icon->ToImageSkia()->GetRepresentation(
+            details.scale_factor).sk_bitmap(),
+        false, &icon_data->data());
 
-    SendResponse(request_id, icon_data);
+    SendResponse(details.request_id, icon_data);
   } else {
     // TODO(glen): send a dummy icon.
-    SendResponse(request_id, NULL);
+    SendResponse(details.request_id, NULL);
   }
 }
