@@ -338,7 +338,7 @@ class ProfileManager : public base::NonThreadSafe,
   // On startup we launch the active profiles in the order they became active
   // during the last run. This is why they are kept in a list, not in a set.
   std::vector<Profile*> active_profiles_;
-  bool shutdown_started_;
+  bool closing_all_browsers_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileManager);
 };

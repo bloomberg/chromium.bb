@@ -133,12 +133,12 @@ BaseLoginDisplayHost::BaseLoginDisplayHost(const gfx::Rect& background_bounds)
       ALLOW_THIS_IN_INITIALIZER_LIST(pointer_factory_(this)),
       shutting_down_(false),
       oobe_progress_bar_visible_(false) {
-  // We need to listen to APP_EXITING but not APP_TERMINATING because
-  // APP_TERMINATING will never be fired as long as this keeps ref-count.
-  // APP_EXITING is safe here because there will be no browser instance that
-  // will block the shutdown.
+  // We need to listen to CLOSE_ALL_BROWSERS_REQUEST but not APP_TERMINATIN
+  // because/ APP_TERMINATING will never be fired as long as this keeps
+  // ref-count. CLOSE_ALL_BROWSERS_REQUEST is safe here because there will be no
+  // browser instance that will block the shutdown.
   registrar_.Add(this,
-                 content::NOTIFICATION_APP_EXITING,
+                 content::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
                  content::NotificationService::AllSources());
 
   // NOTIFICATION_BROWSER_OPENED is issued after browser is created, but
@@ -272,12 +272,12 @@ void BaseLoginDisplayHost::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_APP_EXITING) {
+  if (type == content::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST) {
     ShutdownDisplayHost(true);
   } else if (type == chrome::NOTIFICATION_BROWSER_OPENED) {
     OnBrowserCreated();
     registrar_.Remove(this,
-                      content::NOTIFICATION_APP_EXITING,
+                      content::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
                       content::NotificationService::AllSources());
     registrar_.Remove(this,
                       chrome::NOTIFICATION_BROWSER_OPENED,

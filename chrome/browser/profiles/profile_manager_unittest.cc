@@ -484,7 +484,7 @@ TEST_F(ProfileManagerTest, LastOpenedProfilesAtShutdown) {
 
   // Simulate a shutdown.
   content::NotificationService::current()->Notify(
-      content::NOTIFICATION_APP_EXITING,
+      content::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
 

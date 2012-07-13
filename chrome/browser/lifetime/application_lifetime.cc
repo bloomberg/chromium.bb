@@ -84,7 +84,7 @@ void MarkAsCleanShutdown() {
 
 void AttemptExitInternal() {
   content::NotificationService::current()->Notify(
-      content::NOTIFICATION_APP_EXITING,
+      content::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
 
@@ -313,7 +313,7 @@ void SessionEnding() {
   browser_shutdown::OnShutdownStarting(browser_shutdown::END_SESSION);
 
   content::NotificationService::current()->Notify(
-      content::NOTIFICATION_APP_EXITING,
+      content::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
 

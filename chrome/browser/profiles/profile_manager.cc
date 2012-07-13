@@ -231,7 +231,7 @@ ProfileManager::ProfileManager(const FilePath& user_data_dir)
       ALLOW_THIS_IN_INITIALIZER_LIST(
           browser_list_observer_(this)),
 #endif
-      shutdown_started_(false) {
+      closing_all_browsers_(false) {
 #if defined(OS_CHROMEOS)
   registrar_.Add(
       this,
@@ -248,7 +248,11 @@ ProfileManager::ProfileManager(const FilePath& user_data_dir)
       content::NotificationService::AllSources());
   registrar_.Add(
       this,
-      content::NOTIFICATION_APP_EXITING,
+      content::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
+      content::NotificationService::AllSources());
+  registrar_.Add(
+      this,
+      chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
       content::NotificationService::AllSources());
 }
 
@@ -534,14 +538,20 @@ void ProfileManager::Observe(
     return;
   }
 #endif
-  if (shutdown_started_)
-    return;
-
-  bool update_active_profiles = false;
+  bool save_active_profiles = false;
   switch (type) {
-    case content::NOTIFICATION_APP_EXITING: {
+    case content::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST: {
       // Ignore any browsers closing from now on.
-      shutdown_started_ = true;
+      closing_all_browsers_ = true;
+      break;
+    }
+    case chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED: {
+      // This will cancel the shutdown process, so the active profiles are
+      // tracked again. Also, as the active profiles may have changed (i.e. if
+      // some windows were closed) we save the current list of active profiles
+      // again.
+      closing_all_browsers_ = false;
+      save_active_profiles = true;
       break;
     }
     case chrome::NOTIFICATION_BROWSER_OPENED: {
@@ -551,7 +561,7 @@ void ProfileManager::Observe(
       DCHECK(profile);
       if (!profile->IsOffTheRecord() && ++browser_counts_[profile] == 1) {
         active_profiles_.push_back(profile);
-        update_active_profiles = true;
+        save_active_profiles = !closing_all_browsers_;
       }
       break;
     }
@@ -563,7 +573,7 @@ void ProfileManager::Observe(
       if (!profile->IsOffTheRecord() && --browser_counts_[profile] == 0) {
         active_profiles_.erase(std::find(active_profiles_.begin(),
                                          active_profiles_.end(), profile));
-        update_active_profiles = true;
+        save_active_profiles = !closing_all_browsers_;
       }
       break;
     }
@@ -572,7 +582,8 @@ void ProfileManager::Observe(
       break;
     }
   }
-  if (update_active_profiles) {
+
+  if (save_active_profiles) {
     PrefService* local_state = g_browser_process->local_state();
     DCHECK(local_state);
     ListPrefUpdate update(local_state, prefs::kProfilesLastActive);

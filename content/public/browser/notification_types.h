@@ -175,7 +175,7 @@ enum NotificationType {
   // because the shutdown process can be cancelled by unload handler.
   // Use APP_TERMINATING for such needs.
   //  The source and details are unspecified.
-  NOTIFICATION_APP_EXITING,
+  NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
 
   // Indicates that a devtools window is opening. The source is the
   // BrowserContext* and the details is the inspected RenderViewHost*.

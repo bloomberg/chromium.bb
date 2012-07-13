@@ -39,8 +39,8 @@ BrowserStateMonitor::BrowserStateMonitor(InputMethodManager* manager)
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
                               content::NotificationService::AllSources());
-  // We should not use APP_EXITING here since logout might be canceled by
-  // JavaScript after APP_EXITING is sent (crosbug.com/11055).
+  // We should not use ALL_BROWSERS_CLOSING here since logout might be cancelled
+  // by JavaScript after ALL_BROWSERS_CLOSING is sent (crosbug.com/11055).
   notification_registrar_.Add(this,
                               content::NOTIFICATION_APP_TERMINATING,
                               content::NotificationService::AllSources());
