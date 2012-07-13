@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,13 +9,13 @@
 namespace ui {
 
 // How many frames per second to target.
-static const int kDefaultFramerateHz = 50;
+static const int kDefaultFrameRateHz = 60;
 
 // How long animations should take by default.
 static const int kDefaultDurationMs = 120;
 
 SlideAnimation::SlideAnimation(AnimationDelegate* target)
-    : LinearAnimation(kDefaultFramerateHz, target),
+    : LinearAnimation(kDefaultFrameRateHz, target),
       target_(target),
       tween_type_(Tween::EASE_OUT),
       showing_(false),
@@ -55,7 +55,7 @@ void SlideAnimation::Show() {
     return;
   }
 
-  // This will also reset the currently-occuring animation.
+  // This will also reset the currently-occurring animation.
   SetDuration(static_cast<int>(slide_duration_ * (1 - value_current_)));
   Start();
 }
@@ -77,7 +77,7 @@ void SlideAnimation::Hide() {
     return;
   }
 
-  // This will also reset the currently-occuring animation.
+  // This will also reset the currently-occurring animation.
   SetDuration(static_cast<int>(slide_duration_ * value_current_));
   Start();
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,6 +69,8 @@ class UI_EXPORT SlideAnimation : public LinearAnimation {
   virtual double GetCurrentValue() const OVERRIDE;
   bool IsShowing() const { return showing_; }
   bool IsClosing() const { return !showing_ && value_end_ < value_current_; }
+
+  class TestApi;
 
  private:
   // Overridden from Animation.
