@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "content/public/test/test_browser_thread.h"

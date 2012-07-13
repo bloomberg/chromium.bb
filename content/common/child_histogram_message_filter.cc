@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "base/metrics/statistics_recorder.h"
 #include "content/common/child_process.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/child_thread.h"

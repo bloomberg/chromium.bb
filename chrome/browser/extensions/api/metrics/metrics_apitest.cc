@@ -5,6 +5,7 @@
 #include <map>
 
 #include "base/metrics/histogram.h"
+#include "base/metrics/statistics_recorder.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"

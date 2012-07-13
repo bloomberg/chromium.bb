@@ -5,6 +5,7 @@
 #include "content/browser/histogram_internals_request_job.h"
 
 #include "base/metrics/histogram.h"
+#include "base/metrics/statistics_recorder.h"
 #include "content/browser/histogram_synchronizer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"

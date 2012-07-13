@@ -152,6 +152,7 @@
 #include "base/guid.h"
 #include "base/md5.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/platform_thread.h"

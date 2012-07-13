@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/statistics_recorder.h"
 #include "net/base/net_test_suite.h"
 #include "net/base/test_completion_callback.h"
 #include "net/curvecp/circular_buffer.h"

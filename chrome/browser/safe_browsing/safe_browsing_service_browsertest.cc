@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_split.h"
@@ -42,8 +41,6 @@
 #include "sql/statement.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using base::Histogram;
-using base::StatisticsRecorder;
 using content::BrowserThread;
 using content::InterstitialPage;
 using content::WebContents;

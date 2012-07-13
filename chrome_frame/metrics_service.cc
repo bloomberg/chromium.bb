@@ -50,6 +50,7 @@
 #include "third_party/bzip2/bzlib.h"
 #endif
 
+#include "base/metrics/statistics_recorder.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
