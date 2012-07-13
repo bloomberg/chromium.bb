@@ -844,7 +844,16 @@ void SessionModelAssociator::InitializeCurrentMachineTag(
     syncer::syncable::Directory* dir =
         trans->GetWrappedWriteTrans()->directory();
     current_machine_tag_ = "session_sync";
+#if defined(OS_ANDROID)
+    const std::string android_id = syncer::internal::GetAndroidId();
+    // There are reports that sometimes the android_id can't be read. Those
+    // are supposed to be fixed as of Gingerbread, but if it happens we fall
+    // back to use the same GUID generation as on other platforms.
+    current_machine_tag_.append(android_id.empty() ?
+                                    dir->cache_guid() : android_id);
+#else
     current_machine_tag_.append(dir->cache_guid());
+#endif
     DVLOG(1) << "Creating session sync guid: " << current_machine_tag_;
     if (pref_service_)
       pref_service_->SetString(kSyncSessionsGUID, current_machine_tag_);
