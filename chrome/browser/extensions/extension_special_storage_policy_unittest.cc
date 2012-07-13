@@ -20,6 +20,11 @@ using extensions::Extension;
 namespace keys = extension_manifest_keys;
 
 class ExtensionSpecialStoragePolicyTest : public testing::Test {
+ public:
+  virtual void SetUp() {
+    policy_ = new ExtensionSpecialStoragePolicy(NULL);
+  }
+
  protected:
   scoped_refptr<Extension> CreateProtectedApp() {
 #if defined(OS_WIN)
@@ -116,104 +121,126 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
     EXPECT_TRUE(handler_app.get()) << error;
     return handler_app;
   }
+
+  // Verifies that the set of extensions protecting |url| is *exactly* equal to
+  // |expected_extensions|. Pass in an empty set to verify that an origin is not
+  // protected.
+  void ExpectProtectedBy(const ExtensionSet& expected_extensions,
+                         const GURL& url) {
+    const ExtensionSet* extensions = policy_->ExtensionsProtectingOrigin(url);
+    EXPECT_EQ(expected_extensions.size(), extensions->size());
+    for (ExtensionSet::const_iterator it = expected_extensions.begin();
+         it != expected_extensions.end(); ++it) {
+      EXPECT_TRUE(extensions->Contains((*it)->id()))
+          << "Origin " << url << "not protected by extension ID "
+          << (*it)->id();
+    }
+  }
+
+  scoped_refptr<ExtensionSpecialStoragePolicy> policy_;
 };
 
 TEST_F(ExtensionSpecialStoragePolicyTest, EmptyPolicy) {
   const GURL kHttpUrl("http://foo");
   const GURL kExtensionUrl("chrome-extension://bar");
 
-  scoped_refptr<ExtensionSpecialStoragePolicy> policy(
-      new ExtensionSpecialStoragePolicy(NULL));
-
-  ASSERT_FALSE(policy->IsStorageUnlimited(kHttpUrl));
-  ASSERT_FALSE(policy->IsStorageUnlimited(kHttpUrl));  // test cached result
-  ASSERT_FALSE(policy->IsStorageUnlimited(kExtensionUrl));
-  ASSERT_FALSE(policy->IsStorageProtected(kHttpUrl));
+  EXPECT_FALSE(policy_->IsStorageUnlimited(kHttpUrl));
+  EXPECT_FALSE(policy_->IsStorageUnlimited(kHttpUrl));  // test cached result
+  EXPECT_FALSE(policy_->IsStorageUnlimited(kExtensionUrl));
+  ExtensionSet empty_set;
+  ExpectProtectedBy(empty_set, kHttpUrl);
 
   // This one is just based on the scheme.
-  ASSERT_TRUE(policy->IsStorageProtected(kExtensionUrl));
+  EXPECT_TRUE(policy_->IsStorageProtected(kExtensionUrl));
 }
 
 
 TEST_F(ExtensionSpecialStoragePolicyTest, AppWithProtectedStorage) {
   scoped_refptr<Extension> extension(CreateProtectedApp());
-  scoped_refptr<ExtensionSpecialStoragePolicy> policy(
-      new ExtensionSpecialStoragePolicy(NULL));
-  policy->GrantRightsForExtension(extension);
-  EXPECT_FALSE(policy->IsStorageUnlimited(extension->url()));
-  EXPECT_FALSE(policy->IsStorageUnlimited(GURL("http://explicit/")));
-  EXPECT_TRUE(policy->IsStorageProtected(GURL("http://explicit/")));
-  EXPECT_TRUE(policy->IsStorageProtected(GURL("http://explicit:6000/")));
-  EXPECT_TRUE(policy->IsStorageProtected(GURL("http://foo.wildcards/")));
-  EXPECT_TRUE(policy->IsStorageProtected(GURL("https://bar.wildcards/")));
-  EXPECT_FALSE(policy->IsStorageProtected(GURL("http://not_listed/")));
+  policy_->GrantRightsForExtension(extension);
+  ExtensionSet protecting_extensions;
+  protecting_extensions.Insert(extension);
+  ExtensionSet empty_set;
 
-  policy->RevokeRightsForExtension(extension);
-  EXPECT_FALSE(policy->IsStorageProtected(GURL("http://explicit/")));
-  EXPECT_FALSE(policy->IsStorageProtected(GURL("http://foo.wildcards/")));
-  EXPECT_FALSE(policy->IsStorageProtected(GURL("https://bar.wildcards/")));
+  EXPECT_FALSE(policy_->IsStorageUnlimited(extension->url()));
+  EXPECT_FALSE(policy_->IsStorageUnlimited(GURL("http://explicit/")));
+  ExpectProtectedBy(protecting_extensions, GURL("http://explicit/"));
+  ExpectProtectedBy(protecting_extensions, GURL("http://explicit:6000/"));
+  ExpectProtectedBy(protecting_extensions, GURL("http://foo.wildcards/"));
+  ExpectProtectedBy(protecting_extensions, GURL("https://bar.wildcards/"));
+  ExpectProtectedBy(empty_set, GURL("http://not_listed/"));
+
+  policy_->RevokeRightsForExtension(extension);
+  ExpectProtectedBy(empty_set, GURL("http://explicit/"));
+  ExpectProtectedBy(empty_set, GURL("http://foo.wildcards/"));
+  ExpectProtectedBy(empty_set, GURL("https://bar.wildcards/"));
 }
 
 TEST_F(ExtensionSpecialStoragePolicyTest, AppWithUnlimitedStorage) {
   scoped_refptr<Extension> extension(CreateUnlimitedApp());
-  scoped_refptr<ExtensionSpecialStoragePolicy> policy(
-      new ExtensionSpecialStoragePolicy(NULL));
-  policy->GrantRightsForExtension(extension);
-  EXPECT_TRUE(policy->IsStorageProtected(GURL("http://explicit/")));
-  EXPECT_TRUE(policy->IsStorageProtected(GURL("http://explicit:6000/")));
-  EXPECT_TRUE(policy->IsStorageProtected(GURL("https://foo.wildcards/")));
-  EXPECT_TRUE(policy->IsStorageProtected(GURL("https://foo.wildcards/")));
-  EXPECT_TRUE(policy->IsStorageProtected(GURL("http://bar.wildcards/")));
-  EXPECT_FALSE(policy->IsStorageProtected(GURL("http://not_listed/")));
-  EXPECT_TRUE(policy->IsStorageUnlimited(extension->url()));
-  EXPECT_TRUE(policy->IsStorageUnlimited(GURL("http://explicit/")));
-  EXPECT_TRUE(policy->IsStorageUnlimited(GURL("http://explicit:6000/")));
-  EXPECT_TRUE(policy->IsStorageUnlimited(GURL("https://foo.wildcards/")));
-  EXPECT_TRUE(policy->IsStorageUnlimited(GURL("https://bar.wildcards/")));
-  EXPECT_FALSE(policy->IsStorageUnlimited(GURL("http://not_listed/")));
+  policy_->GrantRightsForExtension(extension);
+  ExtensionSet protecting_extensions;
+  protecting_extensions.Insert(extension);
+  ExtensionSet empty_set;
 
-  policy->RevokeRightsForExtension(extension);
-  EXPECT_FALSE(policy->IsStorageProtected(GURL("http://explicit/")));
-  EXPECT_FALSE(policy->IsStorageProtected(GURL("https://foo.wildcards/")));
-  EXPECT_FALSE(policy->IsStorageProtected(GURL("https://foo.wildcards/")));
-  EXPECT_FALSE(policy->IsStorageProtected(GURL("http://bar.wildcards/")));
-  EXPECT_FALSE(policy->IsStorageUnlimited(GURL("http://explicit/")));
-  EXPECT_FALSE(policy->IsStorageUnlimited(GURL("https://foo.wildcards/")));
-  EXPECT_FALSE(policy->IsStorageUnlimited(GURL("https://bar.wildcards/")));
+  ExpectProtectedBy(protecting_extensions, GURL("http://explicit/"));
+  ExpectProtectedBy(protecting_extensions, GURL("http://explicit:6000/"));
+  ExpectProtectedBy(protecting_extensions, GURL("https://foo.wildcards/"));
+  ExpectProtectedBy(protecting_extensions, GURL("https://foo.wildcards/"));
+  ExpectProtectedBy(protecting_extensions, GURL("http://bar.wildcards/"));
+  ExpectProtectedBy(empty_set, GURL("http://not_listed/"));
+  EXPECT_TRUE(policy_->IsStorageUnlimited(extension->url()));
+  EXPECT_TRUE(policy_->IsStorageUnlimited(GURL("http://explicit/")));
+  EXPECT_TRUE(policy_->IsStorageUnlimited(GURL("http://explicit:6000/")));
+  EXPECT_TRUE(policy_->IsStorageUnlimited(GURL("https://foo.wildcards/")));
+  EXPECT_TRUE(policy_->IsStorageUnlimited(GURL("https://bar.wildcards/")));
+  EXPECT_FALSE(policy_->IsStorageUnlimited(GURL("http://not_listed/")));
+
+  policy_->RevokeRightsForExtension(extension);
+  ExpectProtectedBy(empty_set, GURL("http://explicit/"));
+  ExpectProtectedBy(empty_set, GURL("https://foo.wildcards/"));
+  ExpectProtectedBy(empty_set, GURL("https://foo.wildcards/"));
+  ExpectProtectedBy(empty_set, GURL("http://bar.wildcards/"));
+  EXPECT_FALSE(policy_->IsStorageUnlimited(GURL("http://explicit/")));
+  EXPECT_FALSE(policy_->IsStorageUnlimited(GURL("https://foo.wildcards/")));
+  EXPECT_FALSE(policy_->IsStorageUnlimited(GURL("https://bar.wildcards/")));
 }
 
 TEST_F(ExtensionSpecialStoragePolicyTest, OverlappingApps) {
   scoped_refptr<Extension> protected_app(CreateProtectedApp());
   scoped_refptr<Extension> unlimited_app(CreateUnlimitedApp());
-  scoped_refptr<ExtensionSpecialStoragePolicy> policy(
-      new ExtensionSpecialStoragePolicy(NULL));
-  policy->GrantRightsForExtension(protected_app);
-  policy->GrantRightsForExtension(unlimited_app);
+  policy_->GrantRightsForExtension(protected_app);
+  policy_->GrantRightsForExtension(unlimited_app);
+  ExtensionSet protecting_extensions;
+  ExtensionSet empty_set;
+  protecting_extensions.Insert(protected_app);
+  protecting_extensions.Insert(unlimited_app);
 
-  EXPECT_TRUE(policy->IsStorageProtected(GURL("http://explicit/")));
-  EXPECT_TRUE(policy->IsStorageProtected(GURL("http://explicit:6000/")));
-  EXPECT_TRUE(policy->IsStorageProtected(GURL("https://foo.wildcards/")));
-  EXPECT_TRUE(policy->IsStorageProtected(GURL("https://foo.wildcards/")));
-  EXPECT_TRUE(policy->IsStorageProtected(GURL("http://bar.wildcards/")));
-  EXPECT_FALSE(policy->IsStorageProtected(GURL("http://not_listed/")));
-  EXPECT_TRUE(policy->IsStorageUnlimited(GURL("http://explicit/")));
-  EXPECT_TRUE(policy->IsStorageUnlimited(GURL("http://explicit:6000/")));
-  EXPECT_TRUE(policy->IsStorageUnlimited(GURL("https://foo.wildcards/")));
-  EXPECT_TRUE(policy->IsStorageUnlimited(GURL("https://bar.wildcards/")));
-  EXPECT_FALSE(policy->IsStorageUnlimited(GURL("http://not_listed/")));
+  ExpectProtectedBy(protecting_extensions, GURL("http://explicit/"));
+  ExpectProtectedBy(protecting_extensions, GURL("http://explicit:6000/"));
+  ExpectProtectedBy(protecting_extensions, GURL("https://foo.wildcards/"));
+  ExpectProtectedBy(protecting_extensions, GURL("https://foo.wildcards/"));
+  ExpectProtectedBy(protecting_extensions, GURL("http://bar.wildcards/"));
+  ExpectProtectedBy(empty_set, GURL("http://not_listed/"));
+  EXPECT_TRUE(policy_->IsStorageUnlimited(GURL("http://explicit/")));
+  EXPECT_TRUE(policy_->IsStorageUnlimited(GURL("http://explicit:6000/")));
+  EXPECT_TRUE(policy_->IsStorageUnlimited(GURL("https://foo.wildcards/")));
+  EXPECT_TRUE(policy_->IsStorageUnlimited(GURL("https://bar.wildcards/")));
+  EXPECT_FALSE(policy_->IsStorageUnlimited(GURL("http://not_listed/")));
 
-  policy->RevokeRightsForExtension(unlimited_app);
-  EXPECT_FALSE(policy->IsStorageUnlimited(GURL("http://explicit/")));
-  EXPECT_FALSE(policy->IsStorageUnlimited(GURL("https://foo.wildcards/")));
-  EXPECT_FALSE(policy->IsStorageUnlimited(GURL("https://bar.wildcards/")));
-  EXPECT_TRUE(policy->IsStorageProtected(GURL("http://explicit/")));
-  EXPECT_TRUE(policy->IsStorageProtected(GURL("http://foo.wildcards/")));
-  EXPECT_TRUE(policy->IsStorageProtected(GURL("https://bar.wildcards/")));
+  policy_->RevokeRightsForExtension(unlimited_app);
+  protecting_extensions.Remove(unlimited_app->id());
+  EXPECT_FALSE(policy_->IsStorageUnlimited(GURL("http://explicit/")));
+  EXPECT_FALSE(policy_->IsStorageUnlimited(GURL("https://foo.wildcards/")));
+  EXPECT_FALSE(policy_->IsStorageUnlimited(GURL("https://bar.wildcards/")));
+  ExpectProtectedBy(protecting_extensions, GURL("http://explicit/"));
+  ExpectProtectedBy(protecting_extensions, GURL("http://foo.wildcards/"));
+  ExpectProtectedBy(protecting_extensions, GURL("https://bar.wildcards/"));
 
-  policy->RevokeRightsForExtension(protected_app);
-  EXPECT_FALSE(policy->IsStorageProtected(GURL("http://explicit/")));
-  EXPECT_FALSE(policy->IsStorageProtected(GURL("http://foo.wildcards/")));
-  EXPECT_FALSE(policy->IsStorageProtected(GURL("https://bar.wildcards/")));
+  policy_->RevokeRightsForExtension(protected_app);
+  ExpectProtectedBy(empty_set, GURL("http://explicit/"));
+  ExpectProtectedBy(empty_set, GURL("http://foo.wildcards/"));
+  ExpectProtectedBy(empty_set, GURL("https://bar.wildcards/"));
 }
 
 TEST_F(ExtensionSpecialStoragePolicyTest, HasSessionOnlyOrigins) {
@@ -223,17 +250,16 @@ TEST_F(ExtensionSpecialStoragePolicyTest, HasSessionOnlyOrigins) {
   TestingProfile profile;
   CookieSettings* cookie_settings =
       CookieSettings::Factory::GetForProfile(&profile);
-  scoped_refptr<ExtensionSpecialStoragePolicy> policy(
-      new ExtensionSpecialStoragePolicy(cookie_settings));
+  policy_ = new ExtensionSpecialStoragePolicy(cookie_settings);
 
-  EXPECT_FALSE(policy->HasSessionOnlyOrigins());
+  EXPECT_FALSE(policy_->HasSessionOnlyOrigins());
 
   // The default setting can be session-only.
   cookie_settings->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
-  EXPECT_TRUE(policy->HasSessionOnlyOrigins());
+  EXPECT_TRUE(policy_->HasSessionOnlyOrigins());
 
   cookie_settings->SetDefaultCookieSetting(CONTENT_SETTING_ALLOW);
-  EXPECT_FALSE(policy->HasSessionOnlyOrigins());
+  EXPECT_FALSE(policy_->HasSessionOnlyOrigins());
 
   // Or the session-onlyness can affect individual origins.
   ContentSettingsPattern pattern =
@@ -243,11 +269,11 @@ TEST_F(ExtensionSpecialStoragePolicyTest, HasSessionOnlyOrigins) {
                                     ContentSettingsPattern::Wildcard(),
                                     CONTENT_SETTING_SESSION_ONLY);
 
-  EXPECT_TRUE(policy->HasSessionOnlyOrigins());
+  EXPECT_TRUE(policy_->HasSessionOnlyOrigins());
 
   // Clearing an origin-specific rule.
   cookie_settings->ResetCookieSetting(pattern,
                                       ContentSettingsPattern::Wildcard());
 
-  EXPECT_FALSE(policy->HasSessionOnlyOrigins());
+  EXPECT_FALSE(policy_->HasSessionOnlyOrigins());
 }

@@ -162,7 +162,6 @@ enum CocoaCookieDetailsType {
 
 // Used for cookie details in both the cookie tree and the cookie prompt dialog.
 - (id)initWithCookie:(const net::CookieMonster::CanonicalCookie*)treeNode
-              origin:(NSString*)origin
    canEditExpiration:(BOOL)canEditExpiration;
 
 // Used for database details in the cookie tree.

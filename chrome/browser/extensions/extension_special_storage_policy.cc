@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
@@ -66,10 +67,16 @@ bool ExtensionSpecialStoragePolicy::NeedsProtection(
   return extension->is_hosted_app() && !extension->from_bookmark();
 }
 
+const ExtensionSet* ExtensionSpecialStoragePolicy::ExtensionsProtectingOrigin(
+    const GURL& origin) {
+  base::AutoLock locker(lock_);
+  return protected_apps_.ExtensionsContaining(origin);
+}
+
 void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
     const extensions::Extension* extension) {
   DCHECK(extension);
-  if (!extension->is_hosted_app() &&
+  if (!NeedsProtection(extension) &&
       !extension->HasAPIPermission(
           APIPermission::kUnlimitedStorage) &&
       !extension->HasAPIPermission(
@@ -93,7 +100,7 @@ void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
 void ExtensionSpecialStoragePolicy::RevokeRightsForExtension(
     const extensions::Extension* extension) {
   DCHECK(extension);
-  if (!extension->is_hosted_app() &&
+  if (!NeedsProtection(extension) &&
       !extension->HasAPIPermission(
           APIPermission::kUnlimitedStorage) &&
       !extension->HasAPIPermission(
@@ -102,14 +109,12 @@ void ExtensionSpecialStoragePolicy::RevokeRightsForExtension(
   }
   {
     base::AutoLock locker(lock_);
-    if (extension->is_hosted_app() && !extension->from_bookmark())
+    if (NeedsProtection(extension))
       protected_apps_.Remove(extension);
     if (extension->HasAPIPermission(APIPermission::kUnlimitedStorage))
       unlimited_extensions_.Remove(extension);
-    if (extension->HasAPIPermission(
-            APIPermission::kFileBrowserHandler)) {
+    if (extension->HasAPIPermission(APIPermission::kFileBrowserHandler))
       file_handler_extensions_.Remove(extension);
-    }
   }
   NotifyChanged();
 }
@@ -139,43 +144,55 @@ void ExtensionSpecialStoragePolicy::NotifyChanged() {
 
 ExtensionSpecialStoragePolicy::SpecialCollection::SpecialCollection() {}
 
-ExtensionSpecialStoragePolicy::SpecialCollection::~SpecialCollection() {}
+ExtensionSpecialStoragePolicy::SpecialCollection::~SpecialCollection() {
+  STLDeleteValues(&cached_results_);
+}
 
 bool ExtensionSpecialStoragePolicy::SpecialCollection::Contains(
+    const GURL& origin) {
+  return !ExtensionsContaining(origin)->is_empty();
+}
+
+const ExtensionSet*
+ExtensionSpecialStoragePolicy::SpecialCollection::ExtensionsContaining(
     const GURL& origin) {
   CachedResults::const_iterator found = cached_results_.find(origin);
   if (found != cached_results_.end())
     return found->second;
 
-  for (Extensions::const_iterator iter = extensions_.begin();
+  ExtensionSet* result = new ExtensionSet();
+  for (ExtensionSet::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
-    if (iter->second->OverlapsWithOrigin(origin)) {
-      cached_results_[origin] = true;
-      return true;
-    }
+    if ((*iter)->OverlapsWithOrigin(origin))
+      result->Insert(*iter);
   }
-  cached_results_[origin] = false;
-  return false;
+  cached_results_[origin] = result;
+  return result;
 }
 
 bool ExtensionSpecialStoragePolicy::SpecialCollection::ContainsExtension(
     const std::string& extension_id) {
-  return extensions_.find(extension_id) != extensions_.end();
+  return extensions_.Contains(extension_id);
 }
 
 void ExtensionSpecialStoragePolicy::SpecialCollection::Add(
     const extensions::Extension* extension) {
-  cached_results_.clear();
-  extensions_[extension->id()] = extension;
+  ClearCache();
+  extensions_.Insert(extension);
 }
 
 void ExtensionSpecialStoragePolicy::SpecialCollection::Remove(
     const extensions::Extension* extension) {
-  cached_results_.clear();
-  extensions_.erase(extension->id());
+  ClearCache();
+  extensions_.Remove(extension->id());
 }
 
 void ExtensionSpecialStoragePolicy::SpecialCollection::Clear() {
+  ClearCache();
+  extensions_.Clear();
+}
+
+void ExtensionSpecialStoragePolicy::SpecialCollection::ClearCache() {
+  STLDeleteValues(&cached_results_);
   cached_results_.clear();
-  extensions_.clear();
 }

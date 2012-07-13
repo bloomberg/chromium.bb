@@ -117,7 +117,6 @@
 }
 
 - (id)initWithCookie:(const net::CookieMonster::CanonicalCookie*)cookie
-              origin:(NSString*)origin
    canEditExpiration:(BOOL)canEditExpiration {
   if ((self = [super init])) {
     type_ = kCocoaCookieDetailsTypeCookie;
@@ -126,7 +125,7 @@
     name_.reset([base::SysUTF8ToNSString(cookie->Name()) retain]);
     content_.reset([base::SysUTF8ToNSString(cookie->Value()) retain]);
     path_.reset([base::SysUTF8ToNSString(cookie->Path()) retain]);
-    domain_.reset([origin retain]);
+    domain_.reset([base::SysUTF8ToNSString(cookie->Domain()) retain]);
 
     if (cookie->IsPersistent()) {
       expires_.reset([base::SysUTF16ToNSString(
@@ -258,12 +257,9 @@
 + (CocoaCookieDetails*)createFromCookieTreeNode:(CookieTreeNode*)treeNode {
   CookieTreeNode::DetailedInfo info = treeNode->GetDetailedInfo();
   CookieTreeNode::DetailedInfo::NodeType nodeType = info.node_type;
-  NSString* origin;
   switch (nodeType) {
     case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
-      origin = base::SysUTF16ToNSString(info.origin.c_str());
       return [[[CocoaCookieDetails alloc] initWithCookie:info.cookie
-                                                  origin:origin
                                        canEditExpiration:NO] autorelease];
     case CookieTreeNode::DetailedInfo::TYPE_DATABASE:
       return [[[CocoaCookieDetails alloc]

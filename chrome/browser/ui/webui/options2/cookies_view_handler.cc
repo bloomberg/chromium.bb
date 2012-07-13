@@ -91,6 +91,8 @@ void CookiesViewHandler::GetLocalizedValues(
       IDS_COOKIES_SERVER_BOUND_CERT_CREATED_LABEL },
     { "label_server_bound_cert_expires",
       IDS_COOKIES_SERVER_BOUND_CERT_EXPIRES_LABEL },
+    { "label_protected_by_apps",
+      IDS_GEOLOCATION_SET_BY_HOVER },  // TODO(bauerb): Use a better string
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -192,7 +194,10 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
         BrowsingDataFileSystemHelper::Create(profile),
         BrowsingDataQuotaHelper::Create(profile),
         BrowsingDataServerBoundCertHelper::Create(profile));
-    cookies_tree_model_.reset(new CookiesTreeModel(apps_map, false));
+    cookies_tree_model_.reset(
+        new CookiesTreeModel(apps_map,
+                             profile->GetExtensionSpecialStoragePolicy(),
+                             false));
     cookies_tree_model_->AddCookiesTreeObserver(this);
   }
 
@@ -216,7 +221,10 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
               NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
         }
       }
-      app_cookies_tree_model_.reset(new CookiesTreeModel(apps_map, false));
+      app_cookies_tree_model_.reset(
+          new CookiesTreeModel(apps_map,
+                               profile->GetExtensionSpecialStoragePolicy(),
+                               false));
       app_cookies_tree_model_->AddCookiesTreeObserver(this);
     }
   }
@@ -224,9 +232,8 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
 
 void CookiesViewHandler::UpdateSearchResults(const ListValue* args) {
   string16 query;
-  if (!args->GetString(0, &query)) {
+  if (!args->GetString(0, &query))
     return;
-  }
 
   EnsureCookiesTreeModelCreated();
 
@@ -240,9 +247,8 @@ void CookiesViewHandler::RemoveAll(const ListValue* args) {
 
 void CookiesViewHandler::Remove(const ListValue* args) {
   std::string node_path;
-  if (!args->GetString(0, &node_path)) {
+  if (!args->GetString(0, &node_path))
     return;
-  }
 
   EnsureCookiesTreeModelCreated();
 
@@ -254,9 +260,8 @@ void CookiesViewHandler::Remove(const ListValue* args) {
 
 void CookiesViewHandler::LoadChildren(const ListValue* args) {
   std::string node_path;
-  if (!args->GetString(0, &node_path)) {
+  if (!args->GetString(0, &node_path))
     return;
-  }
 
   EnsureCookiesTreeModelCreated();
 

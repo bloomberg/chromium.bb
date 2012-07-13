@@ -140,7 +140,7 @@ list.cookie-list > .deletable-item[selected] .cookie-data {
   font-size: 85%;
   height: auto;
   margin: 2px 4px 2px 0;
-  max-width: 100px;
+  max-width: 120px;
   min-width: 40px;
   overflow: hidden;
   padding: 0 3px;
@@ -161,6 +161,12 @@ list.cookie-list > .deletable-item[selected] .cookie-data {
 .cookie-items .cookie-item[selected]:hover {
   background: rgb(245, 248, 248);
   border-color: rgb(100, 113, 135);
+}
+
+.cookie-items .cookie-item .protecting-app,
+.cookie-data .protecting-app {
+  margin-bottom: -3px;
+  margin-left: 4px;
 }
 
 /* Styles for the cookie details box. */

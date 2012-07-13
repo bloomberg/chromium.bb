@@ -264,17 +264,17 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
     CocoaCookieTreeNode* node = [treeNode representedObject];
     CookieTreeNode* cookie = static_cast<CookieTreeNode*>([node treeNode]);
     if (cookie->GetDetailedInfo().node_type !=
-        CookieTreeNode::DetailedInfo::TYPE_ORIGIN) {
+        CookieTreeNode::DetailedInfo::TYPE_HOST) {
       continue;
     }
     Profile* profile = tab_contents_->profile();
-    CookieTreeOriginNode* origin_node =
-        static_cast<CookieTreeOriginNode*>(cookie);
-    origin_node->CreateContentException(
+    CookieTreeHostNode* host_node =
+        static_cast<CookieTreeHostNode*>(cookie);
+    host_node->CreateContentException(
         CookieSettings::Factory::GetForProfile(profile), setting);
     if (!lastDomain.empty())
       multipleDomainsChanged = YES;
-    lastDomain = origin_node->GetTitle();
+    lastDomain = host_node->GetTitle();
   }
   if (multipleDomainsChanged)
     [self showInfoBarForMultipleDomainsAndSetting:setting];
@@ -357,12 +357,12 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
     CocoaCookieTreeNode* node = [treeNode representedObject];
     CookieTreeNode* cookie = static_cast<CookieTreeNode*>([node treeNode]);
     if (cookie->GetDetailedInfo().node_type !=
-        CookieTreeNode::DetailedInfo::TYPE_ORIGIN) {
+        CookieTreeNode::DetailedInfo::TYPE_HOST) {
       continue;
     }
-   CookieTreeOriginNode* origin_node =
-       static_cast<CookieTreeOriginNode*>(cookie);
-   if (origin_node->CanCreateContentException()) {
+   CookieTreeHostNode* host_node =
+       static_cast<CookieTreeHostNode*>(cookie);
+   if (host_node->CanCreateContentException()) {
       if (isAllowedOutlineView) {
         [self setAllowedCookiesButtonsEnabled:YES];
       } else {
@@ -400,7 +400,7 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
         NULL,
         allowed_lsos.server_bound_certs()->Clone());
 
-    allowedTreeModel_.reset(new CookiesTreeModel(apps_map, true));
+    allowedTreeModel_.reset(new CookiesTreeModel(apps_map, NULL, true));
   }
 
   const LocalSharedObjectsContainer& blocked_lsos =
@@ -419,7 +419,7 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
         NULL,
         blocked_lsos.server_bound_certs()->Clone());
 
-    blockedTreeModel_.reset(new CookiesTreeModel(apps_map, true));
+    blockedTreeModel_.reset(new CookiesTreeModel(apps_map, NULL, true));
   }
 
   // Convert the model's icons from Skia to Cocoa.

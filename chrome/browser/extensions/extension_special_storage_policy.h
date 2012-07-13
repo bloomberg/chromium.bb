@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/synchronization/lock.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/quota/special_storage_policy.h"
 
@@ -41,6 +42,10 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   // Decides whether the storage for |extension|'s web extent needs protection.
   bool NeedsProtection(const extensions::Extension* extension);
 
+  // Returns the set of extensions protecting this origin. The caller does not
+  // take ownership of the return value.
+  const ExtensionSet* ExtensionsProtectingOrigin(const GURL& origin);
+
  protected:
   virtual ~ExtensionSpecialStoragePolicy();
 
@@ -51,16 +56,18 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
     ~SpecialCollection();
 
     bool Contains(const GURL& origin);
+    const ExtensionSet* ExtensionsContaining(const GURL& origin);
     bool ContainsExtension(const std::string& extension_id);
     void Add(const extensions::Extension* extension);
     void Remove(const extensions::Extension* extension);
     void Clear();
 
    private:
-    typedef std::map<GURL, bool> CachedResults;
-    typedef std::map<std::string, scoped_refptr<const extensions::Extension> >
-        Extensions;
-    Extensions extensions_;
+    typedef std::map<GURL, ExtensionSet*> CachedResults;
+
+    void ClearCache();
+
+    ExtensionSet extensions_;
     CachedResults cached_results_;
   };
 

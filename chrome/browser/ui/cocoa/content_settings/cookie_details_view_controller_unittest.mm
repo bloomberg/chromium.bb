@@ -19,10 +19,8 @@ static CocoaCookieDetails* CreateTestCookieDetails(BOOL canEditExpiration) {
       "PHPSESSID=0123456789abcdef0123456789abcdef; path=/");
   net::ParsedCookie pc(cookieLine);
   net::CookieMonster::CanonicalCookie cookie(url, pc);
-  NSString* origin = base::SysUTF8ToNSString("http://chromium.org");
   CocoaCookieDetails* details = [CocoaCookieDetails alloc];
   [details initWithCookie:&cookie
-                   origin:origin
         canEditExpiration:canEditExpiration];
   return [details autorelease];
 }

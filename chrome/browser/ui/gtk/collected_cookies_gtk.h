@@ -43,11 +43,11 @@ class CollectedCookiesGtk : public ConstrainedWindowGtkDelegate,
   // Initialize all widgets of this dialog.
   void Init();
 
-  // True if the selection contains at least one origin node.
-  bool SelectionContainsOriginNode(GtkTreeSelection* selection,
-                                   gtk_tree::TreeAdapter* adapter);
+  // True if the selection contains at least one host node.
+  bool SelectionContainsHostNode(GtkTreeSelection* selection,
+                                 gtk_tree::TreeAdapter* adapter);
 
-  // Enable the allow/block buttons if at least one origin node is selected.
+  // Enable the allow/block buttons if at least one host node is selected.
   void EnableControls();
 
   // Add exceptions for all origin nodes within the selection.

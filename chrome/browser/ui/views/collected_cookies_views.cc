@@ -345,7 +345,7 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
       NULL,
       allowed_lsos.server_bound_certs()->Clone());
 
-  allowed_cookies_tree_model_.reset(new CookiesTreeModel(apps_map, true));
+  allowed_cookies_tree_model_.reset(new CookiesTreeModel(apps_map, NULL, true));
   allowed_cookies_tree_ = new views::TreeView();
   allowed_cookies_tree_->SetModel(allowed_cookies_tree_model_.get());
   allowed_cookies_tree_->SetRootShown(false);
@@ -417,7 +417,7 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
       NULL,
       blocked_lsos.server_bound_certs()->Clone());
 
-  blocked_cookies_tree_model_.reset(new CookiesTreeModel(apps_map, true));
+  blocked_cookies_tree_model_.reset(new CookiesTreeModel(apps_map, NULL, true));
   blocked_cookies_tree_ = new views::TreeView();
   blocked_cookies_tree_->SetModel(blocked_cookies_tree_model_.get());
   blocked_cookies_tree_->SetRootShown(false);
@@ -475,8 +475,8 @@ void CollectedCookiesViews::EnableControls() {
   if (node) {
     CookieTreeNode* cookie_node = static_cast<CookieTreeNode*>(node);
     if (cookie_node->GetDetailedInfo().node_type ==
-        CookieTreeNode::DetailedInfo::TYPE_ORIGIN) {
-      enable_allowed_buttons = static_cast<CookieTreeOriginNode*>(
+        CookieTreeNode::DetailedInfo::TYPE_HOST) {
+      enable_allowed_buttons = static_cast<CookieTreeHostNode*>(
           cookie_node)->CanCreateContentException();
     }
   }
@@ -487,8 +487,8 @@ void CollectedCookiesViews::EnableControls() {
   if (node) {
     CookieTreeNode* cookie_node = static_cast<CookieTreeNode*>(node);
     if (cookie_node->GetDetailedInfo().node_type ==
-        CookieTreeNode::DetailedInfo::TYPE_ORIGIN) {
-      enable_blocked_buttons = static_cast<CookieTreeOriginNode*>(
+        CookieTreeNode::DetailedInfo::TYPE_HOST) {
+      enable_blocked_buttons = static_cast<CookieTreeHostNode*>(
           cookie_node)->CanCreateContentException();
     }
   }
@@ -519,12 +519,12 @@ void CollectedCookiesViews::ShowCookieInfo() {
 
 void CollectedCookiesViews::AddContentException(views::TreeView* tree_view,
                                                 ContentSetting setting) {
-  CookieTreeOriginNode* origin_node =
-      static_cast<CookieTreeOriginNode*>(tree_view->GetSelectedNode());
+  CookieTreeHostNode* host_node =
+      static_cast<CookieTreeHostNode*>(tree_view->GetSelectedNode());
   Profile* profile = tab_contents_->profile();
-  origin_node->CreateContentException(
+  host_node->CreateContentException(
       CookieSettings::Factory::GetForProfile(profile), setting);
-  infobar_->UpdateVisibility(true, setting, origin_node->GetTitle());
+  infobar_->UpdateVisibility(true, setting, host_node->GetTitle());
   status_changed_ = true;
 }
 

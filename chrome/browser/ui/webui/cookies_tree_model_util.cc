@@ -27,6 +27,7 @@ const char kKeyHasChildren[] = "hasChildren";
 
 const char kKeyAppId[] = "appId";
 
+const char kKeyAppsProtectingThis[] = "appsProtectingThis";
 const char kKeyName[] = "name";
 const char kKeyContent[] = "content";
 const char kKeyDomain[] = "domain";
@@ -94,7 +95,7 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
   dict->SetBoolean(kKeyHasChildren, !node.empty());
 
   switch (node.GetDetailedInfo().node_type) {
-    case CookieTreeNode::DetailedInfo::TYPE_ORIGIN: {
+    case CookieTreeNode::DetailedInfo::TYPE_HOST: {
       dict->SetString(kKeyType, "origin");
       dict->SetString(kKeyAppId, node.GetDetailedInfo().app_id);
 #if defined(OS_MACOSX)
@@ -259,6 +260,21 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
 #endif
       break;
   }
+
+  const ExtensionSet* protecting_apps =
+      node.GetModel()->ExtensionsProtectingNode(node);
+  if (protecting_apps && !protecting_apps->is_empty()) {
+    base::ListValue* app_infos = new base::ListValue;
+    for (ExtensionSet::const_iterator it = protecting_apps->begin();
+         it != protecting_apps->end(); ++it) {
+      base::DictionaryValue* app_info = new base::DictionaryValue();
+      app_info->SetString(kKeyId, (*it)->id());
+      app_info->SetString(kKeyName, (*it)->name());
+      app_infos->Append(app_info);
+    }
+    dict->Set(kKeyAppsProtectingThis, app_infos);
+  }
+
   return true;
 }
 
