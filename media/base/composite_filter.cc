@@ -413,7 +413,7 @@ void CompositeFilter::OnStatusCB(const base::Closure& callback,
 }
 
 FilterHost* CompositeFilter::host() {
-  return host_impl_.get()->host();
+  return host_impl_.get() ? host_impl_.get()->host() : NULL;
 }
 
 void CompositeFilter::SetError(PipelineStatus error) {
