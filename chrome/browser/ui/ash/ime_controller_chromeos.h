@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_ASH_IME_CONTROLLER_CHROMEOS_H_
-#define CHROME_BROWSER_UI_VIEWS_ASH_IME_CONTROLLER_CHROMEOS_H_
+#ifndef CHROME_BROWSER_UI_ASH_IME_CONTROLLER_CHROMEOS_H_
+#define CHROME_BROWSER_UI_ASH_IME_CONTROLLER_CHROMEOS_H_
 
 #include "ash/ime_control_delegate.h"
 #include "base/basictypes.h"
@@ -29,4 +29,4 @@ class ImeController : public ash::ImeControlDelegate {
   DISALLOW_COPY_AND_ASSIGN(ImeController);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_ASH_IME_CONTROLLER_CHROMEOS_H_
+#endif  // CHROME_BROWSER_UI_ASH_IME_CONTROLLER_CHROMEOS_H_

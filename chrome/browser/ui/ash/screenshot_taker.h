@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_ASH_SCREENSHOT_TAKER_H_
-#define CHROME_BROWSER_UI_VIEWS_ASH_SCREENSHOT_TAKER_H_
+#ifndef CHROME_BROWSER_UI_ASH_SCREENSHOT_TAKER_H_
+#define CHROME_BROWSER_UI_ASH_SCREENSHOT_TAKER_H_
 
 #include "ash/screenshot_delegate.h"
 #include "base/basictypes.h"
@@ -37,4 +37,4 @@ class ScreenshotTaker : public ash::ScreenshotDelegate {
   DISALLOW_COPY_AND_ASSIGN(ScreenshotTaker);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_ASH_SCREENSHOT_TAKER_H_
+#endif  // CHROME_BROWSER_UI_ASH_SCREENSHOT_TAKER_H_

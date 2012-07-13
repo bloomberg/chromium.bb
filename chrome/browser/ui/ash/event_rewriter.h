@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_ASH_EVENT_REWRITER_H_
-#define CHROME_BROWSER_UI_VIEWS_ASH_EVENT_REWRITER_H_
+#ifndef CHROME_BROWSER_UI_ASH_EVENT_REWRITER_H_
+#define CHROME_BROWSER_UI_ASH_EVENT_REWRITER_H_
 
 #include <map>
 #include <string>
@@ -176,4 +176,4 @@ class EventRewriter : public ash::EventRewriterDelegate,
   DISALLOW_COPY_AND_ASSIGN(EventRewriter);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_ASH_EVENT_REWRITER_H_
+#endif  // CHROME_BROWSER_UI_ASH_EVENT_REWRITER_H_

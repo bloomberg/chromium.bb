@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/ash/ime_controller_chromeos.h"
+#include "chrome/browser/ui/ash/ime_controller_chromeos.h"
 
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "ui/base/accelerators/accelerator.h"

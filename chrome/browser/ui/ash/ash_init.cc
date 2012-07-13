@@ -15,9 +15,9 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/caps_lock_handler.h"
+#include "chrome/browser/ui/ash/event_rewriter.h"
+#include "chrome/browser/ui/ash/screenshot_taker.h"
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
-#include "chrome/browser/ui/views/ash/event_rewriter.h"
-#include "chrome/browser/ui/views/ash/screenshot_taker.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/aura/aura_switches.h"
 #include "ui/aura/display_manager.h"
@@ -30,8 +30,8 @@
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
-#include "chrome/browser/ui/views/ash/brightness_controller_chromeos.h"
-#include "chrome/browser/ui/views/ash/ime_controller_chromeos.h"
+#include "chrome/browser/ui/ash/brightness_controller_chromeos.h"
+#include "chrome/browser/ui/ash/ime_controller_chromeos.h"
 #endif
 
 

@@ -1622,10 +1622,11 @@
         'browser/task_profiler/task_profiler_data_serializer_unittest.cc',
         'browser/themes/browser_theme_pack_unittest.cc',
         'browser/themes/theme_service_unittest.cc',
+        'browser/ui/ash/event_rewriter_unittest.cc',
+        'browser/ui/ash/ime_controller_chromeos_unittest.cc',
         'browser/ui/auto_login_prompter_unittest.cc',
         'browser/ui/browser_unittest.cc',
         'browser/ui/chrome_select_file_policy_unittest.cc',
-        'browser/ui/search/search_delegate_unittest.cc',
         # It is safe to list */cocoa/* files in the "common" file list
         # without an explicit exclusion since gyp is smart enough to
         # exclude them from non-Mac builds.
@@ -1802,6 +1803,7 @@
         'browser/ui/panels/panel_cocoa_unittest.mm',
         'browser/ui/panels/panel_mouse_watcher_unittest.cc',
         'browser/ui/search_engines/keyword_editor_controller_unittest.cc',
+        'browser/ui/search/search_delegate_unittest.cc',
         'browser/ui/sync/one_click_signin_helper_unittest.cc',
         'browser/ui/tab_contents/tab_contents_iterator_unittest.cc',
         'browser/ui/tabs/dock_info_unittest.cc',
@@ -1822,8 +1824,6 @@
         'browser/ui/views/accelerator_table_unittest.cc',
         'browser/ui/views/accessibility/accessibility_event_router_views_unittest.cc',
         'browser/ui/views/ash/app_list/apps_model_builder_unittest.cc',
-        'browser/ui/views/ash/event_rewriter_unittest.cc',
-        'browser/ui/views/ash/ime_controller_chromeos_unittest.cc',
         'browser/ui/views/ash/launcher/browser_launcher_item_controller_unittest.cc',
         'browser/ui/views/ash/launcher/chrome_launcher_controller_unittest.cc',
         'browser/ui/views/ash/window_positioner_unittest.cc',
@@ -2194,7 +2194,7 @@
             ['exclude', '^browser/policy/enterprise_install_attributes_unittest.cc' ],
             ['exclude', '^browser/policy/network_configuration_updater_unittest.cc' ],
             ['exclude', '^browser/policy/user_cloud_policy_store_chromeos_unittest.cc'],
-            ['exclude', '^browser/ui/views/ash/ime_controller_chromeos_unittest.cc'],
+            ['exclude', '^browser/ui/ash/ime_controller_chromeos_unittest.cc'],
             ['exclude', '^browser/ui/webui/chromeos/imageburner/'],
             ['exclude', '^browser/ui/webui/chromeos/login'],
             ['exclude', '^browser/ui/webui/options/chromeos/'],

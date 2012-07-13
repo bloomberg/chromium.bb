@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/ash/event_rewriter.h"
+
 #include "base/basictypes.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/ui/views/ash/event_rewriter.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
