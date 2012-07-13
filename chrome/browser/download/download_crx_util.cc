@@ -91,8 +91,8 @@ scoped_refptr<CrxInstaller> OpenChromeExtension(
         CrxInstaller::OffStoreInstallAllowedBecausePref);
   }
 
-  if (UserScript::IsURLUserScript(download_item.GetURL(),
-                                  download_item.GetMimeType())) {
+  if (extensions::UserScript::IsURLUserScript(download_item.GetURL(),
+                                              download_item.GetMimeType())) {
     installer->InstallUserScript(download_item.GetFullPath(),
                                  download_item.GetURL());
   } else {
@@ -117,8 +117,8 @@ bool IsExtensionDownload(const DownloadItem& download_item) {
     return false;
 
   if (download_item.GetMimeType() == extensions::Extension::kMimeType ||
-      UserScript::IsURLUserScript(download_item.GetURL(),
-                                  download_item.GetMimeType())) {
+      extensions::UserScript::IsURLUserScript(download_item.GetURL(),
+                                              download_item.GetMimeType())) {
     return true;
   } else {
     return false;

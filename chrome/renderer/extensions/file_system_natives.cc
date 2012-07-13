@@ -27,7 +27,8 @@ static v8::Handle<v8::Value> GetIsolatedFileSystem(
   WebKit::WebFrame* webframe = WebKit::WebFrame::frameForCurrentContext();
   DCHECK(webframe);
 
-  GURL context_url = UserScriptSlave::GetDataSourceURLForFrame(webframe);
+  GURL context_url =
+      extensions::UserScriptSlave::GetDataSourceURLForFrame(webframe);
   CHECK(context_url.SchemeIs(chrome::kExtensionScheme));
 
   std::string name(fileapi::GetIsolatedFileSystemName(context_url.GetOrigin(),

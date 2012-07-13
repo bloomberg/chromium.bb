@@ -42,7 +42,8 @@ using WebKit::WebString;
 using WebKit::WebVector;
 using WebKit::WebView;
 using content::RenderThread;
-using extensions::Extension;
+
+namespace extensions {
 
 // These two strings are injected before and after the Greasemonkey API and
 // user script to wrap it in an anonymous scope.
@@ -368,3 +369,5 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
     NOTREACHED();
   }
 }
+
+}  // namespace extensions

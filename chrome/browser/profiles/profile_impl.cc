@@ -606,7 +606,7 @@ ExtensionService* ProfileImpl::GetExtensionService() {
   return extensions::ExtensionSystem::Get(this)->extension_service();
 }
 
-UserScriptMaster* ProfileImpl::GetUserScriptMaster() {
+extensions::UserScriptMaster* ProfileImpl::GetUserScriptMaster() {
   return extensions::ExtensionSystem::Get(this)->user_script_master();
 }
 

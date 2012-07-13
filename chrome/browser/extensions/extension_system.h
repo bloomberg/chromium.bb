@@ -20,7 +20,6 @@ class ExtensionNavigationObserver;
 class ExtensionProcessManager;
 class ExtensionService;
 class Profile;
-class UserScriptMaster;
 
 namespace extensions {
 class AlarmManager;
@@ -31,6 +30,7 @@ class LazyBackgroundTaskQueue;
 class ManagementPolicy;
 class RulesRegistryService;
 class StateStore;
+class UserScriptMaster;
 
 // The ExtensionSystem manages the creation and destruction of services
 // related to extensions. Most objects are shared between normal

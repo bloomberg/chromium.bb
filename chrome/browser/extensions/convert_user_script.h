@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,6 @@ class GURL;
 
 namespace extensions {
 class Extension;
-}
 
 // Wraps the specified user script in an extension. The extension is created
 // unpacked in the system temp dir. Returns a valid extension that the caller
@@ -26,5 +25,7 @@ class Extension;
 // returned object.
 scoped_refptr<extensions::Extension> ConvertUserScriptToExtension(
     const FilePath& user_script, const GURL& original_url, string16* error);
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_CONVERT_USER_SCRIPT_H_

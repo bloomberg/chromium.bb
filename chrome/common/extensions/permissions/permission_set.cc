@@ -506,7 +506,7 @@ void PermissionSet::InitImplicitExtensionPermissions(
     apis_.insert(APIPermission::kFileBrowserHandlerInternal);
 
   // Add the scriptable hosts.
-  for (UserScriptList::const_iterator content_script =
+  for (extensions::UserScriptList::const_iterator content_script =
            extension->content_scripts().begin();
        content_script != extension->content_scripts().end(); ++content_script) {
     URLPatternSet::const_iterator pattern =

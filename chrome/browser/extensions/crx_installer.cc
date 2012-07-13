@@ -172,8 +172,8 @@ void CrxInstaller::InstallUserScript(const FilePath& source_file,
 
 void CrxInstaller::ConvertUserScriptOnFileThread() {
   string16 error;
-  scoped_refptr<Extension> extension =
-      ConvertUserScriptToExtension(source_file_, download_url_, &error);
+  scoped_refptr<Extension> extension = extensions::ConvertUserScriptToExtension(
+      source_file_, download_url_, &error);
   if (!extension) {
     ReportFailureFromFileThread(CrxInstallerError(error));
     return;
@@ -315,7 +315,7 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
       // For self-hosted apps, verify that the entire extent is on the same
       // host (or a subdomain of the host) the download happened from.  There's
       // no way for us to verify that the app controls any other hosts.
-      URLPattern pattern(UserScript::kValidUserScriptSchemes);
+      URLPattern pattern(extensions::UserScript::kValidUserScriptSchemes);
       pattern.SetHost(download_url_.host());
       pattern.SetMatchSubdomains(true);
 

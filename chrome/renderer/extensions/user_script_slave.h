@@ -20,15 +20,14 @@
 class ExtensionSet;
 class GURL;
 
-namespace extensions {
-class Extension;
-}
-
 namespace WebKit {
 class WebFrame;
 }
 
 using WebKit::WebScriptSource;
+
+namespace extensions {
+class Extension;
 
 // Manages installed UserScripts for a render process.
 class UserScriptSlave {
@@ -54,7 +53,7 @@ class UserScriptSlave {
   // Gets the isolated world ID to use for the given |extension| in the given
   // |frame|. If no isolated world has been created for that extension,
   // one will be created and initialized.
-  int GetIsolatedWorldIdForExtension(const extensions::Extension* extension,
+  int GetIsolatedWorldIdForExtension(const Extension* extension,
                                      WebKit::WebFrame* frame);
 
   // Gets the id of the extension running in a given isolated world. If no such
@@ -66,7 +65,7 @@ class UserScriptSlave {
 
  private:
   static void InitializeIsolatedWorld(int isolated_world_id,
-                                      const extensions::Extension* extension);
+                                      const Extension* extension);
 
   // Shared memory containing raw script data.
   scoped_ptr<base::SharedMemory> shared_memory_;
@@ -86,5 +85,7 @@ class UserScriptSlave {
 
   DISALLOW_COPY_AND_ASSIGN(UserScriptSlave);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_RENDERER_EXTENSIONS_USER_SCRIPT_SLAVE_H_

@@ -16,7 +16,10 @@
 class DelayedResourceQueue;
 class DownloadRequestLimiter;
 class SafeBrowsingService;
+
+namespace extensions {
 class UserScriptListener;
+}
 
 namespace prerender {
 class PrerenderTracker;
@@ -117,7 +120,7 @@ class ChromeResourceDispatcherHostDelegate
 
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
   scoped_refptr<SafeBrowsingService> safe_browsing_;
-  scoped_refptr<UserScriptListener> user_script_listener_;
+  scoped_refptr<extensions::UserScriptListener> user_script_listener_;
   prerender::PrerenderTracker* prerender_tracker_;
 
   // Whether or not we've initialized the Cache.

@@ -159,7 +159,8 @@ const std::set<std::string>& ChromeV8Context::GetAvailableExtensionAPIs() {
         extensions::ExtensionAPI::GetSharedInstance()->GetAPIsForContext(
             context_type_,
             extension_,
-            UserScriptSlave::GetDataSourceURLForFrame(web_frame_)).Pass();
+            extensions::UserScriptSlave::GetDataSourceURLForFrame(
+                web_frame_)).Pass();
   }
   return *(available_extension_apis_.get());
 }

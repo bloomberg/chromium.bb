@@ -79,7 +79,7 @@ class ContentScriptLoader {
       params.extension_id = extension_id_;
       params.is_javascript = true;
       params.code = data;
-      params.run_at = UserScript::DOCUMENT_IDLE;
+      params.run_at = extensions::UserScript::DOCUMENT_IDLE;
       params.all_frames = true;
       params.in_main_world = false;
       render_view_host_->Send(new ExtensionMsg_ExecuteCode(
@@ -134,7 +134,7 @@ void EnableSpokenFeedback(bool enabled, content::WebUI* login_web_ui) {
       params.extension_id = extension->id();
       params.is_javascript = true;
       params.code = "window.INJECTED_AFTER_LOAD = true;";
-      params.run_at = UserScript::DOCUMENT_IDLE;
+      params.run_at = extensions::UserScript::DOCUMENT_IDLE;
       params.all_frames = true;
       params.in_main_world = false;
       render_view_host->Send(new ExtensionMsg_ExecuteCode(
@@ -145,9 +145,9 @@ void EnableSpokenFeedback(bool enabled, content::WebUI* login_web_ui) {
           extension->id(), render_view_host);
 
       for (size_t i = 0; i < extension->content_scripts().size(); i++) {
-        const UserScript& script = extension->content_scripts()[i];
+        const extensions::UserScript& script = extension->content_scripts()[i];
         for (size_t j = 0; j < script.js_scripts().size(); ++j) {
-          const UserScript::File &file = script.js_scripts()[j];
+          const extensions::UserScript::File &file = script.js_scripts()[j];
           ExtensionResource resource = extension->GetResource(
               file.relative_path());
           loader->AppendScript(resource);

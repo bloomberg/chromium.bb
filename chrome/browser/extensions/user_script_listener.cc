@@ -19,6 +19,8 @@
 using content::BrowserThread;
 using content::ResourceThrottle;
 
+namespace extensions {
+
 class UserScriptListener::Throttle
     : public ResourceThrottle,
       public base::SupportsWeakPtr<UserScriptListener::Throttle> {
@@ -164,9 +166,8 @@ void UserScriptListener::ReplaceURLPatterns(void* profile_id,
   data.url_patterns = patterns;
 }
 
-void UserScriptListener::CollectURLPatterns(
-    const extensions::Extension* extension,
-    URLPatterns* patterns) {
+void UserScriptListener::CollectURLPatterns(const Extension* extension,
+                                            URLPatterns* patterns) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const UserScriptList& scripts = extension->content_scripts();
@@ -186,8 +187,8 @@ void UserScriptListener::Observe(int type,
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       Profile* profile = content::Source<Profile>(source).ptr();
-      const extensions::Extension* extension =
-          content::Details<const extensions::Extension>(details).ptr();
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
       if (extension->content_scripts().empty())
         return;  // no new patterns from this extension.
 
@@ -203,9 +204,8 @@ void UserScriptListener::Observe(int type,
 
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       Profile* profile = content::Source<Profile>(source).ptr();
-      const extensions::Extension* unloaded_extension =
-          content::Details<extensions::UnloadedExtensionInfo>(
-              details)->extension;
+      const Extension* unloaded_extension =
+          content::Details<UnloadedExtensionInfo>(details)->extension;
       if (unloaded_extension->content_scripts().empty())
         return;  // no patterns to delete for this extension.
 
@@ -241,3 +241,5 @@ void UserScriptListener::Observe(int type,
       NOTREACHED();
   }
 }
+
+}  // namespace extensions

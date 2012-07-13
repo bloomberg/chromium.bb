@@ -1315,7 +1315,7 @@ bool UpdateTabFunction::UpdateURLIfPresent(DictionaryValue* update_props,
         ScriptExecutor::JAVASCRIPT,
         url.path(),
         ScriptExecutor::TOP_FRAME,
-        UserScript::DOCUMENT_IDLE,
+        extensions::UserScript::DOCUMENT_IDLE,
         ScriptExecutor::MAIN_WORLD,
         base::Bind(&UpdateTabFunction::OnExecuteCodeFinished, this));
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,8 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 }
 
 }
+
+namespace extensions {
 
 // Test bringing up a master on a specific directory, putting a script
 // in there, etc.
@@ -272,3 +274,5 @@ TEST_F(UserScriptMasterTest, LeaveBOMNotAtTheBeginning) {
 
   EXPECT_EQ(content, user_scripts[0].js_scripts()[0].GetContent().as_string());
 }
+
+}  // namespace extensions

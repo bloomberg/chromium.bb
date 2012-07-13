@@ -452,7 +452,7 @@ ExtensionService* TestingProfile::GetExtensionService() {
   return extensions::ExtensionSystem::Get(this)->extension_service();
 }
 
-UserScriptMaster* TestingProfile::GetUserScriptMaster() {
+extensions::UserScriptMaster* TestingProfile::GetUserScriptMaster() {
   return extensions::ExtensionSystem::Get(this)->user_script_master();
 }
 

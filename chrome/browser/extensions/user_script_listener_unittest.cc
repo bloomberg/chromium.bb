@@ -23,7 +23,8 @@
 
 using content::ResourceController;
 using content::ResourceThrottle;
-using extensions::Extension;
+
+namespace extensions {
 
 namespace {
 
@@ -151,7 +152,7 @@ class UserScriptListenerTest
         .AppendASCII("Extensions")
         .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
         .AppendASCII("1.0.0.0");
-    extensions::UnpackedInstaller::Create(service_)->Load(extension_path);
+    UnpackedInstaller::Create(service_)->Load(extension_path);
   }
 
   void UnloadTestExtension() {
@@ -281,3 +282,5 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
 }
 
 }  // namespace
+
+}  // namespace extensions

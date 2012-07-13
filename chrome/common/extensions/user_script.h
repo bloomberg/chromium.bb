@@ -17,6 +17,8 @@
 class Pickle;
 class PickleIterator;
 
+namespace extensions {
+
 // Represents a user script, either a standalone one, or one that is part of an
 // extension.
 class UserScript {
@@ -255,5 +257,7 @@ class UserScript {
 };
 
 typedef std::vector<UserScript> UserScriptList;
+
+}  // namespace extensions
 
 #endif  // CHROME_COMMON_EXTENSIONS_USER_SCRIPT_H_

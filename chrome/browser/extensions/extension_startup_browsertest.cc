@@ -101,7 +101,8 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     ui_test_utils::WindowedNotificationObserver user_scripts_observer(
         chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
         content::NotificationService::AllSources());
-    UserScriptMaster* master = browser()->profile()->GetUserScriptMaster();
+    extensions::UserScriptMaster* master =
+        browser()->profile()->GetUserScriptMaster();
     if (!master->ScriptsReady())
       user_scripts_observer.Wait();
     ASSERT_TRUE(master->ScriptsReady());

@@ -22,6 +22,8 @@ bool UrlMatchesGlobs(const std::vector<std::string>* globs,
 
 }  // namespace
 
+namespace extensions {
+
 // static
 const char UserScript::kFileExtension[] = ".user.js";
 
@@ -211,3 +213,5 @@ void UserScript::UnpickleScripts(const ::Pickle& pickle, PickleIterator* iter,
     scripts->push_back(file);
   }
 }
+
+}  // namespace extensions

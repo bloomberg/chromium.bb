@@ -24,10 +24,10 @@
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
 
-using extensions::Extension;
-
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
+
+namespace extensions {
 
 scoped_refptr<Extension> ConvertUserScriptToExtension(
     const FilePath& user_script_path, const GURL& original_url,
@@ -187,3 +187,5 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   temp_dir.Take();  // The caller takes ownership of the directory.
   return extension;
 }
+
+}  // namespace extensions

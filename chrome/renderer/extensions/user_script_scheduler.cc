@@ -29,7 +29,8 @@ using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebString;
 using WebKit::WebView;
-using extensions::Extension;
+
+namespace extensions {
 
 UserScriptScheduler::UserScriptScheduler(
     WebFrame* frame, ExtensionDispatcher* extension_dispatcher)
@@ -221,3 +222,5 @@ bool UserScriptScheduler::GetAllChildFrames(
   }
   return true;
 }
+
+}  // namespace extensions

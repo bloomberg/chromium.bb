@@ -1057,7 +1057,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   AddPattern(&expected_patterns, "http://*.google.com/*");
   AddPattern(&expected_patterns, "https://*.google.com/*");
   const Extension* extension = loaded_[0];
-  const UserScriptList& scripts = extension->content_scripts();
+  const extensions::UserScriptList& scripts = extension->content_scripts();
   ASSERT_EQ(2u, scripts.size());
   EXPECT_EQ(expected_patterns, scripts[0].url_patterns());
   EXPECT_EQ(2u, scripts[0].js_scripts().size());

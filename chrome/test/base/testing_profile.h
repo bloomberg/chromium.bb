@@ -148,7 +148,7 @@ class TestingProfile : public Profile {
   virtual Profile* GetOriginalProfile() OVERRIDE;
   virtual VisitedLinkMaster* GetVisitedLinkMaster() OVERRIDE;
   virtual ExtensionService* GetExtensionService() OVERRIDE;
-  virtual UserScriptMaster* GetUserScriptMaster() OVERRIDE;
+  virtual extensions::UserScriptMaster* GetUserScriptMaster() OVERRIDE;
   virtual ExtensionProcessManager* GetExtensionProcessManager() OVERRIDE;
   virtual ExtensionEventRouter* GetExtensionEventRouter() OVERRIDE;
   void SetExtensionSpecialStoragePolicy(

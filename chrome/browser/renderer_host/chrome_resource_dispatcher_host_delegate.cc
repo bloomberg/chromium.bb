@@ -74,7 +74,7 @@ ChromeResourceDispatcherHostDelegate::ChromeResourceDispatcherHostDelegate(
     prerender::PrerenderTracker* prerender_tracker)
     : download_request_limiter_(g_browser_process->download_request_limiter()),
       safe_browsing_(g_browser_process->safe_browsing_service()),
-      user_script_listener_(new UserScriptListener()),
+      user_script_listener_(new extensions::UserScriptListener()),
       prerender_tracker_(prerender_tracker),
       variation_ids_cache_initialized_(false) {
 }
@@ -321,7 +321,7 @@ void ChromeResourceDispatcherHostDelegate::AppendChromeMetricsHeaders(
 bool ChromeResourceDispatcherHostDelegate::ShouldForceDownloadResource(
     const GURL& url, const std::string& mime_type) {
   // Special-case user scripts to get downloaded instead of viewed.
-  return UserScript::IsURLUserScript(url, mime_type);
+  return extensions::UserScript::IsURLUserScript(url, mime_type);
 }
 
 void ChromeResourceDispatcherHostDelegate::OnResponseStarted(

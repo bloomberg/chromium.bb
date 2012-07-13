@@ -29,6 +29,8 @@
 
 using content::BrowserThread;
 
+namespace extensions {
+
 // Helper function to parse greasesmonkey headers
 static bool GetDeclarationValue(const base::StringPiece& line,
                                 const base::StringPiece& prefix,
@@ -350,8 +352,8 @@ void UserScriptMaster::Observe(int type,
       break;
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       // Add any content scripts inside the extension.
-      const extensions::Extension* extension =
-          content::Details<const extensions::Extension>(details).ptr();
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
       extensions_info_[extension->id()] =
           ExtensionSet::ExtensionPathAndDefaultLocale(
               extension->path(), extension->default_locale());
@@ -369,9 +371,8 @@ void UserScriptMaster::Observe(int type,
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       // Remove any content scripts.
-      const extensions::Extension* extension =
-          content::Details<extensions::UnloadedExtensionInfo>(
-              details)->extension;
+      const Extension* extension =
+          content::Details<UnloadedExtensionInfo>(details)->extension;
       extensions_info_.erase(extension->id());
       UserScriptList new_user_scripts;
       for (UserScriptList::iterator iter = user_scripts_.begin();
@@ -438,3 +439,5 @@ void UserScriptMaster::SendUpdate(content::RenderProcessHost* process,
   if (base::SharedMemory::IsHandleValid(handle_for_process))
     process->Send(new ExtensionMsg_UpdateUserScripts(handle_for_process));
 }
+
+}  // namespace extensions

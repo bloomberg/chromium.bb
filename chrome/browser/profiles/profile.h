@@ -32,7 +32,6 @@ class PrefService;
 class PromoCounter;
 class ProtocolHandlerRegistry;
 class TestingProfile;
-class UserScriptMaster;
 class VisitedLinkMaster;
 class WebDataService;
 
@@ -53,9 +52,12 @@ class LibCrosServiceLibraryImpl;
 class ResetDefaultProxyConfigServiceTask;
 }
 
-
 namespace content {
 class WebUI;
+}
+
+namespace extensions {
+class UserScriptMaster;
 }
 
 namespace fileapi {
@@ -193,11 +195,11 @@ class Profile : public content::BrowserContext {
   virtual ExtensionService* GetExtensionService() = 0;
 
   // DEPRECATED. Instead, use ExtensionSystem::user_script_master().
-  // Retrieves a pointer to the UserScriptMaster associated with this
-  // profile.  The UserScriptMaster is lazily created the first time
-  // that this method is called.
+  // Retrieves a pointer to the extensions::UserScriptMaster associated with
+  // this profile.  The extensions::UserScriptMaster is lazily created the first
+  // time that this method is called.
   // TODO(yoz): remove this accessor (bug 104095).
-  virtual UserScriptMaster* GetUserScriptMaster() = 0;
+  virtual extensions::UserScriptMaster* GetUserScriptMaster() = 0;
 
   // DEPRECATED. Instead, use ExtensionSystem::process_manager().
   // Retrieves a pointer to the ExtensionProcessManager associated with this

@@ -16,8 +16,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using extensions::Extension;
-
 namespace {
 
 static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
@@ -26,6 +24,8 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 }
 
 }
+
+namespace extensions {
 
 TEST(ExtensionFromUserScript, Basic) {
   FilePath test_file;
@@ -217,3 +217,5 @@ TEST(ExtensionFromUserScript, RunAtDocumentIdle) {
   const UserScript& script = extension->content_scripts()[0];
   EXPECT_EQ(UserScript::DOCUMENT_IDLE, script.run_location());
 }
+
+}  // namespace extensions

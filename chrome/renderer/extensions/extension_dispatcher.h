@@ -25,11 +25,11 @@ class ExtensionRequestSender;
 class GURL;
 class ModuleSystem;
 class URLPattern;
-class UserScriptSlave;
 struct ExtensionMsg_Loaded_Params;
 
 namespace extensions {
 class FilteredEventRouter;
+class UserScriptSlave;
 }
 
 namespace WebKit {
@@ -64,7 +64,9 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   const ChromeV8ContextSet& v8_context_set() const {
     return v8_context_set_;
   }
-  UserScriptSlave* user_script_slave() { return user_script_slave_.get(); }
+  extensions::UserScriptSlave* user_script_slave() {
+    return user_script_slave_.get();
+  }
   extensions::V8SchemaRegistry* v8_schema_registry() {
     return &v8_schema_registry_;
   }
@@ -222,7 +224,7 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   // There is zero or one for each v8 context.
   ChromeV8ContextSet v8_context_set_;
 
-  scoped_ptr<UserScriptSlave> user_script_slave_;
+  scoped_ptr<extensions::UserScriptSlave> user_script_slave_;
 
   // Same as above, but on a longer timer and will run even if the process is
   // not idle, to ensure that IdleHandle gets called eventually.

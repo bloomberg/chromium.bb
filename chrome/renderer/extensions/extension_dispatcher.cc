@@ -277,7 +277,7 @@ ExtensionDispatcher::ExtensionDispatcher()
         kInitialExtensionIdleHandlerDelayMs);
   }
 
-  user_script_slave_.reset(new UserScriptSlave(&extensions_));
+  user_script_slave_.reset(new extensions::UserScriptSlave(&extensions_));
   request_sender_.reset(new ExtensionRequestSender(this, &v8_context_set_));
   PopulateSourceMap();
   PopulateLazyBindingsMap();
@@ -693,7 +693,7 @@ void ExtensionDispatcher::DidCreateScriptContext(
   }
 
   ExtensionURLInfo url_info(frame->document().securityOrigin(),
-      UserScriptSlave::GetDataSourceURLForFrame(frame));
+      extensions::UserScriptSlave::GetDataSourceURLForFrame(frame));
 
   Feature::Context context_type =
       ClassifyJavaScriptContext(extension_id, extension_group, url_info);
@@ -792,7 +792,7 @@ std::string ExtensionDispatcher::GetExtensionID(const WebFrame* frame,
   }
 
   // Extension pages (chrome-extension:// URLs).
-  GURL frame_url = UserScriptSlave::GetDataSourceURLForFrame(frame);
+  GURL frame_url = extensions::UserScriptSlave::GetDataSourceURLForFrame(frame);
   return extensions_.GetExtensionOrAppIDByURL(
       ExtensionURLInfo(frame->document().securityOrigin(), frame_url));
 }
@@ -1064,7 +1064,7 @@ bool ExtensionDispatcher::CheckCurrentContextAccessToExtensionAPI(
   // we should abort.
   WebKit::WebFrame* frame = context->web_frame();
   ExtensionURLInfo url_info(frame->document().securityOrigin(),
-      UserScriptSlave::GetDataSourceURLForFrame(frame));
+      extensions::UserScriptSlave::GetDataSourceURLForFrame(frame));
   CHECK(!extensions_.IsSandboxedPage(url_info));
 
   return true;

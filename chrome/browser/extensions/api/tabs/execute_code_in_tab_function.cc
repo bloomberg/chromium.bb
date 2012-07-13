@@ -36,7 +36,7 @@ namespace keys = extensions::tabs_constants;
 ExecuteCodeInTabFunction::ExecuteCodeInTabFunction()
     : execute_tab_id_(-1),
       all_frames_(false),
-      run_at_(UserScript::DOCUMENT_IDLE) {
+      run_at_(extensions::UserScript::DOCUMENT_IDLE) {
 }
 
 ExecuteCodeInTabFunction::~ExecuteCodeInTabFunction() {}
@@ -105,11 +105,11 @@ bool ExecuteCodeInTabFunction::RunImpl() {
           keys::kRunAtKey, &run_string));
 
     if (run_string == extension_manifest_values::kRunAtDocumentStart)
-      run_at_ = UserScript::DOCUMENT_START;
+      run_at_ = extensions::UserScript::DOCUMENT_START;
     else if (run_string == extension_manifest_values::kRunAtDocumentEnd)
-      run_at_ = UserScript::DOCUMENT_END;
+      run_at_ = extensions::UserScript::DOCUMENT_END;
     else if (run_string == extension_manifest_values::kRunAtDocumentIdle)
-      run_at_ = UserScript::DOCUMENT_IDLE;
+      run_at_ = extensions::UserScript::DOCUMENT_IDLE;
     else
       EXTENSION_FUNCTION_VALIDATE(false);
   }

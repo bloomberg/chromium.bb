@@ -8,6 +8,8 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace extensions {
+
 static const int kAllSchemes =
     URLPattern::SCHEME_HTTP |
     URLPattern::SCHEME_HTTPS |
@@ -214,3 +216,5 @@ TEST(ExtensionUserScriptTest, Defaults) {
   UserScript script;
   ASSERT_EQ(UserScript::DOCUMENT_IDLE, script.run_location());
 }
+
+}  // namespace extensions

@@ -59,7 +59,7 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction {
   bool all_frames_;
 
   // The intended time to run the script.
-  UserScript::RunLocation run_at_;
+  extensions::UserScript::RunLocation run_at_;
 };
 
 class TabsExecuteScriptFunction : public ExecuteCodeInTabFunction {

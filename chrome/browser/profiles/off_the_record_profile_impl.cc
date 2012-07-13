@@ -196,7 +196,7 @@ ExtensionService* OffTheRecordProfileImpl::GetExtensionService() {
   return extensions::ExtensionSystem::Get(this)->extension_service();
 }
 
-UserScriptMaster* OffTheRecordProfileImpl::GetUserScriptMaster() {
+extensions::UserScriptMaster* OffTheRecordProfileImpl::GetUserScriptMaster() {
   return extensions::ExtensionSystem::Get(this)->user_script_master();
 }
 

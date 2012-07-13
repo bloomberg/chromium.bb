@@ -272,10 +272,10 @@ bool ValidateExtension(const Extension* extension,
   }
 
   for (size_t i = 0; i < extension->content_scripts().size(); ++i) {
-    const UserScript& script = extension->content_scripts()[i];
+    const extensions::UserScript& script = extension->content_scripts()[i];
 
     for (size_t j = 0; j < script.js_scripts().size(); j++) {
-      const UserScript::File& js_script = script.js_scripts()[j];
+      const extensions::UserScript::File& js_script = script.js_scripts()[j];
       const FilePath& path = ExtensionResource::GetFilePath(
           js_script.extension_root(), js_script.relative_path(),
           symlink_policy);
@@ -285,7 +285,7 @@ bool ValidateExtension(const Extension* extension,
     }
 
     for (size_t j = 0; j < script.css_scripts().size(); j++) {
-      const UserScript::File& css_script = script.css_scripts()[j];
+      const extensions::UserScript::File& css_script = script.css_scripts()[j];
       const FilePath& path = ExtensionResource::GetFilePath(
           css_script.extension_root(), css_script.relative_path(),
           symlink_policy);
