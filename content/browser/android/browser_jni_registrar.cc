@@ -10,6 +10,7 @@
 #include "content/browser/android/content_settings.h"
 #include "content/browser/android/content_view_client.h"
 #include "content/browser/android/content_view_core_impl.h"
+#include "content/browser/android/content_view_statics.h"
 #include "content/browser/android/download_controller.h"
 #include "content/browser/android/sandboxed_process_launcher.h"
 #include "content/browser/android/touch_point.h"
@@ -29,6 +30,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     content::DownloadController::RegisterDownloadController },
   { "SandboxedProcessLauncher", content::RegisterSandboxedProcessLauncher },
   { "TouchPoint", content::RegisterTouchPoint },
+  { "WebViewStatics", content::RegisterWebViewStatics },
 };
 
 }  // namespace

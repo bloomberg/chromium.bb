@@ -201,6 +201,8 @@
     'browser/android/content_view_client.h',
     'browser/android/content_view_core_impl.cc',
     'browser/android/content_view_core_impl.h',
+    'browser/android/content_view_statics.cc',
+    'browser/android/content_view_statics.h',
     'browser/android/devtools_server.cc',
     'browser/android/download_controller.cc',
     'browser/android/download_controller.h',

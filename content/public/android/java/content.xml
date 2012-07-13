@@ -41,6 +41,7 @@
       <classpath>
         <pathelement path="${location.base}/android.jar" />
         <pathelement path="${jar.dir}/chromium_base.jar" />
+        <pathelement path="${jar.dir}/chromium_net.jar" />
       </classpath>
     </javac>
   </target>
