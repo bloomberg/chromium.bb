@@ -14,6 +14,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/favicon/favicon_service.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -633,7 +634,7 @@ void BookmarkChangeProcessor::ApplyBookmarkFavicon(
   GURL fake_icon_url = bookmark_node->url();
 
   HistoryService* history =
-      profile->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      HistoryServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
   FaviconService* favicon_service =
       profile->GetFaviconService(Profile::EXPLICIT_ACCESS);
 

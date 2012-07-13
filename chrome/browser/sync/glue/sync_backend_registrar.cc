@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -78,8 +79,8 @@ SyncBackendRegistrar::SyncBackendRegistrar(
     routing_info_[it.Get()] = syncer::GROUP_PASSIVE;
   }
 
-  HistoryService* history_service = profile->GetHistoryService(
-      Profile::IMPLICIT_ACCESS);
+  HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS);
   if (history_service) {
     workers_[syncer::GROUP_HISTORY] = new HistoryModelWorker(history_service);
   } else {

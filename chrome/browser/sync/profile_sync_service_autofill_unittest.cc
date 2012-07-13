@@ -378,10 +378,6 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     token_service_ = static_cast<TokenService*>(
         TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), BuildTokenService));
-    // GetHistoryService() gets called indirectly, but the result is ignored, so
-    // it is safe to return NULL.
-    EXPECT_CALL(*profile_, GetHistoryService(_)).
-        WillRepeatedly(Return(static_cast<HistoryService*>(NULL)));
     EXPECT_CALL(*personal_data_manager_, LoadProfiles()).Times(1);
     EXPECT_CALL(*personal_data_manager_, LoadCreditCards()).Times(1);
 

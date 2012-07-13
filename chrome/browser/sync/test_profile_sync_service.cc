@@ -101,12 +101,6 @@ void SyncBackendHostForProfileSyncTest::StartConfiguration(
   }
 }
 
-void SyncBackendHostForProfileSyncTest::SetHistoryServiceExpectations(
-    ProfileMock* profile) {
-  EXPECT_CALL(*profile, GetHistoryService(testing::_)).
-      WillOnce(testing::Return((HistoryService*)NULL));
-}
-
 }  // namespace browser_sync
 
 syncer::TestIdFactory* TestProfileSyncService::id_factory() {

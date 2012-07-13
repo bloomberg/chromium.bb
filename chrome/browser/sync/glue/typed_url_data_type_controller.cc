@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
@@ -116,8 +117,8 @@ bool TypedUrlDataTypeController::PostTaskOnBackendThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  HistoryService* history = profile()->GetHistoryService(
-      Profile::IMPLICIT_ACCESS);
+  HistoryService* history = HistoryServiceFactory::GetForProfile(
+      profile(), Profile::IMPLICIT_ACCESS);
   if (history) {
     history->ScheduleDBTask(new RunTaskOnHistoryThread(task, this),
                             &cancelable_consumer_);

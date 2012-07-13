@@ -10,7 +10,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/change_processor_mock.h"
 #include "chrome/browser/sync/glue/data_type_controller_mock.h"
@@ -45,13 +47,17 @@ class BookmarkModelMock : public BookmarkModel {
 
 class HistoryMock : public HistoryService {
  public:
-  HistoryMock() {}
+  explicit HistoryMock(Profile* profile) : HistoryService(profile) {}
   MOCK_METHOD0(BackendLoaded, bool(void));
 
  protected:
   virtual ~HistoryMock() {}
 };
 
+scoped_refptr<RefcountedProfileKeyedService> BuildHistoryService(
+      Profile* profile) {
+  return new HistoryMock(profile);
+}
 
 class SyncBookmarkDataTypeControllerTest : public testing::Test {
  public:
@@ -61,7 +67,9 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test {
   virtual void SetUp() {
     model_associator_ = new ModelAssociatorMock();
     change_processor_ = new ChangeProcessorMock();
-    history_service_ = new HistoryMock();
+    history_service_ = static_cast<HistoryMock*>(
+        HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+            &profile_, BuildHistoryService).get());
     profile_sync_factory_.reset(
         new ProfileSyncComponentsFactoryMock(model_associator_,
                                    change_processor_));
@@ -75,8 +83,6 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test {
   void SetStartExpectations() {
     EXPECT_CALL(profile_, GetBookmarkModel()).
         WillRepeatedly(Return(&bookmark_model_));
-    EXPECT_CALL(profile_, GetHistoryService(_)).
-        WillRepeatedly(Return(history_service_.get()));
     EXPECT_CALL(bookmark_model_, IsLoaded()).WillRepeatedly(Return(true));
     EXPECT_CALL(*history_service_,
                 BackendLoaded()).WillRepeatedly(Return(true));
@@ -115,7 +121,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test {
   scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
   ProfileMock profile_;
   BookmarkModelMock bookmark_model_;
-  scoped_refptr<HistoryMock> history_service_;
+  HistoryMock* history_service_;
   ProfileSyncServiceMock service_;
   ModelAssociatorMock* model_associator_;
   ChangeProcessorMock* change_processor_;
@@ -175,7 +181,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartHistoryServiceNotReady) {
                  base::Unretained(&model_load_callback_)));
 
   EXPECT_EQ(DataTypeController::MODEL_STARTING, bookmark_dtc_->state());
-  testing::Mock::VerifyAndClearExpectations(history_service_.get());
+  testing::Mock::VerifyAndClearExpectations(history_service_);
   EXPECT_CALL(*history_service_, BackendLoaded()).WillRepeatedly(Return(true));
 
   // Send the notification that the history service has finished loading the db.

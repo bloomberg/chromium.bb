@@ -15,9 +15,12 @@
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service_factory.h"
@@ -89,13 +92,18 @@ class HistoryBackendMock : public HistoryBackend {
 
 class HistoryServiceMock : public HistoryService {
  public:
-  HistoryServiceMock() {}
+  explicit HistoryServiceMock(Profile* profile) : HistoryService(profile) {}
   MOCK_METHOD2(ScheduleDBTask, void(HistoryDBTask*,
                                     CancelableRequestConsumerBase*));
 
  private:
   virtual ~HistoryServiceMock() {}
 };
+
+scoped_refptr<RefcountedProfileKeyedService> BuildHistoryService(
+    Profile* profile) {
+  return new HistoryServiceMock(profile);
+}
 
 class TestTypedUrlModelAssociator : public TypedUrlModelAssociator {
  public:
@@ -166,8 +174,10 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     AbstractProfileSyncServiceTest::SetUp();
     profile_.CreateRequestContext();
     history_backend_ = new HistoryBackendMock();
-    history_service_ = new HistoryServiceMock();
-    EXPECT_CALL((*history_service_.get()), ScheduleDBTask(_, _))
+    history_service_ = static_cast<HistoryServiceMock*>(
+        HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+            &profile_, BuildHistoryService).get());
+    EXPECT_CALL((*history_service_), ScheduleDBTask(_, _))
         .WillRepeatedly(RunTaskOnDBThread(&history_thread_,
                                           history_backend_.get()));
     history_thread_.Start();
@@ -213,12 +223,6 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
                                               &model_associator));
       EXPECT_CALL(*factory, CreateDataTypeManager(_, _)).
           WillOnce(ReturnNewDataTypeManager());
-
-      EXPECT_CALL(profile_, GetHistoryServiceWithoutCreating()).
-          WillRepeatedly(Return(history_service_.get()));
-
-      EXPECT_CALL(profile_, GetHistoryService(_)).
-          WillRepeatedly(Return(history_service_.get()));
 
       token_service_->IssueAuthTokenForTest(
           GaiaConstants::kSyncService, "token");
@@ -304,7 +308,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
 
   ProfileMock profile_;
   scoped_refptr<HistoryBackendMock> history_backend_;
-  scoped_refptr<HistoryServiceMock> history_service_;
+  HistoryServiceMock* history_service_;
   browser_sync::DataTypeErrorHandlerMock error_handler_;
 };
 

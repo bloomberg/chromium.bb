@@ -7,6 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -81,8 +82,8 @@ bool BookmarkDataTypeController::DependentsLoaded() {
   if (!bookmark_model || !bookmark_model->IsLoaded())
     return false;
 
-  HistoryService* history =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* history = HistoryServiceFactory::GetForProfile(
+      profile_, Profile::EXPLICIT_ACCESS);
   if (!history || !history->BackendLoaded())
     return false;
 
