@@ -378,20 +378,20 @@ class CrocHtml(object):
     for group in sorted(cov_dir.stats_by_group):
       self.AddItem(table, group, cov_dir.stats_by_group[group], None)
 
-    table = body.E('table', e_class='sortable')
-    table.E('h3').Text('Subdirectories')
     # List subdirs
     if cov_dir.subdirs:
+      table = body.E('table', e_class='sortable')
+      table.E('h3').Text('Subdirectories')
       self.AddSectionHeader(table, None, 'Subdirectory')
 
       for d in sorted(cov_dir.subdirs):
         self.AddItem(table, d + '/', cov_dir.subdirs[d].stats_by_group['all'],
                      None, link=d + '/index.html')
 
-    table = body.E('table', e_class='sortable')
-    table.E('h3').Text('Files in This Directory')
     # List files
     if cov_dir.files:
+      table = body.E('table', e_class='sortable')
+      table.E('h3').Text('Files in This Directory')
       self.AddSectionHeader(table, None, 'Filename',
                             is_file=True)
 
