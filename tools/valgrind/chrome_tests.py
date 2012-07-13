@@ -225,7 +225,7 @@ class ChromeTests:
     return tool.Run(cmd, None)
 
   def TestAsh(self):
-    return self.SimpleTest("ash", "aura_shell_unittests")
+    return self.SimpleTest("ash", "ash_unittests")
 
   def TestAura(self):
     return self.SimpleTest("aura", "aura_unittests")
@@ -474,7 +474,7 @@ class ChromeTests:
   # Recognise the original abbreviations as well as full executable names.
   _test_list = {
     "cmdline" : RunCmdLine,
-    "ash": TestAsh,              "aura_shell_unittests": TestAsh,
+    "ash": TestAsh,              "ash_unittests": TestAsh,
     "aura": TestAura,            "aura_unittests": TestAura,
     "automated_ui" : TestAutomatedUI,
     "base": TestBase,            "base_unittests": TestBase,

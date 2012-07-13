@@ -354,7 +354,7 @@
       ],
     },
     {
-      'target_name': 'aura_shell_unittests',
+      'target_name': 'ash_unittests',
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:base',
@@ -394,7 +394,7 @@
         'launcher/launcher_context_menu_unittest.cc',
         'launcher/launcher_model_unittest.cc',
         'launcher/launcher_navigator_unittest.cc',
-	'launcher/launcher_tooltip_manager_unittest.cc',
+        'launcher/launcher_tooltip_manager_unittest.cc',
         'launcher/launcher_unittest.cc',
         'launcher/launcher_view_unittest.cc',
         'root_window_controller_unittest.cc',
@@ -468,7 +468,7 @@
           'sources/': [
             ['exclude', 'accelerators/accelerator_controller_unittest.cc'],
             ['exclude', 'accelerators/accelerator_filter_unittest.cc'],
-	    ['exclude', 'accelerators/nested_dispatcher_controller_unittest.cc'],
+            ['exclude', 'accelerators/nested_dispatcher_controller_unittest.cc'],
             ['exclude', 'drag_drop/drag_drop_controller_unittest.cc'],
             ['exclude', 'tooltips/tooltip_controller_unittest.cc'],
           ],
@@ -480,6 +480,38 @@
           # are not referenced in code, but are referenced in nibs.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
         }],
+      ],
+    },
+    # ash_unittests was formerly named aura_shell_unittests.  While the build
+    # bots are being switched to use the new name we need to support both
+    # executables.
+    # TODO(jamescook): Remove this section when build bots are building and
+    # running ash_unittests.
+    {
+      'target_name': 'aura_shell_unittests',
+      'type': 'none',
+      'dependencies': [
+        'ash_unittests',
+      ],
+      'actions': [
+        {
+          'message': 'TEMPORARY: Copy ash_unittests to aura_shell_unittests',
+          'action_name': 'copy_ash_unittests',
+          'variables': {
+            'source_file': '<(PRODUCT_DIR)/ash_unittests<(EXECUTABLE_SUFFIX)',
+            'dest_file': '<(PRODUCT_DIR)/aura_shell_unittests<(EXECUTABLE_SUFFIX)',
+          },
+          'inputs': [
+            '<(DEPTH)/build/cp.py',
+            '<(source_file)',
+          ],
+          'outputs': [
+            '<(dest_file)',
+          ],
+          'action': [
+            'python', '<(DEPTH)/build/cp.py', '<(source_file)', '<(dest_file)', 
+          ],
+        },
       ],
     },
     {
