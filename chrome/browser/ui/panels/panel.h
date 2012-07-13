@@ -31,6 +31,7 @@ class SkBitmap;
 
 namespace content {
 class WebContents;
+struct NativeWebKeyboardEvent;
 }
 
 // A platform independent implementation of BaseWindow for Panels.
@@ -243,6 +244,9 @@ class Panel : public BaseWindow,
   // possible currently to switch the panel back to autosizing from
   // user-resizable, it should not be a problem.
   void IncreaseMaxSize(const gfx::Size& desired_panel_size);
+
+  // Handles keyboard events coming back from the renderer.
+  void HandleKeyboardEvent(const content::NativeWebKeyboardEvent& event);
 
   // Whether the panel window is always on top.
   void SetAlwaysOnTop(bool on_top);

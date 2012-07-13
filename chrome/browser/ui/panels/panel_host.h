@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/page_zoom.h"
 
 class ExtensionWindowController;
 class FaviconTabHelper;
@@ -52,7 +53,12 @@ class PanelHost : public content::WebContentsDelegate,
                             const gfx::Rect& pos) OVERRIDE;
   virtual bool IsPopupOrPanel(
       const content::WebContents* source) const OVERRIDE;
+  virtual void ContentsZoomChange(bool zoom_in) OVERRIDE;
   virtual bool IsApplication() const OVERRIDE;
+  virtual bool HandleContextMenu(
+      const content::ContextMenuParams& params) OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void ResizeDueToAutoResize(content::WebContents* web_contents,
                                      const gfx::Size& new_size) OVERRIDE;
 
@@ -66,6 +72,12 @@ class PanelHost : public content::WebContentsDelegate,
   virtual ExtensionWindowController* GetExtensionWindowController() const
       OVERRIDE;
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
+
+  // Actions on web contents.
+  void Reload();
+  void ReloadIgnoringCache();
+  void StopLoading();
+  void Zoom(content::PageZoom zoom);
 
  private:
   // Helper to close panel via the message loop.

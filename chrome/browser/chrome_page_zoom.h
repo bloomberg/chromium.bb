@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,11 @@
 #define CHROME_BROWSER_CHROME_PAGE_ZOOM_H_
 
 #include <vector>
+#include "content/public/common/page_zoom.h"
+
+namespace content {
+class WebContents;
+}
 
 namespace chrome_page_zoom {
 
@@ -18,6 +23,9 @@ std::vector<double> PresetZoomFactors(double custom_factor);
 // values along with a custom value (if the custom value is not already
 // represented.)
 std::vector<double> PresetZoomLevels(double custom_level);
+
+// Adjusts the zoom level of |web_contents|.
+void Zoom(content::WebContents* web_contents, content::PageZoom zoom);
 
 }  // namespace chrome_page_zoom
 

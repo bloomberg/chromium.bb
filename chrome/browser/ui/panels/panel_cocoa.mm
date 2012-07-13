@@ -199,13 +199,19 @@ bool PanelCocoa::IsDrawingAttention() const {
 
 bool PanelCocoa::PreHandlePanelKeyboardEvent(
     const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
-  // TODO(jennb): any shortcut handling needed for Panel?
+  // No need to prehandle as no keys are reserved.
   return false;
 }
 
 void PanelCocoa::HandlePanelKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-  // TODO(jennb): any shortcut handling needed for Panel?
+  if (event.skip_in_browser || event.type == NativeWebKeyboardEvent::Char)
+    return;
+
+  ChromeEventProcessingWindow* event_window =
+      static_cast<ChromeEventProcessingWindow*>([controller_ window]);
+  DCHECK([event_window isKindOfClass:[ChromeEventProcessingWindow class]]);
+  [event_window redispatchKeyEvent:event.os_event];
 }
 
 void PanelCocoa::FullScreenModeChanged(

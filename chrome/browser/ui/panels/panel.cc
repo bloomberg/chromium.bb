@@ -23,11 +23,13 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
 
 using content::RenderViewHost;
+using content::UserMetricsAction;
 
 namespace panel_internal {
 
@@ -317,6 +319,10 @@ gfx::Size Panel::ClampSize(const gfx::Size& size) const {
   return gfx::Size(new_width, new_height);
 }
 
+void Panel::HandleKeyboardEvent(const content::NativeWebKeyboardEvent& event) {
+  native_panel_->HandlePanelKeyboardEvent(event);
+}
+
 void Panel::SetAlwaysOnTop(bool on_top) {
   if (always_on_top_ == on_top)
     return;
@@ -520,8 +526,42 @@ void Panel::ExecuteCommandWithDisposition(int id,
   DCHECK(command_updater_.IsCommandEnabled(id)) << "Invalid/disabled command "
                                                 << id;
   switch (id) {
-    case IDC_RELOAD:    // etc
-    // TODO(jennb): implement.
+    // Navigation
+    case IDC_RELOAD:
+      panel_host_->Reload();
+      break;
+    case IDC_RELOAD_IGNORING_CACHE:
+      panel_host_->ReloadIgnoringCache();
+      break;
+    case IDC_STOP:
+      panel_host_->StopLoading();
+      break;
+
+    // Clipboard
+    case IDC_COPY:
+      content::RecordAction(UserMetricsAction("Copy"));
+      native_panel_->PanelCopy();
+      break;
+    case IDC_CUT:
+      content::RecordAction(UserMetricsAction("Cut"));
+      native_panel_->PanelCut();
+      break;
+    case IDC_PASTE:
+      content::RecordAction(UserMetricsAction("Paste"));
+      native_panel_->PanelPaste();
+      break;
+
+    // Zoom
+    case IDC_ZOOM_PLUS:
+      panel_host_->Zoom(content::PAGE_ZOOM_IN);
+      break;
+    case IDC_ZOOM_NORMAL:
+      panel_host_->Zoom(content::PAGE_ZOOM_RESET);
+      break;
+    case IDC_ZOOM_MINUS:
+      panel_host_->Zoom(content::PAGE_ZOOM_OUT);
+      break;
+
     default:
       LOG(WARNING) << "Received unimplemented command: " << id;
       break;
@@ -681,7 +721,7 @@ void Panel::UpdateTitleBar() {
 }
 
 void Panel::LoadingStateChanged(bool is_loading) {
+  command_updater_.UpdateCommandEnabled(IDC_STOP, is_loading);
   native_panel_->UpdatePanelLoadingAnimations(is_loading);
   UpdateTitleBar();
-  command_updater_.UpdateCommandEnabled(IDC_STOP, is_loading);
 }

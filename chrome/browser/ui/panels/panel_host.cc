@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/panels/panel.h"
@@ -19,11 +20,14 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
+
+using content::UserMetricsAction;
 
 PanelHost::PanelHost(Panel* panel, Profile* profile)
     : panel_(panel),
@@ -96,8 +100,21 @@ bool PanelHost::IsPopupOrPanel(const content::WebContents* source) const {
   return true;
 }
 
+void PanelHost::ContentsZoomChange(bool zoom_in) {
+  Zoom(zoom_in ? content::PAGE_ZOOM_IN : content::PAGE_ZOOM_OUT);
+}
+
 bool PanelHost::IsApplication() const {
   return true;
+}
+
+bool PanelHost::HandleContextMenu(const content::ContextMenuParams& params) {
+  return true;  // Disallow context menu.
+}
+
+void PanelHost::HandleKeyboardEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  return panel_->HandleKeyboardEvent(event);
 }
 
 void PanelHost::ResizeDueToAutoResize(content::WebContents* web_contents,
@@ -145,4 +162,23 @@ ExtensionWindowController* PanelHost::GetExtensionWindowController() const {
 
 content::WebContents* PanelHost::GetAssociatedWebContents() const {
   return web_contents_.get();
+}
+
+void PanelHost::Reload() {
+  content::RecordAction(UserMetricsAction("Reload"));
+  web_contents_->GetController().Reload(true);
+}
+
+void PanelHost::ReloadIgnoringCache() {
+  content::RecordAction(UserMetricsAction("ReloadIgnoringCache"));
+  web_contents_->GetController().ReloadIgnoringCache(true);
+}
+
+void PanelHost::StopLoading() {
+  content::RecordAction(UserMetricsAction("Stop"));
+  web_contents_->Stop();
+}
+
+void PanelHost::Zoom(content::PageZoom zoom) {
+  chrome_page_zoom::Zoom(web_contents_.get(), zoom);
 }

@@ -763,54 +763,7 @@ void Zoom(Browser* browser, content::PageZoom zoom) {
   if (browser->is_devtools())
     return;
 
-  content::RenderViewHost* host =
-      GetActiveWebContents(browser)->GetRenderViewHost();
-  if (zoom == content::PAGE_ZOOM_RESET) {
-    host->SetZoomLevel(0);
-    content::RecordAction(UserMetricsAction("ZoomNormal"));
-    return;
-  }
-
-  double current_zoom_level = GetActiveWebContents(browser)->GetZoomLevel();
-  double default_zoom_level =
-      browser->profile()->GetPrefs()->GetDouble(prefs::kDefaultZoomLevel);
-
-  // Generate a vector of zoom levels from an array of known presets along with
-  // the default level added if necessary.
-  std::vector<double> zoom_levels =
-      chrome_page_zoom::PresetZoomLevels(default_zoom_level);
-
-  if (zoom == content::PAGE_ZOOM_OUT) {
-    // Iterate through the zoom levels in reverse order to find the next
-    // lower level based on the current zoom level for this page.
-    for (std::vector<double>::reverse_iterator i = zoom_levels.rbegin();
-         i != zoom_levels.rend(); ++i) {
-      double zoom_level = *i;
-      if (content::ZoomValuesEqual(zoom_level, current_zoom_level))
-        continue;
-      if (zoom_level < current_zoom_level) {
-        host->SetZoomLevel(zoom_level);
-        content::RecordAction(UserMetricsAction("ZoomMinus"));
-        return;
-      }
-      content::RecordAction(UserMetricsAction("ZoomMinus_AtMinimum"));
-    }
-  } else {
-    // Iterate through the zoom levels in normal order to find the next
-    // higher level based on the current zoom level for this page.
-    for (std::vector<double>::const_iterator i = zoom_levels.begin();
-         i != zoom_levels.end(); ++i) {
-      double zoom_level = *i;
-      if (content::ZoomValuesEqual(zoom_level, current_zoom_level))
-        continue;
-      if (zoom_level > current_zoom_level) {
-        host->SetZoomLevel(zoom_level);
-        content::RecordAction(UserMetricsAction("ZoomPlus"));
-        return;
-      }
-    }
-    content::RecordAction(UserMetricsAction("ZoomPlus_AtMaximum"));
-  }
+  chrome_page_zoom::Zoom(GetActiveWebContents(browser), zoom);
 }
 
 void FocusToolbar(Browser* browser) {

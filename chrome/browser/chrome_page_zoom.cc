@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,13 @@
 #include <cmath>
 
 #include "chrome/browser/chrome_page_zoom_constants.h"
-#include "content/public/common/page_zoom.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/renderer_preferences.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+
+using content::UserMetricsAction;
 
 namespace chrome_page_zoom {
 
@@ -54,6 +59,55 @@ std::vector<double> PresetZoomFactors(double custom_factor) {
 
 std::vector<double> PresetZoomLevels(double custom_level) {
   return PresetZoomValues(PAGE_ZOOM_VALUE_TYPE_LEVEL, custom_level);
+}
+
+void Zoom(content::WebContents* web_contents, content::PageZoom zoom) {
+  content::RenderViewHost* host = web_contents->GetRenderViewHost();
+  if (zoom == content::PAGE_ZOOM_RESET) {
+    host->SetZoomLevel(0);
+    content::RecordAction(UserMetricsAction("ZoomNormal"));
+    return;
+  }
+
+  double current_zoom_level = web_contents->GetZoomLevel();
+  double default_zoom_level =
+      web_contents->GetMutableRendererPrefs()->default_zoom_level;
+
+  // Generate a vector of zoom levels from an array of known presets along with
+  // the default level added if necessary.
+  std::vector<double> zoom_levels = PresetZoomLevels(default_zoom_level);
+
+  if (zoom == content::PAGE_ZOOM_OUT) {
+    // Iterate through the zoom levels in reverse order to find the next
+    // lower level based on the current zoom level for this page.
+    for (std::vector<double>::reverse_iterator i = zoom_levels.rbegin();
+         i != zoom_levels.rend(); ++i) {
+      double zoom_level = *i;
+      if (content::ZoomValuesEqual(zoom_level, current_zoom_level))
+        continue;
+      if (zoom_level < current_zoom_level) {
+        host->SetZoomLevel(zoom_level);
+        content::RecordAction(UserMetricsAction("ZoomMinus"));
+        return;
+      }
+      content::RecordAction(UserMetricsAction("ZoomMinus_AtMinimum"));
+    }
+  } else {
+    // Iterate through the zoom levels in normal order to find the next
+    // higher level based on the current zoom level for this page.
+    for (std::vector<double>::const_iterator i = zoom_levels.begin();
+         i != zoom_levels.end(); ++i) {
+      double zoom_level = *i;
+      if (content::ZoomValuesEqual(zoom_level, current_zoom_level))
+        continue;
+      if (zoom_level > current_zoom_level) {
+        host->SetZoomLevel(zoom_level);
+        content::RecordAction(UserMetricsAction("ZoomPlus"));
+        return;
+      }
+    }
+    content::RecordAction(UserMetricsAction("ZoomPlus_AtMaximum"));
+  }
 }
 
 }  // namespace chrome_page_zoom
