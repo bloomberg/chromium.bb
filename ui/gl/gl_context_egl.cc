@@ -79,13 +79,6 @@ bool GLContextEGL::MakeCurrent(GLSurface* surface) {
                "context", context_,
                "surface", surface);
 
-  // Mali work-around: glFlush() does not synchronize between contexts
-  // chrome-os-partner:10068
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
-  if (eglGetCurrentContext() != NULL)
-    glFinish();
-#endif // defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
-
   if (!eglMakeCurrent(display_,
                       surface->GetHandle(),
                       surface->GetHandle(),
