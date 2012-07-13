@@ -297,6 +297,8 @@
     'browser/download/download_item_factory.h',
     'browser/download/download_item_impl.cc',
     'browser/download/download_item_impl.h',
+    'browser/download/download_item_impl_delegate.cc',
+    'browser/download/download_item_impl_delegate.h',
     'browser/download/download_manager_impl.cc',
     'browser/download/download_manager_impl.h',
     'browser/download/download_net_log_parameters.cc',

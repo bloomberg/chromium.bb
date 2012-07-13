@@ -71,13 +71,6 @@ class MockDownloadManager : public content::DownloadManager {
   MOCK_CONST_METHOD0(InProgressCount, int());
   MOCK_CONST_METHOD0(GetBrowserContext, content::BrowserContext*());
   MOCK_METHOD0(LastDownloadPath, FilePath());
-  MOCK_METHOD1(CreateDownloadItem, net::BoundNetLog(DownloadCreateInfo* info));
-  MOCK_METHOD5(CreateSavePackageDownloadItem, content::DownloadItem*(
-      const FilePath& main_file_path,
-      const GURL& page_url,
-      bool is_otr,
-      const std::string& mime_type,
-      content::DownloadItem::Observer* observer));
   MOCK_METHOD0(ClearLastDownloadPath, void());
   MOCK_METHOD2(FileSelected, void(const FilePath& path, int32 download_id));
   MOCK_METHOD1(FileSelectionCanceled, void(int32 download_id));

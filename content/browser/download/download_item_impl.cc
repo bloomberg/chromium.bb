@@ -21,6 +21,7 @@
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
+#include "content/browser/download/download_item_impl_delegate.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -135,31 +136,13 @@ const char DownloadItem::kEmptyFileHash[] = "";
 
 }
 
-// Infrastructure in DownloadItemImpl::Delegate to assert invariant that
-// delegate always outlives all attached DownloadItemImpls.
-DownloadItemImpl::Delegate::Delegate()
-    : count_(0) {}
-
-DownloadItemImpl::Delegate::~Delegate() {
-  DCHECK_EQ(0, count_);
-}
-
-void DownloadItemImpl::Delegate::Attach() {
-  ++count_;
-}
-
-void DownloadItemImpl::Delegate::Detach() {
-  DCHECK_LT(0, count_);
-  --count_;
-}
-
 // Our download table ID starts at 1, so we use 0 to represent a download that
 // has started, but has not yet had its data persisted in the table. We use fake
 // database handles in incognito mode starting at -1 and progressively getting
 // more negative.
 
 // Constructor for reading from the history service.
-DownloadItemImpl::DownloadItemImpl(Delegate* delegate,
+DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
                                    DownloadId download_id,
                                    const DownloadPersistentStoreInfo& info,
                                    const net::BoundNetLog& bound_net_log)
@@ -207,7 +190,7 @@ DownloadItemImpl::DownloadItemImpl(Delegate* delegate,
 
 // Constructing for a regular download:
 DownloadItemImpl::DownloadItemImpl(
-    Delegate* delegate,
+    DownloadItemImplDelegate* delegate,
     const DownloadCreateInfo& info,
     scoped_ptr<DownloadRequestHandleInterface> request_handle,
     bool is_otr,
@@ -267,7 +250,7 @@ DownloadItemImpl::DownloadItemImpl(
 }
 
 // Constructing for the "Save Page As..." feature:
-DownloadItemImpl::DownloadItemImpl(Delegate* delegate,
+DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
                                    const FilePath& path,
                                    const GURL& url,
                                    bool is_otr,

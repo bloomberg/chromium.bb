@@ -20,6 +20,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item_impl.h"
+#include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/save_file.h"
 #include "content/browser/download/save_file_manager.h"
@@ -32,7 +33,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/resource_context.h"
@@ -264,8 +264,9 @@ void SavePackage::InternalInit() {
   file_manager_ = rdh->save_file_manager();
   DCHECK(file_manager_);
 
-  download_manager_ = BrowserContext::GetDownloadManager(
-      web_contents()->GetBrowserContext());
+  download_manager_ = static_cast<DownloadManagerImpl*>(
+      BrowserContext::GetDownloadManager(
+          web_contents()->GetBrowserContext()));
   DCHECK(download_manager_);
 
   download_stats::RecordSavePackageEvent(download_stats::SAVE_PACKAGE_STARTED);

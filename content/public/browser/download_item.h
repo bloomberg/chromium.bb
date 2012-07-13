@@ -147,14 +147,6 @@ class CONTENT_EXPORT DownloadItem {
   // Called when the user has validated the download of a dangerous file.
   virtual void DangerousDownloadValidated() = 0;
 
-  // Called periodically from the download thread, or from the UI thread
-  // for saving packages.
-  // |bytes_so_far| is the number of bytes received so far.
-  // |hash_state| is the current hash state.
-  virtual void UpdateProgress(int64 bytes_so_far,
-                              int64 bytes_per_sec,
-                              const std::string& hash_state) = 0;
-
   // Cancel the download operation. We need to distinguish between cancels at
   // exit (DownloadManager destructor) from user interface initiated cancels
   // because at exit, the history system may not exist, and any updates to it
@@ -166,22 +158,9 @@ class CONTENT_EXPORT DownloadItem {
   // when resuming a download (assuming the server supports byte ranges).
   virtual void Cancel(bool user_cancel) = 0;
 
-  // Indicate that an error has occurred on the download.
-  virtual void Interrupt(content::DownloadInterruptReason reason) = 0;
-
-  // Called by external code (SavePackage) using the DownloadItem interface
-  // to display progress when the DownloadItem should be considered complete.
-  virtual void MarkAsComplete() = 0;
-
-  // Called by the delegate after it delayed opening the download in
-  // DownloadManagerDelegate::ShouldOpenDownload.
+  // Called by the delegate if it delayed opening the download after
+  // the download has actually been opened.
   virtual void DelayedDownloadOpened(bool auto_opened) = 0;
-
-  // Called when all data has been saved. Only has display effects.
-  virtual void OnAllDataSaved(int64 size, const std::string& final_hash) = 0;
-
-  // Called when the downloaded file is removed.
-  virtual void OnDownloadedFileRemoved() = 0;
 
   // Deletes the file from disk and removes the download from the views and
   // history.  |user| should be true if this is the result of the user clicking
@@ -210,11 +189,6 @@ class CONTENT_EXPORT DownloadItem {
 
   // Allow the user to temporarily pause a download or resume a paused download.
   virtual void TogglePause() = 0;
-
-  // Called when the download is ready to complete.
-  // This may perform final rename if necessary and will eventually call
-  // DownloadItem::Completed().
-  virtual void OnDownloadCompleting(DownloadFileManager* file_manager) = 0;
 
   // Returns true if this item matches |query|. |query| must be lower-cased.
   virtual bool MatchesQuery(const string16& query) const = 0;
@@ -272,7 +246,6 @@ class CONTENT_EXPORT DownloadItem {
   virtual void OnIntermediatePathDetermined(DownloadFileManager* file_manager,
                                             const FilePath& path) = 0;
 
-  virtual void SetIsPersisted() = 0;
   virtual bool IsPersisted() const = 0;
 
   // Accessors
@@ -289,14 +262,12 @@ class CONTENT_EXPORT DownloadItem {
   virtual std::string GetReferrerCharset() const = 0;
   virtual std::string GetRemoteAddress() const = 0;
   virtual int64 GetTotalBytes() const = 0;
-  virtual void SetTotalBytes(int64 total_bytes) = 0;
   virtual int64 GetReceivedBytes() const = 0;
   virtual const std::string& GetHashState() const = 0;
   virtual int32 GetId() const = 0;
   virtual DownloadId GetGlobalId() const = 0;
   virtual base::Time GetStartTime() const = 0;
   virtual base::Time GetEndTime() const = 0;
-  virtual void SetDbHandle(int64 handle) = 0;
   virtual int64 GetDbHandle() const = 0;
   virtual bool IsPaused() const = 0;
   virtual bool GetOpenWhenComplete() const = 0;
@@ -340,14 +311,6 @@ class CONTENT_EXPORT DownloadItem {
   // This returns the same path as GetTargetFilePath() for safe downloads
   // but does not for dangerous downloads until the name is verified.
   virtual FilePath GetUserVerifiedFilePath() const = 0;
-
-  // Cancels the off-thread aspects of the download.
-  // TODO(rdsmith): This should be private and only called from
-  // DownloadItem::Cancel/Interrupt; it isn't now because we can't
-  // call those functions from
-  // DownloadManager::FileSelectionCancelled() without doing some
-  // rewrites of the DownloadManager queues.
-  virtual void OffThreadCancel(DownloadFileManager* file_manager) = 0;
 
   // Manage data owned by other subsystems associated with the
   // DownloadItem.  By custom, key is the address of a

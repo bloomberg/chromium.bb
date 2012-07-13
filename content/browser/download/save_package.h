@@ -24,6 +24,8 @@
 #include "content/public/common/referrer.h"
 #include "googleurl/src/gurl.h"
 
+class DownloadItemImpl;
+class DownloadManagerImpl;
 class GURL;
 class SaveFileManager;
 class SaveItem;
@@ -31,7 +33,6 @@ class SavePackage;
 struct SaveFileCreateInfo;
 
 namespace content {
-class DownloadManager;
 class WebContents;
 }
 
@@ -264,8 +265,8 @@ class CONTENT_EXPORT SavePackage
   SaveFileManager* file_manager_;
 
   // DownloadManager owns the DownloadItem and handles history and UI.
-  content::DownloadManager* download_manager_;
-  content::DownloadItem* download_;
+  DownloadManagerImpl* download_manager_;
+  DownloadItemImpl* download_;
 
   // The URL of the page the user wants to save.
   GURL page_url_;

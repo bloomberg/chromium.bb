@@ -197,20 +197,6 @@ class CONTENT_EXPORT DownloadManager
 
   virtual FilePath LastDownloadPath() = 0;
 
-  // Creates the download item.  Must be called on the UI thread.
-  // Returns the |BoundNetLog| used by the |DownloadItem|.
-  virtual net::BoundNetLog CreateDownloadItem(DownloadCreateInfo* info) = 0;
-
-  // Creates a download item for the SavePackage system.
-  // Must be called on the UI thread.  Note that the DownloadManager
-  // retains ownership.
-  virtual DownloadItem* CreateSavePackageDownloadItem(
-      const FilePath& main_file_path,
-      const GURL& page_url,
-      bool is_otr,
-      const std::string& mime_type,
-      DownloadItem::Observer* observer) = 0;
-
   // Clears the last download path, used to initialize "save as" dialogs.
   virtual void ClearLastDownloadPath() = 0;
 

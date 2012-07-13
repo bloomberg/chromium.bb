@@ -9,6 +9,7 @@
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item_impl.h"
+#include "content/browser/download/download_item_impl_delegate.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -31,20 +32,21 @@ using ::testing::Return;
 DownloadId::Domain kValidDownloadItemIdDomain = "valid DownloadId::Domain";
 
 namespace {
-class MockDelegate : public DownloadItemImpl::Delegate {
+class MockDelegate : public DownloadItemImplDelegate {
  public:
   MOCK_METHOD1(ShouldOpenFileBasedOnExtension, bool(const FilePath& path));
-  MOCK_METHOD1(ShouldOpenDownload, bool(DownloadItem* download));
-  MOCK_METHOD1(CheckForFileRemoval, void(DownloadItem* download));
-  MOCK_METHOD1(MaybeCompleteDownload, void(DownloadItem* download));
+  MOCK_METHOD1(ShouldOpenDownload, bool(DownloadItemImpl* download));
+  MOCK_METHOD1(CheckForFileRemoval, void(DownloadItemImpl* download));
+  MOCK_METHOD1(MaybeCompleteDownload, void(DownloadItemImpl* download));
   MOCK_CONST_METHOD0(GetBrowserContext, content::BrowserContext*());
-  MOCK_METHOD1(DownloadStopped, void(DownloadItem* download));
-  MOCK_METHOD1(DownloadCompleted, void(DownloadItem* download));
-  MOCK_METHOD1(DownloadOpened, void(DownloadItem* download));
-  MOCK_METHOD1(DownloadRemoved, void(DownloadItem* download));
-  MOCK_METHOD1(DownloadRenamedToIntermediateName, void(DownloadItem* download));
-  MOCK_METHOD1(DownloadRenamedToFinalName, void(DownloadItem* download));
-  MOCK_CONST_METHOD1(AssertStateConsistent, void(DownloadItem* download));
+  MOCK_METHOD1(DownloadStopped, void(DownloadItemImpl* download));
+  MOCK_METHOD1(DownloadCompleted, void(DownloadItemImpl* download));
+  MOCK_METHOD1(DownloadOpened, void(DownloadItemImpl* download));
+  MOCK_METHOD1(DownloadRemoved, void(DownloadItemImpl* download));
+  MOCK_METHOD1(DownloadRenamedToIntermediateName,
+               void(DownloadItemImpl* download));
+  MOCK_METHOD1(DownloadRenamedToFinalName, void(DownloadItemImpl* download));
+  MOCK_CONST_METHOD1(AssertStateConsistent, void(DownloadItemImpl* download));
 };
 
 class MockRequestHandle : public DownloadRequestHandleInterface {
@@ -162,7 +164,7 @@ class DownloadItemTest : public testing::Test {
   // This class keeps ownership of the created download item; it will
   // be torn down at the end of the test unless DestroyDownloadItem is
   // called.
-  DownloadItem* CreateDownloadItem(DownloadItem::DownloadState state) {
+  DownloadItemImpl* CreateDownloadItem(DownloadItem::DownloadState state) {
     // Normally, the download system takes ownership of info, and is
     // responsible for deleting it.  In these unit tests, however, we
     // don't call the function that deletes it, so we do so ourselves.
@@ -178,7 +180,7 @@ class DownloadItemTest : public testing::Test {
 
     scoped_ptr<DownloadRequestHandleInterface> request_handle(
         new testing::NiceMock<MockRequestHandle>);
-    DownloadItem* download =
+    DownloadItemImpl* download =
         new DownloadItemImpl(&delegate_, *(info_.get()),
                              request_handle.Pass(), false, net::BoundNetLog());
     allocated_downloads_.insert(download);
@@ -226,7 +228,7 @@ const FilePath::CharType kDummyPath[] = FILE_PATH_LITERAL("/testpath");
 //  set_* mutators
 
 TEST_F(DownloadItemTest, NotificationAfterUpdate) {
-  DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadItemImpl* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver observer(item);
 
   item->UpdateProgress(kDownloadChunkSize, kDownloadSpeed, "");
@@ -235,13 +237,14 @@ TEST_F(DownloadItemTest, NotificationAfterUpdate) {
 }
 
 TEST_F(DownloadItemTest, NotificationAfterCancel) {
-  DownloadItem* user_cancel = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadItemImpl* user_cancel = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver observer1(user_cancel);
 
   user_cancel->Cancel(true);
   ASSERT_TRUE(observer1.CheckUpdated());
 
-  DownloadItem* system_cancel = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadItemImpl* system_cancel =
+      CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver observer2(system_cancel);
 
   system_cancel->Cancel(false);
@@ -249,7 +252,7 @@ TEST_F(DownloadItemTest, NotificationAfterCancel) {
 }
 
 TEST_F(DownloadItemTest, NotificationAfterComplete) {
-  DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadItemImpl* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver observer(item);
 
   item->OnAllDataSaved(kDownloadChunkSize, DownloadItem::kEmptyFileHash);
@@ -260,7 +263,7 @@ TEST_F(DownloadItemTest, NotificationAfterComplete) {
 }
 
 TEST_F(DownloadItemTest, NotificationAfterDownloadedFileRemoved) {
-  DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadItemImpl* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver observer(item);
 
   item->OnDownloadedFileRemoved();
@@ -268,7 +271,7 @@ TEST_F(DownloadItemTest, NotificationAfterDownloadedFileRemoved) {
 }
 
 TEST_F(DownloadItemTest, NotificationAfterInterrupted) {
-  DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadItemImpl* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver observer(item);
 
   item->Interrupt(content::DOWNLOAD_INTERRUPT_REASON_NONE);
@@ -276,7 +279,7 @@ TEST_F(DownloadItemTest, NotificationAfterInterrupted) {
 }
 
 TEST_F(DownloadItemTest, NotificationAfterDelete) {
-  DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadItemImpl* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver observer(item);
 
   item->Delete(DownloadItem::DELETE_DUE_TO_BROWSER_SHUTDOWN);
@@ -284,7 +287,7 @@ TEST_F(DownloadItemTest, NotificationAfterDelete) {
 }
 
 TEST_F(DownloadItemTest, NotificationAfterRemove) {
-  DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadItemImpl* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver observer(item);
 
   item->Remove();
@@ -292,7 +295,7 @@ TEST_F(DownloadItemTest, NotificationAfterRemove) {
 }
 
 TEST_F(DownloadItemTest, NotificationAfterOnTargetPathDetermined) {
-  DownloadItem* safe_item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadItemImpl* safe_item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver safe_observer(safe_item);
 
   // Calling OnTargetPathDetermined does not trigger notification if danger type
@@ -302,7 +305,8 @@ TEST_F(DownloadItemTest, NotificationAfterOnTargetPathDetermined) {
       content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
   EXPECT_FALSE(safe_observer.CheckUpdated());
 
-  DownloadItem* dangerous_item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadItemImpl* dangerous_item =
+      CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver dangerous_observer(dangerous_item);
 
   // Calling OnTargetPathDetermined does trigger notification if danger type
@@ -314,7 +318,7 @@ TEST_F(DownloadItemTest, NotificationAfterOnTargetPathDetermined) {
 }
 
 TEST_F(DownloadItemTest, NotificationAfterOnTargetPathSelected) {
-  DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadItemImpl* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver observer(item);
 
   item->OnTargetPathDetermined(
@@ -326,7 +330,7 @@ TEST_F(DownloadItemTest, NotificationAfterOnTargetPathSelected) {
 
 TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
   // Setting to NOT_DANGEROUS does not trigger a notification.
-  DownloadItem* safe_item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadItemImpl* safe_item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver safe_observer(safe_item);
 
   safe_item->OnTargetPathDetermined(
@@ -340,7 +344,8 @@ TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
   EXPECT_FALSE(safe_observer.CheckUpdated());
 
   // Setting to unsafe url or unsafe file should trigger a notification.
-  DownloadItem* unsafeurl_item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadItemImpl* unsafeurl_item =
+      CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver unsafeurl_observer(unsafeurl_item);
 
   unsafeurl_item->OnTargetPathDetermined(
@@ -356,7 +361,8 @@ TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
   unsafeurl_item->DangerousDownloadValidated();
   EXPECT_TRUE(unsafeurl_observer.CheckUpdated());
 
-  DownloadItem* unsafefile_item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadItemImpl* unsafefile_item =
+      CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver unsafefile_observer(unsafefile_item);
 
   unsafefile_item->OnTargetPathDetermined(
@@ -379,7 +385,7 @@ TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
 // name. Check that observers are updated when the new filename is available and
 // not before.
 TEST_F(DownloadItemTest, NotificationAfterOnIntermediatePathDetermined) {
-  DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadItemImpl* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver observer(item);
   FilePath intermediate_path(kDummyPath);
   FilePath new_intermediate_path(intermediate_path.AppendASCII("foo"));
@@ -397,7 +403,7 @@ TEST_F(DownloadItemTest, NotificationAfterOnIntermediatePathDetermined) {
 }
 
 TEST_F(DownloadItemTest, NotificationAfterTogglePause) {
-  DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadItemImpl* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver observer(item);
 
   item->TogglePause();
@@ -408,7 +414,7 @@ TEST_F(DownloadItemTest, NotificationAfterTogglePause) {
 }
 
 TEST_F(DownloadItemTest, DisplayName) {
-  DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadItemImpl* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   item->OnTargetPathDetermined(FilePath(kDummyPath).AppendASCII("foo.bar"),
                                DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                                content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
@@ -431,8 +437,8 @@ class TestExternalData : public DownloadItem::ExternalData {
 };
 
 TEST_F(DownloadItemTest, ExternalData) {
-  DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
-  const DownloadItem* const_item = item;
+  DownloadItemImpl* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  const DownloadItemImpl* const_item = item;
 
   // Shouldn't be anything there before set.
   EXPECT_EQ(NULL, item->GetExternalData(&external_data_test_string));
@@ -492,7 +498,7 @@ TEST_F(DownloadItemTest, ExternalData) {
 // Delegate::DownloadRenamedToFinalName() should be invoked after the final
 // rename.
 TEST_F(DownloadItemTest, CallbackAfterRename) {
-  DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadItemImpl* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   FilePath intermediate_path(kDummyPath);
   FilePath new_intermediate_path(intermediate_path.AppendASCII("foo"));
   FilePath final_path(intermediate_path.AppendASCII("bar"));
@@ -546,7 +552,7 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
 }
 
 TEST_F(DownloadItemTest, Interrupted) {
-  DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadItemImpl* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
 
   const content::DownloadInterruptReason reason(
       content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED);
@@ -564,7 +570,7 @@ TEST_F(DownloadItemTest, Interrupted) {
 }
 
 TEST_F(DownloadItemTest, Canceled) {
-  DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadItemImpl* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
 
   // Confirm cancel sets state properly.
   EXPECT_CALL(*mock_delegate(), DownloadStopped(item));
@@ -573,7 +579,7 @@ TEST_F(DownloadItemTest, Canceled) {
 }
 
 TEST_F(DownloadItemTest, FileRemoved) {
-  DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadItemImpl* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
 
   EXPECT_FALSE(item->GetFileExternallyRemoved());
   item->OnDownloadedFileRemoved();
