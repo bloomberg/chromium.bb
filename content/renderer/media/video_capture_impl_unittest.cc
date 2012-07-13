@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "content/common/child_process.h"
 #include "content/common/media/video_capture_messages.h"
 #include "content/renderer/media/video_capture_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -103,6 +104,7 @@ class VideoCaptureImplTest : public ::testing::Test {
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
     message_loop_proxy_ =
         base::MessageLoopProxy::current().get();
+    child_process_.reset(new ChildProcess());
 
     message_filter_ = new MockVideoCaptureMessageFilter;
     session_id_ = 1;
@@ -121,6 +123,7 @@ class VideoCaptureImplTest : public ::testing::Test {
  protected:
   scoped_ptr<MessageLoop> message_loop_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
+  scoped_ptr<ChildProcess> child_process_;
   scoped_refptr<MockVideoCaptureMessageFilter> message_filter_;
   media::VideoCaptureSessionId session_id_;
   MockVideoCaptureImpl* video_capture_impl_;

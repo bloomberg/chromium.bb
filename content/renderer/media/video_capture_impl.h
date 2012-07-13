@@ -6,6 +6,16 @@
 // interfaces for clients to Start/Stop capture. It also communicates to clients
 // when buffer is ready, state of capture device is changed.
 
+// VideoCaptureImpl is also a delegate of VideoCaptureMessageFilter which
+// relays operation of capture device to browser process and receives response
+// from browser process.
+
+// The media::VideoCapture and VideoCaptureMessageFilter::Delegate are
+// asynchronous interfaces, which means callers can call those interfaces
+// from any threads without worrying about thread safety.
+// The |capture_message_loop_proxy_| is the working thread of VideoCaptureImpl.
+// All non-const members are accessed only on that working thread.
+
 #ifndef CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_IMPL_H_
 
@@ -51,27 +61,31 @@ class CONTENT_EXPORT VideoCaptureImpl
   friend class MockVideoCaptureImpl;
 
   struct DIBBuffer;
+  typedef std::map<media::VideoCapture::EventHandler*,
+      media::VideoCaptureCapability> ClientInfo;
 
   VideoCaptureImpl(media::VideoCaptureSessionId id,
                    base::MessageLoopProxy* capture_message_loop_proxy,
                    VideoCaptureMessageFilter* filter);
   virtual ~VideoCaptureImpl();
 
-  void DoStartCapture(media::VideoCapture::EventHandler* handler,
-                      const media::VideoCaptureCapability& capability);
-  void DoStopCapture(media::VideoCapture::EventHandler* handler);
-  void DoFeedBuffer(scoped_refptr<VideoFrameBuffer> buffer);
+  void DoStartCaptureOnCaptureThread(
+      media::VideoCapture::EventHandler* handler,
+      const media::VideoCaptureCapability& capability);
+  void DoStopCaptureOnCaptureThread(media::VideoCapture::EventHandler* handler);
+  void DoFeedBufferOnCaptureThread(scoped_refptr<VideoFrameBuffer> buffer);
 
-  void DoBufferCreated(base::SharedMemoryHandle handle,
-                       int length, int buffer_id);
-  void DoBufferReceived(int buffer_id, base::Time timestamp);
-  void DoStateChanged(video_capture::State state);
-  void DoDeviceInfoReceived(const media::VideoCaptureParams& device_info);
-  void DoDelegateAdded(int32 device_id);
+  void DoBufferCreatedOnCaptureThread(base::SharedMemoryHandle handle,
+                                      int length, int buffer_id);
+  void DoBufferReceivedOnCaptureThread(int buffer_id, base::Time timestamp);
+  void DoStateChangedOnCaptureThread(video_capture::State state);
+  void DoDeviceInfoReceivedOnCaptureThread(
+      const media::VideoCaptureParams& device_info);
+  void DoDelegateAddedOnCaptureThread(int32 device_id);
 
   void Init();
   void DeInit(base::Closure task);
-  void DoDeInit(base::Closure task);
+  void DoDeInitOnCaptureThread(base::Closure task);
   void StopDevice();
   void RestartCapture();
   void StartCaptureInternal();
@@ -80,19 +94,19 @@ class CONTENT_EXPORT VideoCaptureImpl
   virtual void Send(IPC::Message* message);
 
   // Helpers.
-  bool ClientHasDIB();
+  bool ClientHasDIB() const;
+  bool RemoveClient(media::VideoCapture::EventHandler* handler,
+                    ClientInfo* clients);
 
-  scoped_refptr<VideoCaptureMessageFilter> message_filter_;
-  scoped_refptr<base::MessageLoopProxy> capture_message_loop_proxy_;
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  const scoped_refptr<VideoCaptureMessageFilter> message_filter_;
+  const scoped_refptr<base::MessageLoopProxy> capture_message_loop_proxy_;
+  const scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   int device_id_;
 
-  // Pool of DIBs.
-  typedef std::map<int /* buffer_id */, DIBBuffer*> CachedDIB;
+  // Pool of DIBs. The key is buffer_id.
+  typedef std::map<int, DIBBuffer*> CachedDIB;
   CachedDIB cached_dibs_;
 
-  typedef std::map<media::VideoCapture::EventHandler*,
-      media::VideoCaptureCapability> ClientInfo;
   ClientInfo clients_;
 
   ClientInfo clients_pending_on_filter_;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "content/common/child_process.h"
 #include "content/renderer/media/capture_video_decoder.h"
 #include "content/renderer/media/video_capture_impl.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
@@ -103,6 +104,7 @@ class CaptureVideoDecoderTest : public ::testing::Test {
     read_cb_ = base::Bind(&CaptureVideoDecoderTest::FrameReady,
                           base::Unretained(this));
 
+    child_process_.reset(new ChildProcess());
     vc_impl_.reset(new MockVideoCaptureImpl(
         kVideoStreamId, message_loop_proxy_, new VideoCaptureMessageFilter()));
   }
@@ -159,6 +161,7 @@ class CaptureVideoDecoderTest : public ::testing::Test {
   // Fixture members.
   scoped_refptr<CaptureVideoDecoder> decoder_;
   scoped_refptr<MockVideoCaptureImplManager> vc_manager_;
+  scoped_ptr<ChildProcess> child_process_;
   scoped_ptr<MockVideoCaptureImpl> vc_impl_;
   media::MockStatisticsCB statistics_cb_object_;
   scoped_ptr<MessageLoop> message_loop_;
