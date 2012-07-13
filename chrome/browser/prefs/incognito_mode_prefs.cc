@@ -10,6 +10,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#endif  // OS_WIN
+
 // static
 bool IncognitoModePrefs::IntToAvailability(int in_value,
                                            Availability* out_value) {
@@ -29,6 +33,15 @@ IncognitoModePrefs::Availability IncognitoModePrefs::GetAvailability(
   Availability result = IncognitoModePrefs::ENABLED;
   bool valid = IntToAvailability(pref_value, &result);
   DCHECK(valid);
+#if defined(OS_WIN)
+  // Disable incognito mode windows if parental controls are on. This is only
+  // for Windows Vista and above.
+  if (base::win::IsParentalControlActivityLoggingOn()) {
+    if (result == IncognitoModePrefs::FORCED)
+      LOG(ERROR) << "Ignoring FORCED incognito. Parental control logging on";
+    return IncognitoModePrefs::DISABLED;
+  }
+#endif  // OS_WIN
   return result;
 }
 
