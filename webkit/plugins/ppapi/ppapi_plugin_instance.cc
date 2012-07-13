@@ -1696,11 +1696,9 @@ void PluginInstance::SimulateImeSetCompositionEvent(
 
 void PluginInstance::ClosePendingUserGesture(PP_Instance instance,
                                              PP_TimeTicks timestamp) {
-  // Close the pending user gesture if the plugin had a chance to respond.
-  // Don't close the pending user gesture if the timestamps are equal since
-  // there may be multiple input events with the same timestamp.
-  if (timestamp > pending_user_gesture_)
-    pending_user_gesture_ = 0.0;
+  // Do nothing so that the pending user gesture will stay open for
+  // kUserGestureDurationInSeconds.
+  // TODO(yzshen): remove the code for closing pending user gesture.
 }
 
 PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
