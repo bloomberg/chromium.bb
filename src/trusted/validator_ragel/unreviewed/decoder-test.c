@@ -15,14 +15,14 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator_ragel/unreviewed/decoder.h"
 
-/* This is a copy of NaClLog_Function from shared/platform/nacl_log.c to avoid
+/* This is a copy of NaClLog from shared/platform/nacl_log.c to avoid
  * linking in code in NaCl shared code in the unreviewed/Makefile and be able to
  *  use CHECK().
 
- * TODO(khim): remove the copy of NaClLog_Function implementation as soon as
+ * TODO(khim): remove the copy of NaClLog implementation as soon as
  * unreviewed/Makefile is eliminated.
  */
-void NaClLog_Function(int detail_level, char const  *fmt, ...) {
+void NaClLog(int detail_level, char const  *fmt, ...) {
   va_list ap;
 
   UNREFERENCED_PARAMETER(detail_level);
