@@ -680,10 +680,9 @@ void GDataCache::DestroyOnUIThread() {
 void GDataCache::Initialize() {
   AssertOnSequencedWorkerPool();
 
-  GDataCacheMetadataMap* cache_data =
-      new GDataCacheMetadataMap(blocking_task_runner_);
-  cache_data->Initialize(cache_paths_);
-  metadata_.reset(cache_data);
+  metadata_ = GDataCacheMetadata::CreateGDataCacheMetadata(
+      blocking_task_runner_).Pass();
+  metadata_->Initialize(cache_paths_);
 }
 
 void GDataCache::Destroy() {

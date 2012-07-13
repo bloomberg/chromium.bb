@@ -29,13 +29,15 @@ class GDataCacheMetadata {
   // A map table of cache file's resource id to its CacheEntry* entry.
   typedef std::map<std::string, GDataCacheEntry> CacheMap;
 
+  virtual ~GDataCacheMetadata();
+
   // |pool| and |sequence_token| are used to assert that the functions are
   // called on the right sequenced worker pool with the right sequence token.
   //
   // For testing, the thread assertion can be disabled by passing NULL and
   // the default value of SequenceToken.
-  explicit GDataCacheMetadata(base::SequencedTaskRunner* blocking_task_runner);
-  virtual ~GDataCacheMetadata();
+  static scoped_ptr<GDataCacheMetadata> CreateGDataCacheMetadata(
+      base::SequencedTaskRunner* blocking_task_runner);
 
   // Initialize the cache metadata store.
   virtual void Initialize(const std::vector<FilePath>& cache_paths) = 0;
@@ -64,6 +66,8 @@ class GDataCacheMetadata {
   virtual void Iterate(const IterateCallback& callback) = 0;
 
  protected:
+  explicit GDataCacheMetadata(base::SequencedTaskRunner* blocking_task_runner);
+
   // Checks whether the current thread is on the right sequenced worker pool
   // with the right sequence ID. If not, DCHECK will fail.
   void AssertOnSequencedWorkerPool();
@@ -72,35 +76,6 @@ class GDataCacheMetadata {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataCacheMetadata);
-};
-
-// TODO(achuith,hashimoto,satorux): Move these implementations to cc file.
-// GDataCacheMetadata implementation with std::map;
-class GDataCacheMetadataMap : public GDataCacheMetadata {
- public:
-  explicit GDataCacheMetadataMap(
-      base::SequencedTaskRunner* blocking_task_runner);
-  virtual ~GDataCacheMetadataMap();
-
-  // GDataCacheMetadata overrides:
-  virtual void Initialize(const std::vector<FilePath>& cache_paths) OVERRIDE;
-  virtual void AddOrUpdateCacheEntry(
-      const std::string& resource_id,
-      const GDataCacheEntry& cache_entry) OVERRIDE;
-  virtual void RemoveCacheEntry(const std::string& resource_id) OVERRIDE;
-  virtual bool GetCacheEntry(const std::string& resource_id,
-                             const std::string& md5,
-                             GDataCacheEntry* cache_entry) OVERRIDE;
-  virtual void RemoveTemporaryFiles() OVERRIDE;
-  virtual void Iterate(const IterateCallback& callback) OVERRIDE;
-
- private:
-  friend class GDataCacheMetadataMapTest;
-  FRIEND_TEST_ALL_PREFIXES(GDataCacheMetadataMapTest, RemoveTemporaryFilesTest);
-
-  CacheMap cache_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(GDataCacheMetadataMap);
 };
 
 }  // namespace gdata

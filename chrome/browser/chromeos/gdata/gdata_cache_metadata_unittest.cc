@@ -13,9 +13,9 @@
 
 namespace gdata {
 
-class GDataCacheMetadataMapTest : public testing::Test {
+class GDataCacheMetadataTest : public testing::Test {
  public:
-  GDataCacheMetadataMapTest() {}
+  GDataCacheMetadataTest() {}
 
   virtual void SetUp() OVERRIDE {
     // Create cache directories.
@@ -35,7 +35,7 @@ class GDataCacheMetadataMapTest : public testing::Test {
 
   // Sets up the GDataCacheMetadata object.
   void SetUpCacheMetadata() {
-    metadata_.reset(new GDataCacheMetadataMap(NULL));
+    metadata_ = GDataCacheMetadata::CreateGDataCacheMetadata(NULL).Pass();
     metadata_->Initialize(cache_paths_);
   }
 
@@ -113,15 +113,23 @@ class GDataCacheMetadataMapTest : public testing::Test {
  protected:
   // Helper function to insert an item with key |resource_id| into |cache_map|.
   // |md5| and |cache_state| are used to create the value CacheEntry.
-  void InsertIntoMap(GDataCacheMetadataMap::CacheMap* cache_map,
+  void InsertIntoMap(GDataCacheMetadata::CacheMap* cache_map,
                      const std::string& resource_id,
                      const GDataCacheEntry& cache_entry) {
     cache_map->insert(std::make_pair(
         resource_id, cache_entry));
   }
 
+  // Adds all entries in |cache_map| to the metadata storage.
+  void AddAllMapEntries(const GDataCacheMetadata::CacheMap& cache_map) {
+    for (GDataCacheMetadata::CacheMap::const_iterator iter = cache_map.begin();
+         iter != cache_map.end(); ++iter) {
+      metadata_->AddOrUpdateCacheEntry(iter->first, iter->second);
+    }
+  }
+
   ScopedTempDir temp_dir_;
-  scoped_ptr<GDataCacheMetadataMap> metadata_;
+  scoped_ptr<GDataCacheMetadata> metadata_;
   std::vector<FilePath> cache_paths_;
   FilePath persistent_directory_;
   FilePath tmp_directory_;
@@ -129,9 +137,9 @@ class GDataCacheMetadataMapTest : public testing::Test {
   FilePath outgoing_directory_;
 };
 
-// Test all the methods of GDataCacheMetadataMap except for
+// Test all the methods of GDataCacheMetadata except for
 // RemoveTemporaryFiles.
-TEST_F(GDataCacheMetadataMapTest, CacheTest) {
+TEST_F(GDataCacheMetadataTest, CacheTest) {
   SetUpCacheMetadata();
 
   // Save an initial entry.
@@ -233,7 +241,7 @@ TEST_F(GDataCacheMetadataMapTest, CacheTest) {
   EXPECT_TRUE(cache_entry.is_present());
 }
 
-TEST_F(GDataCacheMetadataMapTest, Initialization) {
+TEST_F(GDataCacheMetadataTest, Initialization) {
   using file_util::PathExists;
   using file_util::IsLink;
   SetUpCacheWithVariousFiles();
@@ -338,11 +346,11 @@ TEST_F(GDataCacheMetadataMapTest, Initialization) {
   EXPECT_FALSE(IsLink(pinned_directory_.AppendASCII("id_not_symlink")));
 }
 
-// Test GDataCacheMetadataMap::RemoveTemporaryFiles.
-TEST_F(GDataCacheMetadataMapTest, RemoveTemporaryFilesTest) {
+// Test GDataCacheMetadata::RemoveTemporaryFiles.
+TEST_F(GDataCacheMetadataTest, RemoveTemporaryFilesTest) {
   SetUpCacheMetadata();
 
-  GDataCacheMetadataMap::CacheMap cache_map;
+  GDataCacheMetadata::CacheMap cache_map;
   {
     GDataCacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
@@ -370,7 +378,7 @@ TEST_F(GDataCacheMetadataMapTest, RemoveTemporaryFilesTest) {
     InsertIntoMap(&cache_map, "<resource_id_4>", cache_entry);
   }
 
-  metadata_->cache_map_ = cache_map;
+  AddAllMapEntries(cache_map);
   metadata_->RemoveTemporaryFiles();
   // resource 1 and 4 should be gone, as these are temporary.
   GDataCacheEntry cache_entry;

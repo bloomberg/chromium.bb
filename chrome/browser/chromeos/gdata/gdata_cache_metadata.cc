@@ -62,14 +62,14 @@ bool IsValidSymbolicLink(const FilePath& file_path,
 void RemoveInvalidFilesFromPersistentDirectory(
     const ResourceIdToFilePathMap& persistent_file_map,
     const ResourceIdToFilePathMap& outgoing_file_map,
-    GDataCacheMetadataMap::CacheMap* cache_map) {
+    GDataCacheMetadata::CacheMap* cache_map) {
   for (ResourceIdToFilePathMap::const_iterator iter =
            persistent_file_map.begin();
        iter != persistent_file_map.end(); ++iter) {
     const std::string& resource_id = iter->first;
     const FilePath& file_path = iter->second;
 
-    GDataCacheMetadataMap::CacheMap::iterator cache_map_iter =
+    GDataCacheMetadata::CacheMap::iterator cache_map_iter =
         cache_map->find(resource_id);
     if (cache_map_iter != cache_map->end()) {
       const GDataCacheEntry& cache_entry = cache_map_iter->second;
@@ -295,25 +295,33 @@ bool CheckIfMd5Matches(
   return false;
 }
 
-}  // namespace
-
-GDataCacheMetadata::GDataCacheMetadata(
-    base::SequencedTaskRunner* blocking_task_runner)
-    : blocking_task_runner_(blocking_task_runner) {
-  AssertOnSequencedWorkerPool();
-}
-
-GDataCacheMetadata::~GDataCacheMetadata() {
-  AssertOnSequencedWorkerPool();
-}
-
-void GDataCacheMetadata::AssertOnSequencedWorkerPool() {
-  DCHECK(!blocking_task_runner_ ||
-         blocking_task_runner_->RunsTasksOnCurrentThread());
-}
-
 ////////////////////////////////////////////////////////////////////////////////
-// GDataCacheMetadataMap
+// GDataCacheMetadata implementation with std::map.
+
+class GDataCacheMetadataMap : public GDataCacheMetadata {
+ public:
+  explicit GDataCacheMetadataMap(
+      base::SequencedTaskRunner* blocking_task_runner);
+
+ private:
+  virtual ~GDataCacheMetadataMap();
+
+  // GDataCacheMetadata overrides:
+  virtual void Initialize(const std::vector<FilePath>& cache_paths) OVERRIDE;
+  virtual void AddOrUpdateCacheEntry(
+      const std::string& resource_id,
+      const GDataCacheEntry& cache_entry) OVERRIDE;
+  virtual void RemoveCacheEntry(const std::string& resource_id) OVERRIDE;
+  virtual bool GetCacheEntry(const std::string& resource_id,
+                             const std::string& md5,
+                             GDataCacheEntry* cache_entry) OVERRIDE;
+  virtual void RemoveTemporaryFiles() OVERRIDE;
+  virtual void Iterate(const IterateCallback& callback) OVERRIDE;
+
+  CacheMap cache_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(GDataCacheMetadataMap);
+};
 
 GDataCacheMetadataMap::GDataCacheMetadataMap(
     base::SequencedTaskRunner* blocking_task_runner)
@@ -398,6 +406,30 @@ void GDataCacheMetadataMap::Iterate(const IterateCallback& callback) {
        iter != cache_map_.end(); ++iter) {
     callback.Run(iter->first, iter->second);
   }
+}
+
+}  // namespace
+
+GDataCacheMetadata::GDataCacheMetadata(
+    base::SequencedTaskRunner* blocking_task_runner)
+    : blocking_task_runner_(blocking_task_runner) {
+  AssertOnSequencedWorkerPool();
+}
+
+GDataCacheMetadata::~GDataCacheMetadata() {
+  AssertOnSequencedWorkerPool();
+}
+
+// static
+scoped_ptr<GDataCacheMetadata> GDataCacheMetadata::CreateGDataCacheMetadata(
+    base::SequencedTaskRunner* blocking_task_runner) {
+  return scoped_ptr<GDataCacheMetadata>(
+      new GDataCacheMetadataMap(blocking_task_runner));
+}
+
+void GDataCacheMetadata::AssertOnSequencedWorkerPool() {
+  DCHECK(!blocking_task_runner_ ||
+         blocking_task_runner_->RunsTasksOnCurrentThread());
 }
 
 }  // namespace gdata
