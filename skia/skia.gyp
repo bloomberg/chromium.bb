@@ -176,6 +176,7 @@
         '../third_party/skia/src/core/Sk64.cpp',
         '../third_party/skia/src/core/SkAAClip.cpp',
         '../third_party/skia/src/core/SkAdvancedTypefaceMetrics.cpp',
+        '../third_party/skia/src/core/SkAnnotation.cpp',
         '../third_party/skia/src/core/SkAlphaRuns.cpp',
         '../third_party/skia/src/core/SkAntiRun.h',
         '../third_party/skia/src/core/SkBitmap.cpp',
@@ -570,6 +571,7 @@
 
         '../third_party/skia/include/core/Sk64.h',
         '../third_party/skia/include/core/SkAdvancedTypefaceMetrics.h',
+        '../third_party/skia/include/core/SkAnnotation.h',
         '../third_party/skia/include/core/SkAutoKern.h',
         '../third_party/skia/include/core/SkBitmap.h',
         '../third_party/skia/include/core/SkBlitRow.h',
