@@ -115,6 +115,35 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CookieIsolation) {
   ASSERT_TRUE(GetInstalledApp(tab2));
   ASSERT_TRUE(!GetInstalledApp(tab3));
 
+  // Check that tabs see cannot each other's localStorage even though they are
+  // in the same origin.
+  RenderViewHost* app1_rvh = tab1->GetRenderViewHost();
+  RenderViewHost* app2_rvh = tab2->GetRenderViewHost();
+  RenderViewHost* non_app_rvh = tab3->GetRenderViewHost();
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+      app1_rvh, L"", L"window.localStorage.setItem('testdata', 'ls_app1');"));
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+      app2_rvh, L"", L"window.localStorage.setItem('testdata', 'ls_app2');"));
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+      non_app_rvh, L"",
+      L"window.localStorage.setItem('testdata', 'ls_normal');"));
+
+  ASSERT_TRUE(ExecuteJavaScript(
+      app1_rvh, L"", L"window.localStorage.getItem('testdata');"));
+
+  const std::wstring& kRetrieveLocalStorage =
+      WrapForJavascriptAndExtract(L"window.localStorage.getItem('testdata')");
+  std::string result;
+  ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
+      app1_rvh, L"", kRetrieveLocalStorage.c_str(), &result));
+  EXPECT_EQ("ls_app1", result);
+  ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
+      app2_rvh, L"", kRetrieveLocalStorage.c_str(), &result));
+  EXPECT_EQ("ls_app2", result);
+  ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
+      non_app_rvh, L"", kRetrieveLocalStorage.c_str(), &result));
+  EXPECT_EQ("ls_normal", result);
+
   // Check that each tab sees its own cookie.
   EXPECT_TRUE(HasCookie(tab1, "app1=3"));
   EXPECT_TRUE(HasCookie(tab2, "app2=4"));
@@ -151,34 +180,6 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CookieIsolation) {
   EXPECT_FALSE(HasCookie(tab1, "app2"));
   EXPECT_FALSE(HasCookie(tab1, "normalPage"));
 
-  // Check that tabs see cannot each other's localStorage even though they are
-  // in the same origin.
-  RenderViewHost* app1_rvh = tab1->GetRenderViewHost();
-  RenderViewHost* app2_rvh = tab2->GetRenderViewHost();
-  RenderViewHost* non_app_rvh = tab3->GetRenderViewHost();
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
-      app1_rvh, L"", L"window.localStorage.setItem('testdata', 'ls_app1');"));
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
-      app2_rvh, L"", L"window.localStorage.setItem('testdata', 'ls_app2');"));
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
-      non_app_rvh, L"",
-      L"window.localStorage.setItem('testdata', 'ls_normal');"));
-
-  ASSERT_TRUE(ExecuteJavaScript(
-      app1_rvh, L"", L"window.localStorage.getItem('testdata');"));
-
-  const std::wstring& kRetrieveLocalStorage =
-      WrapForJavascriptAndExtract(L"window.localStorage.getItem('testdata')");
-  std::string result;
-  ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
-      app1_rvh, L"", kRetrieveLocalStorage.c_str(), &result));
-  EXPECT_EQ("ls_app1", result);
-  ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
-      app2_rvh, L"", kRetrieveLocalStorage.c_str(), &result));
-  EXPECT_EQ("ls_app2", result);
-  ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
-      non_app_rvh, L"", kRetrieveLocalStorage.c_str(), &result));
-  EXPECT_EQ("ls_normal", result);
 }
 
 // Ensure that cookies are not isolated if the isolated apps are not installed.
