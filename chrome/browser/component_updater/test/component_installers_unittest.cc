@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/test/test_browser_thread.h"
+#include "ppapi/shared_impl/test_globals.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,6 +42,10 @@ const FilePath::CharType kDataPath[] =
 TEST(ComponentInstallerTest, PepperFlashCheck) {
   MessageLoop message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
+
+  ppapi::PpapiGlobals::ForTest for_test;
+  ppapi::TestGlobals test_globals(for_test);
+  ppapi::PpapiGlobals::SetPpapiGlobalsOnThreadForTest(&test_globals);
 
   // The test directory is chrome/test/data/components/flapper.
   FilePath manifest;
