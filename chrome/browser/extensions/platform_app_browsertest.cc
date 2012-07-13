@@ -284,7 +284,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, BrowserTag) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/browser_tag")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, BrowserTagIsolation) {
+// This test is disabled. nasko is working on a fix and it should be committed
+// within the hour. The test crashed on linux chromiumos.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DISABLED_BrowserTagIsolation) {
   ASSERT_TRUE(StartTestServer());
 
   // Load a (non-app) page under the "localhost" origin that sets a cookie.
