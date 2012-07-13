@@ -30,7 +30,7 @@ const SkColor kHoverBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
 const SkColor kHeaderBackgroundColorLight = SkColorSetRGB(0xf1, 0xf1, 0xf1);
 const SkColor kHeaderBackgroundColorDark = SkColorSetRGB(0xe7, 0xe7, 0xe7);
 
-const SkColor kBorderDarkColor = SkColorSetRGB(0xbb, 0xbb, 0xbb);
+const SkColor kBorderDarkColor = SkColorSetRGB(0xaa, 0xaa, 0xaa);
 const SkColor kBorderLightColor = SkColorSetRGB(0xeb, 0xeb, 0xeb);
 const SkColor kButtonStrokeColor = SkColorSetRGB(0xdd, 0xdd, 0xdd);
 

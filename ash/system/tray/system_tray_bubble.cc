@@ -203,7 +203,7 @@ void SystemTrayBubble::UpdateView(
   DCHECK(bubble_type != BUBBLE_TYPE_NOTIFICATION);
   DCHECK(bubble_type != bubble_type_);
 
-  const int kSwipeDelayMS = 300;
+  const int kSwipeDelayMS = 150;
   base::TimeDelta swipe_duration =
       base::TimeDelta::FromMilliseconds(kSwipeDelayMS);
   ui::Layer* layer = bubble_view_->RecreateLayer();
@@ -219,7 +219,7 @@ void SystemTrayBubble::UpdateView(
     ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
     settings.AddObserver(new AnimationObserverDeleteLayer(layer));
     settings.SetTransitionDuration(swipe_duration);
-    settings.SetTweenType(ui::Tween::EASE_IN);
+    settings.SetTweenType(ui::Tween::EASE_OUT);
     ui::Transform transform;
     transform.SetTranslateX(layer->bounds().width());
     layer->SetTransform(transform);
@@ -280,7 +280,7 @@ void SystemTrayBubble::UpdateView(
       ui::ScopedLayerAnimationSettings settings(new_layer->GetAnimator());
       settings.AddObserver(new AnimationObserverDeleteLayer(layer));
       settings.SetTransitionDuration(swipe_duration);
-      settings.SetTweenType(ui::Tween::EASE_IN);
+      settings.SetTweenType(ui::Tween::EASE_OUT);
       new_layer->SetTransform(ui::Transform());
     }
   }
