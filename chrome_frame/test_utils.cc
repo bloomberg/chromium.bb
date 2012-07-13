@@ -113,8 +113,9 @@ void ScopedChromeFrameRegistrar::DoRegistration(
         << registration_command;
   } else {
     base::win::ScopedHandle rundll32(process_handle);
-    if (!base::WaitForExitCodeWithTimeout(process_handle, &exit_code,
-                                          kDllRegistrationTimeoutMs)) {
+    if (!base::WaitForExitCodeWithTimeout(
+            process_handle, &exit_code,
+            base::TimeDelta::FromMilliseconds(kDllRegistrationTimeoutMs))) {
       LOG(ERROR) << "Timeout waiting to register or unregister DLL with "
                     "command: " << registration_command;
       base::KillProcess(process_handle, 0, false);

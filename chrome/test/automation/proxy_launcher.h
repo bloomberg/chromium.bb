@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,7 +105,7 @@ class ProxyLauncher {
   // Wait for the browser process to shut down on its own (i.e. as a result of
   // some action that your test has taken). If it has exited within |timeout|,
   // puts the exit code in |exit_code| and returns true.
-  bool WaitForBrowserProcessToQuit(int timeout, int* exit_code);
+  bool WaitForBrowserProcessToQuit(base::TimeDelta timeout, int* exit_code);
 
   AutomationProxy* automation() const;
 
@@ -134,7 +134,7 @@ class ProxyLauncher {
  protected:
   // Creates an automation proxy.
   virtual AutomationProxy* CreateAutomationProxy(
-      int execution_timeout) = 0;
+      base::TimeDelta execution_timeout) = 0;
 
   // Returns the automation proxy's channel with any prefixes prepended,
   // for passing as a command line parameter over to the browser.
@@ -218,7 +218,8 @@ class NamedProxyLauncher : public ProxyLauncher {
   NamedProxyLauncher(const std::string& channel_id,
                      bool launch_browser, bool disconnect_on_failure);
 
-  virtual AutomationProxy* CreateAutomationProxy(int execution_timeout);
+  virtual AutomationProxy* CreateAutomationProxy(
+      base::TimeDelta execution_timeout);
   virtual bool InitializeConnection(
       const LaunchState& state,
       bool wait_for_initial_loads) OVERRIDE WARN_UNUSED_RESULT;
@@ -238,7 +239,8 @@ class NamedProxyLauncher : public ProxyLauncher {
 class AnonymousProxyLauncher : public ProxyLauncher {
  public:
   explicit AnonymousProxyLauncher(bool disconnect_on_failure);
-  virtual AutomationProxy* CreateAutomationProxy(int execution_timeout);
+  virtual AutomationProxy* CreateAutomationProxy(
+      base::TimeDelta execution_timeout);
   virtual bool InitializeConnection(
       const LaunchState& state,
       bool wait_for_initial_loads) OVERRIDE WARN_UNUSED_RESULT;

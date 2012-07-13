@@ -725,7 +725,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View_PageHideShow) {
   // The plugin will be loaded in the foreground tab and will send us a message.
   TestFinishObserver observer(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      TestTimeouts::action_max_timeout_ms());
+      TestTimeouts::action_max_timeout());
 
   GURL url = GetTestFileUrl("View_PageHideShow");
   ui_test_utils::NavigateToURL(browser(), url);

@@ -950,7 +950,7 @@ bool TestWebSocketServer::Start(const FilePath& root_directory) {
   bool wait_success = base::WaitForExitCodeWithTimeout(
       process_handle,
       &exit_code,
-      TestTimeouts::action_max_timeout_ms());
+      TestTimeouts::action_max_timeout());
   base::CloseProcessHandle(process_handle);
 
   if (!wait_success || exit_code != 0) {

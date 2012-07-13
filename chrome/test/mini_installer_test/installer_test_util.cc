@@ -291,7 +291,7 @@ bool RunAndWaitForCommandToFinish(CommandLine command) {
                << command.GetCommandLineString();
     return false;
   }
-  if (!base::WaitForSingleProcess(process, 60 * 1000)) {
+  if (!base::WaitForSingleProcess(process, base::TimeDelta::FromMinutes(1))) {
     LOG(ERROR) << "Launched process did not complete.";
     return false;
   }

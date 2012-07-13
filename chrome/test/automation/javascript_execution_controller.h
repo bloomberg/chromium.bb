@@ -71,7 +71,9 @@ class JavaScriptExecutionController
 
   // Sets a timeout to be used for all JavaScript methods in which a response
   // is returned asynchronously.
-  static void set_timeout(int timeout_ms) { timeout_ms_ = timeout_ms; }
+  static void set_timeout(base::TimeDelta timeout) {
+    timeout_ms_ = timeout.InMilliseconds();
+  }
 
  protected:
   virtual ~JavaScriptExecutionController();
