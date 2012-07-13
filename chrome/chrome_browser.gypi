@@ -4868,6 +4868,8 @@
             'browser/ui/browser_list.cc',
             'browser/ui/browser_navigator.cc',
             'browser/ui/browser_tab_restore_service_delegate.cc',
+            'browser/ui/browser_tabstrip.cc',
+            'browser/ui/browser_tabstrip.h',
             'browser/ui/chrome_pages.cc',
             'browser/ui/chrome_pages.h',
             'browser/ui/sad_tab_helper.cc',
