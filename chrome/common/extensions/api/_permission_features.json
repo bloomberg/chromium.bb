@@ -215,7 +215,7 @@
   // Note: runtime is not actually a permission, but some systems check these
   // values to verify restrictions.
   "runtime": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"],
     "min_manifest_version": 2
   },
