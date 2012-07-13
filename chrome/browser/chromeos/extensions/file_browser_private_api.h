@@ -648,21 +648,6 @@ class SetGDataPreferencesFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class GetPathForDriveSearchResultFunction : public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "fileBrowserPrivate.getPathForDriveSearchResult");
-
- protected:
-  virtual ~GetPathForDriveSearchResultFunction() {}
-
-  virtual bool RunImpl() OVERRIDE;
-
-  void OnEntryFound(base::PlatformFileError error,
-                    const FilePath& entry_path,
-                    scoped_ptr<gdata::GDataEntryProto> entry_proto);
-};
-
 class SearchDriveFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.searchGData");
