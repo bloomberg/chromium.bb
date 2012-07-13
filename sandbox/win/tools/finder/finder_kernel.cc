@@ -4,8 +4,8 @@
 
 #include "sandbox/win/src/restricted_token.h"
 #include "sandbox/win/src/restricted_token_utils.h"
-#include "sandbox/tools/finder/finder.h"
-#include "sandbox/tools/finder/ntundoc.h"
+#include "sandbox/win/tools/finder/finder.h"
+#include "sandbox/win/tools/finder/ntundoc.h"
 
 #define BUFFER_SIZE 0x800
 #define CHECKPTR(x) if (!x) return ::GetLastError()

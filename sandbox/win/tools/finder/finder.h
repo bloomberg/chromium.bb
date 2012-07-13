@@ -6,7 +6,7 @@
 #define SANDBOX_TOOLS_FINDER_FINDER_H__
 
 #include "sandbox/win/src/restricted_token_utils.h"
-#include "sandbox/tools/finder/ntundoc.h"
+#include "sandbox/win/tools/finder/ntundoc.h"
 
 // Type of stats that we calculate during the Scan operation
 enum Stats {

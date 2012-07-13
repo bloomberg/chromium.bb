@@ -4,7 +4,7 @@
 
 #include "sandbox/win/src/restricted_token.h"
 #include "sandbox/win/src/restricted_token_utils.h"
-#include "sandbox/tools/finder/finder.h"
+#include "sandbox/win/tools/finder/finder.h"
 
 Finder::Finder() {
   file_output_ = NULL;
