@@ -118,6 +118,7 @@ table_files = \
 	hyph_en_US.dic \
 	hyph_es_ES.dic \
 	hyph_fr_FR.dic \
+	hyph_hu_HU.dic \
 	hyph_it_IT.dic \
 	hyph_nl_NL.dic \
 	hyph_no_NO.dic \
