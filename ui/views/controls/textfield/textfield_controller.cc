@@ -10,4 +10,12 @@ bool TextfieldController::IsCommandIdEnabled(int command_id) const {
   return false;
 }
 
+bool TextfieldController::IsItemForCommandIdDynamic(int command_id) const {
+  return false;
+}
+
+string16 TextfieldController::GetLabelForCommandId(int command_id) const {
+  return string16();
+}
+
 }  // namespace views

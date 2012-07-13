@@ -598,6 +598,16 @@ bool NativeTextfieldViews::GetAcceleratorForCommandId(int command_id,
   return false;
 }
 
+bool NativeTextfieldViews::IsItemForCommandIdDynamic(int command_id) const {
+  const TextfieldController* controller = textfield_->GetController();
+  return controller && controller->IsItemForCommandIdDynamic(command_id);
+}
+
+string16 NativeTextfieldViews::GetLabelForCommandId(int command_id) const {
+  const TextfieldController* controller = textfield_->GetController();
+  return controller ? controller->GetLabelForCommandId(command_id) : string16();
+}
+
 void NativeTextfieldViews::ExecuteCommand(int command_id) {
   if (!IsCommandIdEnabled(command_id))
     return;

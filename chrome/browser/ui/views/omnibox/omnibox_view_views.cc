@@ -867,6 +867,20 @@ bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
       command_updater_->IsCommandEnabled(command_id);
 }
 
+bool OmniboxViewViews::IsItemForCommandIdDynamic(int command_id) const {
+  return command_id == IDS_PASTE_AND_GO;
+}
+
+string16 OmniboxViewViews::GetLabelForCommandId(int command_id) const {
+  if (command_id == IDS_PASTE_AND_GO) {
+    return l10n_util::GetStringUTF16(
+        model_->IsPasteAndSearch(GetClipboardText()) ?
+        IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO);
+  }
+
+  return string16();
+}
+
 void OmniboxViewViews::ExecuteCommand(int command_id) {
   if (command_id == IDS_PASTE_AND_GO) {
     model_->PasteAndGo(GetClipboardText());
