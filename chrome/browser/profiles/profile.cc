@@ -19,10 +19,6 @@
 #include "chrome/common/chrome_switches.h"
 #endif
 
-// A pointer to the request context for the default profile.  See comments on
-// Profile::GetDefaultRequestContext.
-net::URLRequestContextGetter* Profile::default_request_context_;
-
 Profile::Profile()
     : restored_last_session_(false),
       accessibility_pause_level_(0) {
@@ -97,10 +93,6 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
 #endif
 }
 
-// static
-net::URLRequestContextGetter* Profile::GetDefaultRequestContext() {
-  return default_request_context_;
-}
 
 std::string Profile::GetDebugName() {
   std::string name = GetPath().BaseName().MaybeAsASCII();
