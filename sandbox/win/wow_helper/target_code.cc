@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/wow_helper/target_code.h"
+#include "sandbox/win/wow_helper/target_code.h"
 
 namespace sandbox {
 
