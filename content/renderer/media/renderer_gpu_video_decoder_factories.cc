@@ -4,6 +4,9 @@
 
 #include "content/renderer/media/renderer_gpu_video_decoder_factories.h"
 
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/common/child_thread.h"
@@ -109,8 +112,10 @@ void RendererGpuVideoDecoderFactories::AsyncCreateTextures(
     gles2->TexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     gles2->TexParameterf(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     gles2->TexParameterf(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    gles2->TexImage2D(texture_target, 0, GL_RGBA, size.width(), size.height(),
-                      0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    if (texture_target == GL_TEXTURE_2D) {
+      gles2->TexImage2D(texture_target, 0, GL_RGBA, size.width(), size.height(),
+                        0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    }
   }
   // We need a glFlush here to guarantee the decoder (in the GPU process) can
   // use the texture ids we return here.  Since textures are expected to be
