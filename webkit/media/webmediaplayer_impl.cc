@@ -776,7 +776,9 @@ void WebMediaPlayerImpl::Repaint() {
 void WebMediaPlayerImpl::OnPipelineInitialize(PipelineStatus status) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
   if (status != media::PIPELINE_OK) {
-    OnPipelineError(status);
+    // Any error that occurs before the pipeline can initialize should be
+    // considered a format error.
+    SetNetworkState(WebMediaPlayer::NetworkStateFormatError);
     // Repaint to trigger UI update.
     Repaint();
     return;
@@ -840,6 +842,9 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
       SetNetworkState(WebMediaPlayer::NetworkStateNetworkError);
       break;
 
+    // TODO(vrk): Because OnPipelineInitialize() directly reports the
+    // NetworkStateFormatError instead of calling OnPipelineError(), I believe
+    // this block can be deleted. Should look into it! (crbug.com/126070)
     case media::PIPELINE_ERROR_INITIALIZATION_FAILED:
     case media::PIPELINE_ERROR_REQUIRED_FILTER_MISSING:
     case media::PIPELINE_ERROR_COULD_NOT_RENDER:

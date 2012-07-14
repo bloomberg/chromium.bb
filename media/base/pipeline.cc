@@ -785,7 +785,7 @@ void Pipeline::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
   //   kStarting (for each filter)
   //   kStarted
   SetState(kPausing);
-  seek_timestamp_ = time;
+  seek_timestamp_ = std::max(time, demuxer_->GetStartTime());
   seek_cb_ = seek_cb;
 
   // Kick off seeking!
