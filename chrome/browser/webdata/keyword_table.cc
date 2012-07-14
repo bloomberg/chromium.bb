@@ -114,6 +114,11 @@ bool IsSearchProviderIDValid(int64 id, const std::string& signature) {
 
 }  // anonymous namespace
 
+KeywordTable::KeywordTable(sql::Connection* db, sql::MetaTable* meta_table)
+    : WebDatabaseTable(db, meta_table),
+      backup_overwritten_(false) {
+}
+
 KeywordTable::~KeywordTable() {}
 
 bool KeywordTable::Init() {
@@ -257,7 +262,9 @@ bool KeywordTable::DidDefaultSearchProviderChange() {
     if (backup_id == kInvalidTemplateURLID) {
       UMA_HISTOGRAM_ENUMERATION(
           protector::kProtectorHistogramDefaultSearchProvider,
-          protector::kProtectorErrorValueValidZero,
+          backup_overwritten_ ?
+              protector::kProtectorErrorOverwrittenByMigration :
+              protector::kProtectorErrorValueValidZero,
           protector::kProtectorErrorCount);
       return false;
     }
@@ -268,7 +275,9 @@ bool KeywordTable::DidDefaultSearchProviderChange() {
         current_url == backup_url) {
       UMA_HISTOGRAM_ENUMERATION(
           protector::kProtectorHistogramDefaultSearchProvider,
-          protector::kProtectorErrorValueValid,
+          backup_overwritten_ ?
+              protector::kProtectorErrorOverwrittenByMigration :
+              protector::kProtectorErrorValueValid,
           protector::kProtectorErrorCount);
       return false;
     }
@@ -354,7 +363,10 @@ bool KeywordTable::MigrateToVersion39AddSyncGUIDColumn() {
 }
 
 bool KeywordTable::MigrateToVersion44AddDefaultSearchProviderBackup() {
-  return IsBackupSignatureValid(44) || UpdateBackupSignature(44);
+  if (IsBackupSignatureValid(44))
+    return true;
+  backup_overwritten_ = true;
+  return UpdateBackupSignature(44);
 }
 
 bool KeywordTable::MigrateToVersion45RemoveLogoIDAndAutogenerateColumns() {

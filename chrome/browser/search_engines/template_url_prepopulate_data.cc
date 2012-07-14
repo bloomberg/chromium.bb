@@ -72,8 +72,8 @@ struct PrepopulatedEngine {
   // must use two different unique IDs (and different keywords).
   //
   // The following unique IDs are available:
-  //    50, 52, 53, 56, 58, 60, 61, 64, 65, 66, 70, 74, 78, 79, 80, 81, 84, 86,
-  //    88, 91, 92, 93, 94, 95, 96, 97, 98, 99, 102+
+  //    53, 56, 58, 60, 61, 64, 65, 66, 70, 74, 78, 79, 80, 81, 84, 86, 88, 91,
+  //    92, 93, 94, 95, 96, 97, 98, 99, 102+
   //
   // IDs > 1000 are reserved for distribution custom engines.
   //
@@ -2133,6 +2133,30 @@ const PrepopulatedEngine aport = {
   34,
 };
 
+const PrepopulatedEngine avg = {
+  L"AVG Secure Search",
+  L"search.avg.com",
+  NULL,
+  "http://search.avg.com/route/?q={searchTerms}&lng={language}",
+  "UTF-8",
+  NULL,
+  NULL,
+  SEARCH_ENGINE_AVG,
+  50,
+};
+
+const PrepopulatedEngine avg_i = {
+  L"AVG Secure Search",
+  L"isearch.avg.com",
+  NULL,
+  "http://isearch.avg.com/search?q={searchTerms}&lng={language}",
+  "UTF-8",
+  NULL,
+  NULL,
+  SEARCH_ENGINE_AVG,
+  52,
+};
+
 const PrepopulatedEngine conduit = {
   L"Conduit",
   L"conduit.com",
@@ -2711,8 +2735,8 @@ const PrepopulatedEngine* kAllEngines[] =
       &yahoo_sg, &yahoo_th, &yahoo_tw, &yahoo_uk, &yahoo_ve, &yahoo_vn, &yamli,
       &yandex_ru, &yandex_ua, &zoznam,
       // UMA-only engines:
-      &all_by, &aport, &conduit, &icq, &meta_ua, &metabot_ru, &nigma, &qip,
-      &ukr_net, &webalta, &yandex_tr };
+      &all_by, &aport, &avg, &avg_i, &conduit, &icq, &meta_ua, &metabot_ru,
+      &nigma, &qip, &ukr_net, &webalta, &yandex_tr };
 
 
 // Geographic mappings /////////////////////////////////////////////////////////

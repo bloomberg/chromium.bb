@@ -23,6 +23,7 @@ enum ProtectorError {
   kProtectorErrorValueValid,
   kProtectorErrorValueValidZero,
   kProtectorErrorForcedUpdate,
+  kProtectorErrorOverwrittenByMigration,
 
   // This is for convenience only, must always be the last.
   kProtectorErrorCount

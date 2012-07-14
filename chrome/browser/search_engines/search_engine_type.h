@@ -54,6 +54,7 @@ enum SearchEngineType {
   SEARCH_ENGINE_QIP,
   SEARCH_ENGINE_UKR_NET,
   SEARCH_ENGINE_WEBALTA,
+  SEARCH_ENGINE_AVG,
   SEARCH_ENGINE_MAX  // Bounding max value needed for UMA histogram macro.
 };
 
