@@ -586,8 +586,8 @@
             {
               'action_name': 'content_shell_apk',
               'inputs': [
-                '<(DEPTH)/content/shell/android/java/content_shell_apk.xml',
-                '<(DEPTH)/content/shell/android/java/AndroidManifest.xml',
+                'shell/android/java/content_shell_apk.xml',
+                'shell/android/java/AndroidManifest.xml',
                 '<!@(find shell/android/java -name "*.java")',
                 '<!@(find shell/android/res -name "*")',
                 '<(PRODUCT_DIR)/content_shell/java/libs/chromium_base.jar',
@@ -605,11 +605,16 @@
                 '<(PRODUCT_DIR)/content_shell/ContentShell-debug.apk',
               ],
               'action': [
+                # Pass the build type to ant. Currently it only assumes
+                # debug mode in java. Release mode will break the current
+                # workflow.
+                # 'shell/content_shell_ant_helper.sh',
                 'ant',
                 '-DPRODUCT_DIR=<(ant_build_out)',
                 '-DAPP_ABI=<(android_app_abi)',
                 '-buildfile',
-                '<(DEPTH)/content/shell/android/java/content_shell_apk.xml',
+                'shell/android/java/content_shell_apk.xml',
+                # '<(CONFIGURATION_NAME)',
               ]
             }
           ],
