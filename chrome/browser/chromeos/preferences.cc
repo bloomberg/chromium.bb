@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/power_manager_settings.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -48,7 +50,8 @@ bool IsLumpy() {
 static const char kFallbackInputMethodLocale[] = "en-US";
 
 Preferences::Preferences()
-    : input_method_manager_(input_method::InputMethodManager::GetInstance()) {
+    : prefs_(NULL),
+      input_method_manager_(input_method::InputMethodManager::GetInstance()) {
 }
 
 Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
@@ -271,6 +274,8 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
 }
 
 void Preferences::InitUserPrefs(PrefService* prefs) {
+  prefs_ = prefs;
+
   tap_to_click_enabled_.Init(prefs::kTapToClickEnabled, prefs, this);
   three_finger_click_enabled_.Init(prefs::kEnableTouchpadThreeFingerClick,
       prefs, this);
@@ -560,6 +565,19 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   // Init or update protected content (DRM) support.
   if (!pref_name || *pref_name == prefs::kEnableCrosDRM) {
     system::ToggleDrm(enable_drm_.GetValue());
+  }
+
+  // Change the download directory to the default value if a GData directory is
+  // selected and GData is disabled.
+  if (!pref_name || *pref_name == prefs::kDisableGData) {
+    if (disable_gdata_.GetValue()) {
+      const FilePath download_path =
+          prefs_->GetFilePath(prefs::kDownloadDefaultDirectory);
+      if (gdata::util::IsUnderGDataMountPoint(download_path)) {
+        prefs_->SetFilePath(prefs::kDownloadDefaultDirectory,
+                            download_util::GetDefaultDownloadDirectory());
+      }
+    }
   }
 }
 

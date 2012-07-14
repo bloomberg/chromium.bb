@@ -93,6 +93,8 @@ class Preferences : public content::NotificationObserver {
   // underlying XKB API requires it.
   void UpdateAutoRepeatRate();
 
+  PrefService* prefs_;
+
   input_method::InputMethodManager* input_method_manager_;
 
   BooleanPrefMember tap_to_click_enabled_;
