@@ -5,6 +5,8 @@
 # Watchlist Rules
 # Refer: http://dev.chromium.org/developers/contributing-code/watchlists
 
+# IMPORTANT: The regular expression filepath is tested against each path using
+# re.search, so it is not usually necessary to add .*.
 
 {
   'WATCHLIST_DEFINITIONS': {
@@ -13,77 +15,77 @@
                   '|chrome/browser/ui/views/accelerator_table\.cc',
     },
     'accessibility': {
-      'filepath': 'chrome/browser/accessibility/.*' \
-                  '|content/browser/accessibility/.*' \
-                  '|chrome/.*accessib.*' \
-                  '|ui/base/accessibility/.*' \
-                  '|ui/views/accessibility/.*'
+      'filepath': 'chrome/browser/accessibility/' \
+                  '|content/browser/accessibility/' \
+                  '|chrome/.*accessib' \
+                  '|ui/base/accessibility/' \
+                  '|ui/views/accessibility/'
     },
     'app_list': {
-      'filepath': 'ui/app_list/.*',
+      'filepath': 'ui/app_list/',
     },
     'appcache': {
-      'filepath': 'appcache/.*',
+      'filepath': 'appcache/',
     },
     'aura': {
-      'filepath': 'ui/aura/.*|'\
-                  'ash/.*',
+      'filepath': 'ui/aura/|'\
+                  'ash/',
     },
     'autofill': {
-      'filepath': 'chrome/browser/autofill/.*|'\
-        'chrome/browser/resources/options/autofill_.*|'\
-        'chrome/browser/sync/glue/autofill_.*|'\
-        'chrome/browser/ui/webui/options/autofill_.*|'\
-        'chrome/renderer/autofill/.*|'\
-        'chrome/test/data/autofill/.*|'\
-        'chrome/test/data/autofill/heuristics/input/.*|'\
-        'chrome/test/data/autofill/heuristics/output/.*|'\
-        'chrome/test/data/autofill/merge/input/.*|'\
-        'chrome/test/data/autofill/merge/output/.*|'\
-        'webkit/forms/.*',
+      'filepath': 'chrome/browser/autofill/|'\
+        'chrome/browser/resources/options/autofill_|'\
+        'chrome/browser/sync/glue/autofill_|'\
+        'chrome/browser/ui/webui/options/autofill_|'\
+        'chrome/renderer/autofill/|'\
+        'chrome/test/data/autofill/|'\
+        'chrome/test/data/autofill/heuristics/input/|'\
+        'chrome/test/data/autofill/heuristics/output/|'\
+        'chrome/test/data/autofill/merge/input/|'\
+        'chrome/test/data/autofill/merge/output/|'\
+        'webkit/forms/',
     },
     'automation': {
-      'filepath': 'chrome/browser/automation/.*|chrome/test/automation/.*',
+      'filepath': 'chrome/browser/automation/|chrome/test/automation/',
     },
     'base': {
-      'filepath': '^base/.*',
+      'filepath': '^base/',
     },
     'browser': {
-      'filepath': 'chrome/browser/.*',
+      'filepath': 'chrome/browser/',
     },
     'browser_chromeos': {
-      'filepath': 'chrome/browser/chromeos/.*',
+      'filepath': 'chrome/browser/chromeos/',
     },
     'browser_compositor': {
-      'filepath': 'ui/compositor/.*'
+      'filepath': 'ui/compositor/'
     },
     'browser_main': {
       'filepath': 'chrome/browser/browser_main.cc',
     },
     'browser_resources': {
-      'filepath': 'chrome/browser/resources/.*',
+      'filepath': 'chrome/browser/resources/',
     },
     'bubble': {
-      'filepath': 'ui/views/bubble/.*|'\
-                  'chrome/browser/ui/views/bubble/.*',
+      'filepath': 'ui/views/bubble/|'\
+                  'chrome/browser/ui/views/bubble/',
     },
     'chrome_frame': {
-      'filepath': 'chrome_frame/.*',
+      'filepath': 'chrome_frame/',
     },
     'chromedriver': {
       'filepath': 'chrome/test/webdriver|third_party/webdriver'
     },
     'chromeos': {
-      'filepath': 'chromeos/.*',
+      'filepath': 'chromeos/',
     },
     'chromeos_login': {
-      'filepath': 'chrome/browser/chromeos/login/.*|'\
-                  'chrome/browser/ui/webui/chromeos/login/.*|'\
-                  'chrome/browser/resources/chromeos/login/.*',
+      'filepath': 'chrome/browser/chromeos/login/|'\
+                  'chrome/browser/ui/webui/chromeos/login/|'\
+                  'chrome/browser/resources/chromeos/login/',
     },
     'chromeos_webui': {
-      'filepath': 'chrome/browser/ui/webui/chromeos/.*|'\
-                  'chrome/browser/resources/chromeos/.*',
+      'filepath': 'chrome/browser/ui/webui/chromeos/|'\
+                  'chrome/browser/resources/chromeos/',
     },
     'clang_update': {
       'filepath': 'tools/clang/scripts/update.sh'
@@ -92,42 +94,42 @@
       'filepath': 'clipboard|dnd|drag|drop',
     },
     'content': {
-      'filepath': 'content/.*',
+      'filepath': 'content/',
     },
     'cookie_monster': {
-      'filepath': 'net/cookies/.*|'\
-        'chrome/browser/net/sqlite_persistent_cookie_store.*',
+      'filepath': 'net/cookies/|'\
+        'chrome/browser/net/sqlite_persistent_cookie_store',
     },
     'disk_cache': {
       'filepath': 'net/disk_cache/|http_cache',
     },
     'dns': {
-      'filepath': 'net/base/host_resolver.*|' \
-        'net/base/host_cache.*|' \
-        'net/dns/.*'
+      'filepath': 'net/base/host_resolver|' \
+        'net/base/host_cache|' \
+        'net/dns/'
     },
     'domui_options': {
-      'filepath': 'chrome/browser/resources/options/.*|'\
+      'filepath': 'chrome/browser/resources/options/|'\
                   'chrome/browser/resources/options.html|'\
-                  'chrome/browser/ui/webui/options/.*',
+                  'chrome/browser/ui/webui/options/',
     },
     'download': {
-      'filepath': 'chrome/browser/download/.*|'\
-        'content/browser/download/.*',
+      'filepath': 'chrome/browser/download/|'\
+        'content/browser/download/',
     },
     'downloads_ui': {
-      'filepath': 'chrome/browser/resources/.*downloads\..*' \
-                  '|chrome/browser/ui/webui/.*downloads.*' \
-                  '|chrome/browser/ui/views/download/.*' \
-                  '|chrome/browser/ui/cocoa/download/.*' \
-                  '|chrome/browser/ui/gtk/download/.*'
+      'filepath': 'chrome/browser/resources/.*downloads\.' \
+                  '|chrome/browser/ui/webui/.*downloads' \
+                  '|chrome/browser/ui/views/download/' \
+                  '|chrome/browser/ui/cocoa/download/' \
+                  '|chrome/browser/ui/gtk/download/'
     },
     'extension': {
       'filepath': 'extension',
     },
     'fileapi': {
-      'filepath': 'file_system/.*' \
-                  '|fileapi/.*'
+      'filepath': 'file_system/' \
+                  '|fileapi/'
     },
     'filebrowse': {
       'filepath': 'file_browser' \
@@ -144,64 +146,64 @@
       'filepath': 'gdata'
     },
     'gpu': {
-      'filepath': 'gpu/.*',
+      'filepath': 'gpu/',
     },
     'history': {
-      'filepath': 'chrome/browser/history/.*',
+      'filepath': 'chrome/browser/history/',
     },
     'history_ui': {
-      'filepath': 'chrome/browser/resources/history.*',
+      'filepath': 'chrome/browser/resources/history',
     },
     'i18n': {
-      'filepath': 'base/i18n/.*|base/*string.*|.*l10n.*|.*icu.*|'\
-        '.*locale_settings.*|.*encoding.*',
+      'filepath': 'base/i18n/|base/string|l10n|icu|'\
+        'locale_settings|encoding',
     },
     'imageburner': {
       'filepath': 'imageburner'
     },
     'importer': {
-      'filepath': '.*import.*',
+      'filepath': 'import',
     },
     'installer': {
-      'filepath': 'chrome/installer/.*',
+      'filepath': 'chrome/installer/',
     },
     'ipc': {
-      'filepath': 'ipc/ipc.*',
+      'filepath': 'ipc/ipc',
     },
     'labs': {
       'filepath': 'chrome/browser/labs' \
                   '|chrome/browser/dom_ui/labs'
     },
     'layout_tests': {
-      'filepath': 'webkit/(tools|data)/(layout_tests|test_shell)/.*',
+      'filepath': 'webkit/(tools|data)/(layout_tests|test_shell)/',
     },
     'linux-sandboxing': {
-      'filepath': 'sandbox/linux/.*',
+      'filepath': 'sandbox/linux/',
     },
     'linux-seccomp-bpf': {
       'filepath': 'content/common/sandbox_init_linux.cc',
     },
     'locale_settings': {
-      'filepath': 'chrome/app/resources/locale_settings.*',
+      'filepath': 'chrome/app/resources/locale_settings',
     },
     'mac': {
       'filepath': 'cocoa|\.mm$|(_mac|_posix)\.(cc|h)$',
     },
     'media': {
-      'filepath': 'media/.*|third_party/(ffmpeg|openmax)/.*|webmediaplayer|'\
+      'filepath': 'media/|third_party/(ffmpeg|openmax)/|webmediaplayer|'\
         'audio_message_filter|video_layer',
     },
     'message_loop': {
-      'filepath': 'base/message_.*'
+      'filepath': 'base/message_'
     },
     'metrics': {
-      'filepath': 'base/metrics/.*'\
-                  '|chrome/browser/metrics/.*'\
-                  '|chrome/common/metrics/.*'\
-                  '|chrome_frame/metrics.*'\
-                  '|chrome/browser/chromeos/external_metrics.*'\
-                  '|chrome/browser/extensions/api/metrics/metrics.*'\
-                  '|chrome/browser/ui/webui/metrics_handler.*'\
+      'filepath': 'base/metrics/'\
+                  '|chrome/browser/metrics/'\
+                  '|chrome/common/metrics/'\
+                  '|chrome_frame/metrics'\
+                  '|chrome/browser/chromeos/external_metrics'\
+                  '|chrome/browser/extensions/api/metrics/metrics'\
+                  '|chrome/browser/ui/webui/metrics_handler'\
                   '|content/browser/user_metrics.cc'\
                   '|content/public/browser/user_metrics.h'\
                   '|chrome/tools/extract_actions.py'
@@ -210,44 +212,44 @@
       'filepath': 'mouse_lock',
     },
     'nacl': {
-      'filepath': 'chrome/nacl/.*|chrome/test/nacl/.*|'\
-        'chrome/browser/nacl_host/.*|chrome/common/nacl.*',
+      'filepath': 'chrome/nacl/|chrome/test/nacl/|'\
+        'chrome/browser/nacl_host/|chrome/common/nacl',
     },
     'net': {
-      'filepath': 'net/.*',
+      'filepath': 'net/',
     },
     'net_error_list': {
       'filepath': 'net/base/net_error_list.h',
     },
     'net_log': {
-      'filepath': 'net/base/net_log.*|' \
-        'chrome/browser/net/.*net_log.*|' \
-        'chrome/browser/net/passive_log_collector.*|' \
-        'chrome/browser/resources/net_internals/.*|' \
-        'chrome/browser/ui/webui/net_internals/.*'
+      'filepath': 'net/base/net_log|' \
+        'chrome/browser/net/.*net_log|' \
+        'chrome/browser/net/passive_log_collector|' \
+        'chrome/browser/resources/net_internals/|' \
+        'chrome/browser/ui/webui/net_internals/'
     },
     'npapi_headers': {
-      'filepath': 'third_party/npapi/bindings/.*',
+      'filepath': 'third_party/npapi/bindings/',
     },
     'ntp': {
-      'filepath': 'chrome/browser/resources/ntp4/.*|'\
-        'chrome/browser/resources/touch_ntp/.*|'\
-        'chrome/browser/resources/touch_ntp/.*|'\
-        'chrome/browser/ui/webui/ntp/.*',
+      'filepath': 'chrome/browser/resources/ntp4/|'\
+        'chrome/browser/resources/touch_ntp/|'\
+        'chrome/browser/resources/touch_ntp/|'\
+        'chrome/browser/ui/webui/ntp/',
     },
     'omnibox': {
-      'filepath': 'chrome/browser/autocomplete/.*'\
-                  '|chrome/browser/ui/.*/omnibox/.*'
+      'filepath': 'chrome/browser/autocomplete/'\
+                  '|chrome/browser/ui/.*/omnibox/'
     },
     'panels': {
-      'filepath': 'chrome/browser/ui/panels/.*',
+      'filepath': 'chrome/browser/ui/panels/',
     },
     'pepper_api': {
-      'filepath': 'ppapi/c/.*',
+      'filepath': 'ppapi/c/',
     },
     'plugin': {
-      'filepath': 'chrome/browser/plugin.*|chrome/plugin/.*|'\
-        'chrome/common/plugin.*|webkit/glue/webplugin.*|webkit/glue/plugins/.*',
+      'filepath': 'chrome/browser/plugin|chrome/plugin/|'\
+        'chrome/common/plugin|webkit/glue/webplugin|webkit/glue/plugins/',
     },
     'prerender': {
       'filepath': 'prerender'
@@ -258,116 +260,116 @@
                   '|chrome/browser/automation/automation_provider_json'
     },
     'remoting': {
-      'filepath': 'remoting/.*',
+      'filepath': 'remoting/',
     },
     'renderer': {
-      'filepath': 'chrome/browser/renderer_host/.*|chrome/renderer/.*|'\
-        'chrome/common/render.*',
+      'filepath': 'chrome/browser/renderer_host/|chrome/renderer/|'\
+        'chrome/common/render',
     },
     'search': {
-      'filepath': 'chrome/browser/ui/search/.*',
+      'filepath': 'chrome/browser/ui/search/',
     },
     'sessions': {
-      'filepath': 'chrome/browser/sessions/.*',
+      'filepath': 'chrome/browser/sessions/',
     },
     'shell_window': {
-      'filepath': 'chrome/browser/ui/(views/|gtk/|cocoa/|)extensions/shell.*'
+      'filepath': 'chrome/browser/ui/(views/|gtk/|cocoa/|)extensions/shell'
     },
     'site_instance': {
-      'filepath': 'content/browser/site_instance.*|'\
-        'content/browser/browsing_instance.*',
+      'filepath': 'content/browser/site_instance|'\
+        'content/browser/browsing_instance',
     },
     'speech': {
-      'filepath': 'chrome/browser/speech/.*'\
-                  '|content/browser/speech/.*'\
-                  '|content/common/.*speech.*'\
-                  '|content/public/.*speech.*'
+      'filepath': 'chrome/browser/speech/'\
+                  '|content/browser/speech/'\
+                  '|content/common/.*speech'\
+                  '|content/public/.*speech'
     },
     'sync': {
-      'filepath': 'chrome/browser/sync/.*',
+      'filepath': 'chrome/browser/sync/',
     },
     'tab_contents': {
-      'filepath': 'chrome/browser/tab_contents/.*|'\
-        'content/browser/tab_contents/.*|'\
-        'chrome/browser/ui/tab_contents/.*',
+      'filepath': 'chrome/browser/tab_contents/|'\
+        'content/browser/tab_contents/|'\
+        'chrome/browser/ui/tab_contents/',
     },
     'task_manager': {
       'filepath': 'task_manager'
     },
     'tests': {
-      'filepath': 'apitest|unittest|browsertest|uitest|chrome/test/.*',
+      'filepath': 'apitest|unittest|browsertest|uitest|chrome/test/',
     },
     'textinput': {
-      'filepath': 'content/browser/renderer_host/gtk_im.*'\
-                  '|content/browser/renderer_host/gtk_key.*'\
-                  '|content/browser/renderer_host/render_widget_host_view.*'\
-                  '|content/browser/renderer_host/text_input.*'\
-                  '|ui/base/ime/.*'\
-                  '|ui/base/gtk/event.*'\
-                  '|ui/base/gtk/gtk_im.*'\
-                  '|ui/base/keycodes/.*'\
-                  '|ui/base/win/ime.*'\
-                  '|ui/views/controls/textfield/.*'\
-                  '|ui/views/ime/.*'
+      'filepath': 'content/browser/renderer_host/gtk_im'\
+                  '|content/browser/renderer_host/gtk_key'\
+                  '|content/browser/renderer_host/render_widget_host_view'\
+                  '|content/browser/renderer_host/text_input'\
+                  '|ui/base/ime/'\
+                  '|ui/base/gtk/event'\
+                  '|ui/base/gtk/gtk_im'\
+                  '|ui/base/keycodes/'\
+                  '|ui/base/win/ime'\
+                  '|ui/views/controls/textfield/'\
+                  '|ui/views/ime/'
     },
     'textinput_chromeos': {
-      'filepath': 'chrome/browser/chromeos/input_method/.*'\
-                  '|chrome/browser/chromeos/extensions/input_method.*'\
-                  '|chrome/browser/chromeos/status/input_method.*'\
-                  '|chrome/browser/extensions/extension_input_.*'\
-                  '|chrome/browser/resources/keyboard.*'\
-                  '|chrome/browser/resources/options/language.*'\
+      'filepath': 'chrome/browser/chromeos/input_method/'\
+                  '|chrome/browser/chromeos/extensions/input_method'\
+                  '|chrome/browser/chromeos/status/input_method'\
+                  '|chrome/browser/extensions/extension_input_'\
+                  '|chrome/browser/resources/keyboard'\
+                  '|chrome/browser/resources/options/language'\
                   '|chrome/browser/ui/webui/options/'\
-                  'chromeos/.*(language|keyboard).*'\
-                  '|chrome/browser/ui/webui/options/language.*'
+                  'chromeos/.*(language|keyboard)'\
+                  '|chrome/browser/ui/webui/options/language'
     },
     'this_file': {
       'filepath': '^WATCHLISTS$',
     },
     'tools': {
-      'filepath': 'tools/.*',
+      'filepath': 'tools/',
     },
     'tools_emacs': {
-      'filepath': 'tools/emacs/.*',
+      'filepath': 'tools/emacs/',
     },
     'ui_resources': {
-      'filepath': 'ui/resources/.*'\
-                  '|ui/base/native_theme/resources/.*'\
-                  '|chrome/app/theme/.*'
+      'filepath': 'ui/resources/'\
+                  '|ui/base/native_theme/resources/'\
+                  '|chrome/app/theme/'
     },
     'valgrind': {
       'filepath': 'valgrind',
     },
     'views': {
       # Applies to all files and subdirs within this directory.
-      'filepath': '^ui/views/.*',
+      'filepath': '^ui/views/',
     },
     'views_core': {
       'filepath': 'ui/views/view.h|'\
                   'ui/views/view.cc|'\
-                  'ui/views/widget/.*',
+                  'ui/views/widget/',
     },
     'website_settings': {
-      'filepath': 'chrome/browser/content_settings/*'\
-                  '|chrome/browser/ui/views/website_settings/*'\
-                  '|chrome/browser/ui/website_settings/*'\
-                  '|chrome/common/content_settings*',
+      'filepath': 'chrome/browser/content_settings/'\
+                  '|chrome/browser/ui/views/website_settings/'\
+                  '|chrome/browser/ui/website_settings/'\
+                  '|chrome/common/content_settings',
     },
     'webkit': {
-      'filepath': 'webkit/.*',
+      'filepath': 'webkit/',
     },
     'worker': {
-      'filepath': 'chrome/browser/worker_host/.*|chrome/worker/.*|'\
-        'chrome/common/worker_messages.*|webkit/glue/webworker.*',
+      'filepath': 'chrome/browser/worker_host/|chrome/worker/|'\
+        'chrome/common/worker_messages|webkit/glue/webworker',
     },
     'x11': {
-      'filepath': 'content/browser/renderer_host/backing_store_x\..*' \
-                  '|chrome/browser/chromeos/input_method/xkeyboard\..*' \
-                  '|chrome/browser/chromeos/system_key_event_listener\..*' \
+      'filepath': 'content/browser/renderer_host/backing_store_x\.' \
+                  '|chrome/browser/chromeos/input_method/xkeyboard\.' \
+                  '|chrome/browser/chromeos/system_key_event_listener\.' \
                   '|chrome/browser/chromeos/'\
-                  'xinput_hierarchy_changed_event_listener\..*' \
-                  '|chrome/browser/chromeos/wm_.*' \
-                  '|ui/base/x/.*'
+                  'xinput_hierarchy_changed_event_listener\.' \
+                  '|chrome/browser/chromeos/wm_' \
+                  '|ui/base/x/'
     },
   },
 
