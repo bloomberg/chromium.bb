@@ -40,6 +40,7 @@ class FakeSocket : public net::StreamSocket {
 
   const std::string& written_data() const { return written_data_; }
 
+  void set_next_read_error(int error) { next_read_error_ = error; }
   void AppendInputData(const std::vector<char>& data);
   void PairWith(FakeSocket* peer_socket);
   int input_pos() const { return input_pos_; }
@@ -71,6 +72,7 @@ class FakeSocket : public net::StreamSocket {
   virtual net::NextProto GetNegotiatedProtocol() const OVERRIDE;
 
  private:
+  int next_read_error_;
   bool read_pending_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;

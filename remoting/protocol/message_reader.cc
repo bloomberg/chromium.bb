@@ -66,14 +66,14 @@ void MessageReader::HandleReadResult(int result) {
 
   if (result > 0) {
     OnDataReceived(read_buffer_, result);
+  } else if (result == net::ERR_IO_PENDING) {
+    read_pending_ = true;
   } else {
-    if (result == net::ERR_CONNECTION_CLOSED) {
-      closed_ = true;
-    } else if (result == net::ERR_IO_PENDING) {
-      read_pending_ = true;
-    } else {
+    if (result != net::ERR_CONNECTION_CLOSED) {
       LOG(ERROR) << "Read() returned error " << result;
     }
+    // Stop reading after any error.
+    closed_ = true;
   }
 }
 
@@ -115,7 +115,8 @@ void MessageReader::ProcessDoneEvent() {
   pending_messages_--;
   DCHECK_GE(pending_messages_, 0);
 
-  DoRead(); // Start next read if neccessary.
+  if (!read_pending_)
+    DoRead();  // Start next read if neccessary.
 }
 
 }  // namespace protocol

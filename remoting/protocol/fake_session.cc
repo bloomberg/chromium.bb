@@ -18,7 +18,8 @@ namespace protocol {
 const char kTestJid[] = "host1@gmail.com/chromoting123";
 
 FakeSocket::FakeSocket()
-    : read_pending_(false),
+    : next_read_error_(net::OK),
+      read_pending_(false),
       read_buffer_size_(0),
       input_pos_(0),
       message_loop_(MessageLoop::current()),
@@ -55,6 +56,13 @@ void FakeSocket::PairWith(FakeSocket* peer_socket) {
 int FakeSocket::Read(net::IOBuffer* buf, int buf_len,
                      const net::CompletionCallback& callback) {
   EXPECT_EQ(message_loop_, MessageLoop::current());
+
+  if (next_read_error_ != net::OK) {
+    int r = next_read_error_;
+    next_read_error_ = net::OK;
+    return r;
+  }
+
   if (input_pos_ < static_cast<int>(input_data_.size())) {
     int result = std::min(buf_len,
                           static_cast<int>(input_data_.size()) - input_pos_);

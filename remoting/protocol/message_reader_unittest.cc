@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "net/base/net_errors.h"
 #include "net/socket/socket.h"
 #include "remoting/protocol/fake_session.h"
 #include "remoting/protocol/message_reader.h"
@@ -269,7 +270,6 @@ TEST_F(MessageReaderTest, UseSocketOnCorrectThread) {
   other_thread_.Start();
 
   EXPECT_CALL(callback_, OnMessage(_))
-      .Times(1)
       .WillOnce(Invoke(this, &MessageReaderTest::RunDoneTaskOnOtherThread));
 
   InitReader();
@@ -277,15 +277,29 @@ TEST_F(MessageReaderTest, UseSocketOnCorrectThread) {
   run_task_finished_.Wait();
   message_loop_.RunAllPending();
 
+  Mock::VerifyAndClearExpectations(&callback_);
+
   // Write another message and verify that we receive it.
   base::Closure done_task;
   EXPECT_CALL(callback_, OnMessage(_))
-      .Times(1)
       .WillOnce(SaveArg<0>(&done_task));
   AddMessage(kTestMessage2);
   EXPECT_TRUE(CompareResult(messages_[1], kTestMessage2));
 
   done_task.Run();
+}
+
+// Read() returns error.
+TEST_F(MessageReaderTest, ReadError) {
+  socket_.set_next_read_error(net::ERR_FAILED);
+
+  // Add a message. It should never be read after the error above.
+  AddMessage(kTestMessage1);
+
+  EXPECT_CALL(callback_, OnMessage(_))
+      .Times(0);
+
+  InitReader();
 }
 
 }  // namespace protocol
