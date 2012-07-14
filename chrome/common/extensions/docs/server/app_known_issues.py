@@ -20,7 +20,8 @@ class Issue(object):
     self.title = title
 
 KNOWN_ISSUES_CSV_URL = \
-    'http://code.google.com/p/chromium/issues/csv?can=1&q=AppsKnownIssues'
+    'http://code.google.com/p/chromium/issues/csv?can=1&' \
+    'q=Hotlist%3DKnownIssue%20Feature%3DApps'
 KNOWN_ISSUES_CACHE_KEY = 'known-issues'
 KNOWN_ISSUES_CACHE_TIME = 300 # seconds
 
@@ -66,6 +67,9 @@ class Handler(webapp.RequestHandler):
         closed_issues.append(issue)
       else:
         open_issues.append(issue)
+
+    open_issues.sort(key=lambda issue:issue.title)
+    closed_issues.sort(key=lambda issue:issue.title)
 
     result = (open_issues, closed_issues)
     memcache.add(KNOWN_ISSUES_CACHE_KEY, result, KNOWN_ISSUES_CACHE_TIME)
