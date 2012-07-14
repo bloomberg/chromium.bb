@@ -5,6 +5,7 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 
 #include <algorithm>
+#include <functional>
 #include <utility>
 
 #include "base/process_util.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
+#include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_render_view_host_observer.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
@@ -26,6 +28,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
@@ -35,28 +38,12 @@ using content::DownloadItem;
 using content::OpenURLParams;
 using content::RenderViewHost;
 using content::ResourceRedirectDetails;
+using content::SessionStorageNamespace;
 using content::WebContents;
 
 namespace prerender {
 
 namespace {
-
-// Compares URLs ignoring any ref for the purposes of matching URLs when
-// prerendering.
-struct PrerenderURLPredicate {
-  explicit PrerenderURLPredicate(const GURL& url)
-      : url_(url) {
-  }
-
-  bool operator()(const GURL& url) const {
-    return url.scheme() == url_.scheme() &&
-           url.host() == url_.host() &&
-           url.port() == url_.port() &&
-           url.path() == url_.path() &&
-           url.query() == url_.query();
-  }
-  GURL url_;
-};
 
 // Tells the render process at |child_id| whether |url| is a new prerendered
 // page, or whether |url| is being removed as a prerendered page. Currently
@@ -94,24 +81,6 @@ class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
   }
 };
 
-struct PrerenderContents::PendingPrerenderInfo {
-  PendingPrerenderInfo(const GURL& url,
-                       const content::Referrer& referrer,
-                       const gfx::Size& size);
-  const GURL url;
-  const content::Referrer referrer;
-  const gfx::Size size;
-};
-
-PrerenderContents::PendingPrerenderInfo::PendingPrerenderInfo(
-    const GURL& url,
-    const content::Referrer& referrer,
-    const gfx::Size& size)
-    : url(url),
-      referrer(referrer),
-      size(size) {
-}
-
 // TabContentsDelegateImpl -----------------------------------------------------
 
 class PrerenderContents::TabContentsDelegateImpl
@@ -123,7 +92,7 @@ class PrerenderContents::TabContentsDelegateImpl
 
   // content::WebContentsDelegate implementation:
   virtual WebContents* OpenURLFromTab(WebContents* source,
-                                     const OpenURLParams& params) OVERRIDE {
+                                      const OpenURLParams& params) OVERRIDE {
     // |OpenURLFromTab| is typically called when a frame performs a navigation
     // that requires the browser to perform the transition instead of WebKit.
     // Examples include prerendering a site that redirects to an app URL,
@@ -219,32 +188,59 @@ class PrerenderContents::TabContentsDelegateImpl
   PrerenderContents* prerender_contents_;
 };
 
-void PrerenderContents::AddPendingPrerender(const GURL& url,
-                                            const content::Referrer& referrer,
-                                            const gfx::Size& size) {
-  pending_prerender_list_.push_back(PendingPrerenderInfo(url, referrer, size));
+void PrerenderContents::AddPendingPrerender(
+    const base::WeakPtr<PrerenderHandle> weak_prerender_handle,
+    const GURL& url,
+    const content::Referrer& referrer,
+    const gfx::Size& size) {
+  pending_prerenders_.push_back(
+      PendingPrerenderInfo(weak_prerender_handle, url, referrer, size));
 }
 
-bool PrerenderContents::IsPendingEntry(const GURL& url) const {
-  for (PendingPrerenderList::const_iterator it =
-           pending_prerender_list_.begin();
-       it != pending_prerender_list_.end();
+bool PrerenderContents::IsPendingEntry(
+    const PrerenderHandle& prerender_handle) const {
+  for (std::vector<PendingPrerenderInfo>::const_iterator it =
+           pending_prerenders_.begin();
+       it != pending_prerenders_.end();
        ++it) {
-    if (it->url == url)
+    if (it->weak_prerender_handle.get() == &prerender_handle)
       return true;
   }
   return false;
 }
 
 void PrerenderContents::StartPendingPrerenders() {
-  PendingPrerenderList pending_prerender_list;
-  pending_prerender_list.swap(pending_prerender_list_);
-  for (PendingPrerenderList::iterator it = pending_prerender_list.begin();
+  SessionStorageNamespace* session_storage_namespace = NULL;
+  if (RenderViewHost* render_view_host = GetRenderViewHostMutable())
+    session_storage_namespace = render_view_host->GetSessionStorageNamespace();
+  DCHECK(child_id_ == -1 || session_storage_namespace);
+
+  std::vector<PendingPrerenderInfo> pending_prerender_list;
+  pending_prerender_list.swap(pending_prerenders_);
+  for (std::vector<PendingPrerenderInfo>::iterator it =
+           pending_prerender_list.begin();
        it != pending_prerender_list.end();
        ++it) {
-    prerender_manager_->AddPrerenderFromLinkRelPrerender(
-        child_id_, route_id_, it->url, it->referrer, it->size);
+    if (it->weak_prerender_handle && it->weak_prerender_handle->IsValid()) {
+      prerender_manager_->StartPendingPrerender(
+          it->weak_prerender_handle.get(), ORIGIN_LINK_REL_PRERENDER, child_id_,
+          it->url, it->referrer, it->size, session_storage_namespace);
+    }
   }
+}
+
+PrerenderContents::PendingPrerenderInfo::PendingPrerenderInfo(
+    const base::WeakPtr<PrerenderHandle> weak_prerender_handle,
+    const GURL& url,
+    const content::Referrer& referrer,
+    const gfx::Size& size)
+    : weak_prerender_handle(weak_prerender_handle),
+      url(url),
+      referrer(referrer),
+      size(size) {
+}
+
+PrerenderContents::PendingPrerenderInfo::~PendingPrerenderInfo() {
 }
 
 PrerenderContents::PrerenderContents(
@@ -262,6 +258,7 @@ PrerenderContents::PrerenderContents(
       referrer_(referrer),
       profile_(profile),
       page_id_(0),
+      session_storage_namespace_id_(-1),
       has_stopped_loading_(false),
       has_finished_loading_(false),
       final_status_(FINAL_STATUS_MAX),
@@ -273,6 +270,13 @@ PrerenderContents::PrerenderContents(
       experiment_id_(experiment_id),
       creator_child_id_(-1) {
   DCHECK(prerender_manager != NULL);
+}
+
+void PrerenderContents::MakeIntoDummyReplacementOf(
+    const PrerenderContents* original_prerender_contents) {
+  load_start_time_ = original_prerender_contents->load_start_time_;
+  session_storage_namespace_id_ =
+      original_prerender_contents->session_storage_namespace_id_;
 }
 
 bool PrerenderContents::Init() {
@@ -287,7 +291,7 @@ PrerenderContents::Factory* PrerenderContents::CreateFactory() {
 void PrerenderContents::StartPrerendering(
     int creator_child_id,
     const gfx::Size& size,
-    content::SessionStorageNamespace* session_storage_namespace,
+    SessionStorageNamespace* session_storage_namespace,
     bool is_control_group) {
   DCHECK(profile_ != NULL);
   DCHECK(!size.IsEmpty());
@@ -298,10 +302,14 @@ void PrerenderContents::StartPrerendering(
   DCHECK_EQ(1U, alias_urls_.size());
 
   creator_child_id_ = creator_child_id;
+  session_storage_namespace_id_ = session_storage_namespace->id();
   size_ = size;
 
   InformRenderProcessAboutPrerender(prerender_url_, true,
                                     creator_child_id_);
+
+  DCHECK(load_start_time_.is_null());
+  load_start_time_ = base::TimeTicks::Now();
 
   // Everything after this point sets up the WebContents object and associated
   // RenderView for the prerender page. Don't do this for members of the
@@ -357,9 +365,6 @@ void PrerenderContents::StartPrerendering(
   notification_registrar_.Add(
       this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
       content::Source<WebContents>(GetWebContents()));
-
-  DCHECK(load_start_time_.is_null());
-  load_start_time_ = base::TimeTicks::Now();
 
   // Transfer over the user agent override.
   new_contents->SetUserAgentOverride(
@@ -494,7 +499,7 @@ void PrerenderContents::OnRenderViewHostCreated(
 }
 
 WebContents* PrerenderContents::CreateWebContents(
-    content::SessionStorageNamespace* session_storage_namespace) {
+    SessionStorageNamespace* session_storage_namespace) {
   return  WebContents::Create(profile_, NULL, MSG_ROUTING_NONE, NULL,
                               session_storage_namespace);
 }
@@ -546,17 +551,15 @@ void PrerenderContents::AddAliasURLsFromOtherPrerenderContents(
   }
 }
 
-bool PrerenderContents::MatchesURL(const GURL& url, GURL* matching_url) const {
-  std::vector<GURL>::const_iterator matching_url_iterator =
-      std::find_if(alias_urls_.begin(),
-                   alias_urls_.end(),
-                   PrerenderURLPredicate(url));
-  if (matching_url_iterator != alias_urls_.end()) {
-    if (matching_url)
-      *matching_url = *matching_url_iterator;
-    return true;
-  }
-  return false;
+bool PrerenderContents::Matches(
+    const GURL& url,
+    const SessionStorageNamespace* session_storage_namespace) const {
+  DCHECK(child_id_ == -1 || session_storage_namespace);
+  if (session_storage_namespace &&
+      session_storage_namespace_id_ != session_storage_namespace->id())
+    return false;
+  return std::count_if(alias_urls_.begin(), alias_urls_.end(),
+                       std::bind2nd(std::equal_to<GURL>(), url)) != 0;
 }
 
 void PrerenderContents::RenderViewGone(base::TerminationStatus status) {

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PRERENDER_PRERENDER_MANAGER_H_
 
 #include <list>
+#include <map>
 #include <string>
 #include <utility>
 
@@ -13,6 +14,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
@@ -54,6 +56,7 @@ struct hash<content::WebContents*> {
 namespace prerender {
 
 class PrerenderCondition;
+class PrerenderHandle;
 class PrerenderHistograms;
 class PrerenderHistory;
 class PrerenderLocalPredictor;
@@ -100,36 +103,31 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Entry points for adding prerenders.
 
   // Adds a prerender for |url| if valid. |process_id| and |route_id| identify
-  // the RenderView that the prerender request came from.  The |size| may be
-  // empty, and the current tab size will be used if it is. If the current
-  // active tab size cannot be found, we use a default from PrerenderConfig.
-  // Returns true if the URL was added, false if it was not.
-  // If the launching RenderView is itself prerendering, the prerender is added
-  // as a pending prerender.
-  bool AddPrerenderFromLinkRelPrerender(
+  // the RenderView that the prerender request came from. If |size| is empty, a
+  // default from the PrerenderConfig is used. Returns a caller-owned
+  // PrerenderHandle* if the URL was added, NULL if it was not. If the launching
+  // RenderView is itself prerendering, the prerender is added as a pending
+  // prerender.
+  PrerenderHandle* AddPrerenderFromLinkRelPrerender(
       int process_id,
       int route_id,
       const GURL& url,
       const content::Referrer& referrer,
-      gfx::Size size);
+      const gfx::Size& size);
 
   // Adds a prerender for |url| if valid. As the prerender request is coming
   // from a source without a RenderViewHost (i.e., the omnibox) we don't have a
   // child or route id, or a referrer. This method uses sensible values for
   // those. The |session_storage_namespace| matches the namespace of the active
-  // tab at the time the prerender is generated from the omnibox.
-  bool AddPrerenderFromOmnibox(
+  // tab at the time the prerender is generated from the omnibox. Returns a
+  // caller-owned PrerenderHandle*, or NULL.
+  PrerenderHandle* AddPrerenderFromOmnibox(
       const GURL& url,
       content::SessionStorageNamespace* session_storage_namespace,
-      gfx::Size size);
+      const gfx::Size& size);
 
-  // Request cancelation of a previously added prerender. If the |active_count_|
-  // of the prerender is one, it will be canceled.  Otherwise, |active_count_|
-  // will be decremented by one.
-  void MaybeCancelPrerender(const GURL& url);
-
-  // Destroy all prerenders for the given child route id pair and assign a final
-  // status to them.
+  // If |process_id| and |view_id| refer to a running prerender, destroy
+  // it with |final_status|.
   virtual void DestroyPrerenderForRenderView(int process_id,
                                              int view_id,
                                              FinalStatus final_status);
@@ -183,10 +181,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // is prerendering a page.
   bool IsWebContentsPrerendering(content::WebContents* web_contents) const;
 
-  // Returns true if there is a prerendered page for the given URL and it has
-  // finished loading. Only valid if called before MaybeUsePrerenderedPage.
-  bool DidPrerenderFinishLoading(const GURL& url) const;
-
   // Maintaining and querying the set of WebContents belonging to this
   // PrerenderManager that are currently showing prerendered pages.
   void MarkWebContentsAsPrerendered(content::WebContents* web_contents);
@@ -236,11 +230,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Adds a condition. This is owned by the PrerenderManager.
   void AddCondition(const PrerenderCondition* condition);
 
-  bool IsPendingEntry(const GURL& url) const;
-
-  // Returns true if |url| matches any URLs being prerendered.
-  bool IsPrerendering(const GURL& url) const;
-
   // Records that some visible tab navigated (or was redirected) to the
   // provided URL.
   void RecordNavigation(const GURL& url);
@@ -250,8 +239,63 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   PrerenderHistograms* histograms() const { return histograms_.get(); }
 
  protected:
+  class PrerenderData : public base::SupportsWeakPtr<PrerenderData> {
+   public:
+    // Constructor for a pending prerender, which will get its contents later.
+    explicit PrerenderData(PrerenderManager* manager);
+
+    // Constructor for an active prerender.
+    PrerenderData(PrerenderManager* manager, PrerenderContents* contents);
+
+    ~PrerenderData();
+
+    // A new PrerenderHandle has been created for this PrerenderData.
+    void OnNewHandle();
+
+    // The launcher associated with a handle is navigating away from the context
+    // that launched this prerender. If the prerender is active, it may stay
+    // alive briefly though, in case we we going through a redirect chain that
+    // will eventually land at it.
+    void OnNavigateAwayByHandle();
+
+    // The launcher associated with a handle has taken explicit action to cancel
+    // this prerender. We may well destroy the prerender in this case if no
+    // other handles continue to track it.
+    void OnCancelByHandle();
+
+    PrerenderContents* contents() { return contents_; }
+
+   private:
+    friend class PrerenderManager;
+
+    PrerenderManager* manager_;
+    PrerenderContents* contents_;
+
+    // The number of distinct PrerenderHandles created for |this|, including
+    // ones that have called PrerenderData::OnNavigateAwayByHandle(), but not
+    // counting the ones that have called PrerenderData::OnCancelByHandle(). For
+    // pending prerenders, this will always be 1, since the PrerenderManager
+    // only merges handles of running prerenders.
+    int handle_count_;
+
+    DISALLOW_COPY_AND_ASSIGN(PrerenderData);
+  };
+
   void SetPrerenderContentsFactory(
       PrerenderContents::Factory* prerender_contents_factory);
+
+  // Adds a prerender from a pending Prerender, called by
+  // PrerenderContents::StartPendingPrerenders.
+  void StartPendingPrerender(
+      PrerenderHandle* existing_prerender_handle,
+      Origin origin,
+      int process_id,
+      const GURL& url,
+      const content::Referrer& referrer,
+      const gfx::Size& size,
+      content::SessionStorageNamespace* session_storage_namespace);
+
+  void DestroyPendingPrerenderData(PrerenderData* pending_prerender_data);
 
   // Utility method that is called from the virtual Shutdown method on this
   // class but is called directly from the TestPrerenderManager in the unit
@@ -259,85 +303,38 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void DoShutdown();
 
  private:
-  // Test that needs needs access to internal functions.
   friend class PrerenderBrowserTest;
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, AliasURLTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, CancelAllTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest,
-                           CancelOmniboxRemovesOmniboxTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest,
-                           CancelOmniboxDoesNotRemoveLinkTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, ClearTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, ControlGroup);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, DropOldestRequestTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, DropSecondRequestTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, ExpireTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, FoundTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, FragmentMatchesFragmentTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, FragmentMatchesPageTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, LinkManagerAbandon);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, LinkManagerAddTwiceAbandonTwice);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, LinkManagerAddTwiceCancelTwice);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest,
-                           LinkManagerAddTwiceCancelTwiceThenAbandonTwice);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, LinkManagerCancel);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, LinkManagerCancelThenAbandon);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, LinkManagerCancelThenAddAgain);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, LinkManagerCancelTwice);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, LinkManagerExpireThenAddAgain);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, LinkManagerExpireThenCancel);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, NotSoRecentlyVisited);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, PageMatchesFragmentTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, PendingPrerenderTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, PPLTDummy);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, RateLimitInWindowTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, RateLimitOutsideWindowTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, RecentlyVisitedPPLTDummy);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, SourceRenderViewClosed);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, TwoElementPrerenderTest);
-
-  struct PrerenderContentsData;
-  struct NavigationRecord;
+  friend class PrerenderContents;
+  friend class PrerenderHandle;
+  friend class UnitTestPrerenderManager;
 
   class OnCloseTabContentsDeleter;
+  struct NavigationRecord;
 
-  typedef std::list<PrerenderContentsData> PrerenderContentsDataList;
   typedef base::hash_map<content::WebContents*, bool> WouldBePrerenderedMap;
 
   // Time window for which we record old navigations, in milliseconds.
   static const int kNavigationRecordWindowMs = 5000;
 
-  // Adds a prerender for |url| from referrer |referrer| initiated from the
-  // child process specified by |child_id|. The |origin| specifies how the
-  // prerender was added. If the |size| is empty, then
-  // PrerenderContents::StartPrerendering will instead use the size of the
-  // currently active tab. If the current active tab size cannot be found, it
-  // then uses a default from PrerenderConfig.
-  bool AddPrerender(
+  void OnCancelPrerenderHandle(PrerenderData* prerender_data);
+
+  // Adds a prerender for |url| from |referrer| initiated from the process
+  // |child_id|. The |origin| specifies how the prerender was added. If |size|
+  // is empty, then PrerenderContents::StartPrerendering will instead use a
+  // default from PrerenderConfig. Returns a PrerenderHandle*, owned by the
+  // caller, or NULL.
+  PrerenderHandle* AddPrerender(
       Origin origin,
       int child_id,
       const GURL& url,
       const content::Referrer& referrer,
-      gfx::Size size,
+      const gfx::Size& size,
       content::SessionStorageNamespace* session_storage_namespace);
 
-  // Retrieves the PrerenderContents object for the specified URL, if it
-  // has been prerendered.  The caller will then have ownership of the
-  // PrerenderContents object and is responsible for freeing it.
-  // Returns NULL if the specified URL has not been prerendered.
-  PrerenderContents* GetEntry(const GURL& url);
-
-  // Identical to GetEntry, with one exception:
-  // The WebContents specified indicates the WC in which to swap the
-  // prerendering into.  If the WebContents specified is the one
-  // to doing the prerendered itself, will return NULL.
-  PrerenderContents* GetEntryButNotSpecifiedWC(const GURL& url,
-                                               content::WebContents* wc);
-
-  // Starts scheduling periodic cleanups.
   void StartSchedulingPeriodicCleanups();
-  // Stops scheduling periodic cleanups if they're no longer needed.
-  void MaybeStopSchedulingPeriodicCleanups();
+  void StopSchedulingPeriodicCleanups();
+
+  void EvictOldestPrerendersIfNecessary();
 
   // Deletes stale and cancelled prerendered PrerenderContents, as well as
   // WebContents that have been replaced by prerendered WebContents.
@@ -351,7 +348,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void PostCleanupTask();
 
   base::TimeDelta GetMaxAge() const;
-  bool IsPrerenderElementFresh(const base::Time start) const;
+  bool IsPrerenderFresh(base::TimeTicks start) const;
   void DeleteOldEntries();
   virtual base::Time GetCurrentTime() const;
   virtual base::TimeTicks GetCurrentTimeTicks() const;
@@ -365,20 +362,21 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // list.
   void DeletePendingDeleteEntries();
 
-  // Finds the specified PrerenderContentsData/PrerenderContents and returns it,
-  // if it exists. Returns NULL otherwise.  Unlike GetEntry, the
-  // PrerenderManager maintains ownership of the PrerenderContents.
-  PrerenderContentsData* FindEntryData(const GURL& url);
-  PrerenderContents* FindEntry(const GURL& url) const;
+  // Finds the active PrerenderData object for a running prerender matching
+  // |url| and |session_storage_namespace|.
+  PrerenderData* FindPrerenderData(
+      const GURL& url,
+      const content::SessionStorageNamespace* session_storage_namespace);
 
-  // Returns the iterator to the PrerenderContentsData entry that is being
-  // prerendered from the given child route id pair.
-  PrerenderContentsDataList::iterator
-      FindPrerenderContentsForChildRouteIdPair(
-          const std::pair<int, int>& child_route_id_pair);
+  // If |child_id| and |route_id| correspond to a RenderView that is an active
+  // prerender, returns the PrerenderData object for that prerender. Otherwise,
+  // returns NULL.
+  PrerenderData* FindPrerenderDataForChildAndRoute(int child_id, int route_id);
 
-  PrerenderContentsDataList::iterator
-      FindPrerenderContentsForURL(const GURL& url);
+  // Given the |prerender_contents|, find the iterator in active_prerender_list_
+  // correponding to the given prerender.
+  std::list<linked_ptr<PrerenderData> >::iterator
+      FindIteratorForPrerenderContents(PrerenderContents* prerender_contents);
 
   bool DoesRateLimitAllowPrerender() const;
 
@@ -439,8 +437,12 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   PrerenderTracker* prerender_tracker_;
 
-  // List of prerendered elements.
-  PrerenderContentsDataList prerender_list_;
+  // List of all running prerenders. It is kept sorted, in increasing order by
+  // expiry time. This list owns the PrerenderData objects contained in it.
+  std::list<linked_ptr<PrerenderData> > active_prerender_list_;
+
+  // List of all pending prerenders.
+  std::list<linked_ptr<PrerenderData> > pending_prerender_list_;
 
   // List of recent navigations in this profile, sorted by ascending
   // navigate_time_.

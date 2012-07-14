@@ -1798,6 +1798,8 @@
         'browser/prerender/prerender_field_trial.h',
         'browser/prerender/prerender_final_status.cc',
         'browser/prerender/prerender_final_status.h',
+        'browser/prerender/prerender_handle.cc',
+        'browser/prerender/prerender_handle.h',
         'browser/prerender/prerender_histograms.cc',
         'browser/prerender/prerender_histograms.h',
         'browser/prerender/prerender_history.cc',

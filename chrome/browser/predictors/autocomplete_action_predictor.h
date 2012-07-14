@@ -9,6 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/history/history_types.h"
@@ -25,8 +26,20 @@ class HistoryService;
 class PredictorsHandler;
 class Profile;
 
+namespace content {
+class SessionStorageNamespace;
+}
+
+namespace gfx {
+class Size;
+}
+
 namespace history {
 class URLDatabase;
+}
+
+namespace prerender {
+class PrerenderHandle;
 }
 
 namespace predictors {
@@ -77,6 +90,15 @@ class AutocompleteActionPredictor
   // is then mapped to an Action.
   Action RecommendAction(const string16& user_text,
                          const AutocompleteMatch& match) const;
+
+  // Begin prerendering |url| with |session_storage_namespace|. The |size| gives
+  // the initial size for the target prerender. The predictor will run at most
+  // one prerender at a time, so launching a prerender will cancel our previous
+  // prerenders (if any).
+  void StartPrerendering(
+      const GURL& url,
+      content::SessionStorageNamespace* session_storage_namespace,
+      const gfx::Size& size);
 
   // Return true if the suggestion type warrants a TCP/IP preconnection.
   // i.e., it is now quite likely that the user will select the related domain.
@@ -197,6 +219,8 @@ class AutocompleteActionPredictor
 
   // This is cleared after every Omnibox navigation.
   std::vector<TransitionalMatch> transitional_matches_;
+
+  scoped_ptr<prerender::PrerenderHandle> prerender_handle_;
 
   // This allows us to predict the effect of confidence threshold changes on
   // accuracy.  This is cleared after every omnibox navigation.
