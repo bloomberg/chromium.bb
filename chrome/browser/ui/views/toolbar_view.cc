@@ -823,10 +823,15 @@ bool ToolbarView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 // the location bar gets focus, not the first control in the toolbar - and
 // also so that it selects all content in the location bar.
 bool ToolbarView::SetPaneFocusAndFocusDefault() {
-  if (!SetPaneFocus(location_bar_))
-    return false;
+  if (!location_bar_->HasFocus()) {
+    location_bar_->RequestFocus();
+    location_bar_->SelectAll();
+    return true;
+  }
 
-  location_bar_->SelectAll();
+  if (!AccessiblePaneView::SetPaneFocusAndFocusDefault())
+    return false;
+  browser_->window()->RotatePaneFocus(true);
   return true;
 }
 
