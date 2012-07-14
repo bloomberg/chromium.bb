@@ -143,8 +143,8 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
     { "upToDate", IDS_UPGRADE_UP_TO_DATE },
     { "updating", IDS_UPGRADE_UPDATING },
     { "updateAlmostDone", IDS_UPGRADE_SUCCESSFUL_RELAUNCH },
-    { "getHelpWithChrome",  IDS_GET_HELP_USING_CHROME },
-    { "reportAnIssue",  IDS_REPORT_AN_ISSUE },
+    { "getHelpWithChrome", IDS_GET_HELP_USING_CHROME },
+    { "reportAnIssue", IDS_REPORT_AN_ISSUE },
 #if defined(OS_CHROMEOS)
     { "platform", IDS_PLATFORM_LABEL },
     { "firmware", IDS_ABOUT_PAGE_FIRMWARE },

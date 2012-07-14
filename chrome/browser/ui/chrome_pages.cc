@@ -158,15 +158,10 @@ void ShowInstantConfirmDialog(Browser* browser) {
 
 void ShowAboutChrome(Browser* browser) {
   content::RecordAction(UserMetricsAction("AboutChrome"));
-#if !defined(OS_WIN)
   NavigateParams params(
       GetSingletonTabNavigateParams(browser, GURL(kChromeUIUberURL)));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(browser, params);
-#else
-  // crbug.com/115123.
-  browser->window()->ShowAboutChromeDialog();
-#endif
 }
 
 void ShowSearchEngineSettings(Browser* browser) {

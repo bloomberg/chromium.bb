@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/google/google_update.h"
+#include "chrome/browser/google/google_update_win.h"
 
 #include <atlbase.h>
 #include <atlcom.h>
@@ -77,7 +77,7 @@ HRESULT CoCreateInstanceAsAdmin(REFCLSID class_id, REFIID interface_id,
   if (!interface_ptr)
     return E_POINTER;
 
-  // For Vista we need to instantiate the COM server via the elevation
+  // For Vista, need to instantiate the COM server via the elevation
   // moniker. This ensures that the UAC dialog shows up.
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     wchar_t class_id_as_string[MAX_PATH] = {0};
@@ -106,14 +106,10 @@ HRESULT CoCreateInstanceAsAdmin(REFCLSID class_id, REFIID interface_id,
 
 }  // namespace
 
-////////////////////////////////////////////////////////////////////////////////
-//
 // The GoogleUpdateJobObserver COM class is responsible for receiving status
-// reports from google Update. It keeps track of the progress as Google Update
-// notifies us and ends the message loop we are spinning in once Google Update
-// reports that it is done.
-//
-////////////////////////////////////////////////////////////////////////////////
+// reports from google Update. It keeps track of the progress as GoogleUpdate
+// notifies this observer and ends the message loop that is spinning in once
+// GoogleUpdate reports that it is done.
 class GoogleUpdateJobObserver
   : public CComObjectRootEx<CComSingleThreadModel>,
     public IJobObserver {
@@ -177,7 +173,7 @@ class GoogleUpdateJobObserver
 
     event_sink_ = NULL;
 
-    // We no longer need to spin the message loop that we started spinning in
+    // No longer need to spin the message loop that started spinning in
     // InitiateGoogleUpdateCheck.
     MessageLoop::current()->Quit();
     return S_OK;
@@ -235,9 +231,8 @@ GoogleUpdate::GoogleUpdate()
 GoogleUpdate::~GoogleUpdate() {
 }
 
-void GoogleUpdate::CheckForUpdate(bool install_if_newer,
-                                  views::Widget* window) {
-  // We need to shunt this request over to InitiateGoogleUpdateCheck and have
+void GoogleUpdate::CheckForUpdate(bool install_if_newer, HWND window) {
+  // Need to shunt this request over to InitiateGoogleUpdateCheck and have
   // it run in the file thread.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -249,7 +244,7 @@ void GoogleUpdate::CheckForUpdate(bool install_if_newer,
 // GoogleUpdate, private:
 
 void GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
-                                             views::Widget* window,
+                                             HWND window,
                                              MessageLoop* main_loop) {
   FilePath chrome_exe;
   if (!PathService::Get(base::DIR_EXE, &chrome_exe))
@@ -290,18 +285,13 @@ void GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
     hr = on_demand.CreateInstance(CLSID_OnDemandUserAppsClass);
   } else {
     // The Update operation needs Admin privileges for writing
-    // to %ProgramFiles%. On Vista we need to elevate before instantiating
+    // to %ProgramFiles%. On Vista, need to elevate before instantiating
     // the updater instance.
     if (!install_if_newer) {
       hr = on_demand.CreateInstance(CLSID_OnDemandMachineAppsClass);
     } else {
-      HWND foreground_hwnd = NULL;
-      if (window != NULL) {
-        foreground_hwnd = window->GetNativeWindow();
-      }
-
       hr = CoCreateInstanceAsAdmin(CLSID_OnDemandMachineAppsClass,
-          IID_IGoogleUpdate, foreground_hwnd,
+          IID_IGoogleUpdate, window,
           reinterpret_cast<void**>(on_demand.Receive()));
     }
     system_level = true;
@@ -339,7 +329,7 @@ void GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
     return;
   }
 
-  // We need to spin the message loop while Google Update is running so that it
+  // Need to spin the message loop while Google Update is running so that it
   // can report back to us through GoogleUpdateJobObserver. This message loop
   // will terminate once Google Update sends us the completion status
   // (success/error). See OnComplete().
@@ -389,7 +379,7 @@ void GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
 void GoogleUpdate::ReportResults(GoogleUpdateUpgradeResult results,
                                  GoogleUpdateErrorCode error_code,
                                  const string16& error_message) {
-  // If we get an error, then error code must not be blank, and vice versa.
+  // If there is an error, then error code must not be blank, and vice versa.
   DCHECK(results == UPGRADE_ERROR ? error_code != GOOGLE_UPDATE_NO_ERROR :
                                     error_code == GOOGLE_UPDATE_NO_ERROR);
   if (listener_) {

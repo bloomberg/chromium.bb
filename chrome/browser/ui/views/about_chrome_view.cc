@@ -528,7 +528,7 @@ void AboutChromeView::ViewHierarchyChanged(bool is_add,
             !base::win::UserAccountControlIsEnabled())) {
         UpdateStatus(UPGRADE_CHECK_STARTED, GOOGLE_UPDATE_NO_ERROR, string16());
         // CheckForUpdate(false, ...) means don't upgrade yet.
-        google_updater_->CheckForUpdate(false, GetWidget());
+        google_updater_->CheckForUpdate(false, GetWidget()->GetNativeWindow());
       }
 #endif
     } else {
@@ -681,7 +681,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
       google_updater_->set_status_listener(this);
       UpdateStatus(UPGRADE_STARTED, GOOGLE_UPDATE_NO_ERROR, string16());
       // CheckForUpdate(true,...) means perform upgrade if new version found.
-      google_updater_->CheckForUpdate(true, GetWidget());
+      google_updater_->CheckForUpdate(true, GetWidget()->GetNativeWindow());
       // TODO(seanparent): Need to see if this code needs to change to
       // force a machine restart.
       return;

@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GOOGLE_GOOGLE_UPDATE_H_
-#define CHROME_BROWSER_GOOGLE_GOOGLE_UPDATE_H_
+#ifndef CHROME_BROWSER_GOOGLE_GOOGLE_UPDATE_WIN_H_
+#define CHROME_BROWSER_GOOGLE_GOOGLE_UPDATE_WIN_H_
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
-#if defined(OS_WIN)
 #include "google_update/google_update_idl.h"
-#endif
 
 class MessageLoop;
 namespace views {
@@ -28,7 +26,7 @@ enum GoogleUpdateUpgradeResult {
   UPGRADE_IS_AVAILABLE,
   // The upgrade happened successfully.
   UPGRADE_SUCCESSFUL,
-  // No need to upgrade, we are up to date.
+  // No need to upgrade, Chrome is up to date.
   UPGRADE_ALREADY_UP_TO_DATE,
   // An error occurred.
   UPGRADE_ERROR,
@@ -94,7 +92,7 @@ class GoogleUpdate : public base::RefCountedThreadSafe<GoogleUpdate> {
   // |window| should point to a foreground window. This is needed to ensure
   // that Vista/Windows 7 UAC prompts show up in the foreground. It may also
   // be null.
-  void CheckForUpdate(bool install_if_newer, views::Widget* window);
+  void CheckForUpdate(bool install_if_newer, HWND window);
 
   // Pass NULL to clear the listener
   void set_status_listener(GoogleUpdateStatusListener* listener) {
@@ -106,24 +104,18 @@ class GoogleUpdate : public base::RefCountedThreadSafe<GoogleUpdate> {
 
   virtual ~GoogleUpdate();
 
-// The chromeos implementation is in browser/chromeos/google_update.cpp
-
-#if defined(OS_WIN)
-
   // This function reports failure from the Google Update operation to the
   // listener.
   // Note, after this function completes, this object will have deleted itself.
   bool ReportFailure(HRESULT hr, GoogleUpdateErrorCode error_code,
                      const string16& error_message, MessageLoop* main_loop);
 
-#endif
-
-  // We need to run the update check on another thread than the main thread, and
+  // The update check needs to run on another thread than the main thread, and
   // therefore CheckForUpdate will delegate to this function. |main_loop| points
-  // to the message loop that we want the response to come from.
+  // to the message loop that the response must come from.
   // |window| should point to a foreground window. This is needed to ensure that
   // Vista/Windows 7 UAC prompts show up in the foreground. It may also be null.
-  void InitiateGoogleUpdateCheck(bool install_if_newer, views::Widget* window,
+  void InitiateGoogleUpdateCheck(bool install_if_newer, HWND window,
                                  MessageLoop* main_loop);
 
   // This function reports the results of the GoogleUpdate operation to the
@@ -144,4 +136,4 @@ class GoogleUpdate : public base::RefCountedThreadSafe<GoogleUpdate> {
   DISALLOW_COPY_AND_ASSIGN(GoogleUpdate);
 };
 
-#endif  // CHROME_BROWSER_GOOGLE_GOOGLE_UPDATE_H_
+#endif  // CHROME_BROWSER_GOOGLE_GOOGLE_UPDATE_WIN_H_

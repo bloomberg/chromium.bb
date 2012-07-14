@@ -16,7 +16,7 @@
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-#include "chrome/browser/google/google_update.h"
+#include "chrome/browser/google/google_update_win.h"
 #endif
 
 namespace views {

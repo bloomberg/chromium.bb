@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/google/google_update.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "grit/generated_resources.h"
@@ -101,8 +100,7 @@ void VersionUpdaterCros::UpdateStatusChanged(
     case UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT:
       my_status = FAILED;
       // TODO(derat): More-detailed error info if UpdateEngineClient exposes it.
-      message = l10n_util::GetStringFUTF16Int(IDS_UPGRADE_ERROR,
-                                              GOOGLE_UPDATE_ERROR_UPDATING);
+      message = l10n_util::GetStringFUTF16Int(IDS_UPGRADE_ERROR, 0);
       break;
     case UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE:
       my_status = CHECKING;
