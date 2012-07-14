@@ -400,6 +400,9 @@ void Pipeline::OnAudioTimeUpdate(TimeDelta time, TimeDelta max_time) {
   if (waiting_for_clock_update_ && time < clock_->Elapsed())
     return;
 
+  if (state_ == kSeeking)
+    return;
+
   clock_->SetTime(time, max_time);
   StartClockIfWaitingForTimeUpdate_Locked();
 }
@@ -409,6 +412,9 @@ void Pipeline::OnVideoTimeUpdate(TimeDelta max_time) {
   base::AutoLock auto_lock(lock_);
 
   if (has_audio_)
+    return;
+
+  if (state_ == kSeeking)
     return;
 
   DCHECK(!waiting_for_clock_update_);

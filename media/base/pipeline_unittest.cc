@@ -23,10 +23,12 @@ using ::testing::DeleteArg;
 using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::Invoke;
+using ::testing::InvokeWithoutArgs;
 using ::testing::Mock;
 using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::ReturnRef;
+using ::testing::SaveArg;
 using ::testing::StrictMock;
 using ::testing::WithArg;
 
@@ -204,7 +206,8 @@ class PipelineTest : public ::testing::Test {
     } else {
       EXPECT_CALL(*mocks_->audio_renderer(), Initialize(
           scoped_refptr<AudioDecoder>(mocks_->audio_decoder()), _, _, _))
-          .WillOnce(Invoke(&RunPipelineStatusCB4));
+          .WillOnce(DoAll(SaveArg<3>(&audio_time_cb_),
+                          Invoke(&RunPipelineStatusCB4)));
     }
     EXPECT_CALL(*mocks_->audio_renderer(), SetPlaybackRate(0.0f));
     EXPECT_CALL(*mocks_->audio_renderer(), SetVolume(1.0f));
@@ -294,6 +297,7 @@ class PipelineTest : public ::testing::Test {
   scoped_ptr<media::MockFilterCollection> mocks_;
   scoped_refptr<StrictMock<MockDemuxerStream> > audio_stream_;
   scoped_refptr<StrictMock<MockDemuxerStream> > video_stream_;
+  AudioRenderer::TimeCB audio_time_cb_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PipelineTest);
@@ -861,6 +865,66 @@ TEST_F(PipelineTest, StartTimeIsNonZero) {
   EXPECT_TRUE(pipeline_->HasVideo());
 
   EXPECT_EQ(kStartTime, pipeline_->GetCurrentTime());
+}
+
+static void RunTimeCB(const AudioRenderer::TimeCB& time_cb,
+                       int time_in_ms,
+                       int max_time_in_ms) {
+  time_cb.Run(base::TimeDelta::FromMilliseconds(time_in_ms),
+              base::TimeDelta::FromMilliseconds(max_time_in_ms));
+}
+
+TEST_F(PipelineTest, AudioTimeUpdateDuringSeek) {
+  CreateAudioStream();
+  MockDemuxerStreamVector streams;
+  streams.push_back(audio_stream());
+
+  InitializeDemuxer(&streams, base::TimeDelta::FromSeconds(10));
+  InitializeAudioDecoder(audio_stream());
+  InitializeAudioRenderer();
+  InitializePipeline(PIPELINE_OK);
+
+  float playback_rate = 1.0f;
+  EXPECT_CALL(*mocks_->demuxer(), SetPlaybackRate(playback_rate));
+  EXPECT_CALL(*mocks_->audio_renderer(), SetPlaybackRate(playback_rate));
+  pipeline_->SetPlaybackRate(playback_rate);
+  message_loop_.RunAllPending();
+
+  // Provide an initial time update so that the pipeline transitions out of the
+  // "waiting for time update" state.
+  audio_time_cb_.Run(base::TimeDelta::FromMilliseconds(100),
+                     base::TimeDelta::FromMilliseconds(500));
+
+  base::TimeDelta seek_time = base::TimeDelta::FromSeconds(5);
+
+  // Arrange to trigger a time update while the demuxer is in the middle of
+  // seeking. This update should be ignored by the pipeline and the clock should
+  // not get updated.
+  base::Closure closure = base::Bind(&RunTimeCB, audio_time_cb_, 300, 700);
+  EXPECT_CALL(*mocks_->demuxer(), Seek(seek_time, _))
+      .WillOnce(DoAll(InvokeWithoutArgs(&closure, &base::Closure::Run),
+                      Invoke(&RunPipelineStatusCB2)));
+
+  EXPECT_CALL(*mocks_->audio_renderer(), Pause(_))
+      .WillOnce(Invoke(&RunClosure));
+  EXPECT_CALL(*mocks_->audio_renderer(), Flush(_))
+      .WillOnce(Invoke(&RunClosure));
+  EXPECT_CALL(*mocks_->audio_renderer(), Seek(seek_time, _))
+      .WillOnce(Invoke(&RunPipelineStatusCB2));
+  EXPECT_CALL(*mocks_->audio_renderer(), Play(_))
+      .WillOnce(Invoke(&RunClosure));
+
+  EXPECT_CALL(callbacks_, OnSeek(PIPELINE_OK));
+  DoSeek(seek_time);
+
+  EXPECT_EQ(pipeline_->GetCurrentTime(), seek_time);
+
+  // Now that the seek is complete, verify that time updates advance the current
+  // time.
+  base::TimeDelta new_time = seek_time + base::TimeDelta::FromMilliseconds(100);
+  audio_time_cb_.Run(new_time, new_time);
+
+  EXPECT_EQ(pipeline_->GetCurrentTime(), new_time);
 }
 
 class FlexibleCallbackRunner : public base::DelegateSimpleThread::Delegate {
