@@ -98,6 +98,22 @@ class PackageBuildFailure(BuildScriptFailure):
             % (self.shortname, ' '.join(sorted(self.failed_packages))))
 
 
+class RecordedTraceback(object):
+  """This class represents a traceback recorded in the list of results."""
+
+  def __init__(self, failed_stage, exception, traceback):
+    """Construct a RecordedTraceback object.
+
+    Args:
+      failed_stage: The stage that failed during the build.
+      exception: The raw exception object.
+      traceback: The full stack trace for the failure, as a string.
+    """
+    self.failed_stage = failed_stage
+    self.exception = exception
+    self.traceback = traceback
+
+
 class _Results(object):
   """Static class that collects the results of our BuildStages as they run."""
 
@@ -224,17 +240,14 @@ class _Results(object):
     """Get a list of the exceptions that failed the build.
 
     Returns:
-       A list of (failed_stage, exception, traceback) tuples.
-       failed_stage: The name of the first stage that failed.
-       exception: The exception object thrown by the failure.
-       traceback: The full traceback for the failure.
+       A list of RecordedTraceback objects.
     """
     for name, result, description, _ in self._results_log:
       # If result is not SUCCESS or FORGIVEN, then the stage failed, and
       # result is the exception object and description is a string containing
       # the full traceback.
       if result not in (self.SUCCESS, self.FORGIVEN):
-        yield name, result, description
+        yield RecordedTraceback(name, result, description)
 
   def Report(self, out, archive_urls=None, current_version=None):
     """Generate a user friendly text display of the results data."""
@@ -288,10 +301,10 @@ class _Results(object):
         out.write('@@@STEP_LINK@Artifacts[%s]@%s@@@\n' % (board, url))
       out.write(line)
 
-    for failed_stage, _, traceback in self.GetTracebacks():
-      if failed_stage and traceback:
-        out.write('\nFailed in stage %s:\n\n' % failed_stage)
-        out.write(traceback)
+    for x in self.GetTracebacks():
+      if x.failed_stage and x.traceback:
+        out.write('\nFailed in stage %s:\n\n' % x.failed_stage)
+        out.write(x.traceback)
         out.write('\n')
 
 Results = _Results()

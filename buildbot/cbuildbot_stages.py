@@ -641,16 +641,16 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       if LKGMCandidateSyncStage.sub_manager:
         LKGMCandidateSyncStage.sub_manager.PromoteCandidate()
 
-  def HandleValidationFailure(self, failing_build_statuses):
+  def HandleValidationFailure(self, failing_statuses):
     print '\n%s' % constants.STEP_WARNINGS
     print 'The following builders failed with this manifest:'
-    print ', '.join(sorted(failing_build_statuses.keys()))
+    print ', '.join(sorted(failing_statuses.keys()))
     print 'Please check the logs of the failing builders for details.'
 
-  def HandleValidationTimeout(self, inflight_build_statuses):
+  def HandleValidationTimeout(self, inflight_statuses):
     print '\n%s' % constants.STEP_WARNINGS
     print 'The following builders took too long to finish:'
-    print ', '.join(sorted(inflight_build_statuses.keys()))
+    print ', '.join(sorted(inflight_statuses.keys()))
     print 'Please check the logs of these builders for details.'
 
   def _PerformStage(self):
@@ -690,23 +690,14 @@ class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
       if cbuildbot_config.IsPFQType(self._build_config['build_type']):
         super(CommitQueueCompletionStage, self).HandleSuccess()
 
-  def HandleValidationFailure(self, failing_build_statuses):
+  def HandleValidationFailure(self, failing_statuses):
     """Sends the failure message of all failing builds in one go."""
     super(CommitQueueCompletionStage, self).HandleValidationFailure(
-        failing_build_statuses)
+        failing_statuses)
 
     if self._build_config['master']:
-      failure_list = ['The following build(s) failed:']
-      # Sorts by build name i.e. the dictionary key
-      for builder, status in sorted(failing_build_statuses.items()):
-        if status.message:
-          failure_list.append('%(builder)s: %(message)s' % dict(
-              builder=builder, message=status.message))
-        else:
-          failure_list.append('%(builder)s failed.' % dict(builder=builder))
-
-      failure_message = '\n\n'.join(failure_list)
-      CommitQueueSyncStage.pool.HandleValidationFailure(failure_message)
+      failing_messages = [x.message for x in failing_statuses.itervalues()]
+      CommitQueueSyncStage.pool.HandleValidationFailure(failing_messages)
 
   def HandleValidationTimeout(self, inflight_builders):
     super(CommitQueueCompletionStage, self).HandleValidationTimeout(

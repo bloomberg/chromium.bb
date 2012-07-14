@@ -21,6 +21,7 @@ import urllib
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 
+from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import gerrit_helper
 from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import patch_unittest
@@ -49,10 +50,6 @@ def GetTestJson(change_id=None):
 
 
 # pylint: disable=W0212,R0904
-class TestValidationPool(mox.MoxTestBase):
-  """Tests methods in validation_pool.ValidationPool."""
-
-
 class base_mixin(object):
 
   def setUp(self):
@@ -92,8 +89,8 @@ class base_mixin(object):
     patch.IsAlreadyMerged = lambda:is_merged
     return patch
 
-  def GetPatches(self, how_many=1):
-    l = [self.MockPatch() for _ in xrange(how_many)]
+  def GetPatches(self, how_many=1, **kwargs):
+    l = [self.MockPatch(**kwargs) for _ in xrange(how_many)]
     if how_many == 1:
       return l[0]
     return l
@@ -768,6 +765,120 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
     _f(pool.changes_that_failed_to_apply_earlier, conflicting,
        getter=lambda s:getattr(s, 'patch', s))
     return ''
+
+
+class TestFindSuspects(base_mixin, mox.MoxTestBase):
+  """Tests validation_pool.ValidationPool._FindSuspects"""
+
+  def setUp(self):
+    base_mixin.setUp(self)
+    overlay = 'chromiumos/overlays/chromiumos-overlay'
+    self.overlay_patch = self.GetPatches(project=overlay)
+    self.power_manager = 'chromiumos/platform/power_manager'
+    self.power_manager_pkg = 'chromeos-base/power_manager'
+    self.power_manager_patch = self.GetPatches(project=self.power_manager)
+    self.kernel = 'chromiumos/third_party/kernel'
+    self.kernel_pkg = 'sys-kernel/chromeos-kernel'
+    self.kernel_patch = self.GetPatches(project=self.kernel)
+
+  @staticmethod
+  def _GetBuildFailure(pkg):
+    """Create a PackageBuildFailure for the specified |pkg|.
+
+    Args:
+      pkg: Package that failed to build.
+    """
+    ex = cros_build_lib.RunCommandError('foo', cros_build_lib.CommandResult())
+    return results_lib.PackageBuildFailure(ex, 'bar', [pkg])
+
+  def _AssertSuspects(self, patches, suspects, pkgs=(), exceptions=()):
+    """Run _FindSuspects and verify its output.
+
+    Args:
+      patches: List of patches to look at.
+      suspects: Expected list of suspects returned by _FindSuspects.
+      pkgs: List of packages that failed with exceptions in the build.
+      exceptions: List of other exceptions that occurred during the build.
+    """
+    results = validation_pool.ValidationPool._FindSuspects(
+        patches, list(exceptions) + [self._GetBuildFailure(x) for x in pkgs])
+    self.assertEquals(set(suspects), results)
+
+  def testFailSameProject(self):
+    """Patches to the package that failed should be marked as failing."""
+    suspects = [self.kernel_patch]
+    patches = suspects + [self.power_manager_patch]
+    self._AssertSuspects(patches, suspects, [self.kernel_pkg])
+
+  def testFailSameProjectPlusOverlay(self):
+    """Patches to the overlay should be marked as failing."""
+    suspects = [self.overlay_patch, self.kernel_patch]
+    patches = suspects + [self.power_manager_patch]
+    self._AssertSuspects(patches, suspects, [self.kernel_pkg])
+
+  def testFailUnknownPackage(self):
+    """If no patches changed the package, all patches should fail."""
+    suspects = [self.overlay_patch, self.power_manager_patch]
+    self._AssertSuspects(suspects, suspects, [self.kernel_pkg])
+
+  def testFailUnknownException(self):
+    """An unknown exception should cause all patches to fail."""
+    suspects = [self.kernel_patch, self.power_manager_patch]
+    self._AssertSuspects(suspects, suspects, exceptions=[Exception('foo bar')])
+
+  def testFailUnknownCombo(self):
+    """An unknown exception should cause all patches to fail, even if there
+    are also build failures that we can explain."""
+    suspects = [self.kernel_patch, self.power_manager_patch]
+    self._AssertSuspects(suspects, suspects, [self.kernel_pkg],
+                         [Exception('foo bar')])
+
+  def testFailNoExceptions(self):
+    """If there are no exceptions, all patches should be failed."""
+    suspects = [self.kernel_patch, self.power_manager_patch]
+    self._AssertSuspects(suspects, suspects)
+
+
+class TestCreateValidationFailureMessage(unittest.TestCase):
+  """Tests validation_pool.ValidationPool._CreateValidationFailureMessage"""
+
+  def _AssertMessage(self, change, suspects, messages):
+    """Call the _CreateValidationFailureMessage method.
+
+    Args:
+      change: The change we are commenting on.
+      suspects: List of suspected changes.
+      messages: List of messages to include in comment.
+    """
+    msg = validation_pool.ValidationPool._CreateValidationFailureMessage(
+      change, set(suspects), messages)
+    for x in messages:
+      self.assertTrue(x in msg)
+    return msg
+
+  def testSuspectChange(self):
+    """Test case where 1 is the only change and is suspect."""
+    self._AssertMessage('1', ['1'], ['1 failed'])
+
+  def testInnocentChange(self):
+    """Test case where 1 is innocent."""
+    self._AssertMessage('1', ['2'], ['2 failed'])
+
+  def testSuspectChanges(self):
+    """Test case where 1 is suspected, but so is 2."""
+    self._AssertMessage('1', ['1', '2'], ['1 and 2 failed'])
+
+  def testInnocentChangeWithMultipleSuspects(self):
+    """Test case where 2 and 3 are suspected."""
+    self._AssertMessage('1', ['2', '3'], ['2 and 3 failed'])
+
+  def testNoSuspects(self):
+    """Test case where there are no suspects."""
+    self._AssertMessage('1', [], ['Internal error'])
+
+  def testNoMessages(self):
+    """Test case where there are no messages."""
+    self._AssertMessage('1', ['1'], [])
 
 
 if __name__ == '__main__':

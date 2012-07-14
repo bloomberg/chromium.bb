@@ -21,6 +21,7 @@ from chromite.buildbot import constants
 from chromite.buildbot import gerrit_helper
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import patch as cros_patch
+from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 
 _BUILD_DASHBOARD = 'http://build.chromium.org/p/chromiumos'
@@ -593,6 +594,31 @@ class PatchSeries(object):
                   ' '.join([c.id for c in applied]))
 
 
+class ValidationFailedMessage(object):
+  """Message indicating that changes failed to be validated."""
+
+  def __init__(self, builder_name, build_log, tracebacks):
+    """Create a ValidationFailedMessage object.
+
+    Args:
+      builder_name: The URL-quoted name of the builder.
+      build_log: The URL users should visit to see the build log.
+      tracebacks: A list of results_lib.RecordedTraceback objects.
+    """
+    self.builder_name = builder_name
+    self.build_log = build_log
+    self.tracebacks = tuple(tracebacks)
+
+  def __str__(self):
+    details = []
+    for x in self.tracebacks:
+      details.append('The %s stage failed: %s' % (x.failed_stage, x.exception))
+    if not details:
+      details = ['cbuildbot failed']
+    details.append('in %s' % (self.build_log,))
+    return '%s: %s' % (urllib.unquote(self.builder_name), ' '.join(details))
+
+
 class ValidationPool(object):
   """Class that handles interactions with a validation pool.
 
@@ -1105,39 +1131,130 @@ class ValidationPool(object):
     self._helper_pool.ForChange(change).RemoveCommitReady(
         change, dryrun=self.dryrun)
 
-  def HandleValidationFailure(self, msg):
-    """Handles validation failure by sending |msg| to all changes.
+  @staticmethod
+  def _FindSuspects(changes, exceptions):
+    """Figure out what changes probably caused our failures.
 
-    This handler strips the Commit Ready from all changes forcing developers
-    to re-upload a change that works.  There are many reasons why this might be
-    called e.g. build or testing exception. This is the meta-call called by
-    a master paladin builder with a msg containing all sub-messsages from failed
-    slave builders."""
-    msg += ('\n\nPlease check whether the failure is your fault. '
-            'If your change is not at fault, you may mark it as ready again.')
-    for change in self.changes:
-      # Send notification but don't apply kwargs as the message is already
-      # complete.
-      self._SendNotification(change, '%(failure_message)s', failure_message=msg)
-      self._helper_pool.ForChange(change).RemoveCommitReady(
-          change, dryrun=self.dryrun)
+    We use a fairly simplistic algorithm to calculate breakage: If you changed
+    a package, and that package broke, you probably broke the build. If there
+    were multiple changes to a broken package, we fail them all.
 
-  def GetValidationFailedMessage(self):
-    """Returns message indicating these changes failed to be validated.
+    Some safeguards are implemented to ensure that bad changes are kicked out:
+      1) Changes to overlays (e.g. ebuilds, eclasses, etc.) are always kicked
+         out if the build fails.
+      2) If a package fails that nobody changed, we kick out all of the
+         changes.
+      3) If any failures occur that we can't explain, we kick out all of the
+         changes.
+
+    It is certainly possible to trick this algorithm: If one developer submits
+    a change to libchromeos that breaks the power_manager, and another developer
+    submits a change to the power_manager at the same time, only the
+    power_manager change will be kicked out. That said, in that situation, the
+    libchromeos change will likely be kicked out on the next run, thanks to
+    safeguard #2 above.
+
+    This function is intentionally static, and should be kept simple. If it
+    starts getting complicated, we should move it to a different file.
 
     Args:
-      change: GerritPatch instance to operate upon.
-      failed_stage: If not None, the name of the first stage that failed.
-      exception: The exception object thrown by the first failure.
+      changes: List of changes to examine.
+      exceptions: List of exceptions that occurred during the builds.
+    Returns:
+      suspects: Set of changes that likely caused the failure.
     """
+    suspects = set()
+    blame_everything = False
+    for exception in exceptions:
+      blame_assigned = False
+      if isinstance(exception, results_lib.PackageBuildFailure):
+        for package in exception.failed_packages:
+          failed_projects = portage_utilities.FindWorkonProjects([package])
+          for change in changes:
+            if change.project in failed_projects:
+              blame_assigned = True
+              suspects.add(change)
+      if not blame_assigned:
+        blame_everything = True
+
+    if blame_everything or not suspects:
+      suspects = set(changes)
+    else:
+      # Never treat changes to overlays as innocent.
+      suspects.update(change for change in changes
+                      if '/overlays/' in change.project)
+
+    return suspects
+
+  @staticmethod
+  def _CreateValidationFailureMessage(change, suspects, messages):
+    """Create a message explaining why a validation failure occurred.
+
+    Args:
+      change: The change we want to create a message for.
+      suspects: The set of suspect changes that we think broke the build.
+      messages: A list of build failure messages from supporting builders.
+    """
+    msg = ['The following build(s) failed:'] + map(str, messages)
+
+    # Create a list of changes other than this one that might be guilty.
+    other_suspects = suspects - set([change])
+    other_suspects_str = ', '.join(sorted(map(str, other_suspects)))
+
+    if change in suspects:
+      if other_suspects_str:
+        msg.append('Your change may have caused this failure. There are '
+                   'also other changes that may be at fault: %s'
+                   % other_suspects_str)
+      else:
+        msg.append('This failure was probably caused by your change.')
+
+      msg.append('Please check whether the failure is your fault. If your '
+                 'change is not at fault, you may mark it as ready again.')
+    else:
+      if len(suspects) == 1:
+        msg.append('This failure was probably caused by %s'
+                   % other_suspects_str)
+      else:
+        msg.append('One of the following changes is probably at fault: %s'
+                   % other_suspects_str)
+
+      msg.append('The Commit Queue will retry your change automatically.')
+
+    return '\n\n'.join(msg)
+
+  def HandleValidationFailure(self, messages):
+    """Handles a list of validation failure messages from slave builders.
+
+    This handler parses a list of failure messages from our list of builders
+    and calculates which changes were likely responsible for the failure. The
+    changes that were responsible for the failure have their Commit Ready bit
+    stripped and the other changes are left marked as Commit Ready.
+
+    Args:
+      messages: A list of build failure messages from supporting builders.
+          These must be ValidationFailedMessage objects.
+    """
+
+    # First, calculate which changes are likely at fault for the failure.
+    exceptions = []
+    for message in messages:
+      exceptions.extend(x.exception for x in message.tracebacks)
+    suspects = self._FindSuspects(self.changes, exceptions)
+
+    # Send out failure notifications for each change.
+    for change in self.changes:
+      msg = self._CreateValidationFailureMessage(change, suspects, messages)
+      self._SendNotification(change, '%(details)s', details=msg)
+      if change in suspects:
+        self._helper_pool.ForChange(change).RemoveCommitReady(
+            change, dryrun=self.dryrun)
+
+  def GetValidationFailedMessage(self):
+    """Returns message indicating these changes failed to be validated."""
     logging.info('Validation failed for all changes.')
-    details = []
-    for failed_stage, exception, _ in results_lib.Results.GetTracebacks():
-      details.append('The %s stage failed: %s' % (failed_stage, exception))
-    if not details:
-      details = ['cbuildbot failed']
-    details.append('in %s' % (self.build_log,))
-    return ' '.join(details)
+    return ValidationFailedMessage(self._builder_name, self.build_log,
+                                   results_lib.Results.GetTracebacks())
 
   def HandleCouldNotApply(self, change):
     """Handler for when Paladin fails to apply a change.
