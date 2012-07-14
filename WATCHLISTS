@@ -250,7 +250,7 @@
         'chrome/common/plugin.*|webkit/glue/webplugin.*|webkit/glue/plugins/.*',
     },
     'prerender': {
-      'filepath': 'chrome/browser/prerender/.*'
+      'filepath': 'prerender'
     },
     'pyauto': {
       'filepath': 'chrome/test/pyautolib' \
@@ -456,7 +456,8 @@
     'plugin': ['darin-cc@chromium.org', 'jam@chromium.org',
                'stuartmorgan+watch@chromium.org'],
     'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org',
-                  'dominich+watch@chromium.org', 'mmenke@chromium.org'],
+                  'dominich+watch@chromium.org', 'mmenke@chromium.org',
+                  'gavinp+prer@chromium.org'],
     'pyauto': ['anantha@chromium.org',
                'nirnimesh@chromium.org', 'dyu@chromium.org',
                'dennisjeffrey@chromium.org'],
