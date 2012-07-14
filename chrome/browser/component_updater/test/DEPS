@@ -1,0 +1,4 @@
+include_rules = [
+  # For access to the ppapi test globals.
+  "+ppapi/shared_impl",
+]
