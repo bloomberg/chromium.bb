@@ -46,7 +46,9 @@
 static int option_current_mode = 0;
 
 enum {
-	WESTON_PLANE_DRM_CURSOR = 0x100
+	WESTON_PLANE_DRM_CURSOR =	0x100,
+	WESTON_PLANE_DRM_PLANE =	0x101,
+	WESTON_PLANE_DRM_FB =		0x102
 };
 
 struct drm_compositor {
@@ -144,18 +146,6 @@ struct drm_sprite {
 };
 
 static int
-surface_is_primary(struct weston_compositor *ec, struct weston_surface *es)
-{
-	struct weston_surface *primary;
-
-	primary = container_of(ec->surface_list.next, struct weston_surface,
-			       link);
-	if (es == primary)
-		return -1;
-	return 0;
-}
-
-static int
 drm_sprite_crtc_supported(struct weston_output *output_base, uint32_t supported)
 {
 	struct weston_compositor *ec = output_base->compositor;
@@ -242,15 +232,13 @@ fb_handle_buffer_destroy(struct wl_listener *listener, void *data)
 }
 
 static int
-drm_output_prepare_scanout_surface(struct drm_output *output)
+drm_output_prepare_scanout_surface(struct weston_output *_output,
+				   struct weston_surface *es)
 {
+	struct drm_output *output = (struct drm_output *) _output;
 	struct drm_compositor *c =
 		(struct drm_compositor *) output->base.compositor;
-	struct weston_surface *es;
 	struct gbm_bo *bo;
-
-	es = container_of(c->base.surface_list.next,
-			  struct weston_surface, link);
 
 	if (es->geometry.x != output->base.x ||
 	    es->geometry.y != output->base.y ||
@@ -285,8 +273,7 @@ drm_output_prepare_scanout_surface(struct drm_output *output)
 	wl_signal_add(&output->next->buffer->resource.destroy_signal,
 		      &output->next->buffer_destroy_listener);
 
-	pixman_region32_fini(&es->damage);
-	pixman_region32_init(&es->damage);
+	es->plane = WESTON_PLANE_DRM_FB;
 
 	return 0;
 }
@@ -307,7 +294,8 @@ drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 	}
 
 	wl_list_for_each_reverse(surface, &compositor->base.surface_list, link)
-		weston_surface_draw(surface, &output->base, damage);
+		if (surface->plane == WESTON_PLANE_PRIMARY)
+			weston_surface_draw(surface, &output->base, damage);
 
 	wl_signal_emit(&output->base.frame_signal, output);
 
@@ -337,7 +325,6 @@ drm_output_repaint(struct weston_output *output_base,
 	struct drm_mode *mode;
 	int ret = 0;
 
-	drm_output_prepare_scanout_surface(output);
 	if (!output->next)
 		drm_output_render(output, damage);
 	if (!output->next)
@@ -509,18 +496,6 @@ drm_surface_transform_supported(struct weston_surface *es)
 	return 1;
 }
 
-static int
-drm_surface_overlap_supported(struct weston_output *output_base,
-			      pixman_region32_t *overlap)
-{
-	/* We could potentially use a color key here if the surface left
-	 * to display has rectangular regions
-	 */
-	if (pixman_region32_not_empty(overlap))
-		return 0;
-	return 1;
-}
-
 static void
 drm_disable_unused_sprites(struct weston_output *output_base)
 {
@@ -560,8 +535,7 @@ drm_disable_unused_sprites(struct weston_output *output_base)
  */
 static int
 drm_output_prepare_overlay_surface(struct weston_output *output_base,
-				   struct weston_surface *es,
-				   pixman_region32_t *overlap)
+				   struct weston_surface *es)
 {
 	struct weston_compositor *ec = output_base->compositor;
 	struct drm_compositor *c =(struct drm_compositor *) ec;
@@ -583,16 +557,10 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	if (es->output_mask != (1u << output_base->id))
 		return -1;
 
-	if (surface_is_primary(ec, es))
-		return -1;
-
 	if (es->buffer == NULL)
 		return -1;
 
 	if (!drm_surface_transform_supported(es))
-		return -1;
-
-	if (!drm_surface_overlap_supported(output_base, overlap))
 		return -1;
 
 	wl_list_for_each(s, &c->sprite_list, link) {
@@ -637,14 +605,6 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 		weston_log("addfb2 failed: %d\n", ret);
 		c->sprites_are_broken = 1;
 		return -1;
-	}
-
-	if (s->surface && s->surface != es) {
-		struct weston_surface *old_surf = s->surface;
-		pixman_region32_fini(&old_surf->damage);
-		pixman_region32_init_rect(&old_surf->damage,
-					  old_surf->geometry.x, old_surf->geometry.y,
-					  old_surf->geometry.width, old_surf->geometry.height);
 	}
 
 	s->pending_fb_id = fb_id;
@@ -696,6 +656,8 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	s->src_h = (sy2 - sy1) << 8;
 	pixman_region32_fini(&src_rect);
 
+	es->plane = WESTON_PLANE_DRM_PLANE;
+
 	wl_signal_add(&es->buffer->resource.destroy_signal,
 		      &s->pending_destroy_listener);
 
@@ -708,8 +670,7 @@ drm_output_set_cursor(struct weston_output *output_base,
 
 static void
 weston_output_set_cursor(struct weston_output *output,
-			 struct weston_seat *seat,
-			 pixman_region32_t *overlap)
+			 struct weston_seat *seat)
 {
 	pixman_region32_t cursor_region;
 
@@ -721,26 +682,10 @@ weston_output_set_cursor(struct weston_output *output,
 				  &seat->sprite->transform.boundingbox,
 				  &output->region);
 
-	if (!pixman_region32_not_empty(&cursor_region)) {
-		drm_output_set_cursor(output, NULL);
-		goto out;
-	}
-
-	if (pixman_region32_not_empty(overlap) ||
-	    drm_output_set_cursor(output, seat) < 0) {
-		if (seat->sprite->plane == WESTON_PLANE_DRM_CURSOR) {
-			weston_surface_damage(seat->sprite);
-			drm_output_set_cursor(output, NULL);
-		}
-		seat->sprite->plane = WESTON_PLANE_PRIMARY;
-	} else {
-		if (seat->sprite->plane == WESTON_PLANE_PRIMARY)
-			weston_surface_damage_below(seat->sprite);
-		wl_list_remove(&seat->sprite->link);
+	if (pixman_region32_not_empty(&cursor_region) &&
+	    drm_output_set_cursor(output, seat) == 0)
 		seat->sprite->plane = WESTON_PLANE_DRM_CURSOR;
-	}
 
-out:
 	pixman_region32_fini(&cursor_region);
 }
 
@@ -751,6 +696,7 @@ drm_assign_planes(struct weston_output *output)
 	struct weston_surface *es, *next;
 	pixman_region32_t overlap, surface_overlap;
 	struct weston_seat *seat;
+	int prev_plane;
 
 	/*
 	 * Find a surface for each sprite in the output using some heuristics:
@@ -776,26 +722,36 @@ drm_assign_planes(struct weston_output *output)
 		pixman_region32_intersect(&surface_overlap, &overlap,
 					  &es->transform.boundingbox);
 
-		if (es == seat->sprite) {
-			weston_output_set_cursor(output, seat,
-						 &surface_overlap);
+		prev_plane = es->plane;
+		es->plane = WESTON_PLANE_PRIMARY;
+		if (pixman_region32_not_empty(&surface_overlap))
+			goto bail;
 
-			if (seat->sprite->plane == WESTON_PLANE_PRIMARY)
-				pixman_region32_union(&overlap, &overlap,
-						      &es->transform.boundingbox);
-		} else if (!drm_output_prepare_overlay_surface(output, es,
-							       &surface_overlap)) {
-			pixman_region32_fini(&es->damage);
-			pixman_region32_init(&es->damage);
-		} else {
+		if (es == seat->sprite)
+			weston_output_set_cursor(output, seat);
+
+		if (es->plane == WESTON_PLANE_PRIMARY)
+			drm_output_prepare_scanout_surface(output, es);
+		if (es->plane == WESTON_PLANE_PRIMARY)
+			drm_output_prepare_overlay_surface(output, es);
+
+	bail:
+		if (es->plane == WESTON_PLANE_PRIMARY)
 			pixman_region32_union(&overlap, &overlap,
 					      &es->transform.boundingbox);
-		}
+
+		if (prev_plane != WESTON_PLANE_PRIMARY &&
+		    es->plane == WESTON_PLANE_PRIMARY)
+			weston_surface_damage(es);
+		else if (prev_plane == WESTON_PLANE_PRIMARY &&
+			 es->plane != WESTON_PLANE_PRIMARY)
+			weston_surface_damage_below(es);
+
 		pixman_region32_fini(&surface_overlap);
 	}
 	pixman_region32_fini(&overlap);
 
-	if (!seat->sprite || !weston_surface_is_mapped(seat->sprite))
+	if (!seat->sprite || seat->sprite->plane == WESTON_PLANE_PRIMARY)
 		drm_output_set_cursor(output, NULL);
 
 	drm_disable_unused_sprites(output);
