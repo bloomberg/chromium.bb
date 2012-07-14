@@ -611,11 +611,6 @@ cpfq_arm.add_config('daisy-tot-chrome-pfq-informational',
   boards=['daisy'],
 )
 
-chromium_pfq_info.add_config('amd64-corei7-tot-chrome-pfq-informational',
-  amd64,
-  boards=['amd64-corei7'],
-)
-
 chromium_pfq_info.add_config('amd64-generic-tot-chrome-pfq-informational',
   amd64,
   boards=['amd64-generic'],
@@ -735,12 +730,6 @@ internal_arm_paladin.add_config('daisy-paladin',
 internal_arm_paladin.add_config('kaen-paladin',
   boards=['tegra2_kaen'],
   paladin_builder_name='tegra2 kaen paladin',
-)
-
-internal_arm_paladin.add_config('ironhide-paladin',
-  boards=['ironhide'],
-  important=False,
-  paladin_builder_name='ironhide paladin',
 )
 
 internal_paladin.add_config('zgb-paladin',
@@ -974,10 +963,6 @@ _arm_release.add_config('arm-tegra2_kaen-release',
 
 _arm_release.add_config('daisy-release',
   boards=['daisy'],
-)
-
-_arm_release.add_config('ironhide-release',
-  boards=['ironhide'],
 )
 
 # Factory and Firmware releases much inherit from these classes.  Modifications
