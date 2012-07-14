@@ -26,6 +26,7 @@
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
+#include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -119,6 +120,8 @@ AutocompleteActionPredictor::~AutocompleteActionPredictor() {
     main_profile_predictor_->incognito_predictor_ = NULL;
   else if (incognito_predictor_)
     incognito_predictor_->main_profile_predictor_ = NULL;
+  if (prerender_handle_.get())
+    prerender_handle_->OnCancel();
 }
 
 void AutocompleteActionPredictor::RegisterTransitionalMatches(
@@ -151,6 +154,22 @@ void AutocompleteActionPredictor::RegisterTransitionalMatches(
 
 void AutocompleteActionPredictor::ClearTransitionalMatches() {
   transitional_matches_.clear();
+}
+
+void AutocompleteActionPredictor::StartPrerendering(
+    const GURL& url,
+    content::SessionStorageNamespace* session_storage_namespace,
+    const gfx::Size& size) {
+  if (prerender_handle_.get())
+    prerender_handle_->OnNavigateAway();
+  if (prerender::PrerenderManager* prerender_manager =
+          prerender::PrerenderManagerFactory::GetForProfile(profile_)) {
+    prerender_handle_.reset(
+        prerender_manager->AddPrerenderFromOmnibox(
+            url, session_storage_namespace, size));
+  } else {
+    prerender_handle_.reset();
+  }
 }
 
 // Given a match, return a recommended action.
