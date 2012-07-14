@@ -145,17 +145,17 @@ class HostNPScriptObject : public HostStatusObserver {
                           uint32_t arg_count,
                           NPVariant* result);
 
-  // Loads daemon config config. The first argument specifies the
-  // callback to be called with the config is loaded. The config is
-  // returned as a JSON formatted string. Args are:
+  // Loads daemon config. The first argument specifies the callback to be
+  // called once the config has been loaded. The config is passed as a JSON
+  // formatted string. Args are:
   //   function(string) callback
   bool GetDaemonConfig(const NPVariant* args,
                        uint32_t arg_count,
                        NPVariant* result);
 
-  // Retrieves daemon config version. The first argument specifies the
-  // callback to be called with the obtained version. The version is
-  // returned as a dotted version string, described in daemon_controller.h.
+  // Retrieves daemon version. The first argument specifies the callback to be
+  // called with the obtained version. The version is passed as a dotted
+  // version string, described in daemon_controller.h.
   bool GetDaemonVersion(const NPVariant* args,
                         uint32_t arg_count,
                         NPVariant* result);
