@@ -848,6 +848,33 @@ class TestingAutomationProvider : public AutomationProvider,
   void GetIndicesFromTab(base::DictionaryValue* args,
                          IPC::Message* reply_message);
 
+  // Executes a browser command on the given browser window. Does not wait for
+  // the command to complete.
+  // Example:
+  //   input: { "accelerator": 1,
+  //            "windex": 1
+  //          }
+  void ExecuteBrowserCommandAsyncJSON(DictionaryValue* args,
+                                      IPC::Message* reply_message);
+
+  // Executes a browser command on the given browser window. Waits for the
+  // command to complete before returning.
+  // Example:
+  //   input: { "accelerator": 1,
+  //            "windex": 1
+  //          }
+  void ExecuteBrowserCommandJSON(DictionaryValue* args,
+                                 IPC::Message* reply_message);
+
+  // Checks if a browser command is enabled on the given browser window.
+  // Example:
+  //   input: { "accelerator": 1,
+  //            "windex": 1
+  //          }
+  //   output: { "enabled": true }
+  void IsMenuCommandEnabledJSON(DictionaryValue* args,
+                                IPC::Message* reply_message);
+
   // Navigates to the given URL. Uses the JSON interface.
   // The pair |windex| and |tab_index| or the single |auto_id| must be given
   // to specify the tab.
@@ -1601,6 +1628,10 @@ class TestingAutomationProvider : public AutomationProvider,
   // The automation event observer queue. It is lazily created when an observer
   // is added to avoid overhead when not needed.
   scoped_ptr<AutomationEventQueue> automation_event_queue_;
+
+  // List of commands which just finish synchronously and don't require
+  // setting up an observer.
+  static const int kSynchronousCommands[];
 
   DISALLOW_COPY_AND_ASSIGN(TestingAutomationProvider);
 };

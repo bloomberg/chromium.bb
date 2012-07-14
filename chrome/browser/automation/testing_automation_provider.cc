@@ -254,6 +254,13 @@ class AutomationInterstitialPage : public content::InterstitialPageDelegate {
 
 }  // namespace
 
+const int TestingAutomationProvider::kSynchronousCommands[] = {
+  IDC_HOME,
+  IDC_SELECT_NEXT_TAB,
+  IDC_SELECT_PREVIOUS_TAB,
+  IDC_SHOW_BOOKMARK_MANAGER,
+};
+
 TestingAutomationProvider::TestingAutomationProvider(Profile* profile)
     : AutomationProvider(profile)
 #if defined(OS_CHROMEOS)
@@ -477,7 +484,7 @@ void TestingAutomationProvider::CloseBrowser(int browser_handle,
     return;
 
   Browser* browser = browser_tracker_->GetResource(browser_handle);
-  new BrowserClosedNotificationObserver(browser, this, reply_message);
+  new BrowserClosedNotificationObserver(browser, this, reply_message, false);
   browser->window()->Close();
 }
 
@@ -550,7 +557,8 @@ void TestingAutomationProvider::CloseTab(int tab_handle,
     Browser* browser = browser::FindBrowserWithWebContents(
         controller->GetWebContents());
     DCHECK(browser);
-    new TabClosedNotificationObserver(this, wait_until_closed, reply_message);
+    new TabClosedNotificationObserver(this, wait_until_closed, reply_message,
+                                      false);
     chrome::CloseWebContents(browser, controller->GetWebContents());
     return;
   }
@@ -690,14 +698,6 @@ void TestingAutomationProvider::ExecuteBrowserCommandAsync(int handle,
 
 void TestingAutomationProvider::ExecuteBrowserCommand(
     int handle, int command, IPC::Message* reply_message) {
-  // List of commands which just finish synchronously and don't require
-  // setting up an observer.
-  static const int kSynchronousCommands[] = {
-    IDC_HOME,
-    IDC_SELECT_NEXT_TAB,
-    IDC_SELECT_PREVIOUS_TAB,
-    IDC_SHOW_BOOKMARK_MANAGER,
-  };
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
     if (chrome::SupportsCommand(browser, command) &&
@@ -715,7 +715,7 @@ void TestingAutomationProvider::ExecuteBrowserCommand(
 
       // Use an observer if we have one, otherwise fail.
       if (ExecuteBrowserCommandObserver::CreateAndRegisterObserver(
-          this, browser, command, reply_message)) {
+          this, browser, command, reply_message, false)) {
         chrome::ExecuteCommand(browser, command);
         return;
       }
@@ -1191,7 +1191,7 @@ void TestingAutomationProvider::GetMultiProfileInfo(
 
 void TestingAutomationProvider::OpenNewBrowserWindowOfType(
     int type, bool show, IPC::Message* reply_message) {
-  new BrowserOpenedNotificationObserver(this, reply_message);
+  new BrowserOpenedNotificationObserver(this, reply_message, false);
   // We may have no current browser windows open so don't rely on
   // asking an existing browser to execute the IDC_NEWWINDOW command
   Browser* browser = new Browser(static_cast<Browser::Type>(type), profile_);
@@ -1653,6 +1653,12 @@ void TestingAutomationProvider::SetShelfVisibility(int handle, bool visible) {
 
 void TestingAutomationProvider::BuildJSONHandlerMaps() {
   // Map json commands to their handlers.
+  handler_map_["ApplyAccelerator"] =
+      &TestingAutomationProvider::ExecuteBrowserCommandAsyncJSON;
+  handler_map_["RunCommand"] =
+      &TestingAutomationProvider::ExecuteBrowserCommandJSON;
+  handler_map_["IsMenuCommandEnabled"] =
+      &TestingAutomationProvider::IsMenuCommandEnabledJSON;
   handler_map_["WaitForAllTabsToStopLoading"] =
       &TestingAutomationProvider::WaitForAllViewsToStopLoading;
   handler_map_["GetIndicesFromTab"] =
@@ -6383,6 +6389,98 @@ void TestingAutomationProvider::GoForward(
   new NavigationNotificationObserver(&controller, this, reply_message,
                                      1, false, true);
   controller.GoForward();
+}
+
+void TestingAutomationProvider::ExecuteBrowserCommandAsyncJSON(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  int command;
+  Browser* browser;
+  std::string error;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error)) {
+    reply.SendError(error);
+    return;
+  }
+  if (!args->GetInteger("accelerator", &command)) {
+    reply.SendError("'accelerator' missing or invalid.");
+    return;
+  }
+  if (!chrome::SupportsCommand(browser, command)) {
+    reply.SendError(StringPrintf("Browser does not support command=%d.",
+                                 command));
+    return;
+  }
+  if (!chrome::IsCommandEnabled(browser, command)) {
+    reply.SendError(StringPrintf("Browser command=%d not enabled.", command));
+    return;
+  }
+  chrome::ExecuteCommand(browser, command);
+  reply.SendSuccess(NULL);
+}
+
+void TestingAutomationProvider::ExecuteBrowserCommandJSON(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  int command;
+  Browser* browser;
+  std::string error;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
+  if (!args->GetInteger("accelerator", &command)) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "'accelerator' missing or invalid.");
+    return;
+  }
+  if (!chrome::SupportsCommand(browser, command)) {
+    AutomationJSONReply(this, reply_message).SendError(
+        StringPrintf("Browser does not support command=%d.", command));
+    return;
+  }
+  if (!chrome::IsCommandEnabled(browser, command)) {
+    AutomationJSONReply(this, reply_message).SendError(
+        StringPrintf("Browser command=%d not enabled.", command));
+    return;
+  }
+  // First check if we can handle the command without using an observer.
+  for (size_t i = 0; i < arraysize(kSynchronousCommands); i++) {
+    if (command == kSynchronousCommands[i]) {
+      chrome::ExecuteCommand(browser, command);
+      AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+      return;
+    }
+  }
+  // Use an observer if we have one, otherwise fail.
+  if (ExecuteBrowserCommandObserver::CreateAndRegisterObserver(
+      this, browser, command, reply_message, true)) {
+    chrome::ExecuteCommand(browser, command);
+    return;
+  }
+  AutomationJSONReply(this, reply_message).SendError(
+        StringPrintf("Unable to register observer for browser command=%d.",
+                     command));
+}
+
+void TestingAutomationProvider::IsMenuCommandEnabledJSON(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  int command;
+  Browser* browser;
+  std::string error;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
+  if (!args->GetInteger("accelerator", &command)) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "'accelerator' missing or invalid.");
+    return;
+  }
+  DictionaryValue dict;
+  dict.SetBoolean("enabled", chrome::IsCommandEnabled(browser, command));
+  AutomationJSONReply(this, reply_message).SendSuccess(&dict);
 }
 
 void TestingAutomationProvider::GoBack(

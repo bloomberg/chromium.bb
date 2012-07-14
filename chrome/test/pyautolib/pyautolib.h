@@ -78,18 +78,6 @@ class PyUITestBase : public UITestBase {
   // browser window.  Also brings the window to front.
   bool ActivateTab(int tab_index, int window_index = 0);
 
-  // Apply the accelerator with given id (IDC_BACK, IDC_NEWTAB ...) to the
-  // browser window at the given or first index.
-  // The list can be found at chrome/app/chrome_command_ids.h
-  // Returns true if the call was successful.
-  bool ApplyAccelerator(int id, int window_index = 0);
-
-  // Like ApplyAccelerator except that it waits for the command to execute.
-  bool RunCommand(int browser_command, int window_index = 0);
-
-  // Returns true if the given command id is enabled on the given window.
-  bool IsMenuCommandEnabled(int browser_command, int window_index = 0);
-
   // Shows or hides the download shelf.
   void SetDownloadShelfVisible(bool is_visible, int window_index = 0);
 

@@ -351,10 +351,16 @@ void NavigationNotificationObserver::ConditionMet(
     AutomationMsg_NavigationResponseValues navigation_result) {
   if (automation_) {
     if (use_json_interface_) {
-      DictionaryValue dict;
-      dict.SetInteger("result", navigation_result);
-      AutomationJSONReply(automation_, reply_message_.release())
-          .SendSuccess(&dict);
+      if (navigation_result == AUTOMATION_MSG_NAVIGATION_SUCCESS) {
+        DictionaryValue dict;
+        dict.SetInteger("result", navigation_result);
+        AutomationJSONReply(automation_, reply_message_.release()).SendSuccess(
+            &dict);
+      } else {
+        AutomationJSONReply(automation_, reply_message_.release()).SendError(
+            StringPrintf("Navigation failed with error code=%d.",
+                         navigation_result));
+      }
     } else {
       IPC::ParamTraits<int>::Write(
           reply_message_.get(), navigation_result);
@@ -431,14 +437,17 @@ IPC::Message* TabAppendedNotificationObserver::ReleaseReply() {
 }
 
 TabClosedNotificationObserver::TabClosedNotificationObserver(
-    AutomationProvider* automation, bool wait_until_closed,
-    IPC::Message* reply_message)
+    AutomationProvider* automation,
+    bool wait_until_closed,
+    IPC::Message* reply_message,
+    bool use_json_interface)
     : TabStripNotificationObserver(
       wait_until_closed
           ? static_cast<int>(content::NOTIFICATION_WEB_CONTENTS_DESTROYED)
           : static_cast<int>(chrome::NOTIFICATION_TAB_CLOSING),
           automation),
       reply_message_(reply_message),
+      use_json_interface_(use_json_interface),
       for_browser_command_(false) {
 }
 
@@ -449,13 +458,18 @@ void TabClosedNotificationObserver::ObserveTab(
   if (!automation_)
     return;
 
-  if (for_browser_command_) {
-    AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message_.get(),
-                                                         true);
+  if (use_json_interface_) {
+    AutomationJSONReply(automation_,
+                        reply_message_.release()).SendSuccess(NULL);
   } else {
-    AutomationMsg_CloseTab::WriteReplyParams(reply_message_.get(), true);
+    if (for_browser_command_) {
+      AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message_.get(),
+                                                           true);
+    } else {
+      AutomationMsg_CloseTab::WriteReplyParams(reply_message_.get(), true);
+    }
+    automation_->Send(reply_message_.release());
   }
-  automation_->Send(reply_message_.release());
 }
 
 void TabClosedNotificationObserver::set_for_browser_command(
@@ -778,10 +792,12 @@ void ExtensionsUpdatedObserver::Observe(
 
 BrowserOpenedNotificationObserver::BrowserOpenedNotificationObserver(
     AutomationProvider* automation,
-    IPC::Message* reply_message)
+    IPC::Message* reply_message,
+    bool use_json_interface)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
       new_window_id_(extension_misc::kUnknownWindowId),
+      use_json_interface_(use_json_interface),
       for_browser_command_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -813,11 +829,16 @@ void BrowserOpenedNotificationObserver::Observe(
         TabContents::FromWebContents(controller->GetWebContents());
     int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;
     if (window_id == new_window_id_) {
-      if (for_browser_command_) {
-        AutomationMsg_WindowExecuteCommand::WriteReplyParams(
-            reply_message_.get(), true);
+      if (use_json_interface_) {
+        AutomationJSONReply(automation_,
+                            reply_message_.release()).SendSuccess(NULL);
+      } else {
+        if (for_browser_command_) {
+          AutomationMsg_WindowExecuteCommand::WriteReplyParams(
+              reply_message_.get(), true);
+        }
+        automation_->Send(reply_message_.release());
       }
-      automation_->Send(reply_message_.release());
       delete this;
       return;
     }
@@ -834,9 +855,11 @@ void BrowserOpenedNotificationObserver::set_for_browser_command(
 BrowserClosedNotificationObserver::BrowserClosedNotificationObserver(
     Browser* browser,
     AutomationProvider* automation,
-    IPC::Message* reply_message)
+    IPC::Message* reply_message,
+    bool use_json_interface)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
+      use_json_interface_(use_json_interface),
       for_browser_command_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
                  content::Source<Browser>(browser));
@@ -856,14 +879,19 @@ void BrowserClosedNotificationObserver::Observe(
 
   content::Details<bool> close_app(details);
 
-  if (for_browser_command_) {
-    AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message_.get(),
-                                                         true);
+  if (use_json_interface_) {
+    AutomationJSONReply(automation_,
+                        reply_message_.release()).SendSuccess(NULL);
   } else {
-    AutomationMsg_CloseBrowser::WriteReplyParams(reply_message_.get(), true,
-                                                 *(close_app.ptr()));
+    if (for_browser_command_) {
+      AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message_.get(),
+                                                           true);
+    } else {
+      AutomationMsg_CloseBrowser::WriteReplyParams(reply_message_.get(), true,
+                                                   *(close_app.ptr()));
+    }
+    automation_->Send(reply_message_.release());
   }
-  automation_->Send(reply_message_.release());
   delete this;
 }
 
@@ -946,31 +974,37 @@ ExecuteBrowserCommandObserver::~ExecuteBrowserCommandObserver() {
 
 // static
 bool ExecuteBrowserCommandObserver::CreateAndRegisterObserver(
-    AutomationProvider* automation, Browser* browser, int command,
-    IPC::Message* reply_message) {
+    AutomationProvider* automation,
+    Browser* browser,
+    int command,
+    IPC::Message* reply_message,
+    bool use_json_interface) {
   bool result = true;
   switch (command) {
     case IDC_NEW_TAB: {
-      new NewTabObserver(automation, reply_message);
+      new NewTabObserver(automation, reply_message, use_json_interface);
       break;
     }
     case IDC_NEW_WINDOW:
     case IDC_NEW_INCOGNITO_WINDOW: {
       BrowserOpenedNotificationObserver* observer =
-          new BrowserOpenedNotificationObserver(automation, reply_message);
+          new BrowserOpenedNotificationObserver(automation, reply_message,
+                                                use_json_interface);
       observer->set_for_browser_command(true);
       break;
     }
     case IDC_CLOSE_WINDOW: {
       BrowserClosedNotificationObserver* observer =
           new BrowserClosedNotificationObserver(browser, automation,
-                                                reply_message);
+                                                reply_message,
+                                                use_json_interface);
       observer->set_for_browser_command(true);
       break;
     }
     case IDC_CLOSE_TAB: {
       TabClosedNotificationObserver* observer =
-          new TabClosedNotificationObserver(automation, true, reply_message);
+          new TabClosedNotificationObserver(automation, true, reply_message,
+                                            use_json_interface);
       observer->set_for_browser_command(true);
       break;
     }
@@ -979,13 +1013,15 @@ bool ExecuteBrowserCommandObserver::CreateAndRegisterObserver(
     case IDC_RELOAD: {
       new NavigationNotificationObserver(
           &chrome::GetActiveWebContents(browser)->GetController(),
-          automation, reply_message, 1, false, false);
+          automation, reply_message, 1, false, use_json_interface);
       break;
     }
     default: {
       ExecuteBrowserCommandObserver* observer =
-          new ExecuteBrowserCommandObserver(automation, reply_message);
+          new ExecuteBrowserCommandObserver(automation, reply_message,
+                                            use_json_interface);
       if (!observer->Register(command)) {
+        observer->ReleaseReply();
         delete observer;
         result = false;
       }
@@ -1000,9 +1036,14 @@ void ExecuteBrowserCommandObserver::Observe(
     const content::NotificationDetails& details) {
   if (type == notification_type_) {
     if (automation_) {
-      AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message_.get(),
-                                                           true);
-      automation_->Send(reply_message_.release());
+      if (use_json_interface_) {
+        AutomationJSONReply(automation_,
+                            reply_message_.release()).SendSuccess(NULL);
+      } else {
+        AutomationMsg_WindowExecuteCommand::WriteReplyParams(
+            reply_message_.get(), true);
+        automation_->Send(reply_message_.release());
+      }
     }
     delete this;
   } else {
@@ -1011,10 +1052,13 @@ void ExecuteBrowserCommandObserver::Observe(
 }
 
 ExecuteBrowserCommandObserver::ExecuteBrowserCommandObserver(
-    AutomationProvider* automation, IPC::Message* reply_message)
+    AutomationProvider* automation,
+    IPC::Message* reply_message,
+    bool use_json_interface)
     : automation_(automation->AsWeakPtr()),
       notification_type_(content::NOTIFICATION_ALL),
-      reply_message_(reply_message) {
+      reply_message_(reply_message),
+      use_json_interface_(use_json_interface) {
 }
 
 bool ExecuteBrowserCommandObserver::Register(int command) {
@@ -1038,6 +1082,10 @@ bool ExecuteBrowserCommandObserver::Getint(
     }
   }
   return found;
+}
+
+IPC::Message* ExecuteBrowserCommandObserver::ReleaseReply() {
+  return reply_message_.release();
 }
 
 FindInPageNotificationObserver::FindInPageNotificationObserver(
@@ -2657,9 +2705,11 @@ void AllViewsStoppedLoadingObserver::CheckIfNoMorePendingLoads() {
 }
 
 NewTabObserver::NewTabObserver(AutomationProvider* automation,
-                               IPC::Message* reply_message)
+                               IPC::Message* reply_message,
+                               bool use_json_interface)
     : automation_(automation->AsWeakPtr()),
-      reply_message_(reply_message) {
+      reply_message_(reply_message),
+      use_json_interface_(use_json_interface) {
   // Use TAB_PARENTED to detect the new tab.
   registrar_.Add(this,
                  chrome::NOTIFICATION_TAB_PARENTED,
@@ -2678,11 +2728,12 @@ void NewTabObserver::Observe(int type,
     // here, but don't send the message. NavigationNotificationObserver
     // will wait properly for the load to finish, and send the message,
     // but it will also append its own return value at the end of the reply.
-    AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message_.get(),
-                                                         true);
+    if (!use_json_interface_)
+      AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message_.get(),
+                                                           true);
     new NavigationNotificationObserver(controller, automation_,
                                        reply_message_.release(),
-                                       1, false, false);
+                                       1, false, use_json_interface_);
   }
   delete this;
 }

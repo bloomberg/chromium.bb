@@ -176,7 +176,9 @@ class PolicyTest(policy_base.PolicyTestBase):
     self.assertTrue(self.GetBookmarkBarVisibility())
     self.assertFalse(self.IsBookmarkBarDetached())
     # The accelerator should be disabled by the policy.
-    self.ApplyAccelerator(pyauto.IDC_SHOW_BOOKMARK_BAR)
+    self.assertRaises(
+        pyauto_errors.JSONInterfaceError,
+        lambda: self.ApplyAccelerator(pyauto.IDC_SHOW_BOOKMARK_BAR))
     self.assertTrue(self.WaitForBookmarkBarVisibilityChange(True))
     self.assertTrue(self.GetBookmarkBarVisibility())
     self.assertFalse(self.IsBookmarkBarDetached())
@@ -186,7 +188,9 @@ class PolicyTest(policy_base.PolicyTestBase):
 
     self.assertTrue(self.WaitForBookmarkBarVisibilityChange(False))
     self.assertFalse(self.GetBookmarkBarVisibility())
-    self.ApplyAccelerator(pyauto.IDC_SHOW_BOOKMARK_BAR)
+    self.assertRaises(
+        pyauto_errors.JSONInterfaceError,
+        lambda: self.ApplyAccelerator(pyauto.IDC_SHOW_BOOKMARK_BAR))
     self.assertTrue(self.WaitForBookmarkBarVisibilityChange(False))
     self.assertFalse(self.GetBookmarkBarVisibility())
     # When disabled by policy, it should never be displayed at all,
@@ -341,7 +345,8 @@ class PolicyTest(policy_base.PolicyTestBase):
     policy = {'DeveloperToolsDisabled': True}
     self.SetUserPolicy(policy)
     self.SetPrefs(pyauto.kDevToolsOpenDocked, False)
-    self.ApplyAccelerator(pyauto.IDC_DEV_TOOLS)
+    self.assertRaises(pyauto_errors.JSONInterfaceError,
+                      lambda: self.ApplyAccelerator(pyauto.IDC_DEV_TOOLS))
     self.assertEquals(1, len(self.GetBrowserInfo()['windows']),
                       msg='Devtools window launched.')
     policy = {'DeveloperToolsDisabled': False}
@@ -451,7 +456,9 @@ class PolicyTest(policy_base.PolicyTestBase):
     """Verify that incognito window can be launched."""
     policy = {'IncognitoEnabled': False}
     self.SetUserPolicy(policy)
-    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    self.assertRaises(
+        pyauto_errors.JSONInterfaceError,
+        lambda: self.ApplyAccelerator(pyauto.IDC_NEW_INCOGNITO_WINDOW))
     self.assertEquals(1, self.GetBrowserWindowCount())
     policy = {'IncognitoEnabled': True}
     self.SetUserPolicy(policy)

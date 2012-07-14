@@ -101,28 +101,6 @@ void PyUITestBase::SetLaunchSwitches() {
   launch_arguments_.AppendSwitchASCII(switches::kHomePage, homepage_);
 }
 
-bool PyUITestBase::ApplyAccelerator(int id, int window_index) {
-  scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
-  return browser_proxy->ApplyAccelerator(id);
-}
-
-bool PyUITestBase::RunCommand(int browser_command, int window_index) {
-  scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
-  EXPECT_TRUE(browser_proxy.get());
-  if (!browser_proxy.get())
-    return false;
-  return browser_proxy->RunCommand(browser_command);
-}
-
-bool PyUITestBase::IsMenuCommandEnabled(int id, int window_index) {
-  scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
-  EXPECT_TRUE(browser_proxy.get());
-  bool enabled = false;
-  if (browser_proxy.get())
-    EXPECT_TRUE(browser_proxy->IsMenuCommandEnabled(id, &enabled));
-  return enabled;
-}
-
 bool PyUITestBase::ActivateTab(int tab_index, int window_index) {
   scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
   return browser_proxy->BringToFront() && browser_proxy->ActivateTab(tab_index);

@@ -275,22 +275,6 @@ class PyUITestBase {
       set_clear_profile;
   void set_clear_profile(bool clear_profile);
 
-  // BrowserProxy methods
-  %feature("docstring", "Apply the accelerator with given id "
-           "(IDC_BACK, IDC_NEWTAB ...) to the given or first window. "
-           "The list can be found at chrome/app/chrome_dll_resource.h. "
-           "Note that this method just schedules the accelerator, but does "
-           "not wait for it to actually finish doing anything."
-           "Returns True on success.")
-      ApplyAccelerator;
-  bool ApplyAccelerator(int id, int window_index=0);
-  %feature("docstring", "Like ApplyAccelerator, except that it waits for "
-           "the command to execute.") RunCommand;
-  bool RunCommand(int browser_command, int window_index = 0);
-  %feature("docstring", "Returns true if the given command id is enabled on "
-           "the given window.") IsMenuCommandEnabled;
-  bool IsMenuCommandEnabled(int browser_command, int window_index = 0);
-
   // Get/fetch properties
   %feature("docstring",
            "Get the path to download directory.") GetDownloadDirectory;

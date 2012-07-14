@@ -1091,6 +1091,73 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=None)
 
+  def ApplyAccelerator(self, accelerator, windex=0):
+    """Apply the accelerator with the given id.
+
+    Note that this method schedules the accelerator, but does not wait for it to
+    actually finish doing anything.
+
+    Args:
+      accelerator: The accelerator id, IDC_BACK, IDC_NEWTAB, etc. The list of
+          ids can be found at chrome/app/chrome_command_ids.h.
+      windex: The index of the browser window to work on. Defaults to the first
+          window.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+
+    cmd_dict = {
+        'command': 'ApplyAccelerator',
+        'accelerator': accelerator,
+        'windex': windex,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def RunCommand(self, accelerator, windex=0):
+    """Apply the accelerator with the given id and wait for it to finish.
+
+    This is like ApplyAccelerator except that it waits for the command to finish
+    executing.
+
+    Args:
+      accelerator: The accelerator id. The list of ids can be found at
+          chrome/app/chrome_command_ids.h.
+      windex: The index of the browser window to work on. Defaults to the first
+          window.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'RunCommand',
+        'accelerator': accelerator,
+        'windex': windex,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def IsMenuCommandEnabled(self, accelerator, windex=0):
+    """Check if a command is enabled for a window.
+
+    Returns true if the command with the given accelerator id is enabled on the
+    given window.
+
+    Args:
+      accelerator: The accelerator id. The list of ids can be found at
+          chrome/app/chrome_command_ids.h.
+      windex: The index of the browser window to work on. Defaults to the first
+          window.
+
+    Returns:
+      True if the command is enabled for the given window.
+    """
+    cmd_dict = {
+        'command': 'IsMenuCommandEnabled',
+        'accelerator': accelerator,
+        'windex': windex,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None).get('enabled')
+
   def ReloadTab(self, tab_index=0, windex=0):
     """Reload the given tab.
 
@@ -1124,7 +1191,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
-    self.ReloadTab(windex, self.GetActiveTabIndex(windex))
+    self.ReloadTab(self.GetActiveTabIndex(windex), windex)
 
   def GetActiveTabIndex(self, windex=0):
     """Get the index of the currently active tab in the given browser window.
