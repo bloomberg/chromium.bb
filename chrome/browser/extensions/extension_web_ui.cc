@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_manager_extension_api.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -56,6 +57,24 @@ void CleanUpDuplicates(ListValue* list) {
     else
       list->Remove(i, NULL);
   }
+}
+
+// Reloads the page in |web_contents| if it uses the same profile as |profile|
+// and if the current URL is a chrome URL.
+void UnregisterAndReplaceOverrideForWebContents(
+    const std::string& page, Profile* profile, WebContents* web_contents) {
+  if (Profile::FromBrowserContext(web_contents->GetBrowserContext()) != profile)
+    return;
+
+  GURL url = web_contents->GetURL();
+  if (!url.SchemeIs(chrome::kChromeUIScheme) || url.host() != page)
+    return;
+
+  // Don't use Reload() since |url| isn't the same as the internal URL that
+  // NavigationController has.
+  web_contents->GetController().LoadURL(
+      url, content::Referrer(url, WebKit::WebReferrerPolicyDefault),
+      content::PAGE_TRANSITION_RELOAD, std::string());
 }
 
 // Helper class that is used to track the loading of the favicon of an
@@ -352,23 +371,9 @@ void ExtensionWebUI::UnregisterAndReplaceOverride(const std::string& page,
   if (found && index == 0) {
     // This is the active override, so we need to find all existing
     // tabs for this override and get them to reload the original URL.
-    for (TabContentsIterator iterator; !iterator.done(); ++iterator) {
-      WebContents* tab = (*iterator)->web_contents();
-      Profile* tab_profile =
-          Profile::FromBrowserContext(tab->GetBrowserContext());
-      if (tab_profile != profile)
-        continue;
-
-      GURL url = tab->GetURL();
-      if (!url.SchemeIs(chrome::kChromeUIScheme) || url.host() != page)
-        continue;
-
-      // Don't use Reload() since |url| isn't the same as the internal URL
-      // that NavigationController has.
-      tab->GetController().LoadURL(
-          url, content::Referrer(url, WebKit::WebReferrerPolicyDefault),
-          content::PAGE_TRANSITION_RELOAD, std::string());
-    }
+    base::Callback<void(WebContents*)> callback =
+        base::Bind(&UnregisterAndReplaceOverrideForWebContents, page, profile);
+    ExtensionTabUtil::ForEachTab(callback);
   }
 }
 

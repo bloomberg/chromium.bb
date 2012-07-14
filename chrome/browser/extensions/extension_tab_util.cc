@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -245,4 +246,11 @@ void ExtensionTabUtil::CreateTab(WebContents* web_contents,
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   params.user_gesture = user_gesture;
   chrome::Navigate(&params);
+}
+
+// static
+void ExtensionTabUtil::ForEachTab(
+    const base::Callback<void(WebContents*)>& callback) {
+  for (TabContentsIterator iterator; !iterator.done(); ++iterator)
+    callback.Run((*iterator)->web_contents());
 }

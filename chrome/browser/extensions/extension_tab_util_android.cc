@@ -99,3 +99,9 @@ void ExtensionTabUtil::CreateTab(WebContents* web_contents,
                                  bool user_gesture) {
   NOTIMPLEMENTED();
 }
+
+// static
+void ExtensionTabUtil::ForEachTab(
+    const base::Callback<void(WebContents*)>& callback) {
+  NOTIMPLEMENTED();
+}

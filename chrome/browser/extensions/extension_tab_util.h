@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class Browser;
@@ -87,6 +88,10 @@ class ExtensionTabUtil {
                         WindowOpenDisposition disposition,
                         const gfx::Rect& initial_pos,
                         bool user_gesture);
+
+  // Executes the specified callback for all tabs in all browser windows.
+  static void ForEachTab(
+      const base::Callback<void(content::WebContents*)>& callback);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TAB_UTIL_H__
