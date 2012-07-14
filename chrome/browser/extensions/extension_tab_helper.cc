@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_tab_helper.h"
 
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/app_notify_channel_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/page_action_controller.h"
 #include "chrome/browser/extensions/script_badge_controller.h"
@@ -200,7 +201,8 @@ bool ExtensionTabHelper::OnMessageReceived(const IPC::Message& message) {
 
 void ExtensionTabHelper::OnDidGetApplicationInfo(
     int32 page_id, const WebApplicationInfo& info) {
-#if !defined(OS_MACOSX)
+  // Android does not implement BrowserWindow.
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
   web_app_info_ = info;
 
   NavigationEntry* entry =
@@ -269,7 +271,6 @@ void ExtensionTabHelper::OnGetAppNotifyChannel(
     const std::string& client_id,
     int return_route_id,
     int callback_id) {
-
   // Check for permission first.
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
@@ -299,7 +300,7 @@ void ExtensionTabHelper::OnGetAppNotifyChannel(
     return;
   }
 
-  AppNotifyChannelUI* ui = new AppNotifyChannelUIImpl(
+  AppNotifyChannelUI* ui = AppNotifyChannelUI::Create(
       profile, tab_contents(), extension->name(),
       AppNotifyChannelUI::NOTIFICATION_INFOBAR);
 

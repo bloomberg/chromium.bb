@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/app_notify_channel_ui.h"
+#include "chrome/browser/extensions/app_notify_channel_ui_impl.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -110,6 +110,14 @@ AppNotifyChannelUIImpl::~AppNotifyChannelUIImpl() {
   CHECK(!observing_sync_);
 }
 
+// static
+AppNotifyChannelUI* AppNotifyChannelUI::Create(Profile* profile,
+    TabContents* tab_contents,
+    const std::string& app_name,
+    AppNotifyChannelUI::UIType ui_type) {
+  return new AppNotifyChannelUIImpl(profile, tab_contents, app_name, ui_type);
+}
+
 void AppNotifyChannelUIImpl::PromptSyncSetup(
     AppNotifyChannelUI::Delegate* delegate) {
   CHECK(delegate_ == NULL);
@@ -164,7 +172,6 @@ void AppNotifyChannelUIImpl::OnInfoBarResult(bool accepted) {
 }
 
 void AppNotifyChannelUIImpl::OnStateChanged() {
-#if !defined(OS_ANDROID)
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
   LoginUIService* login_service =
@@ -183,7 +190,6 @@ void AppNotifyChannelUIImpl::OnStateChanged() {
     StopObservingSync();
     delegate_->OnSyncSetupResult(sync_service->HasSyncSetupCompleted());
   }
-#endif  // !defined(OS_ANDROID)
 }
 
 void AppNotifyChannelUIImpl::StartObservingSync() {
