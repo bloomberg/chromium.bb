@@ -59,6 +59,10 @@ class CaptureData : public base::RefCountedThreadSafe<CaptureData> {
     client_sequence_number_ = client_sequence_number;
   }
 
+  SkIPoint dpi() const { return dpi_; }
+
+  void set_dpi(const SkIPoint& dpi) { dpi_ = dpi; }
+
  private:
   friend class base::RefCountedThreadSafe<CaptureData>;
   virtual ~CaptureData();
@@ -73,6 +77,9 @@ class CaptureData : public base::RefCountedThreadSafe<CaptureData> {
 
   // Sequence number supplied by client for performance tracking.
   int64 client_sequence_number_;
+
+  // DPI for this frame.
+  SkIPoint dpi_;
 };
 
 }  // namespace remoting

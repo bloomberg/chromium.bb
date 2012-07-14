@@ -33,6 +33,11 @@ message VideoPacketFormat {
   // Width and height of the whole screen.
   optional int32 screen_width = 6;
   optional int32 screen_height = 7;
+
+  // Horizontal and vertical DPI of the screen. If either of these is zero or
+  // unset, the corresponding DPI should be assumed to be 96 (Windows' default)
+  optional int32 x_dpi = 8;
+  optional int32 y_dpi = 9;
 }
 
 // TODO(hclam): Remove this message once we can obtain dirty rects from libvpx.

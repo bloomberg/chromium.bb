@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,8 @@ CaptureData::CaptureData(const DataPlanes &data_planes,
       size_(size),
       pixel_format_(format),
       capture_time_ms_(0),
-      client_sequence_number_(0) {
+      client_sequence_number_(0),
+      dpi_(SkIPoint::Make(0, 0)) {
 }
 
 CaptureData::~CaptureData() {}

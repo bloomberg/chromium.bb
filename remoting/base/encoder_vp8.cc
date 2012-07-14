@@ -293,6 +293,11 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
   packet->mutable_format()->set_screen_height(capture_data->size().height());
   packet->set_capture_time_ms(capture_data->capture_time_ms());
   packet->set_client_sequence_number(capture_data->client_sequence_number());
+  SkIPoint dpi(capture_data->dpi());
+  if (dpi.x())
+    packet->mutable_format()->set_x_dpi(dpi.x());
+  if (dpi.y())
+    packet->mutable_format()->set_y_dpi(dpi.y());
   for (SkRegion::Iterator r(updated_region); !r.done(); r.next()) {
     Rect* rect = packet->add_dirty_rects();
     rect->set_x(r.rect().x());
