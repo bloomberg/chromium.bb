@@ -98,7 +98,6 @@ class CONTENT_EXPORT AudioDevice
   virtual void Play() OVERRIDE;
   virtual void Pause(bool flush) OVERRIDE;
   virtual bool SetVolume(double volume) OVERRIDE;
-  virtual void GetVolume(double* volume) OVERRIDE;
 
   // Methods called on IO thread ----------------------------------------------
   // AudioMessageFilter::Delegate methods, called by AudioMessageFilter.

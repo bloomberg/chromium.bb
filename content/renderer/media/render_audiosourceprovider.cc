@@ -18,7 +18,6 @@ RenderAudioSourceProvider::RenderAudioSourceProvider()
       channels_(0),
       sample_rate_(0),
       is_running_(false),
-      volume_(1.0),
       renderer_(NULL),
       client_(NULL) {
   // We create the AudioDevice here using the factory. But we don't yet know
@@ -114,15 +113,7 @@ bool RenderAudioSourceProvider::SetVolume(double volume) {
   base::AutoLock auto_lock(sink_lock_);
   if (!client_)
     default_sink_->SetVolume(volume);
-  volume_ = volume;
   return true;
-}
-
-void RenderAudioSourceProvider::GetVolume(double* volume) {
-  if (!client_)
-    default_sink_->GetVolume(volume);
-  else if (volume)
-    *volume = volume_;
 }
 
 void RenderAudioSourceProvider::Initialize(

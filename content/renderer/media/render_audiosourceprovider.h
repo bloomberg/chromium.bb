@@ -58,7 +58,6 @@ class RenderAudioSourceProvider
   virtual void Pause(bool flush) OVERRIDE;
   virtual void SetPlaybackRate(float rate) OVERRIDE;
   virtual bool SetVolume(double volume) OVERRIDE;
-  virtual void GetVolume(double* volume) OVERRIDE;
   virtual void Initialize(const media::AudioParameters& params,
                           RenderCallback* renderer) OVERRIDE;
 
@@ -72,7 +71,6 @@ class RenderAudioSourceProvider
   int sample_rate_;
 
   bool is_running_;
-  double volume_;
   media::AudioRendererSink::RenderCallback* renderer_;
   WebKit::WebAudioSourceProviderClient* client_;
 

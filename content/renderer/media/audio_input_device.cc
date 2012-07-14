@@ -87,11 +87,6 @@ bool AudioInputDevice::SetVolume(double volume) {
   return true;
 }
 
-bool AudioInputDevice::GetVolume(double* volume) {
-  NOTREACHED();
-  return false;
-}
-
 void AudioInputDevice::SetAutomaticGainControl(bool enabled) {
   DVLOG(1) << "SetAutomaticGainControl(enabled=" << enabled << ")";
   message_loop()->PostTask(FROM_HERE,

@@ -41,7 +41,6 @@ AudioDevice::AudioDevice(
     const scoped_refptr<base::MessageLoopProxy>& io_loop)
     : ScopedLoopObserver(io_loop),
       callback_(NULL),
-      volume_(1.0),
       stream_id_(0),
       play_on_start_(true),
       is_started_(false) {
@@ -103,14 +102,7 @@ bool AudioDevice::SetVolume(double volume) {
     return false;
   }
 
-  volume_ = volume;
-
   return true;
-}
-
-void AudioDevice::GetVolume(double* volume) {
-  // Return a locally cached version of the current scaling factor.
-  *volume = volume_;
 }
 
 void AudioDevice::CreateStreamOnIOThread(const media::AudioParameters& params) {
