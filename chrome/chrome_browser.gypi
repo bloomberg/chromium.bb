@@ -4657,6 +4657,7 @@
             ['exclude', '^browser/ui/views/task_manager_view.cc'],
             ['exclude', '^browser/ui/views/task_manager_view.h'],
             ['exclude', '^browser/ui/views/user_data_dir_dialog_view.cc'],
+            ['exclude', '^browser/ui/webui/help/version_updater_win.cc'],
             ['exclude', '^browser/ui/window_sizer/window_sizer_win.cc'],
             ['exclude', '^browser/ui/window_snapshot/window_snapshot_win.cc'],
             # TODO: (stevenjb/beng): Find a home for these.
