@@ -134,6 +134,10 @@ class AudioRendererMixerTest
       for (size_t i = 0; i < fake_callbacks_.size(); ++i)
         fake_callbacks_[i]->set_half_fill(true);
       expected_callback_->set_half_fill(true);
+      for (size_t i = 0; i < expected_audio_data_.size(); ++i) {
+        memset(expected_audio_data_[i], 0,
+               sizeof(*expected_audio_data_[i]) * request_frames);
+      }
     }
 
     // Render actual audio data.
@@ -284,6 +288,8 @@ class AudioRendererMixerTest
   virtual ~AudioRendererMixerTest() {
     for (size_t i = 0; i < audio_data_.size(); ++i)
       delete [] audio_data_[i];
+    for (size_t i = 0; i < expected_audio_data_.size(); ++i)
+      delete [] expected_audio_data_[i];
   }
 
   scoped_refptr<MockAudioRendererSink> sink_;
