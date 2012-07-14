@@ -685,6 +685,9 @@ struct drm_prime_handle {
 #define DRM_IOCTL_UNLOCK		DRM_IOW( 0x2b, struct drm_lock)
 #define DRM_IOCTL_FINISH		DRM_IOW( 0x2c, struct drm_lock)
 
+#define DRM_IOCTL_PRIME_HANDLE_TO_FD    DRM_IOWR(0x2d, struct drm_prime_handle)
+#define DRM_IOCTL_PRIME_FD_TO_HANDLE    DRM_IOWR(0x2e, struct drm_prime_handle)
+
 #define DRM_IOCTL_AGP_ACQUIRE		DRM_IO(  0x30)
 #define DRM_IOCTL_AGP_RELEASE		DRM_IO(  0x31)
 #define DRM_IOCTL_AGP_ENABLE		DRM_IOW( 0x32, struct drm_agp_mode)
@@ -696,9 +699,6 @@ struct drm_prime_handle {
 
 #define DRM_IOCTL_SG_ALLOC		DRM_IOWR(0x38, struct drm_scatter_gather)
 #define DRM_IOCTL_SG_FREE		DRM_IOW( 0x39, struct drm_scatter_gather)
-
-#define DRM_IOCTL_PRIME_HANDLE_TO_FD    DRM_IOWR(0x2d, struct drm_prime_handle)
-#define DRM_IOCTL_PRIME_FD_TO_HANDLE    DRM_IOWR(0x2e, struct drm_prime_handle)
 
 #define DRM_IOCTL_WAIT_VBLANK		DRM_IOWR(0x3a, union drm_wait_vblank)
 
@@ -778,6 +778,10 @@ struct drm_event_vblank {
 #define DRM_CAP_VBLANK_HIGH_CRTC   0x2
 #define DRM_CAP_DUMB_PREFERRED_DEPTH 0x3
 #define DRM_CAP_DUMB_PREFER_SHADOW 0x4
+#define DRM_CAP_PRIME 0x5
+
+#define DRM_PRIME_CAP_IMPORT 0x1
+#define DRM_PRIME_CAP_EXPORT 0x2
 
 /* typedef area */
 typedef struct drm_clip_rect drm_clip_rect_t;
