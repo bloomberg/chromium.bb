@@ -4,23 +4,46 @@
 
 #include "media/base/audio_renderer_mixer.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "media/audio/audio_util.h"
+#include "media/base/limits.h"
 
 namespace media {
 
 AudioRendererMixer::AudioRendererMixer(
-    const AudioParameters& params, const scoped_refptr<AudioRendererSink>& sink)
-    : audio_parameters_(params),
-      audio_sink_(sink) {
-  // TODO(dalecurtis): Once we have resampling we'll need to pass on a different
-  // set of AudioParameters than the ones we're given.
-  audio_sink_->Initialize(audio_parameters_, this);
+    const AudioParameters& input_params, const AudioParameters& output_params,
+    const scoped_refptr<AudioRendererSink>& sink)
+    : audio_sink_(sink),
+      current_audio_delay_milliseconds_(0) {
+  // Sanity check sample rates.
+  DCHECK_LE(input_params.sample_rate(), limits::kMaxSampleRate);
+  DCHECK_GE(input_params.sample_rate(), limits::kMinSampleRate);
+  DCHECK_LE(output_params.sample_rate(), limits::kMaxSampleRate);
+  DCHECK_GE(output_params.sample_rate(), limits::kMinSampleRate);
+
+  // Only resample if necessary since it's expensive.
+  if (input_params.sample_rate() != output_params.sample_rate()) {
+    resampler_.reset(new MultiChannelResampler(
+        output_params.channels(),
+        input_params.sample_rate() / static_cast<double>(
+            output_params.sample_rate()),
+        base::Bind(&AudioRendererMixer::ProvideInput, base::Unretained(this))));
+  }
+
+  audio_sink_->Initialize(output_params, this);
   audio_sink_->Start();
 }
 
 AudioRendererMixer::~AudioRendererMixer() {
   // AudioRendererSinks must be stopped before being destructed.
   audio_sink_->Stop();
+
+  // Clean up |mixer_input_audio_data_|.
+  for (size_t i = 0; i < mixer_input_audio_data_.size(); ++i)
+    delete [] mixer_input_audio_data_[i];
+  mixer_input_audio_data_.clear();
 
   // Ensures that all mixer inputs have stopped themselves prior to destruction
   // and have called RemoveMixerInput().
@@ -42,11 +65,40 @@ void AudioRendererMixer::RemoveMixerInput(
 int AudioRendererMixer::Render(const std::vector<float*>& audio_data,
                                int number_of_frames,
                                int audio_delay_milliseconds) {
+  current_audio_delay_milliseconds_ = audio_delay_milliseconds;
+
+  if (resampler_.get())
+    resampler_->Resample(audio_data, number_of_frames);
+  else
+    ProvideInput(audio_data, number_of_frames);
+
+  // Always return the full number of frames requested, ProvideInput() will pad
+  // with silence if it wasn't able to acquire enough data.
+  return number_of_frames;
+}
+
+void AudioRendererMixer::ProvideInput(const std::vector<float*>& audio_data,
+                                      int number_of_frames) {
   base::AutoLock auto_lock(mixer_inputs_lock_);
+
+  // Allocate staging area for each mixer input's audio data on first call.  We
+  // won't know how much to allocate until here because of resampling.
+  if (mixer_input_audio_data_.size() == 0) {
+    // TODO(dalecurtis): If we switch to AVX/SSE optimization, we'll need to
+    // allocate these on 32-byte boundaries and ensure they're sized % 32 bytes.
+    mixer_input_audio_data_.reserve(audio_data.size());
+    for (size_t i = 0; i < audio_data.size(); ++i)
+      mixer_input_audio_data_.push_back(new float[number_of_frames]);
+    mixer_input_audio_data_size_ = number_of_frames;
+  }
+
+  // Sanity check our inputs.
+  DCHECK_LE(number_of_frames, mixer_input_audio_data_size_);
+  DCHECK_EQ(audio_data.size(), mixer_input_audio_data_.size());
 
   // Zero |audio_data| so we're mixing into a clean buffer and return silence if
   // we couldn't get enough data from our inputs.
-  for (int i = 0; i < audio_parameters_.channels(); ++i)
+  for (size_t i = 0; i < audio_data.size(); ++i)
     memset(audio_data[i], 0, number_of_frames * sizeof(*audio_data[i]));
 
   // Have each mixer render its data into an output buffer then mix the result.
@@ -57,24 +109,21 @@ int AudioRendererMixer::Render(const std::vector<float*>& audio_data,
     double volume;
     input->GetVolume(&volume);
 
-    // Nothing to do if the input isn't playing or the volume is zero.
-    if (!input->playing() || volume == 0.0f)
+    // Nothing to do if the input isn't playing.
+    if (!input->playing())
       continue;
 
-    const std::vector<float*>& mixer_input_audio_data = input->audio_data();
-
     int frames_filled = input->callback()->Render(
-        mixer_input_audio_data, number_of_frames, audio_delay_milliseconds);
+        mixer_input_audio_data_, number_of_frames,
+        current_audio_delay_milliseconds_);
     if (frames_filled == 0)
       continue;
 
-    // TODO(dalecurtis): Resample audio data.
-
     // Volume adjust and mix each mixer input into |audio_data| after rendering.
     // TODO(dalecurtis): Optimize with NEON/SSE/AVX vector_fmac from FFmpeg.
-    for (int j = 0; j < audio_parameters_.channels(); ++j) {
+    for (size_t j = 0; j < audio_data.size(); ++j) {
       float* dest = audio_data[j];
-      float* source = mixer_input_audio_data[j];
+      float* source = mixer_input_audio_data_[j];
       for (int k = 0; k < frames_filled; ++k)
         dest[k] += source[k] * static_cast<float>(volume);
     }
@@ -82,10 +131,6 @@ int AudioRendererMixer::Render(const std::vector<float*>& audio_data,
     // No need to clamp values as InterleaveFloatToInt() will take care of this
     // for us later when data is transferred to the browser process.
   }
-
-  // Always return the full number of frames requested, padded with silence if
-  // we couldn't get enough data.
-  return number_of_frames;
 }
 
 void AudioRendererMixer::OnRenderError() {
