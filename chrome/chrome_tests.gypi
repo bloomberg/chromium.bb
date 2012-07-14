@@ -940,7 +940,7 @@
     },
     {
       'target_name': 'unit_tests',
-      'type': 'executable',
+      'type': '<(gtest_target_type)',
       'dependencies': [
         # unit tests should only depend on
         # 1) everything that the chrome binaries depend on:
@@ -2454,7 +2454,14 @@
             ['exclude', '^common/service_'],
             ['exclude', '^service/'],
           ],
-        }],
+          'conditions': [
+            ['gtest_target_type == "shared_library"', {
+              'dependencies': [
+                '../testing/android/native_test.gyp:native_test_native_code',
+              ],
+            }],
+          ],
+        }],  # OS == android
         ['enable_themes==0', {
           'sources!': [
             'browser/sync/glue/theme_data_type_controller_unittest.cc',
@@ -4675,5 +4682,27 @@
         },
       ]
     }],  # 'coverage!=0'
+    # Special target to wrap a gtest_target_type==shared_library
+    # unit_tests into an android apk for execution.
+    ['OS == "android" and gtest_target_type == "shared_library"', {
+      'targets': [
+        {
+          'target_name': 'unit_tests_apk',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base_java',
+            'unit_tests',
+          ],
+          'variables': {
+            'test_suite_name': 'unit_tests',
+            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)unit_tests<(SHARED_LIB_SUFFIX)',
+            'input_jars_paths': [
+              '<(PRODUCT_DIR)/lib.java/chromium_base.jar',
+             ],
+          },
+          'includes': [ '../build/apk_test.gypi' ],
+        },
+      ],
+    }],
   ],  # 'conditions'
 }
