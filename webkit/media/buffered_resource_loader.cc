@@ -299,11 +299,9 @@ void BufferedResourceLoader::Read(
     }
 
     // Make sure we stop deferring now that there's additional capacity.
-    if (active_loader_->deferred())
-      SetDeferred(false);
-
-    DCHECK(!ShouldEnableDefer())
+    DCHECK(!ShouldDefer())
         << "Capacity was not adjusted properly to prevent deferring.";
+    UpdateDeferBehavior();
 
     return;
   }
@@ -606,61 +604,31 @@ void BufferedResourceLoader::UpdateDeferBehavior() {
   if (!active_loader_.get())
     return;
 
-  // If necessary, toggle defer state and continue/pause downloading data
-  // accordingly.
-  if (ShouldEnableDefer() || ShouldDisableDefer())
-    SetDeferred(!active_loader_->deferred());
+  SetDeferred(ShouldDefer());
 }
 
 void BufferedResourceLoader::SetDeferred(bool deferred) {
+  if (active_loader_->deferred() == deferred)
+    return;
+
   active_loader_->SetDeferred(deferred);
   loading_cb_.Run(deferred ? kLoadingDeferred : kLoading);
 }
 
-bool BufferedResourceLoader::ShouldEnableDefer() const {
-  // If we're already deferring, then enabling makes no sense.
-  if (active_loader_->deferred())
-    return false;
-
+bool BufferedResourceLoader::ShouldDefer() const {
   switch(defer_strategy_) {
-    // Never defer at all, so never enable defer.
     case kNeverDefer:
       return false;
 
-    // Defer if nothing is being requested.
     case kReadThenDefer:
+      DCHECK(read_cb_.is_null() || last_offset_ > buffer_.forward_bytes())
+          << "We shouldn't stop deferring if we can fulfill the read";
       return read_cb_.is_null();
 
-    // Defer if we've reached max capacity.
     case kCapacityDefer:
       return buffer_.forward_bytes() >= buffer_.forward_capacity();
   }
-  // Otherwise don't enable defer.
-  return false;
-}
-
-bool BufferedResourceLoader::ShouldDisableDefer() const {
-  // If we're not deferring, then disabling makes no sense.
-  if (!active_loader_->deferred())
-    return false;
-
-  switch(defer_strategy_) {
-    // Always disable deferring.
-    case kNeverDefer:
-      return true;
-
-    // We have an outstanding read request, and we have not buffered enough
-    // yet to fulfill the request; disable defer to get more data.
-    case kReadThenDefer:
-      return !read_cb_.is_null() && last_offset_ > buffer_.forward_bytes();
-
-    // Disable deferring whenever our forward-buffered amount falls beneath our
-    // capacity.
-    case kCapacityDefer:
-      return buffer_.forward_bytes() < buffer_.forward_capacity();
-  }
-
-  // Otherwise keep deferring.
+  NOTREACHED();
   return false;
 }
 

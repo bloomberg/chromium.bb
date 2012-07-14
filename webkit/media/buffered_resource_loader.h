@@ -213,20 +213,16 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   // Updates the |buffer_|'s forward and backward capacities.
   void UpdateBufferWindow();
 
-  // Returns true if we should defer resource loading based on the current
-  // buffering scheme.
-  bool ShouldEnableDefer() const;
-
-  // Returns true if we should enable resource loading based on the current
-  // buffering scheme.
-  bool ShouldDisableDefer() const;
-
   // Updates deferring behavior based on current buffering scheme.
   void UpdateDeferBehavior();
 
-  // Set defer state to |deferred| and cease/continue downloading data
-  // accordingly.
+  // Sets |active_loader_|'s defer state and fires |loading_cb_| if the state
+  // changed.
   void SetDeferred(bool deferred);
+
+  // Returns true if we should defer resource loading based on the current
+  // buffering scheme.
+  bool ShouldDefer() const;
 
   // Returns true if the current read request can be fulfilled by what is in
   // the buffer.
