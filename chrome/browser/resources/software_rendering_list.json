@@ -65,7 +65,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "2.1",
+  "version": "2.2",
   "entries": [
     {
       "id": 1,
@@ -621,6 +621,23 @@
       "blacklist": [
         "flash_3d",
         "flash_stage3d"
+      ]
+    },
+    {
+      "id": 42,
+      "description": "AMD Radeon HD 6490M on Snow Leopard is buggy.",
+      "cr_bugs": [137307],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "=",
+          "number": "10.6"
+        }
+      },
+      "vendor_id": "0x1002",
+      "device_id": ["0x6760"],
+      "blacklist": [
+        "webgl"
       ]
     }
   ]
