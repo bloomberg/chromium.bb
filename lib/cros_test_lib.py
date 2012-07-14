@@ -25,7 +25,7 @@ class TempDirMixin(object):
     osutils._TempDirSetup(self)
 
   def tearDown(self):
-    osutils._TempDirTearDown(self)
+    osutils._TempDirTearDown(self, False)
 
 
 class EasyAttr(dict):

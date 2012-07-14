@@ -6,6 +6,7 @@
 
 import contextlib
 import errno
+import logging
 import os
 import shutil
 import tempfile
@@ -106,6 +107,22 @@ def SafeMakedirs(path, mode=0775, sudo=False):
   return False
 
 
+def RmDir(path, force_sudo=False):
+  """Recursively remove a directory.
+
+  If force_sudo is False, the function will error out if the directory doesn't
+  exist.
+
+  Arguments:
+    force_sudo: Remove directories as root.
+  """
+  if force_sudo:
+    cros_build_lib.SudoRunCommand(['rm', '-rf', path],
+                                  debug_level=logging.DEBUG)
+  else:
+    shutil.rmtree(path)
+
+
 # pylint: disable=W0212,R0904,W0702
 def _TempDirSetup(self, prefix='tmp', update_env=True):
   """Generate a tempdir, modifying the object, and env to use it.
@@ -137,13 +154,13 @@ def _TempDirSetup(self, prefix='tmp', update_env=True):
 
 
 # pylint: disable=W0212,R0904,W0702
-def _TempDirTearDown(self):
+def _TempDirTearDown(self, force_sudo):
   # Note that _TempDirSetup may have failed, resulting in these attributes
   # not being set; this is why we use getattr here (and must).
   tempdir = getattr(self, 'tempdir', None)
   try:
     if tempdir is not None:
-      shutil.rmtree(tempdir)
+      RmDir(tempdir, force_sudo)
   except EnvironmentError, e:
     # Suppress ENOENT since we may be invoked
     # in a context where parallel wipes of the tempdir
@@ -164,8 +181,13 @@ def _TempDirTearDown(self):
 
 
 @contextlib.contextmanager
-def TempDirContextManager(prefix='tmp', storage=None):
-  """ContextManager constraining all tempfile/TMPDIR activity to a tempdir"""
+def TempDirContextManager(prefix='tmp', storage=None, sudo_rm=False):
+  """ContextManager constraining all tempfile/TMPDIR activity to a tempdir
+
+  Arguments:
+    storage: The object that will have its 'tempdir' attribute set.
+    sudo_rm: Whether the temporary dir will need root privileges to remove.
+  """
   if storage is None:
     # Fake up a mutable object.
     # TOOD(build): rebase this to EasyAttr from cros_test_lib once it moves
@@ -176,9 +198,10 @@ def TempDirContextManager(prefix='tmp', storage=None):
 
   _TempDirSetup(storage, prefix=prefix)
   try:
-    yield
+    yield storage.tempdir
   finally:
-    _TempDirTearDown(storage)
+    _TempDirTearDown(storage, sudo_rm)
+
 
 # pylint: disable=W0212,R0904,W0702
 def TempDirDecorator(func):

@@ -1816,6 +1816,59 @@ def GetChromiteTrackingBranch():
   return 'master'
 
 
+def WaitForCondition(func, period, timeout):
+  """Periodically run a function, waiting in between runs.
+
+  Continues to run until the function returns a 'True' value.
+
+  Arguments:
+    func: The function to run to test for condition.  Returns True to indicate
+          condition was met.
+    period: How long to wait in between testing of condition.
+    timeout: The maximum amount of time to wait.
+
+  Raises:
+    TimeoutError when the timeout is exceeded.
+  """
+  assert period >= 0
+  with SubCommandTimeout(timeout):
+    timestamp = time.time()
+    while not func():
+      time_remaining = period - int(time.time() - timestamp)
+      if time_remaining > 0:
+        time.sleep(time_remaining)
+      timestamp = time.time()
+
+
+def RunCurl(args, **kwargs):
+  """Runs curl and wraps around all necessary hacks."""
+  cmd = ['curl']
+  cmd.extend(args)
+
+  # These values were discerned via scraping the curl manpage; they're all
+  # retry related (dns failed, timeout occurred, etc, see  the manpage for
+  # exact specifics of each).
+  # Note we allow 22 to deal w/ 500's- they're thrown by google storage
+  # occasionally.
+  # Finally, we do not use curl's --retry option since it generally doesn't
+  # actually retry anything; code 18 for example, it will not retry on.
+  retriable_exits = frozenset([5, 6, 7, 15, 18, 22, 26, 28, 52, 56])
+  try:
+    return RunCommandWithRetries(5, cmd, sleep=3, retry_on=retriable_exits,
+                                 **kwargs)
+  except RunCommandError, e:
+    code = e.result.returncode
+    if code in (51, 58, 60):
+      # These are the return codes of failing certs as per 'man curl'.
+      Die('Download failed with certificate error? Try "sudo c_rehash".')
+    else:
+      try:
+        return RunCommandWithRetries(5, cmd, sleep=60, retry_on=retriable_exits,
+                                     **kwargs)
+      except RunCommandError, e:
+        Die("Curl failed w/ exit code %i", code)
+
+
 def SetupBasicLogging():
   """Sets up basic logging to use format from constants."""
   logging_format = '%(asctime)s - %(filename)s - %(levelname)-8s: %(message)s'

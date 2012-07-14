@@ -93,36 +93,6 @@ def FetchRemoteTarballs(urls):
   Returns:
     Full path to the downloaded file
   """
-
-  def RunCurl(args, **kwargs):
-    """Runs curl and wraps around all necessary hacks."""
-    cmd = ['curl']
-    cmd.extend(args)
-
-    # These values were discerned via scraping the curl manpage; they're all
-    # retry related (dns failed, timeout occurred, etc, see  the manpage for
-    # exact specifics of each).
-    # Note we allow 22 to deal w/ 500's- they're thrown by google storage
-    # occasionally.
-    # Finally, we do not use curl's --retry option since it generally doesn't
-    # actually retry anything; code 18 for example, it will not retry on.
-    retriable_exits = frozenset([5, 6, 7, 15, 18, 22, 26, 28, 52, 56])
-    try:
-      return cros_build_lib.RunCommandWithRetries(
-          5, cmd, sleep=3, retry_on=retriable_exits, **kwargs)
-    except cros_build_lib.RunCommandError, e:
-      code = e.result.returncode
-      if code in (51, 58, 60):
-        # These are the return codes of failing certs as per 'man curl'.
-        print 'Download failed with certificate error? Try "sudo c_rehash".'
-      else:
-        try:
-          return cros_build_lib.RunCommandWithRetries(
-             5, cmd, sleep=60, retry_on=retriable_exits, **kwargs)
-        except cros_build_lib.RunCommandError, e:
-          print "Curl failed w/ exit code %i" % code
-      sys.exit(1)
-
   def RemoteTarballExists(url):
     """Tests if a remote tarball exists."""
     # We also use this for "local" tarballs using file:// urls. Those will
@@ -130,9 +100,9 @@ def FetchRemoteTarballs(urls):
     if url.startswith('file://'):
       return os.path.exists(url.replace('file://', ''))
 
-    result = RunCurl(['-I', url],
-                     redirect_stdout=True, redirect_stderr=True,
-                     print_cmd=False)
+    result = cros_build_lib.RunCurl(['-I', url],
+                                    redirect_stdout=True, redirect_stderr=True,
+                                    print_cmd=False)
     # We must walk the output to find the string '200 OK' for use cases where
     # a proxy is involved and may have pushed down the actual header.
     for header in result.output.splitlines():
@@ -176,10 +146,10 @@ def FetchRemoteTarballs(urls):
     # see:
     # pylint: disable=C0301
     # https://sourceforge.net/tracker/?func=detail&atid=100976&aid=3482927&group_id=976
-    result = RunCurl(['-I', url],
-                     redirect_stdout=True,
-                     redirect_stderr=True,
-                     print_cmd=False)
+    result = cros_build_lib.RunCurl(['-I', url],
+                                    redirect_stdout=True,
+                                    redirect_stderr=True,
+                                    print_cmd=False)
 
     for x in result.output.splitlines():
       if x.lower().startswith("content-length:"):
@@ -190,7 +160,7 @@ def FetchRemoteTarballs(urls):
           return tarball_dest
         break
   curl_opts.append(url)
-  RunCurl(curl_opts)
+  cros_build_lib.RunCurl(curl_opts)
   return tarball_dest
 
 
