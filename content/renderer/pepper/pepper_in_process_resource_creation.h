@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/renderer/pepper/pepper_instance_state_accessor_impl.h"
 #include "webkit/plugins/ppapi/resource_creation_impl.h"
 
 class RenderViewImpl;
@@ -42,7 +43,15 @@ class PepperInProcessResourceCreation
                                   const ppapi::PpapiPermissions& perms);
   virtual ~PepperInProcessResourceCreation();
 
+  // ResourceCreation_API implementation.
+  virtual PP_Resource CreateFileChooser(
+      PP_Instance instance,
+      PP_FileChooserMode_Dev mode,
+      const char* accept_types) OVERRIDE;
+
  private:
+  PepperInstanceStateAccessorImpl instance_state_;
+
   class HostToPluginRouter;
   scoped_ptr<HostToPluginRouter> host_to_plugin_router_;
 

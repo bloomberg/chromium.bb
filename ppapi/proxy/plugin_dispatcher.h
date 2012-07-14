@@ -34,6 +34,8 @@ class ResourceCreationAPI;
 
 namespace proxy {
 
+class ResourceMessageReplyParams;
+
 // Used to keep track of per-instance data.
 struct InstanceData {
   InstanceData();
@@ -142,6 +144,9 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
   void ForceFreeAllInstances();
 
   // IPC message handlers.
+  void OnMsgResourceReply(
+      const ppapi::proxy::ResourceMessageReplyParams& reply_params,
+      const IPC::Message& nested_msg);
   void OnMsgSupportsInterface(const std::string& interface_name, bool* result);
   void OnMsgSetPreferences(const Preferences& prefs);
 

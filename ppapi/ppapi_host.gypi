@@ -19,6 +19,7 @@
         'PPAPI_HOST_IMPLEMENTATION',
       ],
       'sources': [
+        'host/dispatch_host_message.h',
         'host/host_factory.h',
         'host/host_message_context.h',
         'host/ppapi_host.cc',

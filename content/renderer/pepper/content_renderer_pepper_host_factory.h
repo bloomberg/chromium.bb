@@ -7,14 +7,20 @@
 
 #include "base/compiler_specific.h"
 #include "ppapi/host/host_factory.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
 
 class RenderViewImpl;
 
 namespace content {
 
+class PepperInstanceStateAccessor;
+
 class ContentRendererPepperHostFactory : public ppapi::host::HostFactory {
  public:
-  explicit ContentRendererPepperHostFactory(RenderViewImpl* render_view);
+  explicit ContentRendererPepperHostFactory(
+      RenderViewImpl* render_view,
+      const ppapi::PpapiPermissions& permissions,
+      PepperInstanceStateAccessor* state);
   virtual ~ContentRendererPepperHostFactory();
 
   virtual scoped_ptr<ppapi::host::ResourceHost> CreateResourceHost(
@@ -24,7 +30,9 @@ class ContentRendererPepperHostFactory : public ppapi::host::HostFactory {
       const IPC::Message& message) OVERRIDE;
 
  private:
-  RenderViewImpl* render_view_;
+  RenderViewImpl* render_view_;  // Non-owning.
+  ppapi::PpapiPermissions permissions_;
+  PepperInstanceStateAccessor* instance_state_;  // Non-owning.
 
   DISALLOW_COPY_AND_ASSIGN(ContentRendererPepperHostFactory);
 };

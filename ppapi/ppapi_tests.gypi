@@ -140,6 +140,7 @@
       'sources': [
         'proxy/run_all_unittests.cc',
 
+        'proxy/file_chooser_resource_unittest.cc',
         'proxy/mock_resource.cc',
         'proxy/mock_resource.h',
         'proxy/plugin_dispatcher_unittest.cc',

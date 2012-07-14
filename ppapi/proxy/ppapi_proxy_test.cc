@@ -410,6 +410,5 @@ void TwoWayTest::TearDown() {
   io_thread_.Stop();
 }
 
-
 }  // namespace proxy
 }  // namespace ppapi

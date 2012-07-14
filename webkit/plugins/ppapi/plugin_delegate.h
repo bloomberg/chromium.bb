@@ -73,12 +73,10 @@ class PlatformCanvas;
 }
 
 namespace WebKit {
-class WebFileChooserCompletion;
 class WebGamepads;
 class WebPlugin;
 struct WebCompositionUnderline;
 struct WebCursorInfo;
-struct WebFileChooserParams;
 }
 
 namespace webkit_glue {
@@ -416,11 +414,6 @@ class PluginDelegate {
 
   // Notifies that the index of the currently selected item has been updated.
   virtual void SelectedFindResultChanged(int identifier, int index) = 0;
-
-  // Runs a file chooser.
-  virtual bool RunFileChooser(
-      const WebKit::WebFileChooserParams& params,
-      WebKit::WebFileChooserCompletion* chooser_completion) = 0;
 
   // Sends an async IPC to open a local file.
   typedef base::Callback<void (base::PlatformFileError, base::PassPlatformFile)>

@@ -58,11 +58,9 @@ class PluginModule;
 }
 
 namespace WebKit {
-class WebFileChooserCompletion;
 class WebGamepads;
 class WebMouseEvent;
 struct WebCompositionUnderline;
-struct WebFileChooserParams;
 }
 
 namespace content {
@@ -209,9 +207,6 @@ class PepperPluginDelegateImpl
                                           int total,
                                           bool final_result) OVERRIDE;
   virtual void SelectedFindResultChanged(int identifier, int index) OVERRIDE;
-  virtual bool RunFileChooser(
-      const WebKit::WebFileChooserParams& params,
-      WebKit::WebFileChooserCompletion* chooser_completion) OVERRIDE;
   virtual bool AsyncOpenFile(const FilePath& path,
                              int flags,
                              const AsyncOpenFileCallback& callback) OVERRIDE;

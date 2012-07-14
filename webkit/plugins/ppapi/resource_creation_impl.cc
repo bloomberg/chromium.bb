@@ -16,7 +16,6 @@
 #include "webkit/plugins/ppapi/ppb_broker_impl.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
 #include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
-#include "webkit/plugins/ppapi/ppb_file_chooser_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_io_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
@@ -113,13 +112,6 @@ PP_Resource ResourceCreationImpl::CreateBuffer(PP_Instance instance,
 PP_Resource ResourceCreationImpl::CreateDirectoryReader(
     PP_Resource directory_ref) {
   return PPB_DirectoryReader_Impl::Create(directory_ref);
-}
-
-PP_Resource ResourceCreationImpl::CreateFileChooser(
-    PP_Instance instance,
-    PP_FileChooserMode_Dev mode,
-    const char* accept_types) {
-  return PPB_FileChooser_Impl::Create(instance, mode, accept_types);
 }
 
 PP_Resource ResourceCreationImpl::CreateFileIO(PP_Instance instance) {

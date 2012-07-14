@@ -217,6 +217,7 @@ bool PPB_FileRef_Proxy::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
+// static
 void PPB_FileRef_Proxy::SerializeFileRef(PP_Resource file_ref,
                                          PPB_FileRef_CreateInfo* result) {
   EnterResourceNoLock<PPB_FileRef_API> enter(file_ref, false);

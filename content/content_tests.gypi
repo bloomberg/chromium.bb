@@ -521,7 +521,12 @@
         'content_shell_lib',
         'test_support_content',
         '../base/base.gyp:test_support_base',
+        '../ipc/ipc.gyp:test_support_ipc',
         '../net/net.gyp:net_test_support',
+        '../ppapi/ppapi_internal.gyp:ppapi_host',
+        '../ppapi/ppapi_internal.gyp:ppapi_proxy',
+        '../ppapi/ppapi_internal.gyp:ppapi_shared',
+        '../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
         '../ui/ui.gyp:ui',
@@ -537,6 +542,7 @@
         'test/content_browser_test.h',
         'test/content_browser_test.cc',
         'test/content_test_launcher.cc',
+        'renderer/pepper/pepper_file_chooser_host_browsertest.cc',
       ],
       'conditions': [
         ['OS=="win"', {

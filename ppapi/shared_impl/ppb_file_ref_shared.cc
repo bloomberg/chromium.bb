@@ -17,7 +17,6 @@ PPB_FileRef_Shared::PPB_FileRef_Shared(ResourceObjectType type,
     // Resource's constructor assigned a PP_Resource, so we can fill out our
     // host resource now.
     create_info_.resource = host_resource();
-    DCHECK(!create_info_.resource.is_null());
   }
 }
 

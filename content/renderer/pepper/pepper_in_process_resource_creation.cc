@@ -11,10 +11,12 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/host/ppapi_host.h"
+#include "ppapi/proxy/file_chooser_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/resource_tracker.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 // Note that the code in the creation functions in this file should generally
 // be the same as that in ppapi/proxy/resource_creation_proxy.cc. See
@@ -26,6 +28,7 @@ class PepperInProcessResourceCreation::PluginToHostRouter
     : public IPC::Sender {
  public:
   PluginToHostRouter(RenderViewImpl* render_view,
+                     PepperInstanceStateAccessor* state,
                      IPC::Sender* host_to_plugin_sender,
                      const ppapi::PpapiPermissions& perms);
   virtual ~PluginToHostRouter() {}
@@ -46,10 +49,11 @@ class PepperInProcessResourceCreation::PluginToHostRouter
 
 PepperInProcessResourceCreation::PluginToHostRouter::PluginToHostRouter(
     RenderViewImpl* render_view,
+    PepperInstanceStateAccessor* state,
     IPC::Sender* host_to_plugin_sender,
     const ppapi::PpapiPermissions& perms)
     : weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      factory_(render_view),
+      factory_(render_view, perms, state),
       host_(host_to_plugin_sender, &factory_, perms) {
 }
 
@@ -136,13 +140,24 @@ PepperInProcessResourceCreation::PepperInProcessResourceCreation(
     webkit::ppapi::PluginInstance* instance,
     const ppapi::PpapiPermissions& perms)
     : ResourceCreationImpl(instance),
+      instance_state_(instance->module()),
       host_to_plugin_router_(new HostToPluginRouter),
       plugin_to_host_router_(
-          new PluginToHostRouter(render_view, host_to_plugin_router_.get(),
+          new PluginToHostRouter(render_view, &instance_state_,
+                                 host_to_plugin_router_.get(),
                                  perms)) {
 }
 
 PepperInProcessResourceCreation::~PepperInProcessResourceCreation() {
+}
+
+PP_Resource PepperInProcessResourceCreation::CreateFileChooser(
+    PP_Instance instance,
+    PP_FileChooserMode_Dev mode,
+    const char* accept_types) {
+  return (new ppapi::proxy::FileChooserResource(
+      plugin_to_host_router_.get(),
+      instance, mode, accept_types))->GetReference();
 }
 
 }  // namespace content

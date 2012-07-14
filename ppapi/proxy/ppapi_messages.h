@@ -561,13 +561,6 @@ IPC_MESSAGE_ROUTED3(
     IPC::PlatformFileForTransit /* handle */,
     int32_t /* result */)
 
-// PPB_FileChooser.
-IPC_MESSAGE_ROUTED3(
-    PpapiMsg_PPBFileChooser_ChooseComplete,
-    ppapi::HostResource /* chooser */,
-    int32_t /* result_code (will be != PP_OK on failure */,
-    std::vector<ppapi::PPB_FileRef_CreateInfo> /* chosen_files */)
-
 // PPB_NetworkMonitor_Private.
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPBNetworkMonitor_NetworkList,
                     uint32 /* plugin_dispatcher_id */,
@@ -1123,18 +1116,6 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBBuffer_Create,
                            ppapi::HostResource /* result_resource */,
                            base::SharedMemoryHandle /* result_shm_handle */)
 
-// PPB_FileChooser.
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFileChooser_Create,
-                           PP_Instance /* instance */,
-                           int /* mode */,
-                           std::string /* accept_types */,
-                           ppapi::HostResource /* result */)
-IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBFileChooser_Show,
-                    ppapi::HostResource /* file_chooser */,
-                    PP_Bool /* save_as */,
-                    ppapi::proxy::SerializedVar /* suggested_file_name */,
-                    bool /* require_user_gesture */)
-
 // PPB_NetworkMonitor_Private.
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBNetworkMonitor_Start,
                      uint32 /* plugin_dispatcher_id */)
@@ -1442,3 +1423,16 @@ IPC_MESSAGE_CONTROL2(
     PpapiPluginMsg_ResourceReply,
     ppapi::proxy::ResourceMessageReplyParams /* reply_params */,
     IPC::Message /* nested_msg */)
+
+//-----------------------------------------------------------------------------
+// Messages for resources using call/reply above.
+
+// File chooser.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_FileChooser_Create)
+IPC_MESSAGE_CONTROL4(PpapiHostMsg_FileChooser_Show,
+                     bool /* save_as */,
+                     bool /* open_multiple */,
+                     std::string /* suggested_file_name */,
+                     std::vector<std::string> /* accept_mime_types */)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FileChooser_ShowReply,
+                     std::vector<ppapi::PPB_FileRef_CreateInfo> /* files */)

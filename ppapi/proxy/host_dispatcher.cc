@@ -183,6 +183,11 @@ bool HostDispatcher::OnMessageReceived(const IPC::Message& msg) {
   BoolRestorer restorer(&allow_plugin_reentrancy_);
   allow_plugin_reentrancy_ = false;
 
+  for (size_t i = 0; i < filters_.size(); i++) {
+    if (filters_[i]->OnMessageReceived(msg))
+      return true;
+  }
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(HostDispatcher, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_LogWithSource, OnHostMsgLogWithSource)

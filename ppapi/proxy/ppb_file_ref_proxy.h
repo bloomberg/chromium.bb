@@ -12,6 +12,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_time.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/proxy/proxy_completion_callback_factory.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
@@ -24,7 +25,8 @@ namespace proxy {
 
 class SerializedVarReturnValue;
 
-class PPB_FileRef_Proxy : public InterfaceProxy {
+class PPAPI_PROXY_EXPORT PPB_FileRef_Proxy
+    : public NON_EXPORTED_BASE(InterfaceProxy) {
  public:
   explicit PPB_FileRef_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_FileRef_Proxy();
@@ -41,13 +43,10 @@ class PPB_FileRef_Proxy : public InterfaceProxy {
   // "create info" for reconstitution in the plugin. This struct contains all
   // the necessary information about the file ref.
   //
-  // This function is not static because it needs access to the particular
-  // dispatcher and host interface.
-  //
   // Various PPAPI functions return file refs from various interfaces, so this
   // function is public so anybody can send a file ref.
-  void SerializeFileRef(PP_Resource file_ref,
-                        PPB_FileRef_CreateInfo* result);
+  static void SerializeFileRef(PP_Resource file_ref,
+                               PPB_FileRef_CreateInfo* result);
 
   // Creates a plugin resource from the given CreateInfo sent from the host.
   // The value will be the result of calling SerializeFileRef on the host.

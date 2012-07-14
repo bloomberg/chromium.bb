@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "ipc/ipc_test_sink.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -17,6 +16,7 @@
 #include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
+#include "ppapi/proxy/resource_message_test_sink.h"
 #include "ppapi/shared_impl/test_globals.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,7 +32,7 @@ class ProxyTestHarnessBase {
 
   PP_Module pp_module() const { return pp_module_; }
   PP_Instance pp_instance() const { return pp_instance_; }
-  IPC::TestSink& sink() { return sink_; }
+  ResourceMessageTestSink& sink() { return sink_; }
 
   virtual PpapiGlobals* GetGlobals() = 0;
   // Returns either the plugin or host dispatcher, depending on the test.
@@ -65,7 +65,7 @@ class ProxyTestHarnessBase {
 
  private:
   // Destination for IPC messages sent by the test.
-  IPC::TestSink sink_;
+  ResourceMessageTestSink sink_;
 
   // The module and instance ID associated with the plugin dispatcher.
   PP_Module pp_module_;
@@ -270,6 +270,17 @@ class TwoWayTest : public testing::Test {
   base::WaitableEvent channel_created_;
   base::WaitableEvent shutdown_event_;
 };
+
+// Used during Gtests when you have a PP_Var that you want to EXPECT is equal
+// to a certain constant string value:
+//
+//   EXPECT_VAR_IS_STRING("foo", my_var);
+#define EXPECT_VAR_IS_STRING(str, var) { \
+  StringVar* sv = StringVar::FromPPVar(var); \
+  EXPECT_TRUE(sv); \
+  if (sv) \
+    EXPECT_EQ(str, sv->value()); \
+}
 
 }  // namespace proxy
 }  // namespace ppapi

@@ -61,9 +61,6 @@ class MockPluginDelegate : public PluginDelegate {
                                           int total,
                                           bool final_result);
   virtual void SelectedFindResultChanged(int identifier, int index);
-  virtual bool RunFileChooser(
-      const WebKit::WebFileChooserParams& params,
-      WebKit::WebFileChooserCompletion* chooser_completion);
   virtual bool AsyncOpenFile(const FilePath& path,
                              int flags,
                              const AsyncOpenFileCallback& callback);

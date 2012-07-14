@@ -130,12 +130,6 @@ void MockPluginDelegate::NumberOfFindResultsChanged(int identifier,
 void MockPluginDelegate::SelectedFindResultChanged(int identifier, int index) {
 }
 
-bool MockPluginDelegate::RunFileChooser(
-    const WebKit::WebFileChooserParams& params,
-    WebKit::WebFileChooserCompletion* chooser_completion) {
-  return false;
-}
-
 bool MockPluginDelegate::AsyncOpenFile(const FilePath& path,
                                        int flags,
                                        const AsyncOpenFileCallback& callback) {
