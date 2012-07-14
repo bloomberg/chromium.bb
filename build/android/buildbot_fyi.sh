@@ -16,4 +16,5 @@ bb_baseline_setup "$BB_SRC_ROOT" "$@"
 bb_install_build_deps "$BB_SRC_ROOT"
 bb_compile
 bb_compile_experimental
+bb_run_content_shell_test
 bb_run_tests

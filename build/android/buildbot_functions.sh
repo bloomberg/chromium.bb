@@ -250,6 +250,13 @@ function bb_run_tests {
   build/android/run_tests.py --xvfb --verbose
 }
 
+# Run simple content shell test on device.
+function bb_run_content_shell_test {
+  echo "@@@BUILD_STEP Run simple content shell test on actual hardware@@@"
+  content/shell/android/simple_content_shell_test.sh \
+    "${SRC_ROOT}"/out/Release/content_shell/ContentShell-debug.apk
+}
+
 # Zip and archive a build.
 function bb_zip_build {
   echo "@@@BUILD_STEP Zip build@@@"

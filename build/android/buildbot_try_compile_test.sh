@@ -15,4 +15,5 @@ ROOT=$(cd "$(dirname $0)"; pwd)
 bb_baseline_setup "${ROOT}"/../..
 bb_install_build_deps "${ROOT}"/../..
 bb_compile
+bb_run_content_shell_test
 bb_run_tests
