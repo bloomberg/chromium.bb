@@ -113,8 +113,7 @@ class RenderWidgetHostViewAura
   virtual void AcceleratedSurfaceNew(
       int32 width_in_pixel,
       int32 height_in_pixel,
-      uint64* surface_id,
-      TransportDIB::Handle* surface_handle) OVERRIDE;
+      uint64 surface_id) OVERRIDE;
   virtual void AcceleratedSurfaceRelease(uint64 surface_id) OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;

@@ -57,7 +57,7 @@ class DefaultTransportFactory
 
   virtual scoped_refptr<ui::Texture> CreateTransportClient(
       const gfx::Size& size,
-      uint64* transport_handle,
+      uint64 transport_handle,
       ui::Compositor* compositor) OVERRIDE {
     return NULL;
   }
@@ -221,13 +221,13 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
 
   virtual scoped_refptr<ui::Texture> CreateTransportClient(
       const gfx::Size& size,
-      uint64* transport_handle,
+      uint64 transport_handle,
       ui::Compositor* compositor) {
     PerCompositorData* data = per_compositor_data_[compositor];
     DCHECK(data);
     scoped_refptr<ImageTransportClientTexture> image(
         new ImageTransportClientTexture(data->shared_context.get(),
-                                        size, *transport_handle));
+                                        size, transport_handle));
     return image;
   }
 

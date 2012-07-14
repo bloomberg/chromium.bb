@@ -293,26 +293,12 @@ void GpuProcessHostUIShim::OnResizeView(int32 surface_id,
 
 void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
     const GpuHostMsg_AcceleratedSurfaceNew_Params& params) {
-  ScopedSendOnIOThread delayed_send(
-      host_id_,
-      new AcceleratedSurfaceMsg_NewACK(
-          params.route_id,
-          params.surface_handle,
-          TransportDIB::DefaultHandleValue()));
-
   RenderWidgetHostViewPort* view = GetRenderWidgetHostViewFromSurfaceID(
       params.surface_id);
   if (!view)
     return;
-
-  uint64 surface_handle = params.surface_handle;
-  TransportDIB::Handle shm_handle = TransportDIB::DefaultHandleValue();
-
   view->AcceleratedSurfaceNew(
-      params.width, params.height, &surface_handle, &shm_handle);
-  delayed_send.Cancel();
-  Send(new AcceleratedSurfaceMsg_NewACK(
-      params.route_id, surface_handle, shm_handle));
+      params.width, params.height, params.surface_handle);
 }
 
 #endif

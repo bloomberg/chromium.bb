@@ -76,7 +76,7 @@ class ImageTransportFactory {
   // sent by the GPU process.
   virtual scoped_refptr<ui::Texture> CreateTransportClient(
       const gfx::Size& size,
-      uint64* transport_handle,
+      uint64 transport_handle,
       ui::Compositor* compositor) = 0;
 
   // Gets a GLHelper instance, associated with the compositor context. This

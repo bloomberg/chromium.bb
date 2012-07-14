@@ -45,8 +45,6 @@ class TextureImageTransportSurface :
 
  protected:
   // ImageTransportSurface implementation.
-  virtual void OnNewSurfaceACK(
-      uint64 surface_handle, TransportDIB::Handle shm_handle) OVERRIDE;
   virtual void OnBufferPresented(
       uint32 sync_point) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;

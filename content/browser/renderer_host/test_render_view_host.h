@@ -148,8 +148,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
 
 #if defined(USE_AURA)
   virtual void AcceleratedSurfaceNew(
-      int32 width, int32 height, uint64* surface_id,
-      TransportDIB::Handle* surface_handle) OVERRIDE { }
+      int32 width, int32 height, uint64 surface_id) OVERRIDE { }
   virtual void AcceleratedSurfaceRelease(uint64 surface_id) OVERRIDE { }
 #endif
 

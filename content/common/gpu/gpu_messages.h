@@ -222,11 +222,6 @@ IPC_MESSAGE_CONTROL0(GpuMsg_CollectGraphicsInfo)
 // view.
 IPC_MESSAGE_ROUTED0(AcceleratedSurfaceMsg_ResizeViewACK)
 
-// Tells the GPU process that it's safe to start rendering to the surface.
-IPC_MESSAGE_ROUTED2(AcceleratedSurfaceMsg_NewACK,
-                    uint64 /* surface_handle */,
-                    TransportDIB::Handle /* shared memory buffer */)
-
 // Tells the GPU process that the browser process has handled the swap
 // buffers or post sub-buffer request. A non-zero sync point means
 // that we should wait for the sync point.

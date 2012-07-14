@@ -666,8 +666,7 @@ bool RenderWidgetHostViewAura::HasAcceleratedSurface(
 void RenderWidgetHostViewAura::AcceleratedSurfaceNew(
       int32 width_in_pixel,
       int32 height_in_pixel,
-      uint64* surface_handle,
-      TransportDIB::Handle* shm_handle) {
+      uint64 surface_handle) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   scoped_refptr<ui::Texture> surface(factory->CreateTransportClient(
       gfx::Size(width_in_pixel, height_in_pixel), surface_handle,
@@ -677,7 +676,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceNew(
     return;
   }
 
-  image_transport_clients_[*surface_handle] = surface;
+  image_transport_clients_[surface_handle] = surface;
 }
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceRelease(

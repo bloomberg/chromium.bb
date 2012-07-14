@@ -349,10 +349,6 @@ unsigned TextureImageTransportSurface::GetFormat() {
   return parent_stub_ ? parent_stub_->surface()->GetFormat() : 0;
 }
 
-void TextureImageTransportSurface::OnNewSurfaceACK(
-    uint64 surface_handle, TransportDIB::Handle /*shm_handle*/) {
-}
-
 void TextureImageTransportSurface::OnBufferPresented(uint32 sync_point) {
   if (sync_point == 0) {
     BufferPresentedImpl();

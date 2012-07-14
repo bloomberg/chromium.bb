@@ -93,8 +93,6 @@ bool ImageTransportHelper::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ImageTransportHelper, message)
     IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_BufferPresented,
                         OnBufferPresented)
-    IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_NewACK,
-                        OnNewSurfaceACK)
     IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_ResizeViewACK, OnResizeViewACK);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -198,12 +196,6 @@ gpu::gles2::GLES2Decoder* ImageTransportHelper::Decoder() {
   return stub_->decoder();
 }
 
-void ImageTransportHelper::OnNewSurfaceACK(
-    uint64 surface_handle,
-    TransportDIB::Handle shm_handle) {
-  surface_->OnNewSurfaceACK(surface_handle, shm_handle);
-}
-
 void ImageTransportHelper::OnBufferPresented(uint32 sync_point) {
   surface_->OnBufferPresented(sync_point);
 }
@@ -301,11 +293,6 @@ bool PassThroughImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
     did_set_swap_interval_ = true;
   }
   return true;
-}
-
-void PassThroughImageTransportSurface::OnNewSurfaceACK(
-    uint64 surface_handle,
-    TransportDIB::Handle shm_handle) {
 }
 
 void PassThroughImageTransportSurface::OnBufferPresented(uint32 sync_point) {

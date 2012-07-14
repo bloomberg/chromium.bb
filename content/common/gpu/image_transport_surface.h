@@ -59,8 +59,6 @@ class ImageTransportSurface {
  public:
   ImageTransportSurface();
 
-  virtual void OnNewSurfaceACK(
-      uint64 surface_id, TransportDIB::Handle surface_handle) = 0;
   virtual void OnBufferPresented(uint32 sync_point) = 0;
   virtual void OnResizeViewACK() = 0;
   virtual void OnResize(gfx::Size size) = 0;
@@ -137,7 +135,6 @@ class ImageTransportHelper : public IPC::Listener {
   gpu::gles2::GLES2Decoder* Decoder();
 
   // IPC::Message handlers.
-  void OnNewSurfaceACK(uint64 surface_handle, TransportDIB::Handle shm_handle);
   void OnBufferPresented(uint32 sync_point);
   void OnResizeViewACK();
 
@@ -174,8 +171,6 @@ class PassThroughImageTransportSurface
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
 
   // ImageTransportSurface implementation.
-  virtual void OnNewSurfaceACK(
-      uint64 surface_handle, TransportDIB::Handle shm_handle) OVERRIDE;
   virtual void OnBufferPresented(uint32 sync_point) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
