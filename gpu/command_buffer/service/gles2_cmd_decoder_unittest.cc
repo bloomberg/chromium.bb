@@ -5122,13 +5122,11 @@ TEST_F(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
   for (size_t ii = 0; ii < arraysize(test_data); ++ii) {
     const S3TCTestData& test = test_data[ii];
     CompressedTexImage2DBucket cmd;
-    // test too small width.
-    cmd.Init(
-        GL_TEXTURE_2D, 0, test.format, 2, 4, 0,
+    // test small width.
+    DoCompressedTexImage2D(
+        GL_TEXTURE_2D, 0, test.format, 2, 4, 0, test.block_size,
         kBucketId);
-    bucket->SetSize(test.block_size);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
     // test bad width.
     cmd.Init(
@@ -5138,13 +5136,11 @@ TEST_F(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
     EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 
-    // test too small height.
-    cmd.Init(
-        GL_TEXTURE_2D, 0, test.format, 4, 2, 0,
+    // test small height.
+    DoCompressedTexImage2D(
+        GL_TEXTURE_2D, 0, test.format, 4, 2, 0, test.block_size,
         kBucketId);
-    bucket->SetSize(test.block_size);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
     // test too bad height.
     cmd.Init(
@@ -5154,21 +5150,17 @@ TEST_F(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
     EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 
-    // test too small for level 0.
-    cmd.Init(
-        GL_TEXTURE_2D, 0, test.format, 1, 1, 0,
+    // test small for level 0.
+    DoCompressedTexImage2D(
+        GL_TEXTURE_2D, 0, test.format, 1, 1, 0, test.block_size,
         kBucketId);
-    bucket->SetSize(test.block_size);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
-    // test too small for level 0.
-    cmd.Init(
-        GL_TEXTURE_2D, 0, test.format, 2, 2, 0,
+    // test small for level 0.
+    DoCompressedTexImage2D(
+        GL_TEXTURE_2D, 0, test.format, 2, 2, 0, test.block_size,
         kBucketId);
-    bucket->SetSize(test.block_size);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
     // test size too large.
     cmd.Init(

@@ -6973,8 +6973,8 @@ const int kS3TCDXT1BlockSize = 8;
 const int kS3TCDXT3AndDXT5BlockSize = 16;
 
 bool IsValidDXTSize(GLint level, GLsizei size) {
-  return (level && size == 1) ||
-         (level && size == 2) || !(size % kS3TCBlockWidth);
+  return (size == 1) ||
+         (size == 2) || !(size % kS3TCBlockWidth);
 }
 
 }  // anonymous namespace.
