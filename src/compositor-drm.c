@@ -664,35 +664,62 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	return 0;
 }
 
-static int
-drm_output_set_cursor(struct weston_output *output_base,
-		      struct weston_seat *es);
-
 static void
-weston_output_set_cursor(struct weston_output *output,
-			 struct weston_seat *seat)
+drm_output_set_cursor(struct weston_output *output_base,
+		      struct weston_seat *seat)
 {
-	pixman_region32_t cursor_region;
+	struct drm_output *output = (struct drm_output *) output_base;
+	struct drm_compositor *c =
+		(struct drm_compositor *) output->base.compositor;
+	EGLint handle, stride;
+	struct gbm_bo *bo;
+	uint32_t buf[64 * 64];
+	unsigned char *s;
+	int i;
 
-	if (seat->sprite == NULL)
+	if (seat->sprite->output_mask != (1u << output_base->id))
 		return;
 
-	pixman_region32_init(&cursor_region);
-	pixman_region32_intersect(&cursor_region,
-				  &seat->sprite->transform.boundingbox,
-				  &output->region);
+	if (seat->sprite->buffer == NULL ||
+	    !wl_buffer_is_shm(seat->sprite->buffer) ||
+	    seat->sprite->geometry.width > 64 ||
+	    seat->sprite->geometry.height > 64)
+		return;
 
-	if (pixman_region32_not_empty(&cursor_region) &&
-	    drm_output_set_cursor(output, seat) == 0)
-		seat->sprite->plane = WESTON_PLANE_DRM_CURSOR;
+	output->current_cursor ^= 1;
+	bo = output->cursor_bo[output->current_cursor];
+	memset(buf, 0, sizeof buf);
+	stride = wl_shm_buffer_get_stride(seat->sprite->buffer);
+	s = wl_shm_buffer_get_data(seat->sprite->buffer);
+	for (i = 0; i < seat->sprite->geometry.height; i++)
+		memcpy(buf + i * 64, s + i * stride,
+		       seat->sprite->geometry.width * 4);
 
-	pixman_region32_fini(&cursor_region);
+	if (gbm_bo_write(bo, buf, sizeof buf) < 0)
+		return;
+
+	handle = gbm_bo_get_handle(bo).s32;
+	if (drmModeSetCursor(c->drm.fd, output->crtc_id, handle, 64, 64)) {
+		weston_log("failed to set cursor: %n\n");
+		return;
+	}
+
+	if (drmModeMoveCursor(c->drm.fd, output->crtc_id,
+			      seat->sprite->geometry.x - output->base.x,
+			      seat->sprite->geometry.y - output->base.y)) {
+		weston_log("failed to move cursor: %m\n");
+		return;
+	}
+
+	seat->sprite->plane = WESTON_PLANE_DRM_CURSOR;
 }
 
 static void
 drm_assign_planes(struct weston_output *output)
 {
-	struct weston_compositor *ec = output->compositor;
+	struct drm_compositor *c =
+		(struct drm_compositor *) output->compositor;
+	struct drm_output *drm_output = (struct drm_output *) output;
 	struct weston_surface *es, *next;
 	pixman_region32_t overlap, surface_overlap;
 	struct weston_seat *seat;
@@ -711,9 +738,9 @@ drm_assign_planes(struct weston_output *output)
 	 * the client buffer can be used directly for the sprite surface
 	 * as we do for flipping full screen surfaces.
 	 */
-	seat = (struct weston_seat *) ec->seat;
+	seat = (struct weston_seat *) c->base.seat;
 	pixman_region32_init(&overlap);
-	wl_list_for_each_safe(es, next, &ec->surface_list, link) {
+	wl_list_for_each_safe(es, next, &c->base.surface_list, link) {
 		/*
 		 * FIXME: try to assign hw cursors here too, they're just
 		 * special overlays
@@ -728,7 +755,7 @@ drm_assign_planes(struct weston_output *output)
 			goto bail;
 
 		if (es == seat->sprite)
-			weston_output_set_cursor(output, seat);
+			drm_output_set_cursor(output, seat);
 
 		if (es->plane == WESTON_PLANE_PRIMARY)
 			drm_output_prepare_scanout_surface(output, es);
@@ -752,75 +779,9 @@ drm_assign_planes(struct weston_output *output)
 	pixman_region32_fini(&overlap);
 
 	if (!seat->sprite || seat->sprite->plane == WESTON_PLANE_PRIMARY)
-		drm_output_set_cursor(output, NULL);
+		drmModeSetCursor(c->drm.fd, drm_output->crtc_id, 0, 0, 0);
 
 	drm_disable_unused_sprites(output);
-}
-
-static int
-drm_output_set_cursor(struct weston_output *output_base,
-		      struct weston_seat *es)
-{
-	struct drm_output *output = (struct drm_output *) output_base;
-	struct drm_compositor *c =
-		(struct drm_compositor *) output->base.compositor;
-	EGLint handle, stride;
-	int ret = -1;
-	struct gbm_bo *bo;
-	uint32_t buf[64 * 64];
-	unsigned char *d, *s, *end;
-
-	if (es == NULL) {
-		drmModeSetCursor(c->drm.fd, output->crtc_id, 0, 0, 0);
-		return 0;
-	}
-
-	if (es->sprite->buffer == NULL ||
-	    !wl_buffer_is_shm(es->sprite->buffer))
-		goto out;
-
-	if (es->sprite->geometry.width > 64 ||
-	    es->sprite->geometry.height > 64)
-		goto out;
-
-	output->current_cursor ^= 1;
-	bo = output->cursor_bo[output->current_cursor];
-	if (bo == NULL)
-		goto out;
-
-	memset(buf, 0, sizeof buf);
-	d = (unsigned char *) buf;
-	stride = wl_shm_buffer_get_stride(es->sprite->buffer);
-	s = wl_shm_buffer_get_data(es->sprite->buffer);
-	end = s + stride * es->sprite->geometry.height;
-	while (s < end) {
-		memcpy(d, s, es->sprite->geometry.width * 4);
-		s += stride;
-		d += 64 * 4;
-	}
-
-	if (gbm_bo_write(bo, buf, sizeof buf) < 0)
-		goto out;
-
-	handle = gbm_bo_get_handle(bo).s32;
-	ret = drmModeSetCursor(c->drm.fd, output->crtc_id, handle, 64, 64);
-	if (ret) {
-		weston_log("failed to set cursor: %s\n", strerror(-ret));
-		goto out;
-	}
-
-	ret = drmModeMoveCursor(c->drm.fd, output->crtc_id,
-				es->sprite->geometry.x - output->base.x,
-				es->sprite->geometry.y - output->base.y);
-	if (ret) {
-		weston_log("failed to move cursor: %s\n", strerror(-ret));
-		goto out;
-	}
-
-out:
-	if (ret)
-		drmModeSetCursor(c->drm.fd, output->crtc_id, 0, 0, 0);
-	return ret;
 }
 
 static void
@@ -835,7 +796,7 @@ drm_output_destroy(struct weston_output *output_base)
 		backlight_destroy(output->backlight);
 
 	/* Turn off hardware cursor */
-	drm_output_set_cursor(&output->base, NULL);
+	drmModeSetCursor(c->drm.fd, output->crtc_id, 0, 0, 0);
 
 	/* Restore original CRTC state */
 	drmModeSetCrtc(c->drm.fd, origcrtc->crtc_id, origcrtc->buffer_id,
@@ -1755,10 +1716,9 @@ static void
 vt_func(struct weston_compositor *compositor, int event)
 {
 	struct drm_compositor *ec = (struct drm_compositor *) compositor;
-	struct weston_output *output;
 	struct weston_seat *seat;
 	struct drm_sprite *sprite;
-	struct drm_output *drm_output;
+	struct drm_output *output;
 
 	switch (event) {
 	case TTY_ENTER_VT:
@@ -1793,18 +1753,18 @@ vt_func(struct weston_compositor *compositor, int event)
 		 * back, we schedule a repaint, which will process
 		 * pending frame callbacks. */
 
-		wl_list_for_each(output, &ec->base.output_list, link) {
-			output->repaint_needed = 0;
-			drm_output_set_cursor(output, NULL);
+		wl_list_for_each(output, &ec->base.output_list, base.link) {
+			output->base.repaint_needed = 0;
+			drmModeSetCursor(ec->drm.fd, output->crtc_id, 0, 0, 0);
 		}
 
-		drm_output = container_of(ec->base.output_list.next,
-					  struct drm_output, base.link);
+		output = container_of(ec->base.output_list.next,
+				      struct drm_output, base.link);
 
 		wl_list_for_each(sprite, &ec->sprite_list, link)
 			drmModeSetPlane(ec->drm.fd,
 					sprite->plane_id,
-					drm_output->crtc_id, 0, 0,
+					output->crtc_id, 0, 0,
 					0, 0, 0, 0, 0, 0, 0, 0);
 
 		if (weston_launcher_drm_set_master(&ec->base, ec->drm.fd, 0) < 0)
