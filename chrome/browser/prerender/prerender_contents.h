@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_CONTENTS_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_CONTENTS_H_
 
-#include <list>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
@@ -36,6 +36,7 @@ class WebContents;
 
 namespace prerender {
 
+class PrerenderHandle;
 class PrerenderManager;
 class PrerenderRenderViewHostObserver;
 class PrerenderTracker;
@@ -65,10 +66,6 @@ class PrerenderContents : public content::NotificationObserver,
     DISALLOW_COPY_AND_ASSIGN(Factory);
   };
 
-  // Information on pages that the prerendered page has tried to prerender.
-  struct PendingPrerenderInfo;
-  typedef std::list<PendingPrerenderInfo> PendingPrerenderList;
-
   // Indicates how this PrerenderContents relates to MatchComplete. This is to
   // figure out which histograms to use to record the FinalStatus, Match (record
   // all prerenders and control group prerenders) or MatchComplete (record
@@ -79,7 +76,7 @@ class PrerenderContents : public content::NotificationObserver,
     // MatchComplete.
     MATCH_COMPLETE_DEFAULT,
     // A prerender that used to be a regular prerender, but has since been
-    // replaced by a MatchComplete dummy.  Therefore, we will record this only
+    // replaced by a MatchComplete dummy. Therefore, we will record this only
     // for Match, but not for MatchComplete.
     MATCH_COMPLETE_REPLACED,
     // A prerender that is a MatchComplete dummy replacing a regular prerender.
@@ -93,6 +90,12 @@ class PrerenderContents : public content::NotificationObserver,
   };
 
   virtual ~PrerenderContents();
+
+  // For MatchComplete correctness, create a dummy replacement prerender
+  // contents to stand in for this prerender contents that (which we are about
+  // to destroy).
+  void MakeIntoDummyReplacementOf(
+      const PrerenderContents* original_prerender_contents);
 
   bool Init();
 
@@ -155,11 +158,10 @@ class PrerenderContents : public content::NotificationObserver,
   base::TimeTicks load_start_time() const { return load_start_time_; }
 
   // Indicates whether this prerendered page can be used for the provided
-  // URL, i.e. whether there is a match. |matching_url| is optional and will be
-  // set to the URL that is found as a match if it is provided.
-  // TODO(gavinp,mmenke): Rework matching to be based on both the URL
-  // and the session WebStorage.
-  bool MatchesURL(const GURL& url, GURL* matching_url) const;
+  // |url| and |session_storage_namespace|.
+  bool Matches(
+      const GURL& url,
+      const content::SessionStorageNamespace* session_storage_namespace) const;
 
   // content::WebContentsObserver implementation.
   virtual void DidStopLoading() OVERRIDE;
@@ -211,19 +213,37 @@ class PrerenderContents : public content::NotificationObserver,
   // MouseEvent being dispatched by a link to a website installed as an app.
   bool IsCrossSiteNavigationPending() const;
 
-  // Adds a pending prerender to the list.
-  virtual void AddPendingPrerender(const GURL& url,
-                                   const content::Referrer& referrer,
-                                   const gfx::Size& size);
+  // Adds a pending prerender to the list. If |weak_prerender_handle| still
+  // exists when this page is made visible, it will be launched.
+  virtual void AddPendingPrerender(
+      base::WeakPtr<PrerenderHandle> weak_prerender_handle,
+      const GURL& url,
+      const content::Referrer& referrer,
+      const gfx::Size& size);
 
   // Returns true if |url| corresponds to a pending prerender.
-  bool IsPendingEntry(const GURL& url) const;
+  bool IsPendingEntry(const PrerenderHandle& prerender_handle) const;
 
   // Reissues any pending prerender requests from the prerendered page.  Also
   // clears the list of pending requests.
   void StartPendingPrerenders();
 
  protected:
+  // Information on pages that the prerendered page has tried to prerender.
+  struct PendingPrerenderInfo {
+    PendingPrerenderInfo(
+        base::WeakPtr<PrerenderHandle> weak_prerender_handle,
+        const GURL& url,
+        const content::Referrer& referrer,
+        const gfx::Size& size);
+    ~PendingPrerenderInfo();
+
+    base::WeakPtr<PrerenderHandle> weak_prerender_handle;
+    GURL url;
+    content::Referrer referrer;
+    gfx::Size size;
+  };
+
   PrerenderContents(PrerenderManager* prerender_manager,
                     PrerenderTracker* prerender_tracker,
                     Profile* profile,
@@ -241,8 +261,8 @@ class PrerenderContents : public content::NotificationObserver,
     return notification_registrar_;
   }
 
-  const PendingPrerenderList* pending_prerender_list() const {
-    return &pending_prerender_list_;
+  const std::vector<PendingPrerenderInfo>& pending_prerenders() const {
+    return pending_prerenders_;
   }
 
   bool prerendering_has_been_cancelled() const {
@@ -253,6 +273,11 @@ class PrerenderContents : public content::NotificationObserver,
       content::SessionStorageNamespace* session_storage_namespace);
 
   bool prerendering_has_started_;
+
+  // Time at which we started to load the URL.  This is used to compute
+  // the time elapsed from initiating a prerender until the time the
+  // (potentially only partially) prerendered page is shown to the user.
+  base::TimeTicks load_start_time_;
 
  private:
   class TabContentsDelegateImpl;
@@ -302,6 +327,11 @@ class PrerenderContents : public content::NotificationObserver,
   // such as HTTP redirects or javascript redirects.
   std::vector<GURL> alias_urls_;
 
+  // The session storage namespace id for use in matching. We must save it
+  // rather than get it from the RenderViewHost since in the control group
+  // we won't have a RenderViewHost.
+  int64 session_storage_namespace_id_;
+
   bool has_stopped_loading_;
 
   // True when the main frame has finished loading.
@@ -319,11 +349,6 @@ class PrerenderContents : public content::NotificationObserver,
   // Tracks whether or not prerendering has been cancelled by calling Destroy.
   // Used solely to prevent double deletion.
   bool prerendering_has_been_cancelled_;
-
-  // Time at which we started to load the URL.  This is used to compute
-  // the time elapsed from initiating a prerender until the time the
-  // (potentially only partially) prerendered page is shown to the user.
-  base::TimeTicks load_start_time_;
 
   // Process Metrics of the render process associated with the
   // RenderViewHost for this object.
@@ -347,7 +372,7 @@ class PrerenderContents : public content::NotificationObserver,
   uint8 experiment_id_;
 
   // List of all pages the prerendered page has tried to prerender.
-  PendingPrerenderList pending_prerender_list_;
+  std::vector<PendingPrerenderInfo> pending_prerenders_;
 
   // The process that created the child id.
   int creator_child_id_;
