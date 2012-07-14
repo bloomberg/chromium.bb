@@ -108,7 +108,7 @@ struct drm_output {
 
 	struct gbm_surface *surface;
 	struct gbm_bo *cursor_bo[2];
-	int current_cursor;
+	int current_cursor, cursor_free;
 	EGLSurface egl_surface;
 	struct drm_fb *current, *next;
 	struct backlight *backlight;
@@ -666,7 +666,7 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 
 static void
 drm_output_set_cursor(struct weston_output *output_base,
-		      struct weston_seat *seat)
+		      struct weston_surface *es)
 {
 	struct drm_output *output = (struct drm_output *) output_base;
 	struct drm_compositor *c =
@@ -677,23 +677,21 @@ drm_output_set_cursor(struct weston_output *output_base,
 	unsigned char *s;
 	int i;
 
-	if (seat->sprite->output_mask != (1u << output_base->id))
+	if (!output->cursor_free)
 		return;
-
-	if (seat->sprite->buffer == NULL ||
-	    !wl_buffer_is_shm(seat->sprite->buffer) ||
-	    seat->sprite->geometry.width > 64 ||
-	    seat->sprite->geometry.height > 64)
+	if (es->output_mask != (1u << output_base->id))
+		return;
+	if (es->buffer == NULL || !wl_buffer_is_shm(es->buffer) ||
+	    es->geometry.width > 64 || es->geometry.height > 64)
 		return;
 
 	output->current_cursor ^= 1;
 	bo = output->cursor_bo[output->current_cursor];
 	memset(buf, 0, sizeof buf);
-	stride = wl_shm_buffer_get_stride(seat->sprite->buffer);
-	s = wl_shm_buffer_get_data(seat->sprite->buffer);
-	for (i = 0; i < seat->sprite->geometry.height; i++)
-		memcpy(buf + i * 64, s + i * stride,
-		       seat->sprite->geometry.width * 4);
+	stride = wl_shm_buffer_get_stride(es->buffer);
+	s = wl_shm_buffer_get_data(es->buffer);
+	for (i = 0; i < es->geometry.height; i++)
+		memcpy(buf + i * 64, s + i * stride, es->geometry.width * 4);
 
 	if (gbm_bo_write(bo, buf, sizeof buf) < 0)
 		return;
@@ -705,13 +703,14 @@ drm_output_set_cursor(struct weston_output *output_base,
 	}
 
 	if (drmModeMoveCursor(c->drm.fd, output->crtc_id,
-			      seat->sprite->geometry.x - output->base.x,
-			      seat->sprite->geometry.y - output->base.y)) {
+			      es->geometry.x - output->base.x,
+			      es->geometry.y - output->base.y)) {
 		weston_log("failed to move cursor: %m\n");
 		return;
 	}
 
-	seat->sprite->plane = WESTON_PLANE_DRM_CURSOR;
+	es->plane = WESTON_PLANE_DRM_CURSOR;
+	output->cursor_free = 0;
 }
 
 static void
@@ -722,7 +721,6 @@ drm_assign_planes(struct weston_output *output)
 	struct drm_output *drm_output = (struct drm_output *) output;
 	struct weston_surface *es, *next;
 	pixman_region32_t overlap, surface_overlap;
-	struct weston_seat *seat;
 	int prev_plane;
 
 	/*
@@ -738,13 +736,9 @@ drm_assign_planes(struct weston_output *output)
 	 * the client buffer can be used directly for the sprite surface
 	 * as we do for flipping full screen surfaces.
 	 */
-	seat = (struct weston_seat *) c->base.seat;
 	pixman_region32_init(&overlap);
+	drm_output->cursor_free = 1;
 	wl_list_for_each_safe(es, next, &c->base.surface_list, link) {
-		/*
-		 * FIXME: try to assign hw cursors here too, they're just
-		 * special overlays
-		 */
 		pixman_region32_init(&surface_overlap);
 		pixman_region32_intersect(&surface_overlap, &overlap,
 					  &es->transform.boundingbox);
@@ -754,9 +748,8 @@ drm_assign_planes(struct weston_output *output)
 		if (pixman_region32_not_empty(&surface_overlap))
 			goto bail;
 
-		if (es == seat->sprite)
-			drm_output_set_cursor(output, seat);
-
+		if (es->plane == WESTON_PLANE_PRIMARY)
+			drm_output_set_cursor(output, es);
 		if (es->plane == WESTON_PLANE_PRIMARY)
 			drm_output_prepare_scanout_surface(output, es);
 		if (es->plane == WESTON_PLANE_PRIMARY)
@@ -778,7 +771,7 @@ drm_assign_planes(struct weston_output *output)
 	}
 	pixman_region32_fini(&overlap);
 
-	if (!seat->sprite || seat->sprite->plane == WESTON_PLANE_PRIMARY)
+	if (drm_output->cursor_free)
 		drmModeSetCursor(c->drm.fd, drm_output->crtc_id, 0, 0, 0);
 
 	drm_disable_unused_sprites(output);
