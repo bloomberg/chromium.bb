@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "googleurl/src/gurl.h"
 
@@ -24,7 +25,6 @@ class Size;
 
 namespace prerender {
 
-class PrerenderHandle;
 class PrerenderManager;
 
 // PrerenderLinkManager implements the API on Link elements for all documents
@@ -69,20 +69,14 @@ class PrerenderLinkManager : public ProfileKeyedService {
   friend class PrerenderTest;
 
   typedef std::pair<int, int> ChildAndPrerenderIdPair;
-  typedef std::map<ChildAndPrerenderIdPair, PrerenderHandle*>
-      IdPairToPrerenderHandleMap;
+  typedef std::map<ChildAndPrerenderIdPair, GURL> IdPairToUrlMap;
 
-  void RemovePrerender(
-      const IdPairToPrerenderHandleMap::iterator& id_to_handle_iter);
+  void RemovePrerender(const IdPairToUrlMap::iterator& id_url_iter);
 
   bool IsEmpty() const;
 
   PrerenderManager* manager_;
-
-  // A map from child process id and prerender id to PrerenderHandles. We map
-  // from this pair because the prerender ids are only unique within their
-  // renderer process.
-  IdPairToPrerenderHandleMap ids_to_handle_map_;
+  IdPairToUrlMap ids_to_url_map_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderLinkManager);
 };
