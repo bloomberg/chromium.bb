@@ -77,7 +77,7 @@ bool P2PTransportImpl::Init(WebKit::WebFrame* web_frame,
 
   DCHECK(!channel_.get());
   channel_.reset(new cricket::P2PTransportChannel(
-      0, NULL, allocator_.get()));
+      "", 0, NULL, allocator_.get()));
   channel_->SetIceUfrag(
       talk_base::CreateRandomString(cricket::ICE_UFRAG_LENGTH));
   channel_->SetIcePwd(talk_base::CreateRandomString(cricket::ICE_PWD_LENGTH));

@@ -70,20 +70,22 @@ P2PPortAllocator::~P2PPortAllocator() {
 }
 
 cricket::PortAllocatorSession* P2PPortAllocator::CreateSessionInternal(
+    const std::string& content_name,
     int component,
     const std::string& ice_username_fragment,
     const std::string& ice_password) {
   return new P2PPortAllocatorSession(
-      this, component, ice_username_fragment, ice_password);
+      this, content_name, component, ice_username_fragment, ice_password);
 }
 
 P2PPortAllocatorSession::P2PPortAllocatorSession(
     P2PPortAllocator* allocator,
+    const std::string& content_name,
     int component,
     const std::string& ice_username_fragment,
     const std::string& ice_password)
     : cricket::BasicPortAllocatorSession(
-        allocator, component,
+        allocator, content_name, component,
         ice_username_fragment, ice_password),
       allocator_(allocator),
       relay_session_attempts_(0),

@@ -32,6 +32,7 @@ class PepperPortAllocatorSession
  public:
   PepperPortAllocatorSession(
       cricket::HttpPortAllocatorBase* allocator,
+      const std::string& content_name,
       int component,
       const std::string& ice_username_fragment,
       const std::string& ice_password,
@@ -74,6 +75,7 @@ class PepperPortAllocatorSession
 
 PepperPortAllocatorSession::PepperPortAllocatorSession(
     cricket::HttpPortAllocatorBase* allocator,
+    const std::string& content_name,
     int component,
     const std::string& ice_username_fragment,
     const std::string& ice_password,
@@ -82,7 +84,7 @@ PepperPortAllocatorSession::PepperPortAllocatorSession(
     const std::string& relay_token,
     const pp::InstanceHandle& instance)
     : HttpPortAllocatorSessionBase(
-        allocator, component, ice_username_fragment, ice_password,
+        allocator, content_name, component, ice_username_fragment, ice_password,
         stun_hosts, relay_hosts, relay_token, ""),
       instance_(instance),
       stun_address_resolver_(instance_),
@@ -336,11 +338,12 @@ PepperPortAllocator::~PepperPortAllocator() {
 }
 
 cricket::PortAllocatorSession* PepperPortAllocator::CreateSessionInternal(
+    const std::string& content_name,
     int component,
     const std::string& ice_username_fragment,
     const std::string& ice_password) {
    return new PepperPortAllocatorSession(
-       this, component, ice_username_fragment, ice_password,
+       this, content_name, component, ice_username_fragment, ice_password,
        stun_hosts(), relay_hosts(), relay_token(), instance_);
 }
 

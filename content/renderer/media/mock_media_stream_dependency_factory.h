@@ -23,6 +23,9 @@ class MockLocalVideoTrack : public LocalVideoTrackInterface {
   virtual cricket::VideoCapturer* GetVideoCapture() OVERRIDE;
   virtual void SetRenderer(VideoRendererWrapperInterface* renderer) OVERRIDE;
   virtual VideoRendererWrapperInterface* GetRenderer() OVERRIDE;
+  virtual void AddRenderer(VideoRendererInterface* renderer) OVERRIDE;
+  virtual void RemoveRenderer(VideoRendererInterface* renderer) OVERRIDE;
+  virtual cricket::VideoRenderer* FrameInput() OVERRIDE;
   virtual std::string kind() const OVERRIDE;
   virtual std::string label() const OVERRIDE;
   virtual bool enabled() const OVERRIDE;

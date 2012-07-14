@@ -34,6 +34,7 @@ class HostPortAllocator : public cricket::HttpPortAllocatorBase {
 
   // cricket::HttpPortAllocatorBase overrides.
   virtual cricket::PortAllocatorSession* CreateSessionInternal(
+      const std::string& content_name,
       int component,
       const std::string& ice_username_fragment,
       const std::string& ice_password) OVERRIDE;

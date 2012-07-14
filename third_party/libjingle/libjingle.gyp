@@ -534,6 +534,8 @@
         'source/talk/app/webrtc/roapsignaling.cc',
         'source/talk/app/webrtc/roapsignaling.h',
         'source/talk/app/webrtc/streamcollection.h',
+        'source/talk/app/webrtc/videotrackrenderers.cc',
+        'source/talk/app/webrtc/videotrackrenderers.h',
         'source/talk/app/webrtc/videorendererimpl.cc',
         'source/talk/app/webrtc/videotrack.cc',
         'source/talk/app/webrtc/videotrack.h',

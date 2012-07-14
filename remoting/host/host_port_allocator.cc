@@ -25,6 +25,7 @@ class HostPortAllocatorSession
  public:
   HostPortAllocatorSession(
       cricket::HttpPortAllocatorBase* allocator,
+      const std::string& content_name,
       int component,
       const std::string& ice_username_fragment,
       const std::string& ice_password,
@@ -50,6 +51,7 @@ class HostPortAllocatorSession
 
 HostPortAllocatorSession::HostPortAllocatorSession(
     cricket::HttpPortAllocatorBase* allocator,
+    const std::string& content_name,
     int component,
     const std::string& ice_username_fragment,
     const std::string& ice_password,
@@ -58,7 +60,7 @@ HostPortAllocatorSession::HostPortAllocatorSession(
     const std::string& relay,
     const scoped_refptr<net::URLRequestContextGetter>& url_context)
     : HttpPortAllocatorSessionBase(
-        allocator, component, ice_username_fragment, ice_password,
+        allocator, content_name, component, ice_username_fragment, ice_password,
         stun_hosts, relay_hosts, relay, ""),
       url_context_(url_context) {
 }
@@ -165,11 +167,12 @@ HostPortAllocator::~HostPortAllocator() {
 }
 
 cricket::PortAllocatorSession* HostPortAllocator::CreateSessionInternal(
+    const std::string& content_name,
     int component,
     const std::string& ice_username_fragment,
     const std::string& ice_password) {
   return new HostPortAllocatorSession(
-      this, component, ice_username_fragment, ice_password,
+      this, content_name, component, ice_username_fragment, ice_password,
       stun_hosts(), relay_hosts(), relay_token(), url_context_);
 }
 

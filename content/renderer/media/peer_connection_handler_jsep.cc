@@ -209,7 +209,7 @@ void PeerConnectionHandlerJsep::OnStateChange(StateType state_changed) {
         case webrtc::PeerConnectionInterface::kNew:
           ready_state = WebKit::WebPeerConnection00HandlerClient::ReadyStateNew;
           break;
-        case webrtc::PeerConnectionInterface::kNegotiating:
+        case webrtc::PeerConnectionInterface::kOpening:
           ready_state =
               WebKit::WebPeerConnection00HandlerClient::ReadyStateNegotiating;
           break;

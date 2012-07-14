@@ -35,6 +35,7 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
   virtual ~P2PPortAllocator();
 
   virtual cricket::PortAllocatorSession* CreateSessionInternal(
+      const std::string& content_name,
       int component,
       const std::string& ice_username_fragment,
       const std::string& ice_password) OVERRIDE;
@@ -54,6 +55,7 @@ class P2PPortAllocatorSession : public cricket::BasicPortAllocatorSession,
  public:
   P2PPortAllocatorSession(
       P2PPortAllocator* allocator,
+      const std::string& content_name,
       int component,
       const std::string& ice_username_fragment,
       const std::string& ice_password);

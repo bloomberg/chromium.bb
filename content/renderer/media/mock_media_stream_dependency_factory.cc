@@ -90,6 +90,19 @@ VideoRendererWrapperInterface* MockLocalVideoTrack::GetRenderer() {
   return renderer_;
 }
 
+void MockLocalVideoTrack::AddRenderer(VideoRendererInterface* renderer) {
+  NOTIMPLEMENTED();
+}
+
+void MockLocalVideoTrack::RemoveRenderer(VideoRendererInterface* renderer) {
+  NOTIMPLEMENTED();
+}
+
+cricket::VideoRenderer* MockLocalVideoTrack::FrameInput() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 std::string MockLocalVideoTrack::kind() const {
   NOTIMPLEMENTED();
   return "";
@@ -176,6 +189,10 @@ class MockSessionDescription : public SessionDescriptionInterface {
   virtual std::string session_version() const OVERRIDE {
     NOTIMPLEMENTED();
     return "";
+  }
+  virtual SdpType type() const OVERRIDE {
+    NOTIMPLEMENTED();
+    return kOffer;
   }
   virtual bool AddCandidate(const IceCandidateInterface* candidate) OVERRIDE {
     NOTIMPLEMENTED();

@@ -167,4 +167,45 @@ void MockPeerConnectionImpl::AddRemoteStream(MediaStreamInterface* stream) {
   remote_streams_->AddStream(stream);
 }
 
+void MockPeerConnectionImpl::CreateOffer(
+    CreateSessionDescriptionObserver* observer,
+    const SessionDescriptionOptions& options) {
+  NOTIMPLEMENTED();
+}
+
+void MockPeerConnectionImpl::CreateAnswer(
+    CreateSessionDescriptionObserver* observer,
+    const SessionDescriptionOptions& options) {
+  NOTIMPLEMENTED();
+}
+
+void MockPeerConnectionImpl::SetLocalDescription(
+    SetSessionDescriptionObserver* observer,
+    SessionDescriptionInterface* desc) {
+  NOTIMPLEMENTED();
+}
+
+void MockPeerConnectionImpl::SetRemoteDescription(
+    SetSessionDescriptionObserver* observer,
+    SessionDescriptionInterface* desc) {
+  NOTIMPLEMENTED();
+}
+
+bool MockPeerConnectionImpl::UpdateIce(const IceServers& configuration,
+    IceOptions options) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool MockPeerConnectionImpl::AddIceCandidate(
+    const IceCandidateInterface* candidate) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+PeerConnectionInterface::IceState MockPeerConnectionImpl::ice_state() {
+  NOTIMPLEMENTED();
+  return kIceNew;
+}
+
 }  // namespace webrtc
