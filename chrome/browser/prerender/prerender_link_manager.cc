@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "chrome/browser/prerender/prerender_contents.h"
-#include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -30,13 +29,6 @@ PrerenderLinkManager::PrerenderLinkManager(PrerenderManager* manager)
 }
 
 PrerenderLinkManager::~PrerenderLinkManager() {
-  for (IdPairToPrerenderHandleMap::iterator it = ids_to_handle_map_.begin();
-       it != ids_to_handle_map_.end();
-       ++it) {
-    PrerenderHandle* prerender_handle = it->second;
-    prerender_handle->OnCancel();
-    delete prerender_handle;
-  }
 }
 
 bool PrerenderLinkManager::OnAddPrerender(int child_id,
@@ -52,28 +44,20 @@ bool PrerenderLinkManager::OnAddPrerender(int child_id,
            << ", size = (" << size.width() << ", " << size.height() << ")"
            << ", render_view_route_id = " << render_view_route_id;
 
-  const ChildAndPrerenderIdPair child_and_prerender_id(child_id, prerender_id);
-  DCHECK_EQ(0U, ids_to_handle_map_.count(child_and_prerender_id));
-
   // TODO(gavinp): Add tests to ensure fragments work, then remove this fragment
   // clearing code.
   url_canon::Replacements<char> replacements;
   replacements.ClearRef();
   const GURL url = orig_url.ReplaceComponents(replacements);
 
-  scoped_ptr<PrerenderHandle> prerender_handle(
-      manager_->AddPrerenderFromLinkRelPrerender(
-          child_id, render_view_route_id, url, referrer, size));
-  if (prerender_handle.get()) {
-    std::pair<IdPairToPrerenderHandleMap::iterator, bool> insert_result =
-        ids_to_handle_map_.insert(IdPairToPrerenderHandleMap::value_type(
-            child_and_prerender_id, NULL));
-    DCHECK(insert_result.second);
-    delete insert_result.first->second;
-    insert_result.first->second = prerender_handle.release();
-    return true;
+  if (!manager_->AddPrerenderFromLinkRelPrerender(
+          child_id, render_view_route_id, url, referrer, size)) {
+    return false;
   }
-  return false;
+  const ChildAndPrerenderIdPair child_and_prerender_id(child_id, prerender_id);
+  DCHECK_EQ(0U, ids_to_url_map_.count(child_and_prerender_id));
+  ids_to_url_map_.insert(std::make_pair(child_and_prerender_id, url));
+  return true;
 }
 
 // TODO(gavinp): Once an observer interface is provided down to the WebKit
@@ -85,28 +69,24 @@ void PrerenderLinkManager::OnCancelPrerender(int child_id, int prerender_id) {
   DVLOG(2) << "OnCancelPrerender, child_id = " << child_id
            << ", prerender_id = " << prerender_id;
   const ChildAndPrerenderIdPair child_and_prerender_id(child_id, prerender_id);
-  IdPairToPrerenderHandleMap::iterator id_to_handle_iter =
-      ids_to_handle_map_.find(child_and_prerender_id);
-  if (id_to_handle_iter == ids_to_handle_map_.end()) {
+  IdPairToUrlMap::iterator id_url_iter =
+      ids_to_url_map_.find(child_and_prerender_id);
+  if (id_url_iter == ids_to_url_map_.end()) {
     DVLOG(5) << "... canceling a prerender that doesn't exist.";
     return;
   }
-  PrerenderHandle* prerender_handle = id_to_handle_iter->second;
-  prerender_handle->OnCancel();
-  RemovePrerender(id_to_handle_iter);
+  const GURL url = id_url_iter->second;
+  ids_to_url_map_.erase(id_url_iter);
+  manager_->MaybeCancelPrerender(url);
 }
 
 void PrerenderLinkManager::OnAbandonPrerender(int child_id, int prerender_id) {
   DVLOG(2) << "OnAbandonPrerender, child_id = " << child_id
            << ", prerender_id = " << prerender_id;
+  // TODO(gavinp,cbentzel): Implement reasonable behaviour for
+  // navigation away from launcher.
   const ChildAndPrerenderIdPair child_and_prerender_id(child_id, prerender_id);
-  IdPairToPrerenderHandleMap::iterator id_to_handle_iter =
-      ids_to_handle_map_.find(child_and_prerender_id);
-  if (id_to_handle_iter == ids_to_handle_map_.end())
-    return;
-  PrerenderHandle* prerender_handle = id_to_handle_iter->second;
-  prerender_handle->OnNavigateAway();
-  RemovePrerender(id_to_handle_iter);
+  ids_to_url_map_.erase(child_and_prerender_id);
 }
 
 void PrerenderLinkManager::OnChannelClosing(int child_id) {
@@ -116,9 +96,9 @@ void PrerenderLinkManager::OnChannelClosing(int child_id) {
   const ChildAndPrerenderIdPair child_and_maximum_prerender_id(
       child_id, std::numeric_limits<int>::max());
   std::queue<int> prerender_ids_to_abandon;
-  for (IdPairToPrerenderHandleMap::iterator
-           i = ids_to_handle_map_.lower_bound(child_and_minimum_prerender_id),
-           e = ids_to_handle_map_.upper_bound(child_and_maximum_prerender_id);
+  for (IdPairToUrlMap::iterator
+           i = ids_to_url_map_.lower_bound(child_and_minimum_prerender_id),
+           e = ids_to_url_map_.upper_bound(child_and_maximum_prerender_id);
        i != e; ++i) {
     prerender_ids_to_abandon.push(i->first.second);
   }
@@ -131,14 +111,8 @@ void PrerenderLinkManager::OnChannelClosing(int child_id) {
 }
 
 bool PrerenderLinkManager::IsEmpty() const {
-  return ids_to_handle_map_.empty();
-}
-
-void PrerenderLinkManager::RemovePrerender(
-    const IdPairToPrerenderHandleMap::iterator& id_to_handle_iter) {
-  PrerenderHandle* prerender_handle = id_to_handle_iter->second;
-  delete prerender_handle;
-  ids_to_handle_map_.erase(id_to_handle_iter);
+  return ids_to_url_map_.empty();
 }
 
 }  // namespace prerender
+

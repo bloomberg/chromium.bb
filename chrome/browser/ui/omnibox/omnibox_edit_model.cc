@@ -1122,13 +1122,18 @@ void OmniboxEditModel::DoPrerender(const AutocompleteMatch& match) {
   TabContents* tab = controller_->GetTabContents();
   if (!tab)
     return;
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForProfile(tab->profile());
+  if (!prerender_manager)
+    return;
+
+  content::RenderViewHost* current_host =
+      tab->web_contents()->GetRenderViewHost();
   gfx::Rect container_bounds;
   tab->web_contents()->GetView()->GetContainerBounds(&container_bounds);
-  AutocompleteActionPredictorFactory::GetForProfile(profile_)->
-      StartPrerendering(match.destination_url,
-                        tab->web_contents()->GetRenderViewHost()->
-                            GetSessionStorageNamespace(),
-                        container_bounds.size());
+  prerender_manager->AddPrerenderFromOmnibox(
+      match.destination_url, current_host->GetSessionStorageNamespace(),
+      container_bounds.size());
 }
 
 void OmniboxEditModel::DoPreconnect(const AutocompleteMatch& match) {
