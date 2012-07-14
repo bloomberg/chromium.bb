@@ -11,7 +11,9 @@ set -e
 
 # Using Android 4.0, API Level: 14 (ice cream sandwich). The SDK package is
 # about 25M.
-SDK_FILE_NAME="android-sdk_r20-linux.tgz"
+SDK_TARGET_VER=20
+
+SDK_FILE_NAME="android-sdk_r${SDK_TARGET_VER}-linux.tgz"
 SDK_DOWNLOAD_URL="http://dl.google.com/android/${SDK_FILE_NAME}"
 SDK_MD5SUM="22a81cf1d4a951c62f71a8758290e9bb"
 
@@ -96,21 +98,23 @@ if [[ ! -d "${ANDROID_SDK_ROOT}" ]]; then
                   $(dirname "${ANDROID_SDK_ROOT}"))
 fi
 
+# Check the installed SDK revision
+SDK_VER=$(sed '/^\#/d' ${ANDROID_SDK_ROOT}/tools/source.properties | \
+    grep 'Pkg.Revision' |tail -n 1 | cut -d "=" -f2- | \
+    sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+
 # Install the target if it doesn't exist. The package installed above contains
 # no platform, platform-tool or tool, all those should be installed by
 # ${ANDROID_SDK_ROOT}/tools/android.
+# Also, if current SDK version is lower than ${SDK_TARGET_VER}, upgrade the SDK.
 found=$("${ANDROID_SDK_ROOT}/tools/android" list targets \
         | grep "${SDK_TARGET_ID}" | wc -l)
-if [[ "$found" = "0" ]]; then
+if [[ "$found" = "0" || ${SDK_VER} -lt ${SDK_TARGET_VER} ]]; then
   # Updates the SDK by installing the necessary components.
   # From current configuration, all android platforms will be installed.
   # This will take a little bit long time.
-  echo "Install platform, platform-tool and tool ..."
+  echo "Upgrade SDK and install platform, platform-tool and tool ..."
 
-  # Check the SDK revision
-  SDK_VER=$(sed '/^\#/d' ${ANDROID_SDK_ROOT}/tools/source.properties | \
-      grep 'Pkg.Revision' |tail -n 1 | cut -d "=" -f2- | \
-      sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
   if [[ ${SDK_VER} -lt 17 ]]; then
     update_flag=" -o "
   else
