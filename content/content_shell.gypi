@@ -587,7 +587,7 @@
               'action_name': 'content_shell_apk',
               'inputs': [
                 '<(DEPTH)/content/shell/android/java/content_shell_apk.xml',
-                '<(DEPTH)/content/shell/android/AndroidManifest.xml',
+                '<(DEPTH)/content/shell/android/java/AndroidManifest.xml',
                 '<!@(find shell/android/java -name "*.java")',
                 '<!@(find shell/android/res -name "*")',
                 '<(PRODUCT_DIR)/content_shell/java/libs/chromium_base.jar',
