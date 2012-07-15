@@ -4682,6 +4682,8 @@
                 ['exclude', '^browser/ui/webui/certificate_viewer_ui.h'],
                 ['exclude', '^browser/fullscreen_win.cc'],
                 ['include', 'browser/ui/browser_win.cc'],
+                ['include', 'browser/ui/webui/help/version_updater_basic.cc'],
+                ['include', 'browser/ui/webui/help/version_updater_basic.h'],
               ],
             }],
           ],
