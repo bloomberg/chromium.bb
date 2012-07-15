@@ -30,7 +30,9 @@ IN_PROC_BROWSER_TEST_F(
   RunTestViaHTTP("MouseLock_SucceedWhenAllowed");
 }
 
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MouseLock_FailWhenBlocked) {
+// Disabled due to flaky timeouts: http://crbug.com/137421
+IN_PROC_BROWSER_TEST_F(
+    OutOfProcessPPAPITest, DISABLED_MouseLock_FailWhenBlocked) {
   HostContentSettingsMap* settings_map =
       browser()->profile()->GetHostContentSettingsMap();
 
