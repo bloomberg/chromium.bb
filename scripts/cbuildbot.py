@@ -330,6 +330,12 @@ class Builder(object):
         success = self._ReExecuteInBuildroot(sync_instance)
       else:
         self.RunStages()
+    except results_lib.StepFailure:
+      # StepFailure exceptions are already recorded in the report, so there
+      # is no need to print these tracebacks twice.
+      exception_thrown = True
+      if not print_report:
+        raise
     except Exception:
       exception_thrown = True
       raise
