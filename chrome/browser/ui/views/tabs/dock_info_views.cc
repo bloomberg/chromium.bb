@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "build/build_config.h"
 
-#if !defined(OS_WIN)
+#if defined(USE_AURA) || defined(USE_ASH) || defined(OS_CHROMEOS)
 // static
 int DockInfo::GetHotSpotDeltaY() {
   return Tab::GetMinimumUnselectedSize().height() - 1;
