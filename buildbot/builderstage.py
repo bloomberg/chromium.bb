@@ -198,15 +198,25 @@ class BuilderStage(object):
     """Use instead of HandleStageException to ignore an exception."""
     return results_lib.Results.SUCCESS, None
 
-  def _HandleExceptionAsWarning(self, _exception):
+  @staticmethod
+  def _StringifyException(exception):
+    """Convert an exception into a string.
+
+    This can only be called as part of an except block.
+    """
+    if isinstance(exception, results_lib.StepFailure):
+      return str(exception)
+    else:
+      return traceback.format_exc()
+
+  def _HandleExceptionAsWarning(self, exception):
     """Use instead of HandleStageException to treat an exception as a warning.
 
     This is used by the ForgivingBuilderStage's to treat any exceptions as
     warnings instead of stage failures.
     """
     print '\n%s' % constants.STEP_WARNINGS
-    description = traceback.format_exc()
-    print >> sys.stderr, description
+    print >> sys.stderr, self._StringifyException(exception)
     return results_lib.Results.FORGIVEN, None
 
   def _HandleStageException(self, exception):
@@ -217,11 +227,7 @@ class BuilderStage(object):
     """
     # Tell the user about the exception, and record it
     print '\n%s' % constants.STEP_FAILURE
-    description = None
-    if isinstance(exception, results_lib.StepFailure):
-      description = str(exception)
-    else:
-      description = traceback.format_exc()
+    description = self._StringifyException(exception)
     print >> sys.stderr, description
     return exception, description
 
