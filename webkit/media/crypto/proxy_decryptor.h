@@ -38,8 +38,8 @@ class ProxyDecryptor : public media::Decryptor {
                       const std::string& session_id) OVERRIDE;
   virtual void CancelKeyRequest(const std::string& key_system,
                                 const std::string& session_id) OVERRIDE;
-  virtual scoped_refptr<media::DecoderBuffer> Decrypt(
-      const scoped_refptr<media::DecoderBuffer>& input) OVERRIDE;
+  virtual void Decrypt(const scoped_refptr<media::DecoderBuffer>& encrypted,
+                       const DecryptCB& decrypt_cb) OVERRIDE;
 
  private:
   media::DecryptorClient* const client_;

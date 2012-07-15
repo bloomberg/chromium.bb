@@ -52,8 +52,9 @@ void ProxyDecryptor::CancelKeyRequest(const std::string& key_system,
   decryptor_->CancelKeyRequest(key_system, session_id);
 }
 
-scoped_refptr<media::DecoderBuffer> ProxyDecryptor::Decrypt(
-    const scoped_refptr<media::DecoderBuffer>& input) {
+void ProxyDecryptor::Decrypt(
+    const scoped_refptr<media::DecoderBuffer>& encrypted,
+    const DecryptCB& decrypt_cb) {
   // This is safe as we do not replace/delete an existing decryptor at run-time.
   Decryptor* decryptor = NULL;
   {
@@ -61,9 +62,9 @@ scoped_refptr<media::DecoderBuffer> ProxyDecryptor::Decrypt(
     decryptor = decryptor_.get();
   }
   if (!decryptor)
-    return NULL;
+    decrypt_cb.Run(kError, NULL);
 
-  return decryptor->Decrypt(input);
+  return decryptor->Decrypt(encrypted, decrypt_cb);
 }
 
 }  // namespace webkit_media
