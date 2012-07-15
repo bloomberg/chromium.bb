@@ -863,6 +863,11 @@ void Browser::RegisterProtocolHandlerHelper(WebContents* web_contents,
   ProtocolHandlerRegistry* registry =
       tab_contents->profile()->GetProtocolHandlerRegistry();
 
+  // TODO(gbillock): Replace this policy with one that shows the content
+  // settings icon.
+  if (!user_gesture)
+    return;
+
   if (!registry->SilentlyHandleRegisterHandlerRequest(handler)) {
     content::RecordAction(
         UserMetricsAction("RegisterProtocolHandler.InfoBar_Shown"));
