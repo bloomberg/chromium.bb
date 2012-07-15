@@ -192,6 +192,10 @@ void drm_intel_gem_context_destroy(drm_intel_context *ctx);
 int drm_intel_gem_bo_context_exec(drm_intel_bo *bo, drm_intel_context *ctx,
 				  int used, unsigned int flags);
 
+int drm_intel_bo_gem_export_to_prime(drm_intel_bo *bo, int *prime_fd);
+drm_intel_bo *drm_intel_bo_gem_create_from_prime(drm_intel_bufmgr *bufmgr,
+						int prime_fd, int size);
+
 /* drm_intel_bufmgr_fake.c */
 drm_intel_bufmgr *drm_intel_bufmgr_fake_init(int fd,
 					     unsigned long low_offset,

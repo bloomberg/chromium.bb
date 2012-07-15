@@ -2413,6 +2413,69 @@ drm_intel_gem_bo_get_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 	return 0;
 }
 
+drm_intel_bo *
+drm_intel_bo_gem_create_from_prime(drm_intel_bufmgr *bufmgr, int prime_fd, int size)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bufmgr;
+	int ret;
+	uint32_t handle;
+	drm_intel_bo_gem *bo_gem;
+	struct drm_i915_gem_get_tiling get_tiling;
+
+	ret = drmPrimeFDToHandle(bufmgr_gem->fd, prime_fd, &handle);
+	if (ret) {
+	  fprintf(stderr,"ret is %d %d\n", ret, errno);
+		return NULL;
+	}
+
+	bo_gem = calloc(1, sizeof(*bo_gem));
+	if (!bo_gem)
+		return NULL;
+
+	bo_gem->bo.size = size;
+	bo_gem->bo.handle = handle;
+	bo_gem->bo.bufmgr = bufmgr;
+
+	bo_gem->gem_handle = handle;
+
+	atomic_set(&bo_gem->refcount, 1);
+
+	bo_gem->name = "prime";
+	bo_gem->validate_index = -1;
+	bo_gem->reloc_tree_fences = 0;
+	bo_gem->used_as_reloc_target = false;
+	bo_gem->has_error = false;
+	bo_gem->reusable = false;
+
+	DRMINITLISTHEAD(&bo_gem->name_list);
+	DRMINITLISTHEAD(&bo_gem->vma_list);
+
+	VG_CLEAR(get_tiling);
+	get_tiling.handle = bo_gem->gem_handle;
+	ret = drmIoctl(bufmgr_gem->fd,
+		       DRM_IOCTL_I915_GEM_GET_TILING,
+		       &get_tiling);
+	if (ret != 0) {
+		drm_intel_gem_bo_unreference(&bo_gem->bo);
+		return NULL;
+	}
+	bo_gem->tiling_mode = get_tiling.tiling_mode;
+	bo_gem->swizzle_mode = get_tiling.swizzle_mode;
+	/* XXX stride is unknown */
+	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem);
+
+	return &bo_gem->bo;
+}
+
+int
+drm_intel_bo_gem_export_to_prime(drm_intel_bo *bo, int *prime_fd)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+
+	return drmPrimeHandleToFD(bufmgr_gem->fd, bo_gem->gem_handle, DRM_CLOEXEC, prime_fd);
+}
+
 static int
 drm_intel_gem_bo_flink(drm_intel_bo *bo, uint32_t * name)
 {
