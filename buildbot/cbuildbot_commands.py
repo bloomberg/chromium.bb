@@ -595,12 +595,17 @@ def MarkChromeAsStable(buildroot,
       enter_chroot=True,
       chroot_args=chroot_args,
       extra_env=extra_env).output.rstrip()
-  if not portage_atom_string:
+  chrome_atom = None
+  if portage_atom_string:
+    chrome_atom = portage_atom_string.splitlines()[-1].partition('=')[-1]
+  if not chrome_atom:
     cros_build_lib.Info('Found nothing to rev.')
     return None
-  else:
-    chrome_atom = portage_atom_string.splitlines()[-1].split('=')[1]
-    for board in boards:
+
+  for board in boards:
+    # If we're using a version of Chrome other than the latest one, we need
+    # to unmask it manually.
+    if chrome_rev != constants.CHROME_REV_LATEST:
       keywords_file = CHROME_KEYWORDS_FILE % {'board': board}
       cros_build_lib.SudoRunCommand(
           ['mkdir', '-p', os.path.dirname(keywords_file)],
@@ -608,7 +613,20 @@ def MarkChromeAsStable(buildroot,
       cros_build_lib.SudoRunCommand(
           ['tee', keywords_file], input='=%s\n' % chrome_atom,
           enter_chroot=True, cwd=cwd)
-    return chrome_atom
+
+    # Sanity check: We should always be able to merge the version of
+    # Chrome we just unmasked.
+    result = cros_build_lib.RunCommandCaptureOutput(
+        ['emerge-%s' % board, '-p', '--quiet', '=%s' % chrome_atom],
+        enter_chroot=True, error_code_ok=True, combine_stdout_stderr=True)
+    if result.returncode:
+      cros_build_lib.Warning('\n'.join(['', result.output,
+                                        constants.STEP_WARNINGS]))
+      cros_build_lib.Warning('Cannot emerge-%s =%s\nIs Chrome pinned to an '
+                             'older version? ' % (board, chrome_atom))
+      return None
+
+  return chrome_atom
 
 
 def CleanupChromeKeywordsFile(boards, buildroot):
