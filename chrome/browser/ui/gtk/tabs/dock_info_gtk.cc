@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/tabs/tab_gtk.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -206,4 +207,9 @@ bool DockInfo::GetWindowBounds(gfx::Rect* bounds) const {
 void DockInfo::SizeOtherWindowTo(const gfx::Rect& bounds) const {
   gtk_window_move(window(), bounds.x(), bounds.y());
   gtk_window_resize(window(), bounds.width(), bounds.height());
+}
+
+// static
+int DockInfo::GetHotSpotDeltaY() {
+  return TabGtk::GetMinimumUnselectedSize().height() - 1;
 }

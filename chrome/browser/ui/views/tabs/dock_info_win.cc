@@ -327,3 +327,8 @@ void DockInfo::SizeOtherWindowTo(const gfx::Rect& bounds) const {
   SetWindowPos(window(), HWND_TOP, bounds.x(), bounds.y(), bounds.width(),
                bounds.height(), SWP_NOACTIVATE | SWP_NOOWNERZORDER);
 }
+
+// static
+int DockInfo::GetHotSpotDeltaY() {
+  return Tab::GetMinimumUnselectedSize().height() - 1;
+}

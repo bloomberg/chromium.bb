@@ -4,12 +4,8 @@
 
 #include "chrome/browser/ui/tabs/dock_info.h"
 
+#include <stdlib.h>
 #include "base/logging.h"
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/views/tabs/tab.h"
-#else
-#include "chrome/browser/ui/gtk/tabs/tab_gtk.h"
-#endif
 
 namespace {
 
@@ -62,11 +58,7 @@ bool DockInfo::IsCloseToMonitorPoint(const gfx::Point& screen_loc,
     case DockInfo::MAXIMIZE: {
       // Make the maximize height smaller than the tab height to avoid showing
       // the dock indicator when close to maximized browser.
-#if defined(TOOLKIT_VIEWS)
-      hot_spot_delta_y = Tab::GetMinimumUnselectedSize().height() - 1;
-#else
-      hot_spot_delta_y = TabGtk::GetMinimumUnselectedSize().height() - 1;
-#endif
+      hot_spot_delta_y = GetHotSpotDeltaY();
       enable_delta_y = hot_spot_delta_y / 2;
       break;
     }
