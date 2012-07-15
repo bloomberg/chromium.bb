@@ -3805,6 +3805,7 @@
         'browser/ui/views/tabs/base_tab.h',
         'browser/ui/views/tabs/browser_tab_strip_controller.cc',
         'browser/ui/views/tabs/browser_tab_strip_controller.h',
+        'browser/ui/views/tabs/dock_info_views.cc',
         'browser/ui/views/tabs/dock_info_win.cc',
         'browser/ui/views/tabs/dragged_tab_view.cc',
         'browser/ui/views/tabs/dragged_tab_view.h',
