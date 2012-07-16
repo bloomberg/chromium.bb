@@ -58,7 +58,6 @@ class VPNConfigView : public ChildNetworkConfigView,
   virtual void OnCertificatesLoaded(bool initial_load) OVERRIDE;
 
   // ChildNetworkConfigView:
-  virtual string16 GetTitle() OVERRIDE;
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual bool CanLogin() OVERRIDE;
   virtual bool Login() OVERRIDE;

@@ -187,10 +187,6 @@ views::View* NetworkConfigView::GetContentsView() {
   return this;
 }
 
-string16 NetworkConfigView::GetWindowTitle() const {
-  return child_config_view_->GetTitle();
-}
-
 void NetworkConfigView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->name =
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS);

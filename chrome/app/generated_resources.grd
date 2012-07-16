@@ -13658,6 +13658,9 @@ Press any key to continue exploring.
       <message name="IDS_OPTIONS_SETTINGS_JOIN_WIFI_NETWORKS" desc="The title for the dialog to join a wifi network.">
         Join Wi-Fi network
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_JOIN_WIMAX_NETWORKS" desc="The title for the dialog to join a wimax network.">
+        Join Wimax network
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_ADD_VPN" desc="In the settings tab, the text on the button to add a private network.">
         Add private network
       </message>

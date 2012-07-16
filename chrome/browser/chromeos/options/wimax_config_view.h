@@ -45,7 +45,6 @@ class WimaxConfigView : public ChildNetworkConfigView,
                              const views::Event& event) OVERRIDE;
 
   // ChildNetworkConfigView:
-  virtual string16 GetTitle() OVERRIDE;
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual bool CanLogin() OVERRIDE;
   virtual bool Login() OVERRIDE;

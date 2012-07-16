@@ -212,13 +212,6 @@ VPNConfigView::~VPNConfigView() {
     cert_library_->RemoveObserver(this);
 }
 
-string16 VPNConfigView::GetTitle() {
-  if (service_path_.empty())
-    return l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_ADD_VPN);
-  else
-    return l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_JOIN_VPN);
-}
-
 views::View* VPNConfigView::GetInitiallyFocusedView() {
   // Put focus in the first editable field.
   if (server_textfield_)
@@ -481,7 +474,7 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
   if (!cert_library_->CertificatesLoaded())
     cert_library_->AddObserver(this);
 
-  int column_view_set_id = 0;
+  const int column_view_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_view_set_id);
   // Label.
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
@@ -513,6 +506,14 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
     enable_otp_ = true;
     enable_group_name_ = true;
   }
+
+  // Title
+  layout->StartRow(0, column_view_set_id);
+  views::Label* title = new views::Label(l10n_util::GetStringUTF16(
+      vpn ? IDS_OPTIONS_SETTINGS_JOIN_VPN : IDS_OPTIONS_SETTINGS_ADD_VPN));
+  title->SetFont(title->font().DeriveFont(1, gfx::Font::BOLD));
+  layout->AddView(title, 5, 1);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   // Server label and input.
   // Only provide Server name when configuring a new VPN.
