@@ -386,6 +386,7 @@ void MenuItemView::SetIconView(View* icon_view) {
     AddChildView(icon_view);
     icon_view_ = icon_view;
   }
+  Layout();
   SchedulePaint();
 }
 
