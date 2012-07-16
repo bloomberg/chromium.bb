@@ -2365,6 +2365,7 @@
         'browser/ui/alternate_error_tab_observer.h',
         'browser/ui/android/certificate_viewer_android.cc',
         'browser/ui/android/color_chooser_android.cc',
+        'browser/ui/android/extensions/extension_install_dialog_android.cc',
         'browser/ui/android/extensions/extension_view_android.cc',
         'browser/ui/android/extensions/extension_view_android.h',
         'browser/ui/android/external_protocol_dialog_android.cc',
