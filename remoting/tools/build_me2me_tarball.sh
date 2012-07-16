@@ -13,7 +13,8 @@
 
 set -eu
 
-REVISION="$(git svn find-rev HEAD)"
+MERGE_BASE="$(git merge-base HEAD origin/git-svn)"
+REVISION="$(git svn find-rev "$MERGE_BASE")"
 if [ -z "$REVISION" ]; then
   echo "svn revision number not found"
   REVISION_SUFFIX=""
