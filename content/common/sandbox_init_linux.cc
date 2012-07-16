@@ -69,6 +69,14 @@ bool IsSingleThreaded() {
   return num_threads == 1 || num_threads == 0;
 }
 
+inline bool IsChromeOS() {
+#if defined(OS_CHROMEOS)
+  return true;
+#else
+  return false;
+#endif
+}
+
 intptr_t CrashSIGSYS_Handler(const struct arch_seccomp_data& args, void* aux) {
   int syscall = args.nr;
   if (syscall >= 1024)
@@ -311,29 +319,31 @@ bool ShouldDisableSandbox(const CommandLine& command_line,
     return true;
   }
 
-#if !defined(OS_CHROMEOS)
-  // On non ChromeOS we never enable the sandbox AT ALL unless
-  // CHROME_ENABLE_SECCOMP is in the environment.
-  // TODO(jorgelo): remove this when seccomp BPF is included
-  // in an upstream release Linux kernel.
-  static const char kEnableSeccomp[] = "CHROME_ENABLE_SECCOMP";
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  if (!IsChromeOS()) {
+    // On non ChromeOS we never enable the sandbox AT ALL unless
+    // CHROME_ENABLE_SECCOMP is in the environment.
+    // TODO(jorgelo): remove this when seccomp BPF is included
+    // in an upstream release Linux kernel.
+    static const char kEnableSeccomp[] = "CHROME_ENABLE_SECCOMP";
+    scoped_ptr<base::Environment> env(base::Environment::Create());
 
-  if (!env->HasVar(kEnableSeccomp))
-    return true;
-#endif
+    if (!env->HasVar(kEnableSeccomp))
+      return true;
+  }
 
   if (process_type == switches::kGpuProcess) {
-  // The GPU sandbox is disabled by default in ChromeOS, enabled by default on
-  // generic Linux.
-  // TODO(jorgelo): when we feel comfortable, make this a policy decision
-  // instead. (i.e. move this to GetProcessSyscallPolicy) and return an
-  // AllowAllPolicy for lack of "--enable-gpu-sandbox".
-#if defined(OS_CHROMEOS)
-    bool should_disable = true;
-#else
-    bool should_disable = false;
-#endif
+    // The GPU sandbox is disabled by default in ChromeOS, enabled by default on
+    // generic Linux.
+    // TODO(jorgelo): when we feel comfortable, make this a policy decision
+    // instead. (i.e. move this to GetProcessSyscallPolicy) and return an
+    // AllowAllPolicy for lack of "--enable-gpu-sandbox".
+    bool should_disable;
+    if (IsChromeOS()) {
+      should_disable = true;
+    } else {
+      should_disable = false;
+    }
+
     if (command_line.HasSwitch(switches::kEnableGpuSandbox))
       should_disable = false;
     if (command_line.HasSwitch(switches::kDisableGpuSandbox))
@@ -429,11 +439,10 @@ void InitializeSandbox_x86() {
   const std::string ActivatedSeccomp =
       "Activated seccomp filter sandbox for process type: " +
       process_type + ".";
-#if defined(OS_CHROMEOS)
-  LOG(WARNING) << ActivatedSeccomp;
-#else
-  VLOG(1) << ActivatedSeccomp;
-#endif
+  if (IsChromeOS())
+    LOG(WARNING) << ActivatedSeccomp;
+  else
+    VLOG(1) << ActivatedSeccomp;
 }
 
 }  // anonymous namespace
