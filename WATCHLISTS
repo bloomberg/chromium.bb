@@ -349,6 +349,19 @@
                   'ui/views/view.cc|'\
                   'ui/views/widget/',
     },
+    'webintents': {
+      'filepath': 'chrome/browser/intents/.*'\
+                  '|chrome/browser/ui/intents/.*'\
+                  '|chrome/browser/webdata/.*intent.*'\
+                  '|chrome/browser/ui/webui/options2/.*intent.*'\
+                  '|chrome/browser/ui/cocoa/.*intent.*'\
+                  '|chrome/browser/ui/gtk/.*intent.*'\
+                  '|chrome/browser/ui/views/.*intent.*'\
+                  '|content/browser/intents/.*'\
+                  '|content/common/intents.*'\
+                  '|content/public/browser/.*intent.*'
+                  '|webkit/glue/.*intent.*'
+    },
     'website_settings': {
       'filepath': 'chrome/browser/content_settings/'\
                   '|chrome/browser/ui/views/website_settings/'\
@@ -501,6 +514,9 @@
                  'timurrrr+watch@chromium.org'],
     'views': ['tfarina@chromium.org'],
     'views_core': ['ben+watch@chromium.org'],
+    'webintents': [
+                   'gbillock+watch@chromium.org',
+                   'smckay+watch@chromium.org'],
     'website_settings': ['markusheintz@chromium.org'],
     'webkit': ['darin-cc@chromium.org'],
     'worker': ['jam@chromium.org'],
