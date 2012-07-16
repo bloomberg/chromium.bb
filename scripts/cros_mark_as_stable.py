@@ -288,7 +288,7 @@ def main(argv):
       if command == 'push':
         PushChange(constants.STABLE_EBUILD_BRANCH, tracking_branch,
                    options.dryrun, cwd=overlay)
-      elif command == 'commit' and ebuilds:
+      elif command == 'commit':
         existing_branch = cros_build_lib.GetCurrentBranch(overlay)
         work_branch = GitBranch(constants.STABLE_EBUILD_BRANCH, tracking_branch,
                                 cwd=overlay)
@@ -316,7 +316,6 @@ def main(argv):
                     'and reset the git repo yourself.' % overlay)
             raise
 
-      if command == 'commit':
         # Regenerate caches if need be.  We do this all the time to
         # catch when users make changes without updating cache files.
         cache_queue.put([overlay])
