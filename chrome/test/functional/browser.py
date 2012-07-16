@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -23,13 +23,6 @@ class BrowserTest(pyauto.PyUITest):
     while True:
       raw_input('Hit <enter> to dump info.. ')
       self.pprint(self.GetBrowserInfo())
-
-  def setUp(self):
-    pyauto.PyUITest.setUp(self)
-    self._flash_plugin_type = 'Plug-in'
-    if (self.IsChromeOS() and
-        self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome'):
-      self._flash_plugin_type = 'Pepper Plugin'
 
   def _GetUniqProcesses(self, total_tabs, renderer_processes):
     """ Returns a count of uniq processes of opened tabs

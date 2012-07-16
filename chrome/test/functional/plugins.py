@@ -27,7 +27,7 @@ class PluginsTest(pyauto.PyUITest):
   def setUp(self):
     pyauto.PyUITest.setUp(self)
     self._flash_plugin_type = 'Plug-in'
-    if (self.IsLinux() and
+    if ((self.IsLinux() or self.IsWin()) and
         self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome'):
       self._flash_plugin_type = 'Pepper Plugin'
 
