@@ -121,6 +121,11 @@ void GamepadProvider::DoPoll() {
   bool changed;
   GamepadHardwareBuffer* hwbuf = SharedMemoryAsHardwareBuffer();
 
+  ANNOTATE_BENIGN_RACE_SIZED(
+      &hwbuf->buffer,
+      sizeof(WebKit::WebGamepads),
+      "Racey reads are discarded");
+
   {
     base::AutoLock lock(devices_changed_lock_);
     changed = devices_changed_;
@@ -129,9 +134,9 @@ void GamepadProvider::DoPoll() {
 
   // Acquire the SeqLock. There is only ever one writer to this data.
   // See gamepad_hardware_buffer.h.
-  WebKit::WebGamepads tmp;
-  data_fetcher_->GetGamepadData(&tmp, changed);
-  hwbuf->gamepads.Write(tmp);
+  hwbuf->sequence.WriteBegin();
+  data_fetcher_->GetGamepadData(&hwbuf->buffer, changed);
+  hwbuf->sequence.WriteEnd();
 
   // Schedule our next interval of polling.
   ScheduleDoPoll();

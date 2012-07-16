@@ -60,8 +60,6 @@ src:*base/synchronization/waitable_event*
 
 # Don't instrument code dealing with atomics (base::subtle)
 fun:*base*subtle*Release_Store*
-fun:*base*subtle*NoBarrier_Store*
-fun:*base*subtle*Acquire_Load*
 fun:*base*subtle*NoBarrier_CompareAndSwap*
 fun:*base*subtle*NoBarrier_Load*
 # Keep some mangling so we don't match NoBarrier_AtomicIncrement
