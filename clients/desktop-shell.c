@@ -826,7 +826,7 @@ grab_surface_create(struct desktop *desktop)
 {
 	struct wl_surface *s;
 
-	desktop->grab_window = window_create(desktop->display);
+	desktop->grab_window = window_create_custom(desktop->display);
 	window_set_user_data(desktop->grab_window, desktop);
 
 	s = window_get_wl_surface(desktop->grab_window);
