@@ -5,8 +5,6 @@
 #ifndef CONTENT_RENDERER_V8_VALUE_CONVERTER_IMPL_H_
 #define CONTENT_RENDERER_V8_VALUE_CONVERTER_IMPL_H_
 
-#include <set>
-
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/v8_value_converter.h"
@@ -45,18 +43,15 @@ class CONTENT_EXPORT V8ValueConverterImpl : public content::V8ValueConverter {
       const base::DictionaryValue* dictionary) const;
   v8::Handle<v8::Value> ToArrayBuffer(const base::BinaryValue* value) const;
 
-  base::Value* FromV8ValueImpl(v8::Handle<v8::Value> value,
-                               std::set<int>* unique_set) const;
-  base::Value* FromV8Array(v8::Handle<v8::Array> array,
-                           std::set<int>* unique_set) const;
+  base::Value* FromV8ValueImpl(v8::Handle<v8::Value> value) const;
+  base::ListValue* FromV8Array(v8::Handle<v8::Array> array) const;
 
   // This will convert objects of type ArrayBuffer or any of the
   // ArrayBufferView subclasses. The return value will be NULL if |value| is
   // not one of these types.
   base::BinaryValue* FromV8Buffer(v8::Handle<v8::Value> value) const;
 
-  base::Value* FromV8Object(v8::Handle<v8::Object> object,
-                            std::set<int>* unique_set) const;
+  base::DictionaryValue* FromV8Object(v8::Handle<v8::Object> object) const;
 
   // If true, we will convert undefined JavaScript values to null.
   bool undefined_allowed_;

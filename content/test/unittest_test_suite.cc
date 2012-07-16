@@ -5,7 +5,6 @@
 #include "content/public/test/unittest_test_suite.h"
 
 #include "base/logging.h"
-#include "base/rand_util.h"
 #include "base/test/test_suite.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
@@ -20,7 +19,7 @@ class UnitTestTestSuite::UnitTestWebKitPlatformSupport
   virtual ~UnitTestWebKitPlatformSupport() {}
   virtual void cryptographicallyRandomValues(unsigned char* buffer,
                                              size_t length) OVERRIDE {
-    base::RandBytes(buffer, length);
+    memset(buffer, 0, length);
   }
   virtual const unsigned char* getTraceCategoryEnabledFlag(
       const char* categoryName) {
