@@ -1,28 +1,29 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/external_extension_loader.h"
+#include "chrome/browser/extensions/external_loader.h"
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/external_extension_provider_impl.h"
+#include "chrome/browser/extensions/external_provider_impl.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
 
-ExternalExtensionLoader::ExternalExtensionLoader()
+namespace extensions {
+
+ExternalLoader::ExternalLoader()
     : owner_(NULL),
       running_(false) {
 }
 
-void ExternalExtensionLoader::Init(
-    ExternalExtensionProviderImpl* owner) {
+void ExternalLoader::Init(ExternalProviderImpl* owner) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   owner_ = owner;
 }
 
-const FilePath ExternalExtensionLoader::GetBaseCrxFilePath() {
+const FilePath ExternalLoader::GetBaseCrxFilePath() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // By default, relative paths are not supported.
@@ -30,17 +31,19 @@ const FilePath ExternalExtensionLoader::GetBaseCrxFilePath() {
   return FilePath();
 }
 
-void ExternalExtensionLoader::OwnerShutdown() {
+void ExternalLoader::OwnerShutdown() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   owner_ = NULL;
 }
 
-ExternalExtensionLoader::~ExternalExtensionLoader() {}
+ExternalLoader::~ExternalLoader() {}
 
-void ExternalExtensionLoader::LoadFinished() {
+void ExternalLoader::LoadFinished() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   running_ = false;
   if (owner_) {
     owner_->SetPrefs(prefs_.release());
   }
 }
+
+}  // namespace extensions

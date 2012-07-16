@@ -484,7 +484,7 @@ const char kNetworkPredictionEnabled[] = "dns_prefetching.enabled";
 // is async, and the user may have stopped chrome in the middle.  The next time
 // the profile is opened, the process will continue from where it left off.
 //
-// See possible values in external_extension_provider_impl.cc.
+// See possible values in external_provider_impl.cc.
 const char kDefaultAppsInstallState[] = "default_apps_install_state";
 
 #if defined(OS_CHROMEOS)
@@ -1406,7 +1406,7 @@ const char kExtensionAlertsInitializedPref[] = "extensions.alerts.initialized";
 // at startup time. It is a list of strings, each string contains
 // an extension ID and an update URL, delimited by a semicolon.
 // This preference is set by an admin policy, and meant to be only
-// accessed through ExternalPolicyExtensionProvider.
+// accessed through extensions::ExternalPolicyProvider.
 const char kExtensionInstallForceList[] = "extensions.install.forcelist";
 
 // Time of the last, and next scheduled, extensions auto-update checks.

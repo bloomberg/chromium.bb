@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/external_pref_extension_loader.h"
+#include "chrome/browser/extensions/external_pref_loader.h"
 
 #include "base/bind.h"
 #include "base/file_path.h"
@@ -87,28 +87,28 @@ DictionaryValue* ExtractExtensionPrefs(base::ValueSerializer* serializer,
 
 }  // namespace
 
-ExternalPrefExtensionLoader::ExternalPrefExtensionLoader(int base_path_id,
-                                                         Options options)
-    : base_path_id_(base_path_id),
-      options_(options) {
+namespace extensions {
+
+ExternalPrefLoader::ExternalPrefLoader(int base_path_id, Options options)
+    : base_path_id_(base_path_id), options_(options) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-const FilePath ExternalPrefExtensionLoader::GetBaseCrxFilePath() {
+const FilePath ExternalPrefLoader::GetBaseCrxFilePath() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // |base_path_| was set in LoadOnFileThread().
   return base_path_;
 }
 
-void ExternalPrefExtensionLoader::StartLoading() {
+void ExternalPrefLoader::StartLoading() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ExternalPrefExtensionLoader::LoadOnFileThread, this));
+      base::Bind(&ExternalPrefLoader::LoadOnFileThread, this));
 }
 
-void ExternalPrefExtensionLoader::LoadOnFileThread() {
+void ExternalPrefLoader::LoadOnFileThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // TODO(skerner): Some values of base_path_id_ will cause
@@ -148,11 +148,10 @@ void ExternalPrefExtensionLoader::LoadOnFileThread() {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&ExternalPrefExtensionLoader::LoadFinished, this));
+      base::Bind(&ExternalPrefLoader::LoadFinished, this));
 }
 
-void ExternalPrefExtensionLoader::ReadExternalExtensionPrefFile(
-      DictionaryValue* prefs) {
+void ExternalPrefLoader::ReadExternalExtensionPrefFile(DictionaryValue* prefs) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   CHECK(NULL != prefs);
 
@@ -189,8 +188,8 @@ void ExternalPrefExtensionLoader::ReadExternalExtensionPrefFile(
     prefs->MergeDictionary(ext_prefs.get());
 }
 
-void ExternalPrefExtensionLoader::ReadStandaloneExtensionPrefFiles(
-      DictionaryValue* prefs) {
+void ExternalPrefLoader::ReadStandaloneExtensionPrefFiles(
+    DictionaryValue* prefs) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   CHECK(NULL != prefs);
 
@@ -230,9 +229,8 @@ void ExternalPrefExtensionLoader::ReadStandaloneExtensionPrefFiles(
   }
 }
 
-ExternalTestingExtensionLoader::ExternalTestingExtensionLoader(
-    const std::string& json_data,
-    const FilePath& fake_base_path)
+ExternalTestingLoader::ExternalTestingLoader(const std::string& json_data,
+                                             const FilePath& fake_base_path)
     : fake_base_path_(fake_base_path) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   JSONStringValueSerializer serializer(json_data);
@@ -240,14 +238,16 @@ ExternalTestingExtensionLoader::ExternalTestingExtensionLoader(
   testing_prefs_.reset(ExtractExtensionPrefs(&serializer, fake_json_path));
 }
 
-void ExternalTestingExtensionLoader::StartLoading() {
+void ExternalTestingLoader::StartLoading() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   prefs_.reset(testing_prefs_->DeepCopy());
   LoadFinished();
 }
 
-ExternalTestingExtensionLoader::~ExternalTestingExtensionLoader() {}
+ExternalTestingLoader::~ExternalTestingLoader() {}
 
-const FilePath ExternalTestingExtensionLoader::GetBaseCrxFilePath() {
+const FilePath ExternalTestingLoader::GetBaseCrxFilePath() {
   return fake_base_path_;
 }
+
+}  // extensions

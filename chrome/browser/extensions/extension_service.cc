@@ -57,8 +57,8 @@
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
-#include "chrome/browser/extensions/external_extension_provider_impl.h"
-#include "chrome/browser/extensions/external_extension_provider_interface.h"
+#include "chrome/browser/extensions/external_provider_impl.h"
+#include "chrome/browser/extensions/external_provider_interface.h"
 #include "chrome/browser/extensions/installed_loader.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/permissions_updater.h"
@@ -199,7 +199,7 @@ void ExtensionService::CheckExternalUninstall(const std::string& id) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Check if the providers know about this extension.
-  ProviderCollection::const_iterator i;
+  extensions::ProviderCollection::const_iterator i;
   for (i = external_extension_providers_.begin();
        i != external_extension_providers_.end(); ++i) {
     DCHECK(i->get()->IsReady());
@@ -228,10 +228,10 @@ void ExtensionService::ClearProvidersForTesting() {
 }
 
 void ExtensionService::AddProviderForTesting(
-    ExternalExtensionProviderInterface* test_provider) {
+    extensions::ExternalProviderInterface* test_provider) {
   CHECK(test_provider);
   external_extension_providers_.push_back(
-      linked_ptr<ExternalExtensionProviderInterface>(test_provider));
+      linked_ptr<extensions::ExternalProviderInterface>(test_provider));
 }
 
 bool ExtensionService::OnExternalExtensionUpdateUrlFound(
@@ -390,7 +390,7 @@ ExtensionService::ExtensionService(Profile* profile,
   if (extensions_enabled_) {
     if (!command_line->HasSwitch(switches::kImport) &&
         !command_line->HasSwitch(switches::kImportFromFile)) {
-      ExternalExtensionProviderImpl::CreateExternalProviders(
+      extensions::ExternalProviderImpl::CreateExternalProviders(
           this, profile_, &external_extension_providers_);
     }
   }
@@ -438,10 +438,10 @@ ExtensionService::~ExtensionService() {
   // No need to unload extensions here because they are profile-scoped, and the
   // profile is in the process of being deleted.
 
-  ProviderCollection::const_iterator i;
+  extensions::ProviderCollection::const_iterator i;
   for (i = external_extension_providers_.begin();
        i != external_extension_providers_.end(); ++i) {
-    ExternalExtensionProviderInterface* provider = i->get();
+    extensions::ExternalProviderInterface* provider = i->get();
     provider->ServiceShutdown();
   }
 }
@@ -1640,10 +1640,10 @@ void ExtensionService::CheckForExternalUpdates() {
 
   // Ask each external extension provider to give us a call back for each
   // extension they know about. See OnExternalExtension(File|UpdateUrl)Found.
-  ProviderCollection::const_iterator i;
+  extensions::ProviderCollection::const_iterator i;
   for (i = external_extension_providers_.begin();
        i != external_extension_providers_.end(); ++i) {
-    ExternalExtensionProviderInterface* provider = i->get();
+    extensions::ExternalProviderInterface* provider = i->get();
     provider->VisitRegisteredExtension();
   }
 
@@ -1655,7 +1655,7 @@ void ExtensionService::CheckForExternalUpdates() {
 }
 
 void ExtensionService::OnExternalProviderReady(
-    const ExternalExtensionProviderInterface* provider) {
+    const extensions::ExternalProviderInterface* provider) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(provider->IsReady());
 
@@ -1666,7 +1666,7 @@ void ExtensionService::OnExternalProviderReady(
 }
 
 bool ExtensionService::AreAllExternalProvidersReady() const {
-  ProviderCollection::const_iterator i;
+  extensions::ProviderCollection::const_iterator i;
   for (i = external_extension_providers_.begin();
        i != external_extension_providers_.end(); ++i) {
     if (!i->get()->IsReady())

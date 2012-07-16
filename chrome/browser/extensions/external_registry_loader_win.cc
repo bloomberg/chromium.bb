@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/external_registry_extension_loader_win.h"
+#include "chrome/browser/extensions/external_registry_loader_win.h"
 
 #include "base/bind.h"
 #include "base/file_path.h"
@@ -15,7 +15,7 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "base/win/registry.h"
-#include "chrome/browser/extensions/external_extension_provider_impl.h"
+#include "chrome/browser/extensions/external_provider_impl.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -38,14 +38,16 @@ bool CanOpenFileForReading(const FilePath& path) {
 
 }  // namespace
 
-void ExternalRegistryExtensionLoader::StartLoading() {
+namespace extensions {
+
+void ExternalRegistryLoader::StartLoading() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ExternalRegistryExtensionLoader::LoadOnFileThread, this));
+      base::Bind(&ExternalRegistryLoader::LoadOnFileThread, this));
 }
 
-void ExternalRegistryExtensionLoader::LoadOnFileThread() {
+void ExternalRegistryLoader::LoadOnFileThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::TimeTicks start_time = base::TimeTicks::Now();
   scoped_ptr<DictionaryValue> prefs(new DictionaryValue);
@@ -123,7 +125,7 @@ void ExternalRegistryExtensionLoader::LoadOnFileThread() {
 
     std::string id = WideToASCII(*it);
     StringToLowerASCII(&id);
-    if (!extensions::Extension::IdIsValid(id)) {
+    if (!Extension::IdIsValid(id)) {
       LOG(ERROR) << "Invalid id value " << id
                  << " for key " << key_path << ".";
       continue;
@@ -137,10 +139,10 @@ void ExternalRegistryExtensionLoader::LoadOnFileThread() {
     }
 
     prefs->SetString(
-        id + "." + ExternalExtensionProviderImpl::kExternalVersion,
+        id + "." + ExternalProviderImpl::kExternalVersion,
         WideToASCII(extension_version));
     prefs->SetString(
-        id + "." + ExternalExtensionProviderImpl::kExternalCrx,
+        id + "." + ExternalProviderImpl::kExternalCrx,
         extension_path_str);
   }
 
@@ -149,5 +151,7 @@ void ExternalRegistryExtensionLoader::LoadOnFileThread() {
                   base::TimeTicks::Now() - start_time);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&ExternalRegistryExtensionLoader::LoadFinished, this));
+      base::Bind(&ExternalRegistryLoader::LoadFinished, this));
 }
+
+}  // namespace extensions

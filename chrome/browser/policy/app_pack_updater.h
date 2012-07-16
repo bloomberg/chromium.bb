@@ -22,12 +22,11 @@
 #include "net/base/network_change_notifier.h"
 
 class CrxInstaller;
-class ExternalExtensionLoader;
-class FilePath;
 class GURL;
 
 namespace extensions {
 class ExtensionDownloader;
+class ExternalLoader;
 }
 
 namespace net {
@@ -40,7 +39,7 @@ class Location;
 
 namespace policy {
 
-class AppPackExternalExtensionLoader;
+class AppPackExternalLoader;
 class BrowserPolicyConnector;
 
 // The AppPackUpdater manages a set of extensions that are configured via a
@@ -63,10 +62,10 @@ class AppPackUpdater : public CloudPolicySubsystem::Observer,
                  BrowserPolicyConnector* connector);
   virtual ~AppPackUpdater();
 
-  // Creates an ExternalExtensionLoader that will load the crx files downloaded
-  // by the AppPackUpdater. This can be called at most once, and the caller
-  // owns the returned value.
-  ExternalExtensionLoader* CreateExternalExtensionLoader();
+  // Creates an extensions::ExternalLoader that will load the crx files
+  // downloaded by the AppPackUpdater. This can be called at most once, and the
+  // caller owns the returned value.
+  extensions::ExternalLoader* CreateExternalLoader();
 
   // |callback| will be invoked whenever the screen saver extension's path
   // changes. It will be invoked "soon" after this call if a valid path already
@@ -222,7 +221,7 @@ class AppPackUpdater : public CloudPolicySubsystem::Observer,
   // The extension loader wires the AppPackUpdater to the extensions system, and
   // makes it install the currently cached extensions.
   bool created_extension_loader_;
-  base::WeakPtr<AppPackExternalExtensionLoader> extension_loader_;
+  base::WeakPtr<AppPackExternalLoader> extension_loader_;
 
   // Used to download the extensions configured via policy, and to check for
   // updates.

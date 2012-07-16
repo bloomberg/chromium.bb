@@ -8,9 +8,9 @@
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/extensions/external_extension_provider_impl.h"
-#include "chrome/browser/extensions/external_extension_provider_interface.h"
-#include "chrome/browser/extensions/external_policy_extension_loader.h"
+#include "chrome/browser/extensions/external_policy_loader.h"
+#include "chrome/browser/extensions/external_provider_impl.h"
+#include "chrome/browser/extensions/external_provider_interface.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -19,28 +19,29 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
-using extensions::Extension;
 
-class ExternalPolicyExtensionProviderTest : public testing::Test {
+namespace extensions {
+
+class ExternalPolicyProviderTest : public testing::Test {
  public:
-  ExternalPolicyExtensionProviderTest()
+  ExternalPolicyProviderTest()
       : loop_(MessageLoop::TYPE_IO),
         ui_thread_(BrowserThread::UI, &loop_) {
   }
 
-  virtual ~ExternalPolicyExtensionProviderTest() {}
+  virtual ~ExternalPolicyProviderTest() {}
 
  private:
   // We need these to satisfy BrowserThread::CurrentlyOn(BrowserThread::UI)
-  // checks in ExternalExtensionProviderImpl.
+  // checks in ExternalProviderImpl.
   MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
 };
 
-class MockExternalPolicyExtensionProviderVisitor
-    : public ExternalExtensionProviderInterface::VisitorInterface {
+class MockExternalPolicyProviderVisitor
+    : public ExternalProviderInterface::VisitorInterface {
  public:
-  MockExternalPolicyExtensionProviderVisitor() {
+  MockExternalPolicyProviderVisitor() {
   }
 
   // Initialize a provider with |policy_forcelist|, and check that it parses
@@ -52,9 +53,9 @@ class MockExternalPolicyExtensionProviderVisitor
     profile_->GetTestingPrefService()->SetManagedPref(
         prefs::kExtensionInstallForceList,
         policy_forcelist->DeepCopy());
-    provider_.reset(new ExternalExtensionProviderImpl(
+    provider_.reset(new ExternalProviderImpl(
         this,
-        new ExternalPolicyExtensionLoader(profile_.get()),
+        new ExternalPolicyLoader(profile_.get()),
         Extension::INVALID,
         Extension::EXTERNAL_POLICY_DOWNLOAD,
         Extension::NO_FLAGS));
@@ -96,7 +97,7 @@ class MockExternalPolicyExtensionProviderVisitor
   }
 
   virtual void OnExternalProviderReady(
-      const ExternalExtensionProviderInterface* provider) {
+      const ExternalProviderInterface* provider) {
     EXPECT_EQ(provider, provider_.get());
     EXPECT_TRUE(provider->IsReady());
   }
@@ -106,12 +107,12 @@ class MockExternalPolicyExtensionProviderVisitor
 
   scoped_ptr<TestingProfile> profile_;
 
-  scoped_ptr<ExternalExtensionProviderImpl> provider_;
+  scoped_ptr<ExternalProviderImpl> provider_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockExternalPolicyExtensionProviderVisitor);
+  DISALLOW_COPY_AND_ASSIGN(MockExternalPolicyProviderVisitor);
 };
 
-TEST_F(ExternalPolicyExtensionProviderTest, PolicyIsParsed) {
+TEST_F(ExternalPolicyProviderTest, PolicyIsParsed) {
   ListValue forced_extensions;
   forced_extensions.Append(Value::CreateStringValue(
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa;http://www.example.com/crx?a=5;b=6"));
@@ -119,12 +120,12 @@ TEST_F(ExternalPolicyExtensionProviderTest, PolicyIsParsed) {
       "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb;"
       "https://clients2.google.com/service/update2/crx"));
 
-  MockExternalPolicyExtensionProviderVisitor mv;
+  MockExternalPolicyProviderVisitor mv;
   std::set<std::string> empty;
   mv.Visit(&forced_extensions, &forced_extensions, empty);
 }
 
-TEST_F(ExternalPolicyExtensionProviderTest, InvalidPolicyIsNotParsed) {
+TEST_F(ExternalPolicyProviderTest, InvalidPolicyIsNotParsed) {
   ListValue forced_extensions, valid_extensions;
   StringValue valid(
       "cccccccccccccccccccccccccccccccc;http://www.example.com/crx");
@@ -149,7 +150,9 @@ TEST_F(ExternalPolicyExtensionProviderTest, InvalidPolicyIsNotParsed) {
   forced_extensions.Append(Value::CreateStringValue(
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaahttp#//www.example.com/crx"));
 
-  MockExternalPolicyExtensionProviderVisitor mv;
+  MockExternalPolicyProviderVisitor mv;
   std::set<std::string> empty;
   mv.Visit(&forced_extensions, &valid_extensions, empty);
 }
+
+}  // namespace extensions

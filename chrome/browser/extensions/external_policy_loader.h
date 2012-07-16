@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTERNAL_POLICY_EXTENSION_LOADER_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTERNAL_POLICY_EXTENSION_LOADER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_EXTERNAL_POLICY_LOADER_H_
+#define CHROME_BROWSER_EXTENSIONS_EXTERNAL_POLICY_LOADER_H_
 
-#include "chrome/browser/extensions/external_extension_loader.h"
+#include "chrome/browser/extensions/external_loader.h"
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
@@ -14,14 +14,16 @@
 
 class Profile;
 
-// A specialization of the ExternalExtensionProvider that uses
+namespace extensions {
+
+// A specialization of the ExternalProvider that uses
 // prefs::kExtensionInstallForceList to look up which external extensions are
 // registered.
-class ExternalPolicyExtensionLoader
-    : public ExternalExtensionLoader,
+class ExternalPolicyLoader
+    : public ExternalLoader,
       public content::NotificationObserver {
  public:
-  explicit ExternalPolicyExtensionLoader(Profile* profile);
+  explicit ExternalPolicyLoader(Profile* profile);
 
   // content::NotificationObserver implementation
   virtual void Observe(int type,
@@ -32,16 +34,18 @@ class ExternalPolicyExtensionLoader
   virtual void StartLoading() OVERRIDE;
 
  private:
-  friend class base::RefCountedThreadSafe<ExternalExtensionLoader>;
+  friend class base::RefCountedThreadSafe<ExternalLoader>;
 
-  virtual ~ExternalPolicyExtensionLoader() {}
+  virtual ~ExternalPolicyLoader() {}
 
   PrefChangeRegistrar pref_change_registrar_;
   content::NotificationRegistrar notification_registrar_;
 
   Profile* profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExternalPolicyExtensionLoader);
+  DISALLOW_COPY_AND_ASSIGN(ExternalPolicyLoader);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTERNAL_POLICY_EXTENSION_LOADER_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_EXTERNAL_POLICY_LOADER_H_

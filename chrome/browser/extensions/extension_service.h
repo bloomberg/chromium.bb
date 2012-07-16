@@ -33,7 +33,7 @@
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
-#include "chrome/browser/extensions/external_extension_provider_interface.h"
+#include "chrome/browser/extensions/external_provider_interface.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/process_map.h"
@@ -145,7 +145,7 @@ class ExtensionServiceInterface : public syncer::SyncableService {
 // Manages installed and running Chromium extensions.
 class ExtensionService
     : public ExtensionServiceInterface,
-      public ExternalExtensionProviderInterface::VisitorInterface,
+      public extensions::ExternalProviderInterface::VisitorInterface,
       public content::NotificationObserver {
  public:
   // The name of the directory inside the profile where extensions are
@@ -531,14 +531,15 @@ class ExtensionService
   // externally managed extension.  If so, uninstall it.
   void CheckExternalUninstall(const std::string& id);
 
-  // Clear all ExternalExtensionProviders.
+  // Clear all ExternalProviders.
   void ClearProvidersForTesting();
 
-  // Adds an ExternalExtensionProviderInterface for the service to use during
-  // testing. Takes ownership of |test_provider|.
-  void AddProviderForTesting(ExternalExtensionProviderInterface* test_provider);
+  // Adds an ExternalProviderInterface for the service to use during testing.
+  // Takes ownership of |test_provider|.
+  void AddProviderForTesting(
+      extensions::ExternalProviderInterface* test_provider);
 
-  // ExternalExtensionProvider::Visitor implementation.
+  // ExternalProvider::Visitor implementation.
   virtual bool OnExternalExtensionFileFound(
       const std::string& id,
       const Version* version,
@@ -553,7 +554,7 @@ class ExtensionService
       extensions::Extension::Location location) OVERRIDE;
 
   virtual void OnExternalProviderReady(
-      const ExternalExtensionProviderInterface* provider) OVERRIDE;
+      const extensions::ExternalProviderInterface* provider) OVERRIDE;
 
   // Returns true when all the external extension providers are ready.
   bool AreAllExternalProvidersReady() const;
@@ -829,7 +830,7 @@ class ExtensionService
   // A collection of external extension providers.  Each provider reads
   // a source of external extension information.  Examples include the
   // windows registry and external_extensions.json.
-  ProviderCollection external_extension_providers_;
+  extensions::ProviderCollection external_extension_providers_;
 
   // Set to true by OnExternalExtensionUpdateUrlFound() when an external
   // extension URL is found, and by CheckForUpdatesSoon() when an update check

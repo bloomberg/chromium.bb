@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/external_policy_extension_loader.h"
+#include "chrome/browser/extensions/external_policy_loader.h"
 
 #include "base/logging.h"
 #include "base/values.h"
@@ -16,6 +16,8 @@
 #include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
 
+namespace extensions {
+
 namespace {
 
 // Check an extension ID and an URL to be syntactically correct.
@@ -26,7 +28,7 @@ bool CheckExtension(const std::string& id, const std::string& update_url) {
                  << "extension: " << update_url;
     return false;
   }
-  if (!extensions::Extension::IdIsValid(id)) {
+  if (!Extension::IdIsValid(id)) {
     LOG(WARNING) << "Policy specifies invalid ID for external "
                  << "extension: " << id;
     return false;
@@ -36,8 +38,7 @@ bool CheckExtension(const std::string& id, const std::string& update_url) {
 
 }  // namespace
 
-ExternalPolicyExtensionLoader::ExternalPolicyExtensionLoader(
-    Profile* profile)
+ExternalPolicyLoader::ExternalPolicyLoader(Profile* profile)
     : profile_(profile) {
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(prefs::kExtensionInstallForceList, this);
@@ -46,7 +47,7 @@ ExternalPolicyExtensionLoader::ExternalPolicyExtensionLoader(
                               content::Source<Profile>(profile_));
 }
 
-void ExternalPolicyExtensionLoader::StartLoading() {
+void ExternalPolicyLoader::StartLoading() {
   const ListValue* forcelist =
       profile_->GetPrefs()->GetList(prefs::kExtensionInstallForceList);
   DictionaryValue* result = new DictionaryValue();
@@ -73,7 +74,7 @@ void ExternalPolicyExtensionLoader::StartLoading() {
   LoadFinished();
 }
 
-void ExternalPolicyExtensionLoader::Observe(
+void ExternalPolicyLoader::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -102,3 +103,5 @@ void ExternalPolicyExtensionLoader::Observe(
       NOTREACHED() << "Unexpected notification type.";
   }
 }
+
+}  // namespace extensions

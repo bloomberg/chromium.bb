@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTERNAL_PREF_EXTENSION_LOADER_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTERNAL_PREF_EXTENSION_LOADER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_EXTERNAL_PREF_LOADER_H_
+#define CHROME_BROWSER_EXTENSIONS_EXTERNAL_PREF_LOADER_H_
 
-#include "chrome/browser/extensions/external_extension_loader.h"
+#include "chrome/browser/extensions/external_loader.h"
 
 #include <string>
 
@@ -13,11 +13,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
-// A specialization of the ExternalExtensionLoader that uses a json file to
+namespace extensions {
+
+// A specialization of the ExternalLoader that uses a json file to
 // look up which external extensions are registered.
 // Instances of this class are expected to be created and destroyed on the UI
 // thread and they are expecting public method calls from the UI thread.
-class ExternalPrefExtensionLoader : public ExternalExtensionLoader {
+class ExternalPrefLoader : public ExternalLoader {
  public:
   enum Options {
     NONE = 0,
@@ -31,7 +33,7 @@ class ExternalPrefExtensionLoader : public ExternalExtensionLoader {
   // |base_path_id| is the directory containing the external_extensions.json
   // file or the standalone extension manifest files. Relative file paths to
   // extension files are resolved relative to this path.
-  explicit ExternalPrefExtensionLoader(int base_path_id, Options options);
+  ExternalPrefLoader(int base_path_id, Options options);
 
   virtual const FilePath GetBaseCrxFilePath() OVERRIDE;
 
@@ -42,9 +44,9 @@ class ExternalPrefExtensionLoader : public ExternalExtensionLoader {
   }
 
  private:
-  friend class base::RefCountedThreadSafe<ExternalExtensionLoader>;
+  friend class base::RefCountedThreadSafe<ExternalLoader>;
 
-  virtual ~ExternalPrefExtensionLoader() {}
+  virtual ~ExternalPrefLoader() {}
 
   // Actually searches for and loads candidate standalone extension preference
   // files in the path corresponding to |base_path_id|.
@@ -74,16 +76,15 @@ class ExternalPrefExtensionLoader : public ExternalExtensionLoader {
   // describing which extensions to load.
   FilePath base_path_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExternalPrefExtensionLoader);
+  DISALLOW_COPY_AND_ASSIGN(ExternalPrefLoader);
 };
 
-// A simplified version of ExternalPrefExtensionLoader that loads the dictionary
+// A simplified version of ExternalPrefLoader that loads the dictionary
 // from json data specified in a string.
-class ExternalTestingExtensionLoader : public ExternalExtensionLoader {
+class ExternalTestingLoader : public ExternalLoader {
  public:
-  ExternalTestingExtensionLoader(
-      const std::string& json_data,
-      const FilePath& fake_base_path);
+  ExternalTestingLoader(const std::string& json_data,
+                        const FilePath& fake_base_path);
 
   virtual const FilePath GetBaseCrxFilePath() OVERRIDE;
 
@@ -91,14 +92,16 @@ class ExternalTestingExtensionLoader : public ExternalExtensionLoader {
   virtual void StartLoading() OVERRIDE;
 
  private:
-  friend class base::RefCountedThreadSafe<ExternalExtensionLoader>;
+  friend class base::RefCountedThreadSafe<ExternalLoader>;
 
-  virtual ~ExternalTestingExtensionLoader();
+  virtual ~ExternalTestingLoader();
 
   FilePath fake_base_path_;
   scoped_ptr<DictionaryValue> testing_prefs_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExternalTestingExtensionLoader);
+  DISALLOW_COPY_AND_ASSIGN(ExternalTestingLoader);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTERNAL_PREF_EXTENSION_LOADER_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_EXTERNAL_PREF_LOADER_H_

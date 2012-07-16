@@ -938,8 +938,8 @@
   fun:file_util::FileEnumerator::ReadDirectory
   fun:file_util::FileEnumerator::Next
   fun:::GetPrefsCandidateFilesFromFolder
-  fun:ExternalPrefExtensionLoader::ReadStandaloneExtensionPrefFiles
-  fun:ExternalPrefExtensionLoader::LoadOnFileThread
+  fun:ExternalPrefLoader::ReadStandaloneExtensionPrefFiles
+  fun:ExternalPrefLoader::LoadOnFileThread
   fun:base::internal::RunnableAdapter::Run
 }
 {

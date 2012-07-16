@@ -114,12 +114,12 @@ void RegisterUserPrefs(PrefService* prefs) {
 
 Provider::Provider(Profile* profile,
                    VisitorInterface* service,
-                   ExternalExtensionLoader* loader,
+                   extensions::ExternalLoader* loader,
                    extensions::Extension::Location crx_location,
                    extensions::Extension::Location download_location,
                    int creation_flags)
-    : ExternalExtensionProviderImpl(service, loader, crx_location,
-                                    download_location, creation_flags),
+    : extensions::ExternalProviderImpl(service, loader, crx_location,
+                                       download_location, creation_flags),
       profile_(profile) {
   DCHECK(profile);
   set_auto_acknowledge(true);
@@ -132,7 +132,7 @@ void Provider::VisitRegisteredExtension() {
     return;
   }
 
-  ExternalExtensionProviderImpl::VisitRegisteredExtension();
+  extensions::ExternalProviderImpl::VisitRegisteredExtension();
 }
 
 }  // namespace default_apps

@@ -1,23 +1,24 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTERNAL_EXTENSION_LOADER_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTERNAL_EXTENSION_LOADER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_EXTERNAL_LOADER_H_
+#define CHROME_BROWSER_EXTENSIONS_EXTERNAL_LOADER_H_
 
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 
-class ExternalExtensionProviderImpl;
-
 namespace base {
 class DictionaryValue;
 }
 
+namespace extensions {
+class ExternalProviderImpl;
+
 // Base class for gathering a list of external extensions. Subclasses
 // implement loading from registry, JSON file, policy.
-// Instances are owned by ExternalExtensionProviderImpl objects.
+// Instances are owned by ExternalProviderImpl objects.
 // Instances are created on the UI thread and expect public method calls from
 // the UI thread. Some subclasses introduce new methods that are executed on the
 // FILE thread.
@@ -26,13 +27,12 @@ class DictionaryValue;
 // 2.) Load() - implemented in subclasses
 // 3.) LoadFinished()
 // 4.) owner_->SetPrefs()
-class ExternalExtensionLoader
-    : public base::RefCountedThreadSafe<ExternalExtensionLoader> {
+class ExternalLoader : public base::RefCountedThreadSafe<ExternalLoader> {
  public:
-  explicit ExternalExtensionLoader();
+  ExternalLoader();
 
   // Specifies the provider that owns this object.
-  void Init(ExternalExtensionProviderImpl* owner);
+  void Init(ExternalProviderImpl* owner);
 
   // Called by the owner before it gets deleted.
   void OwnerShutdown();
@@ -52,7 +52,7 @@ class ExternalExtensionLoader
   virtual const FilePath GetBaseCrxFilePath();
 
  protected:
-  virtual ~ExternalExtensionLoader();
+  virtual ~ExternalLoader();
 
   // Notifies the provider that the list of extensions has been loaded.
   void LoadFinished();
@@ -67,15 +67,17 @@ class ExternalExtensionLoader
   scoped_ptr<base::DictionaryValue> prefs_;
 
  private:
-  friend class base::RefCountedThreadSafe<ExternalExtensionLoader>;
+  friend class base::RefCountedThreadSafe<ExternalLoader>;
 
-  ExternalExtensionProviderImpl* owner_;  // weak
+  ExternalProviderImpl* owner_;  // weak
 
   // Set to true if loading the extensions is already running. New requests
   // are ignored while this is set true.
   bool running_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExternalExtensionLoader);
+  DISALLOW_COPY_AND_ASSIGN(ExternalLoader);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTERNAL_EXTENSION_LOADER_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_EXTERNAL_LOADER_H_

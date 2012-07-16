@@ -38,9 +38,9 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/external_extension_provider_impl.h"
-#include "chrome/browser/extensions/external_extension_provider_interface.h"
-#include "chrome/browser/extensions/external_pref_extension_loader.h"
+#include "chrome/browser/extensions/external_pref_loader.h"
+#include "chrome/browser/extensions/external_provider_impl.h"
+#include "chrome/browser/extensions/external_provider_interface.h"
 #include "chrome/browser/extensions/installed_loader.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/extensions/pending_extension_info.h"
@@ -155,7 +155,7 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 
 }  // namespace
 
-class MockExtensionProvider : public ExternalExtensionProviderInterface {
+class MockExtensionProvider : public extensions::ExternalProviderInterface {
  public:
   MockExtensionProvider(
       VisitorInterface* visitor,
@@ -175,7 +175,7 @@ class MockExtensionProvider : public ExternalExtensionProviderInterface {
     extension_map_.erase(id);
   }
 
-  // ExternalExtensionProvider implementation:
+  // ExternalProvider implementation:
   virtual void VisitRegisteredExtension() OVERRIDE {
     visit_count_++;
     for (DataMap::const_iterator i = extension_map_.begin();
@@ -238,7 +238,7 @@ class MockExtensionProvider : public ExternalExtensionProviderInterface {
 };
 
 class MockProviderVisitor
-    : public ExternalExtensionProviderInterface::VisitorInterface {
+    : public extensions::ExternalProviderInterface::VisitorInterface {
  public:
 
   // The provider will return |fake_base_path| from
@@ -258,9 +258,9 @@ class MockProviderVisitor
 
   int Visit(const std::string& json_data) {
     // Give the test json file to the provider for parsing.
-    provider_.reset(new ExternalExtensionProviderImpl(
+    provider_.reset(new extensions::ExternalProviderImpl(
         this,
-        new ExternalTestingExtensionLoader(json_data, fake_base_path_),
+        new extensions::ExternalTestingLoader(json_data, fake_base_path_),
         Extension::EXTERNAL_PREF,
         Extension::EXTERNAL_PREF_DOWNLOAD,
         Extension::NO_FLAGS));
@@ -359,7 +359,7 @@ class MockProviderVisitor
   }
 
   virtual void OnExternalProviderReady(
-      const ExternalExtensionProviderInterface* provider) {
+      const extensions::ExternalProviderInterface* provider) {
     EXPECT_EQ(provider, provider_.get());
     EXPECT_TRUE(provider->IsReady());
   }
@@ -368,7 +368,7 @@ class MockProviderVisitor
   int ids_found_;
   FilePath fake_base_path_;
   int expected_creation_flags_;
-  scoped_ptr<ExternalExtensionProviderImpl> provider_;
+  scoped_ptr<extensions::ExternalProviderImpl> provider_;
   scoped_ptr<DictionaryValue> prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(MockProviderVisitor);
@@ -557,7 +557,8 @@ class ExtensionServiceTest
     }
   }
 
-  void AddMockExternalProvider(ExternalExtensionProviderInterface* provider) {
+  void AddMockExternalProvider(
+      extensions::ExternalProviderInterface* provider) {
     service_->AddProviderForTesting(provider);
   }
 
@@ -3765,7 +3766,7 @@ TEST_F(ExtensionServiceTest, ExternalUninstall) {
       .DirName()
       .AppendASCII("PreferencesExternal");
 
-  // This initializes the extensions service with no ExternalExtensionProviders.
+  // This initializes the extensions service with no ExternalProviders.
   InitializeInstalledExtensionService(pref_path, source_install_dir);
   set_extensions_enabled(false);
 

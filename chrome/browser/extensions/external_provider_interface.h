@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTERNAL_EXTENSION_PROVIDER_INTERFACE_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTERNAL_EXTENSION_PROVIDER_INTERFACE_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_EXTERNAL_PROVIDER_INTERFACE_H_
+#define CHROME_BROWSER_EXTENSIONS_EXTERNAL_PROVIDER_INTERFACE_H_
 
 #include <vector>
 
@@ -13,11 +13,13 @@
 class FilePath;
 class Version;
 
+namespace extensions {
+
 // This class is an abstract class for implementing external extensions
 // providers.
-class ExternalExtensionProviderInterface {
+class ExternalProviderInterface {
  public:
-  // ExternalExtensionProvider uses this interface to communicate back to the
+  // ExternalProvider uses this interface to communicate back to the
   // caller what extensions are registered, and which |id|, |version| and |path|
   // they have. See also VisitRegisteredExtension below. Ownership of |version|
   // is not transferred to the visitor.  Callers of the methods below must
@@ -31,7 +33,7 @@ class ExternalExtensionProviderInterface {
         const std::string& id,
         const Version* version,
         const FilePath& path,
-        extensions::Extension::Location location,
+        Extension::Location location,
         int creation_flags,
         bool mark_acknowledged) = 0;
 
@@ -41,7 +43,7 @@ class ExternalExtensionProviderInterface {
     virtual bool OnExternalExtensionUpdateUrlFound(
         const std::string& id,
         const GURL& update_url,
-        extensions::Extension::Location location) = 0;
+        Extension::Location location) = 0;
 
     // Called after all the external extensions have been reported
     // through the above two methods. |provider| is a pointer to the
@@ -49,13 +51,13 @@ class ExternalExtensionProviderInterface {
     // implementation of OnExternalProviderReady() should be able to
     // safely assert that provider->IsReady().
     virtual void OnExternalProviderReady(
-      const ExternalExtensionProviderInterface* provider) = 0;
+        const ExternalProviderInterface* provider) = 0;
 
    protected:
     virtual ~VisitorInterface() {}
   };
 
-  virtual ~ExternalExtensionProviderInterface() {}
+  virtual ~ExternalProviderInterface() {}
 
   // The visitor (ExtensionsService) calls this function before it goes away.
   virtual void ServiceShutdown() = 0;
@@ -73,7 +75,7 @@ class ExternalExtensionProviderInterface {
   // provider type, it will not be changed.
   // This function is no longer used outside unit tests.
   virtual bool GetExtensionDetails(const std::string& id,
-                                   extensions::Extension::Location* location,
+                                   Extension::Location* location,
                                    scoped_ptr<Version>* version) const = 0;
 
   // Determines if this provider had loaded the list of external extensions
@@ -81,7 +83,9 @@ class ExternalExtensionProviderInterface {
   virtual bool IsReady() const = 0;
 };
 
-typedef std::vector<linked_ptr<ExternalExtensionProviderInterface> >
+typedef std::vector<linked_ptr<ExternalProviderInterface> >
     ProviderCollection;
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTERNAL_EXTENSION_PROVIDER_INTERFACE_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_EXTERNAL_PROVIDER_INTERFACE_H_
