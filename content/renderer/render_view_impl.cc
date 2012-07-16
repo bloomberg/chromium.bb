@@ -2391,11 +2391,13 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   WebMediaPlayer* media_player =
       content::GetContentClient()->renderer()->OverrideCreateWebMediaPlayer(
           this, frame, client, AsWeakPtr(), collection, audio_source_provider,
-          message_loop_factory, media_stream_impl_, render_media_log);
+          audio_source_provider, message_loop_factory, media_stream_impl_,
+          render_media_log);
   if (!media_player) {
     media_player = new webkit_media::WebMediaPlayerImpl(
         frame, client, AsWeakPtr(), collection, audio_source_provider,
-        message_loop_factory, media_stream_impl_, render_media_log);
+        audio_source_provider, message_loop_factory, media_stream_impl_,
+        render_media_log);
   }
   return media_player;
 }

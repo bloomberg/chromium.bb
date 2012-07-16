@@ -405,6 +405,7 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(
       base::WeakPtr<webkit_media::WebMediaPlayerDelegate>(),
       collection.release(),
       NULL,
+      NULL,
       message_loop_factory.release(),
       media_stream_client,
       new media::MediaLog());

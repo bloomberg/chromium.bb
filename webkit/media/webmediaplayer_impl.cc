@@ -105,6 +105,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     base::WeakPtr<WebMediaPlayerDelegate> delegate,
     media::FilterCollection* collection,
     WebKit::WebAudioSourceProvider* audio_source_provider,
+    media::AudioRendererSink* audio_renderer_sink,
     media::MessageLoopFactory* message_loop_factory,
     MediaStreamClient* media_stream_client,
     media::MediaLog* media_log)
@@ -128,6 +129,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       accelerated_compositing_reported_(false),
       incremented_externally_allocated_memory_(false),
       audio_source_provider_(audio_source_provider),
+      audio_renderer_sink_(audio_renderer_sink),
       is_local_source_(false),
       decryptor_(proxy_.get()) {
   media_log_->AddEvent(

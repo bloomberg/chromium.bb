@@ -75,6 +75,7 @@ class WebFrame;
 }
 
 namespace media {
+class AudioRendererSink;
 class MediaLog;
 }
 
@@ -104,11 +105,19 @@ class WebMediaPlayerImpl
   // filter if they wish to hear any sound coming out the speakers, otherwise
   // audio data is discarded and media plays back based on wall clock time.
   //
+  // When calling this, the |audio_source_provider| and
+  // |audio_renderer_sink| arguments should be the same object.
+  //
+  // TODO(scherkus): Remove WebAudioSourceProvider parameter once we
+  // refactor RenderAudioSourceProvider to live under webkit/media/
+  // instead of content/renderer/, see http://crbug.com/136442
+
   WebMediaPlayerImpl(WebKit::WebFrame* frame,
                      WebKit::WebMediaPlayerClient* client,
                      base::WeakPtr<WebMediaPlayerDelegate> delegate,
                      media::FilterCollection* collection,
                      WebKit::WebAudioSourceProvider* audio_source_provider,
+                     media::AudioRendererSink* audio_renderer_sink,
                      media::MessageLoopFactory* message_loop_factory,
                      MediaStreamClient* media_stream_client,
                      media::MediaLog* media_log);
@@ -339,6 +348,8 @@ class WebMediaPlayerImpl
   bool incremented_externally_allocated_memory_;
 
   WebKit::WebAudioSourceProvider* audio_source_provider_;
+
+  scoped_refptr<media::AudioRendererSink> audio_renderer_sink_;
 
   bool is_local_source_;
 
