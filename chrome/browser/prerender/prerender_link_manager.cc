@@ -8,7 +8,6 @@
 #include <queue>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -66,10 +65,9 @@ bool PrerenderLinkManager::OnAddPrerender(int child_id,
       manager_->AddPrerenderFromLinkRelPrerender(
           child_id, render_view_route_id, url, referrer, size));
   if (prerender_handle.get()) {
-    PrerenderHandle* null = NULL;
     std::pair<IdPairToPrerenderHandleMap::iterator, bool> insert_result =
-        ids_to_handle_map_.insert(IdPairToPrerenderHandleMap::value_type(
-            child_and_prerender_id, null));
+        ids_to_handle_map_.insert(std::make_pair(
+            child_and_prerender_id, static_cast<PrerenderHandle*>(NULL)));
     DCHECK(insert_result.second);
     delete insert_result.first->second;
     insert_result.first->second = prerender_handle.release();
