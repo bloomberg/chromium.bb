@@ -122,6 +122,32 @@ ACTION_P4(MockUploadExistingFile,
   return kUploadId;
 }
 
+// Returns the absolute path for a test file stored under
+// chrome/test/data/chromeos/gdata.
+FilePath GetTestFilePath(const FilePath::StringType& base_name) {
+  FilePath path;
+  std::string error;
+  PathService::Get(chrome::DIR_TEST_DATA, &path);
+  path = path.AppendASCII("chromeos")
+      .AppendASCII("gdata")
+      .AppendASCII(base_name.c_str());
+  EXPECT_TRUE(file_util::PathExists(path)) <<
+      "Couldn't find " << path.value();
+  return path;
+}
+
+// Loads a test JSON file as a base::Value.
+base::Value* LoadJSONFile(const std::string& base_name) {
+  FilePath path = GetTestFilePath(base_name);
+
+  std::string error;
+  JSONFileValueSerializer serializer(path);
+  base::Value* value = serializer.Deserialize(NULL, &error);
+  EXPECT_TRUE(value) <<
+      "Parse error " << path.value() << ": " << error;
+  return value;
+}
+
 }  // namespace
 
 class MockFreeDiskSpaceGetter : public FreeDiskSpaceGetterInterface {
@@ -136,7 +162,21 @@ class MockGDataUploader : public GDataUploaderInterface {
   // This function is not mockable by gmock.
   virtual int UploadNewFile(
       scoped_ptr<UploadFileInfo> upload_file_info) OVERRIDE {
-    return -1;
+    // Set a document entry for an uploaded file.
+    // Used for TransferFileFromLocalToRemote_RegularFile test.
+    scoped_ptr<base::Value> value(LoadJSONFile("uploaded_file.json"));
+    scoped_ptr<DocumentEntry> document_entry(
+        DocumentEntry::ExtractAndParse(*value));
+    upload_file_info->entry = document_entry.Pass();
+
+    // Run the complection callback.
+    const UploadFileInfo::UploadCompletionCallback callback =
+        upload_file_info->completion_callback;
+    if (!callback.is_null())
+      callback.Run(base::PLATFORM_FILE_OK, upload_file_info.Pass());
+
+    const int kUploadId = 123;
+    return kUploadId;
   }
 
   MOCK_METHOD6(UploadExistingFile,
@@ -668,29 +708,6 @@ class GDataFileSystemTest : public testing::Test {
                                   GDataEntry* entry) {
     ASSERT_TRUE(entry);
     ASSERT_EQ(search_file_path, entry->GetFilePath());
-  }
-
-  static Value* LoadJSONFile(const std::string& filename) {
-    FilePath path = GetTestFilePath(filename);
-
-    std::string error;
-    JSONFileValueSerializer serializer(path);
-    Value* value = serializer.Deserialize(NULL, &error);
-    EXPECT_TRUE(value) <<
-        "Parse error " << path.value() << ": " << error;
-    return value;
-  }
-
-  static FilePath GetTestFilePath(const FilePath::StringType& filename) {
-    FilePath path;
-    std::string error;
-    PathService::Get(chrome::DIR_TEST_DATA, &path);
-    path = path.AppendASCII("chromeos")
-        .AppendASCII("gdata")
-        .AppendASCII(filename.c_str());
-    EXPECT_TRUE(file_util::PathExists(path)) <<
-        "Couldn't find " << path.value();
-    return path;
   }
 
   // Creates a proto file representing a filesystem with directories:
@@ -1255,6 +1272,41 @@ TEST_F(GDataFileSystemTest, CachedFeedLoading) {
   FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("drive/Dir1/SubDir2")));
   FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("drive/Dir1/SubDir2/File3")));
 }
+
+TEST_F(GDataFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
+  LoadRootFeedDocument("root_feed.json");
+
+  // We'll add a file to the Drive root directory.
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+
+  FileOperationCallback callback =
+      base::Bind(&CallbackHelper::FileOperationCallback,
+                 callback_helper_.get());
+
+  // Prepare a local file.
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  const FilePath local_src_file_path = temp_dir.path().Append("local.txt");
+  const std::string kContent = "hello";
+  file_util::WriteFile(local_src_file_path, kContent.data(), kContent.size());
+
+  // Confirm that the remote file does not exist.
+  const FilePath remote_dest_file_path(FILE_PATH_LITERAL("drive/remote.txt"));
+  EXPECT_FALSE(EntryExists(remote_dest_file_path));
+
+  // Transfer the local file to Drive.
+  file_system_->TransferFileFromLocalToRemote(
+      local_src_file_path, remote_dest_file_path, callback);
+  test_util::RunBlockingPoolTask();
+
+  // Now the remote file should exist.
+  EXPECT_TRUE(EntryExists(remote_dest_file_path));
+}
+
+// TODO(satorux): Write this test. crbug.com/137526
+// TEST_F(GDataFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
+// }
 
 TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
   LoadRootFeedDocument("root_feed.json");
