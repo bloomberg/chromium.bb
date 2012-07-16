@@ -57,7 +57,7 @@
         "name": "connect",
         "type": "function",
         "unprivileged": true,
-        "description": "Attempts to connect to other listeners within the extension (such as the extension's background page). This is primarily useful for content scripts connecting to their extension processes. Extensions may connect to content scripts embedded in tabs via <a href='tabs.html#method-connect'><code>chrome.tabs.connect()</code></a>.",
+        "description": "Attempts to connect to other listeners within the extension (such as the extension's background page). This is primarily useful for content scripts connecting to their extension processes. Note that this does not connect to any listeners in a content script. Extensions may connect to content scripts embedded in tabs via <a href='tabs.html#method-connect'><code>chrome.tabs.connect()</code></a>.",
         "parameters": [
           {"type": "string", "name": "extensionId", "optional": true, "description": "The extension ID of the extension you want to connect to. If omitted, default is your own extension."},
           {
@@ -103,7 +103,7 @@
         "type": "function",
         "allowAmbiguousOptionalArguments": true,
         "unprivileged": true,
-        "description": "Sends a single message to other listeners within the extension. Similar to chrome.extension.connect, but only sends a single message with an optional response. The <a href='extension.html#event-onMessage'>chrome.extension.onMessage</a> event is fired in each page of the extension.",
+        "description": "Sends a single message to other listeners within the extension. Similar to chrome.extension.connect, but only sends a single message with an optional response. The <a href='extension.html#event-onMessage'>chrome.extension.onMessage</a> event is fired in each extension page of the extension. Note that extensions cannot send messages to content scripts using this method. To send messages to content scripts, use <a href='tabs.html#method-sendMessage'><code>chrome.tabs.sendMessage()</code></a>.",
         "parameters": [
           {"type": "string", "name": "extensionId", "optional": true, "description": "The extension ID of the extension you want to connect to. If omitted, default is your own extension."},
           { "type": "any", "name": "message" },
@@ -291,15 +291,9 @@
         "unprivileged": true,
         "description": "Fired when a message is sent from either an extension process or a content script.",
         "parameters": [
-          {
-            "name": "details",
-            "type": "object",
-            "properties": {
-              "message": { "type": "any", "description": "The message sent by the calling script."},
-              "sender": { "$ref": "MessageSender" },
-              "sendResponse": { "type": "function", "description": "Function to call (at most once) when you have a response. The argument should be any JSON-ifiable object. If you have more than one <code>onMessage</code> listener in the same document, then only one may send a response. This function becomes invalid when the event listener returns, unless you return true from the event listener to indicate you wish to send a response asynchronously (this will keep the message channel open to the other end until <code>sendResponse</code> is called)." }
-            }
-          }
+          {"name": "message", "type": "any", "description": "The message sent by the calling script."},
+          {"name": "sender", "$ref": "MessageSender" },
+          {"name": "sendResponse", "type": "function", "description": "Function to call (at most once) when you have a response. The argument should be any JSON-ifiable object. If you have more than one <code>onMessage</code> listener in the same document, then only one may send a response. This function becomes invalid when the event listener returns, unless you return true from the event listener to indicate you wish to send a response asynchronously (this will keep the message channel open to the other end until <code>sendResponse</code> is called)." }
         ],
         "returns": {
           "type": "boolean",
@@ -313,15 +307,9 @@
         "anonymous": true,
         "description": "Fired when a message is sent from another extension.",
         "parameters": [
-          {
-            "name": "details",
-            "type": "object",
-            "properties": {
-              "message": { "type": "any", "description": "The message sent by the calling script."},
-              "sender": { "$ref": "MessageSender" },
-              "sendResponse": { "type": "function", "description": "Function to call (at most once) when you have a response. The argument should be any JSON-ifiable object. If you have more than one <code>onMessage</code> listener in the same document, then only one may send a response. This function becomes invalid when the event listener returns, unless you return true from the event listener to indicate you wish to send a response asynchronously (this will keep the message channel open to the other end until <code>sendResponse</code> is called)." }
-            }
-          }
+          {"name": "message", "type": "any", "description": "The message sent by the calling script."},
+          {"name": "sender", "$ref": "MessageSender" },
+          {"name": "sendResponse", "type": "function", "description": "Function to call (at most once) when you have a response. The argument should be any JSON-ifiable object. If you have more than one <code>onMessage</code> listener in the same document, then only one may send a response. This function becomes invalid when the event listener returns, unless you return true from the event listener to indicate you wish to send a response asynchronously (this will keep the message channel open to the other end until <code>sendResponse</code> is called)." }
         ],
         "returns": {
           "type": "boolean",
