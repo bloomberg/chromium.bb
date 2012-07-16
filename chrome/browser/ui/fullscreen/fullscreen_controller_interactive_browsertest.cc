@@ -419,6 +419,10 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_TRUE(IsMouseLocked());
 }
 
+#if defined(OS_WIN)
+// http://crbug.com/137486
+#define ReloadExitsMouseLockAndFullscreen DISABLED_ReloadExitsMouseLockAndFullscreen
+#endif
 // Tests Mouse Lock and Fullscreen are exited upon reload.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
                        ReloadExitsMouseLockAndFullscreen) {
