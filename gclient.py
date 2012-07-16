@@ -1515,8 +1515,8 @@ def GenUsage(parser, command):
 def Parser():
   """Returns the default parser."""
   parser = optparse.OptionParser(version='%prog ' + __version__)
-  # cygwin and some arm boards have issues with parallel sync.
-  if sys.platform == 'cygwin' or platform.machine().startswith('arm'):
+  # some arm boards have issues with parallel sync.
+  if platform.machine().startswith('arm'):
     jobs = 1
   else:
     jobs = 8
