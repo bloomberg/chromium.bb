@@ -116,11 +116,10 @@ class RemoteTryJob(object):
 
     ref_base = os.path.join('refs/tryjobs', self.user, current_time)
     for patch in self.local_patches:
-      sha1 = patch.Sha1Hash()[:8]
       # Isolate the name; if it's a tag or a remote, let through.
       # Else if it's a branch, get the full branch name minus refs/heads.
       local_branch = cros_build_lib.StripLeadingRefsHeads(patch.ref, False)
-      ref_final = os.path.join(ref_base, local_branch, sha1)
+      ref_final = os.path.join(ref_base, local_branch, patch.sha1)
 
       data = self.manifest.projects[patch.project]
 

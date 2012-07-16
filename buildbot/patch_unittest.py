@@ -253,22 +253,45 @@ I am the first commit.
     patch = self.CommitChangeIdFile(git1, cid1, internal=internal)
     # Since it's parent is ToT, there are no deps.
     self.assertEqual(patch.GerritDependencies(git1), [])
-    patch = self.CommitChangeIdFile(git1, cid2, content='poo',
+    patch = self.CommitChangeIdFile(git1, cid2, content='monkeys',
                                     internal=internal)
     self.assertEqual(patch.GerritDependencies(git1),
                      [convert(cid1)])
 
     # Check the behaviour for missing ChangeId in a parent next.
-    patch = self.CommitChangeIdFile(git1, cid1, content='thus',
+    patch = self.CommitChangeIdFile(git1, cid1, content='fling poo',
                                     raw_changeid_text='', internal=internal)
 
     # Note the ordering; leftmost needs to be the nearest child of the commit.
     self.assertEqual(patch.GerritDependencies(git1),
                      map(convert, [cid2, cid1]))
 
-    patch = self.CommitChangeIdFile(git1, cid3, content='the glass walls.')
-    self.assertRaises(cros_patch.BrokenChangeID,
-                      patch.GerritDependencies, git1)
+    parent_sha1 = patch.sha1
+    # Verify if a Change-Id exists but is invalid, it's flagged.
+    for content in ('asdfg', '%sg' % ('0' * 39)):
+      patch = self.CommitChangeIdFile(git1, content='thus %s' % content,
+                                      raw_changeid_text='Change-Id: I%s'
+                                      % content, internal=internal)
+      patch = self.CommitChangeIdFile(git1, cid3, content='update')
+      # assertRaises doesn't allow us to specify the message, thus handle
+      # this manually.
+      try:
+        patch.GerritDependencies(git1)
+        raise AssertionError("Change-Id: I%s failed to trigger a BrokenChangeId"
+                             % (content,))
+      except cros_patch.BrokenChangeID:
+        pass
+      # Now wipe those commits since they'll interfere w/ the next run, and the
+      # following code.
+      cros_build_lib.RunGitCommand(git1, ['reset', '--hard', 'HEAD^^'])
+
+    # Verify that if a ChangeId is lacking, it switches back to commit based
+    # ids.
+    patch = self.CommitChangeIdFile(git1, raw_changeid_text='',
+                                    content='the glass walls.',
+                                    internal=internal)
+    self.assertEqual(patch.GerritDependencies(git1),
+                     map(convert, [parent_sha1, cid2, cid1]))
 
   def testExternalGerritDependencies(self):
     self._assertGerritDependencies()
@@ -287,8 +310,8 @@ I am the first commit.
     ids = set(ids)
     self.assertEqual(ids, deps)
     self.assertEqual(
-        set(cros_patch.FormatChangeId(x) for x in deps if x[0] in 'Ii'),
-        set(x for x in ids if x[0] in 'Ii'))
+        set(cros_patch.FormatPatchDep(x) for x in deps),
+        set(cros_patch.FormatPatchDep(x) for x in ids))
     return patch
 
   def testPaladinDependencies(self):
@@ -299,15 +322,37 @@ I am the first commit.
     # Single key, single value.
     self._CheckPaladin(git1, cid1, [cid2],
                        'CQ-DEPEND=%s' % cid2)
+    # Single key, gerrit number.
+    self._CheckPaladin(git1, cid1, ['123'],
+                       'CQ-DEPEND=%s' % 123)
+    # Single key, gerrit number.
+    self._CheckPaladin(git1, cid1, ['123456'],
+                       'CQ-DEPEND=%s' % 123456)
+    # Single key, gerrit number; ensure it
+    # cuts off before a million changes (this
+    # is done to avoid collisions w/ sha1 when
+    # we're using shortened versions).
+    self.assertRaises(cros_patch.BrokenCQDepends,
+                      self._CheckPaladin, git1, cid1,
+                      ['1234567'], 'CQ-DEPEND=%s' % '1234567')
+    # Single key, gerrit number, internal.
+    self._CheckPaladin(git1, cid1, ['*123'],
+                       'CQ-DEPEND=%s' % '*123')
+    # Ensure SHA1's aren't allowed.
+    sha1 = '0' * 40
+    self.assertRaises(cros_patch.BrokenCQDepends,
+                      self._CheckPaladin, git1, cid1,
+                      [sha1], 'CQ-DEPEND=%s' % sha1)
+
     # Single key, multiple values
-    self._CheckPaladin(git1, cid1, [cid2, cid3],
-                       'CQ-DEPEND=%s %s' % (cid2, cid3))
+    self._CheckPaladin(git1, cid1, [cid2, '1223'],
+                       'CQ-DEPEND=%s %s' % (cid2, '1223'))
     # Dumb comma behaviour
     self._CheckPaladin(git1, cid1, [cid2, cid3],
                       'CQ-DEPEND=%s, %s,' % (cid2, cid3))
     # Multiple keys.
-    self._CheckPaladin(git1, cid1, [cid2, cid3, cid4],
-                      'CQ-DEPEND=%s, %s\nCQ-DEPEND=%s' % (cid2, cid3, cid4))
+    self._CheckPaladin(git1, cid1, [cid2, '*245', cid4],
+                      'CQ-DEPEND=%s, %s\nCQ-DEPEND=%s' % (cid2, '*245', cid4))
 
     # Ensure it goes boom on invalid data.
     self.assertRaises(cros_patch.BrokenCQDepends, self._CheckPaladin,
@@ -379,7 +424,7 @@ class TestUploadedLocalPatch(TestGitRepoPatch):
 
   PROJECT = 'chromiumos/chromite'
   ORIGINAL_BRANCH = 'original_branch'
-  ORIGINAL_SHA1 = 'ffffffff'
+  ORIGINAL_SHA1 = 'ffffffff'.ljust(40, '0')
 
   class patch_kls(_PatchSuppression, cros_patch.UploadedLocalPatch):
     pass
@@ -393,8 +438,9 @@ class TestUploadedLocalPatch(TestGitRepoPatch):
   def testStringRepresentation(self):
     git1, git2, patch = self._CommonGitSetup()
     str_rep = str(patch).split(':')
-    for element in [self.PROJECT, self.ORIGINAL_BRANCH, self.ORIGINAL_SHA1]:
-      self.assertTrue(element in str_rep)
+    for element in [self.PROJECT, self.ORIGINAL_BRANCH, self.ORIGINAL_SHA1[:8]]:
+      self.assertTrue(element in str_rep,
+                      msg="Couldn't find %s in %s" % (element, str_rep))
 
 
 class TestGerritPatch(TestGitRepoPatch):
@@ -544,7 +590,7 @@ class PrepareLocalPatchesTests(mox.MoxTestBase):
   def testBranchSpecifiedSuccessRun(self):
     """Test success with branch specified by user."""
     output_obj = self.mox.CreateMock(cros_build_lib.CommandResult)
-    output_obj.output = '12345'
+    output_obj.output = '12345'.rjust(40, '0')
     self.manifest.GetProjectPath('my/project', True).AndReturn('mydir')
     self.manifest.GetProjectsLocalRevision('my/project').AndReturn('m/kernel')
     self.manifest.ProjectIsInternal('my/project').AndReturn(False)

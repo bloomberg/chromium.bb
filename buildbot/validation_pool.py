@@ -200,8 +200,8 @@ class PatchSeries(object):
     # A mapping of ChangeId to exceptions if the patch failed against
     # ToT.  Primarily used to keep the resolution/applying from going
     # down known bad paths.
-    self._committed_cache = {}
-    self._lookup_cache = {}
+    self._committed_cache = cros_patch.PatchCache()
+    self._lookup_cache = cros_patch.PatchCache()
     self._change_deps_cache = {}
 
   def IsContentMerging(self, change, manifest):
@@ -249,7 +249,7 @@ class PatchSeries(object):
     # is a valid one, 2) to force our internal ChangeId format into
     # gerrit's format (ie, no leading * for internal changes).
     change = helper.QuerySingleRecord(
-        cros_patch.FormatChangeId(query, force_external=True),
+        cros_patch.FormatPatchDep(query, force_external=True),
         must_match=True)
     self.InjectLookupCache([change])
     return change
@@ -277,7 +277,7 @@ class PatchSeries(object):
       if dep in self._committed_cache:
         continue
 
-      dep_change = self._lookup_cache.get(dep)
+      dep_change = self._lookup_cache[dep]
       if dep_change is not None:
         if dep_change not in merged and dep_change not in unsatisfied:
           unsatisfied.append(dep_change)
@@ -314,7 +314,7 @@ class PatchSeries(object):
       A sequency of the necessary cros_patch.GitRepoPatch objects for
       this transaction.
     """
-    plan, stack = [], []
+    plan, stack = [], cros_patch.PatchCache()
     self._ResolveChange(change, buildroot, plan, stack, frozen=frozen)
     return plan
 
@@ -329,7 +329,7 @@ class PatchSeries(object):
       If the change couldn't be resolved, a DependencyError or
       cros_patch.PatchException can be raised.
     """
-    if change.id in self._committed_cache:
+    if change in self._committed_cache:
       return
     if change in stack:
       # If the requested change is already in the stack, then immediately
@@ -340,12 +340,12 @@ class PatchSeries(object):
       # change numbers; support for that is broken currently anyways,
       # but this is one of the spots that needs fixing for that support.
       return
-    stack.append(change)
+    stack.Inject(change)
     try:
       self._PerformResolveChange(buildroot, change, plan,
                                  stack, frozen=frozen)
     finally:
-      stack.pop(-1)
+      stack.Remove(change)
 
   @_PatchWrapException
   def _GetDepsForChange(self, change, buildroot):
@@ -396,15 +396,13 @@ class PatchSeries(object):
     This is primarily useful for external code to notify this object
     that changes were applied to the tree outside its purview- specifically
     useful for dependency resolution."""
-    for change in changes:
-      self._committed_cache[change.id] = change
+    self._committed_cache.Inject(*changes)
 
   def InjectLookupCache(self, changes):
     """Inject into the internal lookup cache the given changes, using them
     (rather than asking gerrit for them) as needed for dependencies.
     """
-    for change in changes:
-      self._lookup_cache[change.id] = change
+    self._lookup_cache.Inject(*changes)
 
   def Apply(self, buildroot, changes, dryrun=False, frozen=True, manifest=None):
     """Applies changes from pool into the directory specified by the buildroot.
@@ -570,7 +568,7 @@ class PatchSeries(object):
 
     applied = []
     for change in changes:
-      if change.id in self._committed_cache:
+      if change in self._committed_cache:
         continue
 
       # If we're in dryrun mode, than force content-merging; else, ask

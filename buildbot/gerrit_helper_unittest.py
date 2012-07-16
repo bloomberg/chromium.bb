@@ -74,7 +74,7 @@ class GerritHelperTest(mox.MoxTestBase):
         '{"project":"tacos/chromite","branch":"master",'
         '"id":"Iee5c89d929f1850d7d4e1a4ff5f21adda8000250",'
         '"currentPatchSet":{"number":"2","ref":"refs/changes/72/5172/1",'
-            '"revision":"ff10979dd360e75ff21f5cf53b7f8647578785eg"},'
+            '"revision":"ff10979dd360e75ff21f5cf53b7f8647578785ea"},'
         '"number":"1112",'
         '"subject":"chromite commit",'
         '"owner":{"name":"Chromite Master","email":"chromite@chromium.org"},'

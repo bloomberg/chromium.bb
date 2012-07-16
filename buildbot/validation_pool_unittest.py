@@ -76,7 +76,7 @@ class base_mixin(object):
     patch.internal = internal
     if change_id is None:
       change_id = self._patch_counter()
-    patch.gerrit_number = change_id
+    patch.gerrit_number = str(change_id)
     # Strip off the leading 0x, trailing 'l'
     change_id = hex(change_id)[2:].rstrip('L').lower()
     patch.change_id = patch.id = 'I%s' % change_id.rjust(40, '0')
@@ -85,9 +85,15 @@ class base_mixin(object):
     patch.url = 'fake_url/%s' % (change_id,)
     patch.apply_error_message = None
     patch.project = project
-    patch.sha1 = 'sha1-%s' % (patch.change_id,)
+    patch.sha1 = hex(_GetNumber())[2:].rstrip('L').lower().rjust(40, '0')
     patch.IsAlreadyMerged = lambda:is_merged
+    patch.LookupAliases = functools.partial(
+        self._LookupAliases, patch)
     return patch
+
+  @staticmethod
+  def _LookupAliases(patch):
+    return [patch.change_id, patch.sha1, patch.gerrit_number]
 
   def GetPatches(self, how_many=1, **kwargs):
     l = [self.MockPatch(**kwargs) for _ in xrange(how_many)]
@@ -199,6 +205,55 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
 
     self.mox.ReplayAll()
     self.assertResults(series, patches, [patch2, patch1])
+    self.mox.VerifyAll()
+
+  def testSha1Deps(self):
+    """Test that we can apply changes correctly and respect sha1 deps.
+
+    This tests a simple out-of-order change where change1 depends on change2
+    but tries to get applied before change2.  What should happen is that
+    we should notice change2 is a dep of change1 and apply it first.
+    """
+    series = self.GetPatchSeries()
+
+    patch1, patch2, patch3 = patches = self.GetPatches(3)
+    patch2.change_id = patch2.id = patch2.sha1
+    patch3.change_id = patch3.id = '*' + patch3.sha1
+    patch3.internal = True
+
+    self.SetPatchDeps(patch1, [patch2.sha1])
+    self.SetPatchDeps(patch2, ['*%s' % patch3.sha1])
+    self.SetPatchDeps(patch3)
+
+    patch2.Apply(self.build_root, trivial=True)
+    patch3.Apply(self.build_root, trivial=True)
+    patch1.Apply(self.build_root, trivial=True)
+
+    self.mox.ReplayAll()
+    self.assertResults(series, patches, [patch3, patch2, patch1])
+    self.mox.VerifyAll()
+
+  def testGerritNumberDeps(self):
+    """Test that we can apply changes correctly and respect gerrit number deps.
+
+    This tests a simple out-of-order change where change1 depends on change2
+    but tries to get applied before change2.  What should happen is that
+    we should notice change2 is a dep of change1 and apply it first.
+    """
+    series = self.GetPatchSeries()
+
+    patch1, patch2, patch3 = patches = self.GetPatches(3)
+
+    self.SetPatchDeps(patch3, cq=[patch1.gerrit_number])
+    self.SetPatchDeps(patch2, cq=[patch3.gerrit_number])
+    self.SetPatchDeps(patch1, cq=[patch2.id])
+
+    patch3.Apply(self.build_root, trivial=True)
+    patch2.Apply(self.build_root, trivial=True)
+    patch1.Apply(self.build_root, trivial=True)
+
+    self.mox.ReplayAll()
+    self.assertResults(series, patches, [patch1, patch2, patch3])
     self.mox.VerifyAll()
 
   def testCrosGerritDeps(self):
@@ -579,8 +634,9 @@ class TestCoreLogic(base_mixin, mox.MoxTestBase):
     pool = self.MakePool(dryrun=False)
 
     patch = self.GetPatches(1)
+    # Force int conversion of gerrit_number to ensure the test is sane.
     cmd = ('ssh -p 29418 gerrit.chromium.org gerrit review '
-           '--submit %i,%i' % (patch.gerrit_number, patch.patch_number))
+           '--submit %i,%i' % (int(patch.gerrit_number), patch.patch_number))
     validation_pool._RunCommand(cmd.split(), False).AndReturn(None)
     self.mox.ReplayAll()
     pool._SubmitChange(patch)

@@ -12,6 +12,7 @@ import re
 
 from chromite.lib import cros_build_lib
 
+_MAXIMUM_GERRIT_NUMBER_LENGTH = 6
 
 class PatchException(Exception):
   """Base exception class all patch exception derive from."""
@@ -73,23 +74,28 @@ class DependencyError(PatchException):
 class BrokenCQDepends(PatchException):
   """Raised if a patch has a CQ-DEPEND line that is ill formated."""
 
-  def __init__(self, patch, text):
+  def __init__(self, patch, text, msg=None):
     PatchException.__init__(self, patch)
     self.text = text
-    self.args += (text,)
+    self.msg = msg
+    self.args += (text, msg)
 
   def __str__(self):
-    return "Change %s has a malformed CQ-DEPEND target: %s" % (
+    s = "Change %s has a malformed CQ-DEPEND target: %s" % (
         self.patch, self.text)
+    if self.msg is not None:
+      s += '; %s' % (self.msg,)
+    return s
 
 
 class BrokenChangeID(PatchException):
   """Raised if a patch has an invalid or missing Change-ID."""
 
-  def __init__(self, patch, message):
+  def __init__(self, patch, message, missing=False):
     PatchException.__init__(self, patch)
     self.message = message
-    self.args += (message,)
+    self.missing = missing
+    self.args += (message, missing)
 
   def __str__(self):
     return "Change %s has a broken ChangeId: %s" % (self.patch, self.message)
@@ -110,6 +116,60 @@ def MakeChangeId(unusable=False):
   return 'I%s' % s
 
 
+class PatchCache(object):
+  """Dict-like object used for tracking a group of patches.
+
+  This is usable both for existence checks against given string
+  deps, and for change querying."""
+
+  def __init__(self, initial=()):
+    self._dict = {}
+    self.Inject(*initial)
+
+  def Inject(self, *changes):
+    """Inject a sequence of changes into this cache."""
+    for change in changes:
+      for key in change.LookupAliases():
+        self.InjectCustomKey(key, change)
+
+  def InjectCustomKey(self, key, change):
+    """Inject a change w/ a specific key.  Generally you want Inject instead."""
+    self._dict[str(key)] = change
+
+  def _GetAliases(self, value):
+    if hasattr(value, 'LookupAliases'):
+      return value.LookupAliases()
+    elif not isinstance(value, basestring):
+      # This isn't needed in production code; it however is
+      # rather useful to flush out bugs in test code.
+      raise ValueError("Value %r isn't a string" % (value,))
+    return [value]
+
+  def Remove(self, *changes):
+    """Remove a change from this cache."""
+    for change in changes:
+      for alias in self._GetAliases(change):
+        self._dict.pop(alias, None)
+
+  def __iter__(self):
+    return iter(set(self._dict.itervalues()))
+
+  def __getitem__(self, key):
+    """If the given key exists, return the Change, else None."""
+    for alias in self._GetAliases(key):
+      val = self._dict.get(alias)
+      if val is not None:
+        return val
+    return None
+
+  def __contains__(self, key):
+    return self[key] is not None
+
+  def copy(self):
+    """Return a copy of this cache."""
+    return self.__class__(list(self))
+
+
 def FormatChangeId(text, force_internal=False, force_external=False,
                    strict=False):
   """Format a Change-Id into a standardized form.
@@ -123,7 +183,7 @@ def FormatChangeId(text, force_internal=False, force_external=False,
     force_external: If True, force the resultant Change-Id to be an externally
       formatted one; this form is the gerrit standard, thus if you need to
       convert a ChangeId for passing directly to gerrit, this should be set to
-      True.  Note that force_internal force_external are mutually exclusive.
+      True.  Note that force_internal and force_external are mutually exclusive.
     strict: If True, then it's an error if the text holds an internally
       formatted ChangeId.  Generally this is only useful if you're working w/
       a direct git commit message and are trying to ensure the message is
@@ -168,6 +228,147 @@ def FormatChangeId(text, force_internal=False, force_external=False,
   return '%sI%s' % (prefix, text)
 
 
+def FormatSha1(text, force_internal=False, force_external=False, strict=False):
+  """Format a Sha1 used for dependencies into a standardized form.
+
+  Use this anywhere we're accepting user input of Sha1s for dependencies.
+
+  Args:
+    text: The given sha1 to inspect and reformat.
+    force_internal: If True, force the resultant sha1 to be an internally
+      formatted one.
+    force_external: If True, force the resultant sha1 to be an externally
+      formatted one; this form is the gerrit standard, thus if you need to
+      convert a sha1 for passing directly to git/gerrit, this should be set to
+      True.  Note that force_internal and force_external are mutually exclusive.
+    strict: If True, then it's an error if the text holds an internally
+      formatted sha1.  Generally this is only useful if you're working w/
+      a direct git commit message and are trying to ensure the message is
+      gerrit compatible.
+  """
+  if force_internal and force_external:
+    raise TypeError("FormatSha1: either force_internal or force_external "
+                    "can be set to True, but not both.")
+
+  if not text:
+    raise ValueError("FormatSha1 invoked w/ an empty value: %r" % (text,))
+
+  original_text = text
+  prefix = '*' if force_internal else ''
+  if text[0].startswith('*'):
+    if strict:
+      raise ValueError("FormatSha1 invoked w/ an internally formatted "
+                       "sha1 while in strict mode: %r" % (original_text,))
+    if not force_external:
+      prefix = '*'
+    text = text[1:]
+
+  if len(text) != 40:
+    raise ValueError("FormatSha1 invoked w/ a malformed value, "
+                     "value isn't 40 characters: %r" % (original_text,))
+
+  try:
+    _ = int(text, 16)
+  except ValueError:
+    raise ValueError("FormatSha1 invoked w/ a non hex sha1 value: %s"
+                     % original_text)
+
+  return '%s%s' % (prefix, text.lower())
+
+
+def FormatGerritNumber(text, force_internal=False, force_external=False,
+                       strict=False):
+  """Format a Gerrit Number used for dependencies into a standardized form.
+
+  Use this anywhere we're accepting user input of Gerrit Numbers for
+  dependencies.
+
+  Args:
+    text: The given sha1 to inspect and reformat.
+    force_internal: If True, force the resultant number to be an internally
+      formatted one.
+    force_external: If True, force the resultant number to be an externally
+      formatted one; this form is the gerrit standard, thus if you need to
+      convert a value for passing directly to gerrit, this should be set to
+      True.  Note that force_internal and force_external are mutually exclusive.
+    strict: If True, then it's an error if the text holds an internally
+      formatted number.  Generally this is only useful if you're working w/
+      a direct git commit message and are trying to ensure the message is
+      gerrit compatible.
+  """
+  if force_internal and force_external:
+    raise TypeError("FormatGerritNumber: either force_internal or "
+                    "force_external can be set to True, but not both.")
+
+  if not text:
+    raise ValueError("FormatGerritNumber invoked w/ an empty value: %r"
+                     % (text,))
+
+  original_text = text
+  prefix = '*' if force_internal else ''
+  if text[0].startswith('*'):
+    if strict:
+      raise ValueError("FormatGerritNumber invoked w/ an internally formatted "
+                       "value while in strict mode: %r" % (original_text,))
+    if not force_external:
+      prefix = '*'
+    text = text[1:]
+
+  if not text.isdigit():
+    raise ValueError("FormatSha1 invoked w/ a value that isn't a number: %r" %
+                     (original_text,))
+  # Force an int conversion to strip any leading zeroes.
+  text = str(int(text))
+  if len(text) > _MAXIMUM_GERRIT_NUMBER_LENGTH:
+    raise ValueError("FormatSha1 invoked w/ a value longer than %i digits: %r" %
+                     (_MAXIMUM_GERRIT_NUMBER_LENGTH, original_text,))
+
+  return '%s%s' % (prefix, text)
+
+
+def FormatPatchDep(text, force_internal=False, force_external=False,
+                   strict=False, sha1=True, changeId=True,
+                   gerrit_number=True):
+  """Given a patch dependency, ensure it's formatted correctly.
+
+  This should be used when the consumer doesn't care what type of dep
+  it is, just as long as it's formatted correctly (ValidationPool for
+  example).
+
+  Args:
+    force_internal, force_external, strict: See FormatChangeId for
+      details.
+    sha1: If False, throw ValueError if the dep is a sha1.
+    changeId: If False, throw ValueError if the dep is a ChangeId.
+    gerrit_number: If False, throw ValueError if the dep is a gerrit number.
+  """
+  if not text:
+    raise ValueError("FormatPatchDep invoked with an empty value: %r"
+                     % (text,))
+  original_text = text
+  text = text.lstrip('*')
+  if text[0:1] in 'Ii':
+    if not changeId:
+      raise ValueError(
+          "FormatPatchDep: ChangeId isn't allowed in this context: %r"
+          % (text,))
+    target = FormatChangeId
+  elif text.isdigit() and len(text) <= _MAXIMUM_GERRIT_NUMBER_LENGTH:
+    if not gerrit_number:
+      raise ValueError(
+          "FormatPatchDep: ChangeId isn't allowed in this context: %r"
+          % (text,))
+    target = FormatGerritNumber
+  elif not sha1:
+    raise ValueError(
+        "FormatPatchDep: sha1 isn't allowed in this context: %r"
+        % (text,))
+  else:
+    target = FormatSha1
+  return target(original_text, force_internal=force_internal,
+                force_external=force_external, strict=strict)
+
+
 class GitRepoPatch(object):
   """Representing a patch from a branch of a local or remote git repository."""
 
@@ -176,7 +377,6 @@ class GitRepoPatch(object):
   # ensuring CQ's internals can do the translation (almost can now,
   # but will fail in the case of a CQ-DEPEND on a change w/in the
   # same pool).
-  _VALID_CHANGE_ID_RE = re.compile(r'^\*?I[0-9a-fA-F]{40}$')
   _STRICT_VALID_CHANGE_ID_RE = re.compile(r'^I[0-9a-fA-F]{40}$')
   _GIT_CHANGE_ID_RE = re.compile(r'^Change-Id:[\t ]*(\w+)\s*$',
                                  re.I|re.MULTILINE)
@@ -204,6 +404,8 @@ class GitRepoPatch(object):
     self.ref = ref
     self.tracking_branch = os.path.basename(tracking_branch)
     self.internal = internal
+    if sha1 is not None:
+      sha1 = FormatSha1(sha1, strict=True)
     self.sha1 = sha1
     # TODO(ferringb): remove this attribute.
     # apply_error_message is currently used by ValidationPool as a way to
@@ -221,6 +423,11 @@ class GitRepoPatch(object):
     # Do the ChangeId setting now that we have a fully setup instance.
     if change_id:
       self._SetChangeId(change_id)
+
+  def LookupAliases(self):
+    """Return the list of lookup keys this change is known by."""
+    l = [self.change_id, self.sha1]
+    return [x for x in l if x is not None]
 
   def ProjectDir(self, checkout_root):
     """Returns the local directory where this patch will be applied."""
@@ -265,6 +472,7 @@ class GitRepoPatch(object):
       # See if we've already got the object
       sha1, msg = _PullData(self.sha1)
       if sha1 is not None:
+        sha1 = FormatSha1(sha1, strict=True)
         assert sha1 == self.sha1
         self._commit_message = msg
         self._EnsureId(msg)
@@ -274,6 +482,7 @@ class GitRepoPatch(object):
                               cwd=target_repo, print_cmd=False)
 
     sha1, msg = _PullData('FETCH_HEAD')
+    sha1 = FormatSha1(sha1, strict=True)
 
     # Even if we know the sha1, still do a sanity check to ensure we
     # actually just fetched it.
@@ -426,9 +635,8 @@ class GitRepoPatch(object):
     Arguments:
       buildroot: The buildroot.
     Returns:
-      An ordered list of Gerrit revisions that this patch depends on.
-    Raises:
-      BrokenChangeID: If a dependent change is missing its ChangeID.
+      An ordered list of Gerrit ChangeIds that this patch depends on.
+      Note that if the commit lacks a ChangeId, the parent's sha1 is returned.
     """
     dependencies = []
     logging.info('Checking for Gerrit dependencies for change %s', self)
@@ -440,7 +648,8 @@ class GitRepoPatch(object):
     try:
       return_obj = cros_build_lib.RunGitCommand(
           project_dir,
-          ['log', '--format=%B%x00', '%s..%s^' % (tracking_branch, rev)])
+          ['log', '-z', '--pretty=format:%H%n%B', '%s..%s^'
+           % (tracking_branch, rev)])
     except cros_build_lib.RunCommandError, e:
       if e.result.returncode != 128:
         raise
@@ -463,19 +672,26 @@ class GitRepoPatch(object):
       # as differing from actual output for a single patch that
       # lacks a commit message.
       # Because the explicit null addition, strip off the last record.
-      patches = return_obj.output.split('\0')[:-1]
+      patches = return_obj.output.split('\0')
 
     for patch_output in patches:
-      change_id = self._ParseChangeId(patch_output)
-      dependencies.append(change_id)
+      sha1, commit_msg = patch_output.split('\n', 1)
+      try:
+        dep = FormatChangeId(self._ParseChangeId(commit_msg),
+                             force_internal=self.internal, strict=True)
+      except BrokenChangeID, e:
+        if not e.missing:
+          raise
+        cros_build_lib.Warning(
+            "Parent %s lacks a ChangeId; using the parent's sha1 as the "
+            "dependency.", sha1)
+        dep = FormatSha1(sha1, force_internal=self.internal, strict=True)
+      dependencies.append(dep)
 
     if dependencies:
       logging.info('Found %s Gerrit dependencies for change %s', dependencies,
                    self)
       # Ensure that our parent's ChangeId's are internal if we are.
-      if self.internal:
-        dependencies = [FormatChangeId(x, force_internal=True)
-                        for x in dependencies]
 
     return dependencies
 
@@ -506,24 +722,27 @@ class GitRepoPatch(object):
     except BrokenChangeID:
       logging.warning(
           'Change %s, sha1 %s lacks a change-id in its commit '
-          'message.  CQ-DEPEND against this rev will not work, nor '
+          'message.  CQ-DEPEND against this rev may not work, nor '
           'will any gerrit querying.  Please add the appropriate '
           'Change-Id into the commit message to resolve this.',
           self, self.sha1)
 
-      # We still need an internal id to address it via- thus we
-      # make a fake one to keep our caches/resolvers happy, while
-      # leaving the authoritive .change_id set to None.
-      self.id = MakeChangeId(unusable=True)
+      self.id = self.sha1
+
     return self.id
 
   def _ParseChangeId(self, data):
-    """Parse a Change-Id out of a block of text."""
+    """Parse a Change-Id out of a block of text.
+
+    Note that the returned content is *not* ran through FormatChangeId;
+    this is left up to the invoker.
+    """
     # Grab just the last pararaph.
     git_metadata = re.split('\n{2,}', data.rstrip())[-1]
     change_id_match = self._GIT_CHANGE_ID_RE.findall(git_metadata)
     if not change_id_match:
-      raise BrokenChangeID(self, 'Missing Change-Id in %s' % (data,))
+      raise BrokenChangeID(self, 'Missing Change-Id in %s' % (data,),
+                           missing=True)
 
     # Now, validate it.  This has no real effect on actual gerrit patches,
     # but for local patches the validation is useful for general sanity
@@ -534,7 +753,7 @@ class GitRepoPatch(object):
     if not self._STRICT_VALID_CHANGE_ID_RE.match(change_id_match):
       raise BrokenChangeID(self, change_id_match)
 
-    return FormatChangeId(change_id_match)
+    return change_id_match
 
   def PaladinDependencies(self, buildroot):
     """Returns an ordered list of dependencies based on the Commit Message.
@@ -558,10 +777,11 @@ class GitRepoPatch(object):
       chunks = ' '.join(match.split(','))
       chunks = chunks.split()
       for chunk in chunks:
-        if not chunk.isdigit():
-          if not self._VALID_CHANGE_ID_RE.match(chunk):
-            raise BrokenCQDepends(self, chunk)
-          chunk = FormatChangeId(chunk)
+        try:
+          chunk = FormatPatchDep(chunk, sha1=False)
+        except ValueError, e:
+          raise BrokenCQDepends(self, chunk, str(e))
+
         if chunk not in dependencies:
           dependencies.append(chunk)
 
@@ -585,10 +805,6 @@ class LocalPatch(GitRepoPatch):
                sha1):
     GitRepoPatch.__init__(self, project_url, project, ref, tracking_branch,
                           internal, sha1=sha1)
-
-  def Sha1Hash(self):
-    """Get the Sha1 of the branch."""
-    return self.sha1
 
   def _GetCarbonCopy(self):
     """Returns a copy of this commit object, with a different sha1.
@@ -671,7 +887,21 @@ class UploadedLocalPatch(GitRepoPatch):
     GitRepoPatch.__init__(self, project_url, project, ref, tracking_branch,
                           internal, sha1=carbon_copy_sha1)
     self.original_branch = original_branch
+
+    self._original_sha1_valid = True
+    try:
+      original_sha1 = FormatSha1(original_sha1, strict=True)
+    except ValueError:
+      self._original_sha1_valid = False
+
     self.original_sha1 = original_sha1
+
+  def LookupAliases(self):
+    """Return the list of lookup keys this change is known by."""
+    l = GitRepoPatch.LookupAliases(self)
+    if self._original_sha1_valid:
+      l.append(self.original_sha1)
+    return l
 
   def __str__(self):
     """Returns custom string to identify this patch."""
@@ -711,7 +941,8 @@ class GerritPatch(GitRepoPatch):
     self.patch_number = patch_dict['currentPatchSet']['number']
     self.commit = patch_dict['currentPatchSet']['revision']
     self.owner, _, _ = patch_dict['owner']['email'].partition('@')
-    self.gerrit_number = patch_dict['number']
+    self.gerrit_number = FormatGerritNumber(str(patch_dict['number']),
+                                            strict=True)
     self.url = patch_dict['url']
     # status - Current state of this change.  Can be one of
     # ['NEW', 'SUBMITTED', 'MERGED', 'ABANDONED'].
@@ -720,6 +951,12 @@ class GerritPatch(GitRepoPatch):
   def __reduce__(self):
     """Used for pickling to re-create patch object."""
     return self.__class__, (self.patch_dict.copy(), self.internal)
+
+  def LookupAliases(self):
+    """Return the list of lookup keys this change is known by."""
+    l = GitRepoPatch.LookupAliases(self)
+    l.append(self.gerrit_number)
+    return l
 
   def IsAlreadyMerged(self):
     """Returns whether the patch has already been merged in Gerrit."""
@@ -747,7 +984,8 @@ class GerritPatch(GitRepoPatch):
     # and also validate our parsing against gerrit's in
     # the process.
     try:
-      parsed_id = self._ParseChangeId(commit_message)
+      parsed_id = FormatChangeId(self._ParseChangeId(commit_message),
+                                 strict=True)
       if parsed_id != self.change_id:
         raise AssertionError(
             'For Change-Id %s, sha %s, our parsing of the Change-Id did not '
@@ -760,9 +998,8 @@ class GerritPatch(GitRepoPatch):
     except BrokenChangeID:
       logging.warning(
           'Change %s, Change-Id %s, sha1 %s lacks a change-id in its commit '
-          'message.  This breaks the ability for any dependencies '
-          'to be committed as a batch (instead having to be committed one '
-          'by one through CQ).  Please add the appropriate '
+          'message.  This can break the ability for any children to depend on '
+          'this Change as a parent.  Please add the appropriate '
           'Change-Id into the commit message to resolve this.',
           self, self.change_id, self.sha1)
 
@@ -782,7 +1019,6 @@ class GerritPatch(GitRepoPatch):
 
   def __eq__(self, other):
     return self.id == other.id
-
 
 
 def PrepareLocalPatches(manifest, patches):

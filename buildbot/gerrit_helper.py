@@ -274,7 +274,7 @@ class GerritHelper():
 
         yield query, result
 
-    id_queries = sorted(cros_patch.FormatChangeId(x)
+    id_queries = sorted(cros_patch.FormatPatchDep(x, sha1=False)
                         for x in queries if not x.isdigit())
 
     if not id_queries:
@@ -403,9 +403,7 @@ def GetGerritPatchInfo(patches):
   parsed_patches = {}
 
   def _FixupFormatting(item):
-    if not item.isdigit():
-      item = cros_patch.FormatChangeId(item)
-    return item
+    return cros_patch.FormatPatchDep(item, sha1=False)
 
   internal_patches = ['*%s' % _FixupFormatting(x[1:]) for x in patches
                       if x.startswith('*')]
