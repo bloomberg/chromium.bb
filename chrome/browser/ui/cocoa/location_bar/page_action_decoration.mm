@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
@@ -42,10 +43,10 @@ const CGFloat kBubblePointYOffset = 2.0;
 
 PageActionDecoration::PageActionDecoration(
     LocationBarViewMac* owner,
-    Profile* profile,
+    Browser* browser,
     ExtensionAction* page_action)
     : owner_(NULL),
-      profile_(profile),
+      browser_(browser),
       page_action_(page_action),
       tracker_(this),
       current_tab_id_(-1),
@@ -54,8 +55,7 @@ PageActionDecoration::PageActionDecoration(
           page_action->GetIconAnimation(
               owner->GetTabContents()->extension_tab_helper()->tab_id()),
           this)) {
-  DCHECK(profile);
-  const Extension* extension = profile->GetExtensionService()->
+  const Extension* extension = browser->profile()->GetExtensionService()->
       GetExtensionById(page_action->extension_id(), false);
   DCHECK(extension);
 
@@ -74,7 +74,7 @@ PageActionDecoration::PageActionDecoration(
   }
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-      content::Source<Profile>(profile_));
+      content::Source<Profile>(browser_->profile()));
 
   // We set the owner last of all so that we can determine whether we are in
   // the process of initializing this class or not.
@@ -248,9 +248,7 @@ NSPoint PageActionDecoration::GetBubblePointInFrame(NSRect frame) {
 }
 
 NSMenu* PageActionDecoration::GetMenu() {
-  if (!profile_)
-    return nil;
-  ExtensionService* service = profile_->GetExtensionService();
+  ExtensionService* service = browser_->profile()->GetExtensionService();
   if (!service)
     return nil;
   const Extension* extension = service->GetExtensionById(
@@ -260,7 +258,7 @@ NSMenu* PageActionDecoration::GetMenu() {
     return nil;
   menu_.reset([[ExtensionActionContextMenu alloc]
       initWithExtension:extension
-                profile:profile_
+                browser:browser_
         extensionAction:page_action_]);
 
   return menu_.get();

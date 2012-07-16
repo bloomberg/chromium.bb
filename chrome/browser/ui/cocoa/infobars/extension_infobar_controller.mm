@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar.h"
@@ -146,9 +147,11 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
 
     ExtensionHost* extensionHost = delegate_->AsExtensionInfoBarDelegate()->
         extension_host();
+    Browser* browser =
+        browser::FindBrowserWithWebContents(owner->web_contents());
     contextMenu_.reset([[ExtensionActionContextMenu alloc]
         initWithExtension:extensionHost->extension()
-                  profile:extensionHost->profile()
+                  browser:browser
           extensionAction:NULL]);
     // See menu_button.h for documentation on why this is needed.
     NSMenuItem* dummyItem =

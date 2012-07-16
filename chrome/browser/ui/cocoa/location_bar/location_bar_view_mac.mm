@@ -615,7 +615,7 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
     DeletePageActionDecorations();
     for (size_t i = 0; i < page_actions_.size(); ++i) {
       page_action_decorations_.push_back(
-          new PageActionDecoration(this, profile_, page_actions_[i]));
+          new PageActionDecoration(this, browser_, page_actions_[i]));
     }
   }
 

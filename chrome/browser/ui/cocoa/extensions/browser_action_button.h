@@ -11,9 +11,9 @@
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/gradient_button_cell.h"
 
+class Browser;
 class ExtensionAction;
 class ExtensionImageTrackerBridge;
-class Profile;
 
 namespace extensions {
 class Extension;
@@ -60,7 +60,7 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
 
 - (id)initWithFrame:(NSRect)frame
           extension:(const extensions::Extension*)extension
-            profile:(Profile*)profile
+            browser:(Browser*)browser
               tabId:(int)tabId;
 
 - (void)setFrame:(NSRect)frameRect animate:(BOOL)animate;

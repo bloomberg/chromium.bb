@@ -128,7 +128,7 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
 
 - (id)initWithFrame:(NSRect)frame
           extension:(const Extension*)extension
-            profile:(Profile*)profile
+            browser:(Browser*)browser
               tabId:(int)tabId {
   if ((self = [super initWithFrame:frame])) {
     BrowserActionCell* cell = [[[BrowserActionCell alloc] init] autorelease];
@@ -150,7 +150,7 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
 
     [self setMenu:[[[ExtensionActionContextMenu alloc]
         initWithExtension:extension
-                  profile:profile
+                  browser:browser
           extensionAction:extension->browser_action()] autorelease]];
 
     tabId_ = tabId;

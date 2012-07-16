@@ -109,12 +109,12 @@ int CurrentTabId() {
 }  // namespace
 
 - (id)initWithExtension:(const Extension*)extension
-                profile:(Profile*)profile
+                browser:(Browser*)browser
         extensionAction:(ExtensionAction*)action{
   if ((self = [super initWithTitle:@""])) {
     action_ = action;
     extension_ = extension;
-    profile_ = profile;
+    browser_ = browser;
 
     NSArray* menuItems = [NSArray arrayWithObjects:
         base::SysUTF8ToNSString(extension->name()),
@@ -156,10 +156,6 @@ int CurrentTabId() {
 }
 
 - (void)dispatch:(id)menuItem {
-  Browser* browser = browser::FindBrowserWithProfile(profile_);
-  if (!browser)
-    return;
-
   NSMenuItem* item = (NSMenuItem*)menuItem;
   switch ([item tag]) {
     case kExtensionContextName: {
@@ -168,17 +164,18 @@ int CurrentTabId() {
       OpenURLParams params(
           url, Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
            false);
-      browser->OpenURL(params);
+      browser_->OpenURL(params);
       break;
     }
     case kExtensionContextOptions: {
       DCHECK(!extension_->options_url().is_empty());
-      profile_->GetExtensionProcessManager()->OpenOptionsPage(extension_,
-                                                              browser);
+      browser_->profile()->GetExtensionProcessManager()->OpenOptionsPage(
+          extension_, browser_);
       break;
     }
     case kExtensionContextDisable: {
-      ExtensionService* extensionService = profile_->GetExtensionService();
+      ExtensionService* extensionService =
+          browser_->profile()->GetExtensionService();
       if (!extensionService)
         return; // Incognito mode.
       extensionService->DisableExtension(extension_->id(),
@@ -186,17 +183,18 @@ int CurrentTabId() {
       break;
     }
     case kExtensionContextUninstall: {
-      uninstaller_.reset(new AsyncUninstaller(extension_, browser));
+      uninstaller_.reset(new AsyncUninstaller(extension_, browser_));
       break;
     }
     case kExtensionContextHide: {
-      ExtensionService* extension_service = profile_->GetExtensionService();
+      ExtensionService* extension_service =
+          browser_->profile()->GetExtensionService();
       extension_service->extension_prefs()->
           SetBrowserActionVisibility(extension_, false);
       break;
     }
     case kExtensionContextManage: {
-      chrome::ShowExtensions(browser);
+      chrome::ShowExtensions(browser_);
       break;
     }
     default:

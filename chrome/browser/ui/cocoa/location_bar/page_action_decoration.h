@@ -11,8 +11,8 @@
 #include "googleurl/src/gurl.h"
 
 @class ExtensionActionContextMenu;
+class Browser;
 class LocationBarViewMac;
-class Profile;
 
 namespace content {
 class WebContents;
@@ -27,7 +27,7 @@ class PageActionDecoration : public ImageDecoration,
                              public ExtensionAction::IconAnimation::Observer {
  public:
   PageActionDecoration(LocationBarViewMac* owner,
-                       Profile* profile,
+                       Browser* browser,
                        ExtensionAction* page_action);
   virtual ~PageActionDecoration();
 
@@ -77,8 +77,8 @@ class PageActionDecoration : public ImageDecoration,
   // The location bar view that owns us.
   LocationBarViewMac* owner_;
 
-  // The current profile (not owned by us).
-  Profile* profile_;
+  // The current browser (not owned by us).
+  Browser* browser_;
 
   // The Page Action that this view represents. The Page Action is not
   // owned by us, it resides in the extension of this particular

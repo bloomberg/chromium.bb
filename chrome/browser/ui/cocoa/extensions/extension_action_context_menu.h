@@ -11,8 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 
 class AsyncUninstaller;
+class Browser;
 class ExtensionAction;
-class Profile;
 
 namespace extensions {
 class Extension;
@@ -31,17 +31,17 @@ namespace extension_action_context_menu {
   // The extension action this menu belongs to. Weak.
   ExtensionAction* action_;
 
-  // The browser profile of the window that contains this extension. Weak.
-  Profile* profile_;
+  // The browser that contains this extension. Weak.
+  Browser* browser_;
 
   // Used to load the extension icon asynchronously on the I/O thread then show
   // the uninstall confirmation dialog.
   scoped_ptr<AsyncUninstaller> uninstaller_;
 }
 
-// Initializes and returns a context menu for the given extension and profile.
+// Initializes and returns a context menu for the given extension and browser.
 - (id)initWithExtension:(const extensions::Extension*)extension
-                profile:(Profile*)profile
+                browser:(Browser*)browser
         extensionAction:(ExtensionAction*)action;
 
 @end

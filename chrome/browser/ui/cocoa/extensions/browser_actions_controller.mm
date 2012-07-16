@@ -470,7 +470,7 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
       [[[BrowserActionButton alloc]
          initWithFrame:buttonFrame
              extension:extension
-               profile:profile_
+               browser:browser_
                  tabId:[self currentTabId]] autorelease];
   [newButton setTarget:self];
   [newButton setAction:@selector(browserActionClicked:)];
