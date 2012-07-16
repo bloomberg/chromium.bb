@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    {{+partials.header_head}}
+    <link href="{{static}}/css/api.css" rel="stylesheet" type="text/css">
+    <title>{{article.title}} - Google Chrome</title>
+  </head>
+  <body>
+    {{+partials.header_body}}
+    <div id="gc-container">
+      {{+partials.sidenav}}
+      <div id="gc-pagecontent">
+        {{+partials.table_of_contents toc:article.toc}}
+{{- This may contain <pre> tags so it is not indented -}}
+{{+article.intro}}
+      </div>
+    </div>
+  </body>
+  {{+partials.footer}}
+</html>

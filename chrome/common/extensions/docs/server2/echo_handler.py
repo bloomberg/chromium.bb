@@ -32,6 +32,7 @@ EXTENSIONS_PATH = 'chrome/common/extensions'
 DOCS_PATH = 'docs'
 API_PATH = 'api'
 INTRO_PATH = DOCS_PATH + '/server2/templates/intros'
+ARTICLE_PATH = DOCS_PATH + '/server2/templates/articles'
 PUBLIC_TEMPLATE_PATH = DOCS_PATH + '/server2/templates/public'
 PRIVATE_TEMPLATE_PATH = DOCS_PATH + '/server2/templates/private'
 EXAMPLES_PATH = 'examples'
@@ -58,7 +59,8 @@ class Server(webapp.RequestHandler):
       cache_timeout_seconds = 300
     cache_builder = FetcherCache.Builder(fetcher, cache_timeout_seconds)
     api_data_source = APIDataSource(cache_builder, API_PATH)
-    intro_data_source = IntroDataSource(cache_builder, INTRO_PATH)
+    intro_data_source = IntroDataSource(cache_builder,
+                                        [INTRO_PATH, ARTICLE_PATH])
     samples_data_source = SamplesDataSource(fetcher,
                                             cache_builder,
                                             EXAMPLES_PATH)
