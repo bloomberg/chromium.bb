@@ -16,11 +16,6 @@ namespace {
 
 int g_blocker_count[2];
 
-#if _WIN32_WINNT <= _WIN32_WINNT_WIN7
-POWER_REQUEST_TYPE PowerRequestExecutionRequired =
-    static_cast<POWER_REQUEST_TYPE>(PowerRequestAwayModeRequired + 1);
-#endif
-
 HANDLE CreatePowerRequest(POWER_REQUEST_TYPE type, const std::string& reason) {
   typedef HANDLE (WINAPI* PowerCreateRequestPtr)(PREASON_CONTEXT);
   typedef BOOL (WINAPI* PowerSetRequestPtr)(HANDLE, POWER_REQUEST_TYPE);
