@@ -17,6 +17,7 @@
 
 namespace net {
 class CertVerifier;
+class TransportSecurityState;
 }  // namespace net
 
 namespace remoting {
@@ -136,6 +137,7 @@ class SSLSocketAdapter : public talk_base::SSLAdapter {
   // |cert_verifier_| must be defined before |ssl_socket_|, so that
   // it's destroyed after |ssl_socket_|.
   scoped_ptr<net::CertVerifier> cert_verifier_;
+  scoped_ptr<net::TransportSecurityState> transport_security_state_;
   scoped_ptr<net::SSLClientSocket> ssl_socket_;
 
   SSLState ssl_state_;

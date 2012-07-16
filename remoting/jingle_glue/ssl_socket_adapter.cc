@@ -13,6 +13,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/ssl_config_service.h"
+#include "net/base/transport_security_state.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/url_request/url_request_context.h"
 
@@ -26,6 +27,7 @@ SSLSocketAdapter::SSLSocketAdapter(AsyncSocket* socket)
     : SSLAdapter(socket),
       ignore_bad_cert_(false),
       cert_verifier_(net::CertVerifier::CreateDefault()),
+      transport_security_state_(new net::TransportSecurityState()),
       ssl_state_(SSLSTATE_NONE),
       read_pending_(false),
       write_pending_(false) {
@@ -61,8 +63,8 @@ int SSLSocketAdapter::BeginSSL() {
   // are correct for us, so we don't use the config service to initialize this
   // object.
   net::SSLConfig ssl_config;
-  net::SSLClientSocketContext context;
-  context.cert_verifier = cert_verifier_.get();
+  net::SSLClientSocketContext context(
+      cert_verifier_.get(), NULL, transport_security_state_.get(), "");
 
   transport_socket_->set_addr(talk_base::SocketAddress(hostname_, 0));
   ssl_socket_.reset(
