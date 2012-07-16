@@ -88,6 +88,12 @@ class VIEWS_EXPORT Event {
            type_ == ui::ET_TOUCH_CANCELLED;
   }
 
+  bool IsScrollGestureEvent() const {
+    return type_ == ui::ET_GESTURE_SCROLL_BEGIN ||
+           type_ == ui::ET_GESTURE_SCROLL_UPDATE ||
+           type_ == ui::ET_GESTURE_SCROLL_END;
+  }
+
  protected:
   Event(ui::EventType type, int flags);
   Event(const NativeEvent& native_event, ui::EventType type, int flags);

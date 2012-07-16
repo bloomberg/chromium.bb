@@ -169,8 +169,13 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
   // The view currently handling touch events.
   View* touch_pressed_handler_;
 
-  // The view currently handling gesture events.
+  // The view currently handling gesture events. When set, this handler receives
+  // all gesture events, except when there is an event handler for the specific
+  // gesture (e.g. scroll).
   View* gesture_handler_;
+
+  // The view currently handling scroll gesture events.
+  View* scroll_gesture_handler_;
 
   // Focus ---------------------------------------------------------------------
 

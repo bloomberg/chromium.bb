@@ -575,6 +575,17 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // This method is invoked for each GestureEvent created by GestureRecognizer.
   // Default implementation does nothing. Override as needed.
+  // If a View returns ui::GESTURE_STATUS_CONSUMED from OnGestureEvent, then
+  // subsequent gestures will be dispatched to the same View, until the gesture
+  // ends (i.e. all touch-points are released).
+  // Scroll gesture events are handled slightly differently: if a View starts
+  // processing gesture events, but does not process an ET_GESTURE_SCROLL_BEGIN
+  // gesture, then the scroll-gesture event will bubble up (i.e. will be sent to
+  // the parent view for processing). If a View then returns
+  // GESTURE_STATUS_CONSUMED from OnGestureEvent, then the subsequent
+  // scroll-gesture events will be sent to this View. However all the other
+  // gesture-events (e.g. ET_GESTURE_END, ET_GESTURE_PINCH_BEGIN etc.) will
+  // continue to be dispatched to the first View.
   virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event);
 
   // Set the MouseHandler for a drag session.
