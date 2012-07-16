@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
@@ -466,6 +467,14 @@ void BaseTab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
         waiting_animation.width() / waiting_animation.height();
     waiting_to_loading_frame_count_ratio =
         waiting_animation_frame_count / loading_animation_frame_count;
+
+    base::debug::Alias(&loading_animation_frame_count);
+    base::debug::Alias(&waiting_animation_frame_count);
+    CHECK_NE(0, waiting_to_loading_frame_count_ratio) <<
+        "Number of frames in IDR_THROBBER must be equal to or greater " <<
+        "than the number of frames in IDR_THROBBER_WAITING. Please " <<
+        "investigate how this happened and update http://crbug.com/132590, " <<
+        "this is causing crashes in the wild.";
   }
 
   // The waiting animation is the reverse of the loading animation, but at a
