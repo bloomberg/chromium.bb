@@ -653,7 +653,10 @@ void EventRewriter::RewriteLocatedEvent(aura::LocatedEvent* event) {
     }
   }
 
-  event->set_flags(ui::EventFlagsFromNative(xevent));
+  const int mouse_event_flags = event->flags() &
+      (ui::EF_IS_DOUBLE_CLICK | ui::EF_IS_TRIPLE_CLICK | ui::EF_IS_NON_CLIENT |
+       ui::EF_IS_SYNTHESIZED | ui::EF_FROM_TOUCH);
+  event->set_flags(mouse_event_flags | ui::EventFlagsFromNative(xevent));
 #else
   // TODO(yusukes): Support Ash on other platforms if needed.
 #endif
