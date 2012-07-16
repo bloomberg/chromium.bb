@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2011-2012 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -724,7 +724,12 @@ class CustomOption(optparse.Option):
 
   def take_action(self, action, dest, opt, value, values, parser):
     if action == 'extend':
-      lvalue = value.split(' ')
+      # If there is extra spaces between each argument, we get '' which later
+      # code barfs on, so skip those.  e.g. We see this with the forms:
+      #  cbuildbot -p 'proj:branch ' ...
+      #  cbuildbot -p ' proj:branch' ...
+      #  cbuildbot -p 'proj:branch  proj2:branch' ...
+      lvalue = value.split()
       values.ensure_value(dest, []).extend(lvalue)
     else:
       optparse.Option.take_action(self, action, dest, opt, value, values,

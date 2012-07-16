@@ -245,7 +245,16 @@ class InterfaceTest(mox.MoxTestBase):
     self.assertEquals(options.debug, True)
     self.assertEquals(options.buildbot, True)
 
-  def testBuildBotWithPatches(self):
+  def testLocalTrybotWithSpacesInPatches(self):
+    """Test that we handle spaces in patch arguments."""
+    args = ['-r', self._BUILD_ROOT, '--remote', '--local-patches',
+            ' proj:br \t  proj2:b2 ',
+            self._X86_PREFLIGHT]
+    self.mox.ReplayAll()
+    (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
+    self.assertEquals(options.local_patches, ['proj:br', 'proj2:b2'])
+
+  def testBuildBotWithRemotePatches(self):
     """Test that --buildbot errors out with patches."""
     args = ['-r', self._BUILD_ROOT, '--buildbot', '-g', '1234',
             self._X86_PREFLIGHT]
@@ -253,7 +262,7 @@ class InterfaceTest(mox.MoxTestBase):
     self.mox.ReplayAll()
     self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
 
-  def testRemoteBuildBotWithPatches(self):
+  def testRemoteBuildBotWithRemotePatches(self):
     """Test that --buildbot and --remote errors out with patches."""
     args = ['-r', self._BUILD_ROOT, '--buildbot', '--remote', '-g', '1234',
             self._X86_PREFLIGHT]
