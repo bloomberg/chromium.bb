@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_page_capture_api.h"
+#include "chrome/browser/extensions/api/page_capture/page_capture_api.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
@@ -23,7 +23,10 @@
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
 using content::WebContents;
+using extensions::PageCaptureSaveAsMHTMLFunction;
 using webkit_blob::ShareableFileReference;
+
+namespace {
 
 // Error messages.
 const char* const kFileTooBigError = "The MHTML file generated is too big.";
@@ -32,6 +35,8 @@ const char* const kSizeRetrievalError =
     "Failed to retrieve size of generated MHTML.";
 const char* const kTemporaryFileError = "Failed to create a temporary file.";
 const char* const kTabClosedError = "Cannot find the tab for thie request.";
+
+}  // namespace
 
 static PageCaptureSaveAsMHTMLFunction::TestDelegate* test_delegate_ = NULL;
 

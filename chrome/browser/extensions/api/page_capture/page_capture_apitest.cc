@@ -1,14 +1,16 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_page_capture_api.h"
+#include "chrome/browser/extensions/api/page_capture/page_capture_api.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "net/base/mock_host_resolver.h"
+
+using extensions::PageCaptureSaveAsMHTMLFunction;
 
 class ExtensionPageCaptureApiTest : public ExtensionApiTest {
  public:

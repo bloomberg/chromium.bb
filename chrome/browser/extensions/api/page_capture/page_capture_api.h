@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PAGE_CAPTURE_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_PAGE_CAPTURE_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_PAGE_CAPTURE_PAGE_CAPTURE_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_PAGE_CAPTURE_PAGE_CAPTURE_API_H_
 
 #include <string>
 
@@ -16,6 +16,8 @@ class FilePath;
 namespace content {
 class WebContents;
 }
+
+namespace extensions {
 
 class PageCaptureSaveAsMHTMLFunction : public AsyncExtensionFunction {
  public:
@@ -61,4 +63,6 @@ class PageCaptureSaveAsMHTMLFunction : public AsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("pageCapture.saveAsMHTML")
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PAGE_CAPTURE_API_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_PAGE_CAPTURE_PAGE_CAPTURE_API_H_

@@ -532,6 +532,8 @@
         }],
         ['enable_extensions==1', {
           'sources': [
+            'browser/extensions/api/page_capture/page_capture_api.cc',
+            'browser/extensions/api/page_capture/page_capture_api.h',
             'browser/extensions/api/debugger/debugger_api.cc',
             'browser/extensions/api/debugger/debugger_api.h',
             'browser/extensions/api/managed_mode/managed_mode_api.cc',
@@ -564,8 +566,6 @@
             'browser/extensions/extension_input_method_api.h',
             'browser/extensions/extension_management_api.cc',
             'browser/extensions/extension_management_api.h',
-            'browser/extensions/extension_page_capture_api.cc',
-            'browser/extensions/extension_page_capture_api.h',
             'browser/extensions/extension_preference_api.cc',
             'browser/extensions/extension_preference_api.h',
             'browser/extensions/settings/settings_api.cc',

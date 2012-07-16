@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/api/metrics/metrics.h"
 #include "chrome/browser/extensions/api/offscreen_tabs/offscreen_tabs_api.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
+#include "chrome/browser/extensions/api/page_capture/page_capture_api.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/api/record/record_api.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
@@ -41,7 +42,6 @@
 #include "chrome/browser/extensions/extension_idle_api.h"
 #include "chrome/browser/extensions/extension_management_api.h"
 #include "chrome/browser/extensions/extension_module.h"
-#include "chrome/browser/extensions/extension_page_capture_api.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/settings/settings_api.h"
@@ -450,7 +450,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<RequestPermissionsFunction>();
 
   // PageCapture
-  RegisterFunction<PageCaptureSaveAsMHTMLFunction>();
+  RegisterFunction<extensions::PageCaptureSaveAsMHTMLFunction>();
 
   // TopSites
   RegisterFunction<GetTopSitesFunction>();
