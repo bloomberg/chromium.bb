@@ -478,6 +478,9 @@ void SigninScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("accountPickerReady",
       base::Bind(&SigninScreenHandler::HandleAccountPickerReady,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("wallpaperReady",
+      base::Bind(&SigninScreenHandler::HandleWallpaperReady,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("loginWebuiReady",
       base::Bind(&SigninScreenHandler::HandleLoginWebuiReady,
                  base::Unretained(this)));
@@ -934,6 +937,16 @@ void SigninScreenHandler::HandleAccountPickerReady(
   if (ScreenLocker::default_screen_locker()) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_LOCK_WEBUI_READY,
+        content::NotificationService::AllSources(),
+        content::NotificationService::NoDetails());
+  }
+}
+
+void SigninScreenHandler::HandleWallpaperReady(
+    const base::ListValue* args) {
+  if (ScreenLocker::default_screen_locker()) {
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_LOCK_BACKGROUND_DISPLAYED,
         content::NotificationService::AllSources(),
         content::NotificationService::NoDetails());
   }

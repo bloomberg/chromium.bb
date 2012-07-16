@@ -13,7 +13,6 @@ cr.define('login', function() {
    * @const
    */
   var MAX_LOGIN_ATTEMPTS_IN_POD = 3;
-  var BACKGROUND_TRANSITION_DURATION_MS = 1000;
   /**
    * Whether to preselect the first pod automatically on login screen.
    * @type {boolean}
@@ -192,30 +191,24 @@ cr.define('login', function() {
     var oobe = Oobe.getInstance();
     if (!oobe.isNewOobe() || !oobe.isLockScreen())
       return;
-    // Prepare animation.
-    var from = $('background');
-    var to = $('background-transition');
-    var start;
-    var duration = BACKGROUND_TRANSITION_DURATION_MS;
-    function radialfade(timestamp) {
-      var progress = 100 * (timestamp - start) / duration;
-      to.style.webkitMaskBoxImage =
-          '-webkit-radial-gradient( 50% 50%, circle cover, rgba(0,0,0,1) ' +
-              progress + '%, rgba(0,0,0,0) ' + (progress + 60) + '%)';
-      if (progress < 100) {
-        webkitRequestAnimationFrame(radialfade);
-      } else {
-        from.style.backgroundImage = to.style.backgroundImage;
-        to.style.webkitMaskBoxImage = '';
-        to.style.backgroundImage = '';
-      }
-    }
+
     // Load image before starting animation.
     var image = new Image();
     image.onload = function() {
-      to.style.backgroundImage = 'url(' + image.src + ')';
-      start = new Date().getTime();
-      webkitRequestAnimationFrame(radialfade);
+      var background = $('background');
+
+      // Prepare to report metric.
+      background.addEventListener('webkitTransitionEnd', function f(e) {
+        if (e.target == background) {
+          background.removeEventListener('webkitTransitionEnd', f);
+          chrome.send('wallpaperReady');
+        }
+      });
+
+      background.style.backgroundImage = 'url(' + image.src + ')';
+      // Start animation.
+      background.classList.add('background-final');
+      background.classList.remove('background-initial');
     };
     // Start image loading.
     // Add timestamp for wallpapers that are rotated over time.

@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "chrome/browser/chromeos/login/lock_window.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/screen_locker_delegate.h"
@@ -87,6 +88,9 @@ class WebUIScreenLocker : public WebUILoginView,
 
   // Tracks when the WebUI finishes loading.
   bool webui_ready_;
+
+  // Time when lock was initiated, required for metrics.
+  base::TimeTicks lock_time_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIScreenLocker);
 };

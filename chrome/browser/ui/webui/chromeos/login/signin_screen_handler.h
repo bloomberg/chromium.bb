@@ -205,6 +205,7 @@ class SigninScreenHandler : public BaseScreenHandler,
   void HandleLaunchHelpApp(const base::ListValue* args);
   void HandleCreateAccount(const base::ListValue* args);
   void HandleAccountPickerReady(const base::ListValue* args);
+  void HandleWallpaperReady(const base::ListValue* args);
   void HandleLoginWebuiReady(const base::ListValue* args);
   void HandleLoginRequestNetworkState(const base::ListValue* args);
   void HandleLoginAddNetworkStateObserver(const base::ListValue* args);

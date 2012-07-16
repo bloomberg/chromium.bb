@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/webui_screen_locker.h"
 
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -46,6 +47,7 @@ WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
 void WebUIScreenLocker::LockScreen(bool unlock_on_input) {
   gfx::Rect bounds(gfx::Screen::GetPrimaryDisplay().bounds());
 
+  lock_time_ = base::TimeTicks::Now();
   LockWindow* lock_window = LockWindow::Create();
   lock_window->set_observer(this);
   lock_window_ = lock_window->GetWidget();
@@ -72,9 +74,14 @@ void WebUIScreenLocker::LockScreen(bool unlock_on_input) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOCK_WEBUI_READY,
                  content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_LOCK_BACKGROUND_DISPLAYED,
+                 content::NotificationService::AllSources());
 }
 
 void WebUIScreenLocker::ScreenLockReady() {
+  UMA_HISTOGRAM_TIMES("LockScreen.LockReady",
+                      base::TimeTicks::Now() - lock_time_);
   ScreenLockerDelegate::ScreenLockReady();
   SetInputEnabled(true);
 }
@@ -130,6 +137,11 @@ void WebUIScreenLocker::Observe(
       webui_ready_ = true;
       if (lock_ready_)
         ScreenLockReady();
+      break;
+    }
+    case chrome::NOTIFICATION_LOCK_BACKGROUND_DISPLAYED: {
+      UMA_HISTOGRAM_TIMES("LockScreen.BackgroundReady",
+                          base::TimeTicks::Now() - lock_time_);
       break;
     }
     default:

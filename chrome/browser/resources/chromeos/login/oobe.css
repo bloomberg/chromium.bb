@@ -1251,6 +1251,8 @@ html[dir=rtl] .error-message {
 }
 
 #background {
+  -webkit-transition: 700ms opacity;
+  background-size: 100% 100%;
   height: 100%;
   left: 0;
   position: absolute;
@@ -1258,10 +1260,10 @@ html[dir=rtl] .error-message {
   width: 100%;
 }
 
-#background-transition {
-  height: 100%;
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: 100%;
+.background-initial {
+  opacity: 0;
+}
+
+.background-final {
+  opacity: 1;
 }

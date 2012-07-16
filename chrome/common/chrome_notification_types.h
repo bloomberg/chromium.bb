@@ -941,6 +941,9 @@ enum NotificationType {
   // Sent when webui lock screen is ready.
   NOTIFICATION_LOCK_WEBUI_READY,
 
+  // Sent when webui lock screen wallpaper is loaded and displayed.
+  NOTIFICATION_LOCK_BACKGROUND_DISPLAYED,
+
   // Sent when GAIA iframe has been loaded.
   // First paint event after this fires NOTIFICATION_LOGIN_WEBUI_VISIBLE.
   // Possible scenarios:
