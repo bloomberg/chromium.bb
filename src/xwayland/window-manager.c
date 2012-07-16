@@ -1065,7 +1065,7 @@ wxs_wm_get_resources(struct weston_wm *wm)
 		return;
 
 	formats = xcb_render_query_pict_formats_formats(formats_reply);
-	for (i = 0; i < formats_reply->length; i++)
+	for (i = 0; i < formats_reply->num_formats; i++)
 		if (formats[i].type == XCB_RENDER_PICT_TYPE_DIRECT &&
 		    formats[i].depth == 24)
 			wm->render_format = formats[i];
