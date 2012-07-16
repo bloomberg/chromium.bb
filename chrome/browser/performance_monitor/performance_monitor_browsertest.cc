@@ -16,10 +16,12 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -357,6 +359,30 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, NewVersionEvent) {
   ASSERT_EQ(kOldVersion, previous_version);
   ASSERT_TRUE(value->GetString("currentVersion", &current_version));
   ASSERT_EQ(version_string, current_version);
+}
+
+#if !defined(OS_WIN)
+// Disabled on Windows due to a bug where Windows will return a normal exit
+// code in the testing environment, even if the process died (this is not the
+// case when hand-testing). This code can be traced to MSDN functions in
+// base::GetTerminationStatus(), so there's not much we can do.
+IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, KilledByOSEvent) {
+  ui_test_utils::CrashTab(chrome::GetActiveWebContents(browser()));
+
+  std::vector<linked_ptr<Event> > events = GetEvents();
+
+  ASSERT_EQ(1u, events.size());
+  CheckEventType(EVENT_KILLED_BY_OS_CRASH, events[0]);
+}
+#endif  // !defined(OS_WIN)
+
+IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, RendererCrashEvent) {
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUICrashURL));
+
+  std::vector<linked_ptr<Event> > events = GetEvents();
+  ASSERT_EQ(1u, events.size());
+
+  CheckEventType(EVENT_RENDERER_CRASH, events[0]);
 }
 
 }  // namespace performance_monitor

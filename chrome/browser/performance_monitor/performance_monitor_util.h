@@ -87,8 +87,7 @@ scoped_ptr<Event> CreateRendererFreezeEvent(
 
 scoped_ptr<Event> CreateCrashEvent(
     const base::Time& time,
-    const EventType& type,
-    const std::string& url);
+    const EventType& type);
 
 scoped_ptr<Event> CreateUncleanShutdownEvent(const base::Time& time);
 

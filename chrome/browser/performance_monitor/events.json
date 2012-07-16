@@ -99,8 +99,7 @@
         "description": "The event to represent a renderer crash.",
         "properties": {
           "eventType": {"type": "integer", "description": "The type of the event."},
-          "time": {"type": "number", "description": "The time at which the event was recorded."},
-          "url": {"type": "string", "description": "The crash url."}
+          "time": {"type": "number", "description": "The time at which the event was recorded."}
         }
       },
       {

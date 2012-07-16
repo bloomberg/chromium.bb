@@ -184,12 +184,10 @@ scoped_ptr<Event> CreateRendererFreezeEvent(const base::Time& time,
 }
 
 scoped_ptr<Event> CreateCrashEvent(const base::Time& time,
-                                   const EventType& type,
-                                   const std::string& url) {
-  events::RendererFreeze event;
+                                   const EventType& type) {
+  events::RendererCrash event;
   event.event_type = type;
   event.time = static_cast<double>(time.ToInternalValue());
-  event.url = url;
   scoped_ptr<base::DictionaryValue> value = event.ToValue();
   return scoped_ptr<Event>(new Event(type, time, value.Pass()));
 }

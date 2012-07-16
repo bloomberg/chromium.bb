@@ -6,8 +6,10 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/process_util.h"
 #include "base/threading/worker_pool.h"
 #include "base/time.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/performance_monitor/constants.h"
 #include "chrome/browser/performance_monitor/database.h"
 #include "chrome/browser/performance_monitor/performance_monitor_util.h"
@@ -19,6 +21,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
 using extensions::Extension;
@@ -91,6 +95,12 @@ void PerformanceMonitor::RegisterForNotifications() {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
       content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+      content::NotificationService::AllSources());
+
+  // Crashes
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_HANG,
+      content::NotificationService::AllSources());
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::NotificationService::AllSources());
 }
 
@@ -210,8 +220,35 @@ void PerformanceMonitor::Observe(int type,
                                                 extension->description()));
       break;
     }
+    case content::NOTIFICATION_RENDERER_PROCESS_HANG: {
+      content::WebContents* contents =
+          content::Source<content::WebContents>(source).ptr();
+      AddEvent(util::CreateRendererFreezeEvent(base::Time::Now(),
+                                               contents->GetURL().spec()));
+      break;
+    }
+    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
+      content::RenderProcessHost::RendererClosedDetails closed_details =
+          *content::Details<content::RenderProcessHost::RendererClosedDetails>(
+              details).ptr();
+
+      // We only care if this is an invalid termination.
+      if (closed_details.status == base::TERMINATION_STATUS_NORMAL_TERMINATION
+          || closed_details.status == base::TERMINATION_STATUS_STILL_RUNNING)
+        break;
+
+      // Determine the type of crash.
+      EventType type =
+          closed_details.status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ?
+          EVENT_KILLED_BY_OS_CRASH : EVENT_RENDERER_CRASH;
+
+      AddEvent(util::CreateCrashEvent(base::Time::Now(),
+                                      type));
+      break;
+    }
     default: {
       NOTREACHED();
+      break;
     }
   }
 }
