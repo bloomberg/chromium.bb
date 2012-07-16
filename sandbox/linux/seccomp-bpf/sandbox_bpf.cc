@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <time.h>
+
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 
@@ -26,7 +28,33 @@ Sandbox::ErrorCode Sandbox::probeEvaluator(int signo) {
   }
 }
 
-bool Sandbox::kernelSupportSeccompBPF(int proc_fd) {
+void Sandbox::probeProcess(void) {
+  if (syscall(__NR_getpid) < 0 && errno == EPERM) {
+    syscall(__NR_exit_group, (intptr_t)100);
+  }
+}
+
+Sandbox::ErrorCode Sandbox::allowAllEvaluator(int signo) {
+  if (signo < static_cast<int>(MIN_SYSCALL) ||
+      signo > static_cast<int>(MAX_SYSCALL)) {
+    return ENOSYS;
+  }
+  return Sandbox::SB_ALLOWED;
+}
+
+void Sandbox::tryVsyscallProcess(void) {
+  time_t current_time;
+  // time() is implemented as a vsyscall. With an older glibc, with
+  // vsyscall=emulate and some versions of the seccomp BPF patch
+  // we may get SIGKILL-ed. Detect this!
+  if (time(&current_time) != static_cast<time_t>(-1)) {
+    syscall(__NR_exit_group, (intptr_t)100);
+  }
+}
+
+bool Sandbox::RunFunctionInPolicy(void (*CodeInSandbox)(),
+                                  EvaluateSyscall syscallEvaluator,
+                                  int proc_fd) {
   // Block all signals before forking a child process. This prevents an
   // attacker from manipulating our test by sending us an unexpected signal.
   sigset_t oldMask, newMask;
@@ -63,17 +91,16 @@ bool Sandbox::kernelSupportSeccompBPF(int proc_fd) {
       if (HANDLE_EINTR(write(fds[1], msg, sizeof(msg)-1))) { }
     } else {
       evaluators_.clear();
-      setSandboxPolicy(probeEvaluator, NULL);
+      setSandboxPolicy(syscallEvaluator, NULL);
       setProcFd(proc_fd);
       startSandbox();
-      if (syscall(__NR_getpid) < 0 && errno == EPERM) {
-        syscall(__NR_exit_group, (intptr_t)100);
-      }
+      // Run our code in the sandbox
+      CodeInSandbox();
     }
     die(NULL);
   }
 
-  // In the parent process
+  // In the parent process.
   if (HANDLE_EINTR(close(fds[1]))) {
     die("close() failed");
   }
@@ -107,6 +134,13 @@ bool Sandbox::kernelSupportSeccompBPF(int proc_fd) {
   }
 
   return rc;
+
+}
+
+bool Sandbox::kernelSupportSeccompBPF(int proc_fd) {
+  return RunFunctionInPolicy(probeProcess, Sandbox::probeEvaluator, proc_fd) &&
+         RunFunctionInPolicy(tryVsyscallProcess, Sandbox::allowAllEvaluator,
+                             proc_fd);
 }
 
 Sandbox::SandboxStatus Sandbox::supportsSeccompSandbox(int proc_fd) {

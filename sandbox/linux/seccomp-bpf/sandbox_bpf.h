@@ -343,7 +343,13 @@ class Sandbox {
   typedef std::map<std::pair<TrapFnc, const void *>, int> TrapIds;
 
   static ErrorCode probeEvaluator(int signo) __attribute__((const));
+  static void      probeProcess(void);
+  static ErrorCode allowAllEvaluator(int signo);
+  static void      tryVsyscallProcess(void);
   static bool      kernelSupportSeccompBPF(int proc_fd);
+  static bool      RunFunctionInPolicy(void (*function)(),
+                                       EvaluateSyscall syscallEvaluator,
+                                       int proc_fd);
   static bool      isSingleThreaded(int proc_fd);
   static bool      disableFilesystem();
   static void      policySanityChecks(EvaluateSyscall syscallEvaluator,
