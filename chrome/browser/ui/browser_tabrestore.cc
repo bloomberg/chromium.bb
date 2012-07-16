@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/browser_tabrestore.h"
 
-#include "chrome/browser/extensions/extension_tab_helper.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/tab_contents/tab_util.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_tab_helper.h"
+#include "chrome/browser/extensions/tab_helper.h"
 
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/app_notify_channel_ui.h"
@@ -44,10 +44,6 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::RenderViewHost;
 using content::WebContents;
-using extensions::Extension;
-using extensions::PageActionController;
-using extensions::ScriptBadgeController;
-using extensions::ScriptExecutor;
 
 namespace {
 
@@ -55,17 +51,18 @@ const char kPermissionError[] = "permission_error";
 
 }  // namespace
 
-ExtensionTabHelper::ExtensionTabHelper(TabContents* tab_contents)
+namespace extensions {
+
+TabHelper::TabHelper(TabContents* tab_contents)
     : content::WebContentsObserver(tab_contents->web_contents()),
       extension_app_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_function_dispatcher_(tab_contents->profile(), this)),
       pending_web_app_action_(NONE),
       tab_contents_(tab_contents),
-      script_executor_(new extensions::ScriptExecutor(
-          tab_contents->web_contents())),
+      script_executor_(new ScriptExecutor(tab_contents->web_contents())),
       active_tab_permission_manager_(tab_contents) {
-  if (extensions::switch_utils::AreScriptBadgesEnabled()) {
+  if (switch_utils::AreScriptBadgesEnabled()) {
     location_bar_controller_.reset(new ScriptBadgeController(
         tab_contents, script_executor_.get()));
   } else {
@@ -77,15 +74,15 @@ ExtensionTabHelper::ExtensionTabHelper(TabContents* tab_contents)
                     &tab_contents->web_contents()->GetController()));
 }
 
-ExtensionTabHelper::~ExtensionTabHelper() {
+TabHelper::~TabHelper() {
 }
 
-void ExtensionTabHelper::CopyStateFrom(const ExtensionTabHelper& source) {
+void TabHelper::CopyStateFrom(const TabHelper& source) {
   SetExtensionApp(source.extension_app());
   extension_app_icon_ = source.extension_app_icon_;
 }
 
-void ExtensionTabHelper::CreateApplicationShortcuts() {
+void TabHelper::CreateApplicationShortcuts() {
   DCHECK(CanCreateApplicationShortcuts());
   NavigationEntry* entry =
       tab_contents_->web_contents()->GetController().GetLastCommittedEntry();
@@ -99,7 +96,7 @@ void ExtensionTabHelper::CreateApplicationShortcuts() {
   GetApplicationInfo(entry->GetPageID());
 }
 
-bool ExtensionTabHelper::CanCreateApplicationShortcuts() const {
+bool TabHelper::CanCreateApplicationShortcuts() const {
 #if defined(OS_MACOSX)
   return false;
 #else
@@ -108,15 +105,15 @@ bool ExtensionTabHelper::CanCreateApplicationShortcuts() const {
 #endif
 }
 
-int ExtensionTabHelper::tab_id() const {
+int TabHelper::tab_id() const {
   return tab_contents_->restore_tab_helper()->session_id().id();
 }
 
-int ExtensionTabHelper::window_id() const {
+int TabHelper::window_id() const {
   return tab_contents_->restore_tab_helper()->window_id().id();
 }
 
-void ExtensionTabHelper::SetExtensionApp(const Extension* extension) {
+void TabHelper::SetExtensionApp(const Extension* extension) {
   DCHECK(!extension || extension->GetFullLaunchURL().is_valid());
   extension_app_ = extension;
 
@@ -124,37 +121,35 @@ void ExtensionTabHelper::SetExtensionApp(const Extension* extension) {
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
-      content::Source<ExtensionTabHelper>(this),
+      content::Source<TabHelper>(this),
       content::NotificationService::NoDetails());
 }
 
-void ExtensionTabHelper::SetExtensionAppById(
-    const std::string& extension_app_id) {
+void TabHelper::SetExtensionAppById(const std::string& extension_app_id) {
   const Extension* extension = GetExtension(extension_app_id);
   if (extension)
     SetExtensionApp(extension);
 }
 
-void ExtensionTabHelper::SetExtensionAppIconById(
-    const std::string& extension_app_id) {
+void TabHelper::SetExtensionAppIconById(const std::string& extension_app_id) {
   const Extension* extension = GetExtension(extension_app_id);
   if (extension)
     UpdateExtensionAppIcon(extension);
 }
 
-SkBitmap* ExtensionTabHelper::GetExtensionAppIcon() {
+SkBitmap* TabHelper::GetExtensionAppIcon() {
   if (extension_app_icon_.empty())
     return NULL;
 
   return &extension_app_icon_;
 }
 
-void ExtensionTabHelper::RenderViewCreated(RenderViewHost* render_view_host) {
+void TabHelper::RenderViewCreated(RenderViewHost* render_view_host) {
   render_view_host->Send(
       new ExtensionMsg_SetTabId(render_view_host->GetRoutingID(), tab_id()));
 }
 
-void ExtensionTabHelper::DidNavigateMainFrame(
+void TabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   if (details.is_in_page)
@@ -180,9 +175,9 @@ void ExtensionTabHelper::DidNavigateMainFrame(
   }
 }
 
-bool ExtensionTabHelper::OnMessageReceived(const IPC::Message& message) {
+bool TabHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ExtensionTabHelper, message)
+  IPC_BEGIN_MESSAGE_MAP(TabHelper, message)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_DidGetApplicationInfo,
                         OnDidGetApplicationInfo)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_InstallApplication,
@@ -199,8 +194,8 @@ bool ExtensionTabHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void ExtensionTabHelper::OnDidGetApplicationInfo(
-    int32 page_id, const WebApplicationInfo& info) {
+void TabHelper::OnDidGetApplicationInfo(int32 page_id,
+                                        const WebApplicationInfo& info) {
   // Android does not implement BrowserWindow.
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
   web_app_info_ = info;
@@ -230,7 +225,7 @@ void ExtensionTabHelper::OnDidGetApplicationInfo(
 #endif
 }
 
-void ExtensionTabHelper::OnInstallApplication(const WebApplicationInfo& info) {
+void TabHelper::OnInstallApplication(const WebApplicationInfo& info) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   ExtensionService* extension_service = profile->GetExtensionService();
@@ -250,32 +245,30 @@ void ExtensionTabHelper::OnInstallApplication(const WebApplicationInfo& info) {
   installer->InstallWebApp(info);
 }
 
-void ExtensionTabHelper::OnInlineWebstoreInstall(
+void TabHelper::OnInlineWebstoreInstall(
     int install_id,
     int return_route_id,
     const std::string& webstore_item_id,
     const GURL& requestor_url) {
-  scoped_refptr<extensions::WebstoreInlineInstaller> installer(
-      new extensions::WebstoreInlineInstaller(
-          web_contents(),
-          install_id,
-          return_route_id,
-          webstore_item_id,
-          requestor_url,
-          this));
+  scoped_refptr<WebstoreInlineInstaller> installer(new WebstoreInlineInstaller(
+      web_contents(),
+      install_id,
+      return_route_id,
+      webstore_item_id,
+      requestor_url,
+      this));
   installer->BeginInstall();
 }
 
-void ExtensionTabHelper::OnGetAppNotifyChannel(
-    const GURL& requestor_url,
-    const std::string& client_id,
-    int return_route_id,
-    int callback_id) {
+void TabHelper::OnGetAppNotifyChannel(const GURL& requestor_url,
+                                      const std::string& client_id,
+                                      int return_route_id,
+                                      int callback_id) {
   // Check for permission first.
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   ExtensionService* extension_service = profile->GetExtensionService();
-  extensions::ProcessMap* process_map = extension_service->process_map();
+  ProcessMap* process_map = extension_service->process_map();
   content::RenderProcessHost* process =
       tab_contents()->web_contents()->GetRenderProcessHost();
   const Extension* extension =
@@ -283,8 +276,7 @@ void ExtensionTabHelper::OnGetAppNotifyChannel(
 
   std::string error;
   if (!extension ||
-      !extension->HasAPIPermission(
-        extensions::APIPermission::kAppNotifications) ||
+      !extension->HasAPIPermission(APIPermission::kAppNotifications) ||
       !process_map->Contains(extension->id(), process->GetID()))
     error = kPermissionError;
 
@@ -317,9 +309,9 @@ void ExtensionTabHelper::OnGetAppNotifyChannel(
   // We'll get called back in AppNotifyChannelSetupComplete.
 }
 
-void ExtensionTabHelper::OnGetAppInstallState(const GURL& requestor_url,
-                                              int return_route_id,
-                                              int callback_id) {
+void TabHelper::OnGetAppInstallState(const GURL& requestor_url,
+                                     int return_route_id,
+                                     int callback_id) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   ExtensionService* extension_service = profile->GetExtensionService();
@@ -339,7 +331,7 @@ void ExtensionTabHelper::OnGetAppInstallState(const GURL& requestor_url,
       return_route_id, state, callback_id));
 }
 
-void ExtensionTabHelper::AppNotifyChannelSetupComplete(
+void TabHelper::AppNotifyChannelSetupComplete(
     const std::string& channel_id,
     const std::string& error,
     const AppNotifyChannelSetup* setup) {
@@ -359,14 +351,12 @@ void ExtensionTabHelper::AppNotifyChannelSetupComplete(
       setup->return_route_id(), channel_id, error, setup->callback_id()));
 }
 
-void ExtensionTabHelper::OnRequest(
-    const ExtensionHostMsg_Request_Params& request) {
+void TabHelper::OnRequest(const ExtensionHostMsg_Request_Params& request) {
   extension_function_dispatcher_.Dispatch(request,
                                           web_contents()->GetRenderViewHost());
 }
 
-const Extension* ExtensionTabHelper::GetExtension(
-    const std::string& extension_app_id) {
+const Extension* TabHelper::GetExtension(const std::string& extension_app_id) {
   if (extension_app_id.empty())
     return NULL;
 
@@ -381,7 +371,7 @@ const Extension* ExtensionTabHelper::GetExtension(
   return extension;
 }
 
-void ExtensionTabHelper::UpdateExtensionAppIcon(const Extension* extension) {
+void TabHelper::UpdateExtensionAppIcon(const Extension* extension) {
   extension_app_icon_.reset();
 
   if (extension) {
@@ -398,22 +388,21 @@ void ExtensionTabHelper::UpdateExtensionAppIcon(const Extension* extension) {
   }
 }
 
-void ExtensionTabHelper::SetAppIcon(const SkBitmap& app_icon) {
+void TabHelper::SetAppIcon(const SkBitmap& app_icon) {
   extension_app_icon_ = app_icon;
   web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TITLE);
 }
 
-void ExtensionTabHelper::OnImageLoaded(const gfx::Image& image,
-                                       const std::string& extension_id,
-                                       int index) {
+void TabHelper::OnImageLoaded(const gfx::Image& image,
+                              const std::string& extension_id,
+                              int index) {
   if (!image.IsEmpty()) {
     extension_app_icon_ = *image.ToSkBitmap();
     web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
   }
 }
 
-ExtensionWindowController*
-ExtensionTabHelper::GetExtensionWindowController() const  {
+ExtensionWindowController* TabHelper::GetExtensionWindowController() const  {
   content::WebContents* contents = web_contents();
   TabContentsIterator tab_iterator;
   for (; !tab_iterator.done(); ++tab_iterator) {
@@ -424,30 +413,29 @@ ExtensionTabHelper::GetExtensionWindowController() const  {
   return NULL;
 }
 
-void ExtensionTabHelper::OnInlineInstallSuccess(int install_id,
-                                                int return_route_id) {
+void TabHelper::OnInlineInstallSuccess(int install_id, int return_route_id) {
   Send(new ExtensionMsg_InlineWebstoreInstallResponse(
       return_route_id, install_id, true, ""));
 }
 
-void ExtensionTabHelper::OnInlineInstallFailure(int install_id,
-                                                int return_route_id,
-                                                const std::string& error) {
+void TabHelper::OnInlineInstallFailure(int install_id,
+                                       int return_route_id,
+                                       const std::string& error) {
   Send(new ExtensionMsg_InlineWebstoreInstallResponse(
       return_route_id, install_id, false, error));
 }
 
-WebContents* ExtensionTabHelper::GetAssociatedWebContents() const {
+WebContents* TabHelper::GetAssociatedWebContents() const {
   return web_contents();
 }
 
-void ExtensionTabHelper::GetApplicationInfo(int32 page_id) {
+void TabHelper::GetApplicationInfo(int32 page_id) {
   Send(new ExtensionMsg_GetApplicationInfo(routing_id(), page_id));
 }
 
-void ExtensionTabHelper::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
+void TabHelper::Observe(int type,
+                        const content::NotificationSource& source,
+                        const content::NotificationDetails& details) {
   DCHECK(type == content::NOTIFICATION_LOAD_STOP);
   const NavigationController& controller =
       *content::Source<NavigationController>(source).ptr();
@@ -465,3 +453,5 @@ void ExtensionTabHelper::Observe(int type,
       pending_web_app_action_ = NONE;
   }
 }
+
+}  // namespace extensions

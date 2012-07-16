@@ -9,7 +9,7 @@
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/active_tab_permission_manager.h"
-#include "chrome/browser/extensions/extension_tab_helper.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"

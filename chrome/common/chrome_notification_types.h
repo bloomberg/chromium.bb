@@ -136,9 +136,9 @@ enum NotificationType {
   // MetricEventDurationDetails.
   NOTIFICATION_METRIC_EVENT_DURATION,
 
-  // This notification is sent when ExtensionTabHelper::SetExtensionApp is
-  // invoked. The source is the ExtensionTabHelper SetExtensionApp was invoked
-  // on.
+  // This notification is sent when extensions::TabHelper::SetExtensionApp is
+  // invoked. The source is the extensions::TabHelper SetExtensionApp was
+  // invoked on.
   NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
 
   // Notification posted when the element that is focused and currently accepts

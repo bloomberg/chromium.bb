@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "chrome/browser/extensions/extension_tab_helper.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
@@ -180,8 +180,8 @@ void SessionChangeProcessor::Observe(
     }
 
     case chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
-      ExtensionTabHelper* extension_tab_helper =
-          content::Source<ExtensionTabHelper>(source).ptr();
+      extensions::TabHelper* extension_tab_helper =
+          content::Source<extensions::TabHelper>(source).ptr();
       if (!extension_tab_helper ||
           extension_tab_helper->web_contents()->GetBrowserContext() !=
               profile_) {

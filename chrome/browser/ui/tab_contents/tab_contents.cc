@@ -13,7 +13,7 @@
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
-#include "chrome/browser/extensions/extension_tab_helper.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/external_protocol/external_protocol_observer.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
@@ -102,7 +102,7 @@ TabContents::TabContents(WebContents* contents)
 #endif
   constrained_window_tab_helper_.reset(new ConstrainedWindowTabHelper(this));
   core_tab_helper_.reset(new CoreTabHelper(contents));
-  extension_tab_helper_.reset(new ExtensionTabHelper(this));
+  extension_tab_helper_.reset(new extensions::TabHelper(this));
   favicon_tab_helper_.reset(new FaviconTabHelper(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));
   history_tab_helper_.reset(new HistoryTabHelper(contents));

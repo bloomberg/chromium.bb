@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 
-#include "chrome/browser/extensions/extension_tab_helper.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"

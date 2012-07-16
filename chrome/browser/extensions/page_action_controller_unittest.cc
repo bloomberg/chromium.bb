@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_tab_helper.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/page_action_controller.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"

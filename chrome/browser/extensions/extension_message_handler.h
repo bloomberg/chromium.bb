@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,8 @@
 
 // Filters and dispatches extension-related IPC messages that arrive from
 // renderers. There is one of these objects for each RenderViewHost in Chrome.
-// Contrast this with ExtensionTabHelper, which is only created for WebContents.
+// Contrast this with extensions::TabHelper, which is only created for
+// WebContents.
 //
 // TODO(aa): Handling of content script messaging should be able to move to EFD
 // once there is an EFD for every RVHD where extension code can run. Then we

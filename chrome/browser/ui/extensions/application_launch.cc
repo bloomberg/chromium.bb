@@ -10,8 +10,8 @@
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/platform_app_launcher.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -337,12 +337,12 @@ WebContents* OpenAppShortcutWindow(Profile* profile,
   TabContents* tab_contents = TabContents::FromWebContents(tab);
   // Set UPDATE_SHORTCUT as the pending web app action. This action is picked
   // up in LoadingStateChanged to schedule a GetApplicationInfo. And when
-  // the web app info is available, ExtensionTabHelper notifies Browser via
+  // the web app info is available, extensions::TabHelper notifies Browser via
   // OnDidGetApplicationInfo, which calls
   // web_app::UpdateShortcutForTabContents when it sees UPDATE_SHORTCUT as
   // pending web app action.
   tab_contents->extension_tab_helper()->set_pending_web_app_action(
-      ExtensionTabHelper::UPDATE_SHORTCUT);
+      extensions::TabHelper::UPDATE_SHORTCUT);
 
   return tab;
 }

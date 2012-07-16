@@ -21,7 +21,6 @@ class BlockedContentTabHelper;
 class BookmarkTabHelper;
 class ConstrainedWindowTabHelper;
 class CoreTabHelper;
-class ExtensionTabHelper;
 class ExternalProtocolObserver;
 class FaviconTabHelper;
 class FindTabHelper;
@@ -65,6 +64,7 @@ class SearchTabHelper;
 }
 
 namespace extensions {
+class TabHelper;
 class WebNavigationTabObserver;
 }
 
@@ -159,11 +159,11 @@ class TabContents : public content::WebContentsObserver {
 
   CoreTabHelper* core_tab_helper() { return core_tab_helper_.get(); }
 
-  ExtensionTabHelper* extension_tab_helper() {
+  extensions::TabHelper* extension_tab_helper() {
     return extension_tab_helper_.get();
   }
 
-  const ExtensionTabHelper* extension_tab_helper() const {
+  const extensions::TabHelper* extension_tab_helper() const {
     return extension_tab_helper_.get();
   }
 
@@ -266,7 +266,7 @@ class TabContents : public content::WebContentsObserver {
 #endif
   scoped_ptr<ConstrainedWindowTabHelper> constrained_window_tab_helper_;
   scoped_ptr<CoreTabHelper> core_tab_helper_;
-  scoped_ptr<ExtensionTabHelper> extension_tab_helper_;
+  scoped_ptr<extensions::TabHelper> extension_tab_helper_;
   scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
   scoped_ptr<FindTabHelper> find_tab_helper_;
   scoped_ptr<HistoryTabHelper> history_tab_helper_;

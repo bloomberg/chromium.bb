@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_tab_helper.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"

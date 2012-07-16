@@ -18,7 +18,7 @@
 #include "base/metrics/histogram.h"
 #include "base/pickle.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/extensions/extension_tab_helper.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
@@ -695,8 +695,8 @@ void SessionService::Observe(int type,
     }
 
     case chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
-      ExtensionTabHelper* extension_tab_helper =
-          content::Source<ExtensionTabHelper>(source).ptr();
+      extensions::TabHelper* extension_tab_helper =
+          content::Source<extensions::TabHelper>(source).ptr();
       if (extension_tab_helper->tab_contents()->profile() != profile())
         return;
       if (extension_tab_helper->extension_app()) {
