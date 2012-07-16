@@ -51,8 +51,8 @@ class AppNotificationManager;
 class BookmarkExtensionEventRouter;
 class CrxInstaller;
 class ExtensionBrowserEventRouter;
+class ExtensionErrorUI;
 class ExtensionFontSettingsEventRouter;
-class ExtensionGlobalError;
 class ExtensionManagementEventRouter;
 class ExtensionPreferenceEventRouter;
 class ExtensionSyncData;
@@ -565,13 +565,12 @@ class ExtensionService
   // extensions.
   void IdentifyAlertableExtensions();
 
-  // Given an ExtensionGlobalError alert, populates it with any extensions that
+  // Given an ExtensionErrorUI alert, populates it with any extensions that
   // need alerting. Returns true if the alert should be displayed at all.
   //
-  // This method takes the extension_global_error argument rather than using
+  // This method takes the extension_error_ui argument rather than using
   // the member variable to make it easier to test the method in isolation.
-  bool PopulateExtensionGlobalError(
-      ExtensionGlobalError* extension_global_error);
+  bool PopulateExtensionErrorUI(ExtensionErrorUI* extension_error_ui);
 
   // Marks alertable extensions as acknowledged, after the user presses the
   // accept button.
@@ -583,7 +582,7 @@ class ExtensionService
 
   // Opens the Extensions page because the user wants to get more details
   // about the alerts.
-  void HandleExtensionAlertDetails(Browser* browser);
+  void HandleExtensionAlertDetails();
 
   // Called when the extension alert is closed.
   void HandleExtensionAlertClosed();
@@ -853,7 +852,7 @@ class ExtensionService
 
   AppShortcutManager app_shortcut_manager_;
 
-  scoped_ptr<ExtensionGlobalError> extension_global_error_;
+  scoped_ptr<ExtensionErrorUI> extension_error_ui_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            InstallAppsWithUnlimtedStorage);

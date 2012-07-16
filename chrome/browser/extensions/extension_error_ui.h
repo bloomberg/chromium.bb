@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_GLOBAL_ERROR_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_GLOBAL_ERROR_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_ERROR_UI_H_
+#define CHROME_BROWSER_EXTENSIONS_EXTENSION_ERROR_UI_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -15,10 +15,11 @@ class ExtensionService;
 
 // This class encapsulates the UI we want to show users when certain events
 // occur related to installed extensions.
-class ExtensionGlobalError : public GlobalError {
+class ExtensionErrorUI {
  public:
-  explicit ExtensionGlobalError(ExtensionService* extension_service);
-  virtual ~ExtensionGlobalError();
+  static ExtensionErrorUI* Create(ExtensionService* extension_service);
+
+  virtual ~ExtensionErrorUI();
 
   // Inform us that a given extension is of a certain type that the user
   // hasn't yet acknowledged.
@@ -40,20 +41,32 @@ class ExtensionGlobalError : public GlobalError {
     return orphaned_extension_ids_.get();
   }
 
-  // GlobalError methods.
-  virtual bool HasBadge() OVERRIDE;
-  virtual bool HasMenuItem() OVERRIDE;
-  virtual int MenuItemCommandID() OVERRIDE;
-  virtual string16 MenuItemLabel() OVERRIDE;
-  virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
-  virtual bool HasBubbleView() OVERRIDE;
-  virtual string16 GetBubbleViewTitle() OVERRIDE;
-  virtual string16 GetBubbleViewMessage() OVERRIDE;
-  virtual string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
-  virtual string16 GetBubbleViewCancelButtonLabel() OVERRIDE;
-  virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE;
-  virtual void BubbleViewAcceptButtonPressed(Browser* browser) OVERRIDE;
-  virtual void BubbleViewCancelButtonPressed(Browser* browser) OVERRIDE;
+  // Shows the installation error in a bubble view. Should return true if a
+  // bubble is shown, false if one could not be shown.
+  virtual bool ShowErrorInBubbleView() = 0;
+
+  // Shows the extension page. Called as a result of the user clicking more
+  // info and should be only called from the context of a callback
+  // (BubbleViewDidClose or BubbleViewAccept/CancelButtonPressed).
+  // It should use the same browser as where the bubble was shown.
+  virtual void ShowExtensions() = 0;
+
+ protected:
+  explicit ExtensionErrorUI(ExtensionService* extension_service);
+
+  ExtensionService* extension_service() const { return extension_service_; }
+
+  // Model methods for the bubble view.
+  string16 GetBubbleViewTitle();
+  string16 GetBubbleViewMessage();
+  string16 GetBubbleViewAcceptButtonLabel();
+  string16 GetBubbleViewCancelButtonLabel();
+
+  // Sub-classes should call this methods based on the actions taken by the user
+  // in the error bubble.
+  void BubbleViewDidClose();
+  void BubbleViewAcceptButtonPressed();
+  void BubbleViewCancelButtonPressed();
 
  private:
   bool should_delete_self_on_close_;
@@ -71,7 +84,7 @@ class ExtensionGlobalError : public GlobalError {
   // Generates the message displayed in the body of the alert.
   string16 GenerateMessage();
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionGlobalError);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionErrorUI);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_GLOBAL_ERROR_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_ERROR_UI_H_

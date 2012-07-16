@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_global_error.h"
+#include "chrome/browser/extensions/extension_error_ui.h"
 
 #include "base/logging.h"
 #include "base/string16.h"
@@ -15,7 +15,7 @@
 
 using extensions::ExtensionIdSet;
 
-ExtensionGlobalError::ExtensionGlobalError(ExtensionService* extension_service)
+ExtensionErrorUI::ExtensionErrorUI(ExtensionService* extension_service)
     : extension_service_(extension_service),
       external_extension_ids_(new ExtensionIdSet),
       blacklisted_extension_ids_(new ExtensionIdSet),
@@ -23,52 +23,22 @@ ExtensionGlobalError::ExtensionGlobalError(ExtensionService* extension_service)
   DCHECK(extension_service_);
 }
 
-ExtensionGlobalError::~ExtensionGlobalError() {
+ExtensionErrorUI::~ExtensionErrorUI() {
 }
 
-void ExtensionGlobalError::AddExternalExtension(const std::string& id) {
+void ExtensionErrorUI::AddExternalExtension(const std::string& id) {
   external_extension_ids_->insert(id);
 }
 
-void ExtensionGlobalError::AddBlacklistedExtension(const std::string& id) {
+void ExtensionErrorUI::AddBlacklistedExtension(const std::string& id) {
   blacklisted_extension_ids_->insert(id);
 }
 
-void ExtensionGlobalError::AddOrphanedExtension(const std::string& id) {
+void ExtensionErrorUI::AddOrphanedExtension(const std::string& id) {
   orphaned_extension_ids_->insert(id);
 }
 
-bool ExtensionGlobalError::HasBadge() {
-  return false;
-}
-
-bool ExtensionGlobalError::HasMenuItem() {
-  return false;
-}
-
-int ExtensionGlobalError::MenuItemCommandID() {
-  NOTREACHED();
-  return 0;
-}
-
-string16 ExtensionGlobalError::MenuItemLabel() {
-  NOTREACHED();
-  return NULL;
-}
-
-void ExtensionGlobalError::ExecuteMenuItem(Browser* browser) {
-  NOTREACHED();
-}
-
-bool ExtensionGlobalError::HasBubbleView() {
-  return true;
-}
-
-string16 ExtensionGlobalError::GetBubbleViewTitle() {
-  return l10n_util::GetStringUTF16(IDS_EXTENSION_ALERT_TITLE);
-}
-
-string16 ExtensionGlobalError::GenerateMessageSection(
+string16 ExtensionErrorUI::GenerateMessageSection(
     const ExtensionIdSet* extensions,
     int template_message_id) {
   CHECK(extensions);
@@ -85,7 +55,7 @@ string16 ExtensionGlobalError::GenerateMessageSection(
   return message;
 }
 
-string16 ExtensionGlobalError::GenerateMessage() {
+string16 ExtensionErrorUI::GenerateMessage() {
   return GenerateMessageSection(external_extension_ids_.get(),
                                 IDS_EXTENSION_ALERT_ITEM_EXTERNAL) +
          GenerateMessageSection(blacklisted_extension_ids_.get(),
@@ -94,7 +64,7 @@ string16 ExtensionGlobalError::GenerateMessage() {
                                 IDS_EXTENSION_ALERT_ITEM_ORPHANED);
 }
 
-string16 ExtensionGlobalError::GetBubbleViewMessage() {
+string16 ExtensionErrorUI::GetBubbleViewMessage() {
   if (message_.empty()) {
     message_ = GenerateMessage();
     if (message_[message_.size()-1] == '\n')
@@ -103,22 +73,26 @@ string16 ExtensionGlobalError::GetBubbleViewMessage() {
   return message_;
 }
 
-string16 ExtensionGlobalError::GetBubbleViewAcceptButtonLabel() {
+string16 ExtensionErrorUI::GetBubbleViewTitle() {
+  return l10n_util::GetStringUTF16(IDS_EXTENSION_ALERT_TITLE);
+}
+
+string16 ExtensionErrorUI::GetBubbleViewAcceptButtonLabel() {
   return l10n_util::GetStringUTF16(IDS_EXTENSION_ALERT_ITEM_OK);
 }
 
-string16 ExtensionGlobalError::GetBubbleViewCancelButtonLabel() {
+string16 ExtensionErrorUI::GetBubbleViewCancelButtonLabel() {
   return l10n_util::GetStringUTF16(IDS_EXTENSION_ALERT_ITEM_DETAILS);
 }
 
-void ExtensionGlobalError::OnBubbleViewDidClose(Browser* browser) {
+void ExtensionErrorUI::BubbleViewDidClose() {
   extension_service_->HandleExtensionAlertClosed();
 }
 
-void ExtensionGlobalError::BubbleViewAcceptButtonPressed(Browser* browser) {
+void ExtensionErrorUI::BubbleViewAcceptButtonPressed() {
   extension_service_->HandleExtensionAlertAccept();
 }
 
-void ExtensionGlobalError::BubbleViewCancelButtonPressed(Browser* browser) {
-  extension_service_->HandleExtensionAlertDetails(browser);
+void ExtensionErrorUI::BubbleViewCancelButtonPressed() {
+  extension_service_->HandleExtensionAlertDetails();
 }

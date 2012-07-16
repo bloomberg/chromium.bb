@@ -291,6 +291,10 @@
         'browser/extensions/extension_disabled_ui.h',
         'browser/extensions/extension_error_reporter.cc',
         'browser/extensions/extension_error_reporter.h',
+        'browser/extensions/extension_error_ui.cc',
+        'browser/extensions/extension_error_ui.h',
+        'browser/extensions/extension_error_ui_default.cc',
+        'browser/extensions/extension_error_ui_default.h',
         'browser/extensions/extension_event_names.cc',
         'browser/extensions/extension_event_names.h',
         'browser/extensions/extension_event_router.cc',
@@ -305,8 +309,6 @@
         'browser/extensions/extension_function_registry.h',
         'browser/extensions/extension_function_util.cc',
         'browser/extensions/extension_function_util.h',
-        'browser/extensions/extension_global_error.cc',
-        'browser/extensions/extension_global_error.h',
         'browser/extensions/extension_global_error_badge.cc',
         'browser/extensions/extension_global_error_badge.h',
         'browser/extensions/extension_host.cc',
@@ -685,6 +687,8 @@
         }],
         ['OS=="android"', {
           'sources': [
+            'browser/extensions/extension_error_ui_android.cc',
+            'browser/extensions/extension_error_ui_android.h',
             'browser/extensions/extension_install_ui_android.cc',
             'browser/extensions/extension_install_ui_android.h',
             'browser/extensions/extension_tab_util_android.cc',
@@ -692,6 +696,8 @@
           'sources!': [
             'browser/extensions/app_notify_channel_ui_impl.cc',
             'browser/extensions/app_notify_channel_ui_impl.h',
+            'browser/extensions/extension_error_ui_default.cc',
+            'browser/extensions/extension_error_ui_default.h',
             'browser/extensions/extension_install_ui_default.cc',
             'browser/extensions/extension_install_ui_default.h',
             'browser/extensions/extension_tab_util.cc',

@@ -32,7 +32,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
-#include "chrome/browser/extensions/extension_global_error.h"
+#include "chrome/browser/extensions/extension_error_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
@@ -5209,16 +5209,15 @@ TEST_F(ExtensionSourcePriorityTest, InstallExternalBlocksSyncRequest) {
 
 TEST_F(ExtensionServiceTest, AlertableExtensionHappyPath) {
   InitializeEmptyExtensionService();
-  scoped_ptr<ExtensionGlobalError> extension_global_error(
-      new ExtensionGlobalError(service_));
+  scoped_ptr<ExtensionErrorUI> extension_error_ui(
+      ExtensionErrorUI::Create(service_));
   MockExtensionProvider* provider =
       new MockExtensionProvider(service_, Extension::EXTERNAL_PREF);
   AddMockExternalProvider(provider);
 
   // Should return false, meaning there aren't any extensions that the user
   // needs to know about.
-  ASSERT_FALSE(service_->PopulateExtensionGlobalError(
-      extension_global_error.get()));
+  ASSERT_FALSE(service_->PopulateExtensionErrorUI(extension_error_ui.get()));
 
   // This is a normal extension, installed normally.
   // This should NOT trigger an alert.
@@ -5239,7 +5238,6 @@ TEST_F(ExtensionServiceTest, AlertableExtensionHappyPath) {
   service_->CheckForExternalUpdates();
   loop_.RunAllPending();
 
-  ASSERT_TRUE(service_->PopulateExtensionGlobalError(
-      extension_global_error.get()));
-  ASSERT_EQ(1u, extension_global_error->get_external_extension_ids()->size());
+  ASSERT_TRUE(service_->PopulateExtensionErrorUI(extension_error_ui.get()));
+  ASSERT_EQ(1u, extension_error_ui->get_external_extension_ids()->size());
 }
