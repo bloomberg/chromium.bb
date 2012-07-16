@@ -58,6 +58,8 @@ struct weston_wm {
 	xcb_window_t wm_window;
 	struct weston_wm_window *focus_window;
 	struct theme *theme;
+	xcb_cursor_t *cursors;
+	int last_cursor;
 	xcb_render_pictforminfo_t format_rgb, format_rgba;
 	struct wl_listener activate_listener;
 

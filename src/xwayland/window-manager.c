@@ -568,6 +568,9 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 		XCB_EVENT_MASK_KEY_RELEASE |
 		XCB_EVENT_MASK_BUTTON_PRESS |
 		XCB_EVENT_MASK_BUTTON_RELEASE |
+		XCB_EVENT_MASK_POINTER_MOTION |
+		XCB_EVENT_MASK_ENTER_WINDOW |
+		XCB_EVENT_MASK_LEAVE_WINDOW |
 		XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY |
 		XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT;
 
@@ -923,6 +926,104 @@ weston_wm_handle_client_message(struct weston_wm *wm,
 		weston_wm_window_handle_moveresize(window, client_message);
 }
 
+enum cursor_type {
+	XWM_CURSOR_TOP,
+	XWM_CURSOR_BOTTOM,
+	XWM_CURSOR_LEFT,
+	XWM_CURSOR_RIGHT,
+	XWM_CURSOR_TOP_LEFT,
+	XWM_CURSOR_TOP_RIGHT,
+	XWM_CURSOR_BOTTOM_LEFT,
+	XWM_CURSOR_BOTTOM_RIGHT,
+	XWM_CURSOR_LEFT_PTR,
+};
+
+static const char *cursors[] = {
+	"top_side",
+	"bottom_side",
+	"left_side",
+	"right_side",
+	"top_left_corner",
+	"top_right_corner",
+	"bottom_left_corner",
+	"bottom_right_corner",
+	"left_ptr"
+};
+
+static void
+weston_wm_create_cursors(struct weston_wm *wm)
+{
+	int i, count = ARRAY_LENGTH(cursors);
+
+	wm->cursors = malloc(count * sizeof(xcb_cursor_t));
+	for (i = 0; i < count; i++) {
+		wm->cursors[i] =
+			xcb_cursor_library_load_cursor(wm, cursors[i]);
+	}
+
+	wm->last_cursor = -1;
+}
+
+static void
+weston_wm_destroy_cursors(struct weston_wm *wm)
+{
+	uint8_t i;
+
+	for (i = 0; i < ARRAY_LENGTH(cursors); i++)
+		xcb_free_cursor(wm->conn, wm->cursors[i]);
+
+	free(wm->cursors);
+}
+
+static int
+get_cursor_for_location(struct theme *t, int width, int height, int x, int y)
+{
+	int location = theme_get_location(t, x, y, width, height);
+
+	switch (location) {
+		case THEME_LOCATION_RESIZING_TOP:
+			return XWM_CURSOR_TOP;
+		case THEME_LOCATION_RESIZING_BOTTOM:
+			return XWM_CURSOR_BOTTOM;
+		case THEME_LOCATION_RESIZING_LEFT:
+			return XWM_CURSOR_LEFT;
+		case THEME_LOCATION_RESIZING_RIGHT:
+			return XWM_CURSOR_RIGHT;
+		case THEME_LOCATION_RESIZING_TOP_LEFT:
+			return XWM_CURSOR_TOP_LEFT;
+		case THEME_LOCATION_RESIZING_TOP_RIGHT:
+			return XWM_CURSOR_TOP_RIGHT;
+		case THEME_LOCATION_RESIZING_BOTTOM_LEFT:
+			return XWM_CURSOR_BOTTOM_LEFT;
+		case THEME_LOCATION_RESIZING_BOTTOM_RIGHT:
+			return XWM_CURSOR_BOTTOM_RIGHT;
+		case THEME_LOCATION_EXTERIOR:
+		case THEME_LOCATION_TITLEBAR:
+		default:
+			return XWM_CURSOR_LEFT_PTR;
+	}
+}
+
+static void
+weston_wm_frame_set_cursor(struct weston_wm *wm,
+			   struct weston_wm_window *window, int cursor)
+{
+	uint32_t cursor_value_list;
+
+	if (!window->frame_id)
+		return;
+
+	if (wm->last_cursor == cursor)
+		return;
+
+	wm->last_cursor = cursor;
+
+	cursor_value_list = wm->cursors[cursor];
+	xcb_change_window_attributes (wm->conn, window->frame_id,
+				      XCB_CW_CURSOR, &cursor_value_list);
+	xcb_flush(wm->conn);
+}
+
 static void
 weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 {
@@ -971,6 +1072,55 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 	}
 }
 
+static void
+weston_wm_handle_motion(struct weston_wm *wm, xcb_generic_event_t *event)
+{
+	xcb_motion_notify_event_t *motion = (xcb_motion_notify_event_t *) event;
+	struct weston_wm_window *window;
+	int cursor, width, height;
+
+	window = hash_table_lookup(wm->window_hash, motion->event);
+	if (!window)
+		return;
+
+	weston_wm_window_get_frame_size(window, &width, &height);
+	cursor = get_cursor_for_location(wm->theme, width, height,
+					 motion->event_x, motion->event_y);
+
+	weston_wm_frame_set_cursor(wm, window, cursor);
+}
+
+static void
+weston_wm_handle_enter(struct weston_wm *wm, xcb_generic_event_t *event)
+{
+	xcb_enter_notify_event_t *enter = (xcb_enter_notify_event_t *) event;
+	struct weston_wm_window *window;
+	int cursor, width, height;
+
+	window = hash_table_lookup(wm->window_hash, enter->event);
+	if (!window)
+		return;
+
+	weston_wm_window_get_frame_size(window, &width, &height);
+	cursor = get_cursor_for_location(wm->theme, width, height,
+					 enter->event_x, enter->event_y);
+
+	weston_wm_frame_set_cursor(wm, window, cursor);
+}
+
+static void
+weston_wm_handle_leave(struct weston_wm *wm, xcb_generic_event_t *event)
+{
+	xcb_leave_notify_event_t *leave = (xcb_leave_notify_event_t *) event;
+	struct weston_wm_window *window;
+
+	window = hash_table_lookup(wm->window_hash, leave->event);
+	if (!window)
+		return;
+
+	weston_wm_frame_set_cursor(wm, window, XWM_CURSOR_LEFT_PTR);
+}
+
 static int
 weston_wm_handle_event(int fd, uint32_t mask, void *data)
 {
@@ -989,6 +1139,15 @@ weston_wm_handle_event(int fd, uint32_t mask, void *data)
 		case XCB_BUTTON_PRESS:
 		case XCB_BUTTON_RELEASE:
 			weston_wm_handle_button(wm, event);
+			break;
+		case XCB_ENTER_NOTIFY:
+			weston_wm_handle_enter(wm, event);
+			break;
+		case XCB_LEAVE_NOTIFY:
+			weston_wm_handle_leave(wm, event);
+			break;
+		case XCB_MOTION_NOTIFY:
+			weston_wm_handle_motion(wm, event);
 			break;
 		case XCB_CREATE_NOTIFY:
 			weston_wm_handle_create_notify(wm, event);
@@ -1284,6 +1443,8 @@ weston_wm_create(struct weston_xserver *wxs)
 	wl_signal_add(&wxs->compositor->activate_signal,
 		      &wm->activate_listener);
 
+	weston_wm_create_cursors(wm);
+
 	weston_log("created wm\n");
 
 	return wm;
@@ -1294,6 +1455,7 @@ weston_wm_destroy(struct weston_wm *wm)
 {
 	/* FIXME: Free windows in hash. */
 	hash_table_destroy(wm->window_hash);
+	weston_wm_destroy_cursors(wm);
 	xcb_disconnect(wm->conn);
 	wl_event_source_remove(wm->source);
 	wl_list_remove(&wm->selection_listener.link);
