@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
 
 namespace extensions {
+class Extension;
 class URLMatcherConditionFactory;
 class WebRequestConditionSet;
 class WebRequestActionSet;
@@ -70,6 +71,7 @@ class WebRequestRule {
   Priority priority() const { return priority_; }
 
   std::list<LinkedPtrEventResponseDelta> CreateDeltas(
+      const extensions::Extension* extension,
       net::URLRequest* request,
       RequestStages request_stage,
       const OptionalRequestData& optional_request_data) const;

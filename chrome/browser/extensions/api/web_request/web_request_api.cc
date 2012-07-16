@@ -105,13 +105,6 @@ bool IsRequestFromExtension(const net::URLRequest* request,
   return extension_info_map->process_map().Contains(info->GetChildID());
 }
 
-bool CanExtensionAccessURL(const Extension* extension, const GURL& url) {
-  // about: URLs are not covered in host permissions, but are allowed anyway.
-  return (url.SchemeIs(chrome::kAboutScheme) ||
-          extension->HasHostPermission(url) ||
-          url.GetOrigin() == extension->url());
-}
-
 void ExtractRequestInfoDetails(net::URLRequest* request,
                                bool* is_main_frame,
                                int64* frame_id,
@@ -338,6 +331,10 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
   // Changes requested by extensions.
   helpers::EventResponseDeltas response_deltas;
 
+  // Provider of meta data about extensions, only used and non-NULL for events
+  // that are delayed until the rules registry is ready.
+  ExtensionInfoMap* extension_info_map;
+
   BlockedRequest()
       : request(NULL),
         event(kInvalidEvent),
@@ -346,7 +343,8 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
         new_url(NULL),
         request_headers(NULL),
         override_response_headers(NULL),
-        auth_credentials(NULL) {}
+        auth_credentials(NULL),
+        extension_info_map(NULL) {}
 };
 
 bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
@@ -488,7 +486,8 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   bool initialize_blocked_requests = false;
 
   initialize_blocked_requests |=
-      ProcessDeclarativeRules(profile, keys::kOnBeforeRequest, request,
+      ProcessDeclarativeRules(profile, extension_info_map,
+                              keys::kOnBeforeRequest, request,
                               extensions::ON_BEFORE_REQUEST, NULL);
 
   int extra_info_spec = 0;
@@ -537,7 +536,8 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
   bool initialize_blocked_requests = false;
 
   initialize_blocked_requests |=
-      ProcessDeclarativeRules(profile, keys::kOnBeforeSendHeaders, request,
+      ProcessDeclarativeRules(profile, extension_info_map,
+                              keys::kOnBeforeSendHeaders, request,
                               extensions::ON_BEFORE_SEND_HEADERS, NULL);
 
   int extra_info_spec = 0;
@@ -621,7 +621,8 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
   bool initialize_blocked_requests = false;
 
   initialize_blocked_requests |=
-      ProcessDeclarativeRules(profile, keys::kOnHeadersReceived, request,
+      ProcessDeclarativeRules(profile, extension_info_map,
+                              keys::kOnHeadersReceived, request,
                               extensions::ON_HEADERS_RECEIVED,
                               original_response_headers);
 
@@ -1149,7 +1150,7 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
           is_request_from_extension && resource_type == ResourceType::XHR;
 
       // Only send webRequest events for URLs the extension has access to.
-      if (!CanExtensionAccessURL(extension, url) ||
+      if (!helpers::CanExtensionAccessURL(extension, url) ||
           (blocking_listener && possibly_synchronous_xhr_from_extension)) {
         continue;
       }
@@ -1400,12 +1401,16 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
 
 bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     void* profile,
+    ExtensionInfoMap* extension_info_map,
     const std::string& event_name,
     net::URLRequest* request,
     extensions::RequestStages request_stage,
     net::HttpResponseHeaders* original_response_headers) {
   if (!rules_registry_.get())
     return false;
+  // In unit tests we don't have an extension_info_map, but then we don't
+  // have a rules_registry_ either.
+  CHECK(extension_info_map);
 
   // TODO(mpcomplete): Eventually we'll want to turn this on, but for now,
   // we won't block startup for declarative webrequest. I want to measure
@@ -1423,21 +1428,20 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     blocked_requests_[request->identifier()].blocking_time = base::Time::Now();
     blocked_requests_[request->identifier()].original_response_headers =
         original_response_headers;
+    blocked_requests_[request->identifier()].extension_info_map =
+        extension_info_map;
     return true;
   }
 #endif
 
   base::Time start = base::Time::Now();
 
-  // TODO(battre): Annotate deltas with extension IDs, so that we can
-  // - Sort deltas by precedence
-  // - Check whether extensions have host permissions.
   extensions::WebRequestRule::OptionalRequestData optional_request_data;
   optional_request_data.original_response_headers =
       original_response_headers;
-  std::list<linked_ptr<helpers::EventResponseDelta> > result =
-      rules_registry_->CreateDeltas(request, request_stage,
-                                    optional_request_data);
+  helpers::EventResponseDeltas result =
+      rules_registry_->CreateDeltas(extension_info_map, request,
+                                    request_stage, optional_request_data);
 
   base::TimeDelta elapsed_time = start - base::Time::Now();
   UMA_HISTOGRAM_TIMES("Extensions.DeclarativeWebRequestNetworkDelay",
@@ -1463,9 +1467,11 @@ void ExtensionWebRequestEventRouter::OnRulesRegistryReady(
     return;
 
   BlockedRequest& blocked_request = blocked_requests_[request_id];
-  ProcessDeclarativeRules(profile, event_name, blocked_request.request,
-                          request_stage,
+  ProcessDeclarativeRules(profile, blocked_request.extension_info_map,
+                          event_name, blocked_request.request, request_stage,
                           blocked_request.original_response_headers);
+  // Reset to NULL so that nobody relies on this being set.
+  blocked_request.extension_info_map = NULL;
   DecrementBlockCount(profile, std::string(), event_name, request_id, NULL);
 }
 

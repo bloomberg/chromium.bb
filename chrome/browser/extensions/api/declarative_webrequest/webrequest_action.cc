@@ -15,10 +15,13 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
+#include "chrome/browser/extensions/extension_info_map.h"
+#include "chrome/common/extensions/extension.h"
 #include "net/url_request/url_request.h"
 
 namespace extensions {
 
+namespace helpers = extension_web_request_api_helpers;
 namespace keys = declarative_webrequest_constants;
 
 namespace {
@@ -195,6 +198,16 @@ int WebRequestAction::GetMinimumPriority() const {
   return std::numeric_limits<int>::min();
 }
 
+bool WebRequestAction::HasPermission(const extensions::Extension* extension,
+                                     const net::URLRequest* request) const {
+  CHECK(extension);  // We enforce non-NULL values for security reasons.
+
+  // TODO(battre): Consider the permission to access requests from the incognito
+  // profile.
+  return helpers::HideRequest(request) ||
+      helpers::CanExtensionAccessURL(extension, request->url());
+}
+
 // static
 scoped_ptr<WebRequestAction> WebRequestAction::Create(
     const base::Value& json_action,
@@ -253,6 +266,7 @@ scoped_ptr<WebRequestActionSet> WebRequestActionSet::Create(
 }
 
 std::list<LinkedPtrEventResponseDelta> WebRequestActionSet::CreateDeltas(
+    const extensions::Extension* extension,
     net::URLRequest* request,
     RequestStages request_stage,
     const WebRequestRule::OptionalRequestData& optional_request_data,
@@ -260,6 +274,8 @@ std::list<LinkedPtrEventResponseDelta> WebRequestActionSet::CreateDeltas(
     const base::Time& extension_install_time) const {
   std::list<LinkedPtrEventResponseDelta> result;
   for (Actions::const_iterator i = actions_.begin(); i != actions_.end(); ++i) {
+    if (extension && !(*i)->HasPermission(extension, request))
+      continue;
     if ((*i)->GetStages() & request_stage) {
       LinkedPtrEventResponseDelta delta = (*i)->CreateDelta(request,
           request_stage, optional_request_data, extension_id,
@@ -304,8 +320,7 @@ LinkedPtrEventResponseDelta WebRequestCancelAction::CreateDelta(
     const base::Time& extension_install_time) const {
   CHECK(request_stage & GetStages());
   LinkedPtrEventResponseDelta result(
-      new extension_web_request_api_helpers::EventResponseDelta(
-          extension_id, extension_install_time));
+      new helpers::EventResponseDelta(extension_id, extension_install_time));
   result->cancel = true;
   return result;
 }
@@ -337,8 +352,7 @@ LinkedPtrEventResponseDelta WebRequestRedirectAction::CreateDelta(
   if (request->url() == redirect_url_)
     return LinkedPtrEventResponseDelta(NULL);
   LinkedPtrEventResponseDelta result(
-      new extension_web_request_api_helpers::EventResponseDelta(
-          extension_id, extension_install_time));
+      new helpers::EventResponseDelta(extension_id, extension_install_time));
   result->new_url = redirect_url_;
   return result;
 }
@@ -362,6 +376,14 @@ WebRequestRedirectToTransparentImageAction::GetType() const {
   return WebRequestAction::ACTION_REDIRECT_TO_TRANSPARENT_IMAGE;
 }
 
+bool WebRequestRedirectToTransparentImageAction::HasPermission(
+    const extensions::Extension* extension,
+    const net::URLRequest* request) const {
+  // TODO(battre): Consider the permission to access requests from the incognito
+  // profile.
+  return true;
+}
+
 LinkedPtrEventResponseDelta
 WebRequestRedirectToTransparentImageAction::CreateDelta(
     net::URLRequest* request,
@@ -371,8 +393,7 @@ WebRequestRedirectToTransparentImageAction::CreateDelta(
     const base::Time& extension_install_time) const {
   CHECK(request_stage & GetStages());
   LinkedPtrEventResponseDelta result(
-      new extension_web_request_api_helpers::EventResponseDelta(
-          extension_id, extension_install_time));
+      new helpers::EventResponseDelta(extension_id, extension_install_time));
   result->new_url = GURL(kTransparentImageUrl);
   return result;
 }
@@ -396,6 +417,12 @@ WebRequestRedirectToEmptyDocumentAction::GetType() const {
   return WebRequestAction::ACTION_REDIRECT_TO_EMPTY_DOCUMENT;
 }
 
+bool WebRequestRedirectToEmptyDocumentAction::HasPermission(
+    const extensions::Extension* extension,
+    const net::URLRequest* request) const {
+  return true;
+}
+
 LinkedPtrEventResponseDelta
 WebRequestRedirectToEmptyDocumentAction::CreateDelta(
     net::URLRequest* request,
@@ -405,8 +432,7 @@ WebRequestRedirectToEmptyDocumentAction::CreateDelta(
     const base::Time& extension_install_time) const {
   CHECK(request_stage & GetStages());
   LinkedPtrEventResponseDelta result(
-      new extension_web_request_api_helpers::EventResponseDelta(
-          extension_id, extension_install_time));
+      new helpers::EventResponseDelta(extension_id, extension_install_time));
   result->new_url = GURL(kEmptyDocumentUrl);
   return result;
 }
@@ -550,8 +576,7 @@ WebRequestSetRequestHeaderAction::CreateDelta(
     const base::Time& extension_install_time) const {
   CHECK(request_stage & GetStages());
   LinkedPtrEventResponseDelta result(
-      new extension_web_request_api_helpers::EventResponseDelta(
-          extension_id, extension_install_time));
+      new helpers::EventResponseDelta(extension_id, extension_install_time));
   result->modified_request_headers.SetHeader(name_, value_);
   return result;
 }
@@ -585,8 +610,7 @@ WebRequestRemoveRequestHeaderAction::CreateDelta(
     const base::Time& extension_install_time) const {
   CHECK(request_stage & GetStages());
   LinkedPtrEventResponseDelta result(
-      new extension_web_request_api_helpers::EventResponseDelta(
-          extension_id, extension_install_time));
+      new helpers::EventResponseDelta(extension_id, extension_install_time));
   result->deleted_request_headers.push_back(name_);
   return result;
 }
@@ -631,8 +655,7 @@ WebRequestAddResponseHeaderAction::CreateDelta(
     return LinkedPtrEventResponseDelta(NULL);
 
   LinkedPtrEventResponseDelta result(
-      new extension_web_request_api_helpers::EventResponseDelta(
-          extension_id, extension_install_time));
+      new helpers::EventResponseDelta(extension_id, extension_install_time));
   result->added_response_headers.push_back(make_pair(name_, value_));
   return result;
 }
@@ -675,8 +698,7 @@ WebRequestRemoveResponseHeaderAction::CreateDelta(
     return LinkedPtrEventResponseDelta(NULL);
 
   LinkedPtrEventResponseDelta result(
-      new extension_web_request_api_helpers::EventResponseDelta(
-          extension_id, extension_install_time));
+      new helpers::EventResponseDelta(extension_id, extension_install_time));
   void* iter = NULL;
   std::string current_value;
   while (headers->EnumerateHeader(&iter, name_, &current_value)) {
@@ -714,6 +736,12 @@ WebRequestAction::Type WebRequestIgnoreRulesAction::GetType() const {
 
 int WebRequestIgnoreRulesAction::GetMinimumPriority() const {
   return minimum_priority_;
+}
+
+bool WebRequestIgnoreRulesAction::HasPermission(
+    const extensions::Extension* extension,
+    const net::URLRequest* request) const {
+  return true;
 }
 
 LinkedPtrEventResponseDelta WebRequestIgnoreRulesAction::CreateDelta(

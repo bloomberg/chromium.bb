@@ -26,6 +26,10 @@ class ListValue;
 class Value;
 }
 
+namespace extensions {
+class Extension;
+}
+
 namespace net {
 class BoundNetLog;
 class URLRequest;
@@ -169,7 +173,7 @@ bool MergeOnAuthRequiredResponses(
     const net::BoundNetLog* net_log);
 
 // Returns true if the request shall not be reported to extensions.
-bool HideRequest(net::URLRequest* request);
+bool HideRequest(const net::URLRequest* request);
 
 // Returns whether |type| is a ResourceType that is handled by the web request
 // API.
@@ -184,6 +188,12 @@ const char* ResourceTypeToString(ResourceType::Type type);
 // success.
 bool ParseResourceType(const std::string& type_str,
                        ResourceType::Type* type);
+
+// Returns whether |extension| may access |url| based on host permissions.
+// In addition to that access is granted to about: URLs and extension URLs
+// that are in the scope of |extension|.
+bool CanExtensionAccessURL(const extensions::Extension* extension,
+                           const GURL& url);
 
 }  // namespace extension_web_request_api_helpers
 
