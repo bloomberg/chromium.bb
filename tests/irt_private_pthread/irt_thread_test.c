@@ -63,7 +63,7 @@ void test_user_thread(void) {
   assert(g_initial_thread_id != NULL);
 
   g_thread_flag = 1;
-  void *dummy_tls = (void *) 0x1234;
+  void *dummy_tls = &dummy_tls;
   int rc = nacl_irt_thread.thread_create(
       (void *) (uintptr_t) user_thread_func, allocate_stack(), dummy_tls);
   assert(rc == 0);
@@ -105,7 +105,7 @@ static void initial_thread_exit_helper(void) {
 
 void test_exiting_initial_thread(void) {
   g_thread_flag = 1;
-  void *dummy_tls = (void *) 0x1234;
+  void *dummy_tls = &dummy_tls;
   int rc = nacl_irt_thread.thread_create(
       (void *) (uintptr_t) initial_thread_exit_helper,
       allocate_stack(), dummy_tls);

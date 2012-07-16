@@ -105,6 +105,27 @@ static int nacl_irt_thread_create(void *start_user_address, void *stack,
                                   void *thread_ptr) {
   struct nc_combined_tdb *tdb;
 
+  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
+#if defined(__i386__)
+  /*
+   * On x86-32, the user thread pointer is fetched by reading %gs:0.
+   * The TCB may implement this in one of two ways:
+   *
+   *  (1) with the %gs segment pointing into untrusted address space,
+   *      so that user code gets *(void **) thread_ptr; or
+   *  (2) with the %gs segment pointing to a copy of the value
+   *      thread_ptr in trusted address space.
+   *
+   * Even if we implement (2), we want to have the freedom to switch
+   * back to (1) later, so we require the user thread library to set
+   * up thread_ptr to point to itself.  This is not foolproof, because
+   * user code might still modify *thread_ptr after the thread has
+   * been launched.
+   */
+  if (*(void **) thread_ptr != thread_ptr)
+    return EINVAL;
+#endif
+
   /*
    * Before we start the thread, allocate the IRT-private TLS area for it.
    */
