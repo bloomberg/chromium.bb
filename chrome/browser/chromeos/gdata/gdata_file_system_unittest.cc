@@ -410,31 +410,6 @@ class GDataFileSystemTest : public testing::Test {
       return "";
   }
 
-  // TODO(satorux): Remove this. crbug.com/137234
-  GDataEntry* FindEntry(const FilePath& file_path) {
-    return file_system_->GetGDataEntryByPath(file_path);
-  }
-
-  // TODO(satorux): Remove this. crbug.com/137234
-  void FindAndTestFilePath(const FilePath& file_path) {
-    GDataEntry* entry = FindEntry(file_path);
-    ASSERT_TRUE(entry) << "Entry can't be found " << file_path.value();
-    EXPECT_EQ(entry->GetFilePath(), file_path);
-  }
-
-  // TODO(satorux): Remove this. crbug.com/137234
-  GDataEntry* FindEntryByResourceId(const std::string& resource_id) {
-    return file_system_->root_->GetEntryByResourceId(resource_id);
-  }
-
-  FilePath GetCacheFilePath(const std::string& resource_id,
-                            const std::string& md5,
-                            GDataCache::CacheSubDirectoryType sub_dir_type,
-                            GDataCache::CachedFileOrigin file_origin) {
-    return cache_->GetCacheFilePath(resource_id, md5, sub_dir_type,
-                                    file_origin);
-  }
-
   // Helper function to call GetCacheEntry from origin thread.
   bool GetCacheEntryFromOriginThread(const std::string& resource_id,
                                      const std::string& md5,
@@ -1088,10 +1063,11 @@ TEST_F(GDataFileSystemTest, SearchInSubSubdir) {
 TEST_F(GDataFileSystemTest, FilePathTests) {
   LoadRootFeedDocument("root_feed.json");
 
-  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("drive/File 1.txt")));
-  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("drive/Directory 1")));
-  FindAndTestFilePath(
-      FilePath(FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt")));
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL("drive/File 1.txt"))));
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))));
+  EXPECT_TRUE(EntryExists(
+      FilePath(
+          FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt"))));
 }
 
 TEST_F(GDataFileSystemTest, ChangeFeed_AddAndDeleteFileInRoot) {
@@ -1266,11 +1242,12 @@ TEST_F(GDataFileSystemTest, CachedFeedLoading) {
   SaveTestFileSystem();
   TestLoadMetadataFromCache();
 
-  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("drive/File1")));
-  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("drive/Dir1")));
-  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("drive/Dir1/File2")));
-  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("drive/Dir1/SubDir2")));
-  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("drive/Dir1/SubDir2/File3")));
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL("drive/File1"))));
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL("drive/Dir1"))));
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL("drive/Dir1/File2"))));
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL("drive/Dir1/SubDir2"))));
+  EXPECT_TRUE(EntryExists(
+      FilePath(FILE_PATH_LITERAL("drive/Dir1/SubDir2/File3"))));
 }
 
 TEST_F(GDataFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
@@ -1907,21 +1884,6 @@ TEST_F(GDataFileSystemTest, FindFirstMissingParentDirectory) {
           &first_missing_parent_path));
 }
 
-TEST_F(GDataFileSystemTest, GetGDataEntryByPath) {
-  LoadRootFeedDocument("root_feed.json");
-
-  GDataEntry* entry = file_system_->GetGDataEntryByPath(
-      FilePath(FILE_PATH_LITERAL("drive/File 1.txt")));
-  ASSERT_TRUE(entry != NULL);
-  EXPECT_EQ("https://file1_link_self/file:2_file_resource_id",
-            entry->edit_url().spec());
-  EXPECT_EQ("https://file_content_url/", entry->content_url().spec());
-
-  GDataEntry* non_existent = file_system_->GetGDataEntryByPath(
-      FilePath(FILE_PATH_LITERAL("drive/Nonexistent.txt")));
-  ASSERT_TRUE(non_existent == NULL);
-}
-
 // Create a directory through the document service
 TEST_F(GDataFileSystemTest, CreateDirectoryWithService) {
   LoadRootFeedDocument("root_feed.json");
@@ -1952,11 +1914,11 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
                  callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  GDataEntry* entry = FindEntry(file_in_root);
-  GDataFile* file = entry->AsGDataFile();
-  FilePath downloaded_file = GetCachePathForFile(file->resource_id(),
-                                                 file->file_md5());
-  const int64 file_size = entry->file_info().size;
+  scoped_ptr<GDataFileProto> file_proto(GetFileInfoByPathSync(file_in_root));
+  FilePath downloaded_file = GetCachePathForFile(
+      file_proto->gdata_entry().resource_id(),
+      file_proto->file_md5());
+  const int64 file_size = file_proto->gdata_entry().file_info().size();
 
   // Pretend we have enough space.
   EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
@@ -1993,10 +1955,10 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
                  callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  GDataEntry* entry = FindEntry(file_in_root);
-  GDataFile* file = entry->AsGDataFile();
-  FilePath downloaded_file = GetCachePathForFile(file->resource_id(),
-                                                 file->file_md5());
+  scoped_ptr<GDataFileProto> file_proto(GetFileInfoByPathSync(file_in_root));
+  FilePath downloaded_file = GetCachePathForFile(
+      file_proto->gdata_entry().resource_id(),
+      file_proto->file_md5());
 
   // Pretend we have no space at all.
   EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
@@ -2032,11 +1994,11 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
                  callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  GDataEntry* entry = FindEntry(file_in_root);
-  GDataFile* file = entry->AsGDataFile();
-  FilePath downloaded_file = GetCachePathForFile(file->resource_id(),
-                                                 file->file_md5());
-  const int64 file_size = entry->file_info().size;
+  scoped_ptr<GDataFileProto> file_proto(GetFileInfoByPathSync(file_in_root));
+  FilePath downloaded_file = GetCachePathForFile(
+      file_proto->gdata_entry().resource_id(),
+      file_proto->file_md5());
+  const int64 file_size = file_proto->gdata_entry().file_info().size();
 
   // Pretend we have no space first (checked before downloading a file),
   // but then start reporting we have space. This is to emulate that
@@ -2093,11 +2055,11 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
                  callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  GDataEntry* entry = FindEntry(file_in_root);
-  GDataFile* file = entry->AsGDataFile();
-  FilePath downloaded_file = GetCachePathForFile(file->resource_id(),
-                                                 file->file_md5());
-  const int64 file_size = entry->file_info().size;
+  scoped_ptr<GDataFileProto> file_proto(GetFileInfoByPathSync(file_in_root));
+  FilePath downloaded_file = GetCachePathForFile(
+      file_proto->gdata_entry().resource_id(),
+      file_proto->file_md5());
+  const int64 file_size = file_proto->gdata_entry().file_info().size();
 
   // Pretend we have enough space first (checked before downloading a file),
   // but then start reporting we have not enough space. This is to emulate that
@@ -2137,14 +2099,14 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromCache) {
                  callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  GDataEntry* entry = FindEntry(file_in_root);
-  GDataFile* file = entry->AsGDataFile();
-  FilePath downloaded_file = GetCachePathForFile(file->resource_id(),
-                                                 file->file_md5());
+  scoped_ptr<GDataFileProto> file_proto(GetFileInfoByPathSync(file_in_root));
+  FilePath downloaded_file = GetCachePathForFile(
+      file_proto->gdata_entry().resource_id(),
+      file_proto->file_md5());
 
   // Store something as cached version of this file.
-  TestStoreToCache(file->resource_id(),
-                   file->file_md5(),
+  TestStoreToCache(file_proto->gdata_entry().resource_id(),
+                   file_proto->file_md5(),
                    GetTestFilePath("root_feed.json"),
                    base::PLATFORM_FILE_OK,
                    test_util::TEST_CACHE_STATE_PRESENT,
@@ -2205,10 +2167,10 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId) {
                  callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  GDataEntry* entry = FindEntry(file_in_root);
-  GDataFile* file = entry->AsGDataFile();
-  FilePath downloaded_file = GetCachePathForFile(file->resource_id(),
-                                                 file->file_md5());
+  scoped_ptr<GDataFileProto> file_proto(GetFileInfoByPathSync(file_in_root));
+  FilePath downloaded_file = GetCachePathForFile(
+      file_proto->gdata_entry().resource_id(),
+      file_proto->file_md5());
 
   // Before Download starts metadata from server will be fetched.
   // We will read content url from the result.
@@ -2224,7 +2186,8 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId) {
                            _, _))
       .Times(1);
 
-  file_system_->GetFileByResourceId(file->resource_id(), callback,
+  file_system_->GetFileByResourceId(file_proto->gdata_entry().resource_id(),
+                                    callback,
                                     GetDownloadDataCallback());
   test_util::RunBlockingPoolTask();
 
@@ -2241,14 +2204,14 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId_FromCache) {
                  callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  GDataEntry* entry = FindEntry(file_in_root);
-  GDataFile* file = entry->AsGDataFile();
-  FilePath downloaded_file = GetCachePathForFile(file->resource_id(),
-                                                 file->file_md5());
+  scoped_ptr<GDataFileProto> file_proto(GetFileInfoByPathSync(file_in_root));
+  FilePath downloaded_file = GetCachePathForFile(
+      file_proto->gdata_entry().resource_id(),
+      file_proto->file_md5());
 
   // Store something as cached version of this file.
-  TestStoreToCache(file->resource_id(),
-                   file->file_md5(),
+  TestStoreToCache(file_proto->gdata_entry().resource_id(),
+                   file_proto->file_md5(),
                    GetTestFilePath("root_feed.json"),
                    base::PLATFORM_FILE_OK,
                    test_util::TEST_CACHE_STATE_PRESENT,
@@ -2259,7 +2222,8 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId_FromCache) {
   EXPECT_CALL(*mock_doc_service_, DownloadFile(_, _, _, _, _))
       .Times(0);
 
-  file_system_->GetFileByResourceId(file->resource_id(), callback,
+  file_system_->GetFileByResourceId(file_proto->gdata_entry().resource_id(),
+                                    callback,
                                     GetDownloadDataCallback());
   test_util::RunBlockingPoolTask();
 
@@ -2385,12 +2349,10 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
 
   // Check the number of files in the root directory. We'll compare the
   // number after updating a file.
-  GDataEntry* root_entry =
-      FindEntryByResourceId(kGDataRootDirectoryResourceId);
-  ASSERT_TRUE(root_entry);
-  GDataDirectory* root_directory = root_entry->AsGDataDirectory();
-  ASSERT_TRUE(root_directory);
-  const size_t num_files_in_root = root_directory->child_files().size();
+  scoped_ptr<GDataDirectoryProto> root_directory_proto(
+      ReadDirectoryByPathSync(FilePath::FromUTF8Unsafe("drive")));
+  ASSERT_TRUE(root_directory_proto.get());
+  const int num_files_in_root = root_directory_proto->child_files().size();
 
   file_system_->UpdateFileByResourceId(kResourceId, callback);
   test_util::RunBlockingPoolTask();
@@ -2399,7 +2361,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   // Make sure that the number of files did not change (i.e. we updated an
   // existing file, rather than adding a new file. The number of files
   // increases if we don't handle the file update right).
-  EXPECT_EQ(num_files_in_root, root_directory->child_files().size());
+  EXPECT_EQ(num_files_in_root, root_directory_proto->child_files().size());
   // After the file is updated, the dirty bit is cleared, hence the symlink
   // should be gone.
   ASSERT_FALSE(file_util::PathExists(outgoing_symlink_path));
@@ -2473,13 +2435,14 @@ TEST_F(GDataFileSystemTest, OpenAndCloseFile) {
                  callback_helper_.get());
 
   const FilePath kFileInRoot(FILE_PATH_LITERAL("drive/File 1.txt"));
-  GDataEntry* entry = FindEntry(kFileInRoot);
-  GDataFile* file = entry->AsGDataFile();
-  FilePath downloaded_file = GetCachePathForFile(file->resource_id(),
-                                                 file->file_md5());
-  const int64 file_size = entry->file_info().size;
-  const std::string file_resource_id = entry->resource_id();
-  const std::string file_md5 = file->file_md5();
+  scoped_ptr<GDataFileProto> file_proto(GetFileInfoByPathSync(kFileInRoot));
+  FilePath downloaded_file = GetCachePathForFile(
+      file_proto->gdata_entry().resource_id(),
+      file_proto->file_md5());
+  const int64 file_size = file_proto->gdata_entry().file_info().size();
+  const std::string& file_resource_id =
+      file_proto->gdata_entry().resource_id();
+  const std::string& file_md5 = file_proto->file_md5();
 
   // A dirty file is created on close.
   EXPECT_CALL(*mock_sync_client_, OnCacheCommitted(file_resource_id)).Times(1);
