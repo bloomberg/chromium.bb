@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,6 +94,47 @@ bool MacSandboxedFileAccessTestCase::SandboxedTest() {
 
 TEST_F(MacSandboxTest, FileAccess) {
   EXPECT_TRUE(RunTestInAllSandboxTypes("MacSandboxedFileAccessTestCase", NULL));
+}
+
+//--------------------- /dev/urandom Sandboxing ----------------------
+// /dev/urandom is available to ppapi sandbox only.
+class MacSandboxedUrandomTestCase : public sandboxtest::MacSandboxTestCase {
+ public:
+  virtual bool SandboxedTest();
+};
+
+REGISTER_SANDBOX_TEST_CASE(MacSandboxedUrandomTestCase);
+
+bool MacSandboxedUrandomTestCase::SandboxedTest() {
+  int fdes = open("/dev/urandom", O_RDONLY);
+  file_util::ScopedFD file_closer(&fdes);
+
+  // Open succeeds under ppapi sandbox, else it is not permitted.
+  if (test_data_ == "ppapi") {
+    if (fdes == -1)
+      return false;
+
+    char buf[16];
+    int rc = read(fdes, buf, sizeof(buf));
+    return rc == sizeof(buf);
+  } else {
+    return fdes == -1 && errno == EPERM;
+  }
+}
+
+TEST_F(MacSandboxTest, UrandomAccess) {
+  // Similar to RunTestInAllSandboxTypes(), except changing
+  // |test_data| for the ppapi case.  Passing "" in the non-ppapi case
+  // to overwrite the test data (NULL means not to change it).
+  for (content::SandboxType i = content::SANDBOX_TYPE_FIRST_TYPE;
+       i < content::SANDBOX_TYPE_AFTER_LAST_TYPE; ++i) {
+    if (i == content::SANDBOX_TYPE_PPAPI) {
+      EXPECT_TRUE(RunTestInSandbox(i, "MacSandboxedUrandomTestCase", "ppapi"));
+    } else {
+      EXPECT_TRUE(RunTestInSandbox(i, "MacSandboxedUrandomTestCase", ""))
+          << "for sandbox type " << i;
+    }
+  }
 }
 
 }  // namespace
