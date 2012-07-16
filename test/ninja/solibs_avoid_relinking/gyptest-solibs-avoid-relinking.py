@@ -11,6 +11,7 @@ solib's public API hasn't changed.
 
 import os
 import sys
+import TestCommon
 import TestGyp
 
 # NOTE(fischman): This test will not work with other generators because the
@@ -21,23 +22,18 @@ import TestGyp
 # if this was extended to other generators).
 test = TestGyp.TestGyp(formats=['ninja'])
 
-# The optimization being tested for is only implemented on linux and mac.
-if sys.platform in ['win32', 'cygwin']:
-  test.pass_test()
-  sys.exit(0)
-
 test.run_gyp('solibs_avoid_relinking.gyp')
 
 # Build the executable, grab its timestamp, touch the solib's source, rebuild
 # executable, ensure timestamp hasn't changed.
 test.build('solibs_avoid_relinking.gyp', 'b')
-test.built_file_must_exist('b')
-pre_stat = os.stat(test.built_file_path('b'))
+test.built_file_must_exist('b' + TestCommon.exe_suffix)
+pre_stat = os.stat(test.built_file_path('b' + TestCommon.exe_suffix))
 os.utime(os.path.join(test.workdir, 'solib.cc'),
          (pre_stat.st_atime, pre_stat.st_mtime + 100))
 test.sleep()
 test.build('solibs_avoid_relinking.gyp', 'b')
-post_stat = os.stat(test.built_file_path('b'))
+post_stat = os.stat(test.built_file_path('b' + TestCommon.exe_suffix))
 
 if pre_stat.st_mtime != post_stat.st_mtime:
   test.fail_test()

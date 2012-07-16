@@ -8,12 +8,24 @@
       'target_name': 'a',
       'type': 'shared_library',
       'sources': [ 'solib.cc' ],
+      # Incremental linking enabled so that .lib timestamp is maintained when
+      # exports are unchanged.
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'LinkIncremental': '2',
+        }
+      },
     },
     {
       'target_name': 'b',
       'type': 'executable',
       'sources': [ 'main.cc' ],
-      'dependencies': [ 'a' ]
+      'dependencies': [ 'a' ],
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'LinkIncremental': '2',
+        }
+      },
     },
   ],
   'conditions': [
