@@ -318,7 +318,7 @@ int BrowserFrameWin::GetMinimizeButtonOffset() const {
   int minimize_button_offset =
       GetMinimizeButtonOffsetForWindow(GetNativeView());
 
-  if (minimize_button_offset)
+  if (minimize_button_offset > 0)
     return minimize_button_offset;
 
   // If we fail to get the minimize button offset via the WM_GETTITLEBARINFOEX
