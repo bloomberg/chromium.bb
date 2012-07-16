@@ -287,7 +287,9 @@ class _RemoteInspectorThread(threading.Thread):
     self._action_queue = []
     self._action_queue_condition = threading.Condition()
     self._action_specific_callback = None  # Callback only for current action.
+    self._action_specific_callback_lock = threading.Lock()
     self._general_callbacks = []  # General callbacks that can be long-lived.
+    self._general_callbacks_lock = threading.Lock()
     self._condition_to_wait = None
 
     # Create a DevToolsSocket client and wait for it to complete the remote
@@ -315,6 +317,19 @@ class _RemoteInspectorThread(threading.Thread):
            debugging communication protocol in WebKit.
     """
     reply_dict = simplejson.loads(msg)
+
+    # Notify callbacks of this message received from the remote inspector.
+    self._action_specific_callback_lock.acquire()
+    if self._action_specific_callback:
+      self._action_specific_callback(reply_dict)
+    self._action_specific_callback_lock.release()
+
+    self._general_callbacks_lock.acquire()
+    if self._general_callbacks:
+      for callback in self._general_callbacks:
+        callback(reply_dict)
+    self._general_callbacks_lock.release()
+
     if 'result' in reply_dict:
       # This is the result message associated with a previously-sent request.
       request = self.GetRequestWithId(reply_dict['id'])
@@ -322,12 +337,6 @@ class _RemoteInspectorThread(threading.Thread):
         request.is_fulfilled_condition.acquire()
         request.is_fulfilled_condition.notify()
         request.is_fulfilled_condition.release()
-    # Notify callbacks of this message received from the remote inspector.
-    if self._action_specific_callback:
-      self._action_specific_callback(reply_dict)
-    if self._general_callbacks:
-      for callback in self._general_callbacks:
-        callback(reply_dict)
 
   def run(self):
     """Start this thread; overridden from threading.Thread."""
@@ -336,7 +345,9 @@ class _RemoteInspectorThread(threading.Thread):
       if self._action_queue:
         # There's a request to the remote inspector that needs to be processed.
         messages, callback = self._action_queue.pop(0)
+        self._action_specific_callback_lock.acquire()
         self._action_specific_callback = callback
+        self._action_specific_callback_lock.release()
 
         # Prepare the request list.
         for message_id, message in enumerate(messages):
@@ -348,17 +359,22 @@ class _RemoteInspectorThread(threading.Thread):
         for request in self._requests:
           self._FillInParams(request)
           self._client.SendMessage(str(request))
+
           request.is_fulfilled_condition.acquire()
           self._condition_to_wait = request.is_fulfilled
           request.is_fulfilled_condition.wait()
           request.is_fulfilled_condition.release()
+
           if self._killed:
             self._client.close()
             return
 
         # Clean up so things are ready for the next request.
         self._requests = []
+
+        self._action_specific_callback_lock.acquire()
         self._action_specific_callback = None
+        self._action_specific_callback_lock.release()
 
       # Wait until there is something to process.
       self._condition_to_wait = self._action_queue_condition
@@ -399,7 +415,9 @@ class _RemoteInspectorThread(threading.Thread):
           remote inspector.  The callable should accept a single argument, which
           is a dictionary representing a message received.
     """
+    self._general_callbacks_lock.acquire()
     self._general_callbacks.append(callback)
+    self._general_callbacks_lock.release()
 
   def RemoveMessageCallback(self, callback):
     """Remove a callback from the set of those to invoke for messages received.
@@ -407,7 +425,9 @@ class _RemoteInspectorThread(threading.Thread):
     Args:
       callback: A callable to remove from consideration.
     """
+    self._general_callbacks_lock.acquire()
     self._general_callbacks.remove(callback)
+    self._general_callbacks_lock.release()
 
   def GetRequestWithId(self, request_id):
     """Identifies the request with the specified id.
@@ -816,6 +836,7 @@ class RemoteInspectorClient(object):
             self._collected_heap_snapshot_data['total_v8_node_count'] = count
             total_size = result['total_shallow_size']
             self._collected_heap_snapshot_data['total_heap_size'] = total_size
+
           done_condition.acquire()
           done_condition.notify()
           done_condition.release()
@@ -824,9 +845,11 @@ class RemoteInspectorClient(object):
     # the snapshot information is available to return.
     self._remote_inspector_thread.PerformAction(HEAP_SNAPSHOT_MESSAGES,
                                                 HandleReply)
+
     done_condition.acquire()
     done_condition.wait()
     done_condition.release()
+
     return self._collected_heap_snapshot_data
 
   def EvaluateJavaScript(self, expression):
@@ -858,6 +881,7 @@ class RemoteInspectorClient(object):
       """
       if 'result' in reply_dict and 'result' in reply_dict['result']:
         self._result = reply_dict['result']['result']['value']
+
         done_condition.acquire()
         done_condition.notify()
         done_condition.release()
@@ -866,9 +890,11 @@ class RemoteInspectorClient(object):
     # until that information is available to return.
     self._remote_inspector_thread.PerformAction(EVALUATE_MESSAGES,
                                                 HandleReply)
+
     done_condition.acquire()
     done_condition.wait()
     done_condition.release()
+
     return self._result
 
   def GetMemoryObjectCounts(self):
@@ -909,6 +935,7 @@ class RemoteInspectorClient(object):
             dom_node_count += dom_element['count']
         self._event_listener_count = event_listener_count
         self._dom_node_count = dom_node_count
+
         done_condition.acquire()
         done_condition.notify()
         done_condition.release()
@@ -917,9 +944,11 @@ class RemoteInspectorClient(object):
     # that information is available to return.
     self._remote_inspector_thread.PerformAction(MEMORY_COUNT_MESSAGES,
                                                 HandleReply)
+
     done_condition.acquire()
     done_condition.wait()
     done_condition.release()
+
     return {
       'DOMNodeCount': self._dom_node_count,
       'EventListenerCount': self._event_listener_count,
