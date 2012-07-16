@@ -647,6 +647,12 @@ const char kEapSubjectMatchProperty[] = "EAP.SubjectMatch";
 const char kHTTPProxyPortProperty[] = "HTTPProxyPort";
 const char kIPConfigProperty[] = "IPConfig";
 const char kPhysicalTechnologyProperty[] = "PhysicalTechnology";
+const char kStaticIPAddressProperty[] = "StaticIP.Address";
+const char kStaticIPGatewayProperty[] = "StaticIP.Gateway";
+const char kStaticIPMtuProperty[] = "StaticIP.Mtu";
+const char kStaticIPNameServersProperty[] = "StaticIP.NameServers";
+const char kStaticIPPeerAddressProperty[] = "StaticIP.PeerAddress";
+const char kStaticIPPrefixlenProperty[] = "StaticIP.Prefixlen";
 const char kWifiVendorInformationProperty[] = "WiFi.VendorInformation";
 
 // WiFi Service Vendor Information dictionary properties.
