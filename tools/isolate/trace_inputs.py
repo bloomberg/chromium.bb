@@ -799,37 +799,37 @@ class ApiBase(object):
   """OS-agnostic API to trace a process and its children."""
   class Context(object):
     """Processes one log line at a time and keeps the list of traced processes.
+
+    The parsing is complicated by the fact that logs are traced out of order for
+    strace but in-order for dtrace and logman. In addition, on Windows it is
+    very frequent that processids are reused so a flat list cannot be used. But
+    at the same time, it is impossible to faithfully construct a graph when the
+    logs are processed out of order. So both a tree and a flat mapping are used,
+    the tree is the real process tree, while the flat mapping stores the last
+    valid process for the corresponding processid. For the strace case, the
+    tree's head is guessed at the last moment.
     """
     class Process(object):
       """Keeps context for one traced child process.
 
       Logs all the files this process touched. Ignores directories.
       """
-      def __init__(self, root, pid, initial_cwd, parentid):
-        """root is a reference to the Context."""
+      def __init__(self, blacklist, pid, initial_cwd):
         # Check internal consistency.
-        assert isinstance(root, ApiBase.Context)
         assert isinstance(pid, int), repr(pid)
-        self.root = weakref.ref(root)
         self.pid = pid
-        # Children are pids.
+        # children are Process instances.
         self.children = []
-        self.parentid = parentid
         self.initial_cwd = initial_cwd
         self.cwd = None
         self.files = set()
         self.only_touched = set()
         self.executable = None
         self.command = None
-
-        if parentid:
-          self.root().processes[parentid].children.append(pid)
+        self._blacklist = blacklist
 
       def to_results_process(self):
         """Resolves file case sensitivity and or late-bound strings."""
-        children = [
-          self.root().processes[c].to_results_process() for c in self.children
-        ]
         # When resolving files, it's normal to get dupe because a file could be
         # opened multiple times with different case. Resolve the deduplication
         # here.
@@ -869,10 +869,10 @@ class ApiBase(object):
             render_to_string_and_fix_case(self.executable),
             self.command,
             render_to_string_and_fix_case(self.initial_cwd),
-            children)
+            [c.to_results_process() for c in self.children])
 
       def add_file(self, filepath, touch_only):
-        if self.root().blacklist(unicode(filepath)):
+        if self._blacklist(unicode(filepath)):
           return
         logging.debug('add_file(%d, %s, %s)' % (self.pid, filepath, touch_only))
         if touch_only:
@@ -882,7 +882,11 @@ class ApiBase(object):
 
     def __init__(self, blacklist):
       self.blacklist = blacklist
-      self.processes = {}
+      # Initial process.
+      self.root_process = None
+      # dict to accelerate process lookup, to not have to lookup the whole graph
+      # each time.
+      self._process_lookup = {}
 
   class Tracer(object):
     """During it's lifetime, the tracing subsystem is enabled."""
@@ -1076,14 +1080,24 @@ class Strace(ApiBase):
           return str(self.render())
 
       def __init__(self, root, pid):
+        """Keeps enough information to be able to guess the original process
+        root.
+
+        strace doesn't store which process was the initial process. So more
+        information needs to be kept so the graph can be reconstructed from the
+        flat map.
+        """
         logging.info('%s(%d)' % (self.__class__.__name__, pid))
-        super(Strace.Context.Process, self).__init__(root, pid, None, None)
+        super(Strace.Context.Process, self).__init__(root.blacklist, pid, None)
+        assert isinstance(root, ApiBase.Context)
+        self._root = weakref.ref(root)
         # The dict key is the function name of the pending call, like 'open'
         # or 'execve'.
         self._pending_calls = {}
         self._line_number = 0
         # Current directory when the process started.
-        self.initial_cwd = self.RelativePath(self.root(), None)
+        self.initial_cwd = self.RelativePath(self._root(), None)
+        self.parentid = None
 
       def get_cwd(self):
         """Returns the best known value of cwd."""
@@ -1188,7 +1202,7 @@ class Strace(ApiBase):
           return
         # Update the other process right away.
         childpid = int(result)
-        child = self.root().get_or_set_proc(childpid)
+        child = self._root().get_or_set_proc(childpid)
         if child.parentid is not None or childpid in self.children:
           raise TracingFailure(
               'Found internal inconsitency in process lifetime detection '
@@ -1199,7 +1213,7 @@ class Strace(ApiBase):
         child.initial_cwd = self.get_cwd()
         child.parentid = self.pid
         # It is necessary because the logs are processed out of order.
-        self.children.append(childpid)
+        self.children.append(child)
 
       def handle_close(self, _args, _result):
         pass
@@ -1301,7 +1315,7 @@ class Strace(ApiBase):
     def to_results(self):
       """Finds back the root process and verify consistency."""
       # TODO(maruel): Absolutely unecessary, fix me.
-      root = [p for p in self.processes.itervalues() if not p.parentid]
+      root = [p for p in self._process_lookup.itervalues() if not p.parentid]
       if len(root) != 1:
         raise TracingFailure(
             'Found internal inconsitency in process lifetime detection '
@@ -1310,15 +1324,16 @@ class Strace(ApiBase):
             None,
             None,
             sorted(p.pid for p in root))
-      process = root[0].to_results_process()
-      if sorted(self.processes) != sorted(p.pid for p in process.all):
+      self.root_process = root[0]
+      process = self.root_process.to_results_process()
+      if sorted(self._process_lookup) != sorted(p.pid for p in process.all):
         raise TracingFailure(
             'Found internal inconsitency in process lifetime detection '
             'while looking for len(tree) == len(list)',
             None,
             None,
             None,
-            sorted(self.processes),
+            sorted(self._process_lookup),
             sorted(p.pid for p in process.all))
       return Results(process)
 
@@ -1332,9 +1347,9 @@ class Strace(ApiBase):
             None,
             None,
             pid)
-      if pid not in self.processes:
-        self.processes[pid] = self.Process(self, pid)
-      return self.processes[pid]
+      if pid not in self._process_lookup:
+        self._process_lookup[pid] = self.Process(self, pid)
+      return self._process_lookup[pid]
 
     @classmethod
     def traces(cls):
@@ -1461,7 +1476,9 @@ class Dtrace(ApiBase):
     O_DIRECTORY = 0x100000
 
     class Process(ApiBase.Context.Process):
-      pass
+      def __init__(self, *args):
+        super(Dtrace.Context.Process, self).__init__(*args)
+        self.cwd = self.initial_cwd
 
     def __init__(self, blacklist, tracer_pid, initial_cwd):
       logging.info(
@@ -1470,8 +1487,6 @@ class Dtrace(ApiBase):
       # Process ID of the trace_child_process.py wrapper script instance.
       self._tracer_pid = tracer_pid
       self._initial_cwd = initial_cwd
-      # First process to be started by self._tracer_pid.
-      self._initial_pid = None
       self._line_number = 0
 
     def on_line(self, line):
@@ -1509,17 +1524,16 @@ class Dtrace(ApiBase):
             e)
 
     def to_results(self):
-      """Uses self._initial_pid to determine the initial process."""
-      process = self.processes[self._initial_pid].to_results_process()
+      process = self.root_process.to_results_process()
       # Internal concistency check.
-      if sorted(self.processes) != sorted(p.pid for p in process.all):
+      if sorted(self._process_lookup) != sorted(p.pid for p in process.all):
         raise TracingFailure(
             'Found internal inconsitency in process lifetime detection '
             'while looking for len(tree) == len(list)',
             None,
             None,
             None,
-            sorted(self.processes),
+            sorted(self._process_lookup),
             sorted(p.pid for p in process.all))
       return Results(process)
 
@@ -1536,7 +1550,7 @@ class Dtrace(ApiBase):
       are child of the traced processes so there is no need to verify the
       process hierarchy.
       """
-      if pid in self.processes:
+      if pid in self._process_lookup:
         raise TracingFailure(
             'Found internal inconsitency in proc_start: %d started two times' %
                 pid,
@@ -1547,25 +1561,25 @@ class Dtrace(ApiBase):
             'Failed to parse arguments: %s' % args,
             None, None, None)
       ppid = int(match.group(1))
-      if ppid == self._tracer_pid and not self._initial_pid:
-        self._initial_pid = pid
-        ppid = None
-        cwd = self._initial_cwd
-      elif ppid in self.processes:
-        parent = self.processes[ppid]
-        cwd = parent.cwd
+      if ppid == self._tracer_pid and not self.root_process:
+        proc = self.root_process = self.Process(
+            self.blacklist, pid, self._initial_cwd)
+      elif ppid in self._process_lookup:
+        proc = self.Process(self.blacklist, pid, self._process_lookup[ppid].cwd)
+        self._process_lookup[ppid].children.append(proc)
       else:
         # Another process tree, ignore.
         return
-      proc = self.processes[pid] = self.Process(self, pid, cwd, ppid)
-      proc.cwd = cwd
-      logging.debug('New child: %s -> %d  cwd:%s' % (ppid, pid, unicode(cwd)))
+      self._process_lookup[pid] = proc
+      logging.debug(
+          'New child: %s -> %d  cwd:%s' %
+          (ppid, pid, unicode(proc.initial_cwd)))
 
     def handle_proc_exit(self, pid, _args):
       """Removes cwd."""
-      if pid in self.processes:
+      if pid in self._process_lookup:
         # self._tracer_pid is not traced itself and other traces run neither.
-        self.processes[pid].cwd = None
+        self._process_lookup[pid].cwd = None
 
     def handle_execve(self, pid, args):
       """Sets the process' executable.
@@ -1577,7 +1591,7 @@ class Dtrace(ApiBase):
       Will have to put the answer at http://stackoverflow.com/questions/7556249.
       :)
       """
-      if not pid in self.processes:
+      if not pid in self._process_lookup:
         # Another process tree, ignore.
         return
       match = self.RE_EXECVE.match(args)
@@ -1585,7 +1599,7 @@ class Dtrace(ApiBase):
         raise TracingFailure(
             'Failed to parse arguments: %r' % args,
             None, None, None)
-      proc = self.processes[pid]
+      proc = self._process_lookup[pid]
       proc.executable = match.group(1)
       proc.command = self.process_escaped_arguments(match.group(3))
       if int(match.group(2)) != len(proc.command):
@@ -1595,24 +1609,24 @@ class Dtrace(ApiBase):
 
     def handle_chdir(self, pid, args):
       """Updates cwd."""
-      if pid not in self.processes:
+      if pid not in self._process_lookup:
         # Another process tree, ignore.
         return
       cwd = self.RE_CHDIR.match(args).group(1)
       if not cwd.startswith('/'):
-        cwd2 = os.path.join(self.processes[pid].cwd, cwd)
+        cwd2 = os.path.join(self._process_lookup[pid].cwd, cwd)
         logging.debug('handle_chdir(%d, %s) -> %s' % (pid, cwd, cwd2))
       else:
         logging.debug('handle_chdir(%d, %s)' % (pid, cwd))
         cwd2 = cwd
-      self.processes[pid].cwd = cwd2
+      self._process_lookup[pid].cwd = cwd2
 
     def handle_open_nocancel(self, pid, args):
       """Redirects to handle_open()."""
       return self.handle_open(pid, args)
 
     def handle_open(self, pid, args):
-      if pid not in self.processes:
+      if pid not in self._process_lookup:
         # Another process tree, ignore.
         return
       match = self.RE_OPEN.match(args)
@@ -1627,7 +1641,7 @@ class Dtrace(ApiBase):
       self._handle_file(pid, match.group(1))
 
     def handle_rename(self, pid, args):
-      if pid not in self.processes:
+      if pid not in self._process_lookup:
         # Another process tree, ignore.
         return
       match = self.RE_RENAME.match(args)
@@ -1640,14 +1654,14 @@ class Dtrace(ApiBase):
 
     def _handle_file(self, pid, filepath):
       if not filepath.startswith('/'):
-        filepath = os.path.join(self.processes[pid].cwd, filepath)
+        filepath = os.path.join(self._process_lookup[pid].cwd, filepath)
       # We can get '..' in the path.
       filepath = os.path.normpath(filepath)
       # Sadly, still need to filter out directories here;
       # saw open_nocancel(".", 0, 0) = 0 lines.
       if os.path.isdir(filepath):
         return
-      self.processes[pid].add_file(filepath, False)
+      self._process_lookup[pid].add_file(filepath, False)
 
     def handle_ftruncate(self, pid, args):
       """Just used as a signal to kill dtrace, ignoring."""
@@ -2261,9 +2275,6 @@ class LogmanTrace(ApiBase):
       self._threads_active = {}
       # Process ID of the tracer, e.g. tracer_inputs.py
       self._tracer_pid = tracer_pid
-      # First process to be started by self._tracer_pid is the executable
-      # traced.
-      self._initial_pid = None
       self._line_number = 0
 
     def on_line(self, line):
@@ -2298,28 +2309,20 @@ class LogmanTrace(ApiBase):
             e)
 
     def to_results(self):
-      """Uses self._initial_pid to determine the initial process."""
-      if not self._initial_pid:
+      if not self.root_process:
         raise TracingFailure(
             'Failed to detect the initial process',
             None, None, None)
-      process = self.processes[self._initial_pid].to_results_process()
-      # Internal concistency check.
-      if sorted(self.processes) != sorted(p.pid for p in process.all):
-        raise TracingFailure(
-            'Found internal inconsitency in process lifetime detection '
-            'while looking for len(tree) == len(list)',
-            None,
-            None,
-            None,
-            sorted(self.processes),
-            sorted(p.pid for p in process.all))
+      process = self.root_process.to_results_process()
       return Results(process)
 
     def _thread_to_process(self, tid):
       """Finds the process from the thread id."""
       tid = int(tid, 16)
-      return self.processes.get(self._threads_active.get(tid))
+      pid = self._threads_active.get(tid)
+      if not pid or not self._process_lookup.get(pid):
+        return
+      return self._process_lookup[pid]
 
     @classmethod
     def handle_EventTrace_Header(cls, line):
@@ -2422,9 +2425,9 @@ class LogmanTrace(ApiBase):
 
     def handle_Process_End(self, line):
       pid = line[self.PID]
-      if pid in self.processes:
+      if pid in self._process_lookup:
         logging.info('Terminated: %d' % pid)
-        self.processes[pid].cwd = None
+        self._process_lookup[pid] = None
       else:
         logging.debug('Terminated: %d' % pid)
 
@@ -2449,21 +2452,21 @@ class LogmanTrace(ApiBase):
       if ppid == self._tracer_pid:
         # Need to ignore processes we don't know about because the log is
         # system-wide. self._tracer_pid shall start only one process.
-        if self._initial_pid:
+        if self.root_process:
           raise TracingFailure(
-              ( 'Parent process is _tracer_pid(%d) but _initial_pid(%d) is '
-                'already set') % (self._tracer_pid, self._initial_pid),
+              ( 'Parent process is _tracer_pid(%d) but root_process(%d) is '
+                'already set') % (self._tracer_pid, self.root_process.pid),
               None, None, None)
-        self._initial_pid = pid
+        proc = self.Process(self.blacklist, pid, None)
+        self.root_process = proc
         ppid = None
-      elif ppid not in self.processes:
+      elif ppid in self._process_lookup:
+        proc = self.Process(self.blacklist, pid, None)
+        self._process_lookup[ppid].children.append(proc)
+      else:
         # Ignore
         return
-      if pid in self.processes:
-        raise TracingFailure(
-            'Process %d started two times' % pid,
-            None, None, None)
-      proc = self.processes[pid] = self.Process(self, pid, None, ppid)
+      self._process_lookup[pid] = proc
 
       if (not line[IMAGE_FILE_NAME].startswith('"') or
           not line[IMAGE_FILE_NAME].endswith('"')):
