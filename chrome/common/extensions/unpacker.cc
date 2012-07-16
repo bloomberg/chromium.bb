@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/extension_unpacker.h"
+#include "chrome/common/extensions/unpacker.h"
 
 #include <set>
 
@@ -29,8 +29,6 @@
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
 namespace filenames = extension_filenames;
-
-using extensions::Extension;
 
 namespace {
 
@@ -86,20 +84,22 @@ bool PathContainsParentDirectory(const FilePath& path) {
 
 }  // namespace
 
-ExtensionUnpacker::ExtensionUnpacker(const FilePath& extension_path,
-                                     const std::string& extension_id,
-                                     Extension::Location location,
-                                     int creation_flags)
+namespace extensions {
+
+Unpacker::Unpacker(const FilePath& extension_path,
+                   const std::string& extension_id,
+                   Extension::Location location,
+                   int creation_flags)
     : extension_path_(extension_path),
       extension_id_(extension_id),
       location_(location),
       creation_flags_(creation_flags) {
 }
 
-ExtensionUnpacker::~ExtensionUnpacker() {
+Unpacker::~Unpacker() {
 }
 
-DictionaryValue* ExtensionUnpacker::ReadManifest() {
+DictionaryValue* Unpacker::ReadManifest() {
   FilePath manifest_path =
       temp_install_dir_.Append(Extension::kManifestFilename);
   if (!file_util::PathExists(manifest_path)) {
@@ -123,8 +123,7 @@ DictionaryValue* ExtensionUnpacker::ReadManifest() {
   return static_cast<DictionaryValue*>(root.release());
 }
 
-bool ExtensionUnpacker::ReadAllMessageCatalogs(
-    const std::string& default_locale) {
+bool Unpacker::ReadAllMessageCatalogs(const std::string& default_locale) {
   FilePath locales_path =
     temp_install_dir_.Append(Extension::kLocaleFolder);
 
@@ -151,7 +150,7 @@ bool ExtensionUnpacker::ReadAllMessageCatalogs(
   return true;
 }
 
-bool ExtensionUnpacker::Run() {
+bool Unpacker::Run() {
   DVLOG(1) << "Installing extension " << extension_path_.value();
 
   // <profile>/Extensions/INSTALL_TEMP/<version>
@@ -218,7 +217,7 @@ bool ExtensionUnpacker::Run() {
   return true;
 }
 
-bool ExtensionUnpacker::DumpImagesToFile() {
+bool Unpacker::DumpImagesToFile() {
   IPC::Message pickle;  // We use a Message so we can use WriteParam.
   IPC::WriteParam(&pickle, decoded_images_);
 
@@ -233,7 +232,7 @@ bool ExtensionUnpacker::DumpImagesToFile() {
   return true;
 }
 
-bool ExtensionUnpacker::DumpMessageCatalogsToFile() {
+bool Unpacker::DumpMessageCatalogsToFile() {
   IPC::Message pickle;
   IPC::WriteParam(&pickle, *parsed_catalogs_.get());
 
@@ -249,8 +248,8 @@ bool ExtensionUnpacker::DumpMessageCatalogsToFile() {
 }
 
 // static
-bool ExtensionUnpacker::ReadImagesFromFile(const FilePath& extension_path,
-                                           DecodedImages* images) {
+bool Unpacker::ReadImagesFromFile(const FilePath& extension_path,
+                                  DecodedImages* images) {
   FilePath path = extension_path.AppendASCII(filenames::kDecodedImagesFilename);
   std::string file_str;
   if (!file_util::ReadFileToString(path, &file_str))
@@ -262,8 +261,8 @@ bool ExtensionUnpacker::ReadImagesFromFile(const FilePath& extension_path,
 }
 
 // static
-bool ExtensionUnpacker::ReadMessageCatalogsFromFile(
-    const FilePath& extension_path, DictionaryValue* catalogs) {
+bool Unpacker::ReadMessageCatalogsFromFile(const FilePath& extension_path,
+                                           DictionaryValue* catalogs) {
   FilePath path = extension_path.AppendASCII(
       filenames::kDecodedMessageCatalogsFilename);
   std::string file_str;
@@ -275,7 +274,7 @@ bool ExtensionUnpacker::ReadMessageCatalogsFromFile(
   return IPC::ReadParam(&pickle, &iter, catalogs);
 }
 
-bool ExtensionUnpacker::AddDecodedImage(const FilePath& path) {
+bool Unpacker::AddDecodedImage(const FilePath& path) {
   // Make sure it's not referencing a file outside the extension's subdir.
   if (path.IsAbsolute() || PathContainsParentDirectory(path)) {
     SetError(kPathNamesMustBeAbsoluteOrLocalError);
@@ -292,7 +291,7 @@ bool ExtensionUnpacker::AddDecodedImage(const FilePath& path) {
   return true;
 }
 
-bool ExtensionUnpacker::ReadMessageCatalog(const FilePath& message_path) {
+bool Unpacker::ReadMessageCatalog(const FilePath& message_path) {
   std::string error;
   JSONFileValueSerializer serializer(message_path);
   scoped_ptr<DictionaryValue> root(
@@ -328,6 +327,8 @@ bool ExtensionUnpacker::ReadMessageCatalog(const FilePath& message_path) {
   return true;
 }
 
-void ExtensionUnpacker::SetError(const std::string &error) {
+void Unpacker::SetError(const std::string &error) {
   error_message_ = UTF8ToUTF16(error);
 }
+
+}  // namespace extensions

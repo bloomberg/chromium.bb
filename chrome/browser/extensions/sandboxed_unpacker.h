@@ -36,7 +36,7 @@ class SandboxedUnpackerClient
   virtual void OnUnpackSuccess(const FilePath& temp_dir,
                                const FilePath& extension_root,
                                const base::DictionaryValue* original_manifest,
-                               const extensions::Extension* extension) = 0;
+                               const Extension* extension) = 0;
   virtual void OnUnpackFailure(const string16& error) = 0;
 
  protected:
@@ -74,7 +74,7 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   // is done in a sandboxed subprocess. Otherwise, it is done in-process.
   SandboxedUnpacker(const FilePath& crx_path,
                              bool run_out_of_process,
-                             extensions::Extension::Location location,
+                             Extension::Location location,
                              int creation_flags,
                              SandboxedUnpackerClient* client);
 
@@ -155,11 +155,11 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   // |public_key_|. Returns true if the signature validates, false otherwise.
   //
   // NOTE: Having this method here is a bit ugly. This code should really live
-  // in ExtensionUnpacker as it is not specific to sandboxed unpacking. It was
-  // put here because we cannot run windows crypto code in the sandbox. But we
-  // could still have this method statically on ExtensionUnpacker so that code
-  // just for unpacking is there and code just for sandboxing of unpacking is
-  // here.
+  // in extensions::Unpacker as it is not specific to sandboxed unpacking. It
+  // was put here because we cannot run windows crypto code in the sandbox. But
+  // we could still have this method statically on extensions::Unpacker so that
+  // code just for unpacking is there and code just for sandboxing of unpacking
+  // is here.
   bool ValidateSignature();
 
   // Starts the utility process that unpacks our extension.
@@ -205,7 +205,7 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   FilePath extension_root_;
 
   // Represents the extension we're unpacking.
-  scoped_refptr<extensions::Extension> extension_;
+  scoped_refptr<Extension> extension_;
 
   // Whether we've received a response from the utility process yet.
   bool got_response_;
@@ -221,7 +221,7 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   base::TimeTicks unpack_start_time_;
 
   // Location to use for the unpacked extension.
-  extensions::Extension::Location location_;
+  Extension::Location location_;
 
   // Creation flags to use for the extension.  These flags will be used
   // when calling Extenion::Create() by the crx installer.

@@ -14,7 +14,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/extension_unpacker.h"
+#include "chrome/common/extensions/unpacker.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -94,7 +94,7 @@ class SandboxedUnpackerTest : public testing::Test {
         "Original path: " << original_path.value() <<
         ", Crx path: " << crx_path.value();
 
-    unpacker_.reset(new ExtensionUnpacker(
+    unpacker_.reset(new Unpacker(
         crx_path, std::string(), Extension::INTERNAL, Extension::NO_FLAGS));
 
     // Build a temp area where the extension will be unpacked.
@@ -161,7 +161,7 @@ class SandboxedUnpackerTest : public testing::Test {
   ScopedTempDir temp_dir_;
   FilePath temp_path_;
   MockSandboxedUnpackerClient* client_;
-  scoped_ptr<ExtensionUnpacker> unpacker_;
+  scoped_ptr<Unpacker> unpacker_;
   scoped_refptr<SandboxedUnpacker> sandboxed_unpacker_;
   MessageLoop loop_;
   scoped_ptr<content::TestBrowserThread> file_thread_;

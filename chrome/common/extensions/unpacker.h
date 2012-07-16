@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_UNPACKER_H_
-#define CHROME_COMMON_EXTENSIONS_EXTENSION_UNPACKER_H_
+#ifndef CHROME_COMMON_EXTENSIONS_UNPACKER_H_
+#define CHROME_COMMON_EXTENSIONS_UNPACKER_H_
 
 #include <string>
 #include <vector>
@@ -19,19 +19,21 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace extensions {
+
 // This class unpacks an extension.  It is designed to be used in a sandboxed
 // child process.  We unpack and parse various bits of the extension, then
 // report back to the browser process, who then transcodes the pre-parsed bits
 // and writes them back out to disk for later use.
-class ExtensionUnpacker {
+class Unpacker {
  public:
   typedef std::vector< Tuple2<SkBitmap, FilePath> > DecodedImages;
 
-  ExtensionUnpacker(const FilePath& extension_path,
-                    const std::string& extension_id,
-                    extensions::Extension::Location location,
-                    int creation_flags);
-  ~ExtensionUnpacker();
+  Unpacker(const FilePath& extension_path,
+           const std::string& extension_id,
+           Extension::Location location,
+           int creation_flags);
+  ~Unpacker();
 
   // Install the extension file at |extension_path|.  Returns true on success.
   // Otherwise, error_message will contain a string explaining what went wrong.
@@ -92,7 +94,7 @@ class ExtensionUnpacker {
   std::string extension_id_;
 
   // The location to use for the created extension.
-  extensions::Extension::Location location_;
+  Extension::Location location_;
 
   // The creation flags to use with the created extension.
   int creation_flags_;
@@ -114,7 +116,9 @@ class ExtensionUnpacker {
   // The last error message that was set.  Empty if there were no errors.
   string16 error_message_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionUnpacker);
+  DISALLOW_COPY_AND_ASSIGN(Unpacker);
 };
 
-#endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_UNPACKER_H_
+}  // namespace extensions
+
+#endif  // CHROME_COMMON_EXTENSIONS_UNPACKER_H_

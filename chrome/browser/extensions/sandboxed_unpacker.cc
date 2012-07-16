@@ -24,7 +24,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
-#include "chrome/common/extensions/extension_unpacker.h"
+#include "chrome/common/extensions/unpacker.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
 #include "crypto/signature_verifier.h"
@@ -35,7 +35,6 @@
 
 using content::BrowserThread;
 using content::UtilityProcessHost;
-using extensions::Extension;
 
 // The following macro makes histograms that record the length of paths
 // in this file much easier to read.
@@ -273,8 +272,7 @@ void SandboxedUnpacker::Start() {
             link_free_crx_path));
   } else {
     // Otherwise, unpack the extension in this process.
-    ExtensionUnpacker unpacker(
-        temp_crx_path, extension_id_, location_, creation_flags_);
+    Unpacker unpacker(temp_crx_path, extension_id_, location_, creation_flags_);
     if (unpacker.Run() && unpacker.DumpImagesToFile() &&
         unpacker.DumpMessageCatalogsToFile()) {
       OnUnpackExtensionSucceeded(*unpacker.parsed_manifest());
@@ -618,8 +616,8 @@ DictionaryValue* SandboxedUnpacker::RewriteManifestFile(
 }
 
 bool SandboxedUnpacker::RewriteImageFiles() {
-  ExtensionUnpacker::DecodedImages images;
-  if (!ExtensionUnpacker::ReadImagesFromFile(temp_dir_.path(), &images)) {
+  Unpacker::DecodedImages images;
+  if (!Unpacker::ReadImagesFromFile(temp_dir_.path(), &images)) {
     // Couldn't read image data from disk.
     ReportFailure(
         COULD_NOT_READ_IMAGE_DATA_FROM_DISK,
@@ -714,8 +712,7 @@ bool SandboxedUnpacker::RewriteImageFiles() {
 
 bool SandboxedUnpacker::RewriteCatalogFiles() {
   DictionaryValue catalogs;
-  if (!ExtensionUnpacker::ReadMessageCatalogsFromFile(temp_dir_.path(),
-                                                      &catalogs)) {
+  if (!Unpacker::ReadMessageCatalogsFromFile(temp_dir_.path(), &catalogs)) {
     // Could not read catalog data from disk.
     ReportFailure(
         COULD_NOT_READ_CATALOG_DATA_FROM_DISK,

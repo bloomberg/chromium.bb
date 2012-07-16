@@ -10,16 +10,18 @@
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/extension_unpacker.h"
+#include "chrome/common/extensions/unpacker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
 
-class ExtensionUnpackerTest : public testing::Test {
+namespace extensions {
+
+class UnpackerTest : public testing::Test {
 public:
-  ~ExtensionUnpackerTest() {
+  ~UnpackerTest() {
     LOG(WARNING) << "Deleting temp dir: "
                  << temp_dir_.path().LossyDisplayName();
     LOG(WARNING) << temp_dir_.Delete();
@@ -42,16 +44,15 @@ public:
         "Original path " << original_path.value() <<
         ", Crx path " << crx_path.value();
 
-    unpacker_.reset(
-        new ExtensionUnpacker(crx_path,
-                              std::string(),
-                              extensions::Extension::INTERNAL,
-                              extensions::Extension::NO_FLAGS));
+    unpacker_.reset(new Unpacker(crx_path,
+                                 std::string(),
+                                 Extension::INTERNAL,
+                                 Extension::NO_FLAGS));
   }
 
  protected:
   ScopedTempDir temp_dir_;
-  scoped_ptr<ExtensionUnpacker> unpacker_;
+  scoped_ptr<Unpacker> unpacker_;
 };
 
 // Crashes intermittently on Windows, see http://crbug.com/109238
@@ -60,7 +61,7 @@ public:
 #else
 #define MAYBE_EmptyDefaultLocale EmptyDefaultLocale
 #endif
-TEST_F(ExtensionUnpackerTest, MAYBE_EmptyDefaultLocale) {
+TEST_F(UnpackerTest, MAYBE_EmptyDefaultLocale) {
   SetupUnpacker("empty_default_locale.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kInvalidDefaultLocale),
@@ -75,7 +76,7 @@ TEST_F(ExtensionUnpackerTest, MAYBE_EmptyDefaultLocale) {
 #define MAYBE_HasDefaultLocaleMissingLocalesFolder \
   HasDefaultLocaleMissingLocalesFolder
 #endif
-TEST_F(ExtensionUnpackerTest, MAYBE_HasDefaultLocaleMissingLocalesFolder) {
+TEST_F(UnpackerTest, MAYBE_HasDefaultLocaleMissingLocalesFolder) {
   SetupUnpacker("has_default_missing_locales.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kLocalesTreeMissing),
@@ -88,7 +89,7 @@ TEST_F(ExtensionUnpackerTest, MAYBE_HasDefaultLocaleMissingLocalesFolder) {
 #else
 #define MAYBE_InvalidDefaultLocale InvalidDefaultLocale
 #endif
-TEST_F(ExtensionUnpackerTest, MAYBE_InvalidDefaultLocale) {
+TEST_F(UnpackerTest, MAYBE_InvalidDefaultLocale) {
   SetupUnpacker("invalid_default_locale.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kInvalidDefaultLocale),
@@ -101,7 +102,7 @@ TEST_F(ExtensionUnpackerTest, MAYBE_InvalidDefaultLocale) {
 #else
 #define MAYBE_InvalidMessagesFile InvalidMessagesFile
 #endif
-TEST_F(ExtensionUnpackerTest, MAYBE_InvalidMessagesFile) {
+TEST_F(UnpackerTest, MAYBE_InvalidMessagesFile) {
   SetupUnpacker("invalid_messages_file.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(MatchPattern(unpacker_->error_message(),
@@ -115,7 +116,7 @@ TEST_F(ExtensionUnpackerTest, MAYBE_InvalidMessagesFile) {
 #else
 #define MAYBE_MissingDefaultData MissingDefaultData
 #endif
-TEST_F(ExtensionUnpackerTest, MAYBE_MissingDefaultData) {
+TEST_F(UnpackerTest, MAYBE_MissingDefaultData) {
   SetupUnpacker("missing_default_data.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kLocalesNoDefaultMessages),
@@ -130,7 +131,7 @@ TEST_F(ExtensionUnpackerTest, MAYBE_MissingDefaultData) {
 #define MAYBE_MissingDefaultLocaleHasLocalesFolder \
   MissingDefaultLocaleHasLocalesFolder
 #endif
-TEST_F(ExtensionUnpackerTest, MAYBE_MissingDefaultLocaleHasLocalesFolder) {
+TEST_F(UnpackerTest, MAYBE_MissingDefaultLocaleHasLocalesFolder) {
   SetupUnpacker("missing_default_has_locales.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kLocalesNoDefaultLocaleSpecified),
@@ -143,7 +144,7 @@ TEST_F(ExtensionUnpackerTest, MAYBE_MissingDefaultLocaleHasLocalesFolder) {
 #else
 #define MAYBE_MissingMessagesFile MissingMessagesFile
 #endif
-TEST_F(ExtensionUnpackerTest, MAYBE_MissingMessagesFile) {
+TEST_F(UnpackerTest, MAYBE_MissingMessagesFile) {
   SetupUnpacker("missing_messages_file.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(MatchPattern(unpacker_->error_message(),
@@ -157,7 +158,7 @@ TEST_F(ExtensionUnpackerTest, MAYBE_MissingMessagesFile) {
 #else
 #define MAYBE_NoLocaleData NoLocaleData
 #endif
-TEST_F(ExtensionUnpackerTest, MAYBE_NoLocaleData) {
+TEST_F(UnpackerTest, MAYBE_NoLocaleData) {
   SetupUnpacker("no_locale_data.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kLocalesNoDefaultMessages),
@@ -170,7 +171,7 @@ TEST_F(ExtensionUnpackerTest, MAYBE_NoLocaleData) {
 #else
 #define MAYBE_GoodL10n GoodL10n
 #endif
-TEST_F(ExtensionUnpackerTest, MAYBE_GoodL10n) {
+TEST_F(UnpackerTest, MAYBE_GoodL10n) {
   SetupUnpacker("good_l10n.crx");
   EXPECT_TRUE(unpacker_->Run());
   EXPECT_TRUE(unpacker_->error_message().empty());
@@ -183,9 +184,11 @@ TEST_F(ExtensionUnpackerTest, MAYBE_GoodL10n) {
 #else
 #define MAYBE_NoL10n NoL10n
 #endif
-TEST_F(ExtensionUnpackerTest, MAYBE_NoL10n) {
+TEST_F(UnpackerTest, MAYBE_NoL10n) {
   SetupUnpacker("no_l10n.crx");
   EXPECT_TRUE(unpacker_->Run());
   EXPECT_TRUE(unpacker_->error_message().empty());
   EXPECT_EQ(0U, unpacker_->parsed_catalogs()->size());
 }
+
+}  // namespace extensions

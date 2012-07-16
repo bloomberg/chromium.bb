@@ -102,7 +102,7 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_GetPrinterCapsAndDefaults,
 // Reply when the utility process is done unpacking an extension.  |manifest|
 // is the parsed manifest.json file.
 // The unpacker should also have written out files containing the decoded
-// images and message catalogs from the extension. See ExtensionUnpacker for
+// images and message catalogs from the extension. See extensions::Unpacker for
 // details.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnpackExtension_Succeeded,
                      DictionaryValue /* manifest */)
