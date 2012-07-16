@@ -34,6 +34,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <sys/mman.h>
+#include <fcntl.h>
 
 #include <xf86drm.h>
 #include <xf86atomic.h>
@@ -439,6 +440,40 @@ nouveau_bo_ref(struct nouveau_bo *bo, struct nouveau_bo **pref)
 			nouveau_bo_del(ref);
 	}
 	*pref = bo;
+}
+
+int
+nouveau_bo_prime_handle_ref(struct nouveau_device *dev, int prime_fd,
+			    struct nouveau_bo **bo)
+{
+	int ret;
+	unsigned int handle;
+
+	ret = drmPrimeFDToHandle(dev->fd, prime_fd, &handle);
+	if (ret) {
+		nouveau_bo_ref(NULL, bo);
+		return ret;
+	}
+
+	ret = nouveau_bo_wrap(dev, handle, bo);
+	if (ret) {
+		nouveau_bo_ref(NULL, bo);
+		return ret;
+	}
+
+	return 0;
+}
+
+int
+nouveau_bo_set_prime(struct nouveau_bo *bo, int *prime_fd)
+{
+	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
+	int ret;
+
+	ret = drmPrimeHandleToFD(bo->device->fd, nvbo->base.handle, DRM_CLOEXEC, prime_fd);
+	if (ret)
+		return ret;
+	return 0;
 }
 
 int

@@ -135,6 +135,9 @@ int  nouveau_bo_map(struct nouveau_bo *, uint32_t access,
 		    struct nouveau_client *);
 int  nouveau_bo_wait(struct nouveau_bo *, uint32_t access,
 		     struct nouveau_client *);
+int  nouveau_bo_prime_handle_ref(struct nouveau_device *dev, int prime_fd,
+				 struct nouveau_bo **);
+int  nouveau_bo_set_prime(struct nouveau_bo *bo, int *prime_fd);
 
 struct nouveau_bufref {
 	struct nouveau_list thead;
