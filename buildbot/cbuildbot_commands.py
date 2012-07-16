@@ -974,9 +974,7 @@ def BuildTarball(buildroot, input_list, tarball_output, cwd=None,
     cwd: Current working directory when tar command is executed.
     compressed: Whether or not the tarball should be compressed with pbzip2.
   """
-  # TODO(build): Revert this once pbzip2 in the chroot is static linked.
-  #pbzip2 = os.path.join(buildroot, 'chroot', 'usr', 'bin', 'pbzip2')
-  pbzip2 = 'bzip2'
+  pbzip2 = os.path.join(buildroot, 'chroot', 'usr', 'bin', 'pbzip2')
   if compressed:
     cmd = ['tar',
            '--use-compress-program=%s' % pbzip2,
