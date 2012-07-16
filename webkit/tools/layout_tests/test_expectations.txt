@@ -36,3 +36,11 @@ BUGCR131187 : platform/chromium/virtual/gpu/canvas/philip/tests/2d.gradient.radi
 BUGCR131187 : platform/chromium/virtual/gpu/fast/canvas/canvas-currentColor.html = TEXT
 BUGCR131187 : canvas/philip/tests/2d.gradient.radial.cone.cylinder.html = TEXT
 BUGCR131187 : fast/canvas/canvas-currentColor.html = TEXT
+
+// To rebaseline after Skia 4600 lands
+BUGCR137508 : svg/W3C-SVG-1.1/paths-data-12-t.svg = IMAGE+TEXT
+BUGCR137508 : svg/hixie/perf/001.xml = IMAGE+TEXT
+BUGCR137508 : svg/hixie/perf/002.xml = IMAGE+TEXT
+BUGCR137508 : svg/as-background-image/svg-as-background-5.html = IMAGE
+
+
