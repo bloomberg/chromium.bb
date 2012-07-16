@@ -922,7 +922,8 @@ class AlertTest(ChromeDriverTest):
 
   def testAlertOnLoadDoesNotHang(self):
     driver = self.GetNewDriver()
-    driver.get(self.GetTestDataUrl() + '/alert_on_load.html')
+    self.assertRaises(WebDriverException, driver.get,
+                      self.GetTestDataUrl() + '/alert_on_load.html')
     driver.switch_to_alert().accept()
 
   def testAlertWhenTypingThrows(self):
