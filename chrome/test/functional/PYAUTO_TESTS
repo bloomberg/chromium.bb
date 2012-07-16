@@ -491,10 +491,6 @@
       'translate',
       'youtube',
 
-      # TODO(craigdh): re-enable after changelist
-      # https://chromiumcodereview.appspot.com/10693168 lands on the QA bots.
-      '-extensions',
-
       # ===========================
       # Permanently-disabled tests.
       # ===========================
