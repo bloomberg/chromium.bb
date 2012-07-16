@@ -38,6 +38,9 @@ namespace {
 const int kFileManagerWidth = 954;  // pixels
 const int kFileManagerHeight = 640;  // pixels
 
+const int kFileManagerMinimumWidth = kFileManagerWidth * 2 / 3;  // pixels
+const int kFileManagerMinimumHeight = kFileManagerHeight * 2 / 3;  // pixels
+
 // Holds references to file manager dialogs that have callbacks pending
 // to their listeners.
 class PendingDialog {
@@ -341,6 +344,9 @@ ExtensionDialog* dialog = ExtensionDialog::Show(file_browser_url,
     LOG(ERROR) << "Unable to create extension dialog";
     return;
   }
+
+  dialog->SetMinimumContentsSize(kFileManagerMinimumWidth,
+                                 kFileManagerMinimumHeight);
 
   // Connect our listener to FileDialogFunction's per-tab callbacks.
   AddPending(tab_id);

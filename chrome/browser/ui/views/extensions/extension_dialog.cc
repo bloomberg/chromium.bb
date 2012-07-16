@@ -206,7 +206,12 @@ void ExtensionDialog::MaybeFocusRenderView() {
 // views::WidgetDelegate overrides.
 
 bool ExtensionDialog::CanResize() const {
-  return false;
+  // Can resize only if minimum contents size set.
+  return extension_host_->view()->GetPreferredSize() != gfx::Size();
+}
+
+void ExtensionDialog::SetMinimumContentsSize(int width, int height) {
+  extension_host_->view()->SetPreferredSize(gfx::Size(width, height));
 }
 
 ui::ModalType ExtensionDialog::GetModalType() const {

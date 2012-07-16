@@ -73,6 +73,9 @@ class ExtensionDialog : public views::WidgetDelegate,
   // Sets the window title.
   void set_title(const string16& title) { window_title_ = title; }
 
+  // Sets minimum contents size in pixels and makes the window resizable.
+  void SetMinimumContentsSize(int width, int height);
+
   ExtensionHost* host() const { return extension_host_.get(); }
 
   // views::WidgetDelegate overrides.
