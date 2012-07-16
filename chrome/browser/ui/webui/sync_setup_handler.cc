@@ -637,22 +637,30 @@ void SyncSetupHandler::HandleSubmitAuth(const ListValue* args) {
     return;
   }
 
-  // If one of password, captcha and otp is non-empty, then the other two must
-  // be empty.  At least one should be non-empty.
-  DCHECK(password.empty() || (captcha.empty() && otp.empty()));
-  DCHECK(captcha.empty() || (password.empty() && otp.empty()));
-  DCHECK(otp.empty() || (captcha.empty() && password.empty()));
-  DCHECK(!otp.empty() || !captcha.empty() || !password.empty());
+  // If one of password, captcha, otp and access_code is non-empty, then the
+  // others must be empty.  At least one should be non-empty.
+  DCHECK(password.empty() ||
+         (captcha.empty() && otp.empty() && access_code.empty()));
+  DCHECK(captcha.empty() ||
+         (password.empty() && otp.empty() && access_code.empty()));
+  DCHECK(otp.empty() ||
+         (captcha.empty() && password.empty() && access_code.empty()));
+  DCHECK(access_code.empty() ||
+         (captcha.empty() && password.empty() && otp.empty()));
+  DCHECK(!otp.empty() || !captcha.empty() || !password.empty() ||
+         !access_code.empty());
 
-  // Last error is two-factor implies otp should not be empty.
-  DCHECK((last_signin_error_.state() != GoogleServiceAuthError::TWO_FACTOR) ||
-      !otp.empty());
-  // Last error is captcha-required implies captcha should not be empty.
-  DCHECK((last_signin_error_.state() !=
-      GoogleServiceAuthError::CAPTCHA_REQUIRED) || !captcha.empty());
+  if (IsClientOAuthEnabled()) {
+    // Last error is two-factor implies otp should not be empty.
+    DCHECK((last_signin_error_.state() != GoogleServiceAuthError::TWO_FACTOR) ||
+        !otp.empty());
+    // Last error is captcha-required implies captcha should not be empty.
+    DCHECK((last_signin_error_.state() !=
+        GoogleServiceAuthError::CAPTCHA_REQUIRED) || !captcha.empty());
+  }
+
   const std::string& solution = captcha.empty() ?
       (otp.empty() ? EmptyString() : otp) : captcha;
-
   TryLogin(username, password, solution, access_code);
 }
 

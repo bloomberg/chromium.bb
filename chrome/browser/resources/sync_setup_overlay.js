@@ -702,6 +702,7 @@ cr.define('options', function() {
         }
 
         f.accessCode.disabled = true;
+        f.otp.disabled = true;
       }
 
       if (1 == args.error) {
@@ -793,6 +794,7 @@ cr.define('options', function() {
         this.setBlurbError_();
         return false;
       }
+
       if (!f.accessCode.disabled && !f.accessCode.value) {
         $('errormsg-0-password').hidden = false;
         return false;
@@ -802,6 +804,11 @@ cr.define('options', function() {
           $('asp-warning-div').hidden) {
         $('asp-warning-div').hidden = false;
         $('gaia-passwd').value = '';
+        return false;
+      }
+
+      if (!f.otp.disabled && !f.otp.value) {
+        $('errormsg-0-otp').hidden = false;
         return false;
       }
 

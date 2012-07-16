@@ -169,7 +169,8 @@ void SigninManager::SetAuthenticatedUsername(const std::string& username) {
 bool SigninManager::PrepareForSignin(SigninType type,
                                      const std::string& username,
                                      const std::string& password) {
-  DCHECK(possibly_invalid_username_.empty());
+  DCHECK(possibly_invalid_username_.empty() ||
+         possibly_invalid_username_ == username);
   DCHECK(!username.empty());
 
   if (!IsAllowedUsername(username)) {
