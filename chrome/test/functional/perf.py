@@ -1688,7 +1688,8 @@ class BaseScrollTest(BasePerfTest):
 
     # Get the scroll test results from the webpage.
     results_js = """
-      window.domAutomationController.send(JSON.stringify({
+      var __stringify = JSON.stringify || JSON.encode;
+      window.domAutomationController.send(__stringify({
           'first_paint_time': chrome.loadTimes().firstPaintTime -
                               chrome.loadTimes().requestTime,
           'frame_times': __frame_times,
@@ -1766,8 +1767,8 @@ class PopularSitesScrollTest(BaseScrollTest):
         'first_paint_time', [r.first_paint_time for r in results],
         'ms', 'FirstPaintTime')
 
-  def test2012Q2(self):
-    test_name = '2012Q2'
+  def test2012Q3(self):
+    test_name = '2012Q3'
     urls = self._GetUrlList(test_name)
     results = []
     with WebPageReplay().GetReplayServer(test_name):
