@@ -212,7 +212,7 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_output *output)
 
 	width = gbm_bo_get_width(bo);
 	height = gbm_bo_get_height(bo);
-	stride = gbm_bo_get_pitch(bo);
+	stride = gbm_bo_get_stride(bo);
 	handle = gbm_bo_get_handle(bo).u32;
 
 	ret = drmModeAddFB(compositor->drm.fd, width, height, 24, 32,
@@ -593,7 +593,7 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 
 	format = gbm_bo_get_format(bo);
 	handle = gbm_bo_get_handle(bo).s32;
-	stride = gbm_bo_get_pitch(bo);
+	stride = gbm_bo_get_stride(bo);
 
 	gbm_bo_destroy(bo);
 
