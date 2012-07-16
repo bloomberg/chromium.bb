@@ -824,8 +824,7 @@ bool ToolbarView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 // also so that it selects all content in the location bar.
 bool ToolbarView::SetPaneFocusAndFocusDefault() {
   if (!location_bar_->HasFocus()) {
-    location_bar_->RequestFocus();
-    location_bar_->SelectAll();
+    location_bar_->FocusLocation(true);
     return true;
   }
 

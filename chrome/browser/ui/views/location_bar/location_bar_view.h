@@ -294,6 +294,7 @@ class LocationBarView : public LocationBar,
   virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& event)
       OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual bool HasFocus() const OVERRIDE;
 
   // Overridden from views::DragController:
   virtual void WriteDragDataForView(View* sender,

@@ -1262,6 +1262,10 @@ void LocationBarView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->selection_end = entry_end;
 }
 
+bool LocationBarView::HasFocus() const {
+  return location_entry_->model()->has_focus();
+}
+
 void LocationBarView::WriteDragDataForView(views::View* sender,
                                            const gfx::Point& press_pt,
                                            OSExchangeData* data) {
