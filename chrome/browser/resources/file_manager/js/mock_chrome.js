@@ -648,8 +648,6 @@ chrome.fileBrowserPrivate = {
       TIME_TODAY: 'Today, $1',
       TIME_YESTERDAY: 'Yesterday, $1',
 
-      ALL_FILES_FILTER: 'All files',
-
       DEFAULT_ACTION_LABEL: '(default)',
       ASH: true,
       DETAIL_VIEW_TOOLTIP: 'List view',
