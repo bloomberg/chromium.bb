@@ -10,9 +10,9 @@ set -o errexit
 #@ Various commands to emulate arm code using qemu
 #@
 #@ Note: this script is not meant to be run as
-#@     tools/llvm/qemu_tool.sh
+#@     tools/trusted_cross_toolchains/qemu_tool_arm.sh
 #@ but rather as:
-#@     toolchain/linux_arm-trusted/qemu_tool.sh
+#@     toolchain/linux_arm-trusted/qemu_tool_arm.sh
 
 # From a qemu build based on qemu-0.10.1.tar.gz
 readonly SDK_ROOT=$(dirname $0)
