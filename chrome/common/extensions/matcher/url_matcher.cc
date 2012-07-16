@@ -209,10 +209,10 @@ bool URLMatcherCondition::IsMatch(
 
 namespace {
 // These are symbols that are not contained in 7-bit ASCII used in GURLs.
-const char kBeginningOfURL[] = {-1, 0};
-const char kEndOfDomain[] = {-2, 0};
-const char kEndOfPath[] = {-3, 0};
-const char kEndOfURL[] = {-4, 0};
+const char kBeginningOfURL[] = {static_cast<char>(-1), 0};
+const char kEndOfDomain[] = {static_cast<char>(-2), 0};
+const char kEndOfPath[] = {static_cast<char>(-3), 0};
+const char kEndOfURL[] = {static_cast<char>(-4), 0};
 }  // namespace
 
 URLMatcherConditionFactory::URLMatcherConditionFactory() : id_counter_(0) {}

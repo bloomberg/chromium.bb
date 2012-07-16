@@ -26,14 +26,14 @@ namespace internal {
 const int kMaxPaths = 15;
 const int kScale = 10;
 const int kColors[] = {
-  SK_ColorYELLOW,
-  SK_ColorGREEN,
-  SK_ColorRED,
-  SK_ColorBLUE,
-  SK_ColorMAGENTA,
-  SK_ColorCYAN,
-  SK_ColorWHITE,
-  SK_ColorBLACK
+  static_cast<int>(SK_ColorYELLOW),
+  static_cast<int>(SK_ColorGREEN),
+  static_cast<int>(SK_ColorRED),
+  static_cast<int>(SK_ColorBLUE),
+  static_cast<int>(SK_ColorMAGENTA),
+  static_cast<int>(SK_ColorCYAN),
+  static_cast<int>(SK_ColorWHITE),
+  static_cast<int>(SK_ColorBLACK)
 };
 
 class TouchHudCanvas : public views::View {
