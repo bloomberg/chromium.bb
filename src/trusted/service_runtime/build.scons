@@ -186,6 +186,7 @@ elif env.Bit('linux'):
   ldr_inputs += [
     'linux/nacl_oop_debugger_hooks.c',
     'linux/nacl_thread_nice.c',
+    'linux/r_debug.c',
     'linux/reserved_at_zero.c',
     'posix/addrspace_teardown.c',
     'posix/sel_memory.c',
@@ -300,10 +301,6 @@ if env.Bit('windows'):
       ],
   )
 
-r_debug_objs = []
-if env.Bit('linux'):
-  r_debug_objs += [env.ComponentObject('linux/r_debug.c')]
-
 sel_ldr_libs = ['sel',
                 'env_cleanser',
                 'nacl_error_code',
@@ -324,7 +321,7 @@ sel_ldr_libs = ['sel',
                 ] + DEBUG_LIBS
 if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
     not env.CrossToolsBuild()):
-  sel_main_objs = [env.ComponentObject('sel_main.c')] + r_debug_objs
+  sel_main_objs = [env.ComponentObject('sel_main.c')]
   SEL_LDR_NODE = env.ComponentProgram('sel_ldr', sel_main_objs,
                                       EXTRA_LIBS=sel_ldr_libs)
   if env.Bit('mac'):
@@ -505,7 +502,7 @@ else:
 if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
     not env.CrossToolsBuild()):
   # NOTE: uses validator
-  mmap_test_objs = [env.ComponentObject('mmap_test.c')] + r_debug_objs
+  mmap_test_objs = [env.ComponentObject('mmap_test.c')]
   mmap_test_exe = env.ComponentProgram(
       'mmap_test',
       mmap_test_objs,
@@ -542,6 +539,21 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
       # dynamic code segment is present.
       osenv='NACL_DISABLE_DYNAMIC_LOADING=1')
   env.AddNodeToTestSuite(node, ['medium_tests'], 'run_trusted_mmap_test')
+
+
+if env.Bit('linux'):
+  nacl_bootstrap_prereservation_test_exe = env.ComponentProgram(
+      'nacl_bootstrap_prereservation_test',
+      ['linux/nacl_bootstrap_prereservation_test.c'],
+      EXTRA_LIBS=['sel'])
+
+  bootstrap, bootstrap_arg = env.GetBootstrap()
+  node = env.CommandTest(
+      'nacl_bootstrap_prereservation_test.out',
+      command=[bootstrap, nacl_bootstrap_prereservation_test_exe,
+               bootstrap_arg])
+  env.AddNodeToTestSuite(node, ['small_tests'],
+                         'run_nacl_bootstrap_prereservation_test')
 
 
 # also seems to have issues with windows coverage or VMs
