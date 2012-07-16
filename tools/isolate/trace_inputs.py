@@ -209,7 +209,7 @@ if sys.platform == 'win32':
     try:
       out = GetLongPathName(GetShortPathName(p))
     except OSError, e:
-      if e.args[0] in (2, 3):
+      if e.args[0] in (2, 3, 5):
         # The path does not exist. Try to recurse and reconstruct the path.
         base = os.path.dirname(p)
         rest = os.path.basename(p)
@@ -262,8 +262,10 @@ elif sys.platform == 'darwin':
         return out + os.path.sep
       return out
     except MacOS.Error, e:
-      if e.args[0] == -43:
+      if e.args[0] in (-43, -120):
         # The path does not exist. Try to recurse and reconstruct the path.
+        # -43 means file not found.
+        # -120 means directory not found.
         base = os.path.dirname(p)
         rest = os.path.basename(p)
         return os.path.join(_native_case(base), rest)
@@ -833,24 +835,38 @@ class ApiBase(object):
         # When resolving files, it's normal to get dupe because a file could be
         # opened multiple times with different case. Resolve the deduplication
         # here.
-        def render_to_string_and_fix_case(x):
-          """Returns the native file path case if the file exists.
+        def fix_path(x):
+          """Returns the native file path case.
 
           Converts late-bound strings.
           """
           if not x:
+            # Do not convert None instance to 'None'.
             return x
           # TODO(maruel): Do not upconvert to unicode here, on linux we don't
           # know the file path encoding so they must be treated as bytes.
           x = unicode(x)
-          if not os.path.exists(x):
-            return x
-          return get_native_path_case(x)
+          if os.path.isabs(x):
+            # If the path is not absolute, which tends to happen occasionally on
+            # Windows, it is not possible to get the native path case so ignore
+            # that trace. It mostly happens for 'executable' value.
+            x = get_native_path_case(x)
+          return x
+
+        def fix_and_blacklist_path(x):
+          x = fix_path(x)
+          if not x:
+            return
+          # The blacklist needs to be reapplied, since path casing could
+          # influence blacklisting.
+          if self._blacklist(x):
+            return
+          return x
 
         # Filters out directories. Some may have passed through.
-        files = set(map(render_to_string_and_fix_case, self.files))
+        files = set(f for f in map(fix_and_blacklist_path, self.files) if f)
         only_touched = set(
-            map(render_to_string_and_fix_case, self.only_touched))
+            f for f in map(fix_and_blacklist_path, self.only_touched) if f)
         only_touched -= files
 
         files = [
@@ -866,15 +882,19 @@ class ApiBase(object):
         return Results.Process(
             self.pid,
             files,
-            render_to_string_and_fix_case(self.executable),
+            fix_path(self.executable),
             self.command,
-            render_to_string_and_fix_case(self.initial_cwd),
+            fix_path(self.initial_cwd),
             [c.to_results_process() for c in self.children])
 
       def add_file(self, filepath, touch_only):
+        """Adds a file if it passes the blacklist."""
         if self._blacklist(unicode(filepath)):
           return
         logging.debug('add_file(%d, %s, %s)' % (self.pid, filepath, touch_only))
+        # Note that filepath and not unicode(filepath) is added. It is because
+        # filepath could be something else than a string, like a RelativePath
+        # instance for dtrace logs.
         if touch_only:
           self.only_touched.add(filepath)
         else:
