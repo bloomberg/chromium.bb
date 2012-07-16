@@ -6,7 +6,7 @@ vars = {
   # toolchain, so that new toolchain tarballs are not downloaded
   # unnecessarily.  There is no need to keep these numbers in sync
   # with each other.
-  "x86_toolchain_version": "9093",
+  "x86_toolchain_version": "9144",
   "pnacl_toolchain_version": "9117",
 
   # ARM trusted toolchain version cannot be changed for now.
