@@ -974,6 +974,19 @@
         ['exclude', '^browser/renderer_host/tap_suppression_controller_aura.cc'],
       ],
     }],
+    ['ui_compositor_image_transport==1', {
+      'dependencies': [
+        '../ui/gl/gl.gyp:gl',
+      ],
+      'link_settings': {
+        'libraries': [
+          '-lXcomposite',
+        ],
+      },
+      'include_dirs': [
+        '../third_party/angle/include',
+      ],
+    }],
     ['java_bridge==1', {
       'defines': [
         'ENABLE_JAVA_BRIDGE',
