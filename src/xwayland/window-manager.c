@@ -1005,13 +1005,10 @@ get_cursor_for_location(struct theme *t, int width, int height, int x, int y)
 }
 
 static void
-weston_wm_frame_set_cursor(struct weston_wm *wm,
-			   struct weston_wm_window *window, int cursor)
+weston_wm_window_set_cursor(struct weston_wm *wm, xcb_window_t window_id,
+			    int cursor)
 {
 	uint32_t cursor_value_list;
-
-	if (!window->frame_id)
-		return;
 
 	if (wm->last_cursor == cursor)
 		return;
@@ -1019,7 +1016,7 @@ weston_wm_frame_set_cursor(struct weston_wm *wm,
 	wm->last_cursor = cursor;
 
 	cursor_value_list = wm->cursors[cursor];
-	xcb_change_window_attributes (wm->conn, window->frame_id,
+	xcb_change_window_attributes (wm->conn, window_id,
 				      XCB_CW_CURSOR, &cursor_value_list);
 	xcb_flush(wm->conn);
 }
@@ -1087,7 +1084,7 @@ weston_wm_handle_motion(struct weston_wm *wm, xcb_generic_event_t *event)
 	cursor = get_cursor_for_location(wm->theme, width, height,
 					 motion->event_x, motion->event_y);
 
-	weston_wm_frame_set_cursor(wm, window, cursor);
+	weston_wm_window_set_cursor(wm, window->frame_id, cursor);
 }
 
 static void
@@ -1105,7 +1102,7 @@ weston_wm_handle_enter(struct weston_wm *wm, xcb_generic_event_t *event)
 	cursor = get_cursor_for_location(wm->theme, width, height,
 					 enter->event_x, enter->event_y);
 
-	weston_wm_frame_set_cursor(wm, window, cursor);
+	weston_wm_window_set_cursor(wm, window->frame_id, cursor);
 }
 
 static void
@@ -1118,7 +1115,7 @@ weston_wm_handle_leave(struct weston_wm *wm, xcb_generic_event_t *event)
 	if (!window)
 		return;
 
-	weston_wm_frame_set_cursor(wm, window, XWM_CURSOR_LEFT_PTR);
+	weston_wm_window_set_cursor(wm, window->frame_id, XWM_CURSOR_LEFT_PTR);
 }
 
 static int
@@ -1444,6 +1441,7 @@ weston_wm_create(struct weston_xserver *wxs)
 		      &wm->activate_listener);
 
 	weston_wm_create_cursors(wm);
+	weston_wm_window_set_cursor(wm, wm->screen->root, XWM_CURSOR_LEFT_PTR);
 
 	weston_log("created wm\n");
 
