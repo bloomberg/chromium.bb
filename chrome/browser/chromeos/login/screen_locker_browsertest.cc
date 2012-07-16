@@ -163,6 +163,10 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ScreenLockerTest);
 };
 
+#if defined(OS_LINUX)
+// http://crbug.com/137488
+#define TestBasic DISABLED_TestBasic
+#endif
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
   EXPECT_CALL(*mock_power_manager_client_, NotifyScreenLockCompleted())
       .Times(1)
@@ -201,6 +205,10 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
   EXPECT_FALSE(tester->IsLocked());
 }
 
+#if defined(OS_LINUX)
+// http://crbug.com/137488
+#define TestFullscreenExit DISABLED_TestFullscreenExit
+#endif
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
   EXPECT_CALL(*mock_power_manager_client_, NotifyScreenLockCompleted())
       .Times(1)
@@ -239,6 +247,10 @@ void UnlockKeyPress(views::Widget* widget) {
   SimulateKeyPress(widget, ui::VKEY_SPACE);
 }
 
+#if defined(OS_LINUX)
+// http://crbug.com/137488
+#define TestShowTwice DISABLED_TestShowTwice
+#endif
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
   EXPECT_CALL(*mock_power_manager_client_, NotifyScreenLockCompleted())
       .Times(2)
