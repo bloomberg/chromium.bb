@@ -31,6 +31,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <signal.h>
+#include <X11/Xcursor/Xcursor.h>
 
 #include "xwayland.h"
 
@@ -138,6 +139,76 @@ get_atom_name(xcb_connection_t *c, xcb_atom_t atom)
 	free(reply);
 
 	return buffer;
+}
+
+static xcb_cursor_t
+xcb_cursor_image_load_cursor(struct weston_wm *wm, const XcursorImage *img)
+{
+	xcb_connection_t *c = wm->conn;
+	xcb_screen_iterator_t s = xcb_setup_roots_iterator(xcb_get_setup(c));
+	xcb_screen_t *screen = s.data;
+	xcb_gcontext_t gc;
+	xcb_pixmap_t pix;
+	xcb_render_picture_t pic;
+	xcb_cursor_t cursor;
+	int stride = img->width * 4;
+
+	pix = xcb_generate_id(c);
+	xcb_create_pixmap(c, 32, pix, screen->root, img->width, img->height);
+
+	pic = xcb_generate_id(c);
+	xcb_render_create_picture(c, pic, pix, wm->format_rgba.id, 0, 0);
+
+	gc = xcb_generate_id(c);
+	xcb_create_gc(c, gc, pix, 0, 0);
+
+	xcb_put_image(c, XCB_IMAGE_FORMAT_Z_PIXMAP, pix, gc,
+		      img->width, img->height, 0, 0, 0, 32,
+		      stride * img->height, (uint8_t *) img->pixels);
+	xcb_free_gc(c, gc);
+
+	cursor = xcb_generate_id(c);
+	xcb_render_create_cursor(c, cursor, pic, img->xhot, img->yhot);
+
+	xcb_render_free_picture(c, pic);
+	xcb_free_pixmap(c, pix);
+
+	return cursor;
+}
+
+static xcb_cursor_t
+xcb_cursor_images_load_cursor(struct weston_wm *wm, const XcursorImages *images)
+{
+	/* TODO: treat animated cursors as well */
+	if (images->nimage != 1)
+		return -1;
+
+	return xcb_cursor_image_load_cursor(wm, images->images[0]);
+}
+
+static xcb_cursor_t
+xcb_cursor_library_load_cursor(struct weston_wm *wm, const char *file)
+{
+	xcb_cursor_t cursor;
+	XcursorImages *images;
+	char *v = NULL;
+	int size = 0;
+
+	if (!file)
+		return 0;
+
+	v = getenv ("XCURSOR_SIZE");
+	if (v)
+		size = atoi(v);
+
+	if (!size)
+		size = 32;
+
+	images = XcursorLibraryLoadImages (file, NULL, size);
+	cursor = xcb_cursor_images_load_cursor (wm, images);
+	XcursorImagesDestroy (images);
+
+	return cursor;
 }
 
 void

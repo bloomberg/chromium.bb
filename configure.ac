@@ -42,7 +42,7 @@ AC_ARG_ENABLE(xwayland, [  --enable-xwayland],,
 	      enable_xwayland=yes)
 AM_CONDITIONAL(ENABLE_XWAYLAND, test x$enable_xwayland = xyes)
 if test x$enable_xwayland = xyes; then
-  PKG_CHECK_MODULES([XWAYLAND], xcb xcb-xfixes cairo-xcb)
+  PKG_CHECK_MODULES([XWAYLAND], xcb xcb-xfixes xcursor cairo-xcb)
   AC_DEFINE([BUILD_XWAYLAND], [1], [Build the X server launcher])
 
   AC_ARG_WITH(xserver-path, AS_HELP_STRING([--with-xserver-path=PATH],
