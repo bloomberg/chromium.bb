@@ -243,16 +243,16 @@ class FileSystemChooseFileFunction::FilePicker
  public:
   FilePicker(FileSystemChooseFileFunction* function,
              content::WebContents* web_contents,
-             const FilePath& suggested_path,
+             const FilePath& suggested_name,
              SelectFileDialog::Type picker_type,
              EntryType entry_type)
-      : suggested_path_(suggested_path),
+      : suggested_name_(suggested_name),
         entry_type_(entry_type),
         function_(function) {
     select_file_dialog_ = SelectFileDialog::Create(
         this, new ChromeSelectFilePolicy(web_contents));
     SelectFileDialog::FileTypeInfo file_type_info;
-    FilePath::StringType extension = suggested_path.Extension();
+    FilePath::StringType extension = suggested_name.Extension();
     if (!extension.empty()) {
       extension.erase(extension.begin());  // drop the .
       file_type_info.extensions.resize(1);
@@ -281,7 +281,7 @@ class FileSystemChooseFileFunction::FilePicker
 
     select_file_dialog_->SelectFile(picker_type,
                                     string16(),
-                                    suggested_path,
+                                    suggested_name,
                                     &file_type_info, 0, FILE_PATH_LITERAL(""),
                                     owning_window, NULL);
   }
@@ -302,7 +302,7 @@ class FileSystemChooseFileFunction::FilePicker
     delete this;
   }
 
-  FilePath suggested_path_;
+  FilePath suggested_name_;
 
   EntryType entry_type_;
 
@@ -313,7 +313,7 @@ class FileSystemChooseFileFunction::FilePicker
 };
 
 bool FileSystemChooseFileFunction::ShowPicker(
-    const FilePath& suggested_path,
+    const FilePath& suggested_name,
     SelectFileDialog::Type picker_type,
     EntryType entry_type) {
   ShellWindowRegistry* registry = ShellWindowRegistry::Get(profile());
@@ -329,7 +329,7 @@ bool FileSystemChooseFileFunction::ShowPicker(
   // its destruction (and subsequent sending of the function response) until the
   // user has selected a file or cancelled the picker. At that point, the picker
   // will delete itself, which will also free the function instance.
-  new FilePicker(this, shell_window->web_contents(), suggested_path,
+  new FilePicker(this, shell_window->web_contents(), suggested_name,
       picker_type, entry_type);
   return true;
 }
@@ -374,18 +374,35 @@ bool FileSystemChooseFileFunction::RunImpl() {
   scoped_ptr<ChooseFile::Params> params(ChooseFile::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
+  FilePath suggested_name;
   EntryType entry_type = READ_ONLY;
   SelectFileDialog::Type picker_type = SelectFileDialog::SELECT_OPEN_FILE;
+
   file_system::ChooseFileOptions* options = params->options.get();
-  if (options && options->type.get()) {
-    if (*options->type == kOpenWritableFileOption) {
-      entry_type = WRITABLE;
-    } else if (*options->type == kSaveFileOption) {
-      entry_type = WRITABLE;
-      picker_type = SelectFileDialog::SELECT_SAVEAS_FILE;
-    } else if (*options->type != kOpenFileOption) {
-      error_ = kUnknownChooseFileType;
-      return false;
+  if (options) {
+    if (options->type.get()) {
+      if (*options->type == kOpenWritableFileOption) {
+        entry_type = WRITABLE;
+      } else if (*options->type == kSaveFileOption) {
+        entry_type = WRITABLE;
+        picker_type = SelectFileDialog::SELECT_SAVEAS_FILE;
+      } else if (*options->type != kOpenFileOption) {
+        error_ = kUnknownChooseFileType;
+        return false;
+      }
+    }
+
+    if (options->suggested_name.get()) {
+      suggested_name = FilePath::FromUTF8Unsafe(
+          *options->suggested_name.get());
+
+      // Don't allow any path components; shorten to the base name. This should
+      // result in a relative path, but in some cases may not. Clear the
+      // suggestion for safety if this is the case.
+      suggested_name = suggested_name.BaseName();
+      if (suggested_name.IsAbsolute()) {
+        suggested_name = FilePath();
+      }
     }
   }
 
@@ -394,7 +411,7 @@ bool FileSystemChooseFileFunction::RunImpl() {
     return false;
   }
 
-  return ShowPicker(FilePath(), picker_type, entry_type);
+  return ShowPicker(suggested_name, picker_type, entry_type);
 }
 
 }  // namespace extensions

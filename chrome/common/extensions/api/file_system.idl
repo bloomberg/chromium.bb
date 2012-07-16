@@ -18,6 +18,10 @@ namespace fileSystem {
     //
     // The default is 'openFile'.
     DOMString? type;
+
+    // The suggested file name that will be presented to the user as the
+    // default name to read or write. This is optional.
+    DOMString? suggestedName;
   };
   callback GetDisplayPathCallback = void (DOMString displayPath);
   callback FileEntryCallback = void ([instanceOf=fileEntry] object fileEntry);
