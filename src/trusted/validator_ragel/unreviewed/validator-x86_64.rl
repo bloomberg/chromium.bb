@@ -98,18 +98,6 @@ static int CheckJumpDest(size_t jump_dest,
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;

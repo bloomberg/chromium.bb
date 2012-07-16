@@ -2152,18 +2152,6 @@ tr0:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -2280,18 +2268,6 @@ tr8:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -2337,18 +2313,6 @@ tr13:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -2390,18 +2354,6 @@ tr14:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -2456,18 +2408,6 @@ tr17:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -2626,18 +2566,6 @@ tr25:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -2721,18 +2649,6 @@ tr30:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -2812,18 +2728,6 @@ tr31:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -3652,18 +3556,6 @@ tr117:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -3832,18 +3724,6 @@ tr156:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -3892,18 +3772,6 @@ tr159:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -4006,18 +3874,6 @@ tr174:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -4318,18 +4174,6 @@ tr280:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -4850,18 +4694,6 @@ tr307:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -5259,18 +5091,6 @@ tr355:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -5933,18 +5753,6 @@ tr738:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -6108,18 +5916,6 @@ tr745:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -6307,18 +6103,6 @@ tr962:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -6544,18 +6328,6 @@ tr1104:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -6648,18 +6420,6 @@ tr1108:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -8664,18 +8424,6 @@ tr253:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -8701,18 +8449,6 @@ tr258:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -8734,18 +8470,6 @@ tr259:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -8807,18 +8531,6 @@ tr246:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -8975,18 +8687,6 @@ tr237:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -9012,18 +8712,6 @@ tr242:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -9045,18 +8733,6 @@ tr243:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -9111,18 +8787,6 @@ tr229:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -9205,18 +8869,6 @@ tr755:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -9251,18 +8903,6 @@ tr759:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -9581,18 +9221,6 @@ tr99:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -9624,18 +9252,6 @@ tr108:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -9661,18 +9277,6 @@ tr113:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -9694,18 +9298,6 @@ tr114:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -10288,18 +9880,6 @@ tr132:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -10331,18 +9911,6 @@ tr141:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -10368,18 +9936,6 @@ tr146:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -10401,18 +9957,6 @@ tr147:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -10468,18 +10012,6 @@ tr470:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -10511,18 +10043,6 @@ tr481:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -10568,18 +10088,6 @@ tr970:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -11250,18 +10758,6 @@ tr263:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -11293,18 +10789,6 @@ tr271:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -11330,18 +10814,6 @@ tr276:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -11363,18 +10835,6 @@ tr277:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -12958,9 +12418,9 @@ st163:
 	if ( ++p == pe )
 		goto _test_eof163;
 case 163:
-	if ( 128u <= (*p) )
-		goto tr368;
-	goto tr42;
+	if ( (*p) <= 127u )
+		goto tr42;
+	goto tr368;
 st164:
 	if ( ++p == pe )
 		goto _test_eof164;
@@ -12974,16 +12434,16 @@ st165:
 	if ( ++p == pe )
 		goto _test_eof165;
 case 165:
-	if ( 128u <= (*p) )
-		goto tr371;
-	goto tr42;
+	if ( (*p) <= 127u )
+		goto tr42;
+	goto tr371;
 st166:
 	if ( ++p == pe )
 		goto _test_eof166;
 case 166:
-	if ( 128u <= (*p) )
-		goto tr372;
-	goto tr42;
+	if ( (*p) <= 127u )
+		goto tr42;
+	goto tr372;
 tr332:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
@@ -13649,18 +13109,6 @@ tr517:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -13686,18 +13134,6 @@ tr522:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -13719,18 +13155,6 @@ tr523:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -13765,18 +13189,6 @@ tr509:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -14021,18 +13433,6 @@ tr526:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -14064,18 +13464,6 @@ tr533:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -14101,18 +13489,6 @@ tr538:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -14134,18 +13510,6 @@ tr539:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -15503,18 +14867,6 @@ tr660:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -15546,18 +14898,6 @@ tr619:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -15583,18 +14923,6 @@ tr626:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -15616,18 +14944,6 @@ tr621:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -18590,18 +17906,6 @@ tr1003:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -18633,18 +17937,6 @@ tr865:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -18670,18 +17962,6 @@ tr873:
         result = 1;
         goto error_detected;
       }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
     } else {
       PrintError("Improper sandboxing in instruction\n", begin - data);
       result = 1;
@@ -18703,18 +17983,6 @@ tr868:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
