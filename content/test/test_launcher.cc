@@ -285,24 +285,24 @@ bool MatchesFilter(const std::string& name, const std::string& filter) {
 // to implement the SLOW_ test prefix.
 static const int kSlowTestTimeoutMultiplier = 5;
 
-int GetTestTerminationTimeout(const std::string& test_name,
-                              int default_timeout_ms) {
-  int timeout_ms = default_timeout_ms;
+base::TimeDelta GetTestTerminationTimeout(const std::string& test_name,
+                                          base::TimeDelta default_timeout) {
+  base::TimeDelta timeout = default_timeout;
 
   // Make it possible for selected tests to request a longer timeout.
   // Generally tests should really avoid doing too much, and splitting
   // a test instead of using SLOW prefix is strongly preferred.
   if (test_name.find("SLOW_") != std::string::npos)
-    timeout_ms *= kSlowTestTimeoutMultiplier;
+    timeout *= kSlowTestTimeoutMultiplier;
 
-  return timeout_ms;
+  return timeout;
 }
 
 // Runs test specified by |test_name| in a child process,
 // and returns the exit code.
 int RunTest(TestLauncherDelegate* launcher_delegate,
             const std::string& test_name,
-            int default_timeout_ms,
+            base::TimeDelta default_timeout,
             bool* was_timeout) {
   if (was_timeout)
     *was_timeout = false;
@@ -370,13 +370,12 @@ int RunTest(TestLauncherDelegate* launcher_delegate,
   if (!base::LaunchProcess(new_cmd_line, options, &process_handle))
     return -1;
 
-  int timeout_ms = GetTestTerminationTimeout(test_name,
-                                             default_timeout_ms);
+  base::TimeDelta timeout = GetTestTerminationTimeout(
+      test_name, default_timeout);
 
   int exit_code = 0;
-  if (!base::WaitForExitCodeWithTimeout(process_handle, &exit_code,
-                                        timeout_ms)) {
-    LOG(ERROR) << "Test timeout (" << timeout_ms
+  if (!base::WaitForExitCodeWithTimeout(process_handle, &exit_code, timeout)) {
+    LOG(ERROR) << "Test timeout (" << timeout.InMilliseconds()
                << " ms) exceeded for " << test_name;
 
     if (was_timeout)
@@ -480,7 +479,7 @@ bool RunTests(TestLauncherDelegate* launcher_delegate,
       bool was_timeout = false;
       int exit_code = RunTest(launcher_delegate,
                               test_name,
-                              TestTimeouts::action_max_timeout_ms(),
+                              TestTimeouts::action_max_timeout(),
                               &was_timeout);
       if (exit_code == 0) {
         // Test passed.
@@ -637,7 +636,7 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   if (warmup || (!should_shard && !has_filter)) {
     exit_code = RunTest(launcher_delegate,
                         kEmptyTestName,
-                        TestTimeouts::large_test_timeout_ms(),
+                        TestTimeouts::large_test_timeout(),
                         NULL);
     if (exit_code != 0 || warmup)
       return exit_code;

@@ -337,8 +337,7 @@ void WebRTCAudioDeviceTest::WaitForMessageLoopCompletion(
   base::WaitableEvent* event = new base::WaitableEvent(false, false);
   loop->PostTask(FROM_HERE, base::Bind(&base::WaitableEvent::Signal,
                  base::Unretained(event)));
-  if (event->TimedWait(base::TimeDelta::FromMilliseconds(
-          TestTimeouts::action_max_timeout_ms()))) {
+  if (event->TimedWait(TestTimeouts::action_max_timeout())) {
     delete event;
   } else {
     // Don't delete the event object in case the message ever gets processed.
