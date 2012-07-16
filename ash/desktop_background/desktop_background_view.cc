@@ -70,6 +70,7 @@ static int RoundPositive(double x) {
 // DesktopBackgroundView, public:
 
 DesktopBackgroundView::DesktopBackgroundView() {
+  set_context_menu_controller(this);
 }
 
 DesktopBackgroundView::~DesktopBackgroundView() {
@@ -132,9 +133,9 @@ bool DesktopBackgroundView::OnMousePressed(const views::MouseEvent& event) {
   return true;
 }
 
-void DesktopBackgroundView::OnMouseReleased(const views::MouseEvent& event) {
-  if (event.IsRightMouseButton())
-    Shell::GetInstance()->ShowBackgroundMenu(GetWidget(), event.location());
+void DesktopBackgroundView::ShowContextMenuForView(views::View* source,
+                                                   const gfx::Point& point) {
+  Shell::GetInstance()->ShowBackgroundMenu(GetWidget(), point);
 }
 
 void CreateDesktopBackground(aura::RootWindow* root_window) {
