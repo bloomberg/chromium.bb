@@ -15,6 +15,7 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -101,6 +102,8 @@ void ScriptBadgeController::NotifyChange() {
 void ScriptBadgeController::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
+  if (details.is_in_page)
+    return;
   extensions_executing_scripts_.clear();
   current_actions_.clear();
 }

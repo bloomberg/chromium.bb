@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/script_badge_controller.h"
@@ -37,7 +38,7 @@ class ScriptBadgeControllerTest : public TabContentsTestHarness {
       : ui_thread_(BrowserThread::UI, MessageLoop::current()) {
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     // Note that this sets a PageActionController into the
     // extension_tab_helper()->location_bar_controller() field.  Do
     // not use that for testing.
@@ -59,6 +60,22 @@ class ScriptBadgeControllerTest : public TabContentsTestHarness {
   }
 
  protected:
+  // Creates a test extension and adds it to |extension_service_|.
+  scoped_refptr<const Extension> AddTestExtension() {
+    scoped_refptr<const Extension> extension = ExtensionBuilder()
+        .SetManifest(DictionaryBuilder()
+            .Set("name", "Extension with page action")
+            .Set("version", "1.0.0")
+            .Set("manifest_version", 2)
+            .Set("permissions", ListBuilder()
+                .Append("tabs"))
+            .Set("page_action", DictionaryBuilder()
+                .Set("default_title", "Hello")))
+        .Build();
+    extension_service_->AddExtension(extension);
+    return extension;
+  }
+
   ExtensionService* extension_service_;
   scoped_ptr<ScriptExecutor> script_executor_;
   scoped_ptr<ScriptBadgeController> script_badge_controller_;
@@ -85,18 +102,7 @@ TEST_F(ScriptBadgeControllerTest, ExecutionMakesBadgeVisible) {
   EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
               testing::ElementsAre());
 
-  scoped_refptr<const Extension> extension =
-      ExtensionBuilder()
-      .SetManifest(DictionaryBuilder()
-                   .Set("name", "Extension with page action")
-                   .Set("version", "1.0.0")
-                   .Set("manifest_version", 2)
-                   .Set("permissions", ListBuilder()
-                        .Append("tabs"))
-                   .Set("page_action", DictionaryBuilder()
-                        .Set("default_title", "Hello")))
-      .Build();
-  extension_service_->AddExtension(extension);
+  scoped_refptr<const Extension> extension = AddTestExtension();
 
   // Establish a page id.
   NavigateAndCommit(GURL("http://www.google.com"));
@@ -120,6 +126,65 @@ TEST_F(ScriptBadgeControllerTest, ExecutionMakesBadgeVisible) {
               testing::ElementsAre(extension->script_badge()));
   EXPECT_THAT(location_bar_updated.events, testing::Gt(0));
 };
+
+TEST_F(ScriptBadgeControllerTest, FragmentNavigation) {
+  scoped_refptr<const Extension> extension = AddTestExtension();
+
+  // Establish a page id.
+  NavigateAndCommit(GURL("http://www.google.com"));
+
+  // Run script. Should be a notification and a script badge.
+  {
+    content::NotificationRegistrar notification_registrar;
+    CountingNotificationObserver location_bar_updated;
+    notification_registrar.Add(
+        &location_bar_updated,
+        chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
+        content::Source<Profile>(tab_contents()->profile()));
+
+    script_badge_controller_->OnExecuteScriptFinished(
+        extension->id(), true,
+        tab_contents()->web_contents()->GetController().GetActiveEntry()->
+            GetPageID(),
+        "");
+
+    EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
+                testing::ElementsAre(extension->script_badge()));
+    EXPECT_EQ(1, location_bar_updated.events);
+  }
+
+  // Navigate to a hash fragment. Shouldn't change.
+  {
+    content::NotificationRegistrar notification_registrar;
+    CountingNotificationObserver location_bar_updated;
+    notification_registrar.Add(
+        &location_bar_updated,
+        chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
+        content::Source<Profile>(tab_contents()->profile()));
+
+    NavigateAndCommit(GURL("http://www.google.com#hash"));
+
+    EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
+                testing::ElementsAre(extension->script_badge()));
+    EXPECT_EQ(0, location_bar_updated.events);
+  }
+
+  // Refreshing the page should reset the badges.
+  {
+    content::NotificationRegistrar notification_registrar;
+    CountingNotificationObserver location_bar_updated;
+    notification_registrar.Add(
+        &location_bar_updated,
+        chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
+        content::Source<Profile>(tab_contents()->profile()));
+
+    Reload();
+
+    EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
+                testing::ElementsAre());
+    EXPECT_EQ(0, location_bar_updated.events);
+  }
+}
 
 }  // namespace
 }  // namespace extensions
