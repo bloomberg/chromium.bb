@@ -62,12 +62,15 @@ class StringBuilder(object):
   """
   def __init__(self):
     self._buf = []
+    self._length = 0
 
   def __len__(self):
-    return len(self._buf)
+    return self._length
 
   def append(self, obj):
-    self._buf.append(str(obj))
+    string = str(obj)
+    self._buf.append(string)
+    self._length += len(string)
 
   def toString(self):
     return ''.join(self._buf)
@@ -88,7 +91,7 @@ class RenderState(object):
   def getFirstContext(self):
     if len(self.localContexts) > 0:
       return self.localContexts[0]
-    elif len(self.globalContexts) > 0:
+    if len(self.globalContexts) > 0:
       return self.globalContexts[0]
     return None
 
@@ -135,16 +138,16 @@ class Identifier(object):
       return self._resolveFromContext(renderState.getFirstContext())
 
     resolved = self._resolveFromContexts(renderState.localContexts)
-    if not resolved:
+    if resolved == None:
       resolved = self._resolveFromContexts(renderState.globalContexts)
-    if not resolved:
+    if resolved == None:
       renderState.addError("Couldn't resolve identifier ", self._path)
     return resolved
 
   def _resolveFromContexts(self, contexts):
     for context in contexts:
       resolved = self._resolveFromContext(context)
-      if resolved:
+      if resolved != None:
         return resolved
     return None
 
@@ -153,7 +156,7 @@ class Identifier(object):
     for next in self._path:
       # Only require that contexts provide a get method, meaning that callers
       # can provide dict-like contexts (for example, to populate values lazily).
-      if not result or not getattr(result, "get", None):
+      if result == None or not getattr(result, "get", None):
         return None
       result = result.get(next)
     return result
@@ -246,7 +249,7 @@ class IndentedNode(DecoratorNode):
     self._indent(renderState.text)
     for i, c in enumerate(contentRenderState.text.toString()):
       renderState.text.append(c)
-      if c == '\n' and i < len(renderState.text) - 1:
+      if c == '\n' and i < len(contentRenderState.text) - 1:
         self._indent(renderState.text)
     renderState.text.append('\n')
 
@@ -345,7 +348,7 @@ class EscapedVariableNode(LeafNode):
 
   def render(self, renderState):
     value = self._id.resolve(renderState)
-    if value:
+    if value != None:
       self._appendEscapedHtml(renderState.text, str(value))
 
   def _appendEscapedHtml(self, escaped, unescaped):
@@ -368,7 +371,7 @@ class UnescapedVariableNode(LeafNode):
 
   def render(self, renderState):
     value = self._id.resolve(renderState)
-    if value:
+    if value != None:
       renderState.text.append(value)
 
 class SectionNode(DecoratorNode):
@@ -380,13 +383,11 @@ class SectionNode(DecoratorNode):
 
   def render(self, renderState):
     value = self._id.resolve(renderState)
-    if not value:
+    if value == None:
       return
 
     type_ = type(value)
-    if value == None:
-      pass
-    elif type_ == list:
+    if type_ == list:
       for item in value:
         renderState.localContexts.insert(0, item)
         self._content.render(renderState)
@@ -407,24 +408,26 @@ class VertedSectionNode(DecoratorNode):
     self._id = id
 
   def render(self, renderState):
-    value = self._id.resolve(renderState)
-    if value and _VertedSectionNodeShouldRender(value):
+    value = self._id.resolve(renderState.inSameContext().disableErrors())
+    if _VertedSectionNodeShouldRender(value):
       renderState.localContexts.insert(0, value)
       self._content.render(renderState)
       renderState.localContexts.pop(0)
 
 def _VertedSectionNodeShouldRender(value):
-  type_ = type(value)
   if value == None:
     return False
-  elif type_ == bool:
+  type_ = type(value)
+  if type_ == bool:
     return value
-  elif type_ == int or type_ == float:
-    return value > 0
-  elif type_ == str or type_ == unicode:
-    return value != ''
-  elif type_ == list or type_ == dict:
+  if type_ == int or type_ == float:
+    return True
+  if type_ == str or type_ == unicode:
+    return True
+  if type_ == list:
     return len(value) > 0
+  if type_ == dict:
+    return True
   raise TypeError("Unhandled type: " + str(type_))
 
 class InvertedSectionNode(DecoratorNode):
@@ -435,8 +438,8 @@ class InvertedSectionNode(DecoratorNode):
     self._id = id
 
   def render(self, renderState):
-    value = self._id.resolve(renderState)
-    if not value or not _VertedSectionNodeShouldRender(value):
+    value = self._id.resolve(renderState.inSameContext().disableErrors())
+    if not _VertedSectionNodeShouldRender(value):
       self._content.render(renderState)
 
 class JsonNode(LeafNode):
@@ -448,7 +451,7 @@ class JsonNode(LeafNode):
 
   def render(self, renderState):
     value = self._id.resolve(renderState)
-    if value:
+    if value != None:
       renderState.text.append(json.dumps(value, separators=(',',':')))
 
 class PartialNode(LeafNode):
@@ -492,6 +495,10 @@ class PartialNode(LeafNode):
       self._args = {}
     self._args[key] = valueId
 
+# List of tokens in order of longest to shortest, to avoid any prefix matching
+# issues.
+TokenValues = []
+
 class Token(object):
   """ The tokens that can appear in a template.
   """
@@ -500,12 +507,21 @@ class Token(object):
       self.name = name
       self.text = text
       self.clazz = clazz
+      TokenValues.append(self)
+
+    def elseNodeClass(self):
+      if self.clazz == VertedSectionNode:
+        return InvertedSectionNode
+      if self.clazz == InvertedSectionNode:
+        return VertedSectionNode
+      raise ValueError(self.clazz + " can not have an else clause.")
 
   OPEN_START_SECTION          = Data("OPEN_START_SECTION"         , "{{#", SectionNode)
   OPEN_START_VERTED_SECTION   = Data("OPEN_START_VERTED_SECTION"  , "{{?", VertedSectionNode)
   OPEN_START_INVERTED_SECTION = Data("OPEN_START_INVERTED_SECTION", "{{^", InvertedSectionNode)
   OPEN_START_JSON             = Data("OPEN_START_JSON"            , "{{*", JsonNode)
   OPEN_START_PARTIAL          = Data("OPEN_START_PARTIAL"         , "{{+", PartialNode)
+  OPEN_ELSE                   = Data("OPEN_ELSE"                  , "{{:", None)
   OPEN_END_SECTION            = Data("OPEN_END_SECTION"           , "{{/", None)
   OPEN_UNESCAPED_VARIABLE     = Data("OPEN_UNESCAPED_VARIABLE"    , "{{{", UnescapedVariableNode)
   CLOSE_MUSTACHE3             = Data("CLOSE_MUSTACHE3"            , "}}}", None)
@@ -514,24 +530,6 @@ class Token(object):
   OPEN_VARIABLE               = Data("OPEN_VARIABLE"              , "{{" , EscapedVariableNode)
   CLOSE_MUSTACHE              = Data("CLOSE_MUSTACHE"             , "}}" , None)
   CHARACTER                   = Data("CHARACTER"                  , "."  , None)
-
-# List of tokens in order of longest to shortest, to avoid any prefix matching
-# issues.
-_tokenList = [
-  Token.OPEN_START_SECTION,
-  Token.OPEN_START_VERTED_SECTION,
-  Token.OPEN_START_INVERTED_SECTION,
-  Token.OPEN_START_JSON,
-  Token.OPEN_START_PARTIAL,
-  Token.OPEN_END_SECTION,
-  Token.OPEN_UNESCAPED_VARIABLE,
-  Token.CLOSE_MUSTACHE3,
-  Token.OPEN_COMMENT,
-  Token.CLOSE_COMMENT,
-  Token.OPEN_VARIABLE,
-  Token.CLOSE_MUSTACHE,
-  Token.CHARACTER
-]
 
 class TokenStream(object):
   """ Tokeniser for template parsing.
@@ -557,12 +555,12 @@ class TokenStream(object):
     if self._remainder == '':
       return None
 
-    for token in _tokenList:
+    for token in TokenValues:
       if self._remainder.startswith(token.text):
         self.nextToken = token
         break
 
-    if self.nextToken == None:
+    if not self.nextToken:
       self.nextToken = Token.CHARACTER
 
     self.nextContents = self._remainder[0:len(self.nextToken.text)]
@@ -592,7 +590,7 @@ class Handlebar(object):
     tokens = TokenStream(template)
     self._topNode = self._parseSection(tokens)
     if not self._topNode:
-      raise ParseException("Template is empty")
+      raise ParseException("Template is empty", tokens.nextLine)
     if tokens.hasNext():
       raise ParseException("There are still tokens remaining, "
                            "was there an end-section without a start-section:",
@@ -604,17 +602,16 @@ class Handlebar(object):
 
     while tokens.hasNext() and not sectionEnded:
       token = tokens.nextToken
-      node = None
 
       if token == Token.CHARACTER:
         startLine = tokens.nextLine
         string = tokens.advanceOverNextString()
-        node = StringNode(string, startLine, tokens.nextLine)
+        nodes.append(StringNode(string, startLine, tokens.nextLine))
       elif token == Token.OPEN_VARIABLE or \
            token == Token.OPEN_UNESCAPED_VARIABLE or \
            token == Token.OPEN_START_JSON:
         id = self._openSectionOrTag(tokens)
-        node = token.clazz(id, tokens.nextLine)
+        nodes.append(token.clazz(id, tokens.nextLine))
       elif token == Token.OPEN_START_PARTIAL:
         tokens.advance()
         id = Identifier(tokens.advanceOverNextString(excluded=' '),
@@ -631,18 +628,30 @@ class Handlebar(object):
                          tokens.nextLine))
 
         tokens.advanceOver(Token.CLOSE_MUSTACHE)
-        node = partialNode
-      elif token == Token.OPEN_START_SECTION or \
-           token == Token.OPEN_START_VERTED_SECTION or \
-           token == Token.OPEN_START_INVERTED_SECTION:
+        nodes.append(partialNode)
+      elif token == Token.OPEN_START_SECTION:
         id = self._openSectionOrTag(tokens)
         section = self._parseSection(tokens)
         self._closeSection(tokens, id)
         if section:
-          node = token.clazz(id, section)
+          nodes.append(SectionNode(id, section))
+      elif token == Token.OPEN_START_VERTED_SECTION or \
+           token == Token.OPEN_START_INVERTED_SECTION:
+        id = self._openSectionOrTag(tokens)
+        section = self._parseSection(tokens)
+        elseSection = None
+        if tokens.nextToken == Token.OPEN_ELSE:
+          self._openElse(tokens, id)
+          elseSection = self._parseSection(tokens)
+        self._closeSection(tokens, id)
+        if section:
+          nodes.append(token.clazz(id, section))
+        if elseSection:
+          nodes.append(token.elseNodeClass()(id, elseSection))
       elif token == Token.OPEN_COMMENT:
         self._advanceOverComment(tokens)
-      elif token == Token.OPEN_END_SECTION:
+      elif token == Token.OPEN_END_SECTION or \
+           token == Token.OPEN_ELSE:
         # Handled after running parseSection within the SECTION cases, so this is a
         # terminating condition. If there *is* an orphaned OPEN_END_SECTION, it will be caught
         # by noticing that there are leftover tokens after termination.
@@ -650,9 +659,6 @@ class Handlebar(object):
       elif Token.CLOSE_MUSTACHE:
         raise ParseException("Orphaned " + tokens.nextToken.name,
                              tokens.nextLine)
-
-      if node:
-        nodes.append(node)
 
     for i, node in enumerate(nodes):
       if isinstance(node, StringNode):
@@ -669,8 +675,8 @@ class Handlebar(object):
         if nextNode:
           nextNode.trimStartingNewLine()
       elif isinstance(node, LeafNode) and \
-           (previousNode == None or previousNode.endsWithEmptyLine()) and \
-           (nextNode == None or nextNode.startsWithNewLine()):
+           (not previousNode or previousNode.endsWithEmptyLine()) and \
+           (not nextNode or nextNode.startsWithNewLine()):
         indentation = 0
         if previousNode:
           indentation = previousNode.trimEndingSpaces()
@@ -713,7 +719,15 @@ class Handlebar(object):
     nextString = tokens.advanceOverNextString()
     if nextString != '' and nextString != str(id):
       raise ParseException(
-          "Start section " + str(id) + " doesn't match end section " + nextString)
+          "Start section " + str(id) + " doesn't match end " + nextString)
+    tokens.advanceOver(Token.CLOSE_MUSTACHE)
+
+  def _openElse(self, tokens, id):
+    tokens.advanceOver(Token.OPEN_ELSE)
+    nextString = tokens.advanceOverNextString()
+    if nextString != '' and nextString != str(id):
+      raise ParseException(
+          "Start section " + str(id) + " doesn't match else " + nextString)
     tokens.advanceOver(Token.CLOSE_MUSTACHE)
 
   def render(self, *contexts):

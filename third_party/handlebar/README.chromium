@@ -2,8 +2,8 @@ Name: Handlebar, logic-less templating system
 Short Name: handlebar
 URL: https://github.com/kalman/templates
 Version: 0
-Date: July 3, 2012
-Revision: commit 401c52a7d3e7496bb94cd12794865bba4dfe9374
+Date: July 13, 2012
+Revision: commit d69e6b7e2bcad0f9defd446ab531e875ebf56499
 License: Apache License, Version 2.0
 Security Critical: no
 
