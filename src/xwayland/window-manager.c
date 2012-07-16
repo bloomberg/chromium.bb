@@ -528,7 +528,7 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 		cairo_xcb_surface_create_with_xrender_format(wm->conn,
 							     wm->screen,
 							     window->frame_id,
-							     &wm->render_format,
+							     &wm->format_rgb,
 							     width, height);
 
 	hash_table_insert(wm->window_hash, window->frame_id, window);
@@ -1065,10 +1065,19 @@ wxs_wm_get_resources(struct weston_wm *wm)
 		return;
 
 	formats = xcb_render_query_pict_formats_formats(formats_reply);
-	for (i = 0; i < formats_reply->num_formats; i++)
+	for (i = 0; i < formats_reply->num_formats; i++) {
+		if (formats[i].direct.red_mask != 0xff &&
+		    formats[i].direct.red_shift != 16)
+			continue;
 		if (formats[i].type == XCB_RENDER_PICT_TYPE_DIRECT &&
 		    formats[i].depth == 24)
-			wm->render_format = formats[i];
+			wm->format_rgb = formats[i];
+		if (formats[i].type == XCB_RENDER_PICT_TYPE_DIRECT &&
+		    formats[i].depth == 32 &&
+		    formats[i].direct.alpha_mask == 0xff &&
+		    formats[i].direct.alpha_shift == 24)
+			wm->format_rgba = formats[i];
+	}
 
 	free(formats_reply);
 }
