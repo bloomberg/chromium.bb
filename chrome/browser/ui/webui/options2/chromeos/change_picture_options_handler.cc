@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -398,9 +397,7 @@ void ChangePictureOptionsHandler::Observe(
 
 gfx::NativeWindow ChangePictureOptionsHandler::GetBrowserWindow() const {
   Browser* browser =
-      browser::FindBrowserWithProfile(Profile::FromWebUI(web_ui()));
-  if (!browser)
-    return NULL;
+      browser::FindBrowserWithWebContents(web_ui()->GetWebContents());
   return browser->window()->GetNativeWindow();
 }
 
