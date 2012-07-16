@@ -2437,14 +2437,27 @@ static const struct wl_callback_listener pointer_surface_listener = {
 void
 input_set_pointer_image(struct input *input, int pointer)
 {
-	if (pointer == input->current_cursor &&
-	    input->pointer_enter_serial == input->cursor_serial)
+	int force = 0;
+
+	if (input->pointer_enter_serial > input->cursor_serial)
+		force = 1;
+
+	if (!force && pointer == input->current_cursor)
 		return;
 
 	input->current_cursor = pointer;
 	input->cursor_serial = input->pointer_enter_serial;
 	if (!input->cursor_frame_cb)
 		pointer_surface_frame_callback(input, NULL, 0);
+	else if (force) {
+		/* The current frame callback may be stuck if, for instance,
+		 * the set cursor request was processed by the server after
+		 * this client lost the focus. In this case the cursor surface
+		 * might not be mapped and the frame callback wouldn't ever
+		 * complete. Send a set_cursor and attach to try to map the
+		 * cursor surface again so that the callback will finish */
+		input_set_pointer_image_index(input, 0);
+	}
 }
 
 struct wl_data_device *
