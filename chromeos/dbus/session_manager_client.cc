@@ -321,19 +321,35 @@ class SessionManagerClientImpl : public SessionManagerClient {
 // The SessionManagerClient implementation used on Linux desktop,
 // which does nothing.
 class SessionManagerClientStubImpl : public SessionManagerClient {
+ public:
+  SessionManagerClientStubImpl() : screen_locked_(false) {}
+  virtual ~SessionManagerClientStubImpl() {}
+
   // SessionManagerClient overrides.
-  virtual void AddObserver(Observer* observer) OVERRIDE {}
-  virtual void RemoveObserver(Observer* observer) OVERRIDE {}
-  virtual bool HasObserver(Observer* observer) OVERRIDE { return false; }
+  virtual void AddObserver(Observer* observer) OVERRIDE {
+    observers_.AddObserver(observer);
+  }
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {
+    observers_.RemoveObserver(observer);
+  }
+  virtual bool HasObserver(Observer* observer) OVERRIDE {
+    return observers_.HasObserver(observer);
+  }
   virtual void EmitLoginPromptReady() OVERRIDE {}
   virtual void EmitLoginPromptVisible() OVERRIDE {}
   virtual void RestartJob(int pid, const std::string& command_line) OVERRIDE {}
   virtual void RestartEntd() OVERRIDE {}
   virtual void StartSession(const std::string& user_email) OVERRIDE {}
   virtual void StopSession() OVERRIDE {}
-  virtual void RequestLockScreen() OVERRIDE {}
-  virtual void RequestUnlockScreen() OVERRIDE {}
-  virtual bool GetIsScreenLocked() OVERRIDE { return false; }
+  virtual void RequestLockScreen() OVERRIDE {
+    screen_locked_ = true;
+    FOR_EACH_OBSERVER(Observer, observers_, LockScreen());
+  }
+  virtual void RequestUnlockScreen() OVERRIDE {
+    screen_locked_ = false;
+    FOR_EACH_OBSERVER(Observer, observers_, UnlockScreen());
+  }
+  virtual bool GetIsScreenLocked() OVERRIDE { return screen_locked_; }
   virtual void RetrieveDevicePolicy(
       const RetrievePolicyCallback& callback) OVERRIDE {
     callback.Run("");
@@ -350,6 +366,12 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
                                const StorePolicyCallback& callback) OVERRIDE {
     callback.Run(true);
   }
+
+ private:
+  ObserverList<Observer> observers_;
+  bool screen_locked_;
+
+  DISALLOW_COPY_AND_ASSIGN(SessionManagerClientStubImpl);
 };
 
 SessionManagerClient::SessionManagerClient() {
