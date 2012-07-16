@@ -735,6 +735,8 @@
   'CHROMEOS_LOGIN': {
     'chromeos': [
       'chromeos_login',
+      # crosbug.com/32583
+      '-chromeos_login.ChromeosLogin.testCachedCredentials',
     ],
   },
 
