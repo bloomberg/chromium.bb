@@ -1205,7 +1205,7 @@ class Strace(ApiBase):
               line,
               e)
 
-      @parse_args(r'^\"(.+?)\", [FRWX]_OK$', True)
+      @parse_args(r'^\"(.+?)\", [FKORWX_|]+$', True)
       def handle_access(self, args, _result):
         self._handle_file(args[0], True)
 
@@ -1294,6 +1294,9 @@ class Strace(ApiBase):
       @parse_args(r'\"(.+?)\", \{.+?, \.\.\.\}', True)
       def handle_stat(self, args, _result):
         self._handle_file(args[0], True)
+
+      def handle_symlink(self, _args, _result):
+        pass
 
       def handle_unlink(self, _args, _result):
         # In theory, the file had to be created anyway.
