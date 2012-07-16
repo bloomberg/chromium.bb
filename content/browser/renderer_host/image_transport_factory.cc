@@ -25,7 +25,6 @@
 #include "ui/compositor/test_web_graphics_context_3d.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
-#include "ui/gl/scoped_make_current.h"
 
 using content::BrowserGpuChannelHostFactory;
 using content::GLHelper;
