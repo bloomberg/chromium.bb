@@ -277,7 +277,7 @@ void PowerSaveBlocker::Delegate::RemoveBlock(DBusAPI api) {
           kFreeDesktopAPIServiceName,
           dbus::ObjectPath(kFreeDesktopAPIObjectPath));
       method_call.reset(
-          new dbus::MethodCall(kFreeDesktopAPIInterfaceName, "Uninhibit"));
+          new dbus::MethodCall(kFreeDesktopAPIInterfaceName, "UnInhibit"));
       break;
   }
 
