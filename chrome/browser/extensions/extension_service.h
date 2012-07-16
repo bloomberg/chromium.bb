@@ -53,7 +53,6 @@ class CrxInstaller;
 class ExtensionBrowserEventRouter;
 class ExtensionFontSettingsEventRouter;
 class ExtensionGlobalError;
-class ExtensionManagedModeEventRouter;
 class ExtensionManagementEventRouter;
 class ExtensionPreferenceEventRouter;
 class ExtensionSyncData;
@@ -67,6 +66,10 @@ class Version;
 namespace chromeos {
 class ExtensionBluetoothEventRouter;
 class ExtensionInputMethodEventRouter;
+}
+
+namespace extensions {
+class ExtensionManagedModeEventRouter;
 }
 
 namespace syncer {
@@ -814,7 +817,8 @@ class ExtensionService
 
   scoped_ptr<ExtensionFontSettingsEventRouter> font_settings_event_router_;
 
-  scoped_ptr<ExtensionManagedModeEventRouter> managed_mode_event_router_;
+  scoped_ptr<extensions::ExtensionManagedModeEventRouter>
+      managed_mode_event_router_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<chromeos::ExtensionBluetoothEventRouter> bluetooth_event_router_;

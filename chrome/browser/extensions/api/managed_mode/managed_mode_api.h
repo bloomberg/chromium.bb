@@ -5,14 +5,16 @@
 // Defines the Chrome Extensions Managed Mode API relevant classes to realize
 // the API as specified in the extension API JSON.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGED_MODE_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGED_MODE_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_MANAGED_MODE_MANAGED_MODE_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_MANAGED_MODE_MANAGED_MODE_API_H_
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 
 class Profile;
+
+namespace extensions {
 
 class ExtensionManagedModeEventRouter : public content::NotificationObserver {
  public:
@@ -82,4 +84,6 @@ class SetPolicyFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGED_MODE_API_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_MANAGED_MODE_MANAGED_MODE_API_H_

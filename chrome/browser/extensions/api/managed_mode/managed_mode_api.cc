@@ -4,7 +4,7 @@
 
 // Implementation of the Chrome Extensions Managed Mode API.
 
-#include "chrome/browser/extensions/extension_managed_mode_api.h"
+#include "chrome/browser/extensions/api/managed_mode/managed_mode_api.h"
 
 #include <string>
 
@@ -36,6 +36,8 @@ const char kEnterSuccessKey[] = "success";
 }  // namespace
 
 namespace keys = extension_preference_api_constants;
+
+namespace extensions {
 
 ExtensionManagedModeEventRouter::ExtensionManagedModeEventRouter(
     Profile* profile) : profile_(profile) {
@@ -127,3 +129,5 @@ bool SetPolicyFunction::RunImpl() {
 #endif
   return true;
 }
+
+}  // namespace extensions

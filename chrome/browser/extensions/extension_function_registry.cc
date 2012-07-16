@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_script_badge_api.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
+#include "chrome/browser/extensions/api/managed_mode/managed_mode_api.h"
 #include "chrome/browser/extensions/api/media_gallery/media_gallery_api.h"
 #include "chrome/browser/extensions/api/metrics/metrics.h"
 #include "chrome/browser/extensions/api/offscreen_tabs/offscreen_tabs_api.h"
@@ -38,7 +39,6 @@
 #include "chrome/browser/extensions/extension_font_settings_api.h"
 #include "chrome/browser/extensions/extension_i18n_api.h"
 #include "chrome/browser/extensions/extension_idle_api.h"
-#include "chrome/browser/extensions/extension_managed_mode_api.h"
 #include "chrome/browser/extensions/extension_management_api.h"
 #include "chrome/browser/extensions/extension_module.h"
 #include "chrome/browser/extensions/extension_page_capture_api.h"
@@ -293,10 +293,10 @@ void ExtensionFunctionRegistry::ResetFunctions() {
 #endif
 
   // Managed mode.
-  RegisterFunction<GetManagedModeFunction>();
-  RegisterFunction<EnterManagedModeFunction>();
-  RegisterFunction<GetPolicyFunction>();
-  RegisterFunction<SetPolicyFunction>();
+  RegisterFunction<extensions::GetManagedModeFunction>();
+  RegisterFunction<extensions::EnterManagedModeFunction>();
+  RegisterFunction<extensions::GetPolicyFunction>();
+  RegisterFunction<extensions::SetPolicyFunction>();
 
   // Management.
   RegisterFunction<GetAllExtensionsFunction>();

@@ -532,6 +532,8 @@
           'sources': [
             'browser/extensions/api/debugger/debugger_api.cc',
             'browser/extensions/api/debugger/debugger_api.h',
+            'browser/extensions/api/managed_mode/managed_mode_api.cc',
+            'browser/extensions/api/managed_mode/managed_mode_api.h',
             'browser/extensions/api/metrics/metrics.cc',
             'browser/extensions/api/metrics/metrics.h',
             'browser/extensions/api/tabs/execute_code_in_tab_function.cc',
@@ -558,8 +560,6 @@
             'browser/extensions/extension_input_ime_api.h',
             'browser/extensions/extension_input_method_api.cc',
             'browser/extensions/extension_input_method_api.h',
-            'browser/extensions/extension_managed_mode_api.cc',
-            'browser/extensions/extension_managed_mode_api.h',
             'browser/extensions/extension_management_api.cc',
             'browser/extensions/extension_management_api.h',
             'browser/extensions/extension_page_capture_api.cc',
