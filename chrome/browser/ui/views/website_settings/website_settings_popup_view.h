@@ -44,7 +44,7 @@ class WebsiteSettingsPopupView
   static void ShowPopup(views::View* anchor_view,
                         Profile* profile,
                         TabContents* tab_contents,
-                        const GURL& gurl,
+                        const GURL& url,
                         const content::SSLStatus& ssl);
 
  private:

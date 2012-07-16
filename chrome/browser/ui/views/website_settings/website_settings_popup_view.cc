@@ -12,8 +12,10 @@
 #include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/content_settings_types.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/cert_store.h"
 #include "googleurl/src/gurl.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
 #include "grit/theme_resources.h"
@@ -83,6 +85,12 @@ const int kPopupWidth = 300;
 
 // The bottom margin of the tabbed pane view.
 const int kTabbedPaneMarginBottom = 8;
+
+// Returns true if the passed |url| refers to an internal chrome page.
+bool InternalChromePage(const GURL& url) {
+  return url.SchemeIs(chrome::kChromeInternalScheme) ||
+         url.SchemeIs(chrome::kChromeUIScheme);
+}
 
 }  // namespace
 
@@ -215,48 +223,92 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
       identity_info_content_(NULL),
       connection_info_content_(NULL),
       page_info_content_(NULL) {
-  views::GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);
-  const int content_column = 0;
-  views::ColumnSet* column_set = layout->AddColumnSet(content_column);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::FILL,
-                        1,
-                        views::GridLayout::USE_PREF,
-                        0,
-                        0);
+  if (InternalChromePage(url)) {
+    views::GridLayout* layout = new views::GridLayout(this);
+    SetLayoutManager(layout);
+    views::ColumnSet* column_set = layout->AddColumnSet(0);
+    column_set->AddColumn(views::GridLayout::FILL,
+                          views::GridLayout::FILL,
+                          0,  // Resize weight.
+                          views::GridLayout::USE_PREF,
+                          0,
+                          0);
+    column_set->AddPaddingColumn(0, kIconMarginLeft);
+    column_set->AddColumn(views::GridLayout::FILL,
+                          views::GridLayout::FILL,
+                          1,
+                          views::GridLayout::USE_PREF,
+                          0,
+                          0);
 
-  header_ = new PopupHeaderView(this);
-  layout->StartRow(1, content_column);
-  layout->AddView(header_);
+    layout->StartRow(1, 0);
 
-  layout->AddPaddingRow(1, kHeaderMarginBottom);
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    const gfx::Image& icon = rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_26);
+    views::ImageView* icon_view = new views::ImageView();
+    icon_view->SetImage(icon.ToImageSkia());
+    layout->AddView(icon_view, 1, 1, views::GridLayout::LEADING,
+                    views::GridLayout::LEADING);
 
-  tabbed_pane_ = new views::TabbedPane();
-  layout->StartRow(1, content_column);
-  layout->AddView(tabbed_pane_);
-  // Tabs must be added after the tabbed_pane_ was added to the views hierachy.
-  // Adding the |tabbed_pane_| to the views hierachy triggers the
-  // initialization of the native tab UI element. If the native tab UI element
-  // is not initalized adding a tab will result in a NULL pointer excetion.
-  tabbed_pane_->AddTab(
-      l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TAB_LABEL_PERMISSIONS),
-      CreatePermissionsTab());
-  tabbed_pane_->AddTab(
-      l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TAB_LABEL_CONNECTION),
-      CreateIdentityTab());
-  tabbed_pane_->SelectTabAt(0);
-  tabbed_pane_->set_listener(this);
+    string16 text = l10n_util::GetStringUTF16(
+        IDS_PAGE_INFO_INTERNAL_PAGE);
+    views::Label* label = new views::Label(text);
+    label->SetMultiLine(true);
+    label->SetAllowCharacterBreak(true);
+    label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    layout->AddView(label, 1, 1, views::GridLayout::LEADING,
+                    views::GridLayout::CENTER);
 
-  layout->AddPaddingRow(0, kTabbedPaneMarginBottom);
+    views::BubbleDelegateView::CreateBubble(this);
+    Show();
+    SizeToContents();
+  } else {
+    // Non internal chrome page.
+    views::GridLayout* layout = new views::GridLayout(this);
+    SetLayoutManager(layout);
+    const int content_column = 0;
+    views::ColumnSet* column_set = layout->AddColumnSet(content_column);
+    column_set->AddColumn(views::GridLayout::FILL,
+                          views::GridLayout::FILL,
+                          1,
+                          views::GridLayout::USE_PREF,
+                          0,
+                          0);
 
-  views::BubbleDelegateView::CreateBubble(this);
-  this->Show();
-  SizeToContents();
+    header_ = new PopupHeaderView(this);
+    layout->StartRow(1, content_column);
+    layout->AddView(header_);
 
-  presenter_.reset(new WebsiteSettings(this, profile,
-                                       tab_contents->content_settings(), url,
-                                       ssl, content::CertStore::GetInstance()));
+    layout->AddPaddingRow(1, kHeaderMarginBottom);
+
+    tabbed_pane_ = new views::TabbedPane();
+    layout->StartRow(1, content_column);
+    layout->AddView(tabbed_pane_);
+    // Tabs must be added after the tabbed_pane_ was added to the views
+    // hierachy.  Adding the |tabbed_pane_| to the views hierachy triggers the
+    // initialization of the native tab UI element. If the native tab UI
+    // element is not initalized adding a tab will result in a NULL pointer
+    // excetion.
+    tabbed_pane_->AddTab(
+        l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TAB_LABEL_PERMISSIONS),
+        CreatePermissionsTab());
+    tabbed_pane_->AddTab(
+        l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TAB_LABEL_CONNECTION),
+        CreateIdentityTab());
+    tabbed_pane_->SelectTabAt(0);
+    tabbed_pane_->set_listener(this);
+
+    layout->AddPaddingRow(0, kTabbedPaneMarginBottom);
+
+    views::BubbleDelegateView::CreateBubble(this);
+    this->Show();
+    SizeToContents();
+
+    presenter_.reset(new WebsiteSettings(this, profile,
+                                         tab_contents->content_settings(), url,
+                                         ssl,
+                                         content::CertStore::GetInstance()));
+  }
 }
 
 void WebsiteSettingsPopupView::OnPermissionChanged(
@@ -294,12 +346,14 @@ void WebsiteSettingsPopupView::TabSelectedAt(int index) {
 }
 
 gfx::Size WebsiteSettingsPopupView::GetPreferredSize() {
+  if (header_ == NULL && tabbed_pane_ == NULL)
+    return views::View::GetPreferredSize();
+
   int height = 0;
   if (header_)
     height += header_->GetPreferredSize().height();
   if (tabbed_pane_)
     height += tabbed_pane_->GetPreferredSize().height();
-
   return gfx::Size(kPopupWidth, height);
 }
 
