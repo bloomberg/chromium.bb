@@ -31,7 +31,8 @@
 namespace {
 
 const int kUserInfoVerticalPadding = 10;
-
+const int kUserInfoEmptyBorderLeftPadding = 6;
+const int kUserInfoEmptyBorderRightPadding = 1;
 const int kUserIconSize = 27;
 
 }  // namespace
@@ -258,7 +259,8 @@ TrayUser::~TrayUser() {
 views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
   CHECK(avatar_ == NULL);
   avatar_ = new tray::RoundedImageView(kTrayRoundedBorderRadius);
-  avatar_->set_border(views::Border::CreateEmptyBorder(0, 6, 0, 0));
+  avatar_->set_border(views::Border::CreateEmptyBorder(
+      0, kUserInfoEmptyBorderLeftPadding, 0, kUserInfoEmptyBorderRightPadding));
   UpdateAfterLoginStatusChange(status);
   return avatar_;
 }
