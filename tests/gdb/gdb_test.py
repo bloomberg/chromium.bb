@@ -47,26 +47,92 @@ def GenerateManifest(nexe, runnable_ld, name):
   return filename
 
 
-# Match FOO=BAR, where BAR is one of:
-#   "BAZ" (c-string), where BAZ does not contain "
-#   {BAZ} (tuple), where BAZ does not contain { and }
-#   [BAZ] (list), where BAZ does not contain [ and ]
-# WARNING! returns invalid matches when c-strings contain \"{}[]!
-_RESULT_RE = re.compile('\,([^=]+)=("([^"]*)"|{([^{}]*)}|\[([^[\]]*)\])')
+class RecordParser(object):
 
-def ParseRecord(s, prefix):
-  res = {}
-  assert s.startswith(prefix)
-  try:
-    # Oversimplification: match some results, break nesting.
-    for m in _RESULT_RE.finditer(s[len(prefix):]):
-      # Oversimplification: ignore tuples and lists.
-      if m.group(3):
-        res[m.group(1)] = m.group(3)
-  except:
-    # Oversimplification: ignore parsing failures.
-    pass
-  return res
+  STATUS_RE = re.compile('[^,]+')
+  KEY_RE = re.compile('([^"{\[=]+)=')
+  VALUE_PREFIX_RE = re.compile('"|{|\[')
+  STRING_VALUE_RE = re.compile('([^"]*)"')
+
+  def __init__(self, line):
+    self.line = line
+    self.pos = 0
+
+  def Skip(self, c):
+    if self.line.startswith(c, self.pos):
+      self.pos += len(c)
+      return True
+    return False
+
+  def Match(self, r):
+    match = r.match(self.line, self.pos)
+    if match is not None:
+      self.pos = match.end()
+    return match
+
+  def ParseString(self):
+    string_value_match = self.Match(self.STRING_VALUE_RE)
+    assert string_value_match is not None
+    return string_value_match.group(1)
+
+  def ParseValue(self):
+    value_prefix_match = self.Match(self.VALUE_PREFIX_RE)
+    assert value_prefix_match is not None
+    if value_prefix_match.group(0) == '"':
+      return self.ParseString()
+    elif value_prefix_match.group(0) == '{':
+      return self.ParseDict()
+    else:
+      return self.ParseList()
+
+  def ParseListMembers(self):
+    result = []
+    while True:
+      # List syntax:
+      #   [foo, bar]
+      #   [foo=x, bar=y] - we parse this as [{foo=x}, {bar=y}]
+      key_match = self.Match(self.KEY_RE)
+      value = self.ParseValue()
+      if key_match is not None:
+        result.append({key_match.group(1): value})
+      else:
+        result.append(value)
+      if not self.Skip(','):
+        break
+    return result
+
+  def ParseList(self):
+    if self.Skip(']'):
+      return []
+    result = self.ParseListMembers()
+    assert self.Skip(']')
+    return result
+
+  def ParseDictMembers(self):
+    result = {}
+    while True:
+      key_match = self.Match(self.KEY_RE)
+      assert key_match is not None
+      result[key_match.group(1)] = self.ParseValue()
+      if not self.Skip(','):
+        break
+    return result
+
+  def ParseDict(self):
+    if self.Skip('}'):
+      return {}
+    result = self.ParseDictMembers()
+    assert self.Skip('}')
+    return result
+
+  def Parse(self):
+    status_match = self.Match(self.STATUS_RE)
+    assert status_match is not None
+    result = {}
+    if self.Skip(','):
+      result = self.ParseDictMembers()
+    assert self.pos == len(self.line)
+    return (status_match.group(0), result)
 
 
 class Gdb(object):
@@ -113,25 +179,28 @@ class Gdb(object):
   def _GetResultRecord(self, result):
     for line in result:
       if line.startswith('^'):
-        return line
+        return RecordParser(line).Parse()
 
   def _GetLastExecAsyncRecord(self, result):
     for line in reversed(result):
       if line.startswith('*'):
-        return line
+        return RecordParser(line).Parse()
 
   def Command(self, command):
-    res = self._GetResultRecord(self._SendRequest(command))
-    return ParseRecord(res, '^done')
+    status, items = self._GetResultRecord(self._SendRequest(command))
+    assert status == '^done', status
+    return items
 
   def ResumeCommand(self, command):
-    res = self._GetResultRecord(self._SendRequest(command))
-    assert res.startswith('^running')
-    res = self._GetLastExecAsyncRecord(self._GetResponse())
-    return ParseRecord(res, '*stopped')
+    status, items = self._GetResultRecord(self._SendRequest(command))
+    assert status == '^running', status
+    status, items = self._GetLastExecAsyncRecord(self._GetResponse())
+    assert status == '*stopped', status
+    return items
 
   def Quit(self):
-    assert self._GetResultRecord(self._SendRequest('-gdb-exit')) == '^exit'
+    status, items = self._GetResultRecord(self._SendRequest('-gdb-exit'))
+    assert status == '^exit', status
 
   def Eval(self, expression):
     return self.Command('-data-evaluate-expression ' + expression)['value']
