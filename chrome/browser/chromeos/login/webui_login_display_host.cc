@@ -241,6 +241,8 @@ void WebUILoginDisplayHost::RenderViewGone(base::TerminationStatus status) {
 }
 
 OobeUI* WebUILoginDisplayHost::GetOobeUI() const {
+  if (!login_view_)
+    return NULL;
   return static_cast<OobeUI*>(login_view_->GetWebUI()->GetController());
 }
 
