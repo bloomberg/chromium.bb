@@ -598,12 +598,8 @@ chromium_pfq_info.add_config('x86-generic-tot-chrome-pfq-informational',
 )
 
 cpfq_arm = \
-chromium_pfq_info.add_config('arm-generic-tot-chrome-pfq-informational',
+chromium_pfq_info.add_config('arm-tegra2-tot-chrome-pfq-informational',
   arm,
-  boards=['arm-generic'],
-)
-
-cpfq_arm.add_config('arm-tegra2-tot-chrome-pfq-informational',
   boards=['tegra2'],
 )
 
