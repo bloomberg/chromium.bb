@@ -114,7 +114,7 @@ cr.define('options', function() {
      * @param {!Object} data The data of the selected item.
      */
     updateButtonState: function(data) {
-      var isCert = !!data && data.id.substr(0, 5) == 'cert-';
+      var isCert = !!data && data.isCert;
       var readOnly = !!data && data.readonly;
       var extractable = !!data && data.extractable;
       var hasChildren = this.tree.items.length > 0;

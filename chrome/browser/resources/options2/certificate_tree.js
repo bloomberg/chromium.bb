@@ -7,12 +7,45 @@ cr.define('options', function() {
   /** @const */ var TreeItem = cr.ui.TreeItem;
 
   /**
+   * Creates a new tree folder for certificate data.
+   * @param {Object=} data Data used to create a certificate tree folder.
+   * @constructor
+   * @extends {TreeItem}
+   */
+  function CertificateTreeFolder(data) {
+    data.isCert = false;
+    var treeFolder = new TreeItem({
+      label: data.name,
+      data: data
+    });
+    treeFolder.__proto__ = CertificateTreeFolder.prototype;
+
+    if (data.icon)
+      treeFolder.icon = data.icon;
+
+    return treeFolder;
+  }
+
+  CertificateTreeFolder.prototype = {
+    __proto__: TreeItem.prototype,
+
+    /**
+     * The tree path id/.
+     * @type {string}
+     */
+    get pathId() {
+      return this.data.id;
+    }
+  };
+
+  /**
    * Creates a new tree item for certificate data.
    * @param {Object=} data Data used to create a certificate tree item.
    * @constructor
    * @extends {TreeItem}
    */
   function CertificateTreeItem(data) {
+    data.isCert = true;
     // TODO(mattm): other columns
     var treeItem = new TreeItem({
       label: data.name,
@@ -20,9 +53,8 @@ cr.define('options', function() {
     });
     treeItem.__proto__ = CertificateTreeItem.prototype;
 
-    if (data.icon) {
+    if (data.icon)
       treeItem.icon = data.icon;
-    }
 
     if (data.untrusted) {
       var badge = document.createElement('span');
@@ -43,12 +75,7 @@ cr.define('options', function() {
      * @type {string}
      */
     get pathId() {
-      var parent = this.parentItem;
-      if (parent && parent instanceof CertificateTreeItem) {
-        return parent.pathId + ',' + this.data.id;
-      } else {
-        return this.data.id;
-      }
+      return this.parentItem.pathId + ',' + this.data.id;
     }
   };
 
@@ -105,7 +132,7 @@ cr.define('options', function() {
         var subnodes = nodesData[i]['subnodes'];
         delete nodesData[i]['subnodes'];
 
-        var item = new CertificateTreeItem(nodesData[i]);
+        var item = new CertificateTreeFolder(nodesData[i]);
         this.addAt(item, i);
 
         for (var j = 0; j < subnodes.length; ++j) {
