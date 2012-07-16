@@ -19,6 +19,9 @@ class H264BitReader : public media::BitReader {
   H264BitReader();
   virtual ~H264BitReader();
 
+  // See the definition of more_rbsp_data() in spec.
+  bool HasMoreRBSPData();
+
  private:
   // This function handles the H.264 escape sequence and stop bit.
   virtual void UpdateCurrByte() OVERRIDE;
