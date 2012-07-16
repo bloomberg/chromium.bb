@@ -233,8 +233,8 @@ class TestPrerenderContents : public PrerenderContents {
   virtual void AddPendingPrerender(
       base::WeakPtr<PrerenderHandle> weak_prerender_handle,
       const GURL& url,
-      const content::Referrer& referrer,
-      const gfx::Size& size) OVERRIDE {
+                                   const content::Referrer& referrer,
+                                   const gfx::Size& size) OVERRIDE {
     PrerenderContents::AddPendingPrerender(
         weak_prerender_handle, url, referrer, size);
     if (expected_pending_prerenders_ > 0 &&
@@ -1010,8 +1010,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         string16(), ASCIIToUTF16(javascript_function_name));
 
     if (prerender_contents->quit_message_loop_on_destruction()) {
-      // Run message loop until the prerender contents is destroyed.
-      ui_test_utils::RunMessageLoop();
+    // Run message loop until the prerender contents is destroyed.
+    ui_test_utils::RunMessageLoop();
     } else {
       // We don't expect to pick up a running prerender, so instead
       // observe one navigation.
@@ -1095,9 +1095,8 @@ IN_PROC_BROWSER_TEST_F(
 // Checks that prerendering works in incognito mode.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderIncognito) {
   Profile* normal_profile = current_browser()->profile();
-  ui_test_utils::OpenURLOffTheRecord(normal_profile, GURL("about:blank"));
-  set_browser(browser::FindBrowserWithProfile(
-      normal_profile->GetOffTheRecordProfile()));
+  set_browser(
+      ui_test_utils::OpenURLOffTheRecord(normal_profile, GURL("about:blank")));
   // Increase memory expectations on the incognito PrerenderManager.
   IncreasePrerenderMemory();
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
