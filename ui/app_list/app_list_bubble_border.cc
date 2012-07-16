@@ -47,7 +47,7 @@ void BuildShape(const gfx::Rect& bounds,
   const SkScalar center_x = SkIntToScalar((bounds.x() + bounds.right()) / 2);
   const SkScalar center_y = SkIntToScalar((bounds.y() + bounds.bottom()) / 2);
 
-  const SkScalar half_arrow_width = SkIntToScalar(kArrowWidth / 2);
+  const SkScalar half_arrow_width = (SkIntToScalar(kArrowWidth) - padding) / 2;
   const SkScalar arrow_height = SkIntToScalar(kArrowHeight) - padding;
 
   path->reset();
