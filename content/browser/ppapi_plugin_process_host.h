@@ -98,7 +98,7 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
 
   // Constructors for plugin and broker process hosts, respectively.
   // You must call Init before doing anything else.
-  PpapiPluginProcessHost(const std::string& plugin_name,
+  PpapiPluginProcessHost(const content::PepperPluginInfo& info,
                          const FilePath& profile_data_directory,
                          net::HostResolver* host_resolver);
   PpapiPluginProcessHost();

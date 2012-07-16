@@ -578,6 +578,8 @@
     'browser/renderer_host/native_web_keyboard_event_gtk.cc',
     'browser/renderer_host/native_web_keyboard_event_mac.mm',
     'browser/renderer_host/native_web_keyboard_event_win.cc',
+    'browser/renderer_host/pepper/content_browser_pepper_host_factory.cc',
+    'browser/renderer_host/pepper/content_browser_pepper_host_factory.h',
     'browser/renderer_host/pepper/pepper_file_message_filter.cc',
     'browser/renderer_host/pepper/pepper_file_message_filter.h',
     'browser/renderer_host/pepper/pepper_lookup_request.h',

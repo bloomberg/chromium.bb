@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "base/time.h"
+#include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/net_util.h"
@@ -22,6 +23,8 @@
 #include "net/socket/stream_socket.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/host/ppapi_host.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
 
 class PepperTCPServerSocket;
 class PepperTCPSocket;
@@ -68,7 +71,9 @@ class PepperMessageFilter
 
   // Constructor when used in the context of a PPAPI process (the argument is
   // provided for sanity checking).
-  PepperMessageFilter(ProcessType type, net::HostResolver* host_resolver);
+  PepperMessageFilter(ProcessType type,
+                      net::HostResolver* host_resolver,
+                      const ppapi::PpapiPermissions& perms);
 
   // content::BrowserMessageFilter methods.
   virtual void OverrideThreadForMessage(
@@ -235,6 +240,11 @@ class PepperMessageFilter
 
   // When non-NULL, this should be used instead of the host_resolver_.
   content::ResourceContext* const resource_context_;
+
+  ppapi::PpapiPermissions permissions_;
+
+  content::ContentBrowserPepperHostFactory host_factory_;
+  ppapi::host::PpapiHost ppapi_host_;
 
   // When non-NULL, this should be used instead of the resource_context_. Use
   // GetHostResolver instead of accessing directly.
