@@ -584,7 +584,7 @@ bool HasWebRequestScheme(const GURL& url) {
 
 }  // namespace
 
-bool HideRequest(const net::URLRequest* request) {
+bool HideRequest(net::URLRequest* request) {
   const GURL& url = request->url();
   const GURL& first_party_url = request->first_party_for_cookies();
   bool hide = false;
@@ -622,14 +622,6 @@ bool ParseResourceType(const std::string& type_str,
     return false;
   *type = kResourceTypeValues[iter - kResourceTypeStrings];
   return true;
-}
-
-bool CanExtensionAccessURL(const extensions::Extension* extension,
-                           const GURL& url) {
-  // about: URLs are not covered in host permissions, but are allowed anyway.
-  return (url.SchemeIs(chrome::kAboutScheme) ||
-          extension->HasHostPermission(url) ||
-          url.GetOrigin() == extension->url());
 }
 
 }  // namespace extension_web_request_api_helpers

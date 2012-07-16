@@ -74,7 +74,6 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
   // Returns which modifications should be executed on the network request
   // according to the rules registered in this registry.
   std::list<LinkedPtrEventResponseDelta> CreateDeltas(
-      const ExtensionInfoMap* extension_info_map,
       net::URLRequest* request,
       RequestStages request_stage,
       const WebRequestRule::OptionalRequestData& optional_request_data);

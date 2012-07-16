@@ -44,7 +44,6 @@ WebRequestRulesRegistry::GetMatches(net::URLRequest* request,
 }
 
 std::list<LinkedPtrEventResponseDelta> WebRequestRulesRegistry::CreateDeltas(
-    const ExtensionInfoMap* extension_info_map,
     net::URLRequest* request,
     RequestStages request_stage,
     const WebRequestRule::OptionalRequestData& optional_request_data) {
@@ -89,9 +88,6 @@ std::list<LinkedPtrEventResponseDelta> WebRequestRulesRegistry::CreateDeltas(
     const ExtensionId& extension_id = rule_id.first;
     const WebRequestRule* rule = webrequest_rules_[rule_id].get();
     CHECK(rule);
-    const extensions::Extension* extension = NULL;
-    if (extension_info_map)
-      extension = extension_info_map->extensions().GetByID(extension_id);
 
     // Skip rule if a previous rule of this extension instructed to ignore
     // all rules with a lower priority than min_priorities[extension_id].
@@ -100,8 +96,7 @@ std::list<LinkedPtrEventResponseDelta> WebRequestRulesRegistry::CreateDeltas(
       continue;
 
     std::list<LinkedPtrEventResponseDelta> rule_result =
-        rule->CreateDeltas(extension, request, request_stage,
-                           optional_request_data);
+        rule->CreateDeltas(request, request_stage, optional_request_data);
     result.splice(result.begin(), rule_result);
 
     min_priorities[extension_id] = std::max(current_min_priority,
