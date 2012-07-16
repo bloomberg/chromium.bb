@@ -11,6 +11,10 @@ import unittest
 class CppTypeGeneratorTest(unittest.TestCase):
   def setUp(self):
     self.model = model.Model()
+    self.forbidden_json = CachedLoad('test/forbidden.json')
+    self.model.AddNamespace(self.forbidden_json[0],
+        'path/to/forbidden.json')
+    self.forbidden = self.model.namespaces.get('forbidden')
     self.permissions_json = CachedLoad('test/permissions.json')
     self.model.AddNamespace(self.permissions_json[0],
         'path/to/permissions.json')
@@ -214,15 +218,33 @@ class CppTypeGeneratorTest(unittest.TestCase):
         '}  // extensions',
         manager.GetRootNamespaceEnd().Render())
 
-  def testExpandChoicesInParams(self):
+  def testExpandParams(self):
     manager = CppTypeGenerator('extensions', self.tabs,
                                self.tabs.unix_name)
     props = self.tabs.functions['move'].params
     self.assertEquals(2, len(props))
-    self.assertEquals(3, len(manager.GetExpandedChoicesInParams(props)))
     self.assertEquals(['move_properties', 'tab_ids_array', 'tab_ids_integer'],
-        sorted([x.unix_name for x in manager.GetExpandedChoicesInParams(props)])
+        sorted([x.unix_name for x in manager.ExpandParams(props)])
     )
+
+  def testGetAllPossibleParameterLists(self):
+    manager = CppTypeGenerator('extensions', self.tabs,
+                               self.tabs.unix_name)
+    props = self.forbidden.functions['forbiddenParameters'].params
+    self.assertEquals(4, len(props))
+    param_lists = manager.GetAllPossibleParameterLists(props)
+    expected_lists = [
+        ['first_choice_array', 'first_string',
+         'second_choice_array', 'second_string'],
+        ['first_choice_array', 'first_string',
+         'second_choice_integer', 'second_string'],
+        ['first_choice_integer', 'first_string',
+         'second_choice_array', 'second_string'],
+        ['first_choice_integer', 'first_string',
+         'second_choice_integer', 'second_string']]
+    result_lists = sorted([[param.unix_name for param in param_list]
+                           for param_list in param_lists])
+    self.assertEquals(expected_lists, result_lists)
 
 if __name__ == '__main__':
   unittest.main()

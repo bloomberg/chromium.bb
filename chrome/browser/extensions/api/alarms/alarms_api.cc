@@ -132,7 +132,7 @@ bool AlarmsGetFunction::RunImpl() {
     return false;
   }
 
-  SetResult(alarms::Get::Result::Create(*alarm->js_alarm));
+  results_ = alarms::Get::Results::Create(*alarm->js_alarm);
   return true;
 }
 
@@ -146,7 +146,7 @@ bool AlarmsGetAllFunction::RunImpl() {
     for (size_t i = 0, size = alarms->size(); i < size; ++i) {
       create_arg.push_back((*alarms)[i].js_alarm);
     }
-    SetResult(alarms::GetAll::Result::Create(create_arg));
+    results_ = alarms::GetAll::Results::Create(create_arg);
   } else {
     SetResult(new base::ListValue());
   }

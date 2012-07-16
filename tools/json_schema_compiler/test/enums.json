@@ -43,6 +43,47 @@
         ]
       },
       {
+        "name": "returnsEnum",
+        "type": "function",
+        "description": "Returns an enum through the callback",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "state",
+                "type": "string",
+                "enum": ["foo", "bar", "baz"]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "returnsTwoEnums",
+        "type": "function",
+        "description": "Returns two enums through the callback",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "firstState",
+                "type": "string",
+                "enum": ["foo", "bar", "baz"]
+              },
+              {
+                "name": "secondState",
+                "type": "string",
+                "enum": ["spam", "ham", "eggs"]
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "takesOptionalEnum",
         "type": "function",
         "description": "Takes an enum as its parameter.",
@@ -81,6 +122,37 @@
             "name": "callback",
             "type": "function",
             "parameters": []
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onEnumFired",
+        "type": "function",
+        "description": "Fired when an enum is ready.",
+        "parameters": [
+          {
+            "name": "someEnum",
+            "type": "string",
+            "enum": ["foo", "bar", "baz"]
+          }
+        ]
+      },
+      {
+        "name": "onTwoEnumsFired",
+        "type": "function",
+        "description": "Fired when two enums are ready.",
+        "parameters": [
+          {
+            "name": "firstEnum",
+            "type": "string",
+            "enum": ["foo", "bar", "baz"]
+          },
+          {
+            "name": "secondEnum",
+            "type": "string",
+            "enum": ["spam", "ham", "eggs"]
           }
         ]
       }

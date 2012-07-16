@@ -89,6 +89,16 @@ class HGenerator(object):
         (c.Concat(self._GenerateFunction(function))
           .Append()
         )
+    if self._namespace.events:
+      (c.Append('//')
+        .Append('// Events')
+        .Append('//')
+        .Append()
+      )
+      for event in self._namespace.events.values():
+        (c.Concat(self._GenerateEvent(event))
+          .Append()
+        )
     (c.Concat(self._cpp_type_generator.GetNamespaceEnd())
       .Concat(self._cpp_type_generator.GetRootNamespaceEnd())
       .Append()
@@ -143,7 +153,8 @@ class HGenerator(object):
         enum_name = self._cpp_type_generator.GetChoicesEnumType(prop)
         c.Append('%s %s_type;' % (enum_name, prop.unix_name))
         c.Append()
-    for prop in self._cpp_type_generator.GetExpandedChoicesInParams(props):
+
+    for prop in self._cpp_type_generator.ExpandParams(props):
       if prop.description:
         c.Comment(prop.description)
       c.Append('%s %s;' % (
@@ -209,8 +220,18 @@ class HGenerator(object):
     c.Substitute({'classname': classname})
     return c
 
+  def _GenerateEvent(self, event):
+    """Generates the namespaces for an event.
+    """
+    c = Code()
+    (c.Sblock('namespace %s {' % cpp_util.Classname(event.name))
+        .Concat(self._GenerateCreateCallbackArguments(event))
+      .Eblock('};')
+    )
+    return c
+
   def _GenerateFunction(self, function):
-    """Generates the structs for a function.
+    """Generates the namespaces and structs for a function.
     """
     c = Code()
     (c.Sblock('namespace %s {' % cpp_util.Classname(function.name))
@@ -218,7 +239,7 @@ class HGenerator(object):
         .Append()
     )
     if function.callback:
-      (c.Concat(self._GenerateFunctionResult(function))
+      (c.Concat(self._GenerateFunctionResults(function.callback))
         .Append()
       )
     c.Eblock('};')
@@ -226,7 +247,7 @@ class HGenerator(object):
     return c
 
   def _GenerateFunctionParams(self, function):
-    """Generates the struct for passing parameters into a function.
+    """Generates the struct for passing parameters from JSON to a function.
     """
     c = Code()
 
@@ -272,36 +293,41 @@ class HGenerator(object):
             enum_name,
             prop,
             prop.enum_values))
-        c.Append('static scoped_ptr<base::Value> CreateEnumValue(%s %s);' %
-            (enum_name, prop.unix_name))
+        create_enum_value = ('scoped_ptr<base::Value> CreateEnumValue(%s %s);' %
+                            (enum_name, prop.unix_name))
+        # If the property is from the UI then we're in a struct so this function
+        # should be static. If it's from the client, then we're just in a
+        # namespace so we can't have the static keyword.
+        if prop.from_json:
+          create_enum_value = 'static ' + create_enum_value
+        c.Append(create_enum_value)
     return c
 
-  def _GenerateFunctionResult(self, function):
-    """Generates functions for passing a function's result back.
+  def _GenerateCreateCallbackArguments(self, function):
+    """Generates functions for passing paramaters to a callback.
     """
     c = Code()
+    params = function.params
+    c.Concat(self._GeneratePropertyStructures(params))
 
-    c.Sblock('namespace Result {')
-    params = function.callback.params
-    if not params:
-      c.Append('base::Value* Create();')
-    else:
-      c.Concat(self._GeneratePropertyStructures(params))
-
-      # If there is a single parameter, this is straightforward. However, if
-      # the callback parameter is of 'choices', this generates a Create method
-      # for each choice. This works because only 1 choice can be returned at a
-      # time.
-      for param in self._cpp_type_generator.GetExpandedChoicesInParams(params):
+    param_lists = self._cpp_type_generator.GetAllPossibleParameterLists(params)
+    for param_list in param_lists:
+      declaration_list = []
+      for param in param_list:
         if param.description:
           c.Comment(param.description)
-        if param.type_ == PropertyType.ANY:
-          c.Comment("base::Value* Result::Create(base::Value*) not generated "
-                    "because it's redundant.")
-          continue
-        c.Append('base::Value* Create(const %s);' %
-                 cpp_util.GetParameterDeclaration(
-                     param, self._cpp_type_generator.GetType(param)))
-    c.Eblock('};')
+        declaration_list.append('const %s' % cpp_util.GetParameterDeclaration(
+            param, self._cpp_type_generator.GetType(param)))
+      c.Append('scoped_ptr<base::ListValue> Create(%s);' %
+               ', '.join(declaration_list))
+    return c
 
+  def _GenerateFunctionResults(self, callback):
+    """Generates namespace for passing a function's result back.
+    """
+    c = Code()
+    (c.Sblock('namespace Results {')
+        .Concat(self._GenerateCreateCallbackArguments(callback))
+      .Eblock('};')
+    )
     return c

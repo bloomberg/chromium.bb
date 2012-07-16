@@ -60,8 +60,11 @@ TEST(JsonSchemaCompilerCrossrefTest, GetTestType) {
       new test::api::simple_api::TestType());
   EXPECT_TRUE(
       test::api::simple_api::TestType::Populate(*value, test_type.get()));
-  scoped_ptr<Value> result(GetTestType::Result::Create(*test_type));
-  EXPECT_TRUE(value->Equals(result.get()));
+
+  scoped_ptr<ListValue> results = GetTestType::Results::Create(*test_type);
+  DictionaryValue* result_dict = NULL;
+  results->GetDictionary(0, &result_dict);
+  EXPECT_TRUE(value->Equals(result_dict));
 }
 
 TEST(JsonSchemaCompilerCrossrefTest, TestTypeInObjectParamsCreate) {

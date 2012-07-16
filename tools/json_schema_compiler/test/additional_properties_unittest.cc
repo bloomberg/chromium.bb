@@ -48,17 +48,15 @@ TEST(JsonSchemaCompilerAdditionalPropertiesTest,
 
 TEST(JsonSchemaCompilerAdditionalPropertiesTest,
     ReturnAdditionalPropertiesResultCreate) {
-  scoped_ptr<DictionaryValue> result_object_value(new DictionaryValue());
-  result_object_value->SetString("key", "value");
-  scoped_ptr<ReturnAdditionalProperties::Result::ResultObject> result_object(
-      new ReturnAdditionalProperties::Result::ResultObject());
-  result_object->integer = 5;
-  result_object->additional_properties.MergeDictionary(
-      result_object_value.get());
-  scoped_ptr<Value> result(
-    ReturnAdditionalProperties::Result::Create(*result_object));
+  DictionaryValue additional;
+  additional.SetString("key", "value");
+  ReturnAdditionalProperties::Results::ResultObject result_object;
+  result_object.integer = 5;
+  result_object.additional_properties.MergeDictionary(&additional);
+  scoped_ptr<ListValue> results =
+      ReturnAdditionalProperties::Results::Create(result_object);
   DictionaryValue* result_dict = NULL;
-  EXPECT_TRUE(result->GetAsDictionary(&result_dict));
+  EXPECT_TRUE(results->GetDictionary(0, &result_dict));
 
   Value* int_temp_value_out = NULL;
   int int_temp = 0;
@@ -67,5 +65,5 @@ TEST(JsonSchemaCompilerAdditionalPropertiesTest,
   EXPECT_TRUE(int_temp_value->GetAsInteger(&int_temp));
   EXPECT_EQ(5, int_temp);
 
-  EXPECT_TRUE(result_dict->Equals(result_object_value.get()));
+  EXPECT_TRUE(result_dict->Equals(&additional));
 }

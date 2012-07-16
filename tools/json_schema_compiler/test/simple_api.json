@@ -122,6 +122,41 @@
           }
         ]
       }
+    ],
+    "events": [
+      {
+        "name": "onIntegerFired",
+        "type": "function",
+        "description": "Fired when an integer is ready.",
+        "parameters": [
+          {
+            "name": "someInteger",
+            "type": "integer"
+          }
+        ]
+      },
+      {
+        "name": "onStringFired",
+        "type": "function",
+        "description": "Fired when a string is ready.",
+        "parameters": [
+          {
+            "name": "someString",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "onTestTypeFired",
+        "type": "function",
+        "description": "Fired when a TestType is ready.",
+        "parameters": [
+          {
+            "name": "someTestType",
+            "$ref": "TestType"
+          }
+        ]
+      }
     ]
   }
 ]

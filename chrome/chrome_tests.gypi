@@ -2037,6 +2037,7 @@
         '../tools/json_schema_compiler/test/additional_properties_unittest.cc',
         '../tools/json_schema_compiler/test/any_unittest.cc',
         '../tools/json_schema_compiler/test/arrays_unittest.cc',
+        '../tools/json_schema_compiler/test/callbacks_unittest.cc',
         '../tools/json_schema_compiler/test/choices_unittest.cc',
         '../tools/json_schema_compiler/test/crossref_unittest.cc',
         '../tools/json_schema_compiler/test/enums_unittest.cc',

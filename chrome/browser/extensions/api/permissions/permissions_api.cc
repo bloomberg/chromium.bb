@@ -59,15 +59,15 @@ bool ContainsPermissionsFunction::RunImpl() {
   if (!permissions.get())
     return false;
 
-  SetResult(Contains::Result::Create(
-      GetExtension()->GetActivePermissions()->Contains(*permissions)));
+  results_ = Contains::Results::Create(
+      GetExtension()->GetActivePermissions()->Contains(*permissions));
   return true;
 }
 
 bool GetAllPermissionsFunction::RunImpl() {
   scoped_ptr<Permissions> permissions =
       helpers::PackPermissionSet(GetExtension()->GetActivePermissions());
-  SetResult(GetAll::Result::Create(*permissions));
+  results_ = GetAll::Results::Create(*permissions);
   return true;
 }
 
@@ -101,12 +101,12 @@ bool RemovePermissionsFunction::RunImpl() {
       PermissionSet::CreateIntersection(permissions.get(), required));
   if (!intersection->IsEmpty()) {
     error_ = kCantRemoveRequiredPermissionsError;
-    SetResult(Remove::Result::Create(false));
+    results_ = Remove::Results::Create(false);
     return false;
   }
 
   PermissionsUpdater(profile()).RemovePermissions(extension, permissions.get());
-  SetResult(Remove::Result::Create(true));
+  results_ = Remove::Results::Create(true);
   return true;
 }
 
@@ -127,14 +127,14 @@ void RequestPermissionsFunction::InstallUIProceed() {
   PermissionsUpdater perms_updater(profile());
   perms_updater.AddPermissions(GetExtension(), requested_permissions_.get());
 
-  SetResult(Request::Result::Create(true));
+  results_ = Request::Results::Create(true);
   SendResponse(true);
 
   Release();  // Balanced in RunImpl().
 }
 
 void RequestPermissionsFunction::InstallUIAbort(bool user_initiated) {
-  SetResult(Request::Result::Create(false));
+  results_ = Request::Results::Create(false);
   SendResponse(true);
 
   Release();  // Balanced in RunImpl().
@@ -176,7 +176,7 @@ bool RequestPermissionsFunction::RunImpl() {
   if (!GetExtension()->optional_permission_set()->Contains(
           *requested_permissions_)) {
     error_ = kNotInOptionalPermissionsError;
-    SetResult(Request::Result::Create(false));
+    results_ = Request::Results::Create(false);
     return false;
   }
 
@@ -187,7 +187,7 @@ bool RequestPermissionsFunction::RunImpl() {
   if (granted.get() && granted->Contains(*requested_permissions_)) {
     PermissionsUpdater perms_updater(profile());
     perms_updater.AddPermissions(GetExtension(), requested_permissions_.get());
-    SetResult(Request::Result::Create(true));
+    results_ = Request::Results::Create(true);
     SendResponse(true);
     return true;
   }

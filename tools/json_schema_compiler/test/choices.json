@@ -95,6 +95,35 @@
             ]
           }
         ]
+      },
+      {
+        "name": "returnMultipleChoices",
+        "type": "function",
+        "description": "Gives back two values where each is an integer or a list of integers.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "firstResult",
+                "choices": [
+                   {"type": "array", "items": {"type": "integer", "minimum": 0}},
+                   {"type": "integer"}
+                 ],
+                "description": "Some integers."
+              },
+              {
+                "name": "secondResult",
+                "choices": [
+                   {"type": "array", "items": {"type": "integer", "minimum": 0}},
+                   {"type": "integer"}
+                 ],
+                "description": "Some integers."
+              }
+            ]
+          }
+        ]
       }
     ]
   }

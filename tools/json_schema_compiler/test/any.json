@@ -49,6 +49,19 @@
           }
         ]
       }
+    ],
+    "events": [
+      {
+        "name": "onAnyFired",
+        "type": "function",
+        "description": "Fired when anything is ready.",
+        "parameters": [
+          {
+            "name": "something",
+            "type": "any"
+          }
+        ]
+      }
     ]
   }
 ]

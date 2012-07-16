@@ -298,8 +298,8 @@ void FileHandlerSelectFileFunction::Respond(
     const std::string& file_system_name,
     const GURL& file_system_root,
     const FilePath& virtual_path) {
-  scoped_ptr<SelectFile::Result::Result> result(
-      new SelectFile::Result::Result());
+  scoped_ptr<SelectFile::Results::Result> result(
+      new SelectFile::Results::Result());
   result->success = success;
   if (success) {
     result->entry.reset(new FileEntryInfo());
@@ -309,7 +309,7 @@ void FileHandlerSelectFileFunction::Respond(
     result->entry->file_is_directory = false;
   }
 
-  SetResult(SelectFile::Result::Create(*result));
+  results_ = SelectFile::Results::Create(*result);
   SendResponse(true);
 }
 

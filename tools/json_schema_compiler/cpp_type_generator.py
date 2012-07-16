@@ -35,21 +35,30 @@ class CppTypeGenerator(object):
       self._type_namespaces[type_] = namespace
     self._cpp_namespaces[namespace] = cpp_namespace
 
-  def GetExpandedChoicesInParams(self, params):
+  def ExpandParams(self, params):
     """Returns the given parameters with PropertyType.CHOICES parameters
-    expanded so that each choice is a separate parameter and sets a unix_name
-    for each choice.
+    expanded so that each choice is a separate parameter.
     """
     expanded = []
     for param in params:
       if param.type_ == PropertyType.CHOICES:
         for choice in param.choices.values():
-          choice.unix_name = (
-              param.unix_name + '_' + choice.type_.name.lower())
           expanded.append(choice)
       else:
         expanded.append(param)
     return expanded
+
+  def GetAllPossibleParameterLists(self, params):
+    """Returns all possible parameter lists for the given set of parameters.
+    Every combination of arguments passed to any of the PropertyType.CHOICES
+    parameters will have a corresponding parameter list returned here.
+    """
+    if not params:
+      return [[]]
+    partial_parameter_lists = self.GetAllPossibleParameterLists(params[1:])
+    return [[param] + partial_list
+            for param in self.ExpandParams(params[:1])
+            for partial_list in partial_parameter_lists]
 
   def GetCppNamespaceName(self, namespace):
     """Gets the mapped C++ namespace name for the given namespace relative to

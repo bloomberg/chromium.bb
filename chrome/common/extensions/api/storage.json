@@ -161,9 +161,9 @@
             "description": "Object mapping each key that changed to its corresponding <a href='#type-StorageChange'>StorageChange</a> for that item."
           },
           {
-            "name": "namespace",
+            "name": "areaName",
             "type": "string",
-            "description": "The namespace (\"sync\" or \"local\") of the storage area the changes are for."
+            "description": "The name of the storage area (\"sync\" or \"local\") the changes are for."
           }
         ]
       }
@@ -171,7 +171,7 @@
     "properties": {
       "sync": {
         "$ref": "StorageArea",
-        "description": "Items under the \"sync\" namespace are synced using Chrome Sync.",
+        "description": "Items under the \"sync\" storage area are synced using Chrome Sync.",
         "value": [ "sync" ],
         "properties": {
           "QUOTA_BYTES": {
@@ -198,7 +198,7 @@
       },
       "local": {
         "$ref": "StorageArea",
-        "description": "Items under the \"local\" namespace are local to each machine.",
+        "description": "Items under the \"local\" storage area are local to each machine.",
         "value": [ "local" ],
         "properties": {
           "QUOTA_BYTES": {

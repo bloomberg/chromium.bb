@@ -77,15 +77,14 @@ class SchemaBundleGenerator(object):
     c.Append("public:")
     c.Sblock("static void RegisterAll(ExtensionFunctionRegistry* registry) {")
     for namespace in self._model.namespaces.values():
+      namespace_name = self.CapitalizeFirstLetter(namespace.name.replace(
+          "experimental.", ""))
       for function in namespace.functions.values():
         if function.nocompile:
           continue
-        namespace_name = self.CapitalizeFirstLetter(namespace.name.replace(
-            "experimental.", ""))
         function_name = namespace_name + self.CapitalizeFirstLetter(
             function.name)
-        c.Append("registry->RegisterFunction<%sFunction>();" % (
-            function_name))
+        c.Append("registry->RegisterFunction<%sFunction>();" % function_name)
     c.Eblock("}")
     c.Eblock("};")
     c.Append()

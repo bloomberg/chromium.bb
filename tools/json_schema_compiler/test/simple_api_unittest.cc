@@ -22,10 +22,10 @@ static scoped_ptr<DictionaryValue> CreateTestTypeDictionary() {
 }  // namespace
 
 TEST(JsonSchemaCompilerSimpleTest, IncrementIntegerResultCreate) {
-  scoped_ptr<Value> result(IncrementInteger::Result::Create(5));
-  int temp = 0;
-  EXPECT_TRUE(result->GetAsInteger(&temp));
-  EXPECT_EQ(5, temp);
+  scoped_ptr<ListValue> results = IncrementInteger::Results::Create(5);
+  ListValue expected;
+  expected.Append(Value::CreateIntegerValue(5));
+  EXPECT_TRUE(results->Equals(&expected));
 }
 
 TEST(JsonSchemaCompilerSimpleTest, IncrementIntegerParamsCreate) {
@@ -108,9 +108,9 @@ TEST(JsonSchemaCompilerSimpleTest, OptionalBeforeRequired) {
 }
 
 TEST(JsonSchemaCompilerSimpleTest, NoParamsResultCreate) {
-  scoped_ptr<Value> result(OptionalString::Result::Create());
-  scoped_ptr<Value> expected(Value::CreateNullValue());
-  EXPECT_TRUE(Value::Equals(result.get(), expected.get()));
+  scoped_ptr<ListValue> results = OptionalString::Results::Create();
+  ListValue expected;
+  EXPECT_TRUE(results->Equals(&expected));
 }
 
 TEST(JsonSchemaCompilerSimpleTest, TestTypePopulate) {
@@ -133,10 +133,48 @@ TEST(JsonSchemaCompilerSimpleTest, TestTypePopulate) {
 }
 
 TEST(JsonSchemaCompilerSimpleTest, GetTestType) {
-  scoped_ptr<DictionaryValue> value = CreateTestTypeDictionary();
-  scoped_ptr<TestType> test_type(new TestType());
-  EXPECT_TRUE(TestType::Populate(*value, test_type.get()));
-  scoped_ptr<Value> result(GetTestType::Result::Create(*test_type));
-  EXPECT_TRUE(value->Equals(result.get()));
+  {
+    scoped_ptr<DictionaryValue> value = CreateTestTypeDictionary();
+    scoped_ptr<TestType> test_type(new TestType());
+    EXPECT_TRUE(TestType::Populate(*value, test_type.get()));
+    scoped_ptr<ListValue> results = GetTestType::Results::Create(*test_type);
+
+    DictionaryValue* result = NULL;
+    results->GetDictionary(0, &result);
+    EXPECT_TRUE(result->Equals(value.get()));
+  }
 }
 
+TEST(JsonSchemaCompilerSimpleTest, OnIntegerFiredCreate) {
+  {
+    scoped_ptr<ListValue> results(OnIntegerFired::Create(5));
+    ListValue expected;
+    expected.Append(Value::CreateIntegerValue(5));
+    EXPECT_TRUE(results->Equals(&expected));
+  }
+}
+
+TEST(JsonSchemaCompilerSimpleTest, OnStringFiredCreate) {
+  {
+    scoped_ptr<ListValue> results(OnStringFired::Create("yo dawg"));
+    ListValue expected;
+    expected.Append(Value::CreateStringValue("yo dawg"));
+    EXPECT_TRUE(results->Equals(&expected));
+  }
+}
+
+TEST(JsonSchemaCompilerSimpleTest, OnTestTypeFiredCreate) {
+  {
+    TestType some_test_type;
+    scoped_ptr<DictionaryValue> expected = CreateTestTypeDictionary();
+    ASSERT_TRUE(expected->GetDouble("number", &some_test_type.number));
+    ASSERT_TRUE(expected->GetString("string", &some_test_type.string));
+    ASSERT_TRUE(expected->GetInteger("integer", &some_test_type.integer));
+    ASSERT_TRUE(expected->GetBoolean("boolean", &some_test_type.boolean));
+
+    scoped_ptr<ListValue> results(OnTestTypeFired::Create(some_test_type));
+    DictionaryValue* result = NULL;
+    results->GetDictionary(0, &result);
+    EXPECT_TRUE(result->Equals(expected.get()));
+  }
+}

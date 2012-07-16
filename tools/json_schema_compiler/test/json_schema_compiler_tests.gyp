@@ -13,6 +13,7 @@
           'any.json',
           'additional_properties.json',
           'arrays.json',
+          'callbacks.json',
           'choices.json',
           'crossref.json',
           'enums.json',

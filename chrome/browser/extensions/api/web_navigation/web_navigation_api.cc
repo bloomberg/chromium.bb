@@ -822,11 +822,11 @@ bool GetFrameFunction::RunImpl() {
   if (!frame_navigation_state.IsValidUrl(frame_url))
     return true;
 
-  GetFrame::Result::Details frame_details;
+  GetFrame::Results::Details frame_details;
   frame_details.url = frame_url.spec();
   frame_details.error_occurred =
       frame_navigation_state.GetErrorOccurredInFrame(frame_id);
-  SetResult(GetFrame::Result::Create(frame_details));
+  results_ = GetFrame::Results::Create(frame_details);
   return true;
 }
 
@@ -856,22 +856,22 @@ bool GetAllFramesFunction::RunImpl() {
   const FrameNavigationState& navigation_state =
       observer->frame_navigation_state();
 
-  std::vector<linked_ptr<GetAllFrames::Result::DetailsElement> > result_list;
+  std::vector<linked_ptr<GetAllFrames::Results::DetailsElement> > result_list;
   for (FrameNavigationState::const_iterator it = navigation_state.begin();
        it != navigation_state.end(); ++it) {
     int64 frame_id = *it;
     GURL frame_url = navigation_state.GetUrl(frame_id);
     if (!navigation_state.IsValidUrl(frame_url))
       continue;
-    linked_ptr<GetAllFrames::Result::DetailsElement> frame(
-        new GetAllFrames::Result::DetailsElement());
+    linked_ptr<GetAllFrames::Results::DetailsElement> frame(
+        new GetAllFrames::Results::DetailsElement());
     frame->url = frame_url.spec();
     frame->frame_id = GetFrameId(navigation_state.IsMainFrame(frame_id),
                                  frame_id);
     frame->error_occurred = navigation_state.GetErrorOccurredInFrame(frame_id);
     result_list.push_back(frame);
   }
-  SetResult(GetAllFrames::Result::Create(result_list));
+  results_ = GetAllFrames::Results::Create(result_list);
   return true;
 }
 

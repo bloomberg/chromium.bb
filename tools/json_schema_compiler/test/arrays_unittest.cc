@@ -194,15 +194,14 @@ TEST(JsonSchemaCompilerArrayTest, ReturnIntegerArrayResultCreate) {
   std::vector<int> integers;
   integers.push_back(1);
   integers.push_back(2);
-  scoped_ptr<Value> result(ReturnIntegerArray::Result::Create(integers));
-  ListValue* list = NULL;
-  EXPECT_TRUE(result->GetAsList(&list));
-  int temp;
-  ASSERT_EQ(2u, list->GetSize());
-  EXPECT_TRUE(list->GetInteger(0, &temp));
-  EXPECT_EQ(1, temp);
-  EXPECT_TRUE(list->GetInteger(1, &temp));
-  EXPECT_EQ(2, temp);
+  scoped_ptr<ListValue> results = ReturnIntegerArray::Results::Create(integers);
+
+  ListValue expected;
+  ListValue* expected_argument = new ListValue();
+  expected_argument->Append(Value::CreateIntegerValue(1));
+  expected_argument->Append(Value::CreateIntegerValue(2));
+  expected.Append(expected_argument);
+  EXPECT_TRUE(results->Equals(&expected));
 }
 
 TEST(JsonSchemaCompilerArrayTest, ReturnRefArrayResultCreate) {
@@ -211,16 +210,16 @@ TEST(JsonSchemaCompilerArrayTest, ReturnRefArrayResultCreate) {
   items.push_back(linked_ptr<Item>(new Item()));
   items[0]->val = 1;
   items[1]->val = 2;
-  scoped_ptr<Value> result(ReturnRefArray::Result::Create(items));
-  ListValue* list = NULL;
-  EXPECT_TRUE(result->GetAsList(&list));
-  ASSERT_EQ(2u, list->GetSize());
-  DictionaryValue* item_value = NULL;
-  int temp;
-  EXPECT_TRUE(list->GetDictionary(0, &item_value));
-  EXPECT_TRUE(item_value->GetInteger("val", &temp));
-  EXPECT_EQ(1, temp);
-  EXPECT_TRUE(list->GetDictionary(1, &item_value));
-  EXPECT_TRUE(item_value->GetInteger("val", &temp));
-  EXPECT_EQ(2, temp);
+  scoped_ptr<ListValue> results = ReturnRefArray::Results::Create(items);
+
+  ListValue expected;
+  ListValue* expected_argument = new ListValue();
+  DictionaryValue* first = new DictionaryValue();
+  first->SetInteger("val", 1);
+  expected_argument->Append(first);
+  DictionaryValue* second = new DictionaryValue();
+  second->SetInteger("val", 2);
+  expected_argument->Append(second);
+  expected.Append(expected_argument);
+  EXPECT_TRUE(results->Equals(&expected));
 }

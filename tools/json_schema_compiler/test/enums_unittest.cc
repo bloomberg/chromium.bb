@@ -25,6 +25,34 @@ TEST(JsonSchemaCompilerEnumsTest, EnumTypePopulate) {
   }
 }
 
+TEST(JsonSchemaCompilerEnumsTest, ReturnsEnumCreate) {
+  {
+    ReturnsEnum::Results::State state = ReturnsEnum::Results::STATE_FOO;
+    scoped_ptr<Value> result = ReturnsEnum::Results::CreateEnumValue(state);
+    scoped_ptr<Value> expected(Value::CreateStringValue("foo"));
+    EXPECT_TRUE(result->Equals(expected.get()));
+  }
+  {
+    ReturnsEnum::Results::State state = ReturnsEnum::Results::STATE_FOO;
+    scoped_ptr<ListValue> results = ReturnsEnum::Results::Create(state);
+    ListValue expected;
+    expected.Append(Value::CreateStringValue("foo"));
+    EXPECT_TRUE(results->Equals(&expected));
+  }
+}
+
+TEST(JsonSchemaCompilerEnumsTest, ReturnsTwoEnumsCreate) {
+  {
+    scoped_ptr<ListValue> results = ReturnsTwoEnums::Results::Create(
+        ReturnsTwoEnums::Results::FIRST_STATE_FOO,
+        ReturnsTwoEnums::Results::SECOND_STATE_HAM);
+    ListValue expected;
+    expected.Append(Value::CreateStringValue("foo"));
+    expected.Append(Value::CreateStringValue("ham"));
+    EXPECT_TRUE(results->Equals(&expected));
+  }
+}
+
 TEST(JsonSchemaCompilerEnumsTest, OptionalEnumTypePopulate) {
   {
     scoped_ptr<OptionalEnumType> enum_type(new OptionalEnumType());
@@ -127,5 +155,33 @@ TEST(JsonSchemaCompilerEnumsTest, TakesMultipleOptionalEnumsParamsCreate) {
     scoped_ptr<TakesMultipleOptionalEnums::Params> params(
         TakesMultipleOptionalEnums::Params::Create(*params_value));
     EXPECT_FALSE(params.get());
+  }
+}
+
+TEST(JsonSchemaCompilerEnumsTest, OnEnumFiredCreate) {
+  {
+    OnEnumFired::SomeEnum some_enum = OnEnumFired::SOME_ENUM_FOO;
+    scoped_ptr<Value> result(OnEnumFired::CreateEnumValue(some_enum));
+    scoped_ptr<Value> expected(Value::CreateStringValue("foo"));
+    EXPECT_TRUE(result->Equals(expected.get()));
+  }
+  {
+    OnEnumFired::SomeEnum some_enum = OnEnumFired::SOME_ENUM_FOO;
+    scoped_ptr<ListValue> results(OnEnumFired::Create(some_enum));
+    ListValue expected;
+    expected.Append(Value::CreateStringValue("foo"));
+    EXPECT_TRUE(results->Equals(&expected));
+  }
+}
+
+TEST(JsonSchemaCompilerEnumsTest, OnTwoEnumsFiredCreate) {
+  {
+    scoped_ptr<Value> results(OnTwoEnumsFired::Create(
+        OnTwoEnumsFired::FIRST_ENUM_FOO,
+        OnTwoEnumsFired::SECOND_ENUM_HAM));
+    ListValue expected;
+    expected.Append(Value::CreateStringValue("foo"));
+    expected.Append(Value::CreateStringValue("ham"));
+    EXPECT_TRUE(results->Equals(&expected));
   }
 }

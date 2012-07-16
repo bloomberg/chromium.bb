@@ -53,6 +53,85 @@
             ]
           }
         ]
+      },
+      {
+        "name": "returnsTwoObjects",
+        "description": "Return two objects.",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "firstInfo",
+                "type": "object",
+                "properties": {
+                  "state": {
+                    "type": "string",
+                    "enum": ["foo", "bar", "baz"]
+                  }
+                }
+              },
+              {
+                "name": "secondInfo",
+                "type": "object",
+                "properties": {
+                  "state": {
+                    "type": "string",
+                    "enum": ["spam", "ham", "eggs"]
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onObjectFired",
+        "type": "function",
+        "description": "Fired when an object is ready.",
+        "parameters": [
+          {
+            "name": "someObject",
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["foo", "bar", "baz"]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "onTwoObjectsFired",
+        "type": "function",
+        "description": "Fired when two objects are ready.",
+        "parameters": [
+          {
+            "name": "firstObject",
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["foo", "bar", "baz"]
+              }
+            }
+          },
+          {
+            "name": "secondObject",
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["spam", "ham", "eggs"]
+              }
+            }
+          }
+        ]
       }
     ]
   }

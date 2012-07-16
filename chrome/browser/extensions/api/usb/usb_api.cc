@@ -57,7 +57,7 @@ void UsbFindDeviceFunction::Work() {
   result.handle = controller()->AddAPIResource(resource);
   result.vendor_id = parameters_->vendor_id;
   result.product_id = parameters_->product_id;
-  SetResult(FindDevice::Result::Create(result));
+  results_ = FindDevice::Results::Create(result);
 }
 
 bool UsbFindDeviceFunction::Respond() {

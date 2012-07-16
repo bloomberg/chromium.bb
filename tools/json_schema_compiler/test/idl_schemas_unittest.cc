@@ -54,15 +54,20 @@ TEST(IdlCompiler, Basics) {
 
   // Test functions that take a callback function as a parameter, with varying
   // callback signatures.
-  scoped_ptr<Value> f4_result(Function4::Result::Create());
-  EXPECT_TRUE(f4_result->IsType(Value::TYPE_NULL));
+  scoped_ptr<ListValue> f4_results = Function4::Results::Create();
+  ListValue expected;
+  EXPECT_TRUE(f4_results->Equals(&expected));
 
-  scoped_ptr<Value> f5_result(Function5::Result::Create(13));
-  EXPECT_TRUE(f5_result->IsType(Value::TYPE_INTEGER));
+  scoped_ptr<ListValue> f5_results(Function5::Results::Create(13));
+  Value* f5_result_int = NULL;
+  ASSERT_TRUE(f5_results->Get(0, &f5_result_int));
+  EXPECT_TRUE(f5_result_int->IsType(Value::TYPE_INTEGER));
 
-  scoped_ptr<Value> f6_result(Function6::Result::Create(a));
+  scoped_ptr<ListValue> f6_results(Function6::Results::Create(a));
+  Value* f6_result_dict = NULL;
+  ASSERT_TRUE(f6_results->Get(0, &f6_result_dict));
   MyType1 c;
-  EXPECT_TRUE(MyType1::Populate(*f6_result, &c));
+  EXPECT_TRUE(MyType1::Populate(*f6_result_dict, &c));
   EXPECT_EQ(a.x, c.x);
   EXPECT_EQ(a.y, c.y);
 }
