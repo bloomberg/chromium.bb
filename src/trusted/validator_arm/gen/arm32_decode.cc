@@ -1432,38 +1432,80 @@ const ClassDecoder& Arm32DecoderState::decode_other_vfp_data_proc(
      const Instruction insn) const
 {
   UNREFERENCED_PARAMETER(insn);
+  if ((insn.Bits() & 0x000F0000) == 0x00000000 /* opc2(19:16) == 0000 */ &&
+      (insn.Bits() & 0x000000C0) == 0x00000040 /* opc3(7:6) == 01 */ &&
+      (insn.Bits() & 0x0FBF0ED0) == 0x0EB00A40 /* $pattern(31:0) == xxxx11101x110000xxxx101x01x0xxxx */) {
+    return VfpOp_instance_;
+  }
+
+  if ((insn.Bits() & 0x000F0000) == 0x00000000 /* opc2(19:16) == 0000 */ &&
+      (insn.Bits() & 0x000000C0) == 0x000000C0 /* opc3(7:6) == 11 */) {
+    return VfpOp_instance_;
+  }
+
   if ((insn.Bits() & 0x000F0000) == 0x00010000 /* opc2(19:16) == 0001 */ &&
-      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */) {
-    return CoprocessorOp_instance_;
+      (insn.Bits() & 0x000000C0) == 0x00000040 /* opc3(7:6) == 01 */ &&
+      (insn.Bits() & 0x0FBF0ED0) == 0x0EB10A40 /* $pattern(31:0) == xxxx11101x110001xxxx101x01x0xxxx */) {
+    return VfpOp_instance_;
+  }
+
+  if ((insn.Bits() & 0x000F0000) == 0x00010000 /* opc2(19:16) == 0001 */ &&
+      (insn.Bits() & 0x000000C0) == 0x000000C0 /* opc3(7:6) == 11 */ &&
+      (insn.Bits() & 0x0FBF0ED0) == 0x0EB10AC0 /* $pattern(31:0) == xxxx11101x110001xxxx101x11x0xxxx */) {
+    return VfpOp_instance_;
+  }
+
+  if ((insn.Bits() & 0x000F0000) == 0x00040000 /* opc2(19:16) == 0100 */ &&
+      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */ &&
+      (insn.Bits() & 0x0FBF0E50) == 0x0EB40A40 /* $pattern(31:0) == xxxx11101x110100xxxx101xx1x0xxxx */) {
+    return VfpOp_instance_;
+  }
+
+  if ((insn.Bits() & 0x000F0000) == 0x00050000 /* opc2(19:16) == 0101 */ &&
+      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */ &&
+      (insn.Bits() & 0x0FBF0E7F) == 0x0EB50A40 /* $pattern(31:0) == xxxx11101x110101xxxx101xx1000000 */) {
+    return VfpOp_instance_;
   }
 
   if ((insn.Bits() & 0x000F0000) == 0x00070000 /* opc2(19:16) == 0111 */ &&
-      (insn.Bits() & 0x000000C0) == 0x000000C0 /* opc3(7:6) == 11 */) {
-    return CoprocessorOp_instance_;
+      (insn.Bits() & 0x000000C0) == 0x000000C0 /* opc3(7:6) == 11 */ &&
+      (insn.Bits() & 0x0FBF0ED0) == 0x0EB70AC0 /* $pattern(31:0) == xxxx11101x110111xxxx101x11x0xxxx */) {
+    return VfpOp_instance_;
   }
 
-  if ((insn.Bits() & 0x00070000) == 0x00000000 /* opc2(19:16) == x000 */ &&
-      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */) {
-    return CoprocessorOp_instance_;
+  if ((insn.Bits() & 0x000F0000) == 0x00080000 /* opc2(19:16) == 1000 */ &&
+      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */ &&
+      (insn.Bits() & 0x0FBF0E50) == 0x0EB80A40 /* $pattern(31:0) == xxxx11101x111000xxxx101xx1x0xxxx */) {
+    return VfpOp_instance_;
+  }
+
+  if ((insn.Bits() & 0x000E0000) == 0x00020000 /* opc2(19:16) == 001x */ &&
+      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */ &&
+      (insn.Bits() & 0x0FBE0F50) == 0x0EB20A40 /* $pattern(31:0) == xxxx11101x11001xxxxx1010x1x0xxxx */) {
+    return VfpOp_instance_;
+  }
+
+  if ((insn.Bits() & 0x000E0000) == 0x000A0000 /* opc2(19:16) == 101x */ &&
+      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */ &&
+      (insn.Bits() & 0x0FBE0E50) == 0x0EBA0A40 /* $pattern(31:0) == xxxx11101x11101xxxxx101xx1x0xxxx */) {
+    return VfpOp_instance_;
+  }
+
+  if ((insn.Bits() & 0x000E0000) == 0x000C0000 /* opc2(19:16) == 110x */ &&
+      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */ &&
+      (insn.Bits() & 0x0FBE0E50) == 0x0EBC0A40 /* $pattern(31:0) == xxxx11101x11110xxxxx101xx1x0xxxx */) {
+    return VfpOp_instance_;
   }
 
   if ((insn.Bits() & 0x000E0000) == 0x000E0000 /* opc2(19:16) == 111x */ &&
-      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */) {
-    return CoprocessorOp_instance_;
+      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */ &&
+      (insn.Bits() & 0x0FBE0E50) == 0x0EBE0A40 /* $pattern(31:0) == xxxx11101x11111xxxxx101xx1x0xxxx */) {
+    return VfpOp_instance_;
   }
 
-  if ((insn.Bits() & 0x00060000) == 0x00020000 /* opc2(19:16) == x01x */ &&
-      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */) {
-    return CoprocessorOp_instance_;
-  }
-
-  if ((insn.Bits() & 0x00060000) == 0x00040000 /* opc2(19:16) == x10x */ &&
-      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */) {
-    return CoprocessorOp_instance_;
-  }
-
-  if ((insn.Bits() & 0x00000040) == 0x00000000 /* opc3(7:6) == x0 */) {
-    return CoprocessorOp_instance_;
+  if ((insn.Bits() & 0x00000040) == 0x00000000 /* opc3(7:6) == x0 */ &&
+      (insn.Bits() & 0x0FB00EF0) == 0x0EB00A00 /* $pattern(31:0) == xxxx11101x11xxxxxxxx101x0000xxxx */) {
+    return VfpOp_instance_;
   }
 
   // Catch any attempt to fall though ...

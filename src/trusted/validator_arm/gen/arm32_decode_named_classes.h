@@ -785,10 +785,52 @@ class CondNop_Yield_Rule_413_A1_P812
   virtual ~CondNop_Yield_Rule_413_A1_P812() {}
 };
 
+class CondVfpOp_Vabs_Rule_269_A2_P532
+    : public CondVfpOp {
+ public:
+  virtual ~CondVfpOp_Vabs_Rule_269_A2_P532() {}
+};
+
 class CondVfpOp_Vadd_Rule_271_A2_P536
     : public CondVfpOp {
  public:
   virtual ~CondVfpOp_Vadd_Rule_271_A2_P536() {}
+};
+
+class CondVfpOp_Vcmp_Vcmpe_Rule_292_A1_P572
+    : public CondVfpOp {
+ public:
+  virtual ~CondVfpOp_Vcmp_Vcmpe_Rule_292_A1_P572() {}
+};
+
+class CondVfpOp_Vcmp_Vcmpe_Rule_292_A2_P572
+    : public CondVfpOp {
+ public:
+  virtual ~CondVfpOp_Vcmp_Vcmpe_Rule_292_A2_P572() {}
+};
+
+class CondVfpOp_Vcvt_Rule_297_A1_P582
+    : public CondVfpOp {
+ public:
+  virtual ~CondVfpOp_Vcvt_Rule_297_A1_P582() {}
+};
+
+class CondVfpOp_Vcvt_Rule_298_A1_P584
+    : public CondVfpOp {
+ public:
+  virtual ~CondVfpOp_Vcvt_Rule_298_A1_P584() {}
+};
+
+class CondVfpOp_Vcvt_Vcvtr_Rule_295_A1_P578
+    : public CondVfpOp {
+ public:
+  virtual ~CondVfpOp_Vcvt_Vcvtr_Rule_295_A1_P578() {}
+};
+
+class CondVfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588
+    : public CondVfpOp {
+ public:
+  virtual ~CondVfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588() {}
 };
 
 class CondVfpOp_Vdiv_Rule_301_A1_P590
@@ -803,10 +845,28 @@ class CondVfpOp_Vm_la_ls_Rule_423_A2_P636
   virtual ~CondVfpOp_Vm_la_ls_Rule_423_A2_P636() {}
 };
 
+class CondVfpOp_Vmov_Rule_326_A2_P640
+    : public CondVfpOp {
+ public:
+  virtual ~CondVfpOp_Vmov_Rule_326_A2_P640() {}
+};
+
+class CondVfpOp_Vmov_Rule_327_A2_P642
+    : public CondVfpOp {
+ public:
+  virtual ~CondVfpOp_Vmov_Rule_327_A2_P642() {}
+};
+
 class CondVfpOp_Vmul_Rule_338_A2_P664
     : public CondVfpOp {
  public:
   virtual ~CondVfpOp_Vmul_Rule_338_A2_P664() {}
+};
+
+class CondVfpOp_Vneg_Rule_342_A2_P672
+    : public CondVfpOp {
+ public:
+  virtual ~CondVfpOp_Vneg_Rule_342_A2_P672() {}
 };
 
 class CondVfpOp_Vnm_la_ls_ul_Rule_343_A1_P674
@@ -819,6 +879,12 @@ class CondVfpOp_Vnm_la_ls_ul_Rule_343_A2_P674
     : public CondVfpOp {
  public:
   virtual ~CondVfpOp_Vnm_la_ls_ul_Rule_343_A2_P674() {}
+};
+
+class CondVfpOp_Vsqrt_Rule_388_A1_P762
+    : public CondVfpOp {
+ public:
+  virtual ~CondVfpOp_Vsqrt_Rule_388_A1_P762() {}
 };
 
 class CondVfpOp_Vsub_Rule_402_A2_P790
@@ -2663,10 +2729,52 @@ class TestIfAddressMasked_Tst_Rule_230_A1_P454
   virtual ~TestIfAddressMasked_Tst_Rule_230_A1_P454() {}
 };
 
+class VfpOp_Vabs_Rule_269_A2_P532
+    : public VfpOp {
+ public:
+  virtual ~VfpOp_Vabs_Rule_269_A2_P532() {}
+};
+
 class VfpOp_Vadd_Rule_271_A2_P536
     : public VfpOp {
  public:
   virtual ~VfpOp_Vadd_Rule_271_A2_P536() {}
+};
+
+class VfpOp_Vcmp_Vcmpe_Rule_292_A1_P572
+    : public VfpOp {
+ public:
+  virtual ~VfpOp_Vcmp_Vcmpe_Rule_292_A1_P572() {}
+};
+
+class VfpOp_Vcmp_Vcmpe_Rule_292_A2_P572
+    : public VfpOp {
+ public:
+  virtual ~VfpOp_Vcmp_Vcmpe_Rule_292_A2_P572() {}
+};
+
+class VfpOp_Vcvt_Rule_297_A1_P582
+    : public VfpOp {
+ public:
+  virtual ~VfpOp_Vcvt_Rule_297_A1_P582() {}
+};
+
+class VfpOp_Vcvt_Rule_298_A1_P584
+    : public VfpOp {
+ public:
+  virtual ~VfpOp_Vcvt_Rule_298_A1_P584() {}
+};
+
+class VfpOp_Vcvt_Vcvtr_Rule_295_A1_P578
+    : public VfpOp {
+ public:
+  virtual ~VfpOp_Vcvt_Vcvtr_Rule_295_A1_P578() {}
+};
+
+class VfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588
+    : public VfpOp {
+ public:
+  virtual ~VfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588() {}
 };
 
 class VfpOp_Vdiv_Rule_301_A1_P590
@@ -2681,10 +2789,28 @@ class VfpOp_Vm_la_ls_Rule_423_A2_P636
   virtual ~VfpOp_Vm_la_ls_Rule_423_A2_P636() {}
 };
 
+class VfpOp_Vmov_Rule_326_A2_P640
+    : public VfpOp {
+ public:
+  virtual ~VfpOp_Vmov_Rule_326_A2_P640() {}
+};
+
+class VfpOp_Vmov_Rule_327_A2_P642
+    : public VfpOp {
+ public:
+  virtual ~VfpOp_Vmov_Rule_327_A2_P642() {}
+};
+
 class VfpOp_Vmul_Rule_338_A2_P664
     : public VfpOp {
  public:
   virtual ~VfpOp_Vmul_Rule_338_A2_P664() {}
+};
+
+class VfpOp_Vneg_Rule_342_A2_P672
+    : public VfpOp {
+ public:
+  virtual ~VfpOp_Vneg_Rule_342_A2_P672() {}
 };
 
 class VfpOp_Vnm_la_ls_ul_Rule_343_A1_P674
@@ -2697,6 +2823,12 @@ class VfpOp_Vnm_la_ls_ul_Rule_343_A2_P674
     : public VfpOp {
  public:
   virtual ~VfpOp_Vnm_la_ls_ul_Rule_343_A2_P674() {}
+};
+
+class VfpOp_Vsqrt_Rule_388_A1_P762
+    : public VfpOp {
+ public:
+  virtual ~VfpOp_Vsqrt_Rule_388_A1_P762() {}
 };
 
 class VfpOp_Vsub_Rule_402_A2_P790
@@ -4371,6 +4503,19 @@ class NamedCondNop_Yield_Rule_413_A1_P812
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondNop_Yield_Rule_413_A1_P812);
 };
 
+class NamedCondVfpOp_Vabs_Rule_269_A2_P532
+    : public NamedClassDecoder {
+ public:
+  inline NamedCondVfpOp_Vabs_Rule_269_A2_P532()
+    : NamedClassDecoder(decoder_, "CondVfpOp Vabs_Rule_269_A2_P532")
+  {}
+  virtual ~NamedCondVfpOp_Vabs_Rule_269_A2_P532() {}
+
+ private:
+  nacl_arm_dec::CondVfpOp_Vabs_Rule_269_A2_P532 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vabs_Rule_269_A2_P532);
+};
+
 class NamedCondVfpOp_Vadd_Rule_271_A2_P536
     : public NamedClassDecoder {
  public:
@@ -4382,6 +4527,84 @@ class NamedCondVfpOp_Vadd_Rule_271_A2_P536
  private:
   nacl_arm_dec::CondVfpOp_Vadd_Rule_271_A2_P536 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vadd_Rule_271_A2_P536);
+};
+
+class NamedCondVfpOp_Vcmp_Vcmpe_Rule_292_A1_P572
+    : public NamedClassDecoder {
+ public:
+  inline NamedCondVfpOp_Vcmp_Vcmpe_Rule_292_A1_P572()
+    : NamedClassDecoder(decoder_, "CondVfpOp Vcmp_Vcmpe_Rule_292_A1_P572")
+  {}
+  virtual ~NamedCondVfpOp_Vcmp_Vcmpe_Rule_292_A1_P572() {}
+
+ private:
+  nacl_arm_dec::CondVfpOp_Vcmp_Vcmpe_Rule_292_A1_P572 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vcmp_Vcmpe_Rule_292_A1_P572);
+};
+
+class NamedCondVfpOp_Vcmp_Vcmpe_Rule_292_A2_P572
+    : public NamedClassDecoder {
+ public:
+  inline NamedCondVfpOp_Vcmp_Vcmpe_Rule_292_A2_P572()
+    : NamedClassDecoder(decoder_, "CondVfpOp Vcmp_Vcmpe_Rule_292_A2_P572")
+  {}
+  virtual ~NamedCondVfpOp_Vcmp_Vcmpe_Rule_292_A2_P572() {}
+
+ private:
+  nacl_arm_dec::CondVfpOp_Vcmp_Vcmpe_Rule_292_A2_P572 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vcmp_Vcmpe_Rule_292_A2_P572);
+};
+
+class NamedCondVfpOp_Vcvt_Rule_297_A1_P582
+    : public NamedClassDecoder {
+ public:
+  inline NamedCondVfpOp_Vcvt_Rule_297_A1_P582()
+    : NamedClassDecoder(decoder_, "CondVfpOp Vcvt_Rule_297_A1_P582")
+  {}
+  virtual ~NamedCondVfpOp_Vcvt_Rule_297_A1_P582() {}
+
+ private:
+  nacl_arm_dec::CondVfpOp_Vcvt_Rule_297_A1_P582 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vcvt_Rule_297_A1_P582);
+};
+
+class NamedCondVfpOp_Vcvt_Rule_298_A1_P584
+    : public NamedClassDecoder {
+ public:
+  inline NamedCondVfpOp_Vcvt_Rule_298_A1_P584()
+    : NamedClassDecoder(decoder_, "CondVfpOp Vcvt_Rule_298_A1_P584")
+  {}
+  virtual ~NamedCondVfpOp_Vcvt_Rule_298_A1_P584() {}
+
+ private:
+  nacl_arm_dec::CondVfpOp_Vcvt_Rule_298_A1_P584 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vcvt_Rule_298_A1_P584);
+};
+
+class NamedCondVfpOp_Vcvt_Vcvtr_Rule_295_A1_P578
+    : public NamedClassDecoder {
+ public:
+  inline NamedCondVfpOp_Vcvt_Vcvtr_Rule_295_A1_P578()
+    : NamedClassDecoder(decoder_, "CondVfpOp Vcvt_Vcvtr_Rule_295_A1_P578")
+  {}
+  virtual ~NamedCondVfpOp_Vcvt_Vcvtr_Rule_295_A1_P578() {}
+
+ private:
+  nacl_arm_dec::CondVfpOp_Vcvt_Vcvtr_Rule_295_A1_P578 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vcvt_Vcvtr_Rule_295_A1_P578);
+};
+
+class NamedCondVfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588
+    : public NamedClassDecoder {
+ public:
+  inline NamedCondVfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588()
+    : NamedClassDecoder(decoder_, "CondVfpOp Vcvtb_Vcvtt_Rule_300_A1_P588")
+  {}
+  virtual ~NamedCondVfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588() {}
+
+ private:
+  nacl_arm_dec::CondVfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588);
 };
 
 class NamedCondVfpOp_Vdiv_Rule_301_A1_P590
@@ -4410,6 +4633,32 @@ class NamedCondVfpOp_Vm_la_ls_Rule_423_A2_P636
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vm_la_ls_Rule_423_A2_P636);
 };
 
+class NamedCondVfpOp_Vmov_Rule_326_A2_P640
+    : public NamedClassDecoder {
+ public:
+  inline NamedCondVfpOp_Vmov_Rule_326_A2_P640()
+    : NamedClassDecoder(decoder_, "CondVfpOp Vmov_Rule_326_A2_P640")
+  {}
+  virtual ~NamedCondVfpOp_Vmov_Rule_326_A2_P640() {}
+
+ private:
+  nacl_arm_dec::CondVfpOp_Vmov_Rule_326_A2_P640 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vmov_Rule_326_A2_P640);
+};
+
+class NamedCondVfpOp_Vmov_Rule_327_A2_P642
+    : public NamedClassDecoder {
+ public:
+  inline NamedCondVfpOp_Vmov_Rule_327_A2_P642()
+    : NamedClassDecoder(decoder_, "CondVfpOp Vmov_Rule_327_A2_P642")
+  {}
+  virtual ~NamedCondVfpOp_Vmov_Rule_327_A2_P642() {}
+
+ private:
+  nacl_arm_dec::CondVfpOp_Vmov_Rule_327_A2_P642 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vmov_Rule_327_A2_P642);
+};
+
 class NamedCondVfpOp_Vmul_Rule_338_A2_P664
     : public NamedClassDecoder {
  public:
@@ -4421,6 +4670,19 @@ class NamedCondVfpOp_Vmul_Rule_338_A2_P664
  private:
   nacl_arm_dec::CondVfpOp_Vmul_Rule_338_A2_P664 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vmul_Rule_338_A2_P664);
+};
+
+class NamedCondVfpOp_Vneg_Rule_342_A2_P672
+    : public NamedClassDecoder {
+ public:
+  inline NamedCondVfpOp_Vneg_Rule_342_A2_P672()
+    : NamedClassDecoder(decoder_, "CondVfpOp Vneg_Rule_342_A2_P672")
+  {}
+  virtual ~NamedCondVfpOp_Vneg_Rule_342_A2_P672() {}
+
+ private:
+  nacl_arm_dec::CondVfpOp_Vneg_Rule_342_A2_P672 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vneg_Rule_342_A2_P672);
 };
 
 class NamedCondVfpOp_Vnm_la_ls_ul_Rule_343_A1_P674
@@ -4447,6 +4709,19 @@ class NamedCondVfpOp_Vnm_la_ls_ul_Rule_343_A2_P674
  private:
   nacl_arm_dec::CondVfpOp_Vnm_la_ls_ul_Rule_343_A2_P674 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vnm_la_ls_ul_Rule_343_A2_P674);
+};
+
+class NamedCondVfpOp_Vsqrt_Rule_388_A1_P762
+    : public NamedClassDecoder {
+ public:
+  inline NamedCondVfpOp_Vsqrt_Rule_388_A1_P762()
+    : NamedClassDecoder(decoder_, "CondVfpOp Vsqrt_Rule_388_A1_P762")
+  {}
+  virtual ~NamedCondVfpOp_Vsqrt_Rule_388_A1_P762() {}
+
+ private:
+  nacl_arm_dec::CondVfpOp_Vsqrt_Rule_388_A1_P762 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_Vsqrt_Rule_388_A1_P762);
 };
 
 class NamedCondVfpOp_Vsub_Rule_402_A2_P790
@@ -8440,6 +8715,19 @@ class NamedTestIfAddressMasked_Tst_Rule_230_A1_P454
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedTestIfAddressMasked_Tst_Rule_230_A1_P454);
 };
 
+class NamedVfpOp_Vabs_Rule_269_A2_P532
+    : public NamedClassDecoder {
+ public:
+  inline NamedVfpOp_Vabs_Rule_269_A2_P532()
+    : NamedClassDecoder(decoder_, "VfpOp Vabs_Rule_269_A2_P532")
+  {}
+  virtual ~NamedVfpOp_Vabs_Rule_269_A2_P532() {}
+
+ private:
+  nacl_arm_dec::VfpOp_Vabs_Rule_269_A2_P532 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vabs_Rule_269_A2_P532);
+};
+
 class NamedVfpOp_Vadd_Rule_271_A2_P536
     : public NamedClassDecoder {
  public:
@@ -8451,6 +8739,84 @@ class NamedVfpOp_Vadd_Rule_271_A2_P536
  private:
   nacl_arm_dec::VfpOp_Vadd_Rule_271_A2_P536 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vadd_Rule_271_A2_P536);
+};
+
+class NamedVfpOp_Vcmp_Vcmpe_Rule_292_A1_P572
+    : public NamedClassDecoder {
+ public:
+  inline NamedVfpOp_Vcmp_Vcmpe_Rule_292_A1_P572()
+    : NamedClassDecoder(decoder_, "VfpOp Vcmp_Vcmpe_Rule_292_A1_P572")
+  {}
+  virtual ~NamedVfpOp_Vcmp_Vcmpe_Rule_292_A1_P572() {}
+
+ private:
+  nacl_arm_dec::VfpOp_Vcmp_Vcmpe_Rule_292_A1_P572 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vcmp_Vcmpe_Rule_292_A1_P572);
+};
+
+class NamedVfpOp_Vcmp_Vcmpe_Rule_292_A2_P572
+    : public NamedClassDecoder {
+ public:
+  inline NamedVfpOp_Vcmp_Vcmpe_Rule_292_A2_P572()
+    : NamedClassDecoder(decoder_, "VfpOp Vcmp_Vcmpe_Rule_292_A2_P572")
+  {}
+  virtual ~NamedVfpOp_Vcmp_Vcmpe_Rule_292_A2_P572() {}
+
+ private:
+  nacl_arm_dec::VfpOp_Vcmp_Vcmpe_Rule_292_A2_P572 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vcmp_Vcmpe_Rule_292_A2_P572);
+};
+
+class NamedVfpOp_Vcvt_Rule_297_A1_P582
+    : public NamedClassDecoder {
+ public:
+  inline NamedVfpOp_Vcvt_Rule_297_A1_P582()
+    : NamedClassDecoder(decoder_, "VfpOp Vcvt_Rule_297_A1_P582")
+  {}
+  virtual ~NamedVfpOp_Vcvt_Rule_297_A1_P582() {}
+
+ private:
+  nacl_arm_dec::VfpOp_Vcvt_Rule_297_A1_P582 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vcvt_Rule_297_A1_P582);
+};
+
+class NamedVfpOp_Vcvt_Rule_298_A1_P584
+    : public NamedClassDecoder {
+ public:
+  inline NamedVfpOp_Vcvt_Rule_298_A1_P584()
+    : NamedClassDecoder(decoder_, "VfpOp Vcvt_Rule_298_A1_P584")
+  {}
+  virtual ~NamedVfpOp_Vcvt_Rule_298_A1_P584() {}
+
+ private:
+  nacl_arm_dec::VfpOp_Vcvt_Rule_298_A1_P584 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vcvt_Rule_298_A1_P584);
+};
+
+class NamedVfpOp_Vcvt_Vcvtr_Rule_295_A1_P578
+    : public NamedClassDecoder {
+ public:
+  inline NamedVfpOp_Vcvt_Vcvtr_Rule_295_A1_P578()
+    : NamedClassDecoder(decoder_, "VfpOp Vcvt_Vcvtr_Rule_295_A1_P578")
+  {}
+  virtual ~NamedVfpOp_Vcvt_Vcvtr_Rule_295_A1_P578() {}
+
+ private:
+  nacl_arm_dec::VfpOp_Vcvt_Vcvtr_Rule_295_A1_P578 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vcvt_Vcvtr_Rule_295_A1_P578);
+};
+
+class NamedVfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588
+    : public NamedClassDecoder {
+ public:
+  inline NamedVfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588()
+    : NamedClassDecoder(decoder_, "VfpOp Vcvtb_Vcvtt_Rule_300_A1_P588")
+  {}
+  virtual ~NamedVfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588() {}
+
+ private:
+  nacl_arm_dec::VfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588);
 };
 
 class NamedVfpOp_Vdiv_Rule_301_A1_P590
@@ -8479,6 +8845,32 @@ class NamedVfpOp_Vm_la_ls_Rule_423_A2_P636
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vm_la_ls_Rule_423_A2_P636);
 };
 
+class NamedVfpOp_Vmov_Rule_326_A2_P640
+    : public NamedClassDecoder {
+ public:
+  inline NamedVfpOp_Vmov_Rule_326_A2_P640()
+    : NamedClassDecoder(decoder_, "VfpOp Vmov_Rule_326_A2_P640")
+  {}
+  virtual ~NamedVfpOp_Vmov_Rule_326_A2_P640() {}
+
+ private:
+  nacl_arm_dec::VfpOp_Vmov_Rule_326_A2_P640 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vmov_Rule_326_A2_P640);
+};
+
+class NamedVfpOp_Vmov_Rule_327_A2_P642
+    : public NamedClassDecoder {
+ public:
+  inline NamedVfpOp_Vmov_Rule_327_A2_P642()
+    : NamedClassDecoder(decoder_, "VfpOp Vmov_Rule_327_A2_P642")
+  {}
+  virtual ~NamedVfpOp_Vmov_Rule_327_A2_P642() {}
+
+ private:
+  nacl_arm_dec::VfpOp_Vmov_Rule_327_A2_P642 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vmov_Rule_327_A2_P642);
+};
+
 class NamedVfpOp_Vmul_Rule_338_A2_P664
     : public NamedClassDecoder {
  public:
@@ -8490,6 +8882,19 @@ class NamedVfpOp_Vmul_Rule_338_A2_P664
  private:
   nacl_arm_dec::VfpOp_Vmul_Rule_338_A2_P664 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vmul_Rule_338_A2_P664);
+};
+
+class NamedVfpOp_Vneg_Rule_342_A2_P672
+    : public NamedClassDecoder {
+ public:
+  inline NamedVfpOp_Vneg_Rule_342_A2_P672()
+    : NamedClassDecoder(decoder_, "VfpOp Vneg_Rule_342_A2_P672")
+  {}
+  virtual ~NamedVfpOp_Vneg_Rule_342_A2_P672() {}
+
+ private:
+  nacl_arm_dec::VfpOp_Vneg_Rule_342_A2_P672 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vneg_Rule_342_A2_P672);
 };
 
 class NamedVfpOp_Vnm_la_ls_ul_Rule_343_A1_P674
@@ -8516,6 +8921,19 @@ class NamedVfpOp_Vnm_la_ls_ul_Rule_343_A2_P674
  private:
   nacl_arm_dec::VfpOp_Vnm_la_ls_ul_Rule_343_A2_P674 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vnm_la_ls_ul_Rule_343_A2_P674);
+};
+
+class NamedVfpOp_Vsqrt_Rule_388_A1_P762
+    : public NamedClassDecoder {
+ public:
+  inline NamedVfpOp_Vsqrt_Rule_388_A1_P762()
+    : NamedClassDecoder(decoder_, "VfpOp Vsqrt_Rule_388_A1_P762")
+  {}
+  virtual ~NamedVfpOp_Vsqrt_Rule_388_A1_P762() {}
+
+ private:
+  nacl_arm_dec::VfpOp_Vsqrt_Rule_388_A1_P762 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpOp_Vsqrt_Rule_388_A1_P762);
 };
 
 class NamedVfpOp_Vsub_Rule_402_A2_P790

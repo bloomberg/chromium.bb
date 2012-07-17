@@ -1216,32 +1216,68 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_mult(
 const NamedClassDecoder& NamedArm32DecoderState::decode_other_vfp_data_proc(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
+  if ((insn.Bits() & 0x000F0000) == 0x00000000 /* opc2(19:16) == 0000 */ &&
+      (insn.Bits() & 0x000000C0) == 0x00000040 /* opc3(7:6) == 01 */ &&
+      (insn.Bits() & 0x0FBF0ED0) == 0x0EB00A40 /* $pattern(31:0) == xxxx11101x110000xxxx101x01x0xxxx */)
+    return CondVfpOp_Vmov_Rule_327_A2_P642_instance_;
+
+  if ((insn.Bits() & 0x000F0000) == 0x00000000 /* opc2(19:16) == 0000 */ &&
+      (insn.Bits() & 0x000000C0) == 0x000000C0 /* opc3(7:6) == 11 */)
+    return CondVfpOp_Vabs_Rule_269_A2_P532_instance_;
+
   if ((insn.Bits() & 0x000F0000) == 0x00010000 /* opc2(19:16) == 0001 */ &&
-      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */)
-    return CoprocessorOp_None_instance_;
+      (insn.Bits() & 0x000000C0) == 0x00000040 /* opc3(7:6) == 01 */ &&
+      (insn.Bits() & 0x0FBF0ED0) == 0x0EB10A40 /* $pattern(31:0) == xxxx11101x110001xxxx101x01x0xxxx */)
+    return CondVfpOp_Vneg_Rule_342_A2_P672_instance_;
+
+  if ((insn.Bits() & 0x000F0000) == 0x00010000 /* opc2(19:16) == 0001 */ &&
+      (insn.Bits() & 0x000000C0) == 0x000000C0 /* opc3(7:6) == 11 */ &&
+      (insn.Bits() & 0x0FBF0ED0) == 0x0EB10AC0 /* $pattern(31:0) == xxxx11101x110001xxxx101x11x0xxxx */)
+    return CondVfpOp_Vsqrt_Rule_388_A1_P762_instance_;
+
+  if ((insn.Bits() & 0x000F0000) == 0x00040000 /* opc2(19:16) == 0100 */ &&
+      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */ &&
+      (insn.Bits() & 0x0FBF0E50) == 0x0EB40A40 /* $pattern(31:0) == xxxx11101x110100xxxx101xx1x0xxxx */)
+    return CondVfpOp_Vcmp_Vcmpe_Rule_292_A1_P572_instance_;
+
+  if ((insn.Bits() & 0x000F0000) == 0x00050000 /* opc2(19:16) == 0101 */ &&
+      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */ &&
+      (insn.Bits() & 0x0FBF0E7F) == 0x0EB50A40 /* $pattern(31:0) == xxxx11101x110101xxxx101xx1000000 */)
+    return CondVfpOp_Vcmp_Vcmpe_Rule_292_A2_P572_instance_;
 
   if ((insn.Bits() & 0x000F0000) == 0x00070000 /* opc2(19:16) == 0111 */ &&
-      (insn.Bits() & 0x000000C0) == 0x000000C0 /* opc3(7:6) == 11 */)
-    return CoprocessorOp_None_instance_;
+      (insn.Bits() & 0x000000C0) == 0x000000C0 /* opc3(7:6) == 11 */ &&
+      (insn.Bits() & 0x0FBF0ED0) == 0x0EB70AC0 /* $pattern(31:0) == xxxx11101x110111xxxx101x11x0xxxx */)
+    return CondVfpOp_Vcvt_Rule_298_A1_P584_instance_;
 
-  if ((insn.Bits() & 0x00070000) == 0x00000000 /* opc2(19:16) == x000 */ &&
-      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */)
-    return CoprocessorOp_None_instance_;
+  if ((insn.Bits() & 0x000F0000) == 0x00080000 /* opc2(19:16) == 1000 */ &&
+      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */ &&
+      (insn.Bits() & 0x0FBF0E50) == 0x0EB80A40 /* $pattern(31:0) == xxxx11101x111000xxxx101xx1x0xxxx */)
+    return CondVfpOp_Vcvt_Vcvtr_Rule_295_A1_P578_instance_;
+
+  if ((insn.Bits() & 0x000E0000) == 0x00020000 /* opc2(19:16) == 001x */ &&
+      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */ &&
+      (insn.Bits() & 0x0FBE0F50) == 0x0EB20A40 /* $pattern(31:0) == xxxx11101x11001xxxxx1010x1x0xxxx */)
+    return CondVfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588_instance_;
+
+  if ((insn.Bits() & 0x000E0000) == 0x000A0000 /* opc2(19:16) == 101x */ &&
+      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */ &&
+      (insn.Bits() & 0x0FBE0E50) == 0x0EBA0A40 /* $pattern(31:0) == xxxx11101x11101xxxxx101xx1x0xxxx */)
+    return CondVfpOp_Vcvt_Rule_297_A1_P582_instance_;
+
+  if ((insn.Bits() & 0x000E0000) == 0x000C0000 /* opc2(19:16) == 110x */ &&
+      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */ &&
+      (insn.Bits() & 0x0FBE0E50) == 0x0EBC0A40 /* $pattern(31:0) == xxxx11101x11110xxxxx101xx1x0xxxx */)
+    return CondVfpOp_Vcvt_Vcvtr_Rule_295_A1_P578_instance_;
 
   if ((insn.Bits() & 0x000E0000) == 0x000E0000 /* opc2(19:16) == 111x */ &&
-      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */)
-    return CoprocessorOp_None_instance_;
+      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */ &&
+      (insn.Bits() & 0x0FBE0E50) == 0x0EBE0A40 /* $pattern(31:0) == xxxx11101x11111xxxxx101xx1x0xxxx */)
+    return CondVfpOp_Vcvt_Rule_297_A1_P582_instance_;
 
-  if ((insn.Bits() & 0x00060000) == 0x00020000 /* opc2(19:16) == x01x */ &&
-      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */)
-    return CoprocessorOp_None_instance_;
-
-  if ((insn.Bits() & 0x00060000) == 0x00040000 /* opc2(19:16) == x10x */ &&
-      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */)
-    return CoprocessorOp_None_instance_;
-
-  if ((insn.Bits() & 0x00000040) == 0x00000000 /* opc3(7:6) == x0 */)
-    return CoprocessorOp_None_instance_;
+  if ((insn.Bits() & 0x00000040) == 0x00000000 /* opc3(7:6) == x0 */ &&
+      (insn.Bits() & 0x0FB00EF0) == 0x0EB00A00 /* $pattern(31:0) == xxxx11101x11xxxxxxxx101x0000xxxx */)
+    return CondVfpOp_Vmov_Rule_326_A2_P640_instance_;
 
   // Catch any attempt to fall through...
   return not_implemented_;

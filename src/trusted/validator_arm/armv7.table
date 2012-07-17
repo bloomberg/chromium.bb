@@ -1360,19 +1360,52 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 #
 # TODO(karl): Fix the class decoders to do the right thing.
 | opc2(19:16) opc3(7:6)
-| -           x0        = CoprocessorOp  # VMOV (immediate) A8-640
-| 0000        01        = CoprocessorOp  # VMOV A8-642
-| "           11        = CoprocessorOp  # VABS A8-352
-| 0001        01        = CoprocessorOp  # VNEG A8-672
-| "           11        = CoprocessorOp  # VSQRT A8-762
-| 001x        x1        = CoprocessorOp  # VCVTB, VCVTT A8-588
-| 010x        x1        = CoprocessorOp  # VCMP, VCMPE A8-572
-| 0111        11        = CoprocessorOp  # VCVT A8-584
-| 1000        x1        = CoprocessorOp  # VCVT, VCVR A8-578
-| 101x        x1        = CoprocessorOp  # VCVT A8-582
-| 110x        x1        = CoprocessorOp  # VCVT, VCVTR A8-578
-| 111x        x1        = CoprocessorOp  # vfp modified immediate constants,
-                                         # Table A7-18
+| -           x0        = CondVfpOp => VfpOp
+                          Vmov_Rule_326_A2_P640
+                          cccc11101d11iiiidddd101s0000iiii
+| 0000        01        = CondVfpOp => VfpOp
+                          Vmov_Rule_327_A2_P642
+                          cccc11101d110000dddd101s01m0mmmm
+| "           11        = CondVfpOp => VfpOp
+                          Vabs_Rule_269_A2_P532
+| 0001        01        = CondVfpOp => VfpOp
+                          Vneg_Rule_342_A2_P672
+                          cccc11101d110001dddd101s01m0mmmm
+| "           11        = CondVfpOp => VfpOp
+                          Vsqrt_Rule_388_A1_P762
+                          cccc11101d110001dddd101s11m0mmmm
+| 001x        x1        = CondVfpOp => VfpOp
+                          Vcvtb_Vcvtt_Rule_300_A1_P588
+                          cccc11101d11001pdddd1010t1m0mmmm
+| 0100        x1        = CondVfpOp => VfpOp
+                          Vcmp_Vcmpe_Rule_292_A1_P572
+                          cccc11101d110100dddd101se1m0mmmm
+| 0101        x1        = CondVfpOp => VfpOp
+                          Vcmp_Vcmpe_Rule_292_A2_P572
+                          cccc11101d110101dddd101se1000000
+| 0111        11        = CondVfpOp => VfpOp
+                          Vcvt_Rule_298_A1_P584
+                          cccc11101d110111dddd101s11m0mmmm
+| 1000        x1        = CondVfpOp => VfpOp
+                          Vcvt_Vcvtr_Rule_295_A1_P578
+                          # Note: table pattern forces opc2(18:16)=000 for instruction.
+                          # This table also contains entry for opc2(18:16)=10x, but not
+                          # other opc2 values. However, rule A1 doesn't mention this
+                          # restriction.
+                          cccc11101d111000dddd101sp1m0mmmm
+| 101x        x1        = CondVfpOp => VfpOp
+                          Vcvt_Rule_297_A1_P582
+                          cccc11101d11101udddd101fx1i0iiii
+| 110x        x1        = CondVfpOp => VfpOp
+                          Vcvt_Vcvtr_Rule_295_A1_P578
+                          # Note: table pattern forces opc2(18:16)=10x for instruction.
+                          # This table also contains entry for opc2(18:16)=000, but
+                          # not other opc2 values. However, rule A1 doesn't mention this
+                          # restriction.
+                          cccc11101d11110xdddd101sp1m0mmmm
+| 111x        x1        = CondVfpOp => VfpOp
+                          Vcvt_Rule_297_A1_P582
+                          cccc11101d11111udddd101fx1i0iiii
 +--
 
 +-- ext_reg_load_store (A7.6)
