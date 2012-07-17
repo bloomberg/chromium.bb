@@ -21,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_switches.h"
@@ -762,7 +763,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_APP_LIST_SHOW_APPS_ONLY_NAME,
     IDS_FLAGS_ENABLE_APP_LIST_SHOW_APPS_ONLY_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(ash::switches::kAppListShowAppsOnly),
+    SINGLE_VALUE_TYPE(app_list::switches::kAppListShowAppsOnly),
   },
   {
     "ash-extended-desktop",

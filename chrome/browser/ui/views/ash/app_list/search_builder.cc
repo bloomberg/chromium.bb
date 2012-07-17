@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "ash/ash_switches.h"
 #include "base/command_line.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
@@ -27,6 +26,7 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_result.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -184,7 +184,7 @@ SearchBuilder::SearchBuilder(
       GetImageSkiaNamed(IDR_OMNIBOX_SEARCH));
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAppListShowAppsOnly)) {
+          app_list::switches::kAppListShowAppsOnly)) {
     // ExtensionAppProvider is a synchronous provider and does not really need a
     // listener.
     apps_provider_ = new ExtensionAppProvider(NULL, profile);

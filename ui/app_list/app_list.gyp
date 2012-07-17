@@ -32,6 +32,8 @@
         'app_list_item_view.h',
         'app_list_model.cc',
         'app_list_model.h',
+        'app_list_switches.cc',
+        'app_list_switches.h',
         'app_list_view.cc',
         'app_list_view.h',
         'app_list_view_delegate.h',
