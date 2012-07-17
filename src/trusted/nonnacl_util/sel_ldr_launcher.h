@@ -1,3 +1,4 @@
+/* -*- c++ -*- */
 /*
  * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
@@ -98,6 +99,15 @@ class SelLdrLauncherBase {
 
   // As above, but raw_desc is Unref'd on failure.
   DescWrapper* WrapCleanup(NaClDesc* raw_desc);
+
+  // Get post-crash NaClLog data.  This include some recent NaClLog
+  // output as well as the LOG_FATAL message.  In the case of a severe
+  // crash -- or if the peer sel_ldr does not support NaClLog crash
+  // logging -- this may return the empty string.
+  //
+  // NB: If the NaCl module has not exited or crashed, this call will
+  // block.
+  nacl::string GetCrashLogOutput();
 
  protected:
   Handle channel_;

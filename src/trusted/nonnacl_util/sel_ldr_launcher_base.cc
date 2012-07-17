@@ -155,4 +155,26 @@ DescWrapper* SelLdrLauncherBase::WrapCleanup(NaClDesc* raw_desc) {
   return factory_->MakeGenericCleanup(raw_desc);
 }
 
+nacl::string SelLdrLauncherBase::GetCrashLogOutput() {
+  DescWrapper::MsgHeader hdr;
+  DescWrapper::MsgIoVec iov;
+  char msg_buf[1024];
+  ssize_t nbytes = 0;
+
+  iov.base = msg_buf;
+  iov.length = sizeof msg_buf;
+  hdr.iov = &iov;
+  hdr.iov_length = 1;
+  hdr.ndescv = NULL;
+  hdr.ndescv_length = 0;
+  hdr.flags = 0;
+  if (NULL != bootstrap_socket_.get()) {
+    nbytes = bootstrap_socket_->RecvMsg(&hdr, 0, NULL);
+  }
+  if (nbytes > 0) {
+    return nacl::string(msg_buf, nbytes);
+  }
+  return "";
+}
+
 }  // namespace nacl

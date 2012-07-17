@@ -72,7 +72,14 @@ static char const       *nacl_log_module_name = NULL;
  */
 static struct NaClMutex log_mu;
 static int              tag_output = 0;
-static int              abort_on_unlock = 0;
+static int              g_abort_count = 0;
+/*
+ * g_abort_count is incremented prior to calling
+ * gNaClLogAbortBehavior, so that the abort hook can invoke other
+ * functions that might need to log, without those log entries
+ * deadlocking or polluting the crash log output.
+ */
+static int              g_abort_behavior_active = 0;
 
 #define NACL_VERBOSITY_UNSET INT_MAX
 
@@ -315,18 +322,41 @@ void NaClLogLock(void) {
 }
 
 void NaClLogUnlock(void) {
-  if (abort_on_unlock) {
-    /*
-     * include an easy-to-recognize output for the fuzzer to recognize
-     */
-    NaClLog_mu(LOG_ERROR, "LOG_FATAL abort exit\n");
+  int run_abort_behavior = 0;
+  switch (g_abort_count) {
+    case 0:
+      NaClXMutexUnlock(&log_mu);
+      break;
+    case 1:
+      /*
+       * include an easy-to-recognize output for the fuzzer to recognize
+       */
+      if (!g_abort_behavior_active) {
+        NaClLog_mu(LOG_ERROR, "LOG_FATAL abort exit\n");
+        g_abort_behavior_active = 1;
+        run_abort_behavior = 1;
+        /*
+         * run abort behavior only on edge transition when
+         * g_abort_behavior_active is first set.
+         */
+      }
+      NaClXMutexUnlock(&log_mu);
+      if (run_abort_behavior) {
 #ifdef __COVERITY__
-    NaClAbort();  /* help coverity figure out that this is the default */
+        NaClAbort();  /* help coverity figure out that this is the default */
 #else
-    (*gNaClLogAbortBehavior)();
+        (*gNaClLogAbortBehavior)();
 #endif
+        NaClAbort();
+      }
+      break;
+    default:
+      /*
+       * Abort handling code in turn aborted.  Eeep!
+       */
+      NaClAbort();
+      break;
   }
-  NaClXMutexUnlock(&log_mu);
 }
 
 static INLINE struct Gio *NaClLogGetGio_mu() {
@@ -457,14 +487,20 @@ void NaClLogDoLogV_mu(int         detail_level,
                       va_list     ap) {
   struct Gio  *s;
 
-  s = NaClLogGetGio_mu();
+  if (0 == g_abort_count) {
+    s = NaClLogGetGio_mu();
 
-  NaClLogOutputTag_mu(s);
-  (void) gvprintf(s, fmt, ap);
-  (void) (*s->vtbl->Flush)(s);
+    NaClLogOutputTag_mu(s);
+    (void) gvprintf(s, fmt, ap);
+    (void) (*s->vtbl->Flush)(s);
+  } else {
+    (void) fprintf(stderr, "POST-ABORT: ");
+    (void) vfprintf(stderr, fmt, ap);
+    (void) fflush(stderr);
+  }
 
   if (LOG_FATAL == detail_level) {
-    abort_on_unlock = 1;
+    ++g_abort_count;
   }
 }
 

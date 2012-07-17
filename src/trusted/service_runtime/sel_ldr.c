@@ -832,23 +832,23 @@ void NaClSetUpBootstrapChannel(struct NaClApp  *nap,
   ssize_t                     rv;
 
   NaClLog(4,
-          "NaClSendServiceAddressTo(0x%08"NACL_PRIxPTR", %"NACL_PRIdPTR")\n",
+          "NaClSetUpBootstrapChannel(0x%08"NACL_PRIxPTR", %"NACL_PRIdPTR")\n",
           (uintptr_t) nap,
           (uintptr_t) inherited_desc);
 
   channel = (struct NaClDescImcDesc *) malloc(sizeof *channel);
   if (NULL == channel) {
-    NaClLog(LOG_FATAL, "NaClSendServiceAddressTo: no memory\n");
+    NaClLog(LOG_FATAL, "NaClSetUpBootstrapChannel: no memory\n");
   }
   if (!NaClDescImcDescCtor(channel, inherited_desc)) {
     NaClLog(LOG_FATAL,
-            ("NaClSendServiceAddressTo: cannot construct IMC descriptor object"
-             " for inherited descriptor %"NACL_PRIdPTR"\n"),
+            ("NaClSetUpBootstrapChannel: cannot construct IMC descriptor"
+             " object for inherited descriptor %"NACL_PRIdPTR"\n"),
             (uintptr_t) inherited_desc);
   }
   if (NULL == nap->service_address) {
     NaClLog(LOG_FATAL,
-            "NaClSendServiceAddressTo: service address not set\n");
+            "NaClSetUpBootstrapChannel: service address not set\n");
     return;
   }
   /*
@@ -865,20 +865,20 @@ void NaClSetUpBootstrapChannel(struct NaClApp  *nap,
   NaClXMutexLock(&nap->mu);
   if (NULL != nap->bootstrap_channel) {
     NaClLog(LOG_FATAL,
-            "NaClSendServiceAddressTo: cannot have two bootstrap channels\n");
+            "NaClSetUpBootstrapChannel: cannot have two bootstrap channels\n");
   }
   nap->bootstrap_channel = (struct NaClDesc *) channel;
   channel = NULL;
   NaClXMutexUnlock(&nap->mu);
 
   NaClLog(1,
-          ("NaClSendServiceAddressTo: descriptor %"NACL_PRIdPTR
+          ("NaClSetUpBootstrapChannel: descriptor %"NACL_PRIdPTR
            ", error %"NACL_PRIdS"\n"),
           (uintptr_t) inherited_desc,
           rv);
-  if (NACL_FI_ERROR_COND("NaClSendServiceAddressTo__SendMsg", 0 != rv)) {
+  if (NACL_FI_ERROR_COND("NaClSetUpBootstrapChannel__SendMsg", 0 != rv)) {
     NaClLog(LOG_FATAL,
-            "NaClSendServiceAddressTo: SendMsg failed, rv = %"NACL_PRIdS"\n",
+            "NaClSetUpBootstrapChannel: SendMsg failed, rv = %"NACL_PRIdS"\n",
             rv);
   }
 }
