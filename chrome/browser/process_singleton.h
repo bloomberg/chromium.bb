@@ -170,6 +170,7 @@ class ProcessSingleton : public base::NonThreadSafe {
   HWND remote_window_;  // The HWND_MESSAGE of another browser.
   HWND window_;  // The HWND_MESSAGE window.
   bool is_virtualized_;  // Stuck inside Microsoft Softricity VM environment.
+  HANDLE lock_file_;
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
   // Return true if the given pid is one of our child processes.
   // Assumes that the current pid is the root of all pids of the current

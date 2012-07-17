@@ -23,6 +23,8 @@
 
 namespace {
 
+const char kLockfile[] = "lockfile";
+
 // Checks the visibility of the enumerated window and signals once a visible
 // window has been found.
 BOOL CALLBACK BrowserWindowEnumeration(HWND window, LPARAM param) {
@@ -148,7 +150,7 @@ bool ProcessSingleton::EscapeVirtualization(const FilePath& user_data_dir) {
 // the profile directory path.
 ProcessSingleton::ProcessSingleton(const FilePath& user_data_dir)
     : window_(NULL), locked_(false), foreground_window_(NULL),
-    is_virtualized_(false) {
+    is_virtualized_(false), lock_file_(INVALID_HANDLE_VALUE) {
   remote_window_ = FindWindowEx(HWND_MESSAGE, NULL,
                                 chrome::kMessageWindowClass,
                                 user_data_dir.value().c_str());
@@ -176,22 +178,40 @@ ProcessSingleton::ProcessSingleton(const FilePath& user_data_dir)
                                   chrome::kMessageWindowClass,
                                   user_data_dir.value().c_str());
     if (!remote_window_) {
-      HINSTANCE hinst = base::GetModuleFromAddress(&ThunkWndProc);
+      // We have to make sure there is no Chrome instance running on another
+      // machine that uses the same profile.
+      FilePath lock_file_path = user_data_dir.AppendASCII(kLockfile);
+      lock_file_ = CreateFile(lock_file_path.value().c_str(),
+                              GENERIC_WRITE,
+                              FILE_SHARE_READ,
+                              NULL,
+                              CREATE_ALWAYS,
+                              FILE_ATTRIBUTE_NORMAL | FILE_FLAG_DELETE_ON_CLOSE,
+                              NULL);
+      DWORD error = GetLastError();
+      LOG_IF(WARNING, lock_file_ != INVALID_HANDLE_VALUE &&
+          error == ERROR_ALREADY_EXISTS) << "Lock file exists but is writable.";
+      LOG_IF(ERROR, lock_file_ == INVALID_HANDLE_VALUE)
+          << "Lock file can not be created! Error code: " << error;
 
-      WNDCLASSEX wc = {0};
-      wc.cbSize = sizeof(wc);
-      wc.lpfnWndProc = base::win::WrappedWindowProc<ThunkWndProc>;
-      wc.hInstance = hinst;
-      wc.lpszClassName = chrome::kMessageWindowClass;
-      ATOM clazz = ::RegisterClassEx(&wc);
-      DCHECK(clazz);
+      if (lock_file_ != INVALID_HANDLE_VALUE) {
+        HINSTANCE hinst = base::GetModuleFromAddress(&ThunkWndProc);
 
-      // Set the window's title to the path of our user data directory so other
-      // Chrome instances can decide if they should forward to us or not.
-      window_ = ::CreateWindow(MAKEINTATOM(clazz),
-                               user_data_dir.value().c_str(),
-                               0, 0, 0, 0, 0, HWND_MESSAGE, 0, hinst, this);
-      CHECK(window_);
+        WNDCLASSEX wc = {0};
+        wc.cbSize = sizeof(wc);
+        wc.lpfnWndProc = base::win::WrappedWindowProc<ThunkWndProc>;
+        wc.hInstance = hinst;
+        wc.lpszClassName = chrome::kMessageWindowClass;
+        ATOM clazz = ::RegisterClassEx(&wc);
+        DCHECK(clazz);
+
+        // Set the window's title to the path of our user data directory so
+        // other Chrome instances can decide if they should forward to us.
+        window_ = ::CreateWindow(MAKEINTATOM(clazz),
+                                 user_data_dir.value().c_str(),
+                                 0, 0, 0, 0, 0, HWND_MESSAGE, 0, hinst, this);
+        CHECK(window_);
+      }
     }
     BOOL success = ReleaseMutex(only_me);
     DCHECK(success) << "GetLastError = " << GetLastError();
@@ -207,11 +227,15 @@ ProcessSingleton::~ProcessSingleton() {
     ::UnregisterClass(chrome::kMessageWindowClass,
                       base::GetModuleFromAddress(&ThunkWndProc));
   }
+  if (lock_file_ != INVALID_HANDLE_VALUE)
+    CloseHandle(lock_file_);
 }
 
 ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   if (is_virtualized_)
     return PROCESS_NOTIFIED;  // We already spawned the process in this case.
+  if (lock_file_ == INVALID_HANDLE_VALUE && !remote_window_)
+    return LOCK_ERROR;
   else if (!remote_window_)
     return PROCESS_NONE;
 
