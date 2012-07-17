@@ -270,7 +270,7 @@ void LayerAnimator::Step(base::TimeTicks now) {
       needs_redraw = true;
   }
 
-  if (needs_redraw)
+  if (needs_redraw && delegate())
     delegate()->ScheduleDrawForAnimation();
 }
 
