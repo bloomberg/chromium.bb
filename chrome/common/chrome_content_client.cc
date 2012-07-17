@@ -206,6 +206,9 @@ content::PepperPluginInfo CreatePepperFlashInfo(const FilePath& path,
       switches::kPpapiFlashInProcess);
   plugin.name = kFlashPluginName;
   plugin.path = path;
+  plugin.permissions = ppapi::PERMISSION_DEV |
+                       ppapi::PERMISSION_PRIVATE |
+                       ppapi::PERMISSION_BYPASS_USER_GESTURE;
 
   std::vector<std::string> flash_version_numbers;
   base::SplitString(version, '.', &flash_version_numbers);

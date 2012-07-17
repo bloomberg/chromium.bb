@@ -120,7 +120,7 @@ void FileChooserResource::OnReplyReceived(int /* sequence */,
   }
 
   // Notify the plugin of the new data.
-  TrackedCallback::ClearAndRun(&callback_, PP_OK);
+  TrackedCallback::ClearAndRun(&callback_, result);
   // DANGER: May delete |this|!
 }
 
