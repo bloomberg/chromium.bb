@@ -24,23 +24,6 @@ RegisterList CondNop::defs(const Instruction i) const {
   return RegisterList();
 }
 
-// CondVfpOp
-SafetyLevel CondVfpOp::safety(const Instruction i) const {
-  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
-  switch (coproc.value(i)) {
-    default: return FORBIDDEN;
-
-    case 10:
-    case 11:  // NEON/VFP
-      return MAY_BE_SAFE;
-  }
-}
-
-RegisterList CondVfpOp::defs(Instruction i) const {
-  UNREFERENCED_PARAMETER(i);
-  return RegisterList();
-}
-
 // MoveImmediate12ToApsr
 SafetyLevel MoveImmediate12ToApsr::safety(const Instruction i) const {
   UNREFERENCED_PARAMETER(i);
@@ -523,6 +506,100 @@ SafetyLevel LoadRegisterList::safety(const Instruction i) const {
 
 RegisterList LoadRegisterList::defs(const Instruction i) const {
   return register_list.registers(i).Union(LoadStoreRegisterList::defs(i));
+}
+
+// LoadStoreVectorOp
+Register LoadStoreVectorOp::FirstReg(const Instruction& i) const {
+  // Assumes that safety has already been checked, and hence,
+  // coproc in { 1010 , 1011 }.
+  uint32_t first_reg = vd.number(i);
+  if (coproc.value(i) == 11) {  // i.e. 1011
+    if (d_bit.value(i) == 1) {
+      first_reg += 16;
+    }
+  } else {
+    first_reg = (first_reg << 1) + d_bit.value(i);
+  }
+  return Register(first_reg);
+}
+
+SafetyLevel LoadStoreVectorOp::safety(const Instruction i) const {
+  // NaCl constraint.
+  if (n.reg(i).Equals(kRegisterPc)) {
+    // Note: covers ARM constraints:
+    //   Rn=15  && (W=1 || CurrentInstSet() != ARM) then UNPREDICTABLE.
+    //   Rn=15  && CurrentInstSet() != ARM then UNPREDICTABLE.
+    return UNPREDICTABLE;
+  }
+
+  // Make sure coprocessor value is safe.
+  return CondVfpOp::safety(i);
+}
+
+Register LoadStoreVectorOp::
+base_address_register(const Instruction i) const {
+  return n.reg(i);
+}
+
+// LoadStoreVectorRegisterList
+uint32_t LoadStoreVectorRegisterList::NumRegisters(const Instruction& i) const {
+  // Assumes that safety has already been checked, and hence,
+  // coproc in { 1010 , 1011 }.
+  return (coproc.value(i) == 11)  // i.e. 1011
+      ? (imm8.value(i) / 2)
+      : imm8.value(i);
+}
+
+SafetyLevel LoadStoreVectorRegisterList::safety(const Instruction i) const {
+  // ARM constraints.
+  if (wback.IsDefined(i) && (indexing.IsDefined(i) == direction.IsAdd(i)))
+    return UNDEFINED;
+
+  // Register list must have at least one register.
+  uint32_t first_reg = FirstReg(i).number();
+
+  if (imm8.value(i) == 0)
+    return UNPREDICTABLE;
+
+  // Register list doesn't exceed available vector registers.
+  switch (coproc.value(i)) {
+    case 11:
+      // Assume double (64-bit) registers. Check that number of registers
+      // is even, and that we don't exceed the total number of available
+      // extended (vector) registers.
+      // Note: The number of 64-bit registers accessed is imm8.value(inst) / 2.
+      if (!imm8.IsEven(i))
+        return DEPRECATED;
+      if ((first_reg + imm8.value(i)) > 32)
+        return UNPREDICTABLE;
+      break;
+
+    default:
+    case 10:
+      // Assume single (32-bit) registers.
+      // Note: The number of 32-bit registers accessed is imm8.value(inst).
+      if ((first_reg + imm8.value(i)) > 32)
+        return UNPREDICTABLE;
+      break;
+  }
+
+  // Make sure coprocessor value is safe.
+  return LoadStoreVectorOp::safety(i);
+}
+
+RegisterList LoadStoreVectorRegisterList::defs(const Instruction i) const {
+  return immediate_addressing_defs(i);
+}
+
+RegisterList LoadStoreVectorRegisterList::
+immediate_addressing_defs(const Instruction i) const {
+  return RegisterList(wback.IsDefined(i) ? n.reg(i) : kRegisterNone);
+}
+
+// LoadStoreVectorRegister
+bool LoadStoreVectorRegister::offset_is_immediate(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return true;
 }
 
 // LoadStore3RegisterOp

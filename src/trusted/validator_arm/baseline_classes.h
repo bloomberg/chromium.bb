@@ -86,24 +86,13 @@ class ForbiddenCondNop : public UnsafeCondNop {
 // +--------+--------------------------------+--------+----------------+
 // A generic VFP instruction that (by default) only effects vector
 // register banks. Hence, they do not change general purpose registers.
-// These instructions are:
-// - Permitted only for whitelisted coprocessors (101x) that define VFP
-//   operations.
-// - Not permitted to update r15.
-//
-// Coprocessor ops with visible side-effects on the APSR conditions flags, or
-// general purpose register should extend and override this.
-class CondVfpOp : public ClassDecoder {
+class CondVfpOp : public CoprocessorOp {
  public:
   // Accessor to non-vector register fields.
-  static const Imm4Bits8To11Interface coproc;
   static const ConditionBits28To31Interface cond;
 
   inline CondVfpOp() {}
   virtual ~CondVfpOp() {}
-
-  virtual SafetyLevel safety(Instruction i) const;
-  virtual RegisterList defs(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(CondVfpOp);
@@ -830,6 +819,103 @@ class StoreRegisterList : public LoadStoreRegisterList {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(StoreRegisterList);
+};
+
+// Models a vector load/store of vector registers into/out of memory.
+// Op{mode}<c><q> {,<size>} <Rn>!, <register list>
+// Op<c> <Dd>, [<Rn>{, #+/-<imm8>}]
+// Op<c> <Sd>, [<Rn>{, #+/-<imm8>}]
+// +--------+------+--+--+--+--+--+--------+--------+--------+----------------+
+// |31302928|272625|24|23|22|21|20|19181716|15141312|1110 9 8| 7 6 5 4 3 2 1 0|
+// +--------+------+--+--+--+--+--+--------+--------+--------+----------------+
+// |  cond  |      | P| U| D| W|  |   Rn   |   Vd   | coproc |      imm8      |
+// +--------+------+--+--+--+--+--+--------+--------+--------+----------------+
+// coproc=1010 implies register size is 32-bit.
+// coproc=1011 implies register size is 64-bit.
+// <Rn> Is the base register defining the memory to use.
+// <Vd>:D defines the first D (vector) register in this operation if
+//     coproc=1010. coproc=1010 implies the register size is 64-bit.
+// D:<Vd> defines the first D (vector) register in this operation if
+//     coproc=1011. coproc=1011 implies the register size is 32-bit
+//
+// NaCl Constraints:
+//    Rn!=Pc.
+class LoadStoreVectorOp : public CondVfpOp {
+ public:
+  // Interfaces for components in the instruction.
+  static const Imm8Bits0To7Interface imm8;
+  static const RegDBits12To15Interface vd;
+  static const RegNBits16To19Interface n;
+  static const WritesBit21Interface wback;
+  static const Imm1Bit22Interface d_bit;
+  static const AddOffsetBit23Interface direction;
+  static const PrePostIndexingBit24Interface indexing;
+
+  inline LoadStoreVectorOp() {}
+  virtual ~LoadStoreVectorOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual Register base_address_register(Instruction i) const;
+
+  // Returns the first register in the register list.
+  Register FirstReg(const Instruction& i) const;
+};
+
+// Models a vector load/store of multiple vector registers into/out of memory.
+// Op{mode}<c><q> {,<size>} <Rn>!, <register list>
+//
+// See base class LoadStoreVectorOp for layout of this instruction.
+//
+// <mode> in { IA , DB } where IA implies P=0 and U=1,
+//                       and DB implies P=1 and U=0
+// <size> in { 32 , 64 } defines the number of registers in the register list.
+// <Rn> Is the base register defining the memory to use.
+// <register list> is a list of consecutively numbered registers defining
+//        the vector registers to use (the list is defined by <Vd>, D,
+//        and <imm8>).
+// <imm8> defines how many (32-bit) registers are to be updated.
+//
+// Constraints:
+//    P=U && W=1 then undefined.
+//    if Rn=15  && (W=1 || CurrentInstSet() != ARM) then UNPREDICTABLE.
+//       Note: NaCl constraint of Rn!=15 handles this case (in base class).
+//    if imm8=0 || (first_reg +imm8) > 32 then UNPREDICTABLE.
+//    if coproc=1011 and imm8 > 16 then UNPREDICTABLE.
+//
+// Note: Legal combinations of PUW: { 010 , 011, 101 }
+class LoadStoreVectorRegisterList : public LoadStoreVectorOp {
+ public:
+  inline LoadStoreVectorRegisterList() {}
+  virtual ~LoadStoreVectorRegisterList() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+
+  // Returns the number of register in the register list, i.e. <size>.
+  uint32_t NumRegisters(const Instruction& i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStoreVectorRegisterList);
+};
+
+// Models a load/store of a vector register into/out of memory.
+// Op<c> <Dd>, [<Rn>{, #+/-<imm8>}]
+// Op<c> <Sd>, [<Rn>{, #+/-<imm8>}]
+//
+// See base class LoadStoreVectorOp for layout of this instruction.
+//
+// <imm8> defines the offset to add to Rn to compute the memory address.
+//
+// Constraints:
+//    if Rn=15 && CurrentInstSet() != ARM then UNPREDICTABLE.
+//       Note: NaCl constraint of Rn!=15 handles this case (in base class).
+class LoadStoreVectorRegister : public LoadStoreVectorOp {
+ public:
+  inline LoadStoreVectorRegister() {}
+  virtual ~LoadStoreVectorRegister() {}
+  virtual bool offset_is_immediate(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStoreVectorRegister);
 };
 
 // Models a 3-register binary operation of the form:

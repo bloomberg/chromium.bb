@@ -394,8 +394,8 @@ static const AnnotatedInstruction examples_of_safe_stores[] = {
   { 0x0D810B00, "vstr d0, [r1]: direct vector store" },
   { 0x0D810B99, "vstr d0, [r1, #0x99]: positive displacement vector store" },
   { 0x0D010B99, "vstr d0, [r1, #-0x99]: negative displacement vector store" },
-  { 0x0C810BBF, "vstmia r1, { d0-d7 }: no writeback" },
-  { 0x0CA10BBF, "vstmia r1!, { d0-d7 }: writeback" },
+  { 0x0C810B10, "vstmia r1, { d0-d7 }: no writeback" },
+  { 0x0CA10B10, "vstmia r1!, { d0-d7 }: writeback" },
 };
 
 static const AnnotatedInstruction examples_of_safe_masks[] = {

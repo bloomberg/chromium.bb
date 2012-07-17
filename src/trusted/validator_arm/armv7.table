@@ -83,6 +83,7 @@
 #        (2) Rn is Pc ans S=0;
 #    NotRdIsPcAndS - not (Rd is Pc (R15) and S=1 (updates register bit)).
 #    NotRnIsPc - Rn!=Pc.
+#    NotRnIsSp - Rn!=Sp.
 #
 # Safety constraints:
 #    RegsNotPc - All registers defined by instruction are not Pc (R15).
@@ -113,6 +114,7 @@ class BreakPointAndConstantPoolHead : Immediate16Use
 class Binary3RegisterImmedShiftedOpRegsNotPc : Binary3RegisterImmedShiftedOp
 class ForbiddenCondNop : UnsafeCondNop
 class LoadRegisterList : LoadStoreRegisterList      
+class LoadStoreVectorRegister : LoadStoreVectorOp
 class Load3RegisterDoubleOp : LoadStore3RegisterDoubleOp
 class Load2RegisterImm8DoubleOp : LoadStore2RegisterImm8DoubleOp
 class Load2RegisterImm8Op : LoadStore2RegisterImm8Op
@@ -1411,29 +1413,46 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 +-- ext_reg_load_store (A7.6)
 # LDC and STC instructions for coprocessors 10/11.
 #
-# Note: Currently, all instructions use use StoreCoprocessor or LoadCoprocessor.
-# This is to try and follow what the previous version of the ARM validator
-# did (except that the previous only used StoreCoprocessor).
+# TODO(karl): Decide if baseline classes should also be actual classes, once
+#             we finish fixing all uses of StoreCoprocessor and LoadCoprocessor.
 #
-# TODO(karl): Fix the class decoders to do the right thing.
+# Note: The following instructions handles both A1 and A2 forms of the
+# instruction, by matching coproc(11:8)=101x.
+#
 | opcode(24:20) Rn(19:16)
 | 0010x         -         -> ext_reg_transfers
-| 01x00         -         = StoreCoprocessor
-                            # VTSM A8-784 (increment after, no writeback).
-| 01x10         -         = StoreCoprocessor
-                            # VTSM A8-784 (increment after, writeback).
-| 1xx00         -         = StoreCoprocessor # VSTR A8-786
-| 10x10         ~1101     = StoreCoprocessor
-                            # VSTM A8-784 (decrement before, writeback).
-| "             1101      = StoreCoprocessor # VPUSH A8-696
-| 01x01         -         = LoadCoprocessor
-                            # VLDM A8-626 (increment after, no writeback).
-| 01x11         ~1101     = LoadCoprocessor
-                            # VLDM A8-626 (increment after, writeback)
-| "             1101      = LoadCoprocessor # VPOP A8-694
-| 1xx01         -         = LoadCoprocessor # VLDR A8-628
-| 10x11         -         = LoadCoprocessor
-                            # VLDM A8-626 (decrement before, writeback).
+| 01x00         -         = LoadStoreVectorRegisterList
+                            Vstm_Rule_399_A1_A2_P784
+                            cccc11001d00nnnndddd101xiiiiiiii
+| 01x10         -         = LoadStoreVectorRegisterList
+                            Vstm_Rule_399_A1_A2_P784
+                            cccc11001d10nnnndddd101xiiiiiiii
+| 1xx00         -         = LoadStoreVectorRegister
+                            Vstr_Rule_400_A1_A2_P786
+                            cccc1101ud00nnnndddd101xiiiiiiii
+| 10x10         ~1101     = LoadStoreVectorRegisterList
+                            Vstm_Rule_399_A1_A2_P784
+                            cccc11010d10nnnndddd101xiiiiiiii
+                            NotRnIsSp
+| "             1101      = LoadStoreVectorRegisterList
+                            Vpush_355_A1_A2_P694
+                            cccc11010d101101dddd101xiiiiiiii
+| 01x01         -         = LoadStoreVectorRegisterList
+                            Vldm_Rule_319_A1_A2_P626
+                            cccc11001d01nnnndddd101xiiiiiiii
+| 01x11         ~1101     = LoadStoreVectorRegisterList
+                            Vldm_Rule_319_A1_A2_P626
+                            cccc11001d11nnnndddd101xiiiiiiii
+                            NotRnIsSp
+| "             1101      = LoadStoreVectorRegisterList
+                            Vpop_Rule_354_A1_A2_P694
+                            cccc11001d111101dddd101xiiiiiiii
+| 1xx01         -         = LoadStoreVectorRegister
+                            Vldr_Rule_320_A1_A2_P628
+                            cccc1101ud01nnnndddd101xiiiiiiii
+| 10x11         -         = LoadStoreVectorRegisterList
+                            Vldm_Rule_318_A1_A2_P626
+                            cccc11010d11nnnndddd101xiiiiiiii
 +--
 
 +-- ext_reg_move (A7.8 page A7-31)

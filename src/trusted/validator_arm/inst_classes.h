@@ -279,6 +279,17 @@ class RegT2Bits12To15Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(RegT2Bits12To15Interface);
 };
 
+// Interface class to pull out a binary immediate value from bit 22.
+class Imm1Bit22Interface {
+ public:
+  static inline uint32_t value(const Instruction& i) {
+    return i.Bits(22, 22);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm1Bit22Interface);
+};
+
 // Interface class to pull out an immediate value in bits 0 through 3.
 class Imm4Bits0To3Interface {
  public:
@@ -288,6 +299,21 @@ class Imm4Bits0To3Interface {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm4Bits0To3Interface);
+};
+
+// Interface class to pull out an immediate value in bits 0 through 7.
+class Imm8Bits0To7Interface {
+ public:
+  static inline uint32_t value(const Instruction& i) {
+    return i.Bits(7, 0);
+  }
+  // Returns if the value is even.
+  static inline bool IsEven(const Instruction& i) {
+    return (value(i) & 0x1) == 0;
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm8Bits0To7Interface);
 };
 
 // Interface class to pull out an immediate value in bits 0 through 11.
@@ -722,6 +748,31 @@ class Unpredictable : public UnsafeClassDecoder {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Unpredictable);
+};
+
+// Defines the base class for all coprocessor instructions. We only
+// only allow coprocessors 101x, which defined VFP operations.
+// +----------------------------------------+--------+----------------+
+// |3130292827262524232221201918171615141312|1110 9 8| 7 6 5 4 3 2 1 0|
+// +----------------------------------------+--------+----------------+
+// |                                        | coproc |                |
+// +----------------------------------------+--------+----------------+
+// Also doesn't permit updates to PC.
+
+class CoprocessorOp : public ClassDecoder {
+ public:
+  // Accessor to non-vector register fields.
+  static const Imm4Bits8To11Interface coproc;
+
+  inline CoprocessorOp() {}
+  virtual ~CoprocessorOp() {}
+
+  virtual SafetyLevel safety(Instruction i) const;
+  // Default assumes defs={}
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(CoprocessorOp);
 };
 
 }  // namespace

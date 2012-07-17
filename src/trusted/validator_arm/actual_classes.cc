@@ -190,15 +190,9 @@ bool MaskAddress::clears_bits(const Instruction i, uint32_t mask) const {
   return (imm12.get_modified_immediate(i) & mask) == mask;
 }
 
-SafetyLevel VfpOp::safety(const Instruction i) const {
-  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
-  switch (coproc.value(i)) {
-    default: return FORBIDDEN;
-
-    case 10:
-    case 11:  // NEON/VFP
-      return MAY_BE_SAFE;
-  }
+RegisterList VfpOp::defs(const Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return kCondsDontCare;
 }
 
 Register BasedAddressUsingRn::base_address_register(Instruction i) const {
@@ -644,7 +638,7 @@ Register VectorStore::base_address_register(Instruction i) const {
 
 
 // Coprocessors
-
+/*
 SafetyLevel CoprocessorOp::safety(Instruction i) const {
   if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
   switch (CoprocIndex(i)) {
@@ -655,13 +649,14 @@ SafetyLevel CoprocessorOp::safety(Instruction i) const {
       return MAY_BE_SAFE;
   }
 }
+*/
 
 RegisterList LoadCoprocessor::defs(Instruction i) const {
   return immediate_addressing_defs(i);
 }
 
 RegisterList LoadCoprocessor::immediate_addressing_defs(Instruction i) const {
-  return RegisterList(WritesFlag(i) ? Rn(i) : kRegisterNone);
+  return RegisterList(writes.IsDefined(i) ? Rn(i) : kRegisterNone);
 }
 
 RegisterList StoreCoprocessor::defs(Instruction i) const {
@@ -669,7 +664,8 @@ RegisterList StoreCoprocessor::defs(Instruction i) const {
 }
 
 RegisterList StoreCoprocessor::immediate_addressing_defs(Instruction i) const {
-  return RegisterList(WritesFlag(i) ? base_address_register(i) : kRegisterNone);
+  return RegisterList(writes.IsDefined(i)
+                      ? base_address_register(i) : kRegisterNone);
 }
 
 Register StoreCoprocessor::base_address_register(Instruction i) const {

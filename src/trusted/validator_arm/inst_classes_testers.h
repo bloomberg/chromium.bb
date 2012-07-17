@@ -1037,10 +1037,98 @@ class LoadStoreRegisterListTester : public CondDecoderTester {
       const NamedClassDecoder& decoder);
 
  protected:
-  nacl_arm_dec::LoadStoreRegisterList expected_decoder;
+  nacl_arm_dec::LoadStoreRegisterList expected_decoder_;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(LoadStoreRegisterListTester);
+};
+
+// Tests decoder class LoadStoreVectorOp
+// Models a vector load/store of vector registers into/out of memory.
+// Op{mode}<c><q> {,<size>} <Rn>!, <register list>
+// Op<c> <Dd>, [<Rn>{, #+/-<imm8>}]
+// Op<c> <Sd>, [<Rn>{, #+/-<imm8>}]
+// +--------+------+--+--+--+--+--+--------+--------+--------+----------------+
+// |31302928|272625|24|23|22|21|20|19181716|15141312|1110 9 8| 7 6 5 4 3 2 1 0|
+// +--------+------+--+--+--+--+--+--------+--------+--------+----------------+
+// |  cond  |      | P| U| D| W|  |   Rn   |   Vd   | coproc |      imm8      |
+// +--------+------+--+--+--+--+--+--------+--------+--------+----------------+
+// coproc=1010 implies register size is 32-bit.
+// coproc=1011 implies register size is 64-bit.
+// <Rn> Is the base register defining the memory to use.
+// <Vd>:D defines the first D (vector) register in this operation if
+//     coproc=1010. coproc=1010 implies the register size is 64-bit.
+// D:<Vd> defines the first D (vector) register in this operation if
+//    coproc=1011. coproc=1011 implies the register size is 32-bit
+//
+// NaCl Constraints:
+//    Rn!=Pc.
+class LoadStoreVectorOpTester : public CondVfpOpTester {
+ public:
+  explicit LoadStoreVectorOpTester(const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::LoadStoreVectorOp expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStoreVectorOpTester);
+};
+
+// Tests decoder class LoadStoreVectorRegisterList.
+// Models a vector load/store of multiple vector registers into/out of memory.
+// Op{mode}<c><q> {,<size>} <Rn>!, <register list>
+//
+// See base class LoadStoreVectorOpTester for layout of this instruction.
+//
+// <mode> in { IA , DB } where IA implies P=0 and U=1,
+//                       and DB implies P=1 and U=0
+// <size> in { 32 , 64 } defines the number of registers in the register list.
+// <Rn> Is the base register defining the memory to use.
+// <register list> is a list of consecutively numbered registers defining
+//        the vector registers to use (the list is defined by <Vd>, D,
+//        and <imm8>).
+// <Vd>:D defines the first register in the register list.
+// <imm8> defines how many registers are to be updated.
+//
+// Constraints:
+//    P=U && W=1 then undefined.
+//    if Rn=15  && (W=1 || CurrentInstSet() != ARM) then UNPREDICTABLE.
+//    if imm8=0 || (Vd+imm8) > 32 then UNPREDICTABLE.
+//    if coproc=1011 and imm8 > 16 then UNPREDICTABLE.
+// NaCl Constraints:
+//    Rn!=Pc.
+// Note: Legal combinations of PUW: { 010 , 011, 101 }
+class LoadStoreVectorRegisterListTester : public LoadStoreVectorOpTester {
+ public:
+  explicit LoadStoreVectorRegisterListTester(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::LoadStoreVectorRegisterList expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStoreVectorRegisterListTester);
+};
+
+// Implements a decoder tester for decoder LoadStoreVectorRegisterList
+// where register Rn is not SP.
+class LoadStoreVectorRegisterListTesterNotRnIsSp
+    : public LoadStoreVectorRegisterListTester {
+ public:
+  explicit LoadStoreVectorRegisterListTesterNotRnIsSp(
+      const NamedClassDecoder& decoder);
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStoreVectorRegisterListTesterNotRnIsSp);
 };
 
 // Models a 3-register load/store operation of the forms:

@@ -1145,6 +1145,48 @@ class LoadRegisterList_Ldmib_Ldmed_Rule_56_A1_P116
   virtual ~LoadRegisterList_Ldmib_Ldmed_Rule_56_A1_P116() {}
 };
 
+class LoadStoreVectorRegister_Vldr_Rule_320_A1_A2_P628
+    : public LoadStoreVectorRegister {
+ public:
+  virtual ~LoadStoreVectorRegister_Vldr_Rule_320_A1_A2_P628() {}
+};
+
+class LoadStoreVectorRegister_Vstr_Rule_400_A1_A2_P786
+    : public LoadStoreVectorRegister {
+ public:
+  virtual ~LoadStoreVectorRegister_Vstr_Rule_400_A1_A2_P786() {}
+};
+
+class LoadStoreVectorRegisterList_Vldm_Rule_318_A1_A2_P626
+    : public LoadStoreVectorRegisterList {
+ public:
+  virtual ~LoadStoreVectorRegisterList_Vldm_Rule_318_A1_A2_P626() {}
+};
+
+class LoadStoreVectorRegisterList_Vldm_Rule_319_A1_A2_P626
+    : public LoadStoreVectorRegisterList {
+ public:
+  virtual ~LoadStoreVectorRegisterList_Vldm_Rule_319_A1_A2_P626() {}
+};
+
+class LoadStoreVectorRegisterList_Vpop_Rule_354_A1_A2_P694
+    : public LoadStoreVectorRegisterList {
+ public:
+  virtual ~LoadStoreVectorRegisterList_Vpop_Rule_354_A1_A2_P694() {}
+};
+
+class LoadStoreVectorRegisterList_Vpush_355_A1_A2_P694
+    : public LoadStoreVectorRegisterList {
+ public:
+  virtual ~LoadStoreVectorRegisterList_Vpush_355_A1_A2_P694() {}
+};
+
+class LoadStoreVectorRegisterList_Vstm_Rule_399_A1_A2_P784
+    : public LoadStoreVectorRegisterList {
+ public:
+  virtual ~LoadStoreVectorRegisterList_Vstm_Rule_399_A1_A2_P784() {}
+};
+
 class MaskedBinary2RegisterImmediateOp_Bic_Rule_19_A1_P50
     : public MaskedBinary2RegisterImmediateOp {
  public:
@@ -5281,6 +5323,97 @@ class NamedLoadRegisterList_Ldmib_Ldmed_Rule_56_A1_P116
  private:
   nacl_arm_dec::LoadRegisterList_Ldmib_Ldmed_Rule_56_A1_P116 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadRegisterList_Ldmib_Ldmed_Rule_56_A1_P116);
+};
+
+class NamedLoadStoreVectorRegister_Vldr_Rule_320_A1_A2_P628
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoadStoreVectorRegister_Vldr_Rule_320_A1_A2_P628()
+    : NamedClassDecoder(decoder_, "LoadStoreVectorRegister Vldr_Rule_320_A1_A2_P628")
+  {}
+  virtual ~NamedLoadStoreVectorRegister_Vldr_Rule_320_A1_A2_P628() {}
+
+ private:
+  nacl_arm_dec::LoadStoreVectorRegister_Vldr_Rule_320_A1_A2_P628 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadStoreVectorRegister_Vldr_Rule_320_A1_A2_P628);
+};
+
+class NamedLoadStoreVectorRegister_Vstr_Rule_400_A1_A2_P786
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoadStoreVectorRegister_Vstr_Rule_400_A1_A2_P786()
+    : NamedClassDecoder(decoder_, "LoadStoreVectorRegister Vstr_Rule_400_A1_A2_P786")
+  {}
+  virtual ~NamedLoadStoreVectorRegister_Vstr_Rule_400_A1_A2_P786() {}
+
+ private:
+  nacl_arm_dec::LoadStoreVectorRegister_Vstr_Rule_400_A1_A2_P786 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadStoreVectorRegister_Vstr_Rule_400_A1_A2_P786);
+};
+
+class NamedLoadStoreVectorRegisterList_Vldm_Rule_318_A1_A2_P626
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoadStoreVectorRegisterList_Vldm_Rule_318_A1_A2_P626()
+    : NamedClassDecoder(decoder_, "LoadStoreVectorRegisterList Vldm_Rule_318_A1_A2_P626")
+  {}
+  virtual ~NamedLoadStoreVectorRegisterList_Vldm_Rule_318_A1_A2_P626() {}
+
+ private:
+  nacl_arm_dec::LoadStoreVectorRegisterList_Vldm_Rule_318_A1_A2_P626 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadStoreVectorRegisterList_Vldm_Rule_318_A1_A2_P626);
+};
+
+class NamedLoadStoreVectorRegisterList_Vldm_Rule_319_A1_A2_P626
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoadStoreVectorRegisterList_Vldm_Rule_319_A1_A2_P626()
+    : NamedClassDecoder(decoder_, "LoadStoreVectorRegisterList Vldm_Rule_319_A1_A2_P626")
+  {}
+  virtual ~NamedLoadStoreVectorRegisterList_Vldm_Rule_319_A1_A2_P626() {}
+
+ private:
+  nacl_arm_dec::LoadStoreVectorRegisterList_Vldm_Rule_319_A1_A2_P626 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadStoreVectorRegisterList_Vldm_Rule_319_A1_A2_P626);
+};
+
+class NamedLoadStoreVectorRegisterList_Vpop_Rule_354_A1_A2_P694
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoadStoreVectorRegisterList_Vpop_Rule_354_A1_A2_P694()
+    : NamedClassDecoder(decoder_, "LoadStoreVectorRegisterList Vpop_Rule_354_A1_A2_P694")
+  {}
+  virtual ~NamedLoadStoreVectorRegisterList_Vpop_Rule_354_A1_A2_P694() {}
+
+ private:
+  nacl_arm_dec::LoadStoreVectorRegisterList_Vpop_Rule_354_A1_A2_P694 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadStoreVectorRegisterList_Vpop_Rule_354_A1_A2_P694);
+};
+
+class NamedLoadStoreVectorRegisterList_Vpush_355_A1_A2_P694
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoadStoreVectorRegisterList_Vpush_355_A1_A2_P694()
+    : NamedClassDecoder(decoder_, "LoadStoreVectorRegisterList Vpush_355_A1_A2_P694")
+  {}
+  virtual ~NamedLoadStoreVectorRegisterList_Vpush_355_A1_A2_P694() {}
+
+ private:
+  nacl_arm_dec::LoadStoreVectorRegisterList_Vpush_355_A1_A2_P694 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadStoreVectorRegisterList_Vpush_355_A1_A2_P694);
+};
+
+class NamedLoadStoreVectorRegisterList_Vstm_Rule_399_A1_A2_P784
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoadStoreVectorRegisterList_Vstm_Rule_399_A1_A2_P784()
+    : NamedClassDecoder(decoder_, "LoadStoreVectorRegisterList Vstm_Rule_399_A1_A2_P784")
+  {}
+  virtual ~NamedLoadStoreVectorRegisterList_Vstm_Rule_399_A1_A2_P784() {}
+
+ private:
+  nacl_arm_dec::LoadStoreVectorRegisterList_Vstm_Rule_399_A1_A2_P784 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadStoreVectorRegisterList_Vstm_Rule_399_A1_A2_P784);
 };
 
 class NamedMaskedBinary2RegisterImmediateOp_Bic_Rule_19_A1_P50

@@ -400,7 +400,7 @@ class MaskAddress : public Defs12To15 {
 //
 // Coprocessor ops with visible side-effects on the APSR conditions flags, or
 // general purpose register should extend and override this.
-class VfpOp : public DontCareInst {
+class VfpOp : public CoprocessorOp {
  public:
   // Accessor to non-vector register fields.
   static const Imm4Bits8To11Interface coproc;
@@ -408,7 +408,8 @@ class VfpOp : public DontCareInst {
   inline VfpOp() {}
   virtual ~VfpOp() {}
 
-  virtual SafetyLevel safety(Instruction i) const;
+  // Default assumes the coprocessor instruction acts like a DontCareInst.
+  virtual RegisterList defs(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(VfpOp);
@@ -1008,6 +1009,8 @@ class VectorLoad : public OldClassDecoder {
 // VST1(single), VST2(single), VST3(single), VST4(single)
 class VectorStore : public OldClassDecoder {
  public:
+  static const WritesBit21Interface writes;
+
   inline VectorStore() {}
   virtual ~VectorStore() {}
 
@@ -1037,6 +1040,7 @@ class VectorStore : public OldClassDecoder {
 //
 // Coprocessor ops with visible side-effects on the APSR conditions flags, or
 // general purpose register should extend and override this.
+/*
 class CoprocessorOp : public OldClassDecoder {
  public:
   inline CoprocessorOp() {}
@@ -1055,6 +1059,7 @@ class CoprocessorOp : public OldClassDecoder {
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(CoprocessorOp);
 };
+*/
 
 // LDC/LDC2, which load data from memory directly into a coprocessor.
 // The only visible side effect of this is optional indexing writeback,
@@ -1066,6 +1071,8 @@ class CoprocessorOp : public OldClassDecoder {
 // LDC(literal), LDC2(literal)
 class LoadCoprocessor : public CoprocessorOp {
  public:
+  static const WritesBit21Interface writes;
+
   inline LoadCoprocessor() {}
   virtual ~LoadCoprocessor() {}
 
@@ -1089,6 +1096,8 @@ class LoadCoprocessor : public CoprocessorOp {
 // whitelist certain cases of this on known coprocessor types (see the impl).
 class StoreCoprocessor : public CoprocessorOp {
  public:
+  static const WritesBit21Interface writes;
+
   inline StoreCoprocessor() {}
   virtual ~StoreCoprocessor() {}
 

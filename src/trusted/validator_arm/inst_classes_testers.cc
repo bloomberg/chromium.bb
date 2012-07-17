@@ -1246,18 +1246,85 @@ ApplySanityChecks(Instruction inst,
   NC_PRECOND(CondDecoderTester::ApplySanityChecks(inst, decoder));
 
   // Check Registers and flags used.
-  EXPECT_TRUE(expected_decoder.n.reg(inst).Equals(inst.Reg(19, 16)));
-  EXPECT_EQ(expected_decoder.wback.IsDefined(inst), inst.Bit(21));
-  EXPECT_EQ(expected_decoder.register_list.value(inst), inst.Bits(15, 0));
+  EXPECT_TRUE(expected_decoder_.n.reg(inst).Equals(inst.Reg(19, 16)));
+  EXPECT_EQ(expected_decoder_.wback.IsDefined(inst), inst.Bit(21));
+  EXPECT_EQ(expected_decoder_.register_list.value(inst), inst.Bits(15, 0));
 
   // Other ARM constraints about this instruction.
-  EXPECT_FALSE(expected_decoder.n.reg(inst).Equals(kRegisterPc))
+  EXPECT_FALSE(expected_decoder_.n.reg(inst).Equals(kRegisterPc))
       << "Expected UNPREDICTABLE for " << InstContents();
   EXPECT_NE(static_cast<uint32_t>(0),
-            expected_decoder.register_list.value(inst))
+            expected_decoder_.register_list.value(inst))
       << "Expected UNPREDICTABLE for " << InstContents();
 
   return true;
+}
+
+// LoadStoreVectorOpTester
+LoadStoreVectorOpTester::LoadStoreVectorOpTester(
+    const NamedClassDecoder& decoder)
+    : CondVfpOpTester(decoder) {}
+
+bool LoadStoreVectorOpTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  // Check if expected class name (etc) is found.
+  NC_PRECOND(CondVfpOpTester::ApplySanityChecks(inst, decoder));
+
+  // Check registers and flags used.
+  EXPECT_EQ(expected_decoder_.imm8.value(inst), inst.Bits(7, 0));
+  EXPECT_TRUE(expected_decoder_.vd.reg(inst).Equals(inst.Reg(15, 12)));
+  EXPECT_TRUE(expected_decoder_.n.reg(inst).Equals(inst.Reg(19, 16)));
+  EXPECT_EQ(expected_decoder_.wback.IsDefined(inst), inst.Bit(21));
+  EXPECT_EQ(expected_decoder_.d_bit.value(inst), inst.Bits(22, 22));
+  EXPECT_EQ(expected_decoder_.direction.IsAdd(inst), inst.Bit(23));
+  EXPECT_EQ(expected_decoder_.indexing.IsDefined(inst), inst.Bit(24));
+
+  // Other NaCl constraints.
+  EXPECT_FALSE(expected_decoder_.n.reg(inst).Equals(kRegisterPc))
+      << "Expected UNPREDICTABLE for " << InstContents();
+
+  return true;
+}
+
+// LoadStoreVectorRegisterListTester
+LoadStoreVectorRegisterListTester::LoadStoreVectorRegisterListTester(
+    const NamedClassDecoder& decoder)
+    : LoadStoreVectorOpTester(decoder) {}
+
+bool LoadStoreVectorRegisterListTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  // Check if expected class name (etc) is found.
+  NC_PRECOND(LoadStoreVectorOpTester::ApplySanityChecks(inst, decoder));
+
+  // Other ARM constraints about this instruction.
+  EXPECT_NE(expected_decoder_.NumRegisters(inst), static_cast<uint32_t>(0))
+      << "Expected UNPREDICTABLE for " << InstContents();
+  EXPECT_LE(expected_decoder_.FirstReg(inst).number()
+            + expected_decoder_.imm8.value(inst),
+            static_cast<uint32_t>(32)) << InstContents();
+  uint32_t puw =
+      (static_cast<uint32_t>(expected_decoder_.indexing.IsDefined(inst)) << 2) +
+      (static_cast<uint32_t>(expected_decoder_.direction.IsAdd(inst)) << 1) +
+      static_cast<uint32_t>(expected_decoder_.wback.IsDefined(inst));
+  bool valid_puw = (puw == 2) || (puw == 3) || (puw == 5);
+  EXPECT_TRUE(valid_puw) << InstContents();
+
+  return true;
+}
+
+// LoadStoreVectorRegisterListTesterNotRnIsSp
+LoadStoreVectorRegisterListTesterNotRnIsSp::
+LoadStoreVectorRegisterListTesterNotRnIsSp(const NamedClassDecoder& decoder)
+    : LoadStoreVectorRegisterListTester(decoder) {}
+
+bool LoadStoreVectorRegisterListTesterNotRnIsSp::PassesParsePreconditions(
+    Instruction inst,
+    const NamedClassDecoder& decoder) {
+  NC_PRECOND(!expected_decoder_.n.reg(inst).Equals(kRegisterStack));
+  return LoadStoreVectorRegisterListTester::PassesParsePreconditions(
+      inst, decoder);
 }
 
 // LoadStore3RegisterOpTester

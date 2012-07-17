@@ -58,4 +58,21 @@ uint32_t Imm12Bits0To11Interface::get_modified_immediate(Instruction i) {
   return (value >> rotation) | (value << (32 - rotation));
 }
 
+// CoprocessorOp
+SafetyLevel CoprocessorOp::safety(const Instruction i) const {
+  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+  switch (coproc.value(i)) {
+    default: return FORBIDDEN;
+
+    case 10:
+    case 11:  // NEON/VFP
+      return MAY_BE_SAFE;
+  }
+}
+
+RegisterList CoprocessorOp::defs(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return RegisterList();
+}
+
 }  // namespace

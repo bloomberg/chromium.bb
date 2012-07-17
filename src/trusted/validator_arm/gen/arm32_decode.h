@@ -181,6 +181,8 @@ class Arm32DecoderState : DecoderState {
   const LoadBasedOffsetMemoryDouble LoadBasedOffsetMemoryDouble_instance_;
   const LoadCoprocessor LoadCoprocessor_instance_;
   const LoadMultiple LoadMultiple_instance_;
+  const LoadStoreVectorRegister LoadStoreVectorRegister_instance_;
+  const LoadStoreVectorRegisterList LoadStoreVectorRegisterList_instance_;
   const MaskAddress MaskAddress_instance_;
   const MoveDoubleFromCoprocessor MoveDoubleFromCoprocessor_instance_;
   const MoveFromCoprocessor MoveFromCoprocessor_instance_;
