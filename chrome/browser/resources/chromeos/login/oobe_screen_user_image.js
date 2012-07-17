@@ -53,6 +53,8 @@ cr.define('oobe', function() {
       var imageGrid = $('user-image-grid');
       UserImagesGrid.decorate(imageGrid);
 
+      imageGrid.previewElement = $('user-image-preview');
+
       imageGrid.addEventListener('select',
                                  this.handleSelect_.bind(this));
       imageGrid.addEventListener('activate',
