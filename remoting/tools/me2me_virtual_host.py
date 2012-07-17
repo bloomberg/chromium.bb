@@ -246,12 +246,11 @@ class Host:
 class Desktop:
   """Manage a single virtual desktop"""
 
-  def __init__(self, width, height):
+  def __init__(self, sizes):
     self.x_proc = None
     self.session_proc = None
     self.host_proc = None
-    self.width = width
-    self.height = height
+    self.sizes = sizes
     g_desktops.append(self)
 
   @staticmethod
@@ -264,14 +263,18 @@ class Desktop:
     return display
 
   def launch_x_server(self, extra_x_args):
+    devnull = open(os.devnull, "rw")
     display = self.get_unused_display_number()
     ret_code = subprocess.call("xauth add :%d . `mcookie`" % display,
                                shell=True)
     if ret_code != 0:
       raise Exception("xauth failed with code %d" % ret_code)
 
+    max_width = max([width for width, height in self.sizes])
+    max_height = max([height for width, height in self.sizes])
+
     logging.info("Starting Xvfb on display :%d" % display);
-    screen_option = "%dx%dx24" % (self.width, self.height)
+    screen_option = "%dx%dx24" % (max_width, max_height)
     self.x_proc = subprocess.Popen(["Xvfb", ":%d" % display,
                                     "-noreset",
                                     "-auth", X_AUTH_FILE,
@@ -299,8 +302,7 @@ class Desktop:
 
     # Wait for X to be active.
     for test in range(5):
-      proc = subprocess.Popen("xdpyinfo > /dev/null", env=self.child_env,
-                              shell=True)
+      proc = subprocess.Popen("xdpyinfo", env=self.child_env, stdout=devnull)
       pid, retcode = os.waitpid(proc.pid, 0)
       if retcode == 0:
         break
@@ -321,6 +323,32 @@ class Desktop:
     pid, retcode = os.waitpid(proc.pid, 0)
     if retcode != 0:
       logging.error("Failed to set XKB to 'evdev'")
+
+    # Register the screen sizes if the X server's RANDR extension supports it.
+    # Errors here are non-fatal; the X server will continue to run with the
+    # dimensions from the "-screen" option.
+    for width, height in self.sizes:
+      label = "%dx%d" % (width, height)
+      args = ["xrandr", "--newmode", label, "0", str(width), "0", "0", "0",
+              str(height), "0", "0", "0"]
+      proc = subprocess.Popen(args, env=self.child_env, stdout=devnull,
+                              stderr=devnull)
+      proc.wait()
+      args = ["xrandr", "--addmode", "screen", label]
+      proc = subprocess.Popen(args, env=self.child_env, stdout=devnull,
+                              stderr=devnull)
+      proc.wait()
+
+    # Set the initial mode to the first size specified, otherwise the X server
+    # would default to (max_width, max_height), which might not even be in the
+    # list.
+    label = "%dx%d" % self.sizes[0]
+    args = ["xrandr", "-s", label]
+    proc = subprocess.Popen(args, env=self.child_env, stdout=devnull,
+                            stderr=devnull)
+    proc.wait()
+
+    devnull.close()
 
   def launch_x_session(self):
     # Start desktop session
@@ -528,10 +556,14 @@ def signal_handler(signum, stackframe):
 
 
 def main():
+  DEFAULT_SIZE = "1280x1024"
   parser = optparse.OptionParser(
       "Usage: %prog [options] [ -- [ X server options ] ]")
-  parser.add_option("-s", "--size", dest="size", default="1280x1024",
-                    help="dimensions of virtual desktop (default: %default)")
+  parser.add_option("-s", "--size", dest="size", action="append",
+                    help="dimensions of virtual desktop (default: %s). "
+                    "This can be specified multiple times to make multiple "
+                    "screen resolutions available (if the Xvfb server "
+                    "supports this)" % DEFAULT_SIZE)
   parser.add_option("-f", "--foreground", dest="foreground", default=False,
                     action="store_true",
                     help="don't run as a background daemon")
@@ -547,10 +579,6 @@ def main():
   parser.add_option("", "--explicit-config", dest="explicit_config",
                     help="explicitly specify content of the config")
   (options, args) = parser.parse_args()
-
-  size_components = options.size.split("x")
-  if len(size_components) != 2:
-    parser.error("Incorrect size format, should be WIDTHxHEIGHT");
 
   host_hash = hashlib.md5(socket.gethostname()).hexdigest()
   pid_filename = os.path.join(CONFIG_DIR, "host#%s.pid" % host_hash)
@@ -568,16 +596,27 @@ def main():
       os.kill(pid, signal.SIGTERM)
     return 0
 
-  try:
-    width = int(size_components[0])
-    height = int(size_components[1])
+  if not options.size:
+    options.size = [DEFAULT_SIZE]
 
-    # Enforce minimum desktop size, as a sanity-check.  The limit of 100 will
-    # detect typos of 2 instead of 3 digits.
-    if width < 100 or height < 100:
-      raise ValueError
-  except ValueError:
-    parser.error("Width and height should be 100 pixels or greater")
+  sizes = []
+  for size in options.size:
+    size_components = size.split("x")
+    if len(size_components) != 2:
+      parser.error("Incorrect size format '%s', should be WIDTHxHEIGHT" % size)
+
+    try:
+      width = int(size_components[0])
+      height = int(size_components[1])
+
+      # Enforce minimum desktop size, as a sanity-check.  The limit of 100 will
+      # detect typos of 2 instead of 3 digits.
+      if width < 100 or height < 100:
+        raise ValueError
+    except ValueError:
+      parser.error("Width and height should be 100 pixels or greater")
+
+    sizes.append((width, height))
 
   atexit.register(cleanup)
 
@@ -667,7 +706,7 @@ def main():
 
   logging.info("Using host_id: " + host.host_id)
 
-  desktop = Desktop(width, height)
+  desktop = Desktop(sizes)
 
   # Remember the time when the last session was launched, in order to enforce
   # a minimum time between launches.  This avoids spinning in case of a
