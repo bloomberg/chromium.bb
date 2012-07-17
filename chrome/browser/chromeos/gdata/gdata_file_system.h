@@ -415,7 +415,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                  const GURL& document_url);
 
   // Callback for handling document copy attempt.
-  void OnCopyDocumentCompleted(const FilePathUpdateCallback& callback,
+  void OnCopyDocumentCompleted(const FilePath& dir_path,
+                               const FileOperationCallback& callback,
                                GDataErrorCode status,
                                scoped_ptr<base::Value> data);
 
@@ -489,11 +490,10 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const FilePath& file_path, const FilePath::StringType& new_name,
       FilePath* updated_file_path);
 
-  // Adds a file or directory at |file_path| to another directory at
-  // |dir_path| on in-memory snapshot of the file system.
-  // Returns PLATFORM_FILE_OK if successful.
+  // Adds an |entry| to another directory at |dir_path| on in-memory snapshot
+  // of the file system. Returns PLATFORM_FILE_OK if successful.
   GDataFileError AddEntryToDirectoryOnFilesystem(
-      const FilePath& file_path, const FilePath& dir_path);
+      GDataEntry* entry, const FilePath& dir_path);
 
   // Removes a file or directory at |file_path| from another directory at
   // |dir_path| on in-memory snapshot of the file system.

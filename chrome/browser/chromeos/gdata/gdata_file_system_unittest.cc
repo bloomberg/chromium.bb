@@ -18,6 +18,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -102,7 +103,7 @@ void DriveSearchCallback(
 
 // Action used to set mock expectations for
 // DocumentsService::GetDocumentEntry().
-ACTION_P2(MockGetDocumentEntryCallback, status, value) {
+ACTION_P2(MockGetDocumentEntry, status, value) {
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
       base::Bind(arg1, status, base::Passed(value)));
 }
@@ -120,6 +121,14 @@ ACTION_P4(MockUploadExistingFile,
 
   const int kUploadId = 123;
   return kUploadId;
+}
+
+// Action used to set mock expectations for
+// GDataFileSystem::CopyDocument().
+ACTION_P2(MockCopyDocument, status, value) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(arg2, status, base::Passed(value)));
 }
 
 // Returns the absolute path for a test file stored under
@@ -663,7 +672,7 @@ class GDataFileSystemTest : public testing::Test {
   void SetExpectationsForGetDocumentEntry(scoped_ptr<base::Value>* document,
                                           const std::string& resource_id) {
     EXPECT_CALL(*mock_doc_service_, GetDocumentEntry(resource_id, _))
-        .WillOnce(MockGetDocumentEntryCallback(gdata::HTTP_SUCCESS, document));
+        .WillOnce(MockGetDocumentEntry(gdata::HTTP_SUCCESS, document));
   }
 
   // Loads serialized proto file from GCache, and makes sure the root
@@ -1265,13 +1274,60 @@ TEST_F(GDataFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
       local_src_file_path, remote_dest_file_path, callback);
   test_util::RunBlockingPoolTask();
 
+  EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
+
   // Now the remote file should exist.
   EXPECT_TRUE(EntryExists(remote_dest_file_path));
 }
 
-// TODO(satorux): Write this test. crbug.com/137526
-// TEST_F(GDataFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
-// }
+TEST_F(GDataFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
+  LoadRootFeedDocument("root_feed.json");
+
+  // Prepare a local file, which is a json file of a hosted document, which
+  // matches "Document 1" in root_feed.json.
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  const FilePath local_src_file_path = temp_dir.path().Append("local.gdoc");
+  const std::string kEditUrl =
+      "https://3_document_self_link/document:5_document_resource_id";
+  const std::string kResourceId = "document:5_document_resource_id";
+  const std::string kContent =
+      base::StringPrintf("{\"url\": \"%s\", \"resource_id\": \"%s\"}",
+                         kEditUrl.c_str(), kResourceId.c_str());
+  file_util::WriteFile(local_src_file_path, kContent.data(), kContent.size());
+
+  // Confirm that the remote file does not exist.
+  const FilePath remote_dest_file_path(
+      FILE_PATH_LITERAL("drive/Directory 1/Document 1.gdoc"));
+  EXPECT_FALSE(EntryExists(remote_dest_file_path));
+
+  // We'll add a file to "Directory 1" directory on Drive.
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
+
+  // We'll copy a hosted document using CopyDocument.
+  // ".gdoc" suffix should be stripped when copying.
+  scoped_ptr<base::Value> document(LoadJSONFile("uploaded_document.json"));
+  EXPECT_CALL(*mock_doc_service_,
+              CopyDocument(kResourceId,
+                           FILE_PATH_LITERAL("Document 1"),
+                           _))
+      .WillOnce(MockCopyDocument(gdata::HTTP_SUCCESS, &document));
+
+  FileOperationCallback callback =
+      base::Bind(&CallbackHelper::FileOperationCallback,
+                 callback_helper_.get());
+
+  // Transfer the local file to Drive.
+  file_system_->TransferFileFromLocalToRemote(
+      local_src_file_path, remote_dest_file_path, callback);
+  test_util::RunBlockingPoolTask();
+
+  EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
+
+  // Now the remote file should exist.
+  EXPECT_TRUE(EntryExists(remote_dest_file_path));
+}
 
 TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
   LoadRootFeedDocument("root_feed.json");
