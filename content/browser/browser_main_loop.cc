@@ -22,6 +22,7 @@
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
+#include "content/browser/histogram_synchronizer.h"
 #include "content/browser/in_process_webkit/webkit_thread.h"
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/plugin_service_impl.h"
@@ -431,11 +432,6 @@ void BrowserMainLoop::CreateThreads() {
     }
   }
 
-  BrowserGpuChannelHostFactory::Initialize();
-#if defined(USE_AURA)
-  ImageTransportFactory::Initialize();
-#endif
-
   BrowserThreadsStarted();
 
   if (parts_.get())
@@ -600,6 +596,13 @@ void BrowserMainLoop::InitializeMainThread() {
 
 
 void BrowserMainLoop::BrowserThreadsStarted() {
+  HistogramSynchronizer::GetInstance();
+
+  content::BrowserGpuChannelHostFactory::Initialize();
+#if defined(USE_AURA)
+  ImageTransportFactory::Initialize();
+#endif
+
   // RDH needs the IO thread to be created.
   resource_dispatcher_host_.reset(new ResourceDispatcherHostImpl());
 
