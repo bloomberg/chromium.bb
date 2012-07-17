@@ -8,8 +8,8 @@
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_window_controller.h"
-#include "chrome/browser/extensions/extension_window_list.h"
+#include "chrome/browser/extensions/window_controller.h"
+#include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -188,7 +188,7 @@ void UIThreadExtensionFunction::SetRenderViewHost(
 // TODO(stevenjb): Replace this with GetExtensionWindowController().
 Browser* UIThreadExtensionFunction::GetCurrentBrowser() {
   // If the delegate has an associated browser, return it.
-  ExtensionWindowController* window_controller =
+  extensions::WindowController* window_controller =
       dispatcher()->delegate()->GetExtensionWindowController();
   if (window_controller) {
     Browser* browser = window_controller->GetBrowser();
@@ -214,19 +214,20 @@ Browser* UIThreadExtensionFunction::GetCurrentBrowser() {
   return browser;
 }
 
-ExtensionWindowController*
+extensions::WindowController*
 UIThreadExtensionFunction::GetExtensionWindowController() {
   // If the delegate has an associated window controller, return it.
-  ExtensionWindowController* window_controller =
+  extensions::WindowController* window_controller =
       dispatcher()->delegate()->GetExtensionWindowController();
   if (window_controller)
     return window_controller;
 
-  return ExtensionWindowList::GetInstance()->CurrentWindowForFunction(this);
+  return extensions::WindowControllerList::GetInstance()->
+      CurrentWindowForFunction(this);
 }
 
 bool UIThreadExtensionFunction::CanOperateOnWindow(
-    const ExtensionWindowController* window_controller) const {
+    const extensions::WindowController* window_controller) const {
   const extensions::Extension* extension = GetExtension();
   // |extension| is NULL for unit tests only.
   if (extension != NULL && !window_controller->IsVisibleToExtension(extension))

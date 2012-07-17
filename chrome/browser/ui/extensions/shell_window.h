@@ -16,7 +16,6 @@
 #include "content/public/common/console_message_level.h"
 #include "ui/gfx/rect.h"
 
-class ExtensionWindowController;
 class GURL;
 class Profile;
 class TabContents;
@@ -27,6 +26,7 @@ class WebContents;
 
 namespace extensions {
 class Extension;
+class WindowController;
 }
 
 // ShellWindow is the type of window used by platform apps. Shell windows
@@ -134,7 +134,7 @@ class ShellWindow : public content::NotificationObserver,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // ExtensionFunctionDispatcher::Delegate implementation.
-  virtual ExtensionWindowController* GetExtensionWindowController() const
+  virtual extensions::WindowController* GetExtensionWindowController() const
       OVERRIDE;
 
   // Message handlers.

@@ -94,14 +94,14 @@ base::LazyInstance<Static> g_global_io_data = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
-ExtensionWindowController*
-    ExtensionFunctionDispatcher::Delegate::GetExtensionWindowController()
+extensions::WindowController*
+ExtensionFunctionDispatcher::Delegate::GetExtensionWindowController()
     const {
   return NULL;
 }
 
 content::WebContents*
-    ExtensionFunctionDispatcher::Delegate::GetAssociatedWebContents() const {
+ExtensionFunctionDispatcher::Delegate::GetAssociatedWebContents() const {
   return NULL;
 }
 

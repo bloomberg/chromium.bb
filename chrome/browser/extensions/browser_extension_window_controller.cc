@@ -15,7 +15,7 @@
 
 BrowserExtensionWindowController::BrowserExtensionWindowController(
     Browser* browser)
-    : ExtensionWindowController(browser->window(), browser->profile()),
+    : extensions::WindowController(browser->window(), browser->profile()),
       browser_(browser) {
 }
 
@@ -37,7 +37,7 @@ std::string BrowserExtensionWindowController::GetWindowTypeText() const {
 
 base::DictionaryValue*
 BrowserExtensionWindowController::CreateWindowValue() const {
-  DictionaryValue* result = ExtensionWindowController::CreateWindowValue();
+  DictionaryValue* result = extensions::WindowController::CreateWindowValue();
   return result;
 }
 
@@ -54,7 +54,7 @@ bool BrowserExtensionWindowController::CanClose(Reason* reason) const {
   // Don't let an extension remove the window if the user is dragging tabs
   // in that window.
   if (!chrome::IsTabStripEditable(browser_)) {
-    *reason = ExtensionWindowController::REASON_NOT_EDITABLE;
+    *reason = extensions::WindowController::REASON_NOT_EDITABLE;
     return false;
   }
   return true;

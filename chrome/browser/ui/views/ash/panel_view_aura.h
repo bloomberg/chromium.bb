@@ -14,12 +14,15 @@
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/widget/widget_delegate.h"
 
-class ExtensionWindowController;
 class GURL;
 class Profile;
 
 namespace content {
 class WebContents;
+}
+
+namespace extensions {
+class WindowController;
 }
 
 namespace views {
@@ -54,7 +57,7 @@ class PanelViewAura : public views::NativeViewHost,
   void SetContentPreferredSize(const gfx::Size& size);
 
   const SessionID& session_id() const { return session_id_; }
-  ExtensionWindowController* extension_window_controller() const {
+  extensions::WindowController* extension_window_controller() const {
     return extension_window_controller_.get();
   }
 
@@ -101,7 +104,7 @@ class PanelViewAura : public views::NativeViewHost,
   scoped_ptr<internal::PanelHost> host_;
   // Unowned pointer to the widget.
   views::Widget* widget_;
-  scoped_ptr<ExtensionWindowController> extension_window_controller_;
+  scoped_ptr<extensions::WindowController> extension_window_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelViewAura);
 };

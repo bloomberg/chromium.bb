@@ -398,7 +398,7 @@ void TabHelper::OnImageLoaded(const gfx::Image& image,
   }
 }
 
-ExtensionWindowController* TabHelper::GetExtensionWindowController() const  {
+WindowController* TabHelper::GetExtensionWindowController() const  {
   content::WebContents* contents = web_contents();
   TabContentsIterator tab_iterator;
   for (; !tab_iterator.done(); ++tab_iterator) {

@@ -343,7 +343,8 @@ void ShellWindow::Observe(int type,
   }
 }
 
-ExtensionWindowController* ShellWindow::GetExtensionWindowController() const {
+extensions::WindowController*
+ShellWindow::GetExtensionWindowController() const {
   return NULL;
 }
 

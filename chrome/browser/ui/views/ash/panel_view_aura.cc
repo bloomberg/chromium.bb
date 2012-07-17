@@ -11,8 +11,7 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/extension_window_controller.h"
-#include "chrome/browser/extensions/extension_window_list.h"
+#include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
@@ -58,7 +57,7 @@ class PanelHost : public content::WebContentsDelegate,
   Profile* profile() const { return profile_; }
 
   // ExtensionFunctionDispatcher::Delegate overrides.
-  virtual ExtensionWindowController* GetExtensionWindowController()
+  virtual extensions::WindowController* GetExtensionWindowController()
       const OVERRIDE;
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
 
@@ -116,7 +115,7 @@ void PanelHost::Init(const GURL& url) {
       url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
 }
 
-ExtensionWindowController* PanelHost::GetExtensionWindowController() const {
+extensions::WindowController* PanelHost::GetExtensionWindowController() const {
   return panel_view_->extension_window_controller();
 }
 
@@ -179,12 +178,12 @@ void PanelHost::OnRequest(const ExtensionHostMsg_Request_Params& params) {
 ////////////////////////////////////////////////////////////////////////////////
 // PanelExtensionWindowController
 
-class PanelExtensionWindowController : public ExtensionWindowController {
+class PanelExtensionWindowController : public extensions::WindowController {
  public:
   PanelExtensionWindowController(PanelViewAura* panel_view,
                                  PanelHost* panel_host);
 
-  // Overriden from ExtensionWindowController:
+  // Overriden from extensions::WindowController:
   virtual int GetWindowId() const OVERRIDE;
   virtual std::string GetWindowTypeText() const OVERRIDE;
   virtual base::DictionaryValue* CreateWindowValue() const OVERRIDE;
@@ -205,7 +204,7 @@ class PanelExtensionWindowController : public ExtensionWindowController {
 PanelExtensionWindowController::PanelExtensionWindowController(
     PanelViewAura* panel_view,
     PanelHost* panel_host)
-    : ExtensionWindowController(panel_view, panel_host->profile()),
+    : extensions::WindowController(panel_view, panel_host->profile()),
       panel_view_(panel_view),
       panel_host_(panel_host) {
 }
@@ -220,7 +219,7 @@ std::string PanelExtensionWindowController::GetWindowTypeText() const {
 
 base::DictionaryValue*
 PanelExtensionWindowController::CreateWindowValue() const {
-  DictionaryValue* result = ExtensionWindowController::CreateWindowValue();
+  DictionaryValue* result = extensions::WindowController::CreateWindowValue();
   return result;
 }
 

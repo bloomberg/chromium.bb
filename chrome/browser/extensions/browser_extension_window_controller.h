@@ -5,15 +5,15 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_BROWSER_EXTENSION_WINDOW_CONTROLLER_H_
 #define CHROME_BROWSER_EXTENSIONS_BROWSER_EXTENSION_WINDOW_CONTROLLER_H_
 
-#include "chrome/browser/extensions/extension_window_controller.h"
+#include "chrome/browser/extensions/window_controller.h"
 
 class Browser;
 
-class BrowserExtensionWindowController : public ExtensionWindowController {
+class BrowserExtensionWindowController : public extensions::WindowController {
  public:
   explicit BrowserExtensionWindowController(Browser* browser);
 
-  // ExtensionWindowController implementation.
+  // extensions::WindowController implementation.
   virtual int GetWindowId() const OVERRIDE;
   virtual std::string GetWindowTypeText() const OVERRIDE;
   virtual base::DictionaryValue* CreateWindowValue() const OVERRIDE;

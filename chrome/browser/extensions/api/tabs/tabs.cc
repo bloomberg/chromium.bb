@@ -26,9 +26,9 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/extension_window_controller.h"
-#include "chrome/browser/extensions/extension_window_list.h"
 #include "chrome/browser/extensions/script_executor.h"
+#include "chrome/browser/extensions/window_controller.h"
+#include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
@@ -97,6 +97,8 @@ using content::Referrer;
 using content::RenderViewHost;
 using content::WebContents;
 using extensions::ScriptExecutor;
+using extensions::WindowController;
+using extensions::WindowControllerList;
 
 const int CaptureVisibleTabFunction::kDefaultQuality = 90;
 
@@ -149,16 +151,16 @@ bool GetBrowserFromWindowID(
 
 bool GetWindowFromWindowID(UIThreadExtensionFunction* function,
                            int window_id,
-                           ExtensionWindowController** controller) {
+                           WindowController** controller) {
   if (window_id == extension_misc::kCurrentWindowId) {
-    ExtensionWindowController* extension_window_controller =
+    WindowController* extension_window_controller =
         function->dispatcher()->delegate()->GetExtensionWindowController();
     // If there is a window controller associated with this extension, use that.
     if (extension_window_controller) {
       *controller = extension_window_controller;
     } else {
       // Otherwise get the focused or most recently added window.
-      *controller = ExtensionWindowList::GetInstance()->
+      *controller = WindowControllerList::GetInstance()->
           CurrentWindowForFunction(function);
     }
     if (!(*controller)) {
@@ -166,8 +168,8 @@ bool GetWindowFromWindowID(UIThreadExtensionFunction* function,
       return false;
     }
   } else {
-    *controller = ExtensionWindowList::GetInstance()->FindWindowForFunctionById(
-        function, window_id);
+    *controller = WindowControllerList::GetInstance()->
+        FindWindowForFunctionById(function, window_id);
     if (!(*controller)) {
       function->SetError(ExtensionErrorUtils::FormatErrorMessage(
           keys::kWindowNotFoundError, base::IntToString(window_id)));
@@ -256,7 +258,7 @@ bool GetWindowFunction::RunImpl() {
   if (params->get_info.get() && params->get_info->populate.get())
     populate_tabs = *params->get_info->populate;
 
-  ExtensionWindowController* controller;
+  WindowController* controller;
   if (!GetWindowFromWindowID(this, params->window_id, &controller))
     return false;
 
@@ -275,7 +277,7 @@ bool GetCurrentWindowFunction::RunImpl() {
   if (params->get_info.get() && params->get_info->populate.get())
     populate_tabs = *params->get_info->populate;
 
-  ExtensionWindowController* controller;
+  WindowController* controller;
   if (!GetWindowFromWindowID(this,
                              extension_misc::kCurrentWindowId,
                              &controller)) {
@@ -299,14 +301,14 @@ bool GetLastFocusedWindowFunction::RunImpl() {
 
   // Note: currently this returns the last active browser. If we decide to
   // include other window types (e.g. panels), we will need to add logic to
-  // ExtensionWindowList that mirrors the active behavior of BrowserList.
+  // WindowControllerList that mirrors the active behavior of BrowserList.
   Browser* browser = browser::FindAnyBrowser(
       profile(), include_incognito());
   if (!browser || !browser->window()) {
     error_ = keys::kNoLastFocusedWindowError;
     return false;
   }
-  ExtensionWindowController* controller =
+  WindowController* controller =
       browser->extension_window_controller();
   if (populate_tabs)
     SetResult(controller->CreateWindowValueWithTabs());
@@ -324,9 +326,9 @@ bool GetAllWindowsFunction::RunImpl() {
     populate_tabs = *params->get_info->populate;
 
   ListValue* window_list = new ListValue();
-  const ExtensionWindowList::WindowList& windows =
-      ExtensionWindowList::GetInstance()->windows();
-  for (ExtensionWindowList::WindowList::const_iterator iter =
+  const WindowControllerList::ControllerList& windows =
+      WindowControllerList::GetInstance()->windows();
+  for (WindowControllerList::ControllerList::const_iterator iter =
            windows.begin();
        iter != windows.end(); ++iter) {
     if (!this->CanOperateOnWindow(*iter))
@@ -650,7 +652,7 @@ bool UpdateWindowFunction::RunImpl() {
   DictionaryValue* update_props;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &update_props));
 
-  ExtensionWindowController* controller;
+  WindowController* controller;
   if (!GetWindowFromWindowID(this, window_id, &controller))
     return false;
 
@@ -784,13 +786,13 @@ bool RemoveWindowFunction::RunImpl() {
   int window_id = -1;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &window_id));
 
-  ExtensionWindowController* controller;
+  WindowController* controller;
   if (!GetWindowFromWindowID(this, window_id, &controller))
     return false;
 
-  ExtensionWindowController::Reason reason;
+  WindowController::Reason reason;
   if (!controller->CanClose(&reason)) {
-    if (reason == ExtensionWindowController::REASON_NOT_EDITABLE)
+    if (reason == WindowController::REASON_NOT_EDITABLE)
       error_ = keys::kTabStripNotEditableError;
     return false;
   }

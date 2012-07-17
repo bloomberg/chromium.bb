@@ -2,36 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_window_controller.h"
+#include "chrome/browser/extensions/window_controller.h"
 
 #include "base/values.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
-#include "chrome/browser/extensions/extension_window_list.h"
+#include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/base_window.h"
 #include "ui/gfx/rect.h"
 
+namespace extensions {
+
 ///////////////////////////////////////////////////////////////////////////////
-// ExtensionWindowController
+// WindowController
 
-ExtensionWindowController::ExtensionWindowController(BaseWindow* window,
-                                                     Profile* profile) :
-    window_(window),
-    profile_(profile) {
-  ExtensionWindowList::GetInstance()->AddExtensionWindow(this);
+WindowController::WindowController(BaseWindow* window, Profile* profile)
+    : window_(window), profile_(profile) {
+  WindowControllerList::GetInstance()->AddExtensionWindow(this);
 }
 
-ExtensionWindowController::~ExtensionWindowController() {
-  ExtensionWindowList::GetInstance()->RemoveExtensionWindow(this);
+WindowController::~WindowController() {
+  WindowControllerList::GetInstance()->RemoveExtensionWindow(this);
 }
 
-Browser* ExtensionWindowController::GetBrowser() const {
+Browser* WindowController::GetBrowser() const {
   return NULL;
 }
 
-namespace keys = extensions::tabs_constants;
+namespace keys = tabs_constants;
 
-base::DictionaryValue* ExtensionWindowController::CreateWindowValue() const {
+base::DictionaryValue* WindowController::CreateWindowValue() const {
   DictionaryValue* result = new DictionaryValue();
 
   result->SetInteger(keys::kIdKey, GetWindowId());
@@ -64,3 +64,5 @@ base::DictionaryValue* ExtensionWindowController::CreateWindowValue() const {
 
   return result;
 }
+
+}  // namespace extensions

@@ -9,7 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
-#include "chrome/browser/extensions/extension_window_controller.h"
+#include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/panels/native_panel.h"
@@ -33,11 +33,11 @@ using content::UserMetricsAction;
 
 namespace panel_internal {
 
-class PanelExtensionWindowController : public ExtensionWindowController {
+class PanelExtensionWindowController : public extensions::WindowController {
  public:
   PanelExtensionWindowController(Panel* panel, Profile* profile);
 
-  // Overridden from ExtensionWindowController.
+  // Overridden from extensions::WindowController.
   virtual int GetWindowId() const OVERRIDE;
   virtual std::string GetWindowTypeText() const OVERRIDE;
   virtual base::DictionaryValue* CreateWindowValueWithTabs() const OVERRIDE;
@@ -54,7 +54,7 @@ class PanelExtensionWindowController : public ExtensionWindowController {
 
 PanelExtensionWindowController::PanelExtensionWindowController(
     Panel* panel, Profile* profile)
-    : ExtensionWindowController(panel, profile),
+    : extensions::WindowController(panel, profile),
       panel_(panel) {
 }
 

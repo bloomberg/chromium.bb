@@ -49,7 +49,8 @@ void BalloonHost::Shutdown() {
   web_contents_.reset();
 }
 
-ExtensionWindowController* BalloonHost::GetExtensionWindowController() const {
+extensions::WindowController*
+BalloonHost::GetExtensionWindowController() const {
   // Notifications don't have a window controller.
   return NULL;
 }

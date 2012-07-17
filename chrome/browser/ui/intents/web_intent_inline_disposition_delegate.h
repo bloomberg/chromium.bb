@@ -54,7 +54,7 @@ class WebIntentInlineDispositionDelegate
       content::RenderViewHost* render_view_host) OVERRIDE;
 
   // ExtensionFunctionDispatcher::Delegate
-  virtual ExtensionWindowController* GetExtensionWindowController()
+  virtual extensions::WindowController* GetExtensionWindowController()
     const OVERRIDE;
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
 

@@ -107,8 +107,8 @@ content::WebContents* WebIntentInlineDispositionDelegate::
   return NULL;
 }
 
-ExtensionWindowController* WebIntentInlineDispositionDelegate::
-    GetExtensionWindowController() const {
+extensions::WindowController*
+WebIntentInlineDispositionDelegate::GetExtensionWindowController() const {
   return NULL;
 }
 

@@ -19,7 +19,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/extension_window_controller.h"
+#include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_creator.h"
@@ -230,7 +230,8 @@ void ExtensionHost::CreateRenderViewNow() {
   }
 }
 
-ExtensionWindowController* ExtensionHost::GetExtensionWindowController() const {
+extensions::WindowController*
+ExtensionHost::GetExtensionWindowController() const {
   return view() && view()->browser() ?
       view()->browser()->extension_window_controller() : NULL;
 }
@@ -536,7 +537,7 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
 
   // If the host is bound to a window, then extract its id. Extensions hosted
   // in ExternalTabContainer objects may not have an associated window.
-  ExtensionWindowController* window = GetExtensionWindowController();
+  extensions::WindowController* window = GetExtensionWindowController();
   if (window) {
     render_view_host->Send(new ExtensionMsg_UpdateBrowserWindowId(
         render_view_host->GetRoutingID(), window->GetWindowId()));

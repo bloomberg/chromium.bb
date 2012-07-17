@@ -49,7 +49,6 @@ class BrowserSyncedWindowDelegate;
 class BrowserToolbarModelDelegate;
 class BrowserTabRestoreServiceDelegate;
 class BrowserWindow;
-class ExtensionWindowController;
 class FindBarController;
 class FullscreenController;
 class PrefService;
@@ -78,6 +77,7 @@ class SessionStorageNamespace;
 
 namespace extensions {
 class Extension;
+class WindowController;
 }
 
 namespace gfx {
@@ -479,7 +479,7 @@ class Browser : public TabStripModelObserver,
     return fullscreen_controller_.get();
   }
 
-  ExtensionWindowController* extension_window_controller() const {
+  extensions::WindowController* extension_window_controller() const {
     return extension_window_controller_.get();
   }
 
@@ -916,7 +916,7 @@ class Browser : public TabStripModelObserver,
 
   scoped_refptr<FullscreenController> fullscreen_controller_;
 
-  scoped_ptr<ExtensionWindowController> extension_window_controller_;
+  scoped_ptr<extensions::WindowController> extension_window_controller_;
 
   scoped_ptr<chrome::BrowserCommandController> command_controller_;
 

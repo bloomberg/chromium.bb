@@ -26,7 +26,6 @@ class Browser;
 class ChromeRenderMessageFilter;
 class ExtensionFunction;
 class ExtensionFunctionDispatcher;
-class ExtensionWindowController;
 class UIThreadExtensionFunction;
 class IOThreadExtensionFunction;
 class Profile;
@@ -39,6 +38,10 @@ class Value;
 
 namespace content {
 class RenderViewHost;
+}
+
+namespace extensions {
+class WindowController;
 }
 
 #define EXTENSION_FUNCTION_VALIDATE(test) do { \
@@ -286,13 +289,13 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   // TODO(stevenjb): Replace this with GetExtensionWindowController().
   Browser* GetCurrentBrowser();
 
-  // Same as above but uses ExtensionWindowList instead of BrowserList.
-  ExtensionWindowController* GetExtensionWindowController();
+  // Same as above but uses WindowControllerList instead of BrowserList.
+  extensions::WindowController* GetExtensionWindowController();
 
   // Returns true if this function (and the profile and extension that it was
   // invoked from) can operate on the window wrapped by |window_controller|.
   bool CanOperateOnWindow(
-      const ExtensionWindowController* window_controller) const;
+      const extensions::WindowController* window_controller) const;
 
  protected:
   friend struct content::BrowserThread::DeleteOnThread<

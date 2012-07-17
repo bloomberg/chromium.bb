@@ -15,7 +15,6 @@
 
 class ChromeRenderMessageFilter;
 class ExtensionFunction;
-class ExtensionWindowController;
 class ExtensionInfoMap;
 class Profile;
 struct ExtensionHostMsg_Request_Params;
@@ -29,6 +28,7 @@ namespace extensions {
 class Extension;
 class ExtensionAPI;
 class ProcessMap;
+class WindowController;
 }
 
 // A factory function for creating new ExtensionFunction instances.
@@ -52,9 +52,9 @@ class ExtensionFunctionDispatcher
  public:
   class Delegate {
    public:
-    // Returns the ExtensionWindowController associated with this delegate,
+    // Returns the extensions::WindowController associated with this delegate,
     // or NULL if no window is associated with the delegate.
-    virtual ExtensionWindowController* GetExtensionWindowController() const;
+    virtual extensions::WindowController* GetExtensionWindowController() const;
 
     // Asks the delegate for any relevant WebContents associated with this
     // context. For example, the WebbContents in which an infobar or

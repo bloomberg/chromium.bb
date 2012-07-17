@@ -12,7 +12,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_zoom.h"
 
-class ExtensionWindowController;
 class FaviconTabHelper;
 class GURL;
 class Panel;
@@ -20,6 +19,10 @@ class Profile;
 
 namespace content {
 class WebContents;
+}
+
+namespace extensions {
+class WindowController;
 }
 
 namespace gfx {
@@ -69,7 +72,7 @@ class PanelHost : public content::WebContentsDelegate,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // ExtensionFunctionDispatcher::Delegate overrides.
-  virtual ExtensionWindowController* GetExtensionWindowController() const
+  virtual extensions::WindowController* GetExtensionWindowController() const
       OVERRIDE;
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
 

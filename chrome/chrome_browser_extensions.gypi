@@ -396,10 +396,6 @@
         'browser/extensions/extension_uninstall_dialog.h',
         'browser/extensions/extension_warning_set.cc',
         'browser/extensions/extension_warning_set.h',
-        'browser/extensions/extension_window_controller.cc',
-        'browser/extensions/extension_window_controller.h',
-        'browser/extensions/extension_window_list.cc',
-        'browser/extensions/extension_window_list.h',
         'browser/extensions/extension_web_ui.cc',
         'browser/extensions/extension_web_ui.h',
         'browser/extensions/extension_webkit_preferences.cc',
@@ -506,6 +502,10 @@
         'browser/extensions/webstore_install_helper.h',
         'browser/extensions/webstore_installer.cc',
         'browser/extensions/webstore_installer.h',
+        'browser/extensions/window_controller.cc',
+        'browser/extensions/window_controller.h',
+        'browser/extensions/window_controller_list.cc',
+        'browser/extensions/window_controller_list.h',
       ],
       'conditions': [
         ['chromeos==0', {

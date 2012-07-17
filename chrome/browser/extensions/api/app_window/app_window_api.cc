@@ -6,9 +6,8 @@
 
 #include "base/time.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_window_controller.h"
-#include "chrome/browser/extensions/extension_window_list.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
+#include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/extensions/api/app_window.h"
 #include "chrome/common/extensions/extension_error_utils.h"

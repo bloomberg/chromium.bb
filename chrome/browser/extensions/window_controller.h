@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_WINDOW_CONTROLLER_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_WINDOW_CONTROLLER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_WINDOW_CONTROLLER_H_
+#define CHROME_BROWSER_EXTENSIONS_WINDOW_CONTROLLER_H_
 
 #include <string>
 
@@ -20,25 +20,24 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace extensions {
-class Extension;
-}
-
 namespace gfx {
 class Rect;
 }
 
+namespace extensions {
+class Extension;
+
 // This API needs to be implemented by any window that might be accessed
 // through chrome.windows or chrome.tabs (e.g. browser windows and panels).
-class ExtensionWindowController {
+class WindowController {
  public:
   enum Reason {
     REASON_NONE,
     REASON_NOT_EDITABLE,
   };
 
-  ExtensionWindowController(BaseWindow* window, Profile* profile);
-  virtual ~ExtensionWindowController();
+  WindowController(BaseWindow* window, Profile* profile);
+  virtual ~WindowController();
 
   BaseWindow* window() const { return window_; }
 
@@ -73,14 +72,15 @@ class ExtensionWindowController {
 
   // Extension/window visibility and ownership is window-specific, subclasses
   // need to define this behavior.
-  virtual bool IsVisibleToExtension(
-      const extensions::Extension* extension) const = 0;
+  virtual bool IsVisibleToExtension(const Extension* extension) const = 0;
 
  private:
   BaseWindow* window_;
   Profile* profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionWindowController);
+  DISALLOW_COPY_AND_ASSIGN(WindowController);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WINDOW_CONTROLLER_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_WINDOW_CONTROLLER_H_

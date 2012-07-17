@@ -156,7 +156,7 @@ void PanelHost::OnRequest(const ExtensionHostMsg_Request_Params& params) {
                                           web_contents_->GetRenderViewHost());
 }
 
-ExtensionWindowController* PanelHost::GetExtensionWindowController() const {
+extensions::WindowController* PanelHost::GetExtensionWindowController() const {
   return panel_->extension_window_controller();
 }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_window_list.h"
+#include "chrome/browser/extensions/window_controller_list.h"
 
 #include <algorithm>
 
@@ -10,37 +10,37 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/base_window.h"
 
+namespace extensions {
+
 ///////////////////////////////////////////////////////////////////////////////
-// ExtensionWindowList
+// WindowControllerList
 
 // static
-ExtensionWindowList* ExtensionWindowList::GetInstance() {
-  return Singleton<ExtensionWindowList>::get();
+WindowControllerList* WindowControllerList::GetInstance() {
+  return Singleton<WindowControllerList>::get();
 }
 
-ExtensionWindowList::ExtensionWindowList() {
+WindowControllerList::WindowControllerList() {
 }
 
-ExtensionWindowList::~ExtensionWindowList() {
+WindowControllerList::~WindowControllerList() {
 }
 
-void ExtensionWindowList::AddExtensionWindow(
-    ExtensionWindowController* window) {
+void WindowControllerList::AddExtensionWindow(WindowController* window) {
   windows_.push_back(window);
 }
 
-void ExtensionWindowList::RemoveExtensionWindow(
-    ExtensionWindowController* window) {
-  WindowList::iterator iter = std::find(
+void WindowControllerList::RemoveExtensionWindow(WindowController* window) {
+  ControllerList::iterator iter = std::find(
       windows_.begin(), windows_.end(), window);
   if (iter != windows_.end())
     windows_.erase(iter);
 }
 
-ExtensionWindowController* ExtensionWindowList::FindWindowForFunctionById(
+WindowController* WindowControllerList::FindWindowForFunctionById(
     const UIThreadExtensionFunction* function,
     int id) const {
-  for (WindowList::const_iterator iter = windows().begin();
+  for (ControllerList::const_iterator iter = windows().begin();
        iter != windows().end(); ++iter) {
     if (function->CanOperateOnWindow(*iter) && (*iter)->GetWindowId() == id)
       return *iter;
@@ -48,11 +48,11 @@ ExtensionWindowController* ExtensionWindowList::FindWindowForFunctionById(
   return NULL;
 }
 
-ExtensionWindowController* ExtensionWindowList::CurrentWindowForFunction(
+WindowController* WindowControllerList::CurrentWindowForFunction(
     const UIThreadExtensionFunction* function) const {
-  ExtensionWindowController* result = NULL;
+  WindowController* result = NULL;
   // Returns either the focused window (if any), or the last window in the list.
-  for (WindowList::const_iterator iter = windows().begin();
+  for (ControllerList::const_iterator iter = windows().begin();
        iter != windows().end(); ++iter) {
     if (function->CanOperateOnWindow(*iter)) {
       result = *iter;
@@ -62,3 +62,5 @@ ExtensionWindowController* ExtensionWindowList::CurrentWindowForFunction(
   }
   return result;
 }
+
+}  // namespace extensions

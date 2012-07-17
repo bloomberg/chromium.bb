@@ -20,7 +20,6 @@
 
 class Browser;
 class BrowserWindow;
-class ExtensionWindowController;
 class GURL;
 class NativePanel;
 class PanelHost;
@@ -32,6 +31,10 @@ class SkBitmap;
 namespace content {
 class WebContents;
 struct NativeWebKeyboardEvent;
+}
+
+namespace extensions {
+class WindowController;
 }
 
 // A platform independent implementation of BaseWindow for Panels.
@@ -74,7 +77,7 @@ class Panel : public BaseWindow,
 
   const std::string& app_name() const { return app_name_; }
   const SessionID& session_id() const { return session_id_; }
-  ExtensionWindowController* extension_window_controller() const {
+  extensions::WindowController* extension_window_controller() const {
     return extension_window_controller_.get();
   }
   const std::string extension_id() const;
@@ -375,7 +378,7 @@ class Panel : public BaseWindow,
 
   content::NotificationRegistrar registrar_;
   const SessionID session_id_;
-  scoped_ptr<ExtensionWindowController> extension_window_controller_;
+  scoped_ptr<extensions::WindowController> extension_window_controller_;
   scoped_ptr<PanelHost> panel_host_;
 
   DISALLOW_COPY_AND_ASSIGN(Panel);

@@ -30,7 +30,6 @@
 #endif
 
 class Browser;
-class ExtensionWindowController;
 class PrefsTabHelper;
 
 namespace content {
@@ -41,6 +40,7 @@ class SiteInstance;
 
 namespace extensions {
 class Extension;
+class WindowController;
 }
 
 // This class is the browser component of an extension component's RenderView.
@@ -183,7 +183,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   void Close();
 
   // ExtensionFunctionDispatcher::Delegate
-  virtual ExtensionWindowController*
+  virtual extensions::WindowController*
       GetExtensionWindowController() const OVERRIDE;
 
   // Message handlers.
