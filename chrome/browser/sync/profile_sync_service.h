@@ -34,6 +34,7 @@
 #include "googleurl/src/gurl.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/internal_api/public/sync_manager_factory.h"
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/js/sync_js_controller.h"
@@ -49,6 +50,7 @@ class ChangeProcessor;
 class DataTypeManager;
 class JsController;
 class SessionModelAssociator;
+
 namespace sessions { class SyncSessionSnapshot; }
 }
 
@@ -791,6 +793,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // The set of currently enabled sync experiments.
   syncer::Experiments current_experiments;
+
+  // Factory the backend will use to build the SyncManager.
+  syncer::SyncManagerFactory sync_manager_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

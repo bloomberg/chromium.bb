@@ -16,6 +16,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/internal_api/public/sync_manager_factory.h"
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync_protocol_error.h"
@@ -105,12 +106,14 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
   credentials.email = "user@example.com";
   credentials.sync_token = "sync_token";
   syncer::TestUnrecoverableErrorHandler handler;
+  syncer::SyncManagerFactory sync_manager_factory;
   backend.Initialize(&mock_frontend,
                      syncer::WeakHandle<syncer::JsEventHandler>(),
                      GURL(k_mock_url),
                      syncer::ModelTypeSet(),
                      credentials,
                      true,
+                     &sync_manager_factory,
                      &handler,
                      NULL);
   backend.StopSyncingForShutdown();

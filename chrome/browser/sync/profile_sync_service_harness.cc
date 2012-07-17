@@ -27,6 +27,7 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
+#include "sync/internal_api/public/util/sync_string_conversions.h"
 
 using syncer::sessions::SyncSessionSnapshot;
 

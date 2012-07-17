@@ -44,8 +44,9 @@ SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}
 
 namespace {
 
-syncer::HttpPostProviderFactory* MakeTestHttpBridgeFactory() {
-  return new browser_sync::TestHttpBridgeFactory();
+scoped_ptr<syncer::HttpPostProviderFactory> MakeTestHttpBridgeFactory() {
+  return scoped_ptr<syncer::HttpPostProviderFactory>(
+      new browser_sync::TestHttpBridgeFactory());
 }
 
 }  // namespace

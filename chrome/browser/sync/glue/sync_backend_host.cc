@@ -44,6 +44,7 @@
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/http_bridge.h"
 #include "sync/internal_api/public/read_transaction.h"
+#include "sync/internal_api/public/sync_manager_factory.h"
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/notifier/sync_notifier.h"
 #include "sync/protocol/encryption.pb.h"
@@ -352,9 +353,10 @@ std::string MakeUserAgentForSyncApi() {
   return user_agent;
 }
 
-syncer::HttpPostProviderFactory* MakeHttpBridgeFactory(
+scoped_ptr<syncer::HttpPostProviderFactory> MakeHttpBridgeFactory(
     const scoped_refptr<net::URLRequestContextGetter>& getter) {
-  return new syncer::HttpBridgeFactory(getter, MakeUserAgentForSyncApi());
+  return scoped_ptr<syncer::HttpPostProviderFactory>(
+      new syncer::HttpBridgeFactory(getter, MakeUserAgentForSyncApi()));
 }
 
 }  // namespace
@@ -366,6 +368,7 @@ void SyncBackendHost::Initialize(
     syncer::ModelTypeSet initial_types,
     const SyncCredentials& credentials,
     bool delete_sync_data_folder,
+    syncer::SyncManagerFactory* sync_manager_factory,
     syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
     syncer::ReportUnrecoverableErrorFunction
         report_unrecoverable_error_function) {
@@ -404,6 +407,7 @@ void SyncBackendHost::Initialize(
       credentials,
       &chrome_sync_notification_bridge_,
       &sync_notifier_factory_,
+      sync_manager_factory,
       delete_sync_data_folder,
       sync_prefs_->GetEncryptionBootstrapToken(),
       syncer::SyncManager::NON_TEST,
@@ -598,7 +602,7 @@ void SyncBackendHost::ConfigureDataTypes(
     types_to_remove_with_nigori.Put(syncer::NIGORI);
   }
   // Only one configure is allowed at a time (DataTypeManager handles user
-  // changes that happen while the syncer is reconfiguraing, and will only
+  // changes that happen while the syncer is reconfiguring, and will only
   // trigger another call to ConfigureDataTypes once the current reconfiguration
   // completes).
   DCHECK_GT(initialization_state_, NOT_INITIALIZED);
@@ -772,6 +776,7 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
     const syncer::SyncCredentials& credentials,
     ChromeSyncNotificationBridge* chrome_sync_notification_bridge,
     syncer::SyncNotifierFactory* sync_notifier_factory,
+    syncer::SyncManagerFactory* sync_manager_factory,
     bool delete_sync_data_folder,
     const std::string& restored_key_for_bootstrapping,
     syncer::SyncManager::TestingMode testing_mode,
@@ -789,6 +794,7 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
       credentials(credentials),
       chrome_sync_notification_bridge(chrome_sync_notification_bridge),
       sync_notifier_factory(sync_notifier_factory),
+      sync_manager_factory(sync_manager_factory),
       delete_sync_data_folder(delete_sync_data_folder),
       restored_key_for_bootstrapping(restored_key_for_bootstrapping),
       testing_mode(testing_mode),
@@ -955,7 +961,7 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
   registrar_ = options.registrar;
   DCHECK(registrar_);
 
-  sync_manager_.reset(new syncer::SyncManager(name_));
+  sync_manager_ = options.sync_manager_factory->CreateSyncManager(name_);
   sync_manager_->AddObserver(this);
   success = sync_manager_->Init(
       sync_data_folder_path_,
@@ -964,15 +970,15 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       options.service_url.EffectiveIntPort(),
       options.service_url.SchemeIsSecure(),
       BrowserThread::GetBlockingPool(),
-      options.make_http_bridge_factory_fn.Run(),
+      options.make_http_bridge_factory_fn.Run().Pass(),
       options.routing_info,
       options.workers,
       options.extensions_activity_monitor,
       options.registrar /* as SyncManager::ChangeDelegate */,
       options.credentials,
-      new BridgedSyncNotifier(
+      scoped_ptr<syncer::SyncNotifier>(new BridgedSyncNotifier(
           options.chrome_sync_notification_bridge,
-          options.sync_notifier_factory->CreateSyncNotifier()),
+          options.sync_notifier_factory->CreateSyncNotifier())),
       options.restored_key_for_bootstrapping,
       options.testing_mode,
       &encryptor_,

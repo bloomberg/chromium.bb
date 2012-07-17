@@ -32,11 +32,11 @@
 #include "sync/internal_api/public/http_post_provider_interface.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
-#include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/test/test_user_share.h"
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/internal_api/syncapi_internal.h"
+#include "sync/internal_api/sync_manager_impl.h"
 #include "sync/js/js_arg_list.h"
 #include "sync/js/js_backend.h"
 #include "sync/js/js_event_handler.h"
@@ -768,10 +768,13 @@ class SyncManagerTest : public testing::Test,
                        WeakHandle<JsEventHandler>(),
                        "bogus", 0, false,
                        base::MessageLoopProxy::current(),
-                       new TestHttpPostProviderFactory(), routing_info, workers,
+                       scoped_ptr<HttpPostProviderFactory>(
+                           new TestHttpPostProviderFactory()),
+                       routing_info, workers,
                        &extensions_activity_monitor_, this,
                        credentials,
-                       sync_notifier_mock_, "",
+                       scoped_ptr<SyncNotifier>(sync_notifier_mock_),
+                       "",
                        syncer::SyncManager::TEST_IN_MEMORY,
                        &encryptor_,
                        &handler_,
@@ -927,7 +930,7 @@ class SyncManagerTest : public testing::Test,
  protected:
   FakeEncryptor encryptor_;
   TestUnrecoverableErrorHandler handler_;
-  SyncManager sync_manager_;
+  SyncManagerImpl sync_manager_;
   WeakHandle<JsBackend> js_backend_;
   StrictMock<SyncManagerObserverMock> observer_;
   syncer::SyncNotifierObserver* sync_notifier_observer_;
@@ -1823,7 +1826,7 @@ TEST_F(SyncManagerTest, SetPassphraseWithEmptyPasswordNode) {
 TEST_F(SyncManagerTest, NudgeDelayTest) {
   EXPECT_EQ(sync_manager_.GetNudgeDelayTimeDelta(syncer::BOOKMARKS),
       base::TimeDelta::FromMilliseconds(
-          SyncManager::kDefaultNudgeDelayMilliseconds));
+          SyncManagerImpl::GetDefaultNudgeDelay()));
 
   EXPECT_EQ(sync_manager_.GetNudgeDelayTimeDelta(syncer::AUTOFILL),
       base::TimeDelta::FromSeconds(
@@ -1831,7 +1834,7 @@ TEST_F(SyncManagerTest, NudgeDelayTest) {
 
   EXPECT_EQ(sync_manager_.GetNudgeDelayTimeDelta(syncer::PREFERENCES),
       base::TimeDelta::FromMilliseconds(
-          SyncManager::kPreferencesNudgeDelayMilliseconds));
+          SyncManagerImpl::GetPreferencesNudgeDelay()));
 }
 
 // Friended by WriteNode, so can't be in an anonymouse namespace.

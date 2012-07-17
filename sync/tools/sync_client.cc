@@ -32,12 +32,14 @@
 #include "sync/internal_api/public/http_bridge.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/sync_manager.h"
+#include "sync/internal_api/public/sync_manager_factory.h"
 #include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_event_handler.h"
 #include "sync/notifier/invalidation_state_tracker.h"
+#include "sync/notifier/sync_notifier.h"
 #include "sync/notifier/sync_notifier_factory.h"
 #include "sync/test/fake_encryptor.h"
 
@@ -326,7 +328,9 @@ int main(int argc, char* argv[]) {
   workers.push_back(passive_model_safe_worker.get());
 
   // Set up sync manager.
-  syncer::SyncManager sync_manager("sync_client manager");
+  syncer::SyncManagerFactory sync_manager_factory;
+  scoped_ptr<syncer::SyncManager> sync_manager =
+      sync_manager_factory.CreateSyncManager("sync_client manager");
   LoggingJsEventHandler js_event_handler;
   const char kSyncServerAndPath[] = "clients4.google.com/chrome-sync/dev";
   int kSyncServerPort = 443;
@@ -347,20 +351,21 @@ int main(int argc, char* argv[]) {
       syncer::SyncManager::NON_TEST;
   NullEncryptor null_encryptor;
   LoggingUnrecoverableErrorHandler unrecoverable_error_handler;
-  sync_manager.Init(database_dir.path(),
+  sync_manager->Init(database_dir.path(),
                     syncer::WeakHandle<syncer::JsEventHandler>(
                         js_event_handler.AsWeakPtr()),
                     kSyncServerAndPath,
                     kSyncServerPort,
                     kUseSsl,
                     blocking_task_runner,
-                    post_factory.release(),
+                    post_factory.Pass(),
                     routing_info,
                     workers,
                     extensions_activity_monitor,
                     &change_delegate,
                     credentials,
-                    sync_notifier_factory.CreateSyncNotifier(),
+                    scoped_ptr<syncer::SyncNotifier>(
+                        sync_notifier_factory.CreateSyncNotifier()),
                     kRestoredKeyForBootstrapping,
                     kTestingMode,
                     &null_encryptor,
@@ -368,8 +373,8 @@ int main(int argc, char* argv[]) {
                     &LogUnrecoverableErrorContext);
   // TODO(akalin): We have pass in model parameters multiple times.
   // Organize handling of model types.
-  sync_manager.UpdateEnabledTypes(model_types);
-  sync_manager.StartSyncingNormally(routing_info);
+  sync_manager->UpdateEnabledTypes(model_types);
+  sync_manager->StartSyncingNormally(routing_info);
 
   sync_loop.Run();
 

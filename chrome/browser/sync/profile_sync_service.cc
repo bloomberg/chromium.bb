@@ -59,6 +59,7 @@
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/util/experiments.h"
+#include "sync/internal_api/public/util/sync_string_conversions.h"
 #include "sync/js/js_arg_list.h"
 #include "sync/js/js_event_details.h"
 #include "sync/util/cryptographer.h"
@@ -352,6 +353,7 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
       initial_types,
       credentials,
       delete_stale_data,
+      &sync_manager_factory_,
       backend_unrecoverable_error_handler_.get(),
       &browser_sync::ChromeReportUnrecoverableError);
 }
@@ -1195,14 +1197,17 @@ void ProfileSyncService::ConfigureDataTypeManager() {
   syncer::ConfigureReason reason = syncer::CONFIGURE_REASON_UNKNOWN;
   if (!HasSyncSetupCompleted()) {
     reason = syncer::CONFIGURE_REASON_NEW_CLIENT;
-  } else if (restart == false ||
-             syncer::InitialSyncEndedForTypes(types, GetUserShare())) {
-    reason = syncer::CONFIGURE_REASON_RECONFIGURATION;
-  } else {
-    DCHECK(restart);
+  } else if (restart) {
+    // Datatype downloads on restart are generally due to newly supported
+    // datatypes (although it's also possible we're picking up where a failed
+    // previous configuration left off).
+    // TODO(sync): consider detecting configuration recovery and setting
+    // the reason here appropriately.
     reason = syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE;
+  } else {
+    // The user initiated a reconfiguration (either to add or remove types).
+    reason = syncer::CONFIGURE_REASON_RECONFIGURATION;
   }
-  DCHECK(reason != syncer::CONFIGURE_REASON_UNKNOWN);
 
   data_type_manager_->Configure(types, reason);
 }

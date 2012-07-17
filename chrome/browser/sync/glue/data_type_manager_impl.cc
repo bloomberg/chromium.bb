@@ -62,6 +62,7 @@ void DataTypeManagerImpl::ConfigureImpl(
     syncer::ConfigureReason reason,
     BackendDataTypeConfigurer::NigoriState nigori_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_NE(reason, syncer::CONFIGURE_REASON_UNKNOWN);
   if (state_ == STOPPING) {
     // You can not set a configuration while stopping.
     LOG(ERROR) << "Configuration set while stopping.";

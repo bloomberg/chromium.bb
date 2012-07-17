@@ -88,10 +88,6 @@ struct SyncCredentials {
 // same thread.
 class SyncManager {
  public:
-  // SyncInternal contains the implementation of SyncManager, while abstracting
-  // internal types from clients of the interface.
-  class SyncInternal;
-
   // An interface the embedding application implements to be notified
   // on change events.  Note that these methods may be called on *any*
   // thread.
@@ -347,8 +343,7 @@ class SyncManager {
     TEST_IN_MEMORY,
   };
 
-  // Create an uninitialized SyncManager.  Callers must Init() before using.
-  explicit SyncManager(const std::string& name);
+  SyncManager();
   virtual ~SyncManager();
 
   // Initialize the sync manager.  |database_location| specifies the path of
@@ -372,55 +367,53 @@ class SyncManager {
   //
   // TODO(akalin): Replace the |post_factory| parameter with a
   // URLFetcher parameter.
-  bool Init(const FilePath& database_location,
-            const syncer::WeakHandle<syncer::JsEventHandler>&
-                event_handler,
-            const std::string& sync_server_and_path,
-            int sync_server_port,
-            bool use_ssl,
-            const scoped_refptr<base::TaskRunner>& blocking_task_runner,
-            HttpPostProviderFactory* post_factory,
-            const syncer::ModelSafeRoutingInfo& model_safe_routing_info,
-            const std::vector<syncer::ModelSafeWorker*>& workers,
-            syncer::ExtensionsActivityMonitor*
-                extensions_activity_monitor,
-            ChangeDelegate* change_delegate,
-            const SyncCredentials& credentials,
-            syncer::SyncNotifier* sync_notifier,
-            const std::string& restored_key_for_bootstrapping,
-            TestingMode testing_mode,
-            syncer::Encryptor* encryptor,
-            syncer::UnrecoverableErrorHandler*
-                unrecoverable_error_handler,
-            syncer::ReportUnrecoverableErrorFunction
-                report_unrecoverable_error_function);
+  virtual bool Init(
+      const FilePath& database_location,
+      const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
+      const std::string& sync_server_and_path,
+      int sync_server_port,
+      bool use_ssl,
+      const scoped_refptr<base::TaskRunner>& blocking_task_runner,
+      scoped_ptr<HttpPostProviderFactory> post_factory,
+      const syncer::ModelSafeRoutingInfo& model_safe_routing_info,
+      const std::vector<syncer::ModelSafeWorker*>& workers,
+      syncer::ExtensionsActivityMonitor* extensions_activity_monitor,
+      ChangeDelegate* change_delegate,
+      const SyncCredentials& credentials,
+      scoped_ptr<syncer::SyncNotifier> sync_notifier,
+      const std::string& restored_key_for_bootstrapping,
+      TestingMode testing_mode,
+      syncer::Encryptor* encryptor,
+      syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
+      syncer::ReportUnrecoverableErrorFunction
+          report_unrecoverable_error_function) = 0;
 
   // Throw an unrecoverable error from a transaction (mostly used for
   // testing).
-  void ThrowUnrecoverableError();
+  virtual void ThrowUnrecoverableError() = 0;
 
-  // Returns the set of types for which we have stored some sync data.
-  syncer::ModelTypeSet InitialSyncEndedTypes();
+  virtual syncer::ModelTypeSet InitialSyncEndedTypes() = 0;
 
   // Returns those types within |types| that have an empty progress marker
   // token.
-  syncer::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
-      syncer::ModelTypeSet types);
+  virtual syncer::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
+      syncer::ModelTypeSet types) = 0;
 
   // Purge from the directory those types with non-empty progress markers
   // but without initial synced ended set.
   // Returns false if an error occurred, true otherwise.
-  bool PurgePartiallySyncedTypes();
+  virtual bool PurgePartiallySyncedTypes() = 0;
 
   // Update tokens that we're using in Sync. Email must stay the same.
-  void UpdateCredentials(const SyncCredentials& credentials);
+  virtual void UpdateCredentials(const SyncCredentials& credentials) = 0;
 
   // Called when the user disables or enables a sync type.
-  void UpdateEnabledTypes(const syncer::ModelTypeSet& enabled_types);
+  virtual void UpdateEnabledTypes(
+      const syncer::ModelTypeSet& enabled_types) = 0;
 
   // Put the syncer in normal mode ready to perform nudges and polls.
-  void StartSyncingNormally(
-      const syncer::ModelSafeRoutingInfo& routing_info);
+  virtual void StartSyncingNormally(
+      const syncer::ModelSafeRoutingInfo& routing_info) = 0;
 
   // Attempts to re-encrypt encrypted data types using the passphrase provided.
   // Notifies observers of the result of the operation via OnPassphraseAccepted
@@ -430,14 +423,15 @@ class SyncManager {
   // keys, and a new implicit passphrase is provided, we try decrypting the
   // pending keys with it, and if that fails, we cache the passphrase for
   // re-encryption once the pending keys are decrypted.
-  void SetEncryptionPassphrase(const std::string& passphrase, bool is_explicit);
+  virtual void SetEncryptionPassphrase(const std::string& passphrase,
+                                       bool is_explicit) = 0;
 
   // Provides a passphrase for decrypting the user's existing sync data.
   // Notifies observers of the result of the operation via OnPassphraseAccepted
   // or OnPassphraseRequired, updates the nigori node, and does re-encryption as
   // appropriate if there is a previously cached encryption passphrase. It is an
   // error to call this when we don't have pending keys.
-  void SetDecryptionPassphrase(const std::string& passphrase);
+  virtual void SetDecryptionPassphrase(const std::string& passphrase) = 0;
 
   // Switches the mode of operation to CONFIGURATION_MODE and performs
   // any configuration tasks needed as determined by the params. Once complete,
@@ -447,33 +441,33 @@ class SyncManager {
   // |retry_task| is invoked if the configuration job could not immediately
   //              execute. |ready_task| will still be called when it eventually
   //              does finish.
-  void ConfigureSyncer(
+  virtual void ConfigureSyncer(
       ConfigureReason reason,
       const syncer::ModelTypeSet& types_to_config,
       const syncer::ModelSafeRoutingInfo& new_routing_info,
       const base::Closure& ready_task,
-      const base::Closure& retry_task);
+      const base::Closure& retry_task) = 0;
 
   // Adds a listener to be notified of sync events.
   // NOTE: It is OK (in fact, it's probably a good idea) to call this before
   // having received OnInitializationCompleted.
-  void AddObserver(Observer* observer);
+  virtual void AddObserver(Observer* observer) = 0;
 
   // Remove the given observer.  Make sure to call this if the
   // Observer is being destroyed so the SyncManager doesn't
   // potentially dereference garbage.
-  void RemoveObserver(Observer* observer);
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Status-related getter.  May be called on any thread.
-  SyncStatus GetDetailedStatus() const;
+  virtual SyncStatus GetDetailedStatus() const = 0;
 
   // Whether or not the Nigori node is encrypted using an explicit passphrase.
   // May be called on any thread.
-  bool IsUsingExplicitPassphrase();
+  virtual bool IsUsingExplicitPassphrase() = 0;
 
   // Call periodically from a database-safe thread to persist recent changes
   // to the syncapi model.
-  void SaveChanges();
+  virtual void SaveChanges() = 0;
 
   // Initiates shutdown of various components in the sync engine.  Must be
   // called from the main thread to allow preempting ongoing tasks on the sync
@@ -484,13 +478,13 @@ class SyncManager {
   // If no scheduler exists, the callback is run immediately (from the loop
   // this was created on, which is the sync loop), as sync is effectively
   // stopped.
-  void StopSyncingForShutdown(const base::Closure& callback);
+  virtual void StopSyncingForShutdown(const base::Closure& callback) = 0;
 
   // Issue a final SaveChanges, and close sqlite handles.
-  void ShutdownOnSyncThread();
+  virtual void ShutdownOnSyncThread() = 0;
 
   // May be called from any thread.
-  UserShare* GetUserShare() const;
+  virtual UserShare* GetUserShare() const = 0;
 
   // Inform the cryptographer of the most recent passphrase and set of
   // encrypted types (from nigori node), then ensure all data that
@@ -504,8 +498,8 @@ class SyncManager {
   //
   // Note: opens a transaction, so must only be called after syncapi
   // has been initialized.
-  void RefreshNigori(const std::string& chrome_version,
-                     const base::Closure& done_callback);
+  virtual void RefreshNigori(const std::string& chrome_version,
+                             const base::Closure& done_callback) = 0;
 
   // Enable encryption of all sync data. Once enabled, it can never be
   // disabled without clearing the server data.
@@ -514,66 +508,17 @@ class SyncManager {
   // comments for OnEncryptedTypesChanged()).  It then may trigger
   // OnPassphraseRequired(), but otherwise it will trigger
   // OnEncryptionComplete().
-  void EnableEncryptEverything();
-
-  // Returns true if we are currently encrypting all sync data.  May
-  // be called on any thread.
-  bool EncryptEverythingEnabledForTest() const;
-
-  // Gets the set of encrypted types from the cryptographer
-  // Note: opens a transaction.  May be called from any thread.
-  syncer::ModelTypeSet GetEncryptedDataTypesForTest() const;
+  virtual void EnableEncryptEverything() = 0;
 
   // Reads the nigori node to determine if any experimental features should
   // be enabled.
   // Note: opens a transaction.  May be called on any thread.
-  bool ReceivedExperiment(syncer::Experiments* experiments) const;
+  virtual bool ReceivedExperiment(syncer::Experiments* experiments) const = 0;
 
   // Uses a read-only transaction to determine if the directory being synced has
   // any remaining unsynced items.  May be called on any thread.
-  bool HasUnsyncedItems() const;
-
-  // Functions used for testing.
-
-  void SimulateEnableNotificationsForTest();
-
-  void SimulateDisableNotificationsForTest(int reason);
-
-  void TriggerOnIncomingNotificationForTest(
-      syncer::ModelTypeSet model_types);
-
-  static const int kDefaultNudgeDelayMilliseconds;
-  static const int kPreferencesNudgeDelayMilliseconds;
-  static const int kPiggybackNudgeDelay;
-
-  static const FilePath::CharType kSyncDatabaseFilename[];
-
- private:
-  friend class SyncManagerTest;
-  FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, NudgeDelayTest);
-
-  // For unit tests.
-  base::TimeDelta GetNudgeDelayTimeDelta(const syncer::ModelType& model_type);
-
-  // Set the internal scheduler for testing purposes.
-  // TODO(sync): Use dependency injection instead. crbug.com/133061
-  void SetSyncSchedulerForTest(
-      scoped_ptr<syncer::SyncScheduler> scheduler);
-
-  base::ThreadChecker thread_checker_;
-
-  // An opaque pointer to the nested private class.
-  SyncInternal* data_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncManager);
+  virtual bool HasUnsyncedItems() const = 0;
 };
-
-bool InitialSyncEndedForTypes(syncer::ModelTypeSet types, UserShare* share);
-
-const char* ConnectionStatusToString(ConnectionStatus status);
-
-// Returns the string representation of a PassphraseRequiredReason value.
-const char* PassphraseRequiredReasonToString(PassphraseRequiredReason reason);
 
 }  // namespace syncer
 

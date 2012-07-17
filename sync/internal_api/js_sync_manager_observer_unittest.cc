@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
+#include "sync/internal_api/public/util/sync_string_conversions.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_test_util.h"

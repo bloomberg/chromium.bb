@@ -34,6 +34,10 @@
 class MessageLoop;
 class Profile;
 
+namespace syncer {
+class SyncManagerFactory;
+}
+
 namespace browser_sync {
 
 class ChangeProcessor;
@@ -169,6 +173,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
       syncer::ModelTypeSet initial_types,
       const syncer::SyncCredentials& credentials,
       bool delete_sync_data_folder,
+      syncer::SyncManagerFactory* sync_manager_factory,
       syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
       syncer::ReportUnrecoverableErrorFunction
           report_unrecoverable_error_function);
@@ -275,7 +280,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // TODO(akalin): Figure out a better way for tests to hook into
   // SyncBackendHost.
 
-  typedef base::Callback<syncer::HttpPostProviderFactory*(void)>
+  typedef base::Callback<scoped_ptr<syncer::HttpPostProviderFactory>(void)>
       MakeHttpBridgeFactoryFn;
 
   struct DoInitializeOptions {
@@ -291,6 +296,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
         const syncer::SyncCredentials& credentials,
         ChromeSyncNotificationBridge* chrome_sync_notification_bridge,
         syncer::SyncNotifierFactory* sync_notifier_factory,
+        syncer::SyncManagerFactory* sync_manager_factory,
         bool delete_sync_data_folder,
         const std::string& restored_key_for_bootstrapping,
         syncer::SyncManager::TestingMode testing_mode,
@@ -311,6 +317,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
     syncer::SyncCredentials credentials;
     ChromeSyncNotificationBridge* const chrome_sync_notification_bridge;
     syncer::SyncNotifierFactory* const sync_notifier_factory;
+    syncer::SyncManagerFactory* const sync_manager_factory;
     std::string lsid;
     bool delete_sync_data_folder;
     std::string restored_key_for_bootstrapping;
