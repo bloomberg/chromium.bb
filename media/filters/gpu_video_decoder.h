@@ -10,6 +10,7 @@
 #include <map>
 
 #include "media/base/pipeline_status.h"
+#include "media/base/demuxer_stream.h"
 #include "media/base/video_decoder.h"
 #include "media/video/video_decode_accelerator.h"
 
@@ -101,7 +102,8 @@ class MEDIA_EXPORT GpuVideoDecoder
   void EnsureDemuxOrDecode();
 
   // Callback to pass to demuxer_stream_->Read() for receiving encoded bits.
-  void RequestBufferDecode(const scoped_refptr<DecoderBuffer>& buffer);
+  void RequestBufferDecode(DemuxerStream::Status status,
+                           const scoped_refptr<DecoderBuffer>& buffer);
 
   // Enqueue a frame for later delivery (or drop it on the floor if a
   // vda->Reset() is in progress) and trigger out-of-line delivery of the oldest

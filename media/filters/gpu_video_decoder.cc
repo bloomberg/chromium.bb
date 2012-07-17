@@ -210,20 +210,27 @@ void GpuVideoDecoder::Read(const ReadCB& read_cb) {
 }
 
 void GpuVideoDecoder::RequestBufferDecode(
+    DemuxerStream::Status status,
     const scoped_refptr<DecoderBuffer>& buffer) {
+  DCHECK_EQ(status != DemuxerStream::kOk, !buffer) << status;
+
   if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
     gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &GpuVideoDecoder::RequestBufferDecode, this, buffer));
+        &GpuVideoDecoder::RequestBufferDecode, this, status, buffer));
     return;
   }
   demuxer_read_in_progress_ = false;
 
-  if (!buffer) {
+  if (status != DemuxerStream::kOk) {
     if (pending_read_cb_.is_null())
       return;
 
+    // TODO(acolwell): Add support for reinitializing the decoder when
+    // |status| == kConfigChanged. For now we just trigger a decode error.
+    DecoderStatus decoder_status =
+        (status == DemuxerStream::kAborted) ? kOk : kDecodeError;
     gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        pending_read_cb_, kOk, scoped_refptr<VideoFrame>()));
+        pending_read_cb_, decoder_status, scoped_refptr<VideoFrame>()));
     pending_read_cb_.Reset();
     return;
   }

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <X11/XKBlib.h>
-#include <X11/Xlib.h>
 #include <signal.h>
 
 #include <iostream>  // NOLINT
@@ -31,6 +29,12 @@
 #include "media/filters/file_data_source.h"
 #include "media/filters/video_renderer_base.h"
 #include "media/tools/player_x11/data_source_logger.h"
+
+// Include X11 headers here because X11/Xlib.h #define's Status
+// which causes compiler errors with Status enum declarations
+// in media::DemuxerStream & media::AudioDecoder.
+#include <X11/XKBlib.h>
+#include <X11/Xlib.h>
 #include "media/tools/player_x11/gl_video_renderer.h"
 #include "media/tools/player_x11/x11_video_renderer.h"
 
