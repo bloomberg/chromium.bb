@@ -36,18 +36,6 @@ template <> const char* interface_name<PPB_Flash_12_3>() {
   return PPB_FLASH_INTERFACE_12_3;
 }
 
-template <> const char* interface_name<PPB_Flash_12_2>() {
-  return PPB_FLASH_INTERFACE_12_2;
-}
-
-template <> const char* interface_name<PPB_Flash_12_1>() {
-  return PPB_FLASH_INTERFACE_12_1;
-}
-
-template <> const char* interface_name<PPB_Flash_12_0>() {
-  return PPB_FLASH_INTERFACE_12_0;
-}
-
 template <> const char* interface_name<PPB_Flash_Print_1_0>() {
   return PPB_FLASH_PRINT_INTERFACE_1_0;
 }
@@ -74,15 +62,6 @@ void InitializeCombinedInterface() {
   } else if (has_interface<PPB_Flash_12_3>()) {
     memcpy(&flash_12_combined_interface, get_interface<PPB_Flash_12_3>(),
            sizeof(PPB_Flash_12_3));
-  } else if (has_interface<PPB_Flash_12_2>()) {
-    memcpy(&flash_12_combined_interface, get_interface<PPB_Flash_12_2>(),
-           sizeof(PPB_Flash_12_2));
-  } else if (has_interface<PPB_Flash_12_1>()) {
-    memcpy(&flash_12_combined_interface, get_interface<PPB_Flash_12_1>(),
-           sizeof(PPB_Flash_12_1));
-  } else if (has_interface<PPB_Flash_12_0>()) {
-    memcpy(&flash_12_combined_interface, get_interface<PPB_Flash_12_0>(),
-           sizeof(PPB_Flash_12_0));
   }
   initialized_combined_interface = true;
 }
@@ -95,10 +74,7 @@ namespace flash {
 bool Flash::IsAvailable() {
   return has_interface<PPB_Flash_12_5>() ||
          has_interface<PPB_Flash_12_4>() ||
-         has_interface<PPB_Flash_12_3>() ||
-         has_interface<PPB_Flash_12_2>() ||
-         has_interface<PPB_Flash_12_1>() ||
-         has_interface<PPB_Flash_12_0>();
+         has_interface<PPB_Flash_12_3>();
 }
 
 // static
