@@ -10,7 +10,7 @@ if not exist "%~dp0..\cygwin" call "%~dp0cygwin_env.bat"
 endlocal
 
 setlocal
-set HERMETIC_MINGW=mingw-w64-gcc-4.7.2-20120626
+set HERMETIC_MINGW=mingw-w64-gcc-4.7.2-20120716
 set HERMETIC_MSYS=MSYS-20111123
 set MINGW_MIRROR=http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/mingw-mirror
 :: Sources can be downloaded at %MINGW_MIRROR%/%HERMETIC_MINGW%-src.zip
