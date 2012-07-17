@@ -8,27 +8,30 @@ import os
 import sys
 Import('env')
 
-#
-# Build common file handling utilities for all validators.
-#
-lib_env = env.Clone();
-lib_env.Append(CPPPATH=['${TARGET_ROOT}'])
-lib_env.ComponentLibrary(lib_env.NaClTargetArchSuffix('ncfileutils'),
-                         ['ncfileutil.c'])
 
-lib_env.ComponentLibrary('validators', ['validator_init.c'])
+env.ComponentLibrary(env.NaClTargetArchSuffix('ncfileutils'), ['ncfileutil.c'])
 
-if env.Bit('target_x86'):
+val_lib_env = env.Clone()
+if env.Bit('validator_ragel'):
+  val_lib_env.Append(CPPDEFINES=[['NACL_VALIDATOR_RAGEL', '1']])
+
+val_lib_env.ComponentLibrary('validators', ['validator_init.c'])
+
+if env.Bit('target_x86') and not env.Bit('validator_ragel'):
+  # The R-DFA validator ignores requests to cache validation results, so the
+  # test fails. Validation caching will probably never be supported in R-DFA
+  # because the R-DFA pass is faster than computing a hash for the executable
+  # segment.
+  #
   # TODO(ncbray) support ARM.  This will require making validation caching safe
   # for ARM and embedding ARM binary chunks in the test that can trigger various
   # validation scenarios.
   gtest_env = env.MakeGTestEnv()
-  validator_libs = ['validators', gtest_env.NaClTargetArchSuffix('ncvalidate')]
 
   validation_cache_test_exe = gtest_env.ComponentProgram(
       'validation_cache_test',
       ['validation_cache_test.cc'],
-      EXTRA_LIBS=validator_libs)
+      EXTRA_LIBS=['validators'])
 
   node = gtest_env.CommandTest(
       'validation_cache_test.out',

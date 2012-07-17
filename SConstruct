@@ -354,6 +354,9 @@ def SetUpArgumentBits(env):
       'to run the specified test(s) without actually running them.  This '
       'argument is a counterpart to built_elsewhere.')
 
+  BitFromArgument(env, 'validator_ragel', default=False,
+    desc='Use the R-DFA validator instead of the original validators.')
+
   #########################################################################
   # EXPERIMENTAL
   # This is for generating a testing library for use within private test

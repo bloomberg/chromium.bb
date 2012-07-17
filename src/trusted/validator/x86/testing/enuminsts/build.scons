@@ -44,6 +44,9 @@ enuminst = test_env.ComponentProgram(
               test_env.NaClTargetArchSuffix('ncdis_decode_tables'),
               test_env.NaClTargetArchSuffix('ncval_base_verbose'),
               test_env.NaClTargetArchSuffix('ncval_base'),
+              'validators',
+              env.NaClTargetArchSuffix('ncvalidate'),
+              env.NaClTargetArchSuffix('dfa_validate_caller'),
               'platform', 'gio', 'utils',
              ])
 env.Requires(enuminst, crt)

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Simple harness for defining library dependencies for scons files."""
+"""Harness for defining library dependencies for scons files."""
 
 
 # The following is a map from a library, to the corresponding
@@ -48,7 +48,6 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
         'ncdis_util_x86_32': [
             'ncval_reg_sfi_verbose_x86_32',
             'ncdis_seg_sfi_verbose_x86_32',
-            'validators',
             ],
         'ncdis_seg_sfi_verbose_x86_32': [
             'ncdis_seg_sfi_x86_32',
@@ -91,9 +90,9 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
             # or decoder, add the following:
             #'nc_opcode_modeling_verbose_x86_32',
             ],
-        'validators': [
-            'ncvalidate_x86_32',
-            'dfa_validate_caller_x86_32',
+        'dfa_validate_caller_x86_32': [
+            'ncval_base_x86_32',
+            'nccopy_x86_32',
             'dfa_validate_x86_32',
             ],
         },
@@ -108,7 +107,6 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
         'ncdis_util_x86_64': [
             'ncval_reg_sfi_verbose_x86_64',
             'ncdis_seg_sfi_verbose_x86_64',
-            'validators',
             ],
         'ncdis_seg_sfi_verbose_x86_64': [
             'ncdis_seg_sfi_x86_64',
@@ -148,9 +146,9 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
             'ncdis_seg_sfi_x86_64',
             'ncval_base_x86_64',
             ],
-        'validators': [
-            'ncvalidate_x86_64',
-            'dfa_validate_caller_x86_64',
+        'dfa_validate_caller_x86_64': [
+            'ncval_base_x86_64',
+            'nccopy_x86_64',
             'dfa_validate_x86_64',
             ],
         },
@@ -170,7 +168,7 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
     }
 
 
-def AddLibDeps(platform, libraries):
+def AddLibDeps(env, platform, libraries):
   """ Adds dependent libraries to list of libraries.
 
   Computes the transitive closure of library dependencies for each library
@@ -193,10 +191,19 @@ def AddLibDeps(platform, libraries):
       if library not in visited:
         VisitLibrary(library)
 
+  def GetLibraryDeps(library):
+    ret = (LIBRARY_DEPENDENCIES_DEFAULT.get(library, []) +
+        PLATFORM_LIBRARY_DEPENDENCIES.get(platform, {}).get(library, []))
+    if library == 'validators' and not env.Bit('target_arm'):
+      if env.Bit('validator_ragel'):
+        ret.append(env.NaClTargetArchSuffix('dfa_validate_caller'))
+      else:
+        ret.append(env.NaClTargetArchSuffix('ncvalidate'))
+    return ret
+
   def VisitLibrary(library):
     visited.add(library)
-    VisitList(LIBRARY_DEPENDENCIES_DEFAULT.get(library, []))
-    VisitList(PLATFORM_LIBRARY_DEPENDENCIES.get(platform, {}).get(library, []))
+    VisitList(GetLibraryDeps(library))
     closure.append(library)
 
   # Ideally we would just do "VisitList(libraries)" here, but some

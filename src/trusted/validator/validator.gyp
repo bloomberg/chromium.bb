@@ -14,6 +14,13 @@
       'sources' : [
         'validator_init.c',
       ],
+      'conditions': [
+        ['nacl_validator_ragel!=0', {
+          'defines': [
+            'NACL_VALIDATOR_RAGEL=1',
+          ],
+        }],
+      ],
     },
   ],
   'conditions': [
@@ -28,6 +35,13 @@
           'variables': {
             'win_target': 'x64',
           },
+          'conditions': [
+            ['nacl_validator_ragel!=0', {
+              'defines': [
+                'NACL_VALIDATOR_RAGEL=1',
+              ],
+            }],
+          ],
         },
       ],
     }],

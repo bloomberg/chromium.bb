@@ -137,7 +137,8 @@ def _ComponentPlatformSetup(env, builder_name, **kwargs):
     # The SubstList2 method expands and flattens so that scons will
     # correctly know about the library dependencies in cases like
     # EXTRA_LIBS=['${FOO_LIBS}', 'bar'].
-    env['LIBS'] = (library_deps.AddLibDeps(env['TARGET_FULLARCH'],
+    env['LIBS'] = (library_deps.AddLibDeps(env,
+                                           env['TARGET_FULLARCH'],
                                            env.SubstList2('${EXTRA_LIBS}')) +
                    env.SubstList2('${LIBS}'))
 

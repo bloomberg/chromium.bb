@@ -135,6 +135,7 @@
     'buildtype%': '<(buildtype)',
     'library%': '<(library)',
     'component%': '<(component)',
+    'nacl_validator_ragel%': 0,
 
     'linux2%': 0,
       'conditions': [

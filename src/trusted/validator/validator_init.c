@@ -7,35 +7,36 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
 
-int NaClUseDfaValidator() {
-  if (getenv("NACL_DANGEROUS_USE_DFA_VALIDATOR") != NULL) {
-    return 1;
-  }
-  return 0;
+
+/* The function is not static to avoid compiler error on platforms where it is
+ * not used.
+ */
+void EmitExperimentalValidatorWarning() {
+  NaClLog(LOG_WARNING, "DANGER! USING THE EXPERIMENTAL DFA VALIDATOR!\n");
 }
 
 const struct NaClValidatorInterface *NaClCreateValidator() {
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
   return NaClValidatorCreateArm();
-#elif NACL_ARCH(NACL_TARGET_ARCH) != NACL_x86
-#error "No validator available for this architecture!"
-#elif NACL_TARGET_SUBARCH == 32 && defined(NACL_STANDALONE)
-  if (NaClUseDfaValidator()) {
-    NaClLog(LOG_WARNING, "DANGER! USING THE EXPERIMENTAL DFA VALIDATOR!\n");
-    return NaClDfaValidatorCreate_x86_32();
-  } else {
-    return NaClValidatorCreate_x86_32();
-  }
-#elif NACL_TARGET_SUBARCH == 32
-  return NaClValidatorCreate_x86_32();
-#elif NACL_TARGET_SUBARCH == 64 && defined(NACL_STANDALONE)
-  if (NaClUseDfaValidator()) {
-    NaClLog(LOG_WARNING, "DANGER! USING THE EXPERIMENTAL DFA VALIDATOR!\n");
-    return NaClDfaValidatorCreate_x86_64();
-  } else {
-    return NaClValidatorCreate_x86_64();
-  }
-#elif NACL_TARGET_SUBARCH == 64
+#elif NACL_ARCH(NACL_TARGET_ARCH) == NACL_x86
+# if NACL_TARGET_SUBARCH == 64
+#  if defined(NACL_VALIDATOR_RAGEL)
+  EmitExperimentalValidatorWarning();
+  return NaClDfaValidatorCreate_x86_64();
+#  else
   return NaClValidatorCreate_x86_64();
+#  endif  /* defined(NACL_VALIDATOR_RAGEL) */
+# elif NACL_TARGET_SUBARCH == 32
+#  if defined(NACL_VALIDATOR_RAGEL)
+  EmitExperimentalValidatorWarning();
+  return NaClDfaValidatorCreate_x86_32();
+#  else
+  return NaClValidatorCreate_x86_32();
+#  endif  /* defined(NACL_VALIDATOR_RAGEL) */
+# else
+#  error "Invalid sub-architecture!"
+# endif
+#else  /* NACL_x86 */
+# error "There is no validator for this architecture!"
 #endif
 }

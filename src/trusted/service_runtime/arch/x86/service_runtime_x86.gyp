@@ -22,11 +22,6 @@
       }],
     ],
   },
-  # For standalone binaries (nacl_standalone=1) we link validator_ragel in
-  # addition to the main validator for testing. For Chromium we avoid this
-  # dependency to keep download size to a minimum. TODO(pasko): eliminate the
-  # difference when validator_ragel is proven to allow a subset of what the
-  # current validator allows.
   'targets': [
     {
       'target_name': 'service_runtime_x86_common',
@@ -38,22 +33,22 @@
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'conditions': [
-        ['target_arch=="ia32"', {
+        ['nacl_validator_ragel==0 and target_arch=="ia32"', {
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/validator/x86/32/validator_x86_32.gyp:ncvalidate_x86_32',
           ],
         }],
-        ['nacl_standalone==1 and target_arch=="ia32"', {
+        ['nacl_validator_ragel!=0 and target_arch=="ia32"', {
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/validator_ragel/dfa_validator_x86_32.gyp:dfa_validate_x86_32',
           ],
         }],
-        ['OS!="win" and target_arch=="x64"', {
+        ['nacl_validator_ragel==0 and OS!="win" and target_arch=="x64"', {
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/validator/x86/64/validator_x86_64.gyp:ncvalidate_x86_64',
           ],
         }],
-        ['nacl_standalone==1 and OS!="win" and target_arch=="x64"', {
+        ['nacl_validator_ragel!=0 and OS!="win" and target_arch=="x64"', {
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/validator_ragel/dfa_validator_x86_64.gyp:dfa_validate_x86_64',
           ],
@@ -71,11 +66,13 @@
             'target_base': 'srt_x86_cmn',
             'win_target': 'x64',
           },
-          'dependencies': [
-            '<(DEPTH)/native_client/src/trusted/validator/x86/64/validator_x86_64.gyp:ncvalidate_x86_64',
-          ],
           'conditions': [
-            ['nacl_standalone==1', {
+            ['nacl_validator_ragel==0', {
+              'dependencies': [
+                '<(DEPTH)/native_client/src/trusted/validator/x86/64/validator_x86_64.gyp:ncvalidate_x86_64',
+              ],
+            }],
+            ['nacl_validator_ragel!=0', {
               'dependencies': [
                 '<(DEPTH)/native_client/src/trusted/validator_ragel/dfa_validator_x86_64.gyp:dfa_validate_x86_64',
               ],

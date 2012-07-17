@@ -6,7 +6,14 @@
 Import('env')
 
 # TODO(mseaborn): Extend the ARM validator to support this.
-if not env.Bit('target_x86'): Return()
+if not env.Bit('target_x86'):
+  Return()
+
+# The R-DFA validators are currently unable to work in stubout mode.
+# TODO(pasko): either eliminate the stubout tools or add stubout mode to the
+# validator.
+if env.Bit('validator_ragel'):
+  Return()
 
 # Create environment for command-line tools and testing.
 env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])

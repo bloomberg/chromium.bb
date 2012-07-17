@@ -318,7 +318,9 @@ sel_ldr_libs = ['sel',
                 'nacl_interval',
                 'platform',
                 'platform_qual_lib',
+                'validators',
                 ] + DEBUG_LIBS
+
 if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
     not env.CrossToolsBuild()):
   sel_main_objs = [env.ComponentObject('sel_main.c')]
@@ -760,7 +762,7 @@ if env.Bit('target_x86_64') and not env.CrossToolsBuild():
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_hello_x32_test')
 
 # Test canned hello_world binary with validator_ragel.
-if env.Bit('target_x86'):
+if env.Bit('validator_ragel') and env.Bit('target_x86'):
   node = env.CommandSelLdrTestNacl(
       'dfa_hwd.out',
       env.File(arch_testdata_dir + '/hello_world.nexe'),
@@ -769,7 +771,6 @@ if env.Bit('target_x86'):
       filter_regex = '"^(Hello, World!)$' + '|' +
         '^[[][^]]*[]] (DANGER! USING THE EXPERIMENTAL DFA VALIDATOR!)$"',
       filter_group_only = 'true',
-      osenv='NACL_DANGEROUS_USE_DFA_VALIDATOR=1',
       )
   env.AddNodeToTestSuite(node, ['medium_tests', 'validator_tests'],
                          'run_dfa_validator_hello_world_test')
