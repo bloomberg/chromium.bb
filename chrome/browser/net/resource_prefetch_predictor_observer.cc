@@ -59,7 +59,8 @@ ResourcePrefetchPredictorObserver::ResourcePrefetchPredictorObserver(
 }
 
 ResourcePrefetchPredictorObserver::~ResourcePrefetchPredictorObserver() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+        BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
 void ResourcePrefetchPredictorObserver::OnRequestStarted(

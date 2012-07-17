@@ -21,7 +21,7 @@ namespace chrome_browser_net {
 //  - Has an instance per profile, and is owned by the corresponding
 //    ProfileIOData.
 //  - Needs to be constructed on UI thread. Rest of the functions can only be
-//    called on the IO thread.
+//    called on the IO thread. Can be destroyed on UI or IO thread.
 class ResourcePrefetchPredictorObserver  {
  public:
   explicit ResourcePrefetchPredictorObserver(
