@@ -42,24 +42,4 @@ void H264BitReader::UpdateCurrByte() {
   }
 }
 
-bool H264BitReader::HasMoreRBSPData() {
-  // Make sure we have more bits, if we are at 0 bits in current byte
-  // and updating current byte fails, we don't have more data anyway.
-  if (num_remaining_bits_in_curr_byte_ == 0) {
-    UpdateCurrByte();
-    if (num_remaining_bits_in_curr_byte_ == 0)
-      return false;
-  }
-
-  // Not on last byte?
-  if (bytes_left_)
-    return true;
-
-  // Last byte, look for stop bit;
-  // We have more RBSP data if the last non-zero bit we find is not the
-  // first available bit.
-  return (curr_byte_ &
-          ((1 << (num_remaining_bits_in_curr_byte_ - 1)) - 1)) != 0;
-}
-
 }  // namespace content
