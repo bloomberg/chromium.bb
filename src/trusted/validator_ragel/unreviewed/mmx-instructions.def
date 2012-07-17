@@ -44,6 +44,8 @@ movd Ed Pq, 0x0f 0x6e, CPUFeature_MMX
 movd Pq Ed, 0x0f 0x7e, CPUFeature_MMX
 movq Eq Pq, rexw 0x0f 0x6e, amd64 CPUFeature_MMX
 movq Pq Eq, rexw 0x0f 0x7e, amd64 CPUFeature_MMX
+######## MOVNTQ ################################################################
+movntq Pq Mq, 0x0f 0xe7, CPUFeature_EMMXSSE
 ######## MOVQ ##################################################################
 movq Qq Pq, 0x0f 0x6f, CPUFeature_MMX
 movq Pq Qq, 0x0f 0x7f, CPUFeature_MMX
