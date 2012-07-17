@@ -2303,12 +2303,6 @@ void GDataFileSystem::RequestDirectoryRefreshOnUIThread(
     return;
   }
 
-  if (entry->resource_id().empty()) {
-    // This can happen if the directory is a virtual directory for search.
-    LOG(ERROR) << "Resource ID not found: " << file_path.value();
-    return;
-  }
-
   LoadFeedFromServer(root_->origin(),
                      0,  // Not delta feed.
                      0,  // Not used.
