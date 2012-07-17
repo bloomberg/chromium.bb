@@ -276,7 +276,7 @@ void MagnificationControllerImpl::OnMouseMove(const gfx::Point& location) {
   }
 
   if (start_zoom && !is_on_zooming_) {
-    bool ret = Redraw(gfx::Point(x, y), scale_, true);
+    bool ret = RedrawDIP(gfx::Point(x, y), scale_, true);
 
     if (ret) {
       is_on_zooming_ = true;
