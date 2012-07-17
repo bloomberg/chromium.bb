@@ -133,16 +133,13 @@ class GDataFileSystem : public GDataFileSystemInterface,
     documents_service_ = new_document_service;
   }
 
+  // Used in tests to load the root feed from the cache.
+  void LoadRootFeedFromCacheForTesting();
+
  private:
   friend class GDataFileSystemTest;
   FRIEND_TEST_ALL_PREFIXES(GDataFileSystemTest,
                            FindFirstMissingParentDirectory);
-  FRIEND_TEST_ALL_PREFIXES(GDataFileSystemTest,
-                           GetGDataEntryByPath);
-  FRIEND_TEST_ALL_PREFIXES(GDataFileSystemTest,
-                           GetFileFromCacheByPath);
-  FRIEND_TEST_ALL_PREFIXES(GDataFileSystemTest,
-                           GetAvailableSpace);
 
   // Defines possible search results of FindFirstMissingParentDirectory().
   enum FindMissingDirectoryResult {
@@ -616,8 +613,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Starts root feed load from the cache. If successful, it will try to find
   // the file upon retrieval completion. In addition to that, it will
-  // initiate retrieval of the root feed from the server if
-  // |should_load_from_server| is set.
+  // initiate retrieval of the root feed from the server unless
+  // |should_load_from_server| is set to false. |should_load_from_server| is
+  // false only for testing.
   void LoadRootFeedFromCache(bool should_load_from_server,
                              const FilePath& search_file_path,
                              const FindEntryCallback& callback);

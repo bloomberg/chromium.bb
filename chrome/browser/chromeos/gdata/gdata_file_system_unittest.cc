@@ -669,20 +669,8 @@ class GDataFileSystemTest : public testing::Test {
   // Loads serialized proto file from GCache, and makes sure the root
   // filesystem has a root at 'drive'
   void TestLoadMetadataFromCache() {
-    file_system_->LoadRootFeedFromCache(
-        false,     // load_from_server
-        FilePath(FILE_PATH_LITERAL("drive")),
-        base::Bind(&GDataFileSystemTest::OnExpectToFindEntry,
-                   FilePath(FILE_PATH_LITERAL("drive"))));
-    BrowserThread::GetBlockingPool()->FlushForTesting();
-    message_loop_.RunAllPending();
-  }
-
-  static void OnExpectToFindEntry(const FilePath& search_file_path,
-                                  GDataFileError error,
-                                  GDataEntry* entry) {
-    ASSERT_TRUE(entry);
-    ASSERT_EQ(search_file_path, entry->GetFilePath());
+    file_system_->LoadRootFeedFromCacheForTesting();
+    test_util::RunBlockingPoolTask();
   }
 
   // Creates a proto file representing a filesystem with directories:

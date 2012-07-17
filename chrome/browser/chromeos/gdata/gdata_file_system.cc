@@ -2786,6 +2786,16 @@ void GDataFileSystem::LoadRootFeedFromCache(
                  base::Owned(params)));
 }
 
+void GDataFileSystem::LoadRootFeedFromCacheForTesting() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  LoadRootFeedFromCache(
+      false,  // should_load_from_server.
+      // search_path doesn't matter if FindEntryCallback parameter is null .
+      FilePath(),
+      FindEntryCallback());
+}
+
 void GDataFileSystem::OnProtoLoaded(LoadRootFeedParams* params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -2810,8 +2820,7 @@ void GDataFileSystem::OnProtoLoaded(LoadRootFeedParams* params) {
 
   FindEntryCallback callback = params->callback;
   // If we got feed content from cache, try search over it.
-  if (!params->should_load_from_server ||
-      (params->load_error == GDATA_FILE_OK && !callback.is_null())) {
+  if (params->load_error == GDATA_FILE_OK && !callback.is_null()) {
     // Continue file content search operation if the delegate hasn't terminated
     // this search branch already.
     FindEntryByPathSyncOnUIThread(params->search_file_path, callback);
