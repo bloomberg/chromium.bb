@@ -27,6 +27,7 @@ function MetadataDispatcher() {
 
   var patterns = ['blob:'];  // We use blob urls in gallery_demo.js
 
+  this.parserInstances_ = [];
   for (var i = 0; i < MetadataDispatcher.parserClasses_.length; i++) {
     var parserClass = MetadataDispatcher.parserClasses_[i];
     var parser = new parserClass(this);
@@ -35,15 +36,25 @@ function MetadataDispatcher() {
   }
 
   this.parserRegexp_ = new RegExp('(' + patterns.join('|') + ')', 'i');
+
+  this.messageHandlers_ = {
+    init: this.init_.bind(this),
+    request: this.request_.bind(this)
+  };
 }
 
+/**
+ * List of registered parser classes.
+ * @private
+ */
 MetadataDispatcher.parserClasses_ = [];
 
+/**
+ * @param {function} parserClass Parser constructor function.
+ */
 MetadataDispatcher.registerParserClass = function(parserClass) {
   MetadataDispatcher.parserClasses_.push(parserClass);
 };
-
-MetadataDispatcher.prototype.parserInstances_ = [];
 
 /**
  * Verbose logging for the dispatcher.
@@ -52,24 +63,29 @@ MetadataDispatcher.prototype.parserInstances_ = [];
  */
 MetadataDispatcher.prototype.verbose = false;
 
-MetadataDispatcher.prototype.messageHandlers = {
-  init: function() {
-    // Inform our owner that we're done initializing.
-    // If we need to pass more data back, we can add it to the param array.
-    this.postMessage('initialized', [this.parserRegexp_]);
-    this.log('initialized with URL filter ' + this.parserRegexp_);
-  },
+/**
+ * |init| message handler.
+ * @private
+ */
+MetadataDispatcher.prototype.init_ = function() {
+  // Inform our owner that we're done initializing.
+  // If we need to pass more data back, we can add it to the param array.
+  this.postMessage('initialized', [this.parserRegexp_]);
+  this.log('initialized with URL filter ' + this.parserRegexp_);
+};
 
-  request: function(fileURL) {
-    var self = this;
-
-    try {
-      this.processOneFile(fileURL, function callback(metadata) {
-          self.postMessage('result', [fileURL, metadata]);
-      });
-    } catch (ex) {
-      this.error(fileURL, ex);
-    }
+/**
+ * |request| message handler.
+ * @param {string} fileURL File URL.
+ * @private
+ */
+MetadataDispatcher.prototype.request_ = function(fileURL) {
+  try {
+    this.processOneFile(fileURL, function callback(metadata) {
+        this.postMessage('result', [fileURL, metadata]);
+    }.bind(this));
+  } catch (ex) {
+    this.error(fileURL, ex);
   }
 };
 
@@ -77,6 +93,7 @@ MetadataDispatcher.prototype.messageHandlers = {
  * Indicate to the caller that an operation has failed.
  *
  * No other messages relating to the failed operation should be sent.
+ * @param {Object...} var_args Arguments.
  */
 MetadataDispatcher.prototype.error = function(var_args) {
   var ary = Array.apply(null, arguments);
@@ -87,6 +104,7 @@ MetadataDispatcher.prototype.error = function(var_args) {
  * Send a log message to the caller.
  *
  * Callers must not parse log messages for control flow.
+ * @param {Object...} var_args Arguments.
  */
 MetadataDispatcher.prototype.log = function(var_args) {
   var ary = Array.apply(null, arguments);
@@ -95,6 +113,7 @@ MetadataDispatcher.prototype.log = function(var_args) {
 
 /**
  * Send a log message to the caller only if this.verbose is true.
+ * @param {Object...} var_args Arguments.
  */
 MetadataDispatcher.prototype.vlog = function(var_args) {
   if (this.verbose)
@@ -103,21 +122,31 @@ MetadataDispatcher.prototype.vlog = function(var_args) {
 
 /**
  * Post a properly formatted message to the caller.
+ * @param {string} verb Message type descriptor.
+ * @param {Array.<Object>} args Arguments array.
  */
-MetadataDispatcher.prototype.postMessage = function(verb, arguments) {
-  global.postMessage({verb: verb, arguments: arguments});
+MetadataDispatcher.prototype.postMessage = function(verb, args) {
+  global.postMessage({verb: verb, arguments: args});
 };
 
+/**
+ * Message handler.
+ * @param {Event} event Event object.
+ */
 MetadataDispatcher.prototype.onMessage = function(event) {
   var data = event.data;
 
-  if (this.messageHandlers.hasOwnProperty(data.verb)) {
-    this.messageHandlers[data.verb].apply(this, data.arguments);
+  if (this.messageHandlers_.hasOwnProperty(data.verb)) {
+    this.messageHandlers_[data.verb].apply(this, data.arguments);
   } else {
     this.log('Unknown message from client: ' + data.verb, data);
   }
 };
 
+/**
+ * @param {string} fileURL File URL.
+ * @param {function(Object)} callback Completion callback.
+ */
 MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
   var self = this;
   var currentStep = -1;
@@ -170,46 +199,12 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
     }
   ];
 
-  if (fileURL.indexOf('blob:') == 0) {
-    // Blob urls require different steps:
-    steps =
-    [ // Read the blob into an array buffer and get the content type
-      function readBlob() {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', fileURL, true);
-        xhr.responseType = 'arraybuffer';
-        xhr.onload = function(e) {
-          if (xhr.status == 200) {
-            nextStep(xhr.getResponseHeader('Content-Type'), xhr.response);
-          } else {
-            onError('HTTP ' + xhr.status);
-          }
-        };
-        xhr.send();
-      },
-
-      // Step two, find the parser matching the content type.
-      function detectFormat(mimeType, arrayBuffer) {
-        for (var i = 0; i != self.parserInstances_.length; i++) {
-          var parser = self.parserInstances_[i];
-          if (parser.acceptsMimeType(mimeType)) {
-            metadata = parser.createDefaultMetadata();
-            var blobBuilder = new WebKitBlobBuilder();
-            blobBuilder.append(arrayBuffer);
-            nextStep(blobBuilder.getBlob(), parser);
-            return;
-          }
-        }
-        callback({});  // Unrecognized mime type.
-      },
-
-      // Reuse the last step from the standard sequence.
-      steps[steps.length - 1]
-    ];
-  }
-
   nextStep();
 };
 
 var dispatcher = new MetadataDispatcher();
+
+/**
+ * Set the web worker message handler.
+ */
 global.onmessage = dispatcher.onMessage.bind(dispatcher);

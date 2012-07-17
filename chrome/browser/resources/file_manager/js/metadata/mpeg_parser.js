@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @param {MetadataDispatcher} parent Parent object.
+ * @constructor
+ */
 function MpegParser(parent) {
   MetadataParser.call(this, parent, 'mpeg', /\.(mp4|m4v|m4a|mpe?g4?)$/i);
   this.mimeType = 'video/mpeg';
@@ -9,12 +13,16 @@ function MpegParser(parent) {
 
 MpegParser.prototype = {__proto__: MetadataParser.prototype};
 
-MpegParser.prototype.acceptsMimeType = function(mimeType) {
-  return mimeType.match(/^video\/(mp4|mpeg)$/);
-};
-
+/**
+ * Size of the atom header.
+ */
 MpegParser.HEADER_SIZE = 8;
 
+/**
+ * @param {ByteReader} br ByteReader instance.
+ * @param {number} opt_end End of atom position.
+ * @return {number} Atom size.
+ */
 MpegParser.readAtomSize = function(br, opt_end) {
   var pos = br.tell();
 
@@ -31,15 +39,24 @@ MpegParser.readAtomSize = function(br, opt_end) {
     throw 'atom too short (' + size + ') @' + pos;
 
   if (opt_end && pos + size > opt_end)
-    throw 'atom too long (' + size + '>' + (opt_end - pos)+ ') @' + pos;
+    throw 'atom too long (' + size + '>' + (opt_end - pos) + ') @' + pos;
 
   return size;
 };
 
+/**
+ * @param {ByteReader} br ByteReader instance.
+ * @param {number} opt_end End of atom position.
+ * @return {string} Atom name.
+ */
 MpegParser.readAtomName = function(br, opt_end) {
   return br.readString(4, opt_end).toLowerCase();
 };
 
+/**
+ * @param {Object} metadata Metadata object.
+ * @return {Object} Root of the parser tree.
+ */
 MpegParser.createRootParser = function(metadata) {
   function findParentAtom(atom, name) {
     for (;;) {
@@ -59,7 +76,7 @@ MpegParser.createRootParser = function(metadata) {
     br.seek(offset, ByteReader.SEEK_CUR);
     var timescale = br.readScalar(4, false, atom.end);
     var duration = br.readScalar(4, false, atom.end);
-    metadata.duration =  duration / timescale;
+    metadata.duration = duration / timescale;
   }
 
   function parseHdlr(br, atom) {
@@ -89,19 +106,19 @@ MpegParser.createRootParser = function(metadata) {
   // 'meta' atom can occur at one of the several places in the file structure.
   var parseMeta = {
     ilst: {
-      "©nam": { data : parseDataString.bind(null, "title") },
-      "©alb": { data : parseDataString.bind(null, "album") },
-      "©art": { data : parseDataString.bind(null, "artist") },
-      "covr": { data : parseCovr }
+      '©nam': { data: parseDataString.bind(null, 'title') },
+      '©alb': { data: parseDataString.bind(null, 'album') },
+      '©art': { data: parseDataString.bind(null, 'artist') },
+      'covr': { data: parseCovr }
     },
     versioned: true
   };
 
   // main parser for the entire file structure.
   return {
-    ftyp:  parseFtyp,
+    ftyp: parseFtyp,
     moov: {
-      mvhd : parseMvhd,
+      mvhd: parseMvhd,
       trak: {
         mdia: {
           hdlr: parseHdlr,
@@ -122,7 +139,14 @@ MpegParser.createRootParser = function(metadata) {
   };
 };
 
-MpegParser.prototype.parse = function (file, metadata, callback, onError) {
+/**
+ *
+ * @param {File} file File.
+ * @param {Object} metadata Metadata.
+ * @param {function(Object)} callback Success callback.
+ * @param {function} onError Error callback.
+ */
+MpegParser.prototype.parse = function(file, metadata, callback, onError) {
   this.rootParser_ = MpegParser.createRootParser(metadata);
 
   // Kick off the processing by reading the first atom's header.
@@ -130,6 +154,12 @@ MpegParser.prototype.parse = function (file, metadata, callback, onError) {
       onError, callback.bind(null, metadata));
 };
 
+/**
+ * @param {function(ByteReader, Object)|Object} parser Parser tree node.
+ * @param {ByteReader} br ByteReader instance.
+ * @param {Object} atom Atom descriptor.
+ * @param {number} filePos File position of the atom start.
+ */
 MpegParser.prototype.applyParser = function(parser, br, atom, filePos) {
   if (this.verbose) {
     var path = atom.name;
@@ -166,12 +196,18 @@ MpegParser.prototype.applyParser = function(parser, br, atom, filePos) {
   }
 };
 
+/**
+ * @param {function(ByteReader, Object)|Object} parser Parser tree node.
+ * @param {ByteReader} br ByteReader instance.
+ * @param {Object} parentAtom Parent atom descriptor.
+ * @param {number} filePos File position of the atom start.
+ */
 MpegParser.prototype.parseMpegAtomsInRange = function(
     parser, br, parentAtom, filePos) {
   var count = 0;
   for (var offset = parentAtom.start; offset != parentAtom.end;) {
     if (count++ > 100) // Most likely we are looping through a corrupt file.
-      throw "too many child atoms in " + parentAtom.name + " @" + offset;
+      throw 'too many child atoms in ' + parentAtom.name + ' @' + offset;
 
     br.seek(offset);
     var size = MpegParser.readAtomSize(br, parentAtom.end);
@@ -192,6 +228,14 @@ MpegParser.prototype.parseMpegAtomsInRange = function(
   }
 };
 
+/**
+ * @param {File} file File.
+ * @param {number} filePos Start position in the file.
+ * @param {number} size Atom size.
+ * @param {string} name Atom name.
+ * @param {function} onError Error callback.
+ * @param {function} onSuccess Success callback.
+ */
 MpegParser.prototype.requestRead = function(
     file, filePos, size, name, onError, onSuccess) {
   var self = this;
@@ -201,10 +245,19 @@ MpegParser.prototype.requestRead = function(
     self.processTopLevelAtom(
         reader.result, file, filePos, size, name, onError, onSuccess);
   };
-  this.vlog("reading @" + filePos + ":" + size);
+  this.vlog('reading @' + filePos + ':' + size);
   reader.readAsArrayBuffer(file.slice(filePos, filePos + size));
 };
 
+/**
+ * @param {ArrayBuffer} buf Data buffer.
+ * @param {File} file File.
+ * @param {number} filePos Start position in the file.
+ * @param {number} size Atom size.
+ * @param {string} name Atom name.
+ * @param {function} onError Error callback.
+ * @param {function} onSuccess Success callback.
+ */
 MpegParser.prototype.processTopLevelAtom = function(
     buf, file, filePos, size, name, onError, onSuccess) {
   try {
@@ -218,8 +271,8 @@ MpegParser.prototype.processTopLevelAtom = function(
     // Check the available data size. It should be either exactly
     // what we requested or HEADER_SIZE bytes less (for the last atom).
     if (bufLength != atomEnd && bufLength != size) {
-      throw "Read failure @" + filePos + ", " +
-          "requested " + size + ", read " + bufLength;
+      throw 'Read failure @' + filePos + ', ' +
+          'requested ' + size + ', read ' + bufLength;
     }
 
     // Process the top level atom.
@@ -251,11 +304,11 @@ MpegParser.prototype.processTopLevelAtom = function(
       this.requestRead(file, filePos, nextSize, nextName, onError, onSuccess);
     } else {
       // The previous read did not return the next atom header, EOF reached.
-      this.vlog("EOF @" + filePos);
+      this.vlog('EOF @' + filePos);
       onSuccess();
     }
-  } catch(e) {
-    return onError(e.toString());
+  } catch (e) {
+    onError(e.toString());
   }
 };
 
