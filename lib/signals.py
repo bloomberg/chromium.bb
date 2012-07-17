@@ -52,10 +52,13 @@ def SignalModuleUsable(_signal=signal.signal, _SIGUSR1=signal.SIGUSR1):
     actual = _signal(_SIGUSR1, handler)
     _signal(_SIGUSR1, actual)
     return True
-  except (TypeError, AttributeError, SystemError):
-    # All three exceptions can be thrown depending on the state of the signal
-    # module internal Handlers array; we catch all, and interpret it as that we
-    # were invoked during sys.exit cleanup.
+  except (TypeError, AttributeError, SystemError, ValueError):
+    # The first three exceptions can be thrown depending on the state of the
+    # signal module internal Handlers array; we catch all, and interpret it
+    # as if we were invoked during sys.exit cleanup.
+    # The last exception can be thrown if we're trying to be used in a thread
+    # which is not the main one.  This can come up with standard python modules
+    # such as BaseHTTPServer.HTTPServer.
     return False
   finally:
     # And now relay those signals to the original handler.  Not all may
