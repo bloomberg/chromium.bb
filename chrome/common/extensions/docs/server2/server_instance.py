@@ -46,6 +46,6 @@ class ServerInstance(object):
     if content:
       request_handler.response.out.write(content)
     else:
-      # TODO: Actual 404 page.
       request_handler.response.set_status(404);
-      request_handler.response.out.write('File not found.')
+      request_handler.response.out.write(
+          self._template_data_source.Render('404'))
