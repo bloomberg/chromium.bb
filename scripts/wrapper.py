@@ -9,7 +9,8 @@ import os
 import signal
 import sys
 
-# We want to use correct version of libraries even when executed through symlink.
+# We want to use the correct version of libraries even when executed through a
+# symlink.
 path = os.path.realpath(__file__)
 path = os.path.normpath(os.path.join(os.path.dirname(path), '..', '..'))
 sys.path.insert(0, path)
@@ -72,8 +73,8 @@ if __name__ == '__main__':
   name = os.path.basename(target)
   target = FindTarget(target, sys.argv[1:])
   if target is None:
-    print >>sys.stderr, ("Internal error detected in wrapper.py: no main "
-                         "functor found in module %r." % (name,))
+    print >> sys.stderr, ("Internal error detected in wrapper.py: no main "
+                          "functor found in module %r." % (name,))
     sys.exit(100)
 
   # Set up basic logging information for all modules that use logging.
@@ -91,14 +92,18 @@ if __name__ == '__main__':
   try:
     ret = target()
   except _ShutDownException, e:
-    print >>sys.stderr, ("%s: Signaled to shutdown: caught %i signal." %
-                         (name, e.signal,))
+    sys.stdout.flush()
+    print >> sys.stderr, ("%s: Signaled to shutdown: caught %i signal." %
+                          (name, e.signal,))
+    sys.stderr.flush()
   except SystemExit, e:
     # Right now, let this crash through- longer term, we'll update the scripts
     # in question to not use sys.exit, and make this into a flagged error.
     raise
   except Exception, e:
-    print >>sys.stderr, ("%s: Unhandled exception:" % (name,))
+    sys.stdout.flush()
+    print >> sys.stderr, ("%s: Unhandled exception:" % (name,))
+    sys.stderr.flush()
     raise
 
   if ret is None:

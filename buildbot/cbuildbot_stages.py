@@ -282,8 +282,7 @@ class SyncStage(bs.BuilderStage):
 
     if not self.skip_sync:
       self.repo.Sync(next_manifest)
-    print >> sys.stderr, self.repo.ExportManifest(
-        mark_revision=self.output_manifest_sha1)
+    print self.repo.ExportManifest(mark_revision=self.output_manifest_sha1)
 
   def _PerformStage(self):
     self.Initialize()

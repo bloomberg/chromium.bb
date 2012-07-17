@@ -216,7 +216,7 @@ class BuilderStage(object):
     warnings instead of stage failures.
     """
     print '\n%s' % constants.STEP_WARNINGS
-    print >> sys.stderr, self._StringifyException(exception)
+    print self._StringifyException(exception)
     return results_lib.Results.FORGIVEN, None
 
   def _HandleStageException(self, exception):
@@ -228,7 +228,7 @@ class BuilderStage(object):
     # Tell the user about the exception, and record it
     print '\n%s' % constants.STEP_FAILURE
     description = self._StringifyException(exception)
-    print >> sys.stderr, description
+    print description
     return exception, description
 
   def HandleSkip(self):

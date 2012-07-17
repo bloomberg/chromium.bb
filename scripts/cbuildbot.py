@@ -11,7 +11,6 @@ full and pre-flight-queue builds.
 """
 
 import distutils.version
-import errno
 import glob
 import logging
 import multiprocessing
@@ -348,7 +347,7 @@ class Builder(object):
         success = results_lib.Results.BuildSucceededSoFar()
         if exception_thrown and success:
           success = False
-          print >> sys.stderr, "\n" + constants.STEP_WARNINGS + """
+          print "\n" + constants.STEP_WARNINGS + """
 Exception thrown, but all stages marked successful. This is an internal error,
 because the stage that threw the exception should be marked as failing."""
 
