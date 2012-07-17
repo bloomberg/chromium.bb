@@ -134,8 +134,17 @@ HRESULT Invoke(IDispatch* object,
     disp_result = &result;
 
 
-  // Invoke the method.
+  // Invoke the method passing the parameters via the DISPPARAMS structure.
+  // DISPATCH_PROPERTYPUT and DISPATCH_PROPERTYPUTREF require the parameter of
+  // the property setter to be named, so |cNamedArgs| and |rgdispidNamedArgs|
+  // structure members should be initialized.
   DISPPARAMS disp_params = { NULL, NULL, 0, 0 };
+  DISPID dispid_named = DISPID_PROPERTYPUT;
+  if (flags == DISPATCH_PROPERTYPUT || flags == DISPATCH_PROPERTYPUTREF) {
+    disp_params.cNamedArgs = 1;
+    disp_params.rgdispidNamedArgs = &dispid_named;
+  }
+
   hr = object->Invoke(disp_id, IID_NULL, LOCALE_USER_DEFAULT, flags,
                       &disp_params, disp_result, NULL, NULL);
   if (FAILED(hr))
@@ -175,8 +184,17 @@ HRESULT Invoke(IDispatch* object,
   if (FAILED(hr))
     return hr;
 
-  // Invoke the method.
+  // Invoke the method passing the parameters via the DISPPARAMS structure.
+  // DISPATCH_PROPERTYPUT and DISPATCH_PROPERTYPUTREF require the parameter of
+  // the property setter to be named, so |cNamedArgs| and |rgdispidNamedArgs|
+  // structure members should be initialized.
   DISPPARAMS disp_params = { disp_args, NULL, 1, 0 };
+  DISPID dispid_named = DISPID_PROPERTYPUT;
+  if (flags == DISPATCH_PROPERTYPUT || flags == DISPATCH_PROPERTYPUTREF) {
+    disp_params.cNamedArgs = 1;
+    disp_params.rgdispidNamedArgs = &dispid_named;
+  }
+
   hr = object->Invoke(disp_id, IID_NULL, LOCALE_USER_DEFAULT, flags,
                       &disp_params, disp_result, NULL, NULL);
   if (FAILED(hr))
@@ -222,8 +240,17 @@ HRESULT Invoke(IDispatch* object,
   if (FAILED(hr))
     return hr;
 
-  // Invoke the method.
+  // Invoke the method passing the parameters via the DISPPARAMS structure.
+  // DISPATCH_PROPERTYPUT and DISPATCH_PROPERTYPUTREF require the parameter of
+  // the property setter to be named, so |cNamedArgs| and |rgdispidNamedArgs|
+  // structure members should be initialized.
   DISPPARAMS disp_params = { disp_args, NULL, 2, 0 };
+  DISPID dispid_named = DISPID_PROPERTYPUT;
+  if (flags == DISPATCH_PROPERTYPUT || flags == DISPATCH_PROPERTYPUTREF) {
+    disp_params.cNamedArgs = 1;
+    disp_params.rgdispidNamedArgs = &dispid_named;
+  }
+
   hr = object->Invoke(disp_id, IID_NULL, LOCALE_USER_DEFAULT, flags,
                       &disp_params, disp_result, NULL, NULL);
   if (FAILED(hr))
@@ -274,8 +301,17 @@ HRESULT Invoke(IDispatch* object,
   if (FAILED(hr))
     return hr;
 
-  // Invoke the method.
+  // Invoke the method passing the parameters via the DISPPARAMS structure.
+  // DISPATCH_PROPERTYPUT and DISPATCH_PROPERTYPUTREF require the parameter of
+  // the property setter to be named, so |cNamedArgs| and |rgdispidNamedArgs|
+  // structure members should be initialized.
   DISPPARAMS disp_params = { disp_args, NULL, 3, 0 };
+  DISPID dispid_named = DISPID_PROPERTYPUT;
+  if (flags == DISPATCH_PROPERTYPUT || flags == DISPATCH_PROPERTYPUTREF) {
+    disp_params.cNamedArgs = 1;
+    disp_params.rgdispidNamedArgs = &dispid_named;
+  }
+
   hr = object->Invoke(disp_id, IID_NULL, LOCALE_USER_DEFAULT, flags,
                       &disp_params, disp_result, NULL, NULL);
   if (FAILED(hr))
@@ -331,8 +367,17 @@ HRESULT Invoke(IDispatch* object,
   if (FAILED(hr))
     return hr;
 
-  // Invoke the method.
+  // Invoke the method passing the parameters via the DISPPARAMS structure.
+  // DISPATCH_PROPERTYPUT and DISPATCH_PROPERTYPUTREF require the parameter of
+  // the property setter to be named, so |cNamedArgs| and |rgdispidNamedArgs|
+  // structure members should be initialized.
   DISPPARAMS disp_params = { disp_args, NULL, 4, 0 };
+  DISPID dispid_named = DISPID_PROPERTYPUT;
+  if (flags == DISPATCH_PROPERTYPUT || flags == DISPATCH_PROPERTYPUTREF) {
+    disp_params.cNamedArgs = 1;
+    disp_params.rgdispidNamedArgs = &dispid_named;
+  }
+
   hr = object->Invoke(disp_id, IID_NULL, LOCALE_USER_DEFAULT, flags,
                       &disp_params, disp_result, NULL, NULL);
   if (FAILED(hr))
@@ -393,8 +438,17 @@ HRESULT Invoke(IDispatch* object,
   if (FAILED(hr))
     return hr;
 
-  // Invoke the method.
+  // Invoke the method passing the parameters via the DISPPARAMS structure.
+  // DISPATCH_PROPERTYPUT and DISPATCH_PROPERTYPUTREF require the parameter of
+  // the property setter to be named, so |cNamedArgs| and |rgdispidNamedArgs|
+  // structure members should be initialized.
   DISPPARAMS disp_params = { disp_args, NULL, 5, 0 };
+  DISPID dispid_named = DISPID_PROPERTYPUT;
+  if (flags == DISPATCH_PROPERTYPUT || flags == DISPATCH_PROPERTYPUTREF) {
+    disp_params.cNamedArgs = 1;
+    disp_params.rgdispidNamedArgs = &dispid_named;
+  }
+
   hr = object->Invoke(disp_id, IID_NULL, LOCALE_USER_DEFAULT, flags,
                       &disp_params, disp_result, NULL, NULL);
   if (FAILED(hr))
@@ -461,8 +515,17 @@ HRESULT Invoke(IDispatch* object,
   if (FAILED(hr))
     return hr;
 
-  // Invoke the method.
+  // Invoke the method passing the parameters via the DISPPARAMS structure.
+  // DISPATCH_PROPERTYPUT and DISPATCH_PROPERTYPUTREF require the parameter of
+  // the property setter to be named, so |cNamedArgs| and |rgdispidNamedArgs|
+  // structure members should be initialized.
   DISPPARAMS disp_params = { disp_args, NULL, 6, 0 };
+  DISPID dispid_named = DISPID_PROPERTYPUT;
+  if (flags == DISPATCH_PROPERTYPUT || flags == DISPATCH_PROPERTYPUTREF) {
+    disp_params.cNamedArgs = 1;
+    disp_params.rgdispidNamedArgs = &dispid_named;
+  }
+
   hr = object->Invoke(disp_id, IID_NULL, LOCALE_USER_DEFAULT, flags,
                       &disp_params, disp_result, NULL, NULL);
   if (FAILED(hr))
@@ -534,8 +597,17 @@ HRESULT Invoke(IDispatch* object,
   if (FAILED(hr))
     return hr;
 
-  // Invoke the method.
+  // Invoke the method passing the parameters via the DISPPARAMS structure.
+  // DISPATCH_PROPERTYPUT and DISPATCH_PROPERTYPUTREF require the parameter of
+  // the property setter to be named, so |cNamedArgs| and |rgdispidNamedArgs|
+  // structure members should be initialized.
   DISPPARAMS disp_params = { disp_args, NULL, 7, 0 };
+  DISPID dispid_named = DISPID_PROPERTYPUT;
+  if (flags == DISPATCH_PROPERTYPUT || flags == DISPATCH_PROPERTYPUTREF) {
+    disp_params.cNamedArgs = 1;
+    disp_params.rgdispidNamedArgs = &dispid_named;
+  }
+
   hr = object->Invoke(disp_id, IID_NULL, LOCALE_USER_DEFAULT, flags,
                       &disp_params, disp_result, NULL, NULL);
   if (FAILED(hr))
