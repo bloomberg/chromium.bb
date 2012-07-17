@@ -249,6 +249,7 @@
                 'app/nibs/ContentBlockedPlugins.xib',
                 'app/nibs/ContentBlockedPopups.xib',
                 'app/nibs/ContentBlockedGeolocation.xib',
+                'app/nibs/ContentProtocolHandlers.xib',
                 'app/nibs/DownloadItem.xib',
                 'app/nibs/DownloadShelf.xib',
                 'app/nibs/EditSearchEngine.xib',

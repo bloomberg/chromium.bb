@@ -23,12 +23,6 @@ using content::PluginService;
 
 namespace {
 
-// Must match the tag of the unblock radio button in the xib files.
-const int kAllowTag = 1;
-
-// Must match the tag of the block radio button in the xib files.
-const int kBlockTag = 2;
-
 // Height of one link in the popup list.
 const int kLinkHeight = 16;
 
@@ -137,6 +131,8 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
       nibPath = @"ContentBlockedGeolocation"; break;
     case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
       nibPath = @"ContentBlockedMixedScript"; break;
+    case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
+      nibPath = @"ContentProtocolHandlers"; break;
     default:
       NOTREACHED();
   }
@@ -169,24 +165,20 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 }
 
 - (void)initializeRadioGroup {
-  // Configure the radio group. For now, only deal with the
-  // strictly needed case of group containing 2 radio buttons.
+  // NOTE! Tags in the xib files must match the order of the radio buttons
+  // passed in the radio_group and be 1-based, not 0-based.
   const ContentSettingBubbleModel::RadioGroup& radio_group =
       contentSettingBubbleModel_->bubble_content().radio_group;
 
   // Select appropriate radio button.
-  [allowBlockRadioGroup_ selectCellWithTag:
-      radio_group.default_item == 0 ? kAllowTag : kBlockTag];
+  [allowBlockRadioGroup_ selectCellWithTag: radio_group.default_item + 1];
 
   const ContentSettingBubbleModel::RadioItems& radio_items =
       radio_group.radio_items;
-  DCHECK_EQ(2u, radio_items.size()) << "Only 2 radio items per group supported";
-  // Set radio group labels from model.
-  NSCell* radioCell = [allowBlockRadioGroup_ cellWithTag:kAllowTag];
-  [radioCell setTitle:base::SysUTF8ToNSString(radio_items[0])];
-
-  radioCell = [allowBlockRadioGroup_ cellWithTag:kBlockTag];
-  [radioCell setTitle:base::SysUTF8ToNSString(radio_items[1])];
+  for (size_t ii = 0; ii < radio_group.radio_items.size(); ++ii) {
+    NSCell* radioCell = [allowBlockRadioGroup_ cellWithTag: ii + 1];
+    [radioCell setTitle:base::SysUTF8ToNSString(radio_items[ii])];
+  }
 
   // Layout radio group labels post-localization.
   [GTMUILocalizerAndLayoutTweaker
@@ -446,6 +438,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
     [self sizeToFitLoadButton];
     [self initializeBlockedPluginsList];
   }
+
   if (allowBlockRadioGroup_)  // not bound in cookie bubble xib
     [self initializeRadioGroup];
 
@@ -460,8 +453,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 
 - (IBAction)allowBlockToggled:(id)sender {
   NSButtonCell *selectedCell = [sender selectedCell];
-  contentSettingBubbleModel_->OnRadioClicked(
-      [selectedCell tag] == kAllowTag ? 0 : 1);
+  contentSettingBubbleModel_->OnRadioClicked([selectedCell tag] - 1);
 }
 
 - (void)popupLinkClicked:(id)sender {
