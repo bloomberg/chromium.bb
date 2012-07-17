@@ -617,10 +617,6 @@ const char kEnableSdch[]                    = "enable-sdch";
 // Enable SPDY/3. This is a temporary testing flag.
 const char kEnableSpdy3[]                   = "enable-spdy3";
 
-// Enable speculative resource prefetching.
-const char kEnableSpeculativeResourcePrefetching[] =
-    "enable-speculative-resource-prefetching";
-
 // Enables the stacked tabstrip.
 const char kEnableStackedTabStrip[]         = "enable-stacked-tab-strip";
 
@@ -1193,6 +1189,17 @@ const char kSimulateUpgrade[]               = "simulate-upgrade";
 // Socket reuse policy. The value should be of type enum
 // ClientSocketReusePolicy.
 const char kSocketReusePolicy[]             = "socket-reuse-policy";
+
+// Speculative resource prefetching.
+const char kSpeculativeResourcePrefetching[] =
+    "speculative-resource-prefetching";
+
+// Speculative resource prefetching is disabled.
+const char kSpeculativeResourcePrefetchingDisabled[] = "disabled";
+
+// Speculative resource prefetching will only learn about resources that need to
+// be prefetched but will not prefetch them.
+const char kSpeculativeResourcePrefetchingLearning[] = "learning";
 
 // Specifies the maximum SSL/TLS version ("ssl3", "tls1", "tls1.1", or
 // "tls1.2").
