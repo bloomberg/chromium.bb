@@ -774,6 +774,7 @@
           '../skia/ext/data/vectorcanvastest/clippingrect/',
           '../skia/ext/data/vectorcanvastest/diagonallines/',
           '../skia/ext/data/vectorcanvastest/lineorientation/',
+          '../skia/ext/data/vectorcanvastest/pathorientation/',
           '../third_party/python_26/Lib/xml/parsers/',
           '../ui/base/glib/',
           '<(PRODUCT_DIR)/test_data/chrome/browser/resources/print_preview/data/',
