@@ -111,11 +111,11 @@ def showCurPos(length, pos1, marker1="^", pos2=None, marker2="*"):
     return "".join(display)
 
 class BrailleTest():
-    def __init__(self, harnessName, table, input, output, outputUniBrl=False, mode=0, cursorPos=None, brlCursorPos=None, testmode='translate', comment=None):
+    def __init__(self, harnessName, tables, input, output, outputUniBrl=False, mode=0, cursorPos=None, brlCursorPos=None, testmode='translate', comment=None):
         self.harnessName = harnessName
-        self.table = table
+        self.tables = tables
         if outputUniBrl:
-            self.table.insert(0, 'unicode.dis')
+            self.tables.insert(0, 'unicode.dis')
         self.input = input
         self.expectedOutput = output
         self.mode = mode if not mode else modes[mode]
@@ -129,9 +129,9 @@ class BrailleTest():
 
     def check_translate(self):
         if self.cursorPos is not None:
-            tBrl, temp1, temp2, tBrlCurPos = translate(self.table, self.input, mode=self.mode, cursorPos=self.cursorPos)
+            tBrl, temp1, temp2, tBrlCurPos = translate(self.tables, self.input, mode=self.mode, cursorPos=self.cursorPos)
         else:
-            tBrl, temp1, temp2, tBrlCurPos = translate(self.table, self.input, mode=self.mode)
+            tBrl, temp1, temp2, tBrlCurPos = translate(self.tables, self.input, mode=self.mode)
         template = "%-25s '%s'"
         tBrlCurPosStr = showCurPos(len(tBrl), tBrlCurPos)
         report = [
@@ -144,7 +144,7 @@ class BrailleTest():
         assert tBrl == self.expectedOutput, u("\n".join(report))
 
     def check_backtranslate(self):
-        backtranslate_output = backTranslateString(self.table, self.input, None, mode=self.mode)
+        backtranslate_output = backTranslateString(self.tables, self.input, None, mode=self.mode)
         template = "%-25s '%s'"
         report = [
             "--- Backtranslate failure: %s ---" % self.__str__(),
@@ -156,7 +156,7 @@ class BrailleTest():
         assert backtranslate_output == self.expectedOutput, u("\n".join(report))
 
     def check_cursor(self):
-        tBrl, temp1, temp2, tBrlCurPos = translate(self.table, self.input, mode=self.mode, cursorPos=self.cursorPos)
+        tBrl, temp1, temp2, tBrlCurPos = translate(self.tables, self.input, mode=self.mode, cursorPos=self.cursorPos)
         template = "%-25s '%s'"
         etBrlCurPosStr = showCurPos(len(tBrl), tBrlCurPos, pos2=self.expectedBrlCursorPos)
         report = [
@@ -189,16 +189,16 @@ def test_allCases():
         harnessModule = json.load(f, encoding="UTF-8")
         f.close()
         tableList = []
-        if isinstance(harnessModule['table'], list):
-            tableList.extend(harnessModule['table'])
+        if isinstance(harnessModule['tables'], list):
+            tableList.extend(harnessModule['tables'])
         else:
-            tableList.append(harnessModule['table'])
+            tableList.append(harnessModule['tables'])
 
         origflags = {'testmode':'translate'}
-        for section in harnessModule['sections']:
+        for section in harnessModule['tests']:
             flags = origflags.copy()
             flags.update(section.get('flags', {}))
-            for testData in section['tests']:
+            for testData in section['data']:
                 test = flags.copy()
                 testTables = tableList[:]
                 test.update(testData)
