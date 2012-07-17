@@ -23,7 +23,7 @@
 #include "ui/aura/desktop/desktop_screen.h"
 #include "ui/aura/desktop/desktop_stacking_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/single_monitor_manager.h"
+#include "ui/aura/single_display_manager.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/desktop_native_widget_helper_aura.h"
 #include "ui/views/widget/native_widget_aura.h"
@@ -55,7 +55,7 @@ void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_.reset(new content::ShellBrowserContext);
 
 #if defined(USE_AURA)
-  aura::Env::GetInstance()->SetMonitorManager(new aura::SingleMonitorManager);
+  aura::Env::GetInstance()->SetDisplayManager(new aura::SingleDisplayManager);
   stacking_client_.reset(new aura::DesktopStackingClient);
   gfx::Screen::SetInstance(aura::CreateDesktopScreen());
 #endif
