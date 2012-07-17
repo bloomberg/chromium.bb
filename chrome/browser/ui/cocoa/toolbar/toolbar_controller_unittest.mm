@@ -97,8 +97,7 @@ TEST_F(ToolbarControllerTest, InitialState) {
 }
 
 // Make sure a "titlebar only" toolbar with location bar works.
-// Crashy, http://crbug.com/122836
-TEST_F(ToolbarControllerTest, DISABLED_TitlebarOnly) {
+TEST_F(ToolbarControllerTest, TitlebarOnly) {
   NSView* view = [bar_ view];
 
   [bar_ setHasToolbar:NO hasLocationBar:YES];
