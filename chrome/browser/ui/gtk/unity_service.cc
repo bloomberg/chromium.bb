@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/environment.h"
+#include "base/nix/xdg_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/shell_integration_linux.h"
 
@@ -49,9 +50,15 @@ unity_launcher_entry_set_progress_visible_func entry_set_progress_visible =
     NULL;
 
 void EnsureMethodsLoaded() {
+  using base::nix::GetDesktopEnvironment;
+
   if (attempted_load)
     return;
   attempted_load = true;
+
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  if (GetDesktopEnvironment(env.get()) != base::nix::DESKTOP_ENVIRONMENT_UNITY)
+    return;
 
   // TODO(erg): When unity stabilizes its interface, switch all this to looking
   // up just ".so" instead of specific versions.
@@ -78,7 +85,6 @@ void EnsureMethodsLoaded() {
       reinterpret_cast<unity_launcher_entry_get_for_desktop_id_func>(
           dlsym(unity_lib, "unity_launcher_entry_get_for_desktop_id"));
   if (entry_get_for_desktop_id) {
-    scoped_ptr<base::Environment> env(base::Environment::Create());
     std::string desktop_id = ShellIntegrationLinux::GetDesktopName(env.get());
     chrome_entry = entry_get_for_desktop_id(desktop_id.c_str());
 

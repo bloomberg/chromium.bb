@@ -154,6 +154,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(Profile* profile) const {
     else
       backend.reset();
   } else if (desktop_env == base::nix::DESKTOP_ENVIRONMENT_GNOME ||
+             desktop_env == base::nix::DESKTOP_ENVIRONMENT_UNITY ||
              desktop_env == base::nix::DESKTOP_ENVIRONMENT_XFCE) {
 #if defined(USE_GNOME_KEYRING)
     VLOG(1) << "Trying GNOME keyring for password storage.";
