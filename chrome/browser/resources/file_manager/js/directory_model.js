@@ -1132,8 +1132,10 @@ DirectoryModel.isSystemDirectory = function(path) {
  * TODO(olege): Change callbacks to events.
  */
 DirectoryModel.prototype.search = function(query,
-                                           onSearchRescan,
-                                           onClearSearch) {
+                                             onSearchRescan,
+                                             onClearSearch) {
+  query = query.trimLeft();
+
   var newDirContents;
   if (!query) {
     if (this.isSearching()) {
