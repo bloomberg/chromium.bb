@@ -265,9 +265,9 @@ drag_grab_button(struct wl_pointer_grab *grab,
 
 	if (seat->pointer->button_count == 0 &&
 	    state == WL_POINTER_BUTTON_STATE_RELEASED) {
-		data_device_end_drag_grab(seat);
 		if (seat->drag_data_source)
 			wl_list_remove(&seat->drag_data_source_listener.link);
+		data_device_end_drag_grab(seat);
 	}
 }
 
