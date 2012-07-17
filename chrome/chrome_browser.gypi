@@ -14,7 +14,6 @@
         'autofill_regexes',
         'browser_extensions',
         'browser/performance_monitor/performance_monitor.gyp:performance_monitor',
-        '../sync/protocol/sync_proto.gyp:sync_proto',
         'cert_logger_proto',
         'chrome_resources.gyp:chrome_extra_resources',
         'chrome_resources.gyp:chrome_resources',
@@ -41,6 +40,7 @@
         '../ppapi/ppapi_internal.gyp:ppapi_proxy',  # For PpapiMsg_LoadPlugin
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
+        '../sync/protocol/sync_proto.gyp:sync_proto',
         # TODO(akalin): Depend only on syncapi_service from sync.
         '../sync/sync.gyp:syncapi_core',
         '../sync/sync.gyp:syncapi_service',
@@ -4642,6 +4642,7 @@
             ['exclude', '^browser/ui/views/frame/system_menu_model.cc'],
             ['exclude', '^browser/ui/views/frame/system_menu_model.h'],
             ['exclude', '^browser/ui/views/importer/import_progress_dialog_view.cc'],
+            ['exclude', '^browser/ui/views/location_bar/location_bar_container_win.cc'],
             ['exclude', '^browser/ui/views/native_constrained_window_win.cc'],
             ['exclude', '^browser/ui/views/omnibox/omnibox_view_win.cc'],
             ['exclude', '^browser/ui/views/omnibox/omnibox_view_win.h'],
