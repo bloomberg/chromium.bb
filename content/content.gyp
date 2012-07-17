@@ -243,6 +243,7 @@
          'type': 'none',
          'dependencies': [
            '../base/base.gyp:base_java',
+           '../net/net.gyp:net_java',
            'content_common',
          ],
          'variables': {

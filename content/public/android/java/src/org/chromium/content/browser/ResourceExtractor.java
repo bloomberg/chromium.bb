@@ -13,6 +13,8 @@ import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import org.chromium.base.PathUtils;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
@@ -273,10 +275,7 @@ public class ResourceExtractor {
     }
 
     public static File getOutputDirFromContext(Context context) {
-        // Note that the "chrome" base directory here must match the one in PathUtils.java
-        // and "paks" must match the value used in chrome_paths.cc.
-        // TODO(benm): Clean this up by removing the duplication.
-        return new File(context.getDir("chrome", Context.MODE_PRIVATE), "paks");
+        return new File(PathUtils.getDataDirectory(context.getApplicationContext()), "paks");
     }
 
     public static void deleteFiles(Context context) {
