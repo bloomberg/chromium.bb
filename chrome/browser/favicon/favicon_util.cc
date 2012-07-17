@@ -10,7 +10,7 @@
 
 // static
 int FaviconUtil::DownloadFavicon(content::RenderViewHost* rvh,
-                                 GURL url,
+                                 const GURL& url,
                                  int image_size) {
   static int id = 0;
   rvh->Send(new IconMsg_DownloadFavicon(rvh->GetRoutingID(), ++id, url,

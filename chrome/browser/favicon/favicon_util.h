@@ -20,7 +20,7 @@ class FaviconUtil {
   // Returns the unique id of the download request. The id will be sent in the
   // IPC message.
   static int DownloadFavicon(content::RenderViewHost* rvh,
-                             GURL url,
+                             const GURL& url,
                              int image_size);
 };
 
