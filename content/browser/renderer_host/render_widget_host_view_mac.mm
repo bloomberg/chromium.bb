@@ -1237,8 +1237,7 @@ void RenderWidgetHostViewMac::GotAcceleratedFrame() {
 
     // Need to wipe the software view with transparency to expose the GL
     // underlay. Invalidate the whole window to do that.
-    if (!about_to_validate_and_paint_)
-      [cocoa_view_ setNeedsDisplay:YES];
+    [cocoa_view_ setNeedsDisplay:YES];
 
     // Delete software backingstore.
     BackingStoreManager::RemoveBackingStore(render_widget_host_);
