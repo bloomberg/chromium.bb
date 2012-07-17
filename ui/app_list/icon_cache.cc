@@ -4,17 +4,42 @@
 
 #include "ui/app_list/icon_cache.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/md5.h"
 #include "ui/gfx/size.h"
 
 namespace {
 
+// Predicator for sorting ImageSkiaRep by scale factor.
+bool ImageRepScaleFactorCompare(const gfx::ImageSkiaRep& rep1,
+                                const gfx::ImageSkiaRep& rep2) {
+  return rep1.scale_factor() < rep2.scale_factor();
+}
+
 // Gets cache key based on |image| contents and desired |size|.
-std::string GetKey(const SkBitmap& image, const gfx::Size& size) {
-  SkAutoLockPixels image_lock(image);
+std::string GetKey(const gfx::ImageSkia& image, const gfx::Size& size) {
+  gfx::ImageSkia::ImageSkiaReps image_reps = image.image_reps();
+  DCHECK_GT(image_reps.size(), 0u);
+
+  std::sort(image_reps.begin(), image_reps.end(), &ImageRepScaleFactorCompare);
+
+  base::MD5Context ctx;
+  base::MD5Init(&ctx);
+  for (gfx::ImageSkia::ImageSkiaReps::const_iterator it = image_reps.begin();
+       it != image_reps.end(); ++it) {
+    const SkBitmap& bitmap = it->sk_bitmap();
+    SkAutoLockPixels image_lock(bitmap);
+
+    base::MD5Update(
+        &ctx,
+        base::StringPiece(reinterpret_cast<const char*>(bitmap.getPixels()),
+                          bitmap.getSize()));
+  }
+
   base::MD5Digest digest;
-  MD5Sum(image.getPixels(), image.getSize(), &digest);
+  base::MD5Final(&digest, &ctx);
 
   return MD5DigestToBase16(digest) + "." + size.ToString();
 }
@@ -59,9 +84,9 @@ void IconCache::PurgeAllUnused() {
   }
 }
 
-bool IconCache::Get(const SkBitmap& src,
+bool IconCache::Get(const gfx::ImageSkia& src,
                     const gfx::Size& size,
-                    SkBitmap* processed) {
+                    gfx::ImageSkia* processed) {
   Cache::iterator it = cache_.find(GetKey(src, size));
   if (it == cache_.end())
     return false;
@@ -73,9 +98,9 @@ bool IconCache::Get(const SkBitmap& src,
   return true;
 }
 
-void IconCache::Put(const SkBitmap& src,
+void IconCache::Put(const gfx::ImageSkia& src,
                     const gfx::Size& size,
-                    const SkBitmap& processed) {
+                    const gfx::ImageSkia& processed) {
   const std::string key = GetKey(src, size);
   cache_[key].image = processed;
   cache_[key].used = true;

@@ -9,8 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/app_list/app_list_export.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace ui {
 class MenuModel;
@@ -27,8 +27,8 @@ class APP_LIST_EXPORT AppListItemModel {
   AppListItemModel();
   virtual ~AppListItemModel();
 
-  void SetIcon(const SkBitmap& icon);
-  const SkBitmap& icon() const {
+  void SetIcon(const gfx::ImageSkia& icon);
+  const gfx::ImageSkia& icon() const {
     return icon_;
   }
 
@@ -50,7 +50,7 @@ class APP_LIST_EXPORT AppListItemModel {
   virtual ui::MenuModel* GetContextMenuModel();
 
  private:
-  SkBitmap icon_;
+  gfx::ImageSkia icon_;
   std::string title_;
   bool highlighted_;
 

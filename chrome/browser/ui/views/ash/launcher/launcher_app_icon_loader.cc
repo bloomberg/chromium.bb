@@ -63,9 +63,9 @@ void LauncherAppIconLoader::OnImageLoaded(const gfx::Image& image,
   std::string id = i->second;
   map_.erase(i);
   if (image.IsEmpty())
-    host_->SetAppImage(id, NULL);
+    host_->SetAppImage(id, extensions::Extension::GetDefaultIcon(true));
   else
-    host_->SetAppImage(id, image.ToSkBitmap());
+    host_->SetAppImage(id, *image.ToImageSkia());
 }
 
 const extensions::Extension* LauncherAppIconLoader::GetExtensionForTab(

@@ -14,7 +14,7 @@ AppListItemModel::AppListItemModel() : highlighted_(false) {
 AppListItemModel::~AppListItemModel() {
 }
 
-void AppListItemModel::SetIcon(const SkBitmap& icon) {
+void AppListItemModel::SetIcon(const gfx::ImageSkia& icon) {
   icon_ = icon;
   FOR_EACH_OBSERVER(AppListItemModelObserver, observers_, ItemIconChanged());
 }

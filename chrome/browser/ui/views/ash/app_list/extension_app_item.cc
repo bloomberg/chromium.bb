@@ -189,7 +189,7 @@ void ExtensionAppItem::OnImageLoaded(const gfx::Image& image,
                                      const std::string& extension_id,
                                      int tracker_index) {
   if (!image.IsEmpty())
-    SetIcon(*image.ToSkBitmap());
+    SetIcon(*image.ToImageSkia());
   else
     SetIcon(Extension::GetDefaultIcon(true /* is_app */));
 }

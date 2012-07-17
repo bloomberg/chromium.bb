@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_IMAGESKIA_OPERATIONS_H_
-#define UI_GFX_IMAGESKIA_OPERATIONS_H_
+#ifndef UI_GFX_IMAGE_IMAGE_SKIA_OPERATIONS_H_
+#define UI_GFX_IMAGE_IMAGE_SKIA_OPERATIONS_H_
 
 #include "base/gtest_prod_util.h"
 #include "ui/base/ui_export.h"
+#include "ui/gfx/shadow_value.h"
 
 namespace gfx {
 class ImageSkia;
+class Size;
 
 class UI_EXPORT ImageSkiaOperations {
  public:
@@ -33,10 +35,18 @@ class UI_EXPORT ImageSkiaOperations {
                                     int src_x, int src_y,
                                     int dst_w, int dst_h);
 
+  // Creates an image by resizing |source| to given |target_dip_size|.
+  static ImageSkia CreateResizedImage(const ImageSkia& source,
+                                      const Size& target_dip_size);
+
+  // Creates an image with drop shadow defined in |shadows| for |source|.
+  static ImageSkia CreateImageWithDropShadow(const ImageSkia& source,
+                                             const ShadowValues& shadows);
+
  private:
   ImageSkiaOperations();  // Class for scoping only.
 };
 
 }
 
-#endif  // UI_GFX_IMAGESKIA_OPERATIONS_H_
+#endif  // UI_GFX_IMAGE_IMAGE_SKIA_OPERATIONS_H_

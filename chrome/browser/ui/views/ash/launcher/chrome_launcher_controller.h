@@ -152,7 +152,7 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   // Sets the image for an app tab. This is intended to be invoked from the
   // AppIconLoader.
-  void SetAppImage(const std::string& app_id, const SkBitmap* image);
+  void SetAppImage(const std::string& app_id, const gfx::ImageSkia& image);
 
   // Returns true if a pinned launcher item with given |app_id| could be found.
   bool IsAppPinned(const std::string& app_id);

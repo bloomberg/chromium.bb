@@ -52,13 +52,18 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
   ash::LauncherItem item;
   item.type = ash::TYPE_TABBED;
   id_to_window_[model->next_id()] = new_window;
-  item.image.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-  item.image.allocPixels();
-  item.image.eraseARGB(255,
-                       image_count == 0 ? 255 : 0,
-                       image_count == 1 ? 255 : 0,
-                       image_count == 2 ? 255 : 0);
+
+  SkBitmap icon_bitmap;
+  icon_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
+  icon_bitmap.allocPixels();
+  icon_bitmap.eraseARGB(255,
+                        image_count == 0 ? 255 : 0,
+                        image_count == 1 ? 255 : 0,
+                        image_count == 2 ? 255 : 0);
   image_count = (image_count + 1) % 3;
+  item.image = gfx::ImageSkia(gfx::ImageSkiaRep(icon_bitmap,
+                                                ui::SCALE_FACTOR_NONE));
+
   model->Add(item);
 }
 

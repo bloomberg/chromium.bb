@@ -27,6 +27,10 @@ ShadowValue::ShadowValue(const gfx::Point& offset,
 ShadowValue::~ShadowValue() {
 }
 
+ShadowValue ShadowValue::Scale(float scale) const {
+  return ShadowValue(offset_.Scale(scale), blur_ * scale, color_);
+}
+
 std::string ShadowValue::ToString() const {
   return base::StringPrintf(
       "(%d,%d),%.2f,rgba(%d,%d,%d,%d)",

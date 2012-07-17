@@ -345,7 +345,7 @@ ash::LauncherID ChromeLauncherController::GetLauncherIDForAppID(
 }
 
 void ChromeLauncherController::SetAppImage(const std::string& id,
-                                           const SkBitmap* image) {
+                                           const gfx::ImageSkia& image) {
   // TODO: need to get this working for shortcuts.
 
   for (IDToItemMap::const_iterator i = id_to_item_map_.begin();
@@ -365,7 +365,7 @@ void ChromeLauncherController::SetAppImage(const std::string& id,
 
     int index = model_->ItemIndexByID(i->first);
     ash::LauncherItem item = model_->items()[index];
-    item.image = image ? *image : Extension::GetDefaultIcon(true);
+    item.image = image;
     model_->Set(index, item);
     // It's possible we're waiting on more than one item, so don't break.
   }
@@ -884,7 +884,7 @@ TabContents* ChromeLauncherController::GetLastActiveTabContents(
       app_id_to_tab_contents_list_.find(app_id);
   if (i == app_id_to_tab_contents_list_.end())
     return NULL;
-  DCHECK(i->second.size() > 0);
+  DCHECK_GT(i->second.size(), 0u);
   return *i->second.begin();
 }
 

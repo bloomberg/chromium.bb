@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace aura {
 class Window;
@@ -49,7 +49,7 @@ enum LauncherItemStatus {
   STATUS_CLOSED,
   // A LauncherItem that has live instance.
   STATUS_RUNNING,
-   // An active LauncherItem that has focus.
+  // An active LauncherItem that has focus.
   STATUS_ACTIVE,
   // A LauncherItem that needs user's attention.
   STATUS_ATTENTION,
@@ -72,7 +72,7 @@ struct ASH_EXPORT LauncherItem {
 
   // Image to display in the launcher. If this item is TYPE_TABBED the image is
   // a favicon image.
-  SkBitmap image;
+  gfx::ImageSkia image;
 
   // Assigned by the model when the item is added.
   LauncherID id;

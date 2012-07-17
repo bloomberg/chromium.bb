@@ -11,7 +11,6 @@
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/worker_pool.h"
 #include "base/utf_string_conversions.h"
-#include "skia/ext/image_operations.h"
 #include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/apps_grid_view.h"
 #include "ui/app_list/drop_shadow_label.h"
@@ -21,7 +20,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/skbitmap_operations.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -85,10 +84,10 @@ const char AppListItemView::kViewClassName[] = "ui/app_list/AppListItemView";
 class AppListItemView::IconOperation
     : public base::RefCountedThreadSafe<AppListItemView::IconOperation> {
  public:
-  IconOperation(const SkBitmap& bitmap,
+  IconOperation(const gfx::ImageSkia& image,
                 const gfx::Size& size,
                 const gfx::ShadowValues& shadows)
-      : bitmap_(bitmap),
+      : image_(image),
         size_(size),
         shadows_(shadows) {
   }
@@ -101,23 +100,28 @@ class AppListItemView::IconOperation
     if (cancel_flag_.IsSet())
       return;
 
-    if (size_ != gfx::Size(bitmap_.width(), bitmap_.height())) {
-      bitmap_ = skia::ImageOperations::Resize(bitmap_,
-          skia::ImageOperations::RESIZE_BEST, size_.width(), size_.height());
+    gfx::ImageSkia resized(
+        gfx::ImageSkiaOperations::CreateResizedImage(image_, size_));
+    gfx::ImageSkia shadow(
+        gfx::ImageSkiaOperations::CreateImageWithDropShadow(resized, shadows_));
+
+    // The following statement causes shadowed image being generated for all
+    // existing image reps in |image_|. This is needed so that expensive shadow
+    // generation does not run on UI thread.
+    gfx::ImageSkia::ImageSkiaReps image_reps = image_.image_reps();
+    for (gfx::ImageSkia::ImageSkiaReps::const_iterator it = image_reps.begin();
+         it != image_reps.end(); ++it) {
+      shadow.GetRepresentation(it->scale_factor());
     }
-
-    if (cancel_flag_.IsSet())
-      return;
-
-    bitmap_ = SkBitmapOperations::CreateDropShadow(bitmap_, shadows_);
+    image_ = shadow;
   }
 
   void Cancel() {
     cancel_flag_.Set();
   }
 
-  const SkBitmap& bitmap() const {
-    return bitmap_;
+  const gfx::ImageSkia& image() const {
+    return image_;
   }
 
  private:
@@ -126,7 +130,7 @@ class AppListItemView::IconOperation
 
   base::CancellationFlag cancel_flag_;
 
-  SkBitmap bitmap_;
+  gfx::ImageSkia image_;
   const gfx::Size size_;
   const gfx::ShadowValues shadows_;
 
@@ -180,7 +184,7 @@ void AppListItemView::UpdateIcon() {
   if (icon_size_.IsEmpty())
     return;
 
-  SkBitmap icon = model_->icon();
+  gfx::ImageSkia icon = model_->icon();
   // Clear icon and bail out if model icon is empty.
   if (icon.empty()) {
     icon_->SetImage(NULL);
@@ -189,7 +193,7 @@ void AppListItemView::UpdateIcon() {
 
   CancelPendingIconOperation();
 
-  SkBitmap shadow;
+  gfx::ImageSkia shadow;
   if (IconCache::GetInstance()->Get(icon, icon_size_, &shadow)) {
     icon_->SetImage(shadow);
   } else {
@@ -215,8 +219,8 @@ void AppListItemView::CancelPendingIconOperation() {
 }
 
 void AppListItemView::ApplyShadow(scoped_refptr<IconOperation> op) {
-  icon_->SetImage(op->bitmap());
-  IconCache::GetInstance()->Put(model_->icon(), icon_size_, op->bitmap());
+  icon_->SetImage(op->image());
+  IconCache::GetInstance()->Put(model_->icon(), icon_size_, op->image());
 
   DCHECK(op.get() == icon_op_.get());
   icon_op_ = NULL;

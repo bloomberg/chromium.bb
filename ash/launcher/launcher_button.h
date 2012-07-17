@@ -45,7 +45,7 @@ class LauncherButton : public views::CustomButton {
                                 LauncherButtonHost* host);
 
   // Sets the image to display for this entry.
-  void SetImage(const SkBitmap& image);
+  void SetImage(const gfx::ImageSkia& image);
 
   // |state| is or'd into the current state.
   void AddState(State state);
@@ -94,7 +94,7 @@ class LauncherButton : public views::CustomButton {
   virtual void OnBlur() OVERRIDE;
 
   // Sets the icon image with a shadow.
-  void SetShadowedImage(const SkBitmap& bitmap);
+  void SetShadowedImage(const gfx::ImageSkia& bitmap);
   // Override for custom initialization.
   virtual void Init();
   // Override to subclass IconView.

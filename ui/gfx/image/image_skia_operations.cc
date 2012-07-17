@@ -6,12 +6,14 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/image/image_skia_source.h"
+#include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
@@ -141,6 +143,74 @@ class TiledImageSource : public gfx::ImageSkiaSource {
   DISALLOW_COPY_AND_ASSIGN(TiledImageSource);
 };
 
+// ResizeSource resizes relevant image reps in |source| to |target_dip_size|
+// for requested scale factors.
+class ResizeSource : public ImageSkiaSource {
+ public:
+  ResizeSource(const ImageSkia& source,
+               const Size& target_dip_size)
+      : source_(source),
+        target_dip_size_(target_dip_size) {
+  }
+  virtual ~ResizeSource() {}
+
+  // gfx::ImageSkiaSource overrides:
+  virtual ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) OVERRIDE {
+    const ImageSkiaRep& image_rep = source_.GetRepresentation(scale_factor);
+    if (image_rep.GetWidth() == target_dip_size_.width() &&
+        image_rep.GetHeight() == target_dip_size_.height())
+      return image_rep;
+
+    const float scale = image_rep.GetScale();
+    const Size target_pixel_size(target_dip_size_.Scale(scale));
+    const SkBitmap resized = skia::ImageOperations::Resize(
+        image_rep.sk_bitmap(),
+        skia::ImageOperations::RESIZE_BEST,
+        target_pixel_size.width(),
+        target_pixel_size.height());
+    return ImageSkiaRep(resized, image_rep.scale_factor());
+  }
+
+ private:
+  const ImageSkia source_;
+  const Size target_dip_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResizeSource);
+};
+
+// DropShadowSource generates image reps with drop shadow for image reps in
+// |source| that represent requested scale factors.
+class DropShadowSource : public ImageSkiaSource {
+ public:
+  DropShadowSource(const ImageSkia& source,
+                   const ShadowValues& shadows_in_dip)
+      : source_(source),
+        shaodws_in_dip_(shadows_in_dip) {
+  }
+  virtual ~DropShadowSource() {}
+
+  // gfx::ImageSkiaSource overrides:
+  virtual ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) OVERRIDE {
+    const ImageSkiaRep& image_rep = source_.GetRepresentation(scale_factor);
+
+    const float scale = image_rep.GetScale();
+    ShadowValues shaodws_in_pixel;
+    for (size_t i = 0; i < shaodws_in_dip_.size(); ++i)
+      shaodws_in_pixel.push_back(shaodws_in_dip_[i].Scale(scale));
+
+    const SkBitmap shaodw_bitmap = SkBitmapOperations::CreateDropShadow(
+        image_rep.sk_bitmap(),
+        shaodws_in_pixel);
+    return ImageSkiaRep(shaodw_bitmap, image_rep.scale_factor());
+  }
+
+ private:
+  const ImageSkia source_;
+  const ShadowValues shaodws_in_dip_;
+
+  DISALLOW_COPY_AND_ASSIGN(DropShadowSource);
+};
+
 }  // namespace;
 
 // static
@@ -162,6 +232,23 @@ ImageSkia ImageSkiaOperations::CreateTiledImage(const ImageSkia& source,
                                                 int dst_w, int dst_h) {
   return ImageSkia(new TiledImageSource(source, src_x, src_y, dst_w, dst_h),
                    gfx::Size(dst_w, dst_h));
+}
+
+// static
+ImageSkia ImageSkiaOperations::CreateResizedImage(const ImageSkia& source,
+                                                  const Size& target_dip_size) {
+  return ImageSkia(new ResizeSource(source, target_dip_size), target_dip_size);
+}
+
+// static
+ImageSkia ImageSkiaOperations::CreateImageWithDropShadow(
+    const ImageSkia& source,
+    const ShadowValues& shadows) {
+  const gfx::Insets shadow_padding = -gfx::ShadowValue::GetMargin(shadows);
+  gfx::Size shadow_image_size = source.size();
+  shadow_image_size.Enlarge(shadow_padding.width(),
+                            shadow_padding.height());
+  return ImageSkia(new DropShadowSource(source, shadows), shadow_image_size);
 }
 
 }  // namespace gfx

@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/app_list/app_list_export.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace gfx {
 class Size;
@@ -29,16 +29,16 @@ class APP_LIST_EXPORT IconCache {
   void MarkAllEntryUnused();
   void PurgeAllUnused();
 
-  bool Get(const SkBitmap& src,
+  bool Get(const gfx::ImageSkia& src,
            const gfx::Size& size,
-           SkBitmap* processed);
-  void Put(const SkBitmap& src,
+           gfx::ImageSkia* processed);
+  void Put(const gfx::ImageSkia& src,
            const gfx::Size& size,
-           const SkBitmap& processed);
+           const gfx::ImageSkia& processed);
 
  private:
   struct Item {
-    SkBitmap image;
+    gfx::ImageSkia image;
     bool used;
   };
   typedef std::map<std::string, Item> Cache;

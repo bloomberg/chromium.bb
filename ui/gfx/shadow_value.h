@@ -33,6 +33,8 @@ class UI_EXPORT ShadowValue {
   double blur() const { return blur_; }
   SkColor color() const { return color_; }
 
+  ShadowValue Scale(float scale) const;
+
   std::string ToString() const;
 
   // Gets margin space needed for shadows. Note that values in returned Insets
