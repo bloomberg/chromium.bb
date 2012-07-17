@@ -240,7 +240,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | 1101x      00000     00       = Unary2RegisterOp
                                      => Defs12To15
                                      Mov_Rule_97_A1_P196
-                                     cccc0001101udddd000000000000mmmm
+                                     cccc0001101u0000dddd00000000mmmm
                                      NotRdIsPcAndS
 | "          ~00000    00       = Unary2RegisterImmedShiftedOp
                                     => Defs12To15
@@ -258,7 +258,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | "          00000     11       = Unary2RegisterOp
                                     => Defs12To15
                                     Rrx_Rule_141_A1_P282
-                                    cccc0001101udddd000000000110mmmm
+                                    cccc0001101u0000dddd00000110mmmm
 | "          ~00000    11       = Unary2RegisterImmedShiftedOp
                                     => Defs12To15
                                      Ror_Rule_139_A1_P278

@@ -3663,19 +3663,19 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Unary2RegisterOpTester_Mov_Rule_97_A1_P196_NotRdIsPcAndS_cccc0001101udddd000000000000mmmm_Test) {
+       Unary2RegisterOpTester_Mov_Rule_97_A1_P196_NotRdIsPcAndS_cccc0001101u0000dddd00000000mmmm_Test) {
   Unary2RegisterOpTester_Mov_Rule_97_A1_P196_NotRdIsPcAndS baseline_tester;
   NamedDefs12To15_Mov_Rule_97_A1_P196 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0001101udddd000000000000mmmm");
+  a_vs_b_tester.Test("cccc0001101u0000dddd00000000mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Unary2RegisterOpTester_Rrx_Rule_141_A1_P282__cccc0001101udddd000000000110mmmm_Test) {
+       Unary2RegisterOpTester_Rrx_Rule_141_A1_P282__cccc0001101u0000dddd00000110mmmm_Test) {
   Unary2RegisterOpTester_Rrx_Rule_141_A1_P282_ baseline_tester;
   NamedDefs12To15_Rrx_Rule_141_A1_P282 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0001101udddd000000000110mmmm");
+  a_vs_b_tester.Test("cccc0001101u0000dddd00000110mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,

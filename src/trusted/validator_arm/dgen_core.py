@@ -75,7 +75,7 @@ class BitPattern(object):
             elif c == '0':
                 mask = (mask << 1) | 1
                 value = value << 1
-            elif c == 'x' or c == 'X':
+            elif c.isalpha():  # covers both rule patterns and table patterns
                 mask = mask << 1
                 value = value << 1
             else:
@@ -464,6 +464,10 @@ class Row(object):
         self.significant_bits = 0
         for p in patterns:
             self.significant_bits += p.significant_bits
+
+    def add_pattern(self, pattern):
+        """Adds a pattern to the row."""
+        self.patterns.append(pattern)
 
     def strictly_overlaps_bits(self, bitpat):
       """Checks if bitpat strictly overlaps a bit pattern in the row."""

@@ -34,6 +34,9 @@ import dgen_output
 # to get a better understanding of decoder actions, and why we need
 # the "action_filter" methods.
 
+"""The current command line arguments to use"""
+_cl_args = {}
+
 # Defines the header for decoder.h
 H_HEADER="""%(FILE_HEADER)s
 
@@ -96,7 +99,7 @@ H_FOOTER="""
 #endif  // %(IFDEF_NAME)s
 """
 
-def generate_h(decoder, decoder_name, filename, out):
+def generate_h(decoder, decoder_name, filename, out, cl_args):
     """Entry point to the decoder for .h file.
 
     Args:
@@ -105,8 +108,11 @@ def generate_h(decoder, decoder_name, filename, out):
         filename: The (localized) name for the .h file.
         named_decoders: If true, generate a decoder state with named instances.
         out: a COutput object to write to.
+        cl_args: A dictionary of additional command line arguments.
     """
+    global _cl_args
     if not decoder.primary: raise Exception('No tables provided.')
+    _cl_args = cl_args
 
     # Before starting, remove all testing information from the parsed tables.
     decoder = decoder.action_filter(['actual'])
@@ -156,7 +162,10 @@ METHOD_HEADER="""
 // Specified by: %(citation)s
 const ClassDecoder& %(decoder_name)s::decode_%(table_name)s(
      const Instruction insn) const
-{
+{"""
+
+METHOD_HEADER_TRACE="""
+  fprintf(stderr, "decode %(table_name)s\\n");
 """
 
 METHOD_DISPATCH_BEGIN="""
@@ -165,14 +174,19 @@ METHOD_DISPATCH_BEGIN="""
 METHOD_DISPATCH_CONTINUE=""" &&
       %s"""
 
-METHOD_DISPATCH_END=")"""
+METHOD_DISPATCH_END=") {"""
+
+METHOD_DISPATCH_TRACE="""
+    fprintf(stderr, "count = %s\\n");"""
 
 METHOD_DISPATCH_CLASS_DECODER="""
-    return %(decoder)s_instance_;
-"""
+    return %(decoder)s_instance_;"""
 
 METHOD_DISPATCH_SUBMETHOD="""
-    return decode_%(subtable_name)s(insn);
+    return decode_%(subtable_name)s(insn);"""
+
+METHOD_DISPATCH_CLOSE="""
+  }
 """
 
 METHOD_FOOTER="""
@@ -181,8 +195,13 @@ METHOD_FOOTER="""
 }
 """
 
-DECODER_METHOD="""
-const ClassDecoder& %(decoder_name)s::decode(const Instruction insn) const {
+DECODER_METHOD_HEADER="""
+const ClassDecoder& %(decoder_name)s::decode(const Instruction insn) const {"""
+
+DECODER_METHOD_TRACE="""
+  fprintf(stderr, "Parsing %%08x\\n", insn.Bits());"""
+
+DECODER_METHOD_FOOTER="""
   return decode_%(entry_table_name)s(insn);
 }
 """
@@ -191,7 +210,7 @@ CC_FOOTER="""
 }  // namespace nacl_arm_dec
 """
 
-def generate_cc(decoder, decoder_name, filename, out):
+def generate_cc(decoder, decoder_name, filename, out, cl_args):
     """Implementation of the decoder in .cc file
 
     Args:
@@ -200,9 +219,12 @@ def generate_cc(decoder, decoder_name, filename, out):
         filename: The (localized) name for the .h file.
         named_decoders: If true, generate a decoder state with named instances.
         out: a COutput object to write to.
+        cl_args: A dictionary of additional command line arguments.
     """
+    global _cl_args
     if not decoder.primary: raise Exception('No tables provided.')
     assert filename.endswith('.cc')
+    _cl_args = cl_args
 
     # Before starting, remove all testing information from the parsed tables.
     decoder = decoder.action_filter(['actual'])
@@ -215,7 +237,10 @@ def generate_cc(decoder, decoder_name, filename, out):
     out.write(CC_HEADER % values)
     _generate_constructors(decoder, values, out)
     _generate_methods(decoder, values, out)
-    out.write(DECODER_METHOD % values)
+    out.write(DECODER_METHOD_HEADER % values)
+    if _cl_args.get('trace') == 'True':
+      out.write(DECODER_METHOD_TRACE % values);
+    out.write(DECODER_METHOD_FOOTER % values)
     out.write(CC_FOOTER % values)
 
 def _generate_constructors(decoder, values, out):
@@ -226,6 +251,7 @@ def _generate_constructors(decoder, values, out):
   out.write(CONSTRUCTOR_FOOTER % values)
 
 def _generate_methods(decoder, values, out):
+  global _cl_args
   for table in decoder.tables():
     # Add the default row as the last in the optimized row, so that
     # it is applied if all other rows do not.
@@ -240,14 +266,17 @@ def _generate_methods(decoder, values, out):
     values['table_name'] = table.name
     values['citation'] = table.citation
     out.write(METHOD_HEADER % values)
-
+    if _cl_args.get('trace') == 'True':
+        out.write(METHOD_HEADER_TRACE % values)
 
     # Add message to stop compilation warnings if this table
     # doesn't require subtables to select a class decoder.
     if not table.methods():
-      out.write("  UNREFERENCED_PARAMETER(insn);")
+      out.write("\n  UNREFERENCED_PARAMETER(insn);")
 
+    count = 0
     for row in opt_rows:
+      count = count + 1
       # Each row consists of a set of bit patterns defining if the row
       # is applicable. Convert this into a sequence of anded C test
       # expressions. For example, convert the following pair of bit
@@ -267,6 +296,8 @@ def _generate_methods(decoder, values, out):
       for p in row.patterns[1:]:
         out.write(METHOD_DISPATCH_CONTINUE % p.to_c_expr('insn.Bits()'))
       out.write(METHOD_DISPATCH_END)
+      if _cl_args.get('trace') == 'True':
+          out.write(METHOD_DISPATCH_TRACE % count)
       if row.action.__class__.__name__ == 'DecoderAction':
         values['decoder'] = row.action.actual
         out.write(METHOD_DISPATCH_CLASS_DECODER % values)
@@ -275,4 +306,5 @@ def _generate_methods(decoder, values, out):
         out.write(METHOD_DISPATCH_SUBMETHOD % values)
       else:
         raise Exception('Bad table action: %s' % repr(row.action))
+      out.write(METHOD_DISPATCH_CLOSE % values)
     out.write(METHOD_FOOTER % values)

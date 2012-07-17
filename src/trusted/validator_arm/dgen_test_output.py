@@ -165,6 +165,9 @@ import dgen_core
 import dgen_opt
 import dgen_output
 
+"""The current command line arguments to use"""
+_cl_args = {}
+
 # The following defines naming conventions used for identifiers.
 # Note: DECODER will be replaced by 'actual' and 'baseline', defining
 # how both types of symbols are generated.
@@ -314,7 +317,7 @@ class NotImplementedNamed : public NamedClassDecoder {
 #endif  // %(IFDEF_NAME)s
 """
 
-def generate_named_classes_h(decoder, decoder_name, filename, out):
+def generate_named_classes_h(decoder, decoder_name, filename, out, cl_args):
   """Defines named classes needed for decoder testing.
 
   Args:
@@ -322,8 +325,11 @@ def generate_named_classes_h(decoder, decoder_name, filename, out):
     decoder_name: The name of the decoder state to build.
     filename: The (localized) name for the .h file.
     out: a COutput object to write to.
+    cl_args: A dictionary of additional command line arguments.
   """
+  global _cl_args
   if not decoder.primary: raise Exception('No tables provided.')
+  _cl_args = cl_args
 
   values = {
       'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
@@ -402,7 +408,7 @@ NAMED_DECODER_H_FOOTER="""
 #endif  // %(IFDEF_NAME)s
 """
 
-def generate_named_decoder_h(decoder, decoder_name, filename, out):
+def generate_named_decoder_h(decoder, decoder_name, filename, out, cl_args):
     """Generates the named decoder for testing.
 
     Args:
@@ -410,9 +416,12 @@ def generate_named_decoder_h(decoder, decoder_name, filename, out):
         decoder_name: The name of the decoder state to build.
         filename: The (localized) name for the .h file.
         out: a COutput object to write to.
+        cl_args: A dictionary of additional command line arguments.
     """
+    global _cl_args
     if not decoder.primary: raise Exception('No tables provided.')
     assert filename.endswith('_decoder.h')
+    _cl_args = cl_args
 
     values = {
         'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
@@ -487,7 +496,7 @@ decode(const nacl_arm_dec::Instruction insn) const {
 }  // namespace nacl_arm_test
 """
 
-def generate_named_cc(decoder, decoder_name, filename, out):
+def generate_named_cc(decoder, decoder_name, filename, out, cl_args):
     """Implementation of the test decoder in .cc file
 
     Args:
@@ -495,9 +504,12 @@ def generate_named_cc(decoder, decoder_name, filename, out):
         decoder_name: The name of the decoder state to build.
         filename: The (localized) name for the .h file.
         out: a COutput object to write to.
+        cl_args: A dictionary of additional command line arguments.
     """
+    global _cl_args
     if not decoder.primary: raise Exception('No tables provided.')
     assert filename.endswith('.cc')
+    _cl_args = cl_args
 
     values = {
         'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
@@ -630,8 +642,11 @@ int main(int argc, char* argv[]) {
 }
 """
 
-def generate_tests_cc(decoder, decoder_name, out, tables):
+def generate_tests_cc(decoder, decoder_name, out, cl_args, tables):
+  global _cl_args
   if not decoder.primary: raise Exception('No tables provided.')
+  _cl_args = cl_args
+
   values = {
       'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
       'NOT_TCB_MESSAGE' : dgen_output.NOT_TCB_BOILERPLATE,

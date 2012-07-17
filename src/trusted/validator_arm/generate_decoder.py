@@ -19,6 +19,7 @@ state (with the given decoder name) to decode instructions, while the
 import re
 import sys
 import dgen_input
+import dgen_add_patterns
 import dgen_decoder_output
 import dgen_test_output
 
@@ -39,12 +40,31 @@ def main(argv):
     decoder_name = argv[3]
     tables = None
 
-    if len(argv) > 4:
-      tables = argv[4:]
+    # Define default command line arguments.
+    cl_args = {'add-rule-patterns': 'True'}
+
+    # Strip off remaining command line arguments and add.
+    remaining_args = argv[4:]
+    while remaining_args and remaining_args[0].startswith('--'):
+      arg = remaining_args[0][len('--'):]
+      remaining_args.pop(0)
+      index = arg.find('=')
+      if index == -1:
+        cl_args[arg] = 'True'
+      else:
+        cl_args[arg[0:index]] = arg[index+1:]
+
+    print "cl args = %s" % cl_args
+
+    # Strip off tables.
+    if remaining_args:
+      tables = remaining_args
 
     print "Decoder Generator reading ", table_filename
     f = open(table_filename, 'r')
     decoder = dgen_input.parse_tables(f)
+    if cl_args.get('add-rule-patterns') == 'True':
+      decoder = dgen_add_patterns.add_rule_pattern_constraints(decoder)
     f.close()
 
     print "Successful - got %d tables." % len(decoder.tables())
@@ -55,23 +75,27 @@ def main(argv):
     if output_filename.endswith('tests.cc'):
       dgen_test_output.generate_tests_cc(decoder,
                                          decoder_name,
-                                         f, tables)
+                                         f, cl_args, tables)
     elif output_filename.endswith('named_classes.h'):
       dgen_test_output.generate_named_classes_h(
           decoder, decoder_name, _localize_filename(output_filename),
-                                                f)
+          f, cl_args)
     elif output_filename.endswith('named_decoder.h'):
       dgen_test_output.generate_named_decoder_h(
-          decoder, decoder_name, _localize_filename(output_filename), f)
+          decoder, decoder_name, _localize_filename(output_filename),
+          f, cl_args)
     elif output_filename.endswith('.h'):
       dgen_decoder_output.generate_h(
-          decoder, decoder_name, _localize_filename(output_filename), f)
+          decoder, decoder_name, _localize_filename(output_filename),
+          f, cl_args)
     elif output_filename.endswith('named.cc'):
       dgen_test_output.generate_named_cc(
-          decoder, decoder_name, _localize_filename(output_filename), f)
+          decoder, decoder_name, _localize_filename(output_filename),
+          f, cl_args)
     elif output_filename.endswith('.cc'):
       dgen_decoder_output.generate_cc(
-          decoder, decoder_name, _localize_filename(output_filename), f)
+          decoder, decoder_name, _localize_filename(output_filename),
+          f, cl_args)
     else:
       print 'Error: output filename not of form "*.{h,cc}"'
     f.close()
