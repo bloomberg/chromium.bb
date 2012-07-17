@@ -1,8 +1,15 @@
 Name: hyphen
 URL: http://sourceforge.net/projects/hunspell/files/Hyphen/
 Version: 2.6
+License File: COPYING
+Security Critical: yes
 
 Description:
-This is a partial copy of Hyphen 2.6.
+This is a partial copy of Hyphen 2.6 with the following changes:
+* Change the input params of hnj_hyphen_load to receive the pointer to a ruleset
+  instead of a file path.
+* Change RIGHTHYPHENMIN to 2 in hyph_en_US.dic so it hyphenates rec-i-proc-i-ty
+  as expected.
+The patch is in google.patch.
 
 See 'hyphen.tex' for additional requirements regarding that file. 

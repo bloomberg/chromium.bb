@@ -90,7 +90,11 @@ struct _HyphenTrans {
   int new_state;
 };
 
+#ifdef HYPHEN_CHROME_CLIENT
+HyphenDict *hnj_hyphen_load (const unsigned char *data, size_t size);
+#else
 HyphenDict *hnj_hyphen_load (const char *fn);
+#endif
 void hnj_hyphen_free (HyphenDict *dict);
 
 /* obsolete, use hnj_hyphen_hyphenate2() or *hyphenate3() functions) */
