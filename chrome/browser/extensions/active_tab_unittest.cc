@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/active_tab_permission_manager.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -73,7 +74,7 @@ class ActiveTabTest : public TabContentsTestHarness {
 
  protected:
   int tab_id() {
-    return tab_contents()->extension_tab_helper()->tab_id();
+    return SessionID::IdForTab(tab_contents());
   }
 
   ActiveTabPermissionManager* active_tab_permission_manager() {

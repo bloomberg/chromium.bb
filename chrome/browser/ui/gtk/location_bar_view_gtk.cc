@@ -1630,7 +1630,7 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
       preview_enabled_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(scoped_icon_animation_observer_(
           page_action->GetIconAnimation(
-              owner->GetTabContents()->extension_tab_helper()->tab_id()),
+              SessionID::IdForTab(owner->GetTabContents())),
           this)) {
   event_box_.Own(gtk_event_box_new());
   gtk_widget_set_size_request(event_box_.get(),

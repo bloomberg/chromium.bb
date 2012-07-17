@@ -62,9 +62,6 @@ class TabHelper : public content::WebContentsObserver,
     pending_web_app_action_ = action;
   }
 
-  // Gets the ID of the tab.
-  int tab_id() const;
-
   // Gets the window ID of the tab.
   int window_id() const;
 

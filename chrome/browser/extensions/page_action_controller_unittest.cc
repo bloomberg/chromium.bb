@@ -8,9 +8,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/page_action_controller.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/extensions/extension.h"
@@ -44,7 +44,7 @@ class PageActionControllerTest : public TabContentsTestHarness {
 
  protected:
   int tab_id() {
-    return tab_contents()->extension_tab_helper()->tab_id();
+    return SessionID::IdForTab(tab_contents());
   }
 
   ExtensionService* extension_service_;

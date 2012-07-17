@@ -7,7 +7,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -79,8 +78,7 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
     if (!tab_contents)
       return false;
 
-    return extension_action_->HasPopup(
-        tab_contents->extension_tab_helper()->tab_id());
+    return extension_action_->HasPopup(SessionID::IdForTab(tab_contents));
   } else if (command_id == DISABLE || command_id == UNINSTALL) {
     // Some extension types can not be disabled or uninstalled.
     return extensions::ExtensionSystem::Get(

@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/restore_tab_helper.h"
+#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -105,12 +105,8 @@ bool TabHelper::CanCreateApplicationShortcuts() const {
 #endif
 }
 
-int TabHelper::tab_id() const {
-  return tab_contents_->restore_tab_helper()->session_id().id();
-}
-
 int TabHelper::window_id() const {
-  return tab_contents_->restore_tab_helper()->window_id().id();
+  return SessionID::IdForWindowContainingTab(tab_contents_);
 }
 
 void TabHelper::SetExtensionApp(const Extension* extension) {
@@ -146,7 +142,8 @@ SkBitmap* TabHelper::GetExtensionAppIcon() {
 
 void TabHelper::RenderViewCreated(RenderViewHost* render_view_host) {
   render_view_host->Send(
-      new ExtensionMsg_SetTabId(render_view_host->GetRoutingID(), tab_id()));
+      new ExtensionMsg_SetTabId(render_view_host->GetRoutingID(),
+                                SessionID::IdForTab(tab_contents_)));
 }
 
 void TabHelper::DidNavigateMainFrame(
@@ -165,8 +162,7 @@ void TabHelper::DidNavigateMainFrame(
        it != service->extensions()->end(); ++it) {
     ExtensionAction* browser_action = (*it)->browser_action();
     if (browser_action) {
-      browser_action->ClearAllValuesForTab(
-          tab_contents_->restore_tab_helper()->session_id().id());
+      browser_action->ClearAllValuesForTab(SessionID::IdForTab(tab_contents_));
       content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
           content::Source<ExtensionAction>(browser_action),

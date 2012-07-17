@@ -1195,7 +1195,7 @@ bool UpdateTabFunction::RunImpl() {
       error_ = keys::kNoSelectedTabError;
       return false;
     }
-    tab_id = contents->extension_tab_helper()->tab_id();
+    tab_id = SessionID::IdForTab(contents);
   } else {
     EXTENSION_FUNCTION_VALIDATE(tab_value->GetAsInteger(&tab_id));
   }
@@ -1620,7 +1620,7 @@ bool CaptureVisibleTabFunction::RunImpl() {
   // permission to do this.
   if (!GetExtension()->CanCaptureVisiblePage(
         web_contents->GetURL(),
-        tab_contents->extension_tab_helper()->tab_id(),
+        SessionID::IdForTab(tab_contents),
         &error_)) {
     return false;
   }

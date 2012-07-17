@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -48,7 +49,7 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
       popup_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(scoped_icon_animation_observer_(
           page_action->GetIconAnimation(
-              owner->GetTabContents()->extension_tab_helper()->tab_id()),
+              SessionID::IdForTab(owner->GetTabContents())),
           this)) {
   const Extension* extension = owner_->profile()->GetExtensionService()->
       GetExtensionById(page_action->extension_id(), false);

@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -25,8 +24,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ScriptBadge) {
   const ExtensionAction* script_badge = extension->script_badge();
   ASSERT_TRUE(script_badge);
 
-  const int tab_id = chrome::GetActiveTabContents(browser())->
-      extension_tab_helper()->tab_id();
+  const int tab_id = SessionID::IdForTab(
+      chrome::GetActiveTabContents(browser()));
   EXPECT_EQ(GURL(extension->GetResourceURL("default_popup.html")),
             script_badge->GetPopupUrl(tab_id));
 

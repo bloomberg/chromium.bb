@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -49,8 +50,7 @@ void ScriptBadgeController::GetAttentionFor(
   // TODO(jyasskin): Modify the icon's appearance to indicate that the
   // extension is merely asking for permission to run:
   // http://crbug.com/133142
-  script_badge->SetIsVisible(
-      tab_contents_->extension_tab_helper()->tab_id(), true);
+  script_badge->SetIsVisible(SessionID::IdForTab(tab_contents_), true);
 
   NotifyChange();
 }
@@ -79,7 +79,7 @@ LocationBarController::Action ScriptBadgeController::OnClicked(
       GetExtensionService()->browser_event_router()->ScriptBadgeExecuted(
           tab_contents_->profile(),
           *script_badge,
-          tab_contents_->extension_tab_helper()->tab_id());
+          SessionID::IdForTab(tab_contents_));
       return ACTION_NONE;
     case 3:  // right
       return extension->ShowConfigureContextMenus() ?
@@ -185,8 +185,8 @@ bool ScriptBadgeController::MarkExtensionExecuting(
   if (!script_badge)
     return false;
 
-  script_badge->RunIconAnimation(
-      tab_contents_->extension_tab_helper()->tab_id());
+  script_badge->RunIconAnimation(SessionID::IdForTab(tab_contents_));
+
   return true;
 }
 
