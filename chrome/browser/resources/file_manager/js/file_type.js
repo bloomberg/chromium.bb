@@ -53,14 +53,8 @@ FileType.types = [
    pattern: /\.wav$/i},
 
   // Text
-  {type: 'text', name: 'PLAIN_TEXT_FILE_TYPE', subtype: 'POD',
-   pattern: /\.pod$/i},
-  {type: 'text', name: 'PLAIN_TEXT_FILE_TYPE', subtype: 'RST',
-   pattern: /\.rst$/i},
   {type: 'text', name: 'PLAIN_TEXT_FILE_TYPE', subtype: 'TXT',
    pattern: /\.txt$/i},
-  {type: 'text', name: 'PLAIN_TEXT_FILE_TYPE', subtype: 'LOG',
-   pattern: /\.log$/i},
 
   // Archive
   {type: 'archive', name: 'ZIP_ARCHIVE_FILE_TYPE', subtype: 'ZIP',
@@ -91,7 +85,7 @@ FileType.types = [
   // Others
   {type: 'document', icon: 'pdf', name: 'PDF_DOCUMENT_FILE_TYPE',
    subtype: 'PDF', pattern: /\.pdf$/i},
-  {type: 'document', icon: 'generic', name: 'HTML_DOCUMENT_FILE_TYPE',
+  {type: 'document', name: 'HTML_DOCUMENT_FILE_TYPE',
    subtype: 'HTML', pattern: /\.(html?|mht|mhtml)$/i},
   {type: 'document', icon: 'word', name: 'WORD_DOCUMENT_FILE_TYPE',
    subtype: 'Word', pattern: /\.(doc|docx)$/i},

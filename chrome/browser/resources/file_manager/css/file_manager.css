@@ -475,23 +475,6 @@ button#detail-view:not([disabled]) {
   z-index: 2;
 }
 
-button.settings {
-  display: none;
-  /* Temporary solution not to uglify settings button */
-  height: 30px;
-  margin-left: 8px;
-  width: 57px;
-}
-
-[gdata] button.settings {
-  background-image: url('../images/settings_button.png');
-  display: block;
-}
-
-[gdata] button.settings:active {
-  background-image: url('../images/settings_button_pressed.png');
-}
-
 .filelist-panel {
   -webkit-box-flex: 1;
   -webkit-box-orient: vertical;
@@ -1002,10 +985,6 @@ input.rename {
 
 .detail-icon[iconType='ppt'] {
   background-image: url(../images/filetype_ppt.png);
-}
-
-.detail-icon[iconType='text'] {
-  background-image: url(../images/filetype_text.png);
 }
 
 .detail-icon[iconType='video'] {

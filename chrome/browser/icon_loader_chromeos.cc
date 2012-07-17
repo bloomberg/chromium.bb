@@ -61,11 +61,6 @@ const IdrBySize kGenericIdrs = {
   IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_GENERIC,
   IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_GENERIC
 };
-const IdrBySize kHtmlIdrs = {
-  IDR_FILE_MANAGER_IMG_FILETYPE_HTML,
-  IDR_FILE_MANAGER_IMG_FILETYPE_HTML,
-  IDR_FILE_MANAGER_IMG_FILETYPE_HTML
-};
 const IdrBySize kImageIdrs = {
   IDR_FILE_MANAGER_IMG_FILETYPE_IMAGE,
   IDR_FILE_MANAGER_IMG_FILETYPE_IMAGE,
@@ -75,11 +70,6 @@ const IdrBySize kPdfIdrs = {
   IDR_FILE_MANAGER_IMG_FILETYPE_PDF,
   IDR_FILE_MANAGER_IMG_FILETYPE_PDF,
   IDR_FILE_MANAGER_IMG_FILETYPE_PDF
-};
-const IdrBySize kTextIdrs = {
-  IDR_FILE_MANAGER_IMG_FILETYPE_TEXT,
-  IDR_FILE_MANAGER_IMG_FILETYPE_TEXT,
-  IDR_FILE_MANAGER_IMG_FILETYPE_TEXT
 };
 const IdrBySize kVideoIdrs = {
   IDR_FILE_MANAGER_IMG_FILETYPE_VIDEO,
@@ -117,8 +107,6 @@ IconMapper::IconMapper() {
     std::make_pair(".oga", kAudioIdrs),
     std::make_pair(".ogg", kAudioIdrs),
     std::make_pair(".wav", kAudioIdrs),
-    std::make_pair(".htm", kHtmlIdrs),
-    std::make_pair(".html", kHtmlIdrs),
     std::make_pair(".bmp", kImageIdrs),
     std::make_pair(".gif", kImageIdrs),
     std::make_pair(".ico", kImageIdrs),
@@ -126,10 +114,6 @@ IconMapper::IconMapper() {
     std::make_pair(".jpg", kImageIdrs),
     std::make_pair(".png", kImageIdrs),
     std::make_pair(".webp", kImageIdrs),
-    std::make_pair(".log", kTextIdrs),
-    std::make_pair(".pod", kTextIdrs),
-    std::make_pair(".rst", kTextIdrs),
-    std::make_pair(".txt", kTextIdrs),
     std::make_pair(".ogm", kVideoIdrs),
     std::make_pair(".ogv", kVideoIdrs),
     std::make_pair(".ogx", kVideoIdrs),
