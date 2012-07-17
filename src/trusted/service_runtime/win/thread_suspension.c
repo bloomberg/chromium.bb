@@ -84,6 +84,26 @@ void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
 
 void NaClUntrustedThreadResume(struct NaClAppThread *natp) {
   if (natp->suspend_state == NACL_APP_THREAD_UNTRUSTED) {
+    if (natp->suspended_registers != NULL) {
+      /*
+       * Apply register modifications.  In case there are any
+       * important fields in CONTEXT that NaClSignalContextToHandler()
+       * does not fill out, we re-fetch the CONTEXT struct before
+       * modifying it.
+       */
+      CONTEXT context;
+      context.ContextFlags = CONTEXT_CONTROL | CONTEXT_INTEGER;
+      if (!GetThreadContext(natp->thread.tid, &context)) {
+        NaClLog(LOG_FATAL, "NaClUntrustedThreadResume: "
+                "GetThreadContext() failed\n");
+      }
+      NaClSignalContextToHandler(&context, natp->suspended_registers);
+      if (!SetThreadContext(natp->thread.tid, &context)) {
+        NaClLog(LOG_FATAL, "NaClUntrustedThreadResume: "
+                "SetThreadContext() failed\n");
+      }
+    }
+
     if (ResumeThread(natp->thread.tid) == (DWORD) -1) {
       NaClLog(LOG_FATAL, "NaClUntrustedThreadResume: "
               "ResumeThread() call failed\n");

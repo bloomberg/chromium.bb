@@ -17,6 +17,7 @@
 struct SuspendTestShm {
   volatile uint32_t var;
   volatile uint32_t should_exit;  /* Boolean */
+  uint32_t continue_after_suspension_func;
 };
 
 

@@ -54,6 +54,7 @@ struct ThreadArgs {
 static void AppThreadInitMinimal(struct NaClAppThread *natp) {
   memset(natp, 0xff, sizeof(*natp));
   natp->suspend_state = NACL_APP_THREAD_UNTRUSTED;
+  natp->suspended_registers = NULL;
   ASSERT_EQ(NaClMutexCtor(&natp->suspend_mu), 1);
 }
 

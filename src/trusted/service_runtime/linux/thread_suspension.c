@@ -79,6 +79,7 @@ void NaClAppThreadSetSuspendState(struct NaClAppThread *natp,
 void NaClSuspendSignalHandler(struct NaClSignalContext *regs) {
   uint32_t tls_idx = NaClTlsGetIdx();
   struct NaClAppThread *natp = nacl_thread[tls_idx];
+  struct NaClSignalContext *suspended_registers = natp->suspended_registers;
 
   /* Sanity check. */
   if (natp->suspend_state != (NACL_APP_THREAD_UNTRUSTED |
@@ -88,8 +89,8 @@ void NaClSuspendSignalHandler(struct NaClSignalContext *regs) {
     NaClAbort();
   }
 
-  if (natp->suspended_registers != NULL) {
-    *natp->suspended_registers = *regs;
+  if (suspended_registers != NULL) {
+    *suspended_registers = *regs;
     /*
      * Ensure that the change to natp->suspend_state does not become
      * visible before the change to natp->suspended_registers.
@@ -114,6 +115,16 @@ void NaClSuspendSignalHandler(struct NaClSignalContext *regs) {
       continue;  /* Retry */
     }
     break;
+  }
+  /*
+   * Apply register modifications.  We need to use a snapshot of
+   * natp->suspended_registers because, since we were asked to resume,
+   * we could have been asked to suspend again, and
+   * suspended_registers could have been allocated in the new
+   * suspension request but not in the original suspension request.
+   */
+  if (suspended_registers != NULL) {
+    *regs = *suspended_registers;
   }
 }
 

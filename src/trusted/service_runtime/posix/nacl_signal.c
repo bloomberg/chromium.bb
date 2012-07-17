@@ -331,6 +331,8 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
 #if NACL_LINUX
   if (sig == NACL_THREAD_SUSPEND_SIGNAL) {
     NaClSuspendSignalHandler(&sigCtx);
+    NaClSignalContextToHandler(uc, &sigCtx);
+    /* Resume untrusted code using possibly modified register state. */
     return;
   }
 #endif

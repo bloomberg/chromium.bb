@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 
@@ -42,6 +43,7 @@ static void SyscallInvokerThread(struct SuspendTestShm *test_shm) {
 }
 
 void spin_instruction();
+void ContinueAfterSuspension();
 
 static void RegisterSetterThread(struct SuspendTestShm *test_shm) {
   /*
@@ -49,6 +51,8 @@ static void RegisterSetterThread(struct SuspendTestShm *test_shm) {
    * block by entering a NaCl syscall because that would disturb the
    * register state.
    */
+  test_shm->continue_after_suspension_func =
+      (uintptr_t) ContinueAfterSuspension;
   assert(offsetof(struct SuspendTestShm, var) == 0);
 #if defined(__i386__)
   __asm__(
@@ -123,6 +127,95 @@ static void RegisterSetterThread(struct SuspendTestShm *test_shm) {
 #else
 # error Unsupported architecture
 #endif
+}
+
+#if defined(__i386__)
+
+struct SavedRegisters {
+  uint32_t regs[6];
+};
+
+const uint32_t kTestValueBase = 0x12340001;
+
+__asm__(
+    ".pushsection .text, \"ax\", @progbits\n"
+    "ContinueAfterSuspension:\n"
+    /* Push "struct SavedRegisters" in reverse order. */
+    "push %edi\n"
+    "push %esi\n"
+    "push %ebx\n"
+    "push %edx\n"
+    "push %ecx\n"
+    "push %eax\n"
+    "push %esp\n"  /* Push argument to CheckSavedRegisters() function */
+    "call CheckSavedRegisters\n"
+    ".popsection\n");
+
+#elif defined(__x86_64__)
+
+struct SavedRegisters {
+  uint64_t regs[13];
+};
+
+const uint64_t kTestValueBase = 0x1234567800000001;
+
+__asm__(
+    ".pushsection .text, \"ax\", @progbits\n"
+    "ContinueAfterSuspension:\n"
+    /* Push "struct SavedRegisters" in reverse order. */
+    "push %r14\n"
+    "push %r13\n"
+    "push %r12\n"
+    "push %r11\n"
+    "push %r10\n"
+    "push %r9\n"
+    "push %r8\n"
+    "push %rdi\n"
+    "push %rsi\n"
+    "push %rbx\n"
+    "push %rdx\n"
+    "push %rcx\n"
+    "push %rax\n"
+    "movl %esp, %edi\n"  /* Argument to CheckSavedRegisters() function */
+    /* Align the stack pointer */
+    "and $~15, %esp\n"
+    "addq %r15, %rsp\n"
+    "call CheckSavedRegisters\n"
+    ".popsection\n");
+
+#elif defined(__arm__)
+
+struct SavedRegisters {
+  uint32_t regs[12];
+};
+
+const uint32_t kTestValueBase = 0x12340001;
+
+__asm__(
+    ".pushsection .text, \"ax\", %progbits\n"
+    "ContinueAfterSuspension:\n"
+    "push {r0-r8, r10-r12}\n"  /* Push "struct SavedRegisters" */
+    "mov r0, sp\n"  /* Argument to CheckSavedRegisters() function */
+    "nop\n"  /* Padding to put the "bl" at the end of the bundle */
+    "bl CheckSavedRegisters\n"
+    ".popsection\n");
+
+#else
+# error Unsupported architecture
+#endif
+
+void CheckSavedRegisters(struct SavedRegisters *saved_regs) {
+  size_t index;
+  for (index = 0; index < NACL_ARRAY_SIZE(saved_regs->regs); index++) {
+    unsigned long long expected = kTestValueBase + index;
+    unsigned long long actual = saved_regs->regs[index];
+    if (actual != expected) {
+      fprintf(stderr, "Failed: for register #%i, %llx != %llx\n",
+              index, actual, expected);
+      _exit(1);
+    }
+  }
+  _exit(0);
 }
 
 int main(int argc, char **argv) {
