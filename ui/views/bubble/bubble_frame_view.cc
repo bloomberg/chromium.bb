@@ -41,9 +41,9 @@ namespace views {
 
 BubbleFrameView::BubbleFrameView(BubbleBorder::ArrowLocation arrow_location,
                                  SkColor color,
-                                 int margin)
+                                 const gfx::Insets& margins)
     : bubble_border_(NULL),
-      content_margins_(margin, margin, margin, margin) {
+      content_margins_(margins) {
   if (base::i18n::IsRTL())
     arrow_location = BubbleBorder::horizontal_mirror(arrow_location);
   // TODO(alicet): Expose the shadow option in BorderContentsView when we make

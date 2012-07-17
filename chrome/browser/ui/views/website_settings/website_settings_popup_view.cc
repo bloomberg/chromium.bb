@@ -25,6 +25,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/insets.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -68,6 +69,12 @@ const int kHeaderPaddingTop = 8;
 // the popup header.
 const int kHeaderRowSpacing = 4;
 
+// The margins between the popup border and the popup content.
+const int kPopupMarginTop = 4;
+const int kPopupMarginLeft = 0;
+const int kPopupMarginBottom = 12;
+const int kPopupMarginRight = 0;
+
 // Padding values for sections.
 const int kSectionPaddingBottom = 6;
 const int kSectionPaddingLeft = 10;
@@ -82,9 +89,6 @@ const int kSectionRowSpacing = 6;
 
 // The max width of the popup.
 const int kPopupWidth = 300;
-
-// The bottom margin of the tabbed pane view.
-const int kTabbedPaneMarginBottom = 8;
 
 // Returns true if the passed |url| refers to an internal chrome page.
 bool InternalChromePage(const GURL& url) {
@@ -298,7 +302,8 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
     tabbed_pane_->SelectTabAt(0);
     tabbed_pane_->set_listener(this);
 
-    layout->AddPaddingRow(0, kTabbedPaneMarginBottom);
+    set_margins(gfx::Insets(kPopupMarginTop, kPopupMarginLeft,
+                            kPopupMarginBottom, kPopupMarginRight));
 
     views::BubbleDelegateView::CreateBubble(this);
     this->Show();

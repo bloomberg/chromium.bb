@@ -12,6 +12,7 @@
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_box_view.h"
+#include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -63,7 +64,7 @@ void AppListView::InitAsBubble(
   search_box_view_->set_contents_view(contents_view_);
 
   set_anchor_view(anchor);
-  set_margin(0);
+  set_margins(gfx::Insets());
   set_move_with_anchor(true);
   set_parent_window(parent);
   set_close_on_deactivate(false);

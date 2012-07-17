@@ -120,7 +120,7 @@ BubbleDelegateView::BubbleDelegateView()
       move_with_anchor_(false),
       arrow_location_(BubbleBorder::TOP_LEFT),
       color_(kBackgroundColor),
-      margin_(kDefaultMargin),
+      margins_(kDefaultMargin, kDefaultMargin, kDefaultMargin, kDefaultMargin),
       original_opacity_(255),
       border_widget_(NULL),
       use_focusless_(false),
@@ -139,7 +139,7 @@ BubbleDelegateView::BubbleDelegateView(
       move_with_anchor_(false),
       arrow_location_(arrow_location),
       color_(kBackgroundColor),
-      margin_(kDefaultMargin),
+      margins_(kDefaultMargin, kDefaultMargin, kDefaultMargin, kDefaultMargin),
       original_opacity_(255),
       border_widget_(NULL),
       use_focusless_(false),
@@ -192,7 +192,7 @@ View* BubbleDelegateView::GetContentsView() {
 
 NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView(
     Widget* widget) {
-  return new BubbleFrameView(arrow_location(), color(), margin());
+  return new BubbleFrameView(arrow_location(), color(), margins());
 }
 
 void BubbleDelegateView::OnWidgetClosing(Widget* widget) {

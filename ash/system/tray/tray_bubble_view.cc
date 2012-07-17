@@ -19,6 +19,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/box_layout.h"
@@ -220,7 +221,7 @@ TrayBubbleView::TrayBubbleView(
       can_activate_(can_activate),
       max_height_(0),
       bubble_width_(bubble_width) {
-  set_margin(0);
+  set_margins(gfx::Insets());
   set_parent_window(Shell::GetContainer(
       anchor->GetWidget()->GetNativeWindow()->GetRootWindow(),
       internal::kShellWindowId_SettingBubbleContainer));

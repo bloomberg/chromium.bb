@@ -8,6 +8,7 @@
 
 #include "ash/launcher/launcher_types.h"
 #include "ash/launcher/launcher_view.h"
+#include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -120,7 +121,7 @@ void OverflowBubbleView::InitOverflowBubble(LauncherDelegate* delegate,
   set_arrow_location(GetBubbleArrowLocation(shelf_alignment));
   set_background(NULL);
   set_color(kLauncherColor);
-  set_margin(kPadding);
+  set_margins(gfx::Insets(kPadding, kPadding, kPadding, kPadding));
   set_move_with_anchor(true);
   views::BubbleDelegateView::CreateBubble(this);
 }

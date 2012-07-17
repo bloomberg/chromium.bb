@@ -21,7 +21,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView {
  public:
   BubbleFrameView(BubbleBorder::ArrowLocation arrow_location,
                   SkColor color,
-                  int margin);
+                  const gfx::Insets& margins);
   virtual ~BubbleFrameView();
 
   // NonClientFrameView overrides:

@@ -12,6 +12,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/insets.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -71,7 +72,8 @@ LauncherTooltipManager::LauncherTooltipBubble::LauncherTooltipBubble(
   set_close_on_esc(false);
   set_close_on_deactivate(false);
   set_use_focusless(true);
-  set_margin(kTooltipMargin);
+  set_margins(gfx::Insets(kTooltipMargin, kTooltipMargin, kTooltipMargin,
+                          kTooltipMargin));
   SetLayoutManager(new views::FillLayout());
   // The anchor may not have the widget in tests.
   if (anchor->GetWidget() && anchor->GetWidget()->GetNativeView()) {

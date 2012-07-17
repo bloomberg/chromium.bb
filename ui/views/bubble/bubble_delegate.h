@@ -74,8 +74,8 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   SkColor color() const { return color_; }
   void set_color(SkColor color) { color_ = color; }
 
-  int margin() const { return margin_; }
-  void set_margin(int margin) { margin_ = margin; }
+  const gfx::Insets& margins() const { return margins_; }
+  void set_margins(const gfx::Insets& margins) { margins_ = margins; }
 
   gfx::NativeView parent_window() const { return parent_window_; }
   void set_parent_window(gfx::NativeView window) { parent_window_ = window; }
@@ -159,8 +159,8 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // The background color of the bubble.
   SkColor color_;
 
-  // The margin between the content and the inside of the border, in pixels.
-  int margin_;
+  // The margins between the content and the inside of the border.
+  gfx::Insets margins_;
 
   // Original opacity of the bubble.
   int original_opacity_;
