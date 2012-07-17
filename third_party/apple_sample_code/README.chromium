@@ -1,7 +1,13 @@
 Name: Apple sample code
 URL: http://developer.apple.com/
+Version: unknown
+Security Critical: Yes
 
 Local changes:
 * ImageAndTextCell.h: Changed 'image' property to 'retain' mode to fix a crash.
 * ImageAndTextCell.m: Moved '@synthesize' to to the top of '@implementation' as
                       suggested by a clang warning.
+* ImageAndTextCell.m: Switched from -[NSImage compositeToPoint:operation:] to
+                      -[NSImage drawInRect:fromRect:operation:fraction:respectFlipped:hints:]
+                      as the former is deprecated and doesn't work properly in
+                      HiDPI.
