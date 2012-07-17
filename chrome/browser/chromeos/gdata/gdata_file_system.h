@@ -305,7 +305,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // GetFileByPath reports no error, calls TransferRegularFile to transfer
   // |local_file_path| to |remote_dest_file_path|.
   //
-  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  // Can be called from UI thread. |callback| is run on the calling thread.
   void OnGetFileCompleteForCopy(const FilePath& remote_dest_file_path,
                                 const FileOperationCallback& callback,
                                 GDataFileError error,
@@ -318,7 +318,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // CopyLocalFileOnBlockingPool to copy |local_file_path| to
   // |local_dest_file_path|.
   //
-  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  // Can be called from UI thread. |callback| is run on the calling thread.
   void OnGetFileCompleteForTransferFile(const FilePath& local_dest_file_path,
                                         const FileOperationCallback& callback,
                                         GDataFileError error,
@@ -331,7 +331,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // file as dirty for the file identified by |file_info.resource_id| and
   // |file_info.md5|.
   //
-  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  // Can be called from UI thread. |callback| is run on the calling thread.
   void OnGetFileCompleteForOpenFile(
       const OpenFileCallback& callback,
       const GetFileCompleteForOpenParams& file_info,
@@ -343,7 +343,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Copies a document with |resource_id| to the directory at |dir_path|
   // and names the copied document as |new_name|.
   //
-  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  // Can be called from UI thread. |callback| is run on the calling thread.
   void CopyDocumentToDirectory(const FilePath& dir_path,
                                const std::string& resource_id,
                                const FilePath::StringType& new_name,
@@ -351,14 +351,14 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Renames a file or directory at |file_path| to |new_name|.
   //
-  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  // Can be called from UI thread. |callback| is run on the calling thread.
   void Rename(const FilePath& file_path,
               const FilePath::StringType& new_name,
               const FilePathUpdateCallback& callback);
 
   // Adds a file or directory at |file_path| to the directory at |dir_path|.
   //
-  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  // Can be called from UI thread. |callback| is run on the calling thread.
   void AddEntryToDirectory(const FilePath& dir_path,
                            const FileOperationCallback& callback,
                            GDataFileError error,
@@ -367,7 +367,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Removes a file or directory at |file_path| from the directory at
   // |dir_path| and moves it to the root directory.
   //
-  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  // Can be called from UI thread. |callback| is run on the calling thread.
   void RemoveEntryFromDirectory(const FilePath& dir_path,
                                 const FilePathUpdateCallback& callback,
                                 GDataFileError error,
