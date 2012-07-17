@@ -18,6 +18,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/weburlrequest_extradata_impl.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
@@ -121,10 +122,9 @@ bool PPB_URLRequestInfo_Impl::ToWebURLRequest(WebFrame* frame,
   }
 
   if (data().has_custom_user_agent) {
-    // TODO(viettrungluu): If |custom_user_agent| is empty, we're supposed to
-    // arrange for User-Agent to be omitted; this probably won't do that.
-    dest->addHTTPHeaderField(WebString::fromUTF8("User-Agent"),
-                             WebString::fromUTF8(data().custom_user_agent));
+    dest->setExtraData(new webkit_glue::WebURLRequestExtraDataImpl(
+        WebKit::WebReferrerPolicyDefault,  // Ignored.
+        WebString::fromUTF8(data().custom_user_agent)));
   }
 
   return true;

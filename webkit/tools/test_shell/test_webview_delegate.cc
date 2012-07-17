@@ -860,7 +860,7 @@ void TestWebViewDelegate::willSendRequest(
 
   request.setExtraData(
       new webkit_glue::WebURLRequestExtraDataImpl(
-          frame->document().referrerPolicy()));
+          frame->document().referrerPolicy(), WebString()));
 
   if (!redirect_response.isNull() && block_redirects_) {
     printf("Returning null for this redirect\n");

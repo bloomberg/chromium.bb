@@ -742,7 +742,8 @@ WebKit::WebURLError CreateCancelledError(const WebKit::WebURLRequest& request) {
 
 WebKit::WebURLRequest::ExtraData* CreateWebURLRequestExtraData(
     WebKit::WebReferrerPolicy referrer_policy) {
-  return new webkit_glue::WebURLRequestExtraDataImpl(referrer_policy);
+  return new webkit_glue::WebURLRequestExtraDataImpl(referrer_policy,
+                                                     WebKit::WebString());
 }
 
 // Bridge for SimpleDatabaseSystem

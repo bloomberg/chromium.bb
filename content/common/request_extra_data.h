@@ -16,6 +16,7 @@ class CONTENT_EXPORT RequestExtraData
     : NON_EXPORTED_BASE(public webkit_glue::WebURLRequestExtraDataImpl) {
  public:
   RequestExtraData(WebKit::WebReferrerPolicy referrer_policy,
+                   const WebKit::WebString& custom_user_agent,
                    bool is_main_frame,
                    int64 frame_id,
                    bool parent_is_main_frame,

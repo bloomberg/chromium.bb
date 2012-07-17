@@ -3301,8 +3301,27 @@ void RenderViewImpl::willSendRequest(WebFrame* frame,
     referrer_policy = frame->document().referrerPolicy();
   }
 
+  // The request's extra data may indicate that we should set a custom user
+  // agent. This needs to be done here, after WebKit is through with setting the
+  // user agent on its own.
+  WebString custom_user_agent;
+  if (request.extraData()) {
+    webkit_glue::WebURLRequestExtraDataImpl* old_extra_data =
+        static_cast<webkit_glue::WebURLRequestExtraDataImpl*>(
+            request.extraData());
+    custom_user_agent = old_extra_data->custom_user_agent();
+
+    if (!custom_user_agent.isNull()) {
+      if (custom_user_agent.isEmpty())
+        request.clearHTTPHeaderField("User-Agent");
+      else
+        request.setHTTPHeaderField("User-Agent", custom_user_agent);
+    }
+  }
+
   request.setExtraData(
       new RequestExtraData(referrer_policy,
+                           custom_user_agent,
                            (frame == top_frame),
                            frame->identifier(),
                            frame->parent() == top_frame,
