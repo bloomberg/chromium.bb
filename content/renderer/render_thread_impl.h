@@ -53,6 +53,7 @@ class ScopedCOMInitializer;
 }
 
 namespace content {
+class AudioRendererMixerManager;
 class BrowserPluginChannelManager;
 class BrowserPluginRegistry;
 class MediaStreamCenter;
@@ -223,6 +224,11 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   // threaded compositing is enabled.
   base::WeakPtr<WebGraphicsContext3DCommandBufferImpl> GetGpuVDAContext3D();
 
+  // AudioRendererMixerManager instance which manages renderer side mixer
+  // instances shared based on configured audio parameters.  Lazily created on
+  // first call.
+  content::AudioRendererMixerManager* GetAudioRendererMixerManager();
+
  private:
   virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
 
@@ -302,6 +308,8 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   ObserverList<content::RenderProcessObserver> observers_;
 
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> gpu_vda_context3d_;
+
+  scoped_ptr<content::AudioRendererMixerManager> audio_renderer_mixer_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };

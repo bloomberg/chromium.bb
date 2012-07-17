@@ -55,8 +55,10 @@
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/gpu/compositor_thread.h"
 #include "content/renderer/gpu/gpu_benchmarking_extension.h"
+#include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
+#include "content/renderer/media/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/media_stream_center.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_message_filter.h"
@@ -111,6 +113,7 @@ using WebKit::WebScriptController;
 using WebKit::WebSecurityPolicy;
 using WebKit::WebString;
 using WebKit::WebView;
+using content::AudioRendererMixerManager;
 using content::RenderProcessObserver;
 
 namespace {
@@ -748,6 +751,17 @@ RenderThreadImpl::GetGpuVDAContext3D() {
             GURL("chrome://gpu/RenderThreadImpl::GetGpuVDAContext3D")));
   }
   return gpu_vda_context3d_->AsWeakPtr();
+}
+
+content::AudioRendererMixerManager*
+RenderThreadImpl::GetAudioRendererMixerManager() {
+  if (!audio_renderer_mixer_manager_.get()) {
+    audio_renderer_mixer_manager_.reset(new AudioRendererMixerManager(
+        audio_hardware::GetOutputSampleRate(),
+        audio_hardware::GetOutputBufferSize()));
+  }
+
+  return audio_renderer_mixer_manager_.get();
 }
 
 #if defined(OS_WIN)

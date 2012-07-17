@@ -312,6 +312,9 @@ const char kEnablePrivilegedWebGLExtensions[] =
 const char kEnablePruneGpuCommandBuffers[] =
     "enable-prune-gpu-command-buffers";
 
+// Enable renderer side mixing and low latency audio path for media elements.
+const char kEnableRendererSideMixing[] = "enable-renderer-side-mixing";
+
 // Enables TLS cached info extension.
 const char kEnableSSLCachedInfo[]  = "enable-ssl-cached-info";
 

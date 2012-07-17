@@ -5,11 +5,17 @@
 #include "content/renderer/media/render_audiosourceprovider.h"
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/logging.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/media/audio_device_factory.h"
+#include "content/renderer/media/audio_renderer_mixer_manager.h"
+#include "content/renderer/render_thread_impl.h"
+#include "media/base/audio_renderer_mixer_input.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioSourceProviderClient.h"
 
 using content::AudioDeviceFactory;
+using content::AudioRendererMixerManager;
 using std::vector;
 using WebKit::WebVector;
 
@@ -20,11 +26,17 @@ RenderAudioSourceProvider::RenderAudioSourceProvider()
       is_running_(false),
       renderer_(NULL),
       client_(NULL) {
-  // We create the AudioDevice here using the factory. But we don't yet know
-  // the audio format (sample-rate, etc.) at this point.  Later, when
-  // Initialize() is called, we have the audio format information and call
-  // the AudioDevice::Initialize() method to fully initialize it.
-  default_sink_ = AudioDeviceFactory::Create();
+  // We create an AudioRendererSink here, but we don't yet know the audio format
+  // (sample-rate, etc.) at this point.  Later, when Initialize() is called, we
+  // have the audio format information and call AudioRendererSink::Initialize()
+  // to fully initialize it.
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kEnableRendererSideMixing)) {
+    default_sink_ = RenderThreadImpl::current()->
+        GetAudioRendererMixerManager()->CreateInput();
+  } else {
+    default_sink_ = AudioDeviceFactory::Create();
+  }
 }
 
 void RenderAudioSourceProvider::setClient(
