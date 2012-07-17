@@ -98,3 +98,14 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
 
   ChromeBrowserMainPartsPosix::PreProfileInit();
 }
+
+void ChromeBrowserMainPartsLinux::PostMainMessageLoopRun() {
+#if !defined(OS_CHROMEOS)
+  // Release it now. Otherwise the FILE thread would be gone when we try to
+  // release it in the dtor and Valgrind would report a leak on almost ever
+  // single browser_test.
+  media_device_notifications_linux_ = NULL;
+#endif
+
+  ChromeBrowserMainPartsPosix::PostMainMessageLoopRun();
+}
