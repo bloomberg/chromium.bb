@@ -5543,6 +5543,22 @@
    fun:_ZN16RenderThreadImplC1ERKSs
    fun:_ZN21WebRTCAudioDeviceTest5SetUpEv
 }
+{
+   bug_137615_a
+   Memcheck:Uninitialized
+   fun:bcmp
+   fun:_ZN3net8internal19AddressTrackerLinux13HandleMessageEPKcm
+   fun:_ZN3net8internal23AddressTrackerLinuxTest13HandleMessageEPcm
+   fun:_ZN3net8internal12_GLOBAL__N_148AddressTrackerLinuxTest_NewAddressDuplicate_Test8TestBodyEv
+}
+{
+   bug_137615_b
+   Memcheck:Uninitialized
+   fun:bcmp
+   fun:_ZN3net8internal19AddressTrackerLinux13HandleMessageEPKcm
+   fun:_ZN3net8internal23AddressTrackerLinuxTest13HandleMessageEPcm
+   fun:_ZN3net8internal12_GLOBAL__N_145AddressTrackerLinuxTest_NewAddressChange_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
