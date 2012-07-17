@@ -21,7 +21,7 @@ import org.chromium.content.common.CommandLine;
  */
 public class ContentShellActivity extends Activity {
 
-    private static final String COMMAND_LINE_FILE = "/data/local/content-shell-command-line";
+    private static final String COMMAND_LINE_FILE = "/data/local/tmp/content-shell-command-line";
     private static final String TAG = ContentShellActivity.class.getName();
 
     private ShellManager mShellManager;
