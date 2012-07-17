@@ -525,7 +525,7 @@ void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
 
   // Get the image to send in the report.
   ScreenshotDataPtr image_ptr;
-  if (!screenshot_path.empty())
+  if (!screenshot_path.empty() &&  screenshot_source_)
     image_ptr = screenshot_source_->GetCachedScreenshot(screenshot_path);
 
 #if defined(OS_CHROMEOS)
