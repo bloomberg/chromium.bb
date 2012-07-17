@@ -10,6 +10,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 
+class Browser;
 class WebIntentPicker;
 
 // This class is the policy delegate for the rendered page in the intents
@@ -23,10 +24,10 @@ class WebIntentInlineDispositionDelegate
   // |picker| is notified when the web contents loading state changes. Must not
   // be NULL.
   // |contents| is the WebContents for the inline disposition.
-  // |profile| is the browser profile inline disposition was invoked from.
+  // |browser| is the browser inline disposition was invoked from.
   WebIntentInlineDispositionDelegate(WebIntentPicker* picker,
                                      content::WebContents* contents,
-                                     Profile* profile);
+                                     Browser* browser);
   virtual ~WebIntentInlineDispositionDelegate();
 
   // WebContentsDelegate implementation.
@@ -66,7 +67,7 @@ class WebIntentInlineDispositionDelegate
   // The WebContents container. Weak pointer.
   content::WebContents* web_contents_;
 
-  Profile* profile_;  // Weak pointer.
+  Browser* browser_;  // Weak pointer.
 
   // Dispatch handler for extension APIs.
   ExtensionFunctionDispatcher extension_function_dispatcher_;

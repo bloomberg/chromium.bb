@@ -11,6 +11,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
@@ -162,9 +163,10 @@ void WebIntentPickerCocoa::OnInlineDisposition(const string16& title,
       tab_util::GetSiteInstanceForNewTab(tab_contents_->profile(), url),
       MSG_ROUTING_NONE, NULL, NULL);
   inline_disposition_tab_contents_.reset(new TabContents(web_contents));
+  Browser* browser = browser::FindBrowserWithWebContents(
+      tab_contents_->web_contents());
   inline_disposition_delegate_.reset(
-      new WebIntentInlineDispositionDelegate(this, web_contents,
-                                             tab_contents_->profile()));
+      new WebIntentInlineDispositionDelegate(this, web_contents, browser));
 
   // Must call this immediately after WebContents creation to avoid race
   // with load.

@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -19,12 +18,12 @@
 WebIntentInlineDispositionDelegate::WebIntentInlineDispositionDelegate(
     WebIntentPicker* picker,
     content::WebContents* contents,
-    Profile* profile)
+    Browser* browser)
     : picker_(picker),
       web_contents_(contents),
-      profile_(profile),
+      browser_(browser),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-        extension_function_dispatcher_(profile, this)) {
+        extension_function_dispatcher_(browser->profile(), this)) {
   content::WebContentsObserver::Observe(web_contents_);
   web_contents_->SetDelegate(this);
   // TODO(groby): Technically, allowing the browser to hande all requests
@@ -71,13 +70,12 @@ void WebIntentInlineDispositionDelegate::AddNewContents(
     bool user_gesture) {
   DCHECK_EQ(source, web_contents_);
   DCHECK_EQ(Profile::FromBrowserContext(new_contents->GetBrowserContext()),
-      profile_);
-  Browser* browser = browser::FindOrCreateTabbedBrowser(profile_);
+      browser_->profile());
   // Force all links to open in a new tab, even when different disposition is
   // requested.
   disposition =
       disposition == NEW_BACKGROUND_TAB ? disposition : NEW_FOREGROUND_TAB;
-  chrome::AddWebContents(browser, NULL, new_contents, disposition, initial_pos,
+  chrome::AddWebContents(browser_, NULL, new_contents, disposition, initial_pos,
                          user_gesture);
 }
 

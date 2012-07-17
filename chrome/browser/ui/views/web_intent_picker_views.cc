@@ -9,6 +9,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/intents/web_intent_inline_disposition_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
@@ -1035,9 +1036,11 @@ void WebIntentPickerViews::OnInlineDisposition(
   // Does not take ownership, so we keep a scoped_ptr
   // for the WebContents locally.
   webview_->SetWebContents(inline_web_contents_.get());
+  Browser* browser = browser::FindBrowserWithWebContents(
+      tab_contents_->web_contents());
   inline_disposition_delegate_.reset(
       new WebIntentInlineDispositionDelegate(this, inline_web_contents_.get(),
-                                             tab_contents_->profile()));
+                                             browser));
   content::WebContents* web_contents = webview_->GetWebContents();
 
   // Must call this immediately after WebContents creation to avoid race

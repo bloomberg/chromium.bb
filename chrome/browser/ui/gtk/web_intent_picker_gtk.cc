@@ -11,6 +11,7 @@
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
@@ -227,9 +228,10 @@ void WebIntentPickerGtk::OnInlineDisposition(const string16& title,
       tab_util::GetSiteInstanceForNewTab(tab_contents_->profile(), url),
       MSG_ROUTING_NONE, NULL, NULL);
   inline_disposition_tab_contents_.reset(new TabContents(web_contents));
+  Browser* browser = browser::FindBrowserWithWebContents(
+      tab_contents_->web_contents());
   inline_disposition_delegate_.reset(
-      new WebIntentInlineDispositionDelegate(this, web_contents,
-                                             tab_contents_->profile()));
+      new WebIntentInlineDispositionDelegate(this, web_contents, browser));
 
   // Must call this immediately after WebContents creation to avoid race
   // with load.
