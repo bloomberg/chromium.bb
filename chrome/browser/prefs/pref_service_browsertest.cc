@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "ui/gfx/rect.h"
 
@@ -38,7 +39,8 @@ class PreferenceServiceTest : public InProcessBrowserTest {
                      AppendASCII("window_placement").
                      AppendASCII("Default"),
           FilePath().Append(chrome::kPreferencesFilename));
-      tmp_pref_file_ = user_data_directory.AppendASCII("Default");
+      tmp_pref_file_ =
+          user_data_directory.AppendASCII(TestingProfile::kTestUserProfileDir);
       CHECK(file_util::CreateDirectory(tmp_pref_file_));
       tmp_pref_file_ = tmp_pref_file_.Append(chrome::kPreferencesFilename);
     } else {

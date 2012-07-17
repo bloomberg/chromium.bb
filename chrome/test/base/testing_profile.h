@@ -46,6 +46,14 @@ class TestingPrefService;
 
 class TestingProfile : public Profile {
  public:
+  // Profile directory name for the test user. This is "Default" on most
+  // platforms but must be different on ChromeOS because a logged-in user cannot
+  // use "Default" as profile directory.
+  // Browser- and UI tests should always use this to get to the user's profile
+  // directory. Unit-tests, though, should use |kInitialProfile|, which is
+  // always "Default", because they are runnining without logged-in user.
+  static const char kTestUserProfileDir[];
+
   // Default constructor that cannot be used with multi-profiles.
   TestingProfile();
 

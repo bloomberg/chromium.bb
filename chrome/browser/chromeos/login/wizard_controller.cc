@@ -688,7 +688,6 @@ bool WizardController::IsDeviceRegistered() {
     // IO on UI thread. But it's required for update from old versions.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     FilePath oobe_complete_flag_file_path = GetOobeCompleteFlagPath();
-    DVLOG(1) << "Checking " << oobe_complete_flag_file_path.value();
     bool file_exists = file_util::PathExists(oobe_complete_flag_file_path);
     SaveIntegerPreferenceForced(kDeviceRegistered, file_exists ? 1 : 0);
     return file_exists;

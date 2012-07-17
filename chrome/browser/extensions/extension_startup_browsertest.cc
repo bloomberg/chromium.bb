@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -53,7 +54,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
   virtual bool SetUpUserDataDirectory() {
     FilePath profile_dir;
     PathService::Get(chrome::DIR_USER_DATA, &profile_dir);
-    profile_dir = profile_dir.AppendASCII("Default");
+    profile_dir = profile_dir.AppendASCII(TestingProfile::kTestUserProfileDir);
     file_util::CreateDirectory(profile_dir);
 
     preferences_file_ = profile_dir.AppendASCII("Preferences");

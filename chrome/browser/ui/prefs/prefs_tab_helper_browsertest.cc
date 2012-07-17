@@ -11,6 +11,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/testing_profile.h"
 
 class PrefsTabHelperBrowserTest : public InProcessBrowserTest {
  protected:
@@ -27,7 +28,8 @@ class PrefsTabHelperBrowserTest : public InProcessBrowserTest {
   virtual bool SetUpUserDataDirectory() OVERRIDE {
     FilePath user_data_directory;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
-    FilePath default_profile = user_data_directory.AppendASCII("Default");
+    FilePath default_profile =
+        user_data_directory.AppendASCII(TestingProfile::kTestUserProfileDir);
     if (!file_util::CreateDirectory(default_profile)) {
       LOG(ERROR) << "Can't create " << default_profile.MaybeAsASCII();
       return false;

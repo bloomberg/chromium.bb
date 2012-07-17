@@ -32,6 +32,7 @@
 
 using ::testing::AnyNumber;
 using ::testing::Return;
+using ::testing::ReturnNull;
 using ::testing::_;
 
 namespace chromeos {
@@ -113,6 +114,9 @@ MockDBusThreadManager::MockDBusThreadManager()
   EXPECT_CALL(*this, GetUpdateEngineClient())
       .WillRepeatedly(Return(mock_update_engine_client_.get()));
 
+  EXPECT_CALL(*this, GetIBusBus())
+      .WillRepeatedly(ReturnNull());
+
   // These observers calls are used in ChromeBrowserMainPartsChromeos.
   EXPECT_CALL(*mock_power_manager_client_.get(), AddObserver(_))
       .Times(AnyNumber());
@@ -126,6 +130,26 @@ MockDBusThreadManager::MockDBusThreadManager()
       .Times(AnyNumber());
   EXPECT_CALL(*mock_update_engine_client_.get(), RemoveObserver(_))
       .Times(AnyNumber());
+  EXPECT_CALL(*mock_bluetooth_manager_client_.get(), AddObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_bluetooth_manager_client_.get(), RemoveObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_bluetooth_adapter_client_.get(), AddObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_bluetooth_adapter_client_.get(), RemoveObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_bluetooth_device_client_.get(), AddObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_bluetooth_device_client_.get(), RemoveObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_bluetooth_input_client_.get(), AddObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_bluetooth_input_client_.get(), RemoveObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_bluetooth_node_client_.get(), AddObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_bluetooth_node_client_.get(), RemoveObserver(_))
+      .Times(AnyNumber());
 
   // Called from PowerMenuButton ctor.
   EXPECT_CALL(*mock_power_manager_client_.get(), RequestStatusUpdate(_))
@@ -133,6 +157,21 @@ MockDBusThreadManager::MockDBusThreadManager()
 
   // Called from DiskMountManager::Initialize(), ChromeBrowserMainPartsChromeos.
   EXPECT_CALL(*mock_cros_disks_client_.get(), SetUpConnections(_, _))
+      .Times(AnyNumber());
+
+  // Called from BluetoothManagerImpl ctor.
+  EXPECT_CALL(*mock_bluetooth_manager_client_.get(), DefaultAdapter(_))
+      .Times(AnyNumber());
+
+  // Called from AsyncMethodCaller ctor and dtor.
+  EXPECT_CALL(*mock_cryptohome_client_.get(), SetAsyncCallStatusHandler(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_cryptohome_client_.get(), ResetAsyncCallStatusHandler())
+      .Times(AnyNumber());
+
+  // Called from BrightnessController::GetBrightnessPercent as part of ash tray
+  // initialization.
+  EXPECT_CALL(*mock_power_manager_client_.get(), GetScreenBrightnessPercent(_))
       .Times(AnyNumber());
 }
 

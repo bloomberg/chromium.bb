@@ -46,6 +46,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/base/chrome_process_util.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/test_switches.h"
 #include "content/common/debug_flags.h"
 #include "googleurl/src/gurl.h"
@@ -584,7 +585,7 @@ DictionaryValue* UITest::GetLocalState() {
 DictionaryValue* UITest::GetDefaultProfilePreferences() {
   FilePath path;
   PathService::Get(chrome::DIR_USER_DATA, &path);
-  path = path.AppendASCII(chrome::kInitialProfile);
+  path = path.AppendASCII(TestingProfile::kTestUserProfileDir);
   return LoadDictionaryValueFromPath(path.Append(chrome::kPreferencesFilename));
 }
 

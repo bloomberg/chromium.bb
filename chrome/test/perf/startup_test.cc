@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/test/automation/automation_proxy.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/perf/perf_test.h"
@@ -104,9 +105,11 @@ class StartupTest : public UIPerfTest {
     if (profile_type_ != UITestBase::COMPLEX_THEME)
       return;
 
-    const FilePath pref_template_path(user_data_dir().AppendASCII("Default").
+    const FilePath pref_template_path(user_data_dir().
+        AppendASCII("Default").
         AppendASCII("PreferencesTemplate"));
-    const FilePath pref_path(user_data_dir().AppendASCII("Default").
+    const FilePath pref_path(user_data_dir().
+        AppendASCII(TestingProfile::kTestUserProfileDir).
         AppendASCII("Preferences"));
 
     // Read in preferences template.

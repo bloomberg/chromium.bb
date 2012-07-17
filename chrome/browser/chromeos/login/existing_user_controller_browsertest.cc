@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/chromeos/login/mock_url_fetchers.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/mock_url_fetcher_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -34,6 +36,7 @@
 namespace chromeos {
 
 using ::testing::AnyNumber;
+using ::testing::AnyOf;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::ReturnNull;
@@ -135,9 +138,13 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
         .Times(AnyNumber());
     EXPECT_CALL(*mock_login_utils_, StopBackgroundFetchers())
         .Times(AnyNumber());
+    EXPECT_CALL(*mock_login_utils_, DelegateDeleted(_))
+        .Times(1);
 
     mock_login_display_host_.reset(new MockLoginDisplayHost());
 
+    EXPECT_CALL(*mock_user_manager_.user_manager(), InitializeWallpaper())
+        .Times(1);
     EXPECT_CALL(*mock_user_manager_.user_manager(), IsKnownUser(kUsername))
         .Times(AnyNumber())
         .WillRepeatedly(Return(true));
@@ -166,8 +173,14 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
     EXPECT_CALL(*mock_login_display_host_.get(), GetNativeWindow())
         .Times(1)
         .WillOnce(ReturnNull());
+    EXPECT_CALL(*mock_login_display_host_.get(), OnPreferencesChanged())
+        .Times(1);
     EXPECT_CALL(*mock_login_display_, Init(_, false, true, true))
         .Times(1);
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(switches::kLoginManager);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -261,6 +274,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, MAYBE_ExistingUserLogin) {
   EXPECT_CALL(*mock_login_display_host_,
               StartWizard(WizardController::kUserImageScreenName, NULL))
       .Times(0);
+  EXPECT_CALL(*mock_user_manager_.user_manager(), IsCurrentUserNew())
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(false));
   existing_user_controller()->Login(kUsername, kPassword);
   ui_test_utils::RunAllPendingInMessageLoop();
 }
@@ -274,6 +290,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
       .Times(1);
   EXPECT_CALL(*mock_login_display_host_.get(), OnCompleteLogin())
       .Times(1);
+  EXPECT_CALL(*mock_user_manager_.user_manager(), IsCurrentUserNew())
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(false));
   existing_user_controller()->DoAutoEnrollment();
   existing_user_controller()->CompleteLogin(kUsername, kPassword);
   ui_test_utils::RunAllPendingInMessageLoop();
@@ -288,7 +307,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
   // activated. In a real WizardController instance that is immediately switched
   // to image screen but this tests uses MockLoginDisplayHost instead.
   EXPECT_CALL(*mock_login_display_host_,
-              StartWizard(WizardController::kRegistrationScreenName, _))
+              StartWizard(AnyOf(WizardController::kRegistrationScreenName,
+                                WizardController::kUserImageScreenName), _))
       .Times(1);
   EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))
       .Times(1)
@@ -304,6 +324,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
       .Times(1);
   EXPECT_CALL(*mock_login_display_host_.get(), OnCompleteLogin())
       .Times(1);
+  EXPECT_CALL(*mock_user_manager_.user_manager(), IsCurrentUserNew())
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(true));
   existing_user_controller()->CompleteLogin(kNewUsername, kPassword);
   ui_test_utils::RunAllPendingInMessageLoop();
 }

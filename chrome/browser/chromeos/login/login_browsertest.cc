@@ -63,9 +63,11 @@ class LoginUserTest : public LoginTestBase {
   }
 };
 
-class LoginProfileTest : public LoginUserTest {
+class LoginGuestTest : public LoginTestBase {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) {
+    command_line->AppendSwitch(switches::kGuestSession);
+    command_line->AppendSwitch(switches::kIncognito);
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
     command_line->AppendSwitch(switches::kNoFirstRun);
   }
@@ -80,8 +82,8 @@ IN_PROC_BROWSER_TEST_F(LoginUserTest, UserPassed) {
   EXPECT_FALSE(profile->IsOffTheRecord());
 }
 
-// On initial launch, we should get the OTR default profile.
-IN_PROC_BROWSER_TEST_F(LoginProfileTest, UserNotPassed) {
+// After a guest login, we should get the OTR default profile.
+IN_PROC_BROWSER_TEST_F(LoginGuestTest, GuestIsOTR) {
   Profile* profile = browser()->profile();
   EXPECT_EQ("Default", profile->GetPath().BaseName().value());
   EXPECT_TRUE(profile->IsOffTheRecord());

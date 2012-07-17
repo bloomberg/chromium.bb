@@ -24,6 +24,7 @@ WizardInProcessBrowserTest::WizardInProcessBrowserTest(const char* screen_name)
 
 void WizardInProcessBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   command_line->AppendSwitch(switches::kNoStartupWindow);
+  command_line->AppendSwitch(switches::kLoginManager);
 }
 
 void WizardInProcessBrowserTest::SetUpOnMainThread() {
