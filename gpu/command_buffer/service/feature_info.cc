@@ -27,6 +27,41 @@ struct FormatInfo {
   size_t count;
 };
 
+class StringSet {
+ public:
+  StringSet() {}
+
+  StringSet(const char* s) {
+    Init(s);
+  }
+
+  StringSet(const std::string& str) {
+    Init(str);
+  }
+
+  void Init(const char* s) {
+    std::string str(s ? s : "");
+    Init(str);
+  }
+
+  void Init(const std::string& str) {
+    std::vector<std::string> tokens;
+    Tokenize(str, " ", &tokens);
+    string_set_.insert(tokens.begin(), tokens.end());
+  }
+
+  bool Contains(const char* s) {
+    return string_set_.find(s) != string_set_.end();
+  }
+
+  bool Contains(const std::string& s) {
+    return string_set_.find(s) != string_set_.end();
+  }
+
+ private:
+  std::set<std::string> string_set_;
+};
+
 }  // anonymous namespace.
 
 FeatureInfo::FeatureInfo() {
@@ -77,8 +112,8 @@ class ExtensionHelper {
       desired_features = NULL;
     }
 
-    InitStringSet(extensions, &have_extensions_);
-    InitStringSet(desired_features, &desired_extensions_);
+    have_extensions_.Init(extensions);
+    desired_extensions_.Init(desired_features);
 
     if (!desired_features) {
        desire_all_features_ = true;
@@ -87,13 +122,12 @@ class ExtensionHelper {
 
   // Returns true if extension exists.
   bool Have(const char* extension) {
-    return have_extensions_.find(extension) != have_extensions_.end();
+    return have_extensions_.Contains(extension);
   }
 
   // Returns true of an extension is desired. It may not exist.
   bool Desire(const char* extension) {
-    return desire_all_features_ ||
-           desired_extensions_.find(extension) != desired_extensions_.end();
+    return desire_all_features_ || desired_extensions_.Contains(extension);
   }
 
   // Returns true if an extension exists and is desired.
@@ -102,30 +136,13 @@ class ExtensionHelper {
   }
 
  private:
-  void InitStringSet(const char* s, std::set<std::string>* string_set) {
-    std::string str(s ? s : "");
-    std::string::size_type lastPos = 0;
-    while (true) {
-      std::string::size_type pos = str.find_first_of(" ", lastPos);
-      if (pos != std::string::npos) {
-        if (pos - lastPos) {
-          string_set->insert(str.substr(lastPos, pos - lastPos));
-        }
-        lastPos = pos + 1;
-      } else {
-        string_set->insert(str.substr(lastPos));
-        break;
-      }
-    }
-  }
-
   bool desire_all_features_;
 
   // Extensions that exist.
-  std::set<std::string> have_extensions_;
+  StringSet have_extensions_;
 
   // Extensions that are desired but may not exist.
-  std::set<std::string> desired_extensions_;
+  StringSet desired_extensions_;
 };
 
 bool FeatureInfo::Initialize(const char* allowed_features) {
@@ -162,11 +179,11 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
           glGetString(string_ids[ii]));
     if (str) {
       std::string lstr(StringToLowerASCII(std::string(str)));
-      feature_flags_.is_intel |= lstr.find("intel") != std::string::npos;
-      feature_flags_.is_nvidia |= lstr.find("nvidia") != std::string::npos;
+      StringSet string_set(lstr);
+      feature_flags_.is_intel |= string_set.Contains("intel");
+      feature_flags_.is_nvidia |= string_set.Contains("nvidia");
       feature_flags_.is_amd |=
-          lstr.find("amd") != std::string::npos ||
-          lstr.find("ati") != std::string::npos;
+          string_set.Contains("amd") || string_set.Contains("ati");
     }
   }
 

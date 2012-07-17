@@ -769,11 +769,22 @@ TEST_F(FeatureInfoTest, IsNvidia) {
   EXPECT_FALSE(info_->feature_flags().is_amd);
 
   SetupInitExpectationsWithVendor("", "", "NViDiA");
-  FeatureInfo::Ref feature_info(new FeatureInfo());
-  feature_info->Initialize(NULL);
-  EXPECT_FALSE(feature_info->feature_flags().is_intel);
-  EXPECT_TRUE(feature_info->feature_flags().is_nvidia);
-  EXPECT_FALSE(feature_info->feature_flags().is_amd);
+  {
+    FeatureInfo::Ref feature_info(new FeatureInfo());
+    feature_info->Initialize(NULL);
+    EXPECT_FALSE(feature_info->feature_flags().is_intel);
+    EXPECT_TRUE(feature_info->feature_flags().is_nvidia);
+    EXPECT_FALSE(feature_info->feature_flags().is_amd);
+  }
+
+  SetupInitExpectationsWithVendor("", "NVIDIA Corporation", "");
+  {
+    FeatureInfo::Ref feature_info(new FeatureInfo());
+    feature_info->Initialize(NULL);
+    EXPECT_FALSE(feature_info->feature_flags().is_intel);
+    EXPECT_TRUE(feature_info->feature_flags().is_nvidia);
+    EXPECT_FALSE(feature_info->feature_flags().is_amd);
+  }
 }
 
 TEST_F(FeatureInfoTest, IsAMD) {
