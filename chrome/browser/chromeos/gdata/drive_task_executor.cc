@@ -81,7 +81,7 @@ bool DriveTaskExecutor::ExecuteAndNotify(
 }
 
 void DriveTaskExecutor::OnFileEntryFetched(
-    base::PlatformFileError error,
+    GDataFileError error,
     scoped_ptr<gdata::GDataFileProto> file_proto) {
   // If we aborted, then this will be zero.
   if (!current_index_)
@@ -90,7 +90,7 @@ void DriveTaskExecutor::OnFileEntryFetched(
   gdata::GDataSystemService* system_service =
       gdata::GDataSystemServiceFactory::GetForProfile(profile());
 
-  if (!system_service || error != base::PLATFORM_FILE_OK) {
+  if (!system_service || error != GDATA_FILE_OK) {
     Done(false);
     return;
   }

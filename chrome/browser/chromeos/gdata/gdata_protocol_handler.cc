@@ -163,7 +163,7 @@ class GDataURLRequestJob : public net::URLRequestJob {
 
   // Helper callback for handling async responses from
   // GDataFileSystem::GetFileByResourceId().
-  void OnGetFileByResourceId(base::PlatformFileError error,
+  void OnGetFileByResourceId(GDataFileError error,
                              const FilePath& local_file_path,
                              const std::string& mime_type,
                              GDataFileType file_type);
@@ -174,7 +174,7 @@ class GDataURLRequestJob : public net::URLRequestJob {
 
   // Helper callback for GetFileInfoByResourceId invoked by StartAsync.
   void OnGetFileInfoByResourceId(const std::string& resource_id,
-                                 base::PlatformFileError error,
+                                 GDataFileError error,
                                  const FilePath& gdata_file_path,
                                  scoped_ptr<GDataFileProto> file_proto);
 
@@ -509,10 +509,10 @@ void GDataURLRequestJob::StartAsync(GDataFileSystem** file_system) {
 
 void GDataURLRequestJob::OnGetFileInfoByResourceId(
     const std::string& resource_id,
-    base::PlatformFileError error,
+    GDataFileError error,
     const FilePath& gdata_file_path,
     scoped_ptr<GDataFileProto> file_proto) {
-  if (error == base::PLATFORM_FILE_OK) {
+  if (error == GDATA_FILE_OK) {
     DCHECK(file_proto.get());
     mime_type_ = file_proto->content_mime_type();
     gdata_file_path_ = gdata_file_path;
@@ -652,14 +652,14 @@ bool GDataURLRequestJob::ReadFromDownloadData() {
 }
 
 void GDataURLRequestJob::OnGetFileByResourceId(
-    base::PlatformFileError error,
+    GDataFileError error,
     const FilePath& local_file_path,
     const std::string& mime_type,
     GDataFileType file_type) {
   DVLOG(1) << "Got OnGetFileByResourceId";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (error != base::PLATFORM_FILE_OK || file_type != REGULAR_FILE) {
+  if (error != GDATA_FILE_OK || file_type != REGULAR_FILE) {
     LOG(WARNING) << "Failed to start request: can't get file for resource id";
     NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                            net::ERR_FILE_NOT_FOUND));

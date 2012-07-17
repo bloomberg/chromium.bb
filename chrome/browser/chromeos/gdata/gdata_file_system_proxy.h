@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILE_SYSTEM_PROXY_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILE_SYSTEM_PROXY_H_
 
+#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "webkit/chromeos/fileapi/remote_file_system_proxy.h"
 
 class Profile;
@@ -90,13 +91,19 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   static bool ValidateUrl(const fileapi::FileSystemURL& url,
                           FilePath* file_path);
 
+  // Helper callback for relaying reply for status callbacks to the
+  // calling thread.
+  void OnStatusCallback(
+      const fileapi::FileSystemOperationInterface::StatusCallback& callback,
+      gdata::GDataFileError error);
+
   // Helper callback for relaying reply for metadata retrieval request to the
   // calling thread.
   void OnGetMetadata(
       const FilePath& file_path,
       const fileapi::FileSystemOperationInterface::GetMetadataCallback&
           callback,
-      base::PlatformFileError error,
+      GDataFileError error,
       scoped_ptr<gdata::GDataEntryProto> entry_proto);
 
   // Helper callback for relaying reply for GetEntryInfoByPath() to the
@@ -105,7 +112,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const FilePath& entry_path,
       const fileapi::FileSystemOperationInterface::SnapshotFileCallback&
           callback,
-      base::PlatformFileError error,
+      GDataFileError error,
       scoped_ptr<GDataEntryProto> entry_proto);
 
   // Helper callback for relaying reply for ReadDirectory() to the calling
@@ -113,7 +120,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   void OnReadDirectory(
       const fileapi::FileSystemOperationInterface::ReadDirectoryCallback&
           callback,
-      base::PlatformFileError error,
+      GDataFileError error,
       bool hide_hosted_documents,
       scoped_ptr<GDataDirectoryProto> directory_proto);
 
@@ -122,7 +129,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   void OnCreateWritableSnapshotFile(
       const FilePath& virtual_path,
       const fileapi::WritableSnapshotFile& callback,
-      base::PlatformFileError result,
+      GDataFileError result,
       const FilePath& local_path);
 
   // Helper callback for closing the local cache file and committing the dirty
@@ -138,7 +145,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const FilePath& virtual_path,
       int64 length,
       const fileapi::FileSystemOperationInterface::StatusCallback& callback,
-      base::PlatformFileError open_result,
+      GDataFileError open_result,
       const FilePath& local_cache_path);
 
   // Invoked during Truncate() operation. This is called when the truncation of

@@ -15,6 +15,7 @@
 #include "base/platform_file.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
+#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "googleurl/src/url_util.h"
@@ -287,7 +288,7 @@ class AddMountFunction : public FileBrowserFunction {
   // A callback method to handle the result of SetMountedState.
   void OnMountedStateSet(const std::string& mount_type,
                          const FilePath::StringType& file_name,
-                         base::PlatformFileError error,
+                         gdata::GDataFileError error,
                          const FilePath& file_path);
 };
 
@@ -359,7 +360,7 @@ class GetSizeStatsFunction : public FileBrowserFunction {
   // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
   void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
 
-  void GetGDataAvailableSpaceCallback(base::PlatformFileError error,
+  void GetGDataAvailableSpaceCallback(gdata::GDataFileError error,
                                 int64 bytes_total,
                                 int64 bytes_used);
 
@@ -428,7 +429,7 @@ class FileDialogStringsFunction : public SyncExtensionFunction {
 // Retrieve property information for multiple files, returning a list of the
 // same length as the input list of file URLs.  If a particular file has an
 // error, then return a dictionary with the key "error" set to the error number
-// (base::PlatformFileError) for that entry in the returned list.
+// (gdata::GDataFileError) for that entry in the returned list.
 class GetGDataFilePropertiesFunction : public FileBrowserFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getGDataFileProperties");
@@ -449,7 +450,7 @@ class GetGDataFilePropertiesFunction : public FileBrowserFunction {
 
   void OnOperationComplete(const FilePath& file_path,
                            base::DictionaryValue* properties,
-                           base::PlatformFileError error,
+                           gdata::GDataFileError error,
                            scoped_ptr<gdata::GDataFileProto> file_proto);
 
   // AsyncExtensionFunction overrides.
@@ -461,7 +462,7 @@ class GetGDataFilePropertiesFunction : public FileBrowserFunction {
  private:
   void OnGetFileInfo(const FilePath& file_path,
                      base::DictionaryValue* property_dict,
-                     base::PlatformFileError error,
+                     gdata::GDataFileError error,
                      scoped_ptr<gdata::GDataFileProto> file_proto);
 
   void CacheStateReceived(base::DictionaryValue* property_dict,
@@ -477,7 +478,7 @@ class GetGDataFilePropertiesFunction : public FileBrowserFunction {
 // properties with the updated cache state.  The returned array is the
 // same length as the input list of file URLs.  If a particular file
 // has an error, then return a dictionary with the key "error" set to
-// the error number (base::PlatformFileError) for that entry in the
+// the error number (gdata::GDataFileError) for that entry in the
 // returned list.
 class PinGDataFileFunction : public GetGDataFilePropertiesFunction {
  public:
@@ -502,7 +503,7 @@ class PinGDataFileFunction : public GetGDataFilePropertiesFunction {
   void OnPinStateSet(const FilePath& path,
                      base::DictionaryValue* properties,
                      scoped_ptr<gdata::GDataFileProto> file_proto,
-                     base::PlatformFileError error,
+                     gdata::GDataFileError error,
                      const std::string& resource_id,
                      const std::string& md5);
 
@@ -562,7 +563,7 @@ class GetGDataFilesFunction : public FileBrowserFunction {
 
   // Called by GDataFileSystem::GetFile(). Pops the file from
   // |remaining_gdata_paths_|, and calls GetFileOrSendResponse().
-  void OnFileReady(base::PlatformFileError error,
+  void OnFileReady(gdata::GDataFileError error,
                    const FilePath& local_path,
                    const std::string& unused_mime_type,
                    gdata::GDataFileType file_type);
@@ -623,7 +624,7 @@ class TransferFileFunction : public FileBrowserFunction {
   void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
 
   // Helper callback for handling response from GDataFileSystem::TransferFile().
-  void OnTransferCompleted(base::PlatformFileError error);
+  void OnTransferCompleted(gdata::GDataFileError error);
 };
 
 // Read setting value.
@@ -663,7 +664,7 @@ class SearchDriveFunction : public AsyncExtensionFunction {
                           const std::string& file_system_name,
                           const GURL& file_system_url);
   // Callback for gdata::SearchAsync called after file system is opened.
-  void OnSearch(base::PlatformFileError error,
+  void OnSearch(gdata::GDataFileError error,
                 scoped_ptr<std::vector<gdata::SearchResultInfo> > result_paths);
 
   // Query for which the search is being performed.

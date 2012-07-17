@@ -17,6 +17,7 @@
 #include "base/timer.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
+#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
@@ -172,13 +173,13 @@ class GDataFileSystem : public GDataFileSystemInterface,
       FileResourceIdMap;
 
   // Callback similar to FileOperationCallback but with a given |file_path|.
-  typedef base::Callback<void(base::PlatformFileError error,
+  typedef base::Callback<void(GDataFileError error,
                               const FilePath& file_path)>
       FilePathUpdateCallback;
 
   // Callback run as a response to LoadFeedFromServer.
   typedef base::Callback<void(GetDocumentsParams* params,
-                              base::PlatformFileError error)>
+                              GDataFileError error)>
       LoadDocumentFeedCallback;
 
   // Struct used to record UMA stats with FeedToFileResourceMap().
@@ -195,7 +196,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // |error| error code returned by |LoadFeedFromServer|.
   void OnSearch(const SearchCallback& callback,
                 GetDocumentsParams* params,
-                base::PlatformFileError error);
+                GDataFileError error);
 
   // Initiates transfer of |local_file_path| with |resource_id| to
   // |remote_dest_file_path|. |local_file_path| must be a file from the local
@@ -230,7 +231,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const FilePath& file_path,
       bool is_exclusive,
       const FileOperationCallback& callback,
-      base::PlatformFileError result,
+      GDataFileError result,
       GDataEntry* entry);
   void DoUploadForCreateBrandNewFile(
       const FilePath& remote_path,
@@ -239,7 +240,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void DidUploadForCreateBrandNewFile(
       const FilePath& local_path,
       const FileOperationCallback& callback,
-      base::PlatformFileError result);
+      GDataFileError result);
 
   // Invoked upon completion of GetFileInfoByPath initiated by
   // GetFileByPath. It then continues to invoke GetResolvedFileByPath.
@@ -247,7 +248,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const FilePath& file_path,
       const GetFileCallback& get_file_callback,
       const GetDownloadDataCallback& get_download_data_callback,
-      base::PlatformFileError error,
+      GDataFileError error,
       scoped_ptr<GDataFileProto> file_info);
 
   // Invoked upon completion of GetFileInfoByPath initiated by OpenFile.
@@ -255,7 +256,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // OnGetFileCompleteForOpenFile.
   void OnGetFileInfoCompleteForOpenFile(const FilePath& file_path,
                                         const OpenFileCallback& callback,
-                                        base::PlatformFileError error,
+                                        GDataFileError error,
                                         scoped_ptr<GDataFileProto> file_info);
 
   // Invoked at the last step of OpenFile. It removes |file_path| from the
@@ -263,7 +264,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // |callback| function.
   void OnOpenFileFinished(const FilePath& file_path,
                           const OpenFileCallback& callback,
-                          base::PlatformFileError result,
+                          GDataFileError result,
                           const FilePath& cache_file_path);
 
   // Invoked during the process of CloseFile. It first gets the path of local
@@ -279,7 +280,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void OnGetFileCompleteForCloseFile(
       const FilePath& file_path,
       const FileOperationCallback& callback,
-      base::PlatformFileError error,
+      GDataFileError error,
       const FilePath& local_cache_path,
       const std::string& mime_type,
       GDataFileType file_type);
@@ -292,16 +293,16 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const FilePath& file_path,
       const base::PlatformFileInfo& file_info,
       const FileOperationCallback& callback,
-      base::PlatformFileError error,
+      GDataFileError error,
       GDataEntry* entry);
   void OnCommitDirtyInCacheCompleteForCloseFile(
       const FileOperationCallback& callback,
-      base::PlatformFileError error,
+      GDataFileError error,
       const std::string& resource_id,
       const std::string& md5);
   void OnCloseFileFinished(const FilePath& file_path,
                            const FileOperationCallback& callback,
-                           base::PlatformFileError result);
+                           GDataFileError result);
 
   // Invoked upon completion of GetFileByPath initiated by Copy. If
   // GetFileByPath reports no error, calls TransferRegularFile to transfer
@@ -310,7 +311,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
   void OnGetFileCompleteForCopy(const FilePath& remote_dest_file_path,
                                 const FileOperationCallback& callback,
-                                base::PlatformFileError error,
+                                GDataFileError error,
                                 const FilePath& local_file_path,
                                 const std::string& unused_mime_type,
                                 GDataFileType file_type);
@@ -323,7 +324,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
   void OnGetFileCompleteForTransferFile(const FilePath& local_dest_file_path,
                                         const FileOperationCallback& callback,
-                                        base::PlatformFileError error,
+                                        GDataFileError error,
                                         const FilePath& local_file_path,
                                         const std::string& unused_mime_type,
                                         GDataFileType file_type);
@@ -337,7 +338,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void OnGetFileCompleteForOpenFile(
       const OpenFileCallback& callback,
       const GetFileCompleteForOpenParams& file_info,
-      base::PlatformFileError error,
+      GDataFileError error,
       const FilePath& file_path,
       const std::string& mime_type,
       GDataFileType file_type);
@@ -363,7 +364,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
   void AddEntryToDirectory(const FilePath& dir_path,
                            const FileOperationCallback& callback,
-                           base::PlatformFileError error,
+                           GDataFileError error,
                            const FilePath& file_path);
 
   // Removes a file or directory at |file_path| from the directory at
@@ -372,14 +373,14 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
   void RemoveEntryFromDirectory(const FilePath& dir_path,
                                 const FilePathUpdateCallback& callback,
-                                base::PlatformFileError error,
+                                GDataFileError error,
                                 const FilePath& file_path);
 
   // Removes file under |file_path| from in-memory snapshot of the file system.
   // |resource_id| contains the resource id of the removed file if it was a
   // file.
   // Return PLATFORM_FILE_OK if successful.
-  base::PlatformFileError RemoveEntryFromGData(const FilePath& file_path,
+  GDataFileError RemoveEntryFromGData(const FilePath& file_path,
                                                std::string* resource_id);
 
   // Callback for handling response from |GDataDocumentsService::GetDocuments|.
@@ -394,7 +395,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // A pass-through callback used for bridging from
   // FilePathUpdateCallback to FileOperationCallback.
   void OnFilePathUpdated(const FileOperationCallback& cllback,
-                         base::PlatformFileError error,
+                         GDataFileError error,
                          const FilePath& file_path);
 
   // Invoked upon completion of MarkDirtyInCache initiated by OpenFile. Invokes
@@ -404,7 +405,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Must be called on UI thread.
   void OnMarkDirtyInCacheCompleteForOpenFile(
       const OpenFileCallback& callback,
-      base::PlatformFileError error,
+      GDataFileError error,
       const std::string& resource_id,
       const std::string& md5,
       const FilePath& cache_file_path);
@@ -481,38 +482,38 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Callback for handling internal StoreToCache() calls after downloading
   // file content.
-  void OnDownloadStoredToCache(base::PlatformFileError error,
+  void OnDownloadStoredToCache(GDataFileError error,
                                const std::string& resource_id,
                                const std::string& md5);
 
   // Renames a file or directory at |file_path| on in-memory snapshot
   // of the file system. Returns PLATFORM_FILE_OK if successful.
-  base::PlatformFileError RenameFileOnFilesystem(
+  GDataFileError RenameFileOnFilesystem(
       const FilePath& file_path, const FilePath::StringType& new_name,
       FilePath* updated_file_path);
 
   // Adds a file or directory at |file_path| to another directory at
   // |dir_path| on in-memory snapshot of the file system.
   // Returns PLATFORM_FILE_OK if successful.
-  base::PlatformFileError AddEntryToDirectoryOnFilesystem(
+  GDataFileError AddEntryToDirectoryOnFilesystem(
       const FilePath& file_path, const FilePath& dir_path);
 
   // Removes a file or directory at |file_path| from another directory at
   // |dir_path| on in-memory snapshot of the file system.
   // Returns PLATFORM_FILE_OK if successful.
-  base::PlatformFileError RemoveEntryFromDirectoryOnFilesystem(
+  GDataFileError RemoveEntryFromDirectoryOnFilesystem(
       const FilePath& file_path, const FilePath& dir_path,
       FilePath* updated_file_path);
 
   // Removes a file or directory under |file_path| from in-memory snapshot of
   // the file system and the corresponding file from cache if it exists.
   // Return PLATFORM_FILE_OK if successful.
-  base::PlatformFileError RemoveEntryFromFileSystem(const FilePath& file_path);
+  GDataFileError RemoveEntryFromFileSystem(const FilePath& file_path);
 
   // Updates whole directory structure feeds collected in |feed_list|.
   // On success, returns PLATFORM_FILE_OK. Record file statistics as UMA
   // histograms.
-  base::PlatformFileError UpdateFromFeed(
+  GDataFileError UpdateFromFeed(
       const std::vector<DocumentFeed*>& feed_list,
       ContentOrigin origin,
       int largest_changestamp,
@@ -539,7 +540,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Converts list of document feeds from collected feeds into
   // FileResourceIdMap.
-  base::PlatformFileError FeedToFileResourceMap(
+  GDataFileError FeedToFileResourceMap(
       const std::vector<DocumentFeed*>& feed_list,
       FileResourceIdMap* file_map,
       int* feed_changestamp,
@@ -547,7 +548,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Converts |entry_value| into GFileDocument instance and adds it
   // to virtual file system at |directory_path|.
-  base::PlatformFileError AddNewDirectory(const FilePath& directory_path,
+  GDataFileError AddNewDirectory(const FilePath& directory_path,
                                           base::Value* entry_value);
 
   // Given non-existing |directory_path|, finds the first missing parent
@@ -603,14 +604,14 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // the content of the refreshed directory object and continue initially
   // started FindEntryByPath() request.
   void OnFeedFromServerLoaded(GetDocumentsParams* params,
-                              base::PlatformFileError status);
+                              GDataFileError status);
 
   // Callback for handling results of ReloadFeedFromServerIfNeeded() initiated
   // from CheckForUpdates(). This callback checks whether feed is successfully
   // reloaded, and in case of failure, restores the content origin of the root
   // directory.
   void OnUpdateChecked(ContentOrigin initial_origin,
-                       base::PlatformFileError error,
+                       GDataFileError error,
                        GDataEntry* entry);
 
   // Starts root feed load from the cache. If successful, it will try to find
@@ -634,14 +635,14 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Runs the callback and notifies that the initial load is finished.
   void RunAndNotifyInitialLoadFinished(
     const FindEntryCallback& callback,
-    base::PlatformFileError error,
+    GDataFileError error,
     GDataEntry* entry);
 
   // Helper function that completes bookkeeping tasks related to
   // completed file transfer.
   void OnTransferCompleted(
       const FileOperationCallback& callback,
-      base::PlatformFileError error,
+      GDataFileError error,
       scoped_ptr<UploadFileInfo> upload_file_info);
 
   // Kicks off file upload once it receives |file_size| and |content_type|.
@@ -649,7 +650,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const FilePath& local_file,
       const FilePath& remote_dest_file,
       const FileOperationCallback& callback,
-      base::PlatformFileError* error,
+      GDataFileError* error,
       int64* file_size,
       std::string* content_type);
 
@@ -660,7 +661,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // GetFileFromCacheByResourceIdAndMd5() calls during processing of
   // GetFileByPath() request.
   void OnGetFileFromCache(const GetFileFromCacheParams& params,
-                          base::PlatformFileError error,
+                          GDataFileError error,
                           const std::string& resource_id,
                           const std::string& md5,
                           const FilePath& cache_file_path);
@@ -695,17 +696,17 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Called when an entry is found for GetEntryInfoByPath().
   void OnGetEntryInfo(const GetEntryInfoCallback& callback,
-                      base::PlatformFileError error,
+                      GDataFileError error,
                       GDataEntry* entry);
 
   // Called when an entry is found for GetFileInfoByPath().
   void OnGetFileInfo(const GetFileInfoCallback& callback,
-                     base::PlatformFileError error,
+                     GDataFileError error,
                      GDataEntry* entry);
 
   // Called when an entry is found for ReadDirectoryByPath().
   void OnReadDirectory(const ReadDirectoryCallback& callback,
-                       base::PlatformFileError error,
+                       GDataFileError error,
                        GDataEntry* entry);
 
   // Finds file info by using virtual |file_path|. This call will also
@@ -720,14 +721,14 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const FilePath& file_path,
       const GetFileCallback& get_file_callback,
       const GetDownloadDataCallback& get_download_data_callback,
-      base::PlatformFileError error,
+      GDataFileError error,
       const GDataFileProto* file_proto);
 
   // Called when GDataCache::GetFileOnUIThread() is completed for
   // UpdateFileByResourceId().
   void OnGetFileCompleteForUpdateFile(
       const FileOperationCallback& callback,
-      base::PlatformFileError error,
+      GDataFileError error,
       const std::string& resource_id,
       const std::string& md5,
       const FilePath& cache_file_path);
@@ -743,7 +744,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // UpdateFileByResourceId().
   void OnUpdatedFileUploaded(
     const FileOperationCallback& callback,
-    base::PlatformFileError error,
+    GDataFileError error,
     scoped_ptr<UploadFileInfo> upload_file_info);
 
   // The following functions are used to forward calls to asynchronous public
@@ -805,7 +806,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void RequestDirectoryRefreshOnUIThread(
       const FilePath& file_path);
   void OnRequestDirectoryRefresh(GetDocumentsParams* params,
-                                 base::PlatformFileError error);
+                                 GDataFileError error);
   void RequestDirectoryRefreshByEntry(const FilePath& directory_path,
       const std::string& directory_resource_id,
       const FileResourceIdMap& file_map,

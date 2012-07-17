@@ -127,7 +127,7 @@ typedef base::Callback<void(
 
 // Callback type used to get result of file search.
 // If |error| is not PLATFORM_FILE_OK, |entry| is set to NULL.
-typedef base::Callback<void(base::PlatformFileError error, GDataEntry* entry)>
+typedef base::Callback<void(GDataFileError error, GDataEntry* entry)>
     FindEntryCallback;
 
 }  // namespace gdata

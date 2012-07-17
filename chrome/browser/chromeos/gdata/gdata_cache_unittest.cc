@@ -112,7 +112,7 @@ class GDataCacheTest : public testing::Test {
         io_thread_(content::BrowserThread::IO),
         cache_(NULL),
         num_callback_invocations_(0),
-        expected_error_(base::PLATFORM_FILE_OK),
+        expected_error_(GDATA_FILE_OK),
         expected_cache_state_(0),
         expected_sub_dir_type_(GDataCache::CACHE_TYPE_META),
         expected_success_(true),
@@ -227,8 +227,8 @@ class GDataCacheTest : public testing::Test {
           resource.resource_id,
           resource.md5,
           test_util::ToCacheEntry(resource.cache_state).is_present() ?
-          base::PLATFORM_FILE_OK :
-          base::PLATFORM_FILE_ERROR_NOT_FOUND,
+          GDATA_FILE_OK :
+          GDATA_FILE_ERROR_NOT_FOUND,
           resource.expected_file_extension);
       EXPECT_EQ(1, num_callback_invocations_);
 
@@ -250,7 +250,7 @@ class GDataCacheTest : public testing::Test {
   void TestGetFileFromCacheByResourceIdAndMd5(
       const std::string& resource_id,
       const std::string& md5,
-      base::PlatformFileError expected_error,
+      GDataFileError expected_error,
       const std::string& expected_file_extension) {
     expected_error_ = expected_error;
     expected_file_extension_ = expected_file_extension;
@@ -267,7 +267,7 @@ class GDataCacheTest : public testing::Test {
       const std::string& resource_id,
       const std::string& md5,
       const FilePath& source_path,
-      base::PlatformFileError expected_error,
+      GDataFileError expected_error,
       int expected_cache_state,
       GDataCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
@@ -283,7 +283,7 @@ class GDataCacheTest : public testing::Test {
     test_util::RunBlockingPoolTask();
   }
 
-  void VerifyGetFromCache(base::PlatformFileError error,
+  void VerifyGetFromCache(GDataFileError error,
                           const std::string& resource_id,
                           const std::string& md5,
                           const FilePath& cache_file_path) {
@@ -291,7 +291,7 @@ class GDataCacheTest : public testing::Test {
 
     EXPECT_EQ(expected_error_, error);
 
-    if (error == base::PLATFORM_FILE_OK) {
+    if (error == GDATA_FILE_OK) {
       // Verify filename of |cache_file_path|.
       FilePath base_name = cache_file_path.BaseName();
       EXPECT_EQ(util::EscapeCacheFileName(resource_id) +
@@ -306,7 +306,7 @@ class GDataCacheTest : public testing::Test {
   }
 
   void TestRemoveFromCache(const std::string& resource_id,
-                           base::PlatformFileError expected_error) {
+                           GDataFileError expected_error) {
     expected_error_ = expected_error;
 
     cache_->RemoveOnUIThread(
@@ -317,7 +317,7 @@ class GDataCacheTest : public testing::Test {
     test_util::RunBlockingPoolTask();
   }
 
-  void VerifyRemoveFromCache(base::PlatformFileError error,
+  void VerifyRemoveFromCache(GDataFileError error,
                              const std::string& resource_id,
                              const std::string& md5) {
     ++num_callback_invocations_;
@@ -417,7 +417,7 @@ class GDataCacheTest : public testing::Test {
   void TestPin(
       const std::string& resource_id,
       const std::string& md5,
-      base::PlatformFileError expected_error,
+      GDataFileError expected_error,
       int expected_cache_state,
       GDataCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
@@ -435,7 +435,7 @@ class GDataCacheTest : public testing::Test {
   void TestUnpin(
       const std::string& resource_id,
       const std::string& md5,
-      base::PlatformFileError expected_error,
+      GDataFileError expected_error,
       int expected_cache_state,
       GDataCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
@@ -453,7 +453,7 @@ class GDataCacheTest : public testing::Test {
   void TestMarkDirty(
       const std::string& resource_id,
       const std::string& md5,
-      base::PlatformFileError expected_error,
+      GDataFileError expected_error,
       int expected_cache_state,
       GDataCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
@@ -469,14 +469,14 @@ class GDataCacheTest : public testing::Test {
     test_util::RunBlockingPoolTask();
   }
 
-  void VerifyMarkDirty(base::PlatformFileError error,
+  void VerifyMarkDirty(GDataFileError error,
                        const std::string& resource_id,
                        const std::string& md5,
                        const FilePath& cache_file_path) {
     VerifyCacheFileState(error, resource_id, md5);
 
     // Verify filename of |cache_file_path|.
-    if (error == base::PLATFORM_FILE_OK) {
+    if (error == GDATA_FILE_OK) {
       FilePath base_name = cache_file_path.BaseName();
       EXPECT_EQ(util::EscapeCacheFileName(resource_id) +
                 FilePath::kExtensionSeparator +
@@ -490,7 +490,7 @@ class GDataCacheTest : public testing::Test {
   void TestCommitDirty(
       const std::string& resource_id,
       const std::string& md5,
-      base::PlatformFileError expected_error,
+      GDataFileError expected_error,
       int expected_cache_state,
       GDataCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
@@ -509,7 +509,7 @@ class GDataCacheTest : public testing::Test {
   void TestClearDirty(
       const std::string& resource_id,
       const std::string& md5,
-      base::PlatformFileError expected_error,
+      GDataFileError expected_error,
       int expected_cache_state,
       GDataCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
@@ -529,7 +529,7 @@ class GDataCacheTest : public testing::Test {
       const std::string& md5,
       const FilePath& file_path,
       bool to_mount,
-      base::PlatformFileError expected_error,
+      GDataFileError expected_error,
       int expected_cache_state,
       GDataCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
@@ -547,7 +547,7 @@ class GDataCacheTest : public testing::Test {
   void VerifySetMountedState(const std::string& resource_id,
                              const std::string& md5,
                              bool to_mount,
-                             base::PlatformFileError error,
+                             GDataFileError error,
                              const FilePath& file_path) {
     ++num_callback_invocations_;
     EXPECT_TRUE(file_util::PathExists(file_path));
@@ -560,7 +560,7 @@ class GDataCacheTest : public testing::Test {
             GDataCache::CACHED_FILE_FROM_SERVER));
   }
 
-  void VerifyCacheFileState(base::PlatformFileError error,
+  void VerifyCacheFileState(GDataFileError error,
                             const std::string& resource_id,
                             const std::string& md5) {
     ++num_callback_invocations_;
@@ -730,7 +730,7 @@ class GDataCacheTest : public testing::Test {
   scoped_ptr<StrictMock<MockGDataCacheObserver> > mock_cache_observer_;
 
   int num_callback_invocations_;
-  base::PlatformFileError expected_error_;
+  GDataFileError expected_error_;
   int expected_cache_state_;
   GDataCache::CacheSubDirectoryType expected_sub_dir_type_;
   bool expected_success_;
@@ -771,14 +771,14 @@ TEST_F(GDataCacheTest, StoreToCacheSimple) {
 
   // Store an existing file.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
-                   base::PLATFORM_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+                   GDATA_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Store a non-existent file to the same |resource_id| and |md5|.
   num_callback_invocations_ = 0;
   TestStoreToCache(resource_id, md5, FilePath("./non_existent.json"),
-                   base::PLATFORM_FILE_ERROR_FAILED,
+                   GDATA_FILE_ERROR_FAILED,
                    test_util::TEST_CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
@@ -788,7 +788,7 @@ TEST_F(GDataCacheTest, StoreToCacheSimple) {
   md5 = "new_md5";
   num_callback_invocations_ = 0;
   TestStoreToCache(resource_id, md5, GetTestFilePath("subdir_feed.json"),
-                   base::PLATFORM_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+                   GDATA_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
 
@@ -820,20 +820,20 @@ TEST_F(GDataCacheTest, GetFromCacheSimple) {
   std::string md5("abcdef0123456789");
   // First store a file to cache.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
-                   base::PLATFORM_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+                   GDATA_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
 
   // Then try to get the existing file from cache.
   num_callback_invocations_ = 0;
   TestGetFileFromCacheByResourceIdAndMd5(
-      resource_id, md5, base::PLATFORM_FILE_OK, md5);
+      resource_id, md5, GDATA_FILE_OK, md5);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Get file from cache with same resource id as existing file but different
   // md5.
   num_callback_invocations_ = 0;
   TestGetFileFromCacheByResourceIdAndMd5(
-      resource_id, "9999", base::PLATFORM_FILE_ERROR_NOT_FOUND, md5);
+      resource_id, "9999", GDATA_FILE_ERROR_NOT_FOUND, md5);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Get file from cache with different resource id from existing file but same
@@ -841,7 +841,7 @@ TEST_F(GDataCacheTest, GetFromCacheSimple) {
   num_callback_invocations_ = 0;
   resource_id = "document:1a2b";
   TestGetFileFromCacheByResourceIdAndMd5(
-      resource_id, md5, base::PLATFORM_FILE_ERROR_NOT_FOUND, md5);
+      resource_id, md5, GDATA_FILE_ERROR_NOT_FOUND, md5);
   EXPECT_EQ(1, num_callback_invocations_);
 }
 
@@ -851,23 +851,23 @@ TEST_F(GDataCacheTest, RemoveFromCacheSimple) {
   std::string md5("abcdef0123456789");
   // First store a file to cache.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
-                   base::PLATFORM_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+                   GDATA_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
 
   // Then try to remove existing file from cache.
   num_callback_invocations_ = 0;
-  TestRemoveFromCache(resource_id, base::PLATFORM_FILE_OK);
+  TestRemoveFromCache(resource_id, GDATA_FILE_OK);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Repeat using non-alphanumeric characters for resource id, including '.'
   // which is an extension separator.
   resource_id = "pdf:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?";
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
-                   base::PLATFORM_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+                   GDATA_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
 
   num_callback_invocations_ = 0;
-  TestRemoveFromCache(resource_id, base::PLATFORM_FILE_OK);
+  TestRemoveFromCache(resource_id, GDATA_FILE_OK);
   EXPECT_EQ(1, num_callback_invocations_);
 }
 
@@ -883,12 +883,12 @@ TEST_F(GDataCacheTest, PinAndUnpin) {
 
   // First store a file to cache.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
-                   base::PLATFORM_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+                   GDATA_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
 
   // Pin the existing file in cache.
   num_callback_invocations_ = 0;
-  TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestPin(resource_id, md5, GDATA_FILE_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED |
           test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -897,14 +897,14 @@ TEST_F(GDataCacheTest, PinAndUnpin) {
 
   // Unpin the existing file in cache.
   num_callback_invocations_ = 0;
-  TestUnpin(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestUnpin(resource_id, md5, GDATA_FILE_OK,
             test_util::TEST_CACHE_STATE_PRESENT,
             GDataCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Pin back the same existing file in cache.
   num_callback_invocations_ = 0;
-  TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestPin(resource_id, md5, GDATA_FILE_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED |
           test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -918,14 +918,14 @@ TEST_F(GDataCacheTest, PinAndUnpin) {
       .Times(1);
 
   num_callback_invocations_ = 0;
-  TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestPin(resource_id, md5, GDATA_FILE_OK,
           test_util::TEST_CACHE_STATE_PINNED,
           GDataCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Unpin the previously pinned non-existent file in cache.
   num_callback_invocations_ = 0;
-  TestUnpin(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestUnpin(resource_id, md5, GDATA_FILE_OK,
             test_util::TEST_CACHE_STATE_NONE,
             GDataCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
@@ -938,7 +938,7 @@ TEST_F(GDataCacheTest, PinAndUnpin) {
       .Times(0);
 
   num_callback_invocations_ = 0;
-  TestUnpin(resource_id, md5, base::PLATFORM_FILE_ERROR_NOT_FOUND,
+  TestUnpin(resource_id, md5, GDATA_FILE_ERROR_NOT_FOUND,
             test_util::TEST_CACHE_STATE_NONE,
             GDataCache::CACHE_TYPE_TMP /* non-applicable */);
   EXPECT_EQ(1, num_callback_invocations_);
@@ -950,14 +950,14 @@ TEST_F(GDataCacheTest, StoreToCachePinned) {
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
 
   // Pin a non-existent file.
-  TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestPin(resource_id, md5, GDATA_FILE_OK,
           test_util::TEST_CACHE_STATE_PINNED,
           GDataCache::CACHE_TYPE_TMP);
 
   // Store an existing file to a previously pinned file.
   num_callback_invocations_ = 0;
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
-                   base::PLATFORM_FILE_OK,
+                   GDATA_FILE_OK,
                    test_util::TEST_CACHE_STATE_PRESENT |
                    test_util::TEST_CACHE_STATE_PINNED |
                    test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -967,7 +967,7 @@ TEST_F(GDataCacheTest, StoreToCachePinned) {
   // Store a non-existent file to a previously pinned and stored file.
   num_callback_invocations_ = 0;
   TestStoreToCache(resource_id, md5, FilePath("./non_existent.json"),
-                   base::PLATFORM_FILE_ERROR_FAILED,
+                   GDATA_FILE_ERROR_FAILED,
                    test_util::TEST_CACHE_STATE_PRESENT |
                    test_util::TEST_CACHE_STATE_PINNED |
                    test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -981,19 +981,19 @@ TEST_F(GDataCacheTest, GetFromCachePinned) {
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
 
   // Pin a non-existent file.
-  TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestPin(resource_id, md5, GDATA_FILE_OK,
           test_util::TEST_CACHE_STATE_PINNED,
           GDataCache::CACHE_TYPE_TMP);
 
   // Get the non-existent pinned file from cache.
   num_callback_invocations_ = 0;
   TestGetFileFromCacheByResourceIdAndMd5(
-      resource_id, md5, base::PLATFORM_FILE_ERROR_NOT_FOUND, md5);
+      resource_id, md5, GDATA_FILE_ERROR_NOT_FOUND, md5);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Store an existing file to the previously pinned non-existent file.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
-                   base::PLATFORM_FILE_OK,
+                   GDATA_FILE_OK,
                    test_util::TEST_CACHE_STATE_PRESENT |
                    test_util::TEST_CACHE_STATE_PINNED |
                    test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -1002,7 +1002,7 @@ TEST_F(GDataCacheTest, GetFromCachePinned) {
   // Get the previously pinned and stored file from cache.
   num_callback_invocations_ = 0;
   TestGetFileFromCacheByResourceIdAndMd5(
-      resource_id, md5, base::PLATFORM_FILE_OK, md5);
+      resource_id, md5, GDATA_FILE_OK, md5);
   EXPECT_EQ(1, num_callback_invocations_);
 }
 
@@ -1014,9 +1014,9 @@ TEST_F(GDataCacheTest, RemoveFromCachePinned) {
 
   // Store a file to cache, and pin it.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
-                   base::PLATFORM_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+                   GDATA_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
-  TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestPin(resource_id, md5, GDATA_FILE_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED |
           test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -1024,7 +1024,7 @@ TEST_F(GDataCacheTest, RemoveFromCachePinned) {
 
   // Remove |resource_id| from cache.
   num_callback_invocations_ = 0;
-  TestRemoveFromCache(resource_id, base::PLATFORM_FILE_OK);
+  TestRemoveFromCache(resource_id, GDATA_FILE_OK);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Repeat using non-alphanumeric characters for resource id, including '.'
@@ -1033,16 +1033,16 @@ TEST_F(GDataCacheTest, RemoveFromCachePinned) {
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
 
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
-                   base::PLATFORM_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+                   GDATA_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
-  TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestPin(resource_id, md5, GDATA_FILE_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED |
           test_util::TEST_CACHE_STATE_PERSISTENT,
           GDataCache::CACHE_TYPE_PERSISTENT);
 
   num_callback_invocations_ = 0;
-  TestRemoveFromCache(resource_id, base::PLATFORM_FILE_OK);
+  TestRemoveFromCache(resource_id, GDATA_FILE_OK);
   EXPECT_EQ(1, num_callback_invocations_);
 }
 
@@ -1053,12 +1053,12 @@ TEST_F(GDataCacheTest, DirtyCacheSimple) {
 
   // First store a file to cache.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
-                   base::PLATFORM_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+                   GDATA_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
 
   // Mark the file dirty.
   num_callback_invocations_ = 0;
-  TestMarkDirty(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestMarkDirty(resource_id, md5, GDATA_FILE_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -1067,7 +1067,7 @@ TEST_F(GDataCacheTest, DirtyCacheSimple) {
 
   // Commit the file dirty.
   num_callback_invocations_ = 0;
-  TestCommitDirty(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestCommitDirty(resource_id, md5, GDATA_FILE_OK,
                   test_util::TEST_CACHE_STATE_PRESENT |
                   test_util::TEST_CACHE_STATE_DIRTY |
                   test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -1076,7 +1076,7 @@ TEST_F(GDataCacheTest, DirtyCacheSimple) {
 
   // Clear dirty state of the file.
   num_callback_invocations_ = 0;
-  TestClearDirty(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestClearDirty(resource_id, md5, GDATA_FILE_OK,
                  test_util::TEST_CACHE_STATE_PRESENT,
                  GDataCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
@@ -1090,9 +1090,9 @@ TEST_F(GDataCacheTest, DirtyCachePinned) {
 
   // First store a file to cache and pin it.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
-                   base::PLATFORM_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+                   GDATA_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
-  TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestPin(resource_id, md5, GDATA_FILE_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED |
           test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -1100,7 +1100,7 @@ TEST_F(GDataCacheTest, DirtyCachePinned) {
 
   // Mark the file dirty.
   num_callback_invocations_ = 0;
-  TestMarkDirty(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestMarkDirty(resource_id, md5, GDATA_FILE_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PINNED |
@@ -1110,7 +1110,7 @@ TEST_F(GDataCacheTest, DirtyCachePinned) {
 
   // Commit the file dirty.
   num_callback_invocations_ = 0;
-  TestCommitDirty(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestCommitDirty(resource_id, md5, GDATA_FILE_OK,
                   test_util::TEST_CACHE_STATE_PRESENT |
                   test_util::TEST_CACHE_STATE_DIRTY |
                   test_util::TEST_CACHE_STATE_PINNED |
@@ -1120,7 +1120,7 @@ TEST_F(GDataCacheTest, DirtyCachePinned) {
 
   // Clear dirty state of the file.
   num_callback_invocations_ = 0;
-  TestClearDirty(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestClearDirty(resource_id, md5, GDATA_FILE_OK,
                  test_util::TEST_CACHE_STATE_PRESENT |
                  test_util::TEST_CACHE_STATE_PINNED |
                  test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -1141,9 +1141,9 @@ TEST_F(GDataCacheTest, PinAndUnpinDirtyCache) {
 
   // First store a file to cache and mark it as dirty.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
-                   base::PLATFORM_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+                   GDATA_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
-  TestMarkDirty(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestMarkDirty(resource_id, md5, GDATA_FILE_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -1158,7 +1158,7 @@ TEST_F(GDataCacheTest, PinAndUnpinDirtyCache) {
   EXPECT_TRUE(file_util::PathExists(dirty_path));
 
   // Pin the dirty file.
-  TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestPin(resource_id, md5, GDATA_FILE_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_DIRTY |
           test_util::TEST_CACHE_STATE_PINNED |
@@ -1169,7 +1169,7 @@ TEST_F(GDataCacheTest, PinAndUnpinDirtyCache) {
   EXPECT_TRUE(file_util::PathExists(dirty_path));
 
   // Unpin the dirty file.
-  TestUnpin(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestUnpin(resource_id, md5, GDATA_FILE_OK,
             test_util::TEST_CACHE_STATE_PRESENT |
             test_util::TEST_CACHE_STATE_DIRTY |
             test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -1186,12 +1186,12 @@ TEST_F(GDataCacheTest, DirtyCacheRepetitive) {
 
   // First store a file to cache.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
-                   base::PLATFORM_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+                   GDATA_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
 
   // Mark the file dirty.
   num_callback_invocations_ = 0;
-  TestMarkDirty(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestMarkDirty(resource_id, md5, GDATA_FILE_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -1200,7 +1200,7 @@ TEST_F(GDataCacheTest, DirtyCacheRepetitive) {
 
   // Again, mark the file dirty.  Nothing should change.
   num_callback_invocations_ = 0;
-  TestMarkDirty(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestMarkDirty(resource_id, md5, GDATA_FILE_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -1209,7 +1209,7 @@ TEST_F(GDataCacheTest, DirtyCacheRepetitive) {
 
   // Commit the file dirty.  Outgoing symlink should be created.
   num_callback_invocations_ = 0;
-  TestCommitDirty(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestCommitDirty(resource_id, md5, GDATA_FILE_OK,
                   test_util::TEST_CACHE_STATE_PRESENT |
                   test_util::TEST_CACHE_STATE_DIRTY |
                   test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -1218,7 +1218,7 @@ TEST_F(GDataCacheTest, DirtyCacheRepetitive) {
 
   // Again, commit the file dirty.  Nothing should change.
   num_callback_invocations_ = 0;
-  TestCommitDirty(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestCommitDirty(resource_id, md5, GDATA_FILE_OK,
                   test_util::TEST_CACHE_STATE_PRESENT |
                   test_util::TEST_CACHE_STATE_DIRTY |
                   test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -1228,7 +1228,7 @@ TEST_F(GDataCacheTest, DirtyCacheRepetitive) {
   // Mark the file dirty agian after it's being committed.  Outgoing symlink
   // should be deleted.
   num_callback_invocations_ = 0;
-  TestMarkDirty(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestMarkDirty(resource_id, md5, GDATA_FILE_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -1237,7 +1237,7 @@ TEST_F(GDataCacheTest, DirtyCacheRepetitive) {
 
   // Commit the file dirty.  Outgoing symlink should be created again.
   num_callback_invocations_ = 0;
-  TestCommitDirty(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestCommitDirty(resource_id, md5, GDATA_FILE_OK,
                   test_util::TEST_CACHE_STATE_PRESENT |
                   test_util::TEST_CACHE_STATE_DIRTY |
                   test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -1246,14 +1246,14 @@ TEST_F(GDataCacheTest, DirtyCacheRepetitive) {
 
   // Clear dirty state of the file.
   num_callback_invocations_ = 0;
-  TestClearDirty(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestClearDirty(resource_id, md5, GDATA_FILE_OK,
                  test_util::TEST_CACHE_STATE_PRESENT,
                  GDataCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Again, clear dirty state of the file, which is no longer dirty.
   num_callback_invocations_ = 0;
-  TestClearDirty(resource_id, md5, base::PLATFORM_FILE_ERROR_INVALID_OPERATION,
+  TestClearDirty(resource_id, md5, GDATA_FILE_ERROR_INVALID_OPERATION,
                  test_util::TEST_CACHE_STATE_PRESENT,
                  GDataCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
@@ -1265,47 +1265,47 @@ TEST_F(GDataCacheTest, DirtyCacheInvalid) {
 
   // Mark a non-existent file dirty.
   num_callback_invocations_ = 0;
-  TestMarkDirty(resource_id, md5, base::PLATFORM_FILE_ERROR_NOT_FOUND,
+  TestMarkDirty(resource_id, md5, GDATA_FILE_ERROR_NOT_FOUND,
                 test_util::TEST_CACHE_STATE_NONE,
                 GDataCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Commit a non-existent file dirty.
   num_callback_invocations_ = 0;
-  TestCommitDirty(resource_id, md5, base::PLATFORM_FILE_ERROR_NOT_FOUND,
+  TestCommitDirty(resource_id, md5, GDATA_FILE_ERROR_NOT_FOUND,
                   test_util::TEST_CACHE_STATE_NONE,
                   GDataCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Clear dirty state of a non-existent file.
   num_callback_invocations_ = 0;
-  TestClearDirty(resource_id, md5, base::PLATFORM_FILE_ERROR_NOT_FOUND,
+  TestClearDirty(resource_id, md5, GDATA_FILE_ERROR_NOT_FOUND,
                  test_util::TEST_CACHE_STATE_NONE,
                  GDataCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Store a file to cache.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
-                   base::PLATFORM_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+                   GDATA_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
 
   // Commit a non-dirty existing file dirty.
   num_callback_invocations_ = 0;
-  TestCommitDirty(resource_id, md5, base::PLATFORM_FILE_ERROR_INVALID_OPERATION,
+  TestCommitDirty(resource_id, md5, GDATA_FILE_ERROR_INVALID_OPERATION,
                  test_util::TEST_CACHE_STATE_PRESENT,
                  GDataCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Clear dirty state of a non-dirty existing file.
   num_callback_invocations_ = 0;
-  TestClearDirty(resource_id, md5, base::PLATFORM_FILE_ERROR_INVALID_OPERATION,
+  TestClearDirty(resource_id, md5, GDATA_FILE_ERROR_INVALID_OPERATION,
                  test_util::TEST_CACHE_STATE_PRESENT,
                  GDataCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Mark an existing file dirty, then store a new file to the same resource id
   // but different md5, which should fail.
-  TestMarkDirty(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestMarkDirty(resource_id, md5, GDATA_FILE_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -1313,7 +1313,7 @@ TEST_F(GDataCacheTest, DirtyCacheInvalid) {
   num_callback_invocations_ = 0;
   md5 = "new_md5";
   TestStoreToCache(resource_id, md5, GetTestFilePath("subdir_feed.json"),
-                   base::PLATFORM_FILE_ERROR_IN_USE,
+                   GDATA_FILE_ERROR_IN_USE,
                    test_util::TEST_CACHE_STATE_PRESENT |
                    test_util::TEST_CACHE_STATE_DIRTY |
                    test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -1329,20 +1329,20 @@ TEST_F(GDataCacheTest, RemoveFromDirtyCache) {
 
   // Store a file to cache, pin it, mark it dirty and commit it.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
-                   base::PLATFORM_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+                   GDATA_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
-  TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestPin(resource_id, md5, GDATA_FILE_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED |
           test_util::TEST_CACHE_STATE_PERSISTENT,
           GDataCache::CACHE_TYPE_PERSISTENT);
-  TestMarkDirty(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestMarkDirty(resource_id, md5, GDATA_FILE_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_PINNED |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
                 GDataCache::CACHE_TYPE_PERSISTENT);
-  TestCommitDirty(resource_id, md5, base::PLATFORM_FILE_OK,
+  TestCommitDirty(resource_id, md5, GDATA_FILE_OK,
                   test_util::TEST_CACHE_STATE_PRESENT |
                   test_util::TEST_CACHE_STATE_PINNED |
                   test_util::TEST_CACHE_STATE_DIRTY |
@@ -1352,7 +1352,7 @@ TEST_F(GDataCacheTest, RemoveFromDirtyCache) {
   // Try to remove the file.  Since file is dirty, it and the corresponding
   // pinned and outgoing symlinks should not be removed.
   num_callback_invocations_ = 0;
-  TestRemoveFromCache(resource_id, base::PLATFORM_FILE_OK);
+  TestRemoveFromCache(resource_id, GDATA_FILE_OK);
   EXPECT_EQ(1, num_callback_invocations_);
 }
 
@@ -1363,7 +1363,7 @@ TEST_F(GDataCacheTest, MountUnmount) {
 
   // First store a file to cache in the tmp subdir.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
-                   base::PLATFORM_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+                   GDATA_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    GDataCache::CACHE_TYPE_TMP);
 
   // Mark the file mounted.
@@ -1372,7 +1372,7 @@ TEST_F(GDataCacheTest, MountUnmount) {
                                        GDataCache::CACHE_TYPE_TMP,
                                        GDataCache::CACHED_FILE_FROM_SERVER);
   TestSetMountedState(resource_id, md5, file_path, true,
-                      base::PLATFORM_FILE_OK,
+                      GDATA_FILE_OK,
                       test_util::TEST_CACHE_STATE_PRESENT |
                       test_util::TEST_CACHE_STATE_MOUNTED |
                       test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -1387,7 +1387,7 @@ TEST_F(GDataCacheTest, MountUnmount) {
                                        GDataCache::CACHE_TYPE_PERSISTENT,
                                        GDataCache::CACHED_FILE_MOUNTED);
   TestSetMountedState(resource_id, md5, file_path, false,
-                      base::PLATFORM_FILE_OK,
+                      GDATA_FILE_OK,
                       test_util::TEST_CACHE_STATE_PRESENT,
                       GDataCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
@@ -1395,7 +1395,7 @@ TEST_F(GDataCacheTest, MountUnmount) {
 
   // Try to remove the file.
   num_callback_invocations_ = 0;
-  TestRemoveFromCache(resource_id, base::PLATFORM_FILE_OK);
+  TestRemoveFromCache(resource_id, GDATA_FILE_OK);
   EXPECT_EQ(1, num_callback_invocations_);
 }
 

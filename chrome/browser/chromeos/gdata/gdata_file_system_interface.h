@@ -35,18 +35,18 @@ struct SearchResultInfo {
 };
 
 // Used for file operations like removing files.
-typedef base::Callback<void(base::PlatformFileError error)>
+typedef base::Callback<void(GDataFileError error)>
     FileOperationCallback;
 
 // Used to get files from the file system.
-typedef base::Callback<void(base::PlatformFileError error,
+typedef base::Callback<void(GDataFileError error,
                             const FilePath& file_path,
                             const std::string& mime_type,
                             GDataFileType file_type)> GetFileCallback;
 
 // Used to get file info from the file system.
 // If |error| is not PLATFORM_FILE_OK, |file_info| is set to NULL.
-typedef base::Callback<void(base::PlatformFileError error,
+typedef base::Callback<void(GDataFileError error,
                             scoped_ptr<GDataFileProto> file_proto)>
     GetFileInfoCallback;
 
@@ -56,20 +56,20 @@ typedef base::Callback<void(base::PlatformFileError error,
 // |gdata_file_path| parameter is provided as GDataFileProto does not contain
 // the gdata file path (i.e. only contains the base name without parent
 // directory names).
-typedef base::Callback<void(base::PlatformFileError error,
+typedef base::Callback<void(GDataFileError error,
                             const FilePath& gdata_file_path,
                             scoped_ptr<GDataFileProto> file_proto)>
     GetFileInfoWithFilePathCallback;
 
 // Used to get entry info from the file system.
 // If |error| is not PLATFORM_FILE_OK, |entry_info| is set to NULL.
-typedef base::Callback<void(base::PlatformFileError error,
+typedef base::Callback<void(GDataFileError error,
                             scoped_ptr<GDataEntryProto> entry_proto)>
     GetEntryInfoCallback;
 
 // Used to read a directory from the file system.
 // If |error| is not PLATFORM_FILE_OK, |directory_info| is set to NULL.
-typedef base::Callback<void(base::PlatformFileError error,
+typedef base::Callback<void(GDataFileError error,
                             bool hide_hosted_documents,
                             scoped_ptr<GDataDirectoryProto> directory_proto)>
     ReadDirectoryCallback;
@@ -77,16 +77,16 @@ typedef base::Callback<void(base::PlatformFileError error,
 // Used to get drive content search results.
 // If |error| is not PLATFORM_FILE_OK, |result_paths| is empty.
 typedef base::Callback<void(
-    base::PlatformFileError error,
+    GDataFileError error,
     scoped_ptr<std::vector<SearchResultInfo> > result_paths)> SearchCallback;
 
 // Used to open files from the file system. |file_path| is the path on the local
 // file system for the opened file.
-typedef base::Callback<void(base::PlatformFileError error,
+typedef base::Callback<void(GDataFileError error,
                             const FilePath& file_path)> OpenFileCallback;
 
 // Used to get available space for the account from GData.
-typedef base::Callback<void(base::PlatformFileError error,
+typedef base::Callback<void(GDataFileError error,
                             int64 bytes_total,
                             int64 bytes_used)> GetAvailableSpaceCallback;
 

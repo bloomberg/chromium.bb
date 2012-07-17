@@ -104,12 +104,12 @@ void OpenEditURLUIThread(Profile* profile, const GURL* edit_url) {
 // ModifyGDataFileResourceUrl.
 void OnGetFileInfoByResourceId(Profile* profile,
                                const std::string& resource_id,
-                               base::PlatformFileError error,
+                               GDataFileError error,
                                const FilePath& /* gdata_file_path */,
                                scoped_ptr<GDataFileProto> file_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != base::PLATFORM_FILE_OK)
+  if (error != GDATA_FILE_OK)
     return;
 
   DCHECK(file_proto.get());
@@ -125,14 +125,14 @@ void OnGetFileInfoForInsertGDataCachePathsPermissions(
     Profile* profile,
     std::vector<std::pair<FilePath, int> >* cache_paths,
     const base::Closure& callback,
-    base::PlatformFileError error,
+    GDataFileError error,
     scoped_ptr<GDataFileProto> file_info) {
   DCHECK(profile);
   DCHECK(cache_paths);
   DCHECK(!callback.is_null());
 
   GDataCache* cache = GetGDataCache(profile);
-  if (!cache || error != base::PLATFORM_FILE_OK) {
+  if (!cache || error != GDATA_FILE_OK) {
     callback.Run();
     return;
   }
@@ -383,6 +383,62 @@ bool IsDriveV2ApiEnabled() {
   static bool enabled = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableDriveV2Api);
   return enabled;
+}
+
+base::PlatformFileError GDataFileErrorToPlatformError(
+    gdata::GDataFileError error) {
+  switch (error) {
+    case gdata::GDATA_FILE_OK:
+      return base::PLATFORM_FILE_OK;
+
+    case gdata::GDATA_FILE_ERROR_FAILED:
+      return base::PLATFORM_FILE_ERROR_FAILED;
+
+    case gdata::GDATA_FILE_ERROR_IN_USE:
+      return base::PLATFORM_FILE_ERROR_IN_USE;
+
+    case gdata::GDATA_FILE_ERROR_EXISTS:
+      return base::PLATFORM_FILE_ERROR_EXISTS;
+
+    case gdata::GDATA_FILE_ERROR_NOT_FOUND:
+      return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+
+    case gdata::GDATA_FILE_ERROR_ACCESS_DENIED:
+      return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
+
+    case gdata::GDATA_FILE_ERROR_TOO_MANY_OPENED:
+      return base::PLATFORM_FILE_ERROR_TOO_MANY_OPENED;
+
+    case gdata::GDATA_FILE_ERROR_NO_MEMORY:
+      return base::PLATFORM_FILE_ERROR_NO_MEMORY;
+
+    case gdata::GDATA_FILE_ERROR_NO_SPACE:
+      return base::PLATFORM_FILE_ERROR_NO_SPACE;
+
+    case gdata::GDATA_FILE_ERROR_NOT_A_DIRECTORY:
+      return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+
+    case gdata::GDATA_FILE_ERROR_INVALID_OPERATION:
+      return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+
+    case gdata::GDATA_FILE_ERROR_SECURITY:
+      return base::PLATFORM_FILE_ERROR_SECURITY;
+
+    case gdata::GDATA_FILE_ERROR_ABORT:
+      return base::PLATFORM_FILE_ERROR_ABORT;
+
+    case gdata::GDATA_FILE_ERROR_NOT_A_FILE:
+      return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+
+    case gdata::GDATA_FILE_ERROR_NOT_EMPTY:
+      return base::PLATFORM_FILE_ERROR_NOT_EMPTY;
+
+    case gdata::GDATA_FILE_ERROR_INVALID_URL:
+      return base::PLATFORM_FILE_ERROR_INVALID_URL;
+  }
+
+  NOTREACHED();
+  return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
 }  // namespace util

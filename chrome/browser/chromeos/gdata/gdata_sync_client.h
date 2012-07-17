@@ -152,7 +152,7 @@ class GDataSyncClient
 
   // Called when a file entry is obtained.
   void OnGetFileInfoByResourceId(const std::string& resource_id,
-                                 base::PlatformFileError error,
+                                 GDataFileError error,
                                  const FilePath& file_path,
                                  scoped_ptr<GDataFileProto> file_proto);
 
@@ -163,19 +163,19 @@ class GDataSyncClient
                        const GDataCacheEntry& cache_entry);
 
   // Called when an existing cache entry and the local files are removed.
-  void OnRemove(base::PlatformFileError error,
+  void OnRemove(GDataFileError error,
                 const std::string& resource_id,
                 const std::string& md5);
 
   // Called when a file is pinned.
-  void OnPinned(base::PlatformFileError error,
+  void OnPinned(GDataFileError error,
                 const std::string& resource_id,
                 const std::string& md5);
 
   // Called when the file for |resource_id| is fetched.
   // Calls DoSyncLoop() to go back to the sync loop.
   void OnFetchFileComplete(const std::string& resource_id,
-                           base::PlatformFileError error,
+                           GDataFileError error,
                            const FilePath& local_path,
                            const std::string& ununsed_mime_type,
                            GDataFileType file_type);
@@ -183,7 +183,7 @@ class GDataSyncClient
   // Called when the file for |resource_id| is uploaded.
   // Calls DoSyncLoop() to go back to the sync loop.
   void OnUploadFileComplete(const std::string& resource_id,
-                            base::PlatformFileError error);
+                            GDataFileError error);
 
   // chromeos::NetworkLibrary::NetworkManagerObserver override.
   virtual void OnNetworkManagerChanged(

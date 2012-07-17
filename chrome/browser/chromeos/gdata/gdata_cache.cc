@@ -96,7 +96,7 @@ void RemoveAllFiles(const FilePath& directory) {
 // - deleting symlink if |symlink_path| is not empty
 // - creating symlink if |symlink_path| is not empty and |create_symlink| is
 //   true.
-base::PlatformFileError ModifyCacheState(
+GDataFileError ModifyCacheState(
     const FilePath& source_path,
     const FilePath& dest_path,
     GDataCache::FileOperationType file_operation_type,
@@ -115,7 +115,7 @@ base::PlatformFileError ModifyCacheState(
                      "move " : "copy ")
                  << source_path.value()
                  << " to " << dest_path.value();
-      return base::PLATFORM_FILE_ERROR_FAILED;
+      return GDATA_FILE_ERROR_FAILED;
     } else {
       DVLOG(1) << (file_operation_type == GDataCache::FILE_OPERATION_MOVE ?
                    "Moved " : "Copied ")
@@ -127,7 +127,7 @@ base::PlatformFileError ModifyCacheState(
   }
 
   if (symlink_path.empty())
-    return base::PLATFORM_FILE_OK;
+    return GDATA_FILE_OK;
 
   // Remove symlink regardless of |create_symlink| because creating a link will
   // not overwrite an existing one.
@@ -137,16 +137,16 @@ base::PlatformFileError ModifyCacheState(
   file_util::Delete(symlink_path, false);
 
   if (!create_symlink)
-    return base::PLATFORM_FILE_OK;
+    return GDATA_FILE_OK;
 
   // Create new symlink to |dest_path|.
   if (!file_util::CreateSymbolicLink(dest_path, symlink_path)) {
     LOG(ERROR) << "Failed to create a symlink from " << symlink_path.value()
                << " to " << dest_path.value();
-    return base::PLATFORM_FILE_ERROR_FAILED;
+    return GDATA_FILE_ERROR_FAILED;
   }
 
-  return base::PLATFORM_FILE_OK;
+  return GDATA_FILE_OK;
 }
 
 // Deletes all files that match |path_to_delete_pattern| except for
@@ -211,7 +211,7 @@ void CollectExistingPinnedFile(std::vector<std::string>* resource_ids,
 // Runs callback with pointers dereferenced.
 // Used to implement SetMountedStateOnUIThread.
 void RunSetMountedStateCallback(const SetMountedStateCallback& callback,
-                                base::PlatformFileError* error,
+                                GDataFileError* error,
                                 FilePath* cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(error);
@@ -224,7 +224,7 @@ void RunSetMountedStateCallback(const SetMountedStateCallback& callback,
 // Runs callback with pointers dereferenced.
 // Used to implement *OnUIThread methods.
 void RunCacheOperationCallback(const CacheOperationCallback& callback,
-                               base::PlatformFileError* error,
+                               GDataFileError* error,
                                const std::string& resource_id,
                                const std::string& md5) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -237,7 +237,7 @@ void RunCacheOperationCallback(const CacheOperationCallback& callback,
 // Runs callback with pointers dereferenced.
 // Used to implement *OnUIThread methods.
 void RunGetFileFromCacheCallback(const GetFileFromCacheCallback& callback,
-                                 base::PlatformFileError* error,
+                                 GDataFileError* error,
                                  const std::string& resource_id,
                                  const std::string& md5,
                                  FilePath* cache_file_path) {
@@ -438,8 +438,8 @@ void GDataCache::GetFileOnUIThread(const std::string& resource_id,
                                    const GetFileFromCacheCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
+  GDataFileError* error =
+      new GDataFileError(GDATA_FILE_OK);
   FilePath* cache_file_path = new FilePath;
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
@@ -464,8 +464,8 @@ void GDataCache::StoreOnUIThread(const std::string& resource_id,
                                  const CacheOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
+  GDataFileError* error =
+      new GDataFileError(GDATA_FILE_OK);
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GDataCache::Store,
@@ -487,8 +487,8 @@ void GDataCache::PinOnUIThread(const std::string& resource_id,
                                const CacheOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
+  GDataFileError* error =
+      new GDataFileError(GDATA_FILE_OK);
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GDataCache::Pin,
@@ -509,8 +509,8 @@ void GDataCache::UnpinOnUIThread(const std::string& resource_id,
                                  const std::string& md5,
                                  const CacheOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
+  GDataFileError* error =
+      new GDataFileError(GDATA_FILE_OK);
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GDataCache::Unpin,
@@ -533,8 +533,8 @@ void GDataCache::SetMountedStateOnUIThread(
     const SetMountedStateCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
+  GDataFileError* error =
+      new GDataFileError(GDATA_FILE_OK);
   FilePath* cache_file_path = new FilePath;
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
@@ -555,8 +555,8 @@ void GDataCache::MarkDirtyOnUIThread(const std::string& resource_id,
                                      const GetFileFromCacheCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
+  GDataFileError* error =
+      new GDataFileError(GDATA_FILE_OK);
   FilePath* cache_file_path = new FilePath;
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
@@ -580,8 +580,7 @@ void GDataCache::CommitDirtyOnUIThread(const std::string& resource_id,
                                        const CacheOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
+  GDataFileError* error = new GDataFileError(GDATA_FILE_OK);
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GDataCache::CommitDirty,
@@ -603,8 +602,8 @@ void GDataCache::ClearDirtyOnUIThread(const std::string& resource_id,
                                       const CacheOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
+  GDataFileError* error =
+      new GDataFileError(GDATA_FILE_OK);
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GDataCache::ClearDirty,
@@ -624,8 +623,8 @@ void GDataCache::RemoveOnUIThread(const std::string& resource_id,
                                   const CacheOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
+  GDataFileError* error =
+      new GDataFileError(GDATA_FILE_OK);
 
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
@@ -710,7 +709,7 @@ void GDataCache::GetResourceIdsOfExistingPinnedFiles(
 
 void GDataCache::GetFile(const std::string& resource_id,
                          const std::string& md5,
-                         base::PlatformFileError* error,
+                         GDataFileError* error,
                          FilePath* cache_file_path) {
   AssertOnSequencedWorkerPool();
   DCHECK(error);
@@ -732,9 +731,9 @@ void GDataCache::GetFile(const std::string& resource_id,
         md5,
         GetSubDirectoryType(cache_entry),
         file_origin);
-    *error = base::PLATFORM_FILE_OK;
+    *error = GDATA_FILE_OK;
   } else {
-    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    *error = GDATA_FILE_ERROR_NOT_FOUND;
   }
 }
 
@@ -742,7 +741,7 @@ void GDataCache::Store(const std::string& resource_id,
                        const std::string& md5,
                        const FilePath& source_path,
                        FileOperationType file_operation_type,
-                       base::PlatformFileError* error) {
+                       GDataFileError* error) {
   AssertOnSequencedWorkerPool();
   DCHECK(error);
 
@@ -760,7 +759,7 @@ void GDataCache::Store(const std::string& resource_id,
                    << (cache_entry.is_dirty() ? "dirty" : "mounted")
                    << " file: res_id=" << resource_id
                    << ", md5=" << md5;
-      *error = base::PLATFORM_FILE_ERROR_IN_USE;
+      *error = GDATA_FILE_ERROR_IN_USE;
       return;
     }
 
@@ -810,7 +809,7 @@ void GDataCache::Store(const std::string& resource_id,
   // Delete files that match |stale_filenames_pattern| except for |dest_path|.
   DeleteFilesSelectively(stale_filenames_pattern, dest_path);
 
-  if (*error == base::PLATFORM_FILE_OK) {
+  if (*error == GDATA_FILE_OK) {
     // Now that file operations have completed, update cache map.
     cache_entry.set_md5(md5);
     cache_entry.set_is_present(true);
@@ -822,7 +821,7 @@ void GDataCache::Store(const std::string& resource_id,
 void GDataCache::Pin(const std::string& resource_id,
                      const std::string& md5,
                      FileOperationType file_operation_type,
-                     base::PlatformFileError* error) {
+                     GDataFileError* error) {
   AssertOnSequencedWorkerPool();
   DCHECK(error);
 
@@ -897,7 +896,7 @@ void GDataCache::Pin(const std::string& resource_id,
                             symlink_path,
                             create_symlink);
 
-  if (*error == base::PLATFORM_FILE_OK) {
+  if (*error == GDATA_FILE_OK) {
     // Now that file operations have completed, update cache map.
     cache_entry.set_md5(md5);
     cache_entry.set_is_pinned(true);
@@ -909,7 +908,7 @@ void GDataCache::Pin(const std::string& resource_id,
 void GDataCache::Unpin(const std::string& resource_id,
                        const std::string& md5,
                        FileOperationType file_operation_type,
-                       base::PlatformFileError* error) {
+                       GDataFileError* error) {
   AssertOnSequencedWorkerPool();
   DCHECK(error);
 
@@ -919,7 +918,7 @@ void GDataCache::Unpin(const std::string& resource_id,
     LOG(WARNING) << "Can't unpin a file that wasn't pinned or cached: res_id="
                  << resource_id
                  << ", md5=" << md5;
-    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    *error = GDATA_FILE_ERROR_NOT_FOUND;
     return;
   }
 
@@ -977,7 +976,7 @@ void GDataCache::Unpin(const std::string& resource_id,
       symlink_path,  // This will be deleted if it exists.
       false /* don't create symlink*/);
 
-  if (*error == base::PLATFORM_FILE_OK) {
+  if (*error == GDATA_FILE_OK) {
     // Now that file operations have completed, update cache map.
     if (cache_entry.is_present()) {
       cache_entry.set_md5(md5);
@@ -993,7 +992,7 @@ void GDataCache::Unpin(const std::string& resource_id,
 
 void GDataCache::SetMountedState(const FilePath& file_path,
                                  bool to_mount,
-                                 base::PlatformFileError *error,
+                                 GDataFileError *error,
                                  FilePath* cache_file_path) {
   AssertOnSequencedWorkerPool();
   DCHECK(error);
@@ -1010,11 +1009,11 @@ void GDataCache::SetMountedState(const FilePath& file_path,
   // Get cache entry associated with the resource_id and md5
   GDataCacheEntry cache_entry;
   if (!GetCacheEntry(resource_id, md5, &cache_entry)) {
-    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    *error = GDATA_FILE_ERROR_NOT_FOUND;
     return;
   }
   if (to_mount == cache_entry.is_mounted()) {
-    *error = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+    *error = GDATA_FILE_ERROR_INVALID_OPERATION;
     return;
   }
 
@@ -1047,7 +1046,7 @@ void GDataCache::SetMountedState(const FilePath& file_path,
   // Move cache blob from source path to destination path.
   *error = ModifyCacheState(source_path, *cache_file_path,
                             FILE_OPERATION_MOVE, FilePath(), false);
-  if (*error == base::PLATFORM_FILE_OK) {
+  if (*error == GDATA_FILE_OK) {
     // Now that cache operation is complete, update cache map
     cache_entry.set_md5(md5);
     cache_entry.set_is_persistent(dest_subdir == CACHE_TYPE_PERSISTENT);
@@ -1058,7 +1057,7 @@ void GDataCache::SetMountedState(const FilePath& file_path,
 void GDataCache::MarkDirty(const std::string& resource_id,
                            const std::string& md5,
                            FileOperationType file_operation_type,
-                           base::PlatformFileError* error,
+                           GDataFileError* error,
                            FilePath* cache_file_path) {
   AssertOnSequencedWorkerPool();
   DCHECK(error);
@@ -1077,7 +1076,7 @@ void GDataCache::MarkDirty(const std::string& resource_id,
     LOG(WARNING) << "Can't mark dirty a file that wasn't cached: res_id="
                  << resource_id
                  << ", md5=" << md5;
-    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    *error = GDATA_FILE_ERROR_NOT_FOUND;
     return;
   }
 
@@ -1109,7 +1108,7 @@ void GDataCache::MarkDirty(const std::string& resource_id,
         false /* don't create symlink */);
 
     // Determine current path of dirty file.
-    if (*error == base::PLATFORM_FILE_OK) {
+    if (*error == GDATA_FILE_OK) {
       *cache_file_path = GetCacheFilePath(
           resource_id,
           md5,
@@ -1151,7 +1150,7 @@ void GDataCache::MarkDirty(const std::string& resource_id,
       symlink_path,
       !symlink_path.empty() /* create symlink */);
 
-  if (*error == base::PLATFORM_FILE_OK) {
+  if (*error == GDATA_FILE_OK) {
     // Now that file operations have completed, update cache map.
     cache_entry.set_md5(md5);
     cache_entry.set_is_dirty(true);
@@ -1163,7 +1162,7 @@ void GDataCache::MarkDirty(const std::string& resource_id,
 void GDataCache::CommitDirty(const std::string& resource_id,
                              const std::string& md5,
                              FileOperationType file_operation_type,
-                             base::PlatformFileError* error) {
+                             GDataFileError* error) {
   AssertOnSequencedWorkerPool();
   DCHECK(error);
 
@@ -1180,7 +1179,7 @@ void GDataCache::CommitDirty(const std::string& resource_id,
     LOG(WARNING) << "Can't commit dirty a file that wasn't cached: res_id="
                  << resource_id
                  << ", md5=" << md5;
-    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    *error = GDATA_FILE_ERROR_NOT_FOUND;
     return;
   }
 
@@ -1190,7 +1189,7 @@ void GDataCache::CommitDirty(const std::string& resource_id,
     LOG(WARNING) << "Can't commit a non-dirty file: res_id="
                  << resource_id
                  << ", md5=" << md5;
-    *error = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+    *error = GDATA_FILE_ERROR_INVALID_OPERATION;
     return;
   }
 
@@ -1222,7 +1221,7 @@ void GDataCache::CommitDirty(const std::string& resource_id,
 void GDataCache::ClearDirty(const std::string& resource_id,
                             const std::string& md5,
                             FileOperationType file_operation_type,
-                            base::PlatformFileError* error) {
+                            GDataFileError* error) {
   AssertOnSequencedWorkerPool();
   DCHECK(error);
 
@@ -1237,7 +1236,7 @@ void GDataCache::ClearDirty(const std::string& resource_id,
     LOG(WARNING) << "Can't clear dirty state of a file that wasn't cached: "
                  << "res_id=" << resource_id
                  << ", md5=" << md5;
-    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    *error = GDATA_FILE_ERROR_NOT_FOUND;
     return;
   }
 
@@ -1247,7 +1246,7 @@ void GDataCache::ClearDirty(const std::string& resource_id,
     LOG(WARNING) << "Can't clear dirty state of a non-dirty file: res_id="
                  << resource_id
                  << ", md5=" << md5;
-    *error = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+    *error = GDATA_FILE_ERROR_INVALID_OPERATION;
     return;
   }
 
@@ -1283,7 +1282,7 @@ void GDataCache::ClearDirty(const std::string& resource_id,
                             false /* don't create symlink */);
 
   // If file is pinned, update symlink in pinned dir.
-  if (*error == base::PLATFORM_FILE_OK && cache_entry.is_pinned()) {
+  if (*error == GDATA_FILE_OK && cache_entry.is_pinned()) {
     symlink_path = GetCacheFilePath(resource_id,
                                     std::string(),
                                     CACHE_TYPE_PINNED,
@@ -1299,7 +1298,7 @@ void GDataCache::ClearDirty(const std::string& resource_id,
                               true /* create symlink */);
   }
 
-  if (*error == base::PLATFORM_FILE_OK) {
+  if (*error == GDATA_FILE_OK) {
     // Now that file operations have completed, update cache map.
     cache_entry.set_md5(md5);
     cache_entry.set_is_dirty(false);
@@ -1309,7 +1308,7 @@ void GDataCache::ClearDirty(const std::string& resource_id,
 }
 
 void GDataCache::Remove(const std::string& resource_id,
-                        base::PlatformFileError* error) {
+                        GDataFileError* error) {
   AssertOnSequencedWorkerPool();
   DCHECK(error);
 
@@ -1327,7 +1326,7 @@ void GDataCache::Remove(const std::string& resource_id,
                  (cache_entry.is_dirty() ? "dirty" : "mounted") :
                  "non-existent")
              << " in cache, not removing";
-    *error = base::PLATFORM_FILE_OK;
+    *error = GDATA_FILE_OK;
     return;
   }
 
@@ -1368,10 +1367,10 @@ void GDataCache::Remove(const std::string& resource_id,
   // Now that all file operations have completed, remove from cache map.
   metadata_->RemoveCacheEntry(resource_id);
 
-  *error = base::PLATFORM_FILE_OK;
+  *error = GDATA_FILE_OK;
 }
 
-void GDataCache::OnPinned(base::PlatformFileError* error,
+void GDataCache::OnPinned(GDataFileError* error,
                           const std::string& resource_id,
                           const std::string& md5,
                           const CacheOperationCallback& callback) {
@@ -1381,11 +1380,11 @@ void GDataCache::OnPinned(base::PlatformFileError* error,
   if (!callback.is_null())
     callback.Run(*error, resource_id, md5);
 
-  if (*error == base::PLATFORM_FILE_OK)
+  if (*error == GDATA_FILE_OK)
     FOR_EACH_OBSERVER(Observer, observers_, OnCachePinned(resource_id, md5));
 }
 
-void GDataCache::OnUnpinned(base::PlatformFileError* error,
+void GDataCache::OnUnpinned(GDataFileError* error,
                             const std::string& resource_id,
                             const std::string& md5,
                             const CacheOperationCallback& callback) {
@@ -1395,7 +1394,7 @@ void GDataCache::OnUnpinned(base::PlatformFileError* error,
   if (!callback.is_null())
     callback.Run(*error, resource_id, md5);
 
-  if (*error == base::PLATFORM_FILE_OK)
+  if (*error == GDATA_FILE_OK)
     FOR_EACH_OBSERVER(Observer, observers_, OnCacheUnpinned(resource_id, md5));
 
   // Now the file is moved from "persistent" to "tmp" directory.
@@ -1409,7 +1408,7 @@ void GDataCache::OnUnpinned(base::PlatformFileError* error,
                  base::Owned(has_enough_space)));
 }
 
-void GDataCache::OnCommitDirty(base::PlatformFileError* error,
+void GDataCache::OnCommitDirty(GDataFileError* error,
                                const std::string& resource_id,
                                const std::string& md5,
                                const CacheOperationCallback& callback) {
@@ -1419,7 +1418,7 @@ void GDataCache::OnCommitDirty(base::PlatformFileError* error,
   if (!callback.is_null())
     callback.Run(*error, resource_id, md5);
 
-  if (*error == base::PLATFORM_FILE_OK)
+  if (*error == GDATA_FILE_OK)
     FOR_EACH_OBSERVER(Observer, observers_, OnCacheCommitted(resource_id));
 }
 

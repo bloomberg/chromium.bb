@@ -494,7 +494,7 @@ void RequestLocalFileSystemFunction::RespondSuccessOnUIThread(
   SetResult(dict);
   dict->SetString("name", name);
   dict->SetString("path", root_path.spec());
-  dict->SetInteger("error", base::PLATFORM_FILE_OK);
+  dict->SetInteger("error", gdata::GDATA_FILE_OK);
   SendResponse(true);
 }
 
@@ -1169,13 +1169,13 @@ void AddMountFunction::GetLocalPathsResponseOnUIThread(
                    display_name));
   } else {
     OnMountedStateSet(mount_type_str, display_name,
-                      base::PLATFORM_FILE_OK, source_path);
+                      gdata::GDATA_FILE_OK, source_path);
   }
 }
 
 void AddMountFunction::OnMountedStateSet(const std::string& mount_type,
                                          const FilePath::StringType& file_name,
-                                         base::PlatformFileError error,
+                                         gdata::GDataFileError error,
                                          const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
@@ -1309,12 +1309,12 @@ void GetSizeStatsFunction::GetLocalPathsResponseOnUIThread(
 }
 
 void GetSizeStatsFunction::GetGDataAvailableSpaceCallback(
-    base::PlatformFileError error,
+    gdata::GDataFileError error,
     int64 bytes_total,
     int64 bytes_used) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error == base::PLATFORM_FILE_OK) {
+  if (error == gdata::GDATA_FILE_OK) {
     int64 bytes_remaining = bytes_total - bytes_used;
     GetSizeStatsCallbackOnUIThread(static_cast<size_t>(bytes_total/1024),
                                    static_cast<size_t>(bytes_remaining/1024));
@@ -1740,7 +1740,7 @@ void GetGDataFilePropertiesFunction::DoOperation(
   // Nothing to do here so simply call OnOperationComplete().
   OnOperationComplete(file_path,
                       property_dict,
-                      base::PLATFORM_FILE_OK,
+                      gdata::GDATA_FILE_OK,
                       file_proto.Pass());
 }
 
@@ -1802,11 +1802,11 @@ void GetGDataFilePropertiesFunction::CompleteGetFileProperties() {
 void GetGDataFilePropertiesFunction::OnGetFileInfo(
     const FilePath& file_path,
     base::DictionaryValue* property_dict,
-    base::PlatformFileError error,
+    gdata::GDataFileError error,
     scoped_ptr<gdata::GDataFileProto> file_proto) {
   DCHECK(property_dict);
 
-  if (error == base::PLATFORM_FILE_OK)
+  if (error == gdata::GDATA_FILE_OK)
     DoOperation(file_path, property_dict, file_proto.Pass());
   else
     OnOperationComplete(file_path, property_dict, error, file_proto.Pass());
@@ -1815,9 +1815,9 @@ void GetGDataFilePropertiesFunction::OnGetFileInfo(
 void GetGDataFilePropertiesFunction::OnOperationComplete(
     const FilePath& file_path,
     base::DictionaryValue* property_dict,
-    base::PlatformFileError error,
+    gdata::GDataFileError error,
     scoped_ptr<gdata::GDataFileProto> file_proto) {
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != gdata::GDATA_FILE_OK) {
     property_dict->SetInteger("errorCode", error);
     CompleteGetFileProperties();
     return;
@@ -1933,7 +1933,7 @@ void PinGDataFileFunction::OnPinStateSet(
     const FilePath& path,
     base::DictionaryValue* properties,
     scoped_ptr<gdata::GDataFileProto> file_proto,
-    base::PlatformFileError error,
+    gdata::GDataFileError error,
     const std::string& /* resource_id */,
     const std::string& /* md5 */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -2049,13 +2049,13 @@ void GetGDataFilesFunction::GetFileOrSendResponse() {
 
 
 void GetGDataFilesFunction::OnFileReady(
-    base::PlatformFileError error,
+    gdata::GDataFileError error,
     const FilePath& local_path,
     const std::string& unused_mime_type,
     gdata::GDataFileType file_type) {
   FilePath gdata_path = remaining_gdata_paths_.front();
 
-  if (error == base::PLATFORM_FILE_OK) {
+  if (error == gdata::GDATA_FILE_OK) {
     local_paths_->Append(Value::CreateStringValue(local_path.value()));
     DVLOG(1) << "Got " << gdata_path.value() << " as " << local_path.value();
 
@@ -2236,12 +2236,13 @@ void TransferFileFunction::GetLocalPathsResponseOnUIThread(
   }
 }
 
-void TransferFileFunction::OnTransferCompleted(base::PlatformFileError error) {
-  if (error == base::PLATFORM_FILE_OK) {
+void TransferFileFunction::OnTransferCompleted(gdata::GDataFileError error) {
+  if (error == gdata::GDATA_FILE_OK) {
     SendResponse(true);
   } else {
     error_ = base::StringPrintf("%d", static_cast<int>(
-        fileapi::PlatformFileErrorToWebFileError(error)));
+        fileapi::PlatformFileErrorToWebFileError(
+            gdata::util::GDataFileErrorToPlatformError(error))));
     SendResponse(false);
   }
 }
@@ -2326,9 +2327,9 @@ void SearchDriveFunction::OnFileSystemOpened(
 }
 
 void SearchDriveFunction::OnSearch(
-    base::PlatformFileError error,
+    gdata::GDataFileError error,
     scoped_ptr<std::vector<gdata::SearchResultInfo> > results) {
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != gdata::GDATA_FILE_OK) {
     SendResponse(false);
     return;
   }

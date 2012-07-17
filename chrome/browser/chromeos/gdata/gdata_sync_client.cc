@@ -322,12 +322,12 @@ void GDataSyncClient::OnGetResourceIdsOfExistingPinnedFiles(
 
 void GDataSyncClient::OnGetFileInfoByResourceId(
     const std::string& resource_id,
-    base::PlatformFileError error,
+    GDataFileError error,
     const FilePath& /* gdata_file_path */,
     scoped_ptr<GDataFileProto> file_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     LOG(WARNING) << "Entry not found: " << resource_id;
     return;
   }
@@ -364,12 +364,12 @@ void GDataSyncClient::OnGetCacheEntry(
   }
 }
 
-void GDataSyncClient::OnRemove(base::PlatformFileError error,
+void GDataSyncClient::OnRemove(GDataFileError error,
                                const std::string& resource_id,
                                const std::string& md5) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     LOG(WARNING) << "Failed to remove cache entry: " << resource_id;
     return;
   }
@@ -382,12 +382,12 @@ void GDataSyncClient::OnRemove(base::PlatformFileError error,
                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
-void GDataSyncClient::OnPinned(base::PlatformFileError error,
+void GDataSyncClient::OnPinned(GDataFileError error,
                                const std::string& resource_id,
                                const std::string& /* md5 */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     LOG(WARNING) << "Failed to pin cache entry: " << resource_id;
     return;
   }
@@ -398,13 +398,13 @@ void GDataSyncClient::OnPinned(base::PlatformFileError error,
 }
 
 void GDataSyncClient::OnFetchFileComplete(const std::string& resource_id,
-                                          base::PlatformFileError error,
+                                          GDataFileError error,
                                           const FilePath& local_path,
                                           const std::string& ununsed_mime_type,
                                           GDataFileType file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error == base::PLATFORM_FILE_OK) {
+  if (error == GDATA_FILE_OK) {
     DVLOG(1) << "Fetched " << resource_id << ": " << local_path.value();
   } else {
     // TODO(satorux): We should re-queue if the error is recoverable.
@@ -416,10 +416,10 @@ void GDataSyncClient::OnFetchFileComplete(const std::string& resource_id,
 }
 
 void GDataSyncClient::OnUploadFileComplete(const std::string& resource_id,
-                                           base::PlatformFileError error) {
+                                           GDataFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error == base::PLATFORM_FILE_OK) {
+  if (error == GDATA_FILE_OK) {
     DVLOG(1) << "Uploaded " << resource_id;
   } else {
     // TODO(satorux): We should re-queue if the error is recoverable.

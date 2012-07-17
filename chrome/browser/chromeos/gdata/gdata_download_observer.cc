@@ -118,9 +118,9 @@ void SubstituteGDataDownloadPathInternal(Profile* profile,
 
 // Callback for GDataFileSystem::CreateDirectory.
 void OnCreateDirectory(const base::Closure& substitute_callback,
-                       base::PlatformFileError error) {
+                       GDataFileError error) {
   DVLOG(1) << "OnCreateDirectory " << error;
-  if (error == base::PLATFORM_FILE_OK) {
+  if (error == GDATA_FILE_OK) {
     substitute_callback.Run();
   } else {
     // TODO(achuith): Handle this.
@@ -132,15 +132,15 @@ void OnCreateDirectory(const base::Closure& substitute_callback,
 void OnEntryFound(Profile* profile,
     const FilePath& gdata_dir_path,
     const base::Closure& substitute_callback,
-    base::PlatformFileError error,
+    GDataFileError error,
     scoped_ptr<gdata::GDataEntryProto> entry_proto) {
-  if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND) {
+  if (error == GDATA_FILE_ERROR_NOT_FOUND) {
     // Destination gdata directory doesn't exist, so create it.
     const bool is_exclusive = false, is_recursive = true;
     GetSystemService(profile)->file_system()->CreateDirectory(
         gdata_dir_path, is_exclusive, is_recursive,
         base::Bind(&OnCreateDirectory, substitute_callback));
-  } else if (error == base::PLATFORM_FILE_OK) {
+  } else if (error == GDATA_FILE_OK) {
     substitute_callback.Run();
   } else {
     // TODO(achuith): Handle this.
@@ -484,7 +484,7 @@ void GDataDownloadObserver::CreateUploadFileInfo(DownloadItem* download) {
 void GDataDownloadObserver::OnReadDirectoryByPath(
     int32 download_id,
     scoped_ptr<UploadFileInfo> upload_file_info,
-    base::PlatformFileError error,
+    GDataFileError error,
     bool /* hide_hosted_documents */,
     scoped_ptr<GDataDirectoryProto> dir_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -524,7 +524,7 @@ void GDataDownloadObserver::StartUpload(
 
 void GDataDownloadObserver::OnUploadComplete(
     int32 download_id,
-    base::PlatformFileError error,
+    GDataFileError error,
     scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(upload_file_info.get());

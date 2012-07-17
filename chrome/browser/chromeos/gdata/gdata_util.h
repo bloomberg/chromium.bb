@@ -10,6 +10,8 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/platform_file.h"
+#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "googleurl/src/gurl.h"
 
 class FilePath;
@@ -95,6 +97,9 @@ void ParseCacheFilePath(const FilePath& path,
 
 // Returns true if Drive v2 API is enabled via commandline switch.
 bool IsDriveV2ApiEnabled();
+
+// Returns a PlatformFileError that corresponds to the GDataFileError provided.
+base::PlatformFileError GDataFileErrorToPlatformError(GDataFileError error);
 
 }  // namespace util
 }  // namespace gdata

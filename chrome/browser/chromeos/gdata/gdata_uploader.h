@@ -113,7 +113,7 @@ class GDataUploader : public GDataUploaderInterface {
 
   // Handle failed uploads.
   void UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
-                    base::PlatformFileError error);
+                    GDataFileError error);
 
   // Removes |upload_id| from UploadFileInfoMap |pending_uploads_|.
   // Note that this does not delete the UploadFileInfo object itself,

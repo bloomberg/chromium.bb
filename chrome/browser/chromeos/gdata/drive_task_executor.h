@@ -33,7 +33,7 @@ class DriveTaskExecutor : public file_handler_util::FileTaskExecutor {
                     const std::string& action_id);
   virtual ~DriveTaskExecutor();
 
-  void OnFileEntryFetched(base::PlatformFileError error,
+  void OnFileEntryFetched(GDataFileError error,
                           scoped_ptr<GDataFileProto> file_proto);
   void OnAppAuthorized(const std::string& resource_id,
                        GDataErrorCode error,

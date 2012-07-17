@@ -12,6 +12,7 @@
 #include "base/platform_file.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 
 class Profile;
 
@@ -118,7 +119,7 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   void OnReadDirectoryByPath(
       int32 download_id,
       scoped_ptr<UploadFileInfo> upload_file_info,
-      base::PlatformFileError error,
+      GDataFileError error,
       bool /* hide_hosted_documents */,
       scoped_ptr<GDataDirectoryProto> dir_proto);
 
@@ -132,7 +133,7 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   // |upload_file_info| for use by MoveFileToGDataCache(). It also invokes the
   // MaybeCompleteDownload() method on the DownloadItem to allow it to complete.
   void OnUploadComplete(int32 download_id,
-                        base::PlatformFileError error,
+                        GDataFileError error,
                         scoped_ptr<UploadFileInfo> upload_file_info);
 
   // Moves the downloaded file to gdata cache.

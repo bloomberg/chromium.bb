@@ -231,11 +231,11 @@ void ShowWarningMessageBox(Profile* profile, const FilePath& path) {
 void OnGDataFileFound(Profile* profile,
                       const FilePath& file_path,
                       gdata::GDataFileType file_type,
-                      base::PlatformFileError error,
+                      gdata::GDataFileError error,
                       scoped_ptr<gdata::GDataFileProto> file_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error == base::PLATFORM_FILE_OK) {
+  if (error == gdata::GDATA_FILE_OK) {
     GURL page_url;
     if (file_type == gdata::REGULAR_FILE) {
       page_url = gdata::util::GetFileResourceUrl(

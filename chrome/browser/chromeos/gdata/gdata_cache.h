@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/platform_file.h"
+#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 
 class Profile;
 
@@ -29,16 +30,16 @@ class GDataCacheEntry;
 class GDataCacheMetadata;
 
 // Callback for SetMountedStateOnUIThread.
-typedef base::Callback<void(base::PlatformFileError error,
+typedef base::Callback<void(GDataFileError error,
                             const FilePath& file_path)> SetMountedStateCallback;
 
 // Callback for completion of cache operation.
-typedef base::Callback<void(base::PlatformFileError error,
+typedef base::Callback<void(GDataFileError error,
                             const std::string& resource_id,
                             const std::string& md5)> CacheOperationCallback;
 
 // Callback for GetFileFromCache.
-typedef base::Callback<void(base::PlatformFileError error,
+typedef base::Callback<void(GDataFileError error,
                             const std::string& resource_id,
                             const std::string& md5,
                             const FilePath& cache_file_path)>
@@ -326,7 +327,7 @@ class GDataCache {
   // Used to implement GetFileOnUIThread.
   void GetFile(const std::string& resource_id,
                const std::string& md5,
-               base::PlatformFileError* error,
+               GDataFileError* error,
                FilePath* cache_file_path);
 
   // Used to implement StoreOnUIThread.
@@ -334,63 +335,63 @@ class GDataCache {
              const std::string& md5,
              const FilePath& source_path,
              FileOperationType file_operation_type,
-             base::PlatformFileError* error);
+             GDataFileError* error);
 
   // Used to implement PinOnUIThread.
   void Pin(const std::string& resource_id,
            const std::string& md5,
            FileOperationType file_operation_type,
-           base::PlatformFileError* error);
+           GDataFileError* error);
 
   // Used to implement UnpinOnUIThread.
   void Unpin(const std::string& resource_id,
              const std::string& md5,
              FileOperationType file_operation_type,
-             base::PlatformFileError* error);
+             GDataFileError* error);
 
   // Used to implement SetMountedStateOnUIThread.
   void SetMountedState(const FilePath& file_path,
                        bool to_mount,
-                       base::PlatformFileError* error,
+                       GDataFileError* error,
                        FilePath* cache_file_path);
 
   // Used to implement MarkDirtyOnUIThread.
   void MarkDirty(const std::string& resource_id,
                  const std::string& md5,
                  FileOperationType file_operation_type,
-                 base::PlatformFileError* error,
+                 GDataFileError* error,
                  FilePath* cache_file_path);
 
   // Used to implement CommitDirtyOnUIThread.
   void CommitDirty(const std::string& resource_id,
                    const std::string& md5,
                    FileOperationType file_operation_type,
-                   base::PlatformFileError* error);
+                   GDataFileError* error);
 
   // Used to implement ClearDirtyOnUIThread.
   void ClearDirty(const std::string& resource_id,
                   const std::string& md5,
                   FileOperationType file_operation_type,
-                  base::PlatformFileError* error);
+                  GDataFileError* error);
 
   // Used to implement RemoveOnUIThread.
   void Remove(const std::string& resource_id,
-              base::PlatformFileError* error);
+              GDataFileError* error);
 
   // Runs callback and notifies the observers when file is pinned.
-  void OnPinned(base::PlatformFileError* error,
+  void OnPinned(GDataFileError* error,
                 const std::string& resource_id,
                 const std::string& md5,
                 const CacheOperationCallback& callback);
 
   // Runs callback and notifies the observers when file is unpinned.
-  void OnUnpinned(base::PlatformFileError* error,
+  void OnUnpinned(GDataFileError* error,
                   const std::string& resource_id,
                   const std::string& md5,
                   const CacheOperationCallback& callback);
 
   // Runs callback and notifies the observers when file is committed.
-  void OnCommitDirty(base::PlatformFileError* error,
+  void OnCommitDirty(GDataFileError* error,
                      const std::string& resource_id,
                      const std::string& md5,
                      const CacheOperationCallback& callback);
@@ -423,7 +424,7 @@ class GDataCache {
 
 
 // The minimum free space to keep. GDataFileSystem::GetFileByPath() returns
-// base::PLATFORM_FILE_ERROR_NO_SPACE if the available space is smaller than
+// GDATA_FILE_ERROR_NO_SPACE if the available space is smaller than
 // this value.
 //
 // Copied from cryptohome/homedirs.h.

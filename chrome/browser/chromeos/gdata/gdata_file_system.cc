@@ -83,7 +83,7 @@ struct LoadRootFeedParams {
         const FindEntryCallback& callback)
         : search_file_path(search_file_path),
           should_load_from_server(should_load_from_server),
-          load_error(base::PLATFORM_FILE_OK),
+          load_error(GDATA_FILE_OK),
           callback(callback) {
     }
   ~LoadRootFeedParams() {
@@ -92,7 +92,7 @@ struct LoadRootFeedParams {
   FilePath search_file_path;
   bool should_load_from_server;
   std::string proto;
-  base::PlatformFileError load_error;
+  GDataFileError load_error;
   base::Time last_modified;
   const FindEntryCallback callback;
 };
@@ -115,21 +115,21 @@ bool ShouldSerializeFileSystemNow(size_t serialized_size,
 }
 
 // Converts gdata error code into file platform error code.
-base::PlatformFileError GDataToPlatformError(GDataErrorCode status) {
+GDataFileError GDataToGDataFileError(GDataErrorCode status) {
   switch (status) {
     case HTTP_SUCCESS:
     case HTTP_CREATED:
-      return base::PLATFORM_FILE_OK;
+      return GDATA_FILE_OK;
     case HTTP_UNAUTHORIZED:
     case HTTP_FORBIDDEN:
-      return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
+      return GDATA_FILE_ERROR_ACCESS_DENIED;
     case HTTP_NOT_FOUND:
-      return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+      return GDATA_FILE_ERROR_NOT_FOUND;
     case GDATA_PARSE_ERROR:
     case GDATA_FILE_ERROR:
-      return base::PLATFORM_FILE_ERROR_ABORT;
+      return GDATA_FILE_ERROR_ABORT;
     default:
-      return base::PLATFORM_FILE_ERROR_FAILED;
+      return GDATA_FILE_ERROR_FAILED;
   }
 }
 
@@ -186,7 +186,7 @@ void AddEntryToDirectoryAndCollectChangedDirectories(
 void OnTransferRegularFileCompleteForCopy(
     const FileOperationCallback& callback,
     scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    base::PlatformFileError error) {
+    GDataFileError error) {
   if (!callback.is_null())
     relay_proxy->PostTask(FROM_HERE, base::Bind(callback, error));
 }
@@ -194,7 +194,7 @@ void OnTransferRegularFileCompleteForCopy(
 // Runs GetFileCallback with pointers dereferenced.
 // Used for PostTaskAndReply().
 void RunGetFileCallbackHelper(const GetFileCallback& callback,
-                              base::PlatformFileError* error,
+                              GDataFileError* error,
                               FilePath* file_path,
                               std::string* mime_type,
                               GDataFileType* file_type) {
@@ -210,7 +210,7 @@ void RunGetFileCallbackHelper(const GetFileCallback& callback,
 // Ditto for FileOperationCallback
 void RunFileOperationCallbackHelper(
     const FileOperationCallback& callback,
-    base::PlatformFileError* error) {
+    GDataFileError* error) {
   DCHECK(error);
 
   if (!callback.is_null())
@@ -220,7 +220,7 @@ void RunFileOperationCallbackHelper(
 // Callback for cache file operations invoked by AddUploadedFileOnUIThread.
 void OnCacheUpdatedForAddUploadedFile(
     const base::Closure& callback,
-    base::PlatformFileError /* error */,
+    GDataFileError /* error */,
     const std::string& /* resource_id */,
     const std::string& /* md5 */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -232,7 +232,7 @@ void OnCacheUpdatedForAddUploadedFile(
 // OnTransferCompleted.
 void OnAddUploadFileCompleted(
     const FileOperationCallback& callback,
-    base::PlatformFileError error) {
+    GDataFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!callback.is_null())
     callback.Run(error);
@@ -279,16 +279,16 @@ void LoadProtoOnBlockingPool(const FilePath& path,
                              LoadRootFeedParams* params) {
   base::PlatformFileInfo info;
   if (!file_util::GetFileInfo(path, &info)) {
-    params->load_error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    params->load_error = GDATA_FILE_ERROR_NOT_FOUND;
     return;
   }
   params->last_modified = info.last_modified;
   if (!file_util::ReadFileToString(path, &params->proto)) {
     LOG(WARNING) << "Proto file not found at " << path.value();
-    params->load_error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    params->load_error = GDATA_FILE_ERROR_NOT_FOUND;
     return;
   }
-  params->load_error = base::PLATFORM_FILE_OK;
+  params->load_error = GDATA_FILE_OK;
 }
 
 // Saves json file content content in |feed| to |file_pathname| on blocking
@@ -316,7 +316,7 @@ void SaveFeedOnBlockingPoolForDebugging(
 // Gets the file size and the content type of |local_file|.
 void GetLocalFileInfoOnBlockingPool(
     const FilePath& local_file,
-    base::PlatformFileError* error,
+    GDataFileError* error,
     int64* file_size,
     std::string* content_type) {
   DCHECK(error);
@@ -328,8 +328,8 @@ void GetLocalFileInfoOnBlockingPool(
 
   *file_size = 0;
   *error = file_util::GetFileSize(local_file, file_size) ?
-      base::PLATFORM_FILE_OK :
-      base::PLATFORM_FILE_ERROR_NOT_FOUND;
+      GDATA_FILE_OK :
+      GDATA_FILE_ERROR_NOT_FOUND;
 }
 
 // Checks if a local file at |local_file_path| is a JSON file referencing a
@@ -356,7 +356,7 @@ void CreateDocumentJsonFileOnBlockingPool(
     const FilePath& document_dir,
     const GURL& edit_url,
     const std::string& resource_id,
-    base::PlatformFileError* error,
+    GDataFileError* error,
     FilePath* temp_file_path,
     std::string* mime_type,
     GDataFileType* file_type) {
@@ -365,7 +365,7 @@ void CreateDocumentJsonFileOnBlockingPool(
   DCHECK(mime_type);
   DCHECK(file_type);
 
-  *error = base::PLATFORM_FILE_ERROR_FAILED;
+  *error = GDATA_FILE_ERROR_FAILED;
 
   if (file_util::CreateTemporaryFileInDir(document_dir, temp_file_path)) {
     std::string document_content = base::StringPrintf(
@@ -374,13 +374,13 @@ void CreateDocumentJsonFileOnBlockingPool(
     int document_size = static_cast<int>(document_content.size());
     if (file_util::WriteFile(*temp_file_path, document_content.data(),
                              document_size) == document_size) {
-      *error = base::PLATFORM_FILE_OK;
+      *error = GDATA_FILE_OK;
     }
   }
 
   *mime_type = kMimeTypeJson;
   *file_type = HOSTED_DOCUMENT;
-  if (*error != base::PLATFORM_FILE_OK)
+  if (*error != GDATA_FILE_OK)
       temp_file_path->clear();
 }
 
@@ -394,16 +394,16 @@ void GetFileInfoOnBlockingPool(const FilePath& path,
 
 // Copies a file from |src_file_path| to |dest_file_path| on the local
 // file system using file_util::CopyFile. |error| is set to
-// base::PLATFORM_FILE_OK on success or base::PLATFORM_FILE_ERROR_FAILED
+// GDATA_FILE_OK on success or GDATA_FILE_ERROR_FAILED
 // otherwise.
 void CopyLocalFileOnBlockingPool(
     const FilePath& src_file_path,
     const FilePath& dest_file_path,
-    base::PlatformFileError* error) {
+    GDataFileError* error) {
   DCHECK(error);
 
   *error = file_util::CopyFile(src_file_path, dest_file_path) ?
-      base::PLATFORM_FILE_OK : base::PLATFORM_FILE_ERROR_FAILED;
+      GDATA_FILE_OK : GDATA_FILE_ERROR_FAILED;
 }
 
 // Runs task on the thread to which |relay_proxy| belongs.
@@ -437,7 +437,7 @@ void RemoveStaleEntryOnUpload(const std::string& resource_id,
 void AddEntryToSearchResults(
     std::vector<SearchResultInfo>* results,
     const SearchCallback& callback,
-    base::PlatformFileError error,
+    GDataFileError error,
     bool run_callback,
     GDataEntry* entry) {
   // If a result is not present in our local file system snapshot, ignore it.
@@ -558,9 +558,9 @@ CallbackType CreateRelayCallback(const CallbackType& callback) {
 
 // Callback used to find a directory element for file system updates.
 void ReadOnlyFindEntryCallback(GDataEntry** out,
-                               base::PlatformFileError error,
+                               GDataFileError error,
                                GDataEntry* entry) {
-  if (error == base::PLATFORM_FILE_OK)
+  if (error == GDATA_FILE_OK)
     *out = entry;
 }
 
@@ -803,11 +803,11 @@ void GDataFileSystem::CheckForUpdates() {
 }
 
 void GDataFileSystem::OnUpdateChecked(ContentOrigin initial_origin,
-                                      base::PlatformFileError error,
+                                      GDataFileError error,
                                       GDataEntry* /* entry */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     root_->set_origin(initial_origin);
   }
 }
@@ -883,11 +883,11 @@ void GDataFileSystem::GetFileInfoByEntryOnUIThread(
   if (entry && entry->AsGDataFile()) {
     scoped_ptr<GDataFileProto> file_proto(new GDataFileProto);
     entry->AsGDataFile()->ToProto(file_proto.get());
-    callback.Run(base::PLATFORM_FILE_OK,
+    callback.Run(GDATA_FILE_OK,
                  entry->GetFilePath(),
                  file_proto.Pass());
   } else {
-    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+    callback.Run(GDATA_FILE_ERROR_NOT_FOUND,
                  FilePath(),
                  scoped_ptr<GDataFileProto>());
   }
@@ -968,8 +968,8 @@ void GDataFileSystem::OnGetAccountMetadata(
     scoped_ptr<base::Value> feed_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::PlatformFileError error = GDataToPlatformError(status);
-  if (error != base::PLATFORM_FILE_OK) {
+  GDataFileError error = GDataToGDataFileError(status);
+  if (error != GDATA_FILE_OK) {
     // Get changes starting from the next changestamp from what we have locally.
     LoadFeedFromServer(initial_origin,
                        local_changestamp + 1, 0,
@@ -1084,10 +1084,10 @@ void GDataFileSystem::LoadFeedFromServer(
 }
 
 void GDataFileSystem::OnFeedFromServerLoaded(GetDocumentsParams* params,
-                                             base::PlatformFileError error) {
+                                             GDataFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     if (!params->callback.is_null())
       params->callback.Run(error, NULL);
     return;
@@ -1098,7 +1098,7 @@ void GDataFileSystem::OnFeedFromServerLoaded(GetDocumentsParams* params,
                          params->start_changestamp,
                          params->root_feed_changestamp);
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     if (!params->callback.is_null())
       params->callback.Run(error, NULL);
 
@@ -1141,7 +1141,7 @@ void GDataFileSystem::TransferFileFromLocalToRemote(
       remote_dest_file_path.DirName());
   if (!dest_dir || !dest_dir->AsGDataDirectory()) {
     base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-        base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+        base::Bind(callback, GDATA_FILE_ERROR_NOT_FOUND));
     NOTREACHED();
     return;
   }
@@ -1192,8 +1192,8 @@ void GDataFileSystem::TransferRegularFile(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
+  GDataFileError* error =
+      new GDataFileError(GDATA_FILE_OK);
   int64* file_size = new int64;
   std::string* content_type = new std::string;
   PostBlockingPoolSequencedTaskAndReply(
@@ -1218,7 +1218,7 @@ void GDataFileSystem::StartFileUploadOnUIThread(
     const FilePath& local_file,
     const FilePath& remote_dest_file,
     const FileOperationCallback& callback,
-    base::PlatformFileError* error,
+    GDataFileError* error,
     int64* file_size,
     std::string* content_type) {
   // This method needs to run on the UI thread as required by
@@ -1228,7 +1228,7 @@ void GDataFileSystem::StartFileUploadOnUIThread(
   DCHECK(file_size);
   DCHECK(content_type);
 
-  if (*error != base::PLATFORM_FILE_OK) {
+  if (*error != GDATA_FILE_OK) {
     if (!callback.is_null())
       callback.Run(*error);
 
@@ -1239,7 +1239,7 @@ void GDataFileSystem::StartFileUploadOnUIThread(
   GDataEntry* dest_dir = GetGDataEntryByPath(remote_dest_file.DirName());
   if (!dest_dir || !dest_dir->AsGDataDirectory()) {
     if (!callback.is_null())
-      callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+      callback.Run(GDATA_FILE_ERROR_NOT_FOUND);
     NOTREACHED();
     return;
   }
@@ -1267,12 +1267,12 @@ void GDataFileSystem::StartFileUploadOnUIThread(
 
 void GDataFileSystem::OnTransferCompleted(
     const FileOperationCallback& callback,
-    base::PlatformFileError error,
+    GDataFileError error,
     scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(upload_file_info.get());
 
-  if (error == base::PLATFORM_FILE_OK && upload_file_info->entry.get()) {
+  if (error == GDATA_FILE_OK && upload_file_info->entry.get()) {
     AddUploadedFile(UPLOAD_NEW_FILE,
                     upload_file_info->gdata_path.DirName(),
                     upload_file_info->entry.Pass(),
@@ -1301,7 +1301,7 @@ void GDataFileSystem::CopyOnUIThread(const FilePath& src_file_path,
                                      const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  GDataFileError error = GDATA_FILE_OK;
   FilePath dest_parent_path = dest_file_path.DirName();
 
   std::string src_file_resource_id;
@@ -1310,20 +1310,20 @@ void GDataFileSystem::CopyOnUIThread(const FilePath& src_file_path,
   GDataEntry* src_entry = GetGDataEntryByPath(src_file_path);
   GDataEntry* dest_parent = GetGDataEntryByPath(dest_parent_path);
   if (!src_entry || !dest_parent) {
-    error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    error = GDATA_FILE_ERROR_NOT_FOUND;
   } else if (!dest_parent->AsGDataDirectory()) {
-    error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+    error = GDATA_FILE_ERROR_NOT_A_DIRECTORY;
   } else if (!src_entry->AsGDataFile()) {
     // TODO(benchan): Implement copy for directories. In the interim,
     // we handle recursive directory copy in the file manager.
-    error = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+    error = GDATA_FILE_ERROR_INVALID_OPERATION;
   } else {
     src_file_resource_id = src_entry->resource_id();
     src_file_is_hosted_document =
         src_entry->AsGDataFile()->is_hosted_document();
   }
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     if (!callback.is_null())
       MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, error));
 
@@ -1353,13 +1353,13 @@ void GDataFileSystem::CopyOnUIThread(const FilePath& src_file_path,
 void GDataFileSystem::OnGetFileCompleteForCopy(
     const FilePath& remote_dest_file_path,
     const FileOperationCallback& callback,
-    base::PlatformFileError error,
+    GDataFileError error,
     const FilePath& local_file_path,
     const std::string& unused_mime_type,
     GDataFileType file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error);
 
@@ -1387,13 +1387,13 @@ void GDataFileSystem::OnGetFileCompleteForCopy(
 void GDataFileSystem::OnGetFileCompleteForTransferFile(
     const FilePath& local_dest_file_path,
     const FileOperationCallback& callback,
-    base::PlatformFileError error,
+    GDataFileError error,
     const FilePath& local_file_path,
     const std::string& unused_mime_type,
     GDataFileType file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error);
 
@@ -1403,8 +1403,8 @@ void GDataFileSystem::OnGetFileCompleteForTransferFile(
   // GetFileByPath downloads the file from gdata to a local cache, which is then
   // copied to the actual destination path on the local file system using
   // CopyLocalFileOnBlockingPool.
-  base::PlatformFileError* copy_file_error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
+  GDataFileError* copy_file_error =
+      new GDataFileError(GDATA_FILE_OK);
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
       blocking_task_runner_,
@@ -1445,7 +1445,7 @@ void GDataFileSystem::Rename(const FilePath& file_path,
   if (file_path.BaseName().value() == new_name) {
     if (!callback.is_null()) {
       MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(callback, base::PLATFORM_FILE_OK, file_path));
+          FROM_HERE, base::Bind(callback, GDATA_FILE_OK, file_path));
     }
     return;
   }
@@ -1454,7 +1454,7 @@ void GDataFileSystem::Rename(const FilePath& file_path,
   if (!entry) {
     if (!callback.is_null()) {
       MessageLoop::current()->PostTask(FROM_HERE,
-          base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND, file_path));
+          base::Bind(callback, GDATA_FILE_ERROR_NOT_FOUND, file_path));
     }
     return;
   }
@@ -1497,18 +1497,18 @@ void GDataFileSystem::MoveOnUIThread(const FilePath& src_file_path,
                                      const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  GDataFileError error = GDATA_FILE_OK;
   FilePath dest_parent_path = dest_file_path.DirName();
 
   GDataEntry* src_entry = GetGDataEntryByPath(src_file_path);
   GDataEntry* dest_parent = GetGDataEntryByPath(dest_parent_path);
   if (!src_entry || !dest_parent) {
-    error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    error = GDATA_FILE_ERROR_NOT_FOUND;
   } else if (!dest_parent->AsGDataDirectory()) {
-    error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+    error = GDATA_FILE_ERROR_NOT_A_DIRECTORY;
   }
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     if (!callback.is_null()) {
       MessageLoop::current()->PostTask(FROM_HERE,
                                        base::Bind(callback, error));
@@ -1556,23 +1556,23 @@ void GDataFileSystem::MoveOnUIThread(const FilePath& src_file_path,
 void GDataFileSystem::AddEntryToDirectory(
     const FilePath& dir_path,
     const FileOperationCallback& callback,
-    base::PlatformFileError error,
+    GDataFileError error,
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   GDataEntry* entry = GetGDataEntryByPath(file_path);
   GDataEntry* dir_entry = GetGDataEntryByPath(dir_path);
-  if (error == base::PLATFORM_FILE_OK) {
+  if (error == GDATA_FILE_OK) {
     if (!entry || !dir_entry) {
-      error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+      error = GDATA_FILE_ERROR_NOT_FOUND;
     } else {
       if (!dir_entry->AsGDataDirectory())
-        error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+        error = GDATA_FILE_ERROR_NOT_A_DIRECTORY;
     }
   }
 
   // Returns if there is an error or |dir_path| is the root directory.
-  if (error != base::PLATFORM_FILE_OK || dir_entry->AsGDataRootDirectory()) {
+  if (error != GDATA_FILE_OK || dir_entry->AsGDataRootDirectory()) {
     if (!callback.is_null())
       MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, error));
 
@@ -1592,23 +1592,23 @@ void GDataFileSystem::AddEntryToDirectory(
 void GDataFileSystem::RemoveEntryFromDirectory(
     const FilePath& dir_path,
     const FilePathUpdateCallback& callback,
-    base::PlatformFileError error,
+    GDataFileError error,
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   GDataEntry* entry = GetGDataEntryByPath(file_path);
   GDataEntry* dir = GetGDataEntryByPath(dir_path);
-  if (error == base::PLATFORM_FILE_OK) {
+  if (error == GDATA_FILE_OK) {
     if (!entry || !dir) {
-      error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+      error = GDATA_FILE_ERROR_NOT_FOUND;
     } else {
       if (!dir->AsGDataDirectory())
-        error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+        error = GDATA_FILE_ERROR_NOT_A_DIRECTORY;
     }
   }
 
   // Returns if there is an error or |dir_path| is the root directory.
-  if (error != base::PLATFORM_FILE_OK || dir->AsGDataRootDirectory()) {
+  if (error != GDATA_FILE_OK || dir->AsGDataRootDirectory()) {
     if (!callback.is_null()) {
       MessageLoop::current()->PostTask(FROM_HERE,
           base::Bind(callback, error, file_path));
@@ -1650,7 +1650,7 @@ void GDataFileSystem::RemoveOnUIThread(
     if (!callback.is_null()) {
       MessageLoop::current()->PostTask(
           FROM_HERE,
-          base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+          base::Bind(callback, GDATA_FILE_ERROR_NOT_FOUND));
     }
     return;
   }
@@ -1696,7 +1696,7 @@ void GDataFileSystem::CreateDirectoryOnUIThread(
     case FOUND_INVALID: {
       if (!callback.is_null()) {
         MessageLoop::current()->PostTask(FROM_HERE,
-            base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+            base::Bind(callback, GDATA_FILE_ERROR_NOT_FOUND));
       }
 
       return;
@@ -1705,8 +1705,8 @@ void GDataFileSystem::CreateDirectoryOnUIThread(
       if (!callback.is_null()) {
         MessageLoop::current()->PostTask(FROM_HERE,
             base::Bind(callback,
-                       is_exclusive ? base::PLATFORM_FILE_ERROR_EXISTS :
-                                      base::PLATFORM_FILE_OK));
+                       is_exclusive ? GDATA_FILE_ERROR_EXISTS :
+                                      GDATA_FILE_OK));
       }
 
       return;
@@ -1727,7 +1727,7 @@ void GDataFileSystem::CreateDirectoryOnUIThread(
   if (directory_path !=  first_missing_path && !is_recursive) {
     if (!callback.is_null()) {
       MessageLoop::current()->PostTask(FROM_HERE,
-           base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+           base::Bind(callback, GDATA_FILE_ERROR_NOT_FOUND));
     }
     return;
   }
@@ -1777,33 +1777,33 @@ void GDataFileSystem::OnGetEntryInfoForCreateFile(
     const FilePath& file_path,
     bool is_exclusive,
     const FileOperationCallback& callback,
-    base::PlatformFileError result,
+    GDataFileError result,
     GDataEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // The |file_path| is invalid. It is an error.
-  if (result != base::PLATFORM_FILE_ERROR_NOT_FOUND &&
-      result != base::PLATFORM_FILE_OK) {
+  if (result != GDATA_FILE_ERROR_NOT_FOUND &&
+      result != GDATA_FILE_OK) {
     if (!callback.is_null())
       callback.Run(result);
     return;
   }
 
   // An entry already exists at |file_path|.
-  if (result == base::PLATFORM_FILE_OK) {
+  if (result == GDATA_FILE_OK) {
     // If an exclusive mode is requested, or the entry is not a regular file,
     // it is an error.
     if (is_exclusive ||
         !entry->AsGDataFile() ||
         entry->AsGDataFile()->is_hosted_document()) {
       if (!callback.is_null())
-        callback.Run(base::PLATFORM_FILE_ERROR_EXISTS);
+        callback.Run(GDATA_FILE_ERROR_EXISTS);
       return;
     }
 
     // Otherwise nothing more to do. Succeeded.
     if (!callback.is_null())
-      callback.Run(base::PLATFORM_FILE_OK);
+      callback.Run(GDATA_FILE_OK);
     return;
   }
 
@@ -1846,12 +1846,12 @@ void GDataFileSystem::OnGetFileInfoCompleteForGetFileByPath(
     const FilePath& file_path,
     const GetFileCallback& get_file_callback,
     const GetDownloadDataCallback& get_download_data_callback,
-    base::PlatformFileError error,
+    GDataFileError error,
     scoped_ptr<GDataFileProto> file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If |error| == PLATFORM_FILE_OK then |file_info| must be valid.
-  DCHECK(error != base::PLATFORM_FILE_OK ||
+  DCHECK(error != GDATA_FILE_OK ||
          (file_info.get() && !file_info->gdata_entry().resource_id().empty()));
   GetResolvedFileByPath(file_path,
                         get_file_callback,
@@ -1864,16 +1864,16 @@ void GDataFileSystem::GetResolvedFileByPath(
     const FilePath& file_path,
     const GetFileCallback& get_file_callback,
     const GetDownloadDataCallback& get_download_data_callback,
-    base::PlatformFileError error,
+    GDataFileError error,
     const GDataFileProto* file_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != base::PLATFORM_FILE_OK || !file_proto) {
+  if (error != GDATA_FILE_OK || !file_proto) {
     if (!get_file_callback.is_null()) {
       MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(get_file_callback,
-                     base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                     GDATA_FILE_ERROR_NOT_FOUND,
                      FilePath(),
                      std::string(),
                      REGULAR_FILE));
@@ -1886,8 +1886,8 @@ void GDataFileSystem::GetResolvedFileByPath(
   // formats. The JSON file contains the edit URL and resource ID of the
   // document.
   if (file_proto->is_hosted_document()) {
-    base::PlatformFileError* error =
-        new base::PlatformFileError(base::PLATFORM_FILE_OK);
+    GDataFileError* error =
+        new GDataFileError(GDATA_FILE_OK);
     FilePath* temp_file_path = new FilePath;
     std::string* mime_type = new std::string;
     GDataFileType* file_type = new GDataFileType(REGULAR_FILE);
@@ -1981,7 +1981,7 @@ void GDataFileSystem::GetFileByEntryOnUIThread(
       base::MessageLoopProxy::current()->PostTask(
           FROM_HERE,
           base::Bind(get_file_callback,
-                     base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                     GDATA_FILE_ERROR_NOT_FOUND,
                      FilePath(),
                      std::string(),
                      REGULAR_FILE));
@@ -1993,14 +1993,14 @@ void GDataFileSystem::GetFileByEntryOnUIThread(
 }
 
 void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
-                                         base::PlatformFileError error,
+                                         GDataFileError error,
                                          const std::string& resource_id,
                                          const std::string& md5,
                                          const FilePath& cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Have we found the file in cache? If so, return it back to the caller.
-  if (error == base::PLATFORM_FILE_OK) {
+  if (error == GDATA_FILE_OK) {
     if (!params.get_file_callback.is_null()) {
       params.get_file_callback.Run(error,
                                    cache_file_path,
@@ -2042,10 +2042,10 @@ void GDataFileSystem::OnGetDocumentEntry(const FilePath& cache_file_path,
                                          scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::PlatformFileError error = GDataToPlatformError(status);
+  GDataFileError error = GDataToGDataFileError(status);
 
   scoped_ptr<GDataEntry> fresh_entry;
-  if (error == base::PLATFORM_FILE_OK) {
+  if (error == GDATA_FILE_OK) {
     scoped_ptr<DocumentEntry> doc_entry(DocumentEntry::ExtractAndParse(*data));
     if (doc_entry.get()) {
       fresh_entry.reset(
@@ -2053,11 +2053,11 @@ void GDataFileSystem::OnGetDocumentEntry(const FilePath& cache_file_path,
     }
     if (!fresh_entry.get() || !fresh_entry->AsGDataFile()) {
       LOG(ERROR) << "Got invalid entry from server for " << params.resource_id;
-      error = base::PLATFORM_FILE_ERROR_FAILED;
+      error = GDATA_FILE_ERROR_FAILED;
     }
   }
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     if (!params.get_file_callback.is_null()) {
       params.get_file_callback.Run(error,
                                    cache_file_path,
@@ -2101,7 +2101,7 @@ void GDataFileSystem::StartDownloadFileIfEnoughSpace(
   if (!*has_enough_space) {
     // If no enough space, return PLATFORM_FILE_ERROR_NO_SPACE.
     if (!params.get_file_callback.is_null()) {
-      params.get_file_callback.Run(base::PLATFORM_FILE_ERROR_NO_SPACE,
+      params.get_file_callback.Run(GDATA_FILE_ERROR_NO_SPACE,
                                    cache_file_path,
                                    params.mime_type,
                                    REGULAR_FILE);
@@ -2144,11 +2144,11 @@ void GDataFileSystem::GetEntryInfoByPathAsyncOnUIThread(
 }
 
 void GDataFileSystem::OnGetEntryInfo(const GetEntryInfoCallback& callback,
-                                    base::PlatformFileError error,
+                                    GDataFileError error,
                                     GDataEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error, scoped_ptr<GDataEntryProto>());
     return;
@@ -2159,7 +2159,7 @@ void GDataFileSystem::OnGetEntryInfo(const GetEntryInfoCallback& callback,
   entry->ToProto(entry_proto.get());
 
   if (!callback.is_null())
-    callback.Run(base::PLATFORM_FILE_OK, entry_proto.Pass());
+    callback.Run(GDATA_FILE_OK, entry_proto.Pass());
 }
 
 void GDataFileSystem::GetFileInfoByPath(const FilePath& file_path,
@@ -2184,11 +2184,11 @@ void GDataFileSystem::GetFileInfoByPathAsyncOnUIThread(
 }
 
 void GDataFileSystem::OnGetFileInfo(const GetFileInfoCallback& callback,
-                                    base::PlatformFileError error,
+                                    GDataFileError error,
                                     GDataEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error, scoped_ptr<GDataFileProto>());
     return;
@@ -2198,7 +2198,7 @@ void GDataFileSystem::OnGetFileInfo(const GetFileInfoCallback& callback,
   GDataFile* file = entry->AsGDataFile();
   if (!file) {
     if (!callback.is_null())
-      callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+      callback.Run(GDATA_FILE_ERROR_NOT_FOUND,
                    scoped_ptr<GDataFileProto>());
     return;
   }
@@ -2207,7 +2207,7 @@ void GDataFileSystem::OnGetFileInfo(const GetFileInfoCallback& callback,
   file->ToProto(file_proto.get());
 
   if (!callback.is_null())
-    callback.Run(base::PLATFORM_FILE_OK, file_proto.Pass());
+    callback.Run(GDATA_FILE_OK, file_proto.Pass());
 }
 
 void GDataFileSystem::ReadDirectoryByPath(
@@ -2235,11 +2235,11 @@ void GDataFileSystem::ReadDirectoryByPathAsyncOnUIThread(
 }
 
 void GDataFileSystem::OnReadDirectory(const ReadDirectoryCallback& callback,
-                                      base::PlatformFileError error,
+                                      GDataFileError error,
                                       GDataEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error,
                    hide_hosted_docs_,
@@ -2251,7 +2251,7 @@ void GDataFileSystem::OnReadDirectory(const ReadDirectoryCallback& callback,
   GDataDirectory* directory = entry->AsGDataDirectory();
   if (!directory) {
     if (!callback.is_null())
-      callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+      callback.Run(GDATA_FILE_ERROR_NOT_FOUND,
                    hide_hosted_docs_,
                    scoped_ptr<GDataDirectoryProto>());
     return;
@@ -2261,7 +2261,7 @@ void GDataFileSystem::OnReadDirectory(const ReadDirectoryCallback& callback,
   directory->ToProto(directory_proto.get());
 
   if (!callback.is_null())
-    callback.Run(base::PLATFORM_FILE_OK,
+    callback.Run(GDATA_FILE_OK,
                  hide_hosted_docs_,
                  directory_proto.Pass());
 }
@@ -2305,12 +2305,12 @@ void GDataFileSystem::RequestDirectoryRefreshOnUIThread(
 
 void GDataFileSystem::OnRequestDirectoryRefresh(
     GetDocumentsParams* params,
-    base::PlatformFileError error) {
+    GDataFileError error) {
   DCHECK(params);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const FilePath& directory_path = params->search_file_path;
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     LOG(ERROR) << "Failed to refresh directory: " << directory_path.value()
                << ": " << error;
     return;
@@ -2323,7 +2323,7 @@ void GDataFileSystem::OnRequestDirectoryRefresh(
                                 &file_map,
                                 &unused_delta_feed_changestamp,
                                 &unused_uma_stats);
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     LOG(ERROR) << "Failed to convert feed: " << directory_path.value()
                << ": " << error;
     return;
@@ -2413,7 +2413,7 @@ void GDataFileSystem::UpdateFileByEntryOnUIThread(
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback,
-                   base::PLATFORM_FILE_ERROR_NOT_FOUND));
+                   GDATA_FILE_ERROR_NOT_FOUND));
     return;
   }
   GDataFile* file = entry->AsGDataFile();
@@ -2428,13 +2428,13 @@ void GDataFileSystem::UpdateFileByEntryOnUIThread(
 
 void GDataFileSystem::OnGetFileCompleteForUpdateFile(
     const FileOperationCallback& callback,
-    base::PlatformFileError error,
+    GDataFileError error,
     const std::string& resource_id,
     const std::string& md5,
     const FilePath& cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error);
     return;
@@ -2457,7 +2457,7 @@ void GDataFileSystem::OnGetFileCompleteForUpdateFileByEntry(
 
   if (!entry || !entry->AsGDataFile()) {
     if (!callback.is_null())
-      callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+      callback.Run(GDATA_FILE_ERROR_NOT_FOUND);
     return;
   }
   GDataFile* file = entry->AsGDataFile();
@@ -2475,12 +2475,12 @@ void GDataFileSystem::OnGetFileCompleteForUpdateFileByEntry(
 
 void GDataFileSystem::OnUpdatedFileUploaded(
     const FileOperationCallback& callback,
-    base::PlatformFileError error,
+    GDataFileError error,
     scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(upload_file_info.get());
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error);
     return;
@@ -2519,8 +2519,8 @@ void GDataFileSystem::OnGetAvailableSpace(
     scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::PlatformFileError error = GDataToPlatformError(status);
-  if (error != base::PLATFORM_FILE_OK) {
+  GDataFileError error = GDataToGDataFileError(status);
+  if (error != GDATA_FILE_OK) {
     callback.Run(error, -1, -1);
     return;
   }
@@ -2529,11 +2529,11 @@ void GDataFileSystem::OnGetAvailableSpace(
   if (data.get())
     feed = AccountMetadataFeed::CreateFrom(*data);
   if (!feed.get()) {
-    callback.Run(base::PLATFORM_FILE_ERROR_FAILED, -1, -1);
+    callback.Run(GDATA_FILE_ERROR_FAILED, -1, -1);
     return;
   }
 
-  callback.Run(base::PLATFORM_FILE_OK,
+  callback.Run(GDATA_FILE_OK,
                feed->quota_bytes_total(),
                feed->quota_bytes_used());
 }
@@ -2544,8 +2544,8 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
     scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::PlatformFileError error = GDataToPlatformError(status);
-  if (error != base::PLATFORM_FILE_OK) {
+  GDataFileError error = GDataToGDataFileError(status);
+  if (error != GDATA_FILE_OK) {
     if (!params.callback.is_null())
       params.callback.Run(error);
 
@@ -2559,7 +2559,7 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
   error = AddNewDirectory(params.created_directory_path.DirName(),
                           created_entry);
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     if (!params.callback.is_null())
       params.callback.Run(error);
 
@@ -2578,16 +2578,16 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
 
   if (!params.callback.is_null()) {
     // Finally done with the create request.
-    params.callback.Run(base::PLATFORM_FILE_OK);
+    params.callback.Run(GDATA_FILE_OK);
   }
 }
 
 void GDataFileSystem::OnSearch(const SearchCallback& callback,
                                GetDocumentsParams* params,
-                               base::PlatformFileError error) {
+                               GDataFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error, scoped_ptr<std::vector<SearchResultInfo> >());
     return;
@@ -2682,13 +2682,13 @@ void GDataFileSystem::OnGetDocuments(ContentOrigin initial_origin,
                         base::TimeTicks::Now() - start_time);
   }
 
-  base::PlatformFileError error = GDataToPlatformError(status);
-  if (error == base::PLATFORM_FILE_OK &&
+  GDataFileError error = GDataToGDataFileError(status);
+  if (error == GDATA_FILE_OK &&
       (!data.get() || data->GetType() != Value::TYPE_DICTIONARY)) {
-    error = base::PLATFORM_FILE_ERROR_FAILED;
+    error = GDATA_FILE_ERROR_FAILED;
   }
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     root_->set_origin(initial_origin);
 
     if (!callback.is_null())
@@ -2703,7 +2703,7 @@ void GDataFileSystem::OnGetDocuments(ContentOrigin initial_origin,
   scoped_ptr<DocumentFeed> current_feed(DocumentFeed::ExtractAndParse(*data));
   if (!current_feed.get()) {
     if (!callback.is_null()) {
-      callback.Run(params, base::PLATFORM_FILE_ERROR_FAILED);
+      callback.Run(params, GDATA_FILE_ERROR_FAILED);
     }
 
     return;
@@ -2796,14 +2796,14 @@ void GDataFileSystem::OnProtoLoaded(LoadRootFeedParams* params) {
   int local_changestamp = 0;
   // Update directory structure only if everything is OK and we haven't yet
   // received the feed from the server yet.
-  if (params->load_error == base::PLATFORM_FILE_OK) {
+  if (params->load_error == GDATA_FILE_OK) {
     DVLOG(1) << "ParseFromString";
     if (root_->ParseFromString(params->proto)) {
       root_->set_last_serialized(params->last_modified);
       root_->set_serialized_size(params->proto.size());
       local_changestamp = root_->largest_changestamp();
     } else {
-      params->load_error = base::PLATFORM_FILE_ERROR_FAILED;
+      params->load_error = GDATA_FILE_ERROR_FAILED;
       LOG(WARNING) << "Parse of cached proto file failed";
     }
   }
@@ -2811,7 +2811,7 @@ void GDataFileSystem::OnProtoLoaded(LoadRootFeedParams* params) {
   FindEntryCallback callback = params->callback;
   // If we got feed content from cache, try search over it.
   if (!params->should_load_from_server ||
-      (params->load_error == base::PLATFORM_FILE_OK && !callback.is_null())) {
+      (params->load_error == GDATA_FILE_OK && !callback.is_null())) {
     // Continue file content search operation if the delegate hasn't terminated
     // this search branch already.
     FindEntryByPathSyncOnUIThread(params->search_file_path, callback);
@@ -2868,7 +2868,7 @@ void GDataFileSystem::SaveFileSystemAsProto() {
 }
 
 void GDataFileSystem::OnFilePathUpdated(const FileOperationCallback& callback,
-                                        base::PlatformFileError error,
+                                        GDataFileError error,
                                         const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!callback.is_null())
@@ -2884,8 +2884,8 @@ void GDataFileSystem::OnRenameResourceCompleted(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   FilePath updated_file_path;
-  base::PlatformFileError error = GDataToPlatformError(status);
-  if (error == base::PLATFORM_FILE_OK)
+  GDataFileError error = GDataToGDataFileError(status);
+  if (error == GDATA_FILE_OK)
     error = RenameFileOnFilesystem(file_path, new_name, &updated_file_path);
 
   if (!callback.is_null())
@@ -2898,8 +2898,8 @@ void GDataFileSystem::OnCopyDocumentCompleted(
     scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::PlatformFileError error = GDataToPlatformError(status);
-  if (error != base::PLATFORM_FILE_OK) {
+  GDataFileError error = GDataToGDataFileError(status);
+  if (error != GDATA_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error, FilePath());
 
@@ -2909,7 +2909,7 @@ void GDataFileSystem::OnCopyDocumentCompleted(
   scoped_ptr<DocumentEntry> doc_entry(DocumentEntry::ExtractAndParse(*data));
   if (!doc_entry.get()) {
     if (!callback.is_null())
-      callback.Run(base::PLATFORM_FILE_ERROR_FAILED, FilePath());
+      callback.Run(GDATA_FILE_ERROR_FAILED, FilePath());
 
     return;
   }
@@ -2920,7 +2920,7 @@ void GDataFileSystem::OnCopyDocumentCompleted(
           root_.get(), doc_entry.get(), root_.get());
   if (!entry) {
     if (!callback.is_null())
-      callback.Run(base::PLATFORM_FILE_ERROR_FAILED, FilePath());
+      callback.Run(GDATA_FILE_ERROR_FAILED, FilePath());
 
     return;
   }
@@ -2941,8 +2941,8 @@ void GDataFileSystem::OnAddEntryToDirectoryCompleted(
     const GURL& document_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::PlatformFileError error = GDataToPlatformError(status);
-  if (error == base::PLATFORM_FILE_OK)
+  GDataFileError error = GDataToGDataFileError(status);
+  if (error == GDATA_FILE_OK)
     error = AddEntryToDirectoryOnFilesystem(file_path, dir_path);
 
   if (!callback.is_null())
@@ -2958,8 +2958,8 @@ void GDataFileSystem::OnRemoveEntryFromDirectoryCompleted(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   FilePath updated_file_path = file_path;
-  base::PlatformFileError error = GDataToPlatformError(status);
-  if (error == base::PLATFORM_FILE_OK)
+  GDataFileError error = GDataToGDataFileError(status);
+  if (error == GDATA_FILE_OK)
     error = RemoveEntryFromDirectoryOnFilesystem(file_path, dir_path,
                                                  &updated_file_path);
 
@@ -2974,9 +2974,9 @@ void GDataFileSystem::OnRemovedDocument(
     const GURL& document_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::PlatformFileError error = GDataToPlatformError(status);
+  GDataFileError error = GDataToGDataFileError(status);
 
-  if (error == base::PLATFORM_FILE_OK)
+  if (error == GDATA_FILE_OK)
     error = RemoveEntryFromFileSystem(file_path);
 
   if (!callback.is_null()) {
@@ -3048,12 +3048,12 @@ void GDataFileSystem::OnFileDownloadedAndSpaceChecked(
     bool* has_enough_space) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::PlatformFileError error = GDataToPlatformError(status);
+  GDataFileError error = GDataToGDataFileError(status);
 
   // Make sure that downloaded file is properly stored in cache. We don't have
   // to wait for this operation to finish since the user can already use the
   // downloaded file.
-  if (error == base::PLATFORM_FILE_OK) {
+  if (error == GDATA_FILE_OK) {
     if (*has_enough_space) {
       cache_->StoreOnUIThread(
           params.resource_id,
@@ -3071,7 +3071,7 @@ void GDataFileSystem::OnFileDownloadedAndSpaceChecked(
           base::Bind(base::IgnoreResult(&file_util::Delete),
                      downloaded_file_path,
                      false /* recursive*/));
-      error = base::PLATFORM_FILE_ERROR_NO_SPACE;
+      error = GDATA_FILE_ERROR_NO_SPACE;
     }
   }
 
@@ -3083,14 +3083,14 @@ void GDataFileSystem::OnFileDownloadedAndSpaceChecked(
   }
 }
 
-void GDataFileSystem::OnDownloadStoredToCache(base::PlatformFileError error,
+void GDataFileSystem::OnDownloadStoredToCache(GDataFileError error,
                                               const std::string& resource_id,
                                               const std::string& md5) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Nothing much to do here for now.
 }
 
-base::PlatformFileError GDataFileSystem::RenameFileOnFilesystem(
+GDataFileError GDataFileSystem::RenameFileOnFilesystem(
     const FilePath& file_path,
     const FilePath::StringType& new_name,
     FilePath* updated_file_path) {
@@ -3099,7 +3099,7 @@ base::PlatformFileError GDataFileSystem::RenameFileOnFilesystem(
 
   GDataEntry* entry = GetGDataEntryByPath(file_path);
   if (!entry)
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return GDATA_FILE_ERROR_NOT_FOUND;
 
   DCHECK(entry->parent());
   entry->set_title(new_name);
@@ -3111,40 +3111,40 @@ base::PlatformFileError GDataFileSystem::RenameFileOnFilesystem(
   // old file_name, and then re-adds the child by first assigning the new title
   // to file_name. http://crbug.com/30157
   if (!entry->parent()->TakeEntry(entry))
-    return base::PLATFORM_FILE_ERROR_FAILED;
+    return GDATA_FILE_ERROR_FAILED;
 
   *updated_file_path = entry->GetFilePath();
 
   NotifyDirectoryChanged(updated_file_path->DirName());
-  return base::PLATFORM_FILE_OK;
+  return GDATA_FILE_OK;
 }
 
-base::PlatformFileError GDataFileSystem::AddEntryToDirectoryOnFilesystem(
+GDataFileError GDataFileSystem::AddEntryToDirectoryOnFilesystem(
     const FilePath& file_path, const FilePath& dir_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   GDataEntry* entry = GetGDataEntryByPath(file_path);
   if (!entry)
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return GDATA_FILE_ERROR_NOT_FOUND;
 
   DCHECK_EQ(root_.get(), entry->parent());
 
   GDataEntry* dir_entry = GetGDataEntryByPath(dir_path);
   if (!dir_entry)
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return GDATA_FILE_ERROR_NOT_FOUND;
 
   GDataDirectory* dir = dir_entry->AsGDataDirectory();
   if (!dir)
-    return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+    return GDATA_FILE_ERROR_NOT_A_DIRECTORY;
 
   if (!dir->TakeEntry(entry))
-    return base::PLATFORM_FILE_ERROR_FAILED;
+    return GDATA_FILE_ERROR_FAILED;
 
   NotifyDirectoryChanged(dir_path);
-  return base::PLATFORM_FILE_OK;
+  return GDATA_FILE_OK;
 }
 
-base::PlatformFileError GDataFileSystem::RemoveEntryFromDirectoryOnFilesystem(
+GDataFileError GDataFileSystem::RemoveEntryFromDirectoryOnFilesystem(
     const FilePath& file_path, const FilePath& dir_path,
     FilePath* updated_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -3152,43 +3152,43 @@ base::PlatformFileError GDataFileSystem::RemoveEntryFromDirectoryOnFilesystem(
 
   GDataEntry* entry = GetGDataEntryByPath(file_path);
   if (!entry)
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return GDATA_FILE_ERROR_NOT_FOUND;
 
   GDataEntry* dir = GetGDataEntryByPath(dir_path);
   if (!dir)
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return GDATA_FILE_ERROR_NOT_FOUND;
 
   if (!dir->AsGDataDirectory())
-    return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+    return GDATA_FILE_ERROR_NOT_A_DIRECTORY;
 
   DCHECK_EQ(dir->AsGDataDirectory(), entry->parent());
 
   if (!root_->TakeEntry(entry))
-    return base::PLATFORM_FILE_ERROR_FAILED;
+    return GDATA_FILE_ERROR_FAILED;
 
   *updated_file_path = entry->GetFilePath();
 
   NotifyDirectoryChanged(updated_file_path->DirName());
-  return base::PLATFORM_FILE_OK;
+  return GDATA_FILE_OK;
 }
 
-base::PlatformFileError GDataFileSystem::RemoveEntryFromFileSystem(
+GDataFileError GDataFileSystem::RemoveEntryFromFileSystem(
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::string resource_id;
-  base::PlatformFileError error = RemoveEntryFromGData(file_path, &resource_id);
-  if (error != base::PLATFORM_FILE_OK)
+  GDataFileError error = RemoveEntryFromGData(file_path, &resource_id);
+  if (error != GDATA_FILE_OK)
     return error;
 
   // If resource_id is not empty, remove its corresponding file from cache.
   if (!resource_id.empty())
     cache_->RemoveOnUIThread(resource_id, CacheOperationCallback());
 
-  return base::PLATFORM_FILE_OK;
+  return GDATA_FILE_OK;
 }
 
-base::PlatformFileError GDataFileSystem::UpdateFromFeed(
+GDataFileError GDataFileSystem::UpdateFromFeed(
     const std::vector<DocumentFeed*>& feed_list,
     ContentOrigin origin,
     int start_changestamp,
@@ -3203,11 +3203,11 @@ base::PlatformFileError GDataFileSystem::UpdateFromFeed(
   int delta_feed_changestamp = 0;
   FeedToFileResourceMapUmaStats uma_stats;
   FileResourceIdMap file_map;
-  base::PlatformFileError error = FeedToFileResourceMap(feed_list,
+  GDataFileError error = FeedToFileResourceMap(feed_list,
                                                         &file_map,
                                                         &delta_feed_changestamp,
                                                         &uma_stats);
-  if (error != base::PLATFORM_FILE_OK)
+  if (error != GDATA_FILE_OK)
     return error;
 
   ApplyFeedFromFileUrlMap(
@@ -3219,7 +3219,7 @@ base::PlatformFileError GDataFileSystem::UpdateFromFeed(
   if (!is_delta_feed)
     UpdateFileCountUmaHistograms(uma_stats);
 
-  return base::PLATFORM_FILE_OK;
+  return GDATA_FILE_OK;
 }
 
 void GDataFileSystem::UpdateFileCountUmaHistograms(
@@ -3383,7 +3383,7 @@ GDataDirectory* GDataFileSystem::FindDirectoryForNewEntry(
   return dir;
 }
 
-base::PlatformFileError GDataFileSystem::FeedToFileResourceMap(
+GDataFileError GDataFileSystem::FeedToFileResourceMap(
     const std::vector<DocumentFeed*>& feed_list,
     FileResourceIdMap* file_map,
     int* feed_changestamp,
@@ -3391,7 +3391,7 @@ base::PlatformFileError GDataFileSystem::FeedToFileResourceMap(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(uma_stats);
 
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  GDataFileError error = GDATA_FILE_OK;
   uma_stats->num_regular_files = 0;
   uma_stats->num_hosted_documents = 0;
   uma_stats->num_files_with_entry_kind.clear();
@@ -3446,7 +3446,7 @@ base::PlatformFileError GDataFileSystem::FeedToFileResourceMap(
     }
   }
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     // If the code above fails to parse a feed, any GDataEntry instance
     // added to |file_by_url| is not managed by a GDataDirectory instance,
     // so we need to explicitly release them here.
@@ -3475,7 +3475,7 @@ void GDataFileSystem::NotifyDocumentFeedFetched(int num_accumulated_entries) {
 
 void GDataFileSystem::RunAndNotifyInitialLoadFinished(
     const FindEntryCallback& callback,
-    base::PlatformFileError error,
+    GDataFileError error,
     GDataEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -3487,40 +3487,40 @@ void GDataFileSystem::RunAndNotifyInitialLoadFinished(
   FOR_EACH_OBSERVER(Observer, observers_, OnInitialLoadFinished());
 }
 
-base::PlatformFileError GDataFileSystem::AddNewDirectory(
+GDataFileError GDataFileSystem::AddNewDirectory(
     const FilePath& directory_path, base::Value* entry_value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!entry_value)
-    return base::PLATFORM_FILE_ERROR_FAILED;
+    return GDATA_FILE_ERROR_FAILED;
 
   scoped_ptr<DocumentEntry> doc_entry(DocumentEntry::CreateFrom(entry_value));
 
   if (!doc_entry.get())
-    return base::PLATFORM_FILE_ERROR_FAILED;
+    return GDATA_FILE_ERROR_FAILED;
 
   // Find parent directory element within the cached file system snapshot.
   GDataEntry* entry = GetGDataEntryByPath(directory_path);
   if (!entry)
-    return base::PLATFORM_FILE_ERROR_FAILED;
+    return GDATA_FILE_ERROR_FAILED;
 
   // Check if parent is a directory since in theory since this is a callback
   // something could in the meantime have nuked the parent dir and created a
   // file with the exact same name.
   GDataDirectory* parent_dir = entry->AsGDataDirectory();
   if (!parent_dir)
-    return base::PLATFORM_FILE_ERROR_FAILED;
+    return GDATA_FILE_ERROR_FAILED;
 
   GDataEntry* new_entry = GDataEntry::FromDocumentEntry(parent_dir,
                                                         doc_entry.get(),
                                                         root_.get());
   if (!new_entry)
-    return base::PLATFORM_FILE_ERROR_FAILED;
+    return GDATA_FILE_ERROR_FAILED;
 
   parent_dir->AddEntry(new_entry);
 
   NotifyDirectoryChanged(directory_path);
-  return base::PLATFORM_FILE_OK;
+  return GDATA_FILE_OK;
 }
 
 GDataFileSystem::FindMissingDirectoryResult
@@ -3556,7 +3556,7 @@ GDataFileSystem::FindFirstMissingParentDirectory(
   return DIRECTORY_ALREADY_PRESENT;
 }
 
-base::PlatformFileError GDataFileSystem::RemoveEntryFromGData(
+GDataFileError GDataFileSystem::RemoveEntryFromGData(
     const FilePath& file_path, std::string* resource_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -3566,11 +3566,11 @@ base::PlatformFileError GDataFileSystem::RemoveEntryFromGData(
   GDataEntry* entry = GetGDataEntryByPath(file_path);
 
   if (!entry)
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return GDATA_FILE_ERROR_NOT_FOUND;
 
   // You can't remove root element.
   if (!entry->parent())
-    return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
+    return GDATA_FILE_ERROR_ACCESS_DENIED;
 
   // If it's a file (only files have resource id), get its resource id so that
   // we can remove it after releasing the auto lock.
@@ -3579,10 +3579,10 @@ base::PlatformFileError GDataFileSystem::RemoveEntryFromGData(
 
   GDataDirectory* parent_dir = entry->parent();
   if (!parent_dir->RemoveEntry(entry))
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return GDATA_FILE_ERROR_NOT_FOUND;
 
   NotifyDirectoryChanged(parent_dir->GetFilePath());
-  return base::PLATFORM_FILE_OK;
+  return GDATA_FILE_OK;
 }
 
 void GDataFileSystem::AddUploadedFile(
@@ -3739,7 +3739,7 @@ void GDataFileSystem::OpenFileOnUIThread(const FilePath& file_path,
   if (open_files_.find(file_path) != open_files_.end()) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(callback, base::PLATFORM_FILE_ERROR_IN_USE, FilePath()));
+        base::Bind(callback, GDATA_FILE_ERROR_IN_USE, FilePath()));
     return;
   }
   open_files_.insert(file_path);
@@ -3758,18 +3758,18 @@ void GDataFileSystem::OpenFileOnUIThread(const FilePath& file_path,
 void GDataFileSystem::OnGetFileInfoCompleteForOpenFile(
     const FilePath& file_path,
     const OpenFileCallback& callback,
-    base::PlatformFileError error,
+    GDataFileError error,
     scoped_ptr<GDataFileProto> file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error == base::PLATFORM_FILE_OK) {
+  if (error == GDATA_FILE_OK) {
     if (file_info->file_md5().empty() || file_info->is_hosted_document()) {
       // No support for opening a directory or hosted document.
-      error = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+      error = GDATA_FILE_ERROR_INVALID_OPERATION;
     }
   }
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error, FilePath());
     return;
@@ -3792,13 +3792,13 @@ void GDataFileSystem::OnGetFileInfoCompleteForOpenFile(
 void GDataFileSystem::OnGetFileCompleteForOpenFile(
     const OpenFileCallback& callback,
     const GetFileCompleteForOpenParams& file_info,
-    base::PlatformFileError error,
+    GDataFileError error,
     const FilePath& file_path,
     const std::string& mime_type,
     GDataFileType file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error, FilePath());
     return;
@@ -3817,7 +3817,7 @@ void GDataFileSystem::OnGetFileCompleteForOpenFile(
 
 void GDataFileSystem::OnMarkDirtyInCacheCompleteForOpenFile(
     const OpenFileCallback& callback,
-    base::PlatformFileError error,
+    GDataFileError error,
     const std::string& resource_id,
     const std::string& md5,
     const FilePath& cache_file_path) {
@@ -3829,14 +3829,14 @@ void GDataFileSystem::OnMarkDirtyInCacheCompleteForOpenFile(
 
 void GDataFileSystem::OnOpenFileFinished(const FilePath& file_path,
                                          const OpenFileCallback& callback,
-                                         base::PlatformFileError result,
+                                         GDataFileError result,
                                          const FilePath& cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // All the invocation of |callback| from operations initiated from OpenFile
   // must go through here. Removes the |file_path| from the remembered set when
   // the file was not successfully opened.
-  if (result != base::PLATFORM_FILE_OK)
+  if (result != GDATA_FILE_OK)
     open_files_.erase(file_path);
 
   if (!callback.is_null())
@@ -3862,7 +3862,7 @@ void GDataFileSystem::CloseFileOnUIThread(
     // The file is not being opened.
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+        base::Bind(callback, GDATA_FILE_ERROR_NOT_FOUND));
     return;
   }
 
@@ -3884,13 +3884,13 @@ void GDataFileSystem::CloseFileOnUIThread(
 void GDataFileSystem::OnGetFileCompleteForCloseFile(
     const FilePath& file_path,
     const FileOperationCallback& callback,
-    base::PlatformFileError error,
+    GDataFileError error,
     const FilePath& local_cache_path,
     const std::string& /* mime_type */,
     GDataFileType /* file_type */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error);
     return;
@@ -3922,7 +3922,7 @@ void GDataFileSystem::OnGetModifiedFileInfoCompleteForCloseFile(
 
   if (!*get_file_info_result) {
     if (!callback.is_null())
-      callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+      callback.Run(GDATA_FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -3939,11 +3939,11 @@ void GDataFileSystem::OnGetFileInfoCompleteForCloseFile(
     const FilePath& file_path,
     const base::PlatformFileInfo& file_info,
     const FileOperationCallback& callback,
-    base::PlatformFileError error,
+    GDataFileError error,
     GDataEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != GDATA_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error);
     return;
@@ -3954,7 +3954,7 @@ void GDataFileSystem::OnGetFileInfoCompleteForCloseFile(
   if (!file || file->file_md5().empty() || file->is_hosted_document()) {
     // No support for opening a directory or hosted document.
     if (!callback.is_null())
-      callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+      callback.Run(GDATA_FILE_ERROR_INVALID_OPERATION);
     return;
   }
   DCHECK(!file->resource_id().empty());
@@ -3979,7 +3979,7 @@ void GDataFileSystem::OnGetFileInfoCompleteForCloseFile(
 
 void GDataFileSystem::OnCommitDirtyInCacheCompleteForCloseFile(
     const FileOperationCallback& callback,
-    base::PlatformFileError error,
+    GDataFileError error,
     const std::string& resource_id,
     const std::string& md5) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -3991,7 +3991,7 @@ void GDataFileSystem::OnCommitDirtyInCacheCompleteForCloseFile(
 void GDataFileSystem::OnCloseFileFinished(
     const FilePath& file_path,
     const FileOperationCallback& callback,
-    base::PlatformFileError result) {
+    GDataFileError result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // All the invocation of |callback| from operations initiated from CloseFile
