@@ -259,7 +259,7 @@ URLMatcherCondition URLMatcherConditionFactory::CreatePathPrefixCondition(
 
 URLMatcherCondition URLMatcherConditionFactory::CreatePathSuffixCondition(
     const std::string& suffix) {
-  return CreateCondition(URLMatcherCondition::HOST_SUFFIX, suffix + kEndOfPath);
+  return CreateCondition(URLMatcherCondition::PATH_SUFFIX, suffix + kEndOfPath);
 }
 
 URLMatcherCondition URLMatcherConditionFactory::CreatePathContainsCondition(
@@ -303,6 +303,15 @@ URLMatcherCondition
       host_suffix + kEndOfDomain + path_prefix);
 }
 
+URLMatcherCondition
+URLMatcherConditionFactory::CreateHostEqualsPathPrefixCondition(
+    const std::string& host,
+    const std::string& path_prefix) {
+  return CreateCondition(URLMatcherCondition::HOST_EQUALS_PATH_PREFIX,
+      kBeginningOfURL + CanonicalizeHostname(host) + kEndOfDomain +
+      path_prefix);
+}
+
 std::string URLMatcherConditionFactory::CanonicalizeURLForFullSearches(
     const GURL& url) {
   return kBeginningOfURL + CanonicalizeHostname(url.host()) + url.path() +
@@ -327,7 +336,7 @@ URLMatcherCondition URLMatcherConditionFactory::CreateURLContainsCondition(
 
 URLMatcherCondition URLMatcherConditionFactory::CreateURLEqualsCondition(
     const std::string& str) {
-  return CreateCondition(URLMatcherCondition::QUERY_EQUALS,
+  return CreateCondition(URLMatcherCondition::URL_EQUALS,
       kBeginningOfURL + CanonicalizeHostname(str) + kEndOfURL);
 }
 

@@ -165,6 +165,48 @@ TEST(URLMatcherConditionFactoryTest, GURLCharacterSet) {
   EXPECT_FALSE(IsStringASCII(url.ref()));
 }
 
+TEST(URLMatcherConditionFactoryTest, Criteria) {
+  URLMatcherConditionFactory factory;
+  EXPECT_EQ(URLMatcherCondition::HOST_PREFIX,
+            factory.CreateHostPrefixCondition("foo").criterion());
+  EXPECT_EQ(URLMatcherCondition::HOST_SUFFIX,
+            factory.CreateHostSuffixCondition("foo").criterion());
+  EXPECT_EQ(URLMatcherCondition::HOST_CONTAINS,
+            factory.CreateHostContainsCondition("foo").criterion());
+  EXPECT_EQ(URLMatcherCondition::HOST_EQUALS,
+            factory.CreateHostEqualsCondition("foo").criterion());
+  EXPECT_EQ(URLMatcherCondition::PATH_PREFIX,
+            factory.CreatePathPrefixCondition("foo").criterion());
+  EXPECT_EQ(URLMatcherCondition::PATH_SUFFIX,
+            factory.CreatePathSuffixCondition("foo").criterion());
+  EXPECT_EQ(URLMatcherCondition::PATH_CONTAINS,
+            factory.CreatePathContainsCondition("foo").criterion());
+  EXPECT_EQ(URLMatcherCondition::PATH_EQUALS,
+            factory.CreatePathEqualsCondition("foo").criterion());
+  EXPECT_EQ(URLMatcherCondition::QUERY_PREFIX,
+            factory.CreateQueryPrefixCondition("foo").criterion());
+  EXPECT_EQ(URLMatcherCondition::QUERY_SUFFIX,
+            factory.CreateQuerySuffixCondition("foo").criterion());
+  EXPECT_EQ(URLMatcherCondition::QUERY_CONTAINS,
+            factory.CreateQueryContainsCondition("foo").criterion());
+  EXPECT_EQ(URLMatcherCondition::QUERY_EQUALS,
+            factory.CreateQueryEqualsCondition("foo").criterion());
+  EXPECT_EQ(URLMatcherCondition::HOST_SUFFIX_PATH_PREFIX,
+            factory.CreateHostSuffixPathPrefixCondition("foo",
+                                                        "bar").criterion());
+  EXPECT_EQ(URLMatcherCondition::HOST_EQUALS_PATH_PREFIX,
+            factory.CreateHostEqualsPathPrefixCondition("foo",
+                                                        "bar").criterion());
+  EXPECT_EQ(URLMatcherCondition::URL_PREFIX,
+            factory.CreateURLPrefixCondition("foo").criterion());
+  EXPECT_EQ(URLMatcherCondition::URL_SUFFIX,
+            factory.CreateURLSuffixCondition("foo").criterion());
+  EXPECT_EQ(URLMatcherCondition::URL_CONTAINS,
+            factory.CreateURLContainsCondition("foo").criterion());
+  EXPECT_EQ(URLMatcherCondition::URL_EQUALS,
+            factory.CreateURLEqualsCondition("foo").criterion());
+}
+
 TEST(URLMatcherConditionFactoryTest, TestSingletonProperty) {
   URLMatcherConditionFactory factory;
   URLMatcherCondition c1 = factory.CreateHostEqualsCondition("www.google.com");
@@ -272,6 +314,15 @@ TEST(URLMatcherConditionFactoryTest, TestComponentSearches) {
         "google.com", ""), url));
   EXPECT_FALSE(Matches(factory.CreateHostSuffixPathPrefixCondition(
         "www", ""), url));
+
+  EXPECT_TRUE(Matches(factory.CreateHostEqualsPathPrefixCondition(
+      "www.google.com", "/webhp"), url));
+  EXPECT_FALSE(Matches(factory.CreateHostEqualsPathPrefixCondition(
+        "", "/webhp"), url));
+  EXPECT_TRUE(Matches(factory.CreateHostEqualsPathPrefixCondition(
+        "www.google.com", ""), url));
+  EXPECT_FALSE(Matches(factory.CreateHostEqualsPathPrefixCondition(
+        "google.com", ""), url));
 }
 
 TEST(URLMatcherConditionFactoryTest, TestFullSearches) {

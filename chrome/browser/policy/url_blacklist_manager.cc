@@ -19,6 +19,12 @@
 #include "googleurl/src/gurl.h"
 
 using content::BrowserThread;
+using extensions::URLMatcher;
+using extensions::URLMatcherCondition;
+using extensions::URLMatcherConditionFactory;
+using extensions::URLMatcherConditionSet;
+using extensions::URLMatcherPortFilter;
+using extensions::URLMatcherSchemeFilter;
 
 namespace policy {
 
@@ -27,201 +33,126 @@ namespace {
 // Maximum filters per policy. Filters over this index are ignored.
 const size_t kMaxFiltersPerPolicy = 100;
 
-typedef std::vector<std::string> StringVector;
+const char* kStandardSchemes[] = {
+  "http",
+  "https",
+  "file",
+  "ftp",
+  "gopher",
+  "ws",
+  "wss"
+};
 
-StringVector* ListValueToStringVector(const base::ListValue* list) {
-  StringVector* vector = new StringVector;
-
-  if (list == NULL)
-    return vector;
-
-  vector->reserve(list->GetSize());
-  std::string s;
-  for (base::ListValue::const_iterator it = list->begin();
-       it != list->end() && vector->size() < kMaxFiltersPerPolicy; ++it) {
-    if ((*it)->GetAsString(&s))
-      vector->push_back(s);
+bool IsStandardScheme(const std::string& scheme) {
+  for (size_t i = 0; i < arraysize(kStandardSchemes); ++i) {
+    if (scheme == kStandardSchemes[i])
+      return true;
   }
-
-  return vector;
+  return false;
 }
 
-// A task that builds the blacklist on the FILE thread. Takes ownership
-// of |block| and |allow| but not of |blacklist|.
-void BuildBlacklist(URLBlacklist* blacklist,
-                    StringVector* block,
-                    StringVector* allow) {
+// A task that builds the blacklist on the FILE thread.
+scoped_ptr<URLBlacklist> BuildBlacklist(scoped_ptr<base::ListValue> block,
+                                        scoped_ptr<base::ListValue> allow) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  scoped_ptr<StringVector> scoped_block(block);
-  scoped_ptr<StringVector> scoped_allow(allow);
-
-  for (StringVector::iterator it = block->begin(); it != block->end(); ++it) {
-    blacklist->Block(*it);
-  }
-  for (StringVector::iterator it = allow->begin(); it != allow->end(); ++it) {
-    blacklist->Allow(*it);
-  }
-}
-
-// A task that owns the URLBlacklist, and passes it to the URLBlacklistManager
-// on the IO thread, if the URLBlacklistManager still exists.
-void SetBlacklistOnIO(base::WeakPtr<URLBlacklistManager> blacklist_manager,
-                      URLBlacklist* blacklist) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (blacklist_manager) {
-    blacklist_manager->SetBlacklist(blacklist);
-  } else {
-    delete blacklist;
-  }
+  scoped_ptr<URLBlacklist> blacklist(new URLBlacklist);
+  blacklist->Block(block.get());
+  blacklist->Allow(allow.get());
+  return blacklist.Pass();
 }
 
 }  // namespace
 
-struct URLBlacklist::PathFilter {
-  explicit PathFilter(const std::string& path, uint16 port, bool match)
-      : path_prefix(path),
-        port(port),
-        blocked_schemes(0),
-        allowed_schemes(0),
-        match_subdomains(match) {}
+struct URLBlacklist::FilterComponents {
+  FilterComponents() : match_subdomains(true), allow(true) {}
+  ~FilterComponents() {}
 
-  std::string path_prefix;
+  std::string scheme;
+  std::string host;
   uint16 port;
-  uint8 blocked_schemes;
-  uint8 allowed_schemes;
+  std::string path;
   bool match_subdomains;
+  bool allow;
 };
 
-URLBlacklist::URLBlacklist() {
+URLBlacklist::URLBlacklist() : id_(0),
+                               url_matcher_(new URLMatcher) {
 }
 
 URLBlacklist::~URLBlacklist() {
-  STLDeleteValues(&host_filters_);
 }
 
-void URLBlacklist::Block(const std::string& filter) {
-  AddFilter(filter, true);
+void URLBlacklist::AddFilters(bool allow,
+                              const base::ListValue* list) {
+  URLMatcherConditionSet::Vector all_conditions;
+  size_t size = std::min(kMaxFiltersPerPolicy, list->GetSize());
+  for (size_t i = 0; i < size; ++i) {
+    std::string pattern;
+    bool success = list->GetString(i, &pattern);
+    DCHECK(success);
+    FilterComponents components;
+    components.allow = allow;
+    if (!FilterToComponents(pattern, &components.scheme, &components.host,
+                            &components.match_subdomains, &components.port,
+                            &components.path)) {
+      LOG(ERROR) << "Invalid pattern " << pattern;
+      continue;
+    }
+
+    all_conditions.push_back(
+        CreateConditionSet(url_matcher_.get(), ++id_, components.scheme,
+                           components.host, components.match_subdomains,
+                           components.port, components.path));
+    filters_[id_] = components;
+  }
+  url_matcher_->AddConditionSets(all_conditions);
 }
 
-void URLBlacklist::Allow(const std::string& filter) {
-  AddFilter(filter, false);
+void URLBlacklist::Block(const base::ListValue* filters) {
+  AddFilters(false, filters);
+}
+
+void URLBlacklist::Allow(const base::ListValue* filters) {
+  AddFilters(true, filters);
 }
 
 bool URLBlacklist::IsURLBlocked(const GURL& url) const {
-  SchemeFlag flag = SCHEME_ALL;
-  if (!SchemeToFlag(url.scheme(), &flag)) {
-    // Not a scheme that can be filtered.
+  if (!HasStandardScheme(url))
     return false;
+
+  std::set<URLMatcherConditionSet::ID> matching_ids =
+      url_matcher_->MatchURL(url);
+
+  const FilterComponents* max = NULL;
+  for (std::set<URLMatcherConditionSet::ID>::iterator id = matching_ids.begin();
+       id != matching_ids.end(); ++id) {
+    std::map<int, FilterComponents>::const_iterator it = filters_.find(*id);
+    DCHECK(it != filters_.end());
+    const FilterComponents& filter = it->second;
+    if (!max || FilterTakesPrecedence(filter, *max))
+      max = &filter;
   }
 
-  std::string host(url.host());
-  int int_port = url.EffectiveIntPort();
-  const uint16 port = int_port > 0 ? int_port : 0;
-  const std::string& path = url.path();
+  // Default to allow.
+  if (!max)
+    return false;
 
-  // The first iteration through the loop will be an exact host match.
-  // Subsequent iterations are subdomain matches, and some filters don't apply
-  // to those.
-  bool is_matching_subdomains = false;
-  const bool host_is_ip = url.HostIsIPAddress();
-  while (1) {
-    HostFilterTable::const_iterator host_filter = host_filters_.find(host);
-    if (host_filter != host_filters_.end()) {
-      const PathFilterList* list = host_filter->second;
-      size_t longest_length = 0;
-      bool is_blocked = false;
-      bool has_match = false;
-      bool has_exact_host_match = false;
-      for (PathFilterList::const_iterator it = list->begin();
-           it != list->end(); ++it) {
-        // Filters that apply to an exact hostname only take precedence over
-        // filters that can apply to subdomains too.
-        // E.g. ".google.com" filters take priority over "google.com".
-        if (has_exact_host_match && it->match_subdomains)
-          continue;
-
-        // Skip if filter doesn't apply to subdomains, and this is a subdomain.
-        if (is_matching_subdomains && !it->match_subdomains)
-          continue;
-
-        if (it->port != 0 && it->port != port)
-          continue;
-
-        // Skip if the filter doesn't apply to the scheme.
-        if ((it->allowed_schemes & flag) == 0 &&
-            (it->blocked_schemes & flag) == 0)
-          continue;
-
-        // If this match can't be longer than the current match, skip it.
-        // For same size matches, the first rule to match takes precedence.
-        // If this is an exact host match, it can be actually shorter than
-        // a previous, non-exact match.
-        if ((has_match && it->path_prefix.length() <= longest_length) &&
-            (has_exact_host_match || it->match_subdomains)) {
-          continue;
-        }
-
-        // Skip if the filter's |path_prefix| is not a prefix of |path|.
-        if (path.compare(0, it->path_prefix.length(), it->path_prefix) != 0)
-          continue;
-
-        // This is the best match so far.
-        has_match = true;
-        has_exact_host_match = !it->match_subdomains;
-        longest_length = it->path_prefix.length();
-        // If both blocked and allowed bits are set, allowed takes precedence.
-        is_blocked = !(it->allowed_schemes & flag);
-      }
-      // If a match was found, return its decision.
-      if (has_match)
-        return is_blocked;
-    }
-
-    // Quit after trying the empty string (corresponding to host '*').
-    // Also skip subdomain matching for IP addresses.
-    if (host.empty() || host_is_ip)
-      break;
-
-    // No match found for this host. Try a subdomain match, by removing the
-    // leftmost subdomain from the hostname.
-    is_matching_subdomains = true;
-    size_t i = host.find('.');
-    if (i != std::string::npos)
-      ++i;
-    host.erase(0, i);
-  }
-
-  // Default is to allow.
-  return false;
+  return !max->allow;
 }
 
 // static
-bool URLBlacklist::SchemeToFlag(const std::string& scheme, SchemeFlag* flag) {
-  if (scheme.empty()) {
-    *flag = SCHEME_ALL;
-  } else if (scheme == "http") {
-    *flag = SCHEME_HTTP;
-  } else if (scheme == "https") {
-    *flag = SCHEME_HTTPS;
-  } else if (scheme == "ftp") {
-    *flag = SCHEME_FTP;
-  } else if (scheme == "ws") {
-    *flag = SCHEME_WS;
-  } else if (scheme == "wss") {
-    *flag = SCHEME_WSS;
-  } else {
-    return false;
-  }
-  return true;
+bool URLBlacklist::HasStandardScheme(const GURL& url) {
+  return IsStandardScheme(url.scheme());
 }
 
 // static
 bool URLBlacklist::FilterToComponents(const std::string& filter,
-                                   std::string* scheme,
-                                   std::string* host,
-                                   uint16* port,
-                                   std::string* path) {
+                                      std::string* scheme,
+                                      std::string* host,
+                                      bool* match_subdomains,
+                                      uint16* port,
+                                      std::string* path) {
   url_parse::Parsed parsed;
   URLFixerUpper::SegmentURL(filter, &parsed);
 
@@ -235,8 +166,28 @@ bool URLBlacklist::FilterToComponents(const std::string& filter,
 
   host->assign(filter, parsed.host.begin, parsed.host.len);
   // Special '*' host, matches all hosts.
-  if (*host == "*")
+  if (*host == "*") {
     host->clear();
+    *match_subdomains = true;
+  } else if ((*host)[0] == '.') {
+    // A leading dot in the pattern syntax means that we don't want to match
+    // subdomains.
+    host->erase(0, 1);
+    *match_subdomains = false;
+  } else {
+    url_canon::RawCanonOutputT<char> output;
+    url_canon::CanonHostInfo host_info;
+    url_canon::CanonicalizeHostVerbose(filter.c_str(), parsed.host,
+                                       &output, &host_info);
+    if (host_info.family == url_canon::CanonHostInfo::NEUTRAL) {
+      // We want to match subdomains. Add a dot in front to make sure we only
+      // match at domain component boundaries.
+      *host = "." + *host;
+      *match_subdomains = true;
+    } else {
+      *match_subdomains = false;
+    }
+  }
 
   if (parsed.port.is_nonempty()) {
     int int_port;
@@ -257,62 +208,66 @@ bool URLBlacklist::FilterToComponents(const std::string& filter,
   else
     path->clear();
 
+  if (!scheme->empty() && !IsStandardScheme(*scheme))
+    return false;
+
   return true;
 }
 
-void URLBlacklist::AddFilter(const std::string& filter, bool block) {
-  std::string scheme;
-  std::string host;
-  uint16 port;
-  std::string path;
-  if (!FilterToComponents(filter, &scheme, &host, &port, &path)) {
-    LOG(WARNING) << "Invalid filter, ignoring: " << filter;
-    return;
+// static
+scoped_refptr<extensions::URLMatcherConditionSet>
+URLBlacklist::CreateConditionSet(
+    extensions::URLMatcher* url_matcher,
+    int id,
+    const std::string& scheme,
+    const std::string& host,
+    bool match_subdomains,
+    uint16 port,
+    const std::string& path) {
+  URLMatcherConditionFactory* condition_factory =
+      url_matcher->condition_factory();
+  std::set<URLMatcherCondition> conditions;
+  conditions.insert(match_subdomains ?
+      condition_factory->CreateHostSuffixPathPrefixCondition(host, path) :
+      condition_factory->CreateHostEqualsPathPrefixCondition(host, path));
+
+  scoped_ptr<URLMatcherSchemeFilter> scheme_filter;
+  if (!scheme.empty())
+    scheme_filter.reset(new URLMatcherSchemeFilter(scheme));
+
+  scoped_ptr<URLMatcherPortFilter> port_filter;
+  if (port != 0) {
+    std::vector<URLMatcherPortFilter::Range> ranges;
+    ranges.push_back(URLMatcherPortFilter::CreateRange(port));
+    port_filter.reset(new URLMatcherPortFilter(ranges));
   }
 
-  SchemeFlag flag;
-  if (!SchemeToFlag(scheme, &flag)) {
-    LOG(WARNING) << "Unsupported scheme in filter, ignoring filter: " << filter;
-    return;
-  }
+  return new URLMatcherConditionSet(id, conditions,
+                                    scheme_filter.Pass(), port_filter.Pass());
+}
 
-  bool match_subdomains = true;
-  // Special syntax to disable subdomain matching.
-  if (!host.empty() && host[0] == '.') {
-    host.erase(0, 1);
-    match_subdomains = false;
-  }
+// static
+bool URLBlacklist::FilterTakesPrecedence(const FilterComponents& lhs,
+                                         const FilterComponents& rhs) {
+  if (lhs.match_subdomains && !rhs.match_subdomains)
+    return false;
+  if (!lhs.match_subdomains && rhs.match_subdomains)
+    return true;
 
-  // Try to find an existing PathFilter with the same path prefix, port and
-  // match_subdomains value.
-  PathFilterList* list;
-  HostFilterTable::iterator host_filter = host_filters_.find(host);
-  if (host_filter == host_filters_.end()) {
-    list = new PathFilterList;
-    host_filters_[host] = list;
-  } else {
-    list = host_filter->second;
-  }
-  PathFilterList::iterator it;
-  for (it = list->begin(); it != list->end(); ++it) {
-    if (it->port == port && it->match_subdomains == match_subdomains &&
-        it->path_prefix == path) {
-      break;
-    }
-  }
-  PathFilter* path_filter;
-  if (it == list->end()) {
-    list->push_back(PathFilter(path, port, match_subdomains));
-    path_filter = &list->back();
-  } else {
-    path_filter = &(*it);
-  }
+  size_t host_length = lhs.host.length();
+  size_t other_host_length = rhs.host.length();
+  if (host_length != other_host_length)
+    return host_length > other_host_length;
 
-  if (block) {
-    path_filter->blocked_schemes |= flag;
-  } else {
-    path_filter->allowed_schemes |= flag;
-  }
+  size_t path_length = lhs.path.length();
+  size_t other_path_length = rhs.path.length();
+  if (path_length != other_path_length)
+    return path_length > other_path_length;
+
+  if (lhs.allow && !rhs.allow)
+    return true;
+
+  return false;
 }
 
 URLBlacklistManager::URLBlacklistManager(PrefService* pref_service)
@@ -371,37 +326,38 @@ void URLBlacklistManager::Update() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // The preferences can only be read on the UI thread.
-  StringVector* block =
-      ListValueToStringVector(pref_service_->GetList(prefs::kUrlBlacklist));
-  StringVector* allow =
-      ListValueToStringVector(pref_service_->GetList(prefs::kUrlWhitelist));
+  scoped_ptr<base::ListValue> block(
+      pref_service_->GetList(prefs::kUrlBlacklist)->DeepCopy());
+  scoped_ptr<base::ListValue> allow(
+      pref_service_->GetList(prefs::kUrlWhitelist)->DeepCopy());
 
   // Go through the IO thread to grab a WeakPtr to |this|. This is safe from
   // here, since this task will always execute before a potential deletion of
   // ProfileIOData on IO.
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&URLBlacklistManager::UpdateOnIO,
-                                     base::Unretained(this), block, allow));
+                                     base::Unretained(this),
+                                     base::Passed(&block),
+                                     base::Passed(&allow)));
 }
 
-void URLBlacklistManager::UpdateOnIO(StringVector* block, StringVector* allow) {
+void URLBlacklistManager::UpdateOnIO(scoped_ptr<base::ListValue> block,
+                                     scoped_ptr<base::ListValue> allow) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  URLBlacklist* blacklist = new URLBlacklist;
   // The URLBlacklist is built on the FILE thread. Once it's ready, it is passed
   // to the URLBlacklistManager on IO.
-  // |blacklist|, |block| and |allow| can leak on the unlikely event of a
-  // policy update and shutdown happening at the same time.
-  BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
-                                  base::Bind(&BuildBlacklist,
-                                             blacklist, block, allow),
-                                  base::Bind(&SetBlacklistOnIO,
-                                             io_weak_ptr_factory_.GetWeakPtr(),
-                                             blacklist));
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&BuildBlacklist,
+                 base::Passed(&block),
+                 base::Passed(&allow)),
+      base::Bind(&URLBlacklistManager::SetBlacklist,
+                 io_weak_ptr_factory_.GetWeakPtr()));
 }
 
-void URLBlacklistManager::SetBlacklist(URLBlacklist* blacklist) {
+void URLBlacklistManager::SetBlacklist(scoped_ptr<URLBlacklist> blacklist) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  blacklist_.reset(blacklist);
+  blacklist_ = blacklist.Pass();
 }
 
 bool URLBlacklistManager::IsURLBlocked(const GURL& url) const {

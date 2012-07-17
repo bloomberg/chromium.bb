@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_POLICY_URL_BLACKLIST_MANAGER_H_
 #define CHROME_BROWSER_POLICY_URL_BLACKLIST_MANAGER_H_
 
+#include <map>
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
@@ -15,10 +15,15 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/common/extensions/matcher/url_matcher.h"
 #include "content/public/browser/notification_observer.h"
 
 class GURL;
 class PrefService;
+
+namespace base {
+class ListValue;
+}
 
 namespace policy {
 
@@ -26,55 +31,67 @@ namespace policy {
 // against this set. The filters are currently kept in memory.
 class URLBlacklist {
  public:
-  // A constant mapped to a scheme that can be filtered.
-  enum SchemeFlag {
-    SCHEME_HTTP   = 1 << 0,
-    SCHEME_HTTPS  = 1 << 1,
-    SCHEME_FTP    = 1 << 2,
-    SCHEME_WS     = 1 << 3,
-    SCHEME_WSS    = 1 << 4,
-
-    SCHEME_ALL    = (1 << 5) - 1,
-  };
-
   URLBlacklist();
   virtual ~URLBlacklist();
 
-  // URLs matching |filter| will be blocked. The filter format is documented
-  // at http://www.chromium.org/administrators/url-blacklist-filter-format
-  void Block(const std::string& filter);
+  // Allows or blocks URLs matching one of the filters, depending on |allow|.
+  void AddFilters(bool allow, const base::ListValue* filters);
 
-  // URLs matching |filter| will be allowed. If |filter| is both Blocked and
-  // Allowed, Allow takes precedence.
-  void Allow(const std::string& filter);
+  // URLs matching one of the |filters| will be blocked. The filter format is
+  // documented at
+  // http://www.chromium.org/administrators/url-blacklist-filter-format.
+  void Block(const base::ListValue* filters);
+
+  // URLs matching one of the |filters| will be allowed. If a URL is both
+  // Blocked and Allowed, Allow takes precedence.
+  void Allow(const base::ListValue* filters);
 
   // Returns true if the URL is blocked.
   bool IsURLBlocked(const GURL& url) const;
 
-  // Returns true if |scheme| is a scheme that can be filtered. Returns true
-  // and sets |flag| to SCHEME_ALL if |scheme| is empty.
-  static bool SchemeToFlag(const std::string& scheme, SchemeFlag* flag);
+  // Returns true if the URL has a standard scheme. Only URLs with standard
+  // schemes are filtered.
+  static bool HasStandardScheme(const GURL& url);
 
   // Splits a URL filter into its components. A GURL isn't used because these
   // can be invalid URLs e.g. "google.com".
   // Returns false if the URL couldn't be parsed.
+  // The |host| is preprocessed so it can be passed to URLMatcher for the
+  // appropriate condition.
   // The optional username and password are ignored.
+  // |match_subdomains| specifies whether the filter should include subdomains
+  // of the hostname (if it is one.)
   // |port| is 0 if none is explicitly defined.
   // |path| does not include query parameters.
   static bool FilterToComponents(const std::string& filter,
                                  std::string* scheme,
                                  std::string* host,
+                                 bool* match_subdomains,
                                  uint16* port,
                                  std::string* path);
+
+  // Creates a condition set that can be used with the |url_matcher|. |id| needs
+  // to be a unique number that will be returned by the |url_matcher| if the URL
+  // matches that condition set.
+  static scoped_refptr<extensions::URLMatcherConditionSet> CreateConditionSet(
+      extensions::URLMatcher* url_matcher,
+      extensions::URLMatcherConditionSet::ID id,
+      const std::string& scheme,
+      const std::string& host,
+      bool match_subdomains,
+      uint16 port,
+      const std::string& path);
+
  private:
-  struct PathFilter;
+  struct FilterComponents;
 
-  typedef std::vector<PathFilter> PathFilterList;
-  typedef base::hash_map<std::string, PathFilterList*> HostFilterTable;
+  // Returns true if |lhs| takes precedence over |rhs|.
+  static bool FilterTakesPrecedence(const FilterComponents& lhs,
+                                    const FilterComponents& rhs);
 
-  void AddFilter(const std::string& filter, bool block);
-
-  HostFilterTable host_filters_;
+  extensions::URLMatcherConditionSet::ID id_;
+  std::map<extensions::URLMatcherConditionSet::ID, FilterComponents> filters_;
+  scoped_ptr<extensions::URLMatcher> url_matcher_;
 
   DISALLOW_COPY_AND_ASSIGN(URLBlacklist);
 };
@@ -110,14 +127,13 @@ class URLBlacklistManager : public content::NotificationObserver {
   bool IsURLBlocked(const GURL& url) const;
 
   // Replaces the current blacklist. Must be called on the IO thread.
-  void SetBlacklist(URLBlacklist* blacklist);
+  // Virtual for testing.
+  virtual void SetBlacklist(scoped_ptr<URLBlacklist> blacklist);
 
   // Registers the preferences related to blacklisting in the given PrefService.
   static void RegisterPrefs(PrefService* pref_service);
 
  protected:
-  typedef std::vector<std::string> StringVector;
-
   // Used to delay updating the blacklist while the preferences are
   // changing, and execute only one update per simultaneous prefs changes.
   void ScheduleUpdate();
@@ -128,7 +144,8 @@ class URLBlacklistManager : public content::NotificationObserver {
 
   // Starts the blacklist update on the IO thread, using the filters in
   // |block| and |allow|. Protected for testing.
-  void UpdateOnIO(StringVector* block, StringVector* allow);
+  void UpdateOnIO(scoped_ptr<base::ListValue> block,
+                  scoped_ptr<base::ListValue> allow);
 
  private:
   virtual void Observe(int type,

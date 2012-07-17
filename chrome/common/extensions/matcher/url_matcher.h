@@ -44,6 +44,7 @@ class URLMatcherCondition {
     QUERY_CONTAINS,
     QUERY_EQUALS,
     HOST_SUFFIX_PATH_PREFIX,
+    HOST_EQUALS_PATH_PREFIX,
     URL_PREFIX,
     URL_SUFFIX,
     URL_CONTAINS,
@@ -137,6 +138,9 @@ class URLMatcherConditionFactory {
   // should be followed by a given |path_prefix|.
   URLMatcherCondition CreateHostSuffixPathPrefixCondition(
       const std::string& host_suffix,
+      const std::string& path_prefix);
+  URLMatcherCondition CreateHostEqualsPathPrefixCondition(
+      const std::string& host,
       const std::string& path_prefix);
 
   // Canonicalizes a URL for "CreateURL*Condition" searches.
