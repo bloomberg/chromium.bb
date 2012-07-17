@@ -390,9 +390,6 @@ struct DataResource {
 const DataResource kDataResources[] = {
   { "missingImage", IDR_BROKENIMAGE, ui::SCALE_FACTOR_100P },
   { "missingImage@2x", IDR_BROKENIMAGE, ui::SCALE_FACTOR_200P },
-#if defined(OS_ANDROID)
-  { "mediaFullscreen", IDR_MEDIA_FULLSCREEN_BUTTON, ui::SCALE_FACTOR_100P },
-#endif
   { "mediaPause", IDR_MEDIA_PAUSE_BUTTON, ui::SCALE_FACTOR_100P },
   { "mediaPlay", IDR_MEDIA_PLAY_BUTTON, ui::SCALE_FACTOR_100P },
   { "mediaPlayDisabled",
