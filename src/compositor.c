@@ -779,7 +779,7 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 				    EGL_WAYLAND_BUFFER_COMPONENTS_WL,
 				    &components)) {
 		for (i = 0; i < es->num_images; i++)
-			ec->destroy_image(ec->egl_display, es->images[0]);
+			ec->destroy_image(ec->egl_display, es->images[i]);
 		es->num_images = 0;
 
 		switch (components) {
