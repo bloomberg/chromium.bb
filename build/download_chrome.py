@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -127,16 +127,15 @@ def Main():
         raise
 
       # Copy over files necessary to run pyauto.
-      pyautopy_url, pyautolib_url = chromebinaries.GetPyAutoURLs(
+      pyauto_files = chromebinaries.GetPyAutoURLs(
           options.base_url,
           options.os,
           options.arch,
           options.revision)
 
-      pyautopy_file = os.path.join(tempdir, pyautopy_url.split('/')[-1])
-      pyautolib_file = os.path.join(tempdir, pyautolib_url.split('/')[-1])
-      download_utils.SyncURL(pyautopy_url, pyautopy_file)
-      download_utils.SyncURL(pyautolib_url, pyautolib_file)
+      for url in pyauto_files:
+        url_dst = os.path.join(tempdir, url.split('/')[-1])
+        download_utils.SyncURL(url, url_dst)
 
       # On Mac, create a symlink to the framework directory so it can be loaded.
       if options.os == 'mac':

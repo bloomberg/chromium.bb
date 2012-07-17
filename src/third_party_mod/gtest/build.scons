@@ -28,6 +28,10 @@ if env.Bit('linux') or env.Bit('mac'):
   # gtest does not compile successfully with "-Wundef"
   env.FilterOut(CCFLAGS=['-pedantic', '-Wswitch-enum', '-Wundef'])
 
+if env.Bit('clang'):
+  # testing/gtest/src/gtest-internal-inl.h has an unused struct field.
+  env.Append(CCFLAGS=['-Wno-unused-private-field'])
+
 if env.Bit('linux') or env.Bit('clang'):
   # because of: testing/gtest/src/gtest-printers.cc:291: error:
   # comparison of unsigned expression >= 0 is always true [-Wtype-limits]

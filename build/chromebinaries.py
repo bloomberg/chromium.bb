@@ -27,7 +27,8 @@ SNAPSHOT_MAP = {
            ('mac', 'x86-32'): ('Mac',
                                'chrome-mac.zip',
                                'chrome-mac.test/pyautolib.py',
-                               'chrome-mac.test/_pyautolib.so'),
+                               'chrome-mac.test/_pyautolib.so',
+                               'chrome-mac.test/ffmpegsumo.so'),
            ('linux', 'x86-32'): ('Linux',
                                  'chrome-linux.zip',
                                  'chrome-linux.test/pyautolib.py',
@@ -131,17 +132,16 @@ def GetBaseDirectory(base_url, os, arch, revision):
 def GetChromeURL(base_url, os, arch, revision):
   directory = GetBaseDirectory(base_url, os, arch, revision)
   key = (os, arch)
-  _, archive_name, _, _ = SNAPSHOT_MAP[key]
+  archive_name = SNAPSHOT_MAP[key][1]
   return '/'.join([directory, archive_name])
 
 
 def GetPyAutoURLs( base_url, os, arch, revision):
   directory = GetBaseDirectory(base_url, os, arch, revision)
   key = (os, arch)
-  _, _, pyautopy_name, pyautolib_name = SNAPSHOT_MAP[key]
-  pyautopy_url = '/'.join([directory, pyautopy_name])
-  pyautolib_url = '/'.join([directory, pyautolib_name])
-  return pyautopy_url, pyautolib_url
+  pyauto_files = SNAPSHOT_MAP[key][2:]
+  pyauto_files = ['/'.join([directory, f]) for f in pyauto_files]
+  return pyauto_files
 
 
 def EvalDepsFile(path):
