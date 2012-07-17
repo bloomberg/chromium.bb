@@ -1156,16 +1156,20 @@ void GDataFileSystem::TransferFileFromLocalToRemoteAfterGetEntryInfo(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != GDATA_FILE_OK) {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(callback, error));
+    if (!callback.is_null()) {
+      base::MessageLoopProxy::current()->PostTask(
+          FROM_HERE, base::Bind(callback, error));
+    }
     return;
   }
 
   DCHECK(entry_proto.get());
   if (!entry_proto->file_info().is_directory()) {
     // The parent of |remote_dest_file_path| is not a directory.
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(callback, GDATA_FILE_ERROR_NOT_A_DIRECTORY));
+    if (!callback.is_null()) {
+      base::MessageLoopProxy::current()->PostTask(
+          FROM_HERE, base::Bind(callback, GDATA_FILE_ERROR_NOT_A_DIRECTORY));
+    }
     return;
   }
 
@@ -1663,18 +1667,35 @@ void GDataFileSystem::RemoveOnUIThread(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataEntry* entry = GetGDataEntryByPath(file_path);
-  if (!entry) {
+  // Get the edit URL of an entry at |file_path|.
+  GetEntryInfoByPath(file_path,
+                     base::Bind(
+                         &GDataFileSystem::RemoveOnUIThreadAfterGetEntryInfo,
+                         ui_weak_ptr_,
+                         file_path,
+                         is_recursive,
+                         callback));
+}
+
+void GDataFileSystem::RemoveOnUIThreadAfterGetEntryInfo(
+    const FilePath& file_path,
+    bool is_recursive,
+    const FileOperationCallback& callback,
+    GDataFileError error,
+    scoped_ptr<GDataEntryProto> entry_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != GDATA_FILE_OK) {
     if (!callback.is_null()) {
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(callback, GDATA_FILE_ERROR_NOT_FOUND));
+      base::MessageLoopProxy::current()->PostTask(
+          FROM_HERE, base::Bind(callback, error));
     }
     return;
   }
 
+  DCHECK(entry_proto.get());
   documents_service_->DeleteDocument(
-      entry->edit_url(),
+      GURL(entry_proto->edit_url()),
       base::Bind(&GDataFileSystem::OnRemovedDocument,
                  ui_weak_ptr_,
                  callback,

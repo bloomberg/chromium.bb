@@ -826,6 +826,15 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                  GDataCache::FileOperationType cache_operation,
                                  const base::Closure& callback);
 
+  // Part of RemoveOnUIThread(). Called after GetEntryInfoByPath() is
+  // complete.
+  void RemoveOnUIThreadAfterGetEntryInfo(
+    const FilePath& file_path,
+    bool is_recursive,
+    const FileOperationCallback& callback,
+    GDataFileError error,
+    scoped_ptr<GDataEntryProto> entry_proto);
+
   // All members should be accessed only on UI thread. Do not post tasks to
   // other threads with base::Unretained(this).
 
