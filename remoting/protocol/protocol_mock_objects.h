@@ -75,6 +75,18 @@ class MockClipboardStub : public ClipboardStub {
   DISALLOW_COPY_AND_ASSIGN(MockClipboardStub);
 };
 
+class MockCursorShapeChangeCallback {
+ public:
+  MockCursorShapeChangeCallback();
+  virtual ~MockCursorShapeChangeCallback();
+
+  MOCK_METHOD1(CursorShapeChangedPtr, void(CursorShapeInfo* info));
+  void CursorShapeChanged(scoped_ptr<CursorShapeInfo> info);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockCursorShapeChangeCallback);
+};
+
 class MockInputStub : public InputStub {
  public:
   MockInputStub();

@@ -6,6 +6,7 @@
 
 #include "base/message_loop_proxy.h"
 #include "net/base/ip_endpoint.h"
+#include "remoting/base/capture_data.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/transport.h"
 
@@ -14,6 +15,15 @@ namespace remoting {
 MockCapturer::MockCapturer() {}
 
 MockCapturer::~MockCapturer() {}
+
+MockCaptureCompletedCallback::MockCaptureCompletedCallback() {}
+
+MockCaptureCompletedCallback::~MockCaptureCompletedCallback() {}
+
+void MockCaptureCompletedCallback::CaptureCompleted(
+    scoped_refptr<CaptureData> capture_data) {
+  CaptureCompletedPtr(capture_data.get());
+}
 
 MockCurtain::MockCurtain() {}
 

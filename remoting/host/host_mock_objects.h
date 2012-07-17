@@ -20,6 +20,18 @@
 
 namespace remoting {
 
+class MockCaptureCompletedCallback {
+ public:
+  MockCaptureCompletedCallback();
+  virtual ~MockCaptureCompletedCallback();
+
+  MOCK_METHOD1(CaptureCompletedPtr, void(CaptureData* capture_data));
+  void CaptureCompleted(scoped_refptr<CaptureData> capture_data);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockCaptureCompletedCallback);
+};
+
 class MockCapturer : public Capturer {
  public:
   MockCapturer();
