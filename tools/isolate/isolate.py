@@ -254,7 +254,7 @@ def process_input(filepath, prevdict, level, read_only):
   return out
 
 
-def recreate_tree(outdir, indir, infiles, action):
+def recreate_tree(outdir, indir, infiles, action, as_sha1):
   """Creates a new tree with only the input files in it.
 
   Arguments:
@@ -262,10 +262,11 @@ def recreate_tree(outdir, indir, infiles, action):
     indir:     Root directory the infiles are based in.
     infiles:   dict of files to map from |indir| to |outdir|.
     action:    See assert below.
+    as_sha1:   Output filename is the sha1 instead of relfile.
   """
-  logging.debug(
-      'recreate_tree(%s, %s, %s, %s)' % (outdir, indir, len(infiles), action))
-  logging.info('Mapping from %s to %s' % (indir, outdir))
+  logging.info(
+      'recreate_tree(outdir=%s, indir=%s, files=%d, action=%s, as_sha1=%s)' %
+      (outdir, indir, len(infiles), action, as_sha1))
 
   assert action in (
       run_test_from_archive.HARDLINK,
@@ -280,10 +281,26 @@ def recreate_tree(outdir, indir, infiles, action):
 
   for relfile, metadata in infiles.iteritems():
     infile = os.path.join(indir, relfile)
-    outfile = os.path.join(outdir, relfile)
-    outsubdir = os.path.dirname(outfile)
-    if not os.path.isdir(outsubdir):
-      os.makedirs(outsubdir)
+    if as_sha1:
+      # Do the hashtable specific checks.
+      if 'link' in metadata:
+        # Skip links when storing a hashtable.
+        continue
+      outfile = os.path.join(outdir, metadata['sha-1'])
+      if os.path.isfile(outfile):
+        # Just do a quick check that the file size matches. No need to stat()
+        # again the input file, grab the value from the dict.
+        if metadata['size'] == os.stat(outfile).st_size:
+          continue
+        else:
+          logging.warn('Overwritting %s' % metadata['sha-1'])
+          os.remove(outfile)
+    else:
+      outfile = os.path.join(outdir, relfile)
+      outsubdir = os.path.dirname(outfile)
+      if not os.path.isdir(outsubdir):
+        os.makedirs(outsubdir)
+
     if metadata.get('touched_only') == True:
       open(outfile, 'ab').close()
     elif 'link' in metadata:
@@ -668,30 +685,14 @@ def CMDhashtable(args):
   success = False
   try:
     complete_state = load_complete_state(options, WITH_HASH)
-
     options.outdir = (
         options.outdir or os.path.join(complete_state.resultdir, 'hashtable'))
-    if not os.path.isdir(options.outdir):
-      os.makedirs(options.outdir)
-
-    # Map each of the file.
-    for relfile, properties in complete_state.result.files.iteritems():
-      infile = os.path.join(complete_state.root_dir, relfile)
-      if not 'sha-1' in properties:
-        # It's a symlink.
-        continue
-      outfile = os.path.join(options.outdir, properties['sha-1'])
-      if os.path.isfile(outfile):
-        # Just do a quick check that the file size matches. No need to stat()
-        # again the input file, grab the value from the dict.
-        out_size = os.stat(outfile).st_size
-        in_size = complete_state.result.files[relfile]['size']
-        if in_size == out_size:
-          continue
-        # Otherwise, an exception will be raised.
-      logging.info('%s -> %s' % (relfile, properties['sha-1']))
-      run_test_from_archive.link_file(
-          outfile, infile, run_test_from_archive.HARDLINK)
+    recreate_tree(
+        outdir=options.outdir,
+        indir=complete_state.root_dir,
+        infiles=complete_state.result.files,
+        action=run_test_from_archive.HARDLINK,
+        as_sha1=True)
 
     complete_state.save_files()
 
@@ -799,10 +800,11 @@ def CMDremap(args):
   if len(os.listdir(options.outdir)):
     raise ExecutionError('Can\'t remap in a non-empty directory')
   recreate_tree(
-      options.outdir,
-      complete_state.root_dir,
-      complete_state.result.files,
-      run_test_from_archive.HARDLINK)
+      outdir=options.outdir,
+      indir=complete_state.root_dir,
+      infiles=complete_state.result.files,
+      action=run_test_from_archive.HARDLINK,
+      as_sha1=False)
   if complete_state.result.read_only:
     run_test_from_archive.make_writable(options.outdir, True)
 
@@ -837,10 +839,11 @@ def CMDrun(args):
       if not os.path.isdir(options.outdir):
         os.makedirs(options.outdir)
     recreate_tree(
-        options.outdir,
-        complete_state.root_dir,
-        complete_state.result.files,
-        run_test_from_archive.HARDLINK)
+        outdir=options.outdir,
+        indir=complete_state.root_dir,
+        infiles=complete_state.result.files,
+        action=run_test_from_archive.HARDLINK,
+        as_sha1=False)
     cwd = os.path.normpath(
         os.path.join(options.outdir, complete_state.result.relative_cwd))
     if not os.path.isdir(cwd):
