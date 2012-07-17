@@ -1424,11 +1424,16 @@ void GDataFileSystem::CopyDocumentToDirectory(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  FilePathUpdateCallback add_file_to_directory_callback =
+      base::Bind(&GDataFileSystem::AddEntryToDirectory,
+                 ui_weak_ptr_,
+                 dir_path,
+                 callback);
+
   documents_service_->CopyDocument(resource_id, new_name,
       base::Bind(&GDataFileSystem::OnCopyDocumentCompleted,
                  ui_weak_ptr_,
-                 dir_path,
-                 callback));
+                 add_file_to_directory_callback));
 }
 
 void GDataFileSystem::Rename(const FilePath& file_path,
@@ -2897,8 +2902,7 @@ void GDataFileSystem::OnRenameResourceCompleted(
 }
 
 void GDataFileSystem::OnCopyDocumentCompleted(
-    const FilePath& dir_path,
-    const FileOperationCallback& callback,
+    const FilePathUpdateCallback& callback,
     GDataErrorCode status,
     scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -2906,7 +2910,7 @@ void GDataFileSystem::OnCopyDocumentCompleted(
   GDataFileError error = GDataToGDataFileError(status);
   if (error != GDATA_FILE_OK) {
     if (!callback.is_null())
-      callback.Run(error);
+      callback.Run(error, FilePath());
 
     return;
   }
@@ -2914,25 +2918,28 @@ void GDataFileSystem::OnCopyDocumentCompleted(
   scoped_ptr<DocumentEntry> doc_entry(DocumentEntry::ExtractAndParse(*data));
   if (!doc_entry.get()) {
     if (!callback.is_null())
-      callback.Run(GDATA_FILE_ERROR_FAILED);
+      callback.Run(GDATA_FILE_ERROR_FAILED, FilePath());
 
     return;
   }
 
-  GDataEntry* entry = GDataEntry::FromDocumentEntry(
-      root_.get(), doc_entry.get(), root_.get());
+  FilePath file_path;
+  GDataEntry* entry =
+      GDataEntry::FromDocumentEntry(
+          root_.get(), doc_entry.get(), root_.get());
   if (!entry) {
     if (!callback.is_null())
-      callback.Run(GDATA_FILE_ERROR_FAILED);
+      callback.Run(GDATA_FILE_ERROR_FAILED, FilePath());
 
     return;
   }
-
-  // |entry| was added in the root directory on the server, so we should
-  // first add it to |root_| to mirror the state and then move it to the
-  // destination directory by AddEntryToDirectory().
   root_->AddEntry(entry);
-  AddEntryToDirectory(dir_path, callback, GDATA_FILE_OK, entry->GetFilePath());
+  file_path = entry->GetFilePath();
+
+  NotifyDirectoryChanged(file_path.DirName());
+
+  if (!callback.is_null())
+    callback.Run(error, file_path);
 }
 
 void GDataFileSystem::OnAddEntryToDirectoryCompleted(
@@ -2944,15 +2951,8 @@ void GDataFileSystem::OnAddEntryToDirectoryCompleted(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   GDataFileError error = GDataToGDataFileError(status);
-  if (error == GDATA_FILE_OK) {
-    GDataEntry* entry = GetGDataEntryByPath(file_path);
-    if (entry) {
-      DCHECK_EQ(root_.get(), entry->parent());
-      error = AddEntryToDirectoryOnFilesystem(entry, dir_path);
-    } else {
-      error = GDATA_FILE_ERROR_NOT_FOUND;
-    }
-  }
+  if (error == GDATA_FILE_OK)
+    error = AddEntryToDirectoryOnFilesystem(file_path, dir_path);
 
   if (!callback.is_null())
     callback.Run(error);
@@ -3129,9 +3129,14 @@ GDataFileError GDataFileSystem::RenameFileOnFilesystem(
 }
 
 GDataFileError GDataFileSystem::AddEntryToDirectoryOnFilesystem(
-    GDataEntry* entry, const FilePath& dir_path) {
+    const FilePath& file_path, const FilePath& dir_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(entry);
+
+  GDataEntry* entry = GetGDataEntryByPath(file_path);
+  if (!entry)
+    return GDATA_FILE_ERROR_NOT_FOUND;
+
+  DCHECK_EQ(root_.get(), entry->parent());
 
   GDataEntry* dir_entry = GetGDataEntryByPath(dir_path);
   if (!dir_entry)
