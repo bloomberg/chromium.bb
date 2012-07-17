@@ -37,6 +37,9 @@ class FullscreenControllerBrowserTest: public FullscreenControllerTest {
 #if defined(OS_MACOSX)
 // http://crbug.com/104265
 #define MAYBE_TestNewTabExitsFullscreen DISABLED_TestNewTabExitsFullscreen
+#elif defined(OS_LINUX)
+// http://crbug.com/137657
+#define MAYBE_TestNewTabExitsFullscreen DISABLED_TestNewTabExitsFullscreen
 #else
 #define MAYBE_TestNewTabExitsFullscreen TestNewTabExitsFullscreen
 #endif
