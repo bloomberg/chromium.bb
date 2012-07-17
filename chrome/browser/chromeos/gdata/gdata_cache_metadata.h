@@ -65,6 +65,10 @@ class GDataCacheMetadata {
   // on each cache entry.
   virtual void Iterate(const IterateCallback& callback) = 0;
 
+  // Force a rescan of cache directories, for testing.
+  virtual void ForceRescanForTesting(
+      const std::vector<FilePath>& cache_paths) = 0;
+
  protected:
   explicit GDataCacheMetadata(base::SequencedTaskRunner* blocking_task_runner);
 

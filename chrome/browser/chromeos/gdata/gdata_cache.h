@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/file_path.h"
@@ -258,6 +259,9 @@ class GDataCache {
   // Utility method to call Initialize on UI thread.
   void RequestInitializeOnUIThread();
 
+  // Force a rescan of cache files, for testing.
+  void ForceRescanOnUIThreadForTesting();
+
   // Gets the cache entry for file corresponding to |resource_id| and |md5|
   // and returns true if entry exists in cache map.  Otherwise, returns false.
   // |md5| can be empty if only matching |resource_id| is desired, which may
@@ -314,6 +318,9 @@ class GDataCache {
 
   // Deletes the cache.
   void Destroy();
+
+  // Force a rescan of cache directories.
+  void ForceRescanForTesting();
 
   // Used to implement GetResourceIdsOfBacklogOnUIThread.
   void GetResourceIdsOfBacklog(

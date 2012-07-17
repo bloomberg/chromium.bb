@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_cache_metadata.h"
 
+#include <leveldb/db.h>
+
 #include "base/file_util.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
@@ -15,6 +17,9 @@ namespace {
 
 // A map table of resource ID to file path.
 typedef std::map<std::string, FilePath> ResourceIdToFilePathMap;
+
+const FilePath::CharType kGDataCacheMetadataDBPath[] =
+    FILE_PATH_LITERAL("cache_metadata.db");
 
 // Returns true if |file_path| is a valid symbolic link as |sub_dir_type|.
 // Otherwise, returns false with the reason.
@@ -215,21 +220,6 @@ void ScanCacheDirectory(
 
 void ScanCachePaths(const std::vector<FilePath>& cache_paths,
                     GDataCacheMetadata::CacheMap* cache_map) {
-  if (cache_paths.size() < GDataCache::NUM_CACHE_TYPES) {
-    LOG(ERROR) << "Size of cache_paths is invalid.";
-    return;
-  }
-
-  if (!GDataCache::CreateCacheDirectories(cache_paths))
-    return;
-
-  // Change permissions of cache persistent directory to u+rwx,og+x in order to
-  // allow archive files in that directory to be mounted by cros-disks.
-  if (!file_util::SetPosixFilePermissions(
-        cache_paths[GDataCache::CACHE_TYPE_PERSISTENT],
-        S_IRWXU | S_IXGRP | S_IXOTH))
-    return;
-
   DVLOG(1) << "Scanning directories";
 
   // Scan cache persistent and tmp directories to enumerate all files and create
@@ -317,6 +307,8 @@ class GDataCacheMetadataMap : public GDataCacheMetadata {
                              GDataCacheEntry* cache_entry) OVERRIDE;
   virtual void RemoveTemporaryFiles() OVERRIDE;
   virtual void Iterate(const IterateCallback& callback) OVERRIDE;
+  virtual void ForceRescanForTesting(
+      const std::vector<FilePath>& cache_paths) OVERRIDE;
 
   CacheMap cache_map_;
 
@@ -408,6 +400,183 @@ void GDataCacheMetadataMap::Iterate(const IterateCallback& callback) {
   }
 }
 
+void GDataCacheMetadataMap::ForceRescanForTesting(
+    const std::vector<FilePath>& cache_paths) {
+  AssertOnSequencedWorkerPool();
+
+  ScanCachePaths(cache_paths, &cache_map_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// GDataCacheMetadata implementation with level::db.
+
+class GDataCacheMetadataDB : public GDataCacheMetadata {
+ public:
+  explicit GDataCacheMetadataDB(
+      base::SequencedTaskRunner* blocking_task_runner);
+
+ private:
+  virtual ~GDataCacheMetadataDB();
+
+  // GDataCacheMetadata overrides:
+  virtual void Initialize(const std::vector<FilePath>& cache_paths) OVERRIDE;
+  virtual void AddOrUpdateCacheEntry(
+      const std::string& resource_id,
+      const GDataCacheEntry& cache_entry) OVERRIDE;
+  virtual void RemoveCacheEntry(const std::string& resource_id) OVERRIDE;
+  virtual bool GetCacheEntry(const std::string& resource_id,
+                             const std::string& md5,
+                             GDataCacheEntry* cache_entry) OVERRIDE;
+  virtual void RemoveTemporaryFiles() OVERRIDE;
+  virtual void Iterate(const IterateCallback& callback) OVERRIDE;
+  virtual void ForceRescanForTesting(
+      const std::vector<FilePath>& cache_paths) OVERRIDE;
+
+  // Helper function to insert |cache_map| entries into the database.
+  void InsertMapIntoDB(const CacheMap& cache_map);
+
+  scoped_ptr<leveldb::DB> level_db_;
+
+  DISALLOW_COPY_AND_ASSIGN(GDataCacheMetadataDB);
+};
+
+GDataCacheMetadataDB::GDataCacheMetadataDB(
+    base::SequencedTaskRunner* blocking_task_runner)
+    : GDataCacheMetadata(blocking_task_runner) {
+  AssertOnSequencedWorkerPool();
+}
+
+GDataCacheMetadataDB::~GDataCacheMetadataDB() {
+  AssertOnSequencedWorkerPool();
+}
+
+void GDataCacheMetadataDB::Initialize(
+    const std::vector<FilePath>& cache_paths) {
+  AssertOnSequencedWorkerPool();
+
+  const FilePath db_path =
+      cache_paths[GDataCache::CACHE_TYPE_META].Append(
+          kGDataCacheMetadataDBPath);
+  DVLOG(1) << "db path=" << db_path.value();
+
+  const bool db_exists = file_util::PathExists(db_path);
+
+  leveldb::DB* level_db = NULL;
+  leveldb::Options options;
+  options.create_if_missing = true;
+  leveldb::Status db_status = leveldb::DB::Open(options, db_path.value(),
+                                                &level_db);
+  DCHECK(level_db);
+  // TODO(achuith,hashimoto,satorux): If db cannot be opened, we should try to
+  // recover it. If that fails, we should just delete it and either rescan or
+  // refetch the feed. crbug.com/137545.
+  DCHECK(db_status.ok());
+  level_db_.reset(level_db);
+
+  // We scan the cache directories to initialize the cache database if we
+  // were previously using the cache map.
+  // TODO(achuith,hashimoto,satorux): Delete ScanCachePaths in M23.
+  // crbug.com/137542
+  if (!db_exists) {
+    CacheMap cache_map;
+    ScanCachePaths(cache_paths, &cache_map);
+    InsertMapIntoDB(cache_map);
+  }
+}
+
+void GDataCacheMetadataDB::InsertMapIntoDB(const CacheMap& cache_map) {
+  DVLOG(1) << "InsertMapIntoDB";
+  for (CacheMap::const_iterator it = cache_map.begin();
+       it != cache_map.end(); ++it) {
+    AddOrUpdateCacheEntry(it->first, it->second);
+  }
+}
+
+void GDataCacheMetadataDB::AddOrUpdateCacheEntry(
+    const std::string& resource_id,
+    const GDataCacheEntry& cache_entry) {
+  AssertOnSequencedWorkerPool();
+
+  DVLOG(1) << "AddOrUpdateCacheEntry, resource_id=" << resource_id;
+  std::string serialized;
+  const bool ok = cache_entry.SerializeToString(&serialized);
+  if (ok)
+    level_db_->Put(leveldb::WriteOptions(),
+                   leveldb::Slice(resource_id),
+                   leveldb::Slice(serialized));
+}
+
+void GDataCacheMetadataDB::RemoveCacheEntry(const std::string& resource_id) {
+  AssertOnSequencedWorkerPool();
+
+  DVLOG(1) << "RemoveCacheEntry, resource_id=" << resource_id;
+  level_db_->Delete(leveldb::WriteOptions(), leveldb::Slice(resource_id));
+}
+
+bool GDataCacheMetadataDB::GetCacheEntry(const std::string& resource_id,
+                                          const std::string& md5,
+                                          GDataCacheEntry* entry) {
+  DCHECK(entry);
+  AssertOnSequencedWorkerPool();
+
+  std::string serialized;
+  const leveldb::Status status = level_db_->Get(leveldb::ReadOptions(),
+      leveldb::Slice(resource_id), &serialized);
+  if (!status.ok()) {
+    DVLOG(1) << "Can't find " << resource_id << " in cache db";
+    return false;
+  }
+
+  GDataCacheEntry cache_entry;
+  const bool ok = cache_entry.ParseFromString(serialized);
+  if (!ok) {
+    LOG(ERROR) << "Failed to parse " << serialized;
+    return false;
+  }
+
+  if (!CheckIfMd5Matches(md5, cache_entry)) {
+    return false;
+  }
+
+  *entry = cache_entry;
+  return true;
+}
+
+void GDataCacheMetadataDB::RemoveTemporaryFiles() {
+  AssertOnSequencedWorkerPool();
+
+  scoped_ptr<leveldb::Iterator> iter(level_db_->NewIterator(
+        leveldb::ReadOptions()));
+  for (iter->SeekToFirst(); iter->Valid(); iter->Next()) {
+    GDataCacheEntry cache_entry;
+    const bool ok = cache_entry.ParseFromString(iter->value().ToString());
+    if (ok && !cache_entry.is_persistent())
+      level_db_->Delete(leveldb::WriteOptions(), iter->key());
+  }
+}
+
+void GDataCacheMetadataDB::Iterate(const IterateCallback& callback) {
+  AssertOnSequencedWorkerPool();
+
+  scoped_ptr<leveldb::Iterator> iter(level_db_->NewIterator(
+        leveldb::ReadOptions()));
+  for (iter->SeekToFirst(); iter->Valid(); iter->Next()) {
+    GDataCacheEntry cache_entry;
+    const bool ok = cache_entry.ParseFromString(iter->value().ToString());
+    if (ok)
+      callback.Run(iter->key().ToString(), cache_entry);
+  }
+}
+
+void GDataCacheMetadataDB::ForceRescanForTesting(
+    const std::vector<FilePath>& cache_paths) {
+  AssertOnSequencedWorkerPool();
+
+  CacheMap cache_map;
+  ScanCachePaths(cache_paths, &cache_map);
+  InsertMapIntoDB(cache_map);
+}
+
 }  // namespace
 
 GDataCacheMetadata::GDataCacheMetadata(
@@ -424,7 +593,7 @@ GDataCacheMetadata::~GDataCacheMetadata() {
 scoped_ptr<GDataCacheMetadata> GDataCacheMetadata::CreateGDataCacheMetadata(
     base::SequencedTaskRunner* blocking_task_runner) {
   return scoped_ptr<GDataCacheMetadata>(
-      new GDataCacheMetadataMap(blocking_task_runner));
+      new GDataCacheMetadataDB(blocking_task_runner));
 }
 
 void GDataCacheMetadata::AssertOnSequencedWorkerPool() {

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -213,8 +215,9 @@ class GDataCacheTest : public testing::Test {
         ASSERT_TRUE(file_util::CreateSymbolicLink(dest_path, link_path));
       }
     }
+
     DVLOG(1) << "PrepareForInitCacheTest finished";
-    cache_->RequestInitializeOnUIThread();  // Force a re-scan.
+    cache_->ForceRescanOnUIThreadForTesting();
     test_util::RunBlockingPoolTask();
   }
 

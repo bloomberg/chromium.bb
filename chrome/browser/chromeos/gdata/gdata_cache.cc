@@ -74,6 +74,26 @@ bool HasEnoughSpaceFor(int64 num_bytes) {
   return (free_space >= num_bytes);
 }
 
+// Create cache directory paths and set permissions.
+void InitCachePaths(const std::vector<FilePath>& cache_paths) {
+  if (cache_paths.size() < GDataCache::NUM_CACHE_TYPES) {
+    NOTREACHED();
+    LOG(ERROR) << "Size of cache_paths is invalid.";
+    return;
+  }
+
+  if (!GDataCache::CreateCacheDirectories(cache_paths))
+    return;
+
+  // Change permissions of cache persistent directory to u+rwx,og+x (711) in
+  // order to allow archive files in that directory to be mounted by cros-disks.
+  file_util::SetPosixFilePermissions(
+      cache_paths[GDataCache::CACHE_TYPE_PERSISTENT],
+      file_util::FILE_PERMISSION_USER_MASK |
+      file_util::FILE_PERMISSION_EXECUTE_BY_GROUP |
+      file_util::FILE_PERMISSION_EXECUTE_BY_OTHERS);
+}
+
 // Remove all files under the given directory, non-recursively.
 // Do not remove recursively as we don't want to touch <gache>/tmp/downloads,
 // which is used for user initiated downloads like "Save As"
@@ -647,6 +667,14 @@ void GDataCache::RequestInitializeOnUIThread() {
       base::Bind(&GDataCache::Initialize, base::Unretained(this)));
 }
 
+void GDataCache::ForceRescanOnUIThreadForTesting() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GDataCache::ForceRescanForTesting, base::Unretained(this)));
+}
+
 bool GDataCache::GetCacheEntry(const std::string& resource_id,
                                const std::string& md5,
                                GDataCacheEntry* entry) {
@@ -679,6 +707,7 @@ void GDataCache::DestroyOnUIThread() {
 void GDataCache::Initialize() {
   AssertOnSequencedWorkerPool();
 
+  InitCachePaths(cache_paths_);
   metadata_ = GDataCacheMetadata::CreateGDataCacheMetadata(
       blocking_task_runner_).Pass();
   metadata_->Initialize(cache_paths_);
@@ -687,6 +716,11 @@ void GDataCache::Initialize() {
 void GDataCache::Destroy() {
   AssertOnSequencedWorkerPool();
   delete this;
+}
+
+void GDataCache::ForceRescanForTesting() {
+  AssertOnSequencedWorkerPool();
+  metadata_->ForceRescanForTesting(cache_paths_);
 }
 
 void GDataCache::GetResourceIdsOfBacklog(
