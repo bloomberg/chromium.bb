@@ -77,8 +77,6 @@
       'test/data/extensions/api_test/accessibility/',
     ],
     'isolate_dependency_touched': [
-      '../third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/autoinstalled/README',
-      '../third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/autoinstalled/__init__.py',
       '../third_party/pyftpdlib/src/pyftpdlib/__init__.py',
       'test/data/content-disposition-empty.html',
       'test/data/content-disposition-inline.html',
@@ -925,8 +923,6 @@
           '../third_party/WebKit/LayoutTests/platform/chromium-win/fast/workers/shared-worker-exception-expected.txt',
           '../third_party/WebKit/LayoutTests/platform/chromium-win/fast/workers/shared-worker-location-expected.txt',
           '../third_party/WebKit/LayoutTests/platform/chromium-win/fast/workers/shared-worker-script-error-expected.txt',
-          '../third_party/WebKit/LayoutTests/platform/chromium-win/fast/workers/worker-context-multi-port-expected.txt',
-          '../third_party/WebKit/LayoutTests/platform/chromium-win/fast/workers/worker-multi-port-expected.txt',
           '../third_party/WebKit/LayoutTests/platform/chromium/fast/events/message-port-multi-expected.txt',
           '../third_party/WebKit/LayoutTests/platform/chromium/media/media-can-play-wav-audio-expected.txt',
           '../third_party/WebKit/LayoutTests/storage/indexeddb/basics-expected.txt',
