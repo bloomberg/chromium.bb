@@ -63,11 +63,8 @@ void StateStore::Observe(int type,
 
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_INSTALLED:
-      extension_id = content::Details<const Extension>(details).ptr()->id();
-      break;
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
-      extension_id =
-          *content::Details<const std::string>(details).ptr();
+      extension_id = content::Details<const Extension>(details).ptr()->id();
       break;
     default:
       NOTREACHED();

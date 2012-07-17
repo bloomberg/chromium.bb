@@ -324,6 +324,40 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, UpdateExtensionEvent) {
   ASSERT_EQ(extension_misc::UNLOAD_REASON_UPDATE, unload_reason);
 }
 
+IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, UninstallExtensionEvent) {
+  const int kNumEvents = 3;
+  FilePath extension_path;
+  PathService::Get(chrome::DIR_TEST_DATA, &extension_path);
+  extension_path = extension_path.AppendASCII("performance_monitor")
+                                 .AppendASCII("extensions")
+                                 .AppendASCII("simple_extension_v1");
+  const Extension* extension = LoadExtension(extension_path);
+
+  std::vector<ExtensionBasicInfo> extension_infos;
+  // There will be three events in all, each pertaining to the same extension:
+  //   Extension Install
+  //   Extension Disable (Unload)
+  //   Extension Uninstall
+  for (int i = 0; i < kNumEvents; ++i)
+    extension_infos.push_back(ExtensionBasicInfo(extension));
+
+  UninstallExtension(extension->id());
+
+  std::vector<int> expected_event_types;
+  expected_event_types.push_back(EVENT_EXTENSION_INSTALL);
+  expected_event_types.push_back(EVENT_EXTENSION_UNLOAD);
+  expected_event_types.push_back(EVENT_EXTENSION_UNINSTALL);
+
+  std::vector<linked_ptr<Event> > events = GetEvents();
+
+  CheckExtensionEvents(expected_event_types, events, extension_infos);
+
+  // There will be an additional field: The unload reason.
+  int unload_reason = -1;
+  ASSERT_TRUE(events[1]->data()->GetInteger("unloadReason", &unload_reason));
+  ASSERT_EQ(extension_misc::UNLOAD_REASON_UNINSTALL, unload_reason);
+}
+
 IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, NewVersionEvent) {
   const char kOldVersion[] = "0.0";
 

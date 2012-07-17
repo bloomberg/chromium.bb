@@ -758,7 +758,7 @@ bool ExtensionService::UninstallExtension(
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
       content::Source<Profile>(profile_),
-      content::Details<const std::string>(&extension_id));
+      content::Details<const Extension>(extension));
 
   if (app_sync_bundle_.HasExtensionId(extension_id) &&
       sync_change.sync_data().GetDataType() == syncer::APPS) {

@@ -143,8 +143,9 @@ void CommandService::Observe(
           content::Details<const Extension>(details).ptr());
       break;
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
-      RemoveKeybindingPrefs(*content::Details<std::string>(details).ptr(),
-                            std::string());
+      RemoveKeybindingPrefs(
+          content::Details<const Extension>(details).ptr()->id(),
+          std::string());
       break;
     default:
       NOTREACHED();

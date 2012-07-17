@@ -349,7 +349,8 @@ void BackgroundContentsService::Observe(
 
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
       // Remove any "This extension has crashed" balloons.
-      ScheduleCloseBalloon(*content::Details<const std::string>(details).ptr());
+      ScheduleCloseBalloon(
+          content::Details<const Extension>(details).ptr()->id());
       break;
     }
 

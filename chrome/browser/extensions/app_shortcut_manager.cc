@@ -76,7 +76,8 @@ void AppShortcutManager::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
-      std::string extension_id = *content::Details<std::string>(details).ptr();
+      std::string extension_id =
+          content::Details<const Extension>(details).ptr()->id();
       if (!disable_shortcut_creation_for_tests)
         web_app::DeleteAllShortcuts(profile_->GetPath(), extension_id);
       break;

@@ -175,7 +175,7 @@ void AppNotificationManager::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   CHECK(type == chrome::NOTIFICATION_EXTENSION_UNINSTALLED);
-  ClearAll(*content::Details<const std::string>(details).ptr());
+  ClearAll(content::Details<const extensions::Extension>(details).ptr()->id());
 }
 
 syncer::SyncDataList AppNotificationManager::GetAllSyncData(

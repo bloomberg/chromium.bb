@@ -498,8 +498,8 @@ enum NotificationType {
   // and the source is a Profile.
   NOTIFICATION_EXTENSION_INSTALL_NOT_ALLOWED,
 
-  // Sent when an extension has been uninstalled. The details are the extension
-  // id and the source is a Profile.
+  // Sent when an extension has been uninstalled. The details are an Extension,
+  // and the source is a Profile.
   NOTIFICATION_EXTENSION_UNINSTALLED,
 
   // Sent when an extension uninstall is not allowed because the extension is

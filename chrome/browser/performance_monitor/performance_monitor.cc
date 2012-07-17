@@ -96,6 +96,8 @@ void PerformanceMonitor::RegisterForNotifications() {
       content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_CRX_INSTALLER_DONE,
       content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+      content::NotificationService::AllSources());
 
   // Crashes
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_HANG,
@@ -204,7 +206,7 @@ void PerformanceMonitor::Observe(int type,
     }
     case chrome::NOTIFICATION_CRX_INSTALLER_DONE: {
       const CrxInstaller* installer =
-        content::Source<CrxInstaller>(source).ptr();
+          content::Source<CrxInstaller>(source).ptr();
 
       // Check if the reason for the install was due to an extension update.
       if (installer->install_cause() != extension_misc::INSTALL_CAUSE_UPDATE)
@@ -218,6 +220,17 @@ void PerformanceMonitor::Observe(int type,
                                                 extension->location(),
                                                 extension->VersionString(),
                                                 extension->description()));
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
+      const Extension* extension = content::Details<Extension>(details).ptr();
+      AddEvent(util::CreateExtensionUninstallEvent(base::Time::Now(),
+                                                   extension->id(),
+                                                   extension->name(),
+                                                   extension->url().spec(),
+                                                   extension->location(),
+                                                   extension->VersionString(),
+                                                   extension->description()));
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_HANG: {
