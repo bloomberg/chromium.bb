@@ -23,6 +23,7 @@
           'experimental_font_settings.json',
           'experimental_record.json',
           'file_browser_handler_internal.json',
+          'history.json',
           'permissions.json',
           'storage.json',
           'tabs.json',

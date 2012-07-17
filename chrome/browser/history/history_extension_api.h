@@ -51,8 +51,8 @@ class HistoryFunction : public AsyncExtensionFunction {
   virtual ~HistoryFunction() {}
   virtual void Run() OVERRIDE;
 
-  bool GetUrlFromValue(base::Value* value, GURL* url);
-  bool GetTimeFromValue(base::Value* value, base::Time* time);
+  bool ValidateUrl(const std::string& url_string, GURL* url);
+  base::Time GetTime(double ms_from_epoch);
 };
 
 // Base class for history funciton APIs which require async interaction with
