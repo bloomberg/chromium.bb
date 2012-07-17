@@ -40,6 +40,21 @@ std::vector<ExtensionAction*> ScriptBadgeController::GetCurrentActions() const {
   return current_actions_;
 }
 
+void ScriptBadgeController::GetAttentionFor(
+    const std::string& extension_id) {
+  ExtensionAction* script_badge = AddExtensionToCurrentActions(extension_id);
+  if (!script_badge)
+    return;
+
+  // TODO(jyasskin): Modify the icon's appearance to indicate that the
+  // extension is merely asking for permission to run:
+  // http://crbug.com/133142
+  script_badge->SetIsVisible(
+      tab_contents_->extension_tab_helper()->tab_id(), true);
+
+  NotifyChange();
+}
+
 LocationBarController::Action ScriptBadgeController::OnClicked(
     const std::string& extension_id, int mouse_button) {
   ExtensionService* service = GetExtensionService();
@@ -50,6 +65,9 @@ LocationBarController::Action ScriptBadgeController::OnClicked(
   CHECK(extension);
   ExtensionAction* script_badge = extension->script_badge();
   CHECK(script_badge);
+
+  tab_contents_->extension_tab_helper()->active_tab_permission_manager()->
+      GrantIfRequested(extension);
 
   switch (mouse_button) {
     case 1:  // left
@@ -77,7 +95,7 @@ void ScriptBadgeController::OnExecuteScriptFinished(
     int32 page_id,
     const std::string& error) {
   if (success && page_id == GetPageID()) {
-    if (InsertExtension(extension_id))
+    if (MarkExtensionExecuting(extension_id))
       NotifyChange();
   }
 }
@@ -104,7 +122,7 @@ void ScriptBadgeController::DidNavigateMainFrame(
     const content::FrameNavigateParams& params) {
   if (details.is_in_page)
     return;
-  extensions_executing_scripts_.clear();
+  extensions_in_current_actions_.clear();
   current_actions_.clear();
 }
 
@@ -137,34 +155,43 @@ void ScriptBadgeController::OnContentScriptsExecuting(
   bool changed = false;
   for (std::set<std::string>::const_iterator it = extension_ids.begin();
        it != extension_ids.end(); ++it) {
-    changed |= InsertExtension(*it);
+    changed |= MarkExtensionExecuting(*it);
   }
   if (changed)
     NotifyChange();
 }
 
-bool ScriptBadgeController::InsertExtension(const std::string& extension_id) {
-  if (!extensions_executing_scripts_.insert(extension_id).second)
-    return false;
+ExtensionAction* ScriptBadgeController::AddExtensionToCurrentActions(
+    const std::string& extension_id) {
+  if (!extensions_in_current_actions_.insert(extension_id).second)
+    return NULL;
 
   ExtensionService* service = GetExtensionService();
   if (!service)
-    return  false;
+    return NULL;
 
   const Extension* extension = service->extensions()->GetByID(extension_id);
   if (!extension)
-    return false;
+    return NULL;
 
   ExtensionAction* script_badge = extension->script_badge();
   current_actions_.push_back(script_badge);
+  return script_badge;
+}
+
+bool ScriptBadgeController::MarkExtensionExecuting(
+    const std::string& extension_id) {
+  ExtensionAction* script_badge = AddExtensionToCurrentActions(extension_id);
+  if (!script_badge)
+    return false;
+
   script_badge->RunIconAnimation(
       tab_contents_->extension_tab_helper()->tab_id());
-
   return true;
 }
 
 bool ScriptBadgeController::EraseExtension(const Extension* extension) {
-  if (extensions_executing_scripts_.erase(extension->id()) == 0)
+  if (extensions_in_current_actions_.erase(extension->id()) == 0)
     return false;
 
   size_t size_before = current_actions_.size();

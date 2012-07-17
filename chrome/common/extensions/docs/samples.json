@@ -308,6 +308,7 @@
     "chrome.runtime.getURL": "runtime.html#method-getURL",
     "chrome.runtime.onInstalled": "runtime.html#event-onInstalled",
     "chrome.runtime.onSuspend": "runtime.html#event-onSuspend",
+    "chrome.scriptBadge.getAttention": "scriptBadge.html#method-getAttention",
     "chrome.scriptBadge.getPopup": "scriptBadge.html#method-getPopup",
     "chrome.scriptBadge.onClicked": "scriptBadge.html#event-onClicked",
     "chrome.scriptBadge.setPopup": "scriptBadge.html#method-setPopup",

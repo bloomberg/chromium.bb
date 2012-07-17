@@ -183,6 +183,11 @@ bool ExtensionActionFunction::SetVisible(bool visible) {
   return true;
 }
 
+extensions::TabHelper& ExtensionActionFunction::tab_helper() const {
+  CHECK(contents_);
+  return *contents_->extension_tab_helper();
+}
+
 bool ExtensionActionShowFunction::RunExtensionAction() {
   return SetVisible(true);
 }

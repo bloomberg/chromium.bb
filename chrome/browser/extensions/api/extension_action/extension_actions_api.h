@@ -11,6 +11,9 @@
 namespace base {
 class DictionaryValue;
 }
+namespace extensions {
+class TabHelper;
+}
 class TabContents;
 
 // Implementation of the browserAction, pageAction, and scriptBadge APIs.
@@ -33,6 +36,10 @@ class ExtensionActionFunction : public SyncExtensionFunction {
   void NotifyBrowserActionChange();
   void NotifyLocationBarChange();
   bool SetVisible(bool visible);
+
+  // Extension-related information for |tab_id_|.
+  // CHECK-fails if there is no tab.
+  extensions::TabHelper& tab_helper() const;
 
   // All the extension action APIs take a single argument called details that
   // is a dictionary.

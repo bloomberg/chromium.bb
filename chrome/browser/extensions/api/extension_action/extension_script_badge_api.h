@@ -28,4 +28,15 @@ class ScriptBadgeGetPopupFunction : public ExtensionActionGetPopupFunction {
   virtual ~ScriptBadgeGetPopupFunction() {}
 };
 
+// scriptBadge.getAttention(tabId)
+class ScriptBadgeGetAttentionFunction : public ExtensionActionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("scriptBadge.getAttention")
+
+  virtual bool RunExtensionAction() OVERRIDE;
+
+ protected:
+  virtual ~ScriptBadgeGetAttentionFunction();
+};
+
 #endif  // CHROME_BROWSER_EXTENSIONS_API_EXTENSION_ACTION_EXTENSION_SCRIPT_BADGE_API_H_

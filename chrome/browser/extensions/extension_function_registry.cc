@@ -136,8 +136,9 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<BrowserActionGetPopupFunction>();
 
   // Script Badges.
-  RegisterFunction<ScriptBadgeSetPopupFunction>();
+  RegisterFunction<ScriptBadgeGetAttentionFunction>();
   RegisterFunction<ScriptBadgeGetPopupFunction>();
+  RegisterFunction<ScriptBadgeSetPopupFunction>();
 
   // Browsing Data.
   RegisterFunction<RemoveBrowsingDataFunction>();

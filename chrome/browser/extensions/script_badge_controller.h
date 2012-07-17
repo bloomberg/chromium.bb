@@ -54,6 +54,7 @@ class ScriptBadgeController
 
   // LocationBarController implementation.
   virtual std::vector<ExtensionAction*> GetCurrentActions() const OVERRIDE;
+  virtual void GetAttentionFor(const std::string& extension_id) OVERRIDE;
   virtual Action OnClicked(const std::string& extension_id,
                            int mouse_button) OVERRIDE;
   virtual void NotifyChange() OVERRIDE;
@@ -86,9 +87,16 @@ class ScriptBadgeController
   void OnContentScriptsExecuting(const std::set<std::string>& extension_ids,
                                  int32 page_id);
 
-  // Tries to insert an extension into the relevant collections, and returns
-  // whether any change was made.
-  bool InsertExtension(const std::string& extension_id);
+  // Adds the extension's icon to the list of script badges.  Returns
+  // the script badge ExtensionAction that was added, or NULL if
+  // extension_id isn't valid.
+  ExtensionAction* AddExtensionToCurrentActions(
+      const std::string& extension_id);
+
+  // Called when an extension is running script on the current tab,
+  // and tries to insert an extension into the relevant collections.
+  // Returns true if any change was made.
+  bool MarkExtensionExecuting(const std::string& extension_id);
 
   // Tries to erase an extension from the relevant collections, and returns
   // whether any change was made.
@@ -97,11 +105,12 @@ class ScriptBadgeController
   // Our parent TabContents.
   TabContents* tab_contents_;
 
-  // The current extension actions in the order they appeared.
+  // The current extension actions in the order they appeared.  These come from
+  // calls to ExecuteScript or getAttention on the current frame.
   std::vector<ExtensionAction*> current_actions_;
 
-  // The extensions that have called ExecuteScript on the current frame.
-  std::set<std::string> extensions_executing_scripts_;
+  // The extensions that have actions in current_actions_.
+  std::set<std::string> extensions_in_current_actions_;
 
   // Listen to extension unloaded notifications.
   content::NotificationRegistrar registrar_;

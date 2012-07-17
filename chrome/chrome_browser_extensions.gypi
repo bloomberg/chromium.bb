@@ -153,6 +153,7 @@
         'browser/extensions/api/extension_action/extension_page_actions_api.h',
         'browser/extensions/api/extension_action/extension_page_actions_api_constants.cc',
         'browser/extensions/api/extension_action/extension_page_actions_api_constants.h',
+        'browser/extensions/api/extension_action/extension_script_badge_api.cc',
         'browser/extensions/api/extension_action/extension_script_badge_api.h',
         'browser/extensions/api/file_system/file_system_api.cc',
         'browser/extensions/api/file_system/file_system_api.h',

@@ -51,6 +51,25 @@
             ]
           }
         ]
+      },
+      {
+        "name": "getAttention",
+        "type": "function",
+
+        "description": "Brings the script badge to the attention of the user, imploring her to click.  You should call this when you detect that you can do something to a particular tab.  Do not call this for every tab. That's tacky.  If the user clicks on the badge, the activeTab APIs become available. If the extension has already run on this tab, this call does nothing.",
+
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "tabId": {
+                "type": "integer",
+                "description": "Specify the tab to request to act on."
+              }
+            }
+          }
+        ]
       }
     ],
     "events": [

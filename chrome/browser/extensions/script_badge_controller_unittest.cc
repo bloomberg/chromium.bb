@@ -186,5 +186,53 @@ TEST_F(ScriptBadgeControllerTest, FragmentNavigation) {
   }
 }
 
+TEST_F(ScriptBadgeControllerTest, GetAttentionMakesBadgeVisible) {
+  content::NotificationRegistrar notification_registrar;
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder()
+      .SetManifest(DictionaryBuilder()
+                   .Set("name", "Extension")
+                   .Set("version", "1.0.0")
+                   .Set("manifest_version", 2)
+                   .Set("permissions", ListBuilder()
+                        .Append("tabs")))
+      .Build();
+  extension_service_->AddExtension(extension);
+
+  // Establish a page id.
+  NavigateAndCommit(GURL("http://www.google.com"));
+
+  CountingNotificationObserver initial_badge_display;
+  notification_registrar.Add(
+      &initial_badge_display,
+      chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
+      content::Source<Profile>(tab_contents()->profile()));
+
+  // Initially, no script badges.
+  EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
+              testing::ElementsAre());
+
+  // Getting attention the first time should display the badge.
+  script_badge_controller_->GetAttentionFor(extension->id());
+
+  EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
+              testing::ElementsAre(extension->script_badge()));
+  EXPECT_THAT(initial_badge_display.events, testing::Gt(0));
+
+  CountingNotificationObserver subsequent_get_attention_call;
+  notification_registrar.Add(
+      &subsequent_get_attention_call,
+      chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
+      content::Source<Profile>(tab_contents()->profile()));
+
+  // Getting attention a second time should have no effect.
+  script_badge_controller_->GetAttentionFor(extension->id());
+
+  EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
+              testing::ElementsAre(extension->script_badge()));
+  EXPECT_EQ(0, subsequent_get_attention_call.events);
+};
+
 }  // namespace
 }  // namespace extensions
