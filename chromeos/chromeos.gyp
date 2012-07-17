@@ -77,6 +77,8 @@
         'dbus/ibus/ibus_component.cc',
         'dbus/ibus/ibus_component.h',
         'dbus/ibus/ibus_constants.h',
+        'dbus/ibus/ibus_engine_service.cc',
+        'dbus/ibus/ibus_engine_service.h',
         'dbus/ibus/ibus_lookup_table.cc',
         'dbus/ibus/ibus_lookup_table.h',
         'dbus/ibus/ibus_object.cc',
@@ -197,6 +199,8 @@
           'dbus/ibus/mock_ibus_client.h',
           'dbus/ibus/mock_ibus_input_context_client.cc',
           'dbus/ibus/mock_ibus_input_context_client.h',
+          'dbus/ibus/mock_ibus_engine_service.cc',
+          'dbus/ibus/mock_ibus_engine_service.h',
         ],
         'include_dirs': [
           '..',
