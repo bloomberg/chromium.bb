@@ -5,6 +5,7 @@
 #include "ash/wm/system_gesture_event_filter.h"
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_table.h"
 #include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
@@ -654,13 +655,12 @@ bool SystemGestureEventFilter::HandleDeviceControl(aura::Window* target,
 
 bool SystemGestureEventFilter::HandleLauncherControl(
     aura::GestureEvent* event) {
-  ash::AcceleratorController* accelerator =
-      ash::Shell::GetInstance()->accelerator_controller();
-  if (start_location_ == BEZEL_START_BOTTOM && event->details().scroll_y() < 0)
-    // We leave the work to switch to the next window to our accelerators.
-    accelerator->AcceleratorPressed(
-        ui::Accelerator(ui::VKEY_LWIN, ui::EF_CONTROL_DOWN));
-  else
+  if (start_location_ == BEZEL_START_BOTTOM &&
+      event->details().scroll_y() < 0) {
+    ash::AcceleratorController* accelerator =
+        ash::Shell::GetInstance()->accelerator_controller();
+    accelerator->PerformAction(FOCUS_LAUNCHER, ui::Accelerator());
+  } else
     return false;
   // No further notifications for this gesture.
   return true;
@@ -670,18 +670,14 @@ bool SystemGestureEventFilter::HandleApplicationControl(
     aura::GestureEvent* event) {
   ash::AcceleratorController* accelerator =
       ash::Shell::GetInstance()->accelerator_controller();
-  if (start_location_ == BEZEL_START_LEFT && event->details().scroll_x() > 0) {
-    // We leave the work to switch to the next window to our accelerators.
-    accelerator->AcceleratorPressed(
-        ui::Accelerator(ui::VKEY_F5, ui::EF_SHIFT_DOWN));
-  } else if (start_location_ == BEZEL_START_RIGHT &&
-             event->details().scroll_x() < 0) {
-    // We leave the work to switch to the previous window to our accelerators.
-    accelerator->AcceleratorPressed(
-        ui::Accelerator(ui::VKEY_F5, ui::EF_NONE));
-  } else {
+  if (start_location_ == BEZEL_START_LEFT && event->details().scroll_x() > 0)
+    accelerator->PerformAction(CYCLE_BACKWARD_LINEAR, ui::Accelerator());
+  else if (start_location_ == BEZEL_START_RIGHT &&
+             event->details().scroll_x() < 0)
+    accelerator->PerformAction(CYCLE_FORWARD_LINEAR, ui::Accelerator());
+  else
     return false;
-  }
+
   // No further notifications for this gesture.
   return true;
 }

@@ -575,16 +575,10 @@ gfx::Point CalibrateTouchCoordinates(
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
            switches::kEnableTouchCalibration))
     return gfx::Point(x, y);
-  // TODO(skuhne): Find a new home for these hardware dependent touch
-  // constants.
-  // Note: These values have been found to be correct for the device I was
-  // testing with. I have the feeling that the DPI resolution of the bezel is
-  // less then the dpi resolution over the visible part - which would explain
-  // why the small value (50) is so wide compared to the entire area.
   gfx::Rect bounds = gfx::Screen::GetPrimaryDisplay().bounds_in_pixel();
-  const int kLeftBorder = 50;
-  const int kRightBorder = 50;
-  const int kBottomBorder = 50;
+  const int kLeftBorder = 49;
+  const int kRightBorder = 49;
+  const int kBottomBorder = 53;
   const int kTopBorder = 0;
   const int resolution_x = bounds.width();
   const int resolution_y = bounds.height();
