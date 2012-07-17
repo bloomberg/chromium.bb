@@ -192,9 +192,7 @@ void MediaStreamManager::CancelRequests(MediaStreamRequester* requester) {
         for (StreamDeviceInfoArray::iterator it =
              request->audio_devices.begin(); it != request->audio_devices.end();
              ++it) {
-          if (it->in_use == true) {
-            audio_input_device_manager()->Close(it->session_id);
-          }
+          audio_input_device_manager()->Close(it->session_id);
         }
       }
       if (request->state[content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE] ==
@@ -202,9 +200,7 @@ void MediaStreamManager::CancelRequests(MediaStreamRequester* requester) {
         for (StreamDeviceInfoArray::iterator it =
              request->video_devices.begin(); it != request->video_devices.end();
              ++it) {
-          if (it->in_use == true) {
-            video_capture_manager()->Close(it->session_id);
-          }
+          video_capture_manager()->Close(it->session_id);
         }
       }
       requests_.erase(it++);
