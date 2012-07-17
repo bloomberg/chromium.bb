@@ -106,6 +106,8 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 32',
     'lucid_64-newlib-x86_64-pnacl':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 64',
+    'precise_64-newlib-x86_64-pnacl':
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 64',
     # PNaCl Spec
     'lucid_64-newlib-arm_qemu-pnacl-spec':
       'bash buildbot/buildbot_spec2k.sh pnacl-arm-qemu',
@@ -200,6 +202,8 @@ BOT_ASSIGNMENT = {
     'nacl-lucid_64-newlib-x86_32-pnacl':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 32',
     'nacl-lucid_64-newlib-x86_64-pnacl':
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 64',
+    'nacl-precise_64-newlib-x86_64-pnacl':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 64',
     'nacl-arm_opt_panda':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-try',
