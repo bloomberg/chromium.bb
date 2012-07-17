@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
-#include "ui/gl/gl_bindings.h"
 
 namespace gfx {
 class GLContext;
