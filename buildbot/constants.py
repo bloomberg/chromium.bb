@@ -148,3 +148,8 @@ DEFAULT_CQ_READY_QUERY = ('status:open AND CodeReview=+2 AND Verified=+1 '
 
 # Path to gsutil on builders.
 GSUTIL_BIN = '/b/build/third_party/gsutil/gsutil'
+
+# Some files need permissions set for several distinct groups. A google storage
+# acl (xml) file will be necessary in those cases. Make available well known
+# locations and standardize.
+KNOWN_ACL_FILES = {'slave': os.path.expanduser('~/slave_archive_acl')}
