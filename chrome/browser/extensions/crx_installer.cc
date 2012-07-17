@@ -464,9 +464,10 @@ void CrxInstaller::InstallUIAbort(bool user_initiated) {
   service->Notify(chrome::NOTIFICATION_NO_THEME_DETECTED,
                   content::Source<CrxInstaller>(this),
                   content::NotificationService::NoDetails());
-  Release();  // balanced in ConfirmInstall().
 
   NotifyCrxInstallComplete(NULL);
+
+  Release();  // balanced in ConfirmInstall().
 
   // We're done. Since we don't post any more tasks to ourself, our ref count
   // should go to zero and we die. The destructor will clean up the temp dir.
