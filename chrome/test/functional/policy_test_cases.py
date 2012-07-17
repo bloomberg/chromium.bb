@@ -245,6 +245,10 @@ class PolicyPrefsTestCases(object):
                                 '.*@google.com', [], ['win', 'mac', 'linux']),
     'DisableSafeBrowsingProceedAnyway':
         ('kSafeBrowsingProceedAnywayDisabled', True, [], OS_ALL),
+    # TODO(joaodasilva): this policy affects the BROWSER settings page but
+    # is only included in official builds.
+    'SpellCheckServiceEnabled':
+        ('kSpellCheckUseSpellingService', False, [], OS_ALL),
 
     # ChromeOS-only policies:
     # TODO(frankf): Add prefs for these after crosbug.com/28756 is fixed.

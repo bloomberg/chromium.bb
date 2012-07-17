@@ -288,6 +288,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDisableSafeBrowsingProceedAnyway,
     prefs::kSafeBrowsingProceedAnywayDisabled,
     Value::TYPE_BOOLEAN },
+  { key::kSpellCheckServiceEnabled,
+    prefs::kSpellCheckUseSpellingService,
+    Value::TYPE_BOOLEAN },
 
 #if defined(OS_CHROMEOS)
   { key::kChromeOsLockOnIdleSuspend,
