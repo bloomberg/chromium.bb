@@ -25,17 +25,3 @@ nexe = env.ComponentProgram(nexe_name,
 env.Publish(nexe_name, 'run',
             ['ppapi_example_audio.html'])
 
-test = env.PPAPIBrowserTester('ppapi_example_audio_test.out',
-                              url='ppapi_example_audio.html#mute',
-                              nmf_names=['ppapi_example_audio'],
-                              files=env.ExtractPublishedFiles(nexe_name))
-
-# Though this tests passes locally, it does not pass on the Windows
-# and Linux buildbots, which do not have audio devices.  Although
-# StartPlayback() and StopPlayback() succeed, the audio callback is
-# not called.  However, this does work on the Mac buildbots.
-is_broken = env.PPAPIBrowserTesterIsBroken() or not env.Bit('host_mac')
-env.AddNodeToTestSuite(test,
-                       ['chrome_browser_tests'],
-                       'run_ppapi_example_audio_test',
-                       is_broken=is_broken)
