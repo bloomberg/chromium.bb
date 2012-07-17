@@ -15865,6 +15865,8 @@ var keyboardOverlayData = {
     'up<>ALT<>CTRL': 'keyboardOverlayHome',
     'v<>CTRL': 'keyboardOverlayPaste',
     'v<>CTRL<>SHIFT': 'keyboardOverlayPasteAsPlainText',
+    'w<>ALT': 'keyboardOverlayNextWindow',
+    'w<>ALT<>SHIFT': 'keyboardOverlayPreviousWindow',
     'w<>CTRL': 'keyboardOverlayCloseTab',
     'w<>CTRL<>SHIFT': 'keyboardOverlayCloseWindow',
     'x<>CTRL': 'keyboardOverlayCut',
