@@ -149,12 +149,18 @@ void NativeTextfieldViews::OnMouseReleased(const MouseEvent& event) {
 
 ui::GestureStatus NativeTextfieldViews::OnGestureEvent(
     const GestureEvent& event) {
+  ui::GestureStatus status = textfield_->OnGestureEvent(event);
+  if (status != ui::GESTURE_STATUS_UNKNOWN)
+    return status;
 
   switch (event.type()) {
     case ui::ET_GESTURE_TAP_DOWN:
       OnBeforeUserAction();
       textfield_->RequestFocus();
-      if (MoveCursorTo(event.location(), false))
+      // We don't deselect if the point is in the selection
+      // because TAP_DOWN may turn into a LONG_PRESS.
+      if (!GetRenderText()->IsPointInSelection(event.location()) &&
+          MoveCursorTo(event.location(), false))
         SchedulePaint();
       OnAfterUserAction();
       return ui::GESTURE_STATUS_CONSUMED;
