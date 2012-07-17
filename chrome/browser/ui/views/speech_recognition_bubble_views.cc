@@ -320,8 +320,8 @@ void SpeechRecognitionBubbleView::Layout() {
 class SpeechRecognitionBubbleImpl : public SpeechRecognitionBubbleBase {
  public:
   SpeechRecognitionBubbleImpl(WebContents* web_contents,
-                        Delegate* delegate,
-                        const gfx::Rect& element_rect);
+                              Delegate* delegate,
+                              const gfx::Rect& element_rect);
   virtual ~SpeechRecognitionBubbleImpl();
 
   // SpeechRecognitionBubble methods.
@@ -359,8 +359,7 @@ SpeechRecognitionBubbleImpl::~SpeechRecognitionBubbleImpl() {
 void SpeechRecognitionBubbleImpl::Show() {
   if (!bubble_) {
     // Anchor to the location icon view, in case |element_rect| is offscreen.
-    Browser* browser = browser::FindOrCreateTabbedBrowser(
-        Profile::FromBrowserContext(GetWebContents()->GetBrowserContext()));
+    Browser* browser = browser::FindBrowserWithWebContents(GetWebContents());
     BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
     views::View* icon = browser_view->GetLocationBarView() ?
         browser_view->GetLocationBarView()->location_icon_view() : NULL;

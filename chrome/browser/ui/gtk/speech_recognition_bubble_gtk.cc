@@ -186,8 +186,7 @@ void SpeechRecognitionBubbleGtk::Show() {
       target_rect.x() > container_rect.width() ||
       target_rect.y() > container_rect.height()) {
     // Target is not in screen view, so point to wrench.
-    Browser* browser =
-        browser::FindOrCreateTabbedBrowser(profile);
+    Browser* browser = browser::FindBrowserWithWebContents(GetWebContents());
     BrowserWindowGtk* browser_window =
         BrowserWindowGtk::GetBrowserWindowForNativeWindow(
             browser->window()->GetNativeWindow());
