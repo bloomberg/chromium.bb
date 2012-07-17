@@ -2399,6 +2399,8 @@
         'browser/ui/ash/event_rewriter.h',
         'browser/ui/ash/ime_controller_chromeos.cc',
         'browser/ui/ash/ime_controller_chromeos.h',
+        'browser/ui/ash/keyboard_brightness_controller_chromeos.cc',
+        'browser/ui/ash/keyboard_brightness_controller_chromeos.h',
         'browser/ui/ash/screenshot_taker.cc',
         'browser/ui/ash/screenshot_taker.h',
         'browser/ui/ash/tabs/dock_info_ash.cc',

@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chrome/browser/ui/ash/brightness_controller_chromeos.h"
 #include "chrome/browser/ui/ash/ime_controller_chromeos.h"
+#include "chrome/browser/ui/ash/keyboard_brightness_controller_chromeos.h"
 #endif
 
 
@@ -83,6 +84,9 @@ void OpenAsh() {
       scoped_ptr<ash::CapsLockDelegate>(new CapsLockHandler(xkeyboard)).Pass());
   shell->accelerator_controller()->SetImeControlDelegate(
       scoped_ptr<ash::ImeControlDelegate>(new ImeController).Pass());
+  shell->accelerator_controller()->SetKeyboardBrightnessControlDelegate(
+      scoped_ptr<ash::KeyboardBrightnessControlDelegate>(
+          new KeyboardBrightnessController).Pass());
   shell->accelerator_controller()->SetVolumeControlDelegate(
       scoped_ptr<ash::VolumeControlDelegate>(new VolumeController).Pass());
 
