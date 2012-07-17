@@ -3,4 +3,5 @@
 # Also still hitting DCHECK(time <= max_time) http://crbug.com/126183
 PipelineIntegrationTest.BasicPlayback
 PipelineIntegrationTest.BasicPlaybackHashed
+PipelineIntegrationTest.BasicPlayback_MediaSource
 PipelineIntegrationTest.EncryptedPlayback
