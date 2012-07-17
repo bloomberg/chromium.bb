@@ -113,12 +113,13 @@
         }
       },
       {
-        "id": "UncleanShutdown",
+        "id": "UncleanExit",
         "type": "object",
-        "description": "The event to represent an unclean shutdown.",
+        "description": "The event to represent an unclean exit.",
         "properties": {
           "eventType": {"type": "integer", "description": "The type of the event."},
-          "time": {"type": "number", "description": "The time at which the event was recorded."}
+          "time": {"type": "number", "description": "The time at which the event was recorded."},
+          "profileName": {"type": "string", "description": "The name of the profile which shutdown uncleanly."}
         }
       }
     ]

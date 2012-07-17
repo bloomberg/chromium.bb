@@ -20,6 +20,7 @@ extern const char kProcessChromeAggregate[];
 extern const char kSampleMetricDescription[];
 extern const char kSampleMetricName[];
 extern const char kStateChromeVersion[];
+extern const char kStateProfilePrefix[];
 
 }  // namespace performance_monitor
 

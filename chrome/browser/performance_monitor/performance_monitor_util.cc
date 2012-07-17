@@ -192,13 +192,15 @@ scoped_ptr<Event> CreateCrashEvent(const base::Time& time,
   return scoped_ptr<Event>(new Event(type, time, value.Pass()));
 }
 
-scoped_ptr<Event> CreateUncleanShutdownEvent(const base::Time& time) {
-  events::UncleanShutdown event;
-  event.event_type = EVENT_UNCLEAN_SHUTDOWN;
+scoped_ptr<Event> CreateUncleanExitEvent(const base::Time& time,
+                                         const std::string& profile_name) {
+  events::UncleanExit event;
+  event.event_type = EVENT_UNCLEAN_EXIT;
   event.time = static_cast<double>(time.ToInternalValue());
+  event.profile_name = profile_name;
   scoped_ptr<base::DictionaryValue> value = event.ToValue();
   return scoped_ptr<Event>(new Event(
-      EVENT_UNCLEAN_SHUTDOWN, time, value.Pass()));
+      EVENT_UNCLEAN_EXIT, time, value.Pass()));
 }
 
 scoped_ptr<Event> CreateChromeUpdateEvent(const base::Time& time,

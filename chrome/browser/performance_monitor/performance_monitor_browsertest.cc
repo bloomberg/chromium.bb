@@ -7,7 +7,9 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/performance_monitor/constants.h"
 #include "chrome/browser/performance_monitor/database.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
@@ -15,8 +17,10 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
@@ -194,6 +198,39 @@ class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
  protected:
   ScopedTempDir db_dir_;
   PerformanceMonitor* performance_monitor_;
+};
+
+class PerformanceMonitorUncleanExitBrowserTest
+    : public PerformanceMonitorBrowserTest {
+ public:
+  virtual bool SetUpUserDataDirectory() OVERRIDE {
+    FilePath user_data_directory;
+    PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
+
+    FilePath default_profile = user_data_directory.AppendASCII("Default");
+    CHECK(file_util::CreateDirectory(default_profile));
+
+    FilePath stock_prefs_file;
+    PathService::Get(chrome::DIR_TEST_DATA, &stock_prefs_file);
+    stock_prefs_file = stock_prefs_file.AppendASCII("performance_monitor")
+                                       .AppendASCII("unclean_exit_prefs");
+    CHECK(file_util::PathExists(stock_prefs_file));
+
+    FilePath default_profile_prefs_file =
+        default_profile.Append(chrome::kPreferencesFilename);
+    CHECK(file_util::CopyFile(stock_prefs_file, default_profile_prefs_file));
+    CHECK(file_util::PathExists(default_profile_prefs_file));
+
+    FilePath second_profile = user_data_directory.AppendASCII("Profile 1");
+    CHECK(file_util::CreateDirectory(second_profile));
+
+    FilePath second_profile_prefs_file =
+        second_profile.Append(chrome::kPreferencesFilename);
+    CHECK(file_util::CopyFile(stock_prefs_file, second_profile_prefs_file));
+    CHECK(file_util::PathExists(second_profile_prefs_file));
+
+    return true;
+  }
 };
 
 // Test that PerformanceMonitor will correctly record an extension installation
@@ -417,6 +454,67 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, RendererCrashEvent) {
   ASSERT_EQ(1u, events.size());
 
   CheckEventType(EVENT_RENDERER_CRASH, events[0]);
+}
+
+IN_PROC_BROWSER_TEST_F(PerformanceMonitorUncleanExitBrowserTest,
+                       OneProfileUncleanExit) {
+  const std::string profile_name = "Default";
+  const std::string time = "12985807272597591";
+  const size_t kNumEvents = 1;
+
+  // Initialize the database value (if there's no value in the database, it
+  // can't determine the last active time of the profile, and doesn't insert
+  // the event).
+  AddStateValue(kStateProfilePrefix + profile_name, time);
+
+  performance_monitor()->CheckForUncleanExits();
+
+  ui_test_utils::RunAllPendingInMessageLoop();
+
+  std::vector<linked_ptr<Event> > events = GetEvents();
+  ASSERT_EQ(kNumEvents, events.size());
+
+  CheckEventType(EVENT_UNCLEAN_EXIT, events[0]);
+
+  std::string event_profile;
+  ASSERT_TRUE(events[0]->data()->GetString("profileName", &event_profile));
+  ASSERT_EQ(profile_name, event_profile);
+}
+
+IN_PROC_BROWSER_TEST_F(PerformanceMonitorUncleanExitBrowserTest,
+                       TwoProfileUncleanExit) {
+  const std::string profile1_name = "Default";
+  const std::string profile2_name = "Profile 1";
+  const std::string time1 = "12985807272597591";
+  const std::string time2 = "12985807272599918";
+  const size_t kNumEvents = 2;
+
+  FilePath profile2_path;
+  PathService::Get(chrome::DIR_USER_DATA, &profile2_path);
+  profile2_path = profile2_path.AppendASCII(profile2_name);
+
+  AddStateValue(kStateProfilePrefix + profile1_name, time1);
+  AddStateValue(kStateProfilePrefix + profile2_name, time2);
+
+  performance_monitor()->CheckForUncleanExits();
+  ui_test_utils::RunAllPendingInMessageLoop();
+
+  // Load the second profile, which has also exited uncleanly.
+  g_browser_process->profile_manager()->GetProfile(profile2_path);
+  ui_test_utils::RunAllPendingInMessageLoop();
+
+  std::vector<linked_ptr<Event> > events = GetEvents();
+
+  ASSERT_EQ(kNumEvents, events.size());
+  CheckEventType(EVENT_UNCLEAN_EXIT, events[0]);
+  CheckEventType(EVENT_UNCLEAN_EXIT, events[1]);
+
+  std::string event_profile;
+  ASSERT_TRUE(events[0]->data()->GetString("profileName", &event_profile));
+  ASSERT_EQ(profile1_name, event_profile);
+
+  ASSERT_TRUE(events[1]->data()->GetString("profileName", &event_profile));
+  ASSERT_EQ(profile2_name, event_profile);
 }
 
 }  // namespace performance_monitor
