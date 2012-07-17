@@ -47,6 +47,8 @@ def link_file(outfile, infile, action):
   logging.debug('Mapping %s to %s' % (infile, outfile))
   if action not in (HARDLINK, SYMLINK, COPY):
     raise ValueError('Unknown mapping action %s' % action)
+  if not os.path.isfile(infile):
+    raise MappingError('%s is missing' % infile)
   if os.path.isfile(outfile):
     raise MappingError(
         '%s already exist; insize:%d; outsize:%d' %
