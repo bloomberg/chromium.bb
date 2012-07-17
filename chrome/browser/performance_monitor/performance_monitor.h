@@ -5,13 +5,10 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MONITOR_PERFORMANCE_MONITOR_H_
 #define CHROME_BROWSER_PERFORMANCE_MONITOR_PERFORMANCE_MONITOR_H_
 
-#include <string>
-
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/timer.h"
 #include "chrome/browser/performance_monitor/database.h"
 #include "chrome/browser/performance_monitor/event.h"
 #include "content/public/browser/notification_details.h"
@@ -54,10 +51,6 @@ class PerformanceMonitor : public content::NotificationObserver {
  private:
   friend struct DefaultSingletonTraits<PerformanceMonitor>;
   FRIEND_TEST_ALL_PREFIXES(PerformanceMonitorBrowserTest, NewVersionEvent);
-  FRIEND_TEST_ALL_PREFIXES(PerformanceMonitorUncleanExitBrowserTest,
-                           OneProfileUncleanExit);
-  FRIEND_TEST_ALL_PREFIXES(PerformanceMonitorUncleanExitBrowserTest,
-                           TwoProfileUncleanExit);
 
   PerformanceMonitor();
   virtual ~PerformanceMonitor();
@@ -70,15 +63,6 @@ class PerformanceMonitor : public content::NotificationObserver {
 
   // Register for the appropriate notifications as a NotificationObserver.
   void RegisterForNotifications();
-
-  // Checks for whether the previous profiles closed uncleanly; this method
-  // should only be called once per run in order to avoid duplication of events
-  // (exceptions made for testing purposes where we construct the environment).
-  void CheckForUncleanExits();
-
-  // Find the last active time for the profile and insert the event into the
-  // database.
-  void AddUncleanExitEvent(const std::string& profile_name);
 
   // Check the previous Chrome version from the Database and determine if
   // it has been updated. If it has, insert an event in the database.
@@ -98,15 +82,6 @@ class PerformanceMonitor : public content::NotificationObserver {
   // Notify any listeners that PerformanceMonitor has finished the initializing.
   void NotifyInitialized();
 
-  // Update the database record of the last time the active profiles were
-  // running; this is used in determining when an unclean exit occurred.
-  void UpdateLiveProfiles();
-  void UpdateLiveProfilesHelper(
-      scoped_ptr<std::set<std::string> > active_profiles, std::string time);
-
-  // Perform any collections that are done on a timed basis.
-  void DoTimedCollections();
-
   // The location at which the database files are stored; if empty, the database
   // will default to '<user_data_dir>/performance_monitor_dbs'.
   FilePath database_path_;
@@ -114,8 +89,6 @@ class PerformanceMonitor : public content::NotificationObserver {
   scoped_ptr<Database> database_;
 
   content::NotificationRegistrar registrar_;
-
-  base::RepeatingTimer<PerformanceMonitor> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceMonitor);
 };

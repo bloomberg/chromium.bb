@@ -89,8 +89,7 @@ scoped_ptr<Event> CreateCrashEvent(
     const base::Time& time,
     const EventType& type);
 
-scoped_ptr<Event> CreateUncleanExitEvent(const base::Time& time,
-                                         const std::string& profile_name);
+scoped_ptr<Event> CreateUncleanShutdownEvent(const base::Time& time);
 
 scoped_ptr<Event> CreateChromeUpdateEvent(
     const base::Time& time,

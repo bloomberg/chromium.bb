@@ -6,16 +6,12 @@
 
 namespace performance_monitor {
 
+// The key to insert/retrieve information about the chrome version from the
+// database.
+const char kStateChromeVersion[] = "chrome_version";
 const char kMetricNotFoundError[] = "Mertic details not found.";
 const char kProcessChromeAggregate[] = "chrome_aggregate";
 const char kSampleMetricDescription[] = "A sample metric.";
 const char kSampleMetricName[] = "SAMPLE";
-
-// The state token to track Chrome versions in the database.
-const char kStateChromeVersion[] = "chrome_version";
-
-// The state token to precede a profile's name, to prevent any possible naming
-// collisions in the database.
-const char kStateProfilePrefix[] = "profile";
 
 }  // namespace performance_monitor
