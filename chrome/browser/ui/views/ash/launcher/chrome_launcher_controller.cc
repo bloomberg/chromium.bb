@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/views/ash/extension_utils.h"
 #include "chrome/browser/ui/views/ash/launcher/browser_launcher_item_controller.h"
 #include "chrome/browser/ui/views/ash/launcher/launcher_app_icon_loader.h"
+#include "chrome/browser/ui/views/ash/launcher/launcher_app_tab_helper.h"
 #include "chrome/browser/ui/views/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -75,6 +76,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   instance_ = this;
   model_->AddObserver(this);
   ShellWindowRegistry::Get(profile_)->AddObserver(this);
+  app_tab_helper_.reset(new LauncherAppTabHelper(profile_));
   app_icon_loader_.reset(new LauncherAppIconLoader(profile_, this));
 
   notification_registrar_.Add(this,
@@ -331,7 +333,7 @@ extensions::ExtensionPrefs::LaunchType ChromeLauncherController::GetLaunchType(
 }
 
 std::string ChromeLauncherController::GetAppID(TabContents* tab) {
-  return app_icon_loader_->GetAppID(tab);
+  return app_tab_helper_->GetAppID(tab);
 }
 
 ash::LauncherID ChromeLauncherController::GetLauncherIDForAppID(
@@ -754,6 +756,10 @@ void ChromeLauncherController::PersistPinnedState() {
   pref_change_registrar_.Add(prefs::kPinnedLauncherApps, this);
 }
 
+void ChromeLauncherController::SetAppTabHelperForTest(AppTabHelper* helper) {
+  app_tab_helper_.reset(helper);
+}
+
 void ChromeLauncherController::SetAppIconLoaderForTest(AppIconLoader* loader) {
   app_icon_loader_.reset(loader);
 }
@@ -816,7 +822,7 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
         app->GetString(ash::kPinnedAppsPrefAppIDPath, &app_id) &&
         std::find(pinned_apps.begin(), pinned_apps.end(), app_id) ==
             pinned_apps.end() &&
-        app_icon_loader_->IsValidID(app_id)) {
+        app_tab_helper_->IsValidID(app_id)) {
       pinned_apps.push_back(app_id);
     }
   }
@@ -916,7 +922,7 @@ ash::LauncherID ChromeLauncherController::InsertAppLauncherItem(
   item.is_incognito = false;
   item.image = Extension::GetDefaultIcon(true);
   if (item.type == ash::TYPE_APP_SHORTCUT &&
-      !app_icon_loader_->IsValidID(app_id)) {
+      !app_tab_helper_->IsValidID(app_id)) {
     item.status = ash::STATUS_IS_PENDING;
   } else {
     TabContents* active_tab = GetLastActiveTabContents(app_id);

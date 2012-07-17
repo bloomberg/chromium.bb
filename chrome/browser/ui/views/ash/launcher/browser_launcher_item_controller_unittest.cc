@@ -28,11 +28,11 @@
 
 namespace {
 
-// Test implementation of AppIconLoader.
-class AppIconLoaderImpl : public ChromeLauncherController::AppIconLoader {
+// Test implementation of AppTabHelper
+class AppTabHelperImpl : public ChromeLauncherController::AppTabHelper {
  public:
-  AppIconLoaderImpl() : fetch_count_(0) {}
-  virtual ~AppIconLoaderImpl() {}
+  AppTabHelperImpl() {}
+  virtual ~AppTabHelperImpl() {}
 
   // Sets the id for the specified tab. The id is removed if Remove() is
   // invoked.
@@ -45,15 +45,7 @@ class AppIconLoaderImpl : public ChromeLauncherController::AppIconLoader {
     return tab_id_map_.find(tab) != tab_id_map_.end();
   }
 
-  // Returns the number of times FetchImage() has been invoked and resets the
-  // count to 0.
-  int GetAndClearFetchCount() {
-    int value = fetch_count_;
-    fetch_count_ = 0;
-    return value;
-  }
-
-  // AppIconLoader implementation:
+  // AppTabHelper implementation:
   virtual std::string GetAppID(TabContents* tab) OVERRIDE {
     return tab_id_map_.find(tab) != tab_id_map_.end() ? tab_id_map_[tab] :
         std::string();
@@ -68,15 +60,34 @@ class AppIconLoaderImpl : public ChromeLauncherController::AppIconLoader {
     return false;
   }
 
-  virtual void FetchImage(const std::string& id) OVERRIDE {
-    fetch_count_++;
-  }
-
  private:
   typedef std::map<TabContents*, std::string> TabToStringMap;
 
   TabToStringMap tab_id_map_;
 
+  DISALLOW_COPY_AND_ASSIGN(AppTabHelperImpl);
+};
+
+// Test implementation of AppIconLoader.
+class AppIconLoaderImpl : public ChromeLauncherController::AppIconLoader {
+ public:
+  AppIconLoaderImpl() : fetch_count_(0) {}
+  virtual ~AppIconLoaderImpl() {}
+
+  // Returns the number of times FetchImage() has been invoked and resets the
+  // count to 0.
+  int GetAndClearFetchCount() {
+    int value = fetch_count_;
+    fetch_count_ = 0;
+    return value;
+  }
+
+  // AppIconLoader implementation:
+  virtual void FetchImage(const std::string& id) OVERRIDE {
+    fetch_count_++;
+  }
+
+ private:
   int fetch_count_;
 
   DISALLOW_COPY_AND_ASSIGN(AppIconLoaderImpl);
@@ -99,7 +110,9 @@ class BrowserLauncherItemControllerTest :
     launcher_model_.reset(new ash::LauncherModel);
     launcher_delegate_.reset(
         new ChromeLauncherController(profile(), launcher_model_.get()));
+    app_tab_helper_ = new AppTabHelperImpl;
     app_icon_loader_ = new AppIconLoaderImpl;
+    launcher_delegate_->SetAppTabHelperForTest(app_tab_helper_);
     launcher_delegate_->SetAppIconLoaderForTest(app_icon_loader_);
     launcher_delegate_->Init();
   }
@@ -163,6 +176,10 @@ class BrowserLauncherItemControllerTest :
     return launcher_delegate_->id_to_item_map_[id].app_id;
   }
 
+  void ResetAppTabHelper() {
+    launcher_delegate_->SetAppTabHelperForTest(app_tab_helper_);
+  }
+
   void ResetAppIconLoader() {
     launcher_delegate_->SetAppIconLoaderForTest(app_icon_loader_);
   }
@@ -181,6 +198,7 @@ class BrowserLauncherItemControllerTest :
   scoped_ptr<ChromeLauncherController> launcher_delegate_;
 
   // Owned by BrowserLauncherItemController.
+  AppTabHelperImpl* app_tab_helper_;
   AppIconLoaderImpl* app_icon_loader_;
 
   scoped_ptr<aura::test::TestActivationClient> activation_client_;
@@ -241,7 +259,7 @@ TEST_F(BrowserLauncherItemControllerTest, PanelItem) {
     TestTabStripModelDelegate tab_strip_delegate;
     TabStripModel tab_strip(&tab_strip_delegate, profile());
     TabContents panel_tab(CreateTestWebContents());
-    app_icon_loader_->SetAppID(&panel_tab, "1");  // Panels are apps.
+    app_tab_helper_->SetAppID(&panel_tab, "1");  // Panels are apps.
     tab_strip.InsertTabContentsAt(0, &panel_tab, TabStripModel::ADD_ACTIVE);
     BrowserLauncherItemController updater(
         &window, &tab_strip, launcher_delegate_.get(),
@@ -258,7 +276,7 @@ TEST_F(BrowserLauncherItemControllerTest, PanelItem) {
     TestTabStripModelDelegate tab_strip_delegate;
     TabStripModel tab_strip(&tab_strip_delegate, profile());
     TabContents panel_tab(CreateTestWebContents());
-    app_icon_loader_->SetAppID(&panel_tab, "1");  // Panels are apps.
+    app_tab_helper_->SetAppID(&panel_tab, "1");  // Panels are apps.
     tab_strip.InsertTabContentsAt(0, &panel_tab, TabStripModel::ADD_ACTIVE);
     BrowserLauncherItemController updater(
         &window, &tab_strip, launcher_delegate_.get(),
@@ -275,7 +293,7 @@ TEST_F(BrowserLauncherItemControllerTest, PersistPinned) {
   size_t initial_size = launcher_model_->items().size();
   TabContents tab1(CreateTestWebContents());
 
-  app_icon_loader_->SetAppID(&tab1, "1");
+  app_tab_helper_->SetAppID(&tab1, "1");
 
   app_icon_loader_->GetAndClearFetchCount();
   launcher_delegate_->PinAppWithID("1");
@@ -288,8 +306,10 @@ TEST_F(BrowserLauncherItemControllerTest, PersistPinned) {
 
   launcher_delegate_.reset(
       new ChromeLauncherController(profile(), launcher_model_.get()));
+  app_tab_helper_ = new AppTabHelperImpl;
+  app_tab_helper_->SetAppID(&tab1, "1");
+  ResetAppTabHelper();
   app_icon_loader_ = new AppIconLoaderImpl;
-  app_icon_loader_->SetAppID(&tab1, "1");
   ResetAppIconLoader();
   launcher_delegate_->Init();
   EXPECT_GT(app_icon_loader_->GetAndClearFetchCount(), 0);

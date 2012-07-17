@@ -66,11 +66,10 @@ class ChromeLauncherController : public ash::LauncherDelegate,
     APP_STATE_REMOVED
   };
 
-  // Interface used to load app icons. This is in it's own class so that it can
-  // be mocked.
-  class AppIconLoader {
+  // Mockable interface to get app ids from tabs.
+  class AppTabHelper {
    public:
-    virtual ~AppIconLoader() {}
+    virtual ~AppTabHelper() {}
 
     // Returns the app id of the specified tab, or an empty string if there is
     // no app.
@@ -79,6 +78,13 @@ class ChromeLauncherController : public ash::LauncherDelegate,
     // Returns true if |id| is valid. Used during restore to ignore no longer
     // valid extensions.
     virtual bool IsValidID(const std::string& id) = 0;
+  };
+
+  // Interface used to load app icons. This is in it's own class so that it can
+  // be mocked.
+  class AppIconLoader {
+   public:
+    virtual ~AppIconLoader() {}
 
     // Fetches the image for the specified id. When done (which may be
     // synchronous), this should invoke SetAppImage() on the LauncherUpdater.
@@ -267,8 +273,9 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   typedef std::map<std::string, TabContentsList> AppIDToTabContentsListMap;
   typedef std::map<TabContents*, std::string> TabContentsToAppIDMap;
 
-  // Sets the AppIconLoader, taking ownership of |loader|. This is intended for
-  // testing.
+  // Sets the AppTabHelper/AppIconLoader, taking ownership of the helper class.
+  // These are intended for testing.
+  void SetAppTabHelperForTest(AppTabHelper* helper);
   void SetAppIconLoaderForTest(AppIconLoader* loader);
 
   // Returns the profile used for new windows.
@@ -324,7 +331,10 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // Currently only used for platform app windows.
   WindowList platform_app_windows_;
 
-  // Used to load the image for an app tab.
+  // Used to get app info for tabs.
+  scoped_ptr<AppTabHelper> app_tab_helper_;
+
+  // Used to load the image for an app item.
   scoped_ptr<AppIconLoader> app_icon_loader_;
 
   content::NotificationRegistrar notification_registrar_;

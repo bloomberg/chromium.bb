@@ -8,9 +8,19 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_resource.h"
-#include "chrome/common/extensions/extension_set.h"
-#include "content/public/browser/web_contents.h"
+
+namespace {
+
+const extensions::Extension* GetExtensionByID(Profile* profile,
+                                              const std::string& id) {
+  ExtensionService* service = profile->GetExtensionService();
+  if (!service)
+    return NULL;
+  return service->extensions()->GetByID(id);
+}
+
+}  // namespace
+
 
 LauncherAppIconLoader::LauncherAppIconLoader(
     Profile* profile,
@@ -22,15 +32,6 @@ LauncherAppIconLoader::LauncherAppIconLoader(
 LauncherAppIconLoader::~LauncherAppIconLoader() {
 }
 
-std::string LauncherAppIconLoader::GetAppID(TabContents* tab) {
-  const extensions::Extension* extension = GetExtensionForTab(tab);
-  return extension ? extension->id() : std::string();
-}
-
-bool LauncherAppIconLoader::IsValidID(const std::string& id) {
-  return GetExtensionByID(id) != NULL;
-}
-
 void LauncherAppIconLoader::FetchImage(const std::string& id) {
   for (ImageLoaderIDToExtensionIDMap::const_iterator i = map_.begin();
        i != map_.end(); ++i) {
@@ -38,7 +39,7 @@ void LauncherAppIconLoader::FetchImage(const std::string& id) {
       return;  // Already loading the image.
   }
 
-  const extensions::Extension* extension = GetExtensionByID(id);
+  const extensions::Extension* extension = GetExtensionByID(profile_, id);
   if (!extension)
     return;
   if (!image_loader_.get())
@@ -66,20 +67,4 @@ void LauncherAppIconLoader::OnImageLoaded(const gfx::Image& image,
     host_->SetAppImage(id, extensions::Extension::GetDefaultIcon(true));
   else
     host_->SetAppImage(id, *image.ToImageSkia());
-}
-
-const extensions::Extension* LauncherAppIconLoader::GetExtensionForTab(
-    TabContents* tab) {
-  ExtensionService* extension_service = profile_->GetExtensionService();
-  if (!extension_service)
-    return NULL;
-  return extension_service->GetInstalledApp(tab->web_contents()->GetURL());
-}
-
-const extensions::Extension* LauncherAppIconLoader::GetExtensionByID(
-    const std::string& id) {
-  ExtensionService* service = profile_->GetExtensionService();
-  if (!service)
-    return NULL;
-  return service->extensions()->GetByID(id);
 }

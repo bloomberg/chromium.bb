@@ -3494,6 +3494,8 @@
         'browser/ui/views/ash/launcher/chrome_launcher_controller.h',
         'browser/ui/views/ash/launcher/launcher_app_icon_loader.cc',
         'browser/ui/views/ash/launcher/launcher_app_icon_loader.h',
+        'browser/ui/views/ash/launcher/launcher_app_tab_helper.cc',
+        'browser/ui/views/ash/launcher/launcher_app_tab_helper.h',
         'browser/ui/views/ash/launcher/launcher_context_menu.cc',
         'browser/ui/views/ash/launcher/launcher_context_menu.h',
         'browser/ui/views/ash/launcher/launcher_favicon_loader.cc',
