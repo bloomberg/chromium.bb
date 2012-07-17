@@ -1835,7 +1835,7 @@ The liblouis translation mode that should be used for this test
 @item testmode
 The optional testmode field can have three values: "translate" (default if undeclaired), "backtranslate" or "hyphenate".
 Declares what tests should be performed on the test data.
-\end table
+@end table
 
 
 Each test case has the following entries:
