@@ -118,59 +118,19 @@ class ChromeAboutPluginsUITest(pyauto.PyUITest):
         '//*[@jscontent="name"][text()="Flash"]//ancestor' \
         '::*[@class="plugin-text"]')
 
-    if self.IsWin():
-      # Verify internal Flash plugin exists in Chrome on Windows.
-      internal_flash_elem = pyauto_utils.WaitForDomElement(self, driver,
-          './/*[contains(text(), "gcswf32.dll")]')
+    # Disable flash plugin from flash detail info.
+    flash_disable_link = flash_plugins_elem.find_element_by_xpath(
+        './/a[text()="Disable"]')
+    flash_disable_link.click()
+    self.assertTrue(self.WaitUntil(lambda: not
+        self._IsEnabled('Shockwave Flash')))
 
-      # Disable internal Flash plugin.
-      internal_flash_disable_link = internal_flash_elem.find_element_by_xpath(
-          './/ancestor::*[@class="plugin-details"]//a[text()="Disable"]')
-      internal_flash_disable_link.click()
-
-      # Verify internal flash is disabled.
-      pyauto_utils.WaitForDomElement(self, internal_flash_elem,
-          './/ancestor::*[@class="plugin-disabled"]')
-      self.assertTrue(self.WaitUntil(lambda: not
-          self._IsEnabled('Shockwave Flash')))
-
-      # Enable internal Flash plugin.
-      internal_flash_enable_link = internal_flash_elem.find_element_by_xpath(
-          './/ancestor::*[@class="plugin-details"]//a[text()="Enable"]')
-      internal_flash_enable_link.click()
-      self.assertTrue(self.WaitUntil(lambda: len(
-          internal_flash_elem.find_elements_by_xpath(
-          './/ancestor::*[@class="plugin-enabled"]')) > 0),
-          msg='Failed to enable internal Flash plugin')
-      self.assertTrue(self.WaitUntil(lambda:
-          self._IsEnabled('Shockwave Flash')))
-
-      # Disable all flash plugins.
-      flash_disable_all_path = """
-      .//ancestor::*[@class="plugin-text"]//following-sibling::*
-      [@class="plugin-actions"]//a[text()="Disable"]
-      """
-      flash_disable_all_link = internal_flash_elem.find_element_by_xpath(
-          flash_disable_all_path)
-      flash_disable_all_link.click()
-      self.assertTrue(self.WaitUntil(lambda: not
-          self._IsEnabled('Shockwave Flash')))
-
-    # Flash plugin in other OS.
-    else:
-      # Disable flash plugin from flash detail info.
-      flash_disable_link = flash_plugins_elem.find_element_by_xpath(
-          './/a[text()="Disable"]')
-      flash_disable_link.click()
-      self.assertTrue(self.WaitUntil(lambda: not
-          self._IsEnabled('Shockwave Flash')))
-
-      # Re-enable Flash plugin from flash detail info.
-      flash_enable_link = flash_plugins_elem.find_element_by_xpath(
-          './/a[text()="Enable"]')
-      flash_enable_link.click()
-      self.assertTrue(self.WaitUntil(lambda:
-          self._IsEnabled('Shockwave Flash')))
+    # Re-enable Flash plugin from flash detail info.
+    flash_enable_link = flash_plugins_elem.find_element_by_xpath(
+        './/a[text()="Enable"]')
+    flash_enable_link.click()
+    self.assertTrue(self.WaitUntil(lambda:
+        self._IsEnabled('Shockwave Flash')))
 
 
 if __name__ == '__main__':
