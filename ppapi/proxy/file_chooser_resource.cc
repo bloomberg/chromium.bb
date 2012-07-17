@@ -40,7 +40,7 @@ int32_t FileChooserResource::ShowWithoutUserGesture(
     PP_Var suggested_file_name,
     const PP_ArrayOutput& output,
     scoped_refptr<TrackedCallback> callback) {
-  int32_t result = ShowInternal(PP_FALSE, suggested_file_name, callback);
+  int32_t result = ShowInternal(save_as, suggested_file_name, callback);
   if (result == PP_OK_COMPLETIONPENDING)
     output_.set_pp_array_output(output);
   return result;
