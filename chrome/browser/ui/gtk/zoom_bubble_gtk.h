@@ -6,48 +6,39 @@
 #define CHROME_BROWSER_UI_GTK_ZOOM_BUBBLE_GTK_H_
 
 #include "base/basictypes.h"
-#include "base/memory/weak_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
-#include "chrome/browser/ui/gtk/gtk_theme_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 
-class Profile;
+class TabContents;
 
 typedef struct _GtkWidget GtkWidget;
 
-class ZoomBubbleGtk : public BubbleDelegateGtk,
-                      public content::NotificationObserver {
+class ZoomBubbleGtk {
  public:
   // Shows the zoom bubble, pointing at |anchor_widget|.
-  static void Show(GtkWidget* anchor, Profile* profile,
-    int zoomPercent, bool auto_close);
+  static void Show(GtkWidget* anchor, TabContents* tab_contents,
+      bool auto_close);
 
   // Closes the zoom bubble.
   static void Close();
 
-  // BubbleDelegateGtk:
-  virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
-
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
  private:
-  ZoomBubbleGtk(GtkWidget* anchor,
-                Profile* profile,
-                int zoom_percent,
-                bool auto_close);
+  ZoomBubbleGtk(GtkWidget* anchor, TabContents* tab_contents, bool auto_close);
   virtual ~ZoomBubbleGtk();
+
+  // Refreshes the bubble by changing the zoom percentage appropriately and
+  // resetting the timer if necessary.
+  void Refresh();
 
   // Closes the zoom bubble.
   void CloseBubble();
 
-  // Notified when |content_| is destroyed so this instance can be deleted.
+  // Notified when the bubble is destroyed so this instance can be deleted.
   CHROMEGTK_CALLBACK_0(ZoomBubbleGtk, void, OnDestroy);
+
+  // Fired when the reset link is clicked.
+  CHROMEGTK_CALLBACK_0(ZoomBubbleGtk, void, OnSetDefaultLinkClick);
 
   // Whether the currently displayed bubble will automatically close.
   bool auto_close_;
@@ -55,16 +46,14 @@ class ZoomBubbleGtk : public BubbleDelegateGtk,
   // Timer used to close the bubble when |auto_close_| is true.
   base::OneShotTimer<ZoomBubbleGtk> timer_;
 
-  // Provides colors.
-  GtkThemeService* theme_service_;
+  // The TabContents for the page whose zoom has changed.
+  TabContents* tab_contents_;
 
   // Label showing zoom percentage.
   GtkWidget* label_;
 
   // The BubbleGtk object containing the zoom bubble's content.
   BubbleGtk* bubble_;
-
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomBubbleGtk);
 };

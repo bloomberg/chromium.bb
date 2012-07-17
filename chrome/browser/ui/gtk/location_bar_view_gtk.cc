@@ -342,11 +342,8 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
     }
   }
 
-  // Zoom code is commented out for now because it is not complete for all
-  // platforms, so it should not be present in M21.
-  // TODO(khorimoto): Uncomment the code below once it is ready.
-  // CreateZoomButton();
-  // gtk_box_pack_end(GTK_BOX(hbox_.get()), zoom_.get(), FALSE, FALSE, 0);
+  CreateZoomButton();
+  gtk_box_pack_end(GTK_BOX(hbox_.get()), zoom_.get(), FALSE, FALSE, 0);
 
   content_setting_hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding + 1));
   gtk_widget_set_name(content_setting_hbox_.get(),
@@ -1235,10 +1232,7 @@ gboolean LocationBarViewGtk::OnZoomButtonPress(GtkWidget* widget,
   if (event->button == 1 && GetWebContents()) {
     // If the zoom icon is clicked, show the zoom bubble and keep it open until
     // it loses focus.
-    const ZoomController* zc = TabContents::FromWebContents(
-        GetWebContents())->zoom_controller();
-    ZoomBubbleGtk::Show(zoom_.get(), browser_->profile(),
-                        zc->zoom_percent(), false);
+    ZoomBubbleGtk::Show(zoom_.get(), GetTabContents(), false);
     return TRUE;
   }
   return FALSE;
@@ -1267,7 +1261,7 @@ void LocationBarViewGtk::ShowZoomBubble(int zoom_percent) {
   if (!zoom_.get() || toolbar_model_->input_in_progress())
     return;
 
-  ZoomBubbleGtk::Show(zoom_.get(), browser_->profile(), zoom_percent, true);
+  ZoomBubbleGtk::Show(zoom_.get(), GetTabContents(), true);
 }
 
 void LocationBarViewGtk::ShowStarBubble(const GURL& url,
