@@ -45,6 +45,8 @@
           'instance.h',
           'instance_handle.cc',
           'instance_handle.h',
+          'lock.cc',
+          'lock.h',
           'logging.h',
           'module.cc',
           'module.h',

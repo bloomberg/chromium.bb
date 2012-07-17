@@ -9,15 +9,11 @@
 #include <cassert>
 #include <deque>
 
-#include "thread_safe_ref_count.h"
-
 namespace event_queue {
 
 // This file provides a queue that uses a mutex and condition variable so that
 // one thread can put pointers into the queue and another thread can pull items
 // out of the queue.
-
-const int kPthreadMutexSuccess = 0;
 
 // Specifies whether we want to wait for the queue.
 enum QueueWaitingFlag {
@@ -30,6 +26,33 @@ enum QueueGetResult {
   kReturnedItem = 0,
   kDidNotWait = 1,
   kQueueWasCancelled
+};
+
+// A simple scoped mutex lock.
+// For most cases, pp::AutoLock in "ppapi/utility/threading/lock.h" can be
+// used; LockingQueue needs to use the pthread_mutex_t directly in
+// pthread_cond_wait so we reimplement a scoped lock here.
+class ScopedLock {
+ public:
+  explicit ScopedLock(pthread_mutex_t* mutex)
+      : mutex_(mutex) {
+    const int kPthreadMutexSuccess = 0;
+    if (pthread_mutex_lock(mutex_) != kPthreadMutexSuccess) {
+      mutex_ = NULL;
+    }
+  }
+  ~ScopedLock() {
+    if (mutex_ != NULL) {
+      pthread_mutex_unlock(mutex_);
+    }
+  }
+
+ private:
+  pthread_mutex_t* mutex_;  // Weak reference, passed in to constructor.
+
+  // Disable copy and assign.
+  ScopedLock& operator =(const ScopedLock&);
+  ScopedLock(const ScopedLock&);
 };
 
 // LockingQueue contains a collection of <T>, such as a collection of
@@ -85,8 +108,6 @@ class LockingQueue {
     // If |wait| is kWait, GetItem will wait to return until the queue
     // contains an item (unless the queue is cancelled).
     QueueGetResult GetItem(T* item_ptr, QueueWaitingFlag wait) {
-      // Because we use both pthread_mutex_lock and pthread_cond_wait,
-      // we directly use the mutex instead of using ScopedLock.
       ScopedLock scoped_mutex(&queue_mutex_);
       // Use a while loop to get an item. If the user does not want to wait,
       // we will exit from the loop anyway, unlocking the mutex.

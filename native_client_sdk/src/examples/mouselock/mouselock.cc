@@ -12,6 +12,12 @@
 
 #include "mouselock.h"
 
+#ifdef WIN32
+#undef min
+#undef max
+#undef PostMessage
+#endif
+
 // Indicate the direction of the mouse location relative to the center of the
 // view.  These values are used to determine which 2D quadrant the needle lies
 // in.

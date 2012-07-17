@@ -463,7 +463,7 @@ def ProcessProject(srcroot, dstroot, desc, toolchains):
     src_file = FindFile(src_name, srcroot, srcdirs)
     if not src_file:
       ErrorMsgFunc('Failed to find: ' + src_name)
-      return (None, None)
+      return None
     dst_file = os.path.join(out_dir, src_name)
     buildbot_common.CopyFile(src_file, dst_file)
 

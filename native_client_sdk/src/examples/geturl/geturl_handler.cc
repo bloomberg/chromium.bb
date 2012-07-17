@@ -11,6 +11,12 @@
 
 #include "geturl_handler.h"
 
+#ifdef WIN32
+#undef min
+#undef max
+#undef PostMessage
+#endif
+
 GetURLHandler* GetURLHandler::Create(pp::Instance* instance,
                                      const std::string& url) {
   return new GetURLHandler(instance, url);

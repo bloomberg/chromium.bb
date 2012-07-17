@@ -23,6 +23,12 @@
 #define INT32_MAX (0x7FFFFFFF)
 #endif
 
+#ifdef WIN32
+#undef min
+#undef max
+#undef PostMessage
+#endif
+
 namespace {
 /// Used for our simple protocol to communicate with Javascript
 const char* const kLoadPrefix = "ld";

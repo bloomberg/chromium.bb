@@ -21,7 +21,6 @@
 
 #include "custom_events.h"
 #include "shared_queue.h"
-#include "thread_safe_ref_count.h"
 
 namespace event_queue {
 const char* const kDidChangeView = "DidChangeView";
@@ -300,8 +299,8 @@ class EventInstance : public pp::Instance {
       pp::Module::Get()->core()->CallOnMainThread(
           0,
           event_instance->callback_factory().NewCallback(
-            &EventInstance::PostStringToBrowser,
-            event_string));
+              &EventInstance::PostStringToBrowser,
+              event_string));
     }  // end of while loop.
     return 0;
   }
@@ -309,8 +308,7 @@ class EventInstance : public pp::Instance {
   // Return the callback factory.
   // Allows the static method (ProcessEventOnWorkerThread) to use
   // the |event_instance| pointer to get the factory.
-  pp::CompletionCallbackFactory<EventInstance, ThreadSafeRefCount>&
-      callback_factory() {
+  pp::CompletionCallbackFactory<EventInstance>& callback_factory() {
     return callback_factory_;
   }
 
@@ -327,8 +325,7 @@ class EventInstance : public pp::Instance {
     }
     pthread_t event_thread_;
     LockingQueue<Event*> event_queue_;
-    pp::CompletionCallbackFactory<EventInstance, ThreadSafeRefCount>
-        callback_factory_;
+    pp::CompletionCallbackFactory<EventInstance> callback_factory_;
 };
 
 // The EventModule provides an implementation of pp::Module that creates

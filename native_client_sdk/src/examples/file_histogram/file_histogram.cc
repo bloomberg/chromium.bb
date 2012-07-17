@@ -36,6 +36,12 @@
 #include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
+#ifdef WIN32
+#undef min
+#undef max
+#undef PostMessage
+#endif
+
 namespace {
 
 const uint32_t kBlue = 0xff4040ffu;
