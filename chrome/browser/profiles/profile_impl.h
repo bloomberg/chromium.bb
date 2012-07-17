@@ -23,12 +23,9 @@
 class ExtensionNavigationObserver;
 class NetPrefObserver;
 class PrefService;
+class PromoResourceService;
 class SSLConfigServiceManager;
 class VisitedLinkEventListener;
-
-#if defined(ENABLE_PROMO_RESOURCE_SERVICE)
-class PromoResourceService;
-#endif
 
 #if defined(OS_CHROMEOS)
 namespace chromeos {
@@ -210,9 +207,7 @@ class ProfileImpl : public Profile,
       extension_special_storage_policy_;
   scoped_ptr<NetPrefObserver> net_pref_observer_;
 
-#if defined(ENABLE_PROMO_RESOURCE_SERVICE)
   scoped_refptr<PromoResourceService> promo_resource_service_;
-#endif
 
   scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;
 

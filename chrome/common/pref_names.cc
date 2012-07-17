@@ -1426,10 +1426,8 @@ const char kNtpMostVisitedURLsBlacklist[] = "ntp.most_visited_blacklist";
 // dynamically deliver data for the new tab page.
 const char kNtpPromoResourceCache[] = "ntp.promo_resource_cache";
 
-#if defined(ENABLE_PROMO_RESOURCE_SERVICE)
 // Last time of update of promo_resource_cache.
 const char kNtpPromoResourceCacheUpdate[] = "ntp.promo_resource_cache_update";
-#endif
 
 // Serves promo resources for the NTP.
 const char kNtpPromoResourceServer[] = "ntp.web_resource_server";
@@ -1446,12 +1444,11 @@ const char kNtpShownBookmarksFolder[] = "ntp.shown_bookmarks_folder";
 // Which page should be visible on the new tab page v4
 const char kNtpShownPage[] = "ntp.shown_page";
 
-#if defined(ENABLE_PROMO_RESOURCE_SERVICE)
+// TODO(achuith): Deprecated, will be removed (M23)
 // Dates between which the NTP should show a custom logo rather than the
 // standard one.
 const char kNtpCustomLogoStart[] = "ntp.alt_logo_start";
 const char kNtpCustomLogoEnd[] = "ntp.alt_logo_end";
-#endif
 
 // The promo resource service version number.
 const char kNtpPromoVersion[] = "ntp.promo_version";

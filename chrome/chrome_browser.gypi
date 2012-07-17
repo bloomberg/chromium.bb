@@ -4358,11 +4358,6 @@
             'browser/ui/views/sync/one_click_signin_bubble_view.h',
           ]
         }],
-        ['enable_promo_resource_service==0', {
-          'sources/': [
-            ['exclude', '^browser/web_resource/promo_resource_service'],
-          ],
-        }],
         ['enable_task_manager==0', {
           'sources/': [
             ['exclude', '^browser/task_manager/'],

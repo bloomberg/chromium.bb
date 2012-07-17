@@ -407,14 +407,12 @@ void NTPResourceCache::CreateNewTabHTML() {
   load_time_data.SetString("themegravity",
       (alignment & ThemeService::ALIGN_RIGHT) ? "right" : "");
 
-#if defined(ENABLE_PROMO_RESOURCE_SERVICE)
   // If the user has preferences for a start and end time for a promo from
   // the server, and this promo string exists, set the localized string.
   if (PromoResourceService::CanShowNotificationPromo(profile_)) {
     load_time_data.SetString("serverpromo",
         prefs->GetString(prefs::kNtpPromoLine));
   }
-#endif
 
   // Determine whether to show the menu for accessing tabs on other devices.
   bool show_other_sessions_menu = !CommandLine::ForCurrentProcess()->HasSwitch(

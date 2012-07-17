@@ -2065,11 +2065,6 @@
             'browser/ui/sync/one_click_signin_helper_unittest.cc',
           ]
         }],
-        ['enable_promo_resource_service==0', {
-          'sources/': [
-            ['exclude', '^browser/web_resource/promo_resource_service'],
-          ],
-        }],
         ['disable_nacl==1', {
           'sources!':[
             'browser/nacl_host/nacl_validation_cache_unittest.cc',
