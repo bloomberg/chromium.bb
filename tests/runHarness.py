@@ -32,7 +32,7 @@ import os
 import sys
 import traceback
 from glob import iglob
-from louis import translate, backTranslateString
+from louis import translate, backTranslateString, hyphenate
 from louis import noContractions, compbrlAtCursor, dotsIO, comp8Dots, pass1Only, compbrlLeftCursor, otherTrans, ucBrl
 
 try:
@@ -127,6 +127,19 @@ class BrailleTest():
     def __str__(self):
         return "%s" % self.harnessName
 
+    def hyphenateword(self, tables, word, mode):
+        # FIXME: liblouis currently crashes if we dont add space at end of the word, probably due to a counter running past the end of the string.
+        # medium/longterm this hack should be removed, and the root of the problem found/resolved.
+        hyphen_mask=hyphenate(tables, word+' ', mode)
+        inlen=len(word)
+        hyphen_word = ''
+        for i in range(inlen):
+            if hyphen_mask[i]=='0':
+                hyphen_word=hyphen_word+word[i]
+            else:
+                hyphen_word=hyphen_word+'-'+word[i]
+        return hyphen_word
+
     def check_translate(self):
         if self.cursorPos is not None:
             tBrl, temp1, temp2, tBrlCurPos = translate(self.tables, self.input, mode=self.mode, cursorPos=self.cursorPos)
@@ -169,6 +182,18 @@ class BrailleTest():
         ]
         assert tBrlCurPos == self.expectedBrlCursorPos, u("\n".join(report))
 
+    def check_hyphenate(self):
+        hyphenated_word = self.hyphenateword(self.tables, self.input, mode=self.mode)
+        template = "%-25s '%s'"
+        report = [
+            "--- Hyphenation failure: %s ---" % self.__str__(),
+            template % ("input:", self.input),
+            template % ("expected hyphenated word:", self.expectedOutput),
+            template % ("actual hyphenated word:", hyphenated_word),
+            "--- end ---",
+        ]
+        assert hyphenated_word == self.expectedOutput, u("\n".join(report))
+
 def test_allCases():
     harness_dir = "harness"
     if 'HARNESS_DIR' in os.environ:
@@ -209,6 +234,9 @@ def test_allCases():
                         yield bt.check_cursor
                 if test['testmode'] == 'backtranslate':
                     yield bt.check_backtranslate
+                if test['testmode'] == 'hyphenate':
+                    yield bt.check_hyphenate
+
 
 if __name__ == '__main__':
     run(addplugins=[Reporter()], argv=['-v', '--with-reporter', sys.argv[0]], defaultTest=__name__)
