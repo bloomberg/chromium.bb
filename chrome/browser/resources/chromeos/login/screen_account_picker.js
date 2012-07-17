@@ -62,49 +62,31 @@ cr.define('login', function() {
     },
 
     /**
+     * Event handler that is invoked just after the frame is shown.
+     * @param {string} data Screen init payload.
+     */
+    onAfterShow: function(data) {
+      $('pod-row').handleAfterShow();
+    },
+
+    /**
      * Event handler that is invoked just before the frame is shown.
      * @param {string} data Screen init payload.
      */
     onBeforeShow: function(data) {
       chrome.send('hideCaptivePortal');
       var podRow = $('pod-row');
-      podRow.handleShow();
+      podRow.handleBeforeShow();
 
       // If this is showing for the lock screen display the sign out button,
       // hide the add user button and activate the locked user's pod.
       var lockedPod = podRow.lockedPod;
       $('add-user-header-bar-item').hidden = !!lockedPod;
       $('sign-out-user-item').hidden = !lockedPod;
-      var preselectedPod = PRESELECT_FIRST_POD ?
-          lockedPod || podRow.pods[0] : lockedPod;
-      if (preselectedPod) {
-        // TODO(altimofeev): empirically I investigated that focus isn't
-        // set correctly if following CSS rules are present:
-        //
-        // podrow {
-        //   -webkit-transition: all 200ms ease-in-out;
-        // }
-        // .pod {
-        //  -webkit-transition: all 230ms ease;
-        // }
-        //
-        // Workaround is either delete these rules or delay the focus setting.
-        var self = this;
-        preselectedPod.addEventListener('webkitTransitionEnd', function f(e) {
-          if (e.target == preselectedPod) {
-            podRow.focusPod(preselectedPod);
-            preselectedPod.removeEventListener('webkitTransitionEnd', f);
-            // Delay the accountPickerReady signal so that if there are any
-            // timeouts waiting to fire we can process these first. This was
-            // causing crbug.com/112218 as the account pod was sometimes focuse
-            // using focusPod (which resets the password) after the test code
-            // set the password.
-            self.onShow();
-          }
-        });
-      } else {
+      // In case of the preselected pod onShow will be called once pod
+      // receives focus.
+      if (!podRow.preselectedPod)
         this.onShow();
-      }
     },
 
     /**

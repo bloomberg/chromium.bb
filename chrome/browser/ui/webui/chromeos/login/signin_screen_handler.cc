@@ -463,6 +463,9 @@ void SigninScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("userSelectedDelayed",
       base::Bind(&SigninScreenHandler::HandleUserSelected,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("userDeselected",
+      base::Bind(&SigninScreenHandler::HandleUserDeselected,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("removeUser",
       base::Bind(&SigninScreenHandler::HandleRemoveUser,
                  base::Unretained(this)));
@@ -742,15 +745,13 @@ void SigninScreenHandler::HandleAuthenticateUser(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::HandleLaunchDemoUser(const base::ListValue* args) {
-  if (!delegate_)
-    return;
-  delegate_->LoginAsDemoUser();
+  if (delegate_)
+    delegate_->LoginAsDemoUser();
 }
 
 void SigninScreenHandler::HandleLaunchIncognito(const base::ListValue* args) {
-  if (!delegate_)
-    return;
-  delegate_->LoginAsGuest();
+  if (delegate_)
+    delegate_->LoginAsGuest();
 }
 
 void SigninScreenHandler::HandleFixCaptivePortal(const base::ListValue* args) {
@@ -801,6 +802,11 @@ void SigninScreenHandler::HandleShutdownSystem(const base::ListValue* args) {
 #endif
 }
 
+void SigninScreenHandler::HandleUserDeselected(const base::ListValue* args) {
+  if (delegate_)
+    delegate_->UserDeselected();
+}
+
 void SigninScreenHandler::HandleUserSelected(const base::ListValue* args) {
   if (!delegate_)
     return;
@@ -846,9 +852,8 @@ void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
 
 void SigninScreenHandler::HandleToggleEnrollmentScreen(
     const base::ListValue* args) {
-  if (!delegate_)
-    return;
-  delegate_->ShowEnterpriseEnrollmentScreen();
+  if (delegate_)
+    delegate_->ShowEnterpriseEnrollmentScreen();
 }
 
 void SigninScreenHandler::HandleLaunchHelpApp(const base::ListValue* args) {
@@ -1023,9 +1028,8 @@ void SigninScreenHandler::HandleDemoWebuiReady(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::HandleSignOutUser(const base::ListValue* args) {
-  if (!delegate_)
-    return;
-  delegate_->Signout();
+  if (delegate_)
+    delegate_->Signout();
 }
 
 void SigninScreenHandler::HandleUserImagesLoaded(const base::ListValue* args) {
@@ -1043,9 +1047,8 @@ void SigninScreenHandler::HandleNetworkErrorShown(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::HandleCreateAccount(const base::ListValue* args) {
-  if (!delegate_)
-    return;
-  delegate_->CreateAccount();
+  if (delegate_)
+    delegate_->CreateAccount();
 }
 
 void SigninScreenHandler::HandleOpenProxySettings(const base::ListValue* args) {

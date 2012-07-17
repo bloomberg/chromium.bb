@@ -165,6 +165,9 @@ cr.define('cr.ui.login', function() {
 
       newStep.classList.remove('hidden');
 
+      if (newStep.onAfterShow)
+        newStep.onAfterShow(screenData);
+
       if (this.isOobeUI()) {
         // Start gliding animation for OOBE steps.
         if (nextStepIndex > this.currentStep_) {

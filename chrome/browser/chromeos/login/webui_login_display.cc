@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
+#include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -192,6 +193,10 @@ void WebUILoginDisplay::CreateAccount() {
   DCHECK(delegate_);
   if (delegate_)
     delegate_->CreateAccount();
+}
+
+void WebUILoginDisplay::UserDeselected() {
+  WallpaperManager::Get()->UserDeselected();
 }
 
 void WebUILoginDisplay::UserSelected(const std::string& username) {

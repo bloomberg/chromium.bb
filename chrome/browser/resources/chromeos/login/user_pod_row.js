@@ -15,11 +15,25 @@ cr.define('login', function() {
   var POD_WIDTH = 170 + 2 * (10 + 10);
 
   /**
+   * Whether to preselect the first pod automatically on login screen.
+   * @type {boolean}
+   * @const
+   */
+  var PRESELECT_FIRST_POD = true;
+
+  /**
    * Wallpaper load delay in milliseconds.
    * @type {number}
    * @const
    */
-  var WALLPAPER_LOAD_DELAY_MS = 800;
+  var WALLPAPER_LOAD_DELAY_MS = 500;
+
+  /**
+   * Wallpaper load delay in milliseconds. TODO(nkostylev): Tune this constant.
+   * @type {number}
+   * @const
+   */
+  var WALLPAPER_BOAT_LOAD_DELAY_MS = 500;
 
   /**
    * Oauth token status. These must match UserManager::OAuthTokenStatus.
@@ -33,7 +47,7 @@ cr.define('login', function() {
   };
 
   /**
-   * Tab order for user pods.  Update these when adding new controls.
+   * Tab order for user pods. Update these when adding new controls.
    * @enum {number}
    * @const
    */
@@ -112,20 +126,11 @@ cr.define('login', function() {
      * Initializes the pod after its properties set and added to a pod row.
      */
     initialize: function() {
-      // TODO(flackr): Get rid of multiple blur listeners. We should be able to
-      // use a single focusout listener on the pod or entire row but this is not
-      // being sent for some reason when you open the status area menus despite
-      // blur being sent.
       if (!this.isGuest) {
         this.passwordElement.addEventListener('keydown',
             this.parentNode.handleKeyDown.bind(this.parentNode));
         this.passwordElement.addEventListener('keypress',
             this.handlePasswordKeyPress_.bind(this));
-        this.passwordElement.addEventListener('blur',
-            this.parentNode.handleBlur.bind(this.parentNode));
-      } else {
-        this.enterButtonElement.addEventListener('blur',
-            this.parentNode.handleBlur.bind(this.parentNode));
       }
 
       this.imageElement.addEventListener('load',
@@ -433,6 +438,12 @@ cr.define('login', function() {
   PodRow.prototype = {
     __proto__: HTMLDivElement.prototype,
 
+    // Whether this user pod row is shown for the first time.
+    firstShown_: true,
+
+    // True if inside focusPod().
+    insideFocusPod_: false,
+
     // Focused pod.
     focusedPod_: undefined,
 
@@ -464,7 +475,7 @@ cr.define('login', function() {
      * @type {NodeList}
      */
     get pods() {
-      return this.children;
+      return this.childNodes;
     },
 
     hideTitles: function() {
@@ -485,7 +496,7 @@ cr.define('login', function() {
      * Returns pod with the given username (null if there is no such pod).
      * @param {string} username Username to be matched.
      * @return {Object} Pod with the given username. null if pod hasn't been
-     *     found.
+     *                  found.
      */
     getPodWithUsername_: function(username) {
       for (var i = 0, pod; pod = this.pods[i]; ++i) {
@@ -620,17 +631,23 @@ cr.define('login', function() {
       for (var i = 0, pod; pod = this.pods[i]; ++i) {
         this.podsWithPendingImages_.push(pod);
       }
+      this.focusPod(this.preselectedPod);
     },
 
     /**
      * Focuses a given user pod or clear focus when given null.
      * @param {UserPod=} podToFocus User pod to focus (undefined clears focus).
      * @param {boolean=} opt_force If true, forces focus update even when
-     *     podToFocus is already focused.
+     *                             podToFocus is already focused.
      */
     focusPod: function(podToFocus, opt_force) {
       if (this.focusedPod_ == podToFocus && !opt_force)
         return;
+
+      // Make sure there's only one focusPod operation happening at a time.
+      if (this.insideFocusPod_)
+        return;
+      this.insideFocusPod_ = true;
 
       clearTimeout(this.loadWallpaperTimeout_);
       for (var i = 0, pod; pod = this.pods[i]; ++i) {
@@ -649,17 +666,28 @@ cr.define('login', function() {
         podToFocus.classList.add('focused');
         podToFocus.reset(true);  // Reset and give focus.
         this.scrollPodIntoView(podToFocus);
-        // Load wallpaper immediately if there no pod was focused previously,
-        // otherwise delay loading to let user tab through pods without lag.
         if (hadFocus) {
+          // Delay wallpaper loading to let user tab through pods without lag.
           this.loadWallpaperTimeout_ = window.setTimeout(
               this.loadWallpaper_.bind(this), WALLPAPER_LOAD_DELAY_MS);
         } else {
-          this.loadWallpaper_();
+          if (!this.firstShown_) {
+            // Load wallpaper immediately if there no pod was focused
+            // previously, and it is not a boot into user pod list case.
+            this.loadWallpaper_();
+          } else {
+            // Boot transition. Delay wallpaper load to remove jank
+            // happening when wallpaper load is competing for resources with
+            // login WebUI.
+            this.loadWallpaperTimeout_ = window.setTimeout(
+                this.loadWallpaper_.bind(this), WALLPAPER_BOAT_LOAD_DELAY_MS);
+            this.firstShown_ = false;
+          }
         }
       } else {
-        // TODO(ivankr): reset wallpaper.
+        chrome.send('userDeselected');
       }
+      this.insideFocusPod_ = false;
     },
 
     loadWallpaper_: function() {
@@ -689,6 +717,17 @@ cr.define('login', function() {
           return pod;
       }
       return null;
+    },
+
+    /**
+     * The pod that is preselected on user pod row show.
+     * @type {?UserPod}
+     */
+    get preselectedPod() {
+      var lockedPod = this.lockedPod;
+      var preselectedPod = PRESELECT_FIRST_POD ?
+          lockedPod || this.pods[0] : lockedPod;
+      return preselectedPod;
     },
 
     /**
@@ -723,9 +762,9 @@ cr.define('login', function() {
     },
 
     /**
-    * Resets OAuth token status (invalidates it).
-    * @param {string} username User for which to reset the status.
-    */
+     * Resets OAuth token status (invalidates it).
+     * @param {string} username User for which to reset the status.
+     */
     resetUserOAuthTokenStatus: function(username) {
       var pod = this.getPodWithUsername_(username);
       if (pod) {
@@ -746,8 +785,9 @@ cr.define('login', function() {
         return;
       // Clears focus if not clicked on a pod.
       if (e.target.parentNode != this &&
-          e.target.parentNode.parentNode != this)
+          e.target.parentNode.parentNode != this) {
         this.focusPod();
+      }
     },
 
     /**
@@ -776,15 +816,6 @@ cr.define('login', function() {
         // on a pod nor on a button/input for a pod.
         this.focusPod();
       }
-    },
-
-    /**
-     * Handles a blur event.
-     * @param {Event} e Blur Event object.
-     */
-    handleBlur: function(e) {
-      // Clear focus when the pod input is blurred.
-      this.focusPod();
     },
 
     /**
@@ -829,9 +860,28 @@ cr.define('login', function() {
     },
 
     /**
-     * Called when the pod row is shown.
+     * Called right after the pod row is shown.
      */
-    handleShow: function() {
+    handleAfterShow: function() {
+      // Force input focus for user pod on show and once transition ends.
+      if (this.focusedPod_) {
+        var focusedPod = this.focusedPod_;
+        var screen = this.parentNode;
+        focusedPod.addEventListener('webkitTransitionEnd', function f(e) {
+          if (e.target == focusedPod) {
+            focusedPod.removeEventListener('webkitTransitionEnd', f);
+            focusedPod.reset(true);
+            // Notify screen that it is ready.
+            screen.onShow();
+          }
+        });
+      }
+    },
+
+    /**
+     * Called right before the pod row is shown.
+     */
+    handleBeforeShow: function() {
       for (var event in this.listeners_) {
         this.ownerDocument.addEventListener(
             event, this.listeners_[event][0], this.listeners_[event][1]);

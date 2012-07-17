@@ -19,12 +19,9 @@ namespace chromeos {
 class WallpaperManager: public system::TimezoneSettings::Observer,
                         public chromeos::ResumeObserver {
  public:
-  WallpaperManager();
-
   static WallpaperManager* Get();
 
-  // Sets last selected user on user pod row.
-  void SetLastSelectedUser(std::string last_selected_user);
+  WallpaperManager();
 
   // Adds PowerManagerClient observer. It needs to be added after
   // PowerManagerClient initialized.
@@ -34,19 +31,25 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // Cancel any previous timer if any.
   void RestartTimer();
 
+  // Sets last selected user on user pod row.
+  void SetLastSelectedUser(const std::string& last_selected_user);
+
+  // User was deselected at login screen, reset wallpaper if needed.
+  void UserDeselected();
+
  private:
   virtual ~WallpaperManager();
-
-  // Overridden from system::TimezoneSettings::Observer.
-  virtual void TimezoneChanged(const icu::TimeZone& timezone) OVERRIDE;
-
-  // Overridden from chromeos::ResumeObserver
-  virtual void SystemResumed() OVERRIDE;
 
   // Change the wallpapers for users who choose DAILY wallpaper type. Updates
   // current wallpaper if it changed. This function should be called at exactly
   // at 0am if chromeos device is on.
   void BatchUpdateWallpaper();
+
+  // Overridden from chromeos::ResumeObserver
+  virtual void SystemResumed() OVERRIDE;
+
+  // Overridden from system::TimezoneSettings::Observer.
+  virtual void TimezoneChanged(const icu::TimeZone& timezone) OVERRIDE;
 
   // The last selected user on user pod row.
   std::string last_selected_user_;

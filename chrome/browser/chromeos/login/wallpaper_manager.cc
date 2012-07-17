@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 
+#include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_resources.h"
+#include "ash/shell.h"
 #include "base/logging.h"
 #include "base/time.h"
 #include "base/values.h"
@@ -25,18 +27,18 @@ namespace chromeos {
 
 static WallpaperManager* g_wallpaper_manager = NULL;
 
+// WallpaperManager, public: ---------------------------------------------------
+
+// static
+WallpaperManager* WallpaperManager::Get() {
+  if (!g_wallpaper_manager)
+    g_wallpaper_manager = new WallpaperManager();
+  return g_wallpaper_manager;
+}
+
 WallpaperManager::WallpaperManager() : last_selected_user_("") {
   system::TimezoneSettings::GetInstance()->AddObserver(this);
   RestartTimer();
-}
-
-WallpaperManager::~WallpaperManager() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
-  system::TimezoneSettings::GetInstance()->RemoveObserver(this);
-}
-
-void WallpaperManager::SetLastSelectedUser(std::string last_selected_user) {
-  last_selected_user_ = last_selected_user;
 }
 
 void WallpaperManager::AddPowerManagerClientObserver() {
@@ -60,12 +62,24 @@ void WallpaperManager::RestartTimer() {
   }
 }
 
-void WallpaperManager::TimezoneChanged(const icu::TimeZone& timezone) {
-  RestartTimer();
+void WallpaperManager::SetLastSelectedUser(
+    const std::string& last_selected_user) {
+  last_selected_user_ = last_selected_user;
 }
 
-void WallpaperManager::SystemResumed() {
-  BatchUpdateWallpaper();
+void WallpaperManager::UserDeselected() {
+  if (!UserManager::Get()->IsUserLoggedIn()) {
+    // This will set default login wallpaper (#fefefe).
+    ash::Shell::GetInstance()->desktop_background_controller()->
+        SetDefaultWallpaper(ash::GetSolidColorIndex());
+  }
+}
+
+// WallpaperManager, private: --------------------------------------------------
+
+WallpaperManager::~WallpaperManager() {
+  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+  system::TimezoneSettings::GetInstance()->RemoveObserver(this);
 }
 
 void WallpaperManager::BatchUpdateWallpaper() {
@@ -108,11 +122,12 @@ void WallpaperManager::BatchUpdateWallpaper() {
   RestartTimer();
 }
 
-// static
-WallpaperManager* WallpaperManager::Get() {
-  if(!g_wallpaper_manager)
-    g_wallpaper_manager = new WallpaperManager();
-  return g_wallpaper_manager;
+void WallpaperManager::SystemResumed() {
+  BatchUpdateWallpaper();
+}
+
+void WallpaperManager::TimezoneChanged(const icu::TimeZone& timezone) {
+  RestartTimer();
 }
 
 }  // chromeos
