@@ -664,51 +664,62 @@ def CMDhashtable(args):
   """
   parser = OptionParserIsolate(command='hashtable')
   options, _ = parser.parse_args(args)
-  complete_state = load_complete_state(options, WITH_HASH)
 
-  options.outdir = (
-      options.outdir or os.path.join(complete_state.resultdir, 'hashtable'))
-  if not os.path.isdir(options.outdir):
-    os.makedirs(options.outdir)
+  success = False
+  try:
+    complete_state = load_complete_state(options, WITH_HASH)
 
-  # Map each of the file.
-  for relfile, properties in complete_state.result.files.iteritems():
-    infile = os.path.join(complete_state.root_dir, relfile)
-    if not 'sha-1' in properties:
-      # It's a symlink.
-      continue
-    outfile = os.path.join(options.outdir, properties['sha-1'])
-    if os.path.isfile(outfile):
-      # Just do a quick check that the file size matches. No need to stat()
-      # again the input file, grab the value from the dict.
-      out_size = os.stat(outfile).st_size
-      in_size = complete_state.result.files[relfile]['size']
-      if in_size == out_size:
+    options.outdir = (
+        options.outdir or os.path.join(complete_state.resultdir, 'hashtable'))
+    if not os.path.isdir(options.outdir):
+      os.makedirs(options.outdir)
+
+    # Map each of the file.
+    for relfile, properties in complete_state.result.files.iteritems():
+      infile = os.path.join(complete_state.root_dir, relfile)
+      if not 'sha-1' in properties:
+        # It's a symlink.
         continue
-      # Otherwise, an exception will be raised.
-    logging.info('%s -> %s' % (relfile, properties['sha-1']))
+      outfile = os.path.join(options.outdir, properties['sha-1'])
+      if os.path.isfile(outfile):
+        # Just do a quick check that the file size matches. No need to stat()
+        # again the input file, grab the value from the dict.
+        out_size = os.stat(outfile).st_size
+        in_size = complete_state.result.files[relfile]['size']
+        if in_size == out_size:
+          continue
+        # Otherwise, an exception will be raised.
+      logging.info('%s -> %s' % (relfile, properties['sha-1']))
+      run_test_from_archive.link_file(
+          outfile, infile, run_test_from_archive.HARDLINK)
+
+    complete_state.save_files()
+
+    # Also archive the .result file.
+    with open(complete_state.result_file, 'rb') as f:
+      result_hash = hashlib.sha1(f.read()).hexdigest()
+    logging.info(
+        '%s -> %s' %
+        (os.path.basename(complete_state.result_file), result_hash))
+    outfile = os.path.join(options.outdir, result_hash)
+    if os.path.isfile(outfile):
+      # Just do a quick check that the file size matches. If they do, skip the
+      # archive. This mean the build result didn't change at all.
+      out_size = os.stat(outfile).st_size
+      in_size = os.stat(complete_state.result_file).st_size
+      if in_size == out_size:
+        success = True
+        return 0
+
     run_test_from_archive.link_file(
-        outfile, infile, run_test_from_archive.HARDLINK)
-
-  complete_state.save_files()
-
-  # Also archive the .result file.
-  with open(complete_state.result_file, 'rb') as f:
-    result_hash = hashlib.sha1(f.read()).hexdigest()
-  logging.info(
-      '%s -> %s' % (os.path.basename(complete_state.result_file), result_hash))
-  outfile = os.path.join(options.outdir, result_hash)
-  if os.path.isfile(outfile):
-    # Just do a quick check that the file size matches. If they do, skip the
-    # archive. This mean the build result didn't change at all.
-    out_size = os.stat(outfile).st_size
-    in_size = os.stat(complete_state.result_file).st_size
-    if in_size == out_size:
-      return 0
-
-  run_test_from_archive.link_file(
-      outfile, complete_state.result_file, run_test_from_archive.HARDLINK)
-  return 0
+        outfile, complete_state.result_file, run_test_from_archive.HARDLINK)
+    success = True
+    return 0
+  finally:
+    # If the command failed, delete the .results file if it exists. This is
+    # important so no stale swarm job is executed.
+    if not success and os.path.isfile(options.result):
+      os.remove(options.result)
 
 
 def CMDnoop(args):
