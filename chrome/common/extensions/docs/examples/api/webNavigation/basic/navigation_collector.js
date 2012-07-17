@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,6 +60,8 @@ function NavigationCollector() {
       this.onErrorOccurredListener_.bind(this));
   chrome.webNavigation.onReferenceFragmentUpdated.addListener(
       this.onReferenceFragmentUpdatedListener_.bind(this));
+  chrome.webNavigation.onHistoryStateUpdated.addListener(
+      this.onHistoryStateUpdatedListener_.bind(this));
 
   // Bind handler to extension messages for communication from popup.
   chrome.extension.onRequest.addListener(this.onRequestListener_.bind(this));
@@ -232,6 +234,40 @@ NavigationCollector.prototype = {
    * @private
    */
   onReferenceFragmentUpdatedListener_: function(data) {
+    var id = this.parseId_(data);
+    if (!this.pending_[id]) {
+      this.completed_[data.url] = this.completed_[data.url] || [];
+      this.completed_[data.url].push({
+        duration: 0,
+        openedInNewWindow: false,
+        source: {
+          frameId: null,
+          tabId: null
+        },
+        transitionQualifiers: data.transitionQualifiers,
+        transitionType: data.transitionType,
+        url: data.url
+      });
+    } else {
+      this.prepareDataStorage_(id, data.url);
+      this.pending_[id].transitionType = data.transitionType;
+      this.pending_[id].transitionQualifiers =
+          data.transitionQualifiers;
+    }
+  },
+
+
+  /**
+   * Handler for the 'onHistoryStateUpdated' event. Updates the pending
+   * request with transition information.
+   *
+   * Pushes the request onto the
+   * 'pending_' object, and stores it for later use.
+   *
+   * @param {!Object} data The event data generated for this request.
+   * @private
+   */
+  onHistoryStateUpdatedListener_: function(data) {
     var id = this.parseId_(data);
     if (!this.pending_[id]) {
       this.completed_[data.url] = this.completed_[data.url] || [];

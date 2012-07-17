@@ -31,6 +31,7 @@ using content::WebContents;
 #define MAYBE_WebNavigationSimpleLoad DISABLED_WebNavigationSimpleLoad
 #define MAYBE_WebNavigationReferenceFragment \
     DISABLED_WebNavigationReferenceFragment
+#define MAYBE_WebNavigationHistory DISABLED_WebNavigationHistory
 #define MAYBE_WebNavigationOpenTab DISABLED_WebNavigationOpenTab
 #define MAYBE_WebNavigationFilteredTest DISABLED_WebNavigationFilteredTest
 #else
@@ -41,6 +42,7 @@ using content::WebContents;
 #define MAYBE_WebNavigationGetFrame WebNavigationGetFrame
 #define MAYBE_WebNavigationSimpleLoad WebNavigationSimpleLoad
 #define MAYBE_WebNavigationReferenceFragment WebNavigationReferenceFragment
+#define MAYBE_WebNavigationHistory WebNavigationHistory
 #define MAYBE_WebNavigationOpenTab WebNavigationOpenTab
 #define MAYBE_WebNavigationFilteredTest WebNavigationFilteredTest
 #endif
@@ -330,6 +332,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationTargetBlankIncognito) {
   tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationHistory) {
+  FrameNavigationState::set_allow_extension_scheme(true);
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
+
+  ASSERT_TRUE(
+      RunExtensionSubtest("webnavigation", "test_history.html"))
+          << message_;
 }
 
 }  // namespace extensions

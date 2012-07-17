@@ -360,6 +360,7 @@
     "chrome.webNavigation.onCreatedNavigationTarget": "webNavigation.html#event-onCreatedNavigationTarget",
     "chrome.webNavigation.onDOMContentLoaded": "webNavigation.html#event-onDOMContentLoaded",
     "chrome.webNavigation.onErrorOccurred": "webNavigation.html#event-onErrorOccurred",
+    "chrome.webNavigation.onHistoryStateUpdated": "webNavigation.html#event-onHistoryStateUpdated",
     "chrome.webNavigation.onReferenceFragmentUpdated": "webNavigation.html#event-onReferenceFragmentUpdated",
     "chrome.webNavigation.onTabReplaced": "webNavigation.html#event-onTabReplaced",
     "chrome.webRequest.handlerBehaviorChanged": "webRequest.html#method-handlerBehaviorChanged",
@@ -2731,6 +2732,7 @@
         "chrome.webNavigation.onCompleted",
         "chrome.webNavigation.onCreatedNavigationTarget",
         "chrome.webNavigation.onErrorOccurred",
+        "chrome.webNavigation.onHistoryStateUpdated",
         "chrome.webNavigation.onReferenceFragmentUpdated"
       ],
       "crx_path": null,
@@ -2746,7 +2748,7 @@
       "packaged_app": false,
       "path": "examples/api/webNavigation/basic/",
       "protocols": [],
-      "search_string": "WEBNAVIGATION TECH DEMO DEMONSTRATION OF THE WEBNAVIGATION EXTENSION API. BACKGROUND_PAGE BROWSER_ACTION WEBNAVIGATION CHROME.I18N.GETMESSAGE CHROME.WEBNAVIGATION.ONBEFORENAVIGATE CHROME.WEBNAVIGATION.ONCOMMITTED CHROME.WEBNAVIGATION.ONCOMPLETED CHROME.WEBNAVIGATION.ONCREATEDNAVIGATIONTARGET CHROME.WEBNAVIGATION.ONERROROCCURRED CHROME.WEBNAVIGATION.ONREFERENCEFRAGMENTUPDATED",
+      "search_string": "WEBNAVIGATION TECH DEMO DEMONSTRATION OF THE WEBNAVIGATION EXTENSION API. BACKGROUND_PAGE BROWSER_ACTION WEBNAVIGATION CHROME.I18N.GETMESSAGE CHROME.WEBNAVIGATION.ONBEFORENAVIGATE CHROME.WEBNAVIGATION.ONCOMMITTED CHROME.WEBNAVIGATION.ONCOMPLETED CHROME.WEBNAVIGATION.ONCREATEDNAVIGATIONTARGET CHROME.WEBNAVIGATION.ONERROROCCURRED CHROME.WEBNAVIGATION.ONHISTORYSTATEUPDATED CHROME.WEBNAVIGATION.ONREFERENCEFRAGMENTUPDATED",
       "source_files": [
         "_locales/en/messages.json",
         "background.js",
@@ -2756,7 +2758,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "b3b6eb02fe573a1a3b4c8e05cc2908e74811e825",
+      "source_hash": "a95f6a3e4b092d8304993ce574db6c7659074b48",
       "zip_path": "examples/api/webNavigation/basic.zip"
     },
     {

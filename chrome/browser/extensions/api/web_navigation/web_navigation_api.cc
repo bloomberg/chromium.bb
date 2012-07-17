@@ -659,6 +659,8 @@ void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
 
   bool is_reference_fragment_navigation =
       IsReferenceFragmentNavigation(frame_id, url);
+  bool is_history_navigation =
+      navigation_state_.GetNavigationCommitted(frame_id);
 
   // Update the URL as it might have changed.
   navigation_state_.UpdateFrame(frame_id, url);
@@ -667,6 +669,18 @@ void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
   if (is_reference_fragment_navigation) {
     DispatchOnCommitted(
         keys::kOnReferenceFragmentUpdated,
+        web_contents(),
+        frame_id,
+        is_main_frame,
+        url,
+        transition_type);
+    navigation_state_.SetNavigationCompleted(frame_id);
+  } else if (is_history_navigation) {
+    // Make the transition type match the one for reference fragment updates.
+    transition_type = static_cast<content::PageTransition>(
+        transition_type | content::PAGE_TRANSITION_CLIENT_REDIRECT);
+    DispatchOnCommitted(
+        keys::kOnHistoryStateUpdated,
         web_contents(),
         frame_id,
         is_main_frame,

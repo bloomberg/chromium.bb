@@ -167,6 +167,10 @@ function initListeners() {
       function(details) {
     captureEvent("onTabReplaced", details);
   });
+  chrome.webNavigation.onHistoryStateUpdated.addListener(
+      function(details) {
+    captureEvent("onHistoryStateUpdated", details);
+  });
 }
 
 // Returns the usual order of navigation events.

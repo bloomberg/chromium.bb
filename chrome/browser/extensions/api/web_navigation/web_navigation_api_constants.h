@@ -30,6 +30,7 @@ extern const char kOnCompleted[];
 extern const char kOnCreatedNavigationTarget[];
 extern const char kOnDOMContentLoaded[];
 extern const char kOnErrorOccurred[];
+extern const char kOnHistoryStateUpdated[];
 extern const char kOnReferenceFragmentUpdated[];
 extern const char kOnTabReplaced[];
 

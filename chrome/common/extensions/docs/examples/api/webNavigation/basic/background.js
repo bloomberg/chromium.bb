@@ -10,7 +10,8 @@ var nav = new NavigationCollector();
 
 var eventList = ['onBeforeNavigate', 'onCreatedNavigationTarget',
     'onCommitted', 'onCompleted', 'onDOMContentLoaded',
-    'onErrorOccurred', 'onReferenceFragmentUpdated', 'onTabReplaced'];
+    'onErrorOccurred', 'onReferenceFragmentUpdated', 'onTabReplaced',
+    'onHistoryStateUpdated'];
 
 eventList.forEach(function(e) {
   chrome.webNavigation[e].addListener(function(data) {

@@ -26,6 +26,7 @@ const char kOnCreatedNavigationTarget[] =
     "webNavigation.onCreatedNavigationTarget";
 const char kOnDOMContentLoaded[] =
     "webNavigation.onDOMContentLoaded";
+const char kOnHistoryStateUpdated[] = "webNavigation.onHistoryStateUpdated";
 const char kOnErrorOccurred[] = "webNavigation.onErrorOccurred";
 const char kOnReferenceFragmentUpdated[] =
     "webNavigation.onReferenceFragmentUpdated";
