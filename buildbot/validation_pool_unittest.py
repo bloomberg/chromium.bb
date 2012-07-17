@@ -780,6 +780,8 @@ class TestFindSuspects(base_mixin, mox.MoxTestBase):
     self.kernel = 'chromiumos/third_party/kernel'
     self.kernel_pkg = 'sys-kernel/chromeos-kernel'
     self.kernel_patch = self.GetPatches(project=self.kernel)
+    self.secret = 'chromeos/secret'
+    self.secret_patch = self.GetPatches(project=self.secret, internal=True)
 
   @staticmethod
   def _GetBuildFailure(pkg):
@@ -791,7 +793,8 @@ class TestFindSuspects(base_mixin, mox.MoxTestBase):
     ex = cros_build_lib.RunCommandError('foo', cros_build_lib.CommandResult())
     return results_lib.PackageBuildFailure(ex, 'bar', [pkg])
 
-  def _AssertSuspects(self, patches, suspects, pkgs=(), exceptions=()):
+  def _AssertSuspects(self, patches, suspects, pkgs=(), exceptions=(),
+                      internal=False):
     """Run _FindSuspects and verify its output.
 
     Args:
@@ -799,44 +802,60 @@ class TestFindSuspects(base_mixin, mox.MoxTestBase):
       suspects: Expected list of suspects returned by _FindSuspects.
       pkgs: List of packages that failed with exceptions in the build.
       exceptions: List of other exceptions that occurred during the build.
+      internal: Whether the failures occurred on an internal bot.
     """
-    results = validation_pool.ValidationPool._FindSuspects(
-        patches, list(exceptions) + [self._GetBuildFailure(x) for x in pkgs])
+    all_exceptions = list(exceptions) + [self._GetBuildFailure(x) for x in pkgs]
+    tracebacks = []
+    for ex in all_exceptions:
+      tracebacks.append(results_lib.RecordedTraceback('Build', ex, str(ex)))
+    message = validation_pool.ValidationFailedMessage(
+        'foo', 'bar', tracebacks, internal)
+    results = validation_pool.ValidationPool._FindSuspects(patches, [message])
     self.assertEquals(set(suspects), results)
 
   def testFailSameProject(self):
     """Patches to the package that failed should be marked as failing."""
     suspects = [self.kernel_patch]
-    patches = suspects + [self.power_manager_patch]
+    patches = suspects + [self.power_manager_patch, self.secret_patch]
     self._AssertSuspects(patches, suspects, [self.kernel_pkg])
 
   def testFailSameProjectPlusOverlay(self):
     """Patches to the overlay should be marked as failing."""
     suspects = [self.overlay_patch, self.kernel_patch]
-    patches = suspects + [self.power_manager_patch]
+    patches = suspects + [self.power_manager_patch, self.secret_patch]
     self._AssertSuspects(patches, suspects, [self.kernel_pkg])
 
   def testFailUnknownPackage(self):
     """If no patches changed the package, all patches should fail."""
     suspects = [self.overlay_patch, self.power_manager_patch]
-    self._AssertSuspects(suspects, suspects, [self.kernel_pkg])
+    changes = suspects + [self.secret_patch]
+    self._AssertSuspects(changes, suspects, [self.kernel_pkg])
 
   def testFailUnknownException(self):
     """An unknown exception should cause all patches to fail."""
     suspects = [self.kernel_patch, self.power_manager_patch]
-    self._AssertSuspects(suspects, suspects, exceptions=[Exception('foo bar')])
+    changes = suspects + [self.secret_patch]
+    self._AssertSuspects(changes, suspects, exceptions=[Exception('foo bar')])
+
+  def testFailUnknownInternalException(self):
+    """An unknown exception should cause all patches to fail."""
+    suspects = [self.kernel_patch, self.power_manager_patch, self.secret_patch]
+    self._AssertSuspects(suspects, suspects, exceptions=[Exception('foo bar')],
+                         internal=True)
 
   def testFailUnknownCombo(self):
     """An unknown exception should cause all patches to fail, even if there
     are also build failures that we can explain."""
     suspects = [self.kernel_patch, self.power_manager_patch]
-    self._AssertSuspects(suspects, suspects, [self.kernel_pkg],
+    changes = suspects + [self.secret_patch]
+    self._AssertSuspects(changes, suspects, [self.kernel_pkg],
                          [Exception('foo bar')])
 
   def testFailNoExceptions(self):
     """If there are no exceptions, all patches should be failed."""
     suspects = [self.kernel_patch, self.power_manager_patch]
-    self._AssertSuspects(suspects, suspects)
+    changes = suspects + [self.secret_patch]
+    self._AssertSuspects(changes, suspects)
 
 
 class TestCreateValidationFailureMessage(unittest.TestCase):

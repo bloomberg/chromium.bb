@@ -597,17 +597,19 @@ class PatchSeries(object):
 class ValidationFailedMessage(object):
   """Message indicating that changes failed to be validated."""
 
-  def __init__(self, builder_name, build_log, tracebacks):
+  def __init__(self, builder_name, build_log, tracebacks, internal):
     """Create a ValidationFailedMessage object.
 
     Args:
       builder_name: The URL-quoted name of the builder.
       build_log: The URL users should visit to see the build log.
       tracebacks: A list of results_lib.RecordedTraceback objects.
+      internal: Whether this failure occurred on an internal builder.
     """
     self.builder_name = builder_name
     self.build_log = build_log
     self.tracebacks = tuple(tracebacks)
+    self.internal = internal
 
   def __str__(self):
     details = []
@@ -1132,7 +1134,7 @@ class ValidationPool(object):
         change, dryrun=self.dryrun)
 
   @staticmethod
-  def _FindSuspects(changes, exceptions):
+  def _FindSuspects(changes, messages):
     """Figure out what changes probably caused our failures.
 
     We use a fairly simplistic algorithm to calculate breakage: If you changed
@@ -1159,29 +1161,38 @@ class ValidationPool(object):
 
     Args:
       changes: List of changes to examine.
-      exceptions: List of exceptions that occurred during the builds.
+      messages: A list of build failure messages from supporting builders.
     Returns:
       suspects: Set of changes that likely caused the failure.
     """
     suspects = set()
     blame_everything = False
-    for exception in exceptions:
-      blame_assigned = False
-      if isinstance(exception, results_lib.PackageBuildFailure):
-        for package in exception.failed_packages:
-          failed_projects = portage_utilities.FindWorkonProjects([package])
-          for change in changes:
-            if change.project in failed_projects:
-              blame_assigned = True
-              suspects.add(change)
-      if not blame_assigned:
-        blame_everything = True
+
+    # If there were no internal failures, only kick out external changes.
+    if any(message.internal for message in messages):
+      candidates = changes
+    else:
+      candidates = [change for change in changes if not change.internal]
+
+    for message in messages:
+      for recorded_traceback in message.tracebacks:
+        exception = recorded_traceback.exception
+        blame_assigned = False
+        if isinstance(exception, results_lib.PackageBuildFailure):
+          for package in exception.failed_packages:
+            failed_projects = portage_utilities.FindWorkonProjects([package])
+            for change in candidates:
+              if change.project in failed_projects:
+                blame_assigned = True
+                suspects.add(change)
+        if not blame_assigned:
+          blame_everything = True
 
     if blame_everything or not suspects:
-      suspects = set(changes)
+      suspects = set(candidates)
     else:
       # Never treat changes to overlays as innocent.
-      suspects.update(change for change in changes
+      suspects.update(change for change in candidates
                       if '/overlays/' in change.project)
 
     return suspects
@@ -1237,10 +1248,7 @@ class ValidationPool(object):
     """
 
     # First, calculate which changes are likely at fault for the failure.
-    exceptions = []
-    for message in messages:
-      exceptions.extend(x.exception for x in message.tracebacks)
-    suspects = self._FindSuspects(self.changes, exceptions)
+    suspects = self._FindSuspects(self.changes, messages)
 
     # Send out failure notifications for each change.
     for change in self.changes:
@@ -1253,8 +1261,11 @@ class ValidationPool(object):
   def GetValidationFailedMessage(self):
     """Returns message indicating these changes failed to be validated."""
     logging.info('Validation failed for all changes.')
+    internal = self._overlays in [constants.PRIVATE_OVERLAYS,
+                                  constants.BOTH_OVERLAYS]
     return ValidationFailedMessage(self._builder_name, self.build_log,
-                                   results_lib.Results.GetTracebacks())
+                                   results_lib.Results.GetTracebacks(),
+                                   internal)
 
   def HandleCouldNotApply(self, change):
     """Handler for when Paladin fails to apply a change.
