@@ -37,6 +37,7 @@
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
@@ -852,7 +853,8 @@ void Browser::RegisterProtocolHandlerHelper(WebContents* web_contents,
                                             const std::string& protocol,
                                             const GURL& url,
                                             const string16& title,
-                                            bool user_gesture) {
+                                            bool user_gesture,
+                                            BrowserWindow* window) {
   TabContents* tab_contents = TabContents::FromWebContents(web_contents);
   if (!tab_contents || tab_contents->profile()->IsOffTheRecord())
     return;
@@ -862,11 +864,23 @@ void Browser::RegisterProtocolHandlerHelper(WebContents* web_contents,
 
   ProtocolHandlerRegistry* registry =
       tab_contents->profile()->GetProtocolHandlerRegistry();
+  TabSpecificContentSettings* content_settings =
+      tab_contents->content_settings();
 
-  // TODO(gbillock): Replace this policy with one that shows the content
-  // settings icon.
-  if (!user_gesture)
+  if (!user_gesture && window) {
+    content_settings->set_pending_protocol_handler(handler);
+    content_settings->set_previous_protocol_handler(
+        registry->GetHandlerFor(handler.protocol()));
+    window->GetLocationBar()->UpdateContentSettingsIcons();
     return;
+  }
+
+  // Make sure content-setting icon is turned off in case the page does
+  // ungestured and gestured RPH calls.
+  if (window) {
+    content_settings->ClearPendingProtocolHandler();
+    window->GetLocationBar()->UpdateContentSettingsIcons();
+  }
 
   if (!registry->SilentlyHandleRegisterHandlerRequest(handler)) {
     content::RecordAction(
@@ -1588,7 +1602,7 @@ void Browser::RegisterProtocolHandler(WebContents* web_contents,
                                       const string16& title,
                                       bool user_gesture) {
   RegisterProtocolHandlerHelper(
-      web_contents, protocol, url, title, user_gesture);
+      web_contents, protocol, url, title, user_gesture, window());
 }
 
 void Browser::RegisterIntentHandler(

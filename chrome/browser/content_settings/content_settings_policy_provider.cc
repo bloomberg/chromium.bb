@@ -38,6 +38,7 @@ const char* kPrefToManageType[] = {
   NULL,  // No policy for default value of mouse lock requests
   NULL,  // No policy for default value of mixed script blocking
   prefs::kManagedDefaultMediaStreamSetting,
+  NULL,  // No policy for default value of protocol handlers
 };
 COMPILE_ASSERT(arraysize(kPrefToManageType) == CONTENT_SETTINGS_NUM_TYPES,
                managed_content_settings_pref_names_array_size_incorrect);
