@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
 
 namespace extensions {
+class Extension;
 class URLMatcherConditionFactory;
 class WebRequestConditionSet;
 class WebRequestActionSet;
@@ -69,7 +70,15 @@ class WebRequestRule {
   const WebRequestActionSet& actions() const { return *actions_; }
   Priority priority() const { return priority_; }
 
+  // Creates all deltas resulting from the ActionSet. This function should
+  // only be called when the conditions_ are fulfilled (from a semantic point
+  // of view; no harm is done if this function is called at other times for
+  // testing purposes).
+  // If |extension| is set, deltas are suppressed if the |extension| does not
+  // have have sufficient permissions to modify the |request|. The returned list
+  // may be empty in this case.
   std::list<LinkedPtrEventResponseDelta> CreateDeltas(
+      const extensions::Extension* extension,
       net::URLRequest* request,
       RequestStages request_stage,
       const OptionalRequestData& optional_request_data) const;

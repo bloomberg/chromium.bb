@@ -336,6 +336,7 @@ class ExtensionWebRequestEventRouter
   // deltas were generated.
   bool ProcessDeclarativeRules(
       void* profile,
+      ExtensionInfoMap* extension_info_map,
       const std::string& event_name,
       net::URLRequest* request,
       extensions::RequestStages request_stage,

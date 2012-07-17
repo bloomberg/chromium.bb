@@ -27,6 +27,10 @@ namespace extension_web_request_api_helpers {
 struct EventResponseDelta;
 }
 
+namespace extensions {
+class Extension;
+}
+
 namespace net {
 class URLRequest;
 }
@@ -38,7 +42,6 @@ typedef linked_ptr<extension_web_request_api_helpers::EventResponseDelta>
 
 // Base class for all WebRequestActions of the declarative Web Request API.
 //
-// TODO(battre): Add method that corresponds to executing the action.
 class WebRequestAction {
  public:
   // Type identifiers for concrete WebRequestActions.
@@ -68,6 +71,13 @@ class WebRequestAction {
   // Returns the minimum priority of rules that may be evaluated after
   // this rule. Defaults to MIN_INT.
   virtual int GetMinimumPriority() const;
+
+  // Returns whether |extension| has permission to execute this action
+  // on |request|. Defaults to checking the host permission.
+  // |extension| may only be NULL for during testing, in which case
+  // host permissions are ignored.
+  virtual bool HasPermission(const extensions::Extension* extension,
+                             const net::URLRequest* request) const;
 
   // Factory method that instantiates a concrete WebRequestAction
   // implementation according to |json_action|, the representation of the
@@ -110,8 +120,10 @@ class WebRequestActionSet {
                                                 bool* bad_message);
 
   // Returns a description of the modifications to |request| caused by the
-  // |actions_| that can be executed at |request_stage|.
+  // |actions_| that can be executed at |request_stage|. If |extension|
+  // is not NULL, permissions of extensions are checked.
   std::list<LinkedPtrEventResponseDelta> CreateDeltas(
+      const extensions::Extension* extension,
       net::URLRequest* request,
       RequestStages request_stage,
       const WebRequestRule::OptionalRequestData& optional_request_data,
@@ -185,6 +197,8 @@ class WebRequestRedirectToTransparentImageAction : public WebRequestAction {
   // Implementation of WebRequestAction:
   virtual int GetStages() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
+  virtual bool HasPermission(const extensions::Extension* extension,
+                             const net::URLRequest* request) const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       net::URLRequest* request,
       RequestStages request_stage,
@@ -206,6 +220,8 @@ class WebRequestRedirectToEmptyDocumentAction : public WebRequestAction {
   // Implementation of WebRequestAction:
   virtual int GetStages() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
+  virtual bool HasPermission(const extensions::Extension* extension,
+                             const net::URLRequest* request) const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       net::URLRequest* request,
       RequestStages request_stage,
@@ -350,6 +366,8 @@ class WebRequestIgnoreRulesAction : public WebRequestAction {
   virtual int GetStages() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
   virtual int GetMinimumPriority() const OVERRIDE;
+  virtual bool HasPermission(const extensions::Extension* extension,
+                             const net::URLRequest* request) const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       net::URLRequest* request,
       RequestStages request_stage,

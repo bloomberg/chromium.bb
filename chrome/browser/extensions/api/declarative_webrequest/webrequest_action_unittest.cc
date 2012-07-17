@@ -4,8 +4,12 @@
 
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_action.h"
 
+#include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
+#include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -114,6 +118,45 @@ TEST(WebRequestActionTest, PerlToRe2Style) {
   // foo$bar -> foo$bar
   EXPECT_EQ("foo$bar", CallPerlToRe2Style("foo$bar"));
 #undef CallPerlToRe2Style
+}
+
+TEST(WebRequestActionTest, TestPermissions) {
+  // Necessary for TestURLRequest.
+  MessageLoop message_loop(MessageLoop::TYPE_IO);
+  TestURLRequestContext context;
+
+  std::string error;
+  bool bad_message = false;
+  scoped_ptr<WebRequestActionSet> action_set;
+
+  // Setup redirect to http://www.foobar.com.
+  base::DictionaryValue redirect;
+  redirect.SetString(keys::kInstanceTypeKey, keys::kRedirectRequestType);
+  redirect.SetString(keys::kRedirectUrlKey, "http://www.foobar.com");
+
+  linked_ptr<json_schema_compiler::any::Any> action = make_linked_ptr(
+      new json_schema_compiler::any::Any);
+  action->Init(redirect);
+  WebRequestActionSet::AnyVector actions;
+  actions.push_back(action);
+
+  action_set = WebRequestActionSet::Create(actions, &error, &bad_message);
+  EXPECT_EQ("", error);
+  EXPECT_FALSE(bad_message);
+  ASSERT_TRUE(action.get());
+
+  // Check that redirect works on regular URLs but not on protected URLs.
+  TestURLRequest regular_request(GURL("http://test.com"), NULL, &context);
+  std::list<LinkedPtrEventResponseDelta> deltas =
+      action_set->CreateDeltas(NULL, &regular_request, ON_BEFORE_REQUEST,
+          WebRequestRule::OptionalRequestData(), "ext1", base::Time());
+  EXPECT_EQ(1u, deltas.size());
+
+  TestURLRequest protected_request(GURL(extension_urls::kGalleryBrowsePrefix),
+                                   NULL, &context);
+  deltas = action_set->CreateDeltas(NULL, &protected_request, ON_BEFORE_REQUEST,
+      WebRequestRule::OptionalRequestData(), "ext1", base::Time());
+  EXPECT_EQ(0u, deltas.size());
 }
 
 }  // namespace extensions

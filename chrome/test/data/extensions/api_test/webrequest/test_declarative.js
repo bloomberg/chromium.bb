@@ -49,7 +49,17 @@ function getURLSetCookie() {
   return getServerURL('set-cookie?Foo=Bar');
 }
 
+function getURLHttpXHRData() {
+  return getServerURL("files/extensions/api_test/webrequest/xhr/data.json",
+                      "b.com");
+}
+function getURLHttpSimpleOnB() {
+  return getServerURL("files/extensions/api_test/webrequest/simpleLoad/a.html",
+                      "b.com");
+}
+
 runTests([
+
   function testCancelRequest() {
     ignoreUnexpected = true;
     expect(
@@ -329,6 +339,40 @@ runTests([
          priority: 200}
       ],
       function() {navigateAndWait(getURLHttpSimple());}
+    );
+  },
+
+  function testPermission() {
+    // Test that a redirect is ignored if the extension has no permission.
+    // we load a.html from a.com and issue an XHR to b.com, which is not
+    // contained in the extension's host permissions. Therefore, we cannot
+    // redirect it and the request succeeds.
+    ignoreUnexpected = true;
+    expect();
+    onRequest.addRules(
+      [ {'conditions': [new RequestMatcher({'url': {'pathContains': ".json"}})],
+         'actions': [
+             new RedirectRequest({'redirectUrl': getURLHttpSimpleOnB()})]}
+      ],
+      function() {
+        var callback = chrome.test.callbackAdded();
+        navigateAndWait(getURL("simpleLoad/a.html"), function() {
+          var asynchronous = false;
+          var req = new XMLHttpRequest();
+          req.onreadystatechange = function() {
+            if (this.readyState != this.DONE)
+              return;
+            if (this.status == 200 && this.responseText == "{}\n") {
+              callback();
+            } else {
+              chrome.test.fail("Redirect was not prevented. Status: " +
+                  this.status + ", responseText: " + this.responseText);
+            }
+          }
+          req.open("GET", getURLHttpXHRData(), asynchronous);
+          req.send(null);
+        });
+      }
     );
   },
 
