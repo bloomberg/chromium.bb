@@ -161,14 +161,14 @@ class ResizeSource : public ImageSkiaSource {
         image_rep.GetHeight() == target_dip_size_.height())
       return image_rep;
 
-    const float scale = image_rep.GetScale();
+    const float scale = ui::GetScaleFactorScale(scale_factor);
     const Size target_pixel_size(target_dip_size_.Scale(scale));
     const SkBitmap resized = skia::ImageOperations::Resize(
         image_rep.sk_bitmap(),
         skia::ImageOperations::RESIZE_BEST,
         target_pixel_size.width(),
         target_pixel_size.height());
-    return ImageSkiaRep(resized, image_rep.scale_factor());
+    return ImageSkiaRep(resized, scale_factor);
   }
 
  private:

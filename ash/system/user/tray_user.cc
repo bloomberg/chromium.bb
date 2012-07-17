@@ -18,6 +18,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/controls/button/button.h"
@@ -60,10 +61,7 @@ class RoundedImageView : public views::View {
     image_size_ = size;
 
     // Try to get the best image quality for the avatar.
-    // TODO(pkotwicz|oshima): Use a generator to resize the image based on
-    // painted scale factor.
-    resized_ = skia::ImageOperations::Resize(image_,
-        skia::ImageOperations::RESIZE_BEST, size.width(), size.height());
+    resized_ = gfx::ImageSkiaOperations::CreateResizedImage(image_, size);
     if (GetWidget() && visible()) {
       PreferredSizeChanged();
       SchedulePaint();
