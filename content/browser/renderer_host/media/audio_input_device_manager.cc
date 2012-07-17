@@ -71,6 +71,13 @@ int AudioInputDeviceManager::Open(const StreamDeviceInfo& device) {
 void AudioInputDeviceManager::Close(int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(listener_);
+  // Checks if the device has been stopped, if not, send stop signal.
+  EventHandlerMap::iterator it = event_handlers_.find(session_id);
+  if (it != event_handlers_.end()) {
+    it->second->OnDeviceStopped(session_id);
+    event_handlers_.erase(session_id);
+  }
+
   device_loop_->PostTask(
       FROM_HERE,
       base::Bind(&AudioInputDeviceManager::CloseOnDeviceThread,
@@ -126,13 +133,6 @@ void AudioInputDeviceManager::CloseOnDeviceThread(int session_id) {
 
   if (devices_.find(session_id) != devices_.end())
     devices_.erase(session_id);
-
-  // Checks if the device has been stopped, if not, send stop signal.
-  EventHandlerMap::iterator it = event_handlers_.find(session_id);
-  if (it != event_handlers_.end()) {
-    it->second->OnDeviceStopped(session_id);
-    event_handlers_.erase(session_id);
-  }
 
   // Posts a callback through the listener on IO thread since
   // MediaStreamManager handles the callback asynchronously.
