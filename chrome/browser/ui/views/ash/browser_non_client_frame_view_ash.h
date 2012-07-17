@@ -10,8 +10,10 @@
 #include "chrome/browser/ui/search/search_types.h"
 #include "chrome/browser/ui/search/toolbar_search_animator_observer.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
-#include "chrome/browser/ui/views/tab_icon_view.h"
+#include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "ui/views/controls/button/button.h"  // ButtonListener
+
+class TabIconView;
 
 namespace ash {
 class FramePainter;
@@ -23,7 +25,7 @@ class ImageButton;
 class BrowserNonClientFrameViewAsh
     : public BrowserNonClientFrameView,
       public views::ButtonListener,
-      public TabIconView::TabIconViewModel,
+      public chrome::TabIconViewModel,
       public chrome::search::ToolbarSearchAnimatorObserver {
  public:
   static const char kViewClassName[];
@@ -61,7 +63,7 @@ class BrowserNonClientFrameViewAsh
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
 
-  // Overridden from TabIconView::TabIconViewModel:
+  // Overridden from chrome::TabIconViewModel:
   virtual bool ShouldTabIconViewAnimate() const OVERRIDE;
   virtual gfx::ImageSkia GetFaviconForTabIconView() OVERRIDE;
 

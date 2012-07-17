@@ -9,11 +9,13 @@
 #include "base/gtest_prod_util.h"
 #include "base/message_loop.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
-#include "chrome/browser/ui/views/tab_icon_view.h"
+#include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "ui/views/controls/button/button.h"
 
 class PanelBrowserView;
 class SkPaint;
+class TabIconView;
+
 namespace gfx {
 class Font;
 class ImageSkia;
@@ -28,7 +30,7 @@ class Label;
 
 class PanelBrowserFrameView : public BrowserNonClientFrameView,
                               public views::ButtonListener,
-                              public TabIconView::TabIconViewModel {
+                              public chrome::TabIconViewModel {
  public:
   PanelBrowserFrameView(BrowserFrame* frame, PanelBrowserView* browser_view);
   virtual ~PanelBrowserFrameView();
@@ -79,7 +81,7 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   virtual void ButtonPressed(views::Button* sender, const views::Event& event)
       OVERRIDE;
 
-  // Overridden from TabIconView::TabIconViewModel:
+  // Overridden from chrome::TabIconViewModel:
   virtual bool ShouldTabIconViewAnimate() const OVERRIDE;
   virtual gfx::ImageSkia GetFaviconForTabIconView() OVERRIDE;
 

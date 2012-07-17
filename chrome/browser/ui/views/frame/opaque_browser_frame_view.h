@@ -8,13 +8,15 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
-#include "chrome/browser/ui/views/tab_icon_view.h"
+#include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
 
 class BrowserView;
+class TabIconView;
+
 namespace views {
 class ImageButton;
 class FrameBackground;
@@ -23,7 +25,7 @@ class FrameBackground;
 class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
                                public content::NotificationObserver,
                                public views::ButtonListener,
-                               public TabIconView::TabIconViewModel {
+                               public chrome::TabIconViewModel {
  public:
   // Constructs a non-client view for an BrowserFrame.
   OpaqueBrowserFrameView(BrowserFrame* frame, BrowserView* browser_view);
@@ -71,7 +73,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual void ButtonPressed(views::Button* sender, const views::Event& event)
       OVERRIDE;
 
-  // Overridden from TabIconView::TabIconViewModel:
+  // Overridden from chrome::TabIconViewModel:
   virtual bool ShouldTabIconViewAnimate() const OVERRIDE;
   virtual gfx::ImageSkia GetFaviconForTabIconView() OVERRIDE;
 

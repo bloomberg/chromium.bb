@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/panels/panel_browser_view.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
+#include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"

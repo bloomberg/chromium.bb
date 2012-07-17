@@ -10,6 +10,7 @@ include_rules = [
  "+chrome/browser/ui/views/frame/browser_non_client_frame_view.h",
  "+chrome/browser/ui/views/sad_tab_view.h",
  "+chrome/browser/ui/views/tab_icon_view.h",
+ "+chrome/browser/ui/views/tab_icon_view_model.h",
  "+chrome/browser/ui/views/tab_modal_confirm_dialog_views.h",
  # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 ]

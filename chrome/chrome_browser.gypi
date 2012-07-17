@@ -3800,6 +3800,7 @@
         'browser/ui/views/tab_contents/render_view_context_menu_win.h',
         'browser/ui/views/tab_icon_view.cc',
         'browser/ui/views/tab_icon_view.h',
+        'browser/ui/views/tab_icon_view_model.h',
         'browser/ui/views/tab_modal_confirm_dialog_views.cc',
         'browser/ui/views/tab_modal_confirm_dialog_views.h',
         'browser/ui/views/tabs/base_tab.cc',

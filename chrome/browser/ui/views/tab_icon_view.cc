@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -48,7 +49,7 @@ void TabIconView::InitializeIfNeeded() {
   }
 }
 
-TabIconView::TabIconView(TabIconViewModel* model)
+TabIconView::TabIconView(chrome::TabIconViewModel* model)
     : model_(model),
       throbber_running_(false),
       is_light_(false),

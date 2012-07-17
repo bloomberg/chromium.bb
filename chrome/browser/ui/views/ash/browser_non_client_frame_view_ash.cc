@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "content/public/browser/web_contents.h"
@@ -29,6 +30,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -381,7 +383,7 @@ void BrowserNonClientFrameViewAsh::ButtonPressed(views::Button* sender,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// TabIconView::TabIconViewModel overrides:
+// chrome::TabIconViewModel overrides:
 
 bool BrowserNonClientFrameViewAsh::ShouldTabIconViewAnimate() const {
   // This function is queried during the creation of the window as the
