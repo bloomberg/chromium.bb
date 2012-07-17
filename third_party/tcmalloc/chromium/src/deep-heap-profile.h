@@ -88,6 +88,7 @@ class DeepHeapProfile {
   struct DeepBucket {
     Bucket*     bucket;
     size_t      committed_size;
+    bool        is_mmap;
     int         id;         // Unique ID of the bucket.
     bool        is_logged;  // True if the stracktrace is logged to a file.
     DeepBucket* next;       // Next entry in hash-table.
@@ -201,17 +202,21 @@ class DeepHeapProfile {
                                                MMapListEntry* mmap_list,
                                                int mmap_list_length);
 
+  // Add a uintptr_t integer to a hash-value for GetDeepBucket.
+  inline static void AddIntegerToHashValue(
+      uintptr_t add, uintptr_t* hash_value);
+
   // Get the DeepBucket object corresponding to the given |bucket|.
   // DeepBucket is an extension to Bucket which is declared above.
-  DeepBucket* GetDeepBucket(Bucket* bucket, DeepBucket** table);
+  DeepBucket* GetDeepBucket(Bucket* bucket, bool is_mmap, DeepBucket** table);
 
   // Reset committed_size member variables in DeepBucket objects to 0.
-  void ResetCommittedSize(Bucket** bucket_table);
+  void ResetCommittedSize(DeepBucket** deep_table);
 
   // Fill bucket data in |bucket_table| into buffer |buffer| of size
   // |buffer_size|, and return the size occupied by the bucket data in
   // |buffer|.  |bucket_length| is the offset for |buffer| to start filling.
-  int SnapshotBucketTableWithoutMalloc(Bucket** bucket_table,
+  int SnapshotBucketTableWithoutMalloc(DeepBucket** deep_table,
                                        int used_in_buffer,
                                        int buffer_size,
                                        char buffer[]);
@@ -241,7 +246,7 @@ class DeepHeapProfile {
                               char buffer[]);
 
   // Write a |bucket_table| into a file of |bucket_fd|.
-  void WriteBucketsTableToBucketFile(Bucket** bucket_table, RawFD bucket_fd);
+  void WriteBucketsTableToBucketFile(DeepBucket** deep_table, RawFD bucket_fd);
 
   // Write both malloc and mmap bucket tables into a "bucket file".
   void WriteBucketsToBucketFile();

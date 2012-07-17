@@ -39,25 +39,35 @@ if not (os.path.isfile(PPROF_PATH) and os.access(PPROF_PATH, os.X_OK)):
 
 # Heap Profile Dump versions
 
+# DUMP_DEEP_1 is OBSOLETE.
 # DUMP_DEEP_1 DOES NOT distinct mmap regions and malloc chunks.
 # Their stacktraces DO contain mmap* or tc-* at their tops.
 # They should be processed by POLICY_DEEP_1.
 DUMP_DEEP_1 = 'DUMP_DEEP_1'
 
+# DUMP_DEEP_2 is OBSOLETE.
 # DUMP_DEEP_2 DOES distinct mmap regions and malloc chunks.
 # Their stacktraces still DO contain mmap* or tc-*.
 # They should be processed by POLICY_DEEP_1.
 DUMP_DEEP_2 = 'DUMP_DEEP_2'
 
+# DUMP_DEEP_3 is OBSOLETE.
 # DUMP_DEEP_3 DOES distinct mmap regions and malloc chunks.
 # Their stacktraces DO NOT contain mmap* or tc-*.
 # They should be processed by POLICY_DEEP_2.
 DUMP_DEEP_3 = 'DUMP_DEEP_3'
 
+# DUMP_DEEP_4 is OBSOLETE.
 # DUMP_DEEP_4 adds some features to DUMP_DEEP_3:
 # 1. Support comments starting with '#'
 # 2. Support additional global stats: e.g. nonprofiled-*.
 DUMP_DEEP_4 = 'DUMP_DEEP_4'
+
+# DUMP_DEEP_5 doesn't separate sections for malloc and mmap.
+# malloc and mmap are identified in bucket files.
+DUMP_DEEP_5 = 'DUMP_DEEP_5'
+
+DUMP_DEEP_OBSOLETE = (DUMP_DEEP_1, DUMP_DEEP_2, DUMP_DEEP_3, DUMP_DEEP_4)
 
 # Heap Profile Policy versions
 
@@ -75,11 +85,32 @@ appeared_addresses = set()
 components = []
 
 
+class EmptyDumpException(Exception):
+  def __init__(self, value):
+    self.value = value
+  def __str__(self):
+    return repr(self.value)
+
+
 class ParsingException(Exception):
   def __init__(self, value):
     self.value = value
   def __str__(self):
     return repr(self.value)
+
+
+class InvalidDumpException(ParsingException):
+  def __init__(self, value):
+    self.value = value
+  def __str__(self):
+    return "invalid heap profile dump: %s" % repr(self.value)
+
+
+class ObsoleteDumpVersionException(ParsingException):
+  def __init__(self, value):
+    self.value = value
+  def __str__(self):
+    return "obsolete heap profile dump version: %s" % repr(self.value)
 
 
 class Policy(object):
@@ -90,14 +121,13 @@ class Policy(object):
     self.condition = re.compile(pattern + r'\Z')
 
 
-def get_component(policy_list, bucket, mmap):
+def get_component(policy_list, bucket):
   """Returns a component name which a given bucket belongs to.
 
   Args:
       policy_list: A list containing Policy objects.  (Parsed policy data by
           parse_policy.)
       bucket: A Bucket object to be searched for.
-      mmap: True if searching for a mmap region.
 
   Returns:
       A string representing a component name.
@@ -111,7 +141,7 @@ def get_component(policy_list, bucket, mmap):
       address_symbol_dict[a] + ' ' for a in bucket.stacktrace).strip()
 
   for policy in policy_list:
-    if mmap == policy.mmap and policy.condition.match(stacktrace):
+    if bucket.mmap == policy.mmap and policy.condition.match(stacktrace):
       bucket.component = policy.name
       return policy.name
 
@@ -120,8 +150,9 @@ def get_component(policy_list, bucket, mmap):
 
 class Bucket(object):
 
-  def __init__(self, stacktrace):
+  def __init__(self, stacktrace, mmap):
     self.stacktrace = stacktrace
+    self.mmap = mmap
     self.component = ''
 
 
@@ -134,22 +165,19 @@ class Log(object):
         l for l in open(self.log_path, 'r') if l and not l.startswith('#')]
     self.log_version = ''
     sys.stderr.write('Loading a dump: %s\n' % log_path)
-    self.mmap_stacktrace_lines = []
-    self.malloc_stacktrace_lines = []
+    self.stacktrace_lines = []
     self.counters = {}
     self.log_time = os.stat(self.log_path).st_mtime
 
-  @staticmethod
-  def dump_stacktrace_lines(stacktrace_lines, buckets):
+  def dump_stacktrace(buckets):
     """Prints a given stacktrace.
 
     Args:
-        stacktrace_lines: A list of strings which are valid as stacktraces.
         buckets: A dict mapping bucket ids and their corresponding Bucket
             objects.
     """
-    for l in stacktrace_lines:
-      words = l.split()
+    for line in self.stacktrace_lines:
+      words = line.split()
       bucket = buckets.get(int(words[BUCKET_ID]))
       if not bucket:
         continue
@@ -159,19 +187,9 @@ class Log(object):
         sys.stdout.write((address_symbol_dict.get(address) or address) + ' ')
       sys.stdout.write('\n')
 
-  def dump_stacktrace(self, buckets):
-    """Prints stacktraces contained in the log.
-
-    Args:
-        buckets: A dict mapping bucket ids and their corresponding Bucket
-            objects.
-    """
-    self.dump_stacktrace_lines(self.mmap_stacktrace_lines, buckets)
-    self.dump_stacktrace_lines(self.malloc_stacktrace_lines, buckets)
-
   @staticmethod
   def accumulate_size_for_pprof(stacktrace_lines, policy_list, buckets,
-                                component_name, mmap):
+                                component_name):
     """Accumulates size of committed chunks and the number of allocated chunks.
 
     Args:
@@ -181,7 +199,6 @@ class Log(object):
         buckets: A dict mapping bucket ids and their corresponding Bucket
             objects.
         component_name: A name of component for filtering.
-        mmap: True if searching for a mmap region.
 
     Returns:
         Two integers which are the accumulated size of committed regions and the
@@ -189,12 +206,12 @@ class Log(object):
     """
     com_committed = 0
     com_allocs = 0
-    for l in stacktrace_lines:
-      words = l.split()
+    for line in stacktrace_lines:
+      words = line.split()
       bucket = buckets.get(int(words[BUCKET_ID]))
       if (not bucket or
           (component_name and
-           component_name != get_component(policy_list, bucket, mmap))):
+           component_name != get_component(policy_list, bucket))):
         continue
 
       com_committed += int(words[COMMITTED])
@@ -204,7 +221,7 @@ class Log(object):
 
   @staticmethod
   def dump_stacktrace_lines_for_pprof(stacktrace_lines, policy_list,
-                                      buckets, component_name, mmap):
+                                      buckets, component_name):
     """Prints information of stacktrace lines for pprof.
 
     Args:
@@ -214,14 +231,13 @@ class Log(object):
         buckets: A dict mapping bucket ids and their corresponding Bucket
             objects.
         component_name: A name of component for filtering.
-        mmap: True if searching for a mmap region.
     """
-    for l in stacktrace_lines:
-      words = l.split()
+    for line in stacktrace_lines:
+      words = line.split()
       bucket = buckets.get(int(words[BUCKET_ID]))
       if (not bucket or
           (component_name and
-           component_name != get_component(policy_list, bucket, mmap))):
+           component_name != get_component(policy_list, bucket))):
         continue
 
       sys.stdout.write('%6d: %8s [%6d: %8s] @' % (
@@ -246,27 +262,17 @@ class Log(object):
     """
     sys.stdout.write('heap profile: ')
     com_committed, com_allocs = self.accumulate_size_for_pprof(
-        self.mmap_stacktrace_lines, policy_list, buckets, component_name,
-        True)
-    add_committed, add_allocs = self.accumulate_size_for_pprof(
-        self.malloc_stacktrace_lines, policy_list, buckets, component_name,
-        False)
-    com_committed += add_committed
-    com_allocs += add_allocs
+        self.stacktrace_lines, policy_list, buckets, component_name)
 
     sys.stdout.write('%6d: %8s [%6d: %8s] @ heapprofile\n' % (
         com_allocs, com_committed, com_allocs, com_committed))
 
     self.dump_stacktrace_lines_for_pprof(
-        self.mmap_stacktrace_lines, policy_list, buckets, component_name,
-        True)
-    self.dump_stacktrace_lines_for_pprof(
-        self.malloc_stacktrace_lines, policy_list, buckets, component_name,
-        False)
+        self.stacktrace_lines, policy_list, buckets, component_name)
 
     sys.stdout.write('MAPPED_LIBRARIES:\n')
-    for l in mapping_lines:
-      sys.stdout.write(l)
+    for line in mapping_lines:
+      sys.stdout.write(line)
 
   @staticmethod
   def check_stacktrace_line(stacktrace_line, buckets):
@@ -332,8 +338,7 @@ class Log(object):
   def parse_stacktraces(self, buckets, line_number):
     """Parses lines in self.log_lines as stacktrace.
 
-    Valid stacktrace lines are stored into self.mmap_stacktrace_lines and
-    self.malloc_stacktrace_lines.
+    Valid stacktrace lines are stored into self.stacktrace_lines.
 
     Args:
         buckets: A dict mapping bucket ids and their corresponding Bucket
@@ -346,38 +351,16 @@ class Log(object):
     """
     sys.stderr.write('  Version: %s\n' % self.log_version)
 
-    if self.log_version in (DUMP_DEEP_3, DUMP_DEEP_4):
-      (self.mmap_stacktrace_lines, line_number) = (
-          self.parse_stacktraces_while_valid(
-              buckets, self.log_lines, line_number))
-      (line_number, _) = self.skip_lines_while(
-          line_number, len(self.log_lines),
-          lambda n: self.log_lines[n] != 'MALLOC_STACKTRACES:\n')
-      (self.malloc_stacktrace_lines, line_number) = (
+    if self.log_version == DUMP_DEEP_5:
+      (self.stacktrace_lines, line_number) = (
           self.parse_stacktraces_while_valid(
               buckets, self.log_lines, line_number))
 
-    elif self.log_version == DUMP_DEEP_2:
-      (self.mmap_stacktrace_lines, line_number) = (
-          self.parse_stacktraces_while_valid(
-              buckets, self.log_lines, line_number))
-      (line_number, _) = self.skip_lines_while(
-          line_number, len(self.log_lines),
-          lambda n: self.log_lines[n] != 'MALLOC_STACKTRACES:\n')
-      (self.malloc_stacktrace_lines, line_number) = (
-          self.parse_stacktraces_while_valid(
-              buckets, self.log_lines, line_number))
-      self.malloc_stacktrace_lines.extend(self.mmap_stacktrace_lines)
-      self.mmap_stacktrace_lines = []
-
-    elif self.log_version == DUMP_DEEP_1:
-      (self.malloc_stacktrace_lines, line_number) = (
-          self.parse_stacktraces_while_valid(
-              buckets, self.log_lines, line_number))
+    elif self.log_version in DUMP_DEEP_OBSOLETE:
+      raise ObsoleteDumpVersionException(self.log_version)
 
     else:
-      raise ParsingException('invalid heap profile dump version: %s' % (
-          self.log_version))
+      raise InvalidDumpException('Invalid version: %s' % self.log_version)
 
   def parse_global_stats(self):
     """Parses lines in self.log_lines as global stats."""
@@ -385,16 +368,12 @@ class Log(object):
         0, len(self.log_lines),
         lambda n: self.log_lines[n] != 'GLOBAL_STATS:\n')
 
-    if self.log_version == DUMP_DEEP_4:
-      global_stat_names = [
-          'total', 'file-exec', 'file-nonexec', 'anonymous', 'stack', 'other',
-          'nonprofiled-absent', 'nonprofiled-anonymous',
-          'nonprofiled-file-exec', 'nonprofiled-file-nonexec',
-          'nonprofiled-stack', 'nonprofiled-other',
-          'profiled-mmap', 'profiled-malloc']
-    else:
-      global_stat_names = [
-          'total', 'file', 'anonymous', 'other', 'mmap', 'tcmalloc']
+    global_stat_names = [
+        'total', 'file-exec', 'file-nonexec', 'anonymous', 'stack', 'other',
+        'nonprofiled-absent', 'nonprofiled-anonymous',
+        'nonprofiled-file-exec', 'nonprofiled-file-nonexec',
+        'nonprofiled-stack', 'nonprofiled-other',
+        'profiled-mmap', 'profiled-malloc']
 
     for prefix in global_stat_names:
       (ln, _) = self.skip_lines_while(
@@ -419,28 +398,28 @@ class Log(object):
     # Skip until an identifiable line.
     headers = ('STACKTRACES:\n', 'MMAP_STACKTRACES:\n', 'heap profile: ')
     if not self.log_lines:
-      raise ParsingException('Empty heap dump file.')
+      raise EmptyDumpException('Empty heap dump file.')
     (ln, found) = self.skip_lines_while(
         0, len(self.log_lines),
         lambda n: not self.log_lines[n].startswith(headers))
     if not found:
-      raise ParsingException('Invalid heap dump file (no version header).')
+      raise InvalidDumpException('No version header.')
 
     # Identify a version.
     if self.log_lines[ln].startswith('heap profile: '):
       version = self.log_lines[ln][13:].strip()
-      if (version == DUMP_DEEP_2 or version == DUMP_DEEP_3 or
-          version == DUMP_DEEP_4):
+      if version == DUMP_DEEP_5:
         (ln, _) = self.skip_lines_while(
             ln, len(self.log_lines),
-            lambda n: self.log_lines[n] != 'MMAP_STACKTRACES:\n')
+            lambda n: self.log_lines[n] != 'STACKTRACES:\n')
+      elif version in DUMP_DEEP_OBSOLETE:
+        raise ObsoleteDumpVersionException(version)
       else:
-        raise ParsingException('invalid heap profile dump version: %s'
-                               % version)
+        raise InvalidDumpException('Invalid version: %s' % version)
     elif self.log_lines[ln] == 'STACKTRACES:\n':
-      version = DUMP_DEEP_1
+      raise ObsoleteDumpVersionException(DUMP_DEEP_1)
     elif self.log_lines[ln] == 'MMAP_STACKTRACES:\n':
-      version = DUMP_DEEP_2
+      raise ObsoleteDumpVersionException(DUMP_DEEP_2)
 
     return (version, ln)
 
@@ -451,11 +430,11 @@ class Log(object):
 
   @staticmethod
   def accumulate_size_for_policy(stacktrace_lines,
-                                 policy_list, buckets, sizes, mmap):
-    for l in stacktrace_lines:
-      words = l.split()
+                                 policy_list, buckets, sizes):
+    for line in stacktrace_lines:
+      words = line.split()
       bucket = buckets.get(int(words[BUCKET_ID]))
-      component_match = get_component(policy_list, bucket, mmap)
+      component_match = get_component(policy_list, bucket)
       sizes[component_match] += int(words[COMMITTED])
 
       if component_match.startswith('tc-'):
@@ -486,17 +465,11 @@ class Log(object):
     sys.stderr.write('apply policy:%s\n' % (self.log_path))
     sizes = dict((c, 0) for c in components)
 
-    self.accumulate_size_for_policy(self.mmap_stacktrace_lines,
-                                    policy_list, buckets, sizes, True)
-    self.accumulate_size_for_policy(self.malloc_stacktrace_lines,
-                                    policy_list, buckets, sizes, False)
+    self.accumulate_size_for_policy(self.stacktrace_lines,
+                                    policy_list, buckets, sizes)
 
-    if self.log_version == DUMP_DEEP_4:
-      mmap_prefix = 'profiled-mmap'
-      malloc_prefix = 'profiled-malloc'
-    else:
-      mmap_prefix = 'mmap'
-      malloc_prefix = 'tcmalloc'
+    mmap_prefix = 'profiled-mmap'
+    malloc_prefix = 'profiled-malloc'
 
     sizes['mmap-no-log'] = (
         self.counters['%s_committed' % mmap_prefix] - sizes['mmap-total-log'])
@@ -557,11 +530,11 @@ class Log(object):
 
   @staticmethod
   def accumulate_size_for_expand(stacktrace_lines, policy_list, buckets,
-                                 component_name, depth, sizes, mmap):
+                                 component_name, depth, sizes):
     for line in stacktrace_lines:
       words = line.split()
       bucket = buckets.get(int(words[BUCKET_ID]))
-      component_match = get_component(policy_list, bucket, mmap)
+      component_match = get_component(policy_list, bucket)
       if component_match == component_name:
         stacktrace_sequence = ''
         for address in bucket.stacktrace[0 : min(len(bucket.stacktrace),
@@ -585,11 +558,8 @@ class Log(object):
     sizes = {}
 
     self.accumulate_size_for_expand(
-        self.mmap_stacktrace_lines, policy_list, buckets, component_name,
-        depth, sizes, True)
-    self.accumulate_size_for_expand(
-        self.malloc_stacktrace_lines, policy_list, buckets, component_name,
-        depth, sizes, False)
+        self.stacktrace_lines, policy_list, buckets, component_name,
+        depth, sizes)
 
     sorted_sizes_list = sorted(
         sizes.iteritems(), key=(lambda x: x[1]), reverse=True)
@@ -765,9 +735,9 @@ Examples:
       continue
     sys.stderr.write('reading buckets from %s\n' % (buckets_path))
     with open(buckets_path, 'r') as buckets_f:
-      for l in buckets_f:
-        words = l.split()
-        buckets[int(words[0])] = Bucket(words[1:])
+      for line in buckets_f:
+        words = line.split()
+        buckets[int(words[0])] = Bucket(words[2:], words[1] == 'mmap')
     n += 1
 
   log_path_list = [log_path]
@@ -790,8 +760,11 @@ Examples:
     sys.stderr.write('Parsing a dump: %s\n' % path)
     try:
       new_log.parse_log(buckets)
-    except ParsingException:
-      sys.stderr.write('  Ignored an invalid dump: %s\n' % path)
+    except EmptyDumpException:
+      sys.stderr.write('  WARNING: ignored an empty dump: %s\n' % path)
+    except ParsingException, e:
+      sys.stderr.write('  Error in parsing heap profile dump: %s\n' % e)
+      sys.exit(1)
     else:
       logs.append(new_log)
 
