@@ -7,7 +7,6 @@
 
 #include "net/base/ip_endpoint.h"
 #include "remoting/host/capturer.h"
-#include "remoting/host/curtain.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/continue_window.h"
@@ -51,14 +50,6 @@ class MockCapturer : public Capturer {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCapturer);
-};
-
-class MockCurtain : public Curtain {
- public:
-  MockCurtain();
-  virtual ~MockCurtain();
-
-  MOCK_METHOD1(EnableCurtainMode, void(bool enable));
 };
 
 class MockDisconnectWindow : public DisconnectWindow {

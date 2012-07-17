@@ -25,14 +25,6 @@ void MockCaptureCompletedCallback::CaptureCompleted(
   CaptureCompletedPtr(capture_data.get());
 }
 
-MockCurtain::MockCurtain() {}
-
-MockCurtain::~MockCurtain() {}
-
-Curtain* Curtain::Create() {
-  return new MockCurtain();
-}
-
 MockEventExecutor::MockEventExecutor() {}
 
 MockEventExecutor::~MockEventExecutor() {}
