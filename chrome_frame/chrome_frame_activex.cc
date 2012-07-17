@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -147,7 +147,8 @@ void GetMiniContextMenuData(UINT cmd,
 }  // namespace chrome_frame
 
 ChromeFrameActivex::ChromeFrameActivex()
-    : chrome_wndproc_hook_(NULL) {
+    : chrome_wndproc_hook_(NULL),
+      attaching_to_existing_cf_tab_(false) {
   TRACE_EVENT_BEGIN_ETW("chromeframe.createactivex", this, "");
 }
 
@@ -410,7 +411,16 @@ STDMETHODIMP ChromeFrameActivex::put_src(BSTR src) {
       return E_ACCESSDENIED;
     }
   }
-  return Base::put_src(src);
+  HRESULT hr = S_OK;
+  // If we are connecting to an existing ExternalTabContainer instance in
+  // Chrome then we should wait for Chrome to initiate the navigation.
+  if (!attaching_to_existing_cf_tab_) {
+    hr = Base::put_src(src);
+  } else {
+    url_.Reset(::SysAllocString(src));
+    attaching_to_existing_cf_tab_ = false;
+  }
+  return S_OK;
 }
 
 HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
@@ -470,6 +480,18 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
 
     InitializeAutomationSettings();
 
+    if (service) {
+      base::win::ScopedBstr navigation_url;
+      service->GetNavigationUrl(navigation_url.Receive());
+      if (navigation_url.Length()) {
+        ChromeFrameUrl cf_url;
+        cf_url.Parse(navigation_url.operator BSTR());
+        if (cf_url.attach_to_external_tab()) {
+          automation_client_->AttachExternalTab(cf_url.cookie());
+          attaching_to_existing_cf_tab_ = true;
+        }
+      }
+    }
     url_fetcher_->set_frame_busting(!is_privileged());
     automation_client_->SetUrlFetcher(url_fetcher_.get());
     if (!InitializeAutomation(profile_name, IsIEInPrivate(), true,

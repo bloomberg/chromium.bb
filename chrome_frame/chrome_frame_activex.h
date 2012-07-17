@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -139,6 +139,10 @@ END_MSG_MAP()
 
   // A hook attached to the top-level window containing the ActiveX control.
   HHOOK chrome_wndproc_hook_;
+
+  // Set to true if the current instance is attaching to an existing Chrome
+  // tab. This occurs when a window.open request is performed by Chrome.
+  bool attaching_to_existing_cf_tab_;
 };
 
 #endif  // CHROME_FRAME_CHROME_FRAME_ACTIVEX_H_

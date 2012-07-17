@@ -102,6 +102,9 @@ interface IChromeFramePrivileged : IUnknown {
   // a dialog should be showed to the user by this CF instance, S_FALSE if
   // not.
   HRESULT ShouldShowVersionMismatchDialog();
+  // Allows the host to return the navigation url during the creation of the
+  // ChromeFrameActiveX instance.
+  HRESULT GetNavigationUrl([out] BSTR* url);
 };
 
 // Expose this service to the ChromeFrame control to trigger privileged
