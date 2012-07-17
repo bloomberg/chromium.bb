@@ -985,3 +985,13 @@
    fun:ShellIntegration::DefaultWebClientWorker::ExecuteSetAsDefault
    fun:base::internal::RunnableAdapter::Run
 }
+{
+   bug_137701
+   ThreadSanitizer:Race
+   ...
+   fun:_vsnprintf_helper
+   ...
+   fun:disk_cache::BackendImpl::SyncInit
+   fun:disk_cache::BackendIO::ExecuteBackendOperation
+   fun:base::internal::RunnableAdapter::Run
+}
