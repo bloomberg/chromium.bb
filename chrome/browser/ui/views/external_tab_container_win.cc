@@ -530,6 +530,9 @@ void ExternalTabContainerWin::WebContentsCreated(WebContents* source_contents,
                                                  int64 source_frame_id,
                                                  const GURL& target_url,
                                                  WebContents* new_contents) {
+  if (!load_requests_via_automation_)
+    return;
+
   RenderViewHost* rvh = new_contents->GetRenderViewHost();
   DCHECK(rvh != NULL);
 
