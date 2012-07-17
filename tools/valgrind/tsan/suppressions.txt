@@ -587,6 +587,15 @@
   fun:media::FFmpegVideoDecoder::DoReset
 }
 {
+  bug_93932_j
+  ThreadSanitizer:Race
+  ...
+  fun:base::MD5Update
+  fun:media::VideoFrame::HashFrameForTesting
+  fun:media::PipelineIntegrationTestBase::OnVideoRendererPaint
+  fun:base::internal::RunnableAdapter::Run
+}
+{
   bug_100020
   ThreadSanitizer:Race
   fun:linked_ptr_internal::join
@@ -975,13 +984,4 @@
    ThreadSanitizer:Race
    fun:ShellIntegration::DefaultWebClientWorker::ExecuteSetAsDefault
    fun:base::internal::RunnableAdapter::Run
-}
-{
-  bug_134891
-  ThreadSanitizer:Race
-  ...
-  fun:base::MD5Update
-  fun:media::VideoFrame::HashFrameForTesting
-  fun:media::PipelineIntegrationTestBase::OnVideoRendererPaint
-  fun:base::internal::RunnableAdapter::Run
 }
