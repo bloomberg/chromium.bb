@@ -114,12 +114,15 @@ class Function(object):
   - |description| a description of the function (if provided)
   - |callback| the callback parameter to the function. There should be exactly
     one
+  - |optional| whether the Function is "optional"; this only makes sense to be
+    present when the Function is representing a callback property.
   """
   def __init__(self, parent, json, from_json=False, from_client=False):
     self.name = json['name']
     self.params = []
     self.description = json.get('description')
     self.callback = None
+    self.optional = json.get('optional', False)
     self.parent = parent
     self.nocompile = json.get('nocompile')
     for param in json.get('parameters', []):
