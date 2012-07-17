@@ -144,7 +144,7 @@ bool MockPluginDelegate::AsyncOpenFileSystemURL(
 }
 
 bool MockPluginDelegate::OpenFileSystem(
-    const GURL& url,
+    const GURL& origin_url,
     fileapi::FileSystemType type,
     long long size,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {

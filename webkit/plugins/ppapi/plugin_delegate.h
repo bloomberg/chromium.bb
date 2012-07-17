@@ -440,7 +440,7 @@ class PluginDelegate {
       const AsyncOpenFileSystemURLCallback& callback) = 0;
 
   virtual bool OpenFileSystem(
-      const GURL& url,
+      const GURL& origin_url,
       fileapi::FileSystemType type,
       long long size,
       fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;

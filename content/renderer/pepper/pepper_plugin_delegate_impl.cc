@@ -864,14 +864,14 @@ void PepperPluginDelegateImpl::WillHandleMouseEvent() {
 }
 
 bool PepperPluginDelegateImpl::OpenFileSystem(
-    const GURL& url,
+    const GURL& origin_url,
     fileapi::FileSystemType type,
     long long size,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
   return file_system_dispatcher->OpenFileSystem(
-      url.GetWithEmptyPath(), type, size, true /* create */, dispatcher);
+      origin_url, type, size, true /* create */, dispatcher);
 }
 
 bool PepperPluginDelegateImpl::MakeDirectory(

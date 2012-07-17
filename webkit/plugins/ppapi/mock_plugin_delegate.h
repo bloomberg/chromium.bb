@@ -69,7 +69,7 @@ class MockPluginDelegate : public PluginDelegate {
       int flags,
       const AsyncOpenFileSystemURLCallback& callback);
   virtual bool OpenFileSystem(
-      const GURL& url,
+      const GURL& origin_url,
       fileapi::FileSystemType type,
       long long size,
       fileapi::FileSystemCallbackDispatcher* dispatcher);
