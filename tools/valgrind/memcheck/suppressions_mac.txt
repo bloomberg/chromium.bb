@@ -1181,14 +1181,10 @@
    fun:_ZN12TType1Strike9GetStrikeERK18TStrikeDescription
    fun:_Z19Type1GetStrikeSpecsmPK18TStrikeDescriptionP11StrikeSpecs
    fun:_ZNK19TConcreteFontScaler14GetFontMetricsEv
-   fun:_ZNK19TConcreteFontScaler23GetATSCompatibleMetricsERiS0_S0_S0_S0_S0_S0_
-   fun:FPFontGetGlyphsForUnichars
+   ...
    fun:_ZNK9TBaseFont20CalculateFontMetricsEb
    fun:_ZNK9TBaseFont15InitFontMetricsEv
    fun:_ZNK9TBaseFont16GetStrikeMetricsEfPK17CGAffineTransformb
-   fun:_ZNK5TFont17InitStrikeMetricsEv
-   fun:CTFontGetAscent
-   fun:__NSFontInstanceInfoInitializeMetricsInfo
 }
 {
    bug_73036
