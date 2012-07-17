@@ -1,0 +1,3170 @@
+{
+  "tests": [
+    {
+      "flags": {
+        "outputUniBrl": true
+      },
+      "data": [
+        {
+          "input": "bagefter", 
+          "output": "⠃⠁⠛⠑⠋⠞⠱"
+        }, 
+        {
+          "input": "betre", 
+          "output": "⠃⠑⠞⠷"
+        }, 
+        {
+          "input": "betr", 
+          "output": "⠃⠑⠞⠗"
+        }, 
+        {
+          "input": "betv", 
+          "output": "⠃⠑⠞⠧"
+        }, 
+        {
+          "input": "bety", 
+          "output": "⠃⠑⠞⠯"
+        }, 
+        {
+          "input": "blev", 
+          "output": "⠃⠧"
+        }, 
+        {
+          "input": "denda", 
+          "output": "⠯⠙⠁"
+        }, 
+        {
+          "input": "denden", 
+          "output": "⠯⠯"
+        }, 
+        {
+          "input": "dender", 
+          "output": "⠯⠾"
+        }, 
+        {
+          "input": "dendet", 
+          "output": "⠯⠮"
+        }, 
+        {
+          "input": "dende", 
+          "output": "⠯⠹"
+        }, 
+        {
+          "input": "dendi", 
+          "output": "⠯⠙⠊"
+        }, 
+        {
+          "input": "dendo", 
+          "output": "⠯⠙⠕"
+        }, 
+        {
+          "input": "dendu", 
+          "output": "⠯⠙⠥"
+        }, 
+        {
+          "input": "dendy", 
+          "output": "⠯⠙⠽"
+        }, 
+        {
+          "input": "dendæ", 
+          "output": "⠯⠙⠜"
+        }, 
+        {
+          "input": "dendâ", 
+          "output": "⠯⠙⠡"
+        }, 
+        {
+          "input": "dendå", 
+          "output": "⠯⠙⠡"
+        }, 
+        {
+          "input": "dendæ", 
+          "output": "⠯⠙⠜"
+        }, 
+        {
+          "input": "dendæ", 
+          "output": "⠯⠙⠜"
+        }, 
+        {
+          "input": "dendö", 
+          "output": "⠯⠙⠪"
+        }, 
+        {
+          "input": "dendø", 
+          "output": "⠯⠙⠪"
+        }, 
+        {
+          "input": "dend", 
+          "output": "⠹⠟"
+        }, 
+        {
+          "input": "denend", 
+          "output": "⠹⠫⠟"
+        }, 
+        {
+          "input": "denene", 
+          "output": "⠹⠫⠫"
+        }, 
+        {
+          "input": "denen", 
+          "output": "⠹⠝⠣"
+        }, 
+        {
+          "input": "denere", 
+          "output": "⠹⠫⠷"
+        }, 
+        {
+          "input": "dener", 
+          "output": "⠹⠝⠟"
+        }, 
+        {
+          "input": "denete", 
+          "output": "⠹⠫⠳"
+        }, 
+        {
+          "input": "denet", 
+          "output": "⠹⠝⠬"
+        }, 
+        {
+          "input": "dene", 
+          "output": "⠹⠫"
+        }, 
+        {
+          "input": "deni", 
+          "output": "⠹⠝⠊"
+        }, 
+        {
+          "input": "denore", 
+          "output": "⠹⠝⠕⠷"
+        }, 
+        {
+          "input": "denor", 
+          "output": "⠹⠝⠭"
+        }, 
+        {
+          "input": "deno", 
+          "output": "⠹⠝⠕"
+        }, 
+        {
+          "input": "denu", 
+          "output": "⠹⠝⠥"
+        }, 
+        {
+          "input": "deny", 
+          "output": "⠹⠝⠽"
+        }, 
+        {
+          "input": "denæ", 
+          "output": "⠹⠝⠜"
+        }, 
+        {
+          "input": "denâ", 
+          "output": "⠹⠝⠡"
+        }, 
+        {
+          "input": "denå", 
+          "output": "⠹⠝⠜"
+        }, 
+        {
+          "input": "denå", 
+          "output": "⠹⠝⠡"
+        }, 
+        {
+          "input": "denæ", 
+          "output": "⠹⠝⠜"
+        }, 
+        {
+          "input": "denæ", 
+          "output": "⠹⠝⠜"
+        }, 
+        {
+          "input": "denö", 
+          "output": "⠹⠝⠪"
+        }, 
+        {
+          "input": "denø", 
+          "output": "⠹⠝⠪"
+        }, 
+        {
+          "input": "den", 
+          "output": "⠯"
+        }, 
+        {
+          "input": "dera", 
+          "output": "⠹⠗⠁"
+        }, 
+        {
+          "input": "derend", 
+          "output": "⠹⠷⠟"
+        }, 
+        {
+          "input": "derene", 
+          "output": "⠹⠷⠫"
+        }, 
+        {
+          "input": "deren", 
+          "output": "⠹⠗⠣"
+        }, 
+        {
+          "input": "derere", 
+          "output": "⠹⠷⠷"
+        }, 
+        {
+          "input": "derer", 
+          "output": "⠹⠗⠱"
+        }, 
+        {
+          "input": "derete", 
+          "output": "⠹⠷⠳"
+        }, 
+        {
+          "input": "deret", 
+          "output": "⠹⠗⠬"
+        }, 
+        {
+          "input": "dere", 
+          "output": "⠹⠷"
+        }, 
+        {
+          "input": "derige", 
+          "output": "⠹⠗⠊⠻"
+        }, 
+        {
+          "input": "derig", 
+          "output": "⠹⠗⠔"
+        }, 
+        {
+          "input": "deri", 
+          "output": "⠹⠗⠊"
+        }, 
+        {
+          "input": "deror", 
+          "output": "⠹⠗⠭"
+        }, 
+        {
+          "input": "dero", 
+          "output": "⠹⠗⠕"
+        }, 
+        {
+          "input": "deru", 
+          "output": "⠹⠗⠥"
+        }, 
+        {
+          "input": "dery", 
+          "output": "⠹⠗⠽"
+        }, 
+        {
+          "input": "deræ", 
+          "output": "⠹⠗⠜"
+        }, 
+        {
+          "input": "derâ", 
+          "output": "⠹⠗⠡"
+        }, 
+        {
+          "input": "derâ", 
+          "output": "⠹⠗⠜"
+        }, 
+        {
+          "input": "derå", 
+          "output": "⠹⠗⠡"
+        }, 
+        {
+          "input": "deræ", 
+          "output": "⠹⠗⠜"
+        }, 
+        {
+          "input": "deræ", 
+          "output": "⠹⠗⠜"
+        }, 
+        {
+          "input": "derö", 
+          "output": "⠹⠗⠪"
+        }, 
+        {
+          "input": "derø", 
+          "output": "⠹⠗⠪"
+        }, 
+        {
+          "input": "der", 
+          "output": "⠾"
+        }, 
+        {
+          "input": "deta", 
+          "output": "⠹⠞⠁"
+        }, 
+        {
+          "input": "detend", 
+          "output": "⠹⠳⠟"
+        }, 
+        {
+          "input": "detene", 
+          "output": "⠹⠳⠫"
+        }, 
+        {
+          "input": "deten", 
+          "output": "⠹⠞⠣"
+        }, 
+        {
+          "input": "detere", 
+          "output": "⠹⠳⠷"
+        }, 
+        {
+          "input": "deter", 
+          "output": "⠹⠞⠱"
+        }, 
+        {
+          "input": "detete", 
+          "output": "⠹⠳⠳"
+        }, 
+        {
+          "input": "detet", 
+          "output": "⠹⠞⠬"
+        }, 
+        {
+          "input": "dete", 
+          "output": "⠹⠳"
+        }, 
+        {
+          "input": "deti", 
+          "output": "⠹⠞⠊"
+        }, 
+        {
+          "input": "deto", 
+          "output": "⠹⠞⠕"
+        }, 
+        {
+          "input": "detu", 
+          "output": "⠹⠞⠥"
+        }, 
+        {
+          "input": "detæ", 
+          "output": "⠹⠞⠜"
+        }, 
+        {
+          "input": "detâ", 
+          "output": "⠹⠞⠡"
+        }, 
+        {
+          "input": "detâ", 
+          "output": "⠹⠞⠜"
+        }, 
+        {
+          "input": "detå", 
+          "output": "⠹⠞⠡"
+        }, 
+        {
+          "input": "detæ", 
+          "output": "⠹⠞⠜"
+        }, 
+        {
+          "input": "detæ", 
+          "output": "⠹⠞⠜"
+        }, 
+        {
+          "input": "detö", 
+          "output": "⠹⠞⠪"
+        }, 
+        {
+          "input": "detø", 
+          "output": "⠹⠞⠪"
+        }, 
+        {
+          "input": "det", 
+          "output": "⠮"
+        }, 
+        {
+          "input": "de", 
+          "output": "⠹"
+        }, 
+        {
+          "input": "ena", 
+          "output": "⠑⠝⠁"
+        }, 
+        {
+          "input": "enda", 
+          "output": "⠣⠙⠁"
+        }, 
+        {
+          "input": "enden", 
+          "output": "⠣⠯"
+        }, 
+        {
+          "input": "ender", 
+          "output": "⠣⠾"
+        }, 
+        {
+          "input": "endet", 
+          "output": "⠣⠮"
+        }, 
+        {
+          "input": "ende", 
+          "output": "⠣⠹"
+        }, 
+        {
+          "input": "endi", 
+          "output": "⠣⠙⠊"
+        }, 
+        {
+          "input": "endor", 
+          "output": "⠣⠙⠥"
+        }, 
+        {
+          "input": "endo", 
+          "output": "⠣⠙⠕"
+        }, 
+        {
+          "input": "endu", 
+          "output": "⠣⠙⠥"
+        }, 
+        {
+          "input": "endy", 
+          "output": "⠣⠙⠽"
+        }, 
+        {
+          "input": "endæ", 
+          "output": "⠣⠙⠜"
+        }, 
+        {
+          "input": "endâ", 
+          "output": "⠣⠙⠡"
+        }, 
+        {
+          "input": "endâ", 
+          "output": "⠣⠙⠜"
+        }, 
+        {
+          "input": "endå", 
+          "output": "⠣⠙⠡"
+        }, 
+        {
+          "input": "endæ", 
+          "output": "⠣⠙⠜"
+        }, 
+        {
+          "input": "endæ", 
+          "output": "⠣⠙⠜"
+        }, 
+        {
+          "input": "endö", 
+          "output": "⠣⠙⠪"
+        }, 
+        {
+          "input": "endø", 
+          "output": "⠣⠙⠪"
+        }, 
+        {
+          "input": "end", 
+          "output": "⠑⠟"
+        }, 
+        {
+          "input": "enend", 
+          "output": "⠣⠫⠙⠪"
+        }, 
+        {
+          "input": "enene", 
+          "output": "⠑⠫⠫"
+        }, 
+        {
+          "input": "enen", 
+          "output": "⠑⠝⠣"
+        }, 
+        {
+          "input": "enere", 
+          "output": "⠑⠫⠷"
+        }, 
+        {
+          "input": "ener", 
+          "output": "⠑⠝⠱"
+        }, 
+        {
+          "input": "enete", 
+          "output": "⠑⠫⠳"
+        }, 
+        {
+          "input": "enet", 
+          "output": "⠑⠝⠬"
+        }, 
+        {
+          "input": "ene", 
+          "output": "⠑⠫"
+        }, 
+        {
+          "input": "eni", 
+          "output": "⠑⠝⠊"
+        }, 
+        {
+          "input": "enore", 
+          "output": "⠑⠝⠕⠷"
+        }, 
+        {
+          "input": "enor", 
+          "output": "⠑⠝⠭"
+        }, 
+        {
+          "input": "enæ", 
+          "output": "⠑⠝⠜"
+        }, 
+        {
+          "input": "enâ", 
+          "output": "⠑⠝⠡"
+        }, 
+        {
+          "input": "enâ", 
+          "output": "⠑⠝⠜"
+        }, 
+        {
+          "input": "enå", 
+          "output": "⠑⠝⠡"
+        }, 
+        {
+          "input": "enæ", 
+          "output": "⠑⠝⠜"
+        }, 
+        {
+          "input": "enæ", 
+          "output": "⠑⠝⠣"
+        }, 
+        {
+          "input": "enö", 
+          "output": "⠑⠝⠪"
+        }, 
+        {
+          "input": "enø", 
+          "output": "⠑⠝⠪"
+        }, 
+        {
+          "input": "en", 
+          "output": "⠣"
+        }, 
+        {
+          "input": "erend", 
+          "output": "⠑⠷⠟"
+        }, 
+        {
+          "input": "erenen", 
+          "output": "⠑⠷⠝⠣"
+        }, 
+        {
+          "input": "erener", 
+          "output": "⠑⠷⠝⠱"
+        }, 
+        {
+          "input": "erenet", 
+          "output": "⠑⠷⠝⠬"
+        }, 
+        {
+          "input": "erene", 
+          "output": "⠑⠷⠫"
+        }, 
+        {
+          "input": "eren", 
+          "output": "⠑⠗⠣"
+        }, 
+        {
+          "input": "erere", 
+          "output": "⠑⠷⠷"
+        }, 
+        {
+          "input": "erer", 
+          "output": "⠑⠗⠱"
+        }, 
+        {
+          "input": "erete", 
+          "output": "⠑⠷⠳"
+        }, 
+        {
+          "input": "eret", 
+          "output": "⠑⠗⠬"
+        }, 
+        {
+          "input": "ere", 
+          "output": "⠑⠷"
+        }, 
+        {
+          "input": "erige", 
+          "output": "⠑⠗⠊⠻"
+        }, 
+        {
+          "input": "erig", 
+          "output": "⠑⠗⠔"
+        }, 
+        {
+          "input": "eror", 
+          "output": "⠑⠗⠭"
+        }, 
+        {
+          "input": "erâ", 
+          "output": "⠑⠗⠜"
+        }, 
+        {
+          "input": "erâ", 
+          "output": "⠑⠗⠡"
+        }, 
+        {
+          "input": "eræ", 
+          "output": "⠑⠗⠜"
+        }, 
+        {
+          "input": "eræ", 
+          "output": "⠑⠗⠜"
+        }, 
+        {
+          "input": "erö", 
+          "output": "⠑⠗⠪"
+        }, 
+        {
+          "input": "erø", 
+          "output": "⠑⠗⠪"
+        }, 
+        {
+          "input": "er", 
+          "output": "⠱"
+        }, 
+        {
+          "input": "etend", 
+          "output": "⠑⠳⠟"
+        }, 
+        {
+          "input": "etene", 
+          "output": "⠑⠳⠫"
+        }, 
+        {
+          "input": "eten", 
+          "output": "⠑⠞⠣"
+        }, 
+        {
+          "input": "etere", 
+          "output": "⠑⠳⠷"
+        }, 
+        {
+          "input": "eter", 
+          "output": "⠑⠞⠱"
+        }, 
+        {
+          "input": "etete", 
+          "output": "⠑⠳⠳"
+        }, 
+        {
+          "input": "etet", 
+          "output": "⠑⠞⠬"
+        }, 
+        {
+          "input": "ete", 
+          "output": "⠑⠳"
+        }, 
+        {
+          "input": "etore", 
+          "output": "⠑⠞⠕⠷"
+        }, 
+        {
+          "input": "etor", 
+          "output": "⠑⠞⠭"
+        }, 
+        {
+          "input": "etæ", 
+          "output": "⠑⠞⠜"
+        }, 
+        {
+          "input": "etâ", 
+          "output": "⠑⠞⠜"
+        }, 
+        {
+          "input": "etâ", 
+          "output": "⠑⠞⠜"
+        }, 
+        {
+          "input": "etâ", 
+          "output": "⠑⠞⠜"
+        }, 
+        {
+          "input": "etæ", 
+          "output": "⠑⠞⠜"
+        }, 
+        {
+          "input": "etæ", 
+          "output": "⠑⠞⠜"
+        }, 
+        {
+          "input": "etö", 
+          "output": "⠑⠞⠪"
+        }, 
+        {
+          "input": "etø", 
+          "output": "⠑⠞⠪"
+        }, 
+        {
+          "input": "et", 
+          "output": "⠬"
+        }, 
+        {
+          "input": "forenen", 
+          "output": "⠋⠭⠑⠝⠣"
+        }, 
+        {
+          "input": "forener", 
+          "output": "⠋⠭⠑⠝⠱"
+        }, 
+        {
+          "input": "forenet", 
+          "output": "⠋⠭⠑⠝⠬"
+        }, 
+        {
+          "input": "forene", 
+          "output": "⠋⠭⠑⠫"
+        }, 
+        {
+          "input": "foru", 
+          "output": "⠋⠭⠥"
+        }, 
+        {
+          "input": "fremef", 
+          "output": "⠋⠷⠍⠑⠋"
+        }, 
+        {
+          "input": "genda", 
+          "output": "⠛⠣⠙⠁"
+        }, 
+        {
+          "input": "genden", 
+          "output": "⠛⠣⠯"
+        }, 
+        {
+          "input": "gender", 
+          "output": "⠛⠣⠾"
+        }, 
+        {
+          "input": "gendet", 
+          "output": "⠛⠣⠮"
+        }, 
+        {
+          "input": "gende", 
+          "output": "⠛⠣⠹"
+        }, 
+        {
+          "input": "gendig", 
+          "output": "⠛⠣⠙⠔"
+        }, 
+        {
+          "input": "gendi", 
+          "output": "⠛⠣⠙⠊"
+        }, 
+        {
+          "input": "gendor", 
+          "output": "⠛⠣⠙⠭"
+        }, 
+        {
+          "input": "gendo", 
+          "output": "⠛⠣⠙⠕"
+        }, 
+        {
+          "input": "gendu", 
+          "output": "⠛⠣⠙⠥"
+        }, 
+        {
+          "input": "gendæ", 
+          "output": "⠛⠣⠙⠜"
+        }, 
+        {
+          "input": "gendâ", 
+          "output": "⠛⠣⠙⠡"
+        }, 
+        {
+          "input": "gendâ", 
+          "output": "⠛⠣⠙⠜"
+        }, 
+        {
+          "input": "gendâ", 
+          "output": "⠛⠣⠙⠡"
+        }, 
+        {
+          "input": "gendæ", 
+          "output": "⠛⠣⠙⠜"
+        }, 
+        {
+          "input": "gendæ", 
+          "output": "⠛⠣⠙⠜"
+        }, 
+        {
+          "input": "gendö", 
+          "output": "⠛⠣⠙⠪"
+        }, 
+        {
+          "input": "gendø", 
+          "output": "⠛⠣⠙⠪"
+        }, 
+        {
+          "input": "gend", 
+          "output": "⠻⠟"
+        }, 
+        {
+          "input": "genen", 
+          "output": "⠻⠝⠣"
+        }, 
+        {
+          "input": "genera", 
+          "output": "⠻⠫⠗⠁"
+        }, 
+        {
+          "input": "genere", 
+          "output": "⠻⠫⠷"
+        }, 
+        {
+          "input": "generi", 
+          "output": "⠻⠫⠗⠊"
+        }, 
+        {
+          "input": "genero", 
+          "output": "⠻⠫⠗⠕"
+        }, 
+        {
+          "input": "generu", 
+          "output": "⠻⠫⠗⠥"
+        }, 
+        {
+          "input": "gener", 
+          "output": "⠻⠝⠱"
+        }, 
+        {
+          "input": "genet", 
+          "output": "⠻⠝⠬"
+        }, 
+        {
+          "input": "gene", 
+          "output": "⠻⠫"
+        }, 
+        {
+          "input": "geni", 
+          "output": "⠻⠝⠊"
+        }, 
+        {
+          "input": "genop", 
+          "output": "⠛⠣⠕⠏"
+        }, 
+        {
+          "input": "geno", 
+          "output": "⠻⠝⠕"
+        }, 
+        {
+          "input": "genu", 
+          "output": "⠻⠝⠥"
+        }, 
+        {
+          "input": "geny", 
+          "output": "⠻⠝⠽"
+        }, 
+        {
+          "input": "genæ", 
+          "output": "⠻⠝⠜"
+        }, 
+        {
+          "input": "genâ", 
+          "output": "⠻⠝⠡"
+        }, 
+        {
+          "input": "genâ", 
+          "output": "⠻⠝⠜"
+        }, 
+        {
+          "input": "genâ", 
+          "output": "⠻⠝⠡"
+        }, 
+        {
+          "input": "genæ", 
+          "output": "⠻⠝⠜"
+        }, 
+        {
+          "input": "genæ", 
+          "output": "⠻⠝⠜"
+        }, 
+        {
+          "input": "genö", 
+          "output": "⠻⠝⠪"
+        }, 
+        {
+          "input": "genø", 
+          "output": "⠻⠝⠪"
+        }, 
+        {
+          "input": "gen", 
+          "output": "⠛⠣"
+        }, 
+        {
+          "input": "geren", 
+          "output": "⠻⠗⠣"
+        }, 
+        {
+          "input": "gerer", 
+          "output": "⠻⠗⠱"
+        }, 
+        {
+          "input": "geret", 
+          "output": "⠻⠗⠬"
+        }, 
+        {
+          "input": "gere", 
+          "output": "⠻⠫"
+        }, 
+        {
+          "input": "geri", 
+          "output": "⠻⠗⠊"
+        }, 
+        {
+          "input": "gero", 
+          "output": "⠻⠗⠕"
+        }, 
+        {
+          "input": "geru", 
+          "output": "⠻⠗⠥"
+        }, 
+        {
+          "input": "gery", 
+          "output": "⠻⠗⠽"
+        }, 
+        {
+          "input": "geræ", 
+          "output": "⠻⠗⠜"
+        }, 
+        {
+          "input": "gerâ", 
+          "output": "⠻⠗⠡"
+        }, 
+        {
+          "input": "gerâ", 
+          "output": "⠻⠗⠜"
+        }, 
+        {
+          "input": "gerâ", 
+          "output": "⠻⠗⠡"
+        }, 
+        {
+          "input": "geræ", 
+          "output": "⠻⠗⠜"
+        }, 
+        {
+          "input": "geræ", 
+          "output": "⠻⠗⠜"
+        }, 
+        {
+          "input": "gerö", 
+          "output": "⠻⠗⠪"
+        }, 
+        {
+          "input": "gerø", 
+          "output": "⠻⠗⠪"
+        }, 
+        {
+          "input": "ger", 
+          "output": "⠛⠱"
+        }, 
+        {
+          "input": "geten", 
+          "output": "⠻⠞⠣"
+        }, 
+        {
+          "input": "geter", 
+          "output": "⠻⠞⠱"
+        }, 
+        {
+          "input": "getet", 
+          "output": "⠻⠞⠬"
+        }, 
+        {
+          "input": "gete", 
+          "output": "⠻⠳"
+        }, 
+        {
+          "input": "geti", 
+          "output": "⠻⠊"
+        }, 
+        {
+          "input": "geto", 
+          "output": "⠻⠕"
+        }, 
+        {
+          "input": "getu", 
+          "output": "⠻⠥"
+        }, 
+        {
+          "input": "gety", 
+          "output": "⠻⠽"
+        }, 
+        {
+          "input": "getæ", 
+          "output": "⠻⠜"
+        }, 
+        {
+          "input": "getâ", 
+          "output": "⠻⠡"
+        }, 
+        {
+          "input": "getâ", 
+          "output": "⠻⠜"
+        }, 
+        {
+          "input": "getâ", 
+          "output": "⠻⠡"
+        }, 
+        {
+          "input": "getæ", 
+          "output": "⠻⠜"
+        }, 
+        {
+          "input": "getæ", 
+          "output": "⠻⠜"
+        }, 
+        {
+          "input": "getö", 
+          "output": "⠻⠪"
+        }, 
+        {
+          "input": "getø", 
+          "output": "⠻⠪"
+        }, 
+        {
+          "input": "get", 
+          "output": "⠛⠬"
+        }, 
+        {
+          "input": "ge", 
+          "output": "⠻"
+        }, 
+        {
+          "input": "grundele", 
+          "output": "⠛⠗⠥⠟⠑⠇⠑"
+        }, 
+        {
+          "input": "heref", 
+          "output": "⠓⠱⠑⠋"
+        }, 
+        {
+          "input": "herom", 
+          "output": "⠓⠱⠕⠍"
+        }, 
+        {
+          "input": "hven", 
+          "output": "⠺⠣"
+        }, 
+        {
+          "input": "hver", 
+          "output": "⠺⠱"
+        }, 
+        {
+          "input": "hvet", 
+          "output": "⠺⠬"
+        }, 
+        {
+          "input": "hve", 
+          "output": "⠺⠑"
+        }, 
+        {
+          "input": "hvor/hvornâr", 
+          "output": "⠌⠠⠌⠌⠝"
+        }, 
+        {
+          "input": "hvor/", 
+          "output": "⠌⠠⠌"
+        }, 
+        {
+          "input": "hvor", 
+          "output": "⠌"
+        }, 
+        {
+          "input": "hv", 
+          "output": "⠺"
+        }, 
+        {
+          "input": "iga", 
+          "output": "⠊⠛⠁"
+        }, 
+        {
+          "input": "igen", 
+          "output": "⠊⠛⠣"
+        }, 
+        {
+          "input": "iger", 
+          "output": "⠊⠛⠱"
+        }, 
+        {
+          "input": "iget", 
+          "output": "⠊⠛⠬"
+        }, 
+        {
+          "input": "ige", 
+          "output": "⠊⠻"
+        }, 
+        {
+          "input": "igig", 
+          "output": "⠊⠛⠔"
+        }, 
+        {
+          "input": "igore", 
+          "output": "⠊⠛⠕⠷"
+        }, 
+        {
+          "input": "igor", 
+          "output": "⠊⠛⠭"
+        }, 
+        {
+          "input": "igæ", 
+          "output": "⠊⠛⠜"
+        }, 
+        {
+          "input": "igâ", 
+          "output": "⠊⠛⠡"
+        }, 
+        {
+          "input": "igâ", 
+          "output": "⠒⠛⠜"
+        }, 
+        {
+          "input": "igâ", 
+          "output": "⠒⠛⠡"
+        }, 
+        {
+          "input": "igæ", 
+          "output": "⠒⠛⠜"
+        }, 
+        {
+          "input": "igæ", 
+          "output": "⠒⠛⠜"
+        }, 
+        {
+          "input": "igö", 
+          "output": "⠒⠛⠪"
+        }, 
+        {
+          "input": "igø", 
+          "output": "⠒⠛⠪"
+        }, 
+        {
+          "input": "ig", 
+          "output": "⠔"
+        }, 
+        {
+          "input": "karaktereg", 
+          "output": "⠅⠁⠗⠁⠅⠎⠱⠑⠛"
+        }, 
+        {
+          "input": "kendete", 
+          "output": "⠅⠣⠹⠳"
+        }, 
+        {
+          "input": "lösköb", 
+          "output": "⠇⠪⠎⠅⠪⠃"
+        }, 
+        {
+          "input": "løskøb", 
+          "output": "⠇⠪⠎⠅⠪⠃"
+        }, 
+        {
+          "input": "mellemö", 
+          "output": "⠩⠇⠇⠑⠍⠪"
+        }, 
+        {
+          "input": "mellemø", 
+          "output": "⠩⠇⠇⠑⠍⠪"
+        }, 
+        {
+          "input": "mena", 
+          "output": "⠩⠝⠁"
+        }, 
+        {
+          "input": "menda", 
+          "output": "⠍⠣⠙⠁"
+        }, 
+        {
+          "input": "menden", 
+          "output": "⠍⠣⠯"
+        }, 
+        {
+          "input": "mender", 
+          "output": "⠍⠣⠾"
+        }, 
+        {
+          "input": "mendet", 
+          "output": "⠍⠣⠮"
+        }, 
+        {
+          "input": "mende", 
+          "output": "⠍⠣⠹"
+        }, 
+        {
+          "input": "mendig", 
+          "output": "⠍⠣⠙⠔"
+        }, 
+        {
+          "input": "mendi", 
+          "output": "⠍⠣⠙⠊"
+        }, 
+        {
+          "input": "mendor", 
+          "output": "⠍⠣⠙⠭"
+        }, 
+        {
+          "input": "mendo", 
+          "output": "⠍⠣⠙⠕"
+        }, 
+        {
+          "input": "mendu", 
+          "output": "⠍⠣⠙⠥"
+        }, 
+        {
+          "input": "mendæ", 
+          "output": "⠍⠣⠙⠜"
+        }, 
+        {
+          "input": "mendâ", 
+          "output": "⠍⠣⠙⠡"
+        }, 
+        {
+          "input": "mendâ", 
+          "output": "⠍⠣⠙⠜"
+        }, 
+        {
+          "input": "mendâ", 
+          "output": "⠍⠣⠙⠡"
+        }, 
+        {
+          "input": "mendæ", 
+          "output": "⠍⠣⠙⠜"
+        }, 
+        {
+          "input": "mendæ", 
+          "output": "⠍⠣⠙⠜"
+        }, 
+        {
+          "input": "mendö", 
+          "output": "⠍⠣⠙⠪"
+        }, 
+        {
+          "input": "mendø", 
+          "output": "⠍⠣⠙⠪"
+        }, 
+        {
+          "input": "mend", 
+          "output": "⠩⠟"
+        }, 
+        {
+          "input": "menen", 
+          "output": "⠩⠝⠣"
+        }, 
+        {
+          "input": "mener", 
+          "output": "⠩⠝⠱"
+        }, 
+        {
+          "input": "menet", 
+          "output": "⠩⠝⠬"
+        }, 
+        {
+          "input": "mene", 
+          "output": "⠩⠫"
+        }, 
+        {
+          "input": "meni", 
+          "output": "⠩⠝⠊"
+        }, 
+        {
+          "input": "meno", 
+          "output": "⠩⠝⠕"
+        }, 
+        {
+          "input": "menu", 
+          "output": "⠩⠝⠥"
+        }, 
+        {
+          "input": "meny", 
+          "output": "⠩⠝⠽"
+        }, 
+        {
+          "input": "menæ", 
+          "output": "⠩⠹⠜"
+        }, 
+        {
+          "input": "menâ", 
+          "output": "⠩⠹⠡"
+        }, 
+        {
+          "input": "menâ", 
+          "output": "⠩⠹⠜"
+        }, 
+        {
+          "input": "menâ", 
+          "output": "⠩⠹⠡"
+        }, 
+        {
+          "input": "menæ", 
+          "output": "⠩⠹⠜"
+        }, 
+        {
+          "input": "menæ", 
+          "output": "⠩⠹⠜"
+        }, 
+        {
+          "input": "menö", 
+          "output": "⠩⠹⠪"
+        }, 
+        {
+          "input": "menø", 
+          "output": "⠩⠹⠪"
+        }, 
+        {
+          "input": "men", 
+          "output": "⠍⠣"
+        }, 
+        {
+          "input": "mera", 
+          "output": "⠩⠗⠁"
+        }, 
+        {
+          "input": "meren", 
+          "output": "⠩⠗⠣"
+        }, 
+        {
+          "input": "merer", 
+          "output": "⠩⠗⠱"
+        }, 
+        {
+          "input": "meret", 
+          "output": "⠩⠗⠬"
+        }, 
+        {
+          "input": "mere", 
+          "output": "⠩⠷"
+        }, 
+        {
+          "input": "meri", 
+          "output": "⠩⠗⠊"
+        }, 
+        {
+          "input": "mero", 
+          "output": "⠩⠗⠕"
+        }, 
+        {
+          "input": "meru", 
+          "output": "⠩⠗⠥"
+        }, 
+        {
+          "input": "mery", 
+          "output": "⠩⠗⠽"
+        }, 
+        {
+          "input": "meræ", 
+          "output": "⠩⠗⠜"
+        }, 
+        {
+          "input": "merâ", 
+          "output": "⠩⠗⠡"
+        }, 
+        {
+          "input": "merâ", 
+          "output": "⠩⠗⠜"
+        }, 
+        {
+          "input": "merâ", 
+          "output": "⠩⠗⠡"
+        }, 
+        {
+          "input": "meræ", 
+          "output": "⠩⠗⠜"
+        }, 
+        {
+          "input": "meræ", 
+          "output": "⠩⠗⠜"
+        }, 
+        {
+          "input": "merö", 
+          "output": "⠩⠗⠪"
+        }, 
+        {
+          "input": "merø", 
+          "output": "⠩⠗⠪"
+        }, 
+        {
+          "input": "mer", 
+          "output": "⠍⠱"
+        }, 
+        {
+          "input": "meta", 
+          "output": "⠩⠞⠁"
+        }, 
+        {
+          "input": "meten", 
+          "output": "⠩⠞⠣"
+        }, 
+        {
+          "input": "meter", 
+          "output": "⠩⠞⠱"
+        }, 
+        {
+          "input": "metet", 
+          "output": "⠩⠞⠬"
+        }, 
+        {
+          "input": "mete", 
+          "output": "⠩⠳"
+        }, 
+        {
+          "input": "meti", 
+          "output": "⠩⠞⠊"
+        }, 
+        {
+          "input": "meto", 
+          "output": "⠩⠞⠕"
+        }, 
+        {
+          "input": "metu", 
+          "output": "⠩⠞⠥"
+        }, 
+        {
+          "input": "mety", 
+          "output": "⠩⠞⠽"
+        }, 
+        {
+          "input": "metæ", 
+          "output": "⠩⠞⠜"
+        }, 
+        {
+          "input": "metâ", 
+          "output": "⠩⠞⠡"
+        }, 
+        {
+          "input": "metâ", 
+          "output": "⠩⠞⠜"
+        }, 
+        {
+          "input": "metâ", 
+          "output": "⠩⠞⠡"
+        }, 
+        {
+          "input": "metæ", 
+          "output": "⠩⠞⠜"
+        }, 
+        {
+          "input": "metæ", 
+          "output": "⠩⠞⠜"
+        }, 
+        {
+          "input": "metö", 
+          "output": "⠩⠞⠪"
+        }, 
+        {
+          "input": "metø", 
+          "output": "⠩⠞⠪"
+        }, 
+        {
+          "input": "met", 
+          "output": "⠙⠬"
+        }, 
+        {
+          "input": "me", 
+          "output": "⠩"
+        }, 
+        {
+          "input": "miskre", 
+          "output": "⠍⠊⠎⠅⠷"
+        }, 
+        {
+          "input": "nda", 
+          "output": "⠝⠙⠁"
+        }, 
+        {
+          "input": "ndende", 
+          "output": "⠝⠯⠹"
+        }, 
+        {
+          "input": "ndend", 
+          "output": "⠝⠹⠟"
+        }, 
+        {
+          "input": "ndene", 
+          "output": "⠝⠹⠫"
+        }, 
+        {
+          "input": "nden", 
+          "output": "⠝⠯"
+        }, 
+        {
+          "input": "ndere", 
+          "output": "⠝⠹⠷"
+        }, 
+        {
+          "input": "nder", 
+          "output": "⠝⠾"
+        }, 
+        {
+          "input": "ndete", 
+          "output": "⠝⠹⠳"
+        }, 
+        {
+          "input": "ndet", 
+          "output": "⠝⠮"
+        }, 
+        {
+          "input": "nde", 
+          "output": "⠝⠹"
+        }, 
+        {
+          "input": "ndi", 
+          "output": "⠝⠙⠊"
+        }, 
+        {
+          "input": "ndrend", 
+          "output": "⠝⠙⠷⠟"
+        }, 
+        {
+          "input": "ndrene", 
+          "output": "⠝⠙⠷⠫"
+        }, 
+        {
+          "input": "ndren", 
+          "output": "⠝⠙⠗⠣"
+        }, 
+        {
+          "input": "ndrere", 
+          "output": "⠝⠙⠷⠷"
+        }, 
+        {
+          "input": "ndrer", 
+          "output": "⠝⠙⠗⠱"
+        }, 
+        {
+          "input": "ndrete", 
+          "output": "⠝⠙⠷⠳"
+        }, 
+        {
+          "input": "ndret", 
+          "output": "⠝⠙⠗⠬"
+        }, 
+        {
+          "input": "ndre", 
+          "output": "⠝⠙⠷"
+        }, 
+        {
+          "input": "ndæ", 
+          "output": "⠝⠙⠜"
+        }, 
+        {
+          "input": "ndâ", 
+          "output": "⠝⠙⠡"
+        }, 
+        {
+          "input": "ndâ", 
+          "output": "⠝⠙⠜"
+        }, 
+        {
+          "input": "ndâ", 
+          "output": "⠝⠙⠡"
+        }, 
+        {
+          "input": "ndæ", 
+          "output": "⠝⠙⠜"
+        }, 
+        {
+          "input": "ndæ", 
+          "output": "⠝⠙⠜"
+        }, 
+        {
+          "input": "ndö", 
+          "output": "⠝⠙⠪"
+        }, 
+        {
+          "input": "ndø", 
+          "output": "⠝⠙⠪"
+        }, 
+        {
+          "input": "nd", 
+          "output": "⠟"
+        }, 
+        {
+          "input": "nena", 
+          "output": "⠫⠝⠁"
+        }, 
+        {
+          "input": "nenda", 
+          "output": "⠝⠣⠙⠁"
+        }, 
+        {
+          "input": "nende", 
+          "output": "⠝⠣⠹"
+        }, 
+        {
+          "input": "nendi", 
+          "output": "⠝⠣⠙⠊"
+        }, 
+        {
+          "input": "nendo", 
+          "output": "⠝⠣⠙⠕"
+        }, 
+        {
+          "input": "nendu", 
+          "output": "⠝⠣⠙⠥"
+        }, 
+        {
+          "input": "nendy", 
+          "output": "⠝⠣⠙⠽"
+        }, 
+        {
+          "input": "nendæ", 
+          "output": "⠝⠣⠙⠜"
+        }, 
+        {
+          "input": "nendâ", 
+          "output": "⠝⠣⠙⠡"
+        }, 
+        {
+          "input": "nendâ", 
+          "output": "⠝⠣⠙⠜"
+        }, 
+        {
+          "input": "nendâ", 
+          "output": "⠝⠣⠙⠡"
+        }, 
+        {
+          "input": "nendæ", 
+          "output": "⠝⠣⠙⠜"
+        }, 
+        {
+          "input": "nendæ", 
+          "output": "⠝⠣⠙⠜"
+        }, 
+        {
+          "input": "nendö", 
+          "output": "⠝⠣⠙⠪"
+        }, 
+        {
+          "input": "nendø", 
+          "output": "⠝⠣⠙⠪"
+        }, 
+        {
+          "input": "nend", 
+          "output": "⠫⠟"
+        }, 
+        {
+          "input": "nene", 
+          "output": "⠫⠫"
+        }, 
+        {
+          "input": "neni", 
+          "output": "⠫⠝⠊"
+        }, 
+        {
+          "input": "nenore", 
+          "output": "⠫⠝⠕⠷"
+        }, 
+        {
+          "input": "nenor", 
+          "output": "⠫⠝⠭"
+        }, 
+        {
+          "input": "neno", 
+          "output": "⠫⠝⠥"
+        }, 
+        {
+          "input": "nenu", 
+          "output": "⠫⠝⠥"
+        }, 
+        {
+          "input": "neny", 
+          "output": "⠫⠝⠽"
+        }, 
+        {
+          "input": "nenæ", 
+          "output": "⠫⠝⠜"
+        }, 
+        {
+          "input": "nenâ", 
+          "output": "⠫⠝⠡"
+        }, 
+        {
+          "input": "nenâ", 
+          "output": "⠫⠝⠜"
+        }, 
+        {
+          "input": "nenâ", 
+          "output": "⠫⠝⠡"
+        }, 
+        {
+          "input": "nenæ", 
+          "output": "⠫⠝⠜"
+        }, 
+        {
+          "input": "nenæ", 
+          "output": "⠫⠝⠜"
+        }, 
+        {
+          "input": "nenö", 
+          "output": "⠫⠝⠪"
+        }, 
+        {
+          "input": "nenø", 
+          "output": "⠫⠝⠪"
+        }, 
+        {
+          "input": "nen", 
+          "output": "⠝⠣"
+        }, 
+        {
+          "input": "nera", 
+          "output": "⠫⠗⠁"
+        }, 
+        {
+          "input": "nerend", 
+          "output": "⠫⠷⠟"
+        }, 
+        {
+          "input": "nerene", 
+          "output": "⠫⠷⠫"
+        }, 
+        {
+          "input": "neren", 
+          "output": "⠫⠗⠣"
+        }, 
+        {
+          "input": "nerere", 
+          "output": "⠫⠷⠷"
+        }, 
+        {
+          "input": "nerer", 
+          "output": "⠫⠗⠱"
+        }, 
+        {
+          "input": "nerete", 
+          "output": "⠫⠷⠳"
+        }, 
+        {
+          "input": "neret", 
+          "output": "⠫⠗⠬"
+        }, 
+        {
+          "input": "nere", 
+          "output": "⠫⠷"
+        }, 
+        {
+          "input": "neri", 
+          "output": "⠫⠗⠊"
+        }, 
+        {
+          "input": "nerore", 
+          "output": "⠫⠗⠕⠷"
+        }, 
+        {
+          "input": "neror", 
+          "output": "⠫⠗⠭"
+        }, 
+        {
+          "input": "nero", 
+          "output": "⠫⠗⠕"
+        }, 
+        {
+          "input": "neru", 
+          "output": "⠫⠗⠥"
+        }, 
+        {
+          "input": "nery", 
+          "output": "⠫⠗⠽"
+        }, 
+        {
+          "input": "neræ", 
+          "output": "⠫⠗⠜"
+        }, 
+        {
+          "input": "nerâ", 
+          "output": "⠫⠗⠡"
+        }, 
+        {
+          "input": "nerâ", 
+          "output": "⠫⠗⠜"
+        }, 
+        {
+          "input": "nerâ", 
+          "output": "⠫⠗⠡"
+        }, 
+        {
+          "input": "neræ", 
+          "output": "⠫⠗⠜"
+        }, 
+        {
+          "input": "neræ", 
+          "output": "⠫⠗⠜"
+        }, 
+        {
+          "input": "nerö", 
+          "output": "⠫⠗⠪"
+        }, 
+        {
+          "input": "nerø", 
+          "output": "⠫⠗⠪"
+        }, 
+        {
+          "input": "ner", 
+          "output": "⠝⠱"
+        }, 
+        {
+          "input": "neta", 
+          "output": "⠫⠞⠁"
+        }, 
+        {
+          "input": "netend", 
+          "output": "⠫⠳⠟"
+        }, 
+        {
+          "input": "netene", 
+          "output": "⠫⠳⠫"
+        }, 
+        {
+          "input": "neten", 
+          "output": "⠫⠞⠣"
+        }, 
+        {
+          "input": "netere", 
+          "output": "⠫⠳⠷"
+        }, 
+        {
+          "input": "neter", 
+          "output": "⠫⠞⠱"
+        }, 
+        {
+          "input": "netete", 
+          "output": "⠫⠳⠳"
+        }, 
+        {
+          "input": "netet", 
+          "output": "⠫⠞⠬"
+        }, 
+        {
+          "input": "nete", 
+          "output": "⠫⠳"
+        }, 
+        {
+          "input": "neti", 
+          "output": "⠫⠞⠊"
+        }, 
+        {
+          "input": "netop", 
+          "output": "⠝⠬⠕⠏"
+        }, 
+        {
+          "input": "netore", 
+          "output": "⠫⠞⠕⠷"
+        }, 
+        {
+          "input": "netor", 
+          "output": "⠫⠞⠭"
+        }, 
+        {
+          "input": "neto", 
+          "output": "⠫⠞⠕"
+        }, 
+        {
+          "input": "netu", 
+          "output": "⠫⠞⠥"
+        }, 
+        {
+          "input": "nety", 
+          "output": "⠫⠞⠽"
+        }, 
+        {
+          "input": "netæ", 
+          "output": "⠫⠞⠜"
+        }, 
+        {
+          "input": "netâ", 
+          "output": "⠫⠞⠡"
+        }, 
+        {
+          "input": "netâ", 
+          "output": "⠫⠞⠜"
+        }, 
+        {
+          "input": "netâ", 
+          "output": "⠫⠞⠡"
+        }, 
+        {
+          "input": "netæ", 
+          "output": "⠫⠞⠜"
+        }, 
+        {
+          "input": "netæ", 
+          "output": "⠫⠞⠜"
+        }, 
+        {
+          "input": "netö", 
+          "output": "⠫⠞⠪"
+        }, 
+        {
+          "input": "netø", 
+          "output": "⠫⠞⠪"
+        }, 
+        {
+          "input": "net", 
+          "output": "⠝⠬"
+        }, 
+        {
+          "input": "ne", 
+          "output": "⠫"
+        }, 
+        {
+          "input": "orend", 
+          "output": "⠕⠷⠟"
+        }, 
+        {
+          "input": "orenend", 
+          "output": "⠕⠷⠫⠟"
+        }, 
+        {
+          "input": "orenene", 
+          "output": "⠕⠷⠫⠫"
+        }, 
+        {
+          "input": "orenen", 
+          "output": "⠕⠷⠝⠣"
+        }, 
+        {
+          "input": "orenere", 
+          "output": "⠕⠷⠫⠷"
+        }, 
+        {
+          "input": "orener", 
+          "output": "⠕⠷⠝⠱"
+        }, 
+        {
+          "input": "orenete", 
+          "output": "⠕⠷⠫⠳"
+        }, 
+        {
+          "input": "orenet", 
+          "output": "⠕⠷⠝⠬"
+        }, 
+        {
+          "input": "orene", 
+          "output": "⠕⠷⠫"
+        }, 
+        {
+          "input": "oren", 
+          "output": "⠕⠗⠣"
+        }, 
+        {
+          "input": "orere", 
+          "output": "⠕⠷⠷"
+        }, 
+        {
+          "input": "orer", 
+          "output": "⠕⠗⠱"
+        }, 
+        {
+          "input": "oreta", 
+          "output": "⠕⠷⠞⠁"
+        }, 
+        {
+          "input": "orete", 
+          "output": "⠕⠷⠳"
+        }, 
+        {
+          "input": "oreti", 
+          "output": "⠕⠷⠞⠊"
+        }, 
+        {
+          "input": "oreto", 
+          "output": "⠕⠷⠞⠕"
+        }, 
+        {
+          "input": "oretu", 
+          "output": "⠕⠷⠞⠥"
+        }, 
+        {
+          "input": "oret", 
+          "output": "⠕⠗⠬"
+        }, 
+        {
+          "input": "ore", 
+          "output": "⠕⠷"
+        }, 
+        {
+          "input": "oror", 
+          "output": "⠕⠗⠭"
+        }, 
+        {
+          "input": "oræ", 
+          "output": "⠕⠗⠜"
+        }, 
+        {
+          "input": "orâ", 
+          "output": "⠕⠗⠡"
+        }, 
+        {
+          "input": "orâ", 
+          "output": "⠕⠗⠜"
+        }, 
+        {
+          "input": "orâ", 
+          "output": "⠕⠗⠡"
+        }, 
+        {
+          "input": "oræ", 
+          "output": "⠕⠗⠜"
+        }, 
+        {
+          "input": "oræ", 
+          "output": "⠕⠗⠜"
+        }, 
+        {
+          "input": "orö", 
+          "output": "⠕⠗⠪"
+        }, 
+        {
+          "input": "orø", 
+          "output": "⠕⠗⠪"
+        }, 
+        {
+          "input": "or", 
+          "output": "⠭"
+        }, 
+        {
+          "input": "over-", 
+          "output": "⠕⠧⠱⠤"
+        }, 
+        {
+          "input": "pristager", 
+          "output": "⠏⠗⠊⠎⠞⠁⠛⠱"
+        }, 
+        {
+          "input": "pristage", 
+          "output": "⠏⠗⠊⠎⠞⠁⠻"
+        }, 
+        {
+          "input": "rena", 
+          "output": "⠷⠝⠁"
+        }, 
+        {
+          "input": "renda", 
+          "output": "⠗⠣⠙⠁"
+        }, 
+        {
+          "input": "renden", 
+          "output": "⠗⠣⠯"
+        }, 
+        {
+          "input": "render", 
+          "output": "⠗⠣⠾"
+        }, 
+        {
+          "input": "rendet", 
+          "output": "⠗⠣⠮"
+        }, 
+        {
+          "input": "rende", 
+          "output": "⠗⠣⠹"
+        }, 
+        {
+          "input": "rendi", 
+          "output": "⠗⠣⠙⠊"
+        }, 
+        {
+          "input": "rendore", 
+          "output": "⠗⠣⠙⠕⠷"
+        }, 
+        {
+          "input": "rendor", 
+          "output": "⠗⠣⠙⠭"
+        }, 
+        {
+          "input": "rendo", 
+          "output": "⠗⠣⠙⠕"
+        }, 
+        {
+          "input": "rendu", 
+          "output": "⠗⠣⠙⠥"
+        }, 
+        {
+          "input": "rendy", 
+          "output": "⠗⠣⠙⠽"
+        }, 
+        {
+          "input": "rendæ", 
+          "output": "⠗⠣⠙⠜"
+        }, 
+        {
+          "input": "rendâ", 
+          "output": "⠗⠣⠙⠡"
+        }, 
+        {
+          "input": "rendâ", 
+          "output": "⠗⠣⠙⠜"
+        }, 
+        {
+          "input": "rendâ", 
+          "output": "⠗⠣⠙⠡"
+        }, 
+        {
+          "input": "rendæ", 
+          "output": "⠗⠣⠙⠜"
+        }, 
+        {
+          "input": "rendæ", 
+          "output": "⠗⠣⠙⠜"
+        }, 
+        {
+          "input": "rendö", 
+          "output": "⠗⠣⠙⠪"
+        }, 
+        {
+          "input": "rendø", 
+          "output": "⠗⠣⠙⠪"
+        }, 
+        {
+          "input": "rend", 
+          "output": "⠷⠟"
+        }, 
+        {
+          "input": "renend", 
+          "output": "⠷⠫⠟"
+        }, 
+        {
+          "input": "renene", 
+          "output": "⠷⠫⠫"
+        }, 
+        {
+          "input": "renen", 
+          "output": "⠷⠝⠣"
+        }, 
+        {
+          "input": "renere", 
+          "output": "⠷⠫⠷"
+        }, 
+        {
+          "input": "rener", 
+          "output": "⠷⠝⠱"
+        }, 
+        {
+          "input": "renete", 
+          "output": "⠷⠫⠳"
+        }, 
+        {
+          "input": "renet", 
+          "output": "⠷⠝⠬"
+        }, 
+        {
+          "input": "rene", 
+          "output": "⠷⠫"
+        }, 
+        {
+          "input": "reni", 
+          "output": "⠷⠝⠊"
+        }, 
+        {
+          "input": "renore", 
+          "output": "⠷⠝⠕⠷"
+        }, 
+        {
+          "input": "renor", 
+          "output": "⠷⠝⠭"
+        }, 
+        {
+          "input": "reno", 
+          "output": "⠷⠝⠕"
+        }, 
+        {
+          "input": "renu", 
+          "output": "⠷⠝⠥"
+        }, 
+        {
+          "input": "reny", 
+          "output": "⠷⠝⠽"
+        }, 
+        {
+          "input": "renæ", 
+          "output": "⠷⠝⠜"
+        }, 
+        {
+          "input": "renâ", 
+          "output": "⠷⠝⠡"
+        }, 
+        {
+          "input": "renâ", 
+          "output": "⠷⠝⠜"
+        }, 
+        {
+          "input": "renâ", 
+          "output": "⠷⠝⠡"
+        }, 
+        {
+          "input": "renæ", 
+          "output": "⠷⠝⠜"
+        }, 
+        {
+          "input": "renæ", 
+          "output": "⠷⠝⠜"
+        }, 
+        {
+          "input": "renö", 
+          "output": "⠷⠝⠪"
+        }, 
+        {
+          "input": "renø", 
+          "output": "⠷⠝⠪"
+        }, 
+        {
+          "input": "ren", 
+          "output": "⠗⠣"
+        }, 
+        {
+          "input": "rera", 
+          "output": "⠷⠗⠁"
+        }, 
+        {
+          "input": "rerend", 
+          "output": "⠗⠷⠟"
+        }, 
+        {
+          "input": "rerene", 
+          "output": "⠷⠷⠫"
+        }, 
+        {
+          "input": "reren", 
+          "output": "⠷⠗⠣"
+        }, 
+        {
+          "input": "rerere", 
+          "output": "⠷⠷⠷"
+        }, 
+        {
+          "input": "rerer", 
+          "output": "⠷⠗⠱"
+        }, 
+        {
+          "input": "rerete", 
+          "output": "⠷⠷⠳"
+        }, 
+        {
+          "input": "reret", 
+          "output": "⠷⠗⠬"
+        }, 
+        {
+          "input": "rere", 
+          "output": "⠷⠷"
+        }, 
+        {
+          "input": "reri", 
+          "output": "⠷⠗⠊"
+        }, 
+        {
+          "input": "rerore", 
+          "output": "⠷⠗⠕⠷"
+        }, 
+        {
+          "input": "reror", 
+          "output": "⠷⠗⠭"
+        }, 
+        {
+          "input": "rero", 
+          "output": "⠷⠗⠕"
+        }, 
+        {
+          "input": "reru", 
+          "output": "⠷⠗⠥"
+        }, 
+        {
+          "input": "rery", 
+          "output": "⠷⠗⠽"
+        }, 
+        {
+          "input": "reræ", 
+          "output": "⠷⠗⠜"
+        }, 
+        {
+          "input": "rerâ", 
+          "output": "⠷⠗⠡"
+        }, 
+        {
+          "input": "rerâ", 
+          "output": "⠷⠗⠜"
+        }, 
+        {
+          "input": "rerâ", 
+          "output": "⠷⠗⠡"
+        }, 
+        {
+          "input": "reræ", 
+          "output": "⠷⠗⠜"
+        }, 
+        {
+          "input": "reræ", 
+          "output": "⠷⠗⠜"
+        }, 
+        {
+          "input": "rerö", 
+          "output": "⠷⠗⠪"
+        }, 
+        {
+          "input": "rerø", 
+          "output": "⠷⠗⠪"
+        }, 
+        {
+          "input": "rer", 
+          "output": "⠗⠱"
+        }, 
+        {
+          "input": "ret-", 
+          "output": "⠗⠬⠤"
+        }, 
+        {
+          "input": "reta", 
+          "output": "⠷⠞⠁"
+        }, 
+        {
+          "input": "retend", 
+          "output": "⠷⠳⠟"
+        }, 
+        {
+          "input": "retene", 
+          "output": "⠷⠳⠫"
+        }, 
+        {
+          "input": "reten", 
+          "output": "⠷⠞⠣"
+        }, 
+        {
+          "input": "retere", 
+          "output": "⠷⠳⠷"
+        }, 
+        {
+          "input": "reter", 
+          "output": "⠷⠞⠱"
+        }, 
+        {
+          "input": "retete", 
+          "output": "⠷⠳⠳"
+        }, 
+        {
+          "input": "retet", 
+          "output": "⠷⠞⠬"
+        }, 
+        {
+          "input": "rete", 
+          "output": "⠷⠳"
+        }, 
+        {
+          "input": "reti", 
+          "output": "⠷⠞⠊"
+        }, 
+        {
+          "input": "retore", 
+          "output": "⠷⠞⠕⠷"
+        }, 
+        {
+          "input": "retor", 
+          "output": "⠷⠞⠭"
+        }, 
+        {
+          "input": "reto", 
+          "output": "⠷⠞⠕"
+        }, 
+        {
+          "input": "retu", 
+          "output": "⠷⠞⠥"
+        }, 
+        {
+          "input": "rety", 
+          "output": "⠷⠞⠽"
+        }, 
+        {
+          "input": "retæ", 
+          "output": "⠷⠞⠜"
+        }, 
+        {
+          "input": "retâ", 
+          "output": "⠷⠞⠡"
+        }, 
+        {
+          "input": "retâ", 
+          "output": "⠷⠞⠜"
+        }, 
+        {
+          "input": "retâ", 
+          "output": "⠷⠞⠡"
+        }, 
+        {
+          "input": "retæ", 
+          "output": "⠷⠞⠜"
+        }, 
+        {
+          "input": "retæ", 
+          "output": "⠷⠞⠜"
+        }, 
+        {
+          "input": "retö", 
+          "output": "⠷⠞⠪"
+        }, 
+        {
+          "input": "retø", 
+          "output": "⠷⠞⠪"
+        }, 
+        {
+          "input": "ret", 
+          "output": "⠗⠬"
+        }, 
+        {
+          "input": "re", 
+          "output": "⠷"
+        }, 
+        {
+          "input": "sk", 
+          "output": "⠿"
+        }, 
+        {
+          "input": "st.", 
+          "output": "⠎⠞⠜"
+        }, 
+        {
+          "input": "st", 
+          "output": "⠵"
+        }, 
+        {
+          "input": "tena", 
+          "output": "⠳⠝⠁"
+        }, 
+        {
+          "input": "tenda", 
+          "output": "⠞⠣⠙⠁"
+        }, 
+        {
+          "input": "tenden", 
+          "output": "⠞⠣⠯"
+        }, 
+        {
+          "input": "tender", 
+          "output": "⠞⠣⠾"
+        }, 
+        {
+          "input": "tendet", 
+          "output": "⠞⠣⠮"
+        }, 
+        {
+          "input": "tende", 
+          "output": "⠞⠣⠹"
+        }, 
+        {
+          "input": "tendig", 
+          "output": "⠞⠣⠙⠔"
+        }, 
+        {
+          "input": "tendi", 
+          "output": "⠞⠣⠙⠊"
+        }, 
+        {
+          "input": "tendore", 
+          "output": "⠞⠣⠙⠕⠷"
+        }, 
+        {
+          "input": "tendor", 
+          "output": "⠞⠣⠙⠭"
+        }, 
+        {
+          "input": "tendo", 
+          "output": "⠞⠣⠙⠕"
+        }, 
+        {
+          "input": "tendu", 
+          "output": "⠞⠣⠙⠥"
+        }, 
+        {
+          "input": "tendy", 
+          "output": "⠞⠣⠙⠽"
+        }, 
+        {
+          "input": "tendæ", 
+          "output": "⠞⠣⠙⠜"
+        }, 
+        {
+          "input": "tendâ", 
+          "output": "⠞⠣⠙⠡"
+        }, 
+        {
+          "input": "tendâ", 
+          "output": "⠞⠣⠙⠜"
+        }, 
+        {
+          "input": "tendâ", 
+          "output": "⠞⠣⠙⠡"
+        }, 
+        {
+          "input": "tendæ", 
+          "output": "⠞⠣⠙⠜"
+        }, 
+        {
+          "input": "tendæ", 
+          "output": "⠞⠣⠙⠜"
+        }, 
+        {
+          "input": "tendö", 
+          "output": "⠞⠣⠙⠪"
+        }, 
+        {
+          "input": "tendø", 
+          "output": "⠞⠣⠙⠪"
+        }, 
+        {
+          "input": "tenend", 
+          "output": "⠳⠫⠟"
+        }, 
+        {
+          "input": "tenene", 
+          "output": "⠳⠫⠫"
+        }, 
+        {
+          "input": "tenen", 
+          "output": "⠳⠝⠣"
+        }, 
+        {
+          "input": "tenere", 
+          "output": "⠳⠫⠷"
+        }, 
+        {
+          "input": "tener", 
+          "output": "⠳⠝⠱"
+        }, 
+        {
+          "input": "tenete", 
+          "output": "⠳⠫⠳"
+        }, 
+        {
+          "input": "tenet", 
+          "output": "⠳⠝⠬"
+        }, 
+        {
+          "input": "tene", 
+          "output": "⠳⠫"
+        }, 
+        {
+          "input": "teni", 
+          "output": "⠳⠝⠊"
+        }, 
+        {
+          "input": "tenore", 
+          "output": "⠳⠝⠕⠷"
+        }, 
+        {
+          "input": "tenor", 
+          "output": "⠳⠝⠭"
+        }, 
+        {
+          "input": "teno", 
+          "output": "⠳⠝⠕"
+        }, 
+        {
+          "input": "tenu", 
+          "output": "⠳⠝⠥"
+        }, 
+        {
+          "input": "teny", 
+          "output": "⠳⠝⠽"
+        }, 
+        {
+          "input": "tenæ", 
+          "output": "⠳⠝⠜"
+        }, 
+        {
+          "input": "tenâ", 
+          "output": "⠳⠝⠡"
+        }, 
+        {
+          "input": "tenâ", 
+          "output": "⠳⠝⠜"
+        }, 
+        {
+          "input": "tenâ", 
+          "output": "⠳⠝⠡"
+        }, 
+        {
+          "input": "tenæ", 
+          "output": "⠳⠝⠜"
+        }, 
+        {
+          "input": "tenæ", 
+          "output": "⠳⠝⠜"
+        }, 
+        {
+          "input": "tenö", 
+          "output": "⠳⠝⠪"
+        }, 
+        {
+          "input": "tenø", 
+          "output": "⠳⠝⠪"
+        }, 
+        {
+          "input": "ten", 
+          "output": "⠞⠣"
+        }, 
+        {
+          "input": "tera", 
+          "output": "⠳⠗⠁"
+        }, 
+        {
+          "input": "terend", 
+          "output": "⠳⠷⠟"
+        }, 
+        {
+          "input": "terene", 
+          "output": "⠳⠷⠫"
+        }, 
+        {
+          "input": "teren", 
+          "output": "⠳⠗⠣"
+        }, 
+        {
+          "input": "terere", 
+          "output": "⠳⠷⠷"
+        }, 
+        {
+          "input": "terer", 
+          "output": "⠳⠗⠱"
+        }, 
+        {
+          "input": "terete", 
+          "output": "⠳⠷⠳"
+        }, 
+        {
+          "input": "teret", 
+          "output": "⠳⠗⠬"
+        }, 
+        {
+          "input": "tere", 
+          "output": "⠳⠷"
+        }, 
+        {
+          "input": "terige", 
+          "output": "⠳⠗⠊⠻"
+        }, 
+        {
+          "input": "terig", 
+          "output": "⠳⠗⠔"
+        }, 
+        {
+          "input": "teri", 
+          "output": "⠳⠗⠊"
+        }, 
+        {
+          "input": "terore", 
+          "output": "⠳⠗⠕⠷"
+        }, 
+        {
+          "input": "teror", 
+          "output": "⠳⠗⠭"
+        }, 
+        {
+          "input": "tero", 
+          "output": "⠳⠗⠕"
+        }, 
+        {
+          "input": "teru", 
+          "output": "⠳⠗⠥"
+        }, 
+        {
+          "input": "tery", 
+          "output": "⠳⠗⠽"
+        }, 
+        {
+          "input": "teræ", 
+          "output": "⠳⠗⠜"
+        }, 
+        {
+          "input": "terâ", 
+          "output": "⠳⠗⠡"
+        }, 
+        {
+          "input": "terâ", 
+          "output": "⠳⠗⠜"
+        }, 
+        {
+          "input": "terâ", 
+          "output": "⠳⠗⠡"
+        }, 
+        {
+          "input": "teræ", 
+          "output": "⠳⠗⠜"
+        }, 
+        {
+          "input": "teræ", 
+          "output": "⠳⠗⠜"
+        }, 
+        {
+          "input": "terö", 
+          "output": "⠳⠗⠪"
+        }, 
+        {
+          "input": "terø", 
+          "output": "⠳⠗⠪"
+        }, 
+        {
+          "input": "ter", 
+          "output": "⠞⠱"
+        }, 
+        {
+          "input": "teta", 
+          "output": "⠳⠞⠁"
+        }, 
+        {
+          "input": "tetend", 
+          "output": "⠳⠳⠟"
+        }, 
+        {
+          "input": "tetene", 
+          "output": "⠳⠳⠫"
+        }, 
+        {
+          "input": "teten", 
+          "output": "⠳⠞⠣"
+        }, 
+        {
+          "input": "tetere", 
+          "output": "⠳⠳⠷"
+        }, 
+        {
+          "input": "teter", 
+          "output": "⠳⠞⠱"
+        }, 
+        {
+          "input": "tetete", 
+          "output": "⠳⠳⠳"
+        }, 
+        {
+          "input": "tetet", 
+          "output": "⠳⠞⠬"
+        }, 
+        {
+          "input": "tete", 
+          "output": "⠳⠳"
+        }, 
+        {
+          "input": "tetige", 
+          "output": "⠳⠞⠊⠻"
+        }, 
+        {
+          "input": "tetig", 
+          "output": "⠳⠞⠔"
+        }, 
+        {
+          "input": "teti", 
+          "output": "⠳⠞⠊"
+        }, 
+        {
+          "input": "tetore", 
+          "output": "⠳⠞⠕⠷"
+        }, 
+        {
+          "input": "tetor", 
+          "output": "⠳⠞⠭"
+        }, 
+        {
+          "input": "teto", 
+          "output": "⠳⠞⠕"
+        }, 
+        {
+          "input": "tetu", 
+          "output": "⠳⠞⠥"
+        }, 
+        {
+          "input": "tety", 
+          "output": "⠳⠞⠽"
+        }, 
+        {
+          "input": "tetæ", 
+          "output": "⠳⠞⠜"
+        }, 
+        {
+          "input": "tetâ", 
+          "output": "⠳⠞⠡"
+        }, 
+        {
+          "input": "tetâ", 
+          "output": "⠳⠞⠜"
+        }, 
+        {
+          "input": "tetâ", 
+          "output": "⠳⠞⠡"
+        }, 
+        {
+          "input": "tetæ", 
+          "output": "⠳⠞⠜"
+        }, 
+        {
+          "input": "tetæ", 
+          "output": "⠳⠞⠜"
+        }, 
+        {
+          "input": "tetö", 
+          "output": "⠳⠞⠪"
+        }, 
+        {
+          "input": "tetø", 
+          "output": "⠳⠞⠪"
+        }, 
+        {
+          "input": "tet", 
+          "output": "⠞⠬"
+        }, 
+        {
+          "input": "te", 
+          "output": "⠳"
+        }, 
+        {
+          "input": "vena", 
+          "output": "⠼⠝⠁"
+        }, 
+        {
+          "input": "venda", 
+          "output": "⠧⠣⠙⠁"
+        }, 
+        {
+          "input": "venden", 
+          "output": "⠧⠣⠯"
+        }, 
+        {
+          "input": "vender", 
+          "output": "⠧⠣⠾"
+        }, 
+        {
+          "input": "vendet", 
+          "output": "⠧⠣⠮"
+        }, 
+        {
+          "input": "vende", 
+          "output": "⠧⠣⠹"
+        }, 
+        {
+          "input": "vendigen", 
+          "output": "⠧⠣⠙⠊⠛⠣"
+        }, 
+        {
+          "input": "vendiger", 
+          "output": "⠧⠣⠙⠊⠛⠱"
+        }, 
+        {
+          "input": "vendiget", 
+          "output": "⠧⠣⠙⠊⠛⠬"
+        }, 
+        {
+          "input": "vendige", 
+          "output": "⠧⠣⠙⠊⠻"
+        }, 
+        {
+          "input": "vendig", 
+          "output": "⠧⠣⠙⠔"
+        }, 
+        {
+          "input": "vendi", 
+          "output": "⠧⠣⠙⠊"
+        }, 
+        {
+          "input": "vendo", 
+          "output": "⠧⠣⠙⠕"
+        }, 
+        {
+          "input": "vendu", 
+          "output": "⠧⠣⠙⠥"
+        }, 
+        {
+          "input": "vendy", 
+          "output": "⠧⠣⠙⠽"
+        }, 
+        {
+          "input": "vendæ", 
+          "output": "⠧⠣⠙⠜"
+        }, 
+        {
+          "input": "vendâ", 
+          "output": "⠧⠣⠙⠡"
+        }, 
+        {
+          "input": "vendâ", 
+          "output": "⠧⠣⠙⠜"
+        }, 
+        {
+          "input": "vendâ", 
+          "output": "⠧⠣⠙⠡"
+        }, 
+        {
+          "input": "vendæ", 
+          "output": "⠧⠣⠙⠜"
+        }, 
+        {
+          "input": "vendæ", 
+          "output": "⠧⠣⠙⠜"
+        }, 
+        {
+          "input": "vendö", 
+          "output": "⠧⠣⠙⠪"
+        }, 
+        {
+          "input": "vendø", 
+          "output": "⠧⠣⠙⠪"
+        }, 
+        {
+          "input": "vend", 
+          "output": "⠼⠟"
+        }, 
+        {
+          "input": "venend", 
+          "output": "⠼⠫⠟"
+        }, 
+        {
+          "input": "venene", 
+          "output": "⠼⠫⠫"
+        }, 
+        {
+          "input": "venen", 
+          "output": "⠼⠝⠣"
+        }, 
+        {
+          "input": "venere", 
+          "output": "⠼⠫⠷"
+        }, 
+        {
+          "input": "vener", 
+          "output": "⠼⠝⠱"
+        }, 
+        {
+          "input": "venete", 
+          "output": "⠼⠫⠳"
+        }, 
+        {
+          "input": "venet", 
+          "output": "⠼⠝⠬"
+        }, 
+        {
+          "input": "vene", 
+          "output": "⠼⠫"
+        }, 
+        {
+          "input": "ven", 
+          "output": "⠧⠣"
+        }, 
+        {
+          "input": "vera", 
+          "output": "⠼⠗⠁"
+        }, 
+        {
+          "input": "verdenskre", 
+          "output": "⠧⠱⠯⠎⠅⠷"
+        }, 
+        {
+          "input": "verdenskr", 
+          "output": "⠧⠱⠯⠎⠅⠗"
+        }, 
+        {
+          "input": "verend", 
+          "output": "⠼⠷⠟"
+        }, 
+        {
+          "input": "verene", 
+          "output": "⠼⠷⠫"
+        }, 
+        {
+          "input": "veren", 
+          "output": "⠼⠗⠣"
+        }, 
+        {
+          "input": "verere", 
+          "output": "⠼⠷⠷"
+        }, 
+        {
+          "input": "verer", 
+          "output": "⠼⠗⠱"
+        }, 
+        {
+          "input": "verete", 
+          "output": "⠼⠷⠳"
+        }, 
+        {
+          "input": "veret", 
+          "output": "⠼⠗⠬"
+        }, 
+        {
+          "input": "vere", 
+          "output": "⠼⠷"
+        }, 
+        {
+          "input": "verige", 
+          "output": "⠼⠗⠊⠻"
+        }, 
+        {
+          "input": "verig", 
+          "output": "⠼⠗⠔"
+        }, 
+        {
+          "input": "veri", 
+          "output": "⠼⠗⠊"
+        }, 
+        {
+          "input": "verore", 
+          "output": "⠼⠗⠕⠷"
+        }, 
+        {
+          "input": "veror", 
+          "output": "⠼⠗⠭"
+        }, 
+        {
+          "input": "vero", 
+          "output": "⠼⠗⠕"
+        }, 
+        {
+          "input": "veru", 
+          "output": "⠼⠗⠥"
+        }, 
+        {
+          "input": "very", 
+          "output": "⠼⠗⠽"
+        }, 
+        {
+          "input": "veræ", 
+          "output": "⠼⠗⠜"
+        }, 
+        {
+          "input": "verâ", 
+          "output": "⠼⠗⠡"
+        }, 
+        {
+          "input": "verâ", 
+          "output": "⠼⠗⠜"
+        }, 
+        {
+          "input": "verâ", 
+          "output": "⠼⠗⠡"
+        }, 
+        {
+          "input": "veræ", 
+          "output": "⠼⠗⠜"
+        }, 
+        {
+          "input": "veræ", 
+          "output": "⠼⠗⠜"
+        }, 
+        {
+          "input": "verö", 
+          "output": "⠼⠗⠪"
+        }, 
+        {
+          "input": "verø", 
+          "output": "⠼⠗⠪"
+        }, 
+        {
+          "input": "ver", 
+          "output": "⠧⠱"
+        }, 
+        {
+          "input": "veta", 
+          "output": "⠼⠞⠁"
+        }, 
+        {
+          "input": "vetend", 
+          "output": "⠼⠳⠟"
+        }, 
+        {
+          "input": "vetene", 
+          "output": "⠼⠳⠫"
+        }, 
+        {
+          "input": "veten", 
+          "output": "⠼⠞⠣"
+        }, 
+        {
+          "input": "vetere", 
+          "output": "⠼⠳⠷"
+        }, 
+        {
+          "input": "veter", 
+          "output": "⠼⠞⠱"
+        }, 
+        {
+          "input": "vetete", 
+          "output": "⠼⠳⠳"
+        }, 
+        {
+          "input": "vetet", 
+          "output": "⠼⠞⠬"
+        }, 
+        {
+          "input": "vete", 
+          "output": "⠼⠳"
+        }, 
+        {
+          "input": "vetige", 
+          "output": "⠼⠞⠊⠻"
+        }, 
+        {
+          "input": "vetig", 
+          "output": "⠼⠞⠔"
+        }, 
+        {
+          "input": "veti", 
+          "output": "⠼⠞⠊"
+        }, 
+        {
+          "input": "vetore", 
+          "output": "⠼⠞⠕⠷"
+        }, 
+        {
+          "input": "vetor", 
+          "output": "⠼⠞⠭"
+        }, 
+        {
+          "input": "veto", 
+          "output": "⠼⠞⠕"
+        }, 
+        {
+          "input": "vetu", 
+          "output": "⠼⠞⠥"
+        }, 
+        {
+          "input": "vety", 
+          "output": "⠼⠞⠽"
+        }, 
+        {
+          "input": "vetæ", 
+          "output": "⠼⠞⠜"
+        }, 
+        {
+          "input": "vetâ", 
+          "output": "⠼⠞⠡"
+        }, 
+        {
+          "input": "vetâ", 
+          "output": "⠼⠞⠜"
+        }, 
+        {
+          "input": "vetâ", 
+          "output": "⠼⠞⠡"
+        }, 
+        {
+          "input": "vetæ", 
+          "output": "⠼⠞⠜"
+        }, 
+        {
+          "input": "vetæ", 
+          "output": "⠼⠞⠜"
+        }, 
+        {
+          "input": "vetö", 
+          "output": "⠼⠞⠪"
+        }, 
+        {
+          "input": "vetø", 
+          "output": "⠼⠞⠪"
+        }, 
+        {
+          "input": "vet", 
+          "output": "⠧⠬"
+        }, 
+        {
+          "input": "ve", 
+          "output": "⠼"
+        }
+      ]
+    }
+  ], 
+  "tables": [
+    "da-dk-g2.ctb"
+  ]
+}
