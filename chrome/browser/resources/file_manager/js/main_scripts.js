@@ -55,6 +55,7 @@
 //<include src="file_copy_manager.js"/>
 //<include src="file_manager.js"/>
 //<include src="file_manager_pyauto.js"/>
+//<include src="file_tasks.js"/>
 //<include src="file_type.js"/>
 //<include src="file_transfer_controller.js"/>
 //<include src="media/media_util.js"/>
