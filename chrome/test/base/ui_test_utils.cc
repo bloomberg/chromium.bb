@@ -119,6 +119,7 @@ class DOMOperationObserver : public content::NotificationObserver,
     registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
                    content::Source<RenderViewHost>(render_view_host));
     message_loop_runner_ = new MessageLoopRunner;
+    message_loop_runner_->Run();
   }
 
   virtual void Observe(int type,
@@ -136,8 +137,7 @@ class DOMOperationObserver : public content::NotificationObserver,
     message_loop_runner_->Quit();
   }
 
-  bool WaitAndGetResponse(std::string* response) WARN_UNUSED_RESULT {
-    message_loop_runner_->Run();
+  bool GetResponse(std::string* response) WARN_UNUSED_RESULT {
     *response = response_;
     return did_respond_;
   }
@@ -217,10 +217,10 @@ class InProcessJavaScriptExecutionController
   // Executes |script| and sets the JSON response |json|.
   virtual bool ExecuteJavaScriptAndGetJSON(const std::string& script,
                                            std::string* json) {
-    DOMOperationObserver dom_op_observer(render_view_host_);
     render_view_host_->ExecuteJavascriptInWebFrame(string16(),
                                                    UTF8ToUTF16(script));
-    return dom_op_observer.WaitAndGetResponse(json);
+    DOMOperationObserver dom_op_observer(render_view_host_);
+    return dom_op_observer.GetResponse(json);
   }
 
   virtual void FirstObjectAdded() {
@@ -256,11 +256,11 @@ bool ExecuteJavaScriptHelper(RenderViewHost* render_view_host,
   //                automation id.
   std::wstring script = L"window.domAutomationController.setAutomationId(0);" +
       original_script;
-  DOMOperationObserver dom_op_observer(render_view_host);
   render_view_host->ExecuteJavascriptInWebFrame(WideToUTF16Hack(frame_xpath),
                                                 WideToUTF16Hack(script));
+  DOMOperationObserver dom_op_observer(render_view_host);
   std::string json;
-  if (!dom_op_observer.WaitAndGetResponse(&json)) {
+  if (!dom_op_observer.GetResponse(&json)) {
     DLOG(ERROR) << "Cannot communicate with DOMOperationObserver.";
     return false;
   }
