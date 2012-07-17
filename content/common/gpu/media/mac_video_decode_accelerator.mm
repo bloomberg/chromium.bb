@@ -112,7 +112,7 @@ bool MacVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile) {
     return false;
 
   MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-      &MacVideoDecodeAccelerator::NotifyInitializeDone, this));
+      &MacVideoDecodeAccelerator::NotifyInitializeDone, base::AsWeakPtr(this)));
   return true;
 }
 
@@ -134,8 +134,8 @@ void MacVideoDecodeAccelerator::Decode(
     if (result == content::H264Parser::kEOStream) {
       if (bitstream_nalu_count_.count(bitstream_buffer.id()) == 0) {
         MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-            &MacVideoDecodeAccelerator::NotifyInputBufferRead, this,
-            bitstream_buffer.id()));
+            &MacVideoDecodeAccelerator::NotifyInputBufferRead,
+            base::AsWeakPtr(this), bitstream_buffer.id()));
       }
       return;
     }
@@ -197,7 +197,7 @@ void MacVideoDecodeAccelerator::Flush() {
                     "Call to Flush() during invalid state.", ILLEGAL_STATE,);
   vda_support_->Flush(true);
   MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-      &MacVideoDecodeAccelerator::NotifyFlushDone, this));
+      &MacVideoDecodeAccelerator::NotifyFlushDone, base::AsWeakPtr(this)));
 }
 
 void MacVideoDecodeAccelerator::Reset() {
@@ -206,10 +206,10 @@ void MacVideoDecodeAccelerator::Reset() {
                     "Call to Reset() during invalid state.", ILLEGAL_STATE,);
   vda_support_->Flush(false);
   MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-      &MacVideoDecodeAccelerator::NotifyResetDone, this));
+      &MacVideoDecodeAccelerator::NotifyResetDone, base::AsWeakPtr(this)));
 }
 
-void MacVideoDecodeAccelerator::Destroy() {
+void MacVideoDecodeAccelerator::Cleanup() {
   DCHECK(CalledOnValidThread());
   if (vda_support_) {
     vda_support_->Destroy();
@@ -219,9 +219,17 @@ void MacVideoDecodeAccelerator::Destroy() {
   decoded_images_.clear();
 }
 
+void MacVideoDecodeAccelerator::Destroy() {
+  DCHECK(CalledOnValidThread());
+  Cleanup();
+  delete this;
+}
+
 MacVideoDecodeAccelerator::~MacVideoDecodeAccelerator() {
   DCHECK(CalledOnValidThread());
-  Destroy();
+  DCHECK(!vda_support_);
+  DCHECK(!client_);
+  DCHECK(decoded_images_.empty());
 }
 
 void MacVideoDecodeAccelerator::OnFrameReady(
@@ -247,8 +255,8 @@ void MacVideoDecodeAccelerator::OnFrameReady(
   if (--bitstream_count_it->second == 0) {
     bitstream_nalu_count_.erase(bitstream_count_it);
     MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &MacVideoDecodeAccelerator::NotifyInputBufferRead, this,
-        bitstream_buffer_id));
+        &MacVideoDecodeAccelerator::NotifyInputBufferRead,
+        base::AsWeakPtr(this), bitstream_buffer_id));
   }
 }
 
@@ -279,7 +287,7 @@ void MacVideoDecodeAccelerator::StopOnError(
     media::VideoDecodeAccelerator::Error error) {
   if (client_)
     client_->NotifyError(error);
-  Destroy();
+  Cleanup();
 }
 
 bool MacVideoDecodeAccelerator::CreateDecoder(
@@ -298,7 +306,7 @@ bool MacVideoDecodeAccelerator::CreateDecoder(
                     PLATFORM_FAILURE, false);
 
   MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-      &MacVideoDecodeAccelerator::RequestPictures, this));
+      &MacVideoDecodeAccelerator::RequestPictures, base::AsWeakPtr(this)));
   return true;
 }
 
@@ -321,9 +329,9 @@ void MacVideoDecodeAccelerator::DecodeNALU(const content::H264NALU& nalu,
   // Keep a ref counted copy of the buffer.
   scoped_refptr<base::RefCountedBytes> bytes(
       base::RefCountedBytes::TakeVector(&data));
-  vda_support_->Decode(bytes->front(), bytes->size(),
-                       base::Bind(&MacVideoDecodeAccelerator::OnFrameReady,
-                                  this, bitstream_buffer_id, bytes));
+  vda_support_->Decode(bytes->front(), bytes->size(), base::Bind(
+      &MacVideoDecodeAccelerator::OnFrameReady,
+      base::AsWeakPtr(this), bitstream_buffer_id, bytes));
 }
 
 void MacVideoDecodeAccelerator::NotifyInitializeDone() {

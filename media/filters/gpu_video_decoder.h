@@ -119,6 +119,10 @@ class MEDIA_EXPORT GpuVideoDecoder
   void GetBufferTimeData(
       int32 id, base::TimeDelta* timestamp, base::TimeDelta* duration);
 
+  // Set |vda_| and |weak_vda_| on the VDA thread (in practice the render
+  // thread).
+  void SetVDA(VideoDecodeAccelerator* vda);
+
   // A shared memory segment and its allocated size.
   struct SHMBuffer {
     SHMBuffer(base::SharedMemory* m, size_t s);
@@ -158,8 +162,11 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   scoped_refptr<Factories> factories_;
 
-  // Populated during Initialize() (on success) and unchanged thereafter.
-  scoped_refptr<VideoDecodeAccelerator> vda_;
+  // Populated during Initialize() via SetVDA() (on success) and unchanged
+  // until an error occurs
+  scoped_ptr<VideoDecodeAccelerator> vda_;
+  // Used to post tasks from the GVD thread to the VDA thread safely.
+  base::WeakPtr<VideoDecodeAccelerator> weak_vda_;
 
   // Callbacks that are !is_null() only during their respective operation being
   // asynchronously executed.

@@ -33,6 +33,7 @@ class CONTENT_EXPORT MacVideoDecodeAccelerator
  public:
   // Does not take ownership of |client| which must outlive |*this|.
   MacVideoDecodeAccelerator(media::VideoDecodeAccelerator::Client* client);
+  virtual ~MacVideoDecodeAccelerator();
 
   // Set the OpenGL context to use.
   void SetCGLContext(CGLContextObj cgl_context);
@@ -48,7 +49,6 @@ class CONTENT_EXPORT MacVideoDecodeAccelerator
   virtual void Destroy() OVERRIDE;
 
  private:
-  virtual ~MacVideoDecodeAccelerator();
 
   // Callback for a completed frame.
   void OnFrameReady(int32 bitstream_buffer_id,
@@ -84,6 +84,9 @@ class CONTENT_EXPORT MacVideoDecodeAccelerator
   // Notifies the client that the input buffer identifed by |input_buffer_id|
   // has been processed.
   void NotifyInputBufferRead(int input_buffer_id);
+
+  // Helper for Destroy(), doing all the actual work except for deleting self.
+  void Cleanup();
 
   // To expose client callbacks from VideoDecodeAccelerator.
   Client* client_;

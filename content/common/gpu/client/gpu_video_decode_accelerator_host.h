@@ -19,13 +19,13 @@ class GpuChannelHost;
 class GpuVideoDecodeAcceleratorHost
     : public IPC::Listener,
       public media::VideoDecodeAccelerator,
-      public base::NonThreadSafe,
-      public base::SupportsWeakPtr<GpuVideoDecodeAcceleratorHost> {
+      public base::NonThreadSafe {
  public:
   // |channel| is used to send IPC messages to GPU process.
   GpuVideoDecodeAcceleratorHost(GpuChannelHost* channel,
                                 int32 decoder_route_id,
                                 media::VideoDecodeAccelerator::Client* client);
+  virtual ~GpuVideoDecodeAcceleratorHost();
 
   // IPC::Listener implementation.
   virtual void OnChannelError() OVERRIDE;
@@ -40,9 +40,6 @@ class GpuVideoDecodeAcceleratorHost
   virtual void Flush() OVERRIDE;
   virtual void Reset() OVERRIDE;
   virtual void Destroy() OVERRIDE;
-
- protected:
-  virtual ~GpuVideoDecodeAcceleratorHost();
 
  private:
   void Send(IPC::Message* message);

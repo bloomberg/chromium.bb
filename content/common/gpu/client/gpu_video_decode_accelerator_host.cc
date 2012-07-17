@@ -122,6 +122,7 @@ void GpuVideoDecodeAcceleratorHost::Destroy() {
   channel_->RemoveRoute(decoder_route_id_);
   client_ = NULL;
   Send(new AcceleratedVideoDecoderMsg_Destroy(decoder_route_id_));
+  delete this;
 }
 
 GpuVideoDecodeAcceleratorHost::~GpuVideoDecodeAcceleratorHost() {}

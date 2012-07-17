@@ -50,7 +50,7 @@ class CommandBufferProxyImpl
   // Note that the GpuVideoDecodeAccelerator may still fail to be created in
   // the GPU process, even if this returns non-NULL. In this case the client is
   // notified of an error later.
-  scoped_refptr<GpuVideoDecodeAcceleratorHost> CreateVideoDecoder(
+  GpuVideoDecodeAcceleratorHost* CreateVideoDecoder(
       media::VideoCodecProfile profile,
       media::VideoDecodeAccelerator::Client* client);
 
@@ -107,7 +107,7 @@ class CommandBufferProxyImpl
 
  private:
   typedef std::map<int32, gpu::Buffer> TransferBufferMap;
-  typedef std::map<int, scoped_refptr<GpuVideoDecodeAcceleratorHost> > Decoders;
+  typedef std::map<int, GpuVideoDecodeAcceleratorHost*> Decoders;
   typedef base::hash_map<uint32, base::Closure> SignalTaskMap;
 
   // Send an IPC message over the GPU channel. This is private to fully

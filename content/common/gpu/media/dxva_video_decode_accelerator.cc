@@ -548,8 +548,9 @@ bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile) {
       PLATFORM_FAILURE, false);
 
   state_ = kNormal;
-  MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&DXVAVideoDecodeAccelerator::NotifyInitializeDone, this));
+  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+      &DXVAVideoDecodeAccelerator::NotifyInitializeDone,
+      base::AsWeakPtr(this)));
   return true;
 }
 
@@ -597,7 +598,7 @@ void DXVAVideoDecodeAccelerator::Decode(
   // decoder to emit an output packet for every input packet.
   // http://code.google.com/p/chromium/issues/detail?id=108121
   MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-      &DXVAVideoDecodeAccelerator::NotifyInputBufferRead, this,
+      &DXVAVideoDecodeAccelerator::NotifyInputBufferRead, base::AsWeakPtr(this),
       bitstream_buffer.id()));
 }
 
@@ -658,7 +659,7 @@ void DXVAVideoDecodeAccelerator::Flush() {
   }
 
   MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-      &DXVAVideoDecodeAccelerator::NotifyFlushDone, this));
+      &DXVAVideoDecodeAccelerator::NotifyFlushDone, base::AsWeakPtr(this)));
 
   state_ = kNormal;
 }
@@ -677,7 +678,7 @@ void DXVAVideoDecodeAccelerator::Reset() {
       "Reset: Failed to send message.", PLATFORM_FAILURE,);
 
   MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-      &DXVAVideoDecodeAccelerator::NotifyResetDone, this));
+      &DXVAVideoDecodeAccelerator::NotifyResetDone, base::AsWeakPtr(this)));
 
   state_ = DXVAVideoDecodeAccelerator::kNormal;
 }
@@ -685,6 +686,7 @@ void DXVAVideoDecodeAccelerator::Reset() {
 void DXVAVideoDecodeAccelerator::Destroy() {
   DCHECK(CalledOnValidThread());
   Invalidate();
+  delete this;
 }
 
 bool DXVAVideoDecodeAccelerator::InitDecoder() {
@@ -946,7 +948,7 @@ bool DXVAVideoDecodeAccelerator::ProcessOutputSample(IMFSample* sample) {
   // Go ahead and request picture buffers.
   MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
       &DXVAVideoDecodeAccelerator::RequestPictureBuffers,
-      this, surface_desc.Width, surface_desc.Height));
+      base::AsWeakPtr(this), surface_desc.Width, surface_desc.Height));
 
   pictures_requested_ = true;
   return true;
@@ -973,8 +975,8 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
       media::Picture output_picture(index->second->id(),
                                     sample_info.input_buffer_id);
       MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-          &DXVAVideoDecodeAccelerator::NotifyPictureReady, this,
-          output_picture));
+          &DXVAVideoDecodeAccelerator::NotifyPictureReady,
+          base::AsWeakPtr(this), output_picture));
 
       index->second->set_available(false);
       pending_output_samples_.pop_front();

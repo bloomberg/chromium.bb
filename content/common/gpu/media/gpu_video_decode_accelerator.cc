@@ -70,12 +70,12 @@ GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
 GpuVideoDecodeAccelerator::~GpuVideoDecodeAccelerator() {
   if (stub_)
     stub_->RemoveDestructionObserver(this);
-  if (video_decode_accelerator_)
-    video_decode_accelerator_->Destroy();
+  if (video_decode_accelerator_.get())
+    video_decode_accelerator_.release()->Destroy();
 }
 
 bool GpuVideoDecodeAccelerator::OnMessageReceived(const IPC::Message& msg) {
-  if (!stub_ || !video_decode_accelerator_)
+  if (!stub_ || !video_decode_accelerator_.get())
     return false;
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuVideoDecodeAccelerator, msg)
@@ -169,31 +169,31 @@ void GpuVideoDecodeAccelerator::Initialize(
     return;
   }
   DLOG(INFO) << "Initializing DXVA HW decoder for windows.";
-  scoped_refptr<DXVAVideoDecodeAccelerator> video_decoder(
+  scoped_ptr<DXVAVideoDecodeAccelerator> video_decoder(
       new DXVAVideoDecodeAccelerator(this));
-  video_decode_accelerator_ = video_decoder;
+  video_decode_accelerator_ = video_decoder.Pass();
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
-  scoped_refptr<OmxVideoDecodeAccelerator> video_decoder(
+  scoped_ptr<OmxVideoDecodeAccelerator> video_decoder(
       new OmxVideoDecodeAccelerator(this));
   video_decoder->SetEglState(
       gfx::GLSurfaceEGL::GetHardwareDisplay(),
       stub_->decoder()->GetGLContext()->GetHandle());
-  video_decode_accelerator_ = video_decoder;
+  video_decode_accelerator_ = video_decoder.Pass();
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  scoped_refptr<VaapiVideoDecodeAccelerator> video_decoder(
+  scoped_ptr<VaapiVideoDecodeAccelerator> video_decoder(
       new VaapiVideoDecodeAccelerator(this, make_context_current_));
   gfx::GLContextGLX* glx_context =
       static_cast<gfx::GLContextGLX*>(stub_->decoder()->GetGLContext());
   GLXContext glx_context_handle =
       static_cast<GLXContext>(glx_context->GetHandle());
   video_decoder->SetGlxState(glx_context->display(), glx_context_handle);
-  video_decode_accelerator_ = video_decoder;
+  video_decode_accelerator_ = video_decoder.Pass();
 #elif defined(OS_MACOSX)
-  scoped_refptr<MacVideoDecodeAccelerator> video_decoder(
+  scoped_ptr<MacVideoDecodeAccelerator> video_decoder(
       new MacVideoDecodeAccelerator(this));
   video_decoder->SetCGLContext(static_cast<CGLContextObj>(
       stub_->decoder()->GetGLContext()->GetHandle()));
-  video_decode_accelerator_ = video_decoder;
+  video_decode_accelerator_ = video_decoder.Pass();
 #else
   NOTIMPLEMENTED() << "HW video decode acceleration not available.";
   NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
@@ -263,7 +263,7 @@ void GpuVideoDecodeAccelerator::OnReset() {
 
 void GpuVideoDecodeAccelerator::OnDestroy() {
   DCHECK(video_decode_accelerator_.get());
-  video_decode_accelerator_->Destroy();
+  video_decode_accelerator_.release()->Destroy();
 }
 
 void GpuVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer(
@@ -296,10 +296,8 @@ void GpuVideoDecodeAccelerator::NotifyResetDone() {
 
 void GpuVideoDecodeAccelerator::OnWillDestroyStub(GpuCommandBufferStub* stub) {
   DCHECK_EQ(stub, stub_.get());
-  if (video_decode_accelerator_) {
-    video_decode_accelerator_->Destroy();
-    video_decode_accelerator_ = NULL;
-  }
+  if (video_decode_accelerator_.get())
+    video_decode_accelerator_.release()->Destroy();
   if (stub_) {
     stub_->RemoveDestructionObserver(this);
     stub_.reset();

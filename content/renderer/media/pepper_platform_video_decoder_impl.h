@@ -58,7 +58,7 @@ class PlatformVideoDecoderImpl
   int32 command_buffer_route_id_;
 
   // Holds a GpuVideoDecodeAcceleratorHost.
-  scoped_refptr<media::VideoDecodeAccelerator> decoder_;
+  scoped_ptr<media::VideoDecodeAccelerator> decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformVideoDecoderImpl);
 };

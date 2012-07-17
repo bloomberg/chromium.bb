@@ -84,8 +84,8 @@ class GpuVideoDecodeAccelerator
   // Unowned pointer to the underlying GpuCommandBufferStub.
   base::WeakPtr<GpuCommandBufferStub> stub_;
 
-  // Pointer to the underlying VideoDecodeAccelerator.
-  scoped_refptr<media::VideoDecodeAccelerator> video_decode_accelerator_;
+  // The underlying VideoDecodeAccelerator.
+  scoped_ptr<media::VideoDecodeAccelerator> video_decode_accelerator_;
 
   // Callback for making the relevant context current for GL calls.
   // Returns false if failed.

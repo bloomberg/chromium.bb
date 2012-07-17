@@ -32,12 +32,18 @@
 // Class to provide video decode acceleration for Intel systems with hardware
 // support for it, and on which libva is available.
 // Decoding tasks are performed in a separate decoding thread.
+//
+// Threading/life-cycle: this object is created & destroyed on the GPU
+// ChildThread.  A few methods on it are called on the decoder thread which is
+// stopped during |this->Destroy()|, so any tasks posted to the decoder thread
+// can assume |*this| is still alive.  See |weak_this_| below for more details.
 class CONTENT_EXPORT VaapiVideoDecodeAccelerator :
     public media::VideoDecodeAccelerator {
  public:
   VaapiVideoDecodeAccelerator(
       Client* client,
       const base::Callback<bool(void)>& make_context_current);
+  virtual ~VaapiVideoDecodeAccelerator();
 
   // media::VideoDecodeAccelerator implementation.
   virtual bool Initialize(media::VideoCodecProfile profile) OVERRIDE;
@@ -53,8 +59,6 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator :
   void SetGlxState(Display* x_display, GLXContext glx_context);
 
  private:
-  virtual ~VaapiVideoDecodeAccelerator();
-
   // Ensure data has been synced with the output texture and notify
   // the client it is ready for displaying.
   void SyncAndNotifyPictureReady(int32 input_id, int32 output_id);
@@ -116,6 +120,9 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator :
   // finished.
   void FinishReset();
 
+  // Helper for Destroy(), doing all the actual work except for deleting self.
+  void Cleanup();
+
   // Client-provided X/GLX state.
   Display* x_display_;
   GLXContext glx_context_;
@@ -173,6 +180,14 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator :
 
   // ChildThread's message loop
   MessageLoop* message_loop_;
+
+  // WeakPtr<> pointing to |this| for use in posting tasks from the decoder
+  // thread back to the ChildThread.  Because the decoder thread is a member of
+  // this class, any task running on the decoder thread is guaranteed that this
+  // object is still alive.  As a result, tasks posted from ChildThread to
+  // decoder thread should use base::Unretained(this), and tasks posted from the
+  // decoder thread to the ChildThread should use |weak_this_|.
+  base::WeakPtr<VaapiVideoDecodeAccelerator> weak_this_;
 
   // To expose client callbacks from VideoDecodeAccelerator.
   // NOTE: all calls to these objects *MUST* be executed on message_loop_.

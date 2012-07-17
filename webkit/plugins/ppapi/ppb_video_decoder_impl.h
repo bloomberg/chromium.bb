@@ -73,7 +73,7 @@ class PPB_VideoDecoder_Impl : public ::ppapi::PPB_VideoDecoder_Shared,
 
   // This is NULL before initialization, and if this PPB_VideoDecoder_Impl is
   // swapped with another.
-  scoped_refptr<PluginDelegate::PlatformVideoDecoder> platform_video_decoder_;
+  scoped_ptr<PluginDelegate::PlatformVideoDecoder> platform_video_decoder_;
 
   // Reference to the plugin requesting this interface.
   const PPP_VideoDecoder_Dev* ppp_videodecoder_;

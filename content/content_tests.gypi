@@ -629,7 +629,9 @@
                   '../third_party/angle/src/build_angle.gyp:libGLESv2',
                 ],
               }],
-              ['OS=="win" and win_use_allocator_shim==1', {
+              ['(OS=="win" and win_use_allocator_shim==1) or '
+               '(os_posix == 1 and OS != "mac" and OS != "android" and '
+               ' linux_use_tcmalloc==1)', {
                 'dependencies': [
                   '../base/allocator/allocator.gyp:allocator',
                 ],

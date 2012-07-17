@@ -224,7 +224,7 @@ class GLRenderingVDAClient : public VideoDecodeAccelerator::Client {
   int num_done_bitstream_buffers() { return num_done_bitstream_buffers_; }
   int num_decoded_frames() { return num_decoded_frames_; }
   double frames_per_second();
-  bool decoder_deleted() { return !decoder_; }
+  bool decoder_deleted() { return !decoder_.get(); }
 
  private:
   typedef std::map<int, media::PictureBuffer*> PictureBufferById;
@@ -250,7 +250,7 @@ class GLRenderingVDAClient : public VideoDecodeAccelerator::Client {
   size_t encoded_data_next_pos_to_decode_;
   int next_bitstream_buffer_id_;
   ClientStateNotification* note_;
-  scoped_refptr<VideoDecodeAccelerator> decoder_;
+  scoped_ptr<VideoDecodeAccelerator> decoder_;
   std::set<int> outstanding_texture_ids_;
   int remaining_play_throughs_;
   int reset_after_frame_num_;
@@ -308,27 +308,27 @@ static bool DoNothingReturnTrue() { return true; }
 void GLRenderingVDAClient::CreateDecoder() {
   CHECK(decoder_deleted());
 #if defined(OS_WIN)
-  scoped_refptr<DXVAVideoDecodeAccelerator> decoder =
-      new DXVAVideoDecodeAccelerator(this);
+  scoped_ptr<DXVAVideoDecodeAccelerator> decoder(
+      new DXVAVideoDecodeAccelerator(this));
 #elif defined(OS_MACOSX)
-  scoped_refptr<MacVideoDecodeAccelerator> decoder =
-      new MacVideoDecodeAccelerator(this);
+  scoped_ptr<MacVideoDecodeAccelerator> decoder(
+      new MacVideoDecodeAccelerator(this));
   decoder->SetCGLContext(
       static_cast<CGLContextObj>(rendering_helper_->GetGLContext()));
 #elif defined(ARCH_CPU_ARMEL)
-  scoped_refptr<OmxVideoDecodeAccelerator> decoder =
-      new OmxVideoDecodeAccelerator(this);
+  scoped_ptr<OmxVideoDecodeAccelerator> decoder(
+      new OmxVideoDecodeAccelerator(this));
   decoder->SetEglState(
       static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
       static_cast<EGLContext>(rendering_helper_->GetGLContext()));
 #elif defined(ARCH_CPU_X86_FAMILY)
-  scoped_refptr<VaapiVideoDecodeAccelerator> decoder =
-      new VaapiVideoDecodeAccelerator(this, base::Bind(&DoNothingReturnTrue));
+  scoped_ptr<VaapiVideoDecodeAccelerator> decoder(
+      new VaapiVideoDecodeAccelerator(this, base::Bind(&DoNothingReturnTrue)));
   decoder->SetGlxState(
       static_cast<Display*>(rendering_helper_->GetGLDisplay()),
       static_cast<GLXContext>(rendering_helper_->GetGLContext()));
 #endif  // OS_WIN
-  decoder_ = decoder.release();
+  decoder_ = decoder.Pass();
   SetState(CS_DECODER_SET);
   if (decoder_deleted())
     return;
@@ -483,8 +483,7 @@ void GLRenderingVDAClient::SetState(ClientState new_state) {
 void GLRenderingVDAClient::DeleteDecoder() {
   if (decoder_deleted())
     return;
-  decoder_->Destroy();
-  decoder_ = NULL;
+  decoder_.release()->Destroy();
   STLClearObject(&encoded_data_);
   for (std::set<int>::iterator it = outstanding_texture_ids_.begin();
        it != outstanding_texture_ids_.end(); ++it) {
