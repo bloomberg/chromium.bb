@@ -33,6 +33,7 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
   virtual ~BrowserChildProcessHost() {}
 
   // Derived classes call this to launch the child process asynchronously.
+  // Takes ownership of |cmd_line|.
   virtual void Launch(
 #if defined(OS_WIN)
       const FilePath& exposed_dir,

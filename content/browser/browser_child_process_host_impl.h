@@ -22,10 +22,10 @@ class BrowserChildProcessHostIterator;
 // Plugins/workers and other child processes that live on the IO thread use this
 // class. RenderProcessHostImpl is the main exception that doesn't use this
 /// class because it lives on the UI thread.
-class CONTENT_EXPORT BrowserChildProcessHostImpl :
-    public content::BrowserChildProcessHost,
-    public NON_EXPORTED_BASE(content::ChildProcessHostDelegate),
-    public ChildProcessLauncher::Client {
+class CONTENT_EXPORT BrowserChildProcessHostImpl
+    : public content::BrowserChildProcessHost,
+      public NON_EXPORTED_BASE(content::ChildProcessHostDelegate),
+      public ChildProcessLauncher::Client {
  public:
   BrowserChildProcessHostImpl(
       content::ProcessType type,
@@ -36,7 +36,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl :
   // instance.
   static void TerminateAll();
 
-  // BrowserChildProcessHostImpl implementation:
+  // BrowserChildProcessHost implementation:
   virtual bool Send(IPC::Message* message) OVERRIDE;
   virtual void Launch(
 #if defined(OS_WIN)
