@@ -431,9 +431,12 @@ void FramePainter::PaintTitleBar(views::NonClientFrameView* view,
   views::WidgetDelegate* delegate = frame_->widget_delegate();
   if (delegate && delegate->ShouldShowWindowTitle()) {
     int title_x = GetTitleOffsetX();
+    int title_y = ui::LAYOUT_TOUCH == ui::GetDisplayLayout() ?
+        (view->GetBoundsForClientView().y() - title_font.GetHeight()) / 2
+        : kTitleOffsetY;
     gfx::Rect title_bounds(
         title_x,
-        kTitleOffsetY,
+        std::max(0, title_y),
         std::max(0, size_button_->x() - kTitleLogoSpacing - title_x),
         title_font.GetHeight());
     canvas->DrawStringInt(delegate->GetWindowTitle(),
