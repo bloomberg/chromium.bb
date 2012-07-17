@@ -1540,9 +1540,6 @@ void RenderWidgetHostViewGtk::OnAccessibilityNotifications(
 }
 
 AtkObject* RenderWidgetHostViewGtk::GetAccessible() {
-  RenderWidgetHostImpl::From(GetRenderWidgetHost())->
-      SetAccessibilityMode(AccessibilityModeComplete);
-
   if (!browser_accessibility_manager_.get()) {
     GtkWidget* parent = gtk_widget_get_parent(view_.get());
     browser_accessibility_manager_.reset(
