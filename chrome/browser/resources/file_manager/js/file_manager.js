@@ -1638,8 +1638,6 @@ FileManager.prototype = {
       case FileManager.DialogType.SELECT_SAVEAS_FILE:
         defaultTitle = str('SELECT_SAVEAS_FILE_TITLE');
         okLabel = str('SAVE_LABEL');
-        // We don't want search enabled in save as dialog.
-        this.dialogDom_.querySelector('#search-box').style.display = 'none';
         break;
 
       case FileManager.DialogType.FULL_PAGE:
