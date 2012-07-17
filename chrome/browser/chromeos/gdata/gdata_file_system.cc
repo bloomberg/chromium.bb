@@ -1137,12 +1137,35 @@ void GDataFileSystem::TransferFileFromLocalToRemote(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Make sure the destination directory exists.
-  GDataEntry* dest_dir = GetGDataEntryByPath(
-      remote_dest_file_path.DirName());
-  if (!dest_dir || !dest_dir->AsGDataDirectory()) {
-    base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-        base::Bind(callback, GDATA_FILE_ERROR_NOT_FOUND));
-    NOTREACHED();
+  GetEntryInfoByPath(
+      remote_dest_file_path.DirName(),
+      base::Bind(
+          &GDataFileSystem::TransferFileFromLocalToRemoteAfterGetEntryInfo,
+          ui_weak_ptr_,
+          local_src_file_path,
+          remote_dest_file_path,
+          callback));
+}
+
+void GDataFileSystem::TransferFileFromLocalToRemoteAfterGetEntryInfo(
+    const FilePath& local_src_file_path,
+    const FilePath& remote_dest_file_path,
+    const FileOperationCallback& callback,
+    GDataFileError error,
+    scoped_ptr<GDataEntryProto> entry_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != GDATA_FILE_OK) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, base::Bind(callback, error));
+    return;
+  }
+
+  DCHECK(entry.get());
+  if (!entry_proto->file_info().is_directory()) {
+    // The parent of |remote_dest_file_path| is not a directory.
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, base::Bind(callback, GDATA_FILE_ERROR_NOT_A_DIRECTORY));
     return;
   }
 

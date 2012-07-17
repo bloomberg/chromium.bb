@@ -195,6 +195,15 @@ class GDataFileSystem : public GDataFileSystemInterface,
                 GetDocumentsParams* params,
                 GDataFileError error);
 
+  // Part of TransferFileFromLocalToRemote(). Called after
+  // GetEntryInfoByPath() is complete.
+  void TransferFileFromLocalToRemoteAfterGetEntryInfo(
+      const FilePath& local_src_file_path,
+      const FilePath& remote_dest_file_path,
+      const FileOperationCallback& callback,
+      GDataFileError error,
+      scoped_ptr<GDataEntryProto> entry_proto);
+
   // Initiates transfer of |local_file_path| with |resource_id| to
   // |remote_dest_file_path|. |local_file_path| must be a file from the local
   // file system, |remote_dest_file_path| is the virtual destination path within
