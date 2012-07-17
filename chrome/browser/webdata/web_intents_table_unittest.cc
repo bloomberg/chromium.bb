@@ -22,16 +22,18 @@ using webkit_glue::WebIntentServiceData;
 
 namespace {
 
-GURL test_url("http://google.com/");
-GURL test_url_fake("http://fakegoogle.com/");
 string16 test_action = ASCIIToUTF16("http://webintents.org/intents/share");
 string16 test_action_2 = ASCIIToUTF16("http://webintents.org/intents/view");
+string16 test_scheme = ASCIIToUTF16("mailto");
+string16 test_scheme_2 = ASCIIToUTF16("web+poodles");
+GURL test_url("http://google.com/");
+GURL test_url_fake("http://fakegoogle.com/");
 string16 test_title = ASCIIToUTF16("Test WebIntent");
 string16 test_title_2 = ASCIIToUTF16("Test WebIntent #2");
 string16 mime_image = ASCIIToUTF16("image/*");
 string16 mime_video = ASCIIToUTF16("video/*");
 
-WebIntentServiceData MakeIntentService(const GURL& url,
+WebIntentServiceData MakeActionService(const GURL& url,
                                        const string16& action,
                                        const string16& type,
                                        const string16& title) {
@@ -39,6 +41,16 @@ WebIntentServiceData MakeIntentService(const GURL& url,
   service.service_url = url;
   service.action = action;
   service.type = type;
+  service.title = title;
+  service.disposition = WebIntentServiceData::DISPOSITION_INLINE;
+  return service;
+}
+
+WebIntentServiceData MakeSchemeService(
+    const string16& scheme, const GURL& url, const string16& title) {
+  WebIntentServiceData service;
+  service.scheme = scheme;
+  service.service_url = url;
   service.title = title;
   service.disposition = WebIntentServiceData::DISPOSITION_INLINE;
   return service;
@@ -61,7 +73,7 @@ class WebIntentsTableTest : public testing::Test {
 };
 
 // Test we can add, retrieve, and remove intent services from the database.
-TEST_F(WebIntentsTableTest, SetGetDeleteIntent) {
+TEST_F(WebIntentsTableTest, ActionIntents) {
   std::vector<WebIntentServiceData> services;
 
   // By default, no intent services exist.
@@ -70,7 +82,7 @@ TEST_F(WebIntentsTableTest, SetGetDeleteIntent) {
 
   // Now adding one.
   WebIntentServiceData service =
-      MakeIntentService(test_url, test_action, mime_image, test_title);
+      MakeActionService(test_url, test_action, mime_image, test_title);
   EXPECT_TRUE(IntentsTable()->SetWebIntentService(service));
 
   // Make sure that service can now be fetched
@@ -87,12 +99,60 @@ TEST_F(WebIntentsTableTest, SetGetDeleteIntent) {
   EXPECT_EQ(0U, services.size());
 }
 
+// Test we can add, retrieve, and remove intent services from the database.
+TEST_F(WebIntentsTableTest, SchemeIntents) {
+  std::vector<WebIntentServiceData> services;
+
+  // By default, no intent services exist.
+  EXPECT_TRUE(IntentsTable()->GetWebIntentServicesForScheme(
+      test_scheme, &services));
+  EXPECT_EQ(0U, services.size());
+
+  // Add a couple new intent services.
+  WebIntentServiceData service =
+      MakeSchemeService(test_scheme, test_url, test_title);
+  EXPECT_TRUE(IntentsTable()->SetWebIntentService(service));
+
+  WebIntentServiceData service2 =
+      MakeSchemeService(test_scheme_2, test_url, test_title_2);
+  EXPECT_TRUE(IntentsTable()->SetWebIntentService(service2));
+
+  // Make sure we can load both services...
+  services.clear();
+  EXPECT_TRUE(IntentsTable()->GetWebIntentServicesForScheme(
+      test_scheme, &services));
+  ASSERT_EQ(1U, services.size());
+  EXPECT_EQ(service, services[0]);
+
+  services.clear();
+  EXPECT_TRUE(IntentsTable()->GetWebIntentServicesForScheme(
+      test_scheme_2, &services));
+  ASSERT_EQ(1U, services.size());
+  EXPECT_EQ(service2, services[0]);
+
+  // Remove the first service.
+  EXPECT_TRUE(IntentsTable()->RemoveWebIntentService(service));
+
+  // Should now be gone.
+  services.clear();
+  EXPECT_TRUE(IntentsTable()->GetWebIntentServicesForScheme(
+      test_scheme, &services));
+  EXPECT_EQ(0U, services.size());
+
+  // Service2 should still be present.
+  services.clear();
+  EXPECT_TRUE(IntentsTable()->GetWebIntentServicesForScheme(
+      test_scheme_2, &services));
+  ASSERT_EQ(1U, services.size());
+  EXPECT_EQ(service2, services[0]);
+}
+
 // Test we support multiple intent services for the same MIME type
 TEST_F(WebIntentsTableTest, SetMultipleIntents) {
   std::vector<WebIntentServiceData> services;
 
   WebIntentServiceData service =
-      MakeIntentService(test_url, test_action, mime_image, test_title);
+      MakeActionService(test_url, test_action, mime_image, test_title);
   EXPECT_TRUE(IntentsTable()->SetWebIntentService(service));
 
   service.type = mime_video;
@@ -119,7 +179,7 @@ TEST_F(WebIntentsTableTest, GetAllIntents) {
   std::vector<WebIntentServiceData> services;
 
   WebIntentServiceData service =
-      MakeIntentService(test_url, test_action, mime_image, test_title);
+      MakeActionService(test_url, test_action, mime_image, test_title);
   EXPECT_TRUE(IntentsTable()->SetWebIntentService(service));
 
   service.action = test_action_2;
@@ -143,11 +203,11 @@ TEST_F(WebIntentsTableTest, GetAllIntents) {
 
 TEST_F(WebIntentsTableTest, DispositionToStringMapping) {
   WebIntentServiceData service =
-      MakeIntentService(test_url, test_action, mime_image, test_title);
+      MakeActionService(test_url, test_action, mime_image, test_title);
   service.disposition = WebIntentServiceData::DISPOSITION_WINDOW;
   EXPECT_TRUE(IntentsTable()->SetWebIntentService(service));
 
-  service = MakeIntentService(test_url, test_action, mime_video, test_title);
+  service = MakeActionService(test_url, test_action, mime_video, test_title);
   service.disposition = WebIntentServiceData::DISPOSITION_INLINE;
   EXPECT_TRUE(IntentsTable()->SetWebIntentService(service));
 
@@ -163,7 +223,7 @@ TEST_F(WebIntentsTableTest, DispositionToStringMapping) {
 }
 
 TEST_F(WebIntentsTableTest, GetByURL) {
-  WebIntentServiceData intent = MakeIntentService(
+  WebIntentServiceData intent = MakeActionService(
       test_url, test_action, mime_image, test_title);
   ASSERT_TRUE(IntentsTable()->SetWebIntentService(intent));
 

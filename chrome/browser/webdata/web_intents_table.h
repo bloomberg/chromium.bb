@@ -62,9 +62,15 @@ class WebIntentsTable : public WebDatabaseTable {
   // If |service| already exists, replaces it.
   bool SetWebIntentService(const webkit_glue::WebIntentServiceData& service);
 
+  // TODO(smckay): rename to GetWebIntentServicesForAction
   // Retrieve all |services| from WebIntents table that match |action|.
   bool GetWebIntentServices(
       const string16& action,
+      std::vector<webkit_glue::WebIntentServiceData>* services);
+
+  // Retrieve all |services| from WebIntents table that match |scheme|.
+  bool GetWebIntentServicesForScheme(
+      const string16& scheme,
       std::vector<webkit_glue::WebIntentServiceData>* services);
 
   // Retrieves all |services| from WebIntents table that match |service_url|.
