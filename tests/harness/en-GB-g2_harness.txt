@@ -1,11 +1,11 @@
 {
-  "sections": [
+  "tests": [
     {
       "flags": {
         "outputUniBrl": true, 
         "testmode": "backtranslate"
       }, 
-      "tests": [
+      "data": [
         {
           "input": "⠮ ⠉⠁⠞ ⠎⠁⠞ ⠕⠝ ⠮ ⠍⠁⠞", 
           "output": "the cat sat on the mat"
@@ -27,7 +27,7 @@
       "flags": {
         "outputUniBrl": true
       }, 
-      "tests": [
+      "data": [
         {
           "input": "the cat sat on the mat", 
           "output": "⠮ ⠉⠁⠞ ⠎⠁⠞ ⠕⠝ ⠮ ⠍⠁⠞"
@@ -46,5 +46,7 @@
       ]
     }
   ], 
-  "table": "en-GB-g2.ctb"
+  "tables": [
+    "en-GB-g2.ctb"
+  ]
 }

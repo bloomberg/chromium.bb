@@ -1,11 +1,11 @@
 {
-  "sections": [
+  "tests": [
     {
       "flags": {
         "outputUniBrl": true, 
         "testmode": "backtranslate"
       }, 
-      "tests": [
+      "data": [
         {
           "input": "⠁⠙⠈⠎⠱⠑⠗⠾", 
           "output": "adásszerű"
@@ -3192,7 +3192,7 @@
       "flags": {
         "outputUniBrl": true
       }, 
-      "tests": [
+      "data": [
         {
           "input": "adásszerű", 
           "output": "⠁⠙⠈⠎⠱⠑⠗⠾"
@@ -6376,5 +6376,7 @@
       ]
     }
   ], 
-  "table": "hu-hu-g1.ctb"
+  "tables": [
+    "hu-hu-g1.ctb"
+  ]
 }
