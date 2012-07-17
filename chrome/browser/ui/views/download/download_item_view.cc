@@ -400,29 +400,7 @@ gfx::Size DownloadItemView::GetPreferredSize() {
 // Handle a mouse click and open the context menu if the mouse is
 // over the drop-down region.
 bool DownloadItemView::OnMousePressed(const views::MouseEvent& event) {
-  // Mouse should not activate us in dangerous mode.
-  if (mode_ == DANGEROUS_MODE)
-    return true;
-
-  // Stop any completion animation.
-  if (complete_animation_.get() && complete_animation_->is_animating())
-    complete_animation_->End();
-
-  if (event.IsOnlyLeftMouseButton()) {
-    if (InDropDownButtonXCoordinateRange(event.x())) {
-      drop_down_pressed_ = true;
-      SetState(NORMAL, PUSHED);
-      // We are setting is_mouse_gesture to false when calling ShowContextMenu
-      // so that the positioning of the context menu will be similar to a
-      // keyboard invocation.  I.e. we want the menu to always be positioned
-      // next to the drop down button instead of the next to the pointer.
-      ShowContextMenu(event.location(), false);
-      // Once called, it is possible that *this was deleted (e.g.: due to
-      // invoking the 'Discard' action.)
-    } else if (!IsShowingWarningDialog()) {
-      SetState(PUSHED, NORMAL);
-    }
-  }
+  HandlePressEvent(event, event.IsOnlyLeftMouseButton());
   return true;
 }
 
@@ -456,17 +434,7 @@ bool DownloadItemView::OnMouseDragged(const views::MouseEvent& event) {
 }
 
 void DownloadItemView::OnMouseReleased(const views::MouseEvent& event) {
-  // Mouse should not activate us in dangerous mode.
-  if (mode_ == DANGEROUS_MODE)
-    return;
-
-  if (event.IsOnlyLeftMouseButton() &&
-      !InDropDownButtonXCoordinateRange(event.x()) &&
-      !IsShowingWarningDialog()) {
-    OpenDownload();
-  }
-
-  SetState(NORMAL, NORMAL);
+  HandleClickEvent(event, event.IsOnlyLeftMouseButton());
 }
 
 void DownloadItemView::OnMouseCaptureLost() {
@@ -523,6 +491,22 @@ bool DownloadItemView::OnKeyPressed(const views::KeyEvent& event) {
     return true;
   }
   return false;
+}
+
+ui::GestureStatus DownloadItemView::OnGestureEvent(
+    const views::GestureEvent& event) {
+  if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
+    HandlePressEvent(event, true);
+    return ui::GESTURE_STATUS_CONSUMED;
+  }
+
+  if (event.type() == ui::ET_GESTURE_TAP) {
+    HandleClickEvent(event, true);
+    return ui::GESTURE_STATUS_CONSUMED;
+  }
+
+  SetState(NORMAL, NORMAL);
+  return views::View::OnGestureEvent(event);
 }
 
 bool DownloadItemView::GetTooltipText(const gfx::Point& p,
@@ -929,6 +913,48 @@ void DownloadItemView::LoadIconIfItemPathChanged() {
     return;
 
   LoadIcon();
+}
+
+void DownloadItemView::HandlePressEvent(const views::LocatedEvent& event,
+                                        bool active_event) {
+  // The event should not activate us in dangerous mode.
+  if (mode_ == DANGEROUS_MODE)
+    return;
+
+  // Stop any completion animation.
+  if (complete_animation_.get() && complete_animation_->is_animating())
+    complete_animation_->End();
+
+  if (active_event) {
+    if (InDropDownButtonXCoordinateRange(event.x())) {
+      drop_down_pressed_ = true;
+      SetState(NORMAL, PUSHED);
+      // We are setting is_mouse_gesture to false when calling ShowContextMenu
+      // so that the positioning of the context menu will be similar to a
+      // keyboard invocation.  I.e. we want the menu to always be positioned
+      // next to the drop down button instead of the next to the pointer.
+      ShowContextMenu(event.location(), false);
+      // Once called, it is possible that *this was deleted (e.g.: due to
+      // invoking the 'Discard' action.)
+    } else if (!IsShowingWarningDialog()) {
+      SetState(PUSHED, NORMAL);
+    }
+  }
+}
+
+void DownloadItemView::HandleClickEvent(const views::LocatedEvent& event,
+                                        bool active_event) {
+  // Mouse should not activate us in dangerous mode.
+  if (mode_ == DANGEROUS_MODE)
+    return;
+
+  if (active_event &&
+      !InDropDownButtonXCoordinateRange(event.x()) &&
+      !IsShowingWarningDialog()) {
+    OpenDownload();
+  }
+
+  SetState(NORMAL, NORMAL);
 }
 
 // Load an icon for the file type we're downloading, and animate any in progress

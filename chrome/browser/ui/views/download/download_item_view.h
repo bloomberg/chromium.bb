@@ -87,6 +87,8 @@ class DownloadItemView : public views::ButtonListener,
   virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(
+      const views::GestureEvent& event) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
                               string16* tooltip) const OVERRIDE;
   virtual void ShowContextMenu(const gfx::Point& p,
@@ -141,6 +143,10 @@ class DownloadItemView : public views::ButtonListener,
 
   void LoadIcon();
   void LoadIconIfItemPathChanged();
+
+  // Common code for handling pointer events (i.e. mouse or gesture).
+  void HandlePressEvent(const views::LocatedEvent& event, bool active_event);
+  void HandleClickEvent(const views::LocatedEvent& event, bool active_event);
 
   // Convenience method to paint the 3 vertical images (bottom, middle, top)
   // that form the background.
