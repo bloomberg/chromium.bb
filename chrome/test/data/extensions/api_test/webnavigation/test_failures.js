@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -150,6 +150,41 @@ function runTests() {
             isLoadedBy("c-", "b-"),
             ["c-onBeforeNavigate", "c-onErrorOccurred"]]);
         chrome.tabs.update(tabId, { url: getURL('failures/a.html') });
+      },
+
+      // Cancel a navigation after it is already committed.
+      function cancel() {
+        expect([
+          { label: "onBeforeNavigate",
+            event: "onBeforeNavigate",
+            details: { frameId: 0,
+                       tabId: 0,
+                       timeStamp: 0,
+                       url: getURL('failures/e.html') }},
+          { label: "onCommitted",
+            event: "onCommitted",
+            details: { frameId: 0,
+                       tabId: 0,
+                       timeStamp: 0,
+                       transitionQualifiers: [],
+                       transitionType: "link",
+                       url: getURL('failures/e.html') }},
+          { label: "onDOMContentLoaded",
+            event: "onDOMContentLoaded",
+            details: { frameId: 0,
+                       tabId: 0,
+                       timeStamp: 0,
+                       url: getURL('failures/e.html') }},
+          { label: "onErrorOccurred",
+            event: "onErrorOccurred",
+            details: { error: "net::ERR_ABORTED",
+                       frameId: 0,
+                       tabId: 0,
+                       timeStamp: 0,
+                       url: getURL('failures/e.html') }}],
+          [["onBeforeNavigate", "onCommitted", "onDOMContentLoaded",
+            "onErrorOccurred"]]);
+        chrome.tabs.update(tabId, { url: getURL('failures/e.html') });
       },
     ]);
   });

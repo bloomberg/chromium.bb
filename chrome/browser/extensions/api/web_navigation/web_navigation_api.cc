@@ -741,6 +741,19 @@ void WebNavigationTabObserver::DidFinishLoad(
                       frame_id);
 }
 
+void WebNavigationTabObserver::DidFailLoad(
+    int64 frame_id,
+    const GURL& validated_url,
+    bool is_main_frame,
+    int error_code,
+    const string16& error_description) {
+  if (!navigation_state_.CanSendEvents(frame_id))
+    return;
+  navigation_state_.SetErrorOccurredInFrame(frame_id);
+  DispatchOnErrorOccurred(
+      web_contents(), validated_url, frame_id, is_main_frame, error_code);
+}
+
 void WebNavigationTabObserver::DidOpenRequestedURL(
     WebContents* new_contents,
     const GURL& url,

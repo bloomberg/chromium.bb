@@ -170,6 +170,11 @@ class WebNavigationTabObserver : public content::NotificationObserver,
   virtual void DidFinishLoad(int64 frame_id,
                              const GURL& validated_url,
                              bool is_main_frame) OVERRIDE;
+  virtual void DidFailLoad(int64 frame_id,
+                           const GURL& validated_url,
+                           bool is_main_frame,
+                           int error_code,
+                           const string16& error_description) OVERRIDE;
   virtual void DidOpenRequestedURL(content::WebContents* new_contents,
                                    const GURL& url,
                                    const content::Referrer& referrer,
