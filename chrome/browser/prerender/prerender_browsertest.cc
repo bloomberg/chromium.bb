@@ -1615,7 +1615,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderTaskManager) {
 }
 
 // Checks that audio loads are deferred on prerendering.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5Audio) {
+// Times out under AddressSanitizer, see http://crbug.com/108402
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_PrerenderHTML5Audio DISABLED_PrerenderHTML5Audio
+#else
+#define MAYBE_PrerenderHTML5Audio PrerenderHTML5Audio
+#endif
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderHTML5Audio) {
   PrerenderTestURL("files/prerender/prerender_html5_audio.html",
                   FINAL_STATUS_USED,
                   1);
