@@ -10,6 +10,8 @@ RendererPreferences::RendererPreferences()
     : can_accept_load_drops(true),
       should_antialias_text(true),
       hinting(RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT),
+      use_autohinter(false),
+      use_bitmaps(false),
       subpixel_rendering(
           RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT),
       use_subpixel_positioning(false),
