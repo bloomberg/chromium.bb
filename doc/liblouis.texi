@@ -1807,37 +1807,52 @@ inpos, modes, etc) then the doctests are for you.
 
 Each harness file is a simple utf8 encoded json file, which has two entries.
 @table @code
-@item table 
-The name of the table which the tests should be run against.
-@item tests 
+@item tables 
+A list containing table names, which the tests should be run against.
+This is usually just one table, but for some situations more than one table is required.
+@item sections
+A list of sections of tests, which should be processed independantly.
+Each section is a dictionary of two items.
+@item flags
+The flags that apply for all the tests in this section.
+For example, they could all be forward translation tests, or they should all be run as computer braille tests.
+
+@item tests
 The list of tests that should be run.
 @end table
 
-Each test case has the following entries:
-
+These are the valid fields for the flags dictionary:
 @table @code
-@item txt
-The unicode text to be tested (required).
+@item comment
+A field describing the reason for the test, the transformation rule or any useful info that might be needed in case the test breaks (optional).
 @item cursorPos
 The position of the cursor within the given text (optional). Useful
 when simulating screenreader interaction, to debug contraction and
 cursor behaviour.
-@item comment
-A field describing the reason for the test, the transformation rule or any useful info that might be needed in case the test breaks (optional).
-@item brl
-The expected braille output (required). The dots should be encoded in
-the liblouis ascii-braille like encoding.
-@item brlCursorPos
-The expected position of the braille cursor in the braille output
-(optional). Useful when simulating screenreader interaction, to debug
-contraction and cursor behaviour.
 @item mode
 The liblouis translation mode that should be used for this test
 (optional). If not defined defaults to 0.
 @item testmode
 The optional testmode field can have three values: "translate" (default if undeclaired), "backtranslate" or "hyphenate".
 Declares what tests should be performed on the test data.
+\end table
+
+
+Each test case has the following entries:
+
+@table @code
+@item input
+The unicode text to be tested (required).
+@item output
+The expected braille output (required). The dots should be encoded in
+the liblouis ascii-braille like encoding.
+@item brlCursorPos
+The expected position of the braille cursor in the braille output
+(optional). Useful when simulating screenreader interaction, to debug
+contraction and cursor behaviour.
 @end table
+
+Variables defined in the flags section can be overwridden by individual tests, but if several tests need the same options, they should idealy be split into their own section, complete with their own flags and tests.
 
 For examples please see @file{*_harness.txt} in the
 harness directory in the source distribution.
