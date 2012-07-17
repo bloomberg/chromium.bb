@@ -389,8 +389,7 @@ class Browser : public TabStripModelObserver,
                                             const std::string& protocol,
                                             const GURL& url,
                                             const string16& title,
-                                            bool user_gesture,
-                                            BrowserWindow* window);
+                                            bool user_gesture);
 
   // Helper function to register an intent handler.
   // |data| is the registered handler data. |user_gesture| is true if the call

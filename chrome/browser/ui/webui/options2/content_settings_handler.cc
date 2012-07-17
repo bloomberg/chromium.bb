@@ -340,7 +340,6 @@ const ContentSettingsHandler::ExContentSettingsTypeNameEntry
   {CONTENT_SETTINGS_TYPE_FULLSCREEN, "fullscreen"},
   {CONTENT_SETTINGS_TYPE_MOUSELOCK, "mouselock"},
   {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, "mixed-script"},
-  {CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, "register-protocol-handler"},
   {EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC, "pepper-flash-cameramic"},
   {CONTENT_SETTINGS_TYPE_MEDIASTREAM, "media-stream"},
 };
@@ -658,9 +657,6 @@ void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {
     // for this content type and we skip it here.
     if (type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE)
       continue;
-    // The RPH settings are retrieved separately.
-    if (type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS)
-      continue;
     UpdateExceptionsViewFromModel(ExContentSettingsType(type));
   }
 }
@@ -690,10 +686,6 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
       break;
     case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
       // We don't yet support exceptions for mixed scripting.
-      break;
-    case CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE:
-      break;
-    case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
       break;
     default:
       UpdateExceptionsViewFromHostContentSettingsMap(
