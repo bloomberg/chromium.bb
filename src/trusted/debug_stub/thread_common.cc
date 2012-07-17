@@ -7,6 +7,7 @@
 #include <map>
 #include <string.h>
 
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/gdb_rsp/abi.h"
 #include "native_client/src/trusted/port/mutex.h"
@@ -66,6 +67,17 @@ class Thread : public IThread {
       // We can start actually reporting the error when we support P packet
       // that writes registers one at a time, as failure to write a single
       // register should be much less confusing.
+    } else if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 &&
+               NACL_BUILD_SUBARCH == 64 &&
+               reg->type_ == gdb_rsp::Abi::X86_64_TRUSTED_PTR) {
+      // Do not change high 32 bits.
+      // GDB should work with untrusted addresses, thus high 32 bits of new
+      // value should be 0.
+      // TODO(eaeltsin): this is not fully implemented yet, and high 32 bits
+      // of new value may also be equal to high 32 bits of old value.
+      // Other cases are definitely bogus.
+      CHECK(len == 8);
+      memcpy((char *) &context_ + reg->offset_, src, 4);
     } else {
       memcpy((char *) &context_ + reg->offset_, src, len);
     }
@@ -100,9 +112,7 @@ IThread *IThread::Create(uint32_t id, struct NaClAppThread *natp) {
   MutexLock lock(ThreadGetLock());
   ThreadMap_t &map = *ThreadGetMap();
 
-  if (map.count(id)) {
-    NaClLog(LOG_FATAL, "IThread::Create: thread 0x%x already exists\n", id);
-  }
+  CHECK(map.count(id) == 0);
 
   Thread *thread = new Thread(id, natp);
   map[id] = thread;
@@ -113,9 +123,7 @@ IThread *IThread::Acquire(uint32_t id) {
   MutexLock lock(ThreadGetLock());
   ThreadMap_t &map = *ThreadGetMap();
 
-  if (map.count(id) == 0) {
-    NaClLog(LOG_FATAL, "IThread::Acquire: thread 0x%x does not exist\n", id);
-  }
+  CHECK(map.count(id) != 0);
 
   Thread *thread = map[id];
   thread->ref_++;
@@ -137,10 +145,7 @@ void IThread::SuspendAllThreadsExceptSignaled(uint32_t signaled_tid) {
   MutexLock lock(ThreadGetLock());
   ThreadMap_t &map = *ThreadGetMap();
 
-  if (map.empty()) {
-    NaClLog(LOG_FATAL,
-            "IThread::SuspendAllThreadsExceptSignaled: no threads\n");
-  }
+  CHECK(!map.empty());
 
   NaClUntrustedThreadsSuspendAllButOne(
       map.begin()->second->natp_->nap,
@@ -168,10 +173,7 @@ void IThread::ResumeAllThreadsExceptSignaled(uint32_t signaled_tid) {
   MutexLock lock(ThreadGetLock());
   ThreadMap_t &map = *ThreadGetMap();
 
-  if (map.empty()) {
-    NaClLog(LOG_FATAL,
-            "IThread::ResumeAllThreadsExceptSignaled: no threads\n");
-  }
+  CHECK(!map.empty());
 
   NaClUntrustedThreadsResumeAllButOne(
       map.begin()->second->natp_->nap,

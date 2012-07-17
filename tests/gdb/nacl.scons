@@ -43,9 +43,9 @@ node = env.CommandTest(
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest.abspath],
     extra_deps=[sel_ldr, irt, gdb_test_guest])
 
-# Nearly nothing works in 64-bit debugger due to address size issues.
 env.AddNodeToTestSuite(node, ['large_tests'], 'run_gdb_stepi_after_break_test',
-                       is_broken=env.Bit('build_x86_64'))
+                       is_broken=(env.Bit('build_x86_64') and
+                                  not env.Bit('nacl_static_link')))
 
 node = env.CommandTest(
     'gdb_print_symbol.out',
@@ -53,6 +53,9 @@ node = env.CommandTest(
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest.abspath],
     extra_deps=[sel_ldr, irt, gdb_test_guest])
 
+# TODO(eaeltsin): fix x86_64-nacl-gdb and enable this test.
+# The test fails on printing wrong value of function parameter, see
+# http://code.google.com/p/nativeclient/issues/detail?id=2898
 env.AddNodeToTestSuite(node, ['large_tests'], 'run_gdb_print_symbol_test',
                        is_broken=env.Bit('build_x86_64'))
 
@@ -70,4 +73,5 @@ node = env.CommandTest(
 
 env.AddNodeToTestSuite(node, ['large_tests'],
                        'run_gdb_break_continue_thread_test',
-                       is_broken=env.Bit('build_x86_64'))
+                       is_broken=(env.Bit('build_x86_64') and
+                                  not env.Bit('nacl_static_link')))

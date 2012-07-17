@@ -33,6 +33,7 @@ class Abi {
   enum RegType {
     GENERAL,
     READ_ONLY,
+    X86_64_TRUSTED_PTR,
     REG_TYPE_CNT
   };
 
