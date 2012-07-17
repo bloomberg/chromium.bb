@@ -53,9 +53,9 @@ class GDataDBTest : public testing::Test {
 
   // Helper functions to add a directory/file, incrementing index.
   GDataDirectory* AddDirectory(GDataDirectory* parent,
-      GDataRootDirectory* root, int sequence_id);
+      GDataDirectoryService* root, int sequence_id);
   GDataFile* AddFile(GDataDirectory* parent,
-      GDataRootDirectory* root, int sequence_id);
+      GDataDirectoryService* directory_service, int sequence_id);
 
   // Tests GDataDB::NewIterator and GDataDBIter::GetNext.
   // Creates an iterator with start at |parent|, and iterates comparing with
@@ -116,26 +116,29 @@ void GDataDBTest::TestGetCorrupt(const GDataEntry& source) {
 
 void GDataDBTest::InitDB() {
   int sequence_id = 1;
-  GDataRootDirectory root;
-  GDataDirectory* dir1 = AddDirectory(&root, &root, sequence_id++);
-  GDataDirectory* dir2 = AddDirectory(&root, &root, sequence_id++);
-  GDataDirectory* dir3 = AddDirectory(dir1, &root, sequence_id++);
+  GDataDirectoryService directory_service;
+  GDataDirectory* dir1 = AddDirectory(directory_service.root(),
+      &directory_service, sequence_id++);
+  GDataDirectory* dir2 = AddDirectory(directory_service.root(),
+      &directory_service, sequence_id++);
+  GDataDirectory* dir3 = AddDirectory(dir1, &directory_service, sequence_id++);
 
-  AddFile(dir1, &root, sequence_id++);
-  AddFile(dir1, &root, sequence_id++);
+  AddFile(dir1, &directory_service, sequence_id++);
+  AddFile(dir1, &directory_service, sequence_id++);
 
-  AddFile(dir2, &root, sequence_id++);
-  AddFile(dir2, &root, sequence_id++);
-  AddFile(dir2, &root, sequence_id++);
+  AddFile(dir2, &directory_service, sequence_id++);
+  AddFile(dir2, &directory_service, sequence_id++);
+  AddFile(dir2, &directory_service, sequence_id++);
 
-  AddFile(dir3, &root, sequence_id++);
-  AddFile(dir3, &root, sequence_id++);
+  AddFile(dir3, &directory_service, sequence_id++);
+  AddFile(dir3, &directory_service, sequence_id++);
 }
 
-GDataDirectory* GDataDBTest::AddDirectory(GDataDirectory* parent,
-                                          GDataRootDirectory* root,
-                                          int sequence_id) {
-  GDataDirectory* dir = new GDataDirectory(parent, root);
+GDataDirectory* GDataDBTest::AddDirectory(
+    GDataDirectory* parent,
+    GDataDirectoryService* directory_service,
+    int sequence_id) {
+  GDataDirectory* dir = new GDataDirectory(parent, directory_service);
   const std::string dir_name = "dir" + base::IntToString(sequence_id);
   const std::string resource_id = std::string("dir_resource_id:") +
                                   dir_name;
@@ -151,9 +154,9 @@ GDataDirectory* GDataDBTest::AddDirectory(GDataDirectory* parent,
 }
 
 GDataFile* GDataDBTest::AddFile(GDataDirectory* parent,
-                                GDataRootDirectory* root,
+                                GDataDirectoryService* directory_service,
                                 int sequence_id) {
-  GDataFile* file = new GDataFile(parent, root);
+  GDataFile* file = new GDataFile(parent, directory_service);
   const std::string title = "file" + base::IntToString(sequence_id);
   const std::string resource_id = std::string("file_resource_id:") +
                                   title;
@@ -191,8 +194,9 @@ void GDataDBTest::TestIter(const std::string& parent,
 }  // namespace
 
 TEST_F(GDataDBTest, PutTest) {
-  GDataRootDirectory root;
-  GDataDirectory dir(&root, &root);
+  GDataDirectoryService directory_service;
+  GDataRootDirectory* root(directory_service.root());
+  GDataDirectory dir(root, &directory_service);
   dir.set_title("dir");
   dir.set_file_name("dir");
   dir.set_resource_id("dir_resource_id");
@@ -217,7 +221,7 @@ TEST_F(GDataDBTest, PutTest) {
 
   TestGetNotFound(dir);
 
-  GDataFile file(&dir, &root);
+  GDataFile file(&dir, &directory_service);
   file.set_title("file");
   file.set_file_name("file");
   file.set_resource_id("file_resource_id");
@@ -293,8 +297,9 @@ TEST_F(GDataDBTest, IterTest) {
 }
 
 TEST_F(GDataDBTest, IncompatibleProtoTest) {
-  GDataRootDirectory root;
-  GDataFile file(&root, &root);
+  GDataDirectoryService directory_service;
+  GDataRootDirectory* root(directory_service.root());
+  GDataFile file(root, &directory_service);
   file.set_title("file");
   file.set_file_name("file");
   file.set_resource_id("file_resource_id");

@@ -542,7 +542,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   GDataDirectory* FindDirectoryForNewEntry(
       GDataEntry* new_entry,
       const FileResourceIdMap& file_map,
-      GDataRootDirectory* orphaned_entries);
+      GDataDirectoryService* orphaned_entries);
 
   // Converts list of document feeds from collected feeds into
   // FileResourceIdMap.
@@ -837,8 +837,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // All members should be accessed only on UI thread. Do not post tasks to
   // other threads with base::Unretained(this).
-
-  scoped_ptr<GDataRootDirectory> root_;
+  scoped_ptr<GDataDirectoryService> directory_service_;
 
   // The profile hosts the GDataFileSystem via GDataSystemService.
   Profile* profile_;

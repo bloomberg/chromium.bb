@@ -26,6 +26,7 @@ namespace gdata {
 class GDataFile;
 class GDataDirectory;
 class GDataRootDirectory;
+class GDataDirectoryService;
 
 class GDataEntryProto;
 class GDataFileProto;
@@ -65,7 +66,7 @@ const char kGDataRootDirectoryResourceId[] = "folder:root";
 // system.
 class GDataEntry {
  public:
-  explicit GDataEntry(GDataDirectory* parent, GDataRootDirectory* root);
+  GDataEntry(GDataDirectory* parent, GDataDirectoryService* directory_service);
   virtual ~GDataEntry();
 
   virtual GDataFile* AsGDataFile();
@@ -77,9 +78,10 @@ class GDataEntry {
   const GDataDirectory* AsGDataDirectoryConst() const;
 
   // Converts DocumentEntry into GDataEntry.
-  static GDataEntry* FromDocumentEntry(GDataDirectory* parent,
-                                       DocumentEntry* doc,
-                                       GDataRootDirectory* root);
+  static GDataEntry* FromDocumentEntry(
+      GDataDirectory* parent,
+      DocumentEntry* doc,
+      GDataDirectoryService* directory_service);
 
   // Serialize/Parse to/from string via proto classes.
   // TODO(achuith): Correctly set up parent_ and root_ links in
@@ -184,7 +186,8 @@ class GDataEntry {
   FilePath::StringType file_name_;
 
   GDataDirectory* parent_;
-  GDataRootDirectory* root_;  // Weak pointer to GDataRootDirectory.
+  // Weak pointer to GDataDirectoryService.
+  GDataDirectoryService* directory_service_;
   bool deleted_;
 
  private:
@@ -199,14 +202,16 @@ typedef std::map<FilePath::StringType, GDataDirectory*>
 // this could be either a regular file or a server side document.
 class GDataFile : public GDataEntry {
  public:
-  explicit GDataFile(GDataDirectory* parent, GDataRootDirectory* root);
+  explicit GDataFile(GDataDirectory* parent,
+                     GDataDirectoryService* directory_service);
   virtual ~GDataFile();
   virtual GDataFile* AsGDataFile() OVERRIDE;
 
   // Converts DocumentEntry into GDataEntry.
-  static GDataEntry* FromDocumentEntry(GDataDirectory* parent,
-                                       DocumentEntry* doc,
-                                       GDataRootDirectory* root);
+  static GDataEntry* FromDocumentEntry(
+      GDataDirectory* parent,
+      DocumentEntry* doc,
+      GDataDirectoryService* directory_service);
 
   // Converts to/from proto.
   bool FromProto(const GDataFileProto& proto) WARN_UNUSED_RESULT;
@@ -252,14 +257,16 @@ class GDataFile : public GDataEntry {
 // collection element.
 class GDataDirectory : public GDataEntry {
  public:
-  GDataDirectory(GDataDirectory* parent, GDataRootDirectory* root);
+  GDataDirectory(GDataDirectory* parent,
+                 GDataDirectoryService* directory_service);
   virtual ~GDataDirectory();
   virtual GDataDirectory* AsGDataDirectory() OVERRIDE;
 
   // Converts DocumentEntry into GDataEntry.
-  static GDataEntry* FromDocumentEntry(GDataDirectory* parent,
-                                       DocumentEntry* doc,
-                                       GDataRootDirectory* root);
+  static GDataEntry* FromDocumentEntry(
+      GDataDirectory* parent,
+      DocumentEntry* doc,
+      GDataDirectoryService* directory_service);
 
   // Converts to/from proto.
   bool FromProto(const GDataDirectoryProto& proto) WARN_UNUSED_RESULT;
@@ -336,30 +343,53 @@ class GDataDirectory : public GDataEntry {
   DISALLOW_COPY_AND_ASSIGN(GDataDirectory);
 };
 
+// TODO(achuith, satorux): Remove this class. Move largest_changestamp and logic
+// in GDataRootDirectory ctor to GDataDirectoryService. Remove uses of
+// AsGDataRootDirectory.  crbug.com/135312
 class GDataRootDirectory : public GDataDirectory {
  public:
-  // A map table of file's resource string to its GDataFile* entry.
-  typedef std::map<std::string, GDataEntry*> ResourceMap;
-
-  // Callback for GetEntryByResourceIdAsync.
-  typedef base::Callback<void(GDataEntry* entry)> GetEntryByResourceIdCallback;
-
-  GDataRootDirectory();
+  explicit GDataRootDirectory(GDataDirectoryService* directory_service);
   virtual ~GDataRootDirectory();
 
   // Largest change timestamp that was the source of content for the current
   // state of the root directory.
   int largest_changestamp() const { return largest_changestamp_; }
   void set_largest_changestamp(int value) { largest_changestamp_ = value; }
+
+  // GDataEntry implementation.
+  virtual GDataRootDirectory* AsGDataRootDirectory() OVERRIDE;
+
+  // Serializes/Parses to/from string via proto classes.
+  void SerializeToString(std::string* serialized_proto) const;
+  bool ParseFromString(const std::string& serialized_proto);
+
+  // Converts to/from proto.
+  bool FromProto(const GDataRootDirectoryProto& proto) WARN_UNUSED_RESULT;
+  void ToProto(GDataRootDirectoryProto* proto) const;
+
+ private:
+  int largest_changestamp_;
+
+  DISALLOW_COPY_AND_ASSIGN(GDataRootDirectory);
+};
+
+// Class to handle GDataEntry* lookups, add/remove GDataEntry*.
+class GDataDirectoryService {
+ public:
+  // Callback for GetEntryByResourceIdAsync.
+  typedef base::Callback<void(GDataEntry* entry)> GetEntryByResourceIdCallback;
+
+  GDataDirectoryService();
+  ~GDataDirectoryService();
+
+  GDataRootDirectory* root() { return root_.get(); }
+
   // Last time when we dumped serialized file system to disk.
   const base::Time& last_serialized() const { return last_serialized_; }
   void set_last_serialized(const base::Time& time) { last_serialized_ = time; }
   // Size of serialized file system on disk in bytes.
   const size_t serialized_size() const { return serialized_size_; }
   void set_serialized_size(size_t size) { serialized_size_ = size; }
-
-  // GDataEntry implementation.
-  virtual GDataRootDirectory* AsGDataRootDirectory() OVERRIDE;
 
   // Adds the entry to resource map.
   void AddEntryToResourceMap(GDataEntry* entry);
@@ -384,22 +414,17 @@ class GDataRootDirectory : public GDataDirectory {
   // fresh value |fresh_file|.
   void RefreshFile(scoped_ptr<GDataFile> fresh_file);
 
-  // Serializes/Parses to/from string via proto classes.
-  void SerializeToString(std::string* serialized_proto) const;
-  bool ParseFromString(const std::string& serialized_proto);
-
-  // Converts to/from proto.
-  bool FromProto(const GDataRootDirectoryProto& proto) WARN_UNUSED_RESULT;
-  void ToProto(GDataRootDirectoryProto* proto) const;
-
  private:
+  // A map table of file's resource string to its GDataFile* entry.
+  typedef std::map<std::string, GDataEntry*> ResourceMap;
+
+  scoped_ptr<GDataRootDirectory> root_;
   ResourceMap resource_map_;
 
   base::Time last_serialized_;
-  int largest_changestamp_;
   size_t serialized_size_;
 
-  DISALLOW_COPY_AND_ASSIGN(GDataRootDirectory);
+  DISALLOW_COPY_AND_ASSIGN(GDataDirectoryService);
 };
 
 }  // namespace gdata

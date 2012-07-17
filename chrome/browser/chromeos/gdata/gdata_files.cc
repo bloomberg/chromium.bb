@@ -44,8 +44,9 @@ void RefreshFileInternal(scoped_ptr<GDataFile> fresh_file,
 
 // GDataEntry class.
 
-GDataEntry::GDataEntry(GDataDirectory* parent, GDataRootDirectory* root)
-    : root_(root),
+GDataEntry::GDataEntry(GDataDirectory* parent,
+                       GDataDirectoryService* directory_service)
+    : directory_service_(directory_service),
       deleted_(false) {
   SetParent(parent);
 }
@@ -93,14 +94,15 @@ void GDataEntry::SetFileNameFromTitle() {
 }
 
 // static.
-GDataEntry* GDataEntry::FromDocumentEntry(GDataDirectory* parent,
-                                          DocumentEntry* doc,
-                                          GDataRootDirectory* root) {
+GDataEntry* GDataEntry::FromDocumentEntry(
+    GDataDirectory* parent,
+    DocumentEntry* doc,
+    GDataDirectoryService* directory_service) {
   DCHECK(doc);
   if (doc->is_folder())
-    return GDataDirectory::FromDocumentEntry(parent, doc, root);
+    return GDataDirectory::FromDocumentEntry(parent, doc, directory_service);
   else if (doc->is_hosted_document() || doc->is_file())
-    return GDataFile::FromDocumentEntry(parent, doc, root);
+    return GDataFile::FromDocumentEntry(parent, doc, directory_service);
 
   return NULL;
 }
@@ -123,8 +125,9 @@ std::string GDataEntry::UnescapeUtf8FileName(const std::string& input) {
 
 // GDataFile class implementation.
 
-GDataFile::GDataFile(GDataDirectory* parent, GDataRootDirectory* root)
-    : GDataEntry(parent, root),
+GDataFile::GDataFile(GDataDirectory* parent,
+                     GDataDirectoryService* directory_service)
+    : GDataEntry(parent, directory_service),
       kind_(DocumentEntry::UNKNOWN),
       is_hosted_document_(false) {
   file_info_.is_directory = false;
@@ -146,11 +149,12 @@ void GDataFile::SetFileNameFromTitle() {
 }
 
 // static.
-GDataEntry* GDataFile::FromDocumentEntry(GDataDirectory* parent,
-                                         DocumentEntry* doc,
-                                         GDataRootDirectory* root) {
+GDataEntry* GDataFile::FromDocumentEntry(
+    GDataDirectory* parent,
+    DocumentEntry* doc,
+    GDataDirectoryService* directory_service) {
   DCHECK(doc->is_hosted_document() || doc->is_file());
-  GDataFile* file = new GDataFile(parent, root);
+  GDataFile* file = new GDataFile(parent, directory_service);
 
   // For regular files, the 'filename' and 'title' attribute in the metadata
   // may be different (e.g. due to rename). To be consistent with the web
@@ -214,8 +218,10 @@ GDataEntry* GDataFile::FromDocumentEntry(GDataDirectory* parent,
 
 // GDataDirectory class implementation.
 
-GDataDirectory::GDataDirectory(GDataDirectory* parent, GDataRootDirectory* root)
-    : GDataEntry(parent, root), origin_(UNINITIALIZED) {
+GDataDirectory::GDataDirectory(GDataDirectory* parent,
+                               GDataDirectoryService* directory_service)
+    : GDataEntry(parent, directory_service),
+      origin_(UNINITIALIZED) {
   file_info_.is_directory = true;
 }
 
@@ -228,11 +234,12 @@ GDataDirectory* GDataDirectory::AsGDataDirectory() {
 }
 
 // static
-GDataEntry* GDataDirectory::FromDocumentEntry(GDataDirectory* parent,
-                                              DocumentEntry* doc,
-                                              GDataRootDirectory* root) {
+GDataEntry* GDataDirectory::FromDocumentEntry(
+    GDataDirectory* parent,
+    DocumentEntry* doc,
+    GDataDirectoryService* directory_service) {
   DCHECK(doc->is_folder());
-  GDataDirectory* dir = new GDataDirectory(parent, root);
+  GDataDirectory* dir = new GDataDirectory(parent, directory_service);
   dir->title_ = UTF16ToUTF8(doc->title());
   // SetFileNameFromTitle() must be called after |title_| is set.
   dir->SetFileNameFromTitle();
@@ -294,8 +301,8 @@ void GDataDirectory::AddEntry(GDataEntry* entry) {
 
 
   // Add entry to resource map.
-  if (root_)
-    root_->AddEntryToResourceMap(entry);
+  if (directory_service_)
+    directory_service_->AddEntryToResourceMap(entry);
 
   // Setup child and parent links.
   AddChild(entry);
@@ -375,8 +382,8 @@ bool GDataDirectory::RemoveChild(GDataEntry* entry) {
   DCHECK_EQ(entry, found_entry);
 
   // Remove entry from resource map first.
-  if (root_)
-    root_->RemoveEntryFromResourceMap(entry);
+  if (directory_service_)
+    directory_service_->RemoveEntryFromResourceMap(entry);
 
   // Then delete it from tree.
   child_files_.erase(file_name);
@@ -393,8 +400,8 @@ void GDataDirectory::RemoveChildren() {
 void GDataDirectory::RemoveChildFiles() {
   for (GDataFileCollection::const_iterator iter = child_files_.begin();
        iter != child_files_.end(); ++iter) {
-    if (root_)
-      root_->RemoveEntryFromResourceMap(iter->second);
+    if (directory_service_)
+      directory_service_->RemoveEntryFromResourceMap(iter->second);
   }
   STLDeleteValues(&child_files_);
   child_files_.clear();
@@ -406,8 +413,8 @@ void GDataDirectory::RemoveChildDirectories() {
     GDataDirectory* dir = iter->second;
     // Remove directories recursively.
     dir->RemoveChildren();
-    if (root_)
-      root_->RemoveEntryFromResourceMap(dir);
+    if (directory_service_)
+      directory_service_->RemoveEntryFromResourceMap(dir);
   }
   STLDeleteValues(&child_directories_);
   child_directories_.clear();
@@ -415,42 +422,51 @@ void GDataDirectory::RemoveChildDirectories() {
 
 // GDataRootDirectory class implementation.
 
-GDataRootDirectory::GDataRootDirectory()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(GDataDirectory(NULL, this)),
-      largest_changestamp_(0), serialized_size_(0) {
+GDataRootDirectory::GDataRootDirectory(
+    GDataDirectoryService* directory_service)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(GDataDirectory(NULL, directory_service)),
+      largest_changestamp_(0) {
   title_ = kGDataRootDirectory;
   SetFileNameFromTitle();
   resource_id_ = kGDataRootDirectoryResourceId;
-  // Add self to the map so the root directory can be looked up by the
-  // resource ID.
-  AddEntryToResourceMap(this);
 }
 
 GDataRootDirectory::~GDataRootDirectory() {
-  // Note that children have a reference to root_,
-  // so we need to delete them here.
-  RemoveChildren();
-  RemoveEntryFromResourceMap(this);
-  DCHECK(resource_map_.empty());
-  resource_map_.clear();
 }
 
 GDataRootDirectory* GDataRootDirectory::AsGDataRootDirectory() {
   return this;
 }
 
-void GDataRootDirectory::AddEntryToResourceMap(GDataEntry* entry) {
+// GDataDirectoryService class implementation.
+
+GDataDirectoryService::GDataDirectoryService()
+    : serialized_size_(0) {
+  root_.reset(new GDataRootDirectory(this));
+  AddEntryToResourceMap(root_.get());
+}
+
+GDataDirectoryService::~GDataDirectoryService() {
+  // Note that children have a reference to root_,
+  // so we need to delete them here.
+  root_->RemoveChildren();
+  RemoveEntryFromResourceMap(root_.get());
+  DCHECK(resource_map_.empty());
+  resource_map_.clear();
+}
+
+void GDataDirectoryService::AddEntryToResourceMap(GDataEntry* entry) {
   // GDataFileSystem has already locked.
   DVLOG(1) << "AddEntryToResourceMap " << entry->resource_id();
   resource_map_.insert(std::make_pair(entry->resource_id(), entry));
 }
 
-void GDataRootDirectory::RemoveEntryFromResourceMap(GDataEntry* entry) {
+void GDataDirectoryService::RemoveEntryFromResourceMap(GDataEntry* entry) {
   // GDataFileSystem has already locked.
   resource_map_.erase(entry->resource_id());
 }
 
-void GDataRootDirectory::FindEntryByPath(const FilePath& file_path,
+void GDataDirectoryService::FindEntryByPath(const FilePath& file_path,
                                          const FindEntryCallback& callback) {
   // GDataFileSystem has already locked.
   DCHECK(!callback.is_null());
@@ -458,7 +474,7 @@ void GDataRootDirectory::FindEntryByPath(const FilePath& file_path,
   std::vector<FilePath::StringType> components;
   file_path.GetComponents(&components);
 
-  GDataDirectory* current_dir = this;
+  GDataDirectory* current_dir = root_.get();
   FilePath directory_path;
 
   for (size_t i = 0; i < components.size() && current_dir; i++) {
@@ -496,23 +512,21 @@ void GDataRootDirectory::FindEntryByPath(const FilePath& file_path,
   callback.Run(GDATA_FILE_ERROR_NOT_FOUND, NULL);
 }
 
-GDataEntry* GDataRootDirectory::GetEntryByResourceId(
+GDataEntry* GDataDirectoryService::GetEntryByResourceId(
     const std::string& resource) {
   // GDataFileSystem has already locked.
   ResourceMap::const_iterator iter = resource_map_.find(resource);
-  if (iter == resource_map_.end())
-    return NULL;
-  return iter->second;
+  return iter == resource_map_.end() ? NULL : iter->second;
 }
 
-void GDataRootDirectory::GetEntryByResourceIdAsync(
+void GDataDirectoryService::GetEntryByResourceIdAsync(
     const std::string& resource_id,
     const GetEntryByResourceIdCallback& callback) {
   GDataEntry* entry = GetEntryByResourceId(resource_id);
   callback.Run(entry);
 }
 
-void GDataRootDirectory::RefreshFile(scoped_ptr<GDataFile> fresh_file) {
+void GDataDirectoryService::RefreshFile(scoped_ptr<GDataFile> fresh_file) {
   DCHECK(fresh_file.get());
 
   // Need to get a reference here because Passed() could get evaluated first.
@@ -626,7 +640,7 @@ bool GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
   DCHECK(proto.gdata_entry().file_info().is_directory());
 
   for (int i = 0; i < proto.child_files_size(); ++i) {
-    scoped_ptr<GDataFile> file(new GDataFile(this, root_));
+    scoped_ptr<GDataFile> file(new GDataFile(this, directory_service_));
     if (!file->FromProto(proto.child_files(i))) {
       RemoveChildren();
       return false;
@@ -634,7 +648,8 @@ bool GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
     AddEntry(file.release());
   }
   for (int i = 0; i < proto.child_directories_size(); ++i) {
-    scoped_ptr<GDataDirectory> dir(new GDataDirectory(this, root_));
+    scoped_ptr<GDataDirectory> dir(new GDataDirectory(this,
+                                                      directory_service_));
     if (!dir->FromProto(proto.child_directories(i))) {
       RemoveChildren();
       return false;
@@ -697,7 +712,6 @@ bool GDataRootDirectory::FromProto(const GDataRootDirectoryProto& proto) {
   if (!GDataDirectory::FromProto(proto.gdata_directory()))
     return false;
 
-  root_ = this;
   largest_changestamp_ = proto.largest_changestamp();
 
   return true;

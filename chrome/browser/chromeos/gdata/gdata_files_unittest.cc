@@ -44,11 +44,12 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectBadTitle) {
   std::string serialized_proto;
   ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
 
-  GDataRootDirectory root;
+  GDataDirectoryService directory_service;
+  GDataRootDirectory* root(directory_service.root());
   // This should fail as the title is empty.
   // root.title() should be unchanged.
-  ASSERT_FALSE(root.ParseFromString(serialized_proto));
-  ASSERT_EQ(kGDataRootDirectory, root.title());
+  ASSERT_FALSE(root->ParseFromString(serialized_proto));
+  ASSERT_EQ(kGDataRootDirectory, root->title());
 
   // Setting the title to "gdata".
   mutable_entry->set_title("gdata");
@@ -56,16 +57,16 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectBadTitle) {
 
   // This should fail as the title is not kGDataRootDirectory.
   // root.title() should be unchanged.
-  ASSERT_FALSE(root.ParseFromString(serialized_proto));
-  ASSERT_EQ(kGDataRootDirectory, root.title());
+  ASSERT_FALSE(root->ParseFromString(serialized_proto));
+  ASSERT_EQ(kGDataRootDirectory, root->title());
 
   // Setting the title to kGDataRootDirectory.
   mutable_entry->set_title(kGDataRootDirectory);
   ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
 
   // This should succeed as the title is kGDataRootDirectory.
-  ASSERT_TRUE(root.ParseFromString(serialized_proto));
-  ASSERT_EQ(kGDataRootDirectory, root.title());
+  ASSERT_TRUE(root->ParseFromString(serialized_proto));
+  ASSERT_EQ(kGDataRootDirectory, root->title());
 }
 
 TEST(GDataRootDirectoryTest, ParseFromString_DetectBadResourceID) {
@@ -78,19 +79,20 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectBadResourceID) {
   std::string serialized_proto;
   ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
 
-  GDataRootDirectory root;
+  GDataDirectoryService directory_service;
+  GDataRootDirectory* root(directory_service.root());
   // This should fail as the resource ID is empty.
   // root.resource_id() should be unchanged.
-  ASSERT_FALSE(root.ParseFromString(serialized_proto));
-  EXPECT_EQ(kGDataRootDirectoryResourceId, root.resource_id());
+  ASSERT_FALSE(root->ParseFromString(serialized_proto));
+  EXPECT_EQ(kGDataRootDirectoryResourceId, root->resource_id());
 
   // Set the correct resource ID.
   mutable_entry->set_resource_id(kGDataRootDirectoryResourceId);
   ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
 
   // This should succeed as the resource ID is correct.
-  ASSERT_TRUE(root.ParseFromString(serialized_proto));
-  EXPECT_EQ(kGDataRootDirectoryResourceId, root.resource_id());
+  ASSERT_TRUE(root->ParseFromString(serialized_proto));
+  EXPECT_EQ(kGDataRootDirectoryResourceId, root->resource_id());
 }
 
 // We have a similar test in FromProto_DetectBadUploadUrl, but the test here
@@ -127,19 +129,20 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectNoUploadUrl) {
       sub_directory_proto->add_child_files();
   file_proto->mutable_gdata_entry()->set_title("test.txt");
 
-  GDataRootDirectory root;
+  GDataDirectoryService directory_service;
+  GDataRootDirectory* root(directory_service.root());
   // The origin is set to UNINITIALIZED by default.
-  ASSERT_EQ(UNINITIALIZED, root.origin());
+  ASSERT_EQ(UNINITIALIZED, root->origin());
   std::string serialized_proto;
   // Serialize the proto and check if it's loaded.
   // This should fail as the upload URL is not set for |file_proto|.
   ASSERT_TRUE(root_directory_proto.SerializeToString(&serialized_proto));
-  ASSERT_FALSE(root.ParseFromString(serialized_proto));
+  ASSERT_FALSE(root->ParseFromString(serialized_proto));
   // Nothing should be added to the root directory if the parse failed.
-  ASSERT_TRUE(root.child_files().empty());
-  ASSERT_TRUE(root.child_directories().empty());
+  ASSERT_TRUE(root->child_files().empty());
+  ASSERT_TRUE(root->child_directories().empty());
   // The origin should remain UNINITIALIZED because the loading failed.
-  ASSERT_EQ(UNINITIALIZED, root.origin());
+  ASSERT_EQ(UNINITIALIZED, root->origin());
 
   // Set an upload URL.
   file_proto->set_upload_url(kResumableEditMediaUrl);
@@ -147,24 +150,26 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectNoUploadUrl) {
   // Serialize the proto and check if it's loaded.
   // This should succeed as the upload URL is set for |file_proto|.
   ASSERT_TRUE(root_directory_proto.SerializeToString(&serialized_proto));
-  ASSERT_TRUE(root.ParseFromString(serialized_proto));
+  ASSERT_TRUE(root->ParseFromString(serialized_proto));
   // No file should be added to the root directory.
-  ASSERT_TRUE(root.child_files().empty());
+  ASSERT_TRUE(root->child_files().empty());
   // Two directories ("empty", "dir") should be added to the root directory.
-  ASSERT_EQ(2U, root.child_directories().size());
+  ASSERT_EQ(2U, root->child_directories().size());
   // The origin should change to FROM_CACHE because we loaded from the cache.
-  ASSERT_EQ(FROM_CACHE, root.origin());
+  ASSERT_EQ(FROM_CACHE, root->origin());
 }
 
 TEST(GDataRootDirectoryTest, RefreshFile) {
-  GDataRootDirectory root;
+  GDataDirectoryService directory_service;
+  GDataRootDirectory* root(directory_service.root());
   // Add a directory to the file system.
-  GDataDirectory* directory_entry = new GDataDirectory(&root, &root);
+  GDataDirectory* directory_entry = new GDataDirectory(root,
+                                                       &directory_service);
   directory_entry->set_resource_id("folder:directory_resource_id");
-  root.AddEntry(directory_entry);
+  root->AddEntry(directory_entry);
 
   // Add a new file to the directory.
-  GDataFile* initial_file_entry = new GDataFile(NULL, &root);
+  GDataFile* initial_file_entry = new GDataFile(NULL, &directory_service);
   initial_file_entry->set_resource_id("file:file_resource_id");
   directory_entry->AddEntry(initial_file_entry);
   ASSERT_EQ(directory_entry, initial_file_entry->parent());
@@ -172,32 +177,35 @@ TEST(GDataRootDirectoryTest, RefreshFile) {
   // Initial file system state set, let's try refreshing entries.
 
   // New value for the entry with resource id "file:file_resource_id".
-  GDataFile* new_file_entry = new GDataFile(NULL, &root);
+  GDataFile* new_file_entry = new GDataFile(NULL, &directory_service);
   new_file_entry->set_resource_id("file:file_resource_id");
-  root.RefreshFile(scoped_ptr<GDataFile>(new_file_entry).Pass());
+  directory_service.RefreshFile(scoped_ptr<GDataFile>(new_file_entry).Pass());
   // Root should have |new_file_entry|, not |initial_file_entry|.
   // If this is not true, |new_file_entry| has probably been destroyed, hence
   // ASSERT (we're trying to access |new_file_entry| later on).
-  ASSERT_EQ(new_file_entry, root.GetEntryByResourceId("file:file_resource_id"));
+  ASSERT_EQ(new_file_entry,
+      directory_service.GetEntryByResourceId("file:file_resource_id"));
   // We have just verified new_file_entry exists inside root, so accessing
   // |new_file_entry->parent()| should be safe.
   EXPECT_EQ(directory_entry, new_file_entry->parent());
 
   // Let's try refreshing file that didn't prviously exist.
-  GDataFile* non_existent_entry = new GDataFile(NULL, &root);
+  GDataFile* non_existent_entry = new GDataFile(NULL, &directory_service);
   non_existent_entry->set_resource_id("file:does_not_exist");
-  root.RefreshFile(scoped_ptr<GDataFile>(non_existent_entry).Pass());
+  directory_service.RefreshFile(
+      scoped_ptr<GDataFile>(non_existent_entry).Pass());
   // File with non existent resource id should not be added.
-  EXPECT_FALSE(root.GetEntryByResourceId("file:does_not_exist"));
+  EXPECT_FALSE(directory_service.GetEntryByResourceId("file:does_not_exist"));
 }
 
 TEST(GDataRootDirectoryTest, GetEntryByResourceId_RootDirectory) {
-  GDataRootDirectory root;
+  GDataDirectoryService directory_service;
   // Look up the root directory by its resource ID.
-  GDataEntry* entry = root.GetEntryByResourceId(kGDataRootDirectoryResourceId);
+  GDataEntry* entry = directory_service.GetEntryByResourceId(
+      kGDataRootDirectoryResourceId);
   ASSERT_TRUE(entry);
   EXPECT_TRUE(entry->AsGDataRootDirectory());
-  EXPECT_EQ(&root, entry->AsGDataRootDirectory());
+  EXPECT_EQ(directory_service.root(), entry->AsGDataRootDirectory());
 }
 
 }  // namespace gdata
