@@ -14,13 +14,6 @@
         'iccjpeg.c',
         'iccjpeg.h',
       ],
-      'conditions': [
-        ['os_bsd==1 and use_system_libjpeg==1', {
-          'include_dirs': [
-            '/usr/local/include',
-          ],
-        }],
-      ],
       'direct_dependent_settings': {
         'include_dirs': [
           '.',
