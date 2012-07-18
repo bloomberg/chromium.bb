@@ -46,6 +46,7 @@ function link_from_pyauto_dep() {
 }
 
 link_from_pyauto_dep \
+    "$pyauto_dep_dir/test_src/chrome/browser/resources/gaia_auth" \
     "$pyauto_dep_dir/test_src/chrome/test/pyautolib" \
     "$pyauto_dep_dir/test_src/net/tools/testserver" \
     "$pyauto_dep_dir/test_src/out/Release/chromedriver" \

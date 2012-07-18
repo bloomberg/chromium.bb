@@ -270,7 +270,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         '--dom-automation',
         '--skip-oauth-login',
         # Enables injection of test content script for webui login automation
-        '--auth-ext-path=/usr/share/chromeos-assets/gaia_auth',
+        '--auth-ext-path=/usr/local/autotest/deps/pyauto_dep/' +
+            'test_src/chrome/browser/resources/gaia_auth',
         # Enable automation provider and chromeos net logs
         '--vmodule=*/browser/automation/*=2,*/chromeos/net/*=2',
       ]
