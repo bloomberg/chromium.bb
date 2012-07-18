@@ -35,7 +35,6 @@
 //               "host_desc" and "io_desc"
 
 namespace {
-static const size_t kSizeTMax = std::numeric_limits<size_t>::max();
 
 struct NaClDesc* OpenHostFileCommon(const char* fname, int flags, int mode) {
   struct NaClHostDesc* nhdp =
@@ -257,7 +256,7 @@ DescWrapper* DescWrapperFactory::ImportSyncSocketHandle(NaClHandle handle) {
 
 #if NACL_LINUX
 DescWrapper* DescWrapperFactory::ImportSysvShm(int key, size_t size) {
-  if (kSizeTMax - NACL_PAGESIZE + 1 <= size) {
+  if (NACL_ABI_SIZE_T_MAX - NACL_PAGESIZE + 1 <= size) {
     // Avoid overflow when rounding to the nearest 4K and casting to
     // nacl_off64_t by preventing negative size.
     return NULL;
@@ -510,7 +509,7 @@ ssize_t DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
   // Initialize to allow simple cleanups.
   header.ndescv = NULL;
   // Allocate and copy IOV.
-  if (kSizeTMax / sizeof(NaClImcMsgIoVec) <= diov_length) {
+  if (NACL_ABI_SIZE_T_MAX / sizeof(NaClImcMsgIoVec) <= diov_length) {
     goto cleanup;
   }
   header.iov = reinterpret_cast<NaClImcMsgIoVec*>(
@@ -527,7 +526,7 @@ ssize_t DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
   if (kHandleCountMax < dgram->ndescv_length) {
     goto cleanup;
   }
-  if (kSizeTMax / sizeof(header.ndescv[0]) <= ddescv_length) {
+  if (NACL_ABI_SIZE_T_MAX / sizeof(header.ndescv[0]) <= ddescv_length) {
     goto cleanup;
   }
   header.ndescv = reinterpret_cast<NaClDesc**>(
@@ -563,7 +562,7 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags,
   }
 
   // Allocate and copy the IOV.
-  if (kSizeTMax / sizeof(NaClImcMsgIoVec) <= diov_length) {
+  if (NACL_ABI_SIZE_T_MAX / sizeof(NaClImcMsgIoVec) <= diov_length) {
     goto cleanup;
   }
   header.iov = reinterpret_cast<NaClImcMsgIoVec*>(
@@ -580,7 +579,7 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags,
   if (kHandleCountMax < dgram->ndescv_length) {
     goto cleanup;
   }
-  if (kSizeTMax / sizeof(header.ndescv[0]) <= ddescv_length) {
+  if (NACL_ABI_SIZE_T_MAX / sizeof(header.ndescv[0]) <= ddescv_length) {
     goto cleanup;
   }
   header.ndescv = reinterpret_cast<NaClDesc**>(
