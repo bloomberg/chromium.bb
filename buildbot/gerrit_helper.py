@@ -65,19 +65,6 @@ class GerritHelper():
     assert isinstance(command_list, list), 'Review command must be list.'
     return self.ssh_prefix + ['gerrit', 'review'] + command_list
 
-  def GrabChangesReadyForCommit(self):
-    """Returns the list of changes to try.
-
-    This methods returns a a list of GerritPatch's to try.
-    """
-
-    results = self.Query(self._CQ_READY_QUERY, sort='lastUpdated')
-
-    # Change to commit are ordered in descending order by last update.
-    # To be fair it makes sense to do apply changes eldest to newest.
-    results.reverse()
-    return results
-
   def GrabPatchFromGerrit(self, project, change, commit, must_match=True):
     """Returns the GerritChange described by the arguments.
 

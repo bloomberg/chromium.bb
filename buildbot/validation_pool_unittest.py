@@ -51,8 +51,10 @@ def GetTestJson(change_id=None):
 
 class MockManifest(object):
 
-  def __init__(self, path):
+  def __init__(self, path, **kwds):
     self.root = path
+    for key, attr in kwds.iteritems():
+      setattr(self, key, attr)
 
   def GetProjectPath(self, project, absolute=False):
     if absolute:
@@ -199,7 +201,6 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
       series._content_merging_projects.setdefault(helper, frozenset())
 
     manifest = MockManifest(self.build_root)
-    manifest.root = self.build_root
     result = series.Apply(changes, dryrun=dryrun,
                           frozen=frozen, manifest=manifest)
 
@@ -698,6 +699,50 @@ class TestCoreLogic(base_mixin, mox.MoxTestBase):
     self.mox.ReplayAll()
     self.assertRaises(MyException, pool.ApplyPoolIntoRepo)
     self.mox.VerifyAll()
+
+  def testFilterNonCrosProjects(self):
+    """Runs through a filter of own manifest and fake changes.
+
+    This test should filter out the tacos/chromite project as its not real.
+    """
+    base_func = itertools.cycle(['chromiumos', 'chromeos']).next
+    patches = self.GetPatches(8)
+    for patch in patches:
+      patch.project = '%s/%i' % (base_func(), _GetNumber())
+      patch.tracking_branch = str(_GetNumber())
+
+    non_cros_patches = self.GetPatches(2)
+    for patch in non_cros_patches:
+      patch.project = str(_GetNumber())
+
+    filtered_patches = patches[:4]
+    allowed_patches = []
+    projects = {}
+    for idx, patch in enumerate(patches[4:]):
+      fails = bool(idx % 2)
+      # Vary the revision so we can validate that it checks the branch.
+      revision = ('monkeys' if fails
+                  else 'refs/heads/%s' % patch.tracking_branch)
+      if fails:
+        filtered_patches.append(patch)
+      else:
+        allowed_patches.append(patch)
+      projects.setdefault(patch.project, {})['revision'] = revision
+
+    manifest = MockManifest(self.build_root, projects=projects)
+
+    self.mox.ReplayAll()
+    results = validation_pool.ValidationPool._FilterNonCrosProjects(
+        patches + non_cros_patches, manifest)
+
+    def compare(list1, list2):
+      mangle = lambda c:(c.id, c.project, c.tracking_branch)
+      self.assertEqual(list1, list2,
+        msg="Comparison failed:\n list1: %r\n list2: %r"
+            % (map(mangle, list1), map(mangle, list2)))
+
+    compare(results[0], allowed_patches)
+    compare(results[1], filtered_patches)
 
 
 # pylint: disable=W0212,R0904

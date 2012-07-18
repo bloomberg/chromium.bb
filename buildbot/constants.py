@@ -143,3 +143,8 @@ EXTERNAL_PATCH_TAG = 'e'
 # Output tags.
 STEP_WARNINGS = '@@@STEP_WARNINGS@@@'
 STEP_FAILURE = '@@@STEP_FAILURE@@@'
+
+# Default gerrit query used to find changes for CQ.
+DEFAULT_CQ_READY_QUERY = ('status:open AND CodeReview=+2 AND Verified=+1 '
+                          'AND CommitReady=+1 AND age:5m '
+                          'AND NOT ( CodeReview=-2 OR Verified=-1 )')

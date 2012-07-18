@@ -14,9 +14,7 @@ import unittest
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import gerrit_helper
-from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import patch_unittest as cros_patch_unittest
-from chromite.buildbot import validation_pool
 from chromite.lib import cros_build_lib
 
 
@@ -100,14 +98,11 @@ class GerritHelperTest(mox.MoxTestBase):
                               redirect_stdout=True).AndReturn(fake_result)
     self.mox.ReplayAll()
     helper = gerrit_helper.GerritHelper(False)
-    changes = helper.GrabChangesReadyForCommit()
-    self.assertEqual(len(changes), 3)
-    self.assertEqual(changes[0].change_id,
-                     'Iee5c89d929f1850d7d4e1a4ff5f21adda800025f')
-    self.assertEqual(changes[1].change_id,
-                     'Iee5c89d929f1850d7d4e1a4ff5f21adda800025d')
-    self.assertEqual(changes[2].change_id,
-                     'Iee5c89d929f1850d7d4e1a4ff5f21adda800025e')
+    changes = helper.Query("monkey")
+    self.assertEqual(set(x.change_id for x in changes),
+                     set(['Iee5c89d929f1850d7d4e1a4ff5f21adda800025f',
+                          'Iee5c89d929f1850d7d4e1a4ff5f21adda800025d',
+                          'Iee5c89d929f1850d7d4e1a4ff5f21adda800025e']))
     self.mox.VerifyAll()
 
   def testParseFakeResultsWithInternalURL(self):
@@ -119,14 +114,11 @@ class GerritHelperTest(mox.MoxTestBase):
                               redirect_stdout=True).AndReturn(fake_result)
     self.mox.ReplayAll()
     helper = gerrit_helper.GerritHelper(True)
-    changes = helper.GrabChangesReadyForCommit()
-    self.assertEqual(len(changes), 3)
-    self.assertEqual(changes[0].change_id,
-                     'Iee5c89d929f1850d7d4e1a4ff5f21adda800025f')
-    self.assertEqual(changes[1].change_id,
-                     'Iee5c89d929f1850d7d4e1a4ff5f21adda800025d')
-    self.assertEqual(changes[2].change_id,
-                     'Iee5c89d929f1850d7d4e1a4ff5f21adda800025e')
+    changes = helper.Query("monkeys")
+    self.assertEqual(set(x.change_id for x in changes),
+                     set(['Iee5c89d929f1850d7d4e1a4ff5f21adda800025f',
+                          'Iee5c89d929f1850d7d4e1a4ff5f21adda800025d',
+                          'Iee5c89d929f1850d7d4e1a4ff5f21adda800025e']))
     self.mox.VerifyAll()
 
   def _PrintChanges(self, changes):
@@ -140,8 +132,11 @@ class GerritHelperTest(mox.MoxTestBase):
     Runs the command and prints out the changes.  Should not throw an exception.
     """
     helper = gerrit_helper.GerritHelper(False)
-    changes = helper.GrabChangesReadyForCommit()
-    self._PrintChanges(changes)
+    change = helper.QuerySingleRecord('1')
+    self.assertEqual(change.gerrit_number, '1')
+    self.assertEqual(change.change_id,
+                     'I924d7614af81bf50631529a0c804475dc321d8fe')
+    self.assertEqual(change.project, 'playground/bar')
 
   def testInternalCommandWorks(self):
     """This is just a sanity test that the internal command is valid.
@@ -149,39 +144,11 @@ class GerritHelperTest(mox.MoxTestBase):
     Runs the command and prints out the changes.  Should not throw an exception.
     """
     helper = gerrit_helper.GerritHelper(True)
-    changes = helper.GrabChangesReadyForCommit()
-    self._PrintChanges(changes)
-
-  def testFilterWithOwnManifestFakeResults(self):
-    """Runs through a filter of own manifest and fake changes.
-
-    This test should filter out the tacos/chromite project as its not real.
-    """
-    fake_result_from_gerrit = self.mox.CreateMock(cros_build_lib.CommandResult)
-    fake_result_from_gerrit.output = self.results
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    cros_build_lib.RunCommand(mox.In('gerrit.chromium.org'),
-                              redirect_stdout=True).AndReturn(
-                                  fake_result_from_gerrit)
-    self.mox.ReplayAll()
-    helper = gerrit_helper.GerritHelper(False)
-    changes = helper.GrabChangesReadyForCommit()
-    new_changes, nom = validation_pool.ValidationPool._FilterNonCrosProjects(
-        changes, constants.SOURCE_ROOT)
-    self.assertEqual(len(new_changes), 1)
-    self.assertEqual(len(nom), 1)
-    self.assertFalse(new_changes[0].project == 'tacos/chromite')
-
-  def testFilterWithOwnManifest(self):
-    """Runs through a filter of own manifest and current changes."""
-    helper = gerrit_helper.GerritHelper(False)
-    changes = helper.GrabChangesReadyForCommit()
-    print 'Changes BEFORE filtering ***'
-    self._PrintChanges(changes)
-    new_changes, _ = validation_pool.ValidationPool._FilterNonCrosProjects(
-        changes, constants.SOURCE_ROOT)
-    print 'Changes AFTER filtering ***'
-    self._PrintChanges(new_changes)
+    change = helper.QuerySingleRecord('1')
+    self.assertEqual(change.gerrit_number, '1')
+    self.assertEqual(change.change_id,
+                     'Idd5056fbd4d6d10525104edc0aa67ee02aaf3a91')
+    self.assertEqual(change.project, 'playground/foo')
 
   def testIsChangeCommitted(self):
     """Tests that we can parse a json to check if a change is committed."""
@@ -322,7 +289,7 @@ class GerritQueryTests(mox.MoxTestBase):
     output_obj.returncode = 0
     output_obj.output = self.result
 
-    for x in xrange(calls_allowed):
+    for _ in xrange(calls_allowed):
       cros_build_lib.RunCommand(mox.In(server),
                                 redirect_stdout=True).AndReturn(output_obj)
 

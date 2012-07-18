@@ -887,6 +887,14 @@ def _CreateParser():
   group.add_remote_option('--version', dest='force_version', default=None,
                           help='Used with manifest logic.  Forces use of this '
                                'version rather than create or get latest.')
+  group.add_remote_option('--cq-gerrit-query', dest='cq_gerrit_override',
+                          default=None,
+                          help=
+      "If given, this gerrit query will be used to find what patches to test, "
+      "rather than the normal 'CommitReady=2 AND Verified=1 AND CodeReview=2' "
+      "query it defaults to.  Use with care- note additionally this setting "
+      "only has an effect if the buildbot target is a cq target, and we're "
+      "in buildbot mode.")
 
   parser.add_option_group(group)
 

@@ -615,7 +615,8 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
         pool = validation_pool.ValidationPool.AcquirePool(
             self._build_config['overlays'], self._build_root,
             self._options.buildnumber, self.builder_name,
-            self._options.debug)
+            self._options.debug,
+            changes_query=self._options.cq_gerrit_override)
 
         # We only have work to do if there are changes to try.
         try:

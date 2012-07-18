@@ -295,7 +295,6 @@ class RawPatchSeries(object):
     Args:
       change: A cros_patch.GitRepoPatch instance to generate a transaction
         for.
-      buildroot: Pathway to the root of a repo checkout to work on.
       frozen: If True, then resolution is limited purely to what is in
         the set of allowed changes; essentially, CQ mode.  If False,
         arbitrary resolution is allowed, pulling changes as necessary
@@ -402,7 +401,7 @@ class RawPatchSeries(object):
 
   def Apply(self, changes, dryrun=False, frozen=True, honor_ordering=False,
             changes_filter=None):
-    """Applies changes from pool into the directory specified by the buildroot.
+    """Applies changes from pool into the build root specified by the manifest.
 
     This method resolves each given change down into a set of transactions-
     the change and its dependencies- that must go in, then tries to apply
@@ -506,15 +505,13 @@ class RawPatchSeries(object):
 
   @contextlib.contextmanager
   def _Transaction(self, commits):
-    """ContextManager used to rollback changes to a buildroot if necessary.
+    """ContextManager used to rollback changes to a build root if necessary.
 
     Specifically, if an unhandled non system exception occurs, this context
     manager will roll back all relevant modifications to the git repos
     involved.
 
     Args:
-      buildroot: The manifest checkout we're operating upon, specifically
-        the root of it.
       commits: A sequence of cros_patch.GitRepoPatch instances that compromise
         this transaction- this is used to identify exactly what may be changed,
         thus what needs to be tracked and rolled back if the transaction fails.
@@ -899,7 +896,7 @@ class ValidationPool(object):
 
   @classmethod
   def AcquirePool(cls, overlays, build_root, build_number, builder_name,
-                  dryrun=False):
+                  dryrun=False, changes_query=None):
     """Acquires the current pool from Gerrit.
 
     Polls Gerrit and checks for which change's are ready to be committed.
@@ -911,11 +908,17 @@ class ValidationPool(object):
       build_number: Corresponding build number for the build.
       builder_name:  Builder name on buildbot dashboard.
       dryrun: Don't submit anything to gerrit.
+      changes_query: The gerrit query to use to identify changes; if None,
+        uses the internal defaults.
     Returns:
       ValidationPool object.
     Raises:
       TreeIsClosedException: if the tree is closed.
     """
+
+    if changes_query is None:
+      changes_query = constants.DEFAULT_CQ_READY_QUERY
+
     # We choose a longer wait here as we haven't committed to anything yet. By
     # doing this here we can reduce the number of builder cycles.
     if dryrun or cls._IsTreeOpen(max_timeout=3600):
@@ -924,9 +927,11 @@ class ValidationPool(object):
                             True, dryrun)
       # Iterate through changes from all gerrit instances we care about.
       for helper in cls.GetGerritHelpersForOverlays(overlays):
-        raw_changes = helper.GrabChangesReadyForCommit()
+        raw_changes = helper.Query(changes_query, sort='lastUpdated')
+        raw_changes.reverse()
+
         changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(
-            raw_changes, build_root)
+            raw_changes, cros_build_lib.ManifestCheckout.Cached(build_root))
         pool.changes.extend(changes)
         pool.non_manifest_changes.extend(non_manifest_changes)
 
@@ -974,7 +979,7 @@ class ValidationPool(object):
     return pool
 
   @staticmethod
-  def _FilterNonCrosProjects(changes, buildroot):
+  def _FilterNonCrosProjects(changes, manifest):
     """Filters changes to a tuple of relevant changes.
 
     There are many code reviews that are not part of Chromium OS and/or
@@ -985,7 +990,7 @@ class ValidationPool(object):
 
     Args:
       changes:  List of GerritPatch objects.
-      buildroot:  Buildroot containing manifest to filter against.
+      manifest: The manifest to check projects/branches against.
 
     Returns tuple of
       relevant reviews in a manifest, relevant reviews not in the manifest.
@@ -998,25 +1003,19 @@ class ValidationPool(object):
     # First we filter to only Chromium OS repositories.
     changes = [c for c in changes if IsCrosReview(c)]
 
-    handler = cros_build_lib.ManifestCheckout.Cached(buildroot)
-    projects = handler.projects
+    projects = manifest.projects
 
     changes_in_manifest = []
     changes_not_in_manifest = []
     for change in changes:
-      branch = handler.default.get('revision')
       patch_branch = 'refs/heads/%s' % change.tracking_branch
-      project = projects.get(change.project)
-      if project:
-        branch = project.get('revision') or branch
+      project_data = projects.get(change.project)
+      if project_data is not None and patch_branch == project_data['revision']:
+        changes_in_manifest.append(change)
+        continue
 
-      if branch == patch_branch:
-        if project:
-          changes_in_manifest.append(change)
-        else:
-          changes_not_in_manifest.append(change)
-      else:
-        logging.info('Filtered change %s', change)
+      changes_not_in_manifest.append(change)
+      logging.info('Filtered change %s', change)
 
     return changes_in_manifest, changes_not_in_manifest
 
