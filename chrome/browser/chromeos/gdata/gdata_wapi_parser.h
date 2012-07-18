@@ -312,8 +312,9 @@ class FeedEntry {
   // List of entry categories.
   const ScopedVector<Category>& categories() const { return categories_; }
 
-  // Returns true when time string (in format yyyy-mm-ddThh:mm:ss.dddZ), is
-  // successfully parsed and output as |time|.
+  // Returns true when time string is successfully parsed and output as |time|.
+  // The time string must be in format yyyy-mm-ddThh:mm:ss.dddTZ (TZ is
+  // either '+hh:mm', '-hh:mm', 'Z' (representing UTC) or empty string).
   static bool GetTimeFromString(
       const base::StringPiece& raw_value, base::Time* time);
 
