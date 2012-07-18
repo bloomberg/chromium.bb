@@ -420,6 +420,48 @@ def CopyExamples(pepperdir, toolchains):
     buildbot_common.ErrorExit('Failed to build examples.')
 
 
+def GetWindowsEnvironment():
+  sys.path.append(os.path.join(NACL_DIR, 'buildbot'))
+  import buildbot_standard
+
+  # buildbot_standard.SetupWindowsEnvironment expects a "context" object. We'll
+  # fake enough of that here to work.
+  class FakeContext(object):
+    def __init__(self):
+      self.env = os.environ
+
+    def GetEnv(self, key):
+      return self.env[key]
+
+    def __getitem__(self, key):
+      return self.env[key]
+    
+    def SetEnv(self, key, value):
+      self.env[key] = value
+
+    def __setitem__(self, key, value):
+      self.env[key] = value
+
+  context = FakeContext()
+  buildbot_standard.SetupWindowsEnvironment(context)
+
+  # buildbot_standard.SetupWindowsEnvironment adds the directory which contains
+  # vcvarsall.bat to the path, but not the directory which contains cl.exe,
+  # link.exe, etc.
+  # Running vcvarsall.bat adds the correct directories to the path, which we
+  # extract below.
+  process = subprocess.Popen('vcvarsall.bat x86 > NUL && set',
+      stdout=subprocess.PIPE, env=context.env, shell=True)
+  stdout, _ = process.communicate()
+
+  # Parse environment from "set" command above.
+  # It looks like this:
+  # KEY1=VALUE1\r\n
+  # KEY2=VALUE2\r\n
+  # ...
+  return dict(line.split('=') for line in stdout.split('\r\n')[:-1])
+
+
 def main(args):
   parser = optparse.OptionParser()
   parser.add_option('--pnacl', help='Enable pnacl build.',
@@ -540,16 +582,21 @@ def main(args):
   tarfile = os.path.join(OUT_DIR, tarname)
 
   # Ship with libraries prebuilt, so run that first
-  if False:
-    buildbot_common.BuildStep('Build Libraries')
-    src_dir = os.path.join(pepperdir, 'src')
-    makefile = os.path.join(src_dir, 'Makefile')
-    if os.path.isfile(makefile):
-      print "\n\nMake: " + src_dir
-      buildbot_common.Run(['make', '-j8'],
-                          cwd=os.path.abspath(src_dir), shell=True)
-      buildbot_common.Run(['make', '-j8', 'clean'],
-                          cwd=os.path.abspath(src_dir), shell=True)
+  buildbot_common.BuildStep('Build Libraries')
+  src_dir = os.path.join(pepperdir, 'src')
+  makefile = os.path.join(src_dir, 'Makefile')
+  if os.path.isfile(makefile):
+    print "\n\nMake: " + src_dir
+    if platform == 'win':
+      # We need to modify the environment to build host on Windows.
+      env = GetWindowsEnvironment()
+    else:
+      env = os.environ
+
+    buildbot_common.Run(['make', '-j8'],
+                        cwd=os.path.abspath(src_dir), shell=True, env=env)
+    buildbot_common.Run(['make', '-j8', 'clean'],
+                        cwd=os.path.abspath(src_dir), shell=True)
 
   if not skip_tar:
     buildbot_common.BuildStep('Tar Pepper Bundle')
@@ -626,8 +673,14 @@ def main(args):
     makefile = os.path.join(example_dir, 'Makefile')
     if os.path.isfile(makefile):
       print "\n\nMake: " + example_dir
+      if platform == 'win':
+        # We need to modify the environment to build host on Windows.
+        env = GetWindowsEnvironment()
+      else:
+        env = os.environ
+
       buildbot_common.Run(['make', '-j8'],
-                          cwd=os.path.abspath(example_dir), shell=True)
+                          cwd=os.path.abspath(example_dir), shell=True, env=env)
 
   # Test examples.
   if not skip_examples and not skip_test_examples:
