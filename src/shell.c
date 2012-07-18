@@ -1358,6 +1358,8 @@ shell_surface_set_maximized(struct wl_client *client,
 	   check whether the ouput is available */
 	if (output_resource)
 		shsurf->output = output_resource->data;
+	else if (es->output)
+		shsurf->output = es->output;
 	else
 		shsurf->output = get_default_output(es->compositor);
 
@@ -1515,6 +1517,8 @@ shell_surface_set_fullscreen(struct wl_client *client,
 
 	if (output_resource)
 		shsurf->output = output_resource->data;
+	else if (es->output)
+		shsurf->output = es->output;
 	else
 		shsurf->output = get_default_output(es->compositor);
 
