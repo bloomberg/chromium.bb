@@ -1004,7 +1004,7 @@ def _FinishParsing(options, args):
   else:
     if len(args) > 1:
       cros_build_lib.Die('Multiple configs not supported if not running with '
-                         '--remote.')
+                         '--remote.  Got %r', args)
 
     if options.slaves:
       cros_build_lib.Die('Cannot use --slaves if not running with --remote.')
