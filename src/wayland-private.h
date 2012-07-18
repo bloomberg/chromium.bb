@@ -46,6 +46,7 @@ void wl_map_init(struct wl_map *map);
 void wl_map_release(struct wl_map *map);
 uint32_t wl_map_insert_new(struct wl_map *map, uint32_t side, void *data);
 int wl_map_insert_at(struct wl_map *map, uint32_t i, void *data);
+int wl_map_reserve_new(struct wl_map *map, uint32_t i);
 void wl_map_remove(struct wl_map *map, uint32_t i);
 void *wl_map_lookup(struct wl_map *map, uint32_t i);
 void wl_map_for_each(struct wl_map *map, wl_iterator_func_t func, void *data);
