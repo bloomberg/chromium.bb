@@ -108,7 +108,7 @@ class PanelView : public NativePanel,
   // Overridden from views::WidgetDelegate:
   virtual void OnDisplayChanged() OVERRIDE;
   virtual void OnWorkAreaChanged() OVERRIDE;
-  virtual bool WillProcessWorkAreaChange() const;
+  virtual bool WillProcessWorkAreaChange() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) OVERRIDE;
