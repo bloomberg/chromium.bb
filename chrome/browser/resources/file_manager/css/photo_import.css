@@ -130,6 +130,7 @@ button.import[pressed] {
   background: rgb(31, 31, 31);
 }
 
+/* Keep width in sync with PhotoImport.ITEM_WIDTH */
 .grid-item {
   border: none !important;
   box-sizing: border-box;
@@ -139,6 +140,24 @@ button.import[pressed] {
   overflow: hidden;
   padding: 0;
   width: 164px;
+}
+
+.grid-item.group,
+.grid-item.empty {
+  background: black !important;
+  outline: none !important;
+}
+
+.grid-item.group {
+  overflow: visible;
+}
+
+.grid-item.group > div {
+  height: 40px;
+  left: 2px;
+  position: absolute;
+  top: 40px;
+  width: 400px;
 }
 
 .grid-frame {

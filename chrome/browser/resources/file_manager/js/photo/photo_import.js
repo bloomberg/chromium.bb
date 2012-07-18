@@ -18,6 +18,7 @@ function PhotoImport(dom, filesystem, params) {
   this.dom_ = dom;
   this.document_ = this.dom_.ownerDocument;
   this.metadataCache_ = params.metadataCache;
+  this.mediaFilesList_ = null;
 
   this.initDom_();
   this.initAlbums_();
@@ -25,6 +26,12 @@ function PhotoImport(dom, filesystem, params) {
 }
 
 PhotoImport.prototype = { __proto__: cr.EventTarget.prototype };
+
+/**
+ * Single item width.
+ * Keep in sync with .grid-item rule in photo_import.css.
+ */
+PhotoImport.ITEM_WIDTH = 164 + 8;
 
 /**
  * Loads app in the document body.
@@ -65,6 +72,8 @@ PhotoImport.load = function(opt_filesystem, opt_params) {
  */
 PhotoImport.prototype.initDom_ = function() {
   this.dom_.setAttribute('loading', '');
+  this.dom_.ownerDocument.defaultView.addEventListener(
+      'resize', this.onResize_.bind(this));
 
   this.spinner_ = this.dom_.querySelector('.spinner');
 
@@ -77,6 +86,12 @@ PhotoImport.prototype.initDom_ = function() {
   // TODO(dgozman): add shades at top and bottom of the list.
   this.grid_ = this.dom_.querySelector('grid');
   cr.ui.Grid.decorate(this.grid_);
+  this.grid_.redraw = cr.ui.List.prototype.redraw;
+  this.grid_.createSelectionController = function(sm) {
+    return new GridSelectionController(sm, this);
+  };
+
+  this.onResize_();  // To set columns number.
   this.grid_.itemConstructor =
       GridItem.bind(null, this);
   this.fileList_ = new cr.ui.ArrayDataModel([]);
@@ -106,8 +121,8 @@ PhotoImport.prototype.initAlbums_ = function() {
 PhotoImport.prototype.loadSource_ = function(source) {
   var onTraversed = function(results) {
     this.dom_.removeAttribute('loading');
-    var mediaFiles = results.filter(FileType.isImageOrVideo);
-    this.fileList_.push.apply(this.fileList_, mediaFiles);
+    this.mediaFilesList_ = results.filter(FileType.isImageOrVideo);
+    this.makeFileGroups_();
   }.bind(this);
 
   var onEntry = function(entry) {
@@ -122,13 +137,121 @@ PhotoImport.prototype.loadSource_ = function(source) {
 };
 
 /**
- * Decorates grid item.
- * @param {HTMLLIElement} li The item.
- * @param {Entry} entry File entry.
+ * Divides files into groups by the modification date and pass them to the grid.
  * @private
  */
-PhotoImport.prototype.decorateGridItem_ = function(li, entry) {
+PhotoImport.prototype.makeFileGroups_ = function() {
+  var files = this.mediaFilesList_;
+  if (!files) return;
+
+  var dateFormatter = v8Intl.DateTimeFormat(
+      [] /* default locale */,
+      {year: 'numeric', month: 'short', day: 'numeric'});
+
+  var columns = this.grid_.columns;
+
+  var onMetadata = function(filesystem) {
+    var unknownGroup = {
+      type: 'group',
+      date: 0,
+      title: loadTimeData.getString('PHOTO_IMPORT_UNKNOWN_DATE'),
+      items: []
+    };
+
+    var groupsMap = {};
+
+    for (var index = 0; index < files.length; index++) {
+      var props = filesystem[index];
+      var item = { type: 'entry', entry: files[index] };
+
+      if (!props || !props.modificationTime) {
+        item.group = unknownGroup;
+        unknownGroup.items.push(item);
+        continue;
+      }
+
+      var date = new Date(props.modificationTime);
+      date.setHours(0);
+      date.setMinutes(0);
+      date.setSeconds(0);
+      date.setMilliseconds(0);
+
+      var time = date.getTime();
+      if (!(time in groupsMap)) {
+        groupsMap[time] = {
+          type: 'group',
+          date: date,
+          title: dateFormatter.format(date),
+          items: []
+        };
+      }
+
+      var group = groupsMap[time];
+      group.items.push(item);
+      item.group = group;
+    }
+
+    var groups = [];
+    for (var time in groupsMap) {
+      if (groupsMap.hasOwnProperty(time)) {
+        groups.push(groupsMap[time]);
+      }
+    }
+    if (unknownGroup.items.length > 0)
+      groups.push(unknownGroup);
+
+    groups.sort(function(a, b) {
+      return b.date.getTime() - a.date.getTime();
+    });
+
+    var list = [];
+    for (var index = 0; index < groups.length; index++) {
+      var group = groups[index];
+
+      list.push(group);
+      for (var t = 1; t < columns; t++) {
+        list.push({ type: 'empty' });
+      }
+
+      for (var j = 0; j < group.items.length; j++) {
+        list.push(group.items[j]);
+      }
+
+      var count = group.items.length;
+      while (count % columns != 0) {
+        list.push({ type: 'empty' });
+        count++;
+      }
+    }
+
+    this.fileList_.splice(0, this.fileList_.length);
+    this.fileList_.push.apply(this.fileList_, list);
+  }.bind(this);
+
+  this.metadataCache_.get(files, 'filesystem', onMetadata);
+};
+
+/**
+ * Decorates grid item.
+ * @param {HTMLLIElement} li The list item.
+ * @param {Object} item The model item.
+ * @private
+ */
+PhotoImport.prototype.decorateGridItem_ = function(li, item) {
   li.className = 'grid-item';
+
+  if (item.type == 'empty') {
+    li.classList.add('empty');
+    return;
+  }
+
+  if (item.type == 'group') {
+    li.classList.add('group');
+    var content = this.document_.createElement('div');
+    content.textContent = item.title;
+    li.appendChild(content);
+    return;
+  }
 
   var frame = this.document_.createElement('div');
   frame.className = 'grid-frame';
@@ -136,9 +259,9 @@ PhotoImport.prototype.decorateGridItem_ = function(li, entry) {
 
   var box = this.document_.createElement('div');
   box.className = 'img-container';
-  this.metadataCache_.get(entry, 'thumbnail|filesystem',
+  this.metadataCache_.get(item.entry, 'thumbnail|filesystem',
       function(metadata) {
-        new ThumbnailLoader(entry.toURL(), metadata).
+        new ThumbnailLoader(item.entry.toURL(), metadata).
             load(box, false /* fit, not fill*/);
       });
   frame.appendChild(box);
@@ -154,13 +277,35 @@ PhotoImport.prototype.onError_ = function(message) {
 };
 
 /**
+ * Resize event handler.
+ * @private
+ */
+PhotoImport.prototype.onResize_ = function() {
+  var columns =
+      Math.floor((this.dom_.clientWidth - 20) / PhotoImport.ITEM_WIDTH);
+  if (columns != this.grid_.columns) {
+    this.grid_.columns = columns;
+    this.makeFileGroups_();
+  }
+};
+
+/**
+ * @return {Array.<Object>} The list of selected entries.
+ * @private
+ */
+PhotoImport.prototype.getSelectedItems_ = function() {
+  return this.grid_.selectedItems.filter(function(item) {
+    return item.type == 'entry';
+  });
+};
+
+/**
  * Event handler for selection change.
  * @param {Event} event The event.
  * @private
  */
 PhotoImport.prototype.onSelectionChanged_ = function(event) {
-  this.importButton_.disabled =
-      this.grid_.selectionModel.selectedIndexes.length == 0;
+  this.importButton_.disabled = this.getSelectedItems_().length == 0;
 };
 
 /**
@@ -169,7 +314,7 @@ PhotoImport.prototype.onSelectionChanged_ = function(event) {
  * @private
  */
 PhotoImport.prototype.onImportClick_ = function(event) {
-  var indexes = this.grid_.selectionModel.selectedIndexes;
+  var items = this.getSelectedItems_();
 
   // TODO: use albums instead.
   var albums = [
@@ -185,10 +330,10 @@ PhotoImport.prototype.onImportClick_ = function(event) {
   }.bind(this);
 
   this.selectAlbumDialog_.show(
-      indexes.length == 1 ?
+      items.length == 1 ?
           loadTimeData.getString('PHOTO_IMPORT_SELECT_ALBUM_CAPTION') :
           loadTimeData.getStringF('PHOTO_IMPORT_SELECT_ALBUM_CAPTION_PLURAL',
-                                  indexes.length),
+                                  items.length),
       albums,
       this.title_.textContent,
       loadTimeData.getString('PHOTO_IMPORT_IMPORT_BUTTON'),
@@ -213,4 +358,102 @@ GridItem.prototype = {
   __proto__: cr.ui.ListItem.prototype,
   get label() {},
   set label(value) {}
+};
+
+/**
+ * Creates a selection controller that is to be used with grid.
+ * @param {cr.ui.ListSelectionModel} selectionModel The selection model to
+ *     interact with.
+ * @param {cr.ui.Grid} grid The grid to interact with.
+ * @constructor
+ * @extends {!cr.ui.ListSelectionController}
+ */
+function GridSelectionController(selectionModel, grid) {
+  this.selectionModel_ = selectionModel;
+  this.grid_ = grid;
+}
+
+/**
+ * Extends cr.ui.ListSelectionController.
+ */
+GridSelectionController.prototype.__proto__ =
+    cr.ui.ListSelectionController.prototype;
+
+/** @inheritDoc */
+GridSelectionController.prototype.getIndexBelow = function(index) {
+  if (index == this.getLastIndex()) {
+    return -1;
+  }
+
+  var dm = this.grid_.dataModel;
+  var columns = this.grid_.columns;
+  var min = (Math.floor(index / columns) + 1) * columns;
+
+  for (var row = 1; true; row++) {
+    var end = index + columns * row;
+    var start = Math.max(min, index + columns * (row - 1));
+    if (start > dm.length) break;
+
+    for (var i = end; i > start; i--) {
+      if (i < dm.length && dm.item(i).type == 'entry')
+        return i;
+    }
+  }
+
+  return this.getLastIndex();
+};
+
+/** @inheritDoc */
+GridSelectionController.prototype.getIndexAbove = function(index) {
+  if (index == this.getFirstIndex()) {
+    return -1;
+  }
+
+  var dm = this.grid_.dataModel;
+  index -= this.grid_.columns;
+  while (index >= 0 && dm.item(index).type != 'entry') {
+    index--;
+  }
+
+  return index < 0 ? this.getFirstIndex() : index;
+};
+
+/** @inheritDoc */
+GridSelectionController.prototype.getIndexBefore = function(index) {
+  var dm = this.grid_.dataModel;
+  index--;
+  while (index >= 0 && dm.item(index).type != 'entry') {
+    index--;
+  }
+  return index;
+};
+
+/** @inheritDoc */
+GridSelectionController.prototype.getIndexAfter = function(index) {
+  var dm = this.grid_.dataModel;
+  index++;
+  while (index < dm.length && dm.item(index).type != 'entry') {
+    index++;
+  }
+  return index == dm.length ? -1 : index;
+};
+
+/** @inheritDoc */
+GridSelectionController.prototype.getFirstIndex = function() {
+  var dm = this.grid_.dataModel;
+  for (var index = 0; index < dm.length; index++) {
+    if (dm.item(index).type == 'entry')
+      return index;
+  }
+  return -1;
+};
+
+/** @inheritDoc */
+GridSelectionController.prototype.getLastIndex = function() {
+  var dm = this.grid_.dataModel;
+  for (var index = dm.length - 1; index >= 0; index--) {
+    if (dm.item(index).type == 'entry')
+      return index;
+  }
+  return -1;
 };
