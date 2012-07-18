@@ -447,10 +447,7 @@ weston_surface_update_transform(struct weston_surface *surface)
 			weston_surface_update_transform_disable(surface);
 	}
 
-	/* weston_surface_damage() without update */
-	pixman_region32_union_rect(&surface->damage, &surface->damage,
-				   0, 0, surface->geometry.width,
-				   surface->geometry.height);
+	weston_surface_damage_below(surface);
 
 	if (weston_surface_is_mapped(surface))
 		weston_surface_assign_output(surface);
