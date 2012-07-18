@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "Keisti PIN kod\u0105"
   },
-  "home_daemon_disabled_message": {
-    "message": "\u0160ioje platformoje dar nepalaikomas \u0161io kompiuterio bendrinimas nuolatinei prieigai... Sekite naujienas!"
-  },
   "home_daemon_start_button": {
     "message": "\u012egalinti nuotolin\u012f ry\u0161\u012f"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(\u0160i funkcija \u201eChromebook\u201c dar negalima\u2026 Steb\u0117kite naujienas.)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "Jei norite \u012fgalinti nuotolin\u012f prisijungim\u0105 prie kito kompiuterio, \u010dia \u012fdiekite \u201eChrome\u201c nuotolin\u012f kompiuterio valdym\u0105 ir spustel\u0117kite \u201e$1\u201c.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "Neturite joki\u0173 registruot\u0173 kompiuteri\u0173. Jei norite \u012fgalinti nuotolin\u012f prisijungim\u0105 prie kompiuterio, \u010dia \u012fdiekite \u201eChrome\u201c nuotolin\u012f kompiuterio valdym\u0105 ir spustel\u0117kite \u201e$1\u201c.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "Jei norite apsaugoti prieig\u0105 prie \u0161io kompiuterio, pasirinkite PIN kod\u0105. Jo bus reikalaujama prisijungiant i\u0161 kitos vietos."

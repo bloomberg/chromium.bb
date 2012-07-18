@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "Endre PIN-koden"
   },
-  "home_daemon_disabled_message": {
-    "message": "\u00c5 dele denne datamaskinen for konstant tilgang er ikke st\u00f8ttet p\u00e5 denne plattformen \u2013 enn s\u00e5 lenge."
-  },
   "home_daemon_start_button": {
     "message": "Aktiver eksterne tilkoblinger"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(denne funksjonen er ikke tilgjengelig for Chromebooks enn\u00e5 \u2026 f\u00f8lg med)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "Du kan aktivere ekstern forbindelse til en annen datamaskin ved \u00e5 installere Chrome Eksternt skrivebord der og klikke p\u00e5 $1.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "Ingen datamaskiner er registrert i kontoen din. Du kan aktivere ekstern forbindelse til en annen datamaskin ved \u00e5 installere Chrome Eksternt skrivebord der og klikke p\u00e5 $1.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "For \u00e5 beskytte tilgangen til denne datamaskinen, m\u00e5 du angi en PIN-kode. Denne koden m\u00e5 skrives inn n\u00e5r du kobler til fra et annet sted."

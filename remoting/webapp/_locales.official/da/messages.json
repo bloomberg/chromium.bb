@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "Skift pinkode"
   },
-  "home_daemon_disabled_message": {
-    "message": "Deling af denne computer med adgang til enhver tid er endnu ikke underst\u00f8ttet p\u00e5 denne platform\u2026 Hold dig orienteret."
-  },
   "home_daemon_start_button": {
     "message": "Aktiv\u00e9r fjernforbindelserne"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(denne funktion er endnu ikke tilg\u00e6ngelig for Chromebooks... hold dig opdateret)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "Hvis du vil aktivere fjernforbindelser til en anden computer, skal du installere Chrome Fjernskrivebord p\u00e5 den p\u00e5g\u00e6ldende computer og klikke p\u00e5 \"$1\".",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "Du har ingen registrerede computere. Hvis du vil aktivere fjernforbindelser til en computer, skal du installere Chrome Fjernskrivebord p\u00e5 den p\u00e5g\u00e6ldende computer og klikke p\u00e5 \"$1\".",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "V\u00e6lg en pinkode for at beskytte adgangen til denne computer. Du skal bruge denne pinkode, n\u00e5r du opretter forbindelse fra en anden placering."

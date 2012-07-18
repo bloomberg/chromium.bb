@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "Magpalit ng PIN"
   },
-  "home_daemon_disabled_message": {
-    "message": "Hindi pa sinusuportahan sa platform na ito ang pagbabahagi sa computer na ito para sa anumang oras na pag-access... manatiling nakasubaybay."
-  },
   "home_daemon_start_button": {
     "message": "Paganahin ang mga remote na koneksyon"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(hindi pa available ang tampok na ito para sa Mga Chromebook\u2026 manatiling nakasubaybay)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "Upang paganahin ang mga malayuang koneksyon sa ibang computer, i-install ang Remote na Desktop ng Chrome doon at i-click ang \u201c$1\u201d.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "Wala kang mga computer na nakarehistro. Upang paganahin ang mga malayuang koneksyon sa isang computer, i-install ang Remote na Desktop ng Chrome doon at i-click ang \u201c$1\u201d.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "Upang maprotektahan ang pag-access sa computer na ito, mangyaring pumili ng PIN. Kakailanganin ang PIN na ito kapag kumokonekta mula sa isa pang lokasyon."

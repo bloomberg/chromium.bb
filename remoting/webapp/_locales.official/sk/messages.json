@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "Zmeni\u0165 PIN"
   },
-  "home_daemon_disabled_message": {
-    "message": "Zdie\u013eanie tohto po\u010d\u00edta\u010da v \u013eubovo\u013enom \u010dase zatia\u013e nie je na tejto platforme podporovan\u00e9. Sledujte n\u00e1s v\u0161ak na\u010falej..."
-  },
   "home_daemon_start_button": {
     "message": "Povoli\u0165 vzdialen\u00e9 pripojenia"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(t\u00e1to funkcia nie je e\u0161te k dispoz\u00edcii pre Chromebooky... sledujte n\u00e1s aj na\u010falej)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "Ak chcete povoli\u0165 vzdialen\u00e9 pripojenie k in\u00e9mu po\u010d\u00edta\u010du, nain\u0161talujte na \u0148om Vzdialen\u00fa plochu Chrome a potom kliknite na tla\u010didlo $1.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "Nie s\u00fa zaregistrovan\u00e9 \u017eiadne po\u010d\u00edta\u010de. Ak chcete povoli\u0165 vzdialen\u00e9 pripojenie k in\u00e9mu po\u010d\u00edta\u010du, nain\u0161talujte na \u0148om Vzdialen\u00fa plochu Chrome a potom kliknite na tla\u010didlo $1.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "Ak chcete chr\u00e1ni\u0165 pr\u00edstup k tomuto po\u010d\u00edta\u010du, zvo\u013ete si k\u00f3d PIN. Tento k\u00f3d sa bude vy\u017eadova\u0165 pri pripojen\u00ed z in\u00e9ho miesta."

@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "Modifier le code d'acc\u00e8s"
   },
-  "home_daemon_disabled_message": {
-    "message": "Cette plate-forme ne permet pas encore de partager cet ordinateur en vue d'y acc\u00e9der \u00e0 tout moment. Merci de votre patience."
-  },
   "home_daemon_start_button": {
     "message": "Activer les connexions \u00e0 distance"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "Cette fonctionnalit\u00e9 n'est pas encore disponible pour les Chromebooks. Merci de votre patience."
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "Pour activer les connexions distantes \u00e0 un autre ordinateur, installez l'application Bureau\u00a0\u00e0\u00a0distance\u00a0Google\u00a0Chrome sur celui-ci, puis cliquez sur \"$1\".",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "Aucun ordinateur n'est enregistr\u00e9. Pour activer les connexions distantes \u00e0 un ordinateur, installez l'application Bureau\u00a0\u00e0 distance\u00a0Google\u00a0Chrome sur celui-ci, puis cliquez sur \"$1\".",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "Pour s\u00e9curiser l'acc\u00e8s \u00e0 cet ordinateur, veuillez d\u00e9finir un code d'acc\u00e8s. Ce code vous sera demand\u00e9 lorsque vous vous connecterez depuis un autre lieu."

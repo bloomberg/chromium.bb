@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "PIN'i de\u011fi\u015ftir"
   },
-  "home_daemon_disabled_message": {
-    "message": "Bu bilgisayar\u0131n zaman s\u0131n\u0131rlamas\u0131z eri\u015fim i\u00e7in payla\u015f\u0131lmas\u0131 hen\u00fcz bu platformda desteklenmiyor\u2026 bizi izlemeye devam edin."
-  },
   "home_daemon_start_button": {
     "message": "Uzaktan ba\u011flant\u0131lar\u0131 etkinle\u015ftir"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(bu \u00f6zellik hen\u00fcz Chromebook'larda kullan\u0131lm\u0131yor... bizi izlemeye devam edin)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "Ba\u015fka bir bilgisayara uzaktan ba\u011flant\u0131lar\u0131 etkinle\u015ftirmek i\u00e7in Chrome Uzaktan Masa\u00fcst\u00fc'n\u00fc o bilgisayara y\u00fckleyin ve \u201c$1\u201d d\u00fc\u011fmesini t\u0131klay\u0131n.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "Kay\u0131tl\u0131 bilgisayar\u0131n\u0131z yok. Ba\u015fka bir bilgisayara uzaktan ba\u011flant\u0131lar\u0131 etkinle\u015ftirmek i\u00e7in Chrome Uzaktan Masa\u00fcst\u00fc'n\u00fc o bilgisayara y\u00fckleyin ve \u201c$1\u201d d\u00fc\u011fmesini t\u0131klay\u0131n.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "Bu bilgisayara eri\u015fimi korumak i\u00e7in l\u00fctfen bir PIN se\u00e7in. Se\u00e7ti\u011finiz PIN daha sonra ba\u015fka bir konumdan ba\u011flan\u0131rken gerekecektir."

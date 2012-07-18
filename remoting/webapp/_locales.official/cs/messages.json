@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "Zm\u011bnit k\u00f3d PIN"
   },
-  "home_daemon_disabled_message": {
-    "message": "Sd\u00edlen\u00ed p\u0159\u00edstupu k tomuto po\u010d\u00edta\u010di v libovolnou dobu zat\u00edm nen\u00ed na t\u00e9to platform\u011b podporov\u00e1no, ale brzy se dozv\u00edte v\u00edce."
-  },
   "home_daemon_start_button": {
     "message": "Povolit vzd\u00e1len\u00e1 p\u0159ipojen\u00ed"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(Tato funkce zat\u00edm pro Chromebooky nen\u00ed k dispozici, ale brzy bude.)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "Chcete-li umo\u017enit vzd\u00e1len\u00e9 p\u0159ipojen\u00ed k jin\u00e9mu po\u010d\u00edta\u010di, nainstalujte do n\u011bj Vzd\u00e1lenou plochu Chrome a pot\u00e9 klikn\u011bte na tla\u010d\u00edtko $1.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "Nejsou zaregistrov\u00e1ny \u017e\u00e1dn\u00e9 po\u010d\u00edta\u010de. Chcete-li umo\u017enit vzd\u00e1len\u00e9 p\u0159ipojen\u00ed k jin\u00e9mu po\u010d\u00edta\u010di, nainstalujte do n\u011bj Vzd\u00e1lenou plochu Chrome a pot\u00e9 klikn\u011bte na tla\u010d\u00edtko $1.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "Zvolte k\u00f3d PIN, kter\u00fdm bude p\u0159\u00edstup k tomuto po\u010d\u00edta\u010di chr\u00e1n\u011bn. Tento k\u00f3d bude vy\u017eadov\u00e1n p\u0159i p\u0159ipojen\u00ed z jin\u00e9ho m\u00edsta."

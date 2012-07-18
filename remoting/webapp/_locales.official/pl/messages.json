@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "Zmie\u0144 PIN"
   },
-  "home_daemon_disabled_message": {
-    "message": "Funkcja sta\u0142ego dost\u0119pu do tego komputera nie jest jeszcze oferowana na tej platformie. Prosimy o cierpliwo\u015b\u0107."
-  },
   "home_daemon_start_button": {
     "message": "W\u0142\u0105cz po\u0142\u0105czenia zdalne"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(Ta funkcja nie jest jeszcze dost\u0119pna dla Chromebook\u00f3w \u2013 prosimy o cierpliwo\u015b\u0107)."
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "Aby umo\u017cliwi\u0107 zdalne po\u0142\u0105czenia z innym komputerem, zainstaluj na nim Pulpit zdalny Chrome i kliknij \u201e$1\u201d.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "Nie masz zarejestrowanych komputer\u00f3w. Aby umo\u017cliwi\u0107 zdalne po\u0142\u0105czenia z komputerem, zainstaluj na nim Pulpit zdalny Chrome i kliknij \u201e$1\u201d.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "Wybierz PIN, by zabezpieczy\u0107 dost\u0119p do tego komputera. PIN b\u0119dzie wymagany podczas \u0142\u0105czenia si\u0119 z innego miejsca."

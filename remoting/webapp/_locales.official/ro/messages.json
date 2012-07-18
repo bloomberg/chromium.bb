@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "Schimba\u0163i codul PIN"
   },
-  "home_daemon_disabled_message": {
-    "message": "Permiterea accesului la acest computer pentru a fi accesat \u00een orice moment nu este \u00eenc\u0103 acceptat\u0103 pe aceast\u0103 platform\u0103... urm\u0103ri\u0163i-ne \u00een continuare."
-  },
   "home_daemon_start_button": {
     "message": "Activa\u0163i conexiunile la distan\u0163\u0103"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(aceast\u0103 func\u0163ie nu este \u00eenc\u0103 disponibil\u0103 pentru Chromebooks... urm\u0103ri\u0163i-ne \u00een continuare)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "Pentru a activa conexiunile la distan\u0163\u0103 pentru alt computer, instala\u0163i Desktop la distan\u0163\u0103 Chrome pe acesta \u015fi face\u0163i clic pe \u201e$1\u201d.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "Nu ave\u0163i niciun computer \u00eenregistrat. Pentru a activa conexiunile la distan\u0163\u0103 pentru un computer, instala\u0163i Desktop la distan\u0163\u0103 Chrome pe acesta \u015fi face\u0163i clic pe \u201e$1\u201d.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "Pentru a proteja accesul la acest computer, alege\u0163i un cod PIN. Acest cod PIN va fi solicitat c\u00e2nd v\u0103 conecta\u0163i din alt\u0103 loca\u0163ie."

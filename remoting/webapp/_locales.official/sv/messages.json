@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "Byt PIN-kod"
   },
-  "home_daemon_disabled_message": {
-    "message": "Delning f\u00f6r direkt \u00e5tkomst till datorn st\u00f6ds \u00e4nnu inte p\u00e5 den h\u00e4r plattformen. H\u00e5ll ut."
-  },
   "home_daemon_start_button": {
     "message": "Aktivera fj\u00e4rranslutningar"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(funktionen \u00e4r \u00e4nnu inte tillg\u00e4ngligt f\u00f6r Chromebooks ... h\u00e5ll utkik)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "Om du vill aktivera fj\u00e4rranslutning till en annan dator installerar du Chrome Remote Desktop p\u00e5 den och klickar p\u00e5 $1.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "Du har inte registrerat n\u00e5gra datorer. Om du vill aktivera fj\u00e4rranslutning till en dator installerar du Chrome Remote Desktop p\u00e5 den och klickar p\u00e5 $1.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "V\u00e4lj en PIN-kod f\u00f6r att skydda \u00e5tkomsten till den h\u00e4r datorn. Du beh\u00f6ver PIN-koden n\u00e4r du ansluter till datorn fr\u00e5n en annan plats."

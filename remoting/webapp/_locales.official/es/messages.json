@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "Cambiar PIN"
   },
-  "home_daemon_disabled_message": {
-    "message": "En esta plataforma, a\u00fan no se puede compartir este ordenador para acceder a \u00e9l en cualquier momento. Sigue atento a las novedades..."
-  },
   "home_daemon_start_button": {
     "message": "Habilitar conexiones remotas"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(esta funci\u00f3n a\u00fan no est\u00e1 disponible para los Chromebook\u2026, sigue atento a las novedades)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "Para habilitar conexiones remotas con otro ordenador, instala Chrome Remote Desktop en \u00e9l y haz clic en $1.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "No tienes ning\u00fan ordenador registrado. Para habilitar conexiones remotas con un ordenador, instala Chrome Remote Desktop en \u00e9l y haz clic en $1.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "Debes elegir un PIN para proteger el acceso a este ordenador. Se solicitar\u00e1 ese PIN cada vez que se establezca conexi\u00f3n con ese ordenador desde otra ubicaci\u00f3n."

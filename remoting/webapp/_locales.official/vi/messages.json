@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "Thay \u0111\u1ed5i m\u00e3 PIN"
   },
-  "home_daemon_disabled_message": {
-    "message": "Vi\u1ec7c chia s\u1ebb m\u00e1y t\u00ednh n\u00e0y \u0111\u1ec3 truy c\u1eadp b\u1ea5t k\u1ef3 l\u00fac n\u00e0o ch\u01b0a \u0111\u01b0\u1ee3c h\u1ed7 tr\u1ee3 tr\u00ean n\u1ec1n t\u1ea3ng n\u00e0y\u2026 h\u00e3y ch\u00fa \u00fd theo d\u00f5i."
-  },
   "home_daemon_start_button": {
     "message": "B\u1eadt k\u1ebft n\u1ed1i t\u1eeb xa"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(t\u00ednh n\u0103ng n\u00e0y ch\u01b0a kh\u1ea3 d\u1ee5ng \u0111\u1ed1i v\u1edbi Chromebook\u2026 h\u00e3y ch\u00fa \u00fd theo d\u00f5i)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "\u0110\u1ec3 b\u1eadt k\u1ebft n\u1ed1i t\u1eeb xa v\u1edbi m\u1ed9t m\u00e1y t\u00ednh kh\u00e1c, h\u00e3y c\u00e0i \u0111\u1eb7t Chrome Remote Desktop tr\u00ean m\u00e1y t\u00ednh \u0111\u00f3 v\u00e0 nh\u1ea5p \u201c$1\u201d.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "B\u1ea1n ch\u01b0a \u0111\u0103ng k\u00fd m\u00e1y t\u00ednh n\u00e0o. \u0110\u1ec3 b\u1eadt k\u1ebft n\u1ed1i t\u1eeb xa v\u1edbi m\u1ed9t m\u00e1y t\u00ednh, h\u00e3y c\u00e0i \u0111\u1eb7t Chrome Remote Desktop tr\u00ean m\u00e1y t\u00ednh \u0111\u00f3 v\u00e0 nh\u1ea5p \u201c$1\u201d.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "\u0110\u1ec3 b\u1ea3o v\u1ec7 quy\u1ec1n truy c\u1eadp v\u00e0o m\u00e1y t\u00ednh n\u00e0y, vui l\u00f2ng ch\u1ecdn m\u00e3 PIN. M\u00e3 PIN n\u00e0y s\u1ebd \u0111\u01b0\u1ee3c y\u00eau c\u1ea7u khi k\u1ebft n\u1ed1i t\u1eeb v\u1ecb tr\u00ed kh\u00e1c."

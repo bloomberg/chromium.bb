@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "Alterar PIN"
   },
-  "home_daemon_disabled_message": {
-    "message": "A partilha do computador para acesso em qualquer altura ainda n\u00e3o \u00e9 suportada por esta plataforma\u2026 mantenha-se atento."
-  },
   "home_daemon_start_button": {
     "message": "Ativar liga\u00e7\u00f5es remotas"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(esta funcionalidade ainda n\u00e3o est\u00e1 dispon\u00edvel para Chromebooks... fique atento)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "Para ativar liga\u00e7\u00f5es remotas a um computador diferente, instale o Chrome Remote Desktop e clique em \"$1\".",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "N\u00e3o tem computadores registados. Para ativar liga\u00e7\u00f5es remotas a um computador, instale o Chrome Remote Desktop e clique em \"$1\".",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "Para proteger o acesso ao computador, escolha um PIN. Esse PIN ser\u00e1 necess\u00e1rio quando estabelecer liga\u00e7\u00e3o a partir de outra localiza\u00e7\u00e3o."

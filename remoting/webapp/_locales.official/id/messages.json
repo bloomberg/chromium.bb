@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "Ubah PIN"
   },
-  "home_daemon_disabled_message": {
-    "message": "Akses setiap saat berbagi komputer ini masih belum didukung di platform ini\u2026 nantikan kabar berikutnya."
-  },
   "home_daemon_start_button": {
     "message": "Aktifkan sambungan jarak jauh"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(fitur ini belum tersedia untuk Chromebooks... nantikan kabar berikutnya)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "Untuk mengaktifkan sambungan jarak jauh ke komputer yang berbeda, pasang Chrome Desktop Jarak Jauh di komputer tersebut lalu klik \"$1\".",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "Anda tidak memiliki komputer yang terdaftar. Untuk mengaktifkan sambungan jarak jauh ke komputer, pasang Chrome Desktop Jarak Jauh di komputer tersebut lalu klik \"$1\".",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "Untuk melindungi akses ke komputer ini, pilih PIN. PIN ini akan dibutuhkan saat menyambungkan dari lokasi lain."

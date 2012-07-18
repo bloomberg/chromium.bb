@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "Pincode wijzigen"
   },
-  "home_daemon_disabled_message": {
-    "message": "Het delen van deze computer voor eenmalige toegang wordt nog niet ondersteund op dit platform\u2026 Houd dit in de gaten."
-  },
   "home_daemon_start_button": {
     "message": "Externe verbindingen inschakelen"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(deze functie is nog niet beschikbaar voor Chromebooks\u2026 nog even geduld)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "Als u externe verbindingen met een andere computer mogelijk wilt maken, installeert u Chrome Remote Desktop op die computer en klikt u op '$1'.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "U heeft geen geregistreerde computers. Als u externe verbindingen met een computer mogelijk wilt maken, installeert u Chrome Remote Desktop op die computer en klikt u op '$1'.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "Om de toegang tot deze computer te beschermen, kiest u een pincode. Deze pincode is vereist wanneer er verbinding wordt gemaakt vanaf een andere locatie."

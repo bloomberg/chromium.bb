@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "PIN \u00e4ndern"
   },
-  "home_daemon_disabled_message": {
-    "message": "Die Freigabe dieses Computers wird auf dieser Plattform noch nicht unterst\u00fctzt. Schauen Sie bald noch einmal vorbei."
-  },
   "home_daemon_start_button": {
     "message": "Remote-Verbindungen aktivieren"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(Diese Funktion ist noch nicht f\u00fcr Chromebooks verf\u00fcgbar\u2026 Bitte haben Sie noch etwas Geduld.)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "Um Remote-Verbindungen zu einem anderen Computer zu erm\u00f6glichen, installieren Sie auf dem betreffenden Computer Chrome Remote Desktop und klicken Sie auf \"$1\".",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "Sie haben noch keine Computer registriert. Um Remote-Verbindungen zu einem Computer zu erm\u00f6glichen, installieren Sie auf dem entsprechenden Computer Chrome Remote Desktop und klicken Sie auf \"$1\".",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "Sch\u00fctzen Sie den Zugriff auf diesen Computer mit einer PIN. Diese wird abgefragt, wenn von einem anderen Standort auf den Computer zugegriffen werden soll."

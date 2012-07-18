@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "Main\u012bt\u00a0PIN"
   },
-  "home_daemon_disabled_message": {
-    "message": "\u0160\u012b datora kop\u012bgo\u0161ana piek\u013cuvei jebkur\u0101 laik\u0101 \u0161aj\u0101 platform\u0101 v\u0113l netiek atbalst\u012bta. Sekojiet l\u012bdzi jaun\u0101kajai inform\u0101cijai."
-  },
   "home_daemon_start_button": {
     "message": "Iesp\u0113jot att\u0101los savienojumus"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(\u0161\u012b funkcija v\u0113l nav pieejama Chromebook datoriem\u2026 sekojiet jaunumiem)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "Lai iesp\u0113jotu att\u0101lus savienojumus ar citu datoru, instal\u0113jiet Chrome att\u0101lo darbvirsmu attiec\u012bgaj\u0101 dator\u0101 un noklik\u0161\u0137iniet uz $1.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "Jums nav neviena re\u0123istr\u0113ta datora. Lai iesp\u0113jotu att\u0101lus savienojumus ar k\u0101du datoru, instal\u0113jiet Chrome att\u0101lo darbvirsmu attiec\u012bgaj\u0101 dator\u0101 un noklik\u0161\u0137iniet uz $1.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "Lai aizsarg\u0101tu piek\u013cuvi \u0161im datoram, l\u016bdzu, izv\u0113lieties\u00a0PIN. \u0160is\u00a0PIN ir nepiecie\u0161ams, lai izveidotu savienojumu, atrodoties cit\u0101 viet\u0101."

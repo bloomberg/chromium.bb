@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "Change PIN"
   },
-  "home_daemon_disabled_message": {
-    "message": "Sharing this computer for any-time access is not yet supported on this platform\u2026 stay tuned."
-  },
   "home_daemon_start_button": {
     "message": "Enable remote connections"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(this feature is not yet available for Chromebooks\u2026 stay tuned)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "To enable remote connections to a different computer, install Chrome Remote Desktop there and click \u201c$1\u201d.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "You have no computers registered. To enable remote connections to a computer, install Chrome Remote Desktop there and click \u201c$1\u201d.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "To protect access to this computer, please choose a PIN. This PIN will be required when connecting from another location."
@@ -297,7 +310,7 @@
     "message": "Please enter the same PIN in both boxes."
   },
   "product_description": {
-    "message": "Access your own computer or provide assistance to someone else on their computer securely over the Internet."
+    "message": "Access other computers or allow another user to access your computer securely over the Internet."
   },
   "product_name": {
     "message": "Chrome Remote Desktop BETA"

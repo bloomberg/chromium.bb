@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "Promijeni PIN"
   },
-  "home_daemon_disabled_message": {
-    "message": "Dijeljenje ovog ra\u010dunala za pristup u bilo kojem trenutku jo\u0161 nije podr\u017ean na ovoj platformi... Vi\u0161e o tome uskoro!"
-  },
   "home_daemon_start_button": {
     "message": "Omogu\u0107i daljinske veze"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(ova zna\u010dajka jo\u0161 nije dostupna za Chromebookove... pratite nas i dalje)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "Da biste omogu\u0107ili povezivanje s razli\u010ditim udaljenim ra\u010dunalima, instalirajte na njima Udaljenu radnu povr\u0161inu Chrome pa kliknite \"$1\".",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "Nemate prijavljeno nijedno ra\u010dunalo. Da biste omogu\u0107ili povezivanje s udaljenim ra\u010dunalima, instalirajte na njima Udaljenu radnu povr\u0161inu Chrome pa kliknite \"$1\".",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "Da biste za\u0161titili pristup ovom ra\u010dunalu, odaberite PIN. Taj \u0107e PIN biti potreban prilikom povezivanja s druge lokacije."

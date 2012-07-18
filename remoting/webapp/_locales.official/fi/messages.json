@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "Vaihda PIN-koodi"
   },
-  "home_daemon_disabled_message": {
-    "message": "Tietokoneen rajoittamatonta k\u00e4ytt\u00f6jakoa ei tueta viel\u00e4 t\u00e4ss\u00e4 k\u00e4ytt\u00f6ymp\u00e4rist\u00f6ss\u00e4... Seuraa kuitenkin tilannetta."
-  },
   "home_daemon_start_button": {
     "message": "Ota et\u00e4yhteydet k\u00e4ytt\u00f6\u00f6n"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(t\u00e4m\u00e4 ominaisuus ei ole viel\u00e4 saatavilla Chromebookeille ... pysy kuulolla)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "Ota et\u00e4yhteys k\u00e4ytt\u00f6\u00f6n asentamalla toiselle tietokoneelle Chrome-et\u00e4k\u00e4ytt\u00f6 ja valitsemalla $1.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "K\u00e4ytt\u00f6\u00f6si ei ole rekister\u00f6ity tietokoneita. Ota k\u00e4ytt\u00f6\u00f6n et\u00e4yhteys asentamalla toiselle tietokoneelle Chrome-et\u00e4k\u00e4ytt\u00f6 ja valitsemalla $1.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "Suojaa tietokone valitsemalla k\u00e4ytt\u00f6\u00f6n tarvittava PIN-koodi. Koodi vaaditaan et\u00e4yhteytt\u00e4 luotaessa."

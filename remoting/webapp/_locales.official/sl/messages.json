@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "Spreminjanje kode PIN"
   },
-  "home_daemon_disabled_message": {
-    "message": "Skupna raba ra\u010dunalnika za dostop brez \u010dasovne omejitve \u0161e ni podprta v tem okolju; spremljajte nas \u0161e naprej."
-  },
   "home_daemon_start_button": {
     "message": "Omogo\u010di oddaljene povezave"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(ta funkcija \u0161e ni na voljo za Chromebooke \u2026 preverite pozneje)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "\u010ce \u017eelite omogo\u010diti oddaljene povezave v drug ra\u010dunalnik, vanj namestite Chrome Remote Desktop in kliknite \u00bb$1\u00ab.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "Nimate registriranih ra\u010dunalnikov. \u010ce \u017eelite omogo\u010diti oddaljene povezave v ra\u010dunalnik, vanj namestite Chrome Remote Desktop in kliknite \u00bb$1\u00ab.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "\u010ce \u017eelite za\u0161\u010dititi dostop do ra\u010dunalnika, izberite kodo PIN, ki jo boste morali vnesti ob vzpostavljanju povezave z druge lokacije."

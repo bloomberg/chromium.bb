@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "Canvia el PIN"
   },
-  "home_daemon_disabled_message": {
-    "message": "Compartir aquest equip per a un acc\u00e9s total encara no est\u00e0 adm\u00e8s en aquesta plataforma... estigueu al cas."
-  },
   "home_daemon_start_button": {
     "message": "Activa les connexions remotes"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(aquesta funci\u00f3 encara no est\u00e0 disponible per als Chromebook... estigueu ben atent)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "Per activar les connexions remotes a un equip diferent, instal\u00b7leu-hi l'escriptori remot de Chrome i feu clic a \u201c$1\u201d.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "No teniu cap equip registrat. Per activar les connexions remotes a un equip, instal\u00b7leu-hi l'escriptori remot de Chrome i feu clic a \u201c$1\u201d.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "Per protegir l'acc\u00e9s a aquest equip, trieu un PIN. Aquest PIN ser\u00e0 necessari en connectar-se des d'una altra ubicaci\u00f3."

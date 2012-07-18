@@ -158,9 +158,6 @@
   "home_daemon_change_pin_link": {
     "message": "PIN-koodi muutmine"
   },
-  "home_daemon_disabled_message": {
-    "message": "Arvuti igal ajal jagamine pole veel sellel platvormil toetatud \u2026 j\u00e4\u00e4ge ootele."
-  },
   "home_daemon_start_button": {
     "message": "Luba kaug\u00fchendused"
   },
@@ -178,6 +175,22 @@
   },
   "home_share_description_chrome_os": {
     "message": "(See funktsioon ei ole veel Chromebooksis saadaval ... j\u00e4\u00e4ge ootele.)"
+  },
+  "host_list_empty_hosting_supported": {
+    "message": "Kaug\u00fchenduste lubamiseks erineva arvutiga installige sinna Chrome Remote Desktop ja kl\u00f5psake nupul \u201e$1\u201d.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "host_list_empty_hosting_unsupported": {
+    "message": "Te pole \u00fchtegi arvutit registreerinud. Kaug\u00fchenduse lubamiseks arvutis installige Chrome Remote Desktop ja kl\u00f5psake nupul \u201e$1\u201d.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "host_setup_dialog_description": {
     "message": "Valige PIN-kood arvuti juurdep\u00e4\u00e4su kaitsmiseks. PIN-koodi k\u00fcsitakse, kui arvutiga luuakse \u00fchendus teisest asukohast."
