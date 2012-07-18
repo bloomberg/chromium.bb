@@ -1,9 +1,10 @@
 {
+  "tables": [
+    "unicode.dis", 
+    "ta-ta-g1.ctb"
+  ], 
   "tests": [
     {
-      "flags": {
-        "outputUniBrl": true
-      }, 
       "data": [
         {
           "input": "இ", 
@@ -53,10 +54,10 @@
           "input": "’", 
           "output": "⠴"
         }
-      ]
+      ], 
+      "flags": {
+        "outputUniBrl": true
+      }
     }
-  ], 
-  "tables": [
-    "ta-ta-g1.ctb"
   ]
 }

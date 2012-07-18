@@ -1,10 +1,10 @@
 {
+  "tables": [
+    "unicode.dis", 
+    "en-GB-g2.ctb"
+  ], 
   "tests": [
     {
-      "flags": {
-        "outputUniBrl": true, 
-        "testmode": "backtranslate"
-      }, 
       "data": [
         {
           "input": "⠮ ⠉⠁⠞ ⠎⠁⠞ ⠕⠝ ⠮ ⠍⠁⠞", 
@@ -21,12 +21,13 @@
           "mode": "compbrlAtCursor", 
           "output": "you went to"
         }
-      ]
+      ], 
+      "flags": {
+        "outputUniBrl": true, 
+        "testmode": "backtranslate"
+      }
     }, 
     {
-      "flags": {
-        "outputUniBrl": true
-      }, 
       "data": [
         {
           "input": "the cat sat on the mat", 
@@ -43,10 +44,10 @@
           "mode": "compbrlAtCursor", 
           "output": "⠽ ⠺⠑⠝⠞ ⠞⠕"
         }
-      ]
+      ], 
+      "flags": {
+        "outputUniBrl": true
+      }
     }
-  ], 
-  "tables": [
-    "en-GB-g2.ctb"
   ]
 }
