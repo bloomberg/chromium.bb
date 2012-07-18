@@ -75,6 +75,14 @@ enum register_name {
   JMP_TO        /* Operand is jump target address: usually %rip+offset.       */
 };
 
+/*
+ * This enum extends NaClCPUFeatureID to cover instructions not recognized in
+ *
+ * /
+enum DecoderCPUFeatures {
+};
+*/
+
 struct instruction {
   const char *name;
   unsigned char operands_count;

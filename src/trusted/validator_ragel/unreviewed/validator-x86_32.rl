@@ -40,20 +40,6 @@ static inline void BitmapClearBit(uint8_t *bitmap, size_t index) {
   bitmap[index / kBitsPerByte] &= ~(1 << (index % kBitsPerByte));
 }
 
-static int CheckJumpTargets(uint8_t *valid_targets, uint8_t *jump_dests,
-                            size_t size) {
-  size_t i;
-  for (i = 0; i < size / 32; i++) {
-    uint32_t jump_dest_mask = ((uint32_t *) jump_dests)[i];
-    uint32_t valid_target_mask = ((uint32_t *) valid_targets)[i];
-    if ((jump_dest_mask & ~valid_target_mask) != 0) {
-      printf("bad jump to around %x\n", (unsigned)(i * 32));
-      return 1;
-    }
-  }
-  return 0;
-}
-
 static const size_t kBundleSize = 32;
 static const size_t kBundleMask = 31;
 
@@ -64,16 +50,11 @@ static const size_t kBundleMask = 31;
  */
 static int MarkJumpTarget(size_t jump_dest,
                           uint8_t *jump_dests,
-                          size_t size,
-                          size_t report_inst_offset) {
+                          size_t size) {
   if ((jump_dest & kBundleMask) == 0) {
     return TRUE;
   }
   if (jump_dest >= size) {
-    printf("offset 0x%zx: direct jump out of range at destination: %"NACL_PRIxS
-           "\n",
-           report_inst_offset,
-           jump_dest);
     return FALSE;
   }
   BitmapSetBit(jump_dests, jump_dest);
@@ -88,9 +69,9 @@ static int MarkJumpTarget(size_t jump_dest,
     int8_t offset = (uint8_t) (p[0]);
     size_t jump_dest = offset + (p - data) + 1;
 
-    if (!MarkJumpTarget(jump_dest, jump_dests, size, begin - data)) {
+    if (!MarkJumpTarget(jump_dest, jump_dests, size)) {
+      errors_detected |= DIRECT_JUMP_OUT_OF_RANGE;
       result = 1;
-      goto error_detected;
     }
   }
   action rel16_operand {
@@ -101,9 +82,9 @@ static int MarkJumpTarget(size_t jump_dest,
         (p[-3] + 256U * (p[-2] + 256U * (p[-1] + 256U * ((uint32_t) p[0]))));
     size_t jump_dest = offset + (p - data) + 1;
 
-    if (!MarkJumpTarget(jump_dest, jump_dests, size, begin - data)) {
+    if (!MarkJumpTarget(jump_dest, jump_dests, size)) {
+      errors_detected |= DIRECT_JUMP_OUT_OF_RANGE;
       result = 1;
-      goto error_detected;
     }
   }
 
@@ -139,16 +120,20 @@ static int MarkJumpTarget(size_t jump_dest,
 
   main := ((one_instruction | special_instruction) >{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      })*
      @{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
     $err{
-        process_error(begin, userdata);
+        process_error(begin, UNRECOGNIZED_INSTRUCTION, userdata);
         result = 1;
         goto error_detected;
     };
@@ -170,10 +155,8 @@ static int MarkJumpTarget(size_t jump_dest,
 #define SET_DISP_PTR(P)
 #define SET_CPU_FEATURE(F) \
   if (!(F)) { \
-    printf("offset 0x%"NACL_PRIxS": CPU Feature not found", \
-           (uintptr_t)(begin - data)); \
+    errors_detected |= CPUID_UNSUPPORTED_INSTRUCTION; \
     result = 1; \
-    goto error_detected; \
   }
 #define CPUFeature_3DNOW    cpu_features->data[NaClCPUFeature_3DNOW]
 #define CPUFeature_3DPRFTCH CPUFeature_3DNOW || CPUFeature_PRE || CPUFeature_LM
@@ -229,6 +212,10 @@ int ValidateChunkIA32(const uint8_t *data, size_t size,
 
   int result = 0;
 
+  size_t i;
+
+  int errors_detected;
+
   assert(size % kBundleSize == 0);
 
   while (p < data + size) {
@@ -240,8 +227,14 @@ int ValidateChunkIA32(const uint8_t *data, size_t size,
     %% write exec;
   }
 
-  if (CheckJumpTargets(valid_targets, jump_dests, size)) {
-    return 1;
+  for (i = 0; i < size / 32; i++) {
+    uint32_t jump_dest_mask = ((uint32_t *) jump_dests)[i];
+    uint32_t valid_target_mask = ((uint32_t *) valid_targets)[i];
+    if ((jump_dest_mask & ~valid_target_mask) != 0) {
+      process_error(data + i * 32, BAD_JUMP_TARGET, userdata);
+      result = 1;
+      break;
+    }
   }
 
 error_detected:

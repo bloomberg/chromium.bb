@@ -19,10 +19,6 @@
 
 #include "native_client/src/trusted/validator_ragel/gen/validator-x86_64-instruction-consts.c"
 
-static void PrintError(const char* msg, uintptr_t ptr) {
-  printf("offset 0x%"NACL_PRIxS": %s", ptr, msg);
-}
-
 static const int kBitsPerByte = 8;
 
 static inline uint8_t *BitmapAllocate(size_t indexes) {
@@ -46,40 +42,27 @@ static inline void BitmapClearBit(uint8_t *bitmap, size_t index) {
   bitmap[index / kBitsPerByte] &= ~(1 << (index % kBitsPerByte));
 }
 
-static int CheckJumpTargets(uint8_t *valid_targets, uint8_t *jump_dests,
-                            size_t size) {
-  size_t i;
-  for (i = 0; i < size / 32; i++) {
-    uint32_t jump_dest_mask = ((uint32_t *) jump_dests)[i];
-    uint32_t valid_target_mask = ((uint32_t *) valid_targets)[i];
-    if ((jump_dest_mask & ~valid_target_mask) != 0) {
-      printf("bad jump to around %x\n", (unsigned)(i * 32));
-      return 1;
-    }
-  }
-  return 0;
-}
-
 static const size_t kBundleSize = 32;
 static const size_t kBundleMask = 31;
 
-static int CheckJumpDest(size_t jump_dest,
-                         uint8_t *jump_dests,
-                         size_t size,
-                         size_t report_offset) {
-  if ((jump_dest & kBundleMask) != 0) {
-    if (jump_dest >= size) {
-      printf("offset 0x%zx: direct jump out of range at destination: %"NACL_PRIxS
-             "\n",
-             report_offset,
-             jump_dest);
-      return FALSE;
-    } else {
-      BitmapSetBit(jump_dests, jump_dest);
-    }
+/* Mark the destination of a jump instruction and make an early validity check:
+ * to jump outside given code region, the target address must be aligned.
+ *
+ * Returns TRUE iff the jump passes the early validity check.
+ */
+static int MarkJumpTarget(size_t jump_dest,
+                          uint8_t *jump_dests,
+                          size_t size) {
+  if ((jump_dest & kBundleMask) == 0) {
+    return TRUE;
   }
+  if (jump_dest >= size) {
+    return FALSE;
+  }
+  BitmapSetBit(jump_dests, jump_dest);
   return TRUE;
 }
+
 
 %%{
   machine x86_64_decoder;
@@ -94,14 +77,12 @@ static int CheckJumpDest(size_t jump_dest,
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 
@@ -109,9 +90,9 @@ static int CheckJumpDest(size_t jump_dest,
     int8_t offset = (uint8_t) (p[0]);
     size_t jump_dest = offset + (p - data) + 1;
 
-    if (!CheckJumpDest(jump_dest, jump_dests, size, begin - data)) {
+    if (!MarkJumpTarget(jump_dest, jump_dests, size)) {
+      errors_detected |= DIRECT_JUMP_OUT_OF_RANGE;
       result = 1;
-      goto error_detected;
     }
     SET_OPERAND_NAME(0, JMP_TO);
     SET_MODRM_BASE(REG_RIP);
@@ -125,9 +106,9 @@ static int CheckJumpDest(size_t jump_dest,
         (p[-3] + 256U * (p[-2] + 256U * (p[-1] + 256U * ((uint32_t) p[0]))));
     size_t jump_dest = offset + (p - data) + 1;
 
-    if (!CheckJumpDest(jump_dest, jump_dests, size, begin - data)) {
+    if (!MarkJumpTarget(jump_dest, jump_dests, size)) {
+      errors_detected |= DIRECT_JUMP_OUT_OF_RANGE;
       result = 1;
-      goto error_detected;
     }
     SET_OPERAND_NAME(0, JMP_TO);
     SET_MODRM_BASE(REG_RIP);
@@ -138,13 +119,11 @@ static int CheckJumpDest(size_t jump_dest,
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -153,13 +132,11 @@ static int CheckJumpDest(size_t jump_dest,
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -179,21 +156,18 @@ static int CheckJumpDest(size_t jump_dest,
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -206,13 +180,11 @@ static int CheckJumpDest(size_t jump_dest,
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -238,27 +210,24 @@ static int CheckJumpDest(size_t jump_dest,
           CHECK_OPERAND(1, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(1, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(1, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted) ||
                  (CHECK_OPERAND(1, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(1, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted) ||
                  (CHECK_OPERAND(1, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(1, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0).  */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -299,9 +268,8 @@ static int CheckJumpDest(size_t jump_dest,
     (0x48 0x81 0xe4 any{3} (0x80 .. 0xff)) | # and $XXX,%rsp
     (0x48 0x83 0xe4 (0x80 .. 0xff))          # and $XXX,%rsp
     @{ if (restricted_register == REG_RSP) {
-         PrintError("Incorrectly modified register %%rsp\n", begin - data);
+         errors_detected |= RESTRICTED_RSP_UNPROCESSED;
          result = 1;
-         goto error_detected;
        }
        restricted_register = kNoRestrictedReg;
     } |
@@ -309,9 +277,8 @@ static int CheckJumpDest(size_t jump_dest,
     (0x48 0x81 0xe5 any{3} (0x80 .. 0xff)) | # and $XXX,%rsp
     (0x48 0x83 0xe5 (0x80 .. 0xff))          # and $XXX,%rsp
     @{ if (restricted_register == REG_RBP) {
-         PrintError("Incorrectly modified register %%rbp\n", begin - data);
+         errors_detected |= RESTRICTED_RBP_UNPROCESSED;
          result = 1;
-         goto error_detected;
        }
        restricted_register = kNoRestrictedReg;
     } |
@@ -319,9 +286,8 @@ static int CheckJumpDest(size_t jump_dest,
      0x49 0x8d 0x2c 0x2f       | # lea (%r15,%rbp,1),%rbp
      0x4a 0x8d 0x6c 0x3d 0x00)   # lea 0x0(%rbp,%r15,1),%rbp
     @{ if (restricted_register != REG_RBP) {
-         PrintError("Incorrectly sandboxed %%rbp\n", begin - data);
+         errors_detected |= RESTRICTED_RBP_UNPROCESSED;
          result = 1;
-         goto error_detected;
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (begin - data));
@@ -329,9 +295,8 @@ static int CheckJumpDest(size_t jump_dest,
     (0x4c 0x01 0xfc       | # add %r15,%rsp
      0x4a 0x8d 0x24 0x3c)   # lea (%rsp,%r15,1),%rsp
     @{ if (restricted_register != REG_RSP) {
-         PrintError("Incorrectly sandboxed %%rsp\n", begin - data);
+         errors_detected |= RESTRICTED_RSP_UNPROCESSED;
          result = 1;
-         goto error_detected;
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (begin - data));
@@ -345,13 +310,11 @@ static int CheckJumpDest(size_t jump_dest,
      0x83 0xe6 0xe0 0x4c 0x01 0xfe 0xff (0xd6|0xe6) | # naclcall/jmp %esi, %r15
      0x83 0xe7 0xe0 0x4c 0x01 0xff 0xff (0xd7|0xe7))  # naclcall/jmp %edi, %r15
     @{ if (restricted_register == REG_RSP) {
-         PrintError("Incorrectly modified register %%rsp\n", begin - data);
+         errors_detected |= RESTRICTED_RSP_UNPROCESSED;
          result = 1;
-         goto error_detected;
        } else if (restricted_register == REG_RBP) {
-         PrintError("Incorrectly modified register %%rbp\n", begin - data);
+         errors_detected |= RESTRICTED_RBP_UNPROCESSED;
          result = 1;
-         goto error_detected;
        }
        BitmapClearBit(valid_targets, (p - data) - 4);
        BitmapClearBit(valid_targets, (p - data) - 1);
@@ -365,13 +328,11 @@ static int CheckJumpDest(size_t jump_dest,
      0x41 0x83 0xe5 0xe0 0x4d 0x01 0xfd 0x41 0xff (0xd5|0xe5) | # naclcall/jmp
      0x41 0x83 0xe6 0xe0 0x4d 0x01 0xfe 0x41 0xff (0xd6|0xe6))  #   %r14d, %r15
     @{ if (restricted_register == REG_RSP) {
-         PrintError("Incorrectly modified register %%rsp\n", begin - data);
+         errors_detected |= RESTRICTED_RSP_UNPROCESSED;
          result = 1;
-         goto error_detected;
        } else if (restricted_register == REG_RBP) {
-         PrintError("Incorrectly modified register %%rbp\n", begin - data);
+         errors_detected |= RESTRICTED_RBP_UNPROCESSED;
          result = 1;
-         goto error_detected;
        }
        BitmapClearBit(valid_targets, (p - data) - 5);
        BitmapClearBit(valid_targets, (p - data) - 2);
@@ -400,13 +361,13 @@ static int CheckJumpDest(size_t jump_dest,
      data16rep 0xad            | # lods   %ds:(%rsi),%ax
      rep? REXW_NONE? 0xad)       # lods   %ds:(%rsi),%eax/%rax
     @{ if (restricted_register != kSandboxedRsi) {
-         PrintError("Incorrectly sandboxed %%rdi\n", begin - data);
+         errors_detected |= RSI_UNSANDBOXDED;
          result = 1;
-         goto error_detected;
+       } else {
+         BitmapClearBit(valid_targets, (begin - data));
+         BitmapClearBit(valid_targets, (sandboxed_rdi - data));
        }
        restricted_register = kNoRestrictedReg;
-       BitmapClearBit(valid_targets, (begin - data));
-       BitmapClearBit(valid_targets, (sandboxed_rdi - data));
     } |
     (condrep? 0xae             | # scas   %es:(%rdi),%al
      data16condrep 0xaf        | # scas   %es:(%rdi),%ax
@@ -417,13 +378,13 @@ static int CheckJumpDest(size_t jump_dest,
      rep? REXW_NONE? 0xab)       # stos   %eax/%rax,%es:(%rdi)
     @{ if (restricted_register != kSandboxedRdi &&
            restricted_register != kSandboxedRsiSandboxedRdi) {
-         PrintError("Incorrectly sandboxed %%rdi\n", begin - data);
+         errors_detected |= RDI_UNSANDBOXDED;
          result = 1;
-         goto error_detected;
+       } else {
+         BitmapClearBit(valid_targets, (begin - data));
+         BitmapClearBit(valid_targets, (sandboxed_rdi - data));
        }
        restricted_register = kNoRestrictedReg;
-       BitmapClearBit(valid_targets, (begin - data));
-       BitmapClearBit(valid_targets, (sandboxed_rdi - data));
     } |
     (condrep? 0xa6            | # cmpsb    %es:(%rdi),%ds:(%rsi)
      data16condrep 0xa7       | # cmpsw    %es:(%rdi),%ds:(%rsi)
@@ -433,33 +394,40 @@ static int CheckJumpDest(size_t jump_dest,
      data16rep 0xa5           | # movsw    %es:(%rdi),%ds:(%rsi)
      rep? REXW_NONE? 0xa5)      # movs[lq] %es:(%rdi),%ds:(%rsi)
     @{ if (restricted_register != kSandboxedRsiSandboxedRdi) {
-         PrintError("Incorrectly sandboxed %%rsi or %%rdi\n", begin - data);
+         errors_detected |= RDI_UNSANDBOXDED;
+         if (restricted_register != kSandboxedRsi) {
+           errors_detected |= RSI_UNSANDBOXDED;
+         }
          result = 1;
-         goto error_detected;
+       } else {
+         BitmapClearBit(valid_targets, (begin - data));
+         BitmapClearBit(valid_targets, (sandboxed_rsi - data));
+         BitmapClearBit(valid_targets, (sandboxed_rsi_restricted_rdi - data));
+         BitmapClearBit(valid_targets, (sandboxed_rdi - data));
        }
        restricted_register = kNoRestrictedReg;
-       BitmapClearBit(valid_targets, (begin - data));
-       BitmapClearBit(valid_targets, (sandboxed_rsi - data));
-       BitmapClearBit(valid_targets, (sandboxed_rsi_restricted_rdi - data));
-       BitmapClearBit(valid_targets, (sandboxed_rdi - data));
     };
 
   main := ((normal_instruction | special_instruction) >{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
         SET_VEX_PREFIX3(0x00);
         operand_states = 0;
-     })*
+     }
      @{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
-     }
+     })*
     $err{
-        process_error(begin, userdata);
+        process_error(begin, UNRECOGNIZED_INSTRUCTION, userdata);
         result = 1;
         goto error_detected;
     };
@@ -524,10 +492,8 @@ enum operand_kind {
 
 #define SET_CPU_FEATURE(F) \
   if (!(F)) { \
-    printf("offset 0x%"NACL_PRIxS": CPU Feature not found", \
-           (uintptr_t)(begin - data)); \
+    errors_detected |= CPUID_UNSUPPORTED_INSTRUCTION; \
     result = 1; \
-    goto error_detected; \
   }
 #define CPUFeature_3DNOW    cpu_features->data[NaClCPUFeature_3DNOW]
 #define CPUFeature_3DPRFTCH CPUFeature_3DNOW || CPUFeature_PRE || CPUFeature_LM
@@ -605,6 +571,10 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
   const uint8_t *sandboxed_rsi_restricted_rdi = 0;
   const uint8_t *sandboxed_rdi = 0;
 
+  size_t i;
+
+  int errors_detected;
+
   assert(size % kBundleSize == 0);
 
   while (p < data + size) {
@@ -623,18 +593,22 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
     %% write exec;
 
     if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly sandboxed %%rbp\n", begin - data);
+      process_error(begin, RESTRICTED_RBP_UNPROCESSED, userdata);
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly sandboxed %%rsp\n", begin - data);
+      process_error(begin, RESTRICTED_RSP_UNPROCESSED, userdata);
       result = 1;
-      goto error_detected;
     }
   }
 
-  if (CheckJumpTargets(valid_targets, jump_dests, size)) {
-    return 1;
+  for (i = 0; i < size / 32; i++) {
+    uint32_t jump_dest_mask = ((uint32_t *) jump_dests)[i];
+    uint32_t valid_target_mask = ((uint32_t *) valid_targets)[i];
+    if ((jump_dest_mask & ~valid_target_mask) != 0) {
+      process_error(data + i * 32, BAD_JUMP_TARGET, userdata);
+      result = 1;
+      break;
+    }
   }
 
 error_detected:

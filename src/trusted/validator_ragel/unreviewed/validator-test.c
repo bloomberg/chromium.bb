@@ -155,9 +155,59 @@ struct ValidateState {
   const uint8_t *offset;
 };
 
-void ProcessError (const uint8_t *ptr, void *userdata) {
-  printf("offset 0x%"NACL_PRIxS": DFA error in validator\n",
+void ProcessError (const uint8_t *ptr, int validation_error, void *userdata) {
+  if (validation_error & UNRECOGNIZED_INSTRUCTION) {
+    printf("offset 0x%"NACL_PRIxS": DFA error in validator\n",
                   (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
+  }
+  if (validation_error & DIRECT_JUMP_OUT_OF_RANGE) {
+    printf("offset 0x%"NACL_PRIxS": direct jump out of range\n",
+                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
+  }
+  if (validation_error & CPUID_UNSUPPORTED_INSTRUCTION) {
+    printf("offset 0x%"NACL_PRIxS": required CPU feature not found\n",
+                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
+  }
+  if (validation_error & FORBIDDEN_BASE_REGISTER) {
+    printf("offset 0x%"NACL_PRIxS": improper memory address - bad base\n",
+                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
+  }
+  if (validation_error & UNRESTRICTED_INDEX_REGISTER) {
+    printf("offset 0x%"NACL_PRIxS": improper memory address - bad base\n",
+                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
+  }
+  if (validation_error & RESTRICTED_RBP_UNPROCESSED) {
+    printf("offset 0x%"NACL_PRIxS": improper %%rbp sandboxing\n",
+                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
+  }
+  if (validation_error & RESTRICTED_RSP_UNPROCESSED) {
+    printf("offset 0x%"NACL_PRIxS": improper %%rsp sandboxing\n",
+                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
+  }
+  if (validation_error & R15_MODIFIED) {
+    printf("offset 0x%"NACL_PRIxS": error - %%r15 is changed\n",
+                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
+  }
+  if (validation_error & BPL_MODIFIED) {
+    printf("offset 0x%"NACL_PRIxS": error - %%bpl or %%bp is changed\n",
+                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
+  }
+  if (validation_error & SPL_MODIFIED) {
+    printf("offset 0x%"NACL_PRIxS": error - %%spl or %%sp is changed\n",
+                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
+  }
+  if (validation_error & RSI_UNSANDBOXDED) {
+    printf("offset 0x%"NACL_PRIxS": error - improper %%rsi sandboxing\n",
+                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
+  }
+  if (validation_error & RDI_UNSANDBOXDED) {
+    printf("offset 0x%"NACL_PRIxS": error - improper %%rdi sandboxing\n",
+                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
+  }
+  if (validation_error & BAD_JUMP_TARGET) {
+    printf("bad jump to around 0x%"NACL_PRIxS"\n",
+                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
+  }
 }
 
 int ValidateFile(const char *filename, int repeat_count,

@@ -21,8 +21,9 @@
 #endif
 
 
-static void ProcessError(const uint8_t *ptr, void *userdata) {
+static void ProcessError(const uint8_t *ptr, int error, void *userdata) {
   UNREFERENCED_PARAMETER(ptr);
+  UNREFERENCED_PARAMETER(error);
   UNREFERENCED_PARAMETER(userdata);
 }
 
