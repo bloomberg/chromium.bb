@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -285,7 +285,7 @@ function runTests() {
             details: { frameId: 0,
                        tabId: 0,
                        timeStamp: 0,
-                       transitionQualifiers: [],
+                       transitionQualifiers: ['maybe_client_redirect'],
                        transitionType: "link",
                        url: getURL('iframe/c.html') }},
           { label: "c-onDOMContentLoaded",

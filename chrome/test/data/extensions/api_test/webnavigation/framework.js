@@ -12,6 +12,26 @@ var nextTabId;
 var tabIds;
 var initialized = false;
 
+function deepCopy(obj) {
+  if (obj === null)
+    return null;
+  if (typeof(obj) != 'object')
+    return obj;
+  if (Array.isArray(obj)) {
+    var tmp_array = new Array;
+    for (var i = 0; i < obj.length; i++) {
+      tmp_array.push(deepCopy(obj[i]));
+    }
+    return tmp_array;
+  }
+
+  var tmp_object = {}
+  for (var p in obj) {
+    tmp_object[p] = deepCopy(obj[p]);
+  }
+  return tmp_object;
+}
+
 // data: array of expected events, each one is a dictionary:
 //     { label: "<unique identifier>",
 //       event: "<webnavigation event type>",
@@ -115,11 +135,31 @@ function captureEvent(name, details) {
   var found = false;
   var label = undefined;
   expectedEventData.forEach(function (exp) {
-    if (deepEq(exp.event, name) && deepEq(exp.details, details)) {
-      if (!found) {
-        found = true;
-        label = exp.label;
-        exp.event = undefined;
+    if (exp.event == name) {
+      var exp_details;
+      var alt_details;
+      if ('transitionQualifiers' in exp.details) {
+        var idx = exp.details['transitionQualifiers'].indexOf(
+            'maybe_client_redirect');
+        if (idx >= 0) {
+          exp_details = deepCopy(exp.details);
+          exp_details['transitionQualifiers'].splice(idx, 1);
+          alt_details = deepCopy(exp_details);
+          alt_details['transitionQualifiers'].push('client_redirect');
+        } else {
+          exp_details = exp.details;
+          alt_details = exp.details;
+        }
+      } else {
+        exp_details = exp.details;
+        alt_details = exp.details;
+      }
+      if (deepEq(exp_details, details) || deepEq(alt_details, details)) {
+        if (!found) {
+          found = true;
+          label = exp.label;
+          exp.event = undefined;
+        }
       }
     }
   });

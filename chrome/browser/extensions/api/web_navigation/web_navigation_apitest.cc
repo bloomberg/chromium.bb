@@ -21,32 +21,6 @@
 
 using content::WebContents;
 
-#if defined(OS_WIN)
-// http://crbug.com/118478
-#define MAYBE_WebNavigationIFrame DISABLED_WebNavigationIFrame
-#define MAYBE_WebNavigationFailures DISABLED_WebNavigationFailures
-#define MAYBE_WebNavigationForwardBack DISABLED_WebNavigationForwardBack
-#define MAYBE_WebNavigationClientRedirect DISABLED_WebNavigationClientRedirect
-#define MAYBE_WebNavigationGetFrame DISABLED_WebNavigationGetFrame
-#define MAYBE_WebNavigationSimpleLoad DISABLED_WebNavigationSimpleLoad
-#define MAYBE_WebNavigationReferenceFragment \
-    DISABLED_WebNavigationReferenceFragment
-#define MAYBE_WebNavigationHistory DISABLED_WebNavigationHistory
-#define MAYBE_WebNavigationOpenTab DISABLED_WebNavigationOpenTab
-#define MAYBE_WebNavigationFilteredTest DISABLED_WebNavigationFilteredTest
-#else
-#define MAYBE_WebNavigationIFrame WebNavigationIFrame
-#define MAYBE_WebNavigationFailures WebNavigationFailures
-#define MAYBE_WebNavigationForwardBack WebNavigationForwardBack
-#define MAYBE_WebNavigationClientRedirect WebNavigationClientRedirect
-#define MAYBE_WebNavigationGetFrame WebNavigationGetFrame
-#define MAYBE_WebNavigationSimpleLoad WebNavigationSimpleLoad
-#define MAYBE_WebNavigationReferenceFragment WebNavigationReferenceFragment
-#define MAYBE_WebNavigationHistory WebNavigationHistory
-#define MAYBE_WebNavigationOpenTab WebNavigationOpenTab
-#define MAYBE_WebNavigationFilteredTest WebNavigationFilteredTest
-#endif
-
 namespace extensions {
 
 namespace {
@@ -81,7 +55,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigation) {
       RunExtensionSubtest("webnavigation", "test_api.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationGetFrame) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationGetFrame) {
   FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -91,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationGetFrame) {
       RunExtensionSubtest("webnavigation", "test_getFrame.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationClientRedirect) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationClientRedirect) {
   FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -115,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationServerRedirect) {
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationForwardBack) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationForwardBack) {
   FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -126,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationForwardBack) {
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationIFrame) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationIFrame) {
   FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -136,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationIFrame) {
       RunExtensionSubtest("webnavigation", "test_iframe.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationOpenTab) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationOpenTab) {
   FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -146,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationOpenTab) {
       RunExtensionSubtest("webnavigation", "test_openTab.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationReferenceFragment) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationReferenceFragment) {
   FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -157,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationReferenceFragment) {
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationSimpleLoad) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationSimpleLoad) {
   FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -167,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationSimpleLoad) {
       RunExtensionSubtest("webnavigation", "test_simpleLoad.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationFailures) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationFailures) {
   FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -177,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationFailures) {
       RunExtensionSubtest("webnavigation", "test_failures.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationFilteredTest) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationFilteredTest) {
   FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -334,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationTargetBlankIncognito) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationHistory) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationHistory) {
   FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
