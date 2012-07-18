@@ -18,6 +18,7 @@ and whether it should upload an SDK to file storage (GSTORE)
 
 # std python includes
 import copy
+import datetime
 import generate_make
 import optparse
 import os
@@ -544,10 +545,21 @@ def main(args):
 
   if not skip_build:
     buildbot_common.BuildStep('Add Text Files')
-    files = ['AUTHORS', 'COPYING', 'LICENSE', 'NOTICE', 'README']
+    files = ['AUTHORS', 'COPYING', 'LICENSE', 'NOTICE']
     files = [os.path.join(SDK_SRC_DIR, filename) for filename in files]
     oshelpers.Copy(['-v'] + files + [pepperdir])
 
+    # Replace a few placeholders in README
+    readme_text = open(os.path.join(SDK_SRC_DIR, 'README'), 'rt').read()
+    readme_text = readme_text.replace('${VERSION}', pepper_ver)
+    readme_text = readme_text.replace('${REVISION}', clnumber)
+
+    # Year/Month/Day Hour:Minute:Second
+    time_format = '%Y/%m/%d %H:%M:%S'
+    readme_text = readme_text.replace('${DATE}',
+        datetime.datetime.now().strftime(time_format))
+
+    open(os.path.join(pepperdir, 'README'), 'wt').write(readme_text)
 
   # Clean out the temporary toolchain untar directory
   if not skip_untar:
