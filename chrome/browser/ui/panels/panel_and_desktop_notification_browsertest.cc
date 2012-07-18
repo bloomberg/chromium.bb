@@ -20,8 +20,8 @@
 #include "ui/gfx/screen.h"
 
 
-// Refactor has only been done for Mac panels so far.
-#if defined(OS_MACOSX)
+// Refactor has only been done for Win and Mac panels so far.
+#if defined(OS_WIN) || defined(OS_MACOSX)
 
 // Desktop notification code subscribes to various panel change notifications
 // so that it knows when to adjusts balloon positions. In order to give
@@ -411,4 +411,4 @@ IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest, InteractWithTwoPanels) {
   EXPECT_EQ(original_balloon_bottom, GetBalloonBottomPosition(balloon));
 }
 
-#endif // OS_MACOSX
+#endif // OS_WIN || OS_MACOSX

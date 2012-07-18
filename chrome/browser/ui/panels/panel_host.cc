@@ -69,8 +69,9 @@ void PanelHost::NavigationStateChanged(const content::WebContents* source,
                                        unsigned changed_flags) {
   // Only need to update the title if the title changed while not loading,
   // because the title is also updated when loading state changes.
-  if (changed_flags & content::INVALIDATE_TYPE_TITLE &&
-      !source->IsLoading())
+  if ((changed_flags & content::INVALIDATE_TYPE_TAB) ||
+      ((changed_flags & content::INVALIDATE_TYPE_TITLE) &&
+       !source->IsLoading()))
     panel_->UpdateTitleBar();
 }
 
@@ -115,6 +116,10 @@ bool PanelHost::HandleContextMenu(const content::ContextMenuParams& params) {
 void PanelHost::HandleKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
   return panel_->HandleKeyboardEvent(event);
+}
+
+void PanelHost::WebContentsFocused(content::WebContents* contents) {
+  panel_->WebContentsFocused(contents);
 }
 
 void PanelHost::ResizeDueToAutoResize(content::WebContents* web_contents,

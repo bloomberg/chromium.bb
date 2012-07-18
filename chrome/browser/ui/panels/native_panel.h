@@ -58,8 +58,7 @@ class NativePanel {
   virtual void ShowTaskManagerForPanel() {}  // legacy
   virtual FindBar* CreatePanelFindBar() = 0;  // legacy
   virtual void NotifyPanelOnUserChangedTheme() = 0;
-  virtual void PanelWebContentsFocused(
-      content::WebContents* contents) {}  // legacy
+  virtual void PanelWebContentsFocused(content::WebContents* contents) {}
   virtual void PanelCut() = 0;
   virtual void PanelCopy() = 0;
   virtual void PanelPaste() = 0;

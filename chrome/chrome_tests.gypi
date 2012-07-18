@@ -2934,7 +2934,7 @@
         'browser/ui/gtk/view_id_util_browsertest.cc',
         'browser/ui/intents/web_intent_picker_controller_browsertest.cc',
         'browser/ui/login/login_prompt_browsertest.cc',
-        'browser/ui/panels/panel_browser_view_browsertest.cc',
+        'browser/ui/panels/panel_view_browsertest.cc',
         'browser/ui/prefs/prefs_tab_helper_browsertest.cc',
         'browser/ui/startup/startup_browser_creator_browsertest.cc',
         'browser/ui/tab_modal_confirm_dialog_browsertest_mac.mm',
@@ -3155,7 +3155,7 @@
             'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',
             'browser/service/service_process_control_browsertest.cc',
             # chromeos does not use cross-platform panels
-            'browser/ui/panels/panel_browser_view_browsertest.cc',
+            'browser/ui/panels/panel_view_browsertest.cc',
           ],
           'dependencies': [
             '../dbus/dbus.gyp:dbus_test_support',
@@ -3338,7 +3338,7 @@
             ['exclude', '^browser/ui/views/'],
             ['exclude', '^../ui/views/'],
             ['exclude', '^browser/extensions/extension_input_apitest.cc'],
-            ['exclude', '^browser/ui/panels/panel_browser_view_browsertest.cc'],
+            ['exclude', '^browser/ui/panels/panel_view_browsertest.cc'],
           ],
         }],
         ['target_arch!="arm"', {

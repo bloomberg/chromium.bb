@@ -62,6 +62,7 @@ class PanelHost : public content::WebContentsDelegate,
       const content::ContextMenuParams& params) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual void WebContentsFocused(content::WebContents* contents) OVERRIDE;
   virtual void ResizeDueToAutoResize(content::WebContents* web_contents,
                                      const gfx::Size& new_size) OVERRIDE;
 

@@ -12,6 +12,8 @@
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel_host.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -148,6 +150,9 @@ void Panel::Initialize(Profile* profile, const GURL& url,
                  content::Source<Profile>(profile));
   registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+                 content::Source<ThemeService>(
+                    ThemeServiceFactory::GetForProfile(profile)));
 
   // Prevent the browser process from shutting down while this window is open.
   browser::StartKeepAlive();
@@ -592,6 +597,9 @@ void Panel::Observe(int type,
     case content::NOTIFICATION_APP_TERMINATING:
       Close();
       break;
+    case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
+      native_panel_->NotifyPanelOnUserChangedTheme();
+      break;
     default:
       NOTREACHED() << "Received unexpected notification " << type;
   }
@@ -724,4 +732,8 @@ void Panel::LoadingStateChanged(bool is_loading) {
   command_updater_.UpdateCommandEnabled(IDC_STOP, is_loading);
   native_panel_->UpdatePanelLoadingAnimations(is_loading);
   UpdateTitleBar();
+}
+
+void Panel::WebContentsFocused(content::WebContents* contents) {
+  native_panel_->PanelWebContentsFocused(contents);
 }

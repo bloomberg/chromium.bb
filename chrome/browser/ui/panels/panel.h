@@ -300,6 +300,9 @@ class Panel : public BaseWindow,
   // Updates UI to reflect change in loading state.
   void LoadingStateChanged(bool is_loading);
 
+  // Updates UI to reflect that the web cotents receives the focus.
+  void WebContentsFocused(content::WebContents* contents);
+
  protected:
   // Panel can only be created using PanelManager::CreatePanel() or subclass.
   // |app_name| is the default title for Panels when the page content does not

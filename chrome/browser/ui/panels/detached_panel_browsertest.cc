@@ -9,8 +9,8 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 
-// Refactor has only been done for Mac panels so far.
-#if defined(OS_MACOSX)
+// Refactor has only been done for Win and Mac panels so far.
+#if defined(OS_WIN) || defined(OS_MACOSX)
 
 class DetachedPanelBrowserTest : public BasePanelBrowserTest {
 };
@@ -146,4 +146,4 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, ClickTitlebar) {
   panel_manager->CloseAll();
 }
 
-#endif // OS_MACOSX
+#endif // OS_WIN || OS_MACOSX

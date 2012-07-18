@@ -41,8 +41,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/screen.h"
 
-// Refactor has only been done for Mac panels so far.
-#if defined(OS_MACOSX)
+// Refactor has only been done for Win and Mac panels so far.
+#if defined(OS_WIN) || defined(OS_MACOSX)
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -463,6 +463,14 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AnimateBounds) {
   scoped_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
 
+  // Validates that no animation should be triggered when the panel is being
+  // dragged.
+  gfx::Point mouse_location(panel->GetBounds().origin());
+  panel_testing->PressLeftMouseButtonTitlebar(mouse_location);
+  panel_testing->DragTitlebar(mouse_location.Add(gfx::Point(-100, 5)));
+  EXPECT_FALSE(panel_testing->IsAnimatingBounds());
+  panel_testing->FinishDragTitlebar();
+
   // Set bounds with animation.
   gfx::Rect bounds = gfx::Rect(10, 20, 150, 160);
   panel->SetPanelBounds(bounds);
@@ -791,6 +799,120 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoreAllWithTitlebarClick) {
   PanelManager::GetInstance()->CloseAll();
 }
 
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
+                       MinimizeRestoreOnAutoHidingDesktopBar) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+  DockedPanelStrip* docked_strip = panel_manager->docked_strip();
+  int expected_bottom_on_expanded = docked_strip->display_area().bottom();
+  int expected_bottom_on_title_only = expected_bottom_on_expanded;
+  int expected_bottom_on_minimized = expected_bottom_on_expanded;
+
+  // Turn on auto-hiding.
+  static const int bottom_bar_thickness = 40;
+  mock_display_settings_provider()->EnableAutoHidingDesktopBar(
+      DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_BOTTOM,
+      true,
+      bottom_bar_thickness);
+  expected_bottom_on_title_only -= bottom_bar_thickness;
+
+  Panel* panel = CreatePanel("1");
+  int initial_height = panel->GetBounds().height();
+
+  EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
+  EXPECT_EQ(expected_bottom_on_expanded, panel->GetBounds().bottom());
+
+  panel->Minimize();
+  WaitForBoundsAnimationFinished(panel);
+  EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
+  EXPECT_EQ(panel::kMinimizedPanelHeight, panel->GetBounds().height());
+  EXPECT_EQ(expected_bottom_on_minimized, panel->GetBounds().bottom());
+
+  panel->SetExpansionState(Panel::TITLE_ONLY);
+  WaitForBoundsAnimationFinished(panel);
+  EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
+  EXPECT_EQ(panel::kTitlebarHeight, panel->GetBounds().height());
+  EXPECT_EQ(expected_bottom_on_title_only, panel->GetBounds().bottom());
+
+  panel->Restore();
+  WaitForBoundsAnimationFinished(panel);
+  EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
+  EXPECT_EQ(initial_height, panel->GetBounds().height());
+  EXPECT_EQ(expected_bottom_on_expanded, panel->GetBounds().bottom());
+
+  panel->Close();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ChangeAutoHideTaskBarThickness) {
+  PanelManager* manager = PanelManager::GetInstance();
+  DockedPanelStrip* docked_strip = manager->docked_strip();
+  int initial_starting_right_position = docked_strip->StartingRightPosition();
+
+  int bottom_bar_thickness = 20;
+  int right_bar_thickness = 30;
+  mock_display_settings_provider()->EnableAutoHidingDesktopBar(
+      DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_BOTTOM,
+      true,
+      bottom_bar_thickness);
+  mock_display_settings_provider()->EnableAutoHidingDesktopBar(
+      DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_RIGHT,
+      true,
+      right_bar_thickness);
+  EXPECT_EQ(
+      initial_starting_right_position - docked_strip->StartingRightPosition(),
+      right_bar_thickness);
+
+  Panel* panel = CreatePanel("PanelTest");
+  panel->SetExpansionState(Panel::TITLE_ONLY);
+  WaitForBoundsAnimationFinished(panel);
+
+  EXPECT_EQ(docked_strip->display_area().bottom() - bottom_bar_thickness,
+            panel->GetBounds().bottom());
+  EXPECT_EQ(docked_strip->StartingRightPosition(),
+            panel->GetBounds().right());
+
+  initial_starting_right_position = docked_strip->StartingRightPosition();
+  int bottom_bar_thickness_delta = 10;
+  bottom_bar_thickness += bottom_bar_thickness_delta;
+  int right_bar_thickness_delta = 15;
+  right_bar_thickness += right_bar_thickness_delta;
+  mock_display_settings_provider()->SetDesktopBarThickness(
+      DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_BOTTOM,
+      bottom_bar_thickness);
+  mock_display_settings_provider()->SetDesktopBarThickness(
+      DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_RIGHT,
+      right_bar_thickness);
+  MessageLoopForUI::current()->RunAllPending();
+  EXPECT_EQ(
+      initial_starting_right_position - docked_strip->StartingRightPosition(),
+      right_bar_thickness_delta);
+  EXPECT_EQ(docked_strip->display_area().bottom() - bottom_bar_thickness,
+            panel->GetBounds().bottom());
+  EXPECT_EQ(docked_strip->StartingRightPosition(),
+            panel->GetBounds().right());
+
+  initial_starting_right_position = docked_strip->StartingRightPosition();
+  bottom_bar_thickness_delta = 20;
+  bottom_bar_thickness -= bottom_bar_thickness_delta;
+  right_bar_thickness_delta = 10;
+  right_bar_thickness -= right_bar_thickness_delta;
+  mock_display_settings_provider()->SetDesktopBarThickness(
+      DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_BOTTOM,
+      bottom_bar_thickness);
+  mock_display_settings_provider()->SetDesktopBarThickness(
+      DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_RIGHT,
+      right_bar_thickness);
+  MessageLoopForUI::current()->RunAllPending();
+  EXPECT_EQ(
+      docked_strip->StartingRightPosition() - initial_starting_right_position,
+      right_bar_thickness_delta);
+  EXPECT_EQ(docked_strip->display_area().bottom() - bottom_bar_thickness,
+            panel->GetBounds().bottom());
+  EXPECT_EQ(docked_strip->StartingRightPosition(),
+            panel->GetBounds().right());
+
+  panel->Close();
+}
+
 #if defined(OS_MACOSX)
 // This test doesn't pass on Snow Leopard (10.6), although it works just
 // fine on Lion (10.7). The problem is not having a real run loop around
@@ -805,9 +927,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivatePanelOrTabbedWindow) {
   Panel* panel1 = CreatePanelWithParams(params1);
   CreatePanelParams params2("Panel2", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel2 = CreatePanelWithParams(params2);
-
-  // Need tab contents in order to trigger deactivation upon close.
-  CreateTestTabContents(panel2->browser());
 
   ASSERT_FALSE(panel1->IsActive());
   ASSERT_TRUE(panel2->IsActive());
@@ -862,20 +981,11 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateBasic) {
   EXPECT_FALSE(panel->IsActive());
   EXPECT_TRUE(native_panel_testing->VerifyActiveState(false));
 
-  // Reactivate the panel.
-  panel->Activate();
-  WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);
-  EXPECT_TRUE(panel->IsActive());
-  EXPECT_TRUE(native_panel_testing->VerifyActiveState(true));
+  // This test does not reactivate the panel because the panel might not be
+  // reactivated programmatically once it is deactivated.
 }
-// TODO(jianli): To be enabled for other platforms.
-#if defined(OS_WIN)
-#define MAYBE_ActivateDeactivateMultiple ActivateDeactivateMultiple
-#else
-#define MAYBE_ActivateDeactivateMultiple DISABLED_ActivateDeactivateMultiple
-#endif
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateMultiple) {
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ActivateDeactivateMultiple) {
   BrowserWindow* tabbed_window = browser()->window();
 
   // Create 4 panels in the following screen layout:
@@ -904,30 +1014,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateMultiple) {
   panels[2]->SetExpansionState(Panel::MINIMIZED);
   EXPECT_EQ(expected_active_states, GetAllPanelActiveStates());
   EXPECT_FALSE(tabbed_window->IsActive());
-
-  // Minimizing active panel P1 should activate last active panel P3.
-  panels[1]->SetExpansionState(Panel::MINIMIZED);
-  last_active_states = expected_active_states;
-  expected_active_states = ProduceExpectedActiveStates(3);
-  WaitForPanelActiveStates(last_active_states, expected_active_states);
-  EXPECT_EQ(expected_active_states, GetAllPanelActiveStates());
-  EXPECT_FALSE(tabbed_window->IsActive());
-
-  // Minimizing active panel P3 should activate last active panel P0.
-  panels[3]->SetExpansionState(Panel::MINIMIZED);
-  last_active_states = expected_active_states;
-  expected_active_states = ProduceExpectedActiveStates(0);
-  WaitForPanelActiveStates(last_active_states, expected_active_states);
-  EXPECT_EQ(expected_active_states, GetAllPanelActiveStates());
-  EXPECT_FALSE(tabbed_window->IsActive());
-
-  // Minimizing active panel P0 should activate last active tabbed window.
-  panels[0]->SetExpansionState(Panel::MINIMIZED);
-  last_active_states = expected_active_states;
-  expected_active_states = ProduceExpectedActiveStates(-1);  // -1 means none.
-  WaitForPanelActiveStates(last_active_states, expected_active_states);
-  EXPECT_EQ(expected_active_states, GetAllPanelActiveStates());
-  EXPECT_TRUE(tabbed_window->IsActive());
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionBasic) {
@@ -1491,4 +1577,4 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   panel->Close();
 }
 
-#endif // OS_MACOSX
+#endif // OS_WIN || OS_MACOSX

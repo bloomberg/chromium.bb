@@ -12,8 +12,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 
-// Refactor has only been done for Mac panels so far.
-#if defined(OS_MACOSX)
+// Refactor has only been done for Win and Mac panels so far.
+#if defined(OS_WIN) || defined(OS_MACOSX)
 
 class DockedPanelBrowserTest : public BasePanelBrowserTest {
  public:
@@ -270,4 +270,4 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, CloseSqueezedPanels) {
   panel_manager->CloseAll();
 }
 
-#endif // OS_MACOSX
+#endif // OS_WIN || OS_MACOSX
