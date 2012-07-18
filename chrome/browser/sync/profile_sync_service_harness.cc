@@ -175,8 +175,8 @@ bool ProfileSyncServiceHarness::SetupSync(
   service_->SetSetupInProgress(true);
 
   // Authenticate sync client using GAIA credentials.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableClientOAuthSignin)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableClientOAuthSignin)) {
     service_->signin()->StartSignInWithOAuth(username_, password_);
   } else {
     service_->signin()->StartSignIn(username_, password_, "", "");

@@ -678,6 +678,7 @@ cr.define('options', function() {
     },
 
     showGaiaLogin_: function(args) {
+      var oldAccessCodeValue = $('access-code').value;
       this.resetPage_('sync-setup-login');
       $('sync-setup-login').hidden = false;
       this.allowEmptyPassword_ = false;
@@ -706,8 +707,7 @@ cr.define('options', function() {
       }
 
       if (1 == args.error) {
-        var accessCode = $('access-code');
-        if (accessCode.value) {
+        if (oldAccessCodeValue) {
           $('errormsg-0-access-code').hidden = false;
           this.showAccessCodeRequired_();
         } else {
@@ -725,6 +725,8 @@ cr.define('options', function() {
         if (args.askForOtp) {
           this.showOtpRequired_();
         } else {
+          if (oldAccessCodeValue)
+            $('errormsg-0-access-code').hidden = false;
           this.showAccessCodeRequired_();
         }
       } else if (args.errorMessage) {
@@ -796,7 +798,7 @@ cr.define('options', function() {
       }
 
       if (!f.accessCode.disabled && !f.accessCode.value) {
-        $('errormsg-0-password').hidden = false;
+        $('errormsg-0-access-code').hidden = false;
         return false;
       }
 
