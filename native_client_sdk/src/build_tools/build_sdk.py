@@ -540,15 +540,16 @@ def main(args):
   tarfile = os.path.join(OUT_DIR, tarname)
 
   # Ship with libraries prebuilt, so run that first
-  buildbot_common.BuildStep('Build Libraries')
-  src_dir = os.path.join(pepperdir, 'src')
-  makefile = os.path.join(src_dir, 'Makefile')
-  if os.path.isfile(makefile):
-    print "\n\nMake: " + src_dir
-    buildbot_common.Run(['make', '-j8'],
-                        cwd=os.path.abspath(src_dir), shell=True)
-    buildbot_common.Run(['make', '-j8', 'clean'],
-                        cwd=os.path.abspath(src_dir), shell=True)
+  if False:
+    buildbot_common.BuildStep('Build Libraries')
+    src_dir = os.path.join(pepperdir, 'src')
+    makefile = os.path.join(src_dir, 'Makefile')
+    if os.path.isfile(makefile):
+      print "\n\nMake: " + src_dir
+      buildbot_common.Run(['make', '-j8'],
+                          cwd=os.path.abspath(src_dir), shell=True)
+      buildbot_common.Run(['make', '-j8', 'clean'],
+                          cwd=os.path.abspath(src_dir), shell=True)
 
   if not skip_tar:
     buildbot_common.BuildStep('Tar Pepper Bundle')
