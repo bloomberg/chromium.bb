@@ -13,6 +13,7 @@
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
+#include "content/common/child_thread.h"
 #include "content/renderer/media/capture_video_decoder.h"
 #include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
@@ -234,7 +235,7 @@ scoped_refptr<media::VideoDecoder> MediaStreamImpl::GetVideoDecoder(
     return CreateLocalVideoDecoder(extra_data->local_stream(),
                                    message_loop_factory);
   if (extra_data->remote_stream())
-    return CreateRemoteVideoDecoder(extra_data->remote_stream(), url,
+    return CreateRemoteVideoDecoder(extra_data->remote_stream(),
                                     message_loop_factory);
   NOTREACHED();
   return NULL;
@@ -511,7 +512,6 @@ scoped_refptr<media::VideoDecoder> MediaStreamImpl::CreateLocalVideoDecoder(
 
 scoped_refptr<media::VideoDecoder> MediaStreamImpl::CreateRemoteVideoDecoder(
     webrtc::MediaStreamInterface* stream,
-    const GURL& url,
     media::MessageLoopFactory* message_loop_factory) {
   if (!stream->video_tracks() || stream->video_tracks()->count() == 0)
     return NULL;
@@ -519,13 +519,10 @@ scoped_refptr<media::VideoDecoder> MediaStreamImpl::CreateRemoteVideoDecoder(
   DVLOG(1) << "MediaStreamImpl::CreateRemoteVideoDecoder label:"
            << stream->label();
 
-  RTCVideoDecoder* rtc_video_decoder = new RTCVideoDecoder(
+  return new RTCVideoDecoder(
       message_loop_factory->GetMessageLoop("RtcVideoDecoderThread"),
-      url.spec());
-  talk_base::scoped_refptr<webrtc::VideoRendererWrapperInterface> renderer(
-      new talk_base::RefCountedObject<VideoRendererWrapper>(rtc_video_decoder));
-  stream->video_tracks()->at(0)->SetRenderer(renderer);
-  return rtc_video_decoder;
+      ChildThread::current()->message_loop(),
+      stream->video_tracks()->at(0));
 }
 
 talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface>
@@ -569,14 +566,6 @@ MediaStreamImpl::CreateNativeLocalMediaStream(
   }
   local_media_streams_[label] = frame;
   return native_stream;
-}
-
-MediaStreamImpl::VideoRendererWrapper::VideoRendererWrapper(
-    RTCVideoDecoder* decoder)
-    : rtc_video_decoder_(decoder) {
-}
-
-MediaStreamImpl::VideoRendererWrapper::~VideoRendererWrapper() {
 }
 
 MediaStreamExtraData::MediaStreamExtraData(

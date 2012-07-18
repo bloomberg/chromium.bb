@@ -116,6 +116,63 @@ class NullVideoFrame : public cricket::VideoFrame {
   }
 };
 
+class MockVideoTrack : public webrtc::VideoTrackInterface {
+ public:
+  static MockVideoTrack* Create() {
+    return new talk_base::RefCountedObject<MockVideoTrack>();
+  }
+
+  virtual std::string kind() const OVERRIDE {
+    NOTIMPLEMENTED();
+    return "";
+  }
+  virtual std::string label() const OVERRIDE {
+    NOTIMPLEMENTED();
+    return "";
+  }
+  virtual bool enabled() const OVERRIDE {
+    NOTIMPLEMENTED();
+    return false;
+  }
+  virtual TrackState state() const OVERRIDE {
+    NOTIMPLEMENTED();
+    return kEnded;
+  }
+  virtual bool set_enabled(bool enable) OVERRIDE {
+    NOTIMPLEMENTED();
+    return false;
+  }
+  virtual bool set_state(TrackState new_state) OVERRIDE {
+    NOTIMPLEMENTED();
+    return false;
+  }
+  virtual void RegisterObserver(webrtc::ObserverInterface* observer) OVERRIDE {
+    NOTIMPLEMENTED();
+  }
+  virtual void UnregisterObserver(
+      webrtc::ObserverInterface* observer) OVERRIDE {
+    NOTIMPLEMENTED();
+  }
+  void SetRenderer(webrtc::VideoRendererWrapperInterface* renderer) OVERRIDE {
+     NOTIMPLEMENTED();
+  }
+  virtual webrtc::VideoRendererWrapperInterface* GetRenderer() OVERRIDE {
+    NOTIMPLEMENTED();
+    return NULL;
+  }
+  MOCK_METHOD1(AddRenderer, void(webrtc::VideoRendererInterface* renderer));
+  MOCK_METHOD1(RemoveRenderer, void(webrtc::VideoRendererInterface* renderer));
+
+  virtual cricket::VideoRenderer* FrameInput() OVERRIDE {
+    NOTIMPLEMENTED();
+    return NULL;
+  }
+
+ protected:
+  MockVideoTrack() {}
+  ~MockVideoTrack() {}
+};
+
 }  // namespace
 
 class RTCVideoDecoderTest : public testing::Test {
@@ -126,7 +183,15 @@ class RTCVideoDecoderTest : public testing::Test {
   static const PipelineStatistics kStatistics;
 
   RTCVideoDecoderTest() {
-    decoder_ = new RTCVideoDecoder(&message_loop_, kUrl);
+  }
+
+  virtual ~RTCVideoDecoderTest() {
+  }
+
+  virtual void SetUp() OVERRIDE {
+    video_track_ = MockVideoTrack::Create();
+    decoder_ = new RTCVideoDecoder(&message_loop_, &message_loop_,
+                                   video_track_);
     renderer_ = new MockVideoRenderer();
     read_cb_ = base::Bind(&RTCVideoDecoderTest::FrameReady,
                           base::Unretained(this));
@@ -137,12 +202,16 @@ class RTCVideoDecoderTest : public testing::Test {
         .Times(AnyNumber());
   }
 
-  virtual ~RTCVideoDecoderTest() {
-    // Finish up any remaining tasks.
+  virtual void TearDown() OVERRIDE {
+    EXPECT_CALL(*video_track_, RemoveRenderer(decoder_.get()));
+    decoder_->Stop(media::NewExpectedClosure());
+
     message_loop_.RunAllPending();
+    EXPECT_EQ(RTCVideoDecoder::kStopped, decoder_->state_);
   }
 
   void InitializeDecoderSuccessfully() {
+    EXPECT_CALL(*video_track_, AddRenderer(decoder_.get()));
     // Test successful initialization.
     decoder_->Initialize(
         NULL, NewExpectedStatusCB(PIPELINE_OK), NewStatisticsCB());
@@ -158,6 +227,7 @@ class RTCVideoDecoderTest : public testing::Test {
                                 const scoped_refptr<media::VideoFrame>&));
 
   // Fixture members.
+  scoped_refptr<MockVideoTrack> video_track_;
   scoped_refptr<RTCVideoDecoder> decoder_;
   scoped_refptr<MockVideoRenderer> renderer_;
   MockStatisticsCB statistics_cb_;
@@ -170,7 +240,6 @@ class RTCVideoDecoderTest : public testing::Test {
 
 const int RTCVideoDecoderTest::kWidth = 640;
 const int RTCVideoDecoderTest::kHeight = 480;
-const char* RTCVideoDecoderTest::kUrl = "media://remote/0";
 const PipelineStatistics RTCVideoDecoderTest::kStatistics;
 
 TEST_F(RTCVideoDecoderTest, Initialize_Successful) {
@@ -212,9 +281,8 @@ TEST_F(RTCVideoDecoderTest, DoSetSize) {
   int new_width = kWidth * 2;
   int new_height = kHeight * 2;
   gfx::Size new_natural_size(new_width, new_height);
-  int new_reserved = 0;
 
-  decoder_->SetSize(new_width, new_height, new_reserved);
+  decoder_->SetSize(new_width, new_height);
 
   EXPECT_EQ(new_width, decoder_->natural_size().width());
   EXPECT_EQ(new_height, decoder_->natural_size().height());

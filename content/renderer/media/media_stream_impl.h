@@ -155,20 +155,6 @@ class CONTENT_EXPORT MediaStreamImpl
   virtual WebKit::WebMediaStreamDescriptor GetMediaStream(const GURL& url);
 
  private:
-  class VideoRendererWrapper : public webrtc::VideoRendererWrapperInterface {
-   public:
-    explicit VideoRendererWrapper(RTCVideoDecoder* decoder);
-    virtual cricket::VideoRenderer* renderer() OVERRIDE {
-      return rtc_video_decoder_.get();
-    }
-
-   protected:
-    virtual ~VideoRendererWrapper();
-
-   private:
-    scoped_refptr<RTCVideoDecoder> rtc_video_decoder_;
-  };
-
   // Structure for storing information about a WebKit request to create a
   // MediaStream.
   struct UserMediaRequestInfo {
@@ -203,7 +189,6 @@ class CONTENT_EXPORT MediaStreamImpl
       media::MessageLoopFactory* message_loop_factory);
   scoped_refptr<media::VideoDecoder> CreateRemoteVideoDecoder(
       webrtc::MediaStreamInterface* stream,
-      const GURL& url,
       media::MessageLoopFactory* message_loop_factory);
   LocalNativeStreamPtr CreateNativeLocalMediaStream(
       const std::string& label,
