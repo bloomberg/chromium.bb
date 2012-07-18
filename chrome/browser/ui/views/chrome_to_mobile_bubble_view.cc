@@ -342,10 +342,8 @@ void ChromeToMobileBubbleView::HandleButtonPressed(views::Button* sender) {
 }
 
 void ChromeToMobileBubbleView::Send() {
-  string16 mobile_id;
-  selected_mobile_->GetString("id", &mobile_id);
   FilePath snapshot = send_copy_->checked() ? snapshot_path_ : FilePath();
-  service_->SendToMobile(mobile_id, snapshot, browser_,
+  service_->SendToMobile(*selected_mobile_, snapshot, browser_,
                          weak_ptr_factory_.GetWeakPtr());
 
   // Update the view's contents to show the "Sending..." progress animation.

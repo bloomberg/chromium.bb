@@ -19,7 +19,7 @@ class MockChromeToMobileService : public ChromeToMobileService {
   MOCK_METHOD0(RequestMobileListUpdate, void());
   MOCK_METHOD2(GenerateSnapshot, void(Browser* browser,
                                       base::WeakPtr<Observer> observer));
-  MOCK_METHOD4(SendToMobile, void(const string16& mobile_id,
+  MOCK_METHOD4(SendToMobile, void(const base::DictionaryValue& mobile,
                                   const FilePath& snapshot,
                                   Browser* browser,
                                   base::WeakPtr<Observer> observer));

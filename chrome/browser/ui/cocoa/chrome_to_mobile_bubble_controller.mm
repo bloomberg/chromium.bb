@@ -163,13 +163,9 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
 }
 
 - (IBAction)send:(id)sender {
-  int index = (mobiles_.size() > 1) ? [mobileRadioGroup_ selectedRow] : 0;
-  DCHECK_GE(index, 0);
-
-  string16 mobileId;
-  mobiles_[index]->GetString("id", &mobileId);
+  int row = (mobiles_.size() > 1) ? [mobileRadioGroup_ selectedRow] : 0;
   FilePath path = ([sendCopy_ state] == NSOnState) ? snapshotPath_ : FilePath();
-  service_->SendToMobile(mobileId, path, browser_, bridge_->AsWeakPtr());
+  service_->SendToMobile(*mobiles_[row], path, browser_, bridge_->AsWeakPtr());
 
   // Update the bubble's contents to show the "Sending..." progress animation.
   [cancel_ setEnabled:NO];

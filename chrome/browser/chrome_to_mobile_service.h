@@ -68,25 +68,31 @@ class ChromeToMobileService : public ProfileKeyedService,
     NUM_METRICS
   };
 
-  // The URLFetcher request types.
-  enum RequestType {
-    SEARCH,
-    URL,
+  // The supported mobile device operating systems.
+  enum MobileOS {
+    ANDROID = 0,
+    IOS,
+  };
+
+  // The cloud print job types.
+  enum JobType {
+    URL = 0,
     DELAYED_SNAPSHOT,
     SNAPSHOT,
   };
 
-  // The aggregated URLFetcher submission data.
-  struct RequestData {
-    RequestData();
-    ~RequestData();
+  // The cloud print job submission data.
+  struct JobData {
+    JobData();
+    ~JobData();
 
+    MobileOS mobile_os;
     string16 mobile_id;
     GURL url;
     string16 title;
-    FilePath snapshot_path;
+    FilePath snapshot;
     std::string snapshot_id;
-    RequestType type;
+    JobType type;
   };
 
   // Returns whether Chrome To Mobile is enabled. Check for the 'disable' or
@@ -113,7 +119,7 @@ class ChromeToMobileService : public ProfileKeyedService,
 
   // Send the browser's selected WebContents to the specified mobile device.
   // Virtual for unit test mocking.
-  virtual void SendToMobile(const string16& mobile_id,
+  virtual void SendToMobile(const base::DictionaryValue& mobile,
                             const FilePath& snapshot,
                             Browser* browser,
                             base::WeakPtr<Observer> observer);
@@ -148,8 +154,14 @@ class ChromeToMobileService : public ProfileKeyedService,
                            const FilePath& path,
                            bool success);
 
-  // Utility function to create URLFetcher requests.
-  net::URLFetcher* CreateRequest(const RequestData& data);
+  // Create a cloud print job submission request for a URL or snapshot.
+  net::URLFetcher* CreateRequest(const JobData& data);
+
+  // Initialize URLFetcher requests (search and jobs submit).
+  void InitRequest(net::URLFetcher* request);
+
+  // Submit a cloud print job request with the requisite data.
+  void SendRequest(net::URLFetcher* request, const JobData& data);
 
   // Send the OAuth2AccessTokenFetcher request.
   // Virtual for unit test mocking.

@@ -300,10 +300,9 @@ void ChromeToMobileBubbleGtk::OnCancelClicked(GtkWidget* widget) {
 }
 
 void ChromeToMobileBubbleGtk::OnSendClicked(GtkWidget* widget) {
-  string16 mobile_id;
-  selected_mobile_->GetString("id", &mobile_id);
   bool send_copy = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(send_copy_));
-  service_->SendToMobile(mobile_id, send_copy ? snapshot_path_ : FilePath(),
+  service_->SendToMobile(*selected_mobile_,
+                         send_copy ? snapshot_path_ : FilePath(),
                          browser_, weak_ptr_factory_.GetWeakPtr());
 
   // Update the view's contents to show the "Sending..." progress animation.
