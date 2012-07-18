@@ -576,7 +576,16 @@ bool GDataEntry::FromProto(const GDataEntryProto& proto) {
   parent_resource_id_ = proto.parent_resource_id();
   edit_url_ = GURL(proto.edit_url());
   content_url_ = GURL(proto.content_url());
+  upload_url_ = GURL(proto.upload_url());
   SetFileNameFromTitle();
+
+  // Reject older protobuf that does not contain the upload URL.  This URL is
+  // necessary for uploading files.
+  if (!proto.has_upload_url()) {
+    LOG(ERROR) << "Incompatible proto detected (no upload URL): "
+               << proto.title();
+    return false;
+  }
 
   return true;
 }
@@ -592,6 +601,7 @@ void GDataEntry::ToProto(GDataEntryProto* proto) const {
   proto->set_parent_resource_id(parent_resource_id_);
   proto->set_edit_url(edit_url_.spec());
   proto->set_content_url(content_url_.spec());
+  proto->set_upload_url(upload_url_.spec());
 }
 
 bool GDataFile::FromProto(const GDataFileProto& proto) {
@@ -606,14 +616,6 @@ bool GDataFile::FromProto(const GDataFileProto& proto) {
   content_mime_type_ = proto.content_mime_type();
   file_md5_ = proto.file_md5();
   document_extension_ = proto.document_extension();
-  // Reject older protobuf that does not contain the upload URL.  This URL is
-  // necessary for uploading dirty files (ex. updating existing files).
-  if (!proto.has_upload_url()) {
-    LOG(ERROR) << "Incompatible proto detected (no upload URL): "
-               << proto.gdata_entry().title();
-    return false;
-  }
-  upload_url_ = GURL(proto.upload_url());
   is_hosted_document_ = proto.is_hosted_document();
 
   return true;
@@ -628,9 +630,6 @@ void GDataFile::ToProto(GDataFileProto* proto) const {
   proto->set_content_mime_type(content_mime_type_);
   proto->set_file_md5(file_md5_);
   proto->set_document_extension(document_extension_);
-  // The upload URL must be stored even if it's empty, as this is used to
-  // detect older protobuf. See FromProto() above.
-  proto->set_upload_url(upload_url_.spec());
   proto->set_is_hosted_document(is_hosted_document_);
 }
 
@@ -662,7 +661,6 @@ bool GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
 
   start_feed_url_ = GURL(proto.start_feed_url());
   next_feed_url_ = GURL(proto.next_feed_url());
-  upload_url_ = GURL(proto.upload_url());
   origin_ = ContentOrigin(proto.origin());
 
   return true;
@@ -673,7 +671,6 @@ void GDataDirectory::ToProto(GDataDirectoryProto* proto) const {
   DCHECK(proto->gdata_entry().file_info().is_directory());
   proto->set_start_feed_url(start_feed_url_.spec());
   proto->set_next_feed_url(next_feed_url_.spec());
-  proto->set_upload_url(upload_url_.spec());
   proto->set_origin(origin_);
   for (GDataFileCollection::const_iterator iter = child_files_.begin();
        iter != child_files_.end(); ++iter) {

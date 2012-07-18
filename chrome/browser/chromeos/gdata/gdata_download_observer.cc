@@ -493,7 +493,7 @@ void GDataDownloadObserver::OnReadDirectoryByPath(
   // TODO(hshi): if the upload directory is no longer valid, use the root
   // directory instead.
   upload_file_info->initial_upload_location =
-      dir_proto.get() ? GURL(dir_proto->upload_url()) : GURL();
+      dir_proto.get() ? GURL(dir_proto->gdata_entry().upload_url()) : GURL();
 
   StartUpload(download_id, upload_file_info.Pass());
 }

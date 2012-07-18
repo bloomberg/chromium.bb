@@ -133,6 +133,10 @@ class GDataEntry {
   const GURL& content_url() const { return content_url_; }
   void set_content_url(const GURL& url) { content_url_ = url; }
 
+  // Upload URL is used for uploading files. See gdata.proto for details.
+  const GURL& upload_url() const { return upload_url_; }
+  void set_upload_url(const GURL& url) { upload_url_ = url; }
+
   // The edit URL is used for removing files and hosted documents.
   const GURL& edit_url() const { return edit_url_; }
 
@@ -177,6 +181,7 @@ class GDataEntry {
   // will show up in the virtual directory as "Foo" and "Foo (2)".
   GURL edit_url_;
   GURL content_url_;
+  GURL upload_url_;
 
   // Remaining fields are not serialized.
 
@@ -219,7 +224,6 @@ class GDataFile : public GDataEntry {
   DocumentEntry::EntryKind kind() const { return kind_; }
   const GURL& thumbnail_url() const { return thumbnail_url_; }
   const GURL& alternate_url() const { return alternate_url_; }
-  const GURL& upload_url() const { return upload_url_; }
   const std::string& content_mime_type() const { return content_mime_type_; }
   const std::string& file_md5() const { return file_md5_; }
   void set_file_md5(const std::string& file_md5) { file_md5_ = file_md5; }
@@ -237,9 +241,6 @@ class GDataFile : public GDataEntry {
   DocumentEntry::EntryKind kind_;
   GURL thumbnail_url_;
   GURL alternate_url_;
-  // Upload url, corresponds to resumable-edit-media link, used for updating
-  // the content of the file.
-  GURL upload_url_;
   std::string content_mime_type_;
   std::string file_md5_;
   std::string document_extension_;
@@ -299,10 +300,6 @@ class GDataDirectory : public GDataEntry {
   // Continuing feed's url.
   const GURL& next_feed_url() const { return next_feed_url_; }
   void set_next_feed_url(const GURL& url) { next_feed_url_ = url; }
-  // Upload url is an entry point for initialization of file upload.
-  // It corresponds to resumable-create-media link from gdata feed.
-  const GURL& upload_url() const { return upload_url_; }
-  void set_upload_url(const GURL& url) { upload_url_ = url; }
   // Collection of children files/directories.
   const GDataFileCollection& child_files() const { return child_files_; }
   const GDataDirectoryCollection& child_directories() const {
@@ -324,9 +321,6 @@ class GDataDirectory : public GDataEntry {
   GURL start_feed_url_;
   // Continuing feed's url.
   GURL next_feed_url_;
-  // Upload url, corresponds to resumable-create-media link for feed
-  // representing this directory.
-  GURL upload_url_;
 
   // Directory content origin.
   ContentOrigin origin_;

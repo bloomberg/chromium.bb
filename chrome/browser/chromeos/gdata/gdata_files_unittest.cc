@@ -14,24 +14,26 @@ namespace gdata {
 
 namespace {
 
+// See gdata.proto for the difference between the two URLs.
 const char kResumableEditMediaUrl[] = "http://resumable-edit-media/";
+const char kResumableCreateMediaUrl[] = "http://resumable-create-media/";
 
 }  // namespace
 
-TEST(GDataFileTest, FromProto_DetectBadUploadUrl) {
-  GDataFileProto proto;
-  proto.mutable_gdata_entry()->set_title("test.txt");
+TEST(GDataEntryTest, FromProto_DetectBadUploadUrl) {
+  GDataEntryProto proto;
+  proto.set_title("test.txt");
 
-  GDataFile file(NULL, NULL);
+  GDataEntry entry(NULL, NULL);
   // This should fail as the upload URL is empty.
-  ASSERT_FALSE(file.FromProto(proto));
+  ASSERT_FALSE(entry.FromProto(proto));
 
   // Set a upload URL.
   proto.set_upload_url(kResumableEditMediaUrl);
 
-  // This should succeed as the resource ID is correct.
-  ASSERT_TRUE(file.FromProto(proto));
-  EXPECT_EQ(kResumableEditMediaUrl, file.upload_url().spec());
+  // This should succeed as the upload URL is set.
+  ASSERT_TRUE(entry.FromProto(proto));
+  EXPECT_EQ(kResumableEditMediaUrl, entry.upload_url().spec());
 }
 
 TEST(GDataRootDirectoryTest, ParseFromString_DetectBadTitle) {
@@ -40,6 +42,7 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectBadTitle) {
       proto.mutable_gdata_directory()->mutable_gdata_entry();
   mutable_entry->mutable_file_info()->set_is_directory(true);
   mutable_entry->set_resource_id(kGDataRootDirectoryResourceId);
+  mutable_entry->set_upload_url(kResumableCreateMediaUrl);
 
   std::string serialized_proto;
   ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
@@ -75,6 +78,7 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectBadResourceID) {
       proto.mutable_gdata_directory()->mutable_gdata_entry();
   mutable_entry->mutable_file_info()->set_is_directory(true);
   mutable_entry->set_title(kGDataRootDirectory);
+  mutable_entry->set_upload_url(kResumableCreateMediaUrl);
 
   std::string serialized_proto;
   ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
@@ -106,6 +110,7 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectNoUploadUrl) {
   mutable_entry->mutable_file_info()->set_is_directory(true);
   mutable_entry->set_title(kGDataRootDirectory);
   mutable_entry->set_resource_id(kGDataRootDirectoryResourceId);
+  mutable_entry->set_upload_url(kResumableCreateMediaUrl);
   // Set the origin to the server.
   root_directory_proto.mutable_gdata_directory()->set_origin(FROM_SERVER);
 
@@ -116,6 +121,8 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectNoUploadUrl) {
   sub_directory_proto->mutable_gdata_entry()->mutable_file_info()->
       set_is_directory(true);
   sub_directory_proto->mutable_gdata_entry()->set_title("empty");
+  sub_directory_proto->mutable_gdata_entry()->set_upload_url(
+      kResumableCreateMediaUrl);
 
   // Add a sub directory under the root directory.
   sub_directory_proto =
@@ -123,6 +130,8 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectNoUploadUrl) {
   sub_directory_proto->mutable_gdata_entry()->mutable_file_info()->
       set_is_directory(true);
   sub_directory_proto->mutable_gdata_entry()->set_title("dir");
+  sub_directory_proto->mutable_gdata_entry()->set_upload_url(
+      kResumableCreateMediaUrl);
 
   // Add a new file under the sub directory "dir".
   GDataFileProto* file_proto =
@@ -145,7 +154,7 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectNoUploadUrl) {
   ASSERT_EQ(UNINITIALIZED, root->origin());
 
   // Set an upload URL.
-  file_proto->set_upload_url(kResumableEditMediaUrl);
+  file_proto->mutable_gdata_entry()->set_upload_url(kResumableEditMediaUrl);
 
   // Serialize the proto and check if it's loaded.
   // This should succeed as the upload URL is set for |file_proto|.

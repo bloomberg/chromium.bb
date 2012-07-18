@@ -693,46 +693,49 @@ class GDataFileSystemTest : public testing::Test {
     PlatformFileInfoProto* platform_info = file_base->mutable_file_info();
     file_base->set_title("drive");
     file_base->set_resource_id(kGDataRootDirectoryResourceId);
+    file_base->set_upload_url("http://resumable-create-media/1");
     platform_info->set_is_directory(true);
 
     // drive/File1
     GDataFileProto* file = root_dir->add_child_files();
-    file->set_upload_url("http://resumable-edit-media/1");
     file_base = file->mutable_gdata_entry();
-    platform_info = file_base->mutable_file_info();
     file_base->set_title("File1");
+    file_base->set_upload_url("http://resumable-edit-media/1");
+    platform_info = file_base->mutable_file_info();
     platform_info->set_is_directory(false);
     platform_info->set_size(1048576);
 
     // drive/Dir1
     GDataDirectoryProto* dir1 = root_dir->add_child_directories();
     file_base = dir1->mutable_gdata_entry();
-    platform_info = file_base->mutable_file_info();
     file_base->set_title("Dir1");
+    file_base->set_upload_url("http://resumable-create-media/2");
+    platform_info = file_base->mutable_file_info();
     platform_info->set_is_directory(true);
 
     // drive/Dir1/File2
     file = dir1->add_child_files();
-    file->set_upload_url("http://resumable-edit-media/2");
     file_base = file->mutable_gdata_entry();
-    platform_info = file_base->mutable_file_info();
     file_base->set_title("File2");
+    file_base->set_upload_url("http://resumable-edit-media/2");
+    platform_info = file_base->mutable_file_info();
     platform_info->set_is_directory(false);
     platform_info->set_size(555);
 
     // drive/Dir1/SubDir2
     GDataDirectoryProto* dir2 = dir1->add_child_directories();
     file_base = dir2->mutable_gdata_entry();
-    platform_info = file_base->mutable_file_info();
     file_base->set_title("SubDir2");
+    file_base->set_upload_url("http://resumable-create-media/3");
+    platform_info = file_base->mutable_file_info();
     platform_info->set_is_directory(true);
 
     // drive/Dir1/SubDir2/File3
     file = dir2->add_child_files();
-    file->set_upload_url("http://resumable-edit-media/3");
     file_base = file->mutable_gdata_entry();
-    platform_info = file_base->mutable_file_info();
     file_base->set_title("File3");
+    file_base->set_upload_url("http://resumable-edit-media/3");
+    platform_info = file_base->mutable_file_info();
     platform_info->set_is_directory(false);
     platform_info->set_size(12345);
 

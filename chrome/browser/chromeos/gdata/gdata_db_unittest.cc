@@ -317,7 +317,8 @@ TEST_F(GDataDBTest, IncompatibleProtoTest) {
   // Tweak the file proto to simulate an incompatible proto in the DB.
   GDataFileProto file_proto;
   file.ToProto(&file_proto);
-  file_proto.clear_upload_url();  // This will make FromProto() fail.
+  // This will make FromProto() fail.
+  file_proto.mutable_gdata_entry()->clear_upload_url();
   std::string serialized_proto;
   file_proto.SerializeToString(&serialized_proto);
   gdata_db_->PutRawForTesting("file_resource_id", serialized_proto);
