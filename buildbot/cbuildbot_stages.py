@@ -1020,6 +1020,10 @@ class ChromeTestStage(BoardSpecificBuilderStage):
   option_name = 'tests'
   config_name = 'chrome_tests'
 
+  # If the chrome tests take longer than an hour to run, abort. They
+  # usually take about 30 minutes to run.
+  CHROME_TEST_TIMEOUT = 3600
+
   def __init__(self, options, build_config, board, archive_stage):
     super(ChromeTestStage, self).__init__(options, build_config, board)
     self._archive_stage = archive_stage
@@ -1028,11 +1032,14 @@ class ChromeTestStage(BoardSpecificBuilderStage):
     try:
       test_results_dir = None
       test_results_dir = commands.CreateTestRoot(self._build_root)
-      commands.RunChromeSuite(self._build_root,
-                              self._current_board,
-                              self.GetImageDirSymlink(),
-                              os.path.join(test_results_dir,
-                                           'chrome_results'))
+      with cros_build_lib.SubCommandTimeout(self.CHROME_TEST_TIMEOUT):
+        commands.RunChromeSuite(self._build_root,
+                                self._current_board,
+                                self.GetImageDirSymlink(),
+                                os.path.join(test_results_dir,
+                                             'chrome_results'))
+    except cros_build_lib.TimeoutError as exception:
+      return self._HandleExceptionAsWarning(exception)
     finally:
       test_tarball = None
       if test_results_dir:
@@ -1052,11 +1059,16 @@ class UnitTestStage(BoardSpecificBuilderStage):
   option_name = 'tests'
   config_name = 'unittests'
 
+  # If the unit tests take longer than 30 minutes, abort. They usually take
+  # five minutes to run.
+  UNIT_TEST_TIMEOUT = 1800
+
   def _PerformStage(self):
-    commands.RunUnitTests(self._build_root,
-                          self._current_board,
-                          full=(not self._build_config['quick_unit']),
-                          nowithdebug=self._build_config['nowithdebug'])
+    with cros_build_lib.SubCommandTimeout(self.UNIT_TEST_TIMEOUT):
+      commands.RunUnitTests(self._build_root,
+                            self._current_board,
+                            full=(not self._build_config['quick_unit']),
+                            nowithdebug=self._build_config['nowithdebug'])
 
 
 class VMTestStage(BoardSpecificBuilderStage):
@@ -1100,7 +1112,7 @@ class VMTestStage(BoardSpecificBuilderStage):
 class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
   """Stage that runs tests in the Autotest lab."""
 
-  # If the tests take longer than an hour and a half, abort.
+  # If the tests take longer than 2h20m, abort.
   INFRASTRUCTURE_TIMEOUT = 8400
   option_name = 'tests'
   config_name = 'hw_tests'
