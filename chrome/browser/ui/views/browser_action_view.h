@@ -92,6 +92,11 @@ class BrowserActionButton : public views::MenuButton,
   void SetButtonPushed();
   void SetButtonNotPushed();
 
+  // Whether the browser action is enabled on this tab. Note that we cannot use
+  // the built-in views enabled/SetEnabled because disabled views do not
+  // receive drag events.
+  bool IsEnabled(int tab_id) const;
+
  protected:
   // Overridden from views::View:
   virtual void ViewHierarchyChanged(bool is_add,

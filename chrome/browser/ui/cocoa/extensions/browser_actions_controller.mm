@@ -812,10 +812,14 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
   [self browserActionClicked:[menuItem representedObject]];
 }
 
+// TODO(yoz): This only gets called when the set of actions in the overflow
+// menu changes (not for things that would update page actions).
+// It should instead be called each time the menu is opened.
 - (void)updateOverflowMenu {
   overflowMenu_.reset([[NSMenu alloc] initWithTitle:@""]);
   // See menu_button.h for documentation on why this is needed.
   [overflowMenu_ addItemWithTitle:@"" action:nil keyEquivalent:@""];
+  [overflowMenu_ setAutoenablesItems:NO];
 
   for (BrowserActionButton* button in hiddenButtons_.get()) {
     NSString* name = base::SysUTF8ToNSString([button extension]->name());
@@ -826,6 +830,7 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
     [item setRepresentedObject:button];
     [item setImage:[button compositedImage]];
     [item setTarget:self];
+    [item setEnabled:[button isEnabled]];
   }
   [chevronMenuButton_ setAttachedMenu:overflowMenu_];
 }

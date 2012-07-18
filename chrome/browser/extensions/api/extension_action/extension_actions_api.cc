@@ -115,9 +115,13 @@ bool ExtensionActionFunction::RunImpl() {
 void ExtensionActionFunction::NotifyChange() {
   switch (extension_action_->action_type()) {
     case ExtensionAction::TYPE_BROWSER:
-      NotifyBrowserActionChange();
-      return;
     case ExtensionAction::TYPE_PAGE:
+      if (extension_->browser_action()) {
+        NotifyBrowserActionChange();
+      } else if (extension_->page_action()) {
+        NotifyLocationBarChange();
+      }
+      return;
     case ExtensionAction::TYPE_SCRIPT_BADGE:
       NotifyLocationBarChange();
       return;
@@ -174,10 +178,6 @@ bool ExtensionActionFunction::ParseCSSColorString(
 }
 
 bool ExtensionActionFunction::SetVisible(bool visible) {
-  // If --enable-script-badges is on there will be a browser_action here
-  // instead of a page action. Disable/renable the browser action perhaps?
-  if (!GetExtension()->page_action())
-    return true;
   extension_action_->SetIsVisible(tab_id_, visible);
   NotifyChange();
   return true;

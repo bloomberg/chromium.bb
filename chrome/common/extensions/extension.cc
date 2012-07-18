@@ -805,9 +805,10 @@ scoped_ptr<ExtensionAction> Extension::LoadExtensionActionHelper(
     string16* error) {
   scoped_ptr<ExtensionAction> result(new ExtensionAction(id(), action_type));
 
-  // Page actions are hidden by default, and browser actions ignore
-  // visibility.
-  result->SetIsVisible(ExtensionAction::kDefaultTabId, false);
+  // Page actions are hidden/disabled by default, and browser actions are
+  // visible/enabled by default.
+  result->SetIsVisible(ExtensionAction::kDefaultTabId,
+                       action_type != ExtensionAction::TYPE_PAGE);
 
   if (manifest_version_ == 1) {
     ListValue* icons = NULL;

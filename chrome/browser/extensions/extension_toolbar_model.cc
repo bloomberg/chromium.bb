@@ -97,10 +97,15 @@ ExtensionToolbarModel::Action ExtensionToolbarModel::ExecuteBrowserAction(
   if (tab_id < 0)
     return ACTION_NONE;
 
+  ExtensionAction* browser_action = extension->browser_action();
+
+  // For browser actions, visibility == enabledness.
+  if (!browser_action->GetIsVisible(tab_id))
+    return ACTION_NONE;
+
   tab_contents->extension_tab_helper()->active_tab_permission_manager()->
       GrantIfRequested(extension);
 
-  ExtensionAction* browser_action = extension->browser_action();
   if (browser_action->HasPopup(tab_id)) {
     if (popup_url_out)
       *popup_url_out = browser_action->GetPopupUrl(tab_id);

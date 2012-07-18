@@ -60,7 +60,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   ExtensionToolbarModel* model() { return model_; }
 
   // Returns the currently selected tab ID, or -1 if there is none.
-  int GetCurrentTabId();
+  int GetCurrentTabId() const;
 
   // Update the display of all buttons.
   void Update();

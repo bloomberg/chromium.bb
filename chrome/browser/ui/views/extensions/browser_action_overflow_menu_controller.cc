@@ -87,6 +87,11 @@ void BrowserActionOverflowMenuController::CancelMenu() {
   menu_->Cancel();
 }
 
+bool BrowserActionOverflowMenuController::IsCommandEnabled(int id) const {
+  BrowserActionView* view = (*views_)[start_index_ + id - 1];
+  return view->button()->IsEnabled(owner_->GetCurrentTabId());
+}
+
 void BrowserActionOverflowMenuController::ExecuteCommand(int id) {
   BrowserActionView* view = (*views_)[start_index_ + id - 1];
   owner_->OnBrowserActionExecuted(view->button());

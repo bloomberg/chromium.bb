@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,6 +47,7 @@ class BrowserActionOverflowMenuController : public views::MenuDelegate {
   void CancelMenu();
 
   // Overridden from views::MenuDelegate:
+  virtual bool IsCommandEnabled(int id) const OVERRIDE;
   virtual void ExecuteCommand(int id) OVERRIDE;
   virtual bool ShowContextMenu(views::MenuItemView* source,
                                int id,

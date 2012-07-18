@@ -237,6 +237,9 @@ class BrowserActionButton : public content::NotificationObserver,
     } else if (default_icon_) {
       SetImage(default_icon_);
     }
+    bool enabled = extension_->browser_action()->GetIsVisible(tab_id);
+    gtk_widget_set_sensitive(button(), enabled);
+
     gtk_widget_queue_draw(button());
   }
 
@@ -581,7 +584,7 @@ BrowserActionsToolbarGtk::~BrowserActionsToolbarGtk() {
   hbox_.Destroy();
 }
 
-int BrowserActionsToolbarGtk::GetCurrentTabId() {
+int BrowserActionsToolbarGtk::GetCurrentTabId() const {
   TabContents* active_tab = chrome::GetActiveTabContents(browser_);
   if (!active_tab)
     return -1;
@@ -788,7 +791,8 @@ bool BrowserActionsToolbarGtk::IsCommandIdChecked(int command_id) const {
 }
 
 bool BrowserActionsToolbarGtk::IsCommandIdEnabled(int command_id) const {
-  return true;
+  const Extension* extension = model_->GetExtensionByIndex(command_id);
+  return extension->browser_action()->GetIsVisible(GetCurrentTabId());
 }
 
 bool BrowserActionsToolbarGtk::GetAcceleratorForCommandId(

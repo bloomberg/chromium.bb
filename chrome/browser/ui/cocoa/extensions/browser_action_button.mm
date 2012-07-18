@@ -273,6 +273,9 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
 
   [[self cell] setTabId:tabId_];
 
+  bool enabled = extension_->browser_action()->GetIsVisible(tabId_);
+  [self setEnabled:enabled ? YES : NO];
+
   [self setNeedsDisplay:YES];
 
   [[NSNotificationCenter defaultCenter]

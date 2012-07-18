@@ -20,10 +20,25 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 using extensions::Extension;
+
+namespace {
+
+// Return a more transparent |image|, with 25% of its original opacity.
+SkBitmap MakeTransparent(const SkBitmap& image) {
+  SkBitmap alpha;
+  alpha.setConfig(SkBitmap::kARGB_8888_Config, image.width(), image.height());
+  alpha.allocPixels();
+  alpha.eraseColor(SkColorSetARGB(64, 0, 0, 0));
+
+  return SkBitmapOperations::CreateMaskedBitmap(image, alpha);
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionButton
@@ -146,10 +161,20 @@ void BrowserActionButton::UpdateState() {
   if (tab_id < 0)
     return;
 
+  if (!IsEnabled(tab_id)) {
+    SetState(views::CustomButton::BS_DISABLED);
+  } else {
+    SetState(menu_visible_ ?
+             views::CustomButton::BS_NORMAL :
+             views::CustomButton::BS_PUSHED);
+  }
+
   SkBitmap icon(browser_action()->GetIcon(tab_id));
   if (icon.isNull())
     icon = default_icon_;
   if (!icon.isNull()) {
+    if (!browser_action()->GetIsVisible(tab_id))
+      icon = MakeTransparent(icon);
     SkPaint paint;
     paint.setXfermode(SkXfermode::Create(SkXfermode::kSrcOver_Mode));
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -187,6 +212,7 @@ void BrowserActionButton::UpdateState() {
     name = UTF8ToUTF16(extension()->name());
   SetTooltipText(name);
   SetAccessibleName(name);
+
   parent()->SchedulePaint();
 }
 
@@ -298,6 +324,10 @@ void BrowserActionButton::SetButtonNotPushed() {
   menu_visible_ = false;
 }
 
+bool BrowserActionButton::IsEnabled(int tab_id) const {
+  return browser_action_->GetIsVisible(tab_id);
+}
+
 BrowserActionButton::~BrowserActionButton() {
 }
 
@@ -360,6 +390,10 @@ gfx::Canvas* BrowserActionView::GetIconWithBadge() {
   SkBitmap icon = button_->extension()->browser_action()->GetIcon(tab_id);
   if (icon.isNull())
     icon = button_->default_icon();
+
+  // Dim the icon if our button is disabled.
+  if (!button_->IsEnabled(tab_id))
+    icon = MakeTransparent(icon);
 
   gfx::Canvas* canvas =
       new gfx::Canvas(gfx::ImageSkiaRep(icon, ui::SCALE_FACTOR_100P), false);
