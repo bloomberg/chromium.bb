@@ -36,6 +36,22 @@ namespace {
 
 const char kViewIntent[] = "http://webintents.org/view";
 
+bool MakePathAbsolute(const FilePath& current_directory,
+                      FilePath* file_path) {
+  DCHECK(file_path);
+  if (file_path->IsAbsolute())
+    return true;
+
+  if (current_directory.empty())
+    return file_util::AbsolutePath(file_path);
+
+  if (!current_directory.IsAbsolute())
+    return false;
+
+  *file_path = current_directory.Append(*file_path);
+  return true;
+}
+
 // Class to handle launching of platform apps with command line information.
 // An instance of this class is created for each launch. The lifetime of these
 // instances is managed by reference counted pointers. As long as an instance
@@ -46,10 +62,12 @@ class PlatformAppCommandLineLauncher
  public:
   PlatformAppCommandLineLauncher(Profile* profile,
                                  const Extension* extension,
-                                 const CommandLine* command_line)
+                                 const CommandLine* command_line,
+                                 const FilePath& current_directory)
       : profile_(profile),
         extension_(extension),
-        command_line_(command_line) {}
+        command_line_(command_line),
+        current_directory_(current_directory) {}
 
   void Launch() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -77,10 +95,19 @@ class PlatformAppCommandLineLauncher
   void GetMimeTypeAndLaunch(const FilePath& file_path) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
+    // If we cannot construct an absolute path, launch with no launch data.
+    FilePath absolute_path(file_path);
+    if (!MakePathAbsolute(current_directory_, &absolute_path)) {
+      LOG(WARNING) << "Cannot make absolute path from " << file_path.value();
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
+              &PlatformAppCommandLineLauncher::LaunchWithNoLaunchData, this));
+      return;
+    }
+
     // If the file doesn't exist, or is a directory, launch with no launch data.
-    if (!file_util::PathExists(file_path) ||
-        file_util::DirectoryExists(file_path)) {
-      LOG(WARNING) << "No file exists with path " << file_path.value();
+    if (!file_util::PathExists(absolute_path) ||
+        file_util::DirectoryExists(absolute_path)) {
+      LOG(WARNING) << "No file exists with path " << absolute_path.value();
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
               &PlatformAppCommandLineLauncher::LaunchWithNoLaunchData, this));
       return;
@@ -88,8 +115,9 @@ class PlatformAppCommandLineLauncher
 
     std::string mime_type;
     // If we cannot obtain the MIME type, launch with no launch data.
-    if (!net::GetMimeTypeFromFile(file_path, &mime_type)) {
-      LOG(WARNING) << "Could not obtain MIME type for " << file_path.value();
+    if (!net::GetMimeTypeFromFile(absolute_path, &mime_type)) {
+      LOG(WARNING) << "Could not obtain MIME type for "
+                   << absolute_path.value();
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
               &PlatformAppCommandLineLauncher::LaunchWithNoLaunchData, this));
       return;
@@ -97,7 +125,7 @@ class PlatformAppCommandLineLauncher
 
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
             &PlatformAppCommandLineLauncher::LaunchWithMimeTypeAndPath,
-            this, file_path, mime_type));
+            this, absolute_path, mime_type));
   }
 
   void LaunchWithMimeTypeAndPath(const FilePath& file_path,
@@ -190,6 +218,8 @@ class PlatformAppCommandLineLauncher
   const Extension* extension_;
   // The command line to be passed through to the app, or NULL.
   const CommandLine* command_line_;
+  // If non-empty, this is used to expand relative paths.
+  const FilePath current_directory_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformAppCommandLineLauncher);
 };
@@ -278,12 +308,14 @@ namespace extensions {
 
 void LaunchPlatformApp(Profile* profile,
                        const Extension* extension,
-                       const CommandLine* command_line) {
+                       const CommandLine* command_line,
+                       const FilePath& current_directory) {
   // launcher will be freed when nothing has a reference to it. The message
   // queue will retain a reference for any outstanding task, so when the
   // launcher has finished it will be freed.
   scoped_refptr<PlatformAppCommandLineLauncher> launcher =
-      new PlatformAppCommandLineLauncher(profile, extension, command_line);
+      new PlatformAppCommandLineLauncher(profile, extension, command_line,
+                                         current_directory);
   launcher->Launch();
 }
 

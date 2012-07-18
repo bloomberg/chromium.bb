@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -204,6 +205,39 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithFile) {
   SetCommandLineArg( "platform_apps/launch_files/test.txt");
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_file"))
       << message_;
+}
+
+// Tests that relative paths can be passed through to the platform app.
+// This test doesn't use the normal test infrastructure as it needs to open
+// the application differently to all other platform app tests, by setting
+// the application_launch::LaunchParams.current_directory field.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithRelativeFile) {
+  // Setup the command line
+  ClearCommandLineArgs();
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  FilePath relative_test_doc = FilePath::FromUTF8Unsafe(
+      "platform_apps/launch_files/test.txt");
+  relative_test_doc = relative_test_doc.NormalizePathSeparators();
+  command_line->AppendArgPath(relative_test_doc);
+
+  // Load the extension
+  ResultCatcher catcher;
+  const extensions::Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("platform_apps/launch_file"));
+  ASSERT_TRUE(extension);
+
+  // Run the test
+  application_launch::LaunchParams params(browser()->profile(), extension,
+                                          extension_misc::LAUNCH_NONE,
+                                          NEW_WINDOW);
+  params.command_line = CommandLine::ForCurrentProcess();
+  params.current_directory = test_data_dir_;
+  application_launch::OpenApplication(params);
+
+  if (!catcher.GetNextResult()) {
+    message_ = catcher.message();
+    ASSERT_TRUE(0);
+  }
 }
 
 // Tests that no launch data is sent through if the platform app provides

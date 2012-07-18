@@ -472,6 +472,7 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(
     application_launch::LaunchParams params(profile, extension,
                                             launch_container, NEW_WINDOW);
     params.command_line = &command_line_;
+    params.current_directory = cur_dir_;
     WebContents* tab_in_app_window = application_launch::OpenApplication(
         params);
 

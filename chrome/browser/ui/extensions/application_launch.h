@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_UI_EXTENSIONS_APPLICATION_LAUNCH_H_
 #define CHROME_BROWSER_UI_EXTENSIONS_APPLICATION_LAUNCH_H_
 
+#include "base/file_path.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "googleurl/src/gurl.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class Browser;
 class CommandLine;
-class GURL;
 class Profile;
 
 namespace content {
@@ -47,6 +48,10 @@ struct LaunchParams {
   // If non-NULL, information from the command line may be passed on to the
   // application.
   const CommandLine* command_line;
+
+  // If non-empty, the current directory from which any relative paths on the
+  // command line should be expanded from.
+  FilePath current_directory;
 };
 
 // Open the application in a way specified by |params|.

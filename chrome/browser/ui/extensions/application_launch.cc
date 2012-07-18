@@ -295,7 +295,8 @@ WebContents* OpenApplication(const LaunchParams& params) {
 #endif
 
   if (extension->is_platform_app()) {
-    extensions::LaunchPlatformApp(profile, extension, params.command_line);
+    extensions::LaunchPlatformApp(profile, extension, params.command_line,
+                                  params.current_directory);
     return NULL;
   }
 
