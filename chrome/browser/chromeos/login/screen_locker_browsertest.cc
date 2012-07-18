@@ -257,7 +257,9 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
   EXPECT_FALSE(tester->IsLocked());
 }
 
-IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestEscape) {
+// TODO(flackr): Find out why the RenderView isn't getting the escape press
+// and re-enable this test (currently this test is flaky).
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestEscape) {
   EXPECT_CALL(*mock_power_manager_client_, NotifyScreenLockCompleted())
       .Times(1)
       .RetiresOnSaturation();
