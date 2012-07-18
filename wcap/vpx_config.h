@@ -1,2 +1,0 @@
-
-#define CONFIG_LITTLE_ENDIAN 1

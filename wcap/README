@@ -9,18 +9,18 @@ something actually changes.
 Recording in Weston is started by pressing MOD+R and stopped by
 pressing MOD+R again.  Currently this leaves a capture.wcap file in
 the cwd of the weston process.  The file format is documented below
-and Weston comes with two tools to convert the wcap file into
-something more usable:
+and Weston comes with the wcap-decode tool to convert the wcap file
+into something more usable:
 
- - wcap-snapshot; a simple tool that will extract a given frame from
-   the capture as a png.  This will produce a lossless screenshot,
-   which is useful if you're trying to screenshot a brief glitch or
-   something like that that's hard to capture with the screenshot tool.
+ - Extract single or all frames as individual png files.  This will
+   produce a lossless screenshot, which is useful if you're trying to
+   screenshot a brief glitch or something like that that's hard to
+   capture with the screenshot tool.
 
-   wcap-snapshot takes a wcap file as its first argument.  Without
-   anything else, it will show the screen size and number of frames in
-   the file.  With an integer second argument, it will extract that
-   frame as a png:
+   wcap-decode takes a number of options and a wcap file as its
+   arguments.  Without anything else, it will show the screen size and
+   number of frames in the file.  Pass --frame=<frame> to extract a
+   single frame or pass --all to extract all frames as png files:
 
 	[krh@minato weston]$ wcap-snapshot capture.wcap 
 	wcap file: size 1024x640, 176 frames
@@ -28,23 +28,23 @@ something more usable:
 	wrote wcap-frame-20.png
 	wcap file: size 1024x640, 176 frames
 
- - wcap-decode; this is a copy of the vpxenc tool from the libvpx
-   repository, with wcap input file support added.  The tool can
-   encode a wcap file into a webm video (http://www.webmproject.org/).
-   The command line arguments are identical to what the vpxenc tool
-   takes and wcap-decode will print them if run without any arguments.
+ - Decode and the wcap file and dump it as a YUV4MPEG2 stream on
+   stdout.  This format is compatible with most video encoders and can
+   be piped directly into a command line encoder such as vpxenc (part
+   of libvpx, encodes to a webm file) or theora_encode (part of
+   libtheora, encodes to a ogg theora file).
 
-   The minimal command line requires a webm output file and a wcap
-   input file:
+   Using vpxenc to encode a webm file would look something like this:
 
-	[krh@minato weston]$ wcap-decode -o foo.webm capture.wcap  
+	[krh@minato weston]$ wcap-decode  --yuv4mpeg2 ../capture.wcap |
+		vpxenc --target-bitrate=1024 --best -t 4 -o foo.webm  -
 
-   but it's possible to select target bitrate and output framerate and
-   it's typically useful to pass -t 4 to let the tool use multiple
-   threads:
+   where we select target bitrate, pass -t 4 to let vpxenc use
+   multiple threads.  To encode to Ogg Theora a command line like this
+   works:
 
-	[krh@minato weston]$ wcap-decode --target-bitrate=1024 \
-		--best -t 4 -o foo.webm capture.wcap  --fps=10/1
+	[krh@minato weston]$ wcap-decode ../capture.wcap  --yuv4mpeg2 |
+		theora_encode - -o cap.ogv
 
 
 WCAP File format
