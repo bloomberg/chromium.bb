@@ -18,6 +18,7 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rule.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
+#include "chrome/browser/extensions/api/web_navigation/web_navigation_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/web_request_time_tracker.h"
@@ -53,6 +54,8 @@ using content::BrowserThread;
 using content::ResourceRequestInfo;
 using extensions::Extension;
 
+using extensions::web_navigation_api_helpers::GetFrameId;
+
 namespace helpers = extension_web_request_api_helpers;
 namespace keys = extension_web_request_api_constants;
 
@@ -72,15 +75,6 @@ static const char* const kWebRequestEvents[] = {
 };
 
 #define ARRAYEND(array) (array + arraysize(array))
-
-// Returns the frame ID as it will be passed to the extension:
-// 0 if the navigation happens in the main frame, or the frame ID
-// modulo 32 bits otherwise.
-// Keep this in sync with the GetFrameId() function in
-// extension_webnavigation_api.cc.
-int GetFrameId(bool is_main_frame, int64 frame_id) {
-  return is_main_frame ? 0 : static_cast<int>(frame_id);
-}
 
 bool IsWebRequestEvent(const std::string& event_name) {
   return std::find(kWebRequestEvents, ARRAYEND(kWebRequestEvents),
