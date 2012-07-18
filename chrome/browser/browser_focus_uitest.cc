@@ -41,7 +41,6 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #endif
 
 #if defined(TOOLKIT_GTK)
