@@ -1557,10 +1557,22 @@ class ArchiveStage(BoardSpecificBuilderStage):
         upload_queue.put([filename])
 
     def ArchiveRegularImages():
-      """Build and archive image.zip and the hwqual image."""
+      """Build and archive regular images.
+
+      This includes the image.zip archive, the recovery image archive, the
+      hwqual images, and au-generator.zip used for update payload generation.
+      """
 
       # Zip up everything in the image directory.
       upload_queue.put([commands.BuildImageZip(archive_path, image_dir)])
+
+      # Zip up the recovery image separately.
+      # TODO(gauravsh): Remove recovery_image.bin from image.zip once we
+      #                 we know for sure there are no users relying on it.
+      if config['chromeos_official'] and 'base' in config['images']:
+        upload_queue.put([commands.BuildRecoveryImageZip(
+            archive_path,
+            os.path.join(image_dir, 'recovery_image.bin'))])
 
       # TODO(petermayo): This logic needs to be exported from the BuildTargets
       # stage rather than copied/re-evaluated here.

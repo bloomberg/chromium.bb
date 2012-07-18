@@ -1094,6 +1094,23 @@ def BuildImageZip(archive_dir, image_dir):
   return filename
 
 
+def BuildRecoveryImageZip(archive_dir, recovery_image_bin):
+  """Build recovery_image.zip in archive_dir from recovery_image.bin
+
+  Args:
+    archive_dir: Directory to store recovery_image.zip
+    recovery_image_bin: Recovery image to zip up.
+
+    Returns the base name of the zipfile.
+  """
+  filename = 'recovery_image.zip'
+  zipfile = os.path.join(archive_dir, filename)
+  cros_build_lib.RunCommandCaptureOutput(
+      ['zip', zipfile, os.path.basename(recovery_image_bin)],
+      cwd=os.path.dirname(recovery_image_bin))
+  return filename
+
+
 def BuildFirmwareArchive(buildroot, board, archive_dir):
   """Build firmware_from_source.tar.bz2 in archive_dir from build root.
 
