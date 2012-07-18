@@ -316,7 +316,7 @@ scons-stage-irt() {
   fi
 
   echo "@@@BUILD_STEP scons-irt [${platform}] [${test}] [${info}]@@@"
-  ${SCONS_COMMON} ${extra} platform=${platform} ${test} || handle-error
+  ${SCONS_COMMON} ${extra} ${mode} platform=${platform} ${test} || handle-error
 }
 
 # Run a single invocation of scons as its own buildbot stage and handle errors
