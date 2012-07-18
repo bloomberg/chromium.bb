@@ -126,6 +126,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       sync_prefs_(profile_ ? profile_->GetPrefs() : NULL),
       invalidator_storage_(profile_ ? profile_->GetPrefs(): NULL),
       sync_service_url_(kDevServerUrl),
+      is_first_time_sync_configure_(false),
       backend_initialized_(false),
       is_auth_in_progress_(false),
       signin_(signin_manager),
@@ -414,6 +415,7 @@ void ProfileSyncService::StartUp() {
   DCHECK(IsSyncEnabledAndLoggedIn());
 
   last_synced_time_ = sync_prefs_.GetLastSyncedTime();
+  start_up_time_ = base::Time::Now();
 
 #if defined(OS_CHROMEOS)
   std::string bootstrap_token = sync_prefs_.GetEncryptionBootstrapToken();
@@ -645,10 +647,23 @@ void ProfileSyncService::DisableBrokenDatatype(
 
 void ProfileSyncService::OnBackendInitialized(
     const syncer::WeakHandle<syncer::JsBackend>& js_backend, bool success) {
-  if (!HasSyncSetupCompleted()) {
+  is_first_time_sync_configure_ = !HasSyncSetupCompleted();
+
+  if (is_first_time_sync_configure_) {
     UMA_HISTOGRAM_BOOLEAN("Sync.BackendInitializeFirstTimeSuccess", success);
   } else {
     UMA_HISTOGRAM_BOOLEAN("Sync.BackendInitializeRestoreSuccess", success);
+  }
+
+  if (!start_up_time_.is_null()) {
+    base::Time on_backend_initialized_time = base::Time::Now();
+    base::TimeDelta delta = on_backend_initialized_time - start_up_time_;
+    if (is_first_time_sync_configure_) {
+      UMA_HISTOGRAM_LONG_TIMES("Sync.BackendInitializeFirstTime", delta);
+    } else {
+      UMA_HISTOGRAM_LONG_TIMES("Sync.BackendInitializeRestoreTime", delta);
+    }
+    start_up_time_ = base::Time();
   }
 
   if (!success) {
@@ -1447,9 +1462,10 @@ void ProfileSyncService::Observe(int type,
                                  const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_SYNC_CONFIGURE_START:
+      sync_configure_start_time_ = base::Time::Now();
+      // no break
     case chrome::NOTIFICATION_SYNC_CONFIGURE_BLOCKED:
       NotifyObservers();
-      // TODO(sync): Maybe toast?
       break;
     case chrome::NOTIFICATION_SYNC_CONFIGURE_DONE: {
       // We should have cleared our cached passphrase before we get here (in
@@ -1458,6 +1474,23 @@ void ProfileSyncService::Observe(int type,
 
       DataTypeManager::ConfigureResult* result =
           content::Details<DataTypeManager::ConfigureResult>(details).ptr();
+
+      if (!sync_configure_start_time_.is_null()) {
+        if (result->status == DataTypeManager::OK ||
+            result->status == DataTypeManager::PARTIAL_SUCCESS) {
+          base::Time sync_configure_stop_time = base::Time::Now();
+          base::TimeDelta delta = sync_configure_stop_time -
+              sync_configure_start_time_;
+          if (is_first_time_sync_configure_) {
+            UMA_HISTOGRAM_LONG_TIMES("Sync.ServiceInitialConfigureTime", delta);
+          } else {
+            UMA_HISTOGRAM_LONG_TIMES("Sync.ServiceSubsequentConfigureTime",
+                                     delta);
+          }
+        }
+
+        sync_configure_start_time_ = base::Time();
+      }
 
       configure_status_ = result->status;
       DVLOG(1) << "PSS SYNC_CONFIGURE_DONE called with status: "

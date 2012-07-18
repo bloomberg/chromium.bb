@@ -711,6 +711,20 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Our backend notifies us whenever we should take a new snapshot.
   base::Time last_synced_time_;
 
+  // The time that StartUp() is called.  This member is zero if StartUp() has
+  // never been called, and is reset to zero once OnBackendInitialized() is
+  // called.
+  base::Time start_up_time_;
+
+  // The time that NOTIFICATION_SYNC_CONFIGURE_START is received.  This member
+  // is zero if NOTIFICATION_SYNC_CONFIGURE_START has not been fired yet, and
+  // is reset to zero once NOTIFICATION_SYNC_CONFIGURE_DONE is received.
+  base::Time sync_configure_start_time_;
+
+  // Indicates if this is the first time sync is being configured.  This value
+  // is equal to !HasSyncSetupCompleted() at the time of OnBackendInitialized().
+  bool is_first_time_sync_configure_;
+
   // List of available data type controllers.
   browser_sync::DataTypeController::TypeMap data_type_controllers_;
 
