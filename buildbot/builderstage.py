@@ -10,6 +10,13 @@ import sys
 import time
 import traceback
 
+# We import mox so that we can identify mox exceptions and pass them through
+# in our exception handling code.
+try:
+  import mox
+except ImportError:
+  mox = None
+
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
@@ -267,6 +274,8 @@ class BuilderStage(object):
         result, description = self._HandleStageException(e)
       raise
     except Exception as e:
+      if mox is not None and isinstance(e, mox.Error):
+        raise
       # Tell the build bot this step failed for the waterfall
       result, description = self._HandleStageException(e)
       if result not in (results_lib.Results.FORGIVEN,

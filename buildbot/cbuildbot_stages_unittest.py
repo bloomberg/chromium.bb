@@ -175,7 +175,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
 
     self.mox.StubOutWithMock(manifest_version.BuildSpecsManager, 'UpdateStatus')
 
-    self.manager.UpdateStatus(success=True)
+    self.manager.UpdateStatus(message=None, success=True)
 
     self.mox.ReplayAll()
     stage = stages.ManifestVersionedSyncCompletionStage(self.options,
@@ -191,7 +191,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
 
     self.mox.StubOutWithMock(manifest_version.BuildSpecsManager, 'UpdateStatus')
 
-    self.manager.UpdateStatus(success=False)
+    self.manager.UpdateStatus(message=None, success=False)
 
 
     self.mox.ReplayAll()
@@ -1238,7 +1238,7 @@ class PublishUprevChangesStageTest(AbstractStageTest):
 
     commands.UprevPush(
         self.build_root,
-        [self.overlay],
+        [self.overlay, self.portage_overlay],
         self.options.debug)
 
     self.mox.ReplayAll()
