@@ -241,12 +241,12 @@ class GDataFileSystemTest : public testing::Test {
 
     // Allocate and keep a pointer to the mock, and inject it into the
     // GDataFileSystem object, which will own the mock object.
-    mock_doc_service_ = new MockDocumentsService;
+    mock_doc_service_ = new StrictMock<MockDocumentsService>;
 
     EXPECT_CALL(*mock_doc_service_, Initialize(profile_.get())).Times(1);
 
     // Likewise, this will be owned by GDataFileSystem.
-    mock_free_disk_space_checker_ = new MockFreeDiskSpaceGetter;
+    mock_free_disk_space_checker_ = new StrictMock<MockFreeDiskSpaceGetter>;
     SetFreeDiskSpaceGetterForTesting(mock_free_disk_space_checker_);
 
     scoped_refptr<base::SequencedWorkerPool> pool =
@@ -868,9 +868,9 @@ class GDataFileSystemTest : public testing::Test {
   GDataCache* cache_;
   scoped_ptr<StrictMock<MockGDataUploader> > mock_uploader_;
   GDataFileSystem* file_system_;
-  MockDocumentsService* mock_doc_service_;
+  StrictMock<MockDocumentsService>* mock_doc_service_;
   scoped_ptr<StrictMock<MockDriveWebAppsRegistry> > mock_webapps_registry_;
-  MockFreeDiskSpaceGetter* mock_free_disk_space_checker_;
+  StrictMock<MockFreeDiskSpaceGetter>* mock_free_disk_space_checker_;
   scoped_ptr<StrictMock<MockGDataSyncClient> > mock_sync_client_;
   scoped_ptr<StrictMock<MockDirectoryChangeObserver> > mock_directory_observer_;
 
@@ -1313,6 +1313,9 @@ TEST_F(GDataFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
                            FILE_PATH_LITERAL("Document 1"),
                            _))
       .WillOnce(MockCopyDocument(gdata::HTTP_SUCCESS, &document));
+  // We'll then add the hosted document to the destination directory.
+  EXPECT_CALL(*mock_doc_service_,
+              AddResourceToDirectory(_, _, _)).Times(1);
 
   FileOperationCallback callback =
       base::Bind(&CallbackHelper::FileOperationCallback,
