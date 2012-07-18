@@ -65,7 +65,7 @@ SetControlSignals(const ControlSignals &control_signals) {
     if (control_signals.rts)
       status |= TIOCM_RTS;
     else
-      status &= !TIOCM_RTS;
+      status &= ~TIOCM_RTS;
   }
 
   return ioctl(file_, TIOCMSET, &status) == 0;
