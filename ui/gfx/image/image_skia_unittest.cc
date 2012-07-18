@@ -15,15 +15,6 @@ namespace gfx {
 
 namespace {
 
-ImageSkiaRep CreateImage(const gfx::Size& size, ui::ScaleFactor scale_factor) {
-  SkBitmap bitmap;
-  gfx::Size pixel_size = size.Scale(ui::GetScaleFactorScale(scale_factor));
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                   pixel_size.width(), pixel_size.height());
-  bitmap.allocPixels();
-  return ImageSkiaRep(bitmap, scale_factor);
-}
-
 class FixedSource : public ImageSkiaSource {
  public:
   FixedSource(const ImageSkiaRep& image) : image_(image) {}
@@ -43,7 +34,7 @@ class DynamicSource : public ImageSkiaSource {
   DynamicSource(const gfx::Size& size) : size_(size) {}
 
   virtual ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) OVERRIDE {
-    return CreateImage(size_, scale_factor);
+    return gfx::ImageSkiaRep(size_, scale_factor);
   }
 
  private:
@@ -57,7 +48,7 @@ class DynamicSource : public ImageSkiaSource {
 typedef testing::Test ImageSkiaTest;
 
 TEST(ImageSkiaTest, FixedSource) {
-  ImageSkiaRep image(CreateImage(Size(100, 200), ui::SCALE_FACTOR_100P));
+  ImageSkiaRep image(Size(100, 200), ui::SCALE_FACTOR_100P);
   ImageSkia image_skia(new FixedSource(image), Size(100, 200));
   EXPECT_EQ(0U, image_skia.image_reps().size());
 
@@ -111,6 +102,13 @@ TEST(ImageSkiaTest, DynamicSource) {
   EXPECT_EQ(2U, image_skia.image_reps().size());
   image_skia.GetRepresentation(ui::SCALE_FACTOR_200P);
   EXPECT_EQ(2U, image_skia.image_reps().size());
+}
+
+TEST(ImageSkiaTest, GetBitmap) {
+  ImageSkia image_skia(new DynamicSource(Size(100, 200)), Size(100, 200));
+  const SkBitmap* bitmap = image_skia.bitmap();
+  EXPECT_NE(static_cast<SkBitmap*>(NULL), bitmap);
+  EXPECT_FALSE(bitmap->isNull());
 }
 
 }  // namespace gfx

@@ -191,7 +191,7 @@ void ImageSkia::RemoveRepresentation(ui::ScaleFactor scale_factor) {
     image_reps.erase(it);
 }
 
-bool ImageSkia::HasRepresentation(ui::ScaleFactor scale_factor) {
+bool ImageSkia::HasRepresentation(ui::ScaleFactor scale_factor) const {
   if (isNull())
     return false;
 
@@ -270,7 +270,9 @@ const SkBitmap* ImageSkia::bitmap() const {
     return &NullImageRep().sk_bitmap();
   }
 
-  return &storage_->image_reps()[0].sk_bitmap();
+  ImageSkiaReps::iterator it =
+      storage_->FindRepresentation(ui::SCALE_FACTOR_100P, true);
+  return &it->sk_bitmap();
 }
 
 void ImageSkia::Init(const ImageSkiaRep& image_rep) {

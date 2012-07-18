@@ -36,6 +36,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
@@ -396,21 +397,34 @@ class ButtonContainerMenuItemView : public MenuItemView {
   DISALLOW_COPY_AND_ASSIGN(ButtonContainerMenuItemView);
 };
 
-gfx::ImageSkia* TintImage(gfx::ImageSkia* image, SkColor tint_value) {
-  // In case of touch, the menu needs to be brightened up a bit.
-  // Create a new bitmap since we do not want to change the original image.
-  SkBitmap bitmap_copy;
-  image->bitmap()->copyTo(&bitmap_copy, SkBitmap::kARGB_8888_Config);
-  SkCanvas canvas(bitmap_copy);
-  SkPaint paint;
-  // We leave the old alpha alone and add the new color multiplied
-  // with the source alpha to the existing alpha. Thus: We brighten
-  // the image up - but only the non transparent pixels.
-  paint.setXfermodeMode(SkXfermode::kDstATop_Mode);
-  paint.setColor(tint_value);
-  canvas.drawPaint(paint);
-  return new gfx::ImageSkia(bitmap_copy);
-}
+class TintedImageSource: public gfx::CanvasImageSource {
+ public:
+  TintedImageSource(gfx::ImageSkia& image, SkColor tint_value)
+      : CanvasImageSource(image.size(), false),
+        image_(image),
+        tint_value_(tint_value) {
+  }
+
+  virtual ~TintedImageSource() {
+  }
+
+  void Draw(gfx::Canvas* canvas) OVERRIDE {
+    canvas->DrawImageInt(image_, 0, 0);
+    SkPaint paint;
+    // We leave the old alpha alone and add the new color multiplied
+    // with the source alpha to the existing alpha. Thus: We brighten
+    // the image up - but only the non transparent pixels.
+    paint.setXfermodeMode(SkXfermode::kDstATop_Mode);
+    paint.setColor(tint_value_);
+    canvas->sk_canvas()->drawPaint(paint);
+  }
+
+ private:
+  const gfx::ImageSkia image_;
+  const SkColor tint_value_;
+
+  DISALLOW_COPY_AND_ASSIGN(TintedImageSource);
+};
 
 }  // namespace
 
@@ -539,10 +553,13 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_FULLSCREEN_MENU_BUTTON);
     if (is_touch) {
-      tinted_fullscreen_image_.reset(TintImage(full_screen_image,
-                                               kTouchImageBrighten));
+      // In case of touch, the menu needs to be brightened up a bit.
+      gfx::CanvasImageSource* source = new TintedImageSource(
+          *full_screen_image, kTouchImageBrighten);
+      // ImageSkia takes ownership of |source|.
+      tinted_fullscreen_image_ = gfx::ImageSkia(source, source->size());
       fullscreen_button_->SetImage(ImageButton::BS_NORMAL,
-          tinted_fullscreen_image_.get());
+                                   &tinted_fullscreen_image_);
     } else {
       fullscreen_button_->SetImage(ImageButton::BS_NORMAL, full_screen_image);
     }
@@ -709,7 +726,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
   ImageButton* fullscreen_button_;
 
   // The tinted bitmap of the fullscreen button.
-  scoped_ptr<gfx::ImageSkia> tinted_fullscreen_image_;
+  gfx::ImageSkia tinted_fullscreen_image_;
 
   // Width given to |zoom_label_|. This is the width at 100%.
   int zoom_label_width_;

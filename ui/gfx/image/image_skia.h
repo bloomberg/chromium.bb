@@ -73,9 +73,9 @@ class UI_EXPORT ImageSkia {
   // Removes the image rep of |scale_factor| if present.
   void RemoveRepresentation(ui::ScaleFactor scale_factor);
 
-  // Returns true if the object owns a image rep whose density matches
+  // Returns true if the object owns an image rep whose density matches
   // |scale_factor| exactly.
-  bool HasRepresentation(ui::ScaleFactor scale_factor);
+  bool HasRepresentation(ui::ScaleFactor scale_factor) const;
 
   // Returns the image rep whose density best matches
   // |scale_factor|.
@@ -102,9 +102,11 @@ class UI_EXPORT ImageSkia {
   // after ImageSkiaSource conversion.
   bool extractSubset(ImageSkia* dst, const SkIRect& subset) const;
 
-  // Returns pointer to an SkBitmap contained by this object.
-  // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
-  // done.
+  // Returns pointer to 1x bitmap contained by this object. If there is no 1x
+  // bitmap, the bitmap whose scale factor is closest to 1x is returned.
+  // This function should only be used in unittests and on platforms which do
+  // not support scale factors other than 1x.
+  // TODO(pkotwicz): Return null SkBitmap when the object has no 1x bitmap.
   const SkBitmap* bitmap() const;
 
   // Returns a vector with the image reps contained in this object.
