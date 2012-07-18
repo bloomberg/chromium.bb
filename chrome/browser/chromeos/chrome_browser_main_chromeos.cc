@@ -57,6 +57,7 @@
 #include "chrome/browser/chromeos/web_socket_proxy_controller.h"
 #include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/media_gallery/media_device_notifications_chromeos.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -441,6 +442,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   screen_lock_observer_.reset(new chromeos::ScreenLockObserver());
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
     power_state_override_.reset(new chromeos::PowerStateOverride());
+
+  media_device_notifications_ = new chromeos::MediaDeviceNotifications();
 
   ChromeBrowserMainPartsLinux::PostProfileInit();
 }

@@ -1094,6 +1094,8 @@
         'browser/chromeos/cros/onc_network_parser_unittest.cc',
         'browser/chromeos/cros_settings_unittest.cc',
         'browser/chromeos/customization_document_unittest.cc',
+        'browser/chromeos/disks/mock_disk_mount_manager.cc',
+        'browser/chromeos/disks/mock_disk_mount_manager.h',
         'browser/chromeos/dbus/cros_dbus_service_unittest.cc',
         'browser/chromeos/dbus/proxy_resolution_service_provider_unittest.cc',
         'browser/chromeos/device_settings_provider_unittest.cc',
@@ -1341,6 +1343,7 @@
         'browser/mac/keystone_glue_unittest.mm',
         'browser/managed_mode_unittest.cc',
         'browser/media/media_internals_unittest.cc',
+        'browser/media_gallery/media_device_notifications_chromeos_unittest.cc',
         'browser/media_gallery/media_device_notifications_linux_unittest.cc',
         'browser/media_gallery/media_device_notifications_utils_unittest.cc',
         'browser/media_gallery/media_device_notifications_window_win_unittest.cc',
@@ -2171,7 +2174,6 @@
         ['chromeos==1', {
           'sources/': [
             ['exclude', '^browser/media_gallery/media_device_notifications_linux_unittest.cc'],
-
             ['exclude', '^browser/password_manager/native_backend_gnome_x_unittest.cc'],
             ['exclude', '^browser/password_manager/native_backend_kwallet_x_unittest.cc'],
             ['exclude', '^browser/safe_browsing/download_protection_service_unittest.cc' ],
@@ -2182,6 +2184,7 @@
         }, { # else: chromeos == 0
           'sources/': [
             ['exclude', '^browser/chromeos/'],
+            ['exclude', '^browser/media_gallery/media_device_notifications_chromeos_unittest.cc'],
             ['exclude', '^browser/net/gaia/gaia_oauth_fetcher_unittest.cc'],
             ['exclude', '^browser/policy/auto_enrollment_client_unittest.cc' ],
             ['exclude', '^browser/policy/configuration_policy_handler_chromeos_unittest.cc' ],
