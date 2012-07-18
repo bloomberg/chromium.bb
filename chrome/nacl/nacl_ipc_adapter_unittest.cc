@@ -12,7 +12,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "ipc/ipc_test_sink.h"
-#include "native_client/src/trusted/desc/nacl_desc_custom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -41,18 +40,6 @@ class NaClIPCAdapterTest : public testing::Test {
   }
 
  protected:
-  int BlockingReceive(void* buf, size_t buf_size) {
-    NaClImcMsgIoVec iov = {buf, buf_size};
-    NaClImcTypedMsgHdr msg = {&iov, 1};
-    return adapter_->BlockingReceive(&msg);
-  }
-
-  int Send(void* buf, size_t buf_size) {
-    NaClImcMsgIoVec iov = {buf, buf_size};
-    NaClImcTypedMsgHdr msg = {&iov, 1};
-    return adapter_->Send(&msg);
-  }
-
   MessageLoop message_loop_;
 
   scoped_refptr<NaClIPCAdapter> adapter_;
@@ -83,7 +70,7 @@ TEST_F(NaClIPCAdapterTest, SimpleReceiveRewriting) {
   const int kBufSize = 64;
   char buf[kBufSize];
 
-  int bytes_read = BlockingReceive(buf, kBufSize);
+  int bytes_read = adapter_->BlockingReceive(buf, kBufSize);
   EXPECT_EQ(sizeof(NaClIPCAdapter::NaClMessageHeader) + sizeof(int),
             static_cast<size_t>(bytes_read));
 
@@ -123,7 +110,7 @@ TEST_F(NaClIPCAdapterTest, SendRewriting) {
   *reinterpret_cast<int*>(
       &buf[sizeof(NaClIPCAdapter::NaClMessageHeader)]) = value;
 
-  int result = Send(buf, buf_size);
+  int result = adapter_->Send(buf, buf_size);
   EXPECT_EQ(buf_size, result);
 
   // Check that the message came out the other end in the test sink
@@ -140,7 +127,7 @@ TEST_F(NaClIPCAdapterTest, SendRewriting) {
   // into two parts and it should still work.
   sink_->ClearMessages();
   int first_chunk_size = 7;
-  result = Send(buf, first_chunk_size);
+  result = adapter_->Send(buf, first_chunk_size);
   EXPECT_EQ(first_chunk_size, result);
 
   // First partial send should not have made any messages.
@@ -149,14 +136,14 @@ TEST_F(NaClIPCAdapterTest, SendRewriting) {
 
   // Second partial send should do the same.
   int second_chunk_size = 2;
-  result = Send(&buf[first_chunk_size], second_chunk_size);
+  result = adapter_->Send(&buf[first_chunk_size], second_chunk_size);
   EXPECT_EQ(second_chunk_size, result);
   message_loop_.RunAllPending();
   ASSERT_EQ(0u, sink_->message_count());
 
   // Send the rest of the message in a third chunk.
   int third_chunk_size = buf_size - first_chunk_size - second_chunk_size;
-  result = Send(&buf[first_chunk_size + second_chunk_size],
+  result = adapter_->Send(&buf[first_chunk_size + second_chunk_size],
                           third_chunk_size);
   EXPECT_EQ(third_chunk_size, result);
 
@@ -190,11 +177,11 @@ TEST_F(NaClIPCAdapterTest, PartialReceive) {
 
   // Read part of the first message.
   int bytes_requested = 7;
-  int bytes_read = BlockingReceive(buf, bytes_requested);
+  int bytes_read = adapter_->BlockingReceive(buf, bytes_requested);
   ASSERT_EQ(bytes_requested, bytes_read);
 
   // Read the rest, this should give us the rest of the first message only.
-  bytes_read += BlockingReceive(&buf[bytes_requested],
+  bytes_read += adapter_->BlockingReceive(&buf[bytes_requested],
                                         kBufSize - bytes_requested);
   EXPECT_EQ(sizeof(NaClIPCAdapter::NaClMessageHeader) + sizeof(int),
             static_cast<size_t>(bytes_read));
@@ -207,7 +194,7 @@ TEST_F(NaClIPCAdapterTest, PartialReceive) {
   EXPECT_EQ(type_1, output_header->type);
 
   // Read the second message to make sure we went on to it.
-  bytes_read = BlockingReceive(buf, kBufSize);
+  bytes_read = adapter_->BlockingReceive(buf, kBufSize);
   EXPECT_EQ(sizeof(NaClIPCAdapter::NaClMessageHeader) + sizeof(int),
             static_cast<size_t>(bytes_read));
   output_header =
@@ -242,14 +229,14 @@ TEST_F(NaClIPCAdapterTest, SendOverflow) {
       &buf[sizeof(NaClIPCAdapter::NaClMessageHeader)]) = value;
 
   // Send too much data and make sure that the send fails.
-  int result = Send(buf, big_buf_size);
+  int result = adapter_->Send(buf, big_buf_size);
   EXPECT_EQ(-1, result);
   message_loop_.RunAllPending();
   ASSERT_EQ(0u, sink_->message_count());
 
   // Send too much data in two chunks and make sure that the send fails.
   int first_chunk_size = 7;
-  result = Send(buf, first_chunk_size);
+  result = adapter_->Send(buf, first_chunk_size);
   EXPECT_EQ(first_chunk_size, result);
 
   // First partial send should not have made any messages.
@@ -257,7 +244,7 @@ TEST_F(NaClIPCAdapterTest, SendOverflow) {
   ASSERT_EQ(0u, sink_->message_count());
 
   int second_chunk_size = big_buf_size - first_chunk_size;
-  result = Send(&buf[first_chunk_size], second_chunk_size);
+  result = adapter_->Send(&buf[first_chunk_size], second_chunk_size);
   EXPECT_EQ(-1, result);
   message_loop_.RunAllPending();
   ASSERT_EQ(0u, sink_->message_count());
@@ -295,12 +282,12 @@ TEST_F(NaClIPCAdapterTest, ReadWithChannelError) {
   // after 1s.
   const int kBufSize = 64;
   char buf[kBufSize];
-  int result = BlockingReceive(buf, kBufSize);
+  int result = adapter_->BlockingReceive(buf, kBufSize);
   EXPECT_EQ(-1, result);
 
   // Test the "previously had an error" case. BlockingReceive should return
   // immediately if there was an error.
-  result = BlockingReceive(buf, kBufSize);
+  result = adapter_->BlockingReceive(buf, kBufSize);
   EXPECT_EQ(-1, result);
 
   thread.Join();
