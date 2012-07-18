@@ -138,7 +138,7 @@ class GDataEntry {
 
   // The resource id of the parent folder. This piece of information is needed
   // to pair files from change feeds with their directory parents withing the
-  // existing file system snapshot (GDataRootDirectory::resource_map_).
+  // existing file system snapshot (GDataDirectoryService::resource_map_).
   const std::string& parent_resource_id() const { return parent_resource_id_; }
 
   // True if file was deleted. Used only for instances that are generated from
@@ -342,32 +342,6 @@ class GDataDirectory : public GDataEntry {
   DISALLOW_COPY_AND_ASSIGN(GDataDirectory);
 };
 
-// TODO(achuith, satorux): Remove this class. Move largest_changestamp and logic
-// in GDataRootDirectory ctor to GDataDirectoryService. crbug.com/135312
-class GDataRootDirectory : public GDataDirectory {
- public:
-  explicit GDataRootDirectory(GDataDirectoryService* directory_service);
-  virtual ~GDataRootDirectory();
-
-  // Largest change timestamp that was the source of content for the current
-  // state of the root directory.
-  int largest_changestamp() const { return largest_changestamp_; }
-  void set_largest_changestamp(int value) { largest_changestamp_ = value; }
-
-  // Serializes/Parses to/from string via proto classes.
-  void SerializeToString(std::string* serialized_proto) const;
-  bool ParseFromString(const std::string& serialized_proto);
-
-  // Converts to/from proto.
-  bool FromProto(const GDataRootDirectoryProto& proto) WARN_UNUSED_RESULT;
-  void ToProto(GDataRootDirectoryProto* proto) const;
-
- private:
-  int largest_changestamp_;
-
-  DISALLOW_COPY_AND_ASSIGN(GDataRootDirectory);
-};
-
 // Class to handle GDataEntry* lookups, add/remove GDataEntry*.
 class GDataDirectoryService {
  public:
@@ -377,7 +351,7 @@ class GDataDirectoryService {
   GDataDirectoryService();
   ~GDataDirectoryService();
 
-  GDataRootDirectory* root() { return root_.get(); }
+  GDataDirectory* root() { return root_.get(); }
 
   // Last time when we dumped serialized file system to disk.
   const base::Time& last_serialized() const { return last_serialized_; }
@@ -385,6 +359,11 @@ class GDataDirectoryService {
   // Size of serialized file system on disk in bytes.
   const size_t serialized_size() const { return serialized_size_; }
   void set_serialized_size(size_t size) { serialized_size_ = size; }
+
+  // Largest change timestamp that was the source of content for the current
+  // state of the root directory.
+  const int largest_changestamp() const { return largest_changestamp_; }
+  void set_largest_changestamp(int value) { largest_changestamp_ = value; }
 
   // Adds the entry to resource map.
   void AddEntryToResourceMap(GDataEntry* entry);
@@ -409,15 +388,20 @@ class GDataDirectoryService {
   // fresh value |fresh_file|.
   void RefreshFile(scoped_ptr<GDataFile> fresh_file);
 
+  // Serializes/Parses to/from string via proto classes.
+  void SerializeToString(std::string* serialized_proto) const;
+  bool ParseFromString(const std::string& serialized_proto);
+
  private:
   // A map table of file's resource string to its GDataFile* entry.
   typedef std::map<std::string, GDataEntry*> ResourceMap;
 
-  scoped_ptr<GDataRootDirectory> root_;
+  scoped_ptr<GDataDirectory> root_;  // Stored in the serialized proto.
   ResourceMap resource_map_;
 
   base::Time last_serialized_;
   size_t serialized_size_;
+  int largest_changestamp_;  // Stored in the serialized proto.
 
   DISALLOW_COPY_AND_ASSIGN(GDataDirectoryService);
 };

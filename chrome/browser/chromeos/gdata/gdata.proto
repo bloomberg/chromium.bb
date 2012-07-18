@@ -60,7 +60,8 @@ message GDataDirectoryProto {
   repeated GDataFileProto child_files = 8;
 }
 
-// Represents GDataRootDirectory.
+// Container for the root directory and the largest changestamp.
+// TODO(satorux): Remove this: crbug.com/137862
 message GDataRootDirectoryProto {
   optional GDataDirectoryProto gdata_directory = 1;
   optional int32 largest_changestamp = 2;

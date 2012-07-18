@@ -45,10 +45,10 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectBadTitle) {
   ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
 
   GDataDirectoryService directory_service;
-  GDataRootDirectory* root(directory_service.root());
+  GDataDirectory* root(directory_service.root());
   // This should fail as the title is empty.
   // root.title() should be unchanged.
-  ASSERT_FALSE(root->ParseFromString(serialized_proto));
+  ASSERT_FALSE(directory_service.ParseFromString(serialized_proto));
   ASSERT_EQ(kGDataRootDirectory, root->title());
 
   // Setting the title to "gdata".
@@ -57,7 +57,7 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectBadTitle) {
 
   // This should fail as the title is not kGDataRootDirectory.
   // root.title() should be unchanged.
-  ASSERT_FALSE(root->ParseFromString(serialized_proto));
+  ASSERT_FALSE(directory_service.ParseFromString(serialized_proto));
   ASSERT_EQ(kGDataRootDirectory, root->title());
 
   // Setting the title to kGDataRootDirectory.
@@ -65,7 +65,7 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectBadTitle) {
   ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
 
   // This should succeed as the title is kGDataRootDirectory.
-  ASSERT_TRUE(root->ParseFromString(serialized_proto));
+  ASSERT_TRUE(directory_service.ParseFromString(serialized_proto));
   ASSERT_EQ(kGDataRootDirectory, root->title());
 }
 
@@ -80,10 +80,10 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectBadResourceID) {
   ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
 
   GDataDirectoryService directory_service;
-  GDataRootDirectory* root(directory_service.root());
+  GDataDirectory* root(directory_service.root());
   // This should fail as the resource ID is empty.
   // root.resource_id() should be unchanged.
-  ASSERT_FALSE(root->ParseFromString(serialized_proto));
+  ASSERT_FALSE(directory_service.ParseFromString(serialized_proto));
   EXPECT_EQ(kGDataRootDirectoryResourceId, root->resource_id());
 
   // Set the correct resource ID.
@@ -91,7 +91,7 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectBadResourceID) {
   ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
 
   // This should succeed as the resource ID is correct.
-  ASSERT_TRUE(root->ParseFromString(serialized_proto));
+  ASSERT_TRUE(directory_service.ParseFromString(serialized_proto));
   EXPECT_EQ(kGDataRootDirectoryResourceId, root->resource_id());
 }
 
@@ -130,14 +130,14 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectNoUploadUrl) {
   file_proto->mutable_gdata_entry()->set_title("test.txt");
 
   GDataDirectoryService directory_service;
-  GDataRootDirectory* root(directory_service.root());
+  GDataDirectory* root(directory_service.root());
   // The origin is set to UNINITIALIZED by default.
   ASSERT_EQ(UNINITIALIZED, root->origin());
   std::string serialized_proto;
   // Serialize the proto and check if it's loaded.
   // This should fail as the upload URL is not set for |file_proto|.
   ASSERT_TRUE(root_directory_proto.SerializeToString(&serialized_proto));
-  ASSERT_FALSE(root->ParseFromString(serialized_proto));
+  ASSERT_FALSE(directory_service.ParseFromString(serialized_proto));
   // Nothing should be added to the root directory if the parse failed.
   ASSERT_TRUE(root->child_files().empty());
   ASSERT_TRUE(root->child_directories().empty());
@@ -150,7 +150,7 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectNoUploadUrl) {
   // Serialize the proto and check if it's loaded.
   // This should succeed as the upload URL is set for |file_proto|.
   ASSERT_TRUE(root_directory_proto.SerializeToString(&serialized_proto));
-  ASSERT_TRUE(root->ParseFromString(serialized_proto));
+  ASSERT_TRUE(directory_service.ParseFromString(serialized_proto));
   // No file should be added to the root directory.
   ASSERT_TRUE(root->child_files().empty());
   // Two directories ("empty", "dir") should be added to the root directory.
@@ -161,7 +161,7 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectNoUploadUrl) {
 
 TEST(GDataRootDirectoryTest, RefreshFile) {
   GDataDirectoryService directory_service;
-  GDataRootDirectory* root(directory_service.root());
+  GDataDirectory* root(directory_service.root());
   // Add a directory to the file system.
   GDataDirectory* directory_entry = new GDataDirectory(root,
                                                        &directory_service);

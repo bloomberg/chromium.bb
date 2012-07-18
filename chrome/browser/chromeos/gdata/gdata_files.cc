@@ -40,6 +40,29 @@ void RefreshFileInternal(scoped_ptr<GDataFile> fresh_file,
   }
 }
 
+// Returns true if |proto| is a valid proto as the root directory.
+// Used to reject incompatible proto.
+bool IsValidRootDirectoryProto(const GDataDirectoryProto& proto) {
+  const GDataEntryProto& entry_proto = proto.gdata_entry();
+  // The title field for the root directory was originally empty, then
+  // changed to "gdata", then changed to "drive". Discard the proto data if
+  // the older formats are detected. See crbug.com/128133 for details.
+  if (entry_proto.title() != "drive") {
+    LOG(ERROR) << "Incompatible proto detected (bad title): "
+               << entry_proto.title();
+    return false;
+  }
+  // The title field for the root directory was originally empty. Discard
+  // the proto data if the older format is detected.
+  if (entry_proto.resource_id() != kGDataRootDirectoryResourceId) {
+    LOG(ERROR) << "Incompatible proto detected (bad resource ID): "
+               << entry_proto.resource_id();
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 // GDataEntry class.
@@ -416,25 +439,14 @@ void GDataDirectory::RemoveChildDirectories() {
   child_directories_.clear();
 }
 
-// GDataRootDirectory class implementation.
-
-GDataRootDirectory::GDataRootDirectory(
-    GDataDirectoryService* directory_service)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(GDataDirectory(NULL, directory_service)),
-      largest_changestamp_(0) {
-  title_ = kGDataRootDirectory;
-  SetFileNameFromTitle();
-  resource_id_ = kGDataRootDirectoryResourceId;
-}
-
-GDataRootDirectory::~GDataRootDirectory() {
-}
-
 // GDataDirectoryService class implementation.
 
 GDataDirectoryService::GDataDirectoryService()
     : serialized_size_(0) {
-  root_.reset(new GDataRootDirectory(this));
+  root_.reset(new GDataDirectory(NULL, this));
+  root_->set_title(kGDataRootDirectory);
+  root_->SetFileNameFromTitle();
+  root_->set_resource_id(kGDataRootDirectoryResourceId);
   AddEntryToResourceMap(root_.get());
 }
 
@@ -682,38 +694,6 @@ void GDataDirectory::ToProto(GDataDirectoryProto* proto) const {
   }
 }
 
-bool GDataRootDirectory::FromProto(const GDataRootDirectoryProto& proto) {
-  const GDataEntryProto& entry_proto =
-      proto.gdata_directory().gdata_entry();
-  // The title field for the root directory was originally empty, then
-  // changed to "gdata", then changed to "drive". Discard the proto data if
-  // the older formats are detected. See crbug.com/128133 for details.
-  if (entry_proto.title() != "drive") {
-    LOG(ERROR) << "Incompatible proto detected (bad title): "
-               << entry_proto.title();
-    return false;
-  }
-  // The title field for the root directory was originally empty. Discard
-  // the proto data if the older format is detected.
-  if (entry_proto.resource_id() != kGDataRootDirectoryResourceId) {
-    LOG(ERROR) << "Incompatible proto detected (bad resource ID): "
-               << entry_proto.resource_id();
-    return false;
-  }
-
-  if (!GDataDirectory::FromProto(proto.gdata_directory()))
-    return false;
-
-  largest_changestamp_ = proto.largest_changestamp();
-
-  return true;
-}
-
-void GDataRootDirectory::ToProto(GDataRootDirectoryProto* proto) const {
-  GDataDirectory::ToProto(proto->mutable_gdata_directory());
-  proto->set_largest_changestamp(largest_changestamp_);
-}
-
 void GDataEntry::SerializeToString(std::string* serialized_proto) const {
   const GDataFile* file = AsGDataFileConst();
   const GDataDirectory* dir = AsGDataDirectoryConst();
@@ -758,23 +738,30 @@ scoped_ptr<GDataEntry> GDataEntry::FromProtoString(
   return scoped_ptr<GDataEntry>(NULL);
 }
 
-void GDataRootDirectory::SerializeToString(
+void GDataDirectoryService::SerializeToString(
     std::string* serialized_proto) const {
   GDataRootDirectoryProto proto;
-  ToProto(&proto);
+  root_->ToProto(proto.mutable_gdata_directory());
+  proto.set_largest_changestamp(largest_changestamp_);
+
   const bool ok = proto.SerializeToString(serialized_proto);
   DCHECK(ok);
 }
 
-bool GDataRootDirectory::ParseFromString(const std::string& serialized_proto) {
+bool GDataDirectoryService::ParseFromString(
+    const std::string& serialized_proto) {
   GDataRootDirectoryProto proto;
   if (!proto.ParseFromString(serialized_proto))
     return false;
-
-  if (!FromProto(proto))
+  if (!IsValidRootDirectoryProto(proto.gdata_directory()))
     return false;
 
-  set_origin(FROM_CACHE);
+  if (!root_->FromProto(proto.gdata_directory()))
+    return false;
+
+  root_->set_origin(FROM_CACHE);
+  largest_changestamp_ = proto.largest_changestamp();
+
   return true;
 }
 

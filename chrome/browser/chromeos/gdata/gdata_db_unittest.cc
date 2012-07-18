@@ -195,8 +195,7 @@ void GDataDBTest::TestIter(const std::string& parent,
 
 TEST_F(GDataDBTest, PutTest) {
   GDataDirectoryService directory_service;
-  GDataRootDirectory* root(directory_service.root());
-  GDataDirectory dir(root, &directory_service);
+  GDataDirectory dir(directory_service.root(), &directory_service);
   dir.set_title("dir");
   dir.set_file_name("dir");
   dir.set_resource_id("dir_resource_id");
@@ -298,8 +297,7 @@ TEST_F(GDataDBTest, IterTest) {
 
 TEST_F(GDataDBTest, IncompatibleProtoTest) {
   GDataDirectoryService directory_service;
-  GDataRootDirectory* root(directory_service.root());
-  GDataFile file(root, &directory_service);
+  GDataFile file(directory_service.root(), &directory_service);
   file.set_title("file");
   file.set_file_name("file");
   file.set_resource_id("file_resource_id");

@@ -797,7 +797,7 @@ void GDataFileSystem::CheckForUpdates() {
     directory_service_->root()->set_origin(REFRESHING);
     ReloadFeedFromServerIfNeeded(
         initial_origin,
-        directory_service_->root()->largest_changestamp(),
+        directory_service_->largest_changestamp(),
         directory_service_->root()->GetFilePath(),
         base::Bind(&GDataFileSystem::OnUpdateChecked,
                    ui_weak_ptr_,
@@ -2857,10 +2857,10 @@ void GDataFileSystem::OnProtoLoaded(LoadRootFeedParams* params) {
   // received the feed from the server yet.
   if (params->load_error == GDATA_FILE_OK) {
     DVLOG(1) << "ParseFromString";
-    if (directory_service_->root()->ParseFromString(params->proto)) {
+    if (directory_service_->ParseFromString(params->proto)) {
       directory_service_->set_last_serialized(params->last_modified);
       directory_service_->set_serialized_size(params->proto.size());
-      local_changestamp = directory_service_->root()->largest_changestamp();
+      local_changestamp = directory_service_->largest_changestamp();
     } else {
       params->load_error = GDATA_FILE_ERROR_FAILED;
       LOG(WARNING) << "Parse of cached proto file failed";
@@ -2915,7 +2915,7 @@ void GDataFileSystem::SaveFileSystemAsProto() {
       cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_META).Append(
           kFilesystemProtoFile);
   scoped_ptr<std::string> serialized_proto(new std::string());
-  directory_service_->root()->SerializeToString(serialized_proto.get());
+  directory_service_->SerializeToString(serialized_proto.get());
   directory_service_->set_last_serialized(base::Time::Now());
   directory_service_->set_serialized_size(serialized_proto->size());
   PostBlockingPoolSequencedTask(
@@ -3319,7 +3319,7 @@ void GDataFileSystem::ApplyFeedFromFileUrlMap(
     directory_service_->root()->RemoveChildren();
     changed_dirs.insert(directory_service_->root()->GetFilePath());
   }
-  directory_service_->root()->set_largest_changestamp(feed_changestamp);
+  directory_service_->set_largest_changestamp(feed_changestamp);
 
   scoped_ptr<GDataDirectoryService> orphaned_dir_service(
       new GDataDirectoryService);
