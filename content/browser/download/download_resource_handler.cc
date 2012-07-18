@@ -237,11 +237,11 @@ bool DownloadResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
                                          int* buf_size, int min_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(buf && buf_size);
-  if (!read_buffer_) {
-    *buf_size = min_size < 0 ? kReadBufSize : min_size;
-    last_buffer_size_ = *buf_size;
-    read_buffer_ = new net::IOBuffer(*buf_size);
-  }
+  DCHECK(!read_buffer_);
+
+  *buf_size = min_size < 0 ? kReadBufSize : min_size;
+  last_buffer_size_ = *buf_size;
+  read_buffer_ = new net::IOBuffer(*buf_size);
   *buf = read_buffer_.get();
   return true;
 }
@@ -251,11 +251,6 @@ bool DownloadResourceHandler::OnReadCompleted(int request_id, int bytes_read,
                                               bool* defer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(read_buffer_);
-
-  if (pause_count_ > 0) {
-    *defer = was_deferred_ = true;
-    return true;
-  }
 
   base::TimeTicks now(base::TimeTicks::Now());
   if (!last_read_time_.is_null()) {
@@ -285,6 +280,9 @@ bool DownloadResourceHandler::OnReadCompleted(int request_id, int bytes_read,
   }
 
   read_buffer_ = NULL;  // Drop our reference.
+
+  if (pause_count_ > 0)
+    *defer = was_deferred_ = true;
 
   return true;
 }
