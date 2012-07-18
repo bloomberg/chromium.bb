@@ -5,4 +5,6 @@ include_rules = [
   "+sandbox/win/src",
   "+seccompsandbox",
   "+native_client/src",
+  "+ppapi/c",  # header files only
+  "+ppapi/proxy/ppapi_messages.h",  # for message id's only
 ]
