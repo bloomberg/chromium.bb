@@ -1,0 +1,1477 @@
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.3-orig/config.hin bison-2.3-src/config.hin
+--- bison-2.3-orig/config.hin	2006-06-05 10:32:16.000000000 +0200
++++ bison-2.3-src/config.hin	2008-02-20 23:25:07.859375000 +0100
+@@ -411,3 +411,5 @@
+ 
+ /* Define as `fork' if `vfork' does not work. */
+ #undef vfork
++
++#include "confsys.h"
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.3-orig/lib/subpipe.c bison-2.3-src/lib/subpipe.c
+--- bison-2.3-orig/lib/subpipe.c	2006-01-22 08:38:49.000000000 +0100
++++ bison-2.3-src/lib/subpipe.c	2008-02-20 19:58:31.406250000 +0100
+@@ -83,7 +83,6 @@
+ # define ATTRIBUTE_UNUSED __attribute__ ((__unused__))
+ #endif
+ 
+-
+ /* Initialize this module.  */
+ 
+ void
+@@ -122,6 +121,45 @@ create_subpipe (char const * const *argv
+     error (EXIT_FAILURE, errno,
+ 	   "pipe");
+ 
++/* WIN32 patch taken from the Mingw port:
++   http://prdownloads.sourceforge.net/mingw/bison-1.875-2003.02.10-1-src.tar.bz2?download
++*/
++#ifdef _WIN32
++  /* In windows we must control what the child inherits with the parent process
++   * and then use a spawn function instead of a fork/exec pair.
++   *
++   * So, in assigning the pipe pair we must dup stdio to save the originals,
++   * dup2 the pipe handles to the stdio handles, spawn and then dup2 the saved
++   * handles back to stdio and close the dupped ones.
++   */
++  int osi, oso;
++  
++  if ((osi = dup (STDIN_FILENO)) < 0)
++      error (EXIT_FAILURE, errno, "pipe");
++  setmode(osi, O_NOINHERIT);
++  if ((oso = dup (STDOUT_FILENO)) < 0)
++      error (EXIT_FAILURE, errno, "pipe");
++  setmode(oso, O_NOINHERIT);
++
++  if (dup2(child_fd[0], STDIN_FILENO) < 0)
++      error (EXIT_FAILURE, errno, "pipe");
++  if (dup2(child_fd[1], STDOUT_FILENO) < 0)
++      error (EXIT_FAILURE, errno, "pipe");
++
++#include <conio.h>
++  pid = spawnvp(P_NOWAIT, argv[0], argv);
++  if (pid < 0) {
++  	  printf ("spawnvp: %s\n", argv[0]);
++      error (EXIT_FAILURE, errno, argv[0]);
++  }
++  if (dup2 (osi, STDIN_FILENO))
++      error (EXIT_FAILURE, errno, "dup2");
++  close (osi);
++  if (dup2 (oso, STDOUT_FILENO))
++      error (EXIT_FAILURE, errno, "dup2");
++  close (oso);
++
++#else
+   pid = vfork ();
+   if (pid < 0)
+     error (EXIT_FAILURE, errno,
+@@ -144,7 +182,7 @@ create_subpipe (char const * const *argv
+ 
+       _exit (errno == ENOENT ? 127 : 126);
+     }
+-
++#endif /* _WIN32 */
+   /* Parent.  */
+   close (child_fd[0]);
+   close (child_fd[1]);
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.3-orig/lib/subpipe.h bison-2.3-src/lib/subpipe.h
+--- bison-2.3-orig/lib/subpipe.h	2006-02-09 09:18:57.000000000 +0100
++++ bison-2.3-src/lib/subpipe.h	2008-02-20 19:58:31.437500000 +0100
+@@ -26,3 +26,8 @@ void init_subpipe (void);
+ pid_t create_subpipe (char const * const *, int[2]);
+ void end_of_output_subpipe (pid_t, int[2]);
+ void reap_subpipe (pid_t, char const *);
++#ifdef _WIN32
++# include <io.h>
++# include <fcntl.h>
++# define pipe(a) _pipe((a), 0, O_NOINHERIT)
++#endif
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.3-orig/src/Makefile.in bison-2.3-src/src/Makefile.in
+--- bison-2.3-orig/src/Makefile.in	2006-06-05 10:32:00.000000000 +0200
++++ bison-2.3-src/src/Makefile.in	2008-02-20 20:17:20.984375000 +0100
+@@ -17,7 +17,8 @@
+ 
+ srcdir = @srcdir@
+ top_srcdir = @top_srcdir@
+-VPATH = @srcdir@
++resdir = @top_builddir@resource
++VPATH = @srcdir@ $(resdir)
+ pkgdatadir = $(datadir)/@PACKAGE@
+ pkglibdir = $(libdir)/@PACKAGE@
+ pkgincludedir = $(includedir)/@PACKAGE@
+@@ -87,7 +88,7 @@ am_bison_OBJECTS = LR0.$(OBJEXT) assoc.$
+ 	reader.$(OBJEXT) reduce.$(OBJEXT) relation.$(OBJEXT) \
+ 	scan-gram-c.$(OBJEXT) scan-skel-c.$(OBJEXT) state.$(OBJEXT) \
+ 	symlist.$(OBJEXT) symtab.$(OBJEXT) tables.$(OBJEXT) \
+-	uniqstr.$(OBJEXT) vcg.$(OBJEXT)
++	uniqstr.$(OBJEXT) vcg.$(OBJEXT) bison-res.o
+ bison_OBJECTS = $(am_bison_OBJECTS)
+ bison_LDADD = $(LDADD)
+ am__DEPENDENCIES_1 =
+@@ -160,7 +161,7 @@ LIBS = @LIBS@
+ LTLIBICONV = @LTLIBICONV@
+ LTLIBINTL = @LTLIBINTL@
+ LTLIBOBJS = @LTLIBOBJS@
+-M4 = @M4@
++M4 = m4.exe
+ MAKEINFO = @MAKEINFO@
+ MKINSTALLDIRS = @MKINSTALLDIRS@
+ MSGFMT = @MSGFMT@
+@@ -185,6 +186,9 @@ UNISTD_H = @UNISTD_H@
+ USE_NLS = @USE_NLS@
+ VALGRIND = @VALGRIND@
+ VERSION = @VERSION@
++MAJOR=$(shell echo $(VERSION) | sed -e "s/\..*$$//")
++MINOR=$(shell echo $(VERSION) | sed -e "s/^[^\.]*\.0*\([0-9]\+\).*$$/\1/")
++VERSADD = -Wl,--major-image-version=$(MAJOR) -Wl,--minor-image-version=$(MINOR) 
+ WARNING_CFLAGS = @WARNING_CFLAGS@
+ WARNING_CXXFLAGS = @WARNING_CXXFLAGS@
+ WERROR_CFLAGS = @WERROR_CFLAGS@
+@@ -240,7 +244,7 @@ target_alias = @target_alias@
+ AM_CFLAGS = $(WARNING_CFLAGS) $(WERROR_CFLAGS)
+ AM_CPPFLAGS = -I$(top_srcdir)/lib -I../lib
+ AM_YFLAGS = "-dv"
+-LDADD = ../lib/libbison.a $(LIBINTL)
++LDADD = ../lib/libbison.a $(LIBINTL) $(VERSADD)
+ bin_SCRIPTS = $(YACC_SCRIPT)
+ EXTRA_SCRIPTS = yacc
+ bison_SOURCES = \
+@@ -274,7 +278,8 @@ bison_SOURCES = \
+ 	tables.h tables.c			  \
+ 	uniqstr.c uniqstr.h			  \
+ 	vcg.c vcg.h				  \
+-	vcg_defaults.h
++	vcg_defaults.h			   \
++	bison-res.rc
+ 
+ EXTRA_bison_SOURCES = scan-skel.l scan-gram.l
+ BUILT_SOURCES = scan-skel.c scan-gram.c parse-gram.c parse-gram.h
+@@ -283,7 +288,7 @@ all: $(BUILT_SOURCES)
+ 	$(MAKE) $(AM_MAKEFLAGS) all-am
+ 
+ .SUFFIXES:
+-.SUFFIXES: .c .l .o .obj .y
++.SUFFIXES: .c .l .o .obj .y .rc
+ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
+ 	@for dep in $?; do \
+ 	  case '$(am__configure_deps)' in \
+@@ -397,6 +402,10 @@ distclean-compile:
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/uniqstr.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vcg.Po@am__quote@
+ 
++# Rule to make compiled resource (Windows)
++.rc.o:
++	windres --include-dir $(resdir) -i $< -o $@
++
+ .c.o:
+ @am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
+ @am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.3-orig/src/main.c bison-2.3-src/src/main.c
+--- bison-2.3-orig/src/main.c	2005-12-10 00:51:26.000000000 +0100
++++ bison-2.3-src/src/main.c	2008-02-20 21:17:13.937500000 +0100
+@@ -47,14 +47,14 @@
+ #include "uniqstr.h"
+ 
+ /* The name this program was run with, for messages.  */
+-char *program_name;
++#include "progname.h"
+ 
+ 
+ 
+ int
+ main (int argc, char *argv[])
+ {
+-  program_name = argv[0];
++  set_program_name (argv[0]);
+   setlocale (LC_ALL, "");
+   (void) bindtextdomain (PACKAGE, LOCALEDIR);
+   (void) bindtextdomain ("bison-runtime", LOCALEDIR);
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.3-orig/src/output.c bison-2.3-src/src/output.c
+--- bison-2.3-orig/src/output.c	2006-05-14 23:40:35.000000000 +0200
++++ bison-2.3-src/src/output.c	2008-02-21 17:19:11.609375000 +0100
+@@ -39,6 +39,7 @@
+ #include "scan-skel.h"
+ #include "symtab.h"
+ #include "tables.h"
++#include <relocatable.h>
+ 
+ 
+ static struct obstack format_obstack;
+@@ -513,7 +514,9 @@ output_skeleton (void)
+   char *full_skeleton;
+   char const *p;
+   char const *m4 = (p = getenv ("M4")) ? p : M4;
+-  char const *pkgdatadir = (p = getenv ("BISON_PKGDATADIR")) ? p : PKGDATADIR;
++  char *rel2_pkg_dir = relocate (PKGDATADIR);
++  char const *pkgdatadir = (p = getenv ("BISON_PKGDATADIR")) ? p : rel2_pkg_dir;
++
+   size_t skeleton_size = strlen (skeleton) + 1;
+   size_t pkgdatadirlen = strlen (pkgdatadir);
+   while (pkgdatadirlen && pkgdatadir[pkgdatadirlen - 1] == '/')
+@@ -577,6 +580,8 @@ output_skeleton (void)
+   xfclose (in);
+   reap_subpipe (pid, m4);
+   timevar_pop (TV_M4);
++  if (rel2_pkg_dir)
++  	free (rel2_pkg_dir);
+ }
+ 
+ static void
+@@ -621,7 +626,8 @@ prepare (void)
+   /* About the skeletons. */
+   {
+     char const *pkgdatadir = getenv ("BISON_PKGDATADIR");
+-    MUSCLE_INSERT_STRING ("pkgdatadir", pkgdatadir ? pkgdatadir : PKGDATADIR);
++    char *rel2_pkg_dir = relocate (PKGDATADIR);
++    MUSCLE_INSERT_STRING ("pkgdatadir", pkgdatadir ? pkgdatadir : rel2_pkg_dir);
+     MUSCLE_INSERT_C_STRING ("skeleton", skeleton);
+   }
+ }
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.3-orig/tests/atlocal.in bison-2.3-src/tests/atlocal.in
+--- bison-2.3-orig/tests/atlocal.in	2005-09-19 10:22:17.000000000 +0200
++++ bison-2.3-src/tests/atlocal.in	2008-02-21 17:14:13.375000000 +0100
+@@ -2,6 +2,10 @@
+ # Configurable variable values for Bison test suite.
+ # Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+ 
++INSTALLPREFIX=
++INSTALLDIR=
++EXEEXT=
++
+ # We need a C compiler.
+ CC='@CC@'
+ 
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.3-orig/tests/bison.in bison-2.3-src/tests/bison.in
+--- bison-2.3-orig/tests/bison.in	2004-10-05 12:58:58.000000000 +0200
++++ bison-2.3-src/tests/bison.in	2008-02-20 22:56:41.531250000 +0100
+@@ -3,6 +3,6 @@
+ # Wrapper around a non installed bison to make it work as an installed one.
+ 
+ # Use the shipped files, not those installed.
+-BISON_PKGDATADIR='@abs_top_srcdir@/data'
++BISON_PKGDATADIR=$(cygpath -m '@abs_top_srcdir@/data')
+ export BISON_PKGDATADIR
+-exec $PREBISON '@abs_top_builddir@/src/bison' ${1+"$@"}
++exec $PREBISON $(cygpath -m '@abs_top_builddir@/src/bison') ${1+"$@"}
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.3-orig/tests/calc.at bison-2.3-src/tests/calc.at
+--- bison-2.3-orig/tests/calc.at	2006-03-12 15:45:27.000000000 +0100
++++ bison-2.3-src/tests/calc.at	2008-02-20 19:58:31.515625000 +0100
+@@ -489,7 +489,7 @@ _AT_CHECK_CALC_ERROR([$1], [1],
+                      [20],
+                      [2.0: syntax error, unexpected '+'])
+ # Exercise error messages with EOF: work on an empty file.
+-_AT_CHECK_CALC_ERROR([$1], [1], [/dev/null], [4],
++_AT_CHECK_CALC_ERROR([$1], [1], [NUL], [4],
+                      [1.0: syntax error, unexpected end of input])
+ 
+ # Exercise the error token: without it, we die at the first error,
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.3-orig/tests/testsuite bison-2.3-src/tests/testsuite
+--- bison-2.3-orig/tests/testsuite	2006-06-05 10:32:58.000000000 +0200
++++ bison-2.3-src/tests/testsuite	2008-02-21 17:03:43.671875000 +0100
+@@ -878,9 +878,9 @@ fi
+ 
+ # Use `diff -u' when possible.
+ if diff -u $at_devnull $at_devnull >/dev/null 2>&1; then
+-  at_diff='diff -u'
++  at_diff='diff -u --strip-trailing-cr --binary '
+ else
+-  at_diff=diff
++  at_diff='diff --strip-trailing-cr --binary '
+ fi
+ 
+ 
+@@ -1550,7 +1550,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "input.at:345: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.o main.o \$LIBS"
++echo "input.at:345: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.o main.o \$LDFLAGS \$LDFLAGS \$LIBS"
+ echo input.at:345 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o input input.o main.o $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -6463,7 +6463,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "headers.at:134: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o caller caller.o input.o \$LIBS"
++echo "headers.at:134: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o caller caller.o input.o \$LDFLAGS \$LDFLAGS \$LIBS"
+ echo headers.at:134 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o caller caller.o input.o $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -6624,7 +6624,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "actions.at:76: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LIBS"
++echo "actions.at:76: $CC $CFLAGS $CPPFLAGS $LDFLAGS -o input input.c $LIBS"
+ echo actions.at:76 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o input input.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -6786,7 +6786,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "actions.at:151: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LIBS"
++echo "actions.at:151: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LDFLAGS \$LDFLAGS \$LIBS"
+ echo actions.at:151 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o input input.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -7087,7 +7087,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "actions.at:527: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LIBS"
++echo "actions.at:527: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LDFLAGS \$LDFLAGS \$LIBS"
+ echo actions.at:527 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o input input.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -7602,7 +7602,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "actions.at:528: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LIBS"
++echo "actions.at:528: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LDFLAGS \$LDFLAGS \$LIBS"
+ echo actions.at:528 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o input input.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -8152,7 +8152,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "actions.at:533: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o input input.cc \$LIBS"
++echo "actions.at:533: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o input input.cc \$LDFLAGS \$LDFLAGS \$LIBS"
+ echo actions.at:533 >$at_check_line_file
+ ( $at_traceon; $CXX $CXXFLAGS $CPPFLAGS $LDFLAGS -o input input.cc $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -8636,7 +8636,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "actions.at:534: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o input input.cc \$LIBS"
++echo "actions.at:534: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o input input.cc \$LDFLAGS \$LIBS"
+ echo actions.at:534 >$at_check_line_file
+ ( $at_traceon; $CXX $CXXFLAGS $CPPFLAGS $LDFLAGS -o input input.cc $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -9079,7 +9079,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "actions.at:536: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LIBS"
++echo "actions.at:536: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LDFLAGS \$LDFLAGS \$LIBS"
+ echo actions.at:536 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o input input.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -9525,7 +9525,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "actions.at:537: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LIBS"
++echo "actions.at:537: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LDFLAGS \$LIBS"
+ echo actions.at:537 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o input input.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -9878,7 +9878,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "conflicts.at:101: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LIBS"
++echo "conflicts.at:101: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LDFLAGS \$LDFLAGS \$LIBS"
+ echo conflicts.at:101 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o input input.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -11231,7 +11231,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:550: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:550: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LDFLAGS \$LIBS"
+ echo calc.at:550 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -11729,9 +11729,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:550: \$PREPARSER ./calc /dev/null"
++echo "calc.at:550: \$PREPARSER ./calc NUL"
+ echo calc.at:550 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -12440,7 +12440,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:552: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:552: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LDFLAGS \$LIBS"
+ echo calc.at:552 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -12937,10 +12937,11 @@ $at_traceon
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++
+ $at_traceoff
+-echo "calc.at:552: \$PREPARSER ./calc /dev/null"
++echo "calc.at:552: \$PREPARSER ./calc NUL"
+ echo calc.at:552 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -13680,7 +13681,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:553: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:553: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LDFLAGS \$LIBS"
+ echo calc.at:553 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -14173,9 +14174,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:553: \$PREPARSER ./calc /dev/null"
++echo "calc.at:553: \$PREPARSER ./calc NUL"
+ echo calc.at:553 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -14880,7 +14881,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:554: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:554: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LDFLAGS \$LIBS"
+ echo calc.at:554 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -15377,10 +15378,11 @@ $at_traceon
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++
+ $at_traceoff
+-echo "calc.at:554: \$PREPARSER ./calc /dev/null"
++echo "calc.at:554: \$PREPARSER ./calc NUL"
+ echo calc.at:554 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -16089,7 +16091,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:555: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:555: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:555 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -16587,9 +16589,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:555: \$PREPARSER ./calc /dev/null"
++echo "calc.at:555: \$PREPARSER ./calc NUL"
+ echo calc.at:555 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -17298,7 +17300,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:556: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:556: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:556 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -17795,10 +17797,11 @@ $at_traceon
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++
+ $at_traceoff
+-echo "calc.at:556: \$PREPARSER ./calc /dev/null"
++echo "calc.at:556: \$PREPARSER ./calc NUL"
+ echo calc.at:556 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -18507,7 +18510,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:557: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:557: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:557 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -18999,10 +19002,11 @@ $at_traceon
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++
+ $at_traceoff
+-echo "calc.at:557: \$PREPARSER ./calc /dev/null"
++echo "calc.at:557: \$PREPARSER ./calc NUL"
+ echo calc.at:557 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -19729,7 +19733,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:559: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:559: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:559 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -20226,10 +20230,11 @@ $at_traceon
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++
+ $at_traceoff
+-echo "calc.at:559: \$PREPARSER ./calc /dev/null"
++echo "calc.at:559: \$PREPARSER ./calc NUL"
+ echo calc.at:559 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -20969,7 +20974,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:560: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:560: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:560 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -21457,9 +21462,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:560: \$PREPARSER ./calc /dev/null"
++echo "calc.at:560: \$PREPARSER ./calc NUL"
+ echo calc.at:560 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -22191,7 +22196,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:562: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:562: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:562 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -22679,9 +22684,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:562: \$PREPARSER ./calc /dev/null"
++echo "calc.at:562: \$PREPARSER ./calc NUL"
+ echo calc.at:562 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -23382,7 +23387,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:564: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:564: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:564 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -23880,9 +23885,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:564: \$PREPARSER ./calc /dev/null"
++echo "calc.at:564: \$PREPARSER ./calc NUL"
+ echo calc.at:564 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -24622,7 +24627,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:565: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:565: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:565 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -25110,9 +25115,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:565: \$PREPARSER ./calc /dev/null"
++echo "calc.at:565: \$PREPARSER ./calc NUL"
+ echo calc.at:565 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -25835,7 +25840,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:567: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:567: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:567 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -26328,9 +26333,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:567: \$PREPARSER ./calc /dev/null"
++echo "calc.at:567: \$PREPARSER ./calc NUL"
+ echo calc.at:567 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -27066,7 +27071,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:569: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:569: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:569 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -27554,9 +27559,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:569: \$PREPARSER ./calc /dev/null"
++echo "calc.at:569: \$PREPARSER ./calc NUL"
+ echo calc.at:569 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -28266,7 +28271,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:586: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:586: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:586 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -28764,9 +28769,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:586: \$PREPARSER ./calc /dev/null"
++echo "calc.at:586: \$PREPARSER ./calc NUL"
+ echo calc.at:586 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -29475,7 +29480,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:588: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:588: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:588 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -29972,10 +29977,11 @@ $at_traceon
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++
+ $at_traceoff
+-echo "calc.at:588: \$PREPARSER ./calc /dev/null"
++echo "calc.at:588: \$PREPARSER ./calc NUL"
+ echo calc.at:588 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -30715,7 +30721,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:589: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:589: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:589 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -31208,9 +31214,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:589: \$PREPARSER ./calc /dev/null"
++echo "calc.at:589: \$PREPARSER ./calc NUL"
+ echo calc.at:589 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -31915,7 +31921,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:590: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:590: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:590 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -32412,10 +32418,11 @@ $at_traceon
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++
+ $at_traceoff
+-echo "calc.at:590: \$PREPARSER ./calc /dev/null"
++echo "calc.at:590: \$PREPARSER ./calc NUL"
+ echo calc.at:590 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -33124,7 +33131,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:591: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:591: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:591 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -33622,9 +33629,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:591: \$PREPARSER ./calc /dev/null"
++echo "calc.at:591: \$PREPARSER ./calc NUL"
+ echo calc.at:591 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -34333,7 +34340,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:592: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:592: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:592 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -34830,10 +34837,11 @@ $at_traceon
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++
+ $at_traceoff
+-echo "calc.at:592: \$PREPARSER ./calc /dev/null"
++echo "calc.at:592: \$PREPARSER ./calc NUL"
+ echo calc.at:592 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -35542,7 +35550,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:593: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:593: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:593 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -36034,10 +36042,11 @@ $at_traceon
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++
+ $at_traceoff
+-echo "calc.at:593: \$PREPARSER ./calc /dev/null"
++echo "calc.at:593: \$PREPARSER ./calc NUL"
+ echo calc.at:593 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -36773,7 +36782,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:595: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:595: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:595 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -37265,10 +37274,11 @@ $at_traceon
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++
+ $at_traceoff
+-echo "calc.at:595: \$PREPARSER ./calc /dev/null"
++echo "calc.at:595: \$PREPARSER ./calc NUL"
+ echo calc.at:595 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -38004,7 +38014,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:596: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:596: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:596 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -38492,9 +38502,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:596: \$PREPARSER ./calc /dev/null"
++echo "calc.at:596: \$PREPARSER ./calc NUL"
+ echo calc.at:596 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -39226,7 +39236,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:598: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:598: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:598 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -39714,9 +39724,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:598: \$PREPARSER ./calc /dev/null"
++echo "calc.at:598: \$PREPARSER ./calc NUL"
+ echo calc.at:598 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -40417,7 +40427,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:600: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:600: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:600 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -40915,9 +40925,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:600: \$PREPARSER ./calc /dev/null"
++echo "calc.at:600: \$PREPARSER ./calc NUL"
+ echo calc.at:600 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -41657,7 +41667,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:601: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:601: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:601 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -42145,9 +42155,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:601: \$PREPARSER ./calc /dev/null"
++echo "calc.at:601: \$PREPARSER ./calc NUL"
+ echo calc.at:601 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -42879,7 +42889,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:603: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:603: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:603 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -43367,9 +43377,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:603: \$PREPARSER ./calc /dev/null"
++echo "calc.at:603: \$PREPARSER ./calc NUL"
+ echo calc.at:603 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -44101,7 +44111,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "calc.at:605: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LIBS"
++echo "calc.at:605: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.c \$LDFLAGS \$LIBS"
+ echo calc.at:605 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o calc calc.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -44589,9 +44599,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:605: \$PREPARSER ./calc /dev/null"
++echo "calc.at:605: \$PREPARSER ./calc NUL"
+ echo calc.at:605 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -45365,7 +45375,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "calc.at:621: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.cc \$LIBS"
++echo "calc.at:621: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.cc \$LDFLAGS \$LIBS"
+ echo calc.at:621 >$at_check_line_file
+ ( $at_traceon; $CXX $CXXFLAGS $CPPFLAGS $LDFLAGS -o calc calc.cc $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -45858,9 +45868,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:621: \$PREPARSER ./calc /dev/null"
++echo "calc.at:621: \$PREPARSER ./calc NUL"
+ echo calc.at:621 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -46629,7 +46639,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "calc.at:622: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.cc \$LIBS"
++echo "calc.at:622: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.cc \$LDFLAGS \$LIBS"
+ echo calc.at:622 >$at_check_line_file
+ ( $at_traceon; $CXX $CXXFLAGS $CPPFLAGS $LDFLAGS -o calc calc.cc $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -47117,9 +47127,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:622: \$PREPARSER ./calc /dev/null"
++echo "calc.at:622: \$PREPARSER ./calc NUL"
+ echo calc.at:622 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -47884,7 +47894,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "calc.at:624: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.cc \$LIBS"
++echo "calc.at:624: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.cc \$LDFLAGS \$LIBS"
+ echo calc.at:624 >$at_check_line_file
+ ( $at_traceon; $CXX $CXXFLAGS $CPPFLAGS $LDFLAGS -o calc calc.cc $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -48372,9 +48382,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:624: \$PREPARSER ./calc /dev/null"
++echo "calc.at:624: \$PREPARSER ./calc NUL"
+ echo calc.at:624 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -49139,7 +49149,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "calc.at:626: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.cc \$LIBS"
++echo "calc.at:626: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.cc \$LDFLAGS \$LIBS"
+ echo calc.at:626 >$at_check_line_file
+ ( $at_traceon; $CXX $CXXFLAGS $CPPFLAGS $LDFLAGS -o calc calc.cc $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -49627,9 +49637,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:626: \$PREPARSER ./calc /dev/null"
++echo "calc.at:626: \$PREPARSER ./calc NUL"
+ echo calc.at:626 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -50394,7 +50404,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "calc.at:628: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.cc \$LIBS"
++echo "calc.at:628: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.cc \$LDFLAGS \$LIBS"
+ echo calc.at:628 >$at_check_line_file
+ ( $at_traceon; $CXX $CXXFLAGS $CPPFLAGS $LDFLAGS -o calc calc.cc $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -50882,9 +50892,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:628: \$PREPARSER ./calc /dev/null"
++echo "calc.at:628: \$PREPARSER ./calc NUL"
+ echo calc.at:628 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -51658,7 +51668,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "calc.at:651: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.cc \$LIBS"
++echo "calc.at:651: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.cc \$LDFLAGS \$LIBS"
+ echo calc.at:651 >$at_check_line_file
+ ( $at_traceon; $CXX $CXXFLAGS $CPPFLAGS $LDFLAGS -o calc calc.cc $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -52146,9 +52156,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:651: \$PREPARSER ./calc /dev/null"
++echo "calc.at:651: \$PREPARSER ./calc NUL"
+ echo calc.at:651 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -52913,7 +52923,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "calc.at:653: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.cc \$LIBS"
++echo "calc.at:653: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o calc calc.cc \$LDFLAGS \$LIBS"
+ echo calc.at:653 >$at_check_line_file
+ ( $at_traceon; $CXX $CXXFLAGS $CPPFLAGS $LDFLAGS -o calc calc.cc $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -53401,9 +53411,9 @@ $at_traceon
+ 
+ # Exercise error messages with EOF: work on an empty file.
+ $at_traceoff
+-echo "calc.at:653: \$PREPARSER ./calc /dev/null"
++echo "calc.at:653: \$PREPARSER ./calc NUL"
+ echo calc.at:653 >$at_check_line_file
+-( $at_traceon; $PREPARSER ./calc /dev/null ) >$at_stdout 2>$at_stder1
++( $at_traceon; $PREPARSER ./calc NUL ) >$at_stdout 2>$at_stder1
+ at_status=$?
+ grep '^ *+' $at_stder1 >&2
+ grep -v '^ *+' $at_stder1 >$at_stderr
+@@ -53955,7 +53965,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "torture.at:148: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LIBS"
++echo "torture.at:148: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LDFLAGS \$LIBS"
+ echo torture.at:148 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o input input.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -54195,7 +54205,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "torture.at:253: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LIBS"
++echo "torture.at:253: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LDFLAGS \$LIBS"
+ echo torture.at:253 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o input input.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -54445,7 +54455,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "torture.at:377: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LIBS"
++echo "torture.at:377: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LDFLAGS \$LIBS"
+ echo torture.at:377 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o input input.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -54591,7 +54601,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "torture.at:452: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LIBS"
++echo "torture.at:452: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LDFLAGS \$LIBS"
+ echo torture.at:452 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o input input.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -54788,7 +54798,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "torture.at:473: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LIBS"
++echo "torture.at:473: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LDFLAGS \$LIBS"
+ echo torture.at:473 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o input input.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -57350,7 +57360,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "regression.at:402: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LIBS"
++echo "regression.at:402: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o input input.c \$LDFLAGS \$LIBS"
+ echo regression.at:402 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o input input.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -58068,7 +58078,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "regression.at:866: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o dancer dancer.c \$LIBS"
++echo "regression.at:866: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o dancer dancer.c \$LDFLAGS \$LIBS"
+ echo regression.at:866 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o dancer dancer.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -58323,7 +58333,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "regression.at:867: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o dancer dancer.c \$LIBS"
++echo "regression.at:867: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o dancer dancer.c \$LDFLAGS \$LIBS"
+ echo regression.at:867 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o dancer dancer.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -58613,7 +58623,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "regression.at:868: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o dancer dancer.cc \$LIBS"
++echo "regression.at:868: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o dancer dancer.cc \$LDFLAGS \$LIBS"
+ echo regression.at:868 >$at_check_line_file
+ ( $at_traceon; $CXX $CXXFLAGS $CPPFLAGS $LDFLAGS -o dancer dancer.cc $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -58839,7 +58849,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "regression.at:963: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o expect2 expect2.c \$LIBS"
++echo "regression.at:963: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o expect2 expect2.c \$LDFLAGS \$LIBS"
+ echo regression.at:963 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o expect2 expect2.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -59065,7 +59075,7 @@ fi
+ $at_traceon
+ 
+    $at_traceoff
+-echo "regression.at:964: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o expect2 expect2.c \$LIBS"
++echo "regression.at:964: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o expect2 expect2.c \$LDFLAGS \$LIBS"
+ echo regression.at:964 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o expect2 expect2.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -59325,7 +59335,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "regression.at:965: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o expect2 expect2.cc \$LIBS"
++echo "regression.at:965: \$CXX \$CXXFLAGS \$CPPFLAGS \$LDFLAGS -o expect2 expect2.cc \$LDFLAGS \$LIBS"
+ echo regression.at:965 >$at_check_line_file
+ ( $at_traceon; $CXX $CXXFLAGS $CPPFLAGS $LDFLAGS -o expect2 expect2.cc $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -60116,7 +60126,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "cxx-type.at:414: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o types types.c \$LIBS"
++echo "cxx-type.at:414: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o types types.c \$LDFLAGS \$LIBS"
+ echo cxx-type.at:414 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o types types.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -60594,7 +60604,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "cxx-type.at:420: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o types types.c \$LIBS"
++echo "cxx-type.at:420: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o types types.c \$LDFLAGS \$LIBS"
+ echo cxx-type.at:420 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o types types.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -61069,7 +61079,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "cxx-type.at:427: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o types types.c \$LIBS"
++echo "cxx-type.at:427: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o types types.c \$LDFLAGS \$LIBS"
+ echo cxx-type.at:427 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o types types.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -61547,7 +61557,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "cxx-type.at:434: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o types types.c \$LIBS"
++echo "cxx-type.at:434: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o types types.c \$LDFLAGS \$LIBS"
+ echo cxx-type.at:434 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o types types.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -62027,7 +62037,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "cxx-type.at:441: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o types types.c \$LIBS"
++echo "cxx-type.at:441: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o types types.c \$LDFLAGS \$LIBS"
+ echo cxx-type.at:441 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o types types.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -62510,7 +62520,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "cxx-type.at:448: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o types types.c \$LIBS"
++echo "cxx-type.at:448: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o types types.c \$LDFLAGS \$LIBS"
+ echo cxx-type.at:448 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o types types.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -62990,7 +63000,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "cxx-type.at:455: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o types types.c \$LIBS"
++echo "cxx-type.at:455: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o types types.c \$LDFLAGS \$LIBS"
+ echo cxx-type.at:455 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o types types.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -63473,7 +63483,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "cxx-type.at:461: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o types types.c \$LIBS"
++echo "cxx-type.at:461: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o types types.c \$LDFLAGS \$LIBS"
+ echo cxx-type.at:461 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o types types.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -63953,7 +63963,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "cxx-type.at:468: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o types types.c \$LIBS"
++echo "cxx-type.at:468: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o types types.c \$LDFLAGS \$LIBS"
+ echo cxx-type.at:468 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o types types.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -64165,7 +64175,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "glr-regression.at:97: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr1 glr-regr1.c \$LIBS"
++echo "glr-regression.at:97: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr1 glr-regr1.c \$LDFLAGS \$LIBS"
+ echo glr-regression.at:97 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o glr-regr1 glr-regr1.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -64371,7 +64381,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "glr-regression.at:213: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr2a glr-regr2a.c \$LIBS"
++echo "glr-regression.at:213: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr2a glr-regr2a.c \$LDFLAGS \$LIBS"
+ echo glr-regression.at:213 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o glr-regr2a glr-regr2a.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -64617,7 +64627,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "glr-regression.at:323: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr3 glr-regr3.c \$LIBS"
++echo "glr-regression.at:323: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr3 glr-regr3.c \$LDFLAGS \$LIBS"
+ echo glr-regression.at:323 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o glr-regr3 glr-regr3.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -64800,7 +64810,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "glr-regression.at:418: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr4 glr-regr4.c \$LIBS"
++echo "glr-regression.at:418: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr4 glr-regr4.c \$LDFLAGS \$LIBS"
+ echo glr-regression.at:418 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o glr-regr4 glr-regr4.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -64958,7 +64968,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "glr-regression.at:488: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr5 glr-regr5.c \$LIBS"
++echo "glr-regression.at:488: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr5 glr-regr5.c \$LDFLAGS \$LIBS"
+ echo glr-regression.at:488 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o glr-regr5 glr-regr5.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -65108,7 +65118,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "glr-regression.at:550: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr6 glr-regr6.c \$LIBS"
++echo "glr-regression.at:550: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr6 glr-regr6.c \$LDFLAGS \$LIBS"
+ echo glr-regression.at:550 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o glr-regr6 glr-regr6.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -65273,7 +65283,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "glr-regression.at:628: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr7 glr-regr7.c \$LIBS"
++echo "glr-regression.at:628: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr7 glr-regr7.c \$LDFLAGS \$LIBS"
+ echo glr-regression.at:628 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o glr-regr7 glr-regr7.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -65455,7 +65465,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "glr-regression.at:724: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr8 glr-regr8.c \$LIBS"
++echo "glr-regression.at:724: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr8 glr-regr8.c \$LDFLAGS \$LIBS"
+ echo glr-regression.at:724 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o glr-regr8 glr-regr8.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -65625,7 +65635,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "glr-regression.at:807: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr9 glr-regr9.c \$LIBS"
++echo "glr-regression.at:807: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr9 glr-regr9.c \$LDFLAGS \$LIBS"
+ echo glr-regression.at:807 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o glr-regr9 glr-regr9.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -65777,7 +65787,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "glr-regression.at:870: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr10 glr-regr10.c \$LIBS"
++echo "glr-regression.at:870: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr10 glr-regr10.c \$LDFLAGS \$LIBS"
+ echo glr-regression.at:870 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o glr-regr10 glr-regr10.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -65933,7 +65943,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "glr-regression.at:936: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr11 glr-regr11.c \$LIBS"
++echo "glr-regression.at:936: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr11 glr-regr11.c \$LDFLAGS \$LIBS"
+ echo glr-regression.at:936 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o glr-regr11 glr-regr11.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -66152,7 +66162,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "glr-regression.at:1065: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr12 glr-regr12.c \$LIBS"
++echo "glr-regression.at:1065: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr12 glr-regr12.c \$LDFLAGS \$LIBS"
+ echo glr-regression.at:1065 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o glr-regr12 glr-regr12.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -66366,7 +66376,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "glr-regression.at:1190: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr13 glr-regr13.c \$LIBS"
++echo "glr-regression.at:1190: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr13 glr-regr13.c \$LDFLAGS \$LIBS"
+ echo glr-regression.at:1190 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o glr-regr13 glr-regr13.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -66670,7 +66680,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "glr-regression.at:1405: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr14 glr-regr14.c \$LIBS"
++echo "glr-regression.at:1405: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr14 glr-regr14.c \$LDFLAGS \$LIBS"
+ echo glr-regression.at:1405 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o glr-regr14 glr-regr14.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -66860,7 +66870,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "glr-regression.at:1506: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr15 glr-regr15.c \$LIBS"
++echo "glr-regression.at:1506: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr15 glr-regr15.c \$LDFLAGS \$LIBS"
+ echo glr-regression.at:1506 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o glr-regr15 glr-regr15.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -67015,7 +67025,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "glr-regression.at:1572: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr16 glr-regr16.c \$LIBS"
++echo "glr-regression.at:1572: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr16 glr-regr16.c \$LDFLAGS \$LIBS"
+ echo glr-regression.at:1572 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o glr-regr16 glr-regr16.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?
+@@ -67189,7 +67199,7 @@ fi
+ $at_traceon
+ 
+ $at_traceoff
+-echo "glr-regression.at:1657: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr17 glr-regr17.c \$LIBS"
++echo "glr-regression.at:1657: \$CC \$CFLAGS \$CPPFLAGS \$LDFLAGS -o glr-regr17 glr-regr17.c \$LDFLAGS \$LDFLAGS \$LIBS"
+ echo glr-regression.at:1657 >$at_check_line_file
+ ( $at_traceon; $CC $CFLAGS $CPPFLAGS $LDFLAGS -o glr-regr17 glr-regr17.c $LIBS ) >$at_stdout 2>$at_stder1
+ at_status=$?

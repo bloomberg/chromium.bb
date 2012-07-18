@@ -1,0 +1,61 @@
+# German translation for messages of GNU bison (runtime module).
+# Copyright (C) 2004 Free Software Foundation, Inc.
+# Ulrich Drepper <drepper@gnu.ai.mit.edu>, 1996.
+# Michael Piefel <piefel@informatik.hu-berlin.de>, 2002, 2003, 2004, 2005, 2006.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: bison-runtime 2.3a\n"
+"Report-Msgid-Bugs-To: bug-bison@gnu.org\n"
+"POT-Creation-Date: 2008-12-11 17:06-0500\n"
+"PO-Revision-Date: 2006-12-12 09:38+0100\n"
+"Last-Translator: Michael Piefel <piefel@informatik.hu-berlin.de>\n"
+"Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8-bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+#: data/glr.c:923 data/yacc.c:630
+msgid "syntax error: cannot back up"
+msgstr "Syntaxfehler: Kann nicht zurück gehen"
+
+#: data/glr.c:1806
+msgid "syntax is ambiguous"
+msgstr "Syntax ist mehrdeutig"
+
+#: data/glr.c:2181 data/glr.c:2187 data/glr.c:2455 data/lalr1.cc:878
+#: data/yacc.c:1491 data/yacc.c:1519
+msgid "syntax error"
+msgstr "Syntaxfehler"
+
+#: data/glr.c:2515 data/yacc.c:1106 data/yacc.c:1108 data/yacc.c:1284
+#: data/yacc.c:1640
+msgid "memory exhausted"
+msgstr "Speicher ausgeschöpft"
+
+#: data/yacc.c:918
+#, c-format
+msgid "syntax error, unexpected %s"
+msgstr "Syntaxfehler, unerwartetes %s"
+
+#: data/yacc.c:919
+#, c-format
+msgid "syntax error, unexpected %s, expecting %s"
+msgstr "Syntaxfehler, unerwartetes %s, hatte %s erwartet"
+
+#: data/yacc.c:920
+#, c-format
+msgid "syntax error, unexpected %s, expecting %s or %s"
+msgstr "Syntaxfehler, unerwartetes %s, hatte %s oder %s erwartet"
+
+#: data/yacc.c:921
+#, c-format
+msgid "syntax error, unexpected %s, expecting %s or %s or %s"
+msgstr "Syntaxfehler, unerwartetes %s, hatte %s oder %s oder %s erwartet"
+
+#: data/yacc.c:922
+#, c-format
+msgid "syntax error, unexpected %s, expecting %s or %s or %s or %s"
+msgstr ""
+"Syntaxfehler, unerwartetes %s, hatte %s oder %s oder %s oder %s erwartet"
