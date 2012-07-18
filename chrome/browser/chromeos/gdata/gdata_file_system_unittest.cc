@@ -896,12 +896,11 @@ void AsyncInitializationCallback(
     const FilePath& expected_file_path,
     MessageLoop* message_loop,
     GDataFileError error,
-    bool /* hide_hosted_documents */,
-    scoped_ptr<GDataDirectoryProto> directory_proto) {
+    scoped_ptr<GDataEntryProto> entry_proto) {
   ASSERT_EQ(GDATA_FILE_OK, error);
-  ASSERT_TRUE(directory_proto.get());
-  EXPECT_EQ(expected_file_path.value(),
-            directory_proto->gdata_entry().file_name());
+  ASSERT_TRUE(entry_proto.get());
+  ASSERT_TRUE(entry_proto->file_info().is_directory());
+  EXPECT_EQ(expected_file_path.value(), entry_proto->file_name());
 
   (*counter)++;
   if (*counter >= expected_counter)
@@ -910,7 +909,7 @@ void AsyncInitializationCallback(
 
 TEST_F(GDataFileSystemTest, DuplicatedAsyncInitialization) {
   int counter = 0;
-  ReadDirectoryCallback callback = base::Bind(
+  GetEntryInfoCallback callback = base::Bind(
       &AsyncInitializationCallback,
       &counter,
       2,
@@ -923,9 +922,9 @@ TEST_F(GDataFileSystemTest, DuplicatedAsyncInitialization) {
 
   EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(NotNull())).Times(1);
 
-  file_system_->ReadDirectoryByPath(
+  file_system_->GetEntryInfoByPath(
       FilePath(FILE_PATH_LITERAL("drive")), callback);
-  file_system_->ReadDirectoryByPath(
+  file_system_->GetEntryInfoByPath(
       FilePath(FILE_PATH_LITERAL("drive")), callback);
   message_loop_.Run();  // Wait to get our result
   EXPECT_EQ(2, counter);
@@ -1553,17 +1552,18 @@ TEST_F(GDataFileSystemTest, MoveFileFromRootToSubDirectory) {
   EXPECT_FALSE(src_file_proto->gdata_entry().edit_url().empty());
 
   ASSERT_TRUE(EntryExists(dest_parent_path));
-  scoped_ptr<GDataDirectoryProto> dest_parent_proto = ReadDirectoryByPathSync(
+  scoped_ptr<GDataEntryProto> dest_parent_proto = GetEntryInfoByPathSync(
       dest_parent_path);
   ASSERT_TRUE(dest_parent_proto.get());
-  EXPECT_FALSE(dest_parent_proto->gdata_entry().content_url().empty());
+  ASSERT_TRUE(dest_parent_proto->file_info().is_directory());
+  EXPECT_FALSE(dest_parent_proto->content_url().empty());
 
   EXPECT_CALL(*mock_doc_service_,
               RenameResource(GURL(src_file_proto->gdata_entry().edit_url()),
                              FILE_PATH_LITERAL("Test.log"), _));
   EXPECT_CALL(*mock_doc_service_,
               AddResourceToDirectory(
-                  GURL(dest_parent_proto->gdata_entry().content_url()),
+                  GURL(dest_parent_proto->content_url()),
                   GURL(src_file_proto->gdata_entry().edit_url()), _));
 
   FileOperationCallback callback =
@@ -1602,17 +1602,18 @@ TEST_F(GDataFileSystemTest, MoveFileFromSubDirectoryToRoot) {
   EXPECT_FALSE(src_file_proto->gdata_entry().edit_url().empty());
 
   ASSERT_TRUE(EntryExists(src_parent_path));
-  scoped_ptr<GDataDirectoryProto> src_parent_proto = ReadDirectoryByPathSync(
+  scoped_ptr<GDataEntryProto> src_parent_proto = GetEntryInfoByPathSync(
       src_parent_path);
   ASSERT_TRUE(src_parent_proto.get());
-  EXPECT_FALSE(src_parent_proto->gdata_entry().content_url().empty());
+  ASSERT_TRUE(src_parent_proto->file_info().is_directory());
+  EXPECT_FALSE(src_parent_proto->content_url().empty());
 
   EXPECT_CALL(*mock_doc_service_,
               RenameResource(GURL(src_file_proto->gdata_entry().edit_url()),
                              FILE_PATH_LITERAL("Test.log"), _));
   EXPECT_CALL(*mock_doc_service_,
               RemoveResourceFromDirectory(
-                  GURL(src_parent_proto->gdata_entry().content_url()),
+                  GURL(src_parent_proto->content_url()),
                   GURL(src_file_proto->gdata_entry().edit_url()),
                   src_file_resource_id, _));
 
@@ -1659,16 +1660,18 @@ TEST_F(GDataFileSystemTest, MoveFileBetweenSubDirectories) {
   EXPECT_FALSE(src_file_proto->gdata_entry().edit_url().empty());
 
   ASSERT_TRUE(EntryExists(src_parent_path));
-  scoped_ptr<GDataDirectoryProto> src_parent_proto = ReadDirectoryByPathSync(
+  scoped_ptr<GDataEntryProto> src_parent_proto = GetEntryInfoByPathSync(
       src_parent_path);
   ASSERT_TRUE(src_parent_proto.get());
-  EXPECT_FALSE(src_parent_proto->gdata_entry().content_url().empty());
+  ASSERT_TRUE(src_parent_proto->file_info().is_directory());
+  EXPECT_FALSE(src_parent_proto->content_url().empty());
 
   ASSERT_TRUE(EntryExists(dest_parent_path));
-  scoped_ptr<GDataDirectoryProto> dest_parent_proto = ReadDirectoryByPathSync(
+  scoped_ptr<GDataEntryProto> dest_parent_proto = GetEntryInfoByPathSync(
       dest_parent_path);
   ASSERT_TRUE(dest_parent_proto.get());
-  EXPECT_FALSE(dest_parent_proto->gdata_entry().content_url().empty());
+  ASSERT_TRUE(dest_parent_proto->file_info().is_directory());
+  EXPECT_FALSE(dest_parent_proto->content_url().empty());
 
   EXPECT_FALSE(EntryExists(interim_file_path));
 
@@ -1677,12 +1680,12 @@ TEST_F(GDataFileSystemTest, MoveFileBetweenSubDirectories) {
                              FILE_PATH_LITERAL("Test.log"), _));
   EXPECT_CALL(*mock_doc_service_,
               RemoveResourceFromDirectory(
-                  GURL(src_parent_proto->gdata_entry().content_url()),
+                  GURL(src_parent_proto->content_url()),
                   GURL(src_file_proto->gdata_entry().edit_url()),
                   src_file_resource_id, _));
   EXPECT_CALL(*mock_doc_service_,
               AddResourceToDirectory(
-                  GURL(dest_parent_proto->gdata_entry().content_url()),
+                  GURL(dest_parent_proto->content_url()),
                   GURL(src_file_proto->gdata_entry().edit_url()),
                   _));
 
@@ -1815,10 +1818,10 @@ TEST_F(GDataFileSystemTest, RemoveEntries) {
       file_in_root_proto->gdata_entry().resource_id();
 
   ASSERT_TRUE(EntryExists(dir_in_root));
-  scoped_ptr<GDataDirectoryProto> dir_in_root_proto = ReadDirectoryByPathSync(
+  scoped_ptr<GDataEntryProto> dir_in_root_proto = GetEntryInfoByPathSync(
       dir_in_root);
   ASSERT_TRUE(dir_in_root_proto.get());
-
+  ASSERT_TRUE(dir_in_root_proto->file_info().is_directory());
 
   ASSERT_TRUE(EntryExists(file_in_subdir));
   scoped_ptr<GDataFileProto> file_in_subdir_proto = GetFileInfoByPathSync(
