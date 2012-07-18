@@ -84,7 +84,8 @@ class ProfileDownloader : public net::URLFetcherDelegate,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Overriden from OAuth2AccessTokenConsumer:
-  virtual void OnGetTokenSuccess(const std::string& access_token) OVERRIDE;
+  virtual void OnGetTokenSuccess(const std::string& access_token,
+                                 const base::Time& expiration_time) OVERRIDE;
   virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
 
   // Parses the entry response and gets the name and and profile image URL.
