@@ -127,6 +127,7 @@ PathUtil.isRootPath = function(path) {
   return PathUtil.getRootPath(path) === path;
 };
 
+
 /**
  * @constructor
  * @param {MetadataCache} metadataCache Metadata cache service.
@@ -143,10 +144,61 @@ function FileListContext(metadataCache, fileList, showHidden) {
    */
   this.fileList = fileList;
   /**
-   * @type {boolean}
+   * @type Object.<string, Function>
+   * @private
    */
-  this.showHidden = showHidden;
+  this.filters_ = {};
+  this.setFilterHidden(!showHidden);
 }
+
+/**
+ * @param {string} name Filter identifier.
+ * @param {Function(Entry)} callback A filter — a function receiving an Entry,
+ *     and returning bool.
+ */
+FileListContext.prototype.addFilter = function(name, callback) {
+  this.filters_[name] = callback;
+};
+
+/**
+ * @param {string} name Filter identifier.
+ */
+FileListContext.prototype.removeFilter = function(name) {
+  delete this.filters_[name];
+};
+
+/**
+ * @param {bool} value If do not show hidden files.
+ */
+FileListContext.prototype.setFilterHidden = function(value) {
+  if (value) {
+    this.addFilter(
+        'hidden',
+        function(entry) {return entry.name.substr(0, 1) !== '.';}
+    );
+  } else {
+    this.removeFilter('hidden');
+  }
+};
+
+/**
+ * @return {boolean} If the files with names starting with "." are not shown.
+ */
+FileListContext.prototype.isFilterHiddenOn = function() {
+  return 'hidden' in this.filters_;
+};
+
+/**
+ * @param {Entry} entry File entry.
+ * @return {bool} True if the file should be shown, false otherwise.
+ */
+FileListContext.prototype.filter = function(entry) {
+  for (var name in this.filters_) {
+    if (!this.filters_[name](entry))
+      return false;
+  }
+  return true;
+};
 
 
 /**
@@ -163,6 +215,7 @@ function DirectoryContents(context) {
   this.scanCompletedCallback_ = null;
   this.scanFailedCallback_ = null;
   this.scanCancelled_ = false;
+  this.filter_ = context.filter.bind(context);
 
   this.fileList_.prepareSort = this.prepareSort_.bind(this);
 }
@@ -216,20 +269,6 @@ DirectoryContents.prototype.getPath = function() {
  */
 DirectoryContents.prototype.isSearch = function() {
   return false;
-};
-
-/**
- * @param {boolean} show If hidden files are shown.
- */
-DirectoryContents.prototype.setShowHidden = function(show) {
-  this.showHidden_ = show;
-};
-
-/**
- * @return {boolean} If show hidden.
- */
-DirectoryContents.prototype.ifShowHidden = function() {
-  return this.showHidden_;
 };
 
 /**
@@ -317,11 +356,7 @@ DirectoryContents.prototype.onNewEntries = function(entries) {
   if (this.scanCancelled_)
     return;
 
-  var isHidden = function(e) {
-    return e.name.substr(0, 1) !== '.';
-  };
-  var entriesFiltered = this.context_.showHidden ?
-      [].slice.call(entries) : [].filter.call(entries, isHidden);
+  var entriesFiltered = [].filter.call(entries, this.filter_);
 
   var onPrefetched = function() {
     if (this.scanCancelled_)

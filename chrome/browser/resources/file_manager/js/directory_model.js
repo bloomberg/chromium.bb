@@ -200,14 +200,14 @@ DirectoryModel.prototype.isPathReadOnly = function(path) {
  * @return {boolean} If the files with names starting with "." are not shown.
  */
 DirectoryModel.prototype.isFilterHiddenOn = function() {
-  return this.currentDirContents_.ifShowHidden();
+  return this.currentFileListContext_.isFilterHiddenOn();
 };
 
 /**
  * @param {boolean} value Whether files with leading "." are hidden.
  */
 DirectoryModel.prototype.setFilterHidden = function(value) {
-  this.currentFileListContext_.showHidden = value;
+  this.currentFileListContext_.setFilterHidden(value);
   this.rescanSoon();
 };
 
@@ -1188,6 +1188,23 @@ DirectoryModel.prototype.clearSearch_ = function() {
     this.onClearSearch_ = null;
   }
 };
+
+/**
+ * @param {string} name Filter identifier.
+ * @param {Function(Entry)} callback A filter — a function receiving an Entry,
+ *     and returning bool.
+ */
+DirectoryModel.prototype.addFilter = function(name, callback) {
+  this.currentFileListContext_.addFilter(name, callback);
+};
+
+/**
+ * @param {string} name Filter identifier.
+ */
+DirectoryModel.prototype.removeFilter = function(name) {
+  this.currentFileListContext_.removeFilter(name);
+};
+
 
 /**
  * @constructor
