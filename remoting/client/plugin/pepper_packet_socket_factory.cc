@@ -264,12 +264,17 @@ void UdpPacketSocket::DoSend() {
 }
 
 void UdpPacketSocket::OnSendCompleted(int result) {
+  if (result == PP_ERROR_ABORTED) {
+    // Send is aborted when the socket is being destroyed.
+    // |send_queue_| may be already destroyed, it's not safe to access
+    // it here.
+    return;
+  }
+
   send_pending_ = false;
 
   if (result < 0) {
-    if (result != PP_ERROR_ABORTED) {
-      LOG(ERROR) << "Send failed on a UDP socket: " << result;
-    }
+    LOG(ERROR) << "Send failed on a UDP socket: " << result;
 
     // OS (e.g. OSX) may return EHOSTUNREACH when the peer has the
     // same subnet address as the local host but connected to a
