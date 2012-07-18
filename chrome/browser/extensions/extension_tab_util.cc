@@ -5,6 +5,8 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
+#include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
@@ -250,4 +252,14 @@ void ExtensionTabUtil::ForEachTab(
     const base::Callback<void(WebContents*)>& callback) {
   for (TabContentsIterator iterator; !iterator.done(); ++iterator)
     callback.Run((*iterator)->web_contents());
+}
+
+// static
+extensions::WindowController* ExtensionTabUtil::GetWindowControllerOfTab(
+    const WebContents* web_contents) {
+  Browser* browser = browser::FindBrowserWithWebContents(web_contents);
+  if (browser != NULL)
+    return browser->extension_window_controller();
+
+  return NULL;
 }

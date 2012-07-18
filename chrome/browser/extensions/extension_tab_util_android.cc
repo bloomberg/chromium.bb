@@ -105,3 +105,10 @@ void ExtensionTabUtil::ForEachTab(
     const base::Callback<void(WebContents*)>& callback) {
   NOTIMPLEMENTED();
 }
+
+// static
+extensions::WindowController* ExtensionTabUtil::GetWindowControllerOfTab(
+    const WebContents* web_contents) {
+  NOTIMPLEMENTED();
+  return NULL;
+}

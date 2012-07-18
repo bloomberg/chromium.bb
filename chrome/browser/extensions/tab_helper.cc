@@ -7,12 +7,12 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/app_notify_channel_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/page_action_controller.h"
 #include "chrome/browser/extensions/script_badge_controller.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
@@ -401,14 +401,7 @@ void TabHelper::OnImageLoaded(const gfx::Image& image,
 }
 
 WindowController* TabHelper::GetExtensionWindowController() const  {
-  content::WebContents* contents = web_contents();
-  TabContentsIterator tab_iterator;
-  for (; !tab_iterator.done(); ++tab_iterator) {
-    if (contents == (*tab_iterator)->web_contents())
-      return tab_iterator.browser()->extension_window_controller();
-  }
-
-  return NULL;
+  return ExtensionTabUtil::GetWindowControllerOfTab(web_contents());
 }
 
 void TabHelper::OnInlineInstallSuccess(int install_id, int return_route_id) {

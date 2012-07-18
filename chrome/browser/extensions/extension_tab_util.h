@@ -27,6 +27,7 @@ class WebContents;
 
 namespace extensions {
 class Extension;
+class WindowController;
 }
 
 namespace gfx {
@@ -92,6 +93,9 @@ class ExtensionTabUtil {
   // Executes the specified callback for all tabs in all browser windows.
   static void ForEachTab(
       const base::Callback<void(content::WebContents*)>& callback);
+
+  static extensions::WindowController* GetWindowControllerOfTab(
+      const content::WebContents* web_contents);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TAB_UTIL_H__
