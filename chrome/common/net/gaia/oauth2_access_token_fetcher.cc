@@ -11,7 +11,6 @@
 #include "base/json/json_reader.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/time.h"
 #include "base/values.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -43,7 +42,6 @@ static const char kGetAccessTokenBodyWithScopeFormat[] =
     "scope=%s";
 
 static const char kAccessTokenKey[] = "access_token";
-static const char kExpiresInKey[] = "expires_in";
 
 static GoogleServiceAuthError CreateAuthError(URLRequestStatus status) {
   CHECK(!status.is_success());
@@ -131,26 +129,15 @@ void OAuth2AccessTokenFetcher::EndGetAccessToken(
   }
 
   // The request was successfully fetched and it returned OK.
-  // Parse out the access token and the expiration time.
+  // Parse out the access token.
   std::string access_token;
-  int expires_in;
-  if (!ParseGetAccessTokenResponse(source, &access_token, &expires_in)) {
-    DLOG(WARNING) << "Response doesn't match expected format";
-    OnGetTokenFailure(
-        GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
-    return;
-  }
-  // The token will expire in |expires_in| seconds. Take a 10% error margin to
-  // prevent reusing a token too close to its expiration date.
-  OnGetTokenSuccess(
-      access_token,
-      base::Time::Now() + base::TimeDelta::FromSeconds(9 * expires_in / 10));
+  ParseGetAccessTokenResponse(source, &access_token);
+  OnGetTokenSuccess(access_token);
 }
 
 void OAuth2AccessTokenFetcher::OnGetTokenSuccess(
-    const std::string& access_token,
-    const base::Time& expiration_time) {
-  consumer_->OnGetTokenSuccess(access_token, expiration_time);
+    const std::string& access_token) {
+  consumer_->OnGetTokenSuccess(access_token);
 }
 
 void OAuth2AccessTokenFetcher::OnGetTokenFailure(
@@ -202,8 +189,7 @@ std::string OAuth2AccessTokenFetcher::MakeGetAccessTokenBody(
 // static
 bool OAuth2AccessTokenFetcher::ParseGetAccessTokenResponse(
     const net::URLFetcher* source,
-    std::string* access_token,
-    int* expires_in) {
+    std::string* access_token) {
   CHECK(source);
   CHECK(access_token);
   std::string data;
@@ -213,6 +199,5 @@ bool OAuth2AccessTokenFetcher::ParseGetAccessTokenResponse(
     return false;
 
   DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
-  return dict->GetString(kAccessTokenKey, access_token) &&
-      dict->GetInteger(kExpiresInKey, expires_in);
+  return dict->GetString(kAccessTokenKey, access_token);
 }

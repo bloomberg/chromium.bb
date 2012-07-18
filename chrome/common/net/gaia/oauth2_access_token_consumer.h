@@ -9,19 +9,11 @@
 
 class GoogleServiceAuthError;
 
-namespace base {
-class Time;
-}
-
 // An interface that defines the callbacks for consumers to which
 // OAuth2AccessTokenFetcher can return results.
 class OAuth2AccessTokenConsumer {
  public:
-  // Success callback. |access_token| will contain a valid OAuth2 access token.
-  // |expiration_time| is the date until which the token can be used. This
-  // value has a built-in safety margin, so it can be used as-is.
-  virtual void OnGetTokenSuccess(const std::string& access_token,
-                                 const base::Time& expiration_time) {}
+  virtual void OnGetTokenSuccess(const std::string& access_token) {}
   virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) {}
 
  protected:

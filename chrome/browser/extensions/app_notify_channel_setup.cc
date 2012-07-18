@@ -113,8 +113,7 @@ void AppNotifyChannelSetup::Start() {
 }
 
 void AppNotifyChannelSetup::OnGetTokenSuccess(
-    const std::string& access_token,
-    const base::Time& expiration_time) {
+    const std::string& access_token) {
   oauth2_access_token_ = access_token;
   EndGetAccessToken(true);
 }

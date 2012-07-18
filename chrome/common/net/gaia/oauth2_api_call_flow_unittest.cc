@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/gaia/oauth2_access_token_consumer.h"
@@ -195,9 +194,7 @@ TEST_F(OAuth2ApiCallFlowTest, SecondApiCallSucceeds) {
   flow_->OnURLFetchComplete(url_fetcher1);
   TestURLFetcher* url_fetcher2 = SetupApiCall(true, net::HTTP_OK);
   EXPECT_CALL(*flow_, ProcessApiCallSuccess(url_fetcher2));
-  flow_->OnGetTokenSuccess(
-      at,
-      base::Time::Now() + base::TimeDelta::FromMinutes(3600));
+  flow_->OnGetTokenSuccess(at);
   flow_->OnURLFetchComplete(url_fetcher2);
 }
 
@@ -213,9 +210,7 @@ TEST_F(OAuth2ApiCallFlowTest, SecondApiCallFails) {
   flow_->OnURLFetchComplete(url_fetcher1);
   TestURLFetcher* url_fetcher2 = SetupApiCall(false, net::HTTP_UNAUTHORIZED);
   EXPECT_CALL(*flow_, ProcessApiCallFailure(url_fetcher2));
-  flow_->OnGetTokenSuccess(
-      at,
-      base::Time::Now() + base::TimeDelta::FromMinutes(3600));
+  flow_->OnGetTokenSuccess(at);
   flow_->OnURLFetchComplete(url_fetcher2);
 }
 
@@ -245,9 +240,7 @@ TEST_F(OAuth2ApiCallFlowTest, EmptyAccessTokenFirstApiCallSucceeds) {
   TestURLFetcher* url_fetcher = SetupApiCall(true, net::HTTP_OK);
   EXPECT_CALL(*flow_, ProcessApiCallSuccess(url_fetcher));
   flow_->Start();
-  flow_->OnGetTokenSuccess(
-      at,
-      base::Time::Now() + base::TimeDelta::FromMinutes(3600));
+  flow_->OnGetTokenSuccess(at);
   flow_->OnURLFetchComplete(url_fetcher);
 }
 
@@ -261,9 +254,7 @@ TEST_F(OAuth2ApiCallFlowTest, EmptyAccessTokenApiCallFails) {
   TestURLFetcher* url_fetcher = SetupApiCall(false, net::HTTP_BAD_GATEWAY);
   EXPECT_CALL(*flow_, ProcessApiCallFailure(url_fetcher));
   flow_->Start();
-  flow_->OnGetTokenSuccess(
-      at,
-      base::Time::Now() + base::TimeDelta::FromMinutes(3600));
+  flow_->OnGetTokenSuccess(at);
   flow_->OnURLFetchComplete(url_fetcher);
 }
 

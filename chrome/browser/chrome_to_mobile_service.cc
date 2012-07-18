@@ -302,8 +302,7 @@ void ChromeToMobileService::Observe(
 }
 
 void ChromeToMobileService::OnGetTokenSuccess(
-    const std::string& access_token,
-    const base::Time& expiration_time) {
+    const std::string& access_token) {
   DCHECK(!access_token.empty());
   access_token_fetcher_.reset();
   auth_retry_timer_.Stop();

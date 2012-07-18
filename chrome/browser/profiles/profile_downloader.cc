@@ -381,8 +381,7 @@ void ProfileDownloader::Observe(
 
 // Callback for OAuth2AccessTokenFetcher on success. |access_token| is the token
 // used to start fetching user data.
-void ProfileDownloader::OnGetTokenSuccess(const std::string& access_token,
-                                          const base::Time& expiration_time) {
+void ProfileDownloader::OnGetTokenSuccess(const std::string& access_token) {
   auth_token_ = access_token;
   StartFetchingImage();
 }

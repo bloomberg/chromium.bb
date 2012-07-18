@@ -53,8 +53,7 @@ class OAuth2ApiCallFlow
   virtual void Start();
 
   // OAuth2AccessTokenFetcher implementation.
-  virtual void OnGetTokenSuccess(const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
+  virtual void OnGetTokenSuccess(const std::string& access_token) OVERRIDE;
   virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
 
   // net::URLFetcherDelegate implementation.

@@ -145,8 +145,7 @@ class ChromeToMobileService : public ProfileKeyedService,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // OAuth2AccessTokenConsumer methods.
-  virtual void OnGetTokenSuccess(const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
+  virtual void OnGetTokenSuccess(const std::string& access_token) OVERRIDE;
   virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
 
  private:
