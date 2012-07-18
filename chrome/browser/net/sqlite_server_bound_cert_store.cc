@@ -159,16 +159,16 @@ bool SQLiteServerBoundCertStore::Backend::Load(
   // This function should be called only once per instance.
   DCHECK(!db_.get());
 
+  // TODO(paivanof@gmail.com): We do a lot of disk access in this function,
+  // thus we do an exception to allow IO on the UI thread. This code will be
+  // moved to the DB thread as part of http://crbug.com/89665.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
   // Ensure the parent directory for storing certs is created before reading
-  // from it.  We make an exception to allow IO on the UI thread here because
-  // we are going to disk anyway in db_->Open.  (This code will be moved to the
-  // DB thread as part of http://crbug.com/52909.)
-  {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    const FilePath dir = path_.DirName();
-    if (!file_util::PathExists(dir) && !file_util::CreateDirectory(dir))
-      return false;
-  }
+  // from it.
+  const FilePath dir = path_.DirName();
+  if (!file_util::PathExists(dir) && !file_util::CreateDirectory(dir))
+    return false;
 
   db_.reset(new sql::Connection);
   if (!db_->Open(path_)) {
