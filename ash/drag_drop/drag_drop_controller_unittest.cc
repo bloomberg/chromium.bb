@@ -116,12 +116,14 @@ class TestDragDropController : public internal::DragDropController {
     drag_start_received_ = false;
     num_drag_updates_ = 0;
     drop_received_ = false;
+    drag_canceled_ = false;
     drag_string_.clear();
   }
 
   bool drag_start_received_;
   int num_drag_updates_;
   bool drop_received_;
+  bool drag_canceled_;
   string16 drag_string_;
 
  private:
@@ -142,6 +144,11 @@ class TestDragDropController : public internal::DragDropController {
   void Drop(aura::Window* target, const aura::LocatedEvent& event) OVERRIDE {
     DragDropController::Drop(target, event);
     drop_received_ = true;
+  }
+
+  void DragCancel() OVERRIDE {
+    DragDropController::DragCancel();
+    drag_canceled_ = true;
   }
 
   DISALLOW_COPY_AND_ASSIGN(TestDragDropController);
@@ -618,6 +625,48 @@ TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
       drag_view->num_drag_updates_);
   EXPECT_EQ(1, drag_view->num_drops_);
   EXPECT_EQ(0, drag_view->num_drag_exits_);
+  EXPECT_TRUE(drag_view->drag_done_received_);
+}
+
+TEST_F(DragDropControllerTest, PressingEscapeCancelsDragDrop) {
+  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  DragTestView* drag_view = new DragTestView;
+  AddViewToWidgetAndResize(widget.get(), drag_view);
+  ui::OSExchangeData data;
+  data.SetString(UTF8ToUTF16("I am being dragged"));
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       widget->GetNativeView());
+  generator.PressLeftButton();
+
+  int num_drags = 17;
+  for (int i = 0; i < num_drags; ++i) {
+    // Because we are not doing a blocking drag and drop, the original
+    // OSDragExchangeData object is lost as soon as we return from the drag
+    // initiation in DragDropController::StartDragAndDrop(). Hence we set the
+    // drag_data_ to a fake drag data object that we created.
+    if (i > 0)
+      UpdateDragData(&data);
+    generator.MoveMouseBy(0, 1);
+
+    // Execute any scheduled draws to process deferred mouse events.
+    RunAllPendingInMessageLoop();
+  }
+
+  generator.PressKey(ui::VKEY_ESCAPE, 0);
+
+  EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
+  EXPECT_EQ(num_drags - 1 - drag_view->VerticalDragThreshold(),
+      drag_drop_controller_->num_drag_updates_);
+  EXPECT_FALSE(drag_drop_controller_->drop_received_);
+  EXPECT_TRUE(drag_drop_controller_->drag_canceled_);
+  EXPECT_EQ(UTF8ToUTF16("I am being dragged"),
+      drag_drop_controller_->drag_string_);
+
+  EXPECT_EQ(1, drag_view->num_drag_enters_);
+  EXPECT_EQ(num_drags - 1 - drag_view->VerticalDragThreshold(),
+      drag_view->num_drag_updates_);
+  EXPECT_EQ(0, drag_view->num_drops_);
+  EXPECT_EQ(1, drag_view->num_drag_exits_);
   EXPECT_TRUE(drag_view->drag_done_received_);
 }
 

@@ -193,6 +193,10 @@ bool DragDropController::IsDragDropInProgress() {
 
 bool DragDropController::PreHandleKeyEvent(aura::Window* target,
                                            aura::KeyEvent* event) {
+  if (drag_drop_in_progress_ && event->key_code() == ui::VKEY_ESCAPE) {
+    DragCancel();
+    return true;
+  }
   return false;
 }
 
