@@ -1,10 +1,10 @@
 {
+  "tables": [
+    "unicode.dis", 
+    "hu-hu-g1.ctb"
+  ], 
   "tests": [
     {
-      "flags": {
-        "outputUniBrl": true, 
-        "testmode": "backtranslate"
-      }, 
       "data": [
         {
           "input": "⠁⠙⠈⠎⠱⠑⠗⠾", 
@@ -19,7 +19,6 @@
           "output": "adósszámla"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠁⠹⠁⠛⠕⠎⠱⠑⠗⠛⠡⠫", 
           "output": "Agyagosszergény"
         }, 
@@ -172,7 +171,6 @@
           "output": "becslésszerűen"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠃⠡⠅⠡⠎⠱⠑⠝⠞⠁⠝⠙⠗⠈⠎", 
           "output": "Békésszentandrás"
         }, 
@@ -533,7 +531,6 @@
           "output": "farkasszemet "
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠋⠁⠗⠅⠁⠎⠱⠊⠛⠑⠞⠂", 
           "output": "Farkassziget,"
         }, 
@@ -690,7 +687,6 @@
           "output": "ginzenggyökér"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠛⠕⠍⠃⠕⠎⠱⠑⠛", 
           "output": "Gombosszeg"
         }, 
@@ -939,7 +935,6 @@
           "output": "hússzelet"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠓⠬⠎⠱⠊⠛⠑⠞", 
           "output": "Hússziget"
         }, 
@@ -1092,12 +1087,10 @@
           "output": "kaparásszerű"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠅⠁⠏⠕⠎⠱⠑⠅⠩⠻", 
           "output": "Kaposszekcső"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠅⠁⠏⠕⠎⠱⠑⠗⠙⠁⠓⠑⠸", 
           "output": "Kaposszerdahely"
         }, 
@@ -1158,12 +1151,10 @@
           "output": "kékesszürke"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠅⠑⠍⠑⠝⠑⠎⠱⠑⠝⠞⠍⠈⠗⠞⠕⠝", 
           "output": "Kemenesszentmárton"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠅⠑⠍⠑⠝⠑⠎⠱⠑⠝⠞⠏⠡⠞⠑⠗", 
           "output": "Kemenesszentpéter"
         }, 
@@ -1224,7 +1215,6 @@
           "output": "kilincszörgést "
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠅⠊⠎⠱⠈⠇⠇⠈⠎", 
           "output": "Kisszállás"
         }, 
@@ -1233,7 +1223,6 @@
           "output": "kisszámú"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠅⠊⠎⠱⠑⠃⠑⠝", 
           "output": "Kisszeben"
         }, 
@@ -1246,7 +1235,6 @@
           "output": "kisszekrény"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠅⠊⠎⠱⠑⠝⠞⠍⠈⠗⠞⠕⠝", 
           "output": "Kisszentmárton"
         }, 
@@ -1255,7 +1243,6 @@
           "output": "kisszerű"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠅⠊⠎⠱⠊⠛⠑⠞", 
           "output": "Kissziget"
         }, 
@@ -1268,7 +1255,6 @@
           "output": "kisszótár"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠅⠊⠎⠣⠕⠍⠃⠕⠗", 
           "output": "Kiszombor"
         }, 
@@ -1277,7 +1263,6 @@
           "output": "kiszögellésszerűen"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠅⠊⠎⠜⠊⠙⠈⠫", 
           "output": "Kiszsidány"
         }, 
@@ -1378,7 +1363,6 @@
           "output": "körösszakáli "
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠅⠟⠗⠟⠎⠣⠥⠛", 
           "output": "Köröszug"
         }, 
@@ -1635,22 +1619,18 @@
           "output": "mandarinnyelv"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠍⠁⠗⠕⠎⠱⠡⠅", 
           "output": "Marosszék"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠍⠁⠗⠕⠎⠱⠑⠝⠞⠹⠟⠗⠹ ", 
           "output": "Marosszentgyörgy "
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠍⠁⠗⠕⠎⠣⠥⠛", 
           "output": "Maroszug"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠍⠁⠗⠞⠗⠁⠧⠑⠗⠱⠱⠁⠇", 
           "output": "Martraversszal"
         }, 
@@ -1695,7 +1675,6 @@
           "output": "meggyes"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠍⠑⠹⠹⠑⠎⠊", 
           "output": "Meggyesi"
         }, 
@@ -1792,7 +1771,6 @@
           "output": "mézsör"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠍⠊⠅⠕⠎⠱⠡⠏⠇⠁⠅", 
           "output": "Mikosszéplak"
         }, 
@@ -1869,12 +1847,10 @@
           "output": "nehézsúlyú"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠝⠑⠍⠑⠎⠱⠁⠇⠪⠅", 
           "output": "Nemesszalók"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠝⠑⠍⠑⠎⠱⠑⠝⠞⠁⠝⠙⠗⠈⠎", 
           "output": "Nemesszentandrás"
         }, 
@@ -2119,12 +2095,10 @@
           "output": "piaccsarnok"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠏⠊⠇⠊⠎⠱⠈⠝⠞⠪⠂", 
           "output": "Pilisszántó,"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠏⠊⠇⠊⠎⠱⠑⠝⠞⠅⠑⠗⠑⠱⠞", 
           "output": "Pilisszentkereszt"
         }, 
@@ -2437,7 +2411,6 @@
           "output": "szalonnyelv, szalonnyelven "
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠱⠁⠍⠕⠎⠱⠑⠛", 
           "output": "Szamosszeg"
         }, 
@@ -2474,7 +2447,6 @@
           "output": "szentséggyalázás"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠱⠑⠏⠑⠎⠱⠕⠍⠃⠁⠞", 
           "output": "Szepesszombat"
         }, 
@@ -2495,7 +2467,6 @@
           "output": "szétosszák "
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠱⠊⠇⠧⠈⠎⠱⠑⠝⠞⠍⠈⠗⠞⠕⠝", 
           "output": "Szilvásszentmárton"
         }, 
@@ -2844,7 +2815,6 @@
           "output": "vállpereccsontjából"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠧⠈⠍⠕⠎⠱⠁⠃⠁⠙⠊", 
           "output": "Vámosszabadi"
         }, 
@@ -2885,12 +2855,10 @@
           "output": "vasszállítmány"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠧⠁⠱⠁⠗", 
           "output": "Vaszar"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠧⠈⠜⠝⠕⠅", 
           "output": "Vázsnok"
         }, 
@@ -2939,7 +2907,6 @@
           "output": "vértesszázadbeli "
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠧⠡⠗⠞⠑⠎⠱⠻⠇⠻⠎", 
           "output": "Vértesszőlős"
         }, 
@@ -3120,17 +3087,14 @@
           "output": "zsoldosszokás"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠁ ⠞⠑⠇⠑⠋⠕⠝⠱⠈⠍⠕⠍⠒ ⠼⠚⠋⠤⠼⠁⠤⠼⠃⠑⠋⠤⠼⠃⠑⠋⠄", 
           "output": "A telefonszámom: 06-1-256-256."
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠁ ⠋⠟⠇⠙⠗⠑⠝⠛⠡⠎ ⠼⠛⠂⠑ ⠑⠗⠻⠎⠎⠡⠛⠾ ⠧⠕⠇⠞⠄", 
           "output": "A földrengés 7,5 erősségű volt."
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠞⠁⠍⠈⠎ ⠍⠡⠛ ⠝⠑⠍ ⠞⠥⠙⠞⠁⠂ ⠓⠕⠹ ⠍⠊ ⠧⠈⠗ ⠗⠈⠄", 
           "output": "Tamás még nem tudta, hogy mi vár rá."
         }, 
@@ -3139,12 +3103,10 @@
           "output": "\"Tamás még nem tudta, hogy mi vár rá.\""
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠊ ⠙⠕⠝⠠⠄⠞ ⠝⠕ ⠺⠓⠽ ⠓⠁⠏⠏⠑⠝⠑⠙ ⠞⠓⠊⠎ ⠏⠗⠕⠃⠇⠑⠍⠄", 
           "output": "I don't no why happened this problem."
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠁⠣ ⠼⠁⠼⠧ ⠏⠁⠗⠁⠛⠗⠁⠋⠥⠎ ⠁⠇⠁⠏⠚⠈⠝ ⠁ ⠅⠑⠙⠧⠑⠣⠍⠡⠫ ⠊⠛⠡⠫⠃⠑ ⠧⠑⠓⠑⠞⠻⠄", 
           "output": "Az 1§ paragrafus alapján a kedvezmény igénybe vehető."
         }, 
@@ -3153,22 +3115,18 @@
           "output": "– A sivatagi karavánúton, negyven vagy ötven mérföldnyire innen. Egy Ford. De mi nem megyünk magával. – Elővette az irattárcáját, és átadott Naszifnak egy angol fontot. – Ha visszajön, keressen meg a vasútállomás mellett a Grand Hotelban."
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠁ ⠧⠡⠞⠑⠇⠈⠗ ⠼⠁ ⠰⠑⠄", 
           "output": "A vételár 1 €."
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠙⠑ ⠝⠑⠅⠑⠍ ⠝⠁⠹⠕⠝ ⠝⠑⠓⠑⠣⠑⠍⠗⠑ ⠑⠎⠊⠅ ⠁ ⠇⠑⠧⠡⠇⠌⠗⠈⠎ ⠮⠝⠡⠣⠙ ⠑⠇ ⠁ ⠓⠑⠸⠑⠎⠌⠗⠈⠎⠊ ⠓⠊⠃⠈⠅⠁⠞ ⠡⠎ ⠁ ⠩⠬⠫⠁ ⠌⠗⠈⠎⠕⠍⠁⠞⠵⠄", 
           "output": "De nekem nagyon nehezemre esik a levélírás (nézd el a helyesírási hibákat és a csúnya írásomat)."
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠁ ⠅⠊⠈⠇⠇⠌⠞⠈⠎ ⠍⠑⠛⠫⠊⠞⠪⠚⠈⠝ ⠚⠑⠇⠑⠝ ⠧⠕⠇⠞ ⠁⠣ ⠨⠨⠍⠧⠹⠕⠱ ⠑⠇⠝⠟⠅⠑⠄", 
           "output": "A kiállítás megnyitóján jelen volt az MVGYOSZ elnöke."
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠁ ⠏⠕⠝⠞⠕⠎ ⠊⠙⠻ ⠼⠁⠁⠄⠙⠑ ⠏⠑⠗⠉⠄", 
           "output": "A pontos idő 11:45 perc."
         }, 
@@ -3177,21 +3135,20 @@
           "output": "•A kiadás újdonságai."
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠁ ⠓⠥⠠⠤⠇⠊⠎⠞ ⠋⠈⠚⠇ ⠝⠑⠍ ⠇⠡⠞⠑⠣⠊⠅⠄", 
           "output": "A hu_list fájl nem létezik."
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "⠨⠁⠣ ⠑⠤⠍⠁⠊⠇ ⠉⠌⠍⠑⠍⠒ ⠁⠅⠁⠗⠍⠊⠘⠁⠅⠁⠗⠍⠊⠄⠓⠥⠄", 
           "output": "Az e-mail címem: akarmi@akarmi.hu."
         }
-      ]
+      ], 
+      "flags": {
+        "outputUniBrl": true, 
+        "testmode": "backtranslate"
+      }
     }, 
     {
-      "flags": {
-        "outputUniBrl": true
-      }, 
       "data": [
         {
           "input": "adásszerű", 
@@ -3206,7 +3163,6 @@
           "output": "⠁⠙⠪⠎⠱⠈⠍⠇⠁"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Agyagosszergény", 
           "output": "⠨⠁⠹⠁⠛⠕⠎⠱⠑⠗⠛⠡⠫"
         }, 
@@ -3359,7 +3315,6 @@
           "output": "⠃⠑⠩⠇⠡⠎⠱⠑⠗⠾⠑⠝"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Békésszentandrás", 
           "output": "⠨⠃⠡⠅⠡⠎⠱⠑⠝⠞⠁⠝⠙⠗⠈⠎"
         }, 
@@ -3720,7 +3675,6 @@
           "output": "⠋⠁⠗⠅⠁⠎⠱⠑⠍⠑⠞ "
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Farkassziget,", 
           "output": "⠨⠋⠁⠗⠅⠁⠎⠱⠊⠛⠑⠞⠂"
         }, 
@@ -3877,7 +3831,6 @@
           "output": "⠛⠊⠝⠣⠑⠝⠛⠹⠟⠅⠡⠗"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Gombosszeg", 
           "output": "⠨⠛⠕⠍⠃⠕⠎⠱⠑⠛"
         }, 
@@ -4126,7 +4079,6 @@
           "output": "⠓⠬⠎⠱⠑⠇⠑⠞"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Hússziget", 
           "output": "⠨⠓⠬⠎⠱⠊⠛⠑⠞"
         }, 
@@ -4279,12 +4231,10 @@
           "output": "⠅⠁⠏⠁⠗⠈⠎⠱⠑⠗⠾"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Kaposszekcső", 
           "output": "⠨⠅⠁⠏⠕⠎⠱⠑⠅⠩⠻"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Kaposszerdahely", 
           "output": "⠨⠅⠁⠏⠕⠎⠱⠑⠗⠙⠁⠓⠑⠸"
         }, 
@@ -4345,12 +4295,10 @@
           "output": "⠅⠡⠅⠑⠎⠱⠷⠗⠅⠑"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Kemenesszentmárton", 
           "output": "⠨⠅⠑⠍⠑⠝⠑⠎⠱⠑⠝⠞⠍⠈⠗⠞⠕⠝"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Kemenesszentpéter", 
           "output": "⠨⠅⠑⠍⠑⠝⠑⠎⠱⠑⠝⠞⠏⠡⠞⠑⠗"
         }, 
@@ -4411,7 +4359,6 @@
           "output": "⠅⠊⠇⠊⠝⠩⠣⠟⠗⠛⠡⠎⠞ "
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Kisszállás", 
           "output": "⠨⠅⠊⠎⠱⠈⠇⠇⠈⠎"
         }, 
@@ -4420,7 +4367,6 @@
           "output": "⠅⠊⠎⠱⠈⠍⠬"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Kisszeben", 
           "output": "⠨⠅⠊⠎⠱⠑⠃⠑⠝"
         }, 
@@ -4433,7 +4379,6 @@
           "output": "⠅⠊⠎⠱⠑⠅⠗⠡⠫"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Kisszentmárton", 
           "output": "⠨⠅⠊⠎⠱⠑⠝⠞⠍⠈⠗⠞⠕⠝"
         }, 
@@ -4442,7 +4387,6 @@
           "output": "⠅⠊⠎⠱⠑⠗⠾"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Kissziget", 
           "output": "⠨⠅⠊⠎⠱⠊⠛⠑⠞"
         }, 
@@ -4455,7 +4399,6 @@
           "output": "⠅⠊⠎⠱⠪⠞⠈⠗"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Kiszombor", 
           "output": "⠨⠅⠊⠎⠣⠕⠍⠃⠕⠗"
         }, 
@@ -4464,7 +4407,6 @@
           "output": "⠅⠊⠱⠟⠛⠑⠇⠇⠡⠎⠱⠑⠗⠾⠑⠝"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Kiszsidány", 
           "output": "⠨⠅⠊⠎⠜⠊⠙⠈⠫"
         }, 
@@ -4565,7 +4507,6 @@
           "output": "⠅⠟⠗⠟⠎⠱⠁⠅⠈⠇⠊ "
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Köröszug", 
           "output": "⠨⠅⠟⠗⠟⠎⠣⠥⠛"
         }, 
@@ -4822,22 +4763,18 @@
           "output": "⠍⠁⠝⠙⠁⠗⠊⠝⠫⠑⠇⠧"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Marosszék", 
           "output": "⠨⠍⠁⠗⠕⠎⠱⠡⠅"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Marosszentgyörgy ", 
           "output": "⠨⠍⠁⠗⠕⠎⠱⠑⠝⠞⠹⠟⠗⠹ "
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Maroszug", 
           "output": "⠨⠍⠁⠗⠕⠎⠣⠥⠛"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Martraversszal", 
           "output": "⠨⠍⠁⠗⠞⠗⠁⠧⠑⠗⠱⠱⠁⠇"
         }, 
@@ -4882,7 +4819,6 @@
           "output": "⠍⠑⠹⠹⠑⠎"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Meggyesi", 
           "output": "⠨⠍⠑⠹⠹⠑⠎⠊"
         }, 
@@ -4979,7 +4915,6 @@
           "output": "⠍⠡⠣⠎⠟⠗"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Mikosszéplak", 
           "output": "⠨⠍⠊⠅⠕⠎⠱⠡⠏⠇⠁⠅"
         }, 
@@ -5056,12 +4991,10 @@
           "output": "⠝⠑⠓⠡⠣⠎⠬⠸⠬"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Nemesszalók", 
           "output": "⠨⠝⠑⠍⠑⠎⠱⠁⠇⠪⠅"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Nemesszentandrás", 
           "output": "⠨⠝⠑⠍⠑⠎⠱⠑⠝⠞⠁⠝⠙⠗⠈⠎"
         }, 
@@ -5306,12 +5239,10 @@
           "output": "⠏⠊⠁⠉⠩⠁⠗⠝⠕⠅"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Pilisszántó,", 
           "output": "⠨⠏⠊⠇⠊⠎⠱⠈⠝⠞⠪⠂"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Pilisszentkereszt", 
           "output": "⠨⠏⠊⠇⠊⠎⠱⠑⠝⠞⠅⠑⠗⠑⠱⠞"
         }, 
@@ -5624,7 +5555,6 @@
           "output": "⠱⠁⠇⠕⠝⠫⠑⠇⠧⠂ ⠱⠁⠇⠕⠝⠫⠑⠇⠧⠑⠝ "
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Szamosszeg", 
           "output": "⠨⠱⠁⠍⠕⠎⠱⠑⠛"
         }, 
@@ -5661,7 +5591,6 @@
           "output": "⠱⠑⠝⠞⠎⠡⠛⠹⠁⠇⠈⠣⠈⠎"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Szepesszombat", 
           "output": "⠨⠱⠑⠏⠑⠎⠱⠕⠍⠃⠁⠞"
         }, 
@@ -5682,7 +5611,6 @@
           "output": "⠱⠡⠞⠕⠱⠱⠈⠅ "
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Szilvásszentmárton", 
           "output": "⠨⠱⠊⠇⠧⠈⠎⠱⠑⠝⠞⠍⠈⠗⠞⠕⠝"
         }, 
@@ -6031,7 +5959,6 @@
           "output": "⠧⠈⠇⠇⠏⠑⠗⠑⠉⠩⠕⠝⠞⠚⠈⠃⠪⠇"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Vámosszabadi", 
           "output": "⠨⠧⠈⠍⠕⠎⠱⠁⠃⠁⠙⠊"
         }, 
@@ -6072,12 +5999,10 @@
           "output": "⠧⠁⠎⠱⠈⠇⠇⠌⠞⠍⠈⠫"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Vaszar", 
           "output": "⠨⠧⠁⠱⠁⠗"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Vázsnok", 
           "output": "⠨⠧⠈⠜⠝⠕⠅"
         }, 
@@ -6126,7 +6051,6 @@
           "output": "⠧⠡⠗⠞⠑⠎⠱⠈⠣⠁⠙⠃⠑⠇⠊ "
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Vértesszőlős", 
           "output": "⠨⠧⠡⠗⠞⠑⠎⠱⠻⠇⠻⠎"
         }, 
@@ -6307,17 +6231,14 @@
           "output": "⠜⠕⠇⠙⠕⠎⠱⠕⠅⠈⠎"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "A telefonszámom: 06-1-256-256.", 
           "output": "⠨⠁ ⠞⠑⠇⠑⠋⠕⠝⠱⠈⠍⠕⠍⠒ ⠼⠚⠋⠤⠼⠁⠤⠼⠃⠑⠋⠤⠼⠃⠑⠋⠄"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "A földrengés 7,5 erősségű volt.", 
           "output": "⠨⠁ ⠋⠟⠇⠙⠗⠑⠝⠛⠡⠎ ⠼⠛⠂⠑ ⠑⠗⠻⠎⠎⠡⠛⠾ ⠧⠕⠇⠞⠄"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Tamás még nem tudta, hogy mi vár rá.", 
           "output": "⠨⠞⠁⠍⠈⠎ ⠍⠡⠛ ⠝⠑⠍ ⠞⠥⠙⠞⠁⠂ ⠓⠕⠹ ⠍⠊ ⠧⠈⠗ ⠗⠈⠄"
         }, 
@@ -6326,12 +6247,10 @@
           "output": "⠦⠨⠞⠁⠍⠈⠎ ⠍⠡⠛ ⠝⠑⠍ ⠞⠥⠙⠞⠁⠂ ⠓⠕⠹ ⠍⠊ ⠧⠈⠗ ⠗⠈⠄⠴"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "I don't no why happened this problem.", 
           "output": "⠨⠊ ⠙⠕⠝⠠⠄⠞ ⠝⠕ ⠺⠓⠽ ⠓⠁⠏⠏⠑⠝⠑⠙ ⠞⠓⠊⠎ ⠏⠗⠕⠃⠇⠑⠍⠄"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Az 1§ paragrafus alapján a kedvezmény igénybe vehető.", 
           "output": "⠨⠁⠣ ⠼⠁⠼⠧ ⠏⠁⠗⠁⠛⠗⠁⠋⠥⠎ ⠁⠇⠁⠏⠚⠈⠝ ⠁ ⠅⠑⠙⠧⠑⠣⠍⠡⠫ ⠊⠛⠡⠫⠃⠑ ⠧⠑⠓⠑⠞⠻⠄"
         }, 
@@ -6340,22 +6259,18 @@
           "output": "⠤ ⠨⠁ ⠎⠊⠧⠁⠞⠁⠛⠊ ⠅⠁⠗⠁⠧⠈⠝⠬⠞⠕⠝⠂ ⠝⠑⠹⠧⠑⠝ ⠧⠁⠹ ⠟⠞⠧⠑⠝ ⠍⠡⠗⠋⠟⠇⠙⠫⠊⠗⠑ ⠊⠝⠝⠑⠝⠄ ⠨⠑⠹ ⠨⠋⠕⠗⠙⠄ ⠨⠙⠑ ⠍⠊ ⠝⠑⠍ ⠍⠑⠹⠷⠝⠅ ⠍⠁⠛⠈⠧⠁⠇⠄ ⠤ ⠨⠑⠇⠻⠧⠑⠞⠞⠑ ⠁⠣ ⠊⠗⠁⠞⠞⠈⠗⠉⠈⠚⠈⠞⠂ ⠡⠎ ⠈⠞⠁⠙⠕⠞⠞ ⠨⠝⠁⠱⠊⠋⠝⠁⠅ ⠑⠹ ⠁⠝⠛⠕⠇ ⠋⠕⠝⠞⠕⠞⠄ ⠤ ⠨⠓⠁ ⠧⠊⠱⠱⠁⠚⠟⠝⠂ ⠅⠑⠗⠑⠎⠎⠑⠝ ⠍⠑⠛ ⠁ ⠧⠁⠎⠬⠞⠈⠇⠇⠕⠍⠈⠎ ⠍⠑⠇⠇⠑⠞⠞ ⠁ ⠨⠛⠗⠁⠝⠙ ⠨⠓⠕⠞⠑⠇⠃⠁⠝⠄"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "A vételár 1 €.", 
           "output": "⠨⠁ ⠧⠡⠞⠑⠇⠈⠗ ⠼⠁ ⠰⠑⠄"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "De nekem nagyon nehezemre esik a levélírás (nézd el a helyesírási hibákat és a csúnya írásomat).", 
           "output": "⠨⠙⠑ ⠝⠑⠅⠑⠍ ⠝⠁⠹⠕⠝ ⠝⠑⠓⠑⠣⠑⠍⠗⠑ ⠑⠎⠊⠅ ⠁ ⠇⠑⠧⠡⠇⠌⠗⠈⠎ ⠮⠝⠡⠣⠙ ⠑⠇ ⠁ ⠓⠑⠸⠑⠎⠌⠗⠈⠎⠊ ⠓⠊⠃⠈⠅⠁⠞ ⠡⠎ ⠁ ⠩⠬⠫⠁ ⠌⠗⠈⠎⠕⠍⠁⠞⠵⠄"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "A kiállítás megnyitóján jelen volt az MVGYOSZ elnöke.", 
           "output": "⠨⠁ ⠅⠊⠈⠇⠇⠌⠞⠈⠎ ⠍⠑⠛⠫⠊⠞⠪⠚⠈⠝ ⠚⠑⠇⠑⠝ ⠧⠕⠇⠞ ⠁⠣ ⠨⠨⠍⠧⠹⠕⠱ ⠑⠇⠝⠟⠅⠑⠄"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "A pontos idő 11:45 perc.", 
           "output": "⠨⠁ ⠏⠕⠝⠞⠕⠎ ⠊⠙⠻ ⠼⠁⠁⠄⠙⠑ ⠏⠑⠗⠉⠄"
         }, 
@@ -6364,19 +6279,17 @@
           "output": "⠠⠔⠨⠁ ⠅⠊⠁⠙⠈⠎ ⠬⠚⠙⠕⠝⠎⠈⠛⠁⠊⠄"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "A hu_list fájl nem létezik.", 
           "output": "⠨⠁ ⠓⠥⠠⠤⠇⠊⠎⠞ ⠋⠈⠚⠇ ⠝⠑⠍ ⠇⠡⠞⠑⠣⠊⠅⠄"
         }, 
         {
-          "brlCursorPos": 1, 
           "input": "Az e-mail címem: akarmi@akarmi.hu.", 
           "output": "⠨⠁⠣ ⠑⠤⠍⠁⠊⠇ ⠉⠌⠍⠑⠍⠒ ⠁⠅⠁⠗⠍⠊⠘⠁⠅⠁⠗⠍⠊⠄⠓⠥⠄"
         }
-      ]
+      ], 
+      "flags": {
+        "outputUniBrl": true
+      }
     }
-  ], 
-  "tables": [
-    "hu-hu-g1.ctb"
   ]
 }
