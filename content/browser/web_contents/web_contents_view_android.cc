@@ -171,7 +171,10 @@ void WebContentsViewAndroid::ShowPopupMenu(
     const std::vector<WebMenuItem>& items,
     bool right_aligned,
     bool allow_multiple_selection) {
-  NOTIMPLEMENTED();
+  if (content_view_core_) {
+    content_view_core_->ShowSelectPopupMenu(
+        items, selected_item, allow_multiple_selection);
+  }
 }
 
 void WebContentsViewAndroid::StartDragging(

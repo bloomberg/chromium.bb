@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_ANDROID_CONTENT_VIEW_CORE_IMPL_H_
 #define CONTENT_BROWSER_ANDROID_CONTENT_VIEW_CORE_IMPL_H_
 
+#include <vector>
+
 #include "base/android/jni_helper.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -15,6 +17,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
+
+struct WebMenuItem;
 
 namespace content {
 class ContentViewClient;
@@ -32,6 +36,10 @@ class ContentViewCoreImpl : public ContentViewCore,
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
   // --------------------------------------------------------------------------
+
+  // Notifies the ContentViewCore that items were selected in the currently
+  // showing select popup.
+  void SelectPopupMenuItems(JNIEnv* env, jobject obj, jintArray indices);
 
   void LoadUrlWithoutUrlSanitization(JNIEnv* env,
                                      jobject,
@@ -65,8 +73,17 @@ class ContentViewCoreImpl : public ContentViewCore,
   // Public methods that call to Java via JNI
   // --------------------------------------------------------------------------
 
+  // Creates a popup menu with |items|.
+  // |multiple| defines if it should support multi-select.
+  // If not |multiple|, |selected_item| sets the initially selected item.
+  // Otherwise, item's "checked" flag selects it.
+  void ShowSelectPopupMenu(const std::vector<WebMenuItem>& items,
+                           int selected_item,
+                           bool multiple);
+
   void OnTabCrashed(const base::ProcessHandle handle);
   void SetTitle(const string16& title);
+
   bool HasFocus();
   void OnSelectionChanged(const std::string& text);
   void OnSelectionBoundsChanged(int startx,
@@ -75,6 +92,10 @@ class ContentViewCoreImpl : public ContentViewCore,
                                 int endx,
                                 int endy,
                                 base::i18n::TextDirection end_dir);
+
+  // Called when page loading begins.
+  void DidStartLoading();
+
   void OnAcceleratedCompositingStateChange(RenderWidgetHostViewAndroid* rwhva,
                                            bool activated,
                                            bool force);

@@ -255,6 +255,7 @@ public class ContentViewCore {
      * may be called on this WebView after this method has been called.
      */
     public void destroy() {
+        hidePopupDialog();
         if (mNativeContentViewCore != 0) {
             nativeDestroy(mNativeContentViewCore);
             mNativeContentViewCore = 0;
@@ -497,6 +498,26 @@ public class ContentViewCore {
     }
 
     /**
+     * This method should be called when the containing activity is paused
+     *
+     * @hide
+     **/
+    public void onActivityPause() {
+        TraceEvent.begin();
+        hidePopupDialog();
+        TraceEvent.end();
+    }
+
+    /**
+     * Called when the WebView is hidden.
+     *
+     * @hide
+     **/
+    public void onHide() {
+        hidePopupDialog();
+    }
+
+    /**
      * Return the ContentSettings object used to control the settings for this
      * WebView.
      *
@@ -508,6 +529,10 @@ public class ContentViewCore {
      */
     public ContentSettings getContentSettings() {
         return mContentSettings;
+    }
+
+    private void hidePopupDialog() {
+        SelectPopupDialog.hide(this);
     }
 
     // End FrameLayout overrides.
@@ -544,6 +569,12 @@ public class ContentViewCore {
 
     public boolean isMultiTouchZoomSupported() {
         return mZoomManager.isMultiTouchZoomSupported();
+    }
+
+    void selectPopupMenuItems(int[] indices) {
+        if (mNativeContentViewCore != 0) {
+            nativeSelectPopupMenuItems(mNativeContentViewCore, indices);
+        }
     }
 
     /**
@@ -587,6 +618,31 @@ public class ContentViewCore {
     public boolean isCrashed() {
         if (mNativeContentViewCore == 0) return false;
         return nativeCrashed(mNativeContentViewCore);
+    }
+
+    // The following methods are called by native through jni
+
+    /**
+     * Called (from native) when the <select> popup needs to be shown.
+     * @param items           Items to show.
+     * @param enabled         POPUP_ITEM_TYPEs for items.
+     * @param multiple        Whether the popup menu should support multi-select.
+     * @param selectedIndices Indices of selected items.
+     */
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void showSelectPopup(String[] items, int[] enabled, boolean multiple,
+            int[] selectedIndices) {
+        SelectPopupDialog.show(this, items, enabled, multiple, selectedIndices);
+    }
+
+    /**
+     * Called (from native) when page loading begins.
+     */
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void didStartLoading() {
+        hidePopupDialog();
     }
 
     /**
@@ -741,6 +797,8 @@ public class ContentViewCore {
     private native void nativeStopLoading(int nativeContentViewCoreImpl);
 
     private native void nativeReload(int nativeContentViewCoreImpl);
+
+    private native void nativeSelectPopupMenuItems(int nativeContentViewCoreImpl, int[] indices);
 
     private native void nativeSetClient(int nativeContentViewCoreImpl, ContentViewClient client);
 

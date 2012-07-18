@@ -5,20 +5,32 @@
 #include "content/browser/android/content_view_core_impl.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "content/browser/android/content_view_client.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/content_view_core_jni.h"
+#include "webkit/glue/webmenuitem.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::GetClass;
 using base::android::HasField;
+using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
+
+// Describes the type and enabled state of a select popup item.
+// Keep in sync with the value defined in SelectPopupDialog.java
+enum PopupItemType {
+  POPUP_ITEM_TYPE_GROUP = 0,
+  POPUP_ITEM_TYPE_DISABLED,
+  POPUP_ITEM_TYPE_ENABLED
+};
 
 namespace {
 jfieldID g_native_content_view;
@@ -242,6 +254,50 @@ void ContentViewCoreImpl::SetTitle(const string16& title) {
   NOTIMPLEMENTED() << "not upstreamed yet";
 }
 
+void ContentViewCoreImpl::ShowSelectPopupMenu(
+    const std::vector<WebMenuItem>& items, int selected_item, bool multiple) {
+  JNIEnv* env = AttachCurrentThread();
+
+  // For multi-select list popups we find the list of previous selections by
+  // iterating through the items. But for single selection popups we take the
+  // given |selected_item| as is.
+  ScopedJavaLocalRef<jintArray> selected_array;
+  if (multiple) {
+    scoped_array<jint> native_selected_array(new jint[items.size()]);
+    size_t selected_count = 0;
+    for (size_t i = 0; i < items.size(); ++i) {
+      if (items[i].checked)
+        native_selected_array[selected_count++] = i;
+    }
+
+    selected_array.Reset(env, env->NewIntArray(selected_count));
+    env->SetIntArrayRegion(selected_array.obj(), 0, selected_count,
+                           native_selected_array.get());
+  } else {
+    selected_array.Reset(env, env->NewIntArray(1));
+    jint value = selected_item;
+    env->SetIntArrayRegion(selected_array.obj(), 0, 1, &value);
+  }
+
+  ScopedJavaLocalRef<jintArray> enabled_array(env,
+                                              env->NewIntArray(items.size()));
+  std::vector<string16> labels;
+  labels.reserve(items.size());
+  for (size_t i = 0; i < items.size(); ++i) {
+    labels.push_back(items[i].label);
+    jint enabled =
+        (items[i].type == WebMenuItem::GROUP ? POPUP_ITEM_TYPE_GROUP :
+            (items[i].enabled ? POPUP_ITEM_TYPE_ENABLED :
+                POPUP_ITEM_TYPE_DISABLED));
+    env->SetIntArrayRegion(enabled_array.obj(), i, 1, &enabled);
+  }
+  ScopedJavaLocalRef<jobjectArray> items_array(
+      base::android::ToJavaArrayOfStrings(env, labels));
+  Java_ContentViewCore_showSelectPopup(env, java_object_->View(env).obj(),
+                                       items_array.obj(), enabled_array.obj(),
+                                       multiple, selected_array.obj());
+}
+
 bool ContentViewCoreImpl::HasFocus() {
   NOTIMPLEMENTED() << "not upstreamed yet";
   return false;
@@ -261,6 +317,11 @@ void ContentViewCoreImpl::OnSelectionBoundsChanged(
   NOTIMPLEMENTED() << "not upstreamed yet";
 }
 
+void ContentViewCoreImpl::DidStartLoading() {
+  JNIEnv* env = AttachCurrentThread();
+  Java_ContentViewCore_didStartLoading(env, java_object_->View(env).obj());
+}
+
 void ContentViewCoreImpl::OnAcceleratedCompositingStateChange(
     RenderWidgetHostViewAndroid* rwhva, bool activated, bool force) {
   NOTIMPLEMENTED() << "not upstreamed yet";
@@ -278,6 +339,25 @@ void ContentViewCoreImpl::StartContentIntent(const GURL& content_url) {
 // --------------------------------------------------------------------------
 // Methods called from Java via JNI
 // --------------------------------------------------------------------------
+
+void ContentViewCoreImpl::SelectPopupMenuItems(JNIEnv* env, jobject obj,
+                                               jintArray indices) {
+  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
+      web_contents_->GetRenderViewHost());
+  DCHECK(rvhi);
+  if (indices == NULL) {
+    rvhi->DidCancelPopupMenu();
+    return;
+  }
+
+  int selected_count = env->GetArrayLength(indices);
+  std::vector<int> selected_indices;
+  jint* indices_ptr = env->GetIntArrayElements(indices, NULL);
+  for (int i = 0; i < selected_count; ++i)
+    selected_indices.push_back(indices_ptr[i]);
+  env->ReleaseIntArrayElements(indices, indices_ptr, JNI_ABORT);
+  rvhi->DidSelectPopupMenuItems(selected_indices);
+}
 
 // --------------------------------------------------------------------------
 // Methods called from native code
