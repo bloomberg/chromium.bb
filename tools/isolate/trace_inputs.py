@@ -429,7 +429,7 @@ def fix_python_path(cmd):
   return out
 
 
-def process_quoted_arguments(text):
+def strace_process_quoted_arguments(text):
   """Extracts quoted arguments on a string and return the arguments as a list.
 
   Implemented as an automaton. Supports incomplete strings in the form
@@ -453,19 +453,18 @@ def process_quoted_arguments(text):
     ) = range(8)
 
   state = NEED_QUOTE
-  current_argument = ''
   out = []
   for index, char in enumerate(text):
     if char == '"':
       if state == NEED_QUOTE:
         state = INSIDE_STRING
+        # A new argument was found.
+        out.append('')
       elif state == INSIDE_STRING:
         # The argument is now closed.
-        out.append(current_argument)
-        current_argument = ''
         state = NEED_COMMA_OR_DOT
       elif state == ESCAPED:
-        current_argument += char
+        out[-1] += char
         state = INSIDE_STRING
       else:
         raise ValueError(
@@ -476,9 +475,9 @@ def process_quoted_arguments(text):
       if state in (NEED_COMMA_OR_DOT, NEED_COMMA):
         state = NEED_SPACE
       elif state == INSIDE_STRING:
-        current_argument += char
+        out[-1] += char
       elif state == ESCAPED:
-        current_argument += char
+        out[-1] += char
         state = INSIDE_STRING
       else:
         raise ValueError(
@@ -489,9 +488,9 @@ def process_quoted_arguments(text):
       if state == NEED_SPACE:
         state = NEED_QUOTE
       elif state == INSIDE_STRING:
-        current_argument += char
+        out[-1] += char
       elif state == ESCAPED:
-        current_argument += char
+        out[-1] += char
         state = INSIDE_STRING
       else:
         raise ValueError(
@@ -508,9 +507,9 @@ def process_quoted_arguments(text):
       elif state == NEED_DOT_3:
         state = NEED_COMMA
       elif state == INSIDE_STRING:
-        current_argument += char
+        out[-1] += char
       elif state == ESCAPED:
-        current_argument += char
+        out[-1] += char
         state = INSIDE_STRING
       else:
         raise ValueError(
@@ -519,7 +518,7 @@ def process_quoted_arguments(text):
             text)
     elif char == '\\':
       if state == ESCAPED:
-        current_argument += char
+        out[-1] += char
         state = INSIDE_STRING
       elif state == INSIDE_STRING:
         state = ESCAPED
@@ -530,7 +529,7 @@ def process_quoted_arguments(text):
             text)
     else:
       if state == INSIDE_STRING:
-        current_argument += char
+        out[-1] += char
       else:
         raise ValueError(
             'Can\'t process char at column %d for: %r' % (index, text),
@@ -1249,7 +1248,7 @@ class Strace(ApiBase):
         filepath = args[0]
         self._handle_file(filepath, False)
         self.executable = self.RelativePath(self.get_cwd(), filepath)
-        self.command = process_quoted_arguments(args[1])
+        self.command = strace_process_quoted_arguments(args[1])
 
       def handle_exit_group(self, _args, _result):
         """Removes cwd."""

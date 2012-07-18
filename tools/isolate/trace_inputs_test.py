@@ -36,7 +36,8 @@ class TraceInputs(unittest.TestCase):
       ),
     )
     for actual, expected in test_cases:
-      self.assertEquals(expected, trace_inputs.process_quoted_arguments(actual))
+      self.assertEquals(
+          expected, trace_inputs.strace_process_quoted_arguments(actual))
 
   def test_process_escaped_arguments(self):
     test_cases = (
