@@ -27,7 +27,9 @@ SUIDSandboxUITest.prototype = {
 // - PLEASE DO NOT DISABLE THIS TEST. If you can't figure out how to
 //   get the SUID sandbox installed, please mark the test FLAKY_ so we
 //   can get clear information on where the sandbox is and isn't installed.
-GEN('#if defined(OS_LINUX)');
+// Seccomp sandbox is currently incompatible with AddressSanitizer,
+// see http://crbug.com/137653.
+GEN('#if defined(OS_LINUX) && !defined(ADDRESS_SANITIZER)');
 GEN('# define MAYBE_testSUIDSandboxEnabled \\');
 GEN('     testSUIDSandboxEnabled');
 GEN('#else');
