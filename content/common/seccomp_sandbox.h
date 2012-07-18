@@ -20,7 +20,7 @@
 #if defined(ARCH_CPU_X86_FAMILY) && !defined(CHROMIUM_SELINUX) && \
   !defined(OS_CHROMEOS) && !defined(TOOLKIT_VIEWS) && !defined(OS_OPENBSD)
 #define SECCOMP_SANDBOX
-#include "seccompsandbox/sandbox.h"
+#include "sandbox/linux/seccomp-legacy/sandbox.h"
 #endif
 
 #if defined(SECCOMP_SANDBOX)

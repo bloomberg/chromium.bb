@@ -17,7 +17,7 @@
         [ 'OS=="linux" and (target_arch=="ia32" or target_arch=="x64") '
           'and toolkit_views==0 and selinux==0', {
           'dependencies': [
-            '../seccompsandbox/seccomp.gyp:seccomp_sandbox',
+            'linux/seccomp-legacy/seccomp.gyp:seccomp_sandbox',
           ],
         }],
         # Similarly, compile seccomp BPF when we support it

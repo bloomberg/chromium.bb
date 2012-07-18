@@ -74,9 +74,6 @@ deps = {
   "src/googleurl":
     (Var("googlecode_url") % "google-url") + "/trunk@175",
 
-  "src/seccompsandbox":
-    (Var("googlecode_url") % "seccompsandbox") + "/trunk@186",
-
   "src/sandbox/linux/seccomp-legacy":
     (Var("googlecode_url") % "seccompsandbox") + "/trunk@186",
 

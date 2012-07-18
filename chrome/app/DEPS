@@ -12,7 +12,7 @@ include_rules = [
   "+media/base",  # For initializing media library.
   "+policy",  # For generated headers and source
   "+sandbox",
-  "+seccompsandbox",
+  "+sandbox/linux/seccomp-legacy",
   "+tools/memory_watcher",
   "+third_party/lss/linux_syscall_support.h",
 ]

@@ -51,7 +51,7 @@
 #include "base/android/path_utils.h"
 #include "third_party/lss/linux_syscall_support.h"
 #else
-#include "seccompsandbox/linux_syscall_support.h"
+#include "sandbox/linux/seccomp-legacy/linux_syscall_support.h"
 #endif
 
 #if defined(OS_ANDROID)

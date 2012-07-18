@@ -1,4 +1,4 @@
 include_rules = [
   "+media/base",
-  "+seccompsandbox",
+  "+sandbox/linux/seccomp-legacy",
 ]
