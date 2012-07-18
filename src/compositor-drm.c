@@ -695,7 +695,6 @@ drm_output_set_cursor(struct weston_output *output_base,
 			memcpy(buf + i * 64, s + i * stride,
 			       es->geometry.width * 4);
 
-		weston_log("bo_write now\n");
 		if (gbm_bo_write(bo, buf, sizeof buf) < 0)
 			return;
 
