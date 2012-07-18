@@ -20,7 +20,7 @@
 #include "content/public/app/startup_helper_win.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
-#include "sandbox/src/sandbox_types.h"
+#include "sandbox/win/src/sandbox_types.h"
 
 extern int NaClMain(const content::MainFunctionParams&);
 

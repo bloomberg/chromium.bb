@@ -8,8 +8,8 @@
 #include "base/logging.h"
 #include "content/common/sandbox_policy.h"
 #include "content/public/common/content_switches.h"
-#include "sandbox/src/sandbox.h"
-#include "sandbox/src/sandbox_types.h"
+#include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/sandbox_types.h"
 
 namespace content {
 

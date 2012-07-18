@@ -32,9 +32,9 @@
 #if defined(OS_WIN)
 #include "base/base_switches.h"
 #include "content/common/sandbox_policy.h"
-#include "sandbox/src/dep.h"
-#include "sandbox/src/sandbox_factory.h"
-#include "sandbox/src/sandbox_types.h"
+#include "sandbox/win/src/dep.h"
+#include "sandbox/win/src/sandbox_factory.h"
+#include "sandbox/win/src/sandbox_types.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif

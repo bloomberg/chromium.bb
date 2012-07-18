@@ -1,5 +1,5 @@
 include_rules = [
-  "+sandbox/src",
+  "+sandbox/win/src",
   "+webkit/appcache",
   "+webkit/glue",
 ]

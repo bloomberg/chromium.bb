@@ -34,7 +34,7 @@
 #include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
-#include "sandbox/src/sandbox.h"
+#include "sandbox/win/src/sandbox.h"
 #elif defined(OS_MACOSX)
 #include "content/common/sandbox_init_mac.h"
 #endif

@@ -8,8 +8,8 @@
 #define TEST_INJECTION_DLL
 #include "chrome/test/security_tests/ipc_security_tests.h"
 #include "content/common/injection_test_dll.h"
-#include "sandbox/tests/common/controller.h"
-#include "sandbox/tests/validation_tests/commands.h"
+#include "sandbox/win/tests/common/controller.h"
+#include "sandbox/win/tests/validation_tests/commands.h"
 
 using sandbox::TestOpenKey;
 using sandbox::TestOpenReadFile;
