@@ -34,11 +34,18 @@ namespace {
 
 const char kJavaLangClass[] = "java/lang/Class";
 const char kJavaLangObject[] = "java/lang/Object";
+const char kJavaLangReflectMethod[] = "java/lang/reflect/Method";
 const char kGetClass[] = "getClass";
+const char kGetDeclaredMethods[] = "getDeclaredMethods";
 const char kGetMethods[] = "getMethods";
+const char kGetModifiers[] = "getModifiers";
+const char kReturningInteger[] = "()I";
 const char kReturningJavaLangClass[] = "()Ljava/lang/Class;";
 const char kReturningJavaLangReflectMethodArray[] =
     "()[Ljava/lang/reflect/Method;";
+
+// This constant represents the value at java.lang.reflect.Modifier.PUBLIC.
+const int kJavaPublicModifier = 1;
 
 // Our special NPObject type.  We extend an NPObject with a pointer to a
 // JavaBoundObject.  We also add static methods for each of the NPObject
@@ -120,7 +127,8 @@ bool JavaNPObject::GetProperty(NPObject* np_object,
 // NPVariant. Note that this method does not do any type coercion. The Java
 // return value is simply converted to the corresponding NPAPI type.
 bool CallJNIMethod(jobject object, const JavaType& return_type, jmethodID id,
-                   jvalue* parameters, NPVariant* result) {
+                   jvalue* parameters, NPVariant* result,
+                   bool allow_inherited_methods) {
   JNIEnv* env = AttachCurrentThread();
   switch (return_type.type) {
     case JavaType::TypeBoolean:
@@ -201,7 +209,9 @@ bool CallJNIMethod(jobject object, const JavaType& return_type, jmethodID id,
         NULL_TO_NPVARIANT(*result);
         break;
       }
-      OBJECT_TO_NPVARIANT(JavaBoundObject::Create(scoped_java_object), *result);
+      OBJECT_TO_NPVARIANT(JavaBoundObject::Create(scoped_java_object,
+                                                  allow_inherited_methods),
+                          *result);
       break;
     }
   }
@@ -717,7 +727,8 @@ jvalue CoerceJavaScriptValueToJavaValue(const NPVariant& variant,
 }  // namespace
 
 
-NPObject* JavaBoundObject::Create(const JavaRef<jobject>& object) {
+NPObject* JavaBoundObject::Create(const JavaRef<jobject>& object,
+                                  bool allow_inherited_methods) {
   // The first argument (a plugin's instance handle) is passed through to the
   // allocate function directly, and we don't use it, so it's ok to be 0.
   // The object is created with a ref count of one.
@@ -725,12 +736,15 @@ NPObject* JavaBoundObject::Create(const JavaRef<jobject>& object) {
       &JavaNPObject::kNPClass));
   // The NPObject takes ownership of the JavaBoundObject.
   reinterpret_cast<JavaNPObject*>(np_object)->bound_object =
-      new JavaBoundObject(object);
+      new JavaBoundObject(object, allow_inherited_methods);
   return np_object;
 }
 
-JavaBoundObject::JavaBoundObject(const JavaRef<jobject>& object)
-    : java_object_(object) {
+JavaBoundObject::JavaBoundObject(const JavaRef<jobject>& object,
+                                 bool allow_inherited_methods)
+    : java_object_(object),
+      are_methods_set_up_(false),
+      allow_inherited_methods_(allow_inherited_methods) {
   // We don't do anything with our Java object when first created. We do it all
   // lazily when a method is first invoked.
 }
@@ -783,7 +797,8 @@ bool JavaBoundObject::Invoke(const std::string& name, const NPVariant* args,
 
   // Call
   bool ok = CallJNIMethod(java_object_.obj(), method->return_type(),
-                          method->id(), &parameters[0], result);
+                          method->id(), &parameters[0], result,
+                          allow_inherited_methods_);
 
   // Now that we're done with the jvalue, release any local references created
   // by CoerceJavaScriptValueToJavaValue().
@@ -796,9 +811,9 @@ bool JavaBoundObject::Invoke(const std::string& name, const NPVariant* args,
 }
 
 void JavaBoundObject::EnsureMethodsAreSetUp() const {
-  if (!methods_.empty()) {
+  if (are_methods_set_up_)
     return;
-  }
+  are_methods_set_up_ = true;
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jclass> clazz(env, static_cast<jclass>(
@@ -807,19 +822,40 @@ void JavaBoundObject::EnsureMethodsAreSetUp() const {
           kJavaLangObject,
           kGetClass,
           kReturningJavaLangClass))));
+
+  const char* get_method = allow_inherited_methods_ ?
+      kGetMethods : kGetDeclaredMethods;
+
   ScopedJavaLocalRef<jobjectArray> methods(env, static_cast<jobjectArray>(
       env->CallObjectMethod(clazz.obj(), GetMethodIDFromClassName(
           env,
           kJavaLangClass,
-          kGetMethods,
+          get_method,
           kReturningJavaLangReflectMethodArray))));
+
   size_t num_methods = env->GetArrayLength(methods.obj());
-  DCHECK(num_methods) << "Java objects always have public methods";
+  if (num_methods <= 0)
+    return;
+
   for (size_t i = 0; i < num_methods; ++i) {
     ScopedJavaLocalRef<jobject> java_method(
         env,
         env->GetObjectArrayElement(methods.obj(), i));
-    JavaMethod* method = new JavaMethod(java_method);
-    methods_.insert(std::make_pair(method->name(), method));
+
+    bool is_method_allowed = true;
+    if (!allow_inherited_methods_) {
+      jint modifiers = env->CallIntMethod(java_method.obj(),
+                                          GetMethodIDFromClassName(
+                                              env,
+                                              kJavaLangReflectMethod,
+                                              kGetModifiers,
+                                              kReturningInteger));
+      is_method_allowed &= (modifiers & kJavaPublicModifier);
+    }
+
+    if (is_method_allowed) {
+      JavaMethod* method = new JavaMethod(java_method);
+      methods_.insert(std::make_pair(method->name(), method));
+    }
   }
 }
