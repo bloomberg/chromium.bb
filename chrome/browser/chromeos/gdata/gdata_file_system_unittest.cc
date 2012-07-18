@@ -2456,6 +2456,8 @@ TEST_F(GDataFileSystemTest, GetAvailableSpace) {
 }
 
 TEST_F(GDataFileSystemTest, RequestDirectoryRefresh) {
+  LoadRootFeedDocument("root_feed.json");
+
   // We'll fetch documents in the root directory with its resource ID.
   EXPECT_CALL(*mock_doc_service_,
               GetDocuments(Eq(GURL()), _, _, kGDataRootDirectoryResourceId, _))

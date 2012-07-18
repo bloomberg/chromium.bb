@@ -2317,8 +2317,23 @@ void GDataFileSystem::RequestDirectoryRefreshOnUIThread(
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataEntry* entry = GetGDataEntryByPath(file_path);
-  if (!entry || !entry->AsGDataDirectory()) {
+  // Make sure the destination directory exists.
+  GetEntryInfoByPath(
+      file_path,
+      base::Bind(
+          &GDataFileSystem::RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo,
+          ui_weak_ptr_,
+          file_path));
+}
+
+void GDataFileSystem::RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo(
+    const FilePath& file_path,
+    GDataFileError error,
+    scoped_ptr<GDataEntryProto> entry_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != GDATA_FILE_OK ||
+      !entry_proto->file_info().is_directory()) {
     LOG(ERROR) << "Directory entry not found: " << file_path.value();
     return;
   }
@@ -2329,7 +2344,7 @@ void GDataFileSystem::RequestDirectoryRefreshOnUIThread(
                      true,  // multiple feeds
                      file_path,
                      std::string(),  // No search query
-                     entry->resource_id(),
+                     entry_proto->resource_id(),
                      FindEntryCallback(),  // Not used.
                      base::Bind(&GDataFileSystem::OnRequestDirectoryRefresh,
                                 ui_weak_ptr_));

@@ -832,6 +832,13 @@ class GDataFileSystem : public GDataFileSystemInterface,
     GDataFileError error,
     scoped_ptr<GDataEntryProto> entry_proto);
 
+  // Part of RequestDirectoryRefreshOnUIThread(). Called after
+  // GetEntryInfoByPath() is complete.
+  void RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo(
+    const FilePath& file_path,
+    GDataFileError error,
+    scoped_ptr<GDataEntryProto> entry_proto);
+
   // All members should be accessed only on UI thread. Do not post tasks to
   // other threads with base::Unretained(this).
   scoped_ptr<GDataDirectoryService> directory_service_;
