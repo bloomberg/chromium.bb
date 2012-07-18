@@ -2285,8 +2285,6 @@
             '../third_party/GTM/AppKit',
           ],
           'sources!': [
-            # Blocked on bookmark manager.
-            'browser/bookmarks/bookmark_context_menu_controller_unittest.cc',
             'browser/ui/tabs/dock_info_unittest.cc',
             'browser/ui/tests/ui_gfx_image_unittest.cc',
             'browser/ui/gtk/reload_button_gtk_unittest.cc',

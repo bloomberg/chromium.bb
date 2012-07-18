@@ -277,6 +277,25 @@ TEST_F(BookmarkContextMenuControllerTest, EmptyNodesNullParent) {
       controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_NEW_FOLDER));
 }
 
+// Tests the enabled state of the menus when supplied a vector containing just
+// the top-level bookmark bar node.
+TEST_F(BookmarkContextMenuControllerTest, BookmarkBar) {
+  std::vector<const BookmarkNode*> nodes;
+  nodes.push_back(model_->bookmark_bar_node());
+  BookmarkContextMenuController controller(
+      NULL, NULL, NULL, profile_.get(), NULL, nodes[0]->parent(), nodes);
+  EXPECT_TRUE(controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_OPEN_ALL));
+  EXPECT_TRUE(
+      controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW));
+  EXPECT_TRUE(
+      controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO));
+  EXPECT_FALSE(controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_REMOVE));
+  EXPECT_TRUE(
+      controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_ADD_NEW_BOOKMARK));
+  EXPECT_TRUE(
+      controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_NEW_FOLDER));
+}
+
 TEST_F(BookmarkContextMenuControllerTest, CutCopyPasteNode) {
   const BookmarkNode* bb_node = model_->bookmark_bar_node();
   std::vector<const BookmarkNode*> nodes;

@@ -194,8 +194,6 @@ bool BookmarkContextMenuControllerViews::IsCommandEnabled(int id) const {
       profile_->GetPrefs()->GetBoolean(prefs::kEditBookmarksEnabled);
   IncognitoModePrefs::Availability incognito_avail =
       IncognitoModePrefs::GetAvailability(profile_->GetPrefs());
-  bool is_bookmark_bar_node = selection_.size() == 1 &&
-                              selection_[0] == model_->bookmark_bar_node();
   switch (id) {
     case IDC_BOOKMARK_BAR_OPEN_INCOGNITO:
       return !profile_->IsOffTheRecord() &&
@@ -204,15 +202,13 @@ bool BookmarkContextMenuControllerViews::IsCommandEnabled(int id) const {
     case IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO:
       return HasURLs() &&
              !profile_->IsOffTheRecord() &&
-             incognito_avail != IncognitoModePrefs::DISABLED &&
-             !is_bookmark_bar_node;
+             incognito_avail != IncognitoModePrefs::DISABLED;
 
     case IDC_BOOKMARK_BAR_OPEN_ALL:
-      return HasURLs() && !is_bookmark_bar_node;
+      return HasURLs();
     case IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW:
       return HasURLs() &&
-             incognito_avail != IncognitoModePrefs::FORCED &&
-             !is_bookmark_bar_node;
+             incognito_avail != IncognitoModePrefs::FORCED;
 
     case IDC_BOOKMARK_BAR_RENAME_FOLDER:
     case IDC_BOOKMARK_BAR_EDIT:
