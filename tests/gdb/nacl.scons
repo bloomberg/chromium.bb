@@ -43,9 +43,7 @@ node = env.CommandTest(
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest.abspath],
     extra_deps=[sel_ldr, irt, gdb_test_guest])
 
-env.AddNodeToTestSuite(node, ['large_tests'], 'run_gdb_stepi_after_break_test',
-                       is_broken=(env.Bit('build_x86_64') and
-                                  not env.Bit('nacl_static_link')))
+env.AddNodeToTestSuite(node, ['large_tests'], 'run_gdb_stepi_after_break_test')
 
 node = env.CommandTest(
     'gdb_print_symbol.out',
@@ -72,6 +70,4 @@ node = env.CommandTest(
     extra_deps=[sel_ldr, irt, gdb_test_guest_thread])
 
 env.AddNodeToTestSuite(node, ['large_tests'],
-                       'run_gdb_break_continue_thread_test',
-                       is_broken=(env.Bit('build_x86_64') and
-                                  not env.Bit('nacl_static_link')))
+                       'run_gdb_break_continue_thread_test')
