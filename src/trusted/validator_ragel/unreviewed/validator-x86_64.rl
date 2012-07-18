@@ -573,7 +573,7 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
 
   size_t i;
 
-  int errors_detected;
+  int errors_detected = 0;
 
   assert(size % kBundleSize == 0);
 

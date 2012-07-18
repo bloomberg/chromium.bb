@@ -20,10 +20,6 @@
 
 #include "native_client/src/trusted/validator_ragel/gen/validator-x86_64-instruction-consts.c"
 
-static void PrintError(const char* msg, uintptr_t ptr) {
-  printf("offset 0x%"NACL_PRIxS": %s", ptr, msg);
-}
-
 static const int kBitsPerByte = 8;
 
 static inline uint8_t *BitmapAllocate(size_t indexes) {
@@ -47,40 +43,27 @@ static inline void BitmapClearBit(uint8_t *bitmap, size_t index) {
   bitmap[index / kBitsPerByte] &= ~(1 << (index % kBitsPerByte));
 }
 
-static int CheckJumpTargets(uint8_t *valid_targets, uint8_t *jump_dests,
-                            size_t size) {
-  size_t i;
-  for (i = 0; i < size / 32; i++) {
-    uint32_t jump_dest_mask = ((uint32_t *) jump_dests)[i];
-    uint32_t valid_target_mask = ((uint32_t *) valid_targets)[i];
-    if ((jump_dest_mask & ~valid_target_mask) != 0) {
-      printf("bad jump to around %x\n", (unsigned)(i * 32));
-      return 1;
-    }
-  }
-  return 0;
-}
-
 static const size_t kBundleSize = 32;
 static const size_t kBundleMask = 31;
 
-static int CheckJumpDest(size_t jump_dest,
-                         uint8_t *jump_dests,
-                         size_t size,
-                         size_t report_offset) {
-  if ((jump_dest & kBundleMask) != 0) {
-    if (jump_dest >= size) {
-      printf("offset 0x%zx: direct jump out of range at destination: %"NACL_PRIxS
-             "\n",
-             report_offset,
-             jump_dest);
-      return FALSE;
-    } else {
-      BitmapSetBit(jump_dests, jump_dest);
-    }
+/* Mark the destination of a jump instruction and make an early validity check:
+ * to jump outside given code region, the target address must be aligned.
+ *
+ * Returns TRUE iff the jump passes the early validity check.
+ */
+static int MarkJumpTarget(size_t jump_dest,
+                          uint8_t *jump_dests,
+                          size_t size) {
+  if ((jump_dest & kBundleMask) == 0) {
+    return TRUE;
   }
+  if (jump_dest >= size) {
+    return FALSE;
+  }
+  BitmapSetBit(jump_dests, jump_dest);
   return TRUE;
 }
+
 
 
 
@@ -150,10 +133,8 @@ enum operand_kind {
 
 #define SET_CPU_FEATURE(F) \
   if (!(F)) { \
-    printf("offset 0x%"NACL_PRIxS": CPU Feature not found", \
-           (uintptr_t)(begin - data)); \
+    errors_detected |= CPUID_UNSUPPORTED_INSTRUCTION; \
     result = 1; \
-    goto error_detected; \
   }
 #define CPUFeature_3DNOW    cpu_features->data[NaClCPUFeature_3DNOW]
 #define CPUFeature_3DPRFTCH CPUFeature_3DNOW || CPUFeature_PRE || CPUFeature_LM
@@ -230,6 +211,10 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
   const uint8_t *sandboxed_rsi = 0;
   const uint8_t *sandboxed_rsi_restricted_rdi = 0;
   const uint8_t *sandboxed_rdi = 0;
+
+  size_t i;
+
+  int errors_detected = 0;
 
   assert(size % kBundleSize == 0);
 
@@ -2149,27 +2134,23 @@ tr0:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	{
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -2177,6 +2158,9 @@ tr0:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -2190,13 +2174,11 @@ tr7:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -2216,21 +2198,18 @@ tr7:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -2242,6 +2221,9 @@ tr7:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -2265,27 +2247,23 @@ tr8:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	{
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -2293,6 +2271,9 @@ tr8:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -2310,27 +2291,23 @@ tr13:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	{
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -2338,6 +2315,9 @@ tr13:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -2355,27 +2335,23 @@ tr14:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	{
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -2383,6 +2359,9 @@ tr14:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -2409,27 +2388,23 @@ tr17:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	{
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -2449,21 +2424,18 @@ tr17:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -2475,6 +2447,9 @@ tr17:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -2488,13 +2463,11 @@ tr24:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -2514,21 +2487,18 @@ tr24:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -2540,6 +2510,9 @@ tr24:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -2563,27 +2536,23 @@ tr25:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	{
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -2603,21 +2572,18 @@ tr25:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -2629,6 +2595,9 @@ tr25:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -2646,27 +2615,23 @@ tr30:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	{
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -2686,21 +2651,18 @@ tr30:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -2712,6 +2674,9 @@ tr30:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -2729,27 +2694,23 @@ tr31:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	{
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -2769,21 +2730,18 @@ tr31:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -2795,6 +2753,9 @@ tr31:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -2807,13 +2768,11 @@ tr34:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -2833,21 +2792,18 @@ tr34:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -2859,6 +2815,9 @@ tr34:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -2871,13 +2830,11 @@ tr38:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -2897,21 +2854,18 @@ tr38:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -2923,6 +2877,9 @@ tr38:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -2931,13 +2888,11 @@ tr43:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -2945,6 +2900,9 @@ tr43:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -2956,13 +2914,11 @@ tr45:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -2970,6 +2926,9 @@ tr45:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -2981,13 +2940,11 @@ tr53:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -2995,6 +2952,9 @@ tr53:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3006,13 +2966,11 @@ tr60:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -3020,6 +2978,9 @@ tr60:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3036,13 +2997,11 @@ tr74:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -3062,21 +3021,18 @@ tr74:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -3088,6 +3044,9 @@ tr74:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3104,13 +3063,11 @@ tr79:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -3130,21 +3087,18 @@ tr79:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -3156,6 +3110,9 @@ tr79:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3172,13 +3129,11 @@ tr80:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -3198,21 +3153,18 @@ tr80:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -3224,6 +3176,9 @@ tr80:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3241,13 +3196,11 @@ tr81:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -3267,21 +3220,18 @@ tr81:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -3293,6 +3243,9 @@ tr81:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3310,13 +3263,11 @@ tr82:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -3336,21 +3287,18 @@ tr82:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -3362,6 +3310,9 @@ tr82:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3373,13 +3324,11 @@ tr83:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -3387,6 +3336,9 @@ tr83:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3406,13 +3358,11 @@ tr84:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -3420,6 +3370,9 @@ tr84:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3438,13 +3391,11 @@ tr91:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -3452,6 +3403,9 @@ tr91:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3464,13 +3418,11 @@ tr96:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -3478,6 +3430,9 @@ tr96:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3490,13 +3445,11 @@ tr97:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -3504,6 +3457,9 @@ tr97:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3515,13 +3471,11 @@ tr108:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -3529,6 +3483,9 @@ tr108:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3553,27 +3510,23 @@ tr118:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	{
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -3581,6 +3534,9 @@ tr118:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3592,13 +3548,11 @@ tr125:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -3606,6 +3560,9 @@ tr125:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3622,13 +3579,11 @@ tr126:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -3636,6 +3591,9 @@ tr126:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3648,13 +3606,11 @@ tr141:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -3662,6 +3618,9 @@ tr141:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3671,9 +3630,9 @@ tr155:
         (p[-3] + 256U * (p[-2] + 256U * (p[-1] + 256U * ((uint32_t) p[0]))));
     size_t jump_dest = offset + (p - data) + 1;
 
-    if (!CheckJumpDest(jump_dest, jump_dests, size, begin - data)) {
+    if (!MarkJumpTarget(jump_dest, jump_dests, size)) {
+      errors_detected |= DIRECT_JUMP_OUT_OF_RANGE;
       result = 1;
-      goto error_detected;
     }
     SET_OPERAND_NAME(0, JMP_TO);
     SET_MODRM_BASE(REG_RIP);
@@ -3683,13 +3642,11 @@ tr155:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -3697,6 +3654,9 @@ tr155:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3721,27 +3681,23 @@ tr157:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	{
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -3749,6 +3705,9 @@ tr157:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3773,27 +3732,23 @@ tr160:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	{
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -3801,6 +3756,9 @@ tr160:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3812,13 +3770,11 @@ tr171:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -3826,6 +3782,9 @@ tr171:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3837,13 +3796,11 @@ tr172:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -3851,6 +3808,9 @@ tr172:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3875,27 +3835,23 @@ tr175:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	{
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -3903,6 +3859,9 @@ tr175:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3911,9 +3870,9 @@ tr184:
     int8_t offset = (uint8_t) (p[0]);
     size_t jump_dest = offset + (p - data) + 1;
 
-    if (!CheckJumpDest(jump_dest, jump_dests, size, begin - data)) {
+    if (!MarkJumpTarget(jump_dest, jump_dests, size)) {
+      errors_detected |= DIRECT_JUMP_OUT_OF_RANGE;
       result = 1;
-      goto error_detected;
     }
     SET_OPERAND_NAME(0, JMP_TO);
     SET_MODRM_BASE(REG_RIP);
@@ -3923,13 +3882,11 @@ tr184:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -3937,6 +3894,9 @@ tr184:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3949,13 +3909,11 @@ tr188:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -3963,6 +3921,9 @@ tr188:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -3976,13 +3937,11 @@ tr192:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -3990,6 +3949,9 @@ tr192:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -4006,13 +3968,11 @@ tr193:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -4032,21 +3992,18 @@ tr193:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -4058,6 +4015,9 @@ tr193:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -4080,13 +4040,11 @@ tr203:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -4112,27 +4070,24 @@ tr203:
           CHECK_OPERAND(1, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(1, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(1, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted) ||
                  (CHECK_OPERAND(1, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(1, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted) ||
                  (CHECK_OPERAND(1, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(1, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0).  */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -4149,6 +4104,9 @@ tr203:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -4175,27 +4133,23 @@ tr281:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	{
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -4215,21 +4169,18 @@ tr281:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -4241,6 +4192,9 @@ tr281:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -4259,13 +4213,11 @@ tr288:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -4291,27 +4243,24 @@ tr288:
           CHECK_OPERAND(1, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(1, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(1, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted) ||
                  (CHECK_OPERAND(1, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(1, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted) ||
                  (CHECK_OPERAND(1, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(1, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0).  */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -4328,6 +4277,9 @@ tr288:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -4349,13 +4301,11 @@ tr289:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -4375,21 +4325,18 @@ tr289:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -4401,6 +4348,9 @@ tr289:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -4419,13 +4369,11 @@ tr296:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -4445,21 +4393,18 @@ tr296:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -4471,6 +4416,9 @@ tr296:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -4483,13 +4431,11 @@ tr301:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -4509,21 +4455,18 @@ tr301:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -4535,6 +4478,9 @@ tr301:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -4547,13 +4493,11 @@ tr302:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -4573,21 +4517,18 @@ tr302:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -4599,6 +4540,9 @@ tr302:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -4615,13 +4559,11 @@ tr305:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -4641,21 +4583,18 @@ tr305:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -4667,6 +4606,9 @@ tr305:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -4691,27 +4633,23 @@ tr308:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	{
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -4719,6 +4657,9 @@ tr308:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -4735,13 +4676,11 @@ tr314:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -4761,21 +4700,18 @@ tr314:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -4787,6 +4723,9 @@ tr314:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -4809,13 +4748,11 @@ tr335:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -4841,27 +4778,24 @@ tr335:
           CHECK_OPERAND(1, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(1, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(1, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted) ||
                  (CHECK_OPERAND(1, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(1, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted) ||
                  (CHECK_OPERAND(1, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(1, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0).  */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -4878,60 +4812,75 @@ tr335:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
 tr336:
 	{ if (restricted_register != kSandboxedRsiSandboxedRdi) {
-         PrintError("Incorrectly sandboxed %%rsi or %%rdi\n", begin - data);
+         errors_detected |= RDI_UNSANDBOXDED;
+         if (restricted_register != kSandboxedRsi) {
+           errors_detected |= RSI_UNSANDBOXDED;
+         }
          result = 1;
-         goto error_detected;
+       } else {
+         BitmapClearBit(valid_targets, (begin - data));
+         BitmapClearBit(valid_targets, (sandboxed_rsi - data));
+         BitmapClearBit(valid_targets, (sandboxed_rsi_restricted_rdi - data));
+         BitmapClearBit(valid_targets, (sandboxed_rdi - data));
        }
        restricted_register = kNoRestrictedReg;
-       BitmapClearBit(valid_targets, (begin - data));
-       BitmapClearBit(valid_targets, (sandboxed_rsi - data));
-       BitmapClearBit(valid_targets, (sandboxed_rsi_restricted_rdi - data));
-       BitmapClearBit(valid_targets, (sandboxed_rdi - data));
     }
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
 tr337:
 	{ if (restricted_register != kSandboxedRdi &&
            restricted_register != kSandboxedRsiSandboxedRdi) {
-         PrintError("Incorrectly sandboxed %%rdi\n", begin - data);
+         errors_detected |= RDI_UNSANDBOXDED;
          result = 1;
-         goto error_detected;
+       } else {
+         BitmapClearBit(valid_targets, (begin - data));
+         BitmapClearBit(valid_targets, (sandboxed_rdi - data));
        }
        restricted_register = kNoRestrictedReg;
-       BitmapClearBit(valid_targets, (begin - data));
-       BitmapClearBit(valid_targets, (sandboxed_rdi - data));
     }
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
 tr338:
 	{ if (restricted_register != kSandboxedRsi) {
-         PrintError("Incorrectly sandboxed %%rdi\n", begin - data);
+         errors_detected |= RSI_UNSANDBOXDED;
          result = 1;
-         goto error_detected;
+       } else {
+         BitmapClearBit(valid_targets, (begin - data));
+         BitmapClearBit(valid_targets, (sandboxed_rdi - data));
        }
        restricted_register = kNoRestrictedReg;
-       BitmapClearBit(valid_targets, (begin - data));
-       BitmapClearBit(valid_targets, (sandboxed_rdi - data));
     }
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -4948,13 +4897,11 @@ tr353:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -4974,21 +4921,18 @@ tr353:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -5000,6 +4944,9 @@ tr353:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -5016,13 +4963,11 @@ tr354:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -5042,21 +4987,18 @@ tr354:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -5068,6 +5010,9 @@ tr354:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -5092,27 +5037,23 @@ tr356:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	{
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -5120,6 +5061,9 @@ tr356:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -5128,14 +5072,16 @@ tr369:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
 tr372:
 	{ if (restricted_register == REG_RSP) {
-         PrintError("Incorrectly modified register %%rsp\n", begin - data);
+         errors_detected |= RESTRICTED_RSP_UNPROCESSED;
          result = 1;
-         goto error_detected;
        }
        restricted_register = kNoRestrictedReg;
     }
@@ -5143,14 +5089,16 @@ tr372:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
 tr373:
 	{ if (restricted_register == REG_RBP) {
-         PrintError("Incorrectly modified register %%rbp\n", begin - data);
+         errors_detected |= RESTRICTED_RBP_UNPROCESSED;
          result = 1;
-         goto error_detected;
        }
        restricted_register = kNoRestrictedReg;
     }
@@ -5158,6 +5106,9 @@ tr373:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -5170,13 +5121,11 @@ tr381:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -5196,21 +5145,18 @@ tr381:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -5222,14 +5168,16 @@ tr381:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
 tr396:
 	{ if (restricted_register != REG_RBP) {
-         PrintError("Incorrectly sandboxed %%rbp\n", begin - data);
+         errors_detected |= RESTRICTED_RBP_UNPROCESSED;
          result = 1;
-         goto error_detected;
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (begin - data));
@@ -5238,6 +5186,9 @@ tr396:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -5253,6 +5204,9 @@ tr397:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -5271,14 +5225,16 @@ tr398:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
 tr402:
 	{ if (restricted_register != REG_RSP) {
-         PrintError("Incorrectly sandboxed %%rsp\n", begin - data);
+         errors_detected |= RESTRICTED_RSP_UNPROCESSED;
          result = 1;
-         goto error_detected;
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (begin - data));
@@ -5287,18 +5243,19 @@ tr402:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
 tr408:
 	{ if (restricted_register == REG_RSP) {
-         PrintError("Incorrectly modified register %%rsp\n", begin - data);
+         errors_detected |= RESTRICTED_RSP_UNPROCESSED;
          result = 1;
-         goto error_detected;
        } else if (restricted_register == REG_RBP) {
-         PrintError("Incorrectly modified register %%rbp\n", begin - data);
+         errors_detected |= RESTRICTED_RBP_UNPROCESSED;
          result = 1;
-         goto error_detected;
        }
        BitmapClearBit(valid_targets, (p - data) - 5);
        BitmapClearBit(valid_targets, (p - data) - 2);
@@ -5308,6 +5265,9 @@ tr408:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -5324,13 +5284,11 @@ tr417:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -5350,21 +5308,18 @@ tr417:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -5376,6 +5331,9 @@ tr417:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -5398,13 +5356,11 @@ tr426:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -5430,27 +5386,24 @@ tr426:
           CHECK_OPERAND(1, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(1, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(1, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted) ||
                  (CHECK_OPERAND(1, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(1, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted) ||
                  (CHECK_OPERAND(1, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(1, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0).  */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -5467,6 +5420,9 @@ tr426:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -5479,13 +5435,11 @@ tr437:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -5505,21 +5459,18 @@ tr437:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -5531,6 +5482,9 @@ tr437:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -5542,13 +5496,11 @@ tr497:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -5556,6 +5508,9 @@ tr497:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -5568,13 +5523,11 @@ tr499:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -5582,6 +5535,9 @@ tr499:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -5599,13 +5555,11 @@ tr695:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -5625,21 +5579,18 @@ tr695:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -5651,6 +5602,9 @@ tr695:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -5668,13 +5622,11 @@ tr701:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -5694,21 +5646,18 @@ tr701:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -5720,6 +5669,9 @@ tr701:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -5750,27 +5702,23 @@ tr739:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	{
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -5790,21 +5738,18 @@ tr739:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -5816,6 +5761,9 @@ tr739:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -5835,13 +5783,11 @@ tr743:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -5861,21 +5807,18 @@ tr743:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -5887,6 +5830,9 @@ tr743:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -5917,27 +5863,23 @@ tr746:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	{
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -5957,21 +5899,18 @@ tr746:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -5983,6 +5922,9 @@ tr746:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -6002,13 +5944,11 @@ tr750:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -6028,21 +5968,18 @@ tr750:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -6054,6 +5991,9 @@ tr750:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -6066,13 +6006,11 @@ tr867:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -6080,6 +6018,9 @@ tr867:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -6104,27 +6045,23 @@ tr963:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	{
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -6132,6 +6069,9 @@ tr963:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -6143,13 +6083,11 @@ tr966:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -6157,6 +6095,9 @@ tr966:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -6174,13 +6115,11 @@ tr1082:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -6200,21 +6139,18 @@ tr1082:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -6226,6 +6162,9 @@ tr1082:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -6243,13 +6182,11 @@ tr1087:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -6269,21 +6206,18 @@ tr1087:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -6295,6 +6229,9 @@ tr1087:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -6325,27 +6262,23 @@ tr1105:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	{
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -6365,21 +6298,18 @@ tr1105:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -6391,6 +6321,9 @@ tr1105:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -6421,27 +6354,23 @@ tr1109:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	{
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -6461,21 +6390,18 @@ tr1109:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -6487,6 +6413,9 @@ tr1109:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -6498,13 +6427,11 @@ tr1146:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -6512,6 +6439,9 @@ tr1146:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -6523,13 +6453,11 @@ tr1147:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -6537,6 +6465,9 @@ tr1147:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -6554,13 +6485,11 @@ tr1148:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -6580,21 +6509,18 @@ tr1148:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -6606,6 +6532,9 @@ tr1148:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -6617,13 +6546,11 @@ tr1189:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -6631,18 +6558,19 @@ tr1189:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
 tr1206:
 	{ if (restricted_register == REG_RSP) {
-         PrintError("Incorrectly modified register %%rsp\n", begin - data);
+         errors_detected |= RESTRICTED_RSP_UNPROCESSED;
          result = 1;
-         goto error_detected;
        } else if (restricted_register == REG_RBP) {
-         PrintError("Incorrectly modified register %%rbp\n", begin - data);
+         errors_detected |= RESTRICTED_RBP_UNPROCESSED;
          result = 1;
-         goto error_detected;
        }
        BitmapClearBit(valid_targets, (p - data) - 4);
        BitmapClearBit(valid_targets, (p - data) - 1);
@@ -6652,12 +6580,16 @@ tr1206:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
 tr1271:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -6673,13 +6605,11 @@ tr1271:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -6687,12 +6617,16 @@ tr1271:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
 tr1272:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -6711,13 +6645,11 @@ tr1272:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -6737,21 +6669,18 @@ tr1272:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -6763,12 +6692,16 @@ tr1272:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
 tr1284:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -6779,13 +6712,11 @@ tr1284:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -6793,12 +6724,16 @@ tr1284:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
 tr1285:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -6823,13 +6758,11 @@ tr1285:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -6855,27 +6788,24 @@ tr1285:
           CHECK_OPERAND(1, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(1, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(1, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted) ||
                  (CHECK_OPERAND(1, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(1, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted) ||
                  (CHECK_OPERAND(1, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(1, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0).  */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -6892,12 +6822,16 @@ tr1285:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
 tr1286:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -6911,13 +6845,11 @@ tr1286:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     restricted_register = kNoRestrictedReg;
   }
@@ -6925,12 +6857,16 @@ tr1286:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
 tr1287:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -6938,26 +6874,33 @@ tr1287:
         operand_states = 0;
      }
 	{ if (restricted_register != kSandboxedRsiSandboxedRdi) {
-         PrintError("Incorrectly sandboxed %%rsi or %%rdi\n", begin - data);
+         errors_detected |= RDI_UNSANDBOXDED;
+         if (restricted_register != kSandboxedRsi) {
+           errors_detected |= RSI_UNSANDBOXDED;
+         }
          result = 1;
-         goto error_detected;
+       } else {
+         BitmapClearBit(valid_targets, (begin - data));
+         BitmapClearBit(valid_targets, (sandboxed_rsi - data));
+         BitmapClearBit(valid_targets, (sandboxed_rsi_restricted_rdi - data));
+         BitmapClearBit(valid_targets, (sandboxed_rdi - data));
        }
        restricted_register = kNoRestrictedReg;
-       BitmapClearBit(valid_targets, (begin - data));
-       BitmapClearBit(valid_targets, (sandboxed_rsi - data));
-       BitmapClearBit(valid_targets, (sandboxed_rsi_restricted_rdi - data));
-       BitmapClearBit(valid_targets, (sandboxed_rdi - data));
     }
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
 tr1288:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -6966,24 +6909,28 @@ tr1288:
      }
 	{ if (restricted_register != kSandboxedRdi &&
            restricted_register != kSandboxedRsiSandboxedRdi) {
-         PrintError("Incorrectly sandboxed %%rdi\n", begin - data);
+         errors_detected |= RDI_UNSANDBOXDED;
          result = 1;
-         goto error_detected;
+       } else {
+         BitmapClearBit(valid_targets, (begin - data));
+         BitmapClearBit(valid_targets, (sandboxed_rdi - data));
        }
        restricted_register = kNoRestrictedReg;
-       BitmapClearBit(valid_targets, (begin - data));
-       BitmapClearBit(valid_targets, (sandboxed_rdi - data));
     }
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
 tr1289:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -6991,18 +6938,21 @@ tr1289:
         operand_states = 0;
      }
 	{ if (restricted_register != kSandboxedRsi) {
-         PrintError("Incorrectly sandboxed %%rdi\n", begin - data);
+         errors_detected |= RSI_UNSANDBOXDED;
          result = 1;
-         goto error_detected;
+       } else {
+         BitmapClearBit(valid_targets, (begin - data));
+         BitmapClearBit(valid_targets, (sandboxed_rdi - data));
        }
        restricted_register = kNoRestrictedReg;
-       BitmapClearBit(valid_targets, (begin - data));
-       BitmapClearBit(valid_targets, (sandboxed_rdi - data));
     }
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st785;
@@ -7100,6 +7050,7 @@ tr1042:
 tr1252:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -7113,6 +7064,7 @@ tr1252:
 tr1253:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -7822,6 +7774,7 @@ tr1205:
 tr1254:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -7835,6 +7788,7 @@ tr1254:
 tr1255:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -8421,14 +8375,12 @@ tr254:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st19;
@@ -8446,14 +8398,12 @@ tr259:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st19;
@@ -8471,14 +8421,12 @@ tr260:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st19;
@@ -8532,14 +8480,12 @@ tr247:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st19;
@@ -8621,6 +8567,7 @@ tr1011:
 tr1256:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -8637,6 +8584,7 @@ tr1256:
 tr1290:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -8684,14 +8632,12 @@ tr238:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st20;
@@ -8709,14 +8655,12 @@ tr243:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st20;
@@ -8734,14 +8678,12 @@ tr244:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st20;
@@ -8788,14 +8730,12 @@ tr230:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st20;
@@ -8866,14 +8806,12 @@ tr756:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st20;
@@ -8904,20 +8842,19 @@ tr760:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st20;
 tr1257:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -8934,6 +8871,7 @@ tr1257:
 tr1291:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -8971,7 +8909,7 @@ case 23:
 	goto tr38;
 tr42:
 	{
-        process_error(begin, userdata);
+        process_error(begin, UNRECOGNIZED_INSTRUCTION, userdata);
         result = 1;
         goto error_detected;
     }
@@ -8982,6 +8920,7 @@ cs = 0;
 tr1258:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -9218,14 +9157,12 @@ tr100:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st37;
@@ -9249,14 +9186,12 @@ tr109:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st37;
@@ -9274,14 +9209,12 @@ tr114:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st37;
@@ -9299,14 +9232,12 @@ tr115:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st37;
@@ -9576,6 +9507,7 @@ tr1194:
 tr1260:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -9882,14 +9814,12 @@ tr133:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st53;
@@ -9913,14 +9843,12 @@ tr142:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st53;
@@ -9938,14 +9866,12 @@ tr147:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st53;
@@ -9963,14 +9889,12 @@ tr148:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st53;
@@ -10014,14 +9938,12 @@ tr471:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st53;
@@ -10049,14 +9971,12 @@ tr482:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st53;
@@ -10094,14 +10014,12 @@ tr971:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st53;
@@ -10120,6 +10038,7 @@ tr1179:
 tr1261:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -10444,6 +10363,7 @@ case 63:
 tr1310:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -10688,6 +10608,7 @@ case 74:
 tr1259:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -10701,6 +10622,7 @@ tr1259:
 tr1263:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -10730,6 +10652,7 @@ case 76:
 tr1276:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -10760,14 +10683,12 @@ tr264:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st78;
@@ -10791,14 +10712,12 @@ tr272:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st78;
@@ -10816,14 +10735,12 @@ tr277:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st78;
@@ -10841,20 +10758,19 @@ tr278:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st78;
 tr1262:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -10885,6 +10801,7 @@ case 81:
 tr1264:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -11076,6 +10993,7 @@ tr686:
 tr1274:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -11422,6 +11340,7 @@ tr420:
 tr1275:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -11745,6 +11664,7 @@ tr423:
 tr1280:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -11761,6 +11681,7 @@ tr1280:
 tr1281:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -11801,6 +11722,7 @@ tr424:
 tr1282:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -12205,6 +12127,7 @@ case 149:
 tr1265:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -12259,13 +12182,11 @@ tr323:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -12285,21 +12206,18 @@ tr323:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -12311,6 +12229,9 @@ tr323:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st786;
@@ -12326,6 +12247,7 @@ case 786:
 tr1266:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -12424,9 +12346,9 @@ st163:
 	if ( ++p == pe )
 		goto _test_eof163;
 case 163:
-	if ( (*p) <= 127u )
-		goto tr42;
-	goto tr369;
+	if ( 128u <= (*p) )
+		goto tr369;
+	goto tr42;
 st164:
 	if ( ++p == pe )
 		goto _test_eof164;
@@ -12440,9 +12362,9 @@ st165:
 	if ( ++p == pe )
 		goto _test_eof165;
 case 165:
-	if ( (*p) <= 127u )
-		goto tr42;
-	goto tr372;
+	if ( 128u <= (*p) )
+		goto tr372;
+	goto tr42;
 st166:
 	if ( ++p == pe )
 		goto _test_eof166;
@@ -12592,6 +12514,7 @@ case 180:
 tr1267:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -12793,6 +12716,7 @@ case 195:
 tr1268:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -12866,6 +12790,7 @@ case 200:
 tr1269:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -12888,6 +12813,7 @@ case 201:
 tr1270:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -12924,6 +12850,7 @@ case 203:
 tr1318:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -12967,13 +12894,11 @@ tr406:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -12993,21 +12918,18 @@ tr406:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -13019,6 +12941,9 @@ tr406:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st787;
@@ -13034,6 +12959,7 @@ case 787:
 tr1319:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -13065,6 +12991,7 @@ case 207:
 tr1273:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -13111,14 +13038,12 @@ tr518:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st209;
@@ -13136,14 +13061,12 @@ tr523:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st209;
@@ -13161,14 +13084,12 @@ tr524:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st209;
@@ -13195,14 +13116,12 @@ tr510:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st209;
@@ -13435,14 +13354,12 @@ tr527:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st230;
@@ -13466,14 +13383,12 @@ tr534:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st230;
@@ -13491,14 +13406,12 @@ tr539:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st230;
@@ -13516,20 +13429,19 @@ tr540:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st230;
 tr1299:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -14497,6 +14409,7 @@ case 299:
 tr1277:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -14516,6 +14429,7 @@ case 300:
 tr1278:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -14535,6 +14449,7 @@ case 301:
 tr1279:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -14577,13 +14492,11 @@ tr587:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -14603,21 +14516,18 @@ tr587:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -14629,6 +14539,9 @@ tr587:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st788;
@@ -14644,6 +14557,7 @@ case 788:
 tr1320:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -14687,13 +14601,11 @@ tr589:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -14713,21 +14625,18 @@ tr589:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -14739,6 +14648,9 @@ tr589:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st789;
@@ -14754,6 +14666,7 @@ case 789:
 tr1283:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -14869,14 +14782,12 @@ tr661:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st311;
@@ -14900,14 +14811,12 @@ tr620:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st311;
@@ -14925,14 +14834,12 @@ tr627:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st311;
@@ -14950,14 +14857,12 @@ tr622:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st311;
@@ -17165,6 +17070,7 @@ case 445:
 tr1292:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -17184,6 +17090,7 @@ case 446:
 tr1293:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -17203,6 +17110,7 @@ case 447:
 tr1294:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -17908,14 +17816,12 @@ tr1004:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st488;
@@ -17939,14 +17845,12 @@ tr866:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st488;
@@ -17964,14 +17868,12 @@ tr874:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st488;
@@ -17989,14 +17891,12 @@ tr869:
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
+        errors_detected |= UNRESTRICTED_INDEX_REGISTER;
         result = 1;
-        goto error_detected;
       }
     } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
+      errors_detected |= FORBIDDEN_BASE_REGISTER;
       result = 1;
-      goto error_detected;
     }
   }
 	goto st488;
@@ -21331,6 +21231,7 @@ case 676:
 tr1295:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -21460,6 +21361,7 @@ case 681:
 tr1296:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -21492,6 +21394,7 @@ case 682:
 tr1297:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -21524,6 +21427,7 @@ case 683:
 tr1298:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -21544,6 +21448,7 @@ case 685:
 tr1300:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -21563,6 +21468,7 @@ case 686:
 tr1301:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -21582,6 +21488,7 @@ case 687:
 tr1302:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -21601,6 +21508,7 @@ case 688:
 tr1303:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -21620,6 +21528,7 @@ case 689:
 tr1304:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -21639,6 +21548,7 @@ case 690:
 tr1305:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -21658,6 +21568,7 @@ case 691:
 tr1306:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -21677,6 +21588,7 @@ case 692:
 tr1307:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -21696,6 +21608,7 @@ case 693:
 tr1308:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -21715,6 +21628,7 @@ case 694:
 tr1309:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -21734,6 +21648,7 @@ case 695:
 tr1311:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -21888,6 +21803,7 @@ case 705:
 tr1312:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -22015,6 +21931,7 @@ case 715:
 tr1313:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -22123,6 +22040,7 @@ case 721:
 tr1314:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -22142,6 +22060,7 @@ case 722:
 tr1315:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -22161,6 +22080,7 @@ case 723:
 tr1316:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -22197,6 +22117,7 @@ case 724:
 tr1321:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -22216,6 +22137,7 @@ case 725:
 tr1317:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -22258,13 +22180,11 @@ tr1207:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -22284,21 +22204,18 @@ tr1207:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -22310,6 +22227,9 @@ tr1207:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st790;
@@ -22325,6 +22245,7 @@ case 790:
 tr1322:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -22368,13 +22289,11 @@ tr1209:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -22394,21 +22313,18 @@ tr1209:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -22420,6 +22336,9 @@ tr1209:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st791;
@@ -22435,6 +22354,7 @@ case 791:
 tr1323:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -22477,13 +22397,11 @@ tr1210:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -22503,21 +22421,18 @@ tr1210:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -22529,6 +22444,9 @@ tr1210:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st792;
@@ -22544,6 +22462,7 @@ case 792:
 tr1324:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -22587,13 +22506,11 @@ tr1212:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -22613,21 +22530,18 @@ tr1212:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -22639,6 +22553,9 @@ tr1212:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st793;
@@ -22654,6 +22571,7 @@ case 793:
 tr1325:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -22696,13 +22614,11 @@ tr1213:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -22722,21 +22638,18 @@ tr1213:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -22748,6 +22661,9 @@ tr1213:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st794;
@@ -22763,6 +22679,7 @@ case 794:
 tr1326:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -22806,13 +22723,11 @@ tr1215:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -22832,21 +22747,18 @@ tr1215:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -22858,6 +22770,9 @@ tr1215:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st795;
@@ -22873,6 +22788,7 @@ case 795:
 tr1327:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -22915,13 +22831,11 @@ tr1216:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -22941,21 +22855,18 @@ tr1216:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -22967,6 +22878,9 @@ tr1216:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st796;
@@ -22982,6 +22896,7 @@ case 796:
 tr1328:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -23017,9 +22932,8 @@ case 741:
 	}
 tr1218:
 	{ if (restricted_register != REG_RSP) {
-         PrintError("Incorrectly sandboxed %%rsp\n", begin - data);
+         errors_detected |= RESTRICTED_RSP_UNPROCESSED;
          result = 1;
-         goto error_detected;
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (begin - data));
@@ -23028,6 +22942,9 @@ tr1218:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st797;
@@ -23043,6 +22960,7 @@ case 797:
 tr1329:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -23085,13 +23003,11 @@ tr1219:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -23111,21 +23027,18 @@ tr1219:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -23137,6 +23050,9 @@ tr1219:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st798;
@@ -23152,6 +23068,7 @@ case 798:
 tr1330:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -23187,9 +23104,8 @@ case 745:
 	}
 tr1221:
 	{ if (restricted_register != REG_RBP) {
-         PrintError("Incorrectly sandboxed %%rbp\n", begin - data);
+         errors_detected |= RESTRICTED_RBP_UNPROCESSED;
          result = 1;
-         goto error_detected;
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (begin - data));
@@ -23198,6 +23114,9 @@ tr1221:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st799;
@@ -23213,6 +23132,7 @@ case 799:
 tr1331:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -23255,13 +23175,11 @@ tr1222:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -23281,21 +23199,18 @@ tr1222:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -23307,6 +23222,9 @@ tr1222:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st800;
@@ -23322,6 +23240,7 @@ case 800:
 tr1332:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -23365,13 +23284,11 @@ tr1224:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -23391,21 +23308,18 @@ tr1224:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -23417,6 +23331,9 @@ tr1224:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st801;
@@ -23432,6 +23349,7 @@ case 801:
 tr1333:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -23474,13 +23392,11 @@ tr1225:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -23500,21 +23416,18 @@ tr1225:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -23526,6 +23439,9 @@ tr1225:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st802;
@@ -23541,6 +23457,7 @@ case 802:
 tr1334:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -23584,13 +23501,11 @@ tr1227:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -23610,21 +23525,18 @@ tr1227:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -23636,6 +23548,9 @@ tr1227:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st803;
@@ -23651,6 +23566,7 @@ case 803:
 tr1335:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -23693,13 +23609,11 @@ tr1228:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -23719,21 +23633,18 @@ tr1228:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -23745,6 +23656,9 @@ tr1228:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st804;
@@ -23760,6 +23674,7 @@ case 804:
 tr1336:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -23803,13 +23718,11 @@ tr1230:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -23829,21 +23742,18 @@ tr1230:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -23855,6 +23765,9 @@ tr1230:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st805;
@@ -23870,6 +23783,7 @@ case 805:
 tr1337:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -23924,13 +23838,11 @@ tr1232:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -23950,21 +23862,18 @@ tr1232:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -23976,6 +23885,9 @@ tr1232:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st806;
@@ -23991,6 +23903,7 @@ case 806:
 tr1338:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -24034,13 +23947,11 @@ tr1234:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -24060,21 +23971,18 @@ tr1234:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -24086,6 +23994,9 @@ tr1234:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st807;
@@ -24101,6 +24012,7 @@ case 807:
 tr1339:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -24155,13 +24067,11 @@ tr1236:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -24181,21 +24091,18 @@ tr1236:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -24207,6 +24114,9 @@ tr1236:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st808;
@@ -24222,6 +24132,7 @@ case 808:
 tr1340:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -24265,13 +24176,11 @@ tr1238:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -24291,21 +24200,18 @@ tr1238:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -24317,6 +24223,9 @@ tr1238:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st809;
@@ -24332,6 +24241,7 @@ case 809:
 tr1341:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -24386,13 +24296,11 @@ tr1240:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -24412,21 +24320,18 @@ tr1240:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -24438,6 +24343,9 @@ tr1240:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st810;
@@ -24453,6 +24361,7 @@ case 810:
 tr1342:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -24496,13 +24405,11 @@ tr1242:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -24522,21 +24429,18 @@ tr1242:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -24548,6 +24452,9 @@ tr1242:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st811;
@@ -24563,6 +24470,7 @@ case 811:
 tr1343:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -24617,13 +24525,11 @@ tr1244:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -24643,21 +24549,18 @@ tr1244:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -24669,6 +24572,9 @@ tr1244:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st812;
@@ -24684,6 +24590,7 @@ case 812:
 tr1344:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -24727,13 +24634,11 @@ tr1246:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -24753,21 +24658,18 @@ tr1246:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -24779,6 +24681,9 @@ tr1246:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st813;
@@ -24794,6 +24699,7 @@ case 813:
 tr1345:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -24848,13 +24754,11 @@ tr1248:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -24874,21 +24778,18 @@ tr1248:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -24900,6 +24801,9 @@ tr1248:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st814;
@@ -24915,6 +24819,7 @@ case 814:
 tr1346:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -24958,13 +24863,11 @@ tr1250:
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
      * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      errors_detected |= RESTRICTED_RSP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      errors_detected |= RESTRICTED_RBP_UNPROCESSED;
       result = 1;
-      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -24984,21 +24887,18 @@ tr1250:
       if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        errors_detected |= R15_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        errors_detected |= BPL_MODIFIED;
         result = 1;
-        goto error_detected;
       } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
                   GET_REX_PREFIX()) ||
                  CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        errors_detected |= SPL_MODIFIED;
         result = 1;
-        goto error_detected;
       /* Take 2 bits of operand type from operand_states as restricted_register,
        * make sure operand_states denotes a register (4th bit == 0). */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
@@ -25010,6 +24910,9 @@ tr1250:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st815;
@@ -25025,6 +24928,7 @@ case 815:
 tr1347:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
@@ -26659,7 +26563,7 @@ case 784:
 	case 783: 
 	case 784: 
 	{
-        process_error(begin, userdata);
+        process_error(begin, UNRECOGNIZED_INSTRUCTION, userdata);
         result = 1;
         goto error_detected;
     }
@@ -26672,18 +26576,22 @@ case 784:
 
 
     if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly sandboxed %%rbp\n", begin - data);
+      process_error(begin, RESTRICTED_RBP_UNPROCESSED, userdata);
       result = 1;
-      goto error_detected;
     } else if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly sandboxed %%rsp\n", begin - data);
+      process_error(begin, RESTRICTED_RSP_UNPROCESSED, userdata);
       result = 1;
-      goto error_detected;
     }
   }
 
-  if (CheckJumpTargets(valid_targets, jump_dests, size)) {
-    return 1;
+  for (i = 0; i < size / 32; i++) {
+    uint32_t jump_dest_mask = ((uint32_t *) jump_dests)[i];
+    uint32_t valid_target_mask = ((uint32_t *) valid_targets)[i];
+    if ((jump_dest_mask & ~valid_target_mask) != 0) {
+      process_error(data + i * 32, BAD_JUMP_TARGET, userdata);
+      result = 1;
+      break;
+    }
   }
 
 error_detected:

@@ -41,20 +41,6 @@ static inline void BitmapClearBit(uint8_t *bitmap, size_t index) {
   bitmap[index / kBitsPerByte] &= ~(1 << (index % kBitsPerByte));
 }
 
-static int CheckJumpTargets(uint8_t *valid_targets, uint8_t *jump_dests,
-                            size_t size) {
-  size_t i;
-  for (i = 0; i < size / 32; i++) {
-    uint32_t jump_dest_mask = ((uint32_t *) jump_dests)[i];
-    uint32_t valid_target_mask = ((uint32_t *) valid_targets)[i];
-    if ((jump_dest_mask & ~valid_target_mask) != 0) {
-      printf("bad jump to around %x\n", (unsigned)(i * 32));
-      return 1;
-    }
-  }
-  return 0;
-}
-
 static const size_t kBundleSize = 32;
 static const size_t kBundleMask = 31;
 
@@ -65,16 +51,11 @@ static const size_t kBundleMask = 31;
  */
 static int MarkJumpTarget(size_t jump_dest,
                           uint8_t *jump_dests,
-                          size_t size,
-                          size_t report_inst_offset) {
+                          size_t size) {
   if ((jump_dest & kBundleMask) == 0) {
     return TRUE;
   }
   if (jump_dest >= size) {
-    printf("offset 0x%zx: direct jump out of range at destination: %"NACL_PRIxS
-           "\n",
-           report_inst_offset,
-           jump_dest);
     return FALSE;
   }
   BitmapSetBit(jump_dests, jump_dest);
@@ -106,10 +87,8 @@ static const int x86_64_decoder_en_main = 245;
 #define SET_DISP_PTR(P)
 #define SET_CPU_FEATURE(F) \
   if (!(F)) { \
-    printf("offset 0x%"NACL_PRIxS": CPU Feature not found", \
-           (uintptr_t)(begin - data)); \
+    errors_detected |= CPUID_UNSUPPORTED_INSTRUCTION; \
     result = 1; \
-    goto error_detected; \
   }
 #define CPUFeature_3DNOW    cpu_features->data[NaClCPUFeature_3DNOW]
 #define CPUFeature_3DPRFTCH CPUFeature_3DNOW || CPUFeature_PRE || CPUFeature_LM
@@ -165,6 +144,10 @@ int ValidateChunkIA32(const uint8_t *data, size_t size,
 
   int result = 0;
 
+  size_t i;
+
+  int errors_detected;
+
   assert(size % kBundleSize == 0);
 
   while (p < data + size) {
@@ -188,6 +171,9 @@ tr0:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -200,6 +186,9 @@ tr9:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -212,6 +201,9 @@ tr10:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -221,6 +213,9 @@ tr11:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -230,6 +225,9 @@ tr15:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -241,6 +239,9 @@ tr21:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -252,6 +253,9 @@ tr29:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -263,6 +267,9 @@ tr36:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -274,6 +281,9 @@ tr49:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -285,6 +295,9 @@ tr50:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -296,6 +309,9 @@ tr51:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -307,6 +323,9 @@ tr63:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -318,6 +337,9 @@ tr69:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -327,15 +349,18 @@ tr90:
         (p[-3] + 256U * (p[-2] + 256U * (p[-1] + 256U * ((uint32_t) p[0]))));
     size_t jump_dest = offset + (p - data) + 1;
 
-    if (!MarkJumpTarget(jump_dest, jump_dests, size, begin - data)) {
+    if (!MarkJumpTarget(jump_dest, jump_dests, size)) {
+      errors_detected |= DIRECT_JUMP_OUT_OF_RANGE;
       result = 1;
-      goto error_detected;
     }
   }
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -347,6 +372,9 @@ tr93:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -358,6 +386,9 @@ tr102:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -369,6 +400,9 @@ tr103:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -380,6 +414,9 @@ tr104:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -388,15 +425,18 @@ tr112:
     int8_t offset = (uint8_t) (p[0]);
     size_t jump_dest = offset + (p - data) + 1;
 
-    if (!MarkJumpTarget(jump_dest, jump_dests, size, begin - data)) {
+    if (!MarkJumpTarget(jump_dest, jump_dests, size)) {
+      errors_detected |= DIRECT_JUMP_OUT_OF_RANGE;
       result = 1;
-      goto error_detected;
     }
   }
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -406,6 +446,9 @@ tr132:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -417,6 +460,9 @@ tr178:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -428,6 +474,9 @@ tr252:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -439,6 +488,9 @@ tr259:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -450,6 +502,9 @@ tr293:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -461,6 +516,9 @@ tr320:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -470,6 +528,9 @@ tr346:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -481,6 +542,9 @@ tr372:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -492,6 +556,9 @@ tr378:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -503,6 +570,9 @@ tr398:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -514,24 +584,32 @@ tr406:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
 tr420:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
 tr429:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	{
@@ -541,6 +619,9 @@ tr429:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st245;
@@ -876,6 +957,7 @@ tr402:
 tr414:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st1;
@@ -1055,6 +1137,7 @@ tr374:
 tr430:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st3;
@@ -1283,6 +1366,7 @@ tr395:
 tr415:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st10;
@@ -1311,6 +1395,7 @@ tr263:
 tr416:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st11;
@@ -1336,7 +1421,7 @@ case 14:
 	goto tr15;
 tr19:
 	{
-        process_error(begin, userdata);
+        process_error(begin, UNRECOGNIZED_INSTRUCTION, userdata);
         result = 1;
         goto error_detected;
     }
@@ -1347,6 +1432,7 @@ cs = 0;
 tr417:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st15;
@@ -1865,6 +1951,7 @@ tr401:
 tr427:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st30;
@@ -1874,13 +1961,21 @@ st30:
 case 30:
 	switch( (*p) ) {
 		case 4u: goto st2;
+		case 5u: goto st3;
 		case 12u: goto st2;
+		case 13u: goto st3;
 		case 20u: goto st2;
+		case 21u: goto st3;
 		case 28u: goto st2;
+		case 29u: goto st3;
 		case 36u: goto st2;
+		case 37u: goto st3;
 		case 44u: goto st2;
+		case 45u: goto st3;
 		case 52u: goto st2;
+		case 53u: goto st3;
 		case 60u: goto st2;
+		case 61u: goto st3;
 		case 68u: goto st8;
 		case 76u: goto st8;
 		case 84u: goto st8;
@@ -1898,39 +1993,15 @@ case 30:
 		case 180u: goto st9;
 		case 188u: goto st9;
 	}
-	if ( (*p) < 38u ) {
-		if ( (*p) < 14u ) {
-			if ( (*p) > 3u ) {
-				if ( 6u <= (*p) && (*p) <= 11u )
-					goto tr0;
-			} else
-				goto tr0;
-		} else if ( (*p) > 19u ) {
-			if ( (*p) > 27u ) {
-				if ( 30u <= (*p) && (*p) <= 35u )
-					goto tr0;
-			} else if ( (*p) >= 22u )
-				goto tr0;
-		} else
+	if ( (*p) < 64u ) {
+		if ( (*p) <= 63u )
 			goto tr0;
-	} else if ( (*p) > 43u ) {
-		if ( (*p) < 62u ) {
-			if ( (*p) > 51u ) {
-				if ( 54u <= (*p) && (*p) <= 59u )
-					goto tr0;
-			} else if ( (*p) >= 46u )
-				goto tr0;
-		} else if ( (*p) > 63u ) {
-			if ( (*p) > 127u ) {
-				if ( 192u <= (*p) )
-					goto tr19;
-			} else if ( (*p) >= 64u )
-				goto st7;
-		} else
-			goto tr0;
+	} else if ( (*p) > 127u ) {
+		if ( 128u <= (*p) && (*p) <= 191u )
+			goto st3;
 	} else
-		goto tr0;
-	goto st3;
+		goto st7;
+	goto tr19;
 st31:
 	if ( ++p == pe )
 		goto _test_eof31;
@@ -2161,6 +2232,7 @@ tr403:
 tr424:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st34;
@@ -2413,6 +2485,7 @@ case 44:
 tr447:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st45;
@@ -2543,6 +2616,7 @@ case 51:
 tr418:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	{
@@ -2552,6 +2626,7 @@ tr418:
 tr419:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	{
@@ -2577,6 +2652,7 @@ case 53:
 tr425:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st54;
@@ -2588,6 +2664,7 @@ case 54:
 tr421:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st55;
@@ -2646,6 +2723,7 @@ case 60:
 tr422:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	{
@@ -2740,6 +2818,7 @@ tr192:
 tr437:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st62;
@@ -3239,6 +3318,7 @@ case 94:
 tr431:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st95;
@@ -3325,6 +3405,7 @@ case 96:
 tr438:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st97;
@@ -3694,6 +3775,7 @@ case 109:
 tr454:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st110;
@@ -3747,6 +3829,7 @@ tr269:
 tr423:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st111;
@@ -3896,6 +3979,7 @@ case 119:
 tr426:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st120;
@@ -3964,6 +4048,9 @@ tr224:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st246;
@@ -4116,6 +4203,7 @@ case 246:
 tr428:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st122;
@@ -4706,6 +4794,7 @@ case 149:
 tr432:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st150;
@@ -6100,13 +6189,21 @@ st196:
 case 196:
 	switch( (*p) ) {
 		case 4u: goto st35;
+		case 5u: goto st36;
 		case 12u: goto st35;
+		case 13u: goto st36;
 		case 20u: goto st35;
+		case 21u: goto st36;
 		case 28u: goto st35;
+		case 29u: goto st36;
 		case 36u: goto st35;
+		case 37u: goto st36;
 		case 44u: goto st35;
+		case 45u: goto st36;
 		case 52u: goto st35;
+		case 53u: goto st36;
 		case 60u: goto st35;
+		case 61u: goto st36;
 		case 68u: goto st41;
 		case 76u: goto st41;
 		case 84u: goto st41;
@@ -6124,39 +6221,15 @@ case 196:
 		case 180u: goto st42;
 		case 188u: goto st42;
 	}
-	if ( (*p) < 38u ) {
-		if ( (*p) < 14u ) {
-			if ( (*p) > 3u ) {
-				if ( 6u <= (*p) && (*p) <= 11u )
-					goto st10;
-			} else
-				goto st10;
-		} else if ( (*p) > 19u ) {
-			if ( (*p) > 27u ) {
-				if ( 30u <= (*p) && (*p) <= 35u )
-					goto st10;
-			} else if ( (*p) >= 22u )
-				goto st10;
-		} else
+	if ( (*p) < 64u ) {
+		if ( (*p) <= 63u )
 			goto st10;
-	} else if ( (*p) > 43u ) {
-		if ( (*p) < 62u ) {
-			if ( (*p) > 51u ) {
-				if ( 54u <= (*p) && (*p) <= 59u )
-					goto st10;
-			} else if ( (*p) >= 46u )
-				goto st10;
-		} else if ( (*p) > 63u ) {
-			if ( (*p) > 127u ) {
-				if ( 192u <= (*p) )
-					goto tr19;
-			} else if ( (*p) >= 64u )
-				goto st40;
-		} else
-			goto st10;
+	} else if ( (*p) > 127u ) {
+		if ( 128u <= (*p) && (*p) <= 191u )
+			goto st36;
 	} else
-		goto st10;
-	goto st36;
+		goto st40;
+	goto tr19;
 tr332:
 	{
     SET_VEX_PREFIX3(*p);
@@ -6254,6 +6327,7 @@ case 199:
 tr433:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st200;
@@ -6432,6 +6506,7 @@ case 204:
 tr434:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st205;
@@ -6460,6 +6535,7 @@ case 205:
 tr435:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st206;
@@ -6488,6 +6564,7 @@ case 206:
 tr436:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st207;
@@ -6504,6 +6581,7 @@ case 208:
 tr439:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st209;
@@ -6554,6 +6632,7 @@ case 209:
 tr440:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st210;
@@ -6634,6 +6713,7 @@ case 210:
 tr441:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st211;
@@ -6707,6 +6787,7 @@ case 211:
 tr442:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st212;
@@ -6779,6 +6860,7 @@ case 212:
 tr443:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st213;
@@ -6832,6 +6914,7 @@ case 213:
 tr444:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st214;
@@ -6899,6 +6982,7 @@ case 214:
 tr445:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st215;
@@ -6955,6 +7039,7 @@ case 215:
 tr446:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st216;
@@ -7014,6 +7099,7 @@ case 216:
 tr448:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	{
@@ -7119,6 +7205,7 @@ case 219:
 tr449:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	{
@@ -7202,6 +7289,7 @@ case 224:
 tr450:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	{
@@ -7267,6 +7355,7 @@ case 226:
 tr451:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st227;
@@ -7337,6 +7426,7 @@ case 227:
 tr452:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st228;
@@ -7407,6 +7497,7 @@ case 228:
 tr453:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st229;
@@ -7439,6 +7530,7 @@ case 229:
 tr455:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st230;
@@ -7499,6 +7591,9 @@ tr407:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st247;
@@ -7651,6 +7746,7 @@ case 247:
 tr456:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st232;
@@ -7711,6 +7807,9 @@ tr408:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st248;
@@ -7863,6 +7962,7 @@ case 248:
 tr457:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st234;
@@ -7923,6 +8023,9 @@ tr409:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st249;
@@ -8075,6 +8178,7 @@ case 249:
 tr458:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st236;
@@ -8135,6 +8239,9 @@ tr410:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st250;
@@ -8287,6 +8394,7 @@ case 250:
 tr459:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st238;
@@ -8347,6 +8455,9 @@ tr411:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st251;
@@ -8499,6 +8610,7 @@ case 251:
 tr460:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st240;
@@ -8559,6 +8671,9 @@ tr412:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st252;
@@ -8711,6 +8826,7 @@ case 252:
 tr461:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st242;
@@ -8771,6 +8887,9 @@ tr413:
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
+       if (errors_detected) {
+         process_error(begin, errors_detected, userdata);
+       }
        begin = p + 1;
      }
 	goto st253;
@@ -8923,6 +9042,7 @@ case 253:
 tr462:
 	{
         begin = p;
+        errors_detected = 0;
         BitmapSetBit(valid_targets, p - data);
      }
 	goto st244;
@@ -9474,7 +9594,7 @@ case 244:
 	case 243: 
 	case 244: 
 	{
-        process_error(begin, userdata);
+        process_error(begin, UNRECOGNIZED_INSTRUCTION, userdata);
         result = 1;
         goto error_detected;
     }
@@ -9487,8 +9607,14 @@ case 244:
 
   }
 
-  if (CheckJumpTargets(valid_targets, jump_dests, size)) {
-    return 1;
+  for (i = 0; i < size / 32; i++) {
+    uint32_t jump_dest_mask = ((uint32_t *) jump_dests)[i];
+    uint32_t valid_target_mask = ((uint32_t *) valid_targets)[i];
+    if ((jump_dest_mask & ~valid_target_mask) != 0) {
+      process_error(data + i * 32, BAD_JUMP_TARGET, userdata);
+      result = 1;
+      break;
+    }
   }
 
 error_detected:
