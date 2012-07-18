@@ -22,6 +22,7 @@ class PepperMessageFilter;
 struct PP_NetAddress_Private;
 
 namespace net {
+class DrainableIOBuffer;
 class IOBuffer;
 class SingleRequestHostResolver;
 class StreamSocket;
@@ -101,6 +102,10 @@ class PepperTCPSocket {
 
   bool IsConnected() const;
 
+  // Actually does a write from |write_buffer_|; possibly called many times for
+  // each |Write()|.
+  void DoWrite();
+
   PepperMessageFilter* manager_;
   int32 routing_id_;
   uint32 plugin_dispatcher_id_;
@@ -115,7 +120,13 @@ class PepperTCPSocket {
   scoped_ptr<net::StreamSocket> socket_;
 
   scoped_refptr<net::IOBuffer> read_buffer_;
-  scoped_refptr<net::IOBuffer> write_buffer_;
+
+  // |StreamSocket::Write()| may not always write the full buffer, but we would
+  // rather have our |Write()| do so whenever possible. To do this, we may have
+  // to call the former multiple times for each of the latter. This entails
+  // using a |DrainableIOBuffer|, which requires an underlying base |IOBuffer|.
+  scoped_refptr<net::IOBuffer> write_buffer_base_;
+  scoped_refptr<net::DrainableIOBuffer> write_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperTCPSocket);
 };

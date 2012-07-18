@@ -116,7 +116,7 @@ void PepperTCPSocket::SSLHandshake(
   // IsConnected() includes the state that SSL handshake has been finished and
   // therefore isn't suitable here.
   if (connection_state_ != CONNECTED || read_buffer_.get() ||
-      write_buffer_.get()) {
+      write_buffer_base_.get() || write_buffer_.get()) {
     SendSSLHandshakeACK(false);
     return;
   }
@@ -171,7 +171,8 @@ void PepperTCPSocket::Read(int32 bytes_to_read) {
 void PepperTCPSocket::Write(const std::string& data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (!IsConnected() || write_buffer_.get() || data.empty()) {
+  if (!IsConnected() || write_buffer_base_.get() || write_buffer_.get() ||
+      data.empty()) {
     SendWriteACKError();
     return;
   }
@@ -182,13 +183,10 @@ void PepperTCPSocket::Write(const std::string& data) {
     data_size = ppapi::TCPSocketPrivateImpl::kMaxWriteSize;
   }
 
-  write_buffer_ = new net::IOBuffer(data_size);
-  memcpy(write_buffer_->data(), data.c_str(), data_size);
-  int result = socket_->Write(write_buffer_, data.size(),
-                              base::Bind(&PepperTCPSocket::OnWriteCompleted,
-                                         base::Unretained(this)));
-  if (result != net::ERR_IO_PENDING)
-    OnWriteCompleted(result);
+  write_buffer_base_ = new net::IOBuffer(data_size);
+  memcpy(write_buffer_base_->data(), data.data(), data_size);
+  write_buffer_ = new net::DrainableIOBuffer(write_buffer_base_, data_size);
+  DoWrite();
 }
 
 void PepperTCPSocket::StartConnect(const net::AddressList& addresses) {
@@ -367,17 +365,43 @@ void PepperTCPSocket::OnReadCompleted(int result) {
 }
 
 void PepperTCPSocket::OnWriteCompleted(int result) {
+  DCHECK(write_buffer_base_.get());
   DCHECK(write_buffer_.get());
+
+  // Note: For partial writes of 0 bytes, don't continue writing to avoid a
+  // likely infinite loop.
+  if (result > 0) {
+    write_buffer_->DidConsume(result);
+    if (write_buffer_->BytesRemaining() > 0) {
+      DoWrite();
+      return;
+    }
+  }
 
   if (result >= 0) {
     manager_->Send(new PpapiMsg_PPBTCPSocket_WriteACK(
-        routing_id_, plugin_dispatcher_id_, socket_id_, true, result));
+        routing_id_, plugin_dispatcher_id_, socket_id_, true,
+        write_buffer_->BytesConsumed()));
   } else {
     SendWriteACKError();
   }
+
   write_buffer_ = NULL;
+  write_buffer_base_ = NULL;
 }
 
 bool PepperTCPSocket::IsConnected() const {
   return connection_state_ == CONNECTED || connection_state_ == SSL_CONNECTED;
+}
+
+void PepperTCPSocket::DoWrite() {
+  DCHECK(write_buffer_base_.get());
+  DCHECK(write_buffer_.get());
+  DCHECK_GT(write_buffer_->BytesRemaining(), 0);
+
+  int result = socket_->Write(write_buffer_, write_buffer_->BytesRemaining(),
+                              base::Bind(&PepperTCPSocket::OnWriteCompleted,
+                                         base::Unretained(this)));
+  if (result != net::ERR_IO_PENDING)
+    OnWriteCompleted(result);
 }
