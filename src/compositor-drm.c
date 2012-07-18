@@ -108,7 +108,7 @@ struct drm_output {
 
 	struct gbm_surface *surface;
 	struct gbm_bo *cursor_bo[2];
-	int current_cursor, cursor_free;
+	int current_cursor, cursor_free, cursor_x, cursor_y;
 	EGLSurface egl_surface;
 	struct drm_fb *current, *next;
 	struct backlight *backlight;
@@ -675,7 +675,7 @@ drm_output_set_cursor(struct weston_output *output_base,
 	struct gbm_bo *bo;
 	uint32_t buf[64 * 64];
 	unsigned char *s;
-	int i;
+	int i, x, y;
 
 	if (!output->cursor_free)
 		return;
@@ -702,11 +702,15 @@ drm_output_set_cursor(struct weston_output *output_base,
 		return;
 	}
 
-	if (drmModeMoveCursor(c->drm.fd, output->crtc_id,
-			      es->geometry.x - output->base.x,
-			      es->geometry.y - output->base.y)) {
-		weston_log("failed to move cursor: %m\n");
-		return;
+	x = es->geometry.x - output->base.x;
+	y = es->geometry.y - output->base.y;
+	if (output->cursor_x != x || output->cursor_y != y) {
+		if (drmModeMoveCursor(c->drm.fd, output->crtc_id, x, y)) {
+			weston_log("failed to move cursor: %m\n");
+			return;
+		}
+		output->cursor_x = x;
+		output->cursor_y = y;
 	}
 
 	es->plane = WESTON_PLANE_DRM_CURSOR;
