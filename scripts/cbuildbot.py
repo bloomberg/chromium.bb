@@ -794,6 +794,10 @@ def _CreateParser():
                            help='Name of profile to sub-specify board variant.')
   parser.add_option('--remote', default=False, action='store_true',
                     help=('Specifies that this tryjob should be run remotely.'))
+  parser.add_option('--remote-description', default=None,
+                    help=('Attach an optional description to a --remote run '
+                          'to make it easier to identify the results when it '
+                          'finishes.'))
 
   #
   # Advanced options

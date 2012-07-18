@@ -65,10 +65,12 @@ class RemoteTryJob(object):
     cros_build_lib.Info('Using email:%s', self.user_email)
     # Name of the job that appears on the waterfall.
     patch_list = options.gerrit_patches + options.local_patches
-    self.name = ''
-    if options.branch != 'master':
-      self.name = '[%s] ' % options.branch
-    self.name += ','.join(patch_list)
+    self.name = options.remote_description
+    if self.name is None:
+      self.name = ''
+      if options.branch != 'master':
+        self.name = '[%s] ' % options.branch
+      self.name += ','.join(patch_list)
     self.bots = bots[:]
     self.slaves_request = options.slaves
     self.description = ('name: %s\n patches: %s\nbots: %s' %
@@ -97,7 +99,8 @@ class RemoteTryJob(object):
         'name' : self.name,
         'slaves_request' : self.slaves_request,
         'user' : self.user,
-        'version' : self.TRYJOB_FORMAT_VERSION,}
+        'version' : self.TRYJOB_FORMAT_VERSION,
+        }
 
   def _Submit(self, testjob, dryrun):
     """Internal submission function.  See Submit() for arg description."""
