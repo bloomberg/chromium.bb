@@ -2,29 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_BASE_SHELL_DIALOG_WIN_H_
-#define CHROME_BROWSER_UI_VIEWS_BASE_SHELL_DIALOG_WIN_H_
+#ifndef UI_BASE_DIALOGS_BASE_SHELL_DIALOG_WIN_H_
+#define UI_BASE_DIALOGS_BASE_SHELL_DIALOG_WIN_H_
 
 #include <shlobj.h>
 #include <set>
 
+#include "ui/base/ui_export.h"
 #include "ui/base/dialogs/base_shell_dialog.h"
 
 namespace base {
 class Thread;
 }
 
+namespace ui {
+
 ///////////////////////////////////////////////////////////////////////////////
 // A base class for all shell dialog implementations that handles showing a
 // shell dialog modally on its own thread.
-class BaseShellDialogImpl {
+class UI_EXPORT BaseShellDialogImpl {
  public:
   BaseShellDialogImpl();
   virtual ~BaseShellDialogImpl();
 
  protected:
   // Represents a run of a dialog.
-  struct RunState {
+  struct UI_EXPORT RunState {
     // Owning HWND, may be null.
     HWND owner;
 
@@ -89,4 +92,6 @@ class BaseShellDialogImpl {
   DISALLOW_COPY_AND_ASSIGN(BaseShellDialogImpl);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_BASE_SHELL_DIALOG_WIN_H_
+}  // namespace ui
+
+#endif  // UI_BASE_DIALOGS_BASE_SHELL_DIALOG_WIN_H_

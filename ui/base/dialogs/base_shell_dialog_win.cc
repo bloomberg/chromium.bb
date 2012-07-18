@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/base_shell_dialog_win.h"
+#include "ui/base/dialogs/base_shell_dialog_win.h"
 
 #include <algorithm>
 
 #include "base/threading/thread.h"
 
+namespace {
+
 // Helpers to show certain types of Windows shell dialogs in a way that doesn't
 // block the UI of the entire app.
-
 class ShellDialogThread : public base::Thread {
  public:
   ShellDialogThread() : base::Thread("Chrome_ShellDialogThread") { }
@@ -39,6 +40,10 @@ void ShellDialogThread::CleanUp() {
   // be balanced by a corresponding call to CoUninitialize.
   CoUninitialize();
 }
+
+}  // namespace
+
+namespace ui {
 
 // static
 BaseShellDialogImpl::Owners BaseShellDialogImpl::owners_;
@@ -102,3 +107,5 @@ void BaseShellDialogImpl::EnableOwner(HWND owner) {
   if (IsWindow(owner))
     EnableWindow(owner, TRUE);
 }
+
+}  // namespace ui

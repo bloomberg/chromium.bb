@@ -13,6 +13,11 @@
 #include "ui/aura/single_display_manager.h"
 #include "ui/gfx/screen.h"
 
+#if defined(FILE_MANAGER_EXTENSION)
+#include "chrome/browser/ui/views/select_file_dialog_extension.h"
+#include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
+#endif
+
 ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh() {
 }
 
@@ -27,6 +32,10 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
     stacking_client_.reset(new aura::DesktopStackingClient);
     gfx::Screen::SetInstance(aura::CreateDesktopScreen());
   }
+
+#if defined(FILE_MANAGER_EXTENSION)
+  ui::SelectFileDialog::SetFactory(new SelectFileDialogExtensionFactory);
+#endif
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {

@@ -1,8 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/select_file_dialog.h"
+#include "ui/base/dialogs/select_file_dialog.h"
+#include "ui/base/dialogs/select_file_dialog_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(ShellDialogsWin, AppendExtensionIfNeeded) {
@@ -37,8 +38,8 @@ TEST(ShellDialogsWin, AppendExtensionIfNeeded) {
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     EXPECT_EQ(std::wstring(test_cases[i].expected_filename),
-              AppendExtensionIfNeeded(test_cases[i].filename,
-                                      test_cases[i].filter_selected,
-                                      test_cases[i].suggested_ext));
+              ui::AppendExtensionIfNeeded(test_cases[i].filename,
+                                          test_cases[i].filter_selected,
+                                          test_cases[i].suggested_ext));
   }
 }

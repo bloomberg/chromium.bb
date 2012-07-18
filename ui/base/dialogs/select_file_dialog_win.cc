@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/select_file_dialog.h"
+#include "ui/base/dialogs/select_file_dialog_win.h"
 
 #include <windows.h>
 #include <commdlg.h>
@@ -23,13 +23,10 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/ui/views/base_shell_dialog_win.h"
-#include "content/public/browser/browser_thread.h"
-#include "grit/generated_resources.h"
 #include "grit/ui_strings.h"
+#include "ui/base/dialogs/base_shell_dialog_win.h"
 #include "ui/base/l10n/l10n_util.h"
-
-using content::BrowserThread;
+#include "ui/gfx/native_widget_types.h"
 
 namespace {
 
@@ -76,50 +73,6 @@ bool CallGetSaveFileName(OPENFILENAME* ofn) {
     return GetSaveFileName(ofn) == TRUE;
   }
 }
-
-}  // namespace
-
-// This function takes the output of a SaveAs dialog: a filename, a filter and
-// the extension originally suggested to the user (shown in the dialog box) and
-// returns back the filename with the appropriate extension tacked on. If the
-// user requests an unknown extension and is not using the 'All files' filter,
-// the suggested extension will be appended, otherwise we will leave the
-// filename unmodified. |filename| should contain the filename selected in the
-// SaveAs dialog box and may include the path, |filter_selected| should be
-// '*.something', for example '*.*' or it can be blank (which is treated as
-// *.*). |suggested_ext| should contain the extension without the dot (.) in
-// front, for example 'jpg'.
-std::wstring AppendExtensionIfNeeded(const std::wstring& filename,
-                                     const std::wstring& filter_selected,
-                                     const std::wstring& suggested_ext) {
-  DCHECK(!filename.empty());
-  std::wstring return_value = filename;
-
-  // If we wanted a specific extension, but the user's filename deleted it or
-  // changed it to something that the system doesn't understand, re-append.
-  // Careful: Checking net::GetMimeTypeFromExtension() will only find
-  // extensions with a known MIME type, which many "known" extensions on Windows
-  // don't have.  So we check directly for the "known extension" registry key.
-  std::wstring file_extension(
-      GetExtensionWithoutLeadingDot(FilePath(filename).Extension()));
-  std::wstring key(L"." + file_extension);
-  if (!(filter_selected.empty() || filter_selected == L"*.*") &&
-      !base::win::RegKey(HKEY_CLASSES_ROOT, key.c_str(), KEY_READ).Valid() &&
-      file_extension != suggested_ext) {
-    if (return_value[return_value.length() - 1] != L'.')
-      return_value.append(L".");
-    return_value.append(suggested_ext);
-  }
-
-  // Strip any trailing dots, which Windows doesn't allow.
-  size_t index = return_value.find_last_not_of(L'.');
-  if (index < return_value.size() - 1)
-    return_value.resize(index + 1);
-
-  return return_value;
-}
-
-namespace {
 
 // Get the file type description from the registry. This will be "Text Document"
 // for .txt files, "JPEG Image" for .jpg files, etc. If the registry doesn't
@@ -394,7 +347,7 @@ bool SaveFileAsWithFilter(HWND owner,
     suggested_ext = def_ext;
 
   *final_name =
-      AppendExtensionIfNeeded(*final_name, filter_selected, suggested_ext);
+      ui::AppendExtensionIfNeeded(*final_name, filter_selected, suggested_ext);
   return true;
 }
 
@@ -427,12 +380,10 @@ bool SaveFileAs(HWND owner,
                               final_name);
 }
 
-}  // namespace
-
 // Implementation of SelectFileDialog that shows a Windows common dialog for
 // choosing a file or folder.
-class SelectFileDialogImpl : public SelectFileDialog,
-                             public BaseShellDialogImpl {
+class SelectFileDialogImpl : public ui::SelectFileDialog,
+                             public ui::BaseShellDialogImpl {
  public:
   explicit SelectFileDialogImpl(Listener* listener,
                                 ui::SelectFilePolicy* policy);
@@ -630,8 +581,7 @@ void SelectFileDialogImpl::ExecuteSelectFile(
     std::vector<FilePath> paths;
     if (RunOpenMultiFileDialog(params.title, filter,
                                params.run_state.owner, &paths)) {
-      BrowserThread::PostTask(
-          BrowserThread::UI,
+      params.run_state.dialog_thread->message_loop()->PostTask(
           FROM_HERE,
           base::Bind(&SelectFileDialogImpl::MultiFilesSelected, this, paths,
                      params.params, params.run_state));
@@ -640,14 +590,12 @@ void SelectFileDialogImpl::ExecuteSelectFile(
   }
 
   if (success) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
+      params.run_state.dialog_thread->message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&SelectFileDialogImpl::FileSelected, this, path,
                    filter_index, params.params, params.run_state));
   } else {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
+      params.run_state.dialog_thread->message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&SelectFileDialogImpl::FileNotSelected, this, params.params,
                    params.run_state));
@@ -851,8 +799,55 @@ bool SelectFileDialogImpl::RunOpenMultiFileDialog(
   return success;
 }
 
-// static
-SelectFileDialog* SelectFileDialog::Create(Listener* listener,
-                                           ui::SelectFilePolicy* policy) {
+}  // namespace
+
+namespace ui {
+
+// This function takes the output of a SaveAs dialog: a filename, a filter and
+// the extension originally suggested to the user (shown in the dialog box) and
+// returns back the filename with the appropriate extension tacked on. If the
+// user requests an unknown extension and is not using the 'All files' filter,
+// the suggested extension will be appended, otherwise we will leave the
+// filename unmodified. |filename| should contain the filename selected in the
+// SaveAs dialog box and may include the path, |filter_selected| should be
+// '*.something', for example '*.*' or it can be blank (which is treated as
+// *.*). |suggested_ext| should contain the extension without the dot (.) in
+// front, for example 'jpg'.
+std::wstring AppendExtensionIfNeeded(
+    const std::wstring& filename,
+    const std::wstring& filter_selected,
+    const std::wstring& suggested_ext) {
+  DCHECK(!filename.empty());
+  std::wstring return_value = filename;
+
+  // If we wanted a specific extension, but the user's filename deleted it or
+  // changed it to something that the system doesn't understand, re-append.
+  // Careful: Checking net::GetMimeTypeFromExtension() will only find
+  // extensions with a known MIME type, which many "known" extensions on Windows
+  // don't have.  So we check directly for the "known extension" registry key.
+  std::wstring file_extension(
+      GetExtensionWithoutLeadingDot(FilePath(filename).Extension()));
+  std::wstring key(L"." + file_extension);
+  if (!(filter_selected.empty() || filter_selected == L"*.*") &&
+      !base::win::RegKey(HKEY_CLASSES_ROOT, key.c_str(), KEY_READ).Valid() &&
+      file_extension != suggested_ext) {
+    if (return_value[return_value.length() - 1] != L'.')
+      return_value.append(L".");
+    return_value.append(suggested_ext);
+  }
+
+  // Strip any trailing dots, which Windows doesn't allow.
+  size_t index = return_value.find_last_not_of(L'.');
+  if (index < return_value.size() - 1)
+    return_value.resize(index + 1);
+
+  return return_value;
+}
+
+SelectFileDialog* CreateWinSelectFileDialog(
+    SelectFileDialog::Listener* listener,
+    SelectFilePolicy* policy) {
   return new SelectFileDialogImpl(listener, policy);
 }
+
+}  // namespace ui
