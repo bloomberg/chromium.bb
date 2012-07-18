@@ -17,6 +17,7 @@ class Thread;
 
 namespace dbus {
 class Bus;
+class ObjectPath;
 };
 
 namespace chromeos {
@@ -40,6 +41,8 @@ class FlimflamProfileClient;
 class FlimflamServiceClient;
 class GsmSMSClient;
 class IBusClient;
+class IBusEngineService;
+class IBusEngineFactoryService;
 class IBusInputContextClient;
 class ImageBurnerClient;
 class IntrospectableClient;
@@ -231,6 +234,15 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // Returns the ibus input context client, owned by DBusThreadManager. Do not
   // cache this pointer and use it after DBusThreadManager is shut down.
   virtual IBusInputContextClient* GetIBusInputContextClient() = 0;
+
+  // Returns the ibus engine factory service, owned by DBusThreadManager. Do not
+  // cache this pointer and use it after DBusThreadManager is shut down.
+  virtual IBusEngineFactoryService* GetIBusEngineFactoryService() = 0;
+
+  // Returns the ibus engine service, owned by DBusThreadManager. Do not cache
+  // this pointer and use it after DBusThreadManager is shut down.
+  virtual IBusEngineService* GetIBusEngineService(
+      const dbus::ObjectPath& object_path) = 0;
 
   virtual ~DBusThreadManager();
 

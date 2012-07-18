@@ -5,6 +5,8 @@
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 
 #include "chromeos/dbus/ibus/mock_ibus_client.h"
+#include "chromeos/dbus/ibus/mock_ibus_engine_factory_service.h"
+#include "chromeos/dbus/ibus/mock_ibus_engine_service.h"
 #include "chromeos/dbus/ibus/mock_ibus_input_context_client.h"
 
 namespace chromeos {
@@ -181,5 +183,14 @@ IBusInputContextClient*
   return mock_ibus_input_context_client_.get();
 }
 
+IBusEngineFactoryService*
+    MockDBusThreadManagerWithoutGMock::GetIBusEngineFactoryService() {
+  return mock_ibus_engine_factory_service_.get();
+}
+
+IBusEngineService* MockDBusThreadManagerWithoutGMock::GetIBusEngineService(
+    const dbus::ObjectPath& object_path) {
+  return mock_ibus_engine_service_.get();
+}
 
 }  // namespace chromeos

@@ -11,15 +11,16 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace dbus {
-
 class Bus;
-
+class ObjectPath;
 }  // namespace dbus
 
 namespace chromeos {
 
-class  MockIBusClient;
-class  MockIBusInputContextClient;
+class MockIBusClient;
+class MockIBusEngineFactoryService;
+class MockIBusEngineService;
+class MockIBusInputContextClient;
 
 // This class provides an another mock DBusThreadManager without gmock
 // dependency. This class is used only for places where GMock is not allowed
@@ -60,6 +61,9 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   virtual BluetoothOutOfBandClient* GetBluetoothOutOfBandClient() OVERRIDE;
   virtual IBusClient* GetIBusClient() OVERRIDE;
   virtual IBusInputContextClient* GetIBusInputContextClient() OVERRIDE;
+  virtual IBusEngineFactoryService* GetIBusEngineFactoryService() OVERRIDE;
+  virtual IBusEngineService* GetIBusEngineService(
+      const dbus::ObjectPath& object_path) OVERRIDE;
 
   MockIBusClient* mock_ibus_client() {
     return mock_ibus_client_.get();
@@ -69,6 +73,14 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
     return mock_ibus_input_context_client_.get();
   }
 
+  MockIBusEngineService* mock_ibus_engine_service() {
+    return mock_ibus_engine_service_.get();
+  }
+
+  MockIBusEngineFactoryService* mock_ibus_engine_factory_service() {
+    return mock_ibus_engine_factory_service_.get();
+  }
+
   void set_ibus_bus(dbus::Bus* ibus_bus) {
     ibus_bus_ = ibus_bus;
   }
@@ -76,6 +88,8 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
  private:
   scoped_ptr<MockIBusClient> mock_ibus_client_;
   scoped_ptr<MockIBusInputContextClient> mock_ibus_input_context_client_;
+  scoped_ptr<MockIBusEngineService> mock_ibus_engine_service_;
+  scoped_ptr<MockIBusEngineFactoryService> mock_ibus_engine_factory_service_;
 
   dbus::Bus* ibus_bus_;
   DISALLOW_COPY_AND_ASSIGN(MockDBusThreadManagerWithoutGMock);
