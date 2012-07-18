@@ -377,13 +377,14 @@ void ExtensionEventRouter::DispatchEventImpl(
   for (std::set<const EventListener*>::iterator it = listeners.begin();
        it != listeners.end(); it++) {
     const EventListener* listener = *it;
-    if (listener->process) {
-      if (restrict_to_extension_id.empty() ||
-          restrict_to_extension_id == listener->extension_id)
+    if (restrict_to_extension_id.empty() ||
+        restrict_to_extension_id == listener->extension_id) {
+      if (listener->process) {
         DispatchEventToProcess(listener->extension_id, listener->process,
                                event);
-    } else {
-      DispatchLazyEvent(listener->extension_id, event);
+      } else {
+        DispatchLazyEvent(listener->extension_id, event);
+      }
     }
   }
 }
