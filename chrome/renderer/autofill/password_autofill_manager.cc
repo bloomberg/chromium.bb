@@ -314,7 +314,7 @@ bool PasswordAutofillManager::DidAcceptAutofillSuggestion(
 
   // Set the incoming |value| in the text field and |FillUserNameAndPassword|
   // will do the rest.
-  input.setValue(value);
+  input.setValue(value, true);
   return FillUserNameAndPassword(&input, &password.password_field,
                                  password.fill_data, true, true);
 }
