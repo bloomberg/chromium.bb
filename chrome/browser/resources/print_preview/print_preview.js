@@ -657,6 +657,14 @@ cr.define('print_preview', function() {
         }
       }
 
+      if (e.keyCode == 13 /*enter*/ && this.printTicketStore_.isTicketValid()) {
+        assert(this.uiState_ == PrintPreview.UiState_.READY,
+          'Trying to print when not in ready state: ' + this.uiState_);
+        this.printDocumentOrOpenPdfPreview_(false /*isPdfPreview*/);
+        e.preventDefault();
+        return;
+      }
+
       // Pass certain directional keyboard events to the PDF viewer.
       this.previewArea_.handleDirectionalKeyEvent(e);
     },

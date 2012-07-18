@@ -69,6 +69,7 @@ cr.define('print_preview', function() {
       this.cancelButton_.disabled = !isEnabled;
     },
 
+    /** @param {string} message Error message to display in the print header. */
     setErrorMessage: function(message) {
       var summaryEl = this.getElement().getElementsByClassName(
           PrintHeader.Classes_.SUMMARY)[0];
@@ -79,7 +80,6 @@ cr.define('print_preview', function() {
     /** @override */
     enterDocument: function() {
       print_preview.Component.prototype.enterDocument.call(this);
-      this.printButton_.focus();
 
       // User events
       this.tracker.add(
@@ -220,6 +220,7 @@ cr.define('print_preview', function() {
       } else {
         this.printButton_.textContent = localStrings.getString('printButton');
       }
+      this.printButton_.focus();
     },
 
     /**
@@ -232,6 +233,10 @@ cr.define('print_preview', function() {
           !this.printTicketStore_.isTicketValid() ||
           !this.isEnabled_;
       this.updateSummary_();
+      if (document.activeElement == null ||
+          document.activeElement == document.body) {
+        this.printButton_.focus();
+      }
     }
   };
 
