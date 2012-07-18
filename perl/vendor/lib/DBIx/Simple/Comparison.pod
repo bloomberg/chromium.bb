@@ -1,0 +1,125 @@
+=head1 NAME
+
+DBIx::Simple::Comparison - DBIx::Simple in DBI jargon
+
+=head1 DESCRIPTION
+
+This is just a simple and B<inaccurate> overview of what DBI things the
+DBIx::Simple things represent, or the other way around.
+
+This document can be useful to find the foo equivalent of bar.
+
+C<?> means that DBI doesn't have an equivalent or that I couldn't find one.
+
+C<=> means that DBIx::Simple provides a direct wrapper to the DBI function.
+
+C<~> means that DBIx::Simple's method does more or less the same, but usually
+in a more high level way: context sensitive, combining things, automatically
+taking care of something.
+
+Note that DBIx::Simple is a wrapper around DBI. It is not "better" than DBI. In
+fact, DBIx::Simple cannot work without DBI.
+
+Using DBI directly is always faster than using DBIx::Simple's equivalents. (For
+the computer, that is. For you, DBIx::Simple is supposed to be faster.)
+
+=head2 Classes, common names
+
+ use DBI       ~  use DBIx::Simple
+
+ $DBI::errstr  =  DBIx::Simple->error
+
+ DBI::db       ~  DBIx::Simple
+ $dbh          ~  $db
+ $dbh->errstr  =  $db->error
+
+ connect       ~  connect
+ connect       ~  new
+
+ DBI::st       ~  DBIx::Simple::Result
+ <undef>       ~  DBIx::Simple::Dummy
+ $sth          ~  $result
+
+=head2 Queries
+
+DBI
+
+ my $sth = $dbh->prepare_cached($query);
+ $sth->execute(@values);
+
+~ DBIx::Simple
+
+ my $result = $db->query($query, $values);
+
+=head2 Results
+
+ DBI                          DBIx::Simple
+
+ bind_columns              ~  bind
+
+ fetchrow_arrayref/fetch   =  fetch
+ fetchrow_array            ~  list
+ *1                        ~  flat
+ [@{fetchrow_arrayref}]    =  array
+ fetchall_arrayref         ~  arrays
+ fetchrow_hashref() *2*3   =  hash
+ fetchall_arrayref({}) *4  ~  hashes
+
+ fetchall_hashref *2       =  map_hashes
+ ?                         ?  map_arrays
+ fetchall_hashref(1) *2    =  map
+
+ $sth->{NAME_lc/NAME}      =  $result->columns
+
+*1 There's no fetch variant, but you can do C<< { @{
+$dbh->selectcol_arrayref('SELECT ...', { Slice => [] }) } } >>.
+
+*2 To receive the keys (column names) lowercased, use C<<
+$db->{FetchHashKeyName} = 'NAME_lc' >>. DBIx::Simple lower cases them by
+default.
+
+*3 Or supply an argument, C<'NAME_lc'>.
+
+*4 No, arrayref isn't a typo. When supplied an empty hash reference, DBI's
+fetchall_arrayref actually returns hashrefs. This DBI method does not support
+lower casing of keys, DBIx::Simple does.
+
+=head2 Direct access
+
+ DBI                 DBIx::Simple
+
+ $dbh             =  $db->dbh
+ $sth->{$foo}     =  $result->attr($foo)
+
+ func             =  func
+
+ begin_work       =  begin_work
+ commit           =  commit
+ rollback         =  rollback
+ last_insert_id   =  last_insert_id
+ rows             =  rows
+
+ disconnect       ~  disconnect
+ finish           ~  finish
+
+=head2 DBIx::Simple specific (?)
+
+ keep_statements
+ lc_columns
+ iquery (via SQL::Interp)
+ select, insert, update, delete (via SQL::Abstract)
+ abstract (via SQL::Abstract)
+ flat
+ hashes
+ map_arrays
+ map
+
+=head1 AUTHOR
+
+Juerd Waalboer <juerd@cpan.org> <http://juerd.nl/>
+
+=head1 SEE ALSO
+
+L<DBI>, L<DBIx::Simple>
+
+=cut

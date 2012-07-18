@@ -1,0 +1,697 @@
+#============================================================= -*-perl-*-
+#
+# Template::Manual::VMethods
+#
+# AUTHOR
+#   Andy Wardley  <abw@wardley.org>
+#
+# COPYRIGHT
+#   Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+#
+#   This module is free software; you can redistribute it and/or
+#   modify it under the same terms as Perl itself.
+#
+#========================================================================
+
+=head1 NAME
+
+Template::Manual::VMethods - Virtual Methods
+
+=head1 Scalar Virtual Methods
+
+=head2 chunk(size)
+
+Splits the value into a list of chunks of a certain size.
+
+    [% ccard_no = "1234567824683579";
+       ccard_no.chunk(4).join
+    %]
+
+Output:
+
+    1234 5678 2468 3579
+
+If the size is specified as a negative number then the text will
+be chunked from right-to-left.  This gives the correct grouping
+for numbers, for example.
+
+    [% number = 1234567;
+       number.chunk(-3).join(',')
+    %]
+
+Output:
+
+    1,234,567
+
+=head2 collapse
+
+Returns the text with any leading and trailing whitespace removed and any
+internal sequences of whitespace converted to a single space
+
+    [% text = "  The bird\n  is the word" %]
+    [% text.collapse %]       # The bird is the word
+
+=head2 defined
+
+Returns true if the value is defined.
+
+    [% user = get_user(uid) IF uid.defined %]
+
+=head2 dquote
+
+Returns the text with any double quote characters escaped with a backslash
+prefix.  Any newline characters in the text will be replaced with "\n".
+
+    [% quote = 'He said "Oh really?"' %]
+    [% quote.dquote %]        # He said \"Oh really?\"
+
+=head2 hash
+
+Return the value as a hash reference containing a single entry with
+the key C<value> indicating the original scalar value.  As with the
+C<list> virtual method, this is generally used to help massage data
+into different formats.
+
+=head2 lcfirst
+
+Returns the text with the first letter converted to lower case.
+
+    [% word = 'BIRD' %]
+    [% word.lcfirst %]        # bIRD
+
+=head2 length
+
+Returns the length of the string representation of the item:
+
+    [% IF password.length < 8 %]
+       Password too short, dumbass!
+    [% END %]
+
+=head2 list
+
+Return the value as a single element list.  This can be useful if you
+have a variable which may contain a single item or a list and you want
+to treat them equally.  The C<list> method can be called against a list
+reference and will simply return the original reference, effectively
+a no-op.
+
+    [% thing.list.size %]     # thing can be a scalar or a list
+
+=head2 lower
+
+Returns the text in lower case.
+
+    [% word = 'BIRD' %]
+    [% word.lower %]          # bird
+
+=head2 match(pattern, global)
+
+Performs a regular expression match on the string using the pattern
+passed as an argument.  If the pattern matches the string then the
+method returns a reference to a list of any strings captured within
+parenthesis in the pattern.
+
+    [% name = 'Larry Wall' %]
+    [% matches = name.match('(\w+) (\w+)') %]
+    [% matches.1 %], [% matches.0 %]    # Wall, Larry
+
+If the pattern does not match then the method returns false, rather
+than returning an empty list which Perl and the Template Toolkit both
+consider to be a true value.  This allows you to write expression like
+this.
+
+    [% "We're not worthy!" IF name.match('Larry Wall') %]
+
+    [% IF (matches = name.match('(\w+) (\w+)')) %]
+       pattern matches: [% matches.join(', ') %]
+    [% ELSE %]
+       pattern does not match
+    [% END %]
+
+Any regex modifiers, like C</s>, should be added in the regex using
+the C<(?s)> syntax.  For example, to modify the regex to disregard
+whitespace (the C</x> switch), use:
+
+    [% re = '(?x)
+               (\w+)
+               [ ]
+               (\w+)
+             ';
+      matches = name.match(re);
+    %]
+
+To perform a global search to match the pattern as many times as it
+appears in the source string, provide a true value for the C<global>
+argument following the pattern.
+
+    [% text = 'bandanna';
+       text.match('an+', 1).join(', )      # an, ann
+    %]
+
+=head2 repeat(n)
+
+Repeat the string a specified number of times.
+
+    [% name = 'foo' %]
+    [% name.repeat(3) %]		# foofoofoo
+
+=head2 replace(search, replace)
+
+Outputs the string with all instances of the first argument (specified
+as a Perl regular expression) with the second.
+
+    [% name = 'foo, bar & baz' %]
+    [% name.replace('\W+', '_') %]        # foo_bar_baz
+
+You can use C<$1>, C<$2>, etc., to reference captured parts (in parentheses)
+in the regular expression.  Just be careful to I<single> quote the replacement
+string.  If you use I<double> quotes then TT will try and interpolate the
+variables before passing the string to the C<replace> vmethod.
+
+    [% name = 'FooBarBaz' %]
+    [% name.replace('([A-Z])', ' $1') %]  # Foo Bar Baz
+
+=head2 remove(pattern)
+
+Outputs the string with all instances of the pattern (specified
+as a Perl regular expression) removed.
+
+    [% name = 'foo, bar & baz' %]
+    [% name.remove('\W+') %]    # foobarbaz
+
+=head2 search(pattern)
+
+Performs a similar function to L<match> but simply returns true if the
+string matches the regular expression pattern passed as an argument.
+
+    [% name = 'foo bar baz' %]
+    [% name.search('bar') ? 'bar' : 'no bar' %]	    # bar
+
+This virtual method is now deprecated in favour of L<match>.  Move along
+now, there's nothing more to see here.
+
+=head2 size
+
+Always returns 1 for scalar values.  This method is provided for
+consistency with the hash and list size methods.
+
+=head2 split(pattern)
+
+Calls Perl's C<split()> function to split a string into a list of
+strings.
+
+    [% FOREACH dir IN mypath.split(':') %]
+       [% dir %]
+    [% END %]
+
+=head2 substr(offset, length, replacement)
+
+Returns a substring starting at C<offset>, for C<length> characters.
+
+    [% str 'foo bar baz wiz waz woz') %]
+    [% str.substr(4, 3) %]    # bar
+
+If C<length> is not specified then it returns everything from the
+C<offset> to the end of the string.
+
+    [% str.substr(12) %]      # wiz waz woz
+
+If both C<length> and C<replacement> are specified, then the method
+replaces everything from C<offset> for C<length> characters with
+C<$replacement>.  The substring removed from the string is then returned.
+
+    [% str.substr(0, 11, 'FOO') %]   # foo bar baz
+    [% str %]                        # FOO wiz waz woz
+
+=head2 squote
+
+Returns the text with any single quote characters escaped with a backslash
+prefix.
+
+    [% tim = "Tim O'Reilly" %]
+    [% tim.squote %]          # Tim O\'Reilly
+
+=head2 trim
+
+Returns the text with any leading and trailing whitespace removed.
+
+    [% text = '  hello  world  ' %]
+    [% text.trim %]           # hello  world
+
+=head2 ucfirst
+
+Returns the text with the first letter converted to upper case.
+
+    [% word = 'bird' %]
+    [% word.ucfirst %]        # Bird
+
+=head2 upper
+
+Returns the text in upper case.
+
+    [% word = 'bird' %]
+    [% word.upper %]          # BIRD
+
+=head1 Hash Virtual Methods
+
+=head2 keys
+
+Returns a list of keys in the hash.  They are not returned in any
+particular order, but the order is the same as for the corresponding
+values method.
+
+    [% FOREACH key IN hash.keys %]
+       * [% key %]
+    [% END %]
+
+If you want the keys in sorted order, use the list C<sort> method.
+
+    [% FOREACH key IN hash.keys.sort %]
+       * [% key %]
+    [% END %]
+
+Having got the keys in sorted order, you can then use variable
+interpolation to fetch the value.  This is shown in the following
+example by the use of C<$key> to fetch the item from C<hash> whose
+key is stored in the C<key> variable.
+
+    [% FOREACH key IN hash.keys.sort %]
+       * [% key %] = [% hash.$key %]
+    [% END %]
+
+Alternately, you can use the C<pairs> method to get a list of
+key/value pairs in sorted order.
+
+=head2 values
+
+Returns a list of the values in the hash.  As with the C<keys> method,
+they are not returned in any particular order, although it is the same
+order that the keys are returned in.
+
+    [% hash.values.join(', ') %]
+
+=head2 items
+
+Returns a list of both the keys and the values expanded into a single list.
+
+    [% hash = {
+          a = 10
+          b = 20
+       };
+
+       hash.items.join(', ')    # a, 10, b, 20
+    %]
+
+=head2 each
+
+This method currently returns the same thing as the C<items> method.
+
+However, please note that this method will change in the next major
+version of the Template Toolkit (v3) to return the same thing as the
+C<pairs> method.  This will be done in an effort to make these virtual
+method more consistent with each other and how Perl works.
+
+In anticipation of this, we recommend that you stop using C<hash.each>
+and instead use C<hash.items>.
+
+=head2 pairs
+
+This method returns a list of key/value pairs.  They are returned in
+sorted order according to the keys.
+
+    [% FOREACH pair IN product.pairs %]
+       * [% pair.key %] is [% pair.value %]
+    [% END %]
+
+=head2 list
+
+Returns the contents of the hash in list form.  An argument can be
+passed to indicate the desired items required in the list: C<keys> to
+return a list of the keys (same as C<hash.keys>), C<values> to return a
+list of the values (same as C<hash.values>), C<each> to return as list
+of key and values (same as C<hash.each>), or C<pairs> to return a list
+of key/value pairs (same as C<hash.pairs>).
+
+    [% keys   = hash.list('keys') %]
+    [% values = hash.list('values') %]
+    [% items  = hash.list('each') %]
+    [% pairs  = hash.list('pairs') %]
+
+When called without an argument it currently returns the same thing as
+the C<pairs> method.  However, please note that this method will change
+in the next major version of the Template Toolkit (v3) to return a
+reference to a list containing the single hash reference (as per the
+scalar list method).
+
+In anticipation of this, we recommend that you stop using C<hash.list>
+and instead use C<hash.pairs>.
+
+=head2 sort, nsort
+
+Return a list of the keys, sorted alphabetically (C<sort>) or numerically
+(C<nsort>) according to the corresponding values in the hash.
+
+    [% FOREACH n IN phones.sort %]
+       [% phones.$n %] is [% n %],
+    [% END %]
+
+=head2 import
+
+The C<import> method can be called on a hash array to import the contents
+of another hash array.
+
+    [% hash1 = {
+         foo = 'Foo'
+         bar = 'Bar'
+       }
+       hash2 = {
+           wiz = 'Wiz'
+           woz = 'Woz'
+       }
+    %]
+
+    [% hash1.import(hash2) %]
+    [% hash1.wiz %]             # Wiz
+
+You can also call the C<import()> method by itself to import a hash array
+into the current namespace hash.
+
+    [% user = { id => 'lwall', name => 'Larry Wall' } %]
+    [% import(user) %]
+    [% id %]: [% name %]        # lwall: Larry Wall
+
+=head2 defined, exists
+
+Returns a true or false value if an item in the hash denoted by the key
+passed as an argument is defined or exists, respectively.
+
+    [% hash.defined('somekey') ? 'yes' : 'no' %]
+    [% hash.exists('somekey') ? 'yes' : 'no' %]
+
+When called without any argument, C<hash.defined> returns true if the hash
+itself is defined (e.g. the same effect as C<scalar.defined>).
+
+=head2 delete
+
+Delete one or more items from the hash.
+
+    [% hash.delete('foo', 'bar') %]
+
+=head2 size
+
+Returns the number of key/value pairs in the hash.
+
+=head2 item
+
+Returns an item from the hash using a key passed as an argument.
+
+    [% hash.item('foo') %]  # same as hash.foo
+
+=head1 List Virtual Methods
+
+=head2 first, last
+
+Returns the first/last item in the list.  The item is not removed from the
+list.
+
+    [% results.first %] to [% results.last %]
+
+If either is given a numeric argument C<n>, they return the first or
+last C<n> elements:
+
+    The first 5 results are [% results.first(5).join(", ") %].
+
+=head2 size, max
+
+Returns the size of a list (number of elements) and the maximum
+index number (size - 1), respectively.
+
+    [% results.size %] search results matched your query
+
+=head2 defined
+
+Returns a true or false value if the item in the list denoted by the
+argument is defined.
+
+    [% list.defined(3) ? 'yes' : 'no' %]
+
+When called without any argument, C<list.defined> returns true if the list
+itself is defined (e.g. the same effect as C<scalar.defined>).
+
+=head2 reverse
+
+Returns the items of the list in reverse order.
+
+    [% FOREACH s IN scores.reverse %]
+       ...
+    [% END %]
+
+=head2 join
+
+Joins the items in the list into a single string, using Perl's C<join()>
+function.
+
+    [% items.join(', ') %]
+
+=head2 grep
+
+Returns a list of the items in the list that match a regular expression
+pattern.
+
+    [% FOREACH directory.files.grep('\.txt$') %]
+       ...
+    [% END %]
+
+=head2 sort, nsort
+
+Returns the items in alpha (C<sort>) or numerical (C<nsort>) order.
+
+    [% library = books.sort %]
+
+An argument can be provided to specify a search key.  Where an item in
+the list is a hash reference, the search key will be used to retrieve a
+value from the hash which will then be used as the comparison value.
+Where an item is an object which implements a method of that name, the
+method will be called to return a comparison value.
+
+    [% library = books.sort('author') %]
+
+In the example, the C<books> list can contains hash references with
+an C<author> key or objects with an C<author> method.
+
+You can also specify multiple sort keys.
+
+    [% library = books.sort('author', 'title') %]
+
+In this case the books will be sorted primarily by author.  If two or more
+books have authors with the same name then they will be sorted by title.
+
+=head2 unshift(item), push(item)
+
+The C<push()> method adds an item or items to the end of list.
+
+    [% mylist.push(foo) %]
+    [% mylist.push(foo, bar) %]
+
+The C<unshift()> method adds an item or items to the start of a list.
+
+    [% mylist.unshift(foo) %]
+    [% mylist.push(foo, bar)    %]
+
+=head2 shift, pop
+
+Removes the first/last item from the list and returns it.
+
+    [% first = mylist.shift %]
+    [% last  = mylist.pop   %]
+
+=head2 unique
+
+Returns a list of the unique elements in a list, in the same order
+as in the list itself.
+
+    [% mylist = [ 1, 2, 3, 2, 3, 4, 1, 4, 3, 4, 5 ] %]
+    [% numbers = mylist.unique %]
+
+While this can be explicitly sorted, it is not required that the list
+be sorted before the unique elements are pulled out (unlike the Unix
+command line utility).
+
+    [% numbers = mylist.unique.sort %]
+
+=head2 import
+
+Appends the contents of one or more other lists to the end of the
+current list.
+
+    [% one   = [ 1 2 3 ];
+       two   = [ 4 5 6 ];
+       three = [ 7 8 9 ];
+       one.import(two, three);
+       one.join(', );     # 1, 2, 3, 4, 5, 6, 7, 8, 9
+    %]
+
+=head2 merge
+
+Returns a list composed of zero or more other lists:
+
+    [% list_one = [ 1 2 3 ];
+       list_two = [ 4 5 6 ];
+       list_three = [ 7 8 9 ];
+       list_four = list_one.merge(list_two, list_three);
+    %]
+
+The original lists are not modified.
+
+=head2 slice(from, to)
+
+Returns a slice of items in the list between the bounds passed as
+arguments.  If the second argument, C<to>, isn't specified, then it
+defaults to the last item in the list.  The original list is not
+modified.
+
+    [% first_three = list.slice(0,2) %]
+    [% last_three  = list.slice(-3, -1) %]
+
+=head2 splice(offset, length, list)
+
+Behaves just like Perl's C<splice()> function allowing you to selectively
+remove and/or replace elements in a list.  It removes C<length> items
+from the list, starting at C<offset> and replaces them with the items
+in C<list>.
+
+    [% play_game = [ 'play', 'scrabble' ];
+       ping_pong = [ 'ping', 'pong' ];
+       redundant = play_game.splice(1, 1, ping_pong);
+       redundant.join;     # scrabble
+       play_game.join;     # play ping pong
+    %]
+
+The method returns a list of the items removed by the splice.
+You can use the C<CALL> directive to ignore the output if you're
+not planning to do anything with it.
+
+    [% CALL play_game.splice(1, 1, ping_pong) %]
+
+As well as providing a reference to a list of replacement values,
+you can pass in a list of items.
+
+    [% CALL list.splice(-1, 0, 'foo', 'bar') %]
+
+Be careful about passing just one item in as a replacement value.
+If it is a reference to a list then the contents of the list will
+be used.  If it's not a list, then it will be treated as a single
+value.  You can use square brackets around a single item if you
+need to be explicit:
+
+    [% # push a single item, an_item
+       CALL list.splice(-1, 0, an_item);
+
+       # push the items from another_list
+       CALL list.splice(-1, 0, another_list);
+
+       # push a reference to another_list
+       CALL list.splice(-1, 0, [ another_list ]);
+    %]
+
+=head2 hash
+
+Returns a reference to a hash array comprised of the elements in the
+list.  The even-numbered elements (0, 2, 4, etc) become the keys and
+the odd-numbered elements (1, 3, 5, etc) the values.
+
+    [% list = ['pi', 3.14, 'e', 2.718] %]
+    [% hash = list.hash %]
+    [% hash.pi %]               # 3.14
+    [% hash.e  %]               # 2.718
+
+If a numerical argument is provided then the hash returned will have
+keys generated for each item starting at the number specified.
+
+    [% list = ['beer', 'peanuts'] %]
+    [% hash = list.hash(1) %]
+    [% hash.1  %]               # beer
+    [% hash.2  %]               # peanuts
+
+=head1 Automagic Promotion of Scalar to List for Virtual Methods
+
+In addition to the scalar virtual methods listed in the previous
+section, you can also call any list virtual method against a scalar.
+The item will be automagically promoted to a single element list and
+the appropriate list virtual method will be called.
+
+One particular benefit of this comes when calling subroutines or
+object methods that return a list of items, rather than the
+preferred reference to a list of items.  In this case, the
+Template Toolkit automatically folds the items returned into
+a list.
+
+The upshot is that you can continue to use existing Perl modules or
+code that returns lists of items, without having to refactor it
+just to keep the Template Toolkit happy (by returning references
+to list).  C<Class::DBI> module is just one example of a particularly
+useful module which returns values this way.
+
+If only a single item is returned from a subroutine then the
+Template Toolkit assumes it meant to return a single item (rather
+than a list of 1 item) and leaves it well alone, returning the
+single value as it is.  If you're executing a database query,
+for example, you might get 1 item returned, or perhaps many
+items which are then folded into a list.
+
+The C<FOREACH> directive will happily accept either a list or a single item
+which it will treat as a list. So it's safe to write directives like this,
+where we assume that the C<something> variable is bound to a subroutine which
+may return one or more items:
+
+    [% FOREACH item IN something %]
+       ...
+    [% END %]
+
+The automagic promotion of scalars to single item lists means
+that you can also use list virtual methods safely, even if you
+only get one item returned.  For example:
+
+    [% something.first   %]
+    [% something.join    %]
+    [% something.reverse.join(', ') %]
+
+Note that this is very much a last-ditch behaviour.  If the single
+item return is an object with a C<first> method, for example, then that
+will be called, as expected, in preference to the list virtual method.
+
+=head1 Defining Custom Virtual Methods
+
+You can define your own virtual methods for scalars, lists and hash arrays.
+The L<Template::Stash> package variables C<$SCALAR_OPS>, C<$LIST_OPS> and
+C<$HASH_OPS> are references to hash arrays that define these virtual methods.
+C<HASH_OPS> and C<LIST_OPS> methods are subroutines that accept a hash/list
+reference as the first item. C<SCALAR_OPS> are subroutines that accept a scalar
+value as the first item. Any other arguments specified when the method is
+called will be passed to the subroutine.
+
+    # load Template::Stash to make method tables visible
+    use Template::Stash;
+
+    # define list method to return new list of odd numbers only
+    $Template::Stash::LIST_OPS->{ odd } = sub {
+        my $list = shift;
+        return [ grep { $_ % 2 } @$list ];
+    };
+
+Example template:
+
+    [% primes = [ 2, 3, 5, 7, 9 ] %]
+    [% primes.odd.join(', ') %]		# 3, 5, 7, 9
+
+TODO: document the define_vmethod() method which makes this even easier
+
+=cut
+
+# Local Variables:
+# mode: perl
+# perl-indent-level: 4
+# indent-tabs-mode: nil
+# End:
+#
+# vim: expandtab shiftwidth=4:

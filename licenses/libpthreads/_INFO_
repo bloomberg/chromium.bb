@@ -1,0 +1,4 @@
+Package: pthreads-win32-2.9.0
+Homepage: http://sourceware.org/pthreads-win32/
+Sources: ftp://sourceware.org/pub/pthreads-win32/sources
+Comment: based on Mark Dootson's 20120411 pack - check: http://sourceforge.net/projects/perlmingw/

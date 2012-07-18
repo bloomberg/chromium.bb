@@ -1,0 +1,838 @@
+#============================================================= -*-perl-*-
+#
+# Template::Manual::Variables
+#
+# AUTHOR
+#   Andy Wardley  <abw@wardley.org>
+#
+# COPYRIGHT
+#   Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+#
+#   This module is free software; you can redistribute it and/or
+#   modify it under the same terms as Perl itself.
+#
+#========================================================================
+
+=head1 NAME
+
+Template::Manual::Variables - Template variables and code bindings
+
+=head1 Template Variables
+
+A reference to a hash array may be passed as the second argument to the
+L<process()|Template#process()> method, containing definitions of template
+variables. The C<VARIABLES> (a.k.a. C<PRE_DEFINE>) option can also be used to
+pre-define variables for all templates processed by the object.
+
+    my $tt = Template->new({
+        VARIABLES => {
+            version => 3.14,
+            release => 'Sahara',
+        },  
+    });
+    
+    my $vars = {
+        serial_no => 271828,
+    };
+    
+    $tt->process('myfile', $vars);
+
+F<myfile> template:
+
+    This is version [% version %] ([% release %]).
+    Serial number: [% serial_no %]
+
+Generated Output: 
+
+    This is version 3.14 (Sahara)
+    Serial number: 271828
+
+Variable names may contain any alphanumeric characters or underscores. They
+may be lower, upper or mixed case although the usual convention is to use
+lower case. The case I<is> significant however, and 'C<foo>', 'C<Foo>' and
+'C<FOO>' are all different variables. Upper case variable names are permitted,
+but not recommended due to a possible conflict with an existing or future
+reserved word.  As of version 2.00, these are:
+
+    GET CALL SET DEFAULT INSERT INCLUDE PROCESS WRAPPER 
+    IF UNLESS ELSE ELSIF FOR FOREACH WHILE SWITCH CASE
+    USE PLUGIN FILTER MACRO PERL RAWPERL BLOCK META
+    TRY THROW CATCH FINAL NEXT LAST BREAK RETURN STOP 
+    CLEAR TO STEP AND OR NOT MOD DIV END
+
+The variable values may be of virtually any Perl type, including
+simple scalars, references to lists, hash arrays, subroutines or
+objects.  The Template Toolkit will automatically apply the correct
+procedure to accessing these values as they are used in the template.
+
+Example data:
+
+    my $vars = {
+        article => 'The Third Shoe',
+        person  => { 
+            id    => 314, 
+            name  => 'Mr. Blue',
+            email => 'blue@nowhere.org',
+        },
+        primes  => [ 2, 3, 5, 7, 11, 13 ],
+        wizard  => sub { return join(' ', 'Abracadabra!', @_) },
+        cgi     => CGI->new('mode=submit&debug=1'),
+    };
+
+Example template:
+
+    [% article %]
+    
+    [% person.id %]: [% person.name %] <[% person.email %]>
+    
+    [% primes.first %] - [% primes.last %], including [% primes.3 %]
+    [% primes.size %] prime numbers: [% primes.join(', ') %]
+    
+    [% wizard %]
+    [% wizard('Hocus Pocus!') %]
+    
+    [% cgi.param('mode') %]
+
+Generated output:
+
+    The Third Shoe
+    
+    314: Mr. Blue <blue@nowhere.org>
+    
+    2 - 13, including 7
+    6 prime numbers: 2, 3, 5, 7, 11, 13
+    
+    Abracadabra!
+    Abracadabra! Hocus Pocus!
+    
+    submit
+
+=head2 Scalar Values
+
+Regular scalar variables are accessed by simply specifying their name.
+As these are just entries in the top-level variable hash they can be 
+considered special cases of hash array referencing as described below,
+with the main namespace hash automatically implied.
+
+    [% article %]
+
+=head2 Hash Array References
+
+Members of hash arrays are accessed by specifying the hash reference
+and key separated by the dot 'C<.>' operator.
+
+Example data:
+
+    my $vars = {
+        'home' => 'http://www.myserver.com/homepage.html',
+        'page' => {
+            'this' => 'mypage.html',
+            'next' => 'nextpage.html',
+            'prev' => 'prevpage.html',
+        },
+    };
+
+Example template:
+
+    <a href="[% home %]">Home</a>
+    <a href="[% page.prev %]">Previous Page</a>
+    <a href="[% page.next %]">Next Page</a>
+
+Generated output:
+
+    <a href="http://www.myserver.com/homepage.html">Home</a>
+    <a href="prevpage.html">Previous Page</a>
+    <a href="nextpage.html">Next Page</a>
+
+Any key in a hash which starts with a 'C<_>' or 'C<.>' character will be
+considered private and cannot be evaluated or updated from within a
+template.  The undefined value will be returned for any such variable
+accessed which the Template Toolkit will silently ignore (unless the
+C<DEBUG> option is enabled).
+
+Example data:
+
+    my $vars = {
+        message => 'Hello World!',
+        _secret => "On the Internet, no-one knows you're a dog",
+        thing   => {
+            public    => 123,
+            _private  => 456,
+            '.hidden' => 789,
+        },
+    };
+
+Example template:
+
+    [% message %]           # outputs "Hello World!"
+    [% _secret %]           # no output
+    [% thing.public %]      # outputs "123"
+    [% thing._private %]    # no output
+    [% thing..hidden %]     # ERROR: unexpected token (..)
+
+You can disable this feature by setting the C<$Template::Stash::PRIVATE>
+package variable to a false value.
+
+    $Template::Stash::PRIVATE = undef;   # now you can thing._private
+
+To access a hash entry using a key stored in another variable, prefix
+the key variable with 'C<$>' to have it interpolated before use (see
+L<Variable Interpolation>).
+
+    [% pagename = 'next' %]
+    [% page.$pagename %]       # same as [% page.next %]
+
+When you assign to a variable that contains multiple namespace 
+elements (i.e. it has one or more 'C<.>' characters in the name),
+any hashes required to represent intermediate namespaces will be 
+created automatically.  In this following example, the C<product> 
+variable automatically springs into life as a hash array unless
+otherwise defined.
+
+    [% product.id    = 'XYZ-2000' 
+       product.desc  = 'Bogon Generator'
+       product.price = 666 
+    %]
+    
+    The [% product.id %] [% product.desc %] 
+    costs $[% product.price %].00
+
+Generated output:
+
+    The XYZ-2000 Bogon Generator 
+    costs $666.00
+
+You can use Perl's familiar C<{> ... C<}> construct to explicitly create
+a hash and assign it to a variable.  Note that commas are optional
+between key/value pairs and C<=> can be used in place of C<=E<gt>>.
+
+    # minimal TT style
+    [% product = {
+         id    = 'XYZ-2000'
+         desc  = 'Bogon Generator'
+         price = 666
+       }
+    %]
+
+    # perl style
+    [% product = {
+         id    => 'XYZ-2000',
+         desc  => 'Bogon Generator',
+         price => 666,
+       }
+    %]
+
+=head2 List References
+
+Items in lists are also accessed by use of the dot operator.
+
+Example data:
+
+    my $vars = {
+        people => [ 'Tom', 'Dick', 'Larry' ],
+    };
+
+Example template:
+
+    [% people.0 %]          # Tom
+    [% people.1 %]          # Dick
+    [% people.2 %]          # Larry
+
+The C<FOREACH> directive can be used to iterate through items in a list.
+
+    [% FOREACH person IN people %]
+    Hello [% person %]
+    [% END %]
+
+Generated output:
+
+    Hello Tom
+    Hello Dick
+    Hello Larry
+
+Lists can be constructed in-situ using the regular anonymous list
+C<[> ... C<]> construct.  Commas between items are optional.
+
+    [% cols = [ 'red', 'green', 'blue' ] %]
+    
+    [% FOREACH c IN cols %]
+       [% c %]
+    [% END %]
+
+or:
+
+    [% FOREACH c IN [ 'red', 'green', 'blue' ] %]
+       [% c %]
+    [% END %]
+
+You can also create simple numerical sequences using the C<..> range
+operator:
+
+    [% n = [ 1 .. 4 ] %]    # n is [ 1, 2, 3, 4 ] 
+    
+    [% x = 4
+       y = 8
+       z = [x..y]           # z is [ 4, 5, 6, 7, 8 ]
+    %]
+
+=head2 Subroutines
+
+Template variables can contain references to Perl subroutines.  When
+the variable is used, the Template Toolkit will automatically call the
+subroutine, passing any additional arguments specified.  The return
+value from the subroutine is used as the variable value and inserted
+into the document output.
+
+    my $vars = {
+        wizard  => sub { return join(' ', 'Abracadabra!', @_) },
+    };  
+
+Example template:
+
+    [% wizard %]                    # Abracadabra!
+    [% wizard('Hocus Pocus!') %]    # Abracadabra! Hocus Pocus!
+
+=head2 Objects
+
+Template variables can also contain references to Perl objects.
+Methods are called using the dot operator to specify the method
+against the object variable.  Additional arguments can be specified
+as with subroutines.
+
+    use CGI;
+    
+    my $vars = {
+        # hard coded CGI params for purpose of example
+        cgi  => CGI->new('mode=submit&debug=1'),
+    };
+
+Example template:
+
+    [% FOREACH p IN cgi.param %]     # returns list of param keys
+    [% p %] => [% cgi.param(p) %]   # fetch each param value
+    [% END %]
+
+Generated output:
+
+    mode => submit
+    debug => 1
+
+Object methods can also be called as lvalues.  That is, they can appear on 
+the left side of an assignment.  The method will be called passing the 
+assigning value as an argument.  
+
+    [% myobj.method = 10 %]
+
+equivalent to:
+
+    [% myobj.method(10) %]
+
+=head2 Passing Parameters and Returning Values
+
+Subroutines and methods will be passed any arguments specified in the
+template.  Any template variables in the argument list will first be
+evaluated and their resultant values passed to the code.
+
+    my $vars = {
+        mycode => sub { return 'received ' . join(', ', @_) },
+    };
+
+template:
+
+    [% foo = 10 %]
+    [% mycode(foo, 20) %]       # received 10, 20
+
+Named parameters may also be specified.  These are automatically collected
+into a single hash array which is passed by reference as the B<last> 
+parameter to the sub-routine.  Named parameters can be specified using
+either C<=E<gt>> or C<=> and can appear anywhere in the argument list.
+
+    my $vars = {
+        myjoin => \&myjoin,
+    };
+    
+    sub myjoin {
+        # look for hash ref as last argument
+        my $params = ref $_[-1] eq 'HASH' ? pop : { };
+        return join($params->{ joint } || ' + ', @_);
+    }
+
+Example template:
+
+    [% myjoin(10, 20, 30) %]
+    [% myjoin(10, 20, 30, joint = ' - ' %]
+    [% myjoin(joint => ' * ', 10, 20, 30 %]
+
+Generated output:
+
+    10 + 20 + 30
+    10 - 20 - 30
+    10 * 20 * 30
+
+Parenthesised parameters may be added to any element of a variable,
+not just those that are bound to code or object methods.  At present,
+parameters will be ignored if the variable isn't "callable" but are 
+supported for future extensions.  Think of them as "hints" to that 
+variable, rather than just arguments passed to a function.
+
+    [% r = 'Romeo' %]
+    [% r(100, 99, s, t, v) %]       # outputs "Romeo"
+
+User code should return a value for the variable it represents. This
+can be any of the Perl data types described above: a scalar, or
+reference to a list, hash, subroutine or object.  Where code returns a
+list of multiple values the items will automatically be folded into a
+list reference which can be accessed as per normal.
+
+    my $vars = {
+        # either is OK, first is recommended
+        items1 => sub { return [ 'foo', 'bar', 'baz' ] },
+        items2 => sub { return ( 'foo', 'bar', 'baz' ) },
+    };
+
+Example template:
+
+    [% FOREACH i IN items1 %]
+       ...
+    [% END %]
+    
+    [% FOREACH i IN items2 %]
+       ...
+    [% END %]
+
+=head2 Error Handling
+
+Errors can be reported from user code by calling C<die()>.  Errors raised
+in this way are caught by the Template Toolkit and converted to
+structured exceptions which can be handled from within the template.
+A reference to the exception object is then available as the C<error>
+variable.
+
+    my $vars = {
+        barf => sub { 
+            die "a sick error has occurred\n";
+        },
+    };
+
+Example template:
+
+    [% TRY %]
+       [% barf %]       # calls sub which throws error via die()
+    [% CATCH %]
+       [% error.info %]     # outputs "a sick error has occurred\n"
+    [% END %]
+
+Error messages thrown via C<die()> are converted to exceptions of type
+C<undef> (the literal string "undef" rather than the undefined value).
+Exceptions of user-defined types can be thrown by calling C<die()> with 
+a reference to a L<Template::Exception> object.
+
+    use Template::Exception;
+    
+    my $vars = {
+        login => sub { 
+            ...do something...
+            die Template::Exception->new( badpwd => 'password too silly' );
+        },
+    };
+
+Example template:
+
+    [% TRY %]
+       [% login %]
+    [% CATCH badpwd %]
+       Bad password: [% error.info %]
+    [% CATCH %]
+       Some other '[% error.type %]' error: [% error.info %]
+    [% END %]
+
+The exception types C<stop> and C<return> are used to implement the 
+C<STOP> and C<RETURN> directives.  Throwing an exception as:
+
+    die (Template::Exception->new('stop'));
+
+has the same effect as the directive:
+
+    [% STOP %]
+
+=head1 Virtual Methods
+
+The Template Toolkit implements a number of "virtual methods" which 
+can be applied to scalars, hashes or lists.  For example:
+
+    [% mylist = [ 'foo', 'bar', 'baz' ] %]
+    [% newlist = mylist.sort %]
+
+Here C<mylist> is a regular reference to a list, and 'sort' is 
+a virtual method that returns a new list of the items in sorted 
+order.  You can chain multiple virtual methods together.  For
+example:
+
+    [% mylist.sort.join(', ') %]
+
+Here the C<join> virtual method is called to join the sorted list into
+a single string, generating the following output:
+
+    bar, baz, foo
+
+See L<Template::Manual::VMethods> for details of all the virtual 
+methods available.
+
+=head1 Variable Interpolation
+
+The Template Toolkit uses C<$> consistently to indicate that a variable
+should be interpolated in position.  Most frequently, you see this in 
+double-quoted strings:
+
+    [% fullname = "$honorific $firstname $surname" %]
+
+Or embedded in plain text when the C<INTERPOLATE> option is set:
+
+    Dear $honorific $firstname $surname,
+
+The same rules apply within directives.  If a variable is prefixed
+with a C<$> then it is replaced with its value before being used.  The
+most common use is to retrieve an element from a hash where the key is
+stored in a variable.
+
+    [% uid = 'abw' %]
+    [% users.$uid %]         # same as 'userlist.abw'
+
+Curly braces can be used to delimit interpolated variable names where
+necessary.
+
+    [% users.${me.id}.name %]    
+
+Directives such as C<INCLUDE>, C<PROCESS>, etc., that accept a template name
+as the first argument, will automatically quote it for convenience.
+
+    [% INCLUDE foo/bar.txt %]
+
+The above example is equivalent to:
+
+    [% INCLUDE "foo/bar.txt" %]
+
+To C<INCLUDE> a template whose name is stored in a variable, simply
+prefix the variable name with C<$> to have it interpolated.
+
+    [% myfile = 'header' %]
+    [% INCLUDE $myfile %]
+
+This is equivalent to:
+
+    [% INCLUDE header %]
+
+Note also that a variable containing a reference to a L<Template::Document>
+object can also be processed in this way.
+
+    my $vars = {
+        header => Template::Document->new({ ... }),
+    };
+
+Example template:
+
+    [% INCLUDE $header %]
+
+=head1 Local and Global Variables
+
+Any simple variables that you create, or any changes you make to
+existing variables, will only persist while the template is being
+processed.  The top-level variable hash is copied before processing
+begins and any changes to variables are made in this copy, leaving the
+original intact.  
+
+The same thing happens when you C<INCLUDE> another template. The current
+namespace hash is cloned to prevent any variable changes made in the included
+template from interfering with existing variables. The C<PROCESS> option bypasses
+the localisation step altogether making it slightly faster, but requiring
+greater attention to the possibility of side effects caused by creating or
+changing any variables within the processed template.
+
+    [% BLOCK change_name %]
+       [% name = 'bar' %]
+    [% END %]
+    
+    [% name = 'foo' %] 
+    [% INCLUDE change_name %]
+    [% name %]              # foo
+    [% PROCESS change_name %]
+    [% name %]              # bar
+
+Dotted compound variables behave slightly differently because the
+localisation process is only skin deep.  The current variable
+namespace hash is copied, but no attempt is made to perform a
+deep-copy of other structures within it (hashes, arrays, objects,
+etc).  A variable referencing a hash, for example, will be copied to
+create a new reference but which points to the same hash.  Thus, the
+general rule is that simple variables (undotted variables) are
+localised, but existing complex structures (dotted variables) are not.
+
+    [% BLOCK all_change %]
+       [% x = 20 %]         # changes copy
+       [% y.z = 'zulu' %]       # changes original
+    [% END %]
+    
+    [% x = 10
+       y = { z => 'zebra' }
+    %]
+    [% INCLUDE all_change %]
+    [% x %]             # still '10'
+    [% y.z %]               # now 'zulu'
+
+If you create a complex structure such as a hash or list reference
+within a local template context then it will cease to exist when 
+the template is finished processing.  
+
+    [% BLOCK new_stuff %]
+       [% # define a new 'y' hash array in local context
+          y = { z => 'zulu' }
+       %]
+    [% END %]
+    
+    [% x = 10 %]
+    [% INCLUDE new_stuff %]
+    [% x %]             # outputs '10'
+    [% y %]             # nothing, y is undefined
+
+Similarly, if you update an element of a compound variable which
+I<doesn't> already exists then a hash will be created automatically
+and deleted again at the end of the block.
+
+    [% BLOCK new_stuff %]
+       [% y.z = 'zulu' %]
+    [% END %]
+
+However, if the hash I<does> already exist then you will modify the
+original with permanent effect.  To avoid potential confusion, it is
+recommended that you don't update elements of complex variables from
+within blocks or templates included by another.
+
+If you want to create or update truly global variables then you can 
+use the 'global' namespace.  This is a hash array automatically created
+in the top-level namespace which all templates, localised or otherwise
+see the same reference to.  Changes made to variables within this
+hash are visible across all templates.
+
+    [% global.version = 123 %]
+
+=head1 Compile Time Constant Folding
+
+In addition to variables that get resolved each time a template is
+processed, you can also define variables that get resolved just once
+when the template is compiled.  This generally results in templates
+processing faster because there is less work to be done.
+
+To define compile-time constants, specify a C<CONSTANTS> hash as a
+constructor item as per C<VARIABLES>.  The C<CONSTANTS> hash can contain any
+kind of complex, nested, or dynamic data structures, just like regular
+variables.
+
+    my $tt = Template->new({
+        CONSTANTS => {
+            version => 3.14,
+            release => 'skyrocket',
+            col     => {
+                back => '#ffffff',
+                fore => '#000000',
+            },
+            myobj => My::Object->new(),
+            mysub => sub { ... },
+            joint => ', ',
+        },
+    });
+
+Within a template, you access these variables using the C<constants>
+namespace prefix.
+
+    Version [% constants.version %] ([% constants.release %])
+    Background: [% constants.col.back %]
+
+When the template is compiled, these variable references are replaced
+with the corresponding value.  No further variable lookup is then 
+required when the template is processed.
+
+You can call subroutines, object methods, and even virtual methods on
+constant variables.
+
+    [% constants.mysub(10, 20) %]
+    [% constants.myobj(30, 40) %]
+    [% constants.col.keys.sort.join(', ') %]
+
+One important proviso is that any arguments you pass to subroutines
+or methods must also be literal values or compile time constants.
+
+For example, these are both fine:
+
+    # literal argument
+    [% constants.col.keys.sort.join(', ') %]
+    
+    # constant argument
+    [% constants.col.keys.sort.join(constants.joint) %]
+
+But this next example will raise an error at parse time because
+C<joint> is a runtime variable and cannot be determined at compile
+time.
+
+    # ERROR: runtime variable argument!
+    [% constants.col.keys.sort.join(joint) %]
+
+The C<CONSTANTS_NAMESPACE> option can be used to provide a different 
+namespace prefix for constant variables.  For example:
+
+    my $tt = Template->new({
+        CONSTANTS => {
+            version => 3.14,
+            # ...etc...
+        },
+        CONSTANTS_NAMESPACE => 'const',
+    });
+
+Constants would then be referenced in templates as:
+
+    [% const.version %]
+
+=head1 Special Variables
+
+A number of special variables are automatically defined by the Template 
+Toolkit.
+
+=head2 template
+
+The C<template> variable contains a reference to the main template being
+processed, in the form of a L<Template::Document> object. This variable is
+correctly defined within C<PRE_PROCESS>, C<PROCESS> and C<POST_PROCESS>
+templates, allowing standard headers, footers, etc., to access metadata items
+from the main template. The C<name> and C<modtime> metadata items are
+automatically provided, giving the template name and modification time in
+seconds since the epoch.
+
+Note that the C<template> variable always references the top-level
+template, even when processing other template components via C<INCLUDE>,
+C<PROCESS>, etc.
+
+=head2 component
+
+The C<component> variable is like C<template> but always contains a
+reference to the current, innermost template component being processed.
+In the main template, the C<template> and C<component> variable will 
+reference the same L<Template::Document> object.  In any other template
+component called from the main template, the C<template> variable 
+will remain unchanged, but C<component> will contain a new reference
+to the current component.
+
+This example should demonstrate the difference:
+
+    $template->process('foo')
+        || die $template->error(), "\n";
+
+F<foo> template:
+
+    [% template.name %]         # foo
+    [% component.name %]        # foo
+    [% PROCESS footer %]
+
+F<footer> template:
+
+    [% template.name %]         # foo
+    [% component.name %]        # footer
+
+Additionally, the C<component> variable has two special fields:
+C<caller> and C<callers>.  C<caller> contains the name of the template
+that called the current template (or undef if the values of C<template>
+and C<component> are the same).  C<callers> contains a reference to a
+list of all the templates that have been called on the road to calling
+the current component template (like a call stack), with the
+outer-most template first.
+
+Here's an example:
+
+F<outer.tt2> template:
+
+    [% component.name %]        # 'outer.tt2'
+    [% component.caller %]      # undef
+    [% component.callers %]     # undef
+    [% PROCESS 'middle.tt2' %]
+
+F<middle.tt2> template:
+
+    [% component.name %]        # 'middle.tt2'
+    [% component.caller %]      # 'outer.tt2'
+    [% component.callers %]     # [ 'outer.tt2' ]
+    [% PROCESS 'inner.tt2' %]
+
+F<inner.tt2> template:
+
+    [% component.name %]        # 'inner.tt2'
+    [% component.caller %]      # 'middle.tt2'
+    [% component.callers %]     # [ 'outer.tt2', 'middle.tt2' ]
+
+=head2 loop
+
+Within a C<FOREACH> loop, the C<loop> variable references the 
+L<Template::Iterator> object responsible for controlling the loop.
+
+    [% FOREACH item = [ 'foo', 'bar', 'baz' ] -%]
+       [% "Items:\n" IF loop.first -%]
+       [% loop.count %]/[% loop.size %]: [% item %]
+    [% END %]
+
+=head2 error
+
+Within a C<CATCH> block, the C<error> variable contains a reference to the 
+L<Template::Exception> object thrown from within the C<TRY> block.  The 
+C<type> and C<info> methods can be called or the variable itself can 
+be printed for automatic stringification into a message of the form
+"C<$type error - $info>".  See L<Template::Exception> for further details.
+
+    [% TRY %]
+       ...
+    [% CATCH %]
+       [% error %]
+    [% END %]
+
+=head2 content
+
+The C<WRAPPER> method captures the output from a template block and then 
+includes a named template, passing the captured output as the 'content'
+variable.
+
+    [% WRAPPER box %]
+    Be not afeard; the isle is full of noises,
+    Sounds and sweet airs, that give delight and hurt not.
+    [% END %]
+
+    [% BLOCK box %]
+    <blockquote class="prose">
+      [% content %]
+    </blockquote>
+    [% END %]
+
+=head1 Compound Variables
+
+Compound 'dotted' variables may contain any number of separate
+elements.  Each element may evaluate to any of the permitted variable
+types and the processor will then correctly use this value to evaluate
+the rest of the variable.  Arguments may be passed to any of the
+intermediate elements.
+
+    [% myorg.people.sort('surname').first.fullname %]
+
+Intermediate variables may be used and will behave entirely as expected.
+
+    [% sorted = myorg.people.sort('surname') %]
+    [% sorted.first.fullname %]
+
+This simplified dotted notation has the benefit of hiding the
+implementation details of your data.  For example, you could implement
+a data structure as a hash array one day and then change it to an
+object the next without requiring any change to the templates.
+
+=cut
+
+# Local Variables:
+# mode: perl
+# perl-indent-level: 4
+# indent-tabs-mode: nil
+# End:
+#
+# vim: expandtab shiftwidth=4:

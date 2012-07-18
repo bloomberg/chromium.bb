@@ -1,0 +1,61 @@
+=head1 NAME
+
+String::CRC32 - Perl interface for cyclic redundency check generation
+
+=head1 SYNOPSIS
+
+    use String::CRC32;
+    
+    $crc = crc32("some string");
+    $crc = crc32("some string", initvalue);
+
+    $somestring = "some string";
+    $crc = crc32($somestring);
+
+    open(SOMEFILE, "location/of/some.file");
+    $crc = crc32(*SOMEFILE);
+    close(SOMEFILE);
+
+=head1 DESCRIPTION
+
+The B<CRC32> module calculates CRC sums of 32 bit lenghts.
+It generates the same CRC values as ZMODEM, PKZIP, PICCHECK and
+many others.
+
+Despite its name, this module is able to compute
+the checksum of files as well as strings.
+
+=head1 EXAMPLES
+
+    $crc = crc32("some string");
+
+  results in the same as
+
+    $crc = crc32(" string", crc32("some"));
+
+This is useful for subsequent CRC checking of substrings.
+
+You may even check files:
+
+    open(SOMEFILE, "location/of/some.file");
+    $crc = crc32(*SOMEFILE);
+    close(SOMEFILE);
+
+A init value may also been supplied in the above example.
+
+=head1 AUTHOR
+
+Soenke J. Peters <peters__perl@opcenter.de>
+
+Please be so kind as to report any bugs/suggestions to the above address.
+
+=head1 COPYRIGHT
+
+CRC algorithm code taken from CRC-32 by Craig Bruce. 
+The module stuff is inspired by a similar perl module called 
+String::CRC by David Sharnoff & Matthew Dillon.
+Horst Fickenscher told me that it could be useful to supply an init
+value to the crc checking function and so I included this possibility.
+
+The author of this package disclaims all copyrights and 
+releases it into the public domain.
