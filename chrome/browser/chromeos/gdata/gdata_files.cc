@@ -208,9 +208,7 @@ GDataEntry* GDataFile::FromDocumentEntry(
     file->edit_url_ = edit_link->href();
   file->content_url_ = doc->content_url();
   file->content_mime_type_ = doc->content_mime_type();
-  file->etag_ = doc->etag();
   file->resource_id_ = doc->resource_id();
-  file->id_ = doc->id();
   file->is_hosted_document_ = doc->is_hosted_document();
   file->file_info_.last_modified = doc->updated_time();
   file->file_info_.last_accessed = doc->updated_time();
@@ -606,8 +604,6 @@ bool GDataFile::FromProto(const GDataFileProto& proto) {
   thumbnail_url_ = GURL(proto.thumbnail_url());
   alternate_url_ = GURL(proto.alternate_url());
   content_mime_type_ = proto.content_mime_type();
-  etag_ = proto.etag();
-  id_ = proto.id();
   file_md5_ = proto.file_md5();
   document_extension_ = proto.document_extension();
   // Reject older protobuf that does not contain the upload URL.  This URL is
@@ -630,8 +626,6 @@ void GDataFile::ToProto(GDataFileProto* proto) const {
   proto->set_thumbnail_url(thumbnail_url_.spec());
   proto->set_alternate_url(alternate_url_.spec());
   proto->set_content_mime_type(content_mime_type_);
-  proto->set_etag(etag_);
-  proto->set_id(id_);
   proto->set_file_md5(file_md5_);
   proto->set_document_extension(document_extension_);
   // The upload URL must be stored even if it's empty, as this is used to

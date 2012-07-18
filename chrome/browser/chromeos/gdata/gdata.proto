@@ -38,8 +38,6 @@ message GDataFileProto {
   optional string thumbnail_url = 3;
   optional string alternate_url = 4;
   optional string content_mime_type = 5;
-  optional string etag = 6;
-  optional string id = 7;
   optional string file_md5 = 8;
   optional string document_extension = 9;
   // This is "resumable-edit-media" URL, used to update an existing file.

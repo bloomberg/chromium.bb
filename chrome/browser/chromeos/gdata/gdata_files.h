@@ -221,8 +221,6 @@ class GDataFile : public GDataEntry {
   const GURL& alternate_url() const { return alternate_url_; }
   const GURL& upload_url() const { return upload_url_; }
   const std::string& content_mime_type() const { return content_mime_type_; }
-  const std::string& etag() const { return etag_; }
-  const std::string& id() const { return id_; }
   const std::string& file_md5() const { return file_md5_; }
   void set_file_md5(const std::string& file_md5) { file_md5_ = file_md5; }
   const std::string& document_extension() const { return document_extension_; }
@@ -243,8 +241,6 @@ class GDataFile : public GDataEntry {
   // the content of the file.
   GURL upload_url_;
   std::string content_mime_type_;
-  std::string etag_;
-  std::string id_;
   std::string file_md5_;
   std::string document_extension_;
   bool is_hosted_document_;
