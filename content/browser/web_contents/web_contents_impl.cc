@@ -489,6 +489,9 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       command_line.HasSwitch(switches::kEnableCssShaders);
   prefs.device_supports_touch =
       ui::GetDisplayLayout() == ui::LAYOUT_TOUCH;
+#if defined(OS_ANDROID)
+  prefs.device_supports_mouse = false;
+#endif
 
 #if defined(OS_MACOSX)
   bool default_enable_scroll_animator = true;

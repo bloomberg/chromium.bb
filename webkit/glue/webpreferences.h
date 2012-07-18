@@ -121,6 +121,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool css_regions_enabled;
   bool css_shaders_enabled;
   bool device_supports_touch;
+  bool device_supports_mouse;
 #if !defined(WEBCOMPOSITOR_OWNS_SETTINGS)
   bool threaded_animation_enabled;
   bool per_tile_painting_enabled;

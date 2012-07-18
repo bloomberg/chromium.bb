@@ -103,6 +103,7 @@ WebPreferences::WebPreferences()
       css_regions_enabled(false),
       css_shaders_enabled(false),
       device_supports_touch(false),
+      device_supports_mouse(true),
 #if !defined(WEBCOMPOSITOR_OWNS_SETTINGS)
       threaded_animation_enabled(false),
       per_tile_painting_enabled(false),
@@ -388,6 +389,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setExperimentalCSSCustomFilterEnabled(css_shaders_enabled);
 
   settings->setDeviceSupportsTouch(device_supports_touch);
+  settings->setDeviceSupportsMouse(device_supports_mouse);
 
 #if !defined(WEBCOMPOSITOR_OWNS_SETTINGS)
   settings->setThreadedAnimationEnabled(threaded_animation_enabled);
