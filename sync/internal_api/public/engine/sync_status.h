@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync_protocol_error.h"
 
@@ -18,7 +19,7 @@ namespace syncer {
 // it to track and report on the sync engine's internal state, and the functions
 // in sync_ui_util.cc which convert the contents of this struct into a
 // DictionaryValue used to populate the about:sync summary tab.
-struct SyncStatus {
+struct SYNC_EXPORT SyncStatus {
   SyncStatus();
   ~SyncStatus();
 

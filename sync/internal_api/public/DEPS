@@ -1,5 +1,6 @@
 include_rules = [
   "-sync",
+  "+sync/base",
   "+sync/internal_api/public",
   "+sync/protocol",
 

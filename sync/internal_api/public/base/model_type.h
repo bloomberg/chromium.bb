@@ -14,6 +14,7 @@
 
 #include "base/logging.h"
 #include "base/time.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/enum_set.h"
 
 namespace base {
@@ -28,6 +29,9 @@ class SyncEntity;
 }
 
 namespace syncer {
+
+// TODO(akalin): Move the non-exported functions in this file to a
+// private header.
 
 enum ModelType {
   // Object type unknown.  Objects may transition through
@@ -100,8 +104,9 @@ inline ModelType ModelTypeFromInt(int i) {
   return static_cast<ModelType>(i);
 }
 
-void AddDefaultFieldValue(ModelType datatype,
-                          sync_pb::EntitySpecifics* specifics);
+// Used by tests outside of sync/.
+SYNC_EXPORT void AddDefaultFieldValue(ModelType datatype,
+                                      sync_pb::EntitySpecifics* specifics);
 
 // Extract the model type of a SyncEntity protocol buffer.  ModelType is a
 // local concept: the enum is not in the protocol.  The SyncEntity's ModelType
@@ -112,7 +117,8 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity);
 // Extract the model type from an EntitySpecifics field.  Note that there
 // are some ModelTypes (like TOP_LEVEL_FOLDER) that can't be inferred this way;
 // prefer using GetModelType where possible.
-ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics);
+SYNC_EXPORT ModelType GetModelTypeFromSpecifics(
+    const sync_pb::EntitySpecifics& specifics);
 
 // If this returns false, we shouldn't bother maintaining a position
 // value (sibling ordering) for this item.
@@ -124,13 +130,16 @@ ModelType GetModelTypeFromSpecificsFieldNumber(int field_number);
 
 // Return the field number of the EntitySpecifics field associated with
 // a model type.
-int GetSpecificsFieldNumberFromModelType(ModelType model_type);
+//
+// Used by tests outside of sync.
+SYNC_EXPORT int GetSpecificsFieldNumberFromModelType(
+    ModelType model_type);
 
 // TODO(sync): The functions below badly need some cleanup.
 
 // Returns a pointer to a string with application lifetime that represents
 // the name of |model_type|.
-const char* ModelTypeToString(ModelType model_type);
+SYNC_EXPORT const char* ModelTypeToString(ModelType model_type);
 
 // Handles all model types, and not just real ones.
 //
@@ -141,17 +150,18 @@ base::StringValue* ModelTypeToValue(ModelType model_type);
 ModelType ModelTypeFromValue(const base::Value& value);
 
 // Returns the ModelType corresponding to the name |model_type_string|.
-ModelType ModelTypeFromString(const std::string& model_type_string);
+SYNC_EXPORT ModelType ModelTypeFromString(
+    const std::string& model_type_string);
 
-std::string ModelTypeSetToString(ModelTypeSet model_types);
+SYNC_EXPORT std::string ModelTypeSetToString(ModelTypeSet model_types);
 
 // Caller takes ownership of returned list.
-base::ListValue* ModelTypeSetToValue(ModelTypeSet model_types);
+SYNC_EXPORT base::ListValue* ModelTypeSetToValue(ModelTypeSet model_types);
 
-ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value);
+SYNC_EXPORT ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value);
 
 // Returns a string corresponding to the syncable tag for this datatype.
-std::string ModelTypeToRootTag(ModelType type);
+SYNC_EXPORT std::string ModelTypeToRootTag(ModelType type);
 
 // Convert a real model type to a notification type (used for
 // subscribing to server-issued notifications).  Returns true iff
@@ -167,7 +177,7 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
                                      ModelType* model_type);
 
 // Returns true if |model_type| is a real datatype
-bool IsRealDataType(ModelType model_type);
+SYNC_EXPORT bool IsRealDataType(ModelType model_type);
 
 }  // namespace syncer
 

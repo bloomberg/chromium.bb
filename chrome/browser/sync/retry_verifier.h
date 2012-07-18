@@ -7,6 +7,9 @@
 
 #include "base/time.h"
 
+// TODO(akalin): Move this to somewhere in sync/ and make
+// sync/engine/polling_constants.h private.
+
 namespace syncer {
 namespace sessions {
 class SyncSessionSnapshot;

@@ -10,7 +10,11 @@
 #include <map>
 #include <string>
 
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
+
+// TODO(akalin): Move the non-exported functions in this file to a
+// private header.
 
 namespace base {
 class DictionaryValue;
@@ -26,7 +30,7 @@ typedef std::map<ModelType, std::string> ModelTypePayloadMap;
 
 // Make a TypePayloadMap from all the types in a ModelTypeSet using a
 // default payload.
-ModelTypePayloadMap ModelTypePayloadMapFromEnumSet(
+SYNC_EXPORT ModelTypePayloadMap ModelTypePayloadMapFromEnumSet(
     ModelTypeSet model_types, const std::string& payload);
 
 ModelTypeSet ModelTypePayloadMapToEnumSet(

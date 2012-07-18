@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/model_type_payload_map.h"
 #include "sync/internal_api/public/util/syncer_error.h"
@@ -20,6 +21,9 @@ class DictionaryValue;
 }  // namespace
 
 namespace syncer {
+
+// TODO(akalin): Move the non-exported functions in this file to a
+// private header.
 
 typedef base::Callback<enum SyncerError(void)> WorkCallback;
 
@@ -38,7 +42,7 @@ enum ModelSafeGroup {
   MODEL_SAFE_GROUP_COUNT,
 };
 
-std::string ModelSafeGroupToString(ModelSafeGroup group);
+SYNC_EXPORT std::string ModelSafeGroupToString(ModelSafeGroup group);
 
 // The Syncer uses a ModelSafeWorker for all tasks that could potentially
 // modify syncable entries (e.g under a WriteTransaction). The ModelSafeWorker
@@ -47,7 +51,8 @@ std::string ModelSafeGroupToString(ModelSafeGroup group);
 // is guaranteed to be "model-safe", where "safe" refers to not allowing us to
 // cause an embedding application model to fall out of sync with the
 // syncable::Directory due to a race.
-class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker> {
+class SYNC_EXPORT ModelSafeWorker
+    : public base::RefCountedThreadSafe<ModelSafeWorker> {
  public:
   // Any time the Syncer performs model modifications (e.g employing a
   // WriteTransaction), it should be done by this method to ensure it is done
@@ -73,7 +78,7 @@ typedef std::map<syncer::ModelType, ModelSafeGroup>
 base::DictionaryValue* ModelSafeRoutingInfoToValue(
     const ModelSafeRoutingInfo& routing_info);
 
-std::string ModelSafeRoutingInfoToString(
+SYNC_EXPORT std::string ModelSafeRoutingInfoToString(
     const ModelSafeRoutingInfo& routing_info);
 
 // Make a ModelTypePayloadMap for all the enabled types in a
@@ -82,11 +87,12 @@ syncer::ModelTypePayloadMap ModelSafeRoutingInfoToPayloadMap(
     const ModelSafeRoutingInfo& routes,
     const std::string& payload);
 
-syncer::ModelTypeSet GetRoutingInfoTypes(
+SYNC_EXPORT syncer::ModelTypeSet GetRoutingInfoTypes(
     const ModelSafeRoutingInfo& routing_info);
 
-ModelSafeGroup GetGroupForModelType(const syncer::ModelType type,
-                                    const ModelSafeRoutingInfo& routes);
+SYNC_EXPORT ModelSafeGroup GetGroupForModelType(
+    const syncer::ModelType type,
+    const ModelSafeRoutingInfo& routes);
 
 }  // namespace syncer
 

@@ -14,10 +14,16 @@
     # should depend on.
     {
       'target_name': 'sync',
+      # TODO(akalin): Change this to '<(component)'.  When we rename
+      # this to 'sync_core' and make the overarching 'sync' library,
+      # make that one '<(component)'.
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
       'include_dirs': [
         '..',
+      ],
+      'defines': [
+        'SYNC_IMPLEMENTATION',
       ],
       'dependencies': [
         '../base/base.gyp:base',
@@ -33,6 +39,7 @@
         'protocol/sync_proto.gyp:sync_proto',
       ],
       'sources': [
+        'base/sync_export.h',
         'internal_api/public/base/enum_set.h',
         'internal_api/public/base/model_type.h',
         'internal_api/public/base/model_type_payload_map.cc',
@@ -785,6 +792,9 @@
     {
       'target_name': 'sync_client',
       'type': 'executable',
+      'defines': [
+        'SYNC_TEST',
+      ],
       'dependencies': [
         '../base/base.gyp:base',
         '../jingle/jingle.gyp:notifier',
