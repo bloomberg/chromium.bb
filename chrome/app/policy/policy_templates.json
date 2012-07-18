@@ -352,24 +352,24 @@
         {
           'name': 'Enabled',
           'value': 0,
-          'caption': '''Incognito mode available.'''
+          'caption': '''Incognito mode available.''',
         },
         {
           'name': 'Disabled',
           'value': 1,
-          'caption': '''Incognito mode disabled.'''
+          'caption': '''Incognito mode disabled.''',
         },
         {
           'name': 'Forced',
           'value': 2,
-          'caption': '''Incognito mode forced.'''
+          'caption': '''Incognito mode forced.''',
         },
       ],
       'supported_on': ['chrome.*:14-', 'chrome_os:0.14-'],
       'features': {'dynamic_refresh': True},
       'example_value': 1,
       'id': 93,
-      'caption': '''Incognito mode availability.''',
+      'caption': '''Incognito mode availability''',
       'desc': '''Specifies whether the user may open pages in Incognito mode in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If 'Enabled' is selected or the policy is left unset, pages may be opened in Incognito mode.
@@ -583,7 +583,7 @@
 
       If you enable this setting, the specified list of plugins is never used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. The plugins are marked as disabled in 'about:plugins' and users cannot enable them.
 
-      Note that this policy can be overriden by EnabledPlugins and DisabledPluginsExceptions.
+      Note that this policy can be overridden by EnabledPlugins and DisabledPluginsExceptions.
 
       If this policy is left not set the user can use any plugin installed on the system except for hard-coded incompatible, outdated or dangerous plugins.''',
       'label': '''List of disabled plugins''',
@@ -621,7 +621,7 @@
 
       If you enable this setting, the specified list of plugins can be used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Users can enable or disable them in 'about:plugins', even if the plugin also matches a pattern in DisabledPlugins. Users can also enable and disable plugins that don't match any patterns in DisabledPlugins, DisabledPluginsExceptions and EnabledPlugins.
 
-      This policy is meant to allow for strict plugin balcklisting where the 'DisabledPlugins' list contains wildcarded entries like disable all plugins '*' or disable all Java plugins '*Java*' but the administrator wishes to enable some particular version like 'IcedTea Java 2.3'. This particular versions can be specified in this policy.
+      This policy is meant to allow for strict plugin blacklisting where the 'DisabledPlugins' list contains wildcarded entries like disable all plugins '*' or disable all Java plugins '*Java*' but the administrator wishes to enable some particular version like 'IcedTea Java 2.3'. This particular versions can be specified in this policy.
 
       If this policy is left not set any plugin that matches the patterns in the 'DisabledPlugins' will be locked disabled and the user won't be able to enable them.''',
       'label': '''List of exceptions to the list of disabled plugins''',
@@ -708,7 +708,7 @@
       'example_value': 104857600,
       'id': 111,
       'caption': '''Set media disk cache size in bytes''',
-      'desc': '''Configures the chache size that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing cached media files on the disk.
+      'desc': '''Configures the cache size that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing cached media files on the disk.
 
       If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided cache size regardless whether the user has specified the '--media-cache-size' flag or not.
 
@@ -780,27 +780,27 @@
             {
               'name': 'ProxyDisabled',
               'value': 'direct',
-              'caption': '''Never use a proxy'''
+              'caption': '''Never use a proxy''',
             },
             {
               'name': 'ProxyAutoDetect',
               'value': 'auto_detect',
-              'caption': '''Auto detect proxy settings'''
+              'caption': '''Auto detect proxy settings''',
             },
             {
               'name': 'ProxyPacScript',
               'value': 'pac_script',
-              'caption': '''Use a .pac proxy script'''
+              'caption': '''Use a .pac proxy script''',
             },
             {
               'name': 'ProxyFixedServers',
               'value': 'fixed_servers',
-              'caption': '''Use fixed proxy servers'''
+              'caption': '''Use fixed proxy servers''',
             },
             {
               'name': 'ProxyUseSystem',
               'value': 'system',
-              'caption': '''Use system proxy settings'''
+              'caption': '''Use system proxy settings''',
             },
           ],
           'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
@@ -832,22 +832,22 @@
             {
               'name': 'ProxyServerDisabled',
               'value': 0,
-              'caption': '''Never use a proxy'''
+              'caption': '''Never use a proxy''',
             },
             {
               'name': 'ProxyServerAutoDetect',
               'value': 1,
-              'caption': '''Auto detect proxy settings'''
+              'caption': '''Auto detect proxy settings''',
             },
             {
               'name': 'ProxyServerManual',
               'value': 2,
-              'caption': '''Manually specify proxy settings'''
+              'caption': '''Manually specify proxy settings''',
             },
             {
               'name': 'ProxyServerUseSystem',
               'value': 3,
-              'caption': '''Use system proxy settings'''
+              'caption': '''Use system proxy settings''',
             },
           ],
           'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
@@ -1172,17 +1172,17 @@
             {
               'name': 'RestoreOnStartupIsNewTabPage',
               'value': 5,
-              'caption': '''Open New Tab Page'''
+              'caption': '''Open New Tab Page''',
             },
             {
               'name': 'RestoreOnStartupIsLastSession',
               'value': 1,
-              'caption': '''Restore the last session'''
+              'caption': '''Restore the last session''',
             },
             {
               'name': 'RestoreOnStartupIsURLs',
               'value': 4,
-              'caption': '''Open a list of URLs'''
+              'caption': '''Open a list of URLs''',
             },
           ],
           'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
@@ -1380,17 +1380,17 @@
             {
               'name': 'AllowCookies',
               'value': 1,
-              'caption': '''Allow all sites to set local data.'''
+              'caption': '''Allow all sites to set local data.''',
             },
             {
               'name': 'BlockCookies',
               'value': 2,
-              'caption': '''Do not allow any site to set local data'''
+              'caption': '''Do not allow any site to set local data''',
             },
             {
               'name': 'SessionOnly',
               'value': 4,
-              'caption': '''Keep cookies for the duration of the session.'''
+              'caption': '''Keep cookies for the duration of the session.''',
             },
           ],
           'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
@@ -1409,12 +1409,12 @@
             {
               'name': 'AllowImages',
               'value': 1,
-              'caption': '''Allow all sites to show all images'''
+              'caption': '''Allow all sites to show all images''',
             },
             {
               'name': 'BlockImages',
               'value': 2,
-              'caption': '''Do not allow any site to show images'''
+              'caption': '''Do not allow any site to show images''',
             },
           ],
           'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
@@ -1433,12 +1433,12 @@
             {
               'name': 'AllowJavaScript',
               'value': 1,
-              'caption': '''Allow all sites to run JavaScript'''
+              'caption': '''Allow all sites to run JavaScript''',
             },
             {
               'name': 'BlockJavaScript',
               'value': 2,
-              'caption': '''Do not allow any site to run JavaScript'''
+              'caption': '''Do not allow any site to run JavaScript''',
             },
           ],
           'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
@@ -1457,12 +1457,12 @@
             {
               'name': 'AllowPlugins',
               'value': 1,
-              'caption': '''Allow all sites to automatically run plugins'''
+              'caption': '''Allow all sites to automatically run plugins''',
             },
             {
               'name': 'BlockPlugins',
               'value': 2,
-              'caption': '''Block all plugins'''
+              'caption': '''Block all plugins''',
             },
           ],
           'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
@@ -1481,12 +1481,12 @@
             {
               'name': 'AllowPopups',
               'value': 1,
-              'caption': '''Allow all sites to show pop-ups'''
+              'caption': '''Allow all sites to show pop-ups''',
             },
             {
               'name': 'BlockPopups',
               'value': 2,
-              'caption': '''Do not allow any site to show popups'''
+              'caption': '''Do not allow any site to show popups''',
             },
           ],
           'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
@@ -1505,17 +1505,17 @@
             {
               'name': 'AllowNotifications',
               'value': 1,
-              'caption': '''Allow sites to show desktop notifications'''
+              'caption': '''Allow sites to show desktop notifications''',
             },
             {
               'name': 'BlockNotifications',
               'value': 2,
-              'caption': '''Do not allow any site to show desktop notifications'''
+              'caption': '''Do not allow any site to show desktop notifications''',
             },
             {
               'name': 'AskNotifications',
               'value': 3,
-              'caption': '''Ask every time a site wants to show desktop notifications'''
+              'caption': '''Ask every time a site wants to show desktop notifications''',
             },
           ],
           'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
@@ -1534,17 +1534,17 @@
             {
               'name': 'AllowGeolocation',
               'value': 1,
-              'caption': '''Allow sites to track the users' physical location'''
+              'caption': '''Allow sites to track the users' physical location''',
             },
             {
               'name': 'BlockGeolocation',
               'value': 2,
-              'caption': '''Do not allow any site to track the users' physical location'''
+              'caption': '''Do not allow any site to track the users' physical location''',
             },
             {
               'name': 'AskGeolocation',
               'value': 3,
-              'caption': '''Ask whenever a site wants to track the users' physical location'''
+              'caption': '''Ask whenever a site wants to track the users' physical location''',
             },
           ],
           'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
@@ -1563,12 +1563,12 @@
             {
               'name': 'PromptOnAccess',
               'value': 1,
-              'caption': '''Ask every time a site wants to access my camera and/or microphone'''
+              'caption': '''Ask every time a site wants to access my camera and/or microphone''',
             },
             {
               'name': 'BlockAccess',
               'value': 2,
-              'caption': '''Do not allow any site to access my camera and microphone'''
+              'caption': '''Do not allow any site to access my camera and microphone''',
             },
           ],
           'supported_on': ['chrome.*:22-', 'chrome_os:0.22-'],
@@ -1796,12 +1796,12 @@
             {
               'name': 'RenderInHost',
               'value': 0,
-              'caption': '''Use the host browser by default'''
+              'caption': '''Use the host browser by default''',
             },
             {
               'name': 'RenderInChromeFrame',
               'value': 1,
-              'caption': '''Use <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> by default'''
+              'caption': '''Use <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> by default''',
             },
           ],
           'supported_on': ['chrome_frame:8-'],
@@ -1857,7 +1857,7 @@
     {
       'name': 'ChromeFrameContentTypes',
       'type': 'group',
-      'caption': '''Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the following content types.''',
+      'caption': '''Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the following content types''',
       'desc': '''Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the following content types.''',
       'policies': [
         {
@@ -1867,7 +1867,7 @@
           'features': {'dynamic_refresh': False},
           'example_value': ['text/xml', 'application/xml'],
           'id': 60,
-          'caption': '''Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the listed content types.''',
+          'caption': '''Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the listed content types''',
           'desc': '''Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the listed content types.
 
           If this policy is not set the default renderer will be used for all sites as specified by the 'ChromeFrameRendererSettings' policy.''',
@@ -1884,7 +1884,7 @@
       },
       'example_value': True,
       'id': 61,
-      'caption': '''Enable lock when the device become idle or suspended.''',
+      'caption': '''Enable lock when the device become idle or suspended''',
       'desc': '''Enable lock when <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices become idle or suspended.
 
       If you enable this setting, users will be asked for a password to unlock the device from sleep.
@@ -2146,7 +2146,7 @@
       'example_value': 32,
       'id': 92,
       'caption': '''Maximal number of concurrent connections to the proxy server''',
-      'desc': '''Specifies the maximal number of simultanious connections to the proxy server.
+      'desc': '''Specifies the maximal number of simultaneous connections to the proxy server.
 
       Some proxy servers can not handle high number of concurrent connections per client and this can be solved by setting this policy to a lower value.
 
@@ -2230,7 +2230,7 @@
       'example_value': '{ "NetworkConfigurations": [ { "GUID": "{4b224dfd-6849-7a63-5e394343244ae9c9}", "Name": "my WiFi", "Type": "WiFi", "WiFi": { "SSID": "my WiFi", "HiddenSSID": false, "Security": "None", "AutoConnect": true } } ] }',
       'id': 108,
       'caption': '''Device-level network configuration''',
-      'desc': '''Allows pushing network configuration to be applied for all useers of a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL">https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</ph>''',
+      'desc': '''Allows pushing network configuration to be applied for all users of a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL">https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</ph>''',
     },
     {
       'name': 'CloudPrintSubmitEnabled',
@@ -2304,9 +2304,7 @@
       'example_value': False,
       'id': 117,
       'caption': '''Disable Print Preview''',
-      'desc': '''Disable print preview.
-
-      This setting is used to force the use of the system print dialog instead of print preview.''',
+      'desc': '''This setting is used to force the use of the system print dialog instead of print preview.''',
     },
     {
       'name': 'DisableSSLRecordSplitting',
@@ -2340,7 +2338,7 @@
       'features': {'dynamic_refresh': True},
       'example_value': False,
       'id': 119,
-      'caption': '''Report OS and firmware version.''',
+      'caption': '''Report OS and firmware version''',
       'desc': '''Report OS and firmware version of enrolled devices.
 
       If this setting is set to True, enrolled devices will report the OS and firmware version periodically. If this setting is not set or set to False, version info will not be reported.''',
@@ -2396,7 +2394,7 @@
       'caption': '''Login user white list''',
       'desc': '''Defines the list of users that are allowed to login to the device. Entries are of the form <ph name="USER_WHITELIST_ENTRY_FORMAT">user@domain</ph>, such as <ph name="USER_WHITELIST_ENTRY_EXAMPLE">madmax@managedchrome.com</ph>. To allow arbitrary users on a domain, use entries of the form <ph name="USER_WHITELIST_ENTRY_WILDCARD">*@domain</ph>.
 
-      If this policy is not configured, there are no restrictions on the what users are allowed to sign in. Note that creating new users still requires the <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME">DeviceAllowNewUsers</ph> policy to be configured appropriately.''',
+      If this policy is not configured, there are no restrictions on which users are allowed to sign in. Note that creating new users still requires the <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME">DeviceAllowNewUsers</ph> policy to be configured appropriately.''',
     },
     {
       'name': 'DeviceAllowNewUsers',
@@ -2464,17 +2462,17 @@
         {
           'name': 'StableChannel',
           'value': 'stable-channel',
-          'caption': '''Stable channel'''
+          'caption': '''Stable channel''',
         },
         {
           'name': 'BetaChannel',
           'value': 'beta-channel',
-          'caption': '''Beta channel'''
+          'caption': '''Beta channel''',
         },
         {
           'name': 'DevChannel',
           'value': 'dev-channel',
-          'caption': '''Dev channel (may be unstable)'''
+          'caption': '''Dev channel (may be unstable)''',
         }
       ],
       'supported_on': ['chrome_os:0.11-'],
@@ -2483,7 +2481,7 @@
       'example_value': 'stable-channel',
       'id': 91,
       'caption': '''Release channel''',
-      'desc': '''Specifies the release channel that this device should be locked to.'''
+      'desc': '''Specifies the release channel that this device should be locked to.''',
     },
     {
       'name': 'ChromeOsReleaseChannelDelegated',
@@ -2493,10 +2491,10 @@
       'features': {'dynamic_refresh': True},
       'example_value': False,
       'id': 134,
-      'caption': '''Wether the release channel should be settable by the user or locked.''',
-      'desc': '''If this policy is set to True and the ChromeOsReleaseChannel policy is not specified the users of the enrolling domain will be allowed to change the release channel of the device. If this policy is set to false the device will be locked in whatever channel it was last set.
+      'caption': '''Whether the release channel should be configurable by the user''',
+      'desc': '''If this policy is set to True and the ChromeOsReleaseChannel policy is not specified then users of the enrolling domain will be allowed to change the release channel of the device. If this policy is set to false the device will be locked in whatever channel it was last set.
 
-      The user selected channel will be overriden by the ChromeOsReleaseChannel policy but if the policy channel is more stable than the one that was installed on the device, channel switch might will only after the version of the more stable channel reaches number higher than the one installed on the device.''',
+      The user selected channel will be overridden by the ChromeOsReleaseChannel policy, but if the policy channel is more stable than the one that was installed on the device, then the channel will only switch after the version of the more stable channel reaches a higher version number than the one installed on the device.''',
     },
     {
       'name': 'DeviceEphemeralUsersEnabled',
@@ -2533,7 +2531,7 @@
       'caption': '''Timeout until idle user log-out is executed''',
       'desc': '''This policy is active in retail mode only.
 
-      When the value of this policy is set and is not 0 the currently logged in demo user will be logged out automatically after the specified time.
+      When the value of this policy is set and is not 0 then the currently logged in demo user will be logged out automatically after an inactivity time of the specified duration has elapsed.
 
       The policy value should be specified in milliseconds.''',
     },
@@ -2563,7 +2561,7 @@
       'caption': '''Screen saver to be used on the sign-in screen in retail mode''',
       'desc': '''This policy is active in retail mode only.
 
-      Determines the id of the extension to be used as a screen saver on the sign-in screen. The extension must be part of the AppPack that is configured for this domain through the AppPacks policy.''',
+      Determines the id of the extension to be used as a screen saver on the sign-in screen. The extension must be part of the AppPack that is configured for this domain through the DeviceAppPack policy.''',
     },
     {
       'name': 'DeviceLoginScreenSaverTimeout',
@@ -2586,14 +2584,14 @@
       'supported_on': ['chrome_os:19-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
-      'example_value': [ { "extension-id": "khgabmflimjjbclkmljlpmgaleanedem", "update-url": "http://clients2.google.com/service/update2/crx", "online-only": True, } ],
+      'example_value': [ { "extension-id": "khgabmflimjjbclkmljlpmgaleanedem", "update-url": "http://clients2.google.com/service/update2/crx" } ],
       'id': 135,
       'caption': '''List of AppPack extensions''',
       'desc': '''This policy is active in retail mode only.
 
       Lists extensions that are automatically installed for the Demo user, for devices in retail mode. These extensions are saved in the device and can be installed while offline, after the installation.
 
-      Each list entry contains a dictionary that must include the extension ID in the 'extension-id' field, and its update URL in the 'update-url' field. The optional 'online-only' field can be set to True to indicate that this extension should be installed only when the device is online at sign-in time.''',
+      Each list entry contains a dictionary that must include the extension ID in the 'extension-id' field, and its update URL in the 'update-url' field.''',
     },
     {
       'name': 'DeviceAutoUpdateDisabled',
@@ -2624,8 +2622,7 @@
       "" (or not configured): update to latest version available.
       "1412.": update to any minor version of 1412 (e.g. 1412.24.34 or 1412.60.2)
       "1412.2.": update to any minor version of 1412.2 (e.g. 1412.2.34 or 1412.2.2)
-      "1412.24.34": update to this specific version only
-      '''
+      "1412.24.34": update to this specific version only''',
     },
     {
       'name': 'DeviceUpdateScatterFactor',
@@ -2636,7 +2633,7 @@
       'example_value': 7200,
       'id': 145,
       'caption': '''Auto update scatter factor''',
-      'desc': '''Specifies the number of seconds up to which a device may randomly delay its download of an update from the time the update was first pushed out to the server. The device may wait a portion of this time in terms of wall-clock-time and the remaining portion in terms of the number of update checks. In any case, the scatter is upper bounded to a constant amount of time so that a device does not ever get stuck waiting to download an update forever.'''
+      'desc': '''Specifies the number of seconds up to which a device may randomly delay its download of an update from the time the update was first pushed out to the server. The device may wait a portion of this time in terms of wall-clock-time and the remaining portion in terms of the number of update checks. In any case, the scatter is upper bounded to a constant amount of time so that a device does not ever get stuck waiting to download an update forever.''',
     },
     {
       'name': 'DeviceUpdateAllowedConnectionTypes',
@@ -2647,10 +2644,9 @@
       'example_value': [ 'ethernet' ],
       'id': 146,
       'caption': '''Connection types allowed for updates''',
-      'desc': ''' The types of connections that are OK to use for OS updates. OS updates potentially put heavy strain on the connection due to their size and may incur additional cost. Therefore, they are by default not enabled for connection types that are considered expensive, which include WiMax, Bluetooth and Cellular at the moment.
+      'desc': ''' The types of connections that are allowed to use for OS updates. OS updates potentially put heavy strain on the connection due to their size and may incur additional cost. Therefore, they are by default not enabled for connection types that are considered expensive, which include WiMax, Bluetooth and Cellular at the moment.
 
-      The recognized connection type identifiers are ethernet, wifi, wimax, bluetooth, cellular.
-      '''
+      The recognized connection type identifiers are "ethernet", "wifi", "wimax", "bluetooth" and "cellular".''',
     },
     {
       'name': 'BackgroundModeEnabled',
@@ -2685,11 +2681,9 @@
           'example_value': True,
           'id': 139,
           'caption': '''Disables GData''',
-          'desc': '''Disables Google Docs syncing when set to True.
+          'desc': '''Disables Google Docs syncing when set to True. In that case, no data is uploaded to Google Docs.
 
-          - i.e. no data is uploaded to Google Docs.
-
-          - if not set or false, users will be able to transfer files to Google Docs.''',
+          If not set or set to False, then users will be able to transfer files to Google Docs.''',
         },
         {
           'name': 'GDataDisabledOverCellular',
@@ -2699,11 +2693,9 @@
           'example_value': True,
           'id': 140,
           'caption': '''Disables GData over Cellular connections''',
-          'desc': '''Disables Google Docs syncing when using a cellular connection when set to True.
+          'desc': '''Disables Google Docs syncing when using a cellular connection when set to True. In that case, data is only synced to Google Docs when connected via WiFi or Ethernet.
 
-          - i.e. data is only synced to Google Docs when connected via WiFi or Ethernet.
-
-          - if not set or false, users will be able to transfer files to Google Docs via cellular connections.''',
+          If not set or set to False, then users will be able to transfer files to Google Docs via cellular connections.''',
         },
       ],
     },
@@ -2731,7 +2723,7 @@
       'features': {'dynamic_refresh': True},
       'example_value': '*@domain.com',
       'id': 147,
-      'caption': '''Restrict which users are allowed to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      'caption': '''Restrict which users are allowed to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
       'desc': '''Contains a regular expression which is used to determine which users can sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       An appropriate error is displayed if a user tries to log in with a username that does not match this pattern.
@@ -2746,9 +2738,7 @@
       'example_value': True,
       'id': 150,
       'caption': '''Disable proceeding from the Safe Browsing warning page''',
-      'desc': '''Disable proceeding from the Safe Browsing warning page.
-
-      The Safe Browsing service shows a warning page when users navigate to sites that are flagged as potentially mallicious. Enabling this setting prevents users from proceeding anyway from the warning page to the malicious site.
+      'desc': '''The Safe Browsing service shows a warning page when users navigate to sites that are flagged as potentially mallicious. Enabling this setting prevents users from proceeding anyway from the warning page to the malicious site.
 
       If this setting is disabled or not configured then users can choose to proceed to the flagged site after being shown the warning.''',
     },
@@ -2760,9 +2750,7 @@
       'example_value': False,
       'id': 151,
       'caption': '''Enable or disable spell checking web service''',
-      'desc': '''Enables or disables the spell checking web service.
-
-      <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can use a Google web service to help resolve spelling errors. If this setting is enabled, then this service is always used. If this setting is disabled, then this service is never used.
+      'desc': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can use a Google web service to help resolve spelling errors. If this setting is enabled, then this service is always used. If this setting is disabled, then this service is never used.
 
       Spell checking can still be performed using a downloaded dictionary; this policy only controls the usage of the online service.
 
