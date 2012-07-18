@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <set>
+#include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -413,7 +414,9 @@ bool GLInProcessContext::Initialize(const gfx::Size& size,
   bool bind_generates_resource = false;
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group ?
       context_group->decoder_->GetContextGroup() :
-          new ::gpu::gles2::ContextGroup(NULL, bind_generates_resource)));
+          new ::gpu::gles2::ContextGroup(NULL,
+                                         bind_generates_resource,
+                                         NULL)));
 
   gpu_scheduler_.reset(new GpuScheduler(command_buffer_.get(),
                                         decoder_.get(),

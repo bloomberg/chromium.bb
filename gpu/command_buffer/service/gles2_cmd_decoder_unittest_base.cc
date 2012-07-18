@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <vector>
 
 #include "base/string_number_conversions.h"
 #include "gpu/command_buffer/common/gl_mock.h"
@@ -83,7 +84,9 @@ void GLES2DecoderTestBase::InitDecoder(
     bool bind_generates_resource) {
   gl_.reset(new StrictMock<MockGLInterface>());
   ::gfx::GLInterface::SetGLInterface(gl_.get());
-  group_ = ContextGroup::Ref(new ContextGroup(NULL, bind_generates_resource));
+  group_ = ContextGroup::Ref(new ContextGroup(NULL,
+                                              bind_generates_resource,
+                                              NULL));
 
   InSequence sequence;
 
@@ -874,8 +877,7 @@ void GLES2DecoderTestBase::DoTexImage2DSameSize(
     GLsizei width, GLsizei height, GLint border,
     GLenum format, GLenum type,
     uint32 shared_memory_id, uint32 shared_memory_offset) {
-  if (GLES2Decoder::IsAngle())
-  {
+  if (GLES2Decoder::IsAngle()) {
     EXPECT_CALL(*gl_, TexSubImage2D(
         target, level, 0, 0, width, height, format, type, _))
         .Times(1)

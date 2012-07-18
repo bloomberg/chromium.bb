@@ -103,6 +103,11 @@
 
 #define GL_GLEXT_PROTOTYPES 1
 
+// GL_OES_get_program_binary
+#define GL_PROGRAM_BINARY_LENGTH_OES           0x8741
+#define GL_NUM_PROGRAM_BINARY_FORMATS_OES      0x87FE
+#define GL_PROGRAM_BINARY_FORMATS_OES          0x87FF
+
 // Define this for extra GL error debugging (slower).
 // #define GL_ERROR_DEBUGGING
 #ifdef GL_ERROR_DEBUGGING

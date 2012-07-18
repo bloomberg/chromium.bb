@@ -23,6 +23,7 @@ class TransferBufferManagerInterface;
 
 namespace gles2 {
 
+class ProgramCache;
 class BufferManager;
 class GLES2Decoder;
 class FramebufferManager;
@@ -41,7 +42,8 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   ContextGroup(
       MailboxManager* mailbox_manager,
-      bool bind_generates_resource);
+      bool bind_generates_resource,
+      ProgramCache* program_cache);
 
   // This should only be called by GLES2Decoder. This must be paired with a
   // call to destroy if it succeeds.
@@ -148,6 +150,8 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   uint32 max_fragment_uniform_vectors_;
   uint32 max_varying_vectors_;
   uint32 max_vertex_uniform_vectors_;
+
+  ProgramCache* program_cache_;
 
   scoped_ptr<BufferManager> buffer_manager_;
 

@@ -4,6 +4,9 @@
 
 #include "gpu/command_buffer/service/test_helper.h"
 
+#include <string>
+#include <algorithm>
+
 #include "base/string_number_conversions.h"
 #include "base/string_tokenizer.h"
 #include "gpu/command_buffer/common/gl_mock.h"
@@ -11,8 +14,6 @@
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#include <string.h>
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -368,17 +369,11 @@ void TestHelper::SetupExpectationsForClearingUniforms(
   }
 }
 
-void TestHelper::SetupShader(
+void TestHelper::SetupProgramSuccessExpectations(
     ::gfx::MockGLInterface* gl,
     AttribInfo* attribs, size_t num_attribs,
     UniformInfo* uniforms, size_t num_uniforms,
     GLuint service_id) {
-  InSequence s;
-
-  EXPECT_CALL(*gl,
-      LinkProgram(service_id))
-      .Times(1)
-      .RetiresOnSaturation();
   EXPECT_CALL(*gl,
       GetProgramiv(service_id, GL_LINK_STATUS, _))
       .WillOnce(SetArgumentPointee<2>(1))
@@ -478,6 +473,22 @@ void TestHelper::SetupShader(
       }
     }
   }
+}
+
+void TestHelper::SetupShader(
+    ::gfx::MockGLInterface* gl,
+    AttribInfo* attribs, size_t num_attribs,
+    UniformInfo* uniforms, size_t num_uniforms,
+    GLuint service_id) {
+  InSequence s;
+
+  EXPECT_CALL(*gl,
+      LinkProgram(service_id))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  SetupProgramSuccessExpectations(
+      gl, attribs, num_attribs, uniforms, num_uniforms, service_id);
 }
 
 }  // namespace gles2

@@ -147,8 +147,10 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
                        gfx::GLShareGroup* share_group,
                        gpu::gles2::MailboxManager* mailbox,
                        int client_id,
-                       bool software)
+                       bool software,
+                       gpu::gles2::ProgramCache* program_cache)
     : gpu_channel_manager_(gpu_channel_manager),
+      program_cache_(program_cache),
       unprocessed_messages_(new gpu::RefCountedCounter),
       client_id_(client_id),
       share_group_(share_group ? share_group : new gfx::GLShareGroup),
@@ -332,7 +334,8 @@ void GpuChannel::CreateViewCommandBuffer(
       surface_id,
       watchdog_,
       software_,
-      init_params.active_url));
+      init_params.active_url,
+      program_cache_));
   if (preempt_by_counter_.get())
     stub->SetPreemptByCounter(preempt_by_counter_);
   router_.AddRoute(*route_id, stub.get());
@@ -483,7 +486,8 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
       route_id,
       0, watchdog_,
       software_,
-      init_params.active_url));
+      init_params.active_url,
+      program_cache_));
   if (preempt_by_counter_.get())
     stub->SetPreemptByCounter(preempt_by_counter_);
   router_.AddRoute(route_id, stub.get());

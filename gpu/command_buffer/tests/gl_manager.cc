@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "gpu/command_buffer/tests/gl_manager.h"
+
+#include <vector>
+
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -12,7 +16,6 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
-#include "gpu/command_buffer/tests/gl_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
@@ -95,7 +98,9 @@ void GLManager::Setup(
 
   if (!context_group) {
     context_group = new gles2::ContextGroup(
-        mailbox_manager_.get(), kBindGeneratesResource);
+        mailbox_manager_.get(),
+        kBindGeneratesResource,
+        NULL);
   }
 
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group));

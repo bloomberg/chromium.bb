@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/context_group.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/command_line.h"
@@ -26,7 +27,8 @@ namespace gles2 {
 
 ContextGroup::ContextGroup(
     MailboxManager* mailbox_manager,
-    bool bind_generates_resource)
+    bool bind_generates_resource,
+    ProgramCache* program_cache)
     : mailbox_manager_(mailbox_manager ? mailbox_manager : new MailboxManager),
       num_contexts_(0),
       enforce_gl_minimums_(CommandLine::ForCurrentProcess()->HasSwitch(
@@ -39,6 +41,7 @@ ContextGroup::ContextGroup(
       max_fragment_uniform_vectors_(0u),
       max_varying_vectors_(0u),
       max_vertex_uniform_vectors_(0u),
+      program_cache_(program_cache),
       feature_info_(new FeatureInfo()) {
   {
     TransferBufferManager* manager = new TransferBufferManager();
@@ -93,7 +96,7 @@ bool ContextGroup::Initialize(const DisallowedFeatures& disallowed_features,
   renderbuffer_manager_.reset(new RenderbufferManager(
       max_renderbuffer_size, max_samples));
   shader_manager_.reset(new ShaderManager());
-  program_manager_.reset(new ProgramManager());
+  program_manager_.reset(new ProgramManager(program_cache_));
 
   // Lookup GL things we need to know.
   const GLint kGLES2RequiredMinimumVertexAttribs = 8u;

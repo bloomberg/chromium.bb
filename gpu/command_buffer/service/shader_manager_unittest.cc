@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -245,7 +245,39 @@ TEST_F(ShaderManagerTest, ShaderInfoUseCount) {
   EXPECT_TRUE(info2 == NULL);
 }
 
+TEST_F(ShaderManagerTest, ShaderInfoStoreCompilationStatus) {
+  const GLuint kClientId = 1;
+  const GLuint kServiceId = 11;
+  const GLenum kShaderType = GL_VERTEX_SHADER;
+  ShaderManager::ShaderInfo* info = manager_.CreateShaderInfo(
+      kClientId, kServiceId, kShaderType);
+  ASSERT_TRUE(info != NULL);
+
+  info->UpdateSource("original source");
+  info->FlagSourceAsCompiled(false);
+  EXPECT_FALSE(info->source_compiled());
+  info->FlagSourceAsCompiled(true);
+  EXPECT_TRUE(info->source_compiled());
+}
+
+TEST_F(ShaderManagerTest, ShaderInfoStoreDeferredSource) {
+  const GLuint kClientId = 1;
+  const GLuint kServiceId = 11;
+  const GLenum kShaderType = GL_VERTEX_SHADER;
+  ShaderManager::ShaderInfo* info = manager_.CreateShaderInfo(
+      kClientId, kServiceId, kShaderType);
+  ASSERT_TRUE(info != NULL);
+
+  info->UpdateSource("original source");
+  info->FlagSourceAsCompiled(false);
+
+  EXPECT_EQ("original source", *info->deferred_compilation_source());
+  info->UpdateSource("different!");
+  EXPECT_EQ("original source", *info->deferred_compilation_source());
+
+  info->FlagSourceAsCompiled(true);
+  EXPECT_EQ("different!", *info->deferred_compilation_source());
+}
+
 }  // namespace gles2
 }  // namespace gpu
-
-

@@ -79,7 +79,8 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     int32 surface_id,
     GpuWatchdog* watchdog,
     bool software,
-    const GURL& active_url)
+    const GURL& active_url,
+    gpu::gles2::ProgramCache* program_cache)
     : channel_(channel),
       handle_(handle),
       initial_size_(size),
@@ -103,7 +104,9 @@ GpuCommandBufferStub::GpuCommandBufferStub(
   if (share_group) {
     context_group_ = share_group->context_group_;
   } else {
-    context_group_ = new gpu::gles2::ContextGroup(mailbox_manager, true);
+    context_group_ = new gpu::gles2::ContextGroup(mailbox_manager,
+                                                  true,
+                                                  program_cache);
   }
   if (surface_id != 0)
     surface_state_.reset(new GpuCommandBufferStubBase::SurfaceState(
