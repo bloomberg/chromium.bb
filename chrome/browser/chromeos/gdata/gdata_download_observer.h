@@ -20,7 +20,7 @@ namespace gdata {
 
 class DocumentEntry;
 class GDataDirectoryProto;
-class GDataFileSystem;
+class GDataFileSystemInterface;
 class GDataUploader;
 struct UploadFileInfo;
 
@@ -29,7 +29,8 @@ struct UploadFileInfo;
 class GDataDownloadObserver : public content::DownloadManager::Observer,
                               public content::DownloadItem::Observer {
  public:
-  GDataDownloadObserver(GDataUploader* uploader, GDataFileSystem* file_system);
+  GDataDownloadObserver(GDataUploader* uploader,
+                        GDataFileSystemInterface* file_system);
   virtual ~GDataDownloadObserver();
 
   // Become an observer of  DownloadManager.
@@ -144,7 +145,7 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   // The uploader owned by GDataSystemService. Used to trigger file uploads.
   GDataUploader* gdata_uploader_;
   // The file system owned by GDataSystemService.
-  GDataFileSystem* file_system_;
+  GDataFileSystemInterface* file_system_;
   // Observe the DownloadManager for new downloads.
   content::DownloadManager* download_manager_;
 

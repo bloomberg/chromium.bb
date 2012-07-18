@@ -194,21 +194,21 @@ class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
   virtual ~RemoteFileSystemExtensionApiTest() {}
 
   // Sets up GDataFileSystem that will be used in the test.
-  // NOTE: Remote mount point should get added to mount poitn provider when
+  // NOTE: Remote mount point should get added to mount point provider when
   // getLocalFileSystem is called from filebrowser_component extension.
   virtual void SetupGDataFileSystemForTest() {
-    gdata::GDataSystemService* system_service =
-        gdata::GDataSystemServiceFactory::GetForProfile(browser()->profile());
-    EXPECT_TRUE(system_service && system_service->file_system());
-
-    mock_documents_service_.reset(new gdata::MockDocumentsService());
+    // |mock_documents_service_| is owned by |system_service|.
+    mock_documents_service_ = new gdata::MockDocumentsService();
     operation_registry_.reset(new gdata::GDataOperationRegistry());
-    system_service->file_system()->SetDocumentsServiceForTesting(
-        mock_documents_service_.get());
+    gdata::GDataSystemService* system_service =
+        gdata::GDataSystemServiceFactory::GetInstance()->
+        GetWithCustomDocumentsServiceForTesting(
+            browser()->profile(), mock_documents_service_);
+    EXPECT_TRUE(system_service);
   }
 
  protected:
-  scoped_ptr<gdata::MockDocumentsService> mock_documents_service_;
+  gdata::MockDocumentsService* mock_documents_service_;
   scoped_ptr<gdata::GDataOperationRegistry> operation_registry_;
 };
 

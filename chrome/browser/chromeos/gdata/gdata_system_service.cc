@@ -43,20 +43,7 @@ namespace gdata {
 GDataSystemService::GDataSystemService(Profile* profile)
     : profile_(profile),
       sequence_token_(BrowserThread::GetBlockingPool()->GetSequenceToken()),
-      cache_(GDataCache::CreateGDataCacheOnUIThread(
-          GDataCache::GetCacheRootPath(profile_),
-          GetTaskRunner(sequence_token_))),
-      documents_service_(new DocumentsService),
-      uploader_(new GDataUploader(docs_service())),
-      webapps_registry_(new DriveWebAppsRegistry),
-      file_system_(new GDataFileSystem(profile,
-                                       cache(),
-                                       docs_service(),
-                                       uploader(),
-                                       webapps_registry(),
-                                       GetTaskRunner(sequence_token_))),
-      download_observer_(new GDataDownloadObserver(uploader(), file_system())),
-      sync_client_(new GDataSyncClient(profile, file_system(), cache())) {
+      cache_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -65,8 +52,25 @@ GDataSystemService::~GDataSystemService() {
   cache_->DestroyOnUIThread();
 }
 
-void GDataSystemService::Initialize() {
+void GDataSystemService::Initialize(
+    DocumentsServiceInterface* documents_service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  documents_service_.reset(documents_service);
+  cache_ = GDataCache::CreateGDataCacheOnUIThread(
+      GDataCache::GetCacheRootPath(profile_),
+      GetTaskRunner(sequence_token_));
+  uploader_.reset(new GDataUploader(docs_service()));
+  webapps_registry_.reset(new DriveWebAppsRegistry);
+  file_system_.reset(new GDataFileSystem(profile_,
+                                         cache(),
+                                         docs_service(),
+                                         uploader(),
+                                         webapps_registry(),
+                                         GetTaskRunner(sequence_token_)));
+  download_observer_.reset(new GDataDownloadObserver(uploader(),
+                                                     file_system()));
+  sync_client_.reset(new GDataSyncClient(profile_, file_system(), cache()));
 
   sync_client_->Initialize();
   file_system_->Initialize();
@@ -148,10 +152,28 @@ GDataSystemServiceFactory::GDataSystemServiceFactory()
 GDataSystemServiceFactory::~GDataSystemServiceFactory() {
 }
 
+// static
+ProfileKeyedService* GDataSystemServiceFactory::CreateInstance(
+    Profile* profile) {
+  return new GDataSystemService(profile);
+}
+
+GDataSystemService*
+GDataSystemServiceFactory::GetWithCustomDocumentsServiceForTesting(
+    Profile* profile,
+    DocumentsServiceInterface* documents_service) {
+  GDataSystemService* service =
+      static_cast<GDataSystemService*>(GetInstance()->SetTestingFactoryAndUse(
+          profile,
+          &GDataSystemServiceFactory::CreateInstance));
+  service->Initialize(documents_service);
+  return service;
+}
+
 ProfileKeyedService* GDataSystemServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
   GDataSystemService* service = new GDataSystemService(profile);
-  service->Initialize();
+  service->Initialize(new DocumentsService);
   return service;
 }
 

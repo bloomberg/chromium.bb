@@ -12,7 +12,6 @@
 #include "base/platform_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class FilePath;

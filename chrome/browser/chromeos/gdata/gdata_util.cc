@@ -20,7 +20,7 @@
 #include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -57,7 +57,7 @@ const int kReadOnlyFilePermissions = base::PLATFORM_FILE_OPEN |
                                      base::PLATFORM_FILE_EXCLUSIVE_READ |
                                      base::PLATFORM_FILE_ASYNC;
 
-GDataFileSystem* GetGDataFileSystem(Profile* profile) {
+GDataFileSystemInterface* GetGDataFileSystem(Profile* profile) {
   GDataSystemService* system_service =
       GDataSystemServiceFactory::GetForProfile(profile);
   return system_service ? system_service->file_system() : NULL;
@@ -205,7 +205,7 @@ void ModifyGDataFileResourceUrl(Profile* profile,
                                 GURL* url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataFileSystem* file_system = GetGDataFileSystem(profile);
+  GDataFileSystemInterface* file_system = GetGDataFileSystem(profile);
   if (!file_system)
     return;
   GDataCache* cache = GetGDataCache(profile);
@@ -269,7 +269,7 @@ void InsertGDataCachePathsPermissions(
   DCHECK(cache_paths);
   DCHECK(!callback.is_null());
 
-  GDataFileSystem* file_system = GetGDataFileSystem(profile);
+  GDataFileSystemInterface* file_system = GetGDataFileSystem(profile);
   if (!file_system || gdata_paths->empty()) {
     callback.Run();
     return;

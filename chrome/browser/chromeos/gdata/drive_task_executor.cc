@@ -66,7 +66,7 @@ bool DriveTaskExecutor::ExecuteAndNotify(
   DCHECK(current_index_ == 0);
   if (!system_service || !system_service->file_system())
     return false;
-  gdata::GDataFileSystem* file_system = system_service->file_system();
+  gdata::GDataFileSystemInterface* file_system = system_service->file_system();
 
   // Reset the index, so we know when we're done.
   current_index_ = raw_paths.size();

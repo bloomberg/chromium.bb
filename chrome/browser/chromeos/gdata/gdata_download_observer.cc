@@ -8,7 +8,7 @@
 #include "base/file_util.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
@@ -175,7 +175,7 @@ void OnAuthenticate(Profile* profile,
 
 GDataDownloadObserver::GDataDownloadObserver(
     GDataUploader* uploader,
-    GDataFileSystem* file_system)
+    GDataFileSystemInterface* file_system)
     : gdata_uploader_(uploader),
       file_system_(file_system),
       download_manager_(NULL),

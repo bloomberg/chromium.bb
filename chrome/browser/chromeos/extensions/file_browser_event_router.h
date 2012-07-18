@@ -16,7 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/disks/disk_mount_manager.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
@@ -36,7 +36,7 @@ class FileBrowserEventRouter
       public chromeos::NetworkLibrary::NetworkManagerObserver,
       public content::NotificationObserver,
       public gdata::GDataOperationRegistry::Observer,
-      public gdata::GDataFileSystem::Observer {
+      public gdata::GDataFileSystemInterface::Observer {
  public:
   // RefcountedProfileKeyedService overrides.
   virtual void ShutdownOnUIThread() OVERRIDE;
@@ -79,7 +79,7 @@ class FileBrowserEventRouter
           OVERRIDE;
   virtual void OnAuthenticationFailed() OVERRIDE;
 
-  // gdata::GDataFileSystem::Observer overrides.
+  // gdata::GDataFileSystemInterface::Observer overrides.
   virtual void OnDirectoryChanged(const FilePath& directory_path) OVERRIDE;
   virtual void OnDocumentFeedFetched(int num_accumulated_entries) OVERRIDE;
 
@@ -177,7 +177,7 @@ class FileBrowserEventRouter
                       bool small);
 
   // Returns the GDataFileSystem for the current profile.
-  gdata::GDataFileSystem* GetRemoteFileSystem() const;
+  gdata::GDataFileSystemInterface* GetRemoteFileSystem() const;
 
   // Handles requests to start and stop periodic updates on remote file system.
   // When |start| is set to true, this function starts periodic updates only if

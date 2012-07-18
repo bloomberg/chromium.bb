@@ -10,6 +10,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_test_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/common/chrome_paths.h"

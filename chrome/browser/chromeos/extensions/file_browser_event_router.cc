@@ -35,7 +35,7 @@
 using chromeos::disks::DiskMountManager;
 using chromeos::disks::DiskMountManagerEventType;
 using content::BrowserThread;
-using gdata::GDataFileSystem;
+using gdata::GDataFileSystemInterface;
 using gdata::GDataSystemService;
 using gdata::GDataSystemServiceFactory;
 
@@ -227,7 +227,7 @@ void FileBrowserEventRouter::RemoveFileWatch(
 void FileBrowserEventRouter::HandleRemoteUpdateRequestOnUIThread(bool start) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  gdata::GDataFileSystem* file_system = GetRemoteFileSystem();
+  gdata::GDataFileSystemInterface* file_system = GetRemoteFileSystem();
   DCHECK(file_system);
 
   if (start) {
@@ -734,7 +734,8 @@ FileBrowserEventRouter::FileWatcherExtensions::GetVirtualPath() const {
   return virtual_path_;
 }
 
-gdata::GDataFileSystem* FileBrowserEventRouter::GetRemoteFileSystem() const {
+gdata::GDataFileSystemInterface*
+FileBrowserEventRouter::GetRemoteFileSystem() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   gdata::GDataSystemService* system_service =
       gdata::GDataSystemServiceFactory::GetForProfile(profile_);

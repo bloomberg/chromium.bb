@@ -18,7 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
@@ -112,7 +112,7 @@ GDataSystemService* GetSystemService() {
 }
 
 // Helper function to get GDataFileSystem from Profile on UI thread.
-void GetFileSystemOnUIThread(GDataFileSystem** file_system) {
+void GetFileSystemOnUIThread(GDataFileSystemInterface** file_system) {
   GDataSystemService* system_service = GetSystemService();
   *file_system = system_service ? system_service->file_system() : NULL;
 }
@@ -147,7 +147,7 @@ class GDataURLRequestJob : public net::URLRequestJob {
 
  private:
   // Helper for Start() to let us start asynchronously.
-  void StartAsync(GDataFileSystem** file_system);
+  void StartAsync(GDataFileSystemInterface** file_system);
 
   // Helper methods for Delegate::OnUrlFetchDownloadData and ReadRawData to
   // receive download data and copy to response buffer.
@@ -204,7 +204,7 @@ class GDataURLRequestJob : public net::URLRequestJob {
   void CloseFileStream();
 
   scoped_ptr<base::WeakPtrFactory<GDataURLRequestJob> > weak_ptr_factory_;
-  GDataFileSystem* file_system_;
+  GDataFileSystemInterface* file_system_;
 
   bool error_;  // True if we've encountered an error.
   bool headers_set_;  // True if headers have been set.
@@ -301,12 +301,11 @@ void GDataURLRequestJob::Start() {
   // UI thread; StartAsync reply task will proceed with actually starting the
   // request.
 
-  GDataFileSystem** file_system = new GDataFileSystem*(NULL);
+  GDataFileSystemInterface** file_system = new GDataFileSystemInterface*(NULL);
   BrowserThread::PostTaskAndReply(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&GetFileSystemOnUIThread,
-                 file_system),
+      base::Bind(&GetFileSystemOnUIThread, file_system),
       base::Bind(&GDataURLRequestJob::StartAsync,
                  weak_ptr_factory_->GetWeakPtr(),
                  base::Owned(file_system)));
@@ -472,7 +471,7 @@ GDataURLRequestJob::~GDataURLRequestJob() {
 
 //======================= GDataURLRequestJob private methods ===================
 
-void GDataURLRequestJob::StartAsync(GDataFileSystem** file_system) {
+void GDataURLRequestJob::StartAsync(GDataFileSystemInterface** file_system) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   file_system_ = *file_system;

@@ -127,12 +127,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Used in tests to inject mock document service.
-  void SetDocumentsServiceForTesting(DocumentsServiceInterface*
-      new_document_service) {
-    documents_service_ = new_document_service;
-  }
-
   // Used in tests to load the root feed from the cache.
   void LoadRootFeedFromCacheForTesting();
 

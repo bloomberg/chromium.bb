@@ -1291,7 +1291,7 @@ void GetSizeStatsFunction::GetLocalPathsResponseOnUIThread(
     gdata::GDataSystemService* system_service =
         gdata::GDataSystemServiceFactory::GetForProfile(profile_);
 
-    gdata::GDataFileSystem* file_system =
+    gdata::GDataFileSystemInterface* file_system =
         system_service->file_system();
 
     file_system->GetAvailableSpace(

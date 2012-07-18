@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
