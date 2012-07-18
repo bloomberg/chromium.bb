@@ -135,6 +135,19 @@ def MatchSvnGlob(url, base_url, glob_spec, allow_wildcards):
   return None
 
 
+def print_stats(args):
+  """Prints statistics about the change to the user."""
+  # --no-ext-diff is broken in some versions of Git, so try to work around
+  # this by overriding the environment (but there is still a problem if the
+  # git config key "diff.external" is used).
+  env = os.environ.copy()
+  if 'GIT_EXTERNAL_DIFF' in env:
+    del env['GIT_EXTERNAL_DIFF']
+  return subprocess2.call(
+      ['git', 'diff', '--no-ext-diff', '--stat', '--find-copies-harder'] + args,
+      env=env)
+
+
 class Settings(object):
   def __init__(self):
     self.default_server = None
@@ -1126,16 +1139,7 @@ def CMDupload(parser, args):
     if not options.reviewers and hook_results.reviewers:
       options.reviewers = hook_results.reviewers
 
-  # --no-ext-diff is broken in some versions of Git, so try to work around
-  # this by overriding the environment (but there is still a problem if the
-  # git config key "diff.external" is used).
-  env = os.environ.copy()
-  if 'GIT_EXTERNAL_DIFF' in env:
-    del env['GIT_EXTERNAL_DIFF']
-  subprocess2.call(
-      ['git', 'diff', '--no-ext-diff', '--stat', '--find-copies-harder'] + args,
-      env=env)
-
+  print_stats(args)
   if settings.GetIsGerrit():
     return GerritUpload(options, args, cl)
   return RietveldUpload(options, args, cl)
@@ -1265,7 +1269,7 @@ def SendUpstream(parser, args, cmd):
 
   branches = [base_branch, cl.GetBranchRef()]
   if not options.force:
-    subprocess2.call(['git', 'diff', '--stat'] + branches)
+    print_stats(branches)
     ask_for_data('About to commit; enter to confirm.')
 
   # We want to squash all this branch's commits into one commit with the proper
