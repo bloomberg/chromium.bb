@@ -1,6 +1,9 @@
 <html>
 <head>
-<title>Prerender fragment testing</title>
+<title>NoPrerenderPage</title>
+<!--
+This test checks to make sure that a prerendered page was not loaded.
+-->
 
 <script>
 var pageWasPrerendered = false;
@@ -18,6 +21,7 @@ function DidDisplayPass() {
 
 </head>
 <body>
+  <!-- See PrerenderBrowserTest.PrerenderFragment* -->
   <a name="fragment">Fragment</a>
   <a name="other_fragment">Other Fragment</a>
 </body>

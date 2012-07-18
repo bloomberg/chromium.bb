@@ -17,7 +17,6 @@
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/common/referrer.h"
 #include "googleurl/src/gurl.h"
-#include "googleurl/src/url_canon.h"
 #include "ui/gfx/size.h"
 
 using content::RenderViewHost;
@@ -41,25 +40,19 @@ PrerenderLinkManager::~PrerenderLinkManager() {
 
 bool PrerenderLinkManager::OnAddPrerender(int child_id,
                                           int prerender_id,
-                                          const GURL& orig_url,
+                                          const GURL& url,
                                           const content::Referrer& referrer,
                                           const gfx::Size& size,
                                           int render_view_route_id) {
   DVLOG(2) << "OnAddPrerender, child_id = " << child_id
            << ", prerender_id = " << prerender_id
-           << ", url = " << orig_url.spec();
+           << ", url = " << url.spec();
   DVLOG(3) << "... referrer url = " << referrer.url.spec()
            << ", size = (" << size.width() << ", " << size.height() << ")"
            << ", render_view_route_id = " << render_view_route_id;
 
   const ChildAndPrerenderIdPair child_and_prerender_id(child_id, prerender_id);
   DCHECK_EQ(0U, ids_to_handle_map_.count(child_and_prerender_id));
-
-  // TODO(gavinp): Add tests to ensure fragments work, then remove this fragment
-  // clearing code.
-  url_canon::Replacements<char> replacements;
-  replacements.ClearRef();
-  const GURL url = orig_url.ReplaceComponents(replacements);
 
   scoped_ptr<PrerenderHandle> prerender_handle(
       manager_->AddPrerenderFromLinkRelPrerender(

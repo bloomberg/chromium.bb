@@ -736,26 +736,8 @@ TEST_F(PrerenderTest, RecentlyVisitedPPLTDummy) {
   ASSERT_EQ(pplt_dummy_contents, prerender_manager()->FindAndUseEntry(url));
 }
 
-// Tests that the prerender link manager discards fragments when launching,
-// and matches only occur on URLs without fragments.
-// TODO(gavinp): Drop this test once we are fragment clean.
-TEST_F(PrerenderTest, FragmentDroppedOnLaunchTest) {
-  GURL fragment_url("http://www.google.com/#test");
-  GURL url("http://www.google.com/");
-
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(url,
-                                                       FINAL_STATUS_USED);
-  EXPECT_TRUE(AddSimplePrerender(fragment_url));
-  EXPECT_TRUE(prerender_contents->prerendering_has_started());
-  EXPECT_FALSE(prerender_manager()->FindEntry(fragment_url));
-  ASSERT_EQ(prerender_contents, prerender_manager()->FindAndUseEntry(url));
-}
-
 // Tests that the prerender manager matches include the fragment.
-// TODO(gavinp): Re-enable this once we are fragment clean.
-// fragment clean.
-TEST_F(PrerenderTest, DISABLED_FragmentMatchesTest) {
+TEST_F(PrerenderTest, FragmentMatchesTest) {
   GURL fragment_url("http://www.google.com/#test");
 
   DummyPrerenderContents* prerender_contents =
@@ -769,8 +751,7 @@ TEST_F(PrerenderTest, DISABLED_FragmentMatchesTest) {
 
 // Tests that the prerender manager uses fragment references when matching
 // prerender URLs in the case a different fragment is in both URLs.
-// TODO(gavinp): Re-enable this once we are fragment clean.
-TEST_F(PrerenderTest, DISABLED_FragmentsDifferTest) {
+TEST_F(PrerenderTest, FragmentsDifferTest) {
   GURL fragment_url("http://www.google.com/#test");
   GURL other_fragment_url("http://www.google.com/#other_test");
 

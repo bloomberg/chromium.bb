@@ -1705,15 +1705,24 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRendererCrash) {
   ui_test_utils::RunMessageLoop();
 }
 
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderPageWithFragment) {
+  PrerenderTestURL("files/prerender/prerender_page.html#fragment",
+                   FINAL_STATUS_USED,
+                   1);
+  NavigateToDestURL();
+  ASSERT_TRUE(IsEmptyPrerenderLinkManager());
+}
+
 // Checks that we correctly use a prerendered page when navigating to a
 // fragment.
 // DISABLED: http://crbug.com/84154
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        DISABLED_PrerenderPageNavigateFragment) {
-  PrerenderTestURL("files/prerender/prerender_fragment.html",
+  PrerenderTestURL("files/prerender/no_prerender_page.html",
                    FINAL_STATUS_APP_TERMINATING,
                    1);
-  NavigateToURL("files/prerender/prerender_fragment.html#fragment");
+  NavigateToURL("files/prerender/no_prerender_page.html#fragment");
 }
 
 // Checks that we correctly use a prerendered page when we prerender a fragment
@@ -1721,10 +1730,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // http://crbug.com/83901
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        DISABLED_PrerenderFragmentNavigatePage) {
-  PrerenderTestURL("files/prerender/prerender_fragment.html#fragment",
+  PrerenderTestURL("files/prerender/no_prerender_page.html#fragment",
                    FINAL_STATUS_APP_TERMINATING,
                    1);
-  NavigateToURL("files/prerender/prerender_fragment.html");
+  NavigateToURL("files/prerender/no_prerender_page.html");
 }
 
 // Checks that we correctly use a prerendered page when we prerender a fragment
@@ -1732,10 +1741,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // DISABLED: http://crbug.com/84154
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        DISABLED_PrerenderFragmentNavigateFragment) {
-  PrerenderTestURL("files/prerender/prerender_fragment.html#other_fragment",
+  PrerenderTestURL("files/prerender/no_prerender_page.html#other_fragment",
                    FINAL_STATUS_APP_TERMINATING,
                    1);
-  NavigateToURL("files/prerender/prerender_fragment.html#fragment");
+  NavigateToURL("files/prerender/no_prerender_page.html#fragment");
 }
 
 // Checks that we correctly use a prerendered page when the page uses a client
@@ -1744,10 +1753,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        DISABLED_PrerenderClientRedirectFromFragment) {
   PrerenderTestURL(
-      CreateClientRedirect("files/prerender/prerender_fragment.html#fragment"),
+      CreateClientRedirect("files/prerender/no_prerender_page.html#fragment"),
       FINAL_STATUS_APP_TERMINATING,
       2);
-  NavigateToURL("files/prerender/prerender_fragment.html");
+  NavigateToURL("files/prerender/no_prerender_page.html");
 }
 
 // Checks that we correctly use a prerendered page when the page uses a client
@@ -1756,10 +1765,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        DISABLED_PrerenderClientRedirectToFragment) {
   PrerenderTestURL(
-      CreateClientRedirect("files/prerender/prerender_fragment.html"),
+      CreateClientRedirect("files/prerender/no_prerender_page.html"),
       FINAL_STATUS_APP_TERMINATING,
       2);
-  NavigateToURL("files/prerender/prerender_fragment.html#fragment");
+  NavigateToURL("files/prerender/no_prerender_page.html#fragment");
 }
 
 // Checks that we correctly use a prerendered page when the page uses JS to set
