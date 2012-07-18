@@ -268,8 +268,7 @@ def _BuildCommandLineForRuleRaw(spec, cmd, cygwin_shell, has_input_path,
       direct_cmd = [i.replace('$(InputPath)',
                               '`cygpath -m "${INPUTPATH}"`')
                     for i in direct_cmd]
-    direct_cmd = ['"%s"' % i for i in direct_cmd]
-    direct_cmd = [i.replace('"', '\\"') for i in direct_cmd]
+    direct_cmd = ['\\"%s\\"' % i.replace('"', '\\\\\\"') for i in direct_cmd]
     #direct_cmd = gyp.common.EncodePOSIXShellList(direct_cmd)
     direct_cmd = ' '.join(direct_cmd)
     # TODO(quote):  regularize quoting path names throughout the module

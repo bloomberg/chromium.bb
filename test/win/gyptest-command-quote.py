@@ -23,6 +23,8 @@ if sys.platform == 'win32':
 
   test.build('command-quote.gyp', 'test_batch', chdir=CHDIR)
   test.build('command-quote.gyp', 'test_call_separate', chdir=CHDIR)
+  test.build('command-quote.gyp', 'test_with_double_quotes', chdir=CHDIR)
+  test.build('command-quote.gyp', 'test_with_single_quotes', chdir=CHDIR)
 
   # We confirm that this fails because other generators don't handle spaces in
   # inputs so it's preferable to not have it work here.

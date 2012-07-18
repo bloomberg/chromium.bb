@@ -447,8 +447,8 @@ class MsvsSettings(object):
     cygwin_dir = os.path.normpath(
         os.path.join(path_to_base, self.msvs_cygwin_dirs[0]))
     cd = ('cd %s' % path_to_base).replace('\\', '/')
-    args = [a.replace('\\', '/') for a in args]
-    args = ["'%s'" % a.replace("'", "\\'") for a in args]
+    args = [a.replace('\\', '/').replace('"', '\\"') for a in args]
+    args = ["'%s'" % a.replace("'", "'\\''") for a in args]
     bash_cmd = ' '.join(args)
     cmd = (
         'call "%s\\setup_env.bat" && set CYGWIN=nontsec && ' % cygwin_dir +
