@@ -248,11 +248,9 @@ net::RequestPriority DetermineRequestPriority(ResourceType::Type type) {
     case ResourceType::FAVICON:
       return net::LOWEST;
 
-    // Prefetches and prerenders are at a lower priority than even
-    // LOWEST, since they are not even required for rendering of the
-    // current page.
+    // Prefetches are at a lower priority than even LOWEST, since they are not
+    // even required for rendering of the current page.
     case ResourceType::PREFETCH:
-    case ResourceType::PRERENDER:
       return net::IDLE;
 
     default:
