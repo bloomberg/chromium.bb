@@ -251,6 +251,8 @@
       'sources': [
         'utility/chrome_content_utility_client.cc',
         'utility/chrome_content_utility_client.h',
+        'utility/profile_import_handler.cc',
+        'utility/profile_import_handler.h',
       ],
       'include_dirs': [
         '..',
@@ -259,6 +261,11 @@
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
+          ],
+        }],
+        ['OS=="android"', {
+          'sources!': [
+            'utility/profile_import_handler.cc',
           ],
         }],
       ],
