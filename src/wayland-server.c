@@ -395,9 +395,12 @@ wl_client_add_resource(struct wl_client *client,
 		resource->object.id =
 			wl_map_insert_new(&client->objects,
 					  WL_MAP_SERVER_SIDE, resource);
-	else
-		wl_map_insert_at(&client->objects,
-				 resource->object.id, resource);
+	else if (wl_map_insert_at(&client->objects,
+				  resource->object.id, resource) < 0)
+		wl_resource_post_error(client->display_resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "invalid new id %d",
+				       resource->object.id);
 
 	resource->client = client;
 	wl_signal_init(&resource->destroy_signal);
@@ -1277,7 +1280,10 @@ wl_client_add_object(struct wl_client *client,
 	wl_signal_init(&resource->destroy_signal);
 
 	if (wl_map_insert_at(&client->objects, resource->object.id, resource) < 0) {
-		wl_resource_post_no_memory(client->display_resource);
+		wl_resource_post_error(client->display_resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "invalid new id %d",
+				       resource->object.id);
 		free(resource);
 		return NULL;
 	}
