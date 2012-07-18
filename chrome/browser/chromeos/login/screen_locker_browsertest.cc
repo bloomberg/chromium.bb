@@ -163,15 +163,10 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ScreenLockerTest);
 };
 
-#if defined(OS_LINUX)
-// http://crbug.com/137488
-#define TestBasic DISABLED_TestBasic
-#endif
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
   EXPECT_CALL(*mock_power_manager_client_, NotifyScreenLockCompleted())
       .Times(1)
       .RetiresOnSaturation();
-  UserManager::Get()->UserLoggedIn("user", true);
   ScreenLocker::Show();
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
   tester->EmulateWindowManagerReady();
@@ -188,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
   EXPECT_GT(lock_bounds.width(), 10);
   EXPECT_GT(lock_bounds.height(), 10);
 
-  tester->InjectMockAuthenticator("user", "pass");
+  tester->InjectMockAuthenticator(UserManager::kStubUser, "pass");
   EXPECT_TRUE(tester->IsLocked());
   tester->EnterPassword("fail");
   ui_test_utils::RunAllPendingInMessageLoop();
@@ -205,10 +200,6 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
   EXPECT_FALSE(tester->IsLocked());
 }
 
-#if defined(OS_LINUX)
-// http://crbug.com/137488
-#define TestFullscreenExit DISABLED_TestFullscreenExit
-#endif
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
   EXPECT_CALL(*mock_power_manager_client_, NotifyScreenLockCompleted())
       .Times(1)
@@ -223,14 +214,13 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
   }
   {
     Waiter waiter(browser());
-    UserManager::Get()->UserLoggedIn("user", true);
     ScreenLocker::Show();
     tester->EmulateWindowManagerReady();
     waiter.Wait(true /* locked */, false /* full screen */);
     EXPECT_FALSE(browser()->window()->IsFullscreen());
     EXPECT_TRUE(tester->IsLocked());
   }
-  tester->InjectMockAuthenticator("user", "pass");
+  tester->InjectMockAuthenticator(UserManager::kStubUser, "pass");
   tester->EnterPassword("pass");
   ui_test_utils::RunAllPendingInMessageLoop();
   ScreenLocker::Hide();
@@ -247,16 +237,12 @@ void UnlockKeyPress(views::Widget* widget) {
   SimulateKeyPress(widget, ui::VKEY_SPACE);
 }
 
-#if defined(OS_LINUX)
-// http://crbug.com/137488
-#define TestShowTwice DISABLED_TestShowTwice
-#endif
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
   EXPECT_CALL(*mock_power_manager_client_, NotifyScreenLockCompleted())
       .Times(2)
       .RetiresOnSaturation();
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
-  LockScreenWithUser(tester.get(), "user");
+  LockScreenWithUser(tester.get(), UserManager::kStubUser);
 
   // Ensure there's a profile or this test crashes.
   ProfileManager::GetDefaultProfile();
@@ -271,14 +257,12 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
   EXPECT_FALSE(tester->IsLocked());
 }
 
-// TODO(flackr): Find out why the RenderView isn't getting the escape press
-// and re-enable this test.
-IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestEscape) {
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestEscape) {
   EXPECT_CALL(*mock_power_manager_client_, NotifyScreenLockCompleted())
       .Times(1)
       .RetiresOnSaturation();
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
-  LockScreenWithUser(tester.get(), "user");
+  LockScreenWithUser(tester.get(), UserManager::kStubUser);
 
   // Ensure there's a profile or this test crashes.
   ProfileManager::GetDefaultProfile();
