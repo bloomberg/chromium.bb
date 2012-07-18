@@ -685,21 +685,26 @@ drm_output_set_cursor(struct weston_output *output_base,
 	    es->geometry.width > 64 || es->geometry.height > 64)
 		return;
 
-	output->current_cursor ^= 1;
-	bo = output->cursor_bo[output->current_cursor];
-	memset(buf, 0, sizeof buf);
-	stride = wl_shm_buffer_get_stride(es->buffer);
-	s = wl_shm_buffer_get_data(es->buffer);
-	for (i = 0; i < es->geometry.height; i++)
-		memcpy(buf + i * 64, s + i * stride, es->geometry.width * 4);
+	if (es->buffer && pixman_region32_not_empty(&es->damage)) {
+		output->current_cursor ^= 1;
+		bo = output->cursor_bo[output->current_cursor];
+		memset(buf, 0, sizeof buf);
+		stride = wl_shm_buffer_get_stride(es->buffer);
+		s = wl_shm_buffer_get_data(es->buffer);
+		for (i = 0; i < es->geometry.height; i++)
+			memcpy(buf + i * 64, s + i * stride,
+			       es->geometry.width * 4);
 
-	if (gbm_bo_write(bo, buf, sizeof buf) < 0)
-		return;
+		weston_log("bo_write now\n");
+		if (gbm_bo_write(bo, buf, sizeof buf) < 0)
+			return;
 
-	handle = gbm_bo_get_handle(bo).s32;
-	if (drmModeSetCursor(c->drm.fd, output->crtc_id, handle, 64, 64)) {
-		weston_log("failed to set cursor: %n\n");
-		return;
+		handle = gbm_bo_get_handle(bo).s32;
+		if (drmModeSetCursor(c->drm.fd,
+				     output->crtc_id, handle, 64, 64)) {
+			weston_log("failed to set cursor: %n\n");
+			return;
+		}
 	}
 
 	x = es->geometry.x - output->base.x;
