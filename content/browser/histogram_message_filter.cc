@@ -11,8 +11,7 @@
 
 namespace content {
 
-HistogramMessageFilter::HistogramMessageFilter() {
-}
+HistogramMessageFilter::HistogramMessageFilter() {}
 
 void HistogramMessageFilter::OnChannelConnected(int32 peer_pid) {
   BrowserMessageFilter::OnChannelConnected(peer_pid);

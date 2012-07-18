@@ -32,8 +32,6 @@ class HistogramMessageFilter : public BrowserMessageFilter {
   void OnChildHistogramData(int sequence_number,
                             const std::vector<std::string>& pickled_histograms);
 
-  ProcessType process_type_;
-
   DISALLOW_COPY_AND_ASSIGN(HistogramMessageFilter);
 };
 
