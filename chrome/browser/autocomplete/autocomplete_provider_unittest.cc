@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/autocomplete/autocomplete_provider.h"
+
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -12,7 +14,6 @@
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/autocomplete/search_provider.h"
