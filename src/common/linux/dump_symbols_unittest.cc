@@ -45,7 +45,7 @@
 #include "common/using_std_string.h"
 
 namespace google_breakpad {
-bool WriteSymbolFileInternal(uint8_t* obj_file,
+bool WriteSymbolFileInternal(const uint8_t* obj_file,
                              const string &obj_filename,
                              const string &debug_dir,
                              bool cfi,
@@ -89,9 +89,6 @@ TEST_F(DumpSymbols, Invalid) {
                                        s));
 }
 
-// TODO(ted): Fix the dump_symbols code to deal with cross-word-size
-// ELF files.
-#if __ELF_NATIVE_CLASS == 32
 TEST_F(DumpSymbols, SimplePublic32) {
   ELF elf(EM_386, ELFCLASS32, kLittleEndian);
   // Zero out text section for simplicity.
@@ -126,9 +123,7 @@ TEST_F(DumpSymbols, SimplePublic32) {
             "PUBLIC 1000 0 superfunc\n",
             s.str());
 }
-#endif
 
-#if __ELF_NATIVE_CLASS == 64
 TEST_F(DumpSymbols, SimplePublic64) {
   ELF elf(EM_X86_64, ELFCLASS64, kLittleEndian);
   // Zero out text section for simplicity.
@@ -163,4 +158,3 @@ TEST_F(DumpSymbols, SimplePublic64) {
             "PUBLIC 1000 0 superfunc\n",
             s.str());
 }
-#endif

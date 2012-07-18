@@ -33,6 +33,7 @@
 #include <string.h>
 
 #include "common/linux/linux_libc_support.h"
+#include "common/linux/elfutils-inl.h"
 
 namespace google_breakpad {
 
@@ -41,7 +42,7 @@ namespace {
 template<typename ElfClass>
 void FindElfClassSection(const char *elf_base,
                          const char *section_name,
-                         uint32_t section_type,
+                         typename ElfClass::Word section_type,
                          const void **section_start,
                          int *section_size) {
   typedef typename ElfClass::Ehdr Ehdr;
@@ -53,27 +54,21 @@ void FindElfClassSection(const char *elf_base,
 
   assert(my_strncmp(elf_base, ELFMAG, SELFMAG) == 0);
 
-  int name_len = my_strlen(section_name);
-
   const Ehdr* elf_header = reinterpret_cast<const Ehdr*>(elf_base);
   assert(elf_header->e_ident[EI_CLASS] == ElfClass::kClass);
 
   const Shdr* sections =
-      reinterpret_cast<const Shdr*>(elf_base + elf_header->e_shoff);
-  const Shdr* string_section = sections + elf_header->e_shstrndx;
+    GetOffset<ElfClass,Shdr>(elf_header, elf_header->e_shoff);
+  const Shdr* section_names = sections + elf_header->e_shstrndx;
+  const char* names =
+    GetOffset<ElfClass,char>(elf_header, section_names->sh_offset);
+  const char *names_end = names + section_names->sh_size;
 
-  const Shdr* section = NULL;
-  for (int i = 0; i < elf_header->e_shnum; ++i) {
-    if (sections[i].sh_type == section_type) {
-      const char* current_section_name = (char*)(elf_base +
-                                                 string_section->sh_offset +
-                                                 sections[i].sh_name);
-      if (!my_strncmp(current_section_name, section_name, name_len)) {
-        section = &sections[i];
-        break;
-      }
-    }
-  }
+  const Shdr* section =
+    FindElfSectionByName<ElfClass>(section_name, section_type,
+                                   sections, names, names_end,
+                                   elf_header->e_shnum);
+
   if (section != NULL && section->sh_size > 0) {
     *section_start = elf_base + section->sh_offset;
     *section_size = section->sh_size;
@@ -81,6 +76,18 @@ void FindElfClassSection(const char *elf_base,
 }
 
 }  // namespace
+
+bool IsValidElf(const void* elf_base) {
+  return my_strncmp(reinterpret_cast<const char*>(elf_base),
+                    ELFMAG, SELFMAG) == 0;
+}
+
+int ElfClass(const void* elf_base) {
+  const ElfW(Ehdr)* elf_header =
+    reinterpret_cast<const ElfW(Ehdr)*>(elf_base);
+
+  return elf_header->e_ident[EI_CLASS];
+}
 
 bool FindElfSection(const void *elf_mapped_base,
                     const char *section_name,
@@ -95,22 +102,22 @@ bool FindElfSection(const void *elf_mapped_base,
   *section_start = NULL;
   *section_size = 0;
 
-  const char* elf_base =
-    static_cast<const char*>(elf_mapped_base);
-  const ElfW(Ehdr)* elf_header =
-    reinterpret_cast<const ElfW(Ehdr)*>(elf_base);
-  if (my_strncmp(elf_base, ELFMAG, SELFMAG) != 0)
+  if (!IsValidElf(elf_mapped_base))
     return false;
 
+  int cls = ElfClass(elf_mapped_base);
   if (elfclass) {
-    *elfclass = elf_header->e_ident[EI_CLASS];
+    *elfclass = cls;
   }
 
-  if (elf_header->e_ident[EI_CLASS] == ELFCLASS32) {
+  const char* elf_base =
+    static_cast<const char*>(elf_mapped_base);
+
+  if (cls == ELFCLASS32) {
     FindElfClassSection<ElfClass32>(elf_base, section_name, section_type,
                                     section_start, section_size);
     return *section_start != NULL;
-  } else if (elf_header->e_ident[EI_CLASS] == ELFCLASS64) {
+  } else if (cls == ELFCLASS64) {
     FindElfClassSection<ElfClass64>(elf_base, section_name, section_type,
                                     section_start, section_size);
     return *section_start != NULL;
