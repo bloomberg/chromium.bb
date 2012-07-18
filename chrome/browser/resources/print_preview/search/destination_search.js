@@ -93,7 +93,15 @@ cr.define('print_preview', function() {
 
     // Dispatched when the user requests to sign-in to their Google account.
     SIGN_IN: 'print_preview.DestinationSearch.SIGN_IN'
-  },
+  };
+
+  /**
+   * Padding at the bottom of a destination list in pixels.
+   * @type {number}
+   * @const
+   * @private
+   */
+  DestinationSearch.LIST_BOTTOM_PADDING_ = 18;
 
   DestinationSearch.prototype = {
     __proto__: print_preview.Component.prototype,
@@ -298,7 +306,8 @@ cr.define('print_preview', function() {
       }, 0);
       for (var i = 1; i <= maxListLength; i++) {
         var listsHeight = lists.reduce(function(sum, list) {
-          return sum + list.getEstimatedHeightInPixels(i) + 18 /*padding*/;
+          return sum + list.getEstimatedHeightInPixels(i) +
+              DestinationSearch.LIST_BOTTOM_PADDING_;
         }, 0);
         if (listsHeight > availableHeight) {
           i -= 1;
@@ -309,6 +318,14 @@ cr.define('print_preview', function() {
       lists.forEach(function(list) {
         list.updateShortListSize(i);
       });
+
+      // Set height of the list manually so that search filter doesn't change
+      // lists height.
+      this.getChildElement('.lists').style.height =
+          lists.reduce(function(sum, list) {
+            return sum + list.getEstimatedHeightInPixels(i) +
+                DestinationSearch.LIST_BOTTOM_PADDING_;
+          }, 0) + 'px';
     },
 
     /**
