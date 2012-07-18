@@ -73,7 +73,7 @@ class CaptivePortalTabReloader {
 
   virtual ~CaptivePortalTabReloader();
 
-  // The following 4 functions are all invoked by the CaptivePortalTabHelper:
+  // The following functions are all invoked by the CaptivePortalTabHelper:
 
   // Called when a non-error main frame load starts.  Resets current state,
   // unless this is a login tab.  Each load will eventually result in a call to
@@ -81,21 +81,24 @@ class CaptivePortalTabReloader {
   // loads and for error pages.
   virtual void OnLoadStart(bool is_ssl);
 
-  // Called when a page is committed.  |net_error| will be net::OK in the case
-  // of a successful load.  For an errror page, the entire 3-step process of
-  // getting the error, starting a new provisional load for the error page, and
-  // committing the error page is treated as a single commit.
+  // Called when the main frame is committed.  |net_error| will be net::OK in
+  // the case of a successful load.  For an errror page, the entire 3-step
+  // process of getting the error, starting a new provisional load for the error
+  // page, and committing the error page is treated as a single commit.
   //
   // The Link Doctor page will typically be one OnLoadCommitted with an error
   // code, followed by another OnLoadCommitted with net::OK for the Link Doctor
   // page.
   virtual void OnLoadCommitted(int net_error);
 
-  // This is called when the current provisional load is canceled.
+  // This is called when the current provisional main frame load is canceled.
   // Sets state to STATE_NONE, unless this is a login tab.
   virtual void OnAbort();
 
-  // Called by CaptivePortalTabHelper whenever a captive portal test completes.
+  // Called whenever a provisional load to the main frame is redirected.
+  virtual void OnRedirect(bool is_ssl);
+
+  // Called whenever a captive portal test completes.
   virtual void OnCaptivePortalResults(Result previous_result, Result result);
 
  protected:
@@ -111,7 +114,6 @@ class CaptivePortalTabReloader {
   // STATE_TIMER_RUNNING.  Stopped on any state change, including when a page
   // commits or there's an error.  If the timer triggers, the state switches to
   // STATE_MAYBE_BROKEN_BY_PORTAL and |this| kicks off a captive portal check.
-  // TODO(mmenke):  On redirects, update this timer.
   base::OneShotTimer<CaptivePortalTabReloader> slow_ssl_load_timer_;
 
  private:
@@ -153,6 +155,10 @@ class CaptivePortalTabReloader {
   // page's provisional load starts, so does not perfectly align with the
   // notion of a provisional load used by the WebContents.
   bool provisional_main_frame_load_;
+
+  // True if there was an SSL URL the in the redirect chain for the current
+  // provisional main frame load.
+  bool ssl_url_in_redirect_chain_;
 
   // Time to wait after a provisional HTTPS load before triggering a captive
   // portal check.

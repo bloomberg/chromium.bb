@@ -401,4 +401,145 @@ TEST_F(CaptivePortalTabReloaderTest, LogInWhileTimerRunningNoError) {
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
 }
 
+// Simulate an HTTP redirect to HTTPS, when the Internet is connected.
+TEST_F(CaptivePortalTabReloaderTest, HttpToHttpsRedirectInternetConnected) {
+  tab_reloader().OnLoadStart(false);
+  // There should be no captive portal check pending.
+  MessageLoop::current()->RunAllPending();
+
+  // HTTP to HTTPS redirect.
+  tab_reloader().OnRedirect(true);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_TIMER_RUNNING,
+            tab_reloader().state());
+  EXPECT_TRUE(tab_reloader().TimerRunning());
+
+  EXPECT_CALL(tab_reloader(), CheckForCaptivePortal()).Times(1);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_FALSE(tab_reloader().TimerRunning());
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_MAYBE_BROKEN_BY_PORTAL,
+            tab_reloader().state());
+
+  tab_reloader().OnCaptivePortalResults(RESULT_INTERNET_CONNECTED,
+                                        RESULT_INTERNET_CONNECTED);
+
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
+  EXPECT_FALSE(tab_reloader().TimerRunning());
+
+  tab_reloader().OnLoadCommitted(net::OK);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
+}
+
+// Simulate an HTTP redirect to HTTPS and subsequent Login, when the user logs
+// in before the original page commits.
+TEST_F(CaptivePortalTabReloaderTest, HttpToHttpsRedirectLogin) {
+  tab_reloader().OnLoadStart(false);
+  // There should be no captive portal check pending.
+  MessageLoop::current()->RunAllPending();
+
+  // HTTP to HTTPS redirect.
+  tab_reloader().OnRedirect(true);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_TIMER_RUNNING,
+            tab_reloader().state());
+
+  EXPECT_CALL(tab_reloader(), CheckForCaptivePortal()).Times(1);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_FALSE(tab_reloader().TimerRunning());
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_MAYBE_BROKEN_BY_PORTAL,
+            tab_reloader().state());
+
+  // The captive portal service detects a captive portal.  The TabReloader
+  // should try and create a new login tab in response.
+  EXPECT_CALL(tab_reloader(), MaybeOpenCaptivePortalLoginTab()).Times(1);
+  tab_reloader().OnCaptivePortalResults(RESULT_INTERNET_CONNECTED,
+                                        RESULT_BEHIND_CAPTIVE_PORTAL);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_BROKEN_BY_PORTAL,
+            tab_reloader().state());
+  EXPECT_FALSE(tab_reloader().TimerRunning());
+
+  // The user logs on from another tab, and a captive portal check is triggered.
+  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
+                                        RESULT_INTERNET_CONNECTED);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NEEDS_RELOAD,
+            tab_reloader().state());
+
+  // The error page commits, which should start an asynchronous reload.
+  tab_reloader().OnLoadCommitted(net::ERR_CONNECTION_TIMED_OUT);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NEEDS_RELOAD,
+            tab_reloader().state());
+
+  EXPECT_CALL(tab_reloader(), ReloadTab()).Times(1);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
+}
+
+// Simulate the case where an HTTPs page redirects to an HTTPS page, before
+// the timer triggers.
+TEST_F(CaptivePortalTabReloaderTest, HttpsToHttpRedirect) {
+  tab_reloader().OnLoadStart(true);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_TIMER_RUNNING,
+            tab_reloader().state());
+
+  tab_reloader().OnRedirect(false);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
+  EXPECT_FALSE(tab_reloader().TimerRunning());
+
+  // There should be no captive portal check pending after the redirect.
+  MessageLoop::current()->RunAllPending();
+
+  // Logging in shouldn't do anything.
+  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
+                                        RESULT_INTERNET_CONNECTED);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
+}
+
+// Check that an HTTPS to HTTPS redirect results in no timer running.
+TEST_F(CaptivePortalTabReloaderTest, HttpsToHttpsRedirect) {
+  tab_reloader().OnLoadStart(true);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_TIMER_RUNNING,
+            tab_reloader().state());
+
+  tab_reloader().OnRedirect(true);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE,
+            tab_reloader().state());
+  EXPECT_FALSE(tab_reloader().TimerRunning());
+  // Nothing should happen.
+  MessageLoop::current()->RunAllPending();
+}
+
+// Check that an HTTPS to HTTP to HTTPS redirect results in no timer running.
+TEST_F(CaptivePortalTabReloaderTest, HttpsToHttpToHttpsRedirect) {
+  tab_reloader().OnLoadStart(true);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_TIMER_RUNNING,
+            tab_reloader().state());
+
+  tab_reloader().OnRedirect(false);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
+  EXPECT_FALSE(tab_reloader().TimerRunning());
+
+  tab_reloader().OnRedirect(true);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE,
+            tab_reloader().state());
+  EXPECT_FALSE(tab_reloader().TimerRunning());
+  // Nothing should happen.
+  MessageLoop::current()->RunAllPending();
+}
+
+// Check that an HTTP to HTTP redirect results in the timer not running.
+TEST_F(CaptivePortalTabReloaderTest, HttpToHttpRedirect) {
+  tab_reloader().OnLoadStart(false);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
+
+  tab_reloader().OnRedirect(false);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
+  EXPECT_FALSE(tab_reloader().TimerRunning());
+
+  // There should be no captive portal check pending after the redirect.
+  MessageLoop::current()->RunAllPending();
+
+  // Logging in shouldn't do anything.
+  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
+                                        RESULT_INTERNET_CONNECTED);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
+}
+
 }  // namespace captive_portal

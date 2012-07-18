@@ -9,10 +9,12 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "chrome/browser/captive_portal/captive_portal_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 
+class GURL;
 class Profile;
 
 namespace captive_portal {
@@ -86,6 +88,12 @@ class CaptivePortalTabHelper : public content::WebContentsObserver,
   friend class CaptivePortalBrowserTest;
   friend class CaptivePortalTabHelperTest;
 
+  // Called by Observe in response to the corresponding event.
+  void OnRedirect(int64 frame_id, const GURL& new_url);
+
+  // Called by Observe in response to the corresponding event.
+  void OnCaptivePortalResults(Result previous_result, Result result);
+
   // Called to indicate a tab is at, or is navigating to, the captive portal
   // login page.
   void SetIsLoginTab();
@@ -108,6 +116,11 @@ class CaptivePortalTabHelper : public content::WebContentsObserver,
   // error code associated with the error page we're loading.
   // net::OK, otherwise.
   int pending_error_code_;
+
+  // The ID of the main frame that's currently provisionally loaded, if there is
+  // one.  -1 (unknown/invalid) when there is no such frame, or when an id of
+  // -1 is passed to DidStartProvisionalLoadForFrame.
+  int64 provisional_main_frame_id_;
 
   content::NotificationRegistrar registrar_;
 

@@ -45,8 +45,10 @@
 #include "content/test/net/url_request_failed_job.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "net/base/net_errors.h"
+#include "net/base/transport_security_state.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_status.h"
@@ -68,7 +70,8 @@ const char* const kTestServerIframeTimeoutPath =
 
 // The following URLs each have two different behaviors, depending on whether
 // URLRequestMockCaptivePortalJobFactory is currently simulating the presence
-// of a captive portal or not.
+// of a captive portal or not.  They use different domains so that HSTS can be
+// applied to them independently.
 
 // A mock URL for the CaptivePortalService's |test_url|.  When behind a captive
 // portal, this URL return a mock login page.  When connected to the Internet,
@@ -732,6 +735,25 @@ void CaptivePortalObserver::Observe(
   }
 }
 
+// Adds an HSTS rule for |host|, so that all HTTP requests sent to it will
+// be switched to HTTPS requests.
+void AddHstsHost(net::URLRequestContextGetter* context_getter,
+                 const std::string& host) {
+  ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  net::TransportSecurityState* transport_security_state =
+      context_getter->GetURLRequestContext()->transport_security_state();
+  if (!transport_security_state) {
+    FAIL();
+    return;
+  }
+
+  net::TransportSecurityState::DomainState state;
+  state.upgrade_expiry = state.created + base::TimeDelta::FromDays(1000);
+  state.include_subdomains = false;
+
+  transport_security_state->EnableHost(host, state);
+}
+
 }  // namespace
 
 class CaptivePortalBrowserTest : public InProcessBrowserTest {
@@ -812,11 +834,23 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   // on URLRequestTimeoutOnDemandJob::WaitForJobs having been called.
   void SlowLoadBehindCaptivePortal(Browser* browser, bool expect_login_tab);
 
+  // Same as above, but accepts a URL parameter.  |hanging_url| should either
+  // be kMockHttpsUrl or redirect to kMockHttpsUrl.
+  void SlowLoadBehindCaptivePortal(Browser* browser,
+                                   bool expect_open_login_tab,
+                                   const GURL& hanging_url);
+
   // Just like SlowLoadBehindCaptivePortal, except the navigated tab has
   // a connection timeout rather having its time trigger, and the function
   // waits until that timeout occurs.
   void FastTimeoutBehindCaptivePortal(Browser* browser,
                                       bool expect_open_login_tab);
+
+  // Same as above, but accepts a URL parameter.  |timeout_url| should result
+  // in a connection timeout without hanging.
+  void FastTimeoutBehindCaptivePortal(Browser* browser,
+                                      bool expect_open_login_tab,
+                                      const GURL& timeout_url);
 
   // Navigates the login tab without logging in.  The login tab must be the
   // specified browser's active tab.  Expects no other tab to change state.
@@ -957,6 +991,8 @@ void CaptivePortalBrowserTest::NavigateToPageExpectNoTest(
   EXPECT_EQ(1, browser->tab_count());
   EXPECT_EQ(expected_navigations, navigation_observer.num_navigations());
   EXPECT_EQ(0, NumLoadingTabs());
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE,
+            GetStateOfTabReloaderAt(browser, 0));
 }
 
 void CaptivePortalBrowserTest::SlowLoadNoCaptivePortal(
@@ -1050,6 +1086,15 @@ void CaptivePortalBrowserTest::FastTimeoutNoCaptivePortal(
 void CaptivePortalBrowserTest::SlowLoadBehindCaptivePortal(
     Browser* browser,
     bool expect_open_login_tab) {
+  SlowLoadBehindCaptivePortal(browser,
+                              expect_open_login_tab,
+                              GURL(kMockHttpsUrl));
+}
+
+void CaptivePortalBrowserTest::SlowLoadBehindCaptivePortal(
+    Browser* browser,
+    bool expect_open_login_tab,
+    const GURL& hanging_url) {
   // Calling this on a tab that's waiting for a load to manually be timed out
   // will result in a hang.
   ASSERT_FALSE(chrome::GetActiveWebContents(browser)->IsLoading());
@@ -1074,7 +1119,7 @@ void CaptivePortalBrowserTest::SlowLoadBehindCaptivePortal(
   MultiNavigationObserver navigation_observer;
   CaptivePortalObserver portal_observer(browser->profile());
   ui_test_utils::NavigateToURLWithDisposition(browser,
-                                              GURL(kMockHttpsUrl),
+                                              hanging_url,
                                               CURRENT_TAB,
                                               ui_test_utils::BROWSER_TEST_NONE);
 
@@ -1120,6 +1165,15 @@ void CaptivePortalBrowserTest::SlowLoadBehindCaptivePortal(
 void CaptivePortalBrowserTest::FastTimeoutBehindCaptivePortal(
     Browser* browser,
     bool expect_open_login_tab) {
+  FastTimeoutBehindCaptivePortal(browser,
+                                 expect_open_login_tab,
+                                 GURL(kMockHttpsQuickTimeoutUrl));
+}
+
+void CaptivePortalBrowserTest::FastTimeoutBehindCaptivePortal(
+    Browser* browser,
+    bool expect_open_login_tab,
+    const GURL& timeout_url) {
   // Calling this on a tab that's waiting for a load to manually be timed out
   // will result in a hang.
   ASSERT_FALSE(chrome::GetActiveWebContents(browser)->IsLoading());
@@ -1145,7 +1199,7 @@ void CaptivePortalBrowserTest::FastTimeoutBehindCaptivePortal(
   MultiNavigationObserver navigation_observer;
   CaptivePortalObserver portal_observer(browser->profile());
   ui_test_utils::NavigateToURLWithDisposition(browser,
-                                              GURL(kMockHttpsQuickTimeoutUrl),
+                                              timeout_url,
                                               CURRENT_TAB,
                                               ui_test_utils::BROWSER_TEST_NONE);
 
@@ -1895,6 +1949,58 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, DISABLED_TwoWindows) {
 
   // Simulate logging in.
   Login(active_browser, 0, 1);
+}
+
+// An HTTP page redirects to an HTTPS page loads slowly before timing out.  A
+// captive portal is found, and then the user logs in before the original page
+// times out.
+IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HttpToHttpsRedirectLogin) {
+  ASSERT_TRUE(test_server()->Start());
+  SlowLoadBehindCaptivePortal(
+      browser(),
+      true,
+      test_server()->GetURL(CreateServerRedirect(kMockHttpsUrl)));
+  Login(browser(), 1, 0);
+  FailLoadsAfterLogin(browser(), 1);
+}
+
+// An HTTPS page redirects to an HTTP page.
+IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HttpsToHttpRedirect) {
+  // Use an HTTPS server for the top level page.
+  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
+                               net::TestServer::kLocalhost,
+                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  GURL http_timeout_url =
+      URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_TIMED_OUT);
+
+  // 2 navigations due to the Link Doctor.
+  NavigateToPageExpectNoTest(
+      browser(),
+      https_server.GetURL(CreateServerRedirect(http_timeout_url.spec())),
+      2);
+}
+
+// HSTS redirects an HTTP request to HTTPS, and the request then times out.
+// A captive portal is then detected, and a login tab opened, before logging
+// in.
+IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HstsLogin) {
+  GURL::Replacements replacements;
+  std::string scheme = "http";
+  replacements.SetSchemeStr(scheme);
+  GURL http_timeout_url = GURL(kMockHttpsUrl).ReplaceComponents(replacements);
+
+  URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_TIMED_OUT);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&AddHstsHost,
+                 make_scoped_refptr(browser()->profile()->GetRequestContext()),
+                 http_timeout_url.host()));
+
+  SlowLoadBehindCaptivePortal(browser(), true, http_timeout_url);
+  Login(browser(), 1, 0);
+  FailLoadsAfterLogin(browser(), 1);
 }
 
 }  // namespace captive_portal

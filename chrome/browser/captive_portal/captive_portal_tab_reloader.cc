@@ -9,7 +9,6 @@
 #include "base/message_loop.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -33,6 +32,7 @@ CaptivePortalTabReloader::CaptivePortalTabReloader(
       web_contents_(web_contents),
       state_(STATE_NONE),
       provisional_main_frame_load_(false),
+      ssl_url_in_redirect_chain_(false),
       slow_ssl_load_time_(
           base::TimeDelta::FromSeconds(kDefaultSlowSSLTimeSeconds)),
       open_login_tab_callback_(open_login_tab_callback),
@@ -44,6 +44,7 @@ CaptivePortalTabReloader::~CaptivePortalTabReloader() {
 
 void CaptivePortalTabReloader::OnLoadStart(bool is_ssl) {
   provisional_main_frame_load_ = true;
+  ssl_url_in_redirect_chain_ = is_ssl;
 
   SetState(STATE_NONE);
 
@@ -57,6 +58,7 @@ void CaptivePortalTabReloader::OnLoadStart(bool is_ssl) {
 
 void CaptivePortalTabReloader::OnLoadCommitted(int net_error) {
   provisional_main_frame_load_ = false;
+  ssl_url_in_redirect_chain_ = false;
 
   if (state_ == STATE_NONE)
     return;
@@ -91,7 +93,21 @@ void CaptivePortalTabReloader::OnLoadCommitted(int net_error) {
 
 void CaptivePortalTabReloader::OnAbort() {
   provisional_main_frame_load_ = false;
+  ssl_url_in_redirect_chain_ = false;
+
   SetState(STATE_NONE);
+}
+
+void CaptivePortalTabReloader::OnRedirect(bool is_ssl) {
+  SetState(STATE_NONE);
+  if (!is_ssl)
+    return;
+  // Only start the SSL timer running if no SSL URL has been seen in the current
+  // redirect chain.  If we've already successfully downloaded one SSL URL,
+  // assume we're not behind a captive portal.
+  if (!ssl_url_in_redirect_chain_)
+    SetState(STATE_TIMER_RUNNING);
+  ssl_url_in_redirect_chain_ = true;
 }
 
 void CaptivePortalTabReloader::OnCaptivePortalResults(

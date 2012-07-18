@@ -11,6 +11,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,6 +36,7 @@ class MockCaptivePortalTabReloader : public CaptivePortalTabReloader {
   MOCK_METHOD1(OnLoadStart, void(bool));
   MOCK_METHOD1(OnLoadCommitted, void(int));
   MOCK_METHOD0(OnAbort, void());
+  MOCK_METHOD1(OnRedirect, void(bool));
   MOCK_METHOD2(OnCaptivePortalResults, void(Result, Result));
 };
 
@@ -104,6 +106,7 @@ class CaptivePortalTabHelperTest : public testing::Test {
     return tab_helper_;
   }
 
+  // Simulates a captive portal redirect by calling the Observe method.
   void ObservePortalResult(Result previous_result, Result result) {
     content::Source<Profile> source_profile(NULL);
 
@@ -117,6 +120,13 @@ class CaptivePortalTabHelperTest : public testing::Test {
     tab_helper().Observe(chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
                          source_profile,
                          details_results);
+  }
+
+  // Simulates a redirect.  Uses OnRedirect rather than Observe, for simplicity.
+  void OnRedirect(int64 frame_id, const GURL& new_url) {
+    content::Source<content::WebContents> source_contents(NULL);
+
+    tab_helper().OnRedirect(frame_id, new_url);
   }
 
   MockCaptivePortalTabReloader& mock_reloader() { return *mock_reloader_; }
@@ -247,6 +257,72 @@ TEST_F(CaptivePortalTabHelperTest, HttpsSubframeParallelError) {
   EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::ERR_UNEXPECTED)).Times(1);
   tab_helper().DidCommitProvisionalLoadForFrame(
       frame_id, true, url, content::PAGE_TRANSITION_LINK, NULL);
+}
+
+// Simulates an HTTP to HTTPS redirect, which then times out.
+TEST_F(CaptivePortalTabHelperTest, HttpToHttpsRedirectTimeout) {
+  GURL http_url("http://mail.google.com");
+  EXPECT_CALL(mock_reloader(), OnLoadStart(false)).Times(1);
+  tab_helper().DidStartProvisionalLoadForFrame(1, true, http_url, false, NULL);
+
+  GURL https_url("https://mail.google.com");
+  EXPECT_CALL(mock_reloader(), OnRedirect(true)).Times(1);
+  OnRedirect(1, https_url);
+
+  tab_helper().DidFailProvisionalLoad(
+      1, true, https_url, net::ERR_TIMED_OUT, string16(), NULL);
+
+  // Provisional load starts for the error page.
+  tab_helper().DidStartProvisionalLoadForFrame(
+      1, true, GURL(kErrorPageUrl), true, NULL);
+
+  EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::ERR_TIMED_OUT)).Times(1);
+  tab_helper().DidCommitProvisionalLoadForFrame(
+      1, true, GURL(kErrorPageUrl), content::PAGE_TRANSITION_LINK, NULL);
+}
+
+// Simulates an HTTPS to HTTP redirect.
+TEST_F(CaptivePortalTabHelperTest, HttpsToHttpRedirect) {
+  GURL https_url("https://mail.google.com");
+  EXPECT_CALL(mock_reloader(), OnLoadStart(true)).Times(1);
+  tab_helper().DidStartProvisionalLoadForFrame(1, true, https_url, false, NULL);
+
+  GURL http_url("http://mail.google.com");
+  EXPECT_CALL(mock_reloader(), OnRedirect(false)).Times(1);
+  OnRedirect(1, http_url);
+
+  EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::OK)).Times(1);
+  tab_helper().DidCommitProvisionalLoadForFrame(
+      1, true, http_url, content::PAGE_TRANSITION_LINK, NULL);
+}
+
+// Simulates an HTTPS to HTTPS redirect.
+TEST_F(CaptivePortalTabHelperTest, HttpToHttpRedirect) {
+  GURL https_url("https://mail.google.com");
+  EXPECT_CALL(mock_reloader(), OnLoadStart(true)).Times(1);
+  tab_helper().DidStartProvisionalLoadForFrame(1, true, https_url, false, NULL);
+
+  GURL http_url("https://www.google.com");
+  EXPECT_CALL(mock_reloader(), OnRedirect(true)).Times(1);
+  OnRedirect(1, http_url);
+
+  EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::OK)).Times(1);
+  tab_helper().DidCommitProvisionalLoadForFrame(
+      1, true, http_url, content::PAGE_TRANSITION_LINK, NULL);
+}
+
+// Simulates redirect of a subframe.
+TEST_F(CaptivePortalTabHelperTest, SubframeRedirect) {
+  GURL http_url("http://mail.google.com");
+  EXPECT_CALL(mock_reloader(), OnLoadStart(false)).Times(1);
+  tab_helper().DidStartProvisionalLoadForFrame(1, true, http_url, false, NULL);
+
+  GURL https_url("https://mail.google.com");
+  OnRedirect(2, https_url);
+
+  EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::OK)).Times(1);
+  tab_helper().DidCommitProvisionalLoadForFrame(
+      1, true, GURL(kErrorPageUrl), content::PAGE_TRANSITION_LINK, NULL);
 }
 
 TEST_F(CaptivePortalTabHelperTest, LoginTabLogin) {
