@@ -622,6 +622,9 @@ void OmxVideoDecodeAccelerator::StopOnError(
     media::VideoDecodeAccelerator::Error error) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
+  if (current_state_change_ == ERRORING)
+    return;
+
   if (client_ && init_begun_)
     client_->NotifyError(error);
   client_ = NULL;
@@ -927,9 +930,11 @@ void OmxVideoDecodeAccelerator::EventHandlerCompleteTask(OMX_EVENTTYPE event,
           DispatchStateReached(static_cast<OMX_STATETYPE>(data2));
           return;
         case OMX_CommandFlush:
-          if (current_state_change_ == DESTROYING)
+          if (current_state_change_ == DESTROYING ||
+              current_state_change_ == ERRORING) {
             return;
-          DCHECK(current_state_change_ == RESETTING);
+          }
+          DCHECK_EQ(current_state_change_, RESETTING);
           if (data2 == input_port_)
             InputPortFlushDone();
           else if (data2 == output_port_)
