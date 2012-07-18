@@ -258,6 +258,20 @@ void InstallWebstoreBindings(ModuleSystem* module_system,
                               "chromeHiddenWebstore");
 }
 
+static v8::Handle<v8::Object> GetOrCreateChrome(
+    v8::Handle<v8::Context> context) {
+  v8::Handle<v8::String> chrome_string(v8::String::New("chrome"));
+  v8::Handle<v8::Object> global(context->Global());
+  v8::Handle<v8::Value> chrome(global->Get(chrome_string));
+  if (chrome.IsEmpty() || chrome->IsUndefined()) {
+    v8::Handle<v8::Object> chrome_object(v8::Object::New());
+    global->Set(chrome_string, chrome_object);
+    return chrome_object;
+  }
+  CHECK(chrome->IsObject());
+  return chrome->ToObject();
+}
+
 }  // namespace
 
 ExtensionDispatcher::ExtensionDispatcher()
@@ -720,15 +734,7 @@ void ExtensionDispatcher::DidCreateScriptContext(
           static_cast<chrome::VersionInfo::Channel>(chrome_channel_))));
   module_system->RegisterNativeHandler("logging",
       scoped_ptr<NativeHandler>(new LoggingNativeHandler()));
-  // Create the 'chrome' variable if it doesn't already exist.
-  {
-    v8::HandleScope handle_scope;
-    v8::Handle<v8::String> chrome_string(v8::String::New("chrome"));
-    v8::Handle<v8::Object> global(v8::Context::GetCurrent()->Global());
-    v8::Handle<v8::Value> chrome(global->Get(chrome_string));
-    if (chrome.IsEmpty() || chrome->IsUndefined())
-      global->Set(chrome_string, v8::Object::New());
-  }
+  GetOrCreateChrome(v8_context);
 
   // Loading JavaScript is expensive, so only run the full API bindings
   // generation mechanisms in extension pages (NOT all web pages).
