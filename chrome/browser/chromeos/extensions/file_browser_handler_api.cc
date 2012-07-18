@@ -237,27 +237,9 @@ void FileHandlerSelectFileFunction::CreateFileOnFileThread(
     const GURL& file_system_root) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
-  if (success)
-    success = DoCreateFile();
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
       base::Bind(&FileHandlerSelectFileFunction::OnFileCreated, this,
           success, file_system_name, file_system_root));
-}
-
-bool FileHandlerSelectFileFunction::DoCreateFile() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-
-  // Don't allow links.
-  if (file_util::PathExists(full_path_) && file_util::IsLink(full_path_))
-    return false;
-
-  bool created = false;
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  int creation_flags = base::PLATFORM_FILE_CREATE_ALWAYS |
-                       base::PLATFORM_FILE_READ |
-                       base::PLATFORM_FILE_WRITE;
-  base::CreatePlatformFile(full_path_, creation_flags, &created, &error);
-  return error == base::PLATFORM_FILE_OK;
 }
 
 void FileHandlerSelectFileFunction::OnFileCreated(

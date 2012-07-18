@@ -155,6 +155,33 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const fileapi::FileSystemOperationInterface::StatusCallback& callback,
       base::PlatformFileError* truncate_result);
 
+  // Invoked during OpenFile() operation when truncate or write flags are set.
+  // This is called when a local modifiable cached file is ready for such
+  // operation.
+  void OnOpenFileForWriting(
+      int file_flags,
+      base::ProcessHandle peer_handle,
+      const fileapi::FileSystemOperationInterface::OpenFileCallback& callback,
+      GDataFileError gdata_error,
+      const FilePath& local_cache_path);
+
+  // Invoked during OpenFile() operation when file create flags are set.
+  void OnCreateFileForOpen(
+      const FilePath& file_path,
+      int file_flags,
+      base::ProcessHandle peer_handle,
+      const fileapi::FileSystemOperationInterface::OpenFileCallback& callback,
+      GDataFileError gdata_error);
+
+  // Invoked during OpenFile() operation when base::PLATFORM_FILE_OPEN_TRUNCATED
+  // flag is set. This is called when the truncation of a local cache file is
+  // finished on FILE thread.
+  void OnOpenAndTruncate(
+      base::ProcessHandle peer_handle,
+      const fileapi::FileSystemOperationInterface::OpenFileCallback& callback,
+      base::PlatformFile* platform_file,
+      base::PlatformFileError* truncate_result);
+
   // GDataFileSystemProxy is owned by Profile, which outlives
   // GDataFileSystemProxy, which is owned by CrosMountPointProvider (i.e. by
   // the time Profile is removed, the file manager is already gone). Hence

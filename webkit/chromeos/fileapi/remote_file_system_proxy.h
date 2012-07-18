@@ -94,7 +94,7 @@ class RemoteFileSystemProxyInterface :
       const FileSystemURL& url,
       const WritableSnapshotFile& callback) = 0;
 
-  // Opens file for a give |url| with specified |flags| (see
+  // Opens file for a given |url| with specified |flags| (see
   // base::PlatformFileFlags for details).
   virtual void OpenFile(
       const FileSystemURL& url,

@@ -35,6 +35,13 @@ function errorCallback(error) {
   chrome.test.fail(msg);
 }
 
+function ensureFileExists(entry, successCallback, errorCallback) {
+  entry.filesystem.root.getFile(entry.fullPath,
+                                {create: true},
+                                successCallback,
+                                errorCallback);
+}
+
 function writeToFile(entry) {
   entry.createWriter(function(writer) {
     writer.onerror = function(e) {
@@ -59,7 +66,7 @@ chrome.test.runTests([
           chrome.test.assertTrue(result.success);
           chrome.test.assertTrue(!!result.entry);
 
-         writeToFile(result.entry);
+          ensureFileExists(result.entry, writeToFile, errorCallback);
       });
   },
   function selectionFails() {

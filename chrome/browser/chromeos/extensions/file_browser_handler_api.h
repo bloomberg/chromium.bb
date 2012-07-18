@@ -56,9 +56,6 @@ class FileHandlerSelectFileFunction : public AsyncExtensionFunction {
                               const std::string& file_system_name,
                               const GURL& file_system_root);
 
-  // Creates file on provided file path.
-  bool DoCreateFile();
-
   // Called on UI thread after the file gets created.
   void OnFileCreated(bool success,
                      const std::string& file_system_name,

@@ -157,16 +157,6 @@ void RemoteFileSystemOperation::OpenFile(const FileSystemURL& url,
                                          int file_flags,
                                          base::ProcessHandle peer_handle,
                                          const OpenFileCallback& callback) {
-  // TODO(zelidrag): Implement file write operations.
-  if ((file_flags & base::PLATFORM_FILE_CREATE) ||
-      (file_flags & base::PLATFORM_FILE_WRITE) ||
-      (file_flags & base::PLATFORM_FILE_EXCLUSIVE_WRITE) ||
-      (file_flags & base::PLATFORM_FILE_CREATE_ALWAYS) ||
-      (file_flags & base::PLATFORM_FILE_OPEN_TRUNCATED) ||
-      (file_flags & base::PLATFORM_FILE_DELETE_ON_CLOSE)) {
-    NOTIMPLEMENTED() << "File write operations not supported " << url.spec();
-    return;
-  }
   DCHECK(SetPendingOperationType(kOperationOpenFile));
   remote_proxy_->OpenFile(
       url,
