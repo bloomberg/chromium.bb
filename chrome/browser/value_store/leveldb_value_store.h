@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_VALUE_STORE_LEVELDB_VALUE_STORE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/value_store/value_store.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"

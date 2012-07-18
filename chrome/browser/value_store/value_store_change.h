@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VALUE_STORE_VALUE_STORE_CHANGE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

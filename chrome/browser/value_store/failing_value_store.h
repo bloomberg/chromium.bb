@@ -11,7 +11,8 @@
 // Settings storage area which fails every request.
 class FailingValueStore : public ValueStore {
  public:
-  FailingValueStore() {}
+  FailingValueStore();
+  virtual ~FailingValueStore();
 
   // ValueStore implementation.
   virtual size_t GetBytesInUse(const std::string& key) OVERRIDE;

@@ -4,8 +4,6 @@
 
 #include "chrome/browser/value_store/leveldb_value_store.h"
 
-#include "base/bind.h"
-#include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -20,7 +18,7 @@ using content::BrowserThread;
 namespace {
 
 // Generic error message on failure.
-const char* kGenericOnFailureMessage = "Failure accessing database";
+const char kGenericOnFailureMessage[] = "Failure accessing database";
 
 // Scoped leveldb snapshot which releases the snapshot on destruction.
 class ScopedSnapshot {

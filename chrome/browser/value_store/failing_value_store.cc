@@ -8,7 +8,7 @@
 
 namespace {
 
-const char* kGenericErrorMessage = "Failed to initialize settings";
+const char kGenericErrorMessage[] = "Failed to initialize settings";
 
 ValueStore::ReadResult ReadResultError() {
   return ValueStore::MakeReadResult(kGenericErrorMessage);
@@ -20,14 +20,17 @@ ValueStore::WriteResult WriteResultError() {
 
 }  // namespace
 
+FailingValueStore::FailingValueStore() {}
+
+FailingValueStore::~FailingValueStore() {}
+
 size_t FailingValueStore::GetBytesInUse(const std::string& key) {
   // Let SettingsStorageQuotaEnforcer implement this.
   NOTREACHED() << "Not implemented";
   return 0;
 }
 
-size_t FailingValueStore::GetBytesInUse(
-    const std::vector<std::string>& keys) {
+size_t FailingValueStore::GetBytesInUse(const std::vector<std::string>& keys) {
   // Let SettingsStorageQuotaEnforcer implement this.
   NOTREACHED() << "Not implemented";
   return 0;
@@ -39,8 +42,7 @@ size_t FailingValueStore::GetBytesInUse() {
   return 0;
 }
 
-ValueStore::ReadResult FailingValueStore::Get(
-    const std::string& key) {
+ValueStore::ReadResult FailingValueStore::Get(const std::string& key) {
   return ReadResultError();
 }
 
@@ -63,8 +65,7 @@ ValueStore::WriteResult FailingValueStore::Set(
   return WriteResultError();
 }
 
-ValueStore::WriteResult FailingValueStore::Remove(
-    const std::string& key) {
+ValueStore::WriteResult FailingValueStore::Remove(const std::string& key) {
   return WriteResultError();
 }
 
