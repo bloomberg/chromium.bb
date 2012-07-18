@@ -7,14 +7,17 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/string_split.h"
 #include "base/stringprintf.h"
 #include "chrome/renderer/searchbox.h"
 #include "content/public/renderer/render_view.h"
+#include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
 
 using WebKit::WebFrame;
@@ -25,39 +28,6 @@ using WebKit::WebView;
 namespace extensions_v8 {
 
 static const char kSearchBoxExtensionName[] = "v8/SearchBox";
-
-static const char kSearchBoxExtensionScript[] =
-    "var chrome;"
-    "if (!chrome)"
-    "  chrome = {};"
-    "if (!chrome.searchBox) {"
-    "  chrome.searchBox = new function() {"
-    "    native function GetValue();"
-    "    native function GetVerbatim();"
-    "    native function GetSelectionStart();"
-    "    native function GetSelectionEnd();"
-    "    native function GetX();"
-    "    native function GetY();"
-    "    native function GetWidth();"
-    "    native function GetHeight();"
-    "    native function SetSuggestions();"
-    "    this.__defineGetter__('value', GetValue);"
-    "    this.__defineGetter__('verbatim', GetVerbatim);"
-    "    this.__defineGetter__('selectionStart', GetSelectionStart);"
-    "    this.__defineGetter__('selectionEnd', GetSelectionEnd);"
-    "    this.__defineGetter__('x', GetX);"
-    "    this.__defineGetter__('y', GetY);"
-    "    this.__defineGetter__('width', GetWidth);"
-    "    this.__defineGetter__('height', GetHeight);"
-    "    this.setSuggestions = function(text) {"
-    "      SetSuggestions(text);"
-    "    };"
-    "    this.onchange = null;"
-    "    this.onsubmit = null;"
-    "    this.oncancel = null;"
-    "    this.onresize = null;"
-    "  };"
-    "}";
 
 static const char kDispatchChangeEventScript[] =
     "if (window.chrome &&"
@@ -152,7 +122,7 @@ static const char kInitScript[] =
 
 class SearchBoxExtensionWrapper : public v8::Extension {
  public:
-  SearchBoxExtensionWrapper();
+  explicit SearchBoxExtensionWrapper(const base::StringPiece& code);
 
   // Allows v8's javascript code to call the native functions defined
   // in this class for window.chrome.
@@ -197,8 +167,9 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   DISALLOW_COPY_AND_ASSIGN(SearchBoxExtensionWrapper);
 };
 
-SearchBoxExtensionWrapper::SearchBoxExtensionWrapper()
-    : v8::Extension(kSearchBoxExtensionName, kSearchBoxExtensionScript) {}
+SearchBoxExtensionWrapper::SearchBoxExtensionWrapper(
+    const base::StringPiece& code)
+    : v8::Extension(kSearchBoxExtensionName, code.data(), 0, 0, code.size()) {}
 
 v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     v8::Handle<v8::String> name) {
@@ -437,7 +408,10 @@ bool SearchBoxExtension::PageSupportsInstant(WebFrame* frame) {
 
 // static
 v8::Extension* SearchBoxExtension::Get() {
-  return new SearchBoxExtensionWrapper();
+  const base::StringPiece code =
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_SEARCHBOX_API, ui::SCALE_FACTOR_NONE);
+  return new SearchBoxExtensionWrapper(code);
 }
 
 }  // namespace extensions_v8
