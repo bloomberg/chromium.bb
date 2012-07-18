@@ -138,20 +138,22 @@ class ThumbnailGenerator : public content::NotificationObserver,
       int tag,
       const gfx::Size& size);
 
-  // Asynchronously updates the thumbnail of the given tab. This must be called
-  // on the UI thread.
+  // Asynchronously updates the thumbnail of the given tab. The caller must
+  // ensure that |web_contents| outlives ThumbnailGenerator so that the
+  // asynchronous callback can accesses |web_contents|. This must be called on
+  // the UI thread.
   void AsyncUpdateThumbnail(content::WebContents* web_contents);
 
   // Called when the bitmap for generating a thumbnail is ready after the
   // AsyncUpdateThumbnail invocation. This runs on the UI thread.
   void UpdateThumbnailWithBitmap(
-      const base::WeakPtr<content::WebContents>& web_contents,
+      content::WebContents* web_contents,
       const SkBitmap& bitmap);
 
   // Called when the canvas for generating a thumbnail is ready after the
   // AsyncUpdateThumbnail invocation. This runs on the UI thread.
   void UpdateThumbnailWithCanvas(
-      const base::WeakPtr<content::WebContents>& web_contents,
+      content::WebContents* web_contents,
       skia::PlatformCanvas* temp_canvas,
       bool result);
 
@@ -179,8 +181,6 @@ class ThumbnailGenerator : public content::NotificationObserver,
   bool load_interrupted_;
 
   base::WeakPtrFactory<ThumbnailGenerator> weak_factory_;
-  scoped_ptr<base::WeakPtrFactory<content::WebContents> >
-      web_contents_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailGenerator);
 };

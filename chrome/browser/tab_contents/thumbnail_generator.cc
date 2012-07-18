@@ -190,8 +190,6 @@ void ThumbnailGenerator::StartThumbnailing(WebContents* web_contents) {
                    content::Source<WebContents>(web_contents));
     registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
                    content::Source<WebContents>(web_contents));
-    web_contents_weak_factory_.reset(
-        new base::WeakPtrFactory<WebContents>(web_contents));
   }
 }
 
@@ -376,9 +374,6 @@ void ThumbnailGenerator::WebContentsDisconnected(WebContents* contents) {
     }
     ++iterator;
   }
-
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  web_contents_weak_factory_.reset(NULL);
 }
 
 double ThumbnailGenerator::CalculateBoringScore(const SkBitmap& bitmap) {
@@ -506,7 +501,7 @@ void ThumbnailGenerator::AsyncUpdateThumbnail(
       AskForSnapshot(render_widget_host,
                      base::Bind(&ThumbnailGenerator::UpdateThumbnailWithBitmap,
                                 weak_factory_.GetWeakPtr(),
-                                web_contents_weak_factory_->GetWeakPtr()),
+                                web_contents),
                      view_size,
                      view_size);
     }
@@ -523,19 +518,15 @@ void ThumbnailGenerator::AsyncUpdateThumbnail(
       copy_size,
       base::Bind(&ThumbnailGenerator::UpdateThumbnailWithCanvas,
                  weak_factory_.GetWeakPtr(),
-                 web_contents_weak_factory_->GetWeakPtr(),
+                 web_contents,
                  base::Owned(temp_canvas)),
       temp_canvas);
 }
 
 void ThumbnailGenerator::UpdateThumbnailWithBitmap(
-    const base::WeakPtr<WebContents>& web_contents,
+    WebContents* web_contents,
     const SkBitmap& bitmap) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  // The weak pointer is invalidated when the web contens is disconnected.
-  if (!web_contents.get())
-    return;
-
   if (bitmap.isNull() || bitmap.empty())
     return;
 
@@ -545,18 +536,14 @@ void ThumbnailGenerator::UpdateThumbnailWithBitmap(
                                        kThumbnailHeight,
                                        ThumbnailGenerator::kClippedThumbnail,
                                        &clip_result);
-  UpdateThumbnail(web_contents.get(), thumbnail, clip_result);
+  UpdateThumbnail(web_contents, thumbnail, clip_result);
 }
 
 void ThumbnailGenerator::UpdateThumbnailWithCanvas(
-    const base::WeakPtr<WebContents>& web_contents,
+    WebContents* web_contents,
     skia::PlatformCanvas* temp_canvas,
     bool succeeded) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  // The weak pointer is invalidated when the web contens is disconnected.
-  if (!web_contents.get())
-    return;
-
   if (!succeeded)
     return;
 
