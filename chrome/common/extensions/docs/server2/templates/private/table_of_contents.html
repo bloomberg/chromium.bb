@@ -16,10 +16,10 @@
       <a href="#apiReference">API reference: chrome.{{api.name}}</a>
       <ol>
         {{#api}}
+          {{?api.types}}<li>{{+partials.toc_types}}</li>{{/}}
           {{?api.properties}}<li>{{+partials.toc_properties}}</li>{{/}}
           {{?api.functions}}<li>{{+partials.toc_functions}}</li>{{/}}
           {{?api.events}}<li>{{+partials.toc_events}}</li>{{/}}
-          {{?api.types}}<li>{{+partials.toc_types}}</li>{{/}}
         {{/api}}
       </ol>
     </li>
