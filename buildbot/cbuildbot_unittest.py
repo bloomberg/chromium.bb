@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -546,4 +546,5 @@ class FullInterfaceTest(cros_test_lib.TempDirMixin, unittest.TestCase):
 
 
 if __name__ == '__main__':
+  cros_build_lib.SetupBasicLogging()
   unittest.main()

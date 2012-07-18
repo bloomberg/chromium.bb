@@ -13,8 +13,6 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
-from chromite.buildbot import constants
-from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.scripts import cros_mark_as_stable
 
@@ -109,4 +107,5 @@ class GitBranchTest(mox.MoxTestBase):
 
 
 if __name__ == '__main__':
+  cros_build_lib.SetupBasicLogging()
   unittest.main()

@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,7 +13,6 @@ import signal
 import subprocess
 import sys
 import traceback
-from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 
 
@@ -137,9 +136,9 @@ class _TeeProcess(multiprocessing.Process):
     # pylint: disable=W0703
     except Exception, e:
       tb = traceback.format_exc()
+      cros_build_lib.PrintBuildbotStepFailure(self._error_handle)
       self._error_handle.write(
-          "\n%s\nUnhandled exception occured in tee:\n%s\n"
-          % (constants.STEP_FAILURE, tb,))
+          'Unhandled exception occured in tee:\n%s\n' % (tb,))
       # Try to signal the parent telling them of our
       # imminent demise.
 

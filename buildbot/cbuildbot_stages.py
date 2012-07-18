@@ -354,13 +354,14 @@ class SyncStage(bs.BuilderStage):
 
   def ManifestCheckout(self, next_manifest):
     """Checks out the repository to the given manifest."""
-    print 'BUILDROOT: %s' % self.repo.directory
-    print 'TRACKING BRANCH: %s' % self.repo.branch
-    print 'NEXT MANIFEST: %s' % next_manifest
+    self._Print('\n'.join(['BUILDROOT: %s' % self.repo.directory,
+                           'TRACKING BRANCH: %s' % self.repo.branch,
+                           'NEXT MANIFEST: %s' % next_manifest]))
 
     if not self.skip_sync:
       self.repo.Sync(next_manifest)
-    print self.repo.ExportManifest(mark_revision=self.output_manifest_sha1)
+    print >> sys.stderr, self.repo.ExportManifest(
+        mark_revision=self.output_manifest_sha1)
 
   def _PerformStage(self):
     self.Initialize()
@@ -472,7 +473,7 @@ class ManifestVersionedSyncStage(SyncStage):
       next_manifest = self.GetNextManifest()
 
     if not next_manifest:
-      print 'Found no work to do.'
+      cros_build_lib.Info('Found no work to do.')
       if ManifestVersionedSyncStage.manifest_manager.DidLastBuildSucceed():
         sys.exit(0)
       else:
@@ -480,8 +481,8 @@ class ManifestVersionedSyncStage(SyncStage):
 
     # Log this early on for the release team to grep out before we finish.
     if ManifestVersionedSyncStage.manifest_manager:
-      print '\nRELEASETAG: %s\n' % (
-          ManifestVersionedSyncStage.manifest_manager.current_version)
+      self._Print('\nRELEASETAG: %s\n' % (
+          ManifestVersionedSyncStage.manifest_manager.current_version))
 
     self.ManifestCheckout(next_manifest)
 
@@ -720,16 +721,18 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         LKGMCandidateSyncStage.sub_manager.PromoteCandidate()
 
   def HandleValidationFailure(self, failing_statuses):
-    print '\n%s' % constants.STEP_WARNINGS
-    print 'The following builders failed with this manifest:'
-    print ', '.join(sorted(failing_statuses.keys()))
-    print 'Please check the logs of the failing builders for details.'
+    cros_build_lib.PrintBuildbotStepWarnings()
+    cros_build_lib.Warning('\n'.join([
+        'The following builders failed with this manifest:',
+        ', '.join(sorted(failing_statuses.keys())),
+        'Please check the logs of the failing builders for details.']))
 
   def HandleValidationTimeout(self, inflight_statuses):
-    print '\n%s' % constants.STEP_WARNINGS
-    print 'The following builders took too long to finish:'
-    print ', '.join(sorted(inflight_statuses.keys()))
-    print 'Please check the logs of these builders for details.'
+    cros_build_lib.PrintBuildbotStepWarnings()
+    cros_build_lib.Warning('\n'.join([
+        'The following builders took too long to finish:',
+        ', '.join(sorted(inflight_statuses.keys())),
+        'Please check the logs of these builders for details.']))
 
   def _PerformStage(self):
     super(LKGMCandidateSyncCompletionStage, self)._PerformStage()
@@ -1653,10 +1656,10 @@ class ArchiveStage(BoardSpecificBuilderStage):
       if not files:
         raise Exception('No stripped Chrome found!')
       elif len(files) > 1:
-        print '\n@@@STEP_WARNING@@@'
+        cros_build_lib.PrintBuildbotStepWarnings()
         cros_build_lib.Warning('Expecting one stripped Chrome package, but '
-                               'found multiple in %s.'
-                               % os.path.dirname(chrome_match))
+                               'found multiple in %s.',
+                               os.path.dirname(chrome_match))
 
       chrome_tarball = files[-1]
       filename = os.path.basename(chrome_tarball)

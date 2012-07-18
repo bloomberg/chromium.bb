@@ -52,6 +52,10 @@ class BackgroundSteps(multiprocessing.Process):
     assert not self.Empty()
     _step, output = self._steps.pop(0)
 
+    # Flush stdout and stderr to be sure no output is interleaved.
+    sys.stdout.flush()
+    sys.stderr.flush()
+
     # File position pointers are shared across processes, so we must open
     # our own file descriptor to ensure output is not lost.
     output_name = output.name

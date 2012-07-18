@@ -89,7 +89,7 @@ def _RunBuildScript(buildroot, cmd, capture_output=False, **kwargs):
         return cros_build_lib.RunCommand(cmd, **kwargs)
     except cros_build_lib.RunCommandError as ex:
       # Print the original exception.
-      print ex
+      cros_build_lib.Error('\n%s', ex)
 
       # Check whether a specific package failed. If so, wrap the
       # exception appropriately.
@@ -159,8 +159,7 @@ def BuildRootGitCleanup(buildroot, debug_run):
         cros_build_lib.GitCleanAndCheckoutUpstream(cwd, False)
       except cros_build_lib.RunCommandError, e:
         result = e.result
-        logging.info(result.output)
-        print constants.STEP_WARNINGS
+        logging.warn('\n%s', result.output)
         logging.warn('Deleting %s because %s failed', cwd,  e.result.cmd)
         lock.write_lock()
         if os.path.isdir(cwd):
@@ -175,7 +174,7 @@ def BuildRootGitCleanup(buildroot, debug_run):
           logging.warn('Deleting %s as well', repo_store)
           if os.path.isdir(repo_store):
             shutil.rmtree(repo_store)
-        print constants.STEP_WARNINGS
+        cros_build_lib.PrintBuildbotStepWarnings()
         return
 
       cros_build_lib.RunGitCommand(
@@ -620,10 +619,10 @@ def MarkChromeAsStable(buildroot,
         ['emerge-%s' % board, '-p', '--quiet', '=%s' % chrome_atom],
         enter_chroot=True, error_code_ok=True, combine_stdout_stderr=True)
     if result.returncode:
-      cros_build_lib.Warning('\n'.join(['', result.output,
-                                        constants.STEP_WARNINGS]))
+      cros_build_lib.PrintBuildbotStepWarnings()
+      cros_build_lib.Warning('\n%s' % result.output)
       cros_build_lib.Warning('Cannot emerge-%s =%s\nIs Chrome pinned to an '
-                             'older version? ' % (board, chrome_atom))
+                             'older version?' % (board, chrome_atom))
       return None
 
   return chrome_atom
@@ -878,9 +877,9 @@ def UploadSymbols(buildroot, board, official):
     cros_build_lib.RunCommandCaptureOutput(cmd, cwd=cwd, enter_chroot=True,
                                            combine_stdout_stderr=True)
   except cros_build_lib.RunCommandError, e:
-    # TODO(davidjames): Convert this to a fatal error after July 1, 2012.
-    print constants.STEP_WARNINGS
-    print e.result.output
+    # TODO(davidjames): Convert this to a fatal error.
+    cros_build_lib.PrintBuildbotStepWarnings()
+    logging.warn('\n%s', e.result.output)
 
 
 def PushImages(buildroot, board, branch_name, archive_url, dryrun, profile):

@@ -1,12 +1,11 @@
 #!/usr/bin/python
 
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Unittests for GerritHelper.  Needs to have mox installed."""
 
-import copy
 import mox
 import sys
 import unittest
@@ -14,12 +13,7 @@ import unittest
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import gerrit_helper
-from chromite.buildbot import patch_unittest as cros_patch_unittest
 from chromite.lib import cros_build_lib
-
-
-def test_json_data():
-  return copy.deepcopy(cros_patch_unittest.FAKE_PATCH_JSON)
 
 
 # pylint: disable=W0212,R0904
@@ -344,4 +338,5 @@ class GerritQueryTests(mox.MoxTestBase):
 
 
 if __name__ == '__main__':
+  cros_build_lib.SetupBasicLogging()
   unittest.main()

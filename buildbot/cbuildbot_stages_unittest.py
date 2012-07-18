@@ -1517,4 +1517,5 @@ class BuildStagesResultsTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
+  cros_build_lib.SetupBasicLogging()
   unittest.main()

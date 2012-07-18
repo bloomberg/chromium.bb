@@ -3786,4 +3786,5 @@ class MainTest(CpuTestBase):
     self.mox.VerifyAll()
 
 if __name__ == '__main__':
+  cros_build_lib.SetupBasicLogging()
   unittest.main()

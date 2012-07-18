@@ -22,7 +22,7 @@ from chromite.lib import cros_test_lib
 
 
 # pylint: disable=E1101,W0212,R0904
-class RunBuildScriptTest(mox.MoxTestBase, cros_test_lib.TestCase):
+class RunBuildScriptTest(mox.MoxTestBase):
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
@@ -43,6 +43,7 @@ class RunBuildScriptTest(mox.MoxTestBase, cros_test_lib.TestCase):
     # Mock out functions used by RunBuildScript.
     self.mox.StubOutWithMock(cros_build_lib, 'ReinterpretPathForChroot')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'Error')
     self.mox.StubOutWithMock(os.path, 'exists')
     self.mox.StubOutWithMock(tempfile, 'NamedTemporaryFile')
 
@@ -67,14 +68,13 @@ class RunBuildScriptTest(mox.MoxTestBase, cros_test_lib.TestCase):
       result = cros_build_lib.CommandResult()
       ex = cros_build_lib.RunCommandError('command totally failed', result)
       ret.AndRaise(ex)
+      cros_build_lib.Error('\n%s', ex)
 
     # If the script failed, the exception should be raised and printed.
     self.mox.ReplayAll()
     if raises:
-      with self.OutputCapturer() as output:
-        self.assertRaises(raises, commands._RunBuildScript, buildroot,
-                          cmd, enter_chroot=in_chroot)
-        self.assertEquals(output.GetStdout(), '%s\n' % (ex,))
+      self.assertRaises(raises, commands._RunBuildScript, buildroot,
+                        cmd, enter_chroot=in_chroot)
     else:
       commands._RunBuildScript(buildroot, cmd, enter_chroot=in_chroot)
     self.mox.VerifyAll()
@@ -434,4 +434,5 @@ class CBuildBotTest(mox.MoxTestBase):
 
 
 if __name__ == '__main__':
+  cros_build_lib.SetupBasicLogging()
   unittest.main()

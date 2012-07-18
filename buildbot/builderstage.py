@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -19,7 +19,6 @@ except ImportError:
 
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_results as results_lib
-from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 
@@ -85,13 +84,20 @@ class BuilderStage(object):
 
     return overlays, push_overlays
 
+  def _Print(self, msg):
+    """Prints a msg to stderr."""
+    sys.stdout.flush()
+    print >> sys.stderr, msg
+    sys.stderr.flush()
+
   def _PrintLoudly(self, msg):
     """Prints a msg with loudly."""
 
     border_line = '*' * 60
     edge = '*' * 2
 
-    print border_line
+    sys.stdout.flush()
+    print >> sys.stderr, border_line
 
     msg_lines = msg.split('\n')
 
@@ -100,10 +106,10 @@ class BuilderStage(object):
       del msg_lines[-1]
 
     for msg_line in msg_lines:
-      print '%s %s' % (edge, msg_line)
+      print >> sys.stderr, '%s %s' % (edge, msg_line)
 
-    print border_line
-    sys.stdout.flush()
+    print >> sys.stderr, border_line
+    sys.stderr.flush()
 
   def _GetPortageEnvVar(self, envvar, board):
     """Get a portage environment variable for the configuration's board.
@@ -185,7 +191,7 @@ class BuilderStage(object):
     """Can be overridden.  Called before a stage is performed."""
 
     # Tell the buildbot we are starting a new step for the waterfall
-    print '\n@@@BUILD_STEP %s@@@\n' % self.name
+    self._Print('\n@@@BUILD_STEP %s@@@\n' % self.name)
 
     self._PrintLoudly('Start Stage %s - %s\n\n%s' % (
         self.name, time.strftime('%H:%M:%S'), self.__doc__))
@@ -222,8 +228,8 @@ class BuilderStage(object):
     This is used by the ForgivingBuilderStage's to treat any exceptions as
     warnings instead of stage failures.
     """
-    print '\n%s' % constants.STEP_WARNINGS
-    print self._StringifyException(exception)
+    cros_build_lib.PrintBuildbotStepWarnings()
+    cros_build_lib.Warning(self._StringifyException(exception))
     return results_lib.Results.FORGIVEN, None
 
   def _HandleStageException(self, exception):
@@ -233,9 +239,9 @@ class BuilderStage(object):
     is not an exception.
     """
     # Tell the user about the exception, and record it
-    print '\n%s' % constants.STEP_FAILURE
     description = self._StringifyException(exception)
-    print description
+    cros_build_lib.PrintBuildbotStepFailure()
+    cros_build_lib.Error(description)
     return exception, description
 
   def HandleSkip(self):

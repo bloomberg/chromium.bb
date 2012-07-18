@@ -173,7 +173,7 @@ def _KillChildProcess(proc, kill_timeout, cmd, original_handler, signum, frame):
         # Still doesn't want to die.  Too bad, so sad, time to die.
         proc.kill()
     except EnvironmentError, e:
-      print 'Ignoring unhandled exception in _KillChildProcess: %s' % (e,)
+      Warning('Ignoring unhandled exception in _KillChildProcess: %s', e)
 
     # Ensure our child process has been reaped.
     proc.wait()
@@ -474,10 +474,6 @@ def Warning(message, *args, **kwargs):
   logger.warn(message, *args, **kwargs)
 
 
-# This command is deprecated in favor of operation.Info()
-# It is left here for the moment so people are aware what happened.
-# The reason is that this is not aware of the terminal output restrictions such
-# as verbose, quiet and subprocess output. You should not be calling this.
 def Info(message, *args, **kwargs):
   """Emits an info message using the logging module."""
   logger.info(message, *args, **kwargs)
@@ -488,14 +484,24 @@ def Debug(message, *args, **kwargs):
   logger.debug(message, *args, **kwargs)
 
 
-def PrintBuildbotLink(text, url):
+def PrintBuildbotLink(text, url, f=None):
   """Prints out a link to buildbot."""
-  print '\n@@@STEP_LINK@%(text)s@%(url)s@@@' % { 'text': text, 'url': url }
+  (f or sys.stderr).write('\n@@@STEP_LINK@%s@%s@@@\n' % (text, url))
 
 
-def PrintBuildbotStepText(text):
+def PrintBuildbotStepText(text, f=None):
   """Prints out stage text to buildbot."""
-  print '\n@@@STEP_TEXT@%(text)s@@@' % { 'text': text }
+  (f or sys.stderr).write('\n@@@STEP_TEXT@%s@@@\n' % (text,))
+
+
+def PrintBuildbotStepWarnings(f=None):
+  """Marks a stage as having warnings."""
+  (f or sys.stderr).write('\n@@@STEP_WARNINGS@@@\n')
+
+
+def PrintBuildbotStepFailure(f=None):
+  """Marks a stage as having warnings."""
+  (f or sys.stderr).write('\n@@@STEP_FAILURE@@@\n')
 
 
 def ListFiles(base_dir):

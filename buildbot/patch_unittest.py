@@ -1,13 +1,12 @@
 #!/usr/bin/python
 
-# Copyright (c) 2011-2012 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Unittests for commands.  Needs to be run inside of chroot for mox."""
 
 import itertools
-import logging
 import mox
 import os
 import sys
@@ -732,9 +731,5 @@ class PrepareLocalPatchesTests(mox.MoxTestBase):
 
 
 if __name__ == '__main__':
-  logging_format = '%(asctime)s - %(filename)s - %(levelname)-8s: %(message)s'
-  date_format = constants.LOGGER_DATE_FMT
-  logging.basicConfig(level=logging.DEBUG, format=logging_format,
-
-                      datefmt=date_format)
+  cros_build_lib.SetupBasicLogging()
   unittest.main()
