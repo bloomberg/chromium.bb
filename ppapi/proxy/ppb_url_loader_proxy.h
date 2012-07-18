@@ -87,10 +87,6 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
   void OnCallback(int32_t result, const HostResource& resource);
 
   ProxyCompletionCallbackFactory<PPB_URLLoader_Proxy> callback_factory_;
-
-  // Valid only in the host, this lazily-initialized pointer indicates the
-  // URLLoaderTrusted interface.
-  const PPB_URLLoaderTrusted* host_urlloader_trusted_interface_;
 };
 
 }  // namespace proxy

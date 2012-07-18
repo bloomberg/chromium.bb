@@ -359,8 +359,7 @@ struct PPB_URLLoader_Proxy::ReadCallbackInfo {
 
 PPB_URLLoader_Proxy::PPB_URLLoader_Proxy(Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      host_urlloader_trusted_interface_(NULL) {
+      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PPB_URLLoader_Proxy::~PPB_URLLoader_Proxy() {
