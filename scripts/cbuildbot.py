@@ -925,6 +925,12 @@ def _CreateParser():
   # A(unpatched) patches and bootstraps B.  B patches and bootstraps C.
   parser.add_remote_option('--test-bootstrap', action='store_true',
                           default=False, help=optparse.SUPPRESS_HELP)
+  # Note the default here needs to be hardcoded to 3; that is the last version
+  # that lacked this functionality.
+  # This is used so that cbuildbot when processing tryjobs from
+  # older chromite instances, we can use it for handling compatibility.
+  parser.add_option('--remote-version', default=3, type=int, action='store',
+                    help=optparse.SUPPRESS_HELP)
 
   #
   # Debug options

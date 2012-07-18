@@ -77,6 +77,8 @@ class RemoteTryJob(object):
     if '--buildbot' not in self.extra_args:
       self.extra_args.append('--remote-trybot')
 
+    self.extra_args.append('--remote-version=%s'
+                           % (self.TRYJOB_FORMAT_VERSION,))
     self.tryjob_repo = None
     self.local_patches = local_patches
     self.ssh_url = self.EXT_SSH_URL
