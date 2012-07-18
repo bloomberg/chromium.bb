@@ -17,9 +17,7 @@
 
 class BookmarksTest : public InProcessBrowserTest {
  public:
-  BookmarksTest() {
-    EnableDOMAutomation();
-  }
+  BookmarksTest() {}
 
   void OpenBookmarksManager() {
     content::TestNavigationObserver navigation_observer(

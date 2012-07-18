@@ -38,8 +38,6 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
  protected:
   // InProcessBrowserTest
   virtual void SetUpCommandLine(CommandLine* command_line) {
-    EnableDOMAutomation();
-
     if (!enable_extensions_)
       command_line->AppendSwitch(switches::kDisableExtensions);
 

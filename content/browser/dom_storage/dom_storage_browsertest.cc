@@ -16,9 +16,7 @@
 // from end-to-end.
 class DomStorageBrowserTest : public InProcessBrowserTest {
  public:
-  DomStorageBrowserTest() {
-    EnableDOMAutomation();
-  }
+  DomStorageBrowserTest() {}
 
   GURL GetTestURL(const char* name) {
     FilePath file_name = FilePath().AppendASCII(name);

@@ -55,7 +55,6 @@ void EnsureAttributeEventuallyMatches(
 class DOMAutomationTest : public InProcessBrowserTest {
  public:
   DOMAutomationTest() {
-    EnableDOMAutomation();
     JavaScriptExecutionController::set_timeout(30000);
   }
 

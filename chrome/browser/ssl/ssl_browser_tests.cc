@@ -87,9 +87,7 @@ class SSLUITest : public InProcessBrowserTest {
             HTTPSOptions(HTTPSOptions::CERT_EXPIRED), FilePath(kDocRoot)),
         https_server_mismatched_(
             HTTPSOptions(HTTPSOptions::CERT_MISMATCHED_NAME),
-            FilePath(kDocRoot)) {
-    EnableDOMAutomation();
-  }
+            FilePath(kDocRoot)) {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
     // Browser will both run and display insecure content.

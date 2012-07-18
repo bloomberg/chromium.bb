@@ -23,7 +23,6 @@ class AppControllerPlatformAppBrowserTest : public InProcessBrowserTest {
   AppControllerPlatformAppBrowserTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kAppId,
                                     "1234");
   }
@@ -48,9 +47,7 @@ class AppControllerWebAppBrowserTest : public InProcessBrowserTest {
   AppControllerWebAppBrowserTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kApp,
-                                    GetAppURL());
+    command_line->AppendSwitchASCII(switches::kApp, GetAppURL());
   }
 
   std::string GetAppURL() const {

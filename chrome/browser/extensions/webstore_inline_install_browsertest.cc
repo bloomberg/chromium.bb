@@ -32,13 +32,9 @@ const char kNonAppDomain[] = "nonapp.com";
 class WebstoreInlineInstallTest : public InProcessBrowserTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    EnableDOMAutomation();
-
     // We start the test server now instead of in
     // SetUpInProcessBrowserTestFixture so that we can get its port number.
     ASSERT_TRUE(test_server()->Start());
-
-    InProcessBrowserTest::SetUpCommandLine(command_line);
 
     net::HostPortPair host_port = test_server()->host_port_pair();
     test_gallery_url_ = base::StringPrintf(

@@ -11,9 +11,7 @@
 
 class LoadtimesExtensionBindingsTest : public InProcessBrowserTest {
  public:
-  LoadtimesExtensionBindingsTest() {
-    EnableDOMAutomation();
-  }
+  LoadtimesExtensionBindingsTest() {}
 
   void CompareBeforeAndAfter() {
     // TODO(simonjam): There's a race on whether or not first paint is populated

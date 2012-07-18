@@ -22,9 +22,7 @@ using content::Referrer;
 
 class NewTabUIBrowserTest : public InProcessBrowserTest {
  public:
-  NewTabUIBrowserTest() {
-    EnableDOMAutomation();
-  }
+  NewTabUIBrowserTest() {}
 };
 
 // Ensure that chrome-internal: still loads the NTP.

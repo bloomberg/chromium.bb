@@ -33,9 +33,7 @@ const char* kExtensionId = "bjjcibdiodkkeanflmiijlcfieiemced";
 // .nexe is part of an extension from the Chrome Webstore.
 class NaClExtensionTest : public ExtensionBrowserTest {
  public:
-  NaClExtensionTest() {
-    EnableDOMAutomation();
-  }
+  NaClExtensionTest() {}
 
  protected:
   enum InstallType {

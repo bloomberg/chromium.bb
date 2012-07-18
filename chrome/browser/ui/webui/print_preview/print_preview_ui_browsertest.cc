@@ -18,9 +18,7 @@ namespace {
 
 class PrintPreviewTest : public InProcessBrowserTest {
  public:
-  PrintPreviewTest() {
-    EnableDOMAutomation();
-  }
+  PrintPreviewTest() {}
 
 #if !defined(GOOGLE_CHROME_BUILD)
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {

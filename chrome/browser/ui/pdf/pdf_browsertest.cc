@@ -43,8 +43,6 @@ class PDFBrowserTest : public InProcessBrowserTest,
       : snapshot_different_(true),
         next_dummy_search_value_(0),
         load_stop_notification_count_(0) {
-    EnableDOMAutomation();
-
     pdf_test_server_.reset(new net::TestServer(
         net::TestServer::TYPE_HTTP,
         net::TestServer::kLocalhost,

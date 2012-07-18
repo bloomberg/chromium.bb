@@ -22,11 +22,9 @@
 
 class AutomationMiscBrowserTest : public InProcessBrowserTest {
  public:
-  AutomationMiscBrowserTest() {
-    EnableDOMAutomation();
-  }
+  AutomationMiscBrowserTest() {}
 
-  virtual ~AutomationMiscBrowserTest() { }
+  virtual ~AutomationMiscBrowserTest() {}
 };
 
 class MockMouseEventCallback {

@@ -171,8 +171,6 @@ bool ExecuteJavaScript(content::RenderViewHost* render_view_host,
 // value returned by the script evaluation.
 // They return true on success, false if the script evaluation failed or did not
 // evaluate to the expected type.
-// Note: In order for the domAutomationController to work, you must call
-// EnableDOMAutomation() in your test first.
 bool ExecuteJavaScriptAndExtractInt(content::RenderViewHost* render_view_host,
                                     const std::wstring& frame_xpath,
                                     const std::wstring& script,

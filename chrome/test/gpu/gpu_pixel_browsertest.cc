@@ -95,12 +95,8 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kTestGLLib,
                                     "libllvmpipe.so");
-
-    // This enables DOM automation for tab contents.
-    EnableDOMAutomation();
   }
 
   virtual void SetUpInProcessBrowserTestFixture() {

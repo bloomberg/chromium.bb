@@ -83,9 +83,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, RedirectCrossOrigin) {
 
 class ClickToPlayPluginTest : public InProcessBrowserTest {
  public:
-  ClickToPlayPluginTest() {
-    EnableDOMAutomation();
-  }
+  ClickToPlayPluginTest() {}
 
 #if defined(OS_MACOSX)
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {

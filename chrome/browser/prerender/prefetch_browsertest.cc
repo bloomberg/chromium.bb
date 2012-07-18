@@ -17,9 +17,7 @@ const char kPrefetchPage[] = "files/prerender/simple_prefetch.html";
 class PrefetchBrowserTestBase : public InProcessBrowserTest {
  public:
   explicit PrefetchBrowserTestBase(bool do_prefetching)
-      : InProcessBrowserTest(), do_prefetching_(do_prefetching) {
-    EnableDOMAutomation();
-  }
+      : do_prefetching_(do_prefetching) {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     if (do_prefetching_) {

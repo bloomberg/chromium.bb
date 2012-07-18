@@ -207,9 +207,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
       html_for_tests_("files/geolocation/simple.html"),
       fake_latitude_(1.23),
       fake_longitude_(4.56),
-      started_test_server_(false) {
-    EnableDOMAutomation();
-  }
+      started_test_server_(false) {}
 
   // InProcessBrowserTest
   virtual void SetUpOnMainThread() {

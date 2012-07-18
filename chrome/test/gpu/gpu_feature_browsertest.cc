@@ -51,11 +51,6 @@ class GpuFeatureTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
-    // This enables DOM automation for tab contents.
-    EnableDOMAutomation();
-
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-
     // Do not use mesa if real GPU is required.
     if (!command_line->HasSwitch(switches::kUseGpuInTests)) {
 #if !defined(OS_MACOSX)

@@ -208,8 +208,6 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
     // SetUpInProcessBrowserTestFixture so that we can get its port number.
     ASSERT_TRUE(test_server()->Start());
 
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-
     net::HostPortPair host_port = test_server()->host_port_pair();
     command_line->AppendSwitchASCII(
         switches::kAppsGalleryDownloadURL,

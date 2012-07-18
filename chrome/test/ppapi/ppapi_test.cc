@@ -112,7 +112,6 @@ void PPAPITestBase::TestFinishObserver::OnTimeout() {
 }
 
 PPAPITestBase::PPAPITestBase() {
-  EnableDOMAutomation();
 }
 
 void PPAPITestBase::SetUpCommandLine(CommandLine* command_line) {

@@ -101,9 +101,7 @@ class WindowedPersonalDataManagerObserver : public PersonalDataManagerObserver {
 
 class AutofillTest : public InProcessBrowserTest {
  protected:
-  AutofillTest() {
-    EnableDOMAutomation();
-  }
+  AutofillTest() {}
 
   void CreateTestProfile() {
     autofill_test::DisableSystemServices(browser()->profile());

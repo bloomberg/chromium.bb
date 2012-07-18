@@ -141,8 +141,6 @@ class PageCyclerCachedBrowserTest : public PageCyclerBrowserTest {
   // For a cached test, we use the provided user data directory from the test
   // directory.
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-
     FilePath test_dir;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
     test_dir = test_dir.AppendASCII("page_cycler");

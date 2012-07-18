@@ -35,9 +35,7 @@ using webkit_database::DatabaseUtil;
 // the actual implementation that lives in the browser side (in_process_webkit).
 class IndexedDBBrowserTest : public InProcessBrowserTest {
  public:
-  IndexedDBBrowserTest() {
-    EnableDOMAutomation();
-  }
+  IndexedDBBrowserTest() {}
 
   GURL GetTestURL(const FilePath& file_path) {
     FilePath dir;

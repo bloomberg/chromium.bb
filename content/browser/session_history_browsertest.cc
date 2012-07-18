@@ -18,9 +18,7 @@
 
 class SessionHistoryTest : public InProcessBrowserTest {
  protected:
-  SessionHistoryTest() {
-    EnableDOMAutomation();
-  }
+  SessionHistoryTest() {}
 
   virtual void SetUpOnMainThread() {
     ASSERT_TRUE(test_server()->Start());

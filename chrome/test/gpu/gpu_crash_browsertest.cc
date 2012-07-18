@@ -32,9 +32,6 @@ void SimulateGPUCrash(Browser* browser) {
 class GPUCrashTest : public InProcessBrowserTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) {
-    EnableDOMAutomation();
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-
     // GPU tests require gpu acceleration.
     // We do not care which GL backend is used.
     command_line->AppendSwitchASCII(switches::kUseGL, "any");

@@ -95,14 +95,12 @@ InProcessBrowserLayoutTest::InProcessBrowserLayoutTest(
     const FilePath& test_parent_dir, const FilePath& test_case_dir)
     : test_parent_dir_(test_parent_dir), test_case_dir_(test_case_dir),
       port_(-2) {
-  EnableDOMAutomation();
 }
 
 InProcessBrowserLayoutTest::InProcessBrowserLayoutTest(
     const FilePath& test_parent_dir, const FilePath& test_case_dir, int port)
     : test_parent_dir_(test_parent_dir), test_case_dir_(test_case_dir),
       port_(port) {
-  EnableDOMAutomation();
 }
 
 InProcessBrowserLayoutTest::~InProcessBrowserLayoutTest() {

@@ -101,9 +101,7 @@ class SendKeysMenuListener : public views::MenuListener {
 
 class KeyboardAccessTest : public InProcessBrowserTest {
  public:
-  KeyboardAccessTest() {
-    EnableDOMAutomation();
-  }
+  KeyboardAccessTest() {}
 
   // Use the keyboard to select "New Tab" from the app menu.
   // This test depends on the fact that there is one menu and that

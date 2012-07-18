@@ -17,7 +17,6 @@
 namespace options2 {
 
 OptionsBrowserTest::OptionsBrowserTest() {
-  EnableDOMAutomation();
 }
 
 void OptionsBrowserTest::NavigateToSettings() {

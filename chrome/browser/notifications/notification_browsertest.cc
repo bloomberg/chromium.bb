@@ -14,9 +14,7 @@
 
 class NotificationsPermissionTest : public InProcessBrowserTest {
  public:
-  NotificationsPermissionTest() {
-    EnableDOMAutomation();
-  }
+  NotificationsPermissionTest() {}
 };
 
 // If this flakes, use http://crbug.com/62311 and http://crbug.com/74428.

@@ -52,9 +52,7 @@ using content::WebContents;
 
 class InstantTest : public InProcessBrowserTest {
  public:
-  InstantTest() {
-    EnableDOMAutomation();
-  }
+  InstantTest() {}
 
   void EnableInstant() {
     InstantController::Enable(browser()->profile());

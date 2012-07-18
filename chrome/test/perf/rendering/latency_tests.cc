@@ -224,8 +224,6 @@ class LatencyTest
 
 void LatencyTest::SetUpCommandLine(CommandLine* command_line) {
   BrowserPerfTest::SetUpCommandLine(command_line);
-  // This enables DOM automation for tab contents.
-  EnableDOMAutomation();
   if (CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kEnableThreadedCompositing)) {
     command_line->AppendSwitch(switches::kEnableThreadedCompositing);

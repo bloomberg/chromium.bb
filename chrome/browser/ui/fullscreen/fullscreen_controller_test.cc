@@ -20,7 +20,6 @@ const char FullscreenControllerTest::kFullscreenMouseLockHTML[] =
     "files/fullscreen_mouselock/fullscreen_mouselock.html";
 
 void FullscreenControllerTest::SetUpCommandLine(CommandLine* command_line) {
-  InProcessBrowserTest::SetUpCommandLine(command_line);
   command_line->AppendSwitch(switches::kEnablePointerLock);
 }
 

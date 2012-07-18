@@ -218,7 +218,6 @@ bool BasePanelBrowserTest::SkipTestIfCompizWM() {
 }
 
 void BasePanelBrowserTest::SetUpCommandLine(CommandLine* command_line) {
-  EnableDOMAutomation();
   command_line->AppendSwitch(switches::kEnablePanels);
 }
 

@@ -773,8 +773,6 @@ class SafeBrowsingServiceCookieTest : public InProcessBrowserTest {
   SafeBrowsingServiceCookieTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-
     // We need to start the test server to get the host&port in the url.
     ASSERT_TRUE(test_server()->Start());
 

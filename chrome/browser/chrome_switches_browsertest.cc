@@ -13,9 +13,7 @@
 
 class HostRulesTest : public InProcessBrowserTest {
  protected:
-  HostRulesTest() {
-    EnableDOMAutomation();
-  }
+  HostRulesTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
     ASSERT_TRUE(test_server()->Start());

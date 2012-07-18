@@ -122,9 +122,7 @@ class DevToolsSanityTest : public InProcessBrowserTest {
  public:
   DevToolsSanityTest()
       : window_(NULL),
-        inspected_rvh_(NULL) {
-    EnableDOMAutomation();
-  }
+        inspected_rvh_(NULL) {}
 
  protected:
   void RunTest(const std::string& test_name, const std::string& test_page) {
@@ -270,9 +268,7 @@ class DevToolsExperimentalExtensionTest : public DevToolsExtensionTest {
 
 class WorkerDevToolsSanityTest : public InProcessBrowserTest {
  public:
-  WorkerDevToolsSanityTest() : window_(NULL) {
-    EnableDOMAutomation();
-  }
+  WorkerDevToolsSanityTest() : window_(NULL) {}
 
  protected:
   class WorkerData : public base::RefCountedThreadSafe<WorkerData> {

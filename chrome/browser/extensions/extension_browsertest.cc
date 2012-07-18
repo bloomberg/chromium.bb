@@ -56,9 +56,6 @@ ExtensionBrowserTest::~ExtensionBrowserTest() {
 }
 
 void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
-  // This enables DOM automation for tab contentses.
-  EnableDOMAutomation();
-
   extensions::Feature::SetChannelForTesting(
       chrome::VersionInfo::CHANNEL_UNKNOWN);
 

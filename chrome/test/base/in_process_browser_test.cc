@@ -58,8 +58,7 @@ const char kBrowserTestType[] = "browser";
 }  // namespace
 
 InProcessBrowserTest::InProcessBrowserTest()
-    : browser_(NULL),
-      dom_automation_enabled_(false)
+    : browser_(NULL)
 #if defined(OS_POSIX)
       , handle_sigterm_(true)
 #endif
@@ -157,8 +156,7 @@ void InProcessBrowserTest::PrepareTestCommandLine(CommandLine* command_line) {
   // Propagate commandline settings from test_launcher_utils.
   test_launcher_utils::PrepareBrowserCommandLineForTests(command_line);
 
-  if (dom_automation_enabled_)
-    command_line->AppendSwitch(switches::kDomAutomationController);
+  command_line->AppendSwitch(switches::kDomAutomationController);
 
   // This is a Browser test.
   command_line->AppendSwitchASCII(switches::kTestType, kBrowserTestType);

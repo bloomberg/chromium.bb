@@ -274,9 +274,7 @@ class DownloadTest : public InProcessBrowserTest {
     content::TestFileErrorInjector::FileErrorInfo error_info;
   };
 
-  DownloadTest() {
-    EnableDOMAutomation();
-  }
+  DownloadTest() {}
 
   void SetUpOnMainThread() OVERRIDE {
     BrowserThread::PostTask(

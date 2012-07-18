@@ -159,9 +159,7 @@ class BrowserFocusTest : public InProcessBrowserTest {
 #else
       location_bar_focus_view_id_(VIEW_ID_LOCATION_BAR)
 #endif
-  {
-    EnableDOMAutomation();
-  }
+  {}
 
   bool IsViewFocused(ViewID vid) {
     return ui_test_utils::IsViewFocused(browser(), vid);

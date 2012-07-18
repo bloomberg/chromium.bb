@@ -173,9 +173,6 @@ class InProcessBrowserTest : public BrowserTestBase {
     return host_resolver_.get();
   }
 
-  // Sets some test states (see below for comments).  Call this in your test
-  // constructor.
-  void EnableDOMAutomation() { dom_automation_enabled_ = true; }
 #if defined(OS_POSIX)
   // This is only needed by a test that raises SIGTERM to ensure that a specific
   // codepath is taken.
@@ -211,10 +208,6 @@ class InProcessBrowserTest : public BrowserTestBase {
 
   // ContentRendererClient when running in single-process mode.
   scoped_ptr<content::ContentRendererClient> single_process_renderer_client_;
-
-  // Whether the JavaScript can access the DOMAutomationController (a JS object
-  // that can send messages back to the browser).
-  bool dom_automation_enabled_;
 
   // Host resolver to use during the test.
   scoped_refptr<net::RuleBasedHostResolverProc> host_resolver_;

@@ -21,9 +21,6 @@ class WebGLConformanceTests : public InProcessBrowserTest {
   WebGLConformanceTests() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
-    // This enables DOM automation for tab contents.
-    EnableDOMAutomation();
-
     // Allow privileged WebGL extensions.
     command_line->AppendSwitch(switches::kEnablePrivilegedWebGLExtensions);
   }

@@ -31,9 +31,7 @@ using content::SiteInstance;
 
 class RenderViewHostManagerTest : public InProcessBrowserTest {
  public:
-  RenderViewHostManagerTest() {
-    EnableDOMAutomation();
-  }
+  RenderViewHostManagerTest() {}
 
   static bool GetFilePathWithHostAndPortReplacement(
       const std::string& original_file_path,

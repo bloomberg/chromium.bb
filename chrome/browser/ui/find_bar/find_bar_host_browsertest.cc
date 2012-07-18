@@ -70,8 +70,6 @@ const int kMoveIterations = 30;
 class FindInPageControllerTest : public InProcessBrowserTest {
  public:
   FindInPageControllerTest() {
-    EnableDOMAutomation();
-
 #if defined(TOOLKIT_VIEWS)
     DropdownBarHost::disable_animations_during_testing_ = true;
 #elif defined(TOOLKIT_GTK)

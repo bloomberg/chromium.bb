@@ -26,9 +26,7 @@ void PostQuit(MessageLoop* loop) {
 
 class RenderProcessHostTest : public InProcessBrowserTest {
  public:
-  RenderProcessHostTest() {
-    EnableDOMAutomation();
-  }
+  RenderProcessHostTest() {}
 
   int RenderProcessHostCount() {
     content::RenderProcessHost::iterator hosts =
@@ -144,7 +142,6 @@ class RenderProcessHostTest : public InProcessBrowserTest {
 class RenderProcessHostTestWithCommandLine : public RenderProcessHostTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kRendererProcessLimit, "1");
   }
 };

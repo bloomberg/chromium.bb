@@ -56,9 +56,7 @@ void GetCookiesOnIOThread(const GURL& url,
 class ResourceDispatcherHostBrowserTest : public InProcessBrowserTest,
                                           public DownloadManager::Observer {
  public:
-  ResourceDispatcherHostBrowserTest() : got_downloads_(false) {
-    EnableDOMAutomation();
-  }
+  ResourceDispatcherHostBrowserTest() : got_downloads_(false) {}
 
  protected:
   virtual void SetUpOnMainThread() OVERRIDE {

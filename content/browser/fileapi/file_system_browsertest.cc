@@ -23,9 +23,7 @@ using quota::QuotaManager;
 // the actual implementation that lives in the browser side.
 class FileSystemBrowserTest : public InProcessBrowserTest {
  public:
-  FileSystemBrowserTest() {
-    EnableDOMAutomation();
-  }
+  FileSystemBrowserTest() {}
 
   GURL testUrl(const FilePath& file_path) {
     const FilePath kTestDir(FILE_PATH_LITERAL("fileapi"));

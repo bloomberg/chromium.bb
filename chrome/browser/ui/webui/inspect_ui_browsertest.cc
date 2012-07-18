@@ -21,9 +21,7 @@ const char kSharedWorkerJs[] =
 
 class InspectUITest : public InProcessBrowserTest {
  public:
-  InspectUITest() {
-    EnableDOMAutomation();
-  }
+  InspectUITest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InspectUITest);

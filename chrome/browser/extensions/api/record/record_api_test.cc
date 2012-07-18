@@ -196,7 +196,6 @@ class RecordApiTest : public InProcessBrowserTest {
   // should be replaced.  Clear record-mode, playback-mode, visit-urls,
   // record-stats, and load-extension.
   void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
     std::vector<std::string> remove_switches;
 
     remove_switches.push_back(switches::kUserDataDir);

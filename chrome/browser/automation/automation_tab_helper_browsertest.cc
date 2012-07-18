@@ -53,10 +53,8 @@ class MockNotificationObserver : public content::NotificationObserver {
 
 class AutomationTabHelperBrowserTest : public InProcessBrowserTest {
  public:
-  AutomationTabHelperBrowserTest() {
-    EnableDOMAutomation();
-  }
-  virtual ~AutomationTabHelperBrowserTest() { }
+  AutomationTabHelperBrowserTest() {}
+  virtual ~AutomationTabHelperBrowserTest() {}
 
   void SetUpInProcessBrowserTestFixture() {
     EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));

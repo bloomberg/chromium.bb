@@ -12,11 +12,7 @@
 
 class LoadTimingObserverTest : public InProcessBrowserTest {
  public:
-  LoadTimingObserverTest() {
-    EnableDOMAutomation();
-  }
-
- protected:
+  LoadTimingObserverTest() {}
 };
 
 // http://crbug.com/102030

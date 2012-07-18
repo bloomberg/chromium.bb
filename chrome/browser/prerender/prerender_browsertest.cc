@@ -511,9 +511,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         use_https_src_server_(false),
         call_javascript_(true),
         loader_path_("files/prerender/prerender_loader.html"),
-        explicitly_set_browser_(NULL) {
-    EnableDOMAutomation();
-  }
+        explicitly_set_browser_(NULL) {}
 
   virtual ~PrerenderBrowserTest() {}
 
