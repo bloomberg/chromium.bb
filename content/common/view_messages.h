@@ -51,6 +51,10 @@
 #include "content/common/mac/font_descriptor.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "webkit/media/android/media_metadata_android.h"
+#endif
+
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
@@ -359,6 +363,19 @@ IPC_STRUCT_TRAITS_BEGIN(ui::SelectedFileInfo)
   IPC_STRUCT_TRAITS_MEMBER(path)
   IPC_STRUCT_TRAITS_MEMBER(display_name)
 IPC_STRUCT_TRAITS_END()
+
+#if defined(OS_ANDROID)
+IPC_STRUCT_TRAITS_BEGIN(webkit_media::MediaMetadataAndroid)
+  IPC_STRUCT_TRAITS_MEMBER(width)
+  IPC_STRUCT_TRAITS_MEMBER(height)
+  IPC_STRUCT_TRAITS_MEMBER(duration)
+  IPC_STRUCT_TRAITS_MEMBER(current_time)
+  IPC_STRUCT_TRAITS_MEMBER(paused)
+  IPC_STRUCT_TRAITS_MEMBER(can_pause)
+  IPC_STRUCT_TRAITS_MEMBER(can_seek_forward)
+  IPC_STRUCT_TRAITS_MEMBER(can_seek_backward)
+IPC_STRUCT_TRAITS_END()
+#endif
 
 IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Params)
   // Routing ID of the view initiating the open.

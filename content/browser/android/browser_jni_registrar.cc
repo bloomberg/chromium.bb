@@ -8,6 +8,7 @@
 #include "base/android/jni_registrar.h"
 #include "content/browser/android/android_browser_process.h"
 #include "content/browser/android/content_settings.h"
+#include "content/browser/android/content_video_view.h"
 #include "content/browser/android/content_view_client.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/content_view_statics.h"
@@ -23,6 +24,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     AndroidLocationApiAdapter::RegisterGeolocationService },
   { "AndroidBrowserProcess", content::RegisterAndroidBrowserProcess },
   { "ContentSettings", content::ContentSettings::RegisterContentSettings },
+  { "ContentVideoView", content::ContentVideoView::RegisterContentVideoView },
   { "ContentViewClient", content::RegisterContentViewClient },
   { "ContentViewCore", content::RegisterContentViewCore },
   { "DeviceInfo", content::RegisterDeviceInfo },

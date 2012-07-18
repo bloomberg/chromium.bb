@@ -57,6 +57,18 @@ public class AppResource {
     /** String for the title of the month picker dialog. */
     public static int STRING_MONTH_PICKER_DIALOG_TITLE;
 
+    /** String for playback errors in the media player. */
+    public static int STRING_MEDIA_PLAYER_MESSAGE_PLAYBACK_ERROR;
+
+    /** String for unknown errors in the media player. */
+    public static int STRING_MEDIA_PLAYER_MESSAGE_UNKNOWN_ERROR;
+
+    /** String for the button contents in the media player error dialog. */
+    public static int STRING_MEDIA_PLAYER_ERROR_BUTTON;
+
+    /** String for the title of the media player error dialog. */
+    public static int STRING_MEDIA_PLAYER_ERROR_TITLE;
+
     /**
      * Iterates through all the resources ids and verifies they have values other than zero.
      * @return true if all the resources have been registered.
