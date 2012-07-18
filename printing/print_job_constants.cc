@@ -27,6 +27,9 @@ const char kSettingCollate[] = "collate";
 // Print out color: true for color, false for grayscale.
 const char kSettingColor[] = "color";
 
+// Default to color on or not.
+const char kSettingSetColorAsDefault[] = "setColorAsDefault";
+
 // Key that specifies the height of the content area of the page.
 const char kSettingContentHeight[] = "contentHeight";
 

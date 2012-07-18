@@ -42,6 +42,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/print_messages.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -396,8 +397,10 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     return;
 
   // Storing last used settings.
-  GetStickySettings()->Store(*settings);
-
+  printing::StickySettings* sticky_settings = GetStickySettings();
+  sticky_settings->Store(*settings);
+  sticky_settings->SaveInPrefs(Profile::FromBrowserContext(
+      preview_web_contents()->GetBrowserContext())->GetPrefs());
   // Never try to add headers/footers here. It's already in the generated PDF.
   settings->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
 
@@ -656,13 +659,23 @@ void PrintPreviewHandler::GetNumberFormatAndMeasurementSystem(
 }
 
 void PrintPreviewHandler::HandleGetInitialSettings(const ListValue* /*args*/) {
-  scoped_refptr<PrintSystemTaskProxy> task =
-      new PrintSystemTaskProxy(AsWeakPtr(),
-                               print_backend_.get(),
-                               has_logged_printers_count_);
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&PrintSystemTaskProxy::GetDefaultPrinter, task.get()));
+  printing::StickySettings* sticky_settings = GetStickySettings();
+  sticky_settings->RestoreFromPrefs(Profile::FromBrowserContext(
+      preview_web_contents()->GetBrowserContext())->GetPrefs());
+  if (sticky_settings->printer_name()) {
+    std::string cloud_print_data;
+    if (sticky_settings->printer_cloud_print_data())
+      cloud_print_data = *sticky_settings->printer_cloud_print_data();
+    SendInitialSettings(*sticky_settings->printer_name(), cloud_print_data);
+  } else {
+    scoped_refptr<PrintSystemTaskProxy> task =
+        new PrintSystemTaskProxy(AsWeakPtr(),
+                                 print_backend_.get(),
+                                 has_logged_printers_count_);
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&PrintSystemTaskProxy::GetDefaultPrinter, task.get()));
+  }
   SendCloudPrintEnabled();
 }
 
@@ -728,8 +741,16 @@ void PrintPreviewHandler::ActivateInitiatorTabAndClosePreviewTab() {
 void PrintPreviewHandler::SendPrinterCapabilities(
     const DictionaryValue& settings_info) {
   VLOG(1) << "Get printer capabilities finished";
+  // Copy so we can override with sticky values.
+  scoped_ptr<DictionaryValue> settings(settings_info.DeepCopy());
+  if (GetStickySettings()->color_model() != printing::UNKNOWN_COLOR_MODEL) {
+    settings->SetBoolean(
+        printing::kSettingSetColorAsDefault,
+        printing::isColorModelSelected(
+            GetStickySettings()->color_model()));
+  }
   web_ui()->CallJavascriptFunction("updateWithPrinterCapabilities",
-                                   settings_info);
+                                   *settings);
 }
 
 void PrintPreviewHandler::SetupPrinterList(const ListValue& printers) {

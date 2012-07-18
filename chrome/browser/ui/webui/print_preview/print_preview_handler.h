@@ -70,6 +70,8 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
 
  private:
   friend class PrintPreviewHandlerTest;
+  // TODO(abodenha@chromium.org) See http://crbug.com/136843
+  // PrintSystemTaskProxy should not need to be a friend.
   friend class PrintSystemTaskProxy;
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, StickyMarginsCustom);
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, StickyMarginsDefault);

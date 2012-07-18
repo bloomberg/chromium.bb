@@ -209,6 +209,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableCloudPrintProxy)
   },
   {
+    "print-setting-reset",  // FLAGS:RECORD_UMA
+    IDS_FLAGS_PRINT_SETTING_RESET_NAME,
+    IDS_FLAGS_PRINT_SETTING_RESET_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kPrintSettingsReset)
+  },
+  {
     "crxless-web-apps",
     IDS_FLAGS_CRXLESS_WEB_APPS_NAME,
     IDS_FLAGS_CRXLESS_WEB_APPS_DESCRIPTION,

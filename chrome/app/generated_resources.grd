@@ -5264,6 +5264,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enables a background service that connects the Google Cloud Print service to any printers installed on this computer. Once this lab is enabled, you can turn the Google Cloud Print Connector on by logging in with your Google account in the Under the Hood section of Settings.
         </message>
       </if>
+      <message name="IDS_FLAGS_PRINT_SETTING_RESET_NAME" desc="Discard the last printer and settings on shutdown.">
+        Printer Reset
+      </message>
+      <message name="IDS_FLAGS_PRINT_SETTING_RESET_DESCRIPTION" desc="Description for flag to reset the last printer and settings on browser restart.">
+        Reset the last used printer on restart.  With this enabled, the OS default printer will become the current printer for print preview on each browser start.
+      </message>
       <message name="IDS_FLAGS_CRXLESS_WEB_APPS_NAME" desc="Title of the CRX-less web apps lab">
         CRX-less Web Apps
       </message>

@@ -14,6 +14,7 @@
 
 class FilePath;
 class PrintPreviewHandlerTest;
+class PrefService;
 
 namespace base {
 class DictionaryValue;
@@ -34,6 +35,7 @@ namespace printing {
 // Holds all the settings that should be remembered (sticky) in print preview.
 // A sticky setting will be restored next time the user launches print preview.
 // Only one instance of this class is instantiated.
+// TODO(abodenha) Simplify this class.  See http://crbug.com/136926.
 class StickySettings {
  public:
   StickySettings();
@@ -60,6 +62,9 @@ class StickySettings {
   // Stores the last path the user used to save to pdf.
   void StoreSavePath(const FilePath& path);
 
+  void SaveInPrefs(PrefService* profile);
+  void RestoreFromPrefs(PrefService* profile);
+  static void RegisterUserPrefs(PrefService* prefs);
  private:
   void StoreColorModel(const base::DictionaryValue& settings);
   void StoreMarginSettings(const base::DictionaryValue& settings);

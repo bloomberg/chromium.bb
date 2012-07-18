@@ -67,6 +67,7 @@
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
+#include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
@@ -248,6 +249,8 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   PinnedTabCodec::RegisterUserPrefs(user_prefs);
   PluginsUI::RegisterUserPrefs(user_prefs);
   SyncPromoUI::RegisterUserPrefs(user_prefs);
+  printing::StickySettings::RegisterUserPrefs(user_prefs);
+
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

@@ -1690,6 +1690,10 @@ const char kPrintingEnabled[] = "printing.enabled";
 // Boolean controlling whether print preview is disabled.
 const char kPrintPreviewDisabled[] = "printing.print_preview_disabled";
 
+// The last used printer and its settings.
+const char kPrintPreviewStickySettings[] =
+    "printing.print_preview_sticky_settings";
+
 // The root URL of the cloud print service.
 const char kCloudPrintServiceURL[] = "cloud_print.service_url";
 

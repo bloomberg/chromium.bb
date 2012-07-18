@@ -618,6 +618,7 @@ extern const char kRemoteAccessHostFirewallTraversal[];
 
 extern const char kPrintingEnabled[];
 extern const char kPrintPreviewDisabled[];
+extern const char kPrintPreviewStickySettings[];
 
 extern const char kCloudPrintServiceURL[];
 extern const char kCloudPrintSigninURL[];

@@ -280,6 +280,7 @@ extern const char kPrerenderModeSwitchValueAuto[];
 extern const char kPrerenderModeSwitchValueDisabled[];
 extern const char kPrerenderModeSwitchValueEnabled[];
 extern const char kPrerenderModeSwitchValuePrefetchOnly[];
+extern const char kPrintSettingsReset[];
 extern const char kProductVersion[];
 extern const char kProfileDirectory[];
 extern const char kProfilingAtStart[];

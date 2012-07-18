@@ -1040,6 +1040,9 @@ const char kPrerenderModeSwitchValueEnabled[] = "enabled";
 //   prefetch_only: No prerendering, but enables prefetching.
 const char kPrerenderModeSwitchValuePrefetchOnly[] = "prefetch_only";
 
+// Disable saving the printer and settings between sessions.
+const char kPrintSettingsReset[]       = "print-settings-reset";
+
 // Outputs the product version information and quit. Used as an internal api to
 // detect the installed version of Chrome on Linux.
 const char kProductVersion[]                = "product-version";
