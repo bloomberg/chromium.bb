@@ -47,6 +47,7 @@ enum GDataFileError {
   GDATA_FILE_ERROR_NOT_A_FILE = -13,
   GDATA_FILE_ERROR_NOT_EMPTY = -14,
   GDATA_FILE_ERROR_INVALID_URL = -15,
+  GDATA_FILE_ERROR_NO_CONNECTION = -16,
 };
 
 }  // namespace gdata

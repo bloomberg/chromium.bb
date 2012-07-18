@@ -182,7 +182,7 @@ void GDataSyncClient::DoSyncLoop() {
         sync_task.resource_id,
         base::Bind(&GDataSyncClient::OnFetchFileComplete,
                    weak_ptr_factory_.GetWeakPtr(),
-                   sync_task.resource_id),
+                   sync_task),
         GetDownloadDataCallback());
   } else if (sync_task.sync_type == UPLOAD) {
     DVLOG(1) << "Uploading " << sync_task.resource_id;
@@ -396,7 +396,7 @@ void GDataSyncClient::OnPinned(GDataFileError error,
   StartSyncLoop();
 }
 
-void GDataSyncClient::OnFetchFileComplete(const std::string& resource_id,
+void GDataSyncClient::OnFetchFileComplete(const SyncTask& sync_task,
                                           GDataFileError error,
                                           const FilePath& local_path,
                                           const std::string& ununsed_mime_type,
@@ -404,10 +404,18 @@ void GDataSyncClient::OnFetchFileComplete(const std::string& resource_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error == GDATA_FILE_OK) {
-    DVLOG(1) << "Fetched " << resource_id << ": " << local_path.value();
+    DVLOG(1) << "Fetched " << sync_task.resource_id << ": "
+             << local_path.value();
   } else {
-    // TODO(satorux): We should re-queue if the error is recoverable.
-    LOG(WARNING) << "Failed to fetch " << resource_id << ": " << error;
+    switch (error) {
+      case GDATA_FILE_ERROR_NO_CONNECTION:
+        // Re-queue the task so that we'll retry once the connection is back.
+        queue_.push_front(sync_task);
+        break;
+      default:
+        LOG(WARNING) << "Failed to fetch " << sync_task.resource_id
+                     << ": " << error;
+    }
   }
 
   // Continue the loop.

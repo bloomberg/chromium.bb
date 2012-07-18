@@ -28,6 +28,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AnyNumber;
+using ::testing::DoAll;
 using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
@@ -349,6 +350,34 @@ TEST_F(GDataSyncClientTest, StartSyncLoop_Offline) {
   // as network is not connected.
 
   sync_client_->StartSyncLoop();
+}
+
+TEST_F(GDataSyncClientTest, StartSyncLoop_ResumedConnection) {
+  const std::string resource_id("resource_id_not_fetched_foo");
+  const FilePath file_path(
+      FilePath::FromUTF8Unsafe("local_path_does_not_matter"));
+  const std::string mime_type("mime_type_does_not_matter");
+  SetUpTestFiles();
+  ConnectToWifi();
+  AddResourceIdToFetch(resource_id);
+
+  // Disconnect from network on fetch try.
+  EXPECT_CALL(*mock_file_system_, GetFileByResourceId(resource_id, _, _))
+      .WillOnce(DoAll(
+          InvokeWithoutArgs(this, &GDataSyncClientTest::ConnectToNone),
+          MockGetFileByResourceId(GDATA_FILE_ERROR_NO_CONNECTION,
+                                  file_path,
+                                  mime_type,
+                                  REGULAR_FILE)));
+
+  sync_client_->StartSyncLoop();
+
+  // Expect fetch retry on network reconnection.
+  EXPECT_CALL(*mock_file_system_, GetFileByResourceId(resource_id, _, _))
+      .WillOnce(MockGetFileByResourceId(
+          GDATA_FILE_OK, file_path, mime_type, REGULAR_FILE));
+
+  ConnectToWifi();
 }
 
 TEST_F(GDataSyncClientTest, StartSyncLoop_CelluarDisabled) {

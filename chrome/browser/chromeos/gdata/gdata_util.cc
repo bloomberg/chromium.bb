@@ -435,6 +435,9 @@ base::PlatformFileError GDataFileErrorToPlatformError(
 
     case gdata::GDATA_FILE_ERROR_INVALID_URL:
       return base::PLATFORM_FILE_ERROR_INVALID_URL;
+
+    case gdata::GDATA_FILE_ERROR_NO_CONNECTION:
+      return base::PLATFORM_FILE_ERROR_FAILED;
   }
 
   NOTREACHED();

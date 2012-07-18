@@ -174,7 +174,7 @@ class GDataSyncClient
 
   // Called when the file for |resource_id| is fetched.
   // Calls DoSyncLoop() to go back to the sync loop.
-  void OnFetchFileComplete(const std::string& resource_id,
+  void OnFetchFileComplete(const SyncTask& sync_task,
                            GDataFileError error,
                            const FilePath& local_path,
                            const std::string& ununsed_mime_type,

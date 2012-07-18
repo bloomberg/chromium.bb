@@ -128,6 +128,8 @@ GDataFileError GDataToGDataFileError(GDataErrorCode status) {
     case GDATA_PARSE_ERROR:
     case GDATA_FILE_ERROR:
       return GDATA_FILE_ERROR_ABORT;
+    case GDATA_NO_CONNECTION:
+      return GDATA_FILE_ERROR_NO_CONNECTION;
     default:
       return GDATA_FILE_ERROR_FAILED;
   }
