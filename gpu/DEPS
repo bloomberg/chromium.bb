@@ -1,6 +1,7 @@
 include_rules = [
   "+native_client",
   "+third_party/angle",
+  "+third_party/amd",
   "+../../gpu_export.h",
   "+../command_buffer",
   "+../client",
