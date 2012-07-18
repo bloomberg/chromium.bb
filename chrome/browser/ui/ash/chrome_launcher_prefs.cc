@@ -34,10 +34,13 @@ namespace ash {
 
 const char kPinnedAppsPrefAppIDPath[] = "id";
 
-// Values used for prefs::kShelfAutoHideBehavior.
 const char kShelfAutoHideBehaviorAlways[] = "Always";
 const char kShelfAutoHideBehaviorDefault[] = "Default";
 const char kShelfAutoHideBehaviorNever[] = "Never";
+
+extern const char kShelfAlignmentBottom[] = "Bottom";
+extern const char kShelfAlignmentLeft[] = "Left";
+extern const char kShelfAlignmentRight[] = "Right";
 
 void RegisterChromeLauncherUserPrefs(PrefService* user_prefs) {
   // TODO: If we want to support multiple profiles this will likely need to be
@@ -50,6 +53,9 @@ void RegisterChromeLauncherUserPrefs(PrefService* user_prefs) {
                                PrefService::SYNCABLE_PREF);
   user_prefs->RegisterStringPref(prefs::kShelfAutoHideBehavior,
                                  kShelfAutoHideBehaviorDefault,
+                                 PrefService::SYNCABLE_PREF);
+  user_prefs->RegisterStringPref(prefs::kShelfAlignment,
+                                 kShelfAlignmentBottom,
                                  PrefService::SYNCABLE_PREF);
 }
 

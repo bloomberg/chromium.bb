@@ -1931,6 +1931,8 @@ const char kMediaGalleryRememberedGalleries[] =
     "media_gallery.remembered_galleries";
 
 #if defined(USE_AURA)
+// String value corresponding to ash::Shell::ShelfAlignment.
+const char kShelfAlignment[] = "shelf_alignment";
 // String value corresponding to ash::Shell::ShelfAutoHideBehavior.
 const char kShelfAutoHideBehavior[] =
     "auto_hide_behavior";

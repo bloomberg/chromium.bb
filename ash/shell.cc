@@ -630,8 +630,7 @@ ShelfAutoHideBehavior Shell::GetShelfAutoHideBehavior() const {
 void Shell::SetShelfAlignment(ShelfAlignment alignment) {
   if (!shelf_->SetAlignment(alignment))
     return;
-  FOR_EACH_OBSERVER(ShellObserver, observers_,
-                    OnShelfAlignmentChanged());
+  FOR_EACH_OBSERVER(ShellObserver, observers_, OnShelfAlignmentChanged());
 }
 
 ShelfAlignment Shell::GetShelfAlignment() {

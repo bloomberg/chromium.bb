@@ -12,6 +12,7 @@
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_model_observer.h"
 #include "ash/launcher/launcher_types.h"
+#include "ash/shell_observer.h"
 #include "ash/wm/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -45,12 +46,14 @@ class TabContents;
 
 // ChromeLauncherController manages the launcher items needed for tabbed
 // browsers (BrowserLauncherItemController) and browser shortcuts.
-class ChromeLauncherController : public ash::LauncherDelegate,
-                                 public ash::LauncherModelObserver,
-                                 public content::NotificationObserver,
-                                 public ShellWindowRegistry::Observer,
-                                 public aura::client::ActivationChangeObserver,
-                                 public aura::WindowObserver {
+class ChromeLauncherController
+    : public ash::LauncherDelegate,
+      public ash::LauncherModelObserver,
+      public ash::ShellObserver,
+      public content::NotificationObserver,
+      public ShellWindowRegistry::Observer,
+      public aura::client::ActivationChangeObserver,
+      public aura::WindowObserver {
  public:
   // Indicates if a launcher item is incognito or not.
   enum IncognitoState {
@@ -241,6 +244,9 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // Overriden from aura::WindowObserver:
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE;
 
+  // Overriden from ash::ShellObserver:
+  virtual void OnShelfAlignmentChanged() OVERRIDE;
+
  private:
   friend class BrowserLauncherItemControllerTest;
   friend class ChromeLauncherControllerTest;
@@ -295,6 +301,12 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   // Re-syncs launcher model with prefs::kPinnedLauncherApps.
   void UpdateAppLaunchersFromPref();
+
+  // Sets the shelf auto-hide behavior from prefs.
+  void SetShelfAutoHideBehaviorFromPrefs();
+
+  // Sets the shelf alignment from prefs.
+  void SetShelfAlignmentFromPrefs();
 
   // Returns the most recently active tab contents for an app.
   TabContents* GetLastActiveTabContents(const std::string& app_id);

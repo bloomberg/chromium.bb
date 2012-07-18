@@ -24,6 +24,11 @@ extern const char kShelfAutoHideBehaviorAlways[];
 extern const char kShelfAutoHideBehaviorDefault[];
 extern const char kShelfAutoHideBehaviorNever[];
 
+// Values used for prefs::kShelfAlignment.
+extern const char kShelfAlignmentBottom[];
+extern const char kShelfAlignmentLeft[];
+extern const char kShelfAlignmentRight[];
+
 void RegisterChromeLauncherUserPrefs(PrefService* user_prefs);
 
 base::DictionaryValue* CreateAppDict(const std::string& app_id);

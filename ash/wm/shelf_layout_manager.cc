@@ -161,6 +161,8 @@ void ShelfLayoutManager::SetLauncher(Launcher* launcher) {
     return;
 
   launcher_ = launcher;
+  if (launcher_)
+    launcher_->SetAlignment(alignment_);
   LayoutShelf();
 }
 

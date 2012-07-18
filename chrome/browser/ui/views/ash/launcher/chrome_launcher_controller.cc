@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/views/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/pref_names.h"
@@ -87,6 +88,8 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
                               content::Source<Profile>(profile_));
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(prefs::kPinnedLauncherApps, this);
+  pref_change_registrar_.Add(prefs::kShelfAlignment, this);
+  pref_change_registrar_.Add(prefs::kShelfAutoHideBehavior, this);
 }
 
 ChromeLauncherController::~ChromeLauncherController() {
@@ -105,6 +108,9 @@ ChromeLauncherController::~ChromeLauncherController() {
        i != window_to_id_map_.end(); ++i) {
     i->first->RemoveObserver(this);
   }
+
+  if (ash::Shell::HasInstance())
+    ash::Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 void ChromeLauncherController::Init() {
@@ -135,19 +141,15 @@ void ChromeLauncherController::Init() {
 
   // TODO(sky): update unit test so that this test isn't necessary.
   if (ash::Shell::HasInstance()) {
-    std::string behavior_value(
-        profile_->GetPrefs()->GetString(prefs::kShelfAutoHideBehavior));
-    ash::ShelfAutoHideBehavior behavior =
-        ash::SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT;
-    if (behavior_value == ash::kShelfAutoHideBehaviorNever)
-      behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
-    else if (behavior_value == ash::kShelfAutoHideBehaviorAlways)
-      behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
-    ash::Shell::GetInstance()->SetShelfAutoHideBehavior(behavior);
+    SetShelfAutoHideBehaviorFromPrefs();
+    SetShelfAlignmentFromPrefs();
+
     activation_client_ =
         aura::client::GetActivationClient(
             ash::Shell::GetInstance()->GetPrimaryRootWindow());
     activation_client_->AddObserver(this);
+
+    ash::Shell::GetInstance()->AddShellObserver(this);
   }
 }
 
@@ -633,11 +635,14 @@ void ChromeLauncherController::Observe(
     case chrome::NOTIFICATION_PREF_CHANGED: {
       const std::string& pref_name(
           *content::Details<std::string>(details).ptr());
-      if (pref_name == prefs::kPinnedLauncherApps) {
+      if (pref_name == prefs::kPinnedLauncherApps)
         UpdateAppLaunchersFromPref();
-      } else {
+      else if (pref_name == prefs::kShelfAlignment)
+        SetShelfAlignmentFromPrefs();
+      else if (pref_name == prefs::kShelfAutoHideBehavior)
+        SetShelfAutoHideBehaviorFromPrefs();
+      else
         NOTREACHED() << "Unexpected pref change for " << pref_name;
-      }
       break;
     }
     default:
@@ -718,6 +723,22 @@ void ChromeLauncherController::OnWindowRemovingFromRootWindow(
     SetItemStatus(id, ash::STATUS_CLOSED);
   else
     LauncherItemClosed(id);
+}
+
+void ChromeLauncherController::OnShelfAlignmentChanged() {
+  const char* pref_value = NULL;
+  switch (ash::Shell::GetInstance()->GetShelfAlignment()) {
+    case ash::SHELF_ALIGNMENT_BOTTOM:
+      pref_value = ash::kShelfAlignmentBottom;
+      break;
+    case ash::SHELF_ALIGNMENT_LEFT:
+      pref_value = ash::kShelfAlignmentLeft;
+      break;
+    case ash::SHELF_ALIGNMENT_RIGHT:
+      pref_value = ash::kShelfAlignmentRight;
+      break;
+  }
+  profile_->GetPrefs()->SetString(prefs::kShelfAlignment, pref_value);
 }
 
 void ChromeLauncherController::PersistPinnedState() {
@@ -882,6 +903,33 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
   // Append unprocessed items from the pref to the end of the model.
   for (; pref_app_id != pinned_apps.end(); ++pref_app_id)
     CreateAppLauncherItem(NULL, *pref_app_id, ash::STATUS_CLOSED);
+}
+
+void ChromeLauncherController::SetShelfAutoHideBehaviorFromPrefs() {
+  const std::string behavior_value(
+      profile_->GetPrefs()->GetString(prefs::kShelfAutoHideBehavior));
+  ash::ShelfAutoHideBehavior behavior =
+      ash::SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT;
+  if (behavior_value == ash::kShelfAutoHideBehaviorNever)
+    behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
+  else if (behavior_value == ash::kShelfAutoHideBehaviorAlways)
+    behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+  ash::Shell::GetInstance()->SetShelfAutoHideBehavior(behavior);
+}
+
+void ChromeLauncherController::SetShelfAlignmentFromPrefs() {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kShowLauncherAlignmentMenu))
+    return;
+
+  const std::string alignment_value(
+      profile_->GetPrefs()->GetString(prefs::kShelfAlignment));
+  ash::ShelfAlignment alignment = ash::SHELF_ALIGNMENT_BOTTOM;
+  if (alignment_value == ash::kShelfAlignmentLeft)
+    alignment = ash::SHELF_ALIGNMENT_LEFT;
+  else if (alignment_value == ash::kShelfAlignmentRight)
+    alignment = ash::SHELF_ALIGNMENT_RIGHT;
+  ash::Shell::GetInstance()->SetShelfAlignment(alignment);
 }
 
 TabContents* ChromeLauncherController::GetLastActiveTabContents(
