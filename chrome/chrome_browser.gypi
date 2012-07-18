@@ -5039,7 +5039,6 @@
             ],
           },
           'dependencies': [
-            '../base/base.gyp:closure_blocks_leopard_compat',
             '../third_party/icon_family/icon_family.gyp:icon_family',
           ],
           'actions': [

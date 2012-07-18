@@ -6,7 +6,6 @@
 
 #include <cmath>
 
-#include "base/mac/closure_blocks_leopard_compat.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/prefs/pref_service.h"

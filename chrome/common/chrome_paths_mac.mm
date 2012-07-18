@@ -19,12 +19,6 @@
 
 namespace {
 
-// TODO(thestig) Remove this once we switch to the 10.6 SDK.
-#if !defined(MAC_OS_X_VERSION_10_6) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
-#define NSPicturesDirectory 19
-#endif
-
 const FilePath* g_override_versioned_directory = NULL;
 
 // Return a retained (NOT autoreleased) NSBundle* as the internal

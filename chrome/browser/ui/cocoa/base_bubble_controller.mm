@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
-#include "base/mac/closure_blocks_leopard_compat.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/string_util.h"
@@ -23,28 +22,6 @@
                         atIndex:(NSInteger)index
                     userGesture:(bool)wasUserGesture;
 @end
-
-#if !defined(MAC_OS_X_VERSION_10_6) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
-typedef unsigned long long NSEventMask;
-
-@interface NSEvent (SnowLeopardDeclarations)
-+ (id)addLocalMonitorForEventsMatchingMask:(NSEventMask)mask
-                                   handler:(NSEvent* (^)(NSEvent*))block;
-+ (void)removeMonitor:(id)eventMonitor;
-@end
-
-@interface NSOperationQueue (SnowLeopardDeclarations)
-+ (id)mainQueue;
-@end
-
-@interface NSNotificationCenter (SnowLeopardDeclarations)
-- (id)addObserverForName:(NSString*)name
-                  object:(id)obj
-                   queue:(NSOperationQueue*)queue
-              usingBlock:(void (^)(NSNotification*))block;
-@end
-#endif  // MAC_OS_X_VERSION_10_6
 
 @implementation BaseBubbleController
 

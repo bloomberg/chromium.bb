@@ -82,16 +82,6 @@ using content::BrowserThread;
 using content::DownloadManager;
 using content::UserMetricsAction;
 
-// 10.6 adds a public API for the Spotlight-backed search menu item in the Help
-// menu.  Provide the declaration so it can be called below when building with
-// the 10.5 SDK.
-#if !defined(MAC_OS_X_VERSION_10_6) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
-@interface NSApplication (SnowLeopardSDKDeclarations)
-- (void)setHelpMenu:(NSMenu*)helpMenu;
-@end
-#endif
-
 namespace {
 
 // Declare notification names from the 10.7 SDK.

@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "base/mac/closure_blocks_leopard_compat.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
@@ -65,27 +64,6 @@ using WebKit::WebInputEventFactory;
 using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
 using WebKit::WebGestureEvent;
-
-// Declare things that are part of the 10.6 SDK.
-#if !defined(MAC_OS_X_VERSION_10_6) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
-enum {
-  NSEventTypeBeginGesture     = 19,
-  NSEventTypeEndGesture       = 20
-};
-
-enum {
-  NSEventMaskBeginGesture     = 1 << NSEventTypeBeginGesture,
-  NSEventMaskEndGesture       = 1 << NSEventTypeEndGesture,
-};
-
-typedef unsigned long long NSEventMask;
-
-@class NSTextInputContext;
-@interface NSResponder (AppKitDetails)
-- (NSTextInputContext*)inputContext;
-@end
-#endif  // 10.6
 
 // Declare things that are part of the 10.7 SDK.
 #if !defined(MAC_OS_X_VERSION_10_7) || \

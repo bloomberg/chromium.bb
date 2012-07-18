@@ -23,21 +23,6 @@
 #include "remoting/host/capturer_helper.h"
 #include "remoting/proto/control.pb.h"
 
-#if !defined(MAC_OS_X_VERSION_10_6) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
-
-@interface NSCursor (SnowLeopardSDKDeclarations)
-+ (NSCursor*)currentSystemCursor;
-@end
-
-@interface NSImage (SnowLeopardSDKDeclarations)
-- (CGImageRef)CGImageForProposedRect:(NSRect*)proposedDestRect
-                             context:(NSGraphicsContext*)referenceContext
-                               hints:(NSDictionary*)hints;
-@end
-
-#endif  // MAC_OS_X_VERSION_10_6
-
 namespace remoting {
 
 namespace {

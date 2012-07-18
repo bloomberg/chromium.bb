@@ -44,21 +44,6 @@
 using content::RenderWidgetHostView;
 using content::WebContents;
 
-// Forward-declare symbols that are part of the 10.6 SDK.
-#if !defined(MAC_OS_X_VERSION_10_6) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
-
-enum {
-  NSApplicationPresentationDefault                    = 0,
-  NSApplicationPresentationAutoHideDock               = (1 <<  0),
-  NSApplicationPresentationHideDock                   = (1 <<  1),
-  NSApplicationPresentationAutoHideMenuBar            = (1 <<  2),
-  NSApplicationPresentationHideMenuBar                = (1 <<  3),
-};
-typedef NSUInteger NSApplicationPresentationOptions;
-
-#endif  // MAC_OS_X_VERSION_10_6
-
 namespace {
 
 // Space between the incognito badge and the right edge of the window.

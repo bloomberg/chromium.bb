@@ -23,23 +23,6 @@ const CFStringRef kVDADecoderConfiguration_avcCData = CFSTR("avcC");
 const CFStringRef kCVPixelBufferIOSurfacePropertiesKey =
     CFSTR("IOSurfaceProperties");
 
-#if !defined(MAC_OS_X_VERSION_10_6) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
-enum {
-  kVDADecoderNoErr = 0,
-  kVDADecoderHardwareNotSupportedErr = -12470,
-  kVDADecoderFormatNotSupportedErr = -12471,
-  kVDADecoderFlush_EmitFrames = 1 << 0,
-};
-
-typedef void (*VDADecoderOutputCallback)(
-    void* decompressionOutputRefCon,
-    CFDictionaryRef frameInfo,
-    OSStatus status,
-    uint32_t infoFlags,
-    CVImageBufferRef imageBuffer);
-#endif  // MAC_OS_X_VERSION_10_6
-
 namespace {
 
 // These are 10.6.3 APIs that we look up at run time.

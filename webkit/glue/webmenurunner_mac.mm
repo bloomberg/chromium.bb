@@ -6,27 +6,6 @@
 
 #include "base/sys_string_conversions.h"
 
-#if !defined(MAC_OS_X_VERSION_10_6) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
-enum {
-  NSUserInterfaceLayoutDirectionLeftToRight = 0,
-  NSUserInterfaceLayoutDirectionRightToLeft = 1
-};
-typedef NSInteger NSUserInterfaceLayoutDirection;
-
-@interface NSCell (SnowLeopardSDKDeclarations)
-- (void)setUserInterfaceLayoutDirection:
-    (NSUserInterfaceLayoutDirection)layoutDirection;
-@end
-
-enum {
-  NSTextWritingDirectionEmbedding = (0 << 1),
-  NSTextWritingDirectionOverride = (1 << 1)
-};
-
-static NSString* NSWritingDirectionAttributeName = @"NSWritingDirection";
-#endif
-
 @interface WebMenuRunner (PrivateAPI)
 
 // Worker function used during initialization.

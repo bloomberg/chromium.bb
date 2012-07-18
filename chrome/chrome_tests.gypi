@@ -2280,7 +2280,6 @@
            # exist on disk so it can pull from it.
           'dependencies': [
             'chrome',
-            '../base/base.gyp:closure_blocks_leopard_compat',
             '../third_party/ocmock/ocmock.gyp:ocmock',
           ],
           'include_dirs': [

@@ -119,8 +119,6 @@ void AfterInitialize(bool unit_test_mode) {
       // webkit.org/b/50709.
   };
 
-#if defined(MAC_OS_X_VERSION_10_6) && \
-    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
   NSMutableArray* font_urls = [NSMutableArray array];
   NSURL* resources_directory = [[NSBundle mainBundle] resourceURL];
   for (unsigned i = 0; i < arraysize(fontFileNames); ++i) {
@@ -137,23 +135,6 @@ void AfterInitialize(bool unit_test_mode) {
     DLOG(FATAL) << "Fail to activate fonts.";
     CFRelease(errors);
   }
-#else
-  NSString* resources = [[NSBundle mainBundle] resourcePath];
-  for (unsigned i = 0; i < arraysize(fontFileNames); ++i) {
-    const char* resource_path = [[resources stringByAppendingPathComponent:
-        [NSString stringWithUTF8String:fontFileNames[i]]] UTF8String];
-    FSRef resource_ref;
-    const UInt8* uint8_resource_path
-        = reinterpret_cast<const UInt8*>(resource_path);
-    if (FSPathMakeRef(uint8_resource_path, &resource_ref, nil) != noErr) {
-      DLOG(FATAL) << "Fail to open " << resource_path;
-    }
-    if (ATSFontActivateFromFileReference(&resource_ref, kATSFontContextLocal,
-        kATSFontFormatUnspecified, 0, kATSOptionFlagsDefault, 0) != noErr) {
-      DLOG(FATAL) << "Fail to activate font: " << resource_path;
-    }
-  }
-#endif
 
   SwizzleNSPasteboard();
 

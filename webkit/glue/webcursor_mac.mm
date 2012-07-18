@@ -21,18 +21,6 @@ using WebKit::WebCursorInfo;
 using WebKit::WebImage;
 using WebKit::WebSize;
 
-// Declare symbols that are part of the 10.6 SDK.
-#if !defined(MAC_OS_X_VERSION_10_6) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
-
-@interface NSCursor (SnowLeopardSDKDeclarations)
-+ (NSCursor*)contextualMenuCursor;
-+ (NSCursor*)dragCopyCursor;
-+ (NSCursor*)operationNotAllowedCursor;
-@end
-
-#endif  // MAC_OS_X_VERSION_10_6
-
 // Declare symbols that are part of the 10.7 SDK.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7

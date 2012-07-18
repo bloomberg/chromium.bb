@@ -54,16 +54,6 @@ const double kWidthOfMouseResizeArea = 4.0;
 // down before panel resizing operation actually starts.
 const double kDragThreshold = 3.0;
 
-// Replicate specific 10.6 SDK declarations for building with prior SDKs.
-#if !defined(MAC_OS_X_VERSION_10_6) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
-
-enum {
-  NSWindowCollectionBehaviorParticipatesInCycle = 1 << 5
-};
-
-#endif  // MAC_OS_X_VERSION_10_6
-
 @interface PanelWindowControllerCocoa (PanelsCanBecomeKey)
 // Internal helper method for extracting the total number of panel windows
 // from the panel manager. Used to decide if panel can become the key window.
