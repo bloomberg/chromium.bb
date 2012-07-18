@@ -372,7 +372,7 @@ class DocumentEntry : public FeedEntry {
   // this instead of instantiating JSONValueConverter by yourself
   // because this method does some post-process for some fields.  See
   // FillRemainingFields comment and implementation for the details.
-  static DocumentEntry* CreateFrom(const base::Value* value);
+  static DocumentEntry* CreateFrom(const base::Value& value);
 
   // Creates document entry from parsed XML.
   static DocumentEntry* CreateFromXml(XmlReader* xml_reader);

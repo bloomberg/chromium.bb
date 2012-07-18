@@ -725,16 +725,16 @@ DocumentEntry* DocumentEntry::ExtractAndParse(
   base::DictionaryValue* entry_dict = NULL;
   if (value.GetAsDictionary(&as_dict) &&
       as_dict->GetDictionary(kEntryField, &entry_dict)) {
-    return DocumentEntry::CreateFrom(entry_dict);
+    return DocumentEntry::CreateFrom(*entry_dict);
   }
   return NULL;
 }
 
 // static
-DocumentEntry* DocumentEntry::CreateFrom(const base::Value* value) {
+DocumentEntry* DocumentEntry::CreateFrom(const base::Value& value) {
   base::JSONValueConverter<DocumentEntry> converter;
   scoped_ptr<DocumentEntry> entry(new DocumentEntry());
-  if (!converter.Convert(*value, entry.get())) {
+  if (!converter.Convert(value, entry.get())) {
     DVLOG(1) << "Invalid document entry!";
     return NULL;
   }

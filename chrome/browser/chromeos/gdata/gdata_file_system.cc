@@ -3536,7 +3536,7 @@ GDataFileError GDataFileSystem::AddNewDirectory(
   if (!entry_value)
     return GDATA_FILE_ERROR_FAILED;
 
-  scoped_ptr<DocumentEntry> doc_entry(DocumentEntry::CreateFrom(entry_value));
+  scoped_ptr<DocumentEntry> doc_entry(DocumentEntry::CreateFrom(*entry_value));
 
   if (!doc_entry.get())
     return GDATA_FILE_ERROR_FAILED;

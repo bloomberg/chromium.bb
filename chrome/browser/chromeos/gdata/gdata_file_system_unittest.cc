@@ -2361,7 +2361,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
           entry->GetString("gd$resourceId.$t", &resource_id) &&
           resource_id == kResourceId) {
         // This will be deleted by UploadExistingFile().
-        document_entry = DocumentEntry::CreateFrom(entry);
+        document_entry = DocumentEntry::CreateFrom(*entry);
       }
     }
   }
