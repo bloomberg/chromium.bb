@@ -360,7 +360,8 @@
       # Need internal data dirs in autotest package. crosbug.com/6855
       '-find_in_page.FindMatchTests.testSearchInPDF',
       # crbug.com/134593
-      '-gtalk.test_basic.BasicTest',
+      '-gtalk.test_basic.BasicTest.testCurrentVersion',
+      '-gtalk.test_basic.BasicTest.testRCVersion',
       # crbug.com/129498
       '-https.SSLTest.testSSLCertAuthorityOK',
       '-https.SSLTest.testSSLCertOK',
