@@ -391,8 +391,10 @@ playground2::Sandbox::ErrorCode AllowAllPolicy(int sysno) {
 
 // Warms up/preloads resources needed by the policies.
 void WarmupPolicy(playground2::Sandbox::EvaluateSyscall policy) {
+#if defined(__x86_64__)
   if (policy == GpuProcessPolicy_x86_64)
     OpenWithCache(kDriRcPath, O_RDONLY);
+#endif
 }
 
 // Is the sandbox fully disabled for this process?
