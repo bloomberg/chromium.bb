@@ -191,9 +191,6 @@ void Window::SetType(client::WindowType type) {
   // Cannot change type after the window is initialized.
   DCHECK(!layer());
   type_ = type;
-  if (type_ == client::WINDOW_TYPE_POPUP) {
-    LOG(ERROR) << "POPUP:";
-  }
 }
 
 void Window::SetName(const std::string& name) {
