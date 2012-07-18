@@ -48,6 +48,7 @@
 #include "chrome/browser/extensions/extension_font_settings_api.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_input_ime_api.h"
+#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_management_api.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -74,8 +75,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
@@ -575,10 +574,9 @@ bool ExtensionService::UpdateExtension(
 
   // We want a silent install only for non-pending extensions and
   // pending extensions that have install_silently set.
-  Browser* browser = browser::FindLastActiveWithProfile(profile_);
   ExtensionInstallPrompt* client =
       (!pending_extension_info || pending_extension_info->install_silently()) ?
-      NULL : chrome::CreateExtensionInstallPromptWithBrowser(browser);
+      NULL : ExtensionInstallUI::CreateInstallPromptWithProfile(profile_);
 
   scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(this, client));
   installer->set_expected_id(id);

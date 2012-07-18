@@ -8,10 +8,10 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
+#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/permissions_updater.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/string_ordinal.h"
@@ -50,8 +50,8 @@ SimpleExtensionLoadPrompt::SimpleExtensionLoadPrompt(
     const Extension* extension)
     : service_weak_(extension_service),
       extension_(extension) {
-  Browser* browser = browser::FindLastActiveWithProfile(profile);
-  install_ui_.reset(chrome::CreateExtensionInstallPromptWithBrowser(browser));
+  install_ui_.reset(
+      ExtensionInstallUI::CreateInstallPromptWithProfile(profile));
 }
 
 SimpleExtensionLoadPrompt::~SimpleExtensionLoadPrompt() {

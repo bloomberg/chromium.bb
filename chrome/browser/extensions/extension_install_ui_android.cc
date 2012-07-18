@@ -5,6 +5,9 @@
 #include "chrome/browser/extensions/extension_install_ui_android.h"
 
 #include "base/logging.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
+#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/web_contents.h"
 
 void ExtensionInstallUIAndroid::OnInstallSuccess(
     const extensions::Extension* extension, SkBitmap* icon) {
@@ -35,4 +38,18 @@ void ExtensionInstallUI::OpenAppInstalledUI(
 // static
 void ExtensionInstallUI::DisableFailureUIForTests() {
   NOTIMPLEMENTED();
+}
+
+// static
+ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithWebContents(
+    content::WebContents* web_contents) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+// static
+ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithProfile(
+    Profile* profile) {
+  NOTIMPLEMENTED();
+  return NULL;
 }

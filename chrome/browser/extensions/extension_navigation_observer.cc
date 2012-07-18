@@ -4,9 +4,8 @@
 
 #include "chrome/browser/extensions/extension_navigation_observer.h"
 
+#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -76,10 +75,9 @@ void ExtensionNavigationObserver::PromptToEnableExtensionIfNecessary(
     in_progress_prompt_extension_id_ = extension->id();
     in_progress_prompt_navigation_controller_ = nav_controller;
 
-    Browser* browser = browser::FindBrowserWithWebContents(
-        nav_controller->GetWebContents());
     extension_install_prompt_.reset(
-        chrome::CreateExtensionInstallPromptWithBrowser(browser));
+        ExtensionInstallUI::CreateInstallPromptWithWebContents(
+            nav_controller->GetWebContents()));
     extension_install_prompt_->ConfirmReEnable(this, extension);
   }
 }

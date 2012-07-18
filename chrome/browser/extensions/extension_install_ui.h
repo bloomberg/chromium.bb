@@ -12,8 +12,13 @@
 #include "chrome/browser/extensions/crx_installer_error.h"
 
 class Browser;
+class ExtensionInstallPrompt;
 class Profile;
 class SkBitmap;
+
+namespace content {
+class WebContents;
+}
 
 namespace extensions {
 class Extension;
@@ -49,6 +54,17 @@ class ExtensionInstallUI {
   // Disables showing UI (ErrorBox, etc.) for install failures. To be used only
   // in tests.
   static void DisableFailureUIForTests();
+
+  // Creates an ExtensionInstallPrompt from |web_contents|.
+  // Caller assumes ownership.
+  static ExtensionInstallPrompt* CreateInstallPromptWithWebContents(
+      content::WebContents* web_contents);
+
+  // Creates an ExtensionInstallPrompt from |profile|.
+  // Caller assumes ownership. This method is deperecated
+  // and should not be used in new code.
+  static ExtensionInstallPrompt* CreateInstallPromptWithProfile(
+      Profile* profile);
 
   Profile* profile() { return profile_; }
 

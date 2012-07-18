@@ -29,6 +29,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -259,4 +260,18 @@ void ExtensionInstallUI::OpenAppInstalledUI(Browser* browser,
 // static
 void ExtensionInstallUI::DisableFailureUIForTests() {
   disable_failure_ui_for_tests = true;
+}
+
+// static
+ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithWebContents(
+    content::WebContents* web_contents) {
+  Browser* browser = browser::FindBrowserWithWebContents(web_contents);
+  return chrome::CreateExtensionInstallPromptWithBrowser(browser);
+}
+
+// static
+ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithProfile(
+    Profile* profile) {
+  Browser* browser = browser::FindLastActiveWithProfile(profile);
+  return chrome::CreateExtensionInstallPromptWithBrowser(browser);
 }
