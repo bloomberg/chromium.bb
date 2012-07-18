@@ -756,14 +756,14 @@ wl_connection_demarshal(struct wl_connection *connection,
 			closure->args[i] = id;
 			*id = p;
 
-			object = wl_map_lookup(objects, *p);
-			if (object != NULL) {
-				printf("not a new object (%d), "
+			if (wl_map_reserve_new(objects, *p) < 0) {
+				printf("not a valid new object id (%d), "
 				       "message %s(%s)\n",
 				       *p, message->name, message->signature);
 				errno = EINVAL;
 				goto err;
 			}
+
 			p++;
 			break;
 		case 'a':
