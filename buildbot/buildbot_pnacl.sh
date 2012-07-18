@@ -348,6 +348,9 @@ single-browser-test() {
   # http://code.google.com/p/nativeclient/issues/detail?id=2019
   scons-stage-irt ${platform} \
     "${extra} browser_headless=1 SILENT=1 do_not_run_tests=1" ${test}
+
+  #TODO(dschuff): remove this when streaming is the default
+  export NACL_STREAMING_TRANSLATION=true
   scons-stage-irt ${platform} "${extra} browser_headless=1 SILENT=1 -j1" \
       ${test}
 }
