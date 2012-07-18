@@ -137,6 +137,8 @@ bool IsFileSystemSyscall(int sysno) {
     case __NR_stat:
     case __NR_lstat:
     case __NR_chdir:
+    case __NR_mknod:
+    case __NR_mknodat:
       return true;
     default:
       return false;
