@@ -393,7 +393,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>Items under the "sync" namespace are synced using Chrome Sync.</dd>
+          <dd>Items under the "sync" storage area are synced using Chrome Sync.</dd>
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -532,7 +532,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>Items under the "local" namespace are local to each machine.</dd>
+          <dd>Items under the "local" storage area are local to each machine.</dd>
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -578,7 +578,7 @@ You can find examples that use this API on the
               <h4>onChanged</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.storage.</span><span>onChanged</span><span class="subdued">.addListener</span>(function(<span>object changes, string namespace</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.storage.</span><span>onChanged</span><span class="subdued">.addListener</span>(function(<span>object changes, string areaName</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>Fired when one or more items change.</p>
@@ -612,7 +612,7 @@ You can find examples that use this API on the
                     </div><div>
                       <div>
           <dt>
-            <var>namespace</var>
+            <var>areaName</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -626,7 +626,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>The namespace ("sync" or "local") of the storage area the changes are for.</dd>
+          <dd>The name of the storage area ("sync" or "local") the changes are for.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->

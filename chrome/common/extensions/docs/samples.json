@@ -1011,7 +1011,7 @@
         "manifest.json",
         "sample.js"
       ],
-      "source_hash": "65daf7807e7c175ffb57a7f786d6f83d7c3d7bd9",
+      "source_hash": "35fecf3b24d8b487263539c5671e51f2657b71de",
       "zip_path": "examples/api/contextMenus/event_page.zip"
     },
     {
@@ -1591,7 +1591,7 @@
         "info.js",
         "manifest.json"
       ],
-      "source_hash": "b93a2a775683e9b178f2dc43ae556f0e941549d1",
+      "source_hash": "14a1d263e019558e695419bdea8aef3346c1987b",
       "zip_path": "examples/extensions/imageinfo.zip"
     },
     {

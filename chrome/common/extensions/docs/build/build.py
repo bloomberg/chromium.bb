@@ -80,11 +80,7 @@ def RenderPages(family, dump_render_tree, single_page_name):
   print generator_url
 
   # Run DumpRenderTree and capture result
-  dump_render_tree_timeout = 1000 * 60 * 5  # five minutes
-  p = Popen(
-      [dump_render_tree, "--test-shell",
-       "%s %s" % (generator_url, dump_render_tree_timeout)],
-      stdout=PIPE)
+  p = Popen([dump_render_tree, generator_url], stdout=PIPE)
 
   # The remaining output will be the content of the generated pages.
   output = p.stdout.read()
