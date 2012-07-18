@@ -167,7 +167,7 @@
     "extension_types": ["extension", "packaged_app"]
   },
   "managedModePrivate": {
-    "channel": "stable",
+    "channel": "dev",
     "extension_types": ["extension", "packaged_app"],
     "location": "component"
   },
