@@ -192,9 +192,9 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
  private:
   base::Histogram::SampleSet GetHistogram(const char* name) {
     base::Histogram::SampleSet sample;
-    base::Histogram* current_histogram = NULL;
     base::Histogram* cached_histogram = NULL;
-    base::StatisticsRecorder::FindHistogram(name, &current_histogram);
+    base::Histogram* current_histogram =
+        base::StatisticsRecorder::FindHistogram(name);
     if (ContainsKey(histograms_, name)) {
       cached_histogram = histograms_[name];
     }
