@@ -2505,8 +2505,8 @@ class NavigationControllerHistoryTest : public NavigationControllerTest {
 
     // Make sure we wait for history to shut down before continuing. The task
     // we add will cause our message loop to quit once it is destroyed.
-    HistoryService* history =
-        profile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
+    HistoryService* history = HistoryServiceFactory::GetForProfiles(
+        profile(), Profile::IMPLICIT_ACCESS);
     if (history) {
       history->SetOnBackendDestroyTask(MessageLoop::QuitClosure());
       MessageLoop::current()->Run();
