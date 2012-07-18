@@ -452,6 +452,9 @@ const char kSyncErrorsHelpURL[] =
 const char kSyncCreateNewAccountURL[] =
     "https://accounts.google.com/NewAccount?service=chromiumsync";
 
+const char kChromeToMobileLearnMoreURL[] =
+    "https://support.google.com/chrome/?p=ib_chrome_to_mobile";
+
 #if defined(OS_CHROMEOS)
 const char kNaturalScrollHelpURL[] =
     "https://support.google.com/chromeos/?p=simple_scrolling";

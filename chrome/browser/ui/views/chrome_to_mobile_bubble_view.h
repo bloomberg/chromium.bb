@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_to_mobile_service.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/link_listener.h"
 
 class Browser;
 
@@ -34,6 +35,7 @@ class TextButton;
 // ChromeToMobileBubbleView is a bubble view for the Chrome To Mobile service.
 class ChromeToMobileBubbleView : public views::BubbleDelegateView,
                                  public views::ButtonListener,
+                                 public views::LinkListener,
                                  public ChromeToMobileService::Observer {
  public:
   virtual ~ChromeToMobileBubbleView();
@@ -52,6 +54,9 @@ class ChromeToMobileBubbleView : public views::BubbleDelegateView,
   // views::ButtonListener method.
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
+
+  // views::LinkListener method.
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // ChromeToMobileService::Observer methods.
   virtual void SnapshotGenerated(const FilePath& path, int64 bytes) OVERRIDE;

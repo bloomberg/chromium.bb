@@ -65,6 +65,7 @@ class ChromeToMobileService : public ProfileKeyedService,
     SENDING_SNAPSHOT,       // A snapshot was sent along with the page URL.
     SEND_SUCCESS,           // Cloud print responded with success on send.
     SEND_ERROR,             // Cloud print responded with failure on send.
+    LEARN_MORE_CLICKED,     // The "Learn more" help article link was clicked.
     NUM_METRICS
   };
 
@@ -130,7 +131,10 @@ class ChromeToMobileService : public ProfileKeyedService,
 
   // Log a metric for the "ChromeToMobile.Service" histogram.
   // Virtual for unit test mocking.
-  virtual void LogMetric(Metric metric);
+  virtual void LogMetric(Metric metric) const;
+
+  // Opens the "Learn More" help article link in the supplied |browser|.
+  void LearnMore(Browser* browser) const;
 
   // net::URLFetcherDelegate method.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;

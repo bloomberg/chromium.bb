@@ -69,6 +69,7 @@ class ChromeToMobileBubbleGtk : public BubbleDelegateGtk,
   // Notified when |content_| is destroyed so we can delete our instance.
   CHROMEGTK_CALLBACK_0(ChromeToMobileBubbleGtk, void, OnDestroy);
   CHROMEGTK_CALLBACK_0(ChromeToMobileBubbleGtk, void, OnRadioToggled);
+  CHROMEGTK_CALLBACK_0(ChromeToMobileBubbleGtk, void, OnLearnClicked);
   CHROMEGTK_CALLBACK_0(ChromeToMobileBubbleGtk, void, OnCancelClicked);
   CHROMEGTK_CALLBACK_0(ChromeToMobileBubbleGtk, void, OnSendClicked);
 
@@ -101,6 +102,7 @@ class ChromeToMobileBubbleGtk : public BubbleDelegateGtk,
   std::vector<GtkWidget*> labels_;
 
   GtkWidget* send_copy_;
+  GtkWidget* learn_;
   GtkWidget* cancel_;
   GtkWidget* send_;
   GtkWidget* error_;

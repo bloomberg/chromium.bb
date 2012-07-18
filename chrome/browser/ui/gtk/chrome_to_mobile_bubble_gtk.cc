@@ -219,6 +219,9 @@ ChromeToMobileBubbleGtk::ChromeToMobileBubbleGtk(GtkImage* anchor_image,
   gtk_widget_set_sensitive(send_copy_, FALSE);
   gtk_box_pack_start(GTK_BOX(content), send_copy_, FALSE, FALSE, 0);
 
+  learn_ = theme_service_->BuildChromeLinkButton(
+      l10n_util::GetStringUTF8(IDS_LEARN_MORE));
+
   // Set the send button requested size from its final (presumed longest) string
   // to avoid resizes during animation. Use the same size for the cancel button.
   send_ = gtk_button_new_with_label(
@@ -235,6 +238,7 @@ ChromeToMobileBubbleGtk::ChromeToMobileBubbleGtk(GtkImage* anchor_image,
 
   // Pack the buttons with an expanding label for right-justification.
   GtkWidget* buttons = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(buttons), learn_, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(buttons), gtk_label_new(""), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(buttons), cancel_, FALSE, FALSE, 4);
   gtk_box_pack_start(GTK_BOX(buttons), send_, FALSE, FALSE, 0);
@@ -268,6 +272,7 @@ ChromeToMobileBubbleGtk::ChromeToMobileBubbleGtk(GtkImage* anchor_image,
   }
 
   g_signal_connect(content, "destroy", G_CALLBACK(&OnDestroyThunk), this);
+  g_signal_connect(learn_, "clicked", G_CALLBACK(&OnLearnClickedThunk), this);
   g_signal_connect(cancel_, "clicked", G_CALLBACK(&OnCancelClickedThunk), this);
   g_signal_connect(send_, "clicked", G_CALLBACK(&OnSendClickedThunk), this);
 
@@ -293,6 +298,11 @@ void ChromeToMobileBubbleGtk::OnDestroy(GtkWidget* widget) {
 void ChromeToMobileBubbleGtk::OnRadioToggled(GtkWidget* widget) {
   DCHECK(mobile_map_.find(widget) != mobile_map_.end());
   selected_mobile_ = mobile_map_.find(widget)->second;
+}
+
+void ChromeToMobileBubbleGtk::OnLearnClicked(GtkWidget* widget) {
+  service_->LearnMore(browser_);
+  bubble_->Close();
 }
 
 void ChromeToMobileBubbleGtk::OnCancelClicked(GtkWidget* widget) {

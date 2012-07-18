@@ -361,6 +361,9 @@ extern const char kSyncErrorsHelpURL[];
 // The URL to create a new Google account via sync.
 extern const char kSyncCreateNewAccountURL[];
 
+// The URL for the "Learn more" link in the Chrome To Mobile bubble.
+extern const char kChromeToMobileLearnMoreURL[];
+
 #if defined(OS_CHROMEOS)
 // The URL for the "Learn more" link for natural scrolling on ChromeOS.
 extern const char kNaturalScrollHelpURL[];

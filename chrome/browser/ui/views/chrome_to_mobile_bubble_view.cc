@@ -27,6 +27,7 @@
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/events/event.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -237,6 +238,8 @@ void ChromeToMobileBubbleView::Init() {
 
   const size_t button_column_set_id = 1;
   cs = layout->AddColumnSet(button_column_set_id);
+  cs->AddColumn(GridLayout::LEADING, GridLayout::TRAILING, 0,
+                GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(1, 0);
   cs->AddColumn(GridLayout::LEADING, GridLayout::TRAILING, 0,
                 GridLayout::USE_PREF, 0, 0);
@@ -296,6 +299,10 @@ void ChromeToMobileBubbleView::Init() {
   layout->StartRow(0, single_column_set_id);
   layout->AddView(send_copy_);
 
+  views::Link* learn_more =
+      new views::Link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  learn_more->set_listener(this);
+
   send_ = new views::NativeTextButton(
       this, l10n_util::GetStringUTF16(IDS_CHROME_TO_MOBILE_BUBBLE_SEND));
   send_->SetIsDefault(true);
@@ -303,6 +310,7 @@ void ChromeToMobileBubbleView::Init() {
       this, l10n_util::GetStringUTF16(IDS_CANCEL));
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   layout->StartRow(0, button_column_set_id);
+  layout->AddView(learn_more);
   layout->AddView(send_);
   layout->AddView(cancel_);
 
@@ -326,6 +334,12 @@ ChromeToMobileBubbleView::ChromeToMobileBubbleView(views::View* anchor_view,
 
   // Request a mobile device list update.
   service_->RequestMobileListUpdate();
+}
+
+void ChromeToMobileBubbleView::LinkClicked(views::Link* source,
+                                           int event_flags) {
+  service_->LearnMore(browser_);
+  GetWidget()->Close();
 }
 
 void ChromeToMobileBubbleView::HandleButtonPressed(views::Button* sender) {

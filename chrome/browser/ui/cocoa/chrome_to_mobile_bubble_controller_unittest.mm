@@ -24,7 +24,7 @@ class MockChromeToMobileService : public ChromeToMobileService {
                                   Browser* browser,
                                   base::WeakPtr<Observer> observer));
   MOCK_METHOD1(DeleteSnapshot, void(const FilePath& snapshot));
-  MOCK_METHOD1(LogMetric, void(ChromeToMobileService::Metric));
+  MOCK_CONST_METHOD1(LogMetric, void(ChromeToMobileService::Metric));
 };
 
 void MockChromeToMobileService::AddDevices(size_t count) {

@@ -162,6 +162,11 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
   [super showWindow:sender];
 }
 
+- (IBAction)learn:(id)sender {
+  service_->LearnMore(browser_);
+  [self close];
+}
+
 - (IBAction)send:(id)sender {
   int row = (mobiles_.size() > 1) ? [mobileRadioGroup_ selectedRow] : 0;
   FilePath path = ([sendCopy_ state] == NSOnState) ? snapshotPath_ : FilePath();

@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -31,6 +32,7 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/oauth2_access_token_fetcher.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -266,8 +268,16 @@ void ChromeToMobileService::DeleteSnapshot(const FilePath& snapshot) {
   }
 }
 
-void ChromeToMobileService::LogMetric(Metric metric) {
+void ChromeToMobileService::LogMetric(Metric metric) const {
   UMA_HISTOGRAM_ENUMERATION("ChromeToMobile.Service", metric, NUM_METRICS);
+}
+
+void ChromeToMobileService::LearnMore(Browser* browser) const {
+  LogMetric(LEARN_MORE_CLICKED);
+  chrome::NavigateParams params(browser,
+      GURL(chrome::kChromeToMobileLearnMoreURL), content::PAGE_TRANSITION_LINK);
+  params.disposition = NEW_FOREGROUND_TAB;
+  chrome::Navigate(&params);
 }
 
 void ChromeToMobileService::OnURLFetchComplete(

@@ -109,6 +109,7 @@ class ChromeToMobileBubbleNotificationBridge
                    browser:(Browser*)browser;
 
 // Actions for buttons in the dialog.
+- (IBAction)learn:(id)sender;
 - (IBAction)send:(id)sender;
 - (IBAction)cancel:(id)sender;
 
