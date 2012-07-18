@@ -14,10 +14,10 @@
 namespace {
 
 // The minimum width of the inline disposition tab contents.
-const int kMinInlineDispositionWidth = 300;
+const int kMinInlineDispositionWidth = 0;
 
 // The minimum height of the inline disposition tab contents.
-const int kMinInlineDispositionHeight = 150;
+const int kMinInlineDispositionHeight = 0;
 
 // Maximum inline disposition container sizes.
 const int kMaxInlineDispositionWidth = 900;
