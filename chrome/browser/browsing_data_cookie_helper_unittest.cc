@@ -10,6 +10,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/parsed_cookie.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -147,7 +148,7 @@ TEST_F(BrowsingDataCookieHelperTest, DeleteCookie) {
   // Blocks until BrowsingDataCookieHelperTest::FetchCallback is notified.
   MessageLoop::current()->Run();
 
-  net::CookieMonster::CanonicalCookie cookie = cookie_list_[0];
+  net::CanonicalCookie cookie = cookie_list_[0];
   cookie_helper->DeleteCookie(cookie);
 
   cookie_helper->StartFetching(
@@ -197,8 +198,8 @@ TEST_F(BrowsingDataCookieHelperTest, CannedEmpty) {
 
   net::CookieList cookies;
   net::ParsedCookie pc("a=1");
-  scoped_ptr<net::CookieMonster::CanonicalCookie> cookie(
-      new net::CookieMonster::CanonicalCookie(url_google, pc));
+  scoped_ptr<net::CanonicalCookie> cookie(
+      new net::CanonicalCookie(url_google, pc));
   cookies.push_back(*cookie);
 
   helper->AddReadCookies(url_google, url_google, cookies);

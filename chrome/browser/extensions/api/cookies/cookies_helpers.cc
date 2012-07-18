@@ -20,6 +20,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_util.h"
 
 namespace extensions {
@@ -51,9 +52,8 @@ const char* GetStoreIdFromProfile(Profile* profile) {
       kOffTheRecordProfileStoreId : kOriginalProfileStoreId;
 }
 
-DictionaryValue* CreateCookieValue(
-    const net::CookieMonster::CanonicalCookie& cookie,
-    const std::string& store_id) {
+DictionaryValue* CreateCookieValue(const net::CanonicalCookie& cookie,
+                                   const std::string& store_id) {
   DictionaryValue* result = new DictionaryValue();
 
   // A cookie is a raw byte sequence. By explicitly parsing it as UTF8, we
@@ -103,8 +103,7 @@ void GetCookieListFromStore(
   }
 }
 
-GURL GetURLFromCanonicalCookie(
-    const net::CookieMonster::CanonicalCookie& cookie) {
+GURL GetURLFromCanonicalCookie(const net::CanonicalCookie& cookie) {
   const std::string& domain_key = cookie.Domain();
   const std::string scheme =
       cookie.IsSecure() ? chrome::kHttpsScheme : chrome::kHttpScheme;
@@ -149,8 +148,7 @@ MatchFilter::MatchFilter(const DictionaryValue* details)
   DCHECK(details_);
 }
 
-bool MatchFilter::MatchesCookie(
-    const net::CookieMonster::CanonicalCookie& cookie) {
+bool MatchFilter::MatchesCookie(const net::CanonicalCookie& cookie) {
   return MatchesString(keys::kNameKey, cookie.Name()) &&
          MatchesDomain(cookie.Domain()) &&
          MatchesString(keys::kPathKey, cookie.Path()) &&

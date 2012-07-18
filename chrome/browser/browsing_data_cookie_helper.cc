@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/registry_controlled_domain.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/parsed_cookie.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -44,7 +45,7 @@ void BrowsingDataCookieHelper::StartFetching(
 }
 
 void BrowsingDataCookieHelper::DeleteCookie(
-    const net::CookieMonster::CanonicalCookie& cookie) {
+    const net::CanonicalCookie& cookie) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -82,7 +83,7 @@ void BrowsingDataCookieHelper::NotifyInUIThread(
 }
 
 void BrowsingDataCookieHelper::DeleteCookieOnIOThread(
-    const net::CookieMonster::CanonicalCookie& cookie) {
+    const net::CanonicalCookie& cookie) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   scoped_refptr<net::CookieMonster> cookie_monster =
       request_context_getter_->GetURLRequestContext()->
@@ -141,8 +142,8 @@ void CannedBrowsingDataCookieHelper::AddChangedCookie(
   // This fails to create a canonical cookie, if the normalized cookie domain
   // form cookie line and the url don't have the same domain+registry, or url
   // host isn't cookie domain or one of its subdomains.
-  scoped_ptr<net::CookieMonster::CanonicalCookie> cookie(
-      net::CookieMonster::CanonicalCookie::Create(url, parsed_cookie));
+  scoped_ptr<net::CanonicalCookie> cookie(
+      net::CanonicalCookie::Create(url, parsed_cookie));
   if (cookie.get())
     AddCookie(frame_url, *cookie);
 }
@@ -191,7 +192,7 @@ void CannedBrowsingDataCookieHelper::StartFetching(
 }
 
 bool CannedBrowsingDataCookieHelper::DeleteMatchingCookie(
-    const net::CookieMonster::CanonicalCookie& add_cookie,
+    const net::CanonicalCookie& add_cookie,
     net::CookieList* cookie_list) {
   typedef net::CookieList::iterator cookie_iterator;
   for (cookie_iterator cookie = cookie_list->begin();
@@ -221,7 +222,7 @@ net::CookieList* CannedBrowsingDataCookieHelper::GetCookiesFor(
 
 void CannedBrowsingDataCookieHelper::AddCookie(
     const GURL& frame_url,
-    const net::CookieMonster::CanonicalCookie& cookie) {
+    const net::CanonicalCookie& cookie) {
   net::CookieList* cookie_list =
       GetCookiesFor(frame_url.GetOrigin());
   DeleteMatchingCookie(cookie, cookie_list);

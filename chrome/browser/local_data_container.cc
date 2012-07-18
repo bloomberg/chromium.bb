@@ -10,6 +10,7 @@
 #include "chrome/browser/browsing_data_server_bound_cert_helper.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/cookies_tree_model.h"
+#include "net/cookies/canonical_cookie.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // LocalDataContainer, public:

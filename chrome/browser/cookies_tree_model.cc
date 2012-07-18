@@ -22,7 +22,7 @@
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "net/base/registry_controlled_domain.h"
-#include "net/cookies/cookie_monster.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/url_request/url_request_context.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -182,7 +182,7 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitHost(
 }
 
 CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitCookie(
-    const net::CookieMonster::CanonicalCookie* cookie) {
+    const net::CanonicalCookie* cookie) {
   Init(TYPE_COOKIE);
   this->cookie = cookie;
   return *this;
@@ -273,7 +273,7 @@ CookiesTreeModel* CookieTreeNode::GetModel() const {
 // CookieTreeCookieNode, public:
 
 CookieTreeCookieNode::CookieTreeCookieNode(
-    std::list<net::CookieMonster::CanonicalCookie>::iterator cookie)
+    std::list<net::CanonicalCookie>::iterator cookie)
     : CookieTreeNode(UTF8ToUTF16(cookie->Name())),
       cookie_(cookie) {
 }

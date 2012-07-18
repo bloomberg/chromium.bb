@@ -31,6 +31,7 @@
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "net/cookies/canonical_cookie.h"
 #include "webkit/fileapi/file_system_types.h"
 
 using content::BrowserThread;

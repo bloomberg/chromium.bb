@@ -17,16 +17,19 @@
 #include "chrome/browser/browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data_server_bound_cert_helper.h"
 #include "net/base/server_bound_cert_store.h"
-#include "net/cookies/cookie_monster.h"
 
 class LocalDataContainer;
 class CookiesTreeModel;
+
+namespace net {
+class CanonicalCookie;
+}
 
 // Friendly typedefs for the multiple types of lists used in the model.
 namespace {
 
 typedef std::map<std::string, LocalDataContainer*> ContainerMap;
-typedef std::list<net::CookieMonster::CanonicalCookie> CookieList;
+typedef std::list<net::CanonicalCookie> CookieList;
 typedef std::list<BrowsingDataDatabaseHelper::DatabaseInfo> DatabaseInfoList;
 typedef std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>
     LocalStorageInfoList;

@@ -97,7 +97,7 @@
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
 #include "net/base/ssl_cert_request_info.h"
-#include "net/cookies/cookie_monster.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

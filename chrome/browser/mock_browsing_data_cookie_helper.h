@@ -9,6 +9,7 @@
 #include <string>
 
 #include "chrome/browser/browsing_data_cookie_helper.h"
+#include "net/cookies/canonical_cookie.h"
 
 // Mock for BrowsingDataCookieHelper.
 class MockBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
@@ -19,8 +20,7 @@ class MockBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
   // BrowsingDataCookieHelper methods.
   virtual void StartFetching(
       const net::CookieMonster::GetCookieListCallback &callback) OVERRIDE;
-  virtual void DeleteCookie(
-      const net::CookieMonster::CanonicalCookie& cookie) OVERRIDE;
+  virtual void DeleteCookie(const net::CanonicalCookie& cookie) OVERRIDE;
 
   // Adds some cookie samples.
   void AddCookieSamples(const GURL& url, const std::string& cookie_line);

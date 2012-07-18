@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "net/cookies/cookie_monster.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/view.h"
@@ -22,6 +21,9 @@ class Label;
 class Textfield;
 }
 
+namespace net {
+class CanonicalCookie;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // CookieInfoViewDelegate
@@ -47,7 +49,7 @@ class CookieInfoView : public views::View,
 
   // Update the display from the specified CookieNode.
   void SetCookie(const std::string& domain,
-                 const net::CookieMonster::CanonicalCookie& cookie_node);
+                 const net::CanonicalCookie& cookie_node);
 
   // Update the display from the specified cookie string.
   void SetCookieString(const GURL& url, const std::string& cookie_line);

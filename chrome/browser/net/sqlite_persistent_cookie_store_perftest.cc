@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
+#include "net/cookies/canonical_cookie.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -26,14 +27,12 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
         key_loaded_event_(false, false) {
   }
 
-  void OnLoaded(
-      const std::vector<net::CookieMonster::CanonicalCookie*>& cookies) {
+  void OnLoaded(const std::vector<net::CanonicalCookie*>& cookies) {
     cookies_ = cookies;
     loaded_event_.Signal();
   }
 
-  void OnKeyLoaded(
-      const std::vector<net::CookieMonster::CanonicalCookie*>& cookies) {
+  void OnKeyLoaded(const std::vector<net::CanonicalCookie*>& cookies) {
     cookies_ = cookies;
     key_loaded_event_.Signal();
   }
@@ -51,7 +50,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
     store_ = new SQLitePersistentCookieStore(
         temp_dir_.path().Append(chrome::kCookieFilename),
         false, NULL);
-    std::vector<net::CookieMonster::CanonicalCookie*> cookies;
+    std::vector<net::CanonicalCookie*> cookies;
     Load();
     ASSERT_EQ(0u, cookies_.size());
     // Creates 15000 cookies from 300 eTLD+1s.
@@ -62,10 +61,10 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
       for (int cookie_num = 0; cookie_num < 50; ++cookie_num) {
         t += base::TimeDelta::FromInternalValue(10);
         store_->AddCookie(
-          net::CookieMonster::CanonicalCookie(gurl,
-            base::StringPrintf("Cookie_%d", cookie_num), "1",
-            domain_name, "/", std::string(), std::string(),
-            t, t, t, false, false));
+            net::CanonicalCookie(gurl,
+                base::StringPrintf("Cookie_%d", cookie_num), "1",
+                domain_name, "/", std::string(), std::string(),
+                t, t, t, false, false));
       }
     }
     // Replace the store effectively destroying the current one and forcing it
@@ -86,7 +85,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
   content::TestBrowserThread io_thread_;
   base::WaitableEvent loaded_event_;
   base::WaitableEvent key_loaded_event_;
-  std::vector<net::CookieMonster::CanonicalCookie*> cookies_;
+  std::vector<net::CanonicalCookie*> cookies_;
   ScopedTempDir temp_dir_;
   scoped_refptr<SQLitePersistentCookieStore> store_;
 };

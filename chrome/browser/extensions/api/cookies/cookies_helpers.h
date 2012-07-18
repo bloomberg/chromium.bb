@@ -22,6 +22,10 @@ class DictionaryValue;
 class ListValue;
 }
 
+namespace net {
+class CanonicalCookie;
+}
+
 namespace extensions {
 
 class Extension;
@@ -41,9 +45,8 @@ const char* GetStoreIdFromProfile(Profile* profile);
 // Constructs a Cookie object as defined by the cookies API. This function
 // allocates a new DictionaryValue object; the caller is responsible for
 // freeing it.
-base::DictionaryValue* CreateCookieValue(
-    const net::CookieMonster::CanonicalCookie& cookie,
-    const std::string& store_id);
+base::DictionaryValue* CreateCookieValue(const net::CanonicalCookie& cookie,
+                                         const std::string& store_id);
 
 // Constructs a CookieStore object as defined by the cookies API. This function
 // allocates a new DictionaryValue object; the caller is responsible for
@@ -62,8 +65,7 @@ void GetCookieListFromStore(
 // a cookie against the extension's host permissions. The Secure
 // property of the cookie defines the URL scheme, and the cookie's
 // domain becomes the URL host.
-GURL GetURLFromCanonicalCookie(
-    const net::CookieMonster::CanonicalCookie& cookie);
+GURL GetURLFromCanonicalCookie(const net::CanonicalCookie& cookie);
 
 // Looks through all cookies in the given cookie store, and appends to the
 // match list all the cookies that both match the given URL and cookie details
@@ -94,7 +96,7 @@ class MatchFilter {
 
   // Returns true if the given cookie matches the properties in the match
   // filter.
-  bool MatchesCookie(const net::CookieMonster::CanonicalCookie& cookie);
+  bool MatchesCookie(const net::CanonicalCookie& cookie);
 
  private:
   // Returns true if the details dictionary contains a string with the given

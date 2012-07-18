@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "grit/generated_resources.h"
+#include "net/cookies/canonical_cookie.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
@@ -107,8 +108,7 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       dict->SetString(kKeyType, "cookie");
       dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_ICON");
 
-      const net::CookieMonster::CanonicalCookie& cookie =
-          *node.GetDetailedInfo().cookie;
+      const net::CanonicalCookie& cookie = *node.GetDetailedInfo().cookie;
 
       dict->SetString(kKeyName, cookie.Name());
       dict->SetString(kKeyContent, cookie.Value());

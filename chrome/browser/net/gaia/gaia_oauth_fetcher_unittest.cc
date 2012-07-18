@@ -87,9 +87,9 @@ TEST(GaiaOAuthFetcherTest, GetOAuthToken) {
   base::Time creation = base::Time::Now();
   base::Time expiration = base::Time::Time();
 
-  scoped_ptr<net::CookieMonster::CanonicalCookie> canonical_cookie;
+  scoped_ptr<net::CanonicalCookie> canonical_cookie;
   canonical_cookie.reset(
-      new net::CookieMonster::CanonicalCookie(
+      new net::CanonicalCookie(
           GURL("http://www.google.com/"),  // url
           "oauth_token",                   // name
           oauth_token,                     // value

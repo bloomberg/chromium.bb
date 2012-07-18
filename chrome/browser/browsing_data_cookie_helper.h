@@ -16,6 +16,7 @@
 class GURL;
 
 namespace net {
+class CanonicalCookie;
 class URLRequestContextGetter;
 }
 
@@ -38,7 +39,7 @@ class BrowsingDataCookieHelper
 
   // Requests a single cookie to be deleted in the IO thread. This must be
   // called in the UI thread.
-  virtual void DeleteCookie(const net::CookieMonster::CanonicalCookie& cookie);
+  virtual void DeleteCookie(const net::CanonicalCookie& cookie);
 
  protected:
   friend class base::RefCountedThreadSafe<BrowsingDataCookieHelper>;
@@ -59,8 +60,7 @@ class BrowsingDataCookieHelper
   void NotifyInUIThread(const net::CookieList& cookies);
 
   // Delete a single cookie. This must be called in IO thread.
-  void DeleteCookieOnIOThread(
-      const net::CookieMonster::CanonicalCookie& cookie);
+  void DeleteCookieOnIOThread(const net::CanonicalCookie& cookie);
 
   // Indicates whether or not we're currently fetching information:
   // it's true when StartFetching() is called in the UI thread, and it's reset
@@ -126,9 +126,8 @@ class CannedBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
   // Check if the cookie list contains a cookie with the same name,
   // domain, and path as the newly created cookie. Delete the old cookie
   // if does.
-  bool DeleteMatchingCookie(
-      const net::CookieMonster::CanonicalCookie& add_cookie,
-      net::CookieList* cookie_list);
+  bool DeleteMatchingCookie(const net::CanonicalCookie& add_cookie,
+                            net::CookieList* cookie_list);
 
   virtual ~CannedBrowsingDataCookieHelper();
 
@@ -136,9 +135,8 @@ class CannedBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
   net::CookieList* GetCookiesFor(const GURL& origin);
 
   // Adds the |cookie| to the cookie list for the given |frame_url|.
-  void AddCookie(
-      const GURL& frame_url,
-      const net::CookieMonster::CanonicalCookie& cookie);
+  void AddCookie(const GURL& frame_url,
+                 const net::CanonicalCookie& cookie);
 
   // Map that contains the cookie lists for all frame origins.
   OriginCookieListMap origin_cookie_list_map_;

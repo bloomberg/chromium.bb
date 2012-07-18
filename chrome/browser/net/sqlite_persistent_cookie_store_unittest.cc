@@ -20,15 +20,15 @@
 #include "chrome/common/chrome_constants.h"
 #include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
+#include "net/cookies/canonical_cookie.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 
 using content::BrowserThread;
-using net::CookieMonster;
 
-typedef std::vector<CookieMonster::CanonicalCookie*> CanonicalCookieVector;
+typedef std::vector<net::CanonicalCookie*> CanonicalCookieVector;
 
 class SQLitePersistentCookieStoreTest : public testing::Test {
  public:
@@ -96,10 +96,9 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
                  const std::string& path,
                  const base::Time& creation) {
     store_->AddCookie(
-        CookieMonster::CanonicalCookie(GURL(), name, value, domain, path,
-                                       std::string(), std::string(),
-                                       creation, creation, creation,
-                                       false, false));
+        net::CanonicalCookie(GURL(), name, value, domain, path, std::string(),
+                             std::string(), creation, creation, creation, false,
+                             false));
   }
 
   virtual void SetUp() {
@@ -333,7 +332,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadOldSessionCookies) {
 
   // Add a session cookie.
   store_->AddCookie(
-      CookieMonster::CanonicalCookie(
+      net::CanonicalCookie(
           GURL(), "C", "D", "sessioncookie.com", "/", std::string(),
           std::string(), base::Time::Now(), base::Time(),
           base::Time::Now(), false, false));
@@ -360,7 +359,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestDontLoadOldSessionCookies) {
 
   // Add a session cookie.
   store_->AddCookie(
-      CookieMonster::CanonicalCookie(
+      net::CanonicalCookie(
           GURL(), "C", "D", "sessioncookie.com", "/", std::string(),
           std::string(), base::Time::Now(), base::Time(),
           base::Time::Now(), false, false));
@@ -391,14 +390,14 @@ TEST_F(SQLitePersistentCookieStoreTest, PersistIsPersistent) {
 
   // Add a session cookie.
   store_->AddCookie(
-      CookieMonster::CanonicalCookie(
+      net::CanonicalCookie(
           GURL(), kSessionName, "val", "sessioncookie.com", "/",
           std::string(), std::string(),
           base::Time::Now(), base::Time(), base::Time::Now(),
           false, false));
   // Add a persistent cookie.
   store_->AddCookie(
-      CookieMonster::CanonicalCookie(
+      net::CanonicalCookie(
           GURL(), kPersistentName, "val", "sessioncookie.com", "/",
           std::string(), std::string(),
           base::Time::Now() - base::TimeDelta::FromDays(1), base::Time::Now(),
@@ -410,14 +409,14 @@ TEST_F(SQLitePersistentCookieStoreTest, PersistIsPersistent) {
   CreateAndLoad(true, &cookies);
   ASSERT_EQ(2U, cookies.size());
 
-  std::map<std::string, CookieMonster::CanonicalCookie*> cookie_map;
+  std::map<std::string, net::CanonicalCookie*> cookie_map;
   for (CanonicalCookieVector::const_iterator it = cookies.begin();
        it != cookies.end();
        ++it) {
     cookie_map[(*it)->Name()] = *it;
   }
 
-  std::map<std::string, CookieMonster::CanonicalCookie*>::const_iterator it =
+  std::map<std::string, net::CanonicalCookie*>::const_iterator it =
       cookie_map.find(kSessionName);
   ASSERT_TRUE(it != cookie_map.end());
   EXPECT_FALSE(cookie_map[kSessionName]->IsPersistent());
@@ -482,10 +481,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestClearOnExitPolicy) {
   // A secure cookie on session_origin.
   t += base::TimeDelta::FromInternalValue(10);
   store_->AddCookie(
-      CookieMonster::CanonicalCookie(GURL(), "D", "4", session_origin, "/",
-                                     std::string(), std::string(),
-                                     t, t, t,
-                                     true, false));
+      net::CanonicalCookie(GURL(), "D", "4", session_origin, "/", std::string(),
+                           std::string(), t, t, t, true, false));
 
   // First, check that we can override the policy.
   store_->SetForceKeepSessionState();

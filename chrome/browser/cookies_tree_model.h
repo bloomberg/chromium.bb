@@ -27,7 +27,6 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "net/base/server_bound_cert_store.h"
-#include "net/cookies/cookie_monster.h"
 #include "ui/base/models/tree_node_model.h"
 
 class BrowsingDataCookieHelper;
@@ -53,6 +52,10 @@ class CookieTreeServerBoundCertsNode;
 class CookieTreeSessionStorageNode;
 class CookieTreeSessionStoragesNode;
 class ExtensionSpecialStoragePolicy;
+
+namespace net {
+class CanonicalCookie;
+}
 
 // CookieTreeNode -------------------------------------------------------------
 // The base node type in the Cookies, Databases, and Local Storage options
@@ -94,8 +97,7 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     DetailedInfo& Init(NodeType type);
     DetailedInfo& InitHost(const std::string& app_id,
                            const std::string& app_name);
-    DetailedInfo& InitCookie(
-        const net::CookieMonster::CanonicalCookie* cookie);
+    DetailedInfo& InitCookie(const net::CanonicalCookie* cookie);
     DetailedInfo& InitDatabase(
         const BrowsingDataDatabaseHelper::DatabaseInfo* database_info);
     DetailedInfo& InitLocalStorage(
@@ -119,7 +121,7 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     std::string app_id;
     NodeType node_type;
     GURL origin;
-    const net::CookieMonster::CanonicalCookie* cookie;
+    const net::CanonicalCookie* cookie;
     const BrowsingDataDatabaseHelper::DatabaseInfo* database_info;
     const BrowsingDataLocalStorageHelper::LocalStorageInfo* local_storage_info;
     const BrowsingDataLocalStorageHelper::LocalStorageInfo*
@@ -252,7 +254,7 @@ class CookieTreeCookieNode : public CookieTreeNode {
   // The cookie should remain valid at least as long as the
   // CookieTreeCookieNode is valid.
   explicit CookieTreeCookieNode(
-      std::list<net::CookieMonster::CanonicalCookie>::iterator cookie);
+      std::list<net::CanonicalCookie>::iterator cookie);
   virtual ~CookieTreeCookieNode();
 
   // CookieTreeNode methods:
@@ -262,7 +264,7 @@ class CookieTreeCookieNode : public CookieTreeNode {
  private:
   // cookie_ is expected to remain valid as long as the CookieTreeCookieNode is
   // valid.
-  std::list<net::CookieMonster::CanonicalCookie>::iterator cookie_;
+  std::list<net::CanonicalCookie>::iterator cookie_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieTreeCookieNode);
 };

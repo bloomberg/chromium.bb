@@ -5,6 +5,7 @@
 #include "chrome/browser/mock_browsing_data_cookie_helper.h"
 
 #include "base/logging.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/parsed_cookie.h"
 
 MockBrowsingDataCookieHelper::MockBrowsingDataCookieHelper(
@@ -21,7 +22,7 @@ void MockBrowsingDataCookieHelper::StartFetching(
 }
 
 void MockBrowsingDataCookieHelper::DeleteCookie(
-    const net::CookieMonster::CanonicalCookie& cookie) {
+    const net::CanonicalCookie& cookie) {
   std::string key = cookie.Name() + "=" + cookie.Value();
   CHECK(cookies_.find(key) != cookies_.end());
   cookies_[key] = false;
@@ -31,8 +32,7 @@ void MockBrowsingDataCookieHelper::AddCookieSamples(
     const GURL& url, const std::string& cookie_line) {
   typedef net::CookieList::const_iterator cookie_iterator;
   net::ParsedCookie pc(cookie_line);
-  scoped_ptr<net::CookieMonster::CanonicalCookie> cc;
-  cc.reset(new net::CookieMonster::CanonicalCookie(url, pc));
+  scoped_ptr<net::CanonicalCookie> cc(new net::CanonicalCookie(url, pc));
 
   if (cc.get()) {
     for (cookie_iterator cookie = cookie_list_.begin();

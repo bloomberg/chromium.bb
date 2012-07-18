@@ -6,6 +6,7 @@
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/content_settings/cookie_details.h"
 #include "googleurl/src/gurl.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/parsed_cookie.h"
 #import "testing/gtest_mac.h"
 
@@ -27,7 +28,7 @@ TEST_F(CookiesDetailsTest, CreateForCookie) {
   std::string cookieLine(
       "PHPSESSID=0123456789abcdef0123456789abcdef; path=/");
   net::ParsedCookie pc(cookieLine);
-  net::CookieMonster::CanonicalCookie cookie(url, pc);
+  net::CanonicalCookie cookie(url, pc);
   details.reset([[CocoaCookieDetails alloc] initWithCookie:&cookie
                                          canEditExpiration:NO]);
 

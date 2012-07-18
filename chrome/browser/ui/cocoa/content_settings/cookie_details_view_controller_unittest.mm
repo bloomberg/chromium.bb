@@ -6,6 +6,7 @@
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/content_settings/cookie_details.h"
 #include "chrome/browser/ui/cocoa/content_settings/cookie_details_view_controller.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/parsed_cookie.h"
 
 namespace {
@@ -18,7 +19,7 @@ static CocoaCookieDetails* CreateTestCookieDetails(BOOL canEditExpiration) {
   std::string cookieLine(
       "PHPSESSID=0123456789abcdef0123456789abcdef; path=/");
   net::ParsedCookie pc(cookieLine);
-  net::CookieMonster::CanonicalCookie cookie(url, pc);
+  net::CanonicalCookie cookie(url, pc);
   CocoaCookieDetails* details = [CocoaCookieDetails alloc];
   [details initWithCookie:&cookie
         canEditExpiration:canEditExpiration];

@@ -33,6 +33,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -101,7 +102,7 @@ void SetCookieOnIOThread(
 
 void SetCookieWithDetailsOnIOThread(
     const GURL& url,
-    const net::CookieMonster::CanonicalCookie& cookie,
+    const net::CanonicalCookie& cookie,
     const std::string& original_domain,
     const scoped_refptr<net::URLRequestContextGetter>& context_getter,
     base::WaitableEvent* event,
@@ -255,7 +256,7 @@ void GetCookiesJSON(AutomationProvider* provider,
 
   ListValue* list = new ListValue();
   for (size_t i = 0; i < cookie_list.size(); ++i) {
-    const net::CookieMonster::CanonicalCookie& cookie = cookie_list[i];
+    const net::CanonicalCookie& cookie = cookie_list[i];
     DictionaryValue* cookie_dict = new DictionaryValue();
     cookie_dict->SetString("name", cookie.Name());
     cookie_dict->SetString("value", cookie.Value());
@@ -364,8 +365,8 @@ void SetCookieJSON(AutomationProvider* provider,
     return;
   }
 
-  scoped_ptr<net::CookieMonster::CanonicalCookie> cookie(
-      net::CookieMonster::CanonicalCookie::Create(
+  scoped_ptr<net::CanonicalCookie> cookie(
+      net::CanonicalCookie::Create(
           GURL(url), name, value, domain, path,
           mac_key, mac_algorithm, base::Time(),
           base::Time::FromDoubleT(expiry), secure, http_only));

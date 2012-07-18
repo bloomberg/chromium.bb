@@ -9,14 +9,19 @@
 #ifndef WEBKIT_GLUE_WEBCOOKIE_H_
 #define WEBKIT_GLUE_WEBCOOKIE_H_
 
-#include "net/cookies/cookie_monster.h"
+#include <string>
+
 #include "webkit/glue/webkit_glue_export.h"
+
+namespace net {
+class CanonicalCookie;
+}
 
 namespace webkit_glue {
 
 struct WEBKIT_GLUE_EXPORT WebCookie {
   WebCookie();
-  explicit WebCookie(const net::CookieMonster::CanonicalCookie& c);
+  explicit WebCookie(const net::CanonicalCookie& c);
   WebCookie(const std::string& name, const std::string& value,
             const std::string& domain, const std::string& path, double expires,
             bool http_only, bool secure, bool session);

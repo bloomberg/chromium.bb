@@ -52,6 +52,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
 #include "net/base/server_bound_cert_service.h"
+#include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_monster.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
 #include "net/proxy/proxy_config_service_fixed.h"
@@ -86,7 +88,7 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
 
   // net::CookieMonster::Delegate implementation.
   virtual void OnCookieChanged(
-      const net::CookieMonster::CanonicalCookie& cookie,
+      const net::CanonicalCookie& cookie,
       bool removed,
       net::CookieMonster::Delegate::ChangeCause cause) {
     BrowserThread::PostTask(
@@ -99,7 +101,7 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
   virtual ~ChromeCookieMonsterDelegate() {}
 
   void OnCookieChangedAsyncHelper(
-      const net::CookieMonster::CanonicalCookie& cookie,
+      const net::CanonicalCookie& cookie,
       bool removed,
       net::CookieMonster::Delegate::ChangeCause cause) {
     Profile* profile = profile_getter_.Run();
