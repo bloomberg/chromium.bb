@@ -705,7 +705,8 @@ void ExtensionSettingsHandler::HandleOptionsMessage(const ListValue* args) {
   if (!extension || extension->options_url().is_empty())
     return;
   Profile::FromWebUI(web_ui())->GetExtensionProcessManager()->OpenOptionsPage(
-      extension, NULL);
+      extension,
+      browser::FindBrowserWithWebContents(web_ui()->GetWebContents()));
 }
 
 void ExtensionSettingsHandler::HandleShowButtonMessage(const ListValue* args) {

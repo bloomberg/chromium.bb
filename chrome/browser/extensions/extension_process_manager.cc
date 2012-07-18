@@ -289,7 +289,7 @@ void ExtensionProcessManager::OpenOptionsPage(const Extension* extension,
 
   // Force the options page to open in non-OTR window, because it won't be
   // able to save settings from OTR.
-  if (!browser || browser->profile()->IsOffTheRecord()) {
+  if (browser->profile()->IsOffTheRecord()) {
     Profile* profile = GetProfile();
     browser = browser::FindOrCreateTabbedBrowser(profile->GetOriginalProfile());
   }
