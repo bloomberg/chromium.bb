@@ -33,6 +33,16 @@ const char kSetCursorLocationMethod[] = "SetCursorLocation";
 const char kProcessKeyEventMethod[] = "ProcessKeyEvent";
 }  // namespace input_context
 
+namespace engine_factory {
+const char kServicePath[] = "/org/freedesktop/IBus/Factory";
+const char kServiceInterface[] = "org.freedesktop.IBus.Factory";
+const char kCreateEngineMethod[] = "CreateEngine";
+}  // namespace engine factory
+
+namespace engine {
+const char kServicePathPrefix[] = "/org/freedesktop/IBus/Engine/";
+}  // namespace engine
+
 }  // namespace ibus
 }  // namespace chromeos
 
