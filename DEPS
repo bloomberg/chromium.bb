@@ -46,7 +46,7 @@ vars = {
   "nacl_toolchain_revision": "9093",
   "pnacl_toolchain_revision": "9117",
 
-  "libjingle_revision": "159",
+  "libjingle_revision": "161",
   "libphonenumber_revision": "456",
   "libvpx_revision": "134182",
   "lss_revision": "11",

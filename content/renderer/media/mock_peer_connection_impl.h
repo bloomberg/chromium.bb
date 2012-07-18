@@ -30,7 +30,10 @@ class MockPeerConnectionImpl : public PeerConnectionInterface {
   virtual talk_base::scoped_refptr<StreamCollectionInterface>
       remote_streams() OVERRIDE;
   virtual void AddStream(LocalMediaStreamInterface* stream) OVERRIDE;
+  virtual bool AddStream(MediaStreamInterface* local_stream,
+                         const MediaConstraintsInterface* constraints) OVERRIDE;
   virtual void RemoveStream(LocalMediaStreamInterface* stream) OVERRIDE;
+  virtual void RemoveStream(MediaStreamInterface* local_stream) OVERRIDE;
   virtual bool RemoveStream(const std::string& label) OVERRIDE;
   virtual void CommitStreamChanges() OVERRIDE;
   virtual void Close() OVERRIDE;
@@ -57,16 +60,18 @@ class MockPeerConnectionImpl : public PeerConnectionInterface {
       const OVERRIDE;
 
   // JSEP01 APIs
-  virtual void CreateOffer(CreateSessionDescriptionObserver* observer,
-                           const SessionDescriptionOptions& options) OVERRIDE;
-  virtual void CreateAnswer(CreateSessionDescriptionObserver* observer,
-                            const SessionDescriptionOptions& options) OVERRIDE;
+  virtual void CreateOffer(
+      CreateSessionDescriptionObserver* observer,
+      const MediaConstraintsInterface* constraints) OVERRIDE;
+  virtual void CreateAnswer(
+      CreateSessionDescriptionObserver* observer,
+      const MediaConstraintsInterface* constraints) OVERRIDE;
   virtual void SetLocalDescription(SetSessionDescriptionObserver* observer,
                                    SessionDescriptionInterface* desc) OVERRIDE;
   virtual void SetRemoteDescription(SetSessionDescriptionObserver* observer,
                                     SessionDescriptionInterface* desc) OVERRIDE;
   virtual bool UpdateIce(const IceServers& configuration,
-                         IceOptions options) OVERRIDE;
+                         const MediaConstraintsInterface* constraints) OVERRIDE;
   virtual bool AddIceCandidate(const IceCandidateInterface* candidate) OVERRIDE;
   virtual IceState ice_state() OVERRIDE;
 

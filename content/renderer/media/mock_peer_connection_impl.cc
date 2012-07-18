@@ -79,8 +79,23 @@ void MockPeerConnectionImpl::AddStream(LocalMediaStreamInterface* stream) {
   local_streams_->AddStream(stream);
 }
 
+bool MockPeerConnectionImpl::AddStream(
+    MediaStreamInterface* local_stream,
+    const MediaConstraintsInterface* constraints) {
+  DCHECK(stream_label_.empty());
+  stream_label_ = local_stream->label();
+  local_streams_->AddStream(local_stream);
+  return true;
+}
+
 void MockPeerConnectionImpl::RemoveStream(LocalMediaStreamInterface* stream) {
   DCHECK_EQ(stream_label_, stream->label());
+  stream_label_.clear();
+}
+
+void MockPeerConnectionImpl::RemoveStream(
+    MediaStreamInterface* local_stream) {
+  DCHECK_EQ(stream_label_, local_stream->label());
   stream_label_.clear();
 }
 
@@ -169,13 +184,13 @@ void MockPeerConnectionImpl::AddRemoteStream(MediaStreamInterface* stream) {
 
 void MockPeerConnectionImpl::CreateOffer(
     CreateSessionDescriptionObserver* observer,
-    const SessionDescriptionOptions& options) {
+    const MediaConstraintsInterface* constraints) {
   NOTIMPLEMENTED();
 }
 
 void MockPeerConnectionImpl::CreateAnswer(
     CreateSessionDescriptionObserver* observer,
-    const SessionDescriptionOptions& options) {
+    const MediaConstraintsInterface* constraints) {
   NOTIMPLEMENTED();
 }
 
@@ -191,8 +206,9 @@ void MockPeerConnectionImpl::SetRemoteDescription(
   NOTIMPLEMENTED();
 }
 
-bool MockPeerConnectionImpl::UpdateIce(const IceServers& configuration,
-    IceOptions options) {
+bool MockPeerConnectionImpl::UpdateIce(
+    const IceServers& configuration,
+    const MediaConstraintsInterface* constraints) {
   NOTIMPLEMENTED();
   return false;
 }
