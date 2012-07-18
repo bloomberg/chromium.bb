@@ -62,6 +62,7 @@ DeviceThread::DeviceThread(const char* name)
 }
 
 DeviceThread::~DeviceThread() {
+  Stop();
 }
 
 void DeviceThread::Init() {
@@ -137,30 +138,28 @@ MediaStreamManager::MediaStreamManager(
           device_settings_(new MediaStreamDeviceSettings(this))),
       audio_input_device_manager_(audio_input_device_manager),
       video_capture_manager_(video_capture_manager),
-      enumeration_in_progress_(content::NUM_MEDIA_STREAM_DEVICE_TYPES, false) {
+      enumeration_in_progress_(content::NUM_MEDIA_STREAM_DEVICE_TYPES, false),
+      io_loop_(NULL) {
 }
 
 MediaStreamManager::~MediaStreamManager() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (device_thread_.get()) {
-    video_capture_manager_->Unregister();
-    audio_input_device_manager_->Unregister();
-    device_thread_->Stop();
-  }
+  DCHECK(requests_.empty());
+  DCHECK(!device_thread_.get());
+  DCHECK(!io_loop_);
 }
 
 VideoCaptureManager* MediaStreamManager::video_capture_manager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(video_capture_manager_.get());
+  DCHECK(video_capture_manager_);
   EnsureDeviceThreadAndListener();
-  return video_capture_manager_.get();
+  return video_capture_manager_;
 }
 
 AudioInputDeviceManager* MediaStreamManager::audio_input_device_manager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(audio_input_device_manager_.get());
+  DCHECK(audio_input_device_manager_);
   EnsureDeviceThreadAndListener();
-  return audio_input_device_manager_.get();
+  return audio_input_device_manager_;
 }
 
 void MediaStreamManager::GenerateStream(MediaStreamRequester* requester,
@@ -374,6 +373,11 @@ void MediaStreamManager::EnsureDeviceThreadAndListener() {
   audio_input_device_manager_->Register(this,
                                         device_thread_->message_loop_proxy());
   video_capture_manager_->Register(this, device_thread_->message_loop_proxy());
+
+  // We want to be notified of IO message loop destruction to delete the thread
+  // and the device managers.
+  io_loop_ = MessageLoop::current();
+  io_loop_->AddDestructionObserver(this);
 }
 
 void MediaStreamManager::Opened(MediaStreamType stream_type,
@@ -620,6 +624,20 @@ void MediaStreamManager::UseFakeDevice() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   video_capture_manager()->UseFakeDevice();
   device_settings_->UseFakeUI();
+}
+
+void MediaStreamManager::WillDestroyCurrentMessageLoop() {
+  DCHECK_EQ(MessageLoop::current(), io_loop_);
+  if (device_thread_.get()) {
+    video_capture_manager_->Unregister();
+    audio_input_device_manager_->Unregister();
+    device_thread_.reset();
+  }
+
+  audio_input_device_manager_ = NULL;
+  video_capture_manager_ = NULL;
+  io_loop_ = NULL;
+  device_settings_.reset();
 }
 
 void MediaStreamManager::NotifyObserverDevicesOpened(DeviceRequest* request) {

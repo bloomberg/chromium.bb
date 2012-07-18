@@ -42,7 +42,6 @@ void AudioInputDeviceManager::Register(
 }
 
 void AudioInputDeviceManager::Unregister() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(listener_);
   listener_ = NULL;
 }

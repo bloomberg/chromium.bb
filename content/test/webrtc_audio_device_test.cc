@@ -133,6 +133,17 @@ void WebRTCAudioDeviceTest::SetUp() {
   ui_thread_.reset(new content::TestBrowserThread(content::BrowserThread::UI,
                                                   MessageLoop::current()));
 
+  // Create our own AudioManager and MediaStreamManager.
+  audio_manager_.reset(media::AudioManager::Create());
+
+  scoped_refptr<media_stream::AudioInputDeviceManager>
+      audio_input_device_manager(new media_stream::AudioInputDeviceManager(
+          audio_manager_.get()));
+  scoped_refptr<media_stream::VideoCaptureManager> video_capture_manager(
+      new media_stream::VideoCaptureManager());
+  media_stream_manager_.reset(new media_stream::MediaStreamManager(
+      audio_input_device_manager, video_capture_manager));
+
   // Construct the resource context on the UI thread.
   resource_context_.reset(new MockResourceContext);
 
@@ -173,6 +184,8 @@ void WebRTCAudioDeviceTest::TearDown() {
                  base::Unretained((this))));
   WaitForIOThreadCompletion();
   mock_process_.reset();
+  media_stream_manager_.reset();
+  audio_manager_.reset();
   RendererWebKitPlatformSupportImpl::SetSandboxEnabledForTesting(
       sandbox_was_enabled_);
 }
@@ -197,16 +210,6 @@ void WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
   io_thread_.reset(new content::TestBrowserThread(content::BrowserThread::IO,
                                                   MessageLoop::current()));
 
-  audio_manager_.reset(media::AudioManager::Create());
-
-  scoped_refptr<media_stream::AudioInputDeviceManager>
-      audio_input_device_manager(new media_stream::AudioInputDeviceManager(
-          audio_manager_.get()));
-  scoped_refptr<media_stream::VideoCaptureManager> video_capture_manager(
-      new media_stream::VideoCaptureManager());
-  media_stream_manager_.reset(new media_stream::MediaStreamManager(
-      audio_input_device_manager, video_capture_manager));
-
   // Populate our resource context.
   test_request_context_.reset(new TestURLRequestContext());
   MockResourceContext* resource_context =
@@ -224,8 +227,6 @@ void WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
 void WebRTCAudioDeviceTest::UninitializeIOThread() {
   resource_context_.reset();
 
-  media_stream_manager_.reset();
-  audio_manager_.reset();
   test_request_context_.reset();
   initialize_com_.reset();
 }

@@ -480,10 +480,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 
   speech_recognition_manager_.reset();
 
-  // MediaStreamManager needs to be deleted on IO thread in order to unregister
-  // itself as the listener to VideoCaptureManager and AudioInputDeviceManager.
-  BrowserThread::DeleteOnIOThread::Destruct(media_stream_manager_.release());
-
 #if defined(USE_AURA)
   ImageTransportFactory::Terminate();
 #endif

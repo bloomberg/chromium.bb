@@ -59,7 +59,6 @@ void VideoCaptureManager::Register(MediaStreamProviderListener* listener,
 }
 
 void VideoCaptureManager::Unregister() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(listener_);
   listener_ = NULL;
 }

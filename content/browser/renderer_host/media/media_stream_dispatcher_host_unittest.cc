@@ -200,6 +200,10 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     content::GetContentClient()->set_browser_for_testing(old_browser_client_);
     content::SetContentClient(old_client_);
     content_client_.reset();
+
+    // Delete the IO message loop to delete the device thread,
+    // AudioInputDeviceManager and VideoCaptureManager.
+    message_loop_.reset();
   }
 
   scoped_refptr<MockMediaStreamDispatcherHost> host_;

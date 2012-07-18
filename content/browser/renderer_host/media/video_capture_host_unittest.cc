@@ -248,6 +248,10 @@ class VideoCaptureHostTest : public testing::Test {
 
     // We need to continue running message_loop_ to complete all destructions.
     message_loop_->RunAllPending();
+
+    // Delete the IO message loop to delete the device thread,
+    // AudioInputDeviceManager and VideoCaptureManager.
+    message_loop_.reset();
   }
 
   void StartCapture() {

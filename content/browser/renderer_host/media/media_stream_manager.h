@@ -29,6 +29,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop.h"
 #include "base/threading/thread.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/browser/renderer_host/media/media_stream_settings_requester.h"
@@ -70,6 +71,7 @@ class DeviceThread : public base::Thread {
 // MediaStreamManager::Listener.
 class CONTENT_EXPORT MediaStreamManager
     : public MediaStreamProviderListener,
+      public MessageLoop::DestructionObserver,
       public SettingsRequester {
  public:
   // This class takes the ownerships of the |audio_input_device_manager|
@@ -85,9 +87,9 @@ class CONTENT_EXPORT MediaStreamManager
   // Used to access AudioInputDeviceManager.
   AudioInputDeviceManager* audio_input_device_manager();
 
-  // GenerateStream opens new media devices according to |components|. The
-  // request is identified using |label|, which is pointing to an already
-  // created std::string.
+  // GenerateStream opens new media devices according to |components|. It
+  // creates a new request which is identified by a unique |label| that's
+  // returned to the caller.
   void GenerateStream(MediaStreamRequester* requester, int render_process_id,
                       int render_view_id, const StreamOptions& options,
                       const GURL& security_origin, std::string* label);
@@ -145,6 +147,11 @@ class CONTENT_EXPORT MediaStreamManager
   // MediaStreamManager in our unit tests.
   void UseFakeDevice();
 
+  // This object gets deleted on the UI thread after the IO thread has been
+  // destroyed. So we need to know when IO thread is being destroyed so that
+  // we can delete VideoCaptureManager and AudioInputDeviceManager.
+  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
+
  private:
   // Contains all data needed to keep track of requests.
   struct DeviceRequest;
@@ -180,6 +187,10 @@ class CONTENT_EXPORT MediaStreamManager
   // All non-closed request.
   typedef std::map<std::string, DeviceRequest> DeviceRequests;
   DeviceRequests requests_;
+
+  // Hold a pointer to the IO loop to check we delete the device thread and
+  // managers on the right thread.
+  MessageLoop* io_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamManager);
 };
