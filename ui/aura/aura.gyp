@@ -191,7 +191,7 @@
           'action_name': 'repack_test_support_aura_pack',
           'variables': {
             'pak_inputs': [
-              '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_standard.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.pak',
             ],
           },
           'inputs': [
@@ -226,7 +226,7 @@
       ],
       'sources': [
         'demo/demo_main.cc',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_standard.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.rc',
       ],
     },
     {
@@ -249,7 +249,7 @@
       ],
       'sources': [
         'bench/bench_main.cc',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_standard.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.rc',
       ],
     },
     {
@@ -283,7 +283,7 @@
         'event_filter_unittest.cc',
         'event_unittest.cc',
         'window_unittest.cc',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_standard.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.rc',
       ],
       'conditions': [
         # osmesa GL implementation is used on linux.
