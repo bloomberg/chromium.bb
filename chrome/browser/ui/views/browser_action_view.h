@@ -9,6 +9,7 @@
 
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "content/public/browser/notification_observer.h"
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/view.h"
@@ -28,6 +29,7 @@ class MenuItemView;
 // loading the image for the button asynchronously on the file thread.
 class BrowserActionButton : public views::MenuButton,
                             public views::ButtonListener,
+                            public views::ContextMenuController,
                             public ImageLoadingTracker::Observer,
                             public content::NotificationObserver {
  public:
@@ -57,6 +59,10 @@ class BrowserActionButton : public views::MenuButton,
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
 
+  // Overridden from views::ContextMenuController.
+  virtual void ShowContextMenuForView(View* source,
+                                      const gfx::Point& point) OVERRIDE;
+
   // Overridden from ImageLoadingTracker.
   virtual void OnImageLoaded(const gfx::Image& image,
                              const std::string& extension_id,
@@ -77,8 +83,6 @@ class BrowserActionButton : public views::MenuButton,
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE;
-  virtual void ShowContextMenu(const gfx::Point& p,
-                               bool is_mouse_gesture) OVERRIDE;
 
   // Overridden from ui::AcceleratorTarget.
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;

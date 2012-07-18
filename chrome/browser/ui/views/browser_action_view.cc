@@ -39,6 +39,7 @@ BrowserActionButton::BrowserActionButton(const Extension* extension,
       context_menu_(NULL) {
   set_border(NULL);
   set_alignment(TextButton::ALIGN_CENTER);
+  set_context_menu_controller(this);
 
   // No UpdateState() here because View hierarchy not setup yet. Our parent
   // should call UpdateState() after creation.
@@ -102,6 +103,31 @@ bool BrowserActionButton::CanHandleAccelerators() const {
 void BrowserActionButton::ButtonPressed(views::Button* sender,
                                         const views::Event& event) {
   panel_->OnBrowserActionExecuted(this);
+}
+
+void BrowserActionButton::ShowContextMenuForView(View* source,
+                                                 const gfx::Point& point) {
+  if (!extension()->ShowConfigureContextMenus())
+    return;
+
+  SetButtonPushed();
+
+  // Reconstructs the menu every time because the menu's contents are dynamic.
+  scoped_refptr<ExtensionContextMenuModel> context_menu_contents_(
+      new ExtensionContextMenuModel(extension(), panel_->browser()));
+  views::MenuModelAdapter menu_model_adapter(context_menu_contents_.get());
+  views::MenuRunner menu_runner(menu_model_adapter.CreateMenu());
+
+  context_menu_ = menu_runner.GetMenu();
+  gfx::Point screen_loc;
+  views::View::ConvertPointToScreen(this, &screen_loc);
+  if (menu_runner.RunMenuAt(GetWidget(), NULL, gfx::Rect(screen_loc, size()),
+          views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS) ==
+      views::MenuRunner::MENU_DELETED)
+    return;
+
+  SetButtonNotPushed();
+  context_menu_ = NULL;
 }
 
 void BrowserActionButton::OnImageLoaded(const gfx::Image& image,
@@ -254,31 +280,6 @@ void BrowserActionButton::OnMouseExited(const views::MouseEvent& event) {
 bool BrowserActionButton::OnKeyReleased(const views::KeyEvent& event) {
   return IsPopup() ? MenuButton::OnKeyReleased(event)
                    : TextButton::OnKeyReleased(event);
-}
-
-void BrowserActionButton::ShowContextMenu(const gfx::Point& p,
-                                          bool is_mouse_gesture) {
-  if (!extension()->ShowConfigureContextMenus())
-    return;
-
-  SetButtonPushed();
-
-  // Reconstructs the menu every time because the menu's contents are dynamic.
-  scoped_refptr<ExtensionContextMenuModel> context_menu_contents_(
-      new ExtensionContextMenuModel(extension(), panel_->browser()));
-  views::MenuModelAdapter menu_model_adapter(context_menu_contents_.get());
-  views::MenuRunner menu_runner(menu_model_adapter.CreateMenu());
-
-  context_menu_ = menu_runner.GetMenu();
-  gfx::Point screen_loc;
-  views::View::ConvertPointToScreen(this, &screen_loc);
-  if (menu_runner.RunMenuAt(GetWidget(), NULL, gfx::Rect(screen_loc, size()),
-          views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS) ==
-      views::MenuRunner::MENU_DELETED)
-    return;
-
-  SetButtonNotPushed();
-  context_menu_ = NULL;
 }
 
 bool BrowserActionButton::AcceleratorPressed(

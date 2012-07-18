@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/image_view.h"
 
 class Browser;
@@ -29,6 +30,7 @@ class MenuRunner;
 class PageActionImageView : public views::ImageView,
                             public ImageLoadingTracker::Observer,
                             public views::Widget::Observer,
+                            public views::ContextMenuController,
                             public content::NotificationObserver,
                             public ExtensionAction::IconAnimation::Observer {
  public:
@@ -50,8 +52,6 @@ class PageActionImageView : public views::ImageView,
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
-  virtual void ShowContextMenu(const gfx::Point& p,
-                               bool is_mouse_gesture) OVERRIDE;
 
   // Overridden from ImageLoadingTracker.
   virtual void OnImageLoaded(const gfx::Image& image,
@@ -60,6 +60,10 @@ class PageActionImageView : public views::ImageView,
 
   // Overridden from views::Widget::Observer
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+
+  // Overridden from views::ContextMenuController.
+  virtual void ShowContextMenuForView(View* source,
+                                      const gfx::Point& point) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

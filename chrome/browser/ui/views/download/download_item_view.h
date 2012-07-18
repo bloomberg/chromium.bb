@@ -30,6 +30,7 @@
 #include "content/public/browser/download_manager.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/gfx/font.h"
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/events/event.h"
 #include "ui/views/view.h"
@@ -54,6 +55,7 @@ class TextButton;
 
 class DownloadItemView : public views::ButtonListener,
                          public views::View,
+                         public views::ContextMenuController,
                          public content::DownloadItem::Observer,
                          public ui::AnimationDelegate {
  public:
@@ -91,9 +93,11 @@ class DownloadItemView : public views::ButtonListener,
       const views::GestureEvent& event) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
                               string16* tooltip) const OVERRIDE;
-  virtual void ShowContextMenu(const gfx::Point& p,
-                               bool is_mouse_gesture) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+
+  // Overridden from views::ContextMenuController.
+  virtual void ShowContextMenuForView(View* source,
+                                      const gfx::Point& point) OVERRIDE;
 
   // ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender,
@@ -143,6 +147,10 @@ class DownloadItemView : public views::ButtonListener,
 
   void LoadIcon();
   void LoadIconIfItemPathChanged();
+
+  // Shows the context menu at the specified location. |point| is in the view's
+  // coordinate system.
+  void ShowContextMenuImpl(const gfx::Point& point, bool is_mouse_gesture);
 
   // Common code for handling pointer events (i.e. mouse or gesture).
   void HandlePressEvent(const views::LocatedEvent& event, bool active_event);

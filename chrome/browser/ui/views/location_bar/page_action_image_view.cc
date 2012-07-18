@@ -74,6 +74,7 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
                      owner_->profile()->GetOriginalProfile()));
 
   set_accessibility_focusable(true);
+  set_context_menu_controller(this);
 
   extensions::CommandService* command_service =
       extensions::CommandServiceFactory::GetForProfile(
@@ -168,25 +169,6 @@ bool PageActionImageView::OnKeyPressed(const views::KeyEvent& event) {
   return false;
 }
 
-void PageActionImageView::ShowContextMenu(const gfx::Point& p,
-                                          bool is_mouse_gesture) {
-  const Extension* extension = owner_->profile()->GetExtensionService()->
-      GetExtensionById(page_action()->extension_id(), false);
-  if (!extension->ShowConfigureContextMenus())
-    return;
-
-  scoped_refptr<ExtensionContextMenuModel> context_menu_model(
-      new ExtensionContextMenuModel(extension, browser_));
-  views::MenuModelAdapter menu_model_adapter(context_menu_model.get());
-  menu_runner_.reset(new views::MenuRunner(menu_model_adapter.CreateMenu()));
-  gfx::Point screen_loc;
-  views::View::ConvertPointToScreen(this, &screen_loc);
-  if (menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(screen_loc, size()),
-          views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS) ==
-      views::MenuRunner::MENU_DELETED)
-    return;
-}
-
 void PageActionImageView::OnImageLoaded(const gfx::Image& image,
                                         const std::string& extension_id,
                                         int index) {
@@ -211,6 +193,25 @@ void PageActionImageView::OnImageLoaded(const gfx::Image& image,
   TabContents* tab_contents = owner_ ? owner_->GetTabContents() : NULL;
   if (tab_contents)
     UpdateVisibility(tab_contents->web_contents(), current_url_);
+}
+
+void PageActionImageView::ShowContextMenuForView(View* source,
+                                                 const gfx::Point& point) {
+  const Extension* extension = owner_->profile()->GetExtensionService()->
+      GetExtensionById(page_action()->extension_id(), false);
+  if (!extension->ShowConfigureContextMenus())
+    return;
+
+  scoped_refptr<ExtensionContextMenuModel> context_menu_model(
+      new ExtensionContextMenuModel(extension, browser_));
+  views::MenuModelAdapter menu_model_adapter(context_menu_model.get());
+  menu_runner_.reset(new views::MenuRunner(menu_model_adapter.CreateMenu()));
+  gfx::Point screen_loc;
+  views::View::ConvertPointToScreen(this, &screen_loc);
+  if (menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(screen_loc, size()),
+          views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS) ==
+      views::MenuRunner::MENU_DELETED)
+    return;
 }
 
 bool PageActionImageView::AcceleratorPressed(
