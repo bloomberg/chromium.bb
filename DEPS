@@ -354,6 +354,15 @@ deps_os = {
     "src/third_party/psyco_win32":
       "/trunk/deps/third_party/psyco_win32@79861",
 
+    "src/third_party/bison":
+      "/trunk/deps/third_party/bison@147303",
+
+    "src/third_party/gperf":
+      "/trunk/deps/third_party/gperf@147304",
+
+    "src/third_party/perl":
+      "/trunk/deps/third_party/perl@147306",
+
     "src/third_party/lighttpd":
       "/trunk/deps/third_party/lighttpd@33727",
 
