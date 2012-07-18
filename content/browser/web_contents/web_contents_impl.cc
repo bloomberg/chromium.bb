@@ -2322,7 +2322,7 @@ void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
     return;
 
   content::NotificationService::current()->Notify(
-      content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
+      content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
       content::Source<WebContents>(this),
       content::Details<RenderViewHost>(render_view_host));
   NavigationEntry* entry = controller_.GetActiveEntry();

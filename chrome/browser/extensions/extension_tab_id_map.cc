@@ -47,7 +47,8 @@ class ExtensionTabIdMap::TabObserver : public content::NotificationObserver {
 
 ExtensionTabIdMap::TabObserver::TabObserver() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
+  registrar_.Add(this,
+                 content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -65,7 +66,7 @@ void ExtensionTabIdMap::TabObserver::Observe(
     int type, const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
+    case content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED: {
       WebContents* contents = content::Source<WebContents>(source).ptr();
       TabContents* tab = TabContents::FromWebContents(contents);
       if (!tab)

@@ -30,7 +30,7 @@ PinnedTabService::PinnedTabService(Profile* profile)
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, content::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
+  registrar_.Add(this, chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
                  content::NotificationService::AllSources());
 }
 
@@ -63,7 +63,7 @@ void PinnedTabService::Observe(int type,
       break;
     }
 
-    case content::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST: {
+    case chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST: {
       if (has_normal_browser_)
         GotExit();
       break;

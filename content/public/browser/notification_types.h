@@ -146,6 +146,8 @@ enum NotificationType {
   // controller associated with the state change.
   NOTIFICATION_SSL_INTERNAL_STATE_CHANGED,
 
+  // Application-wide ----------------------------------------------------------
+
 #if defined(OS_MACOSX)
   // This message is sent when the application is made active (Mac OS X only
   // at present). No source or details are passed.
@@ -159,23 +161,7 @@ enum NotificationType {
   // are passed.
   NOTIFICATION_APP_TERMINATING,
 
-#if defined(OS_MACOSX)
-  // This notification is sent when the app has no key window, such as when
-  // all windows are closed but the app is still active. No source or details
-  // are provided.
-  NOTIFICATION_NO_KEY_WINDOW,
-#endif
-
-  // This is sent when the user has chosen to exit the app, but before any
-  // browsers have closed. This is sent if the user chooses to exit
-  // (via exit menu item or keyboard shortcut) or to restart the process
-  // (such as in flags page), not if Chrome exists by some other means
-  // (such as the user closing the last window). Note that receiving this
-  // notification does not necessarily mean the process will exit
-  // because the shutdown process can be cancelled by unload handler.
-  // Use APP_TERMINATING for such needs.
-  //  The source and details are unspecified.
-  NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
+  // Devtools ------------------------------------------------------------------
 
   // Indicates that a devtools window is opening. The source is the
   // BrowserContext* and the details is the inspected RenderViewHost*.
@@ -225,7 +211,7 @@ enum NotificationType {
   // A RenderViewHost was created for a WebContents. The source is the
   // associated WebContents, and the details is the RenderViewHost
   // pointer.
-  NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
+  NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
 
   // Notification than an interstitial has become associated with a tab. The
   // source is the WebContents, the details not used.
@@ -332,7 +318,7 @@ enum NotificationType {
 
   // Notification from WebContents that we have received a response from the
   // renderer in response to a dom automation controller action. The source is
-  // the RenderViewHost, and hte details is a DomOperationNotificationDetails.
+  // the RenderViewHost, and the details is a DomOperationNotificationDetails.
   NOTIFICATION_DOM_OPERATION_RESPONSE,
 
   // Child Processes ---------------------------------------------------------

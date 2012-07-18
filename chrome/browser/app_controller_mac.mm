@@ -323,7 +323,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   // already shutting down.
   if (!browser_shutdown::IsTryingToQuit()) {
     content::NotificationService::current()->Notify(
-        content::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
+        chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
         content::NotificationService::AllSources(),
         content::NotificationService::NoDetails());
     browser::CloseAllBrowsers();
@@ -545,7 +545,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
     return;
 
   content::NotificationService::current()->Notify(
-      content::NOTIFICATION_NO_KEY_WINDOW,
+      chrome::NOTIFICATION_NO_KEY_WINDOW,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
 }

@@ -138,7 +138,7 @@ BaseLoginDisplayHost::BaseLoginDisplayHost(const gfx::Rect& background_bounds)
   // ref-count. CLOSE_ALL_BROWSERS_REQUEST is safe here because there will be no
   // browser instance that will block the shutdown.
   registrar_.Add(this,
-                 content::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
+                 chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
                  content::NotificationService::AllSources());
 
   // NOTIFICATION_BROWSER_OPENED is issued after browser is created, but
@@ -272,12 +272,12 @@ void BaseLoginDisplayHost::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST) {
+  if (type == chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST) {
     ShutdownDisplayHost(true);
   } else if (type == chrome::NOTIFICATION_BROWSER_OPENED) {
     OnBrowserCreated();
     registrar_.Remove(this,
-                      content::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
+                      chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
                       content::NotificationService::AllSources());
     registrar_.Remove(this,
                       chrome::NOTIFICATION_BROWSER_OPENED,

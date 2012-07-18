@@ -160,7 +160,7 @@ void WebUILoginView::Init(views::Widget* login_window) {
       ProfileManager::GetDefaultProfile());
 
   registrar_.Add(this,
-                 content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
+                 content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
                  content::Source<WebContents>(web_contents));
 }
 
@@ -272,7 +272,7 @@ void WebUILoginView::Observe(int type,
       registrar_.RemoveAll();
       break;
     }
-    case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
+    case content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED: {
       RenderViewHost* render_view_host =
           content::Details<RenderViewHost>(details).ptr();
       new SnifferObserver(render_view_host, GetWebUI());

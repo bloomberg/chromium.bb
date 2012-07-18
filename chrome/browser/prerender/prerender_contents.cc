@@ -358,7 +358,7 @@ void PrerenderContents::StartPrerendering(
 
   // Register to inform new RenderViews that we're prerendering.
   notification_registrar_.Add(
-      this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
+      this, content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
       content::Source<WebContents>(new_contents));
 
   // Register for redirect notifications sourced from |this|.
@@ -458,7 +458,7 @@ void PrerenderContents::Observe(int type,
       break;
     }
 
-    case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
+    case content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED: {
       if (prerender_contents_.get()) {
         DCHECK_EQ(content::Source<WebContents>(source).ptr(),
                   prerender_contents_->web_contents());

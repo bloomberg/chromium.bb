@@ -141,7 +141,8 @@ UserStyleSheetWatcher::UserStyleSheetWatcher(Profile* profile,
   // Listen for when the first render view host is created.  If we load
   // too fast, the first tab won't hear the notification and won't get
   // the user style sheet.
-  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
+  registrar_.Add(this,
+                 content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
@@ -177,7 +178,7 @@ void UserStyleSheetWatcher::Observe(int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(type == content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB);
+  DCHECK(type == content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED);
   if (profile_->IsSameProfile(Profile::FromBrowserContext(
           content::Source<WebContents>(source)->GetBrowserContext()))) {
     loader_->NotifyLoaded();

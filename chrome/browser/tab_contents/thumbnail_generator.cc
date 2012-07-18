@@ -185,7 +185,8 @@ void ThumbnailGenerator::StartThumbnailing(WebContents* web_contents) {
     // subclass, RenderViewHost when it is in a tab. We don't make thumbnails
     // for RenderViewHosts that aren't in tabs, or RenderWidgetHosts that
     // aren't views like select popups.
-    registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
+    registrar_.Add(this,
+                   content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
                    content::Source<WebContents>(web_contents));
     registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
                    content::Source<WebContents>(web_contents));
@@ -319,7 +320,7 @@ void ThumbnailGenerator::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
+    case content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED: {
       // Install our observer for all new RVHs.
       RenderViewHost* renderer =
           content::Details<RenderViewHost>(details).ptr();

@@ -217,7 +217,8 @@ bool ExternalTabContainerWin::Init(Profile* profile,
                  content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::Source<NavigationController>(controller));
-  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
+  registrar_.Add(this,
+                 content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
                  content::Source<WebContents>(tab_contents_->web_contents()));
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
                  content::NotificationService::AllSources());
@@ -909,7 +910,7 @@ void ExternalTabContainerWin::Observe(
       }
       break;
     }
-    case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
+    case content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED: {
       if (load_requests_via_automation_) {
         RenderViewHost* rvh = content::Details<RenderViewHost>(details).ptr();
         RegisterRenderViewHostForAutomation(rvh, false);

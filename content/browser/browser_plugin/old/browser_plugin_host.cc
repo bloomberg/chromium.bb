@@ -33,7 +33,7 @@ BrowserPluginHost::BrowserPluginHost(
   // Construct plumbing helpers when a new RenderViewHost is created for
   // this BrowserPluginHost's WebContentsImpl.
   registrar_.Add(this,
-                 NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
+                 NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
                  Source<WebContents>(web_contents));
 }
 
@@ -208,7 +208,7 @@ void BrowserPluginHost::Observe(
     const NotificationSource& source,
     const NotificationDetails& details) {
   switch (type) {
-    case NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
+    case NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED: {
       RenderViewHost* render_view_host =
           Details<RenderViewHost>(details).ptr();
       // BrowserPluginHostHelper is destroyed when its associated RenderViewHost

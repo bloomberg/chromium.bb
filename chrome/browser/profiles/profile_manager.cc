@@ -248,7 +248,7 @@ ProfileManager::ProfileManager(const FilePath& user_data_dir)
       content::NotificationService::AllSources());
   registrar_.Add(
       this,
-      content::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
+      chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
       content::NotificationService::AllSources());
   registrar_.Add(
       this,
@@ -540,7 +540,7 @@ void ProfileManager::Observe(
 #endif
   bool save_active_profiles = false;
   switch (type) {
-    case content::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST: {
+    case chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST: {
       // Ignore any browsers closing from now on.
       closing_all_browsers_ = true;
       break;

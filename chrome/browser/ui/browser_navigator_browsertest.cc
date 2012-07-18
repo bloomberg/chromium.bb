@@ -156,7 +156,7 @@ void BrowserNavigatorTest::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
+    case content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED: {
       ++this->created_tab_contents_count_;
       break;
     }
@@ -189,7 +189,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTabExisting) {
   content::NotificationRegistrar registrar;
 
   // As the registrar object goes out of scope, this will get unregistered
-  registrar.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
+  registrar.Add(this,
+                content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
                 content::NotificationService::AllSources());
 
   chrome::AddSelectedTabWithURL(browser(), singleton_url1,

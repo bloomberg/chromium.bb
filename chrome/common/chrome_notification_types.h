@@ -92,6 +92,26 @@ enum NotificationType {
   // the form of a RetargetingDetails object are provided.
   NOTIFICATION_RETARGETING,
 
+  // Application-wide ----------------------------------------------------------
+
+#if defined(OS_MACOSX)
+  // This notification is sent when the app has no key window, such as when
+  // all windows are closed but the app is still active. No source or details
+  // are provided.
+  NOTIFICATION_NO_KEY_WINDOW,
+#endif
+
+  // This is sent when the user has chosen to exit the app, but before any
+  // browsers have closed. This is sent if the user chooses to exit (via exit
+  // menu item or keyboard shortcut) or to restart the process (such as in flags
+  // page), not if Chrome exits by some other means (such as the user closing
+  // the last window). No source or details are passed.
+  //
+  // Note that receiving this notification does not necessarily mean the process
+  // will exit because the shutdown process can be cancelled by an unload
+  // handler.  Use APP_TERMINATING for such needs.
+  NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
+
   // Application-modal dialogs -----------------------------------------------
 
   // Sent after an application-modal dialog has been shown. The source

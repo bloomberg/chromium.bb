@@ -112,7 +112,7 @@ void ManagedMode::EnterManagedModeImpl(Profile* profile,
   // browsers to close.
   managed_profile_ = original_profile;
   callbacks_.push_back(callback);
-  registrar_.Add(this, content::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
+  registrar_.Add(this, chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
                  content::NotificationService::AllSources());
@@ -206,7 +206,7 @@ void ManagedMode::Observe(int type,
     return;
 
   switch (type) {
-    case content::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST: {
+    case chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST: {
       FinalizeEnter(false);
       return;
     }

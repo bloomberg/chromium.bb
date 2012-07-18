@@ -85,7 +85,7 @@ void ExtensionBrowserEventRouter::Init() {
 #elif defined(OS_MACOSX)
   // Needed for when no suitable window can be passed to an extension as the
   // currently focused window.
-  registrar_.Add(this, content::NOTIFICATION_NO_KEY_WINDOW,
+  registrar_.Add(this, chrome::NOTIFICATION_NO_KEY_WINDOW,
                  content::NotificationService::AllSources());
 #endif
 
@@ -569,7 +569,7 @@ void ExtensionBrowserEventRouter::Observe(
     Browser* browser = content::Source<Browser>(source).ptr();
     OnBrowserWindowReady(browser);
 #if defined(OS_MACOSX)
-  } else if (type == content::NOTIFICATION_NO_KEY_WINDOW) {
+  } else if (type == chrome::NOTIFICATION_NO_KEY_WINDOW) {
     OnBrowserSetLastActive(NULL);
 #endif
   } else {
