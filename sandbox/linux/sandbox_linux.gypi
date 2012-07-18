@@ -37,15 +37,15 @@
         '../testing/gtest.gyp:gtest',
       ],
       'sources': [
-        'linux/tests/unit_tests.cc',
+        'tests/unit_tests.cc',
       ],
       'include_dirs': [
-        '..',
+        '../..',
       ],
       'conditions': [
         [ 'OS=="linux" and (target_arch=="ia32" or target_arch=="x64")', {
           'sources': [
-            'linux/seccomp-bpf/sandbox_bpf_unittest.cc',
+            'seccomp-bpf/sandbox_bpf_unittest.cc',
           ],
         }],
       ],
@@ -54,16 +54,16 @@
       'target_name': 'seccomp_bpf',
       'type': 'static_library',
       'sources': [
-        'linux/seccomp-bpf/sandbox_bpf.cc',
-        'linux/seccomp-bpf/sandbox_bpf.h',
-        'linux/seccomp-bpf/verifier.cc',
-        'linux/seccomp-bpf/verifier.h',
+        'seccomp-bpf/sandbox_bpf.cc',
+        'seccomp-bpf/sandbox_bpf.h',
+        'seccomp-bpf/verifier.cc',
+        'seccomp-bpf/verifier.h',
       ],
       'dependencies': [
         '../base/base.gyp:base',
       ],
       'include_dirs': [
-        '..',
+        '../..',
       ],
     },
     {
@@ -71,27 +71,27 @@
       'target_name': 'chrome_sandbox',
       'type': 'executable',
       'sources': [
-        'linux/suid/linux_util.c',
-        'linux/suid/linux_util.h',
-        'linux/suid/process_util.h',
-        'linux/suid/process_util_linux.c',
-        'linux/suid/sandbox.h',
-        'linux/suid/sandbox.c',
+        'suid/linux_util.c',
+        'suid/linux_util.h',
+        'suid/process_util.h',
+        'suid/process_util_linux.c',
+        'suid/sandbox.h',
+        'suid/sandbox.c',
       ],
       'cflags': [
         # For ULLONG_MAX
         '-std=gnu99',
       ],
       'include_dirs': [
-        '..',
+        '../..',
       ],
     },
     {
       'target_name': 'libc_urandom_override',
       'type': 'static_library',
       'sources': [
-        'linux/services/libc_urandom_override.cc',
-        'linux/services/libc_urandom_override.h',
+        'services/libc_urandom_override.cc',
+        'services/libc_urandom_override.h',
       ],
       'dependencies': [
         '../base/base.gyp:base',

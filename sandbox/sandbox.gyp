@@ -14,7 +14,7 @@
     }],
     [ 'OS=="linux"', {
       'includes': [
-        'sandbox_linux.gypi',
+        'linux/sandbox_linux.gypi',
       ],
     }],
     [ 'OS!="win" and OS!="mac" and OS!="linux"', {
