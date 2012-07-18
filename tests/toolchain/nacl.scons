@@ -48,6 +48,7 @@ TESTS_TO_RUN = [
      ('llvm_math_intrinsics.c', '0', True, env.Bit('bitcode')),
      # NOTE: this test uses bitcode asm's
      ('llvm_bitmanip_intrinsics.c', '0', True, env.Bit('bitcode')),
+     ('llvm_atomic_intrinsics.c', '55', None, True),
 ]
 
 for src, exit_status, golden_file, cond in TESTS_TO_RUN:
