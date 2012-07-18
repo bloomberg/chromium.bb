@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/cros_settings_provider.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/signed_settings_migration_helper.h"
-#include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/prefs/pref_value_map.h"
 #include "content/public/browser/notification_registrar.h"
@@ -22,6 +21,10 @@
 namespace base {
 class Value;
 }
+
+namespace enterprise_management {
+class ChromeDeviceSettingsProto;
+}  // namespace enterprise_management
 
 namespace chromeos {
 

@@ -83,12 +83,11 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
-#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_manager_api.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
-#include "chrome/browser/chromeos/system_settings_provider.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/webui/options2/chromeos/timezone_options_util.h"
 #include "ui/gfx/image/image_skia.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -386,10 +385,7 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 
   // TODO(pastarmovj): replace this with a call to the CrosSettings list
   // handling functionality to come.
-  values->Set("timezoneList",
-      static_cast<chromeos::SystemSettingsProvider*>(
-          chromeos::CrosSettings::Get()->GetProvider(
-              chromeos::kSystemTimezone))->GetTimezoneList());
+  values->Set("timezoneList", GetTimezoneList().release());
 #endif
 #if defined(OS_MACOSX)
   values->SetString("macPasswordsWarning",

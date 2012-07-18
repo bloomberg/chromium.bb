@@ -4085,6 +4085,8 @@
         'browser/ui/webui/options2/chromeos/set_wallpaper_options_handler.h',
         'browser/ui/webui/options2/chromeos/stats_options_handler.cc',
         'browser/ui/webui/options2/chromeos/stats_options_handler.h',
+        'browser/ui/webui/options2/chromeos/timezone_options_util.cc',
+        'browser/ui/webui/options2/chromeos/timezone_options_util.h',
         'browser/ui/webui/options2/chromeos/user_image_source.cc',
         'browser/ui/webui/options2/chromeos/user_image_source.h',
         'browser/ui/webui/options2/chromeos/wallpaper_source.cc',

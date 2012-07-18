@@ -23,6 +23,7 @@
 #include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "chrome/common/net/gaia/gaia_auth_util.h"

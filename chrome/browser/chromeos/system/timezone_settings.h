@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_TIMEZONE_SETTINGS_H_
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_TIMEZONE_SETTINGS_H_
 
-#include <string>
+#include <vector>
 
+#include "base/string16.h"
 #include "chrome/browser/cancelable_request.h"
 #include "unicode/timezone.h"
 
@@ -20,18 +21,27 @@ class TimezoneSettings : public CancelableRequestProvider {
    public:
     // Called when the timezone has changed. |timezone| is non-null.
     virtual void TimezoneChanged(const icu::TimeZone& timezone) = 0;
+   protected:
+    virtual ~Observer();
   };
 
   static TimezoneSettings* GetInstance();
 
   // Returns the current timezone as an icu::Timezone object.
   virtual const icu::TimeZone& GetTimezone() = 0;
+  virtual string16 GetCurrentTimezoneID() = 0;
 
-  // Sets the current timezone. |timezone| must be non-null.
+  // Sets the current timezone and notifies all Observers.
   virtual void SetTimezone(const icu::TimeZone& timezone) = 0;
+  virtual void SetTimezoneFromID(const string16& timezone_id) = 0;
 
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
+
+  virtual const std::vector<icu::TimeZone*>& GetTimezoneList() const = 0;
+
+  // Gets timezone ID which is also used as timezone pref value.
+  static string16 GetTimezoneID(const icu::TimeZone& timezone);
 
  protected:
   virtual ~TimezoneSettings() {}

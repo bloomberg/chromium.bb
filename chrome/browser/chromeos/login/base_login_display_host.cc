@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -50,7 +51,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/widget/widget.h"
-#include "unicode/timezone.h"
 
 namespace {
 
@@ -566,10 +566,8 @@ void ShowLoginWizard(const std::string& first_screen_name,
   // Apply locale customizations only once to preserve whatever locale
   // user has changed to during OOBE.
   if (!timezone_name.empty()) {
-    icu::TimeZone* timezone = icu::TimeZone::createTimeZone(
-        icu::UnicodeString::fromUTF8(timezone_name));
-    CHECK(timezone) << "Timezone could not be set for " << timezone_name;
-    chromeos::system::TimezoneSettings::GetInstance()->SetTimezone(*timezone);
+    chromeos::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
+        UTF8ToUTF16(timezone_name));
   }
 }
 

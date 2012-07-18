@@ -10,10 +10,13 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "crypto/rsa_private_key.h"
+
+namespace enterprise_management {
+class ChromeDeviceSettingsProto;
+}  // namespace enterprise_management
 
 namespace policy {
 

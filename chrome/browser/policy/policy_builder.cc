@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
+#include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "crypto/signature_creator.h"
 
 namespace em = enterprise_management;

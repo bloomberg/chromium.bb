@@ -23,6 +23,7 @@
 #include "chrome/browser/policy/app_pack_updater.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
+#include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/installer/util/google_update_settings.h"

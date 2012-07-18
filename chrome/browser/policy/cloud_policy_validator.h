@@ -12,8 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
-#include "chrome/browser/policy/proto/cloud_policy.pb.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -26,6 +24,8 @@ class MessageLite;
 }
 
 namespace enterprise_management {
+class ChromeDeviceSettingsProto;
+class CloudPolicySettings;
 class PolicyData;
 class PolicyFetchResponse;
 }

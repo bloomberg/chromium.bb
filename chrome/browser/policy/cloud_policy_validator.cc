@@ -8,6 +8,8 @@
 #include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
+#include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
+#include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/common/net/gaia/gaia_auth_util.h"
 #include "content/public/browser/browser_thread.h"

@@ -8,11 +8,16 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
-#include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 
 namespace chromeos {
 class SignedSettingsHelper;
 }  // namespace chromeos
+
+namespace enterprise_management {
+class ChromeDeviceSettingsProto;
+class PolicyData;
+class PolicyFetchResponse;
+}  // namespace enterprise_management
 
 namespace policy {
 
