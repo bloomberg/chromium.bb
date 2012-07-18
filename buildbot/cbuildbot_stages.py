@@ -1466,13 +1466,15 @@ class ArchiveStage(BoardSpecificBuilderStage):
     #       \- ArchiveAutotestTarballs
     #       \- ArchivePayloads
     #    \- ArchiveTestResults
-    #    \- ArchiveDebugSymbols
-    #    \- ArchiveFirmwareImages
-    #    \- BuildAndArchiveAllImages
-    #       (builds recovery image first, then launches functions below)
-    #       \- BuildAndArchiveFactoryImages
-    #       \- ArchiveRegularImages
     #    \- ArchiveStrippedChrome
+    #    \- ArchiveReleaseArtifacts
+    #       \- ArchiveDebugSymbols
+    #       \- ArchiveFirmwareImages
+    #       \- BuildAndArchiveAllImages
+    #          (builds recovery image first, then launches functions below)
+    #          \- BuildAndArchiveFactoryImages
+    #          \- ArchiveRegularImages
+    #       \- PushImage
 
     def ArchiveAutotestTarballs():
       """Archives the autotest tarballs produced in BuildTarget."""
@@ -1647,25 +1649,32 @@ class ArchiveStage(BoardSpecificBuilderStage):
                                  cwd=archive_path)
       upload_queue.put([filename])
 
-    def BuildAndArchiveArtifacts(num_upload_processes=10):
-      with bg_task_runner(upload_queue, UploadArtifact, num_upload_processes):
-        # Run archiving steps in parallel.
-        steps = [ArchiveDebugSymbols, BuildAndArchiveAllImages,
-                 ArchiveArtifactsForHWTesting, ArchiveTestResults,
-                 ArchiveFirmwareImages, ArchiveStrippedChrome]
-        background.RunParallelSteps(steps)
-
     def PushImage():
       # Now that all data has been generated, we can upload the final result to
       # the image server.
       # TODO: When we support branches fully, the friendly name of the branch
       # needs to be used with PushImages
-      if not debug and config['push_image']:
+      if config['push_image']:
         commands.PushImages(buildroot,
                             board=board,
                             branch_name='master',
                             archive_url=upload_url,
+                            dryrun=debug,
                             profile=self._options.profile or config['profile'])
+
+
+    def ArchiveReleaseArtifacts():
+      steps = [ArchiveDebugSymbols, BuildAndArchiveAllImages,
+               ArchiveFirmwareImages]
+      background.RunParallelSteps(steps)
+      PushImage()
+
+    def BuildAndArchiveArtifacts(num_upload_processes=10):
+      with bg_task_runner(upload_queue, UploadArtifact, num_upload_processes):
+        # Run archiving steps in parallel.
+        steps = [ArchiveReleaseArtifacts, ArchiveStrippedChrome,
+                 ArchiveArtifactsForHWTesting, ArchiveTestResults]
+        background.RunParallelSteps(steps)
 
     def MarkAsLatest():
       # Update and upload LATEST file.
@@ -1678,7 +1687,6 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
     try:
       BuildAndArchiveArtifacts()
-      PushImage()
       MarkAsLatest()
     finally:
       commands.RemoveOldArchives(self._bot_archive_root,

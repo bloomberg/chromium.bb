@@ -412,7 +412,7 @@ class CBuildBotTest(mox.MoxTestBase):
          archive_url], cwd=mox.StrContains('crostools'))
 
     self.mox.ReplayAll()
-    commands.PushImages(buildroot, board, branch_name, archive_url, None)
+    commands.PushImages(buildroot, board, branch_name, archive_url, False, None)
     self.mox.VerifyAll()
 
   def testPushImages2(self):
@@ -429,7 +429,7 @@ class CBuildBotTest(mox.MoxTestBase):
 
     self.mox.ReplayAll()
     commands.PushImages(buildroot, board, branch_name, archive_url,
-                        profile=profile_name)
+                        dryrun=False, profile=profile_name)
     self.mox.VerifyAll()
 
 

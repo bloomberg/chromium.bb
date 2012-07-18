@@ -1100,12 +1100,6 @@ class ArchiveStageTest(AbstractStageTest):
     # TODO(davidjames): Test the individual archive steps as well.
     background.RunParallelSteps(mox.IgnoreArg())
 
-    commands.PushImages(self.build_root,
-                        board=self._current_board,
-                        branch_name='master',
-                        archive_url=mox.IgnoreArg(),
-                        profile=None)
-
     commands.RemoveOldArchives(mox.IgnoreArg(), mox.IgnoreArg())
     commands.UpdateLatestFile(mox.IgnoreArg(), mox.IgnoreArg())
     commands.UploadArchivedFile(mox.IgnoreArg(), mox.IgnoreArg(),

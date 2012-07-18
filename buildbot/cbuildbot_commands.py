@@ -883,9 +883,12 @@ def UploadSymbols(buildroot, board, official):
     print e.result.output
 
 
-def PushImages(buildroot, board, branch_name, archive_url, profile):
+def PushImages(buildroot, board, branch_name, archive_url, dryrun, profile):
   """Push the generated image to http://chromeos_images."""
   cmd = ['./pushimage', '--board=%s' % board]
+
+  if dryrun:
+    cmd.append('-n')
 
   if profile:
     cmd.append('--profile=%s' % profile)
