@@ -62,10 +62,6 @@ GDataDirectory* GDataEntry::AsGDataDirectory() {
   return NULL;
 }
 
-GDataRootDirectory* GDataEntry::AsGDataRootDirectory() {
-  return NULL;
-}
-
 const GDataFile* GDataEntry::AsGDataFileConst() const {
   // cast away const and call the non-const version. This is safe.
   return const_cast<GDataEntry*>(this)->AsGDataFile();
@@ -432,10 +428,6 @@ GDataRootDirectory::GDataRootDirectory(
 }
 
 GDataRootDirectory::~GDataRootDirectory() {
-}
-
-GDataRootDirectory* GDataRootDirectory::AsGDataRootDirectory() {
-  return this;
 }
 
 // GDataDirectoryService class implementation.

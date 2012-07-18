@@ -1592,7 +1592,8 @@ void GDataFileSystem::AddEntryToDirectory(
   }
 
   // Returns if there is an error or |dir_path| is the root directory.
-  if (error != GDATA_FILE_OK || dir_entry->AsGDataRootDirectory()) {
+  if (error != GDATA_FILE_OK ||
+      dir_entry->resource_id() == kGDataRootDirectoryResourceId) {
     if (!callback.is_null())
       MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, error));
 
@@ -1628,7 +1629,8 @@ void GDataFileSystem::RemoveEntryFromDirectory(
   }
 
   // Returns if there is an error or |dir_path| is the root directory.
-  if (error != GDATA_FILE_OK || dir->AsGDataRootDirectory()) {
+  if (error != GDATA_FILE_OK ||
+      dir->resource_id() == kGDataRootDirectoryResourceId) {
     if (!callback.is_null()) {
       MessageLoop::current()->PostTask(FROM_HERE,
           base::Bind(callback, error, file_path));

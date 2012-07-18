@@ -204,8 +204,7 @@ TEST(GDataRootDirectoryTest, GetEntryByResourceId_RootDirectory) {
   GDataEntry* entry = directory_service.GetEntryByResourceId(
       kGDataRootDirectoryResourceId);
   ASSERT_TRUE(entry);
-  EXPECT_TRUE(entry->AsGDataRootDirectory());
-  EXPECT_EQ(directory_service.root(), entry->AsGDataRootDirectory());
+  EXPECT_EQ(kGDataRootDirectoryResourceId, entry->resource_id());
 }
 
 }  // namespace gdata

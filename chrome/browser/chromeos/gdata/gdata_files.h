@@ -71,7 +71,6 @@ class GDataEntry {
 
   virtual GDataFile* AsGDataFile();
   virtual GDataDirectory* AsGDataDirectory();
-  virtual GDataRootDirectory* AsGDataRootDirectory();
 
   // const versions of AsGDataFile and AsGDataDirectory.
   const GDataFile* AsGDataFileConst() const;
@@ -344,8 +343,7 @@ class GDataDirectory : public GDataEntry {
 };
 
 // TODO(achuith, satorux): Remove this class. Move largest_changestamp and logic
-// in GDataRootDirectory ctor to GDataDirectoryService. Remove uses of
-// AsGDataRootDirectory.  crbug.com/135312
+// in GDataRootDirectory ctor to GDataDirectoryService. crbug.com/135312
 class GDataRootDirectory : public GDataDirectory {
  public:
   explicit GDataRootDirectory(GDataDirectoryService* directory_service);
@@ -355,9 +353,6 @@ class GDataRootDirectory : public GDataDirectory {
   // state of the root directory.
   int largest_changestamp() const { return largest_changestamp_; }
   void set_largest_changestamp(int value) { largest_changestamp_ = value; }
-
-  // GDataEntry implementation.
-  virtual GDataRootDirectory* AsGDataRootDirectory() OVERRIDE;
 
   // Serializes/Parses to/from string via proto classes.
   void SerializeToString(std::string* serialized_proto) const;
