@@ -13,11 +13,14 @@
 
 #include <asm/unistd.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <linux/audit.h>
 #include <linux/filter.h>
 #include <signal.h>
 #include <string.h>
 #include <sys/prctl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <ucontext.h>
 #include <unistd.h>
 
@@ -145,6 +148,74 @@ bool IsFileSystemSyscall(int sysno) {
   }
 }
 
+static const char kDriRcPath[] = "/etc/drirc";
+
+// TODO(jorgelo): limited to /etc/drirc for now, extend this to cover
+// other sandboxed file access cases.
+int OpenWithCache(const char* pathname, int flags) {
+  static int drircfd = -1;
+  static bool do_open = true;
+  int res = -1;
+
+  if (strcmp(pathname, kDriRcPath) == 0 && flags == O_RDONLY) {
+    if (do_open) {
+      drircfd = open(pathname, flags);
+      do_open = false;
+      res = drircfd;
+    } else {
+      // dup() man page:
+      // "After a successful return from one of these system calls,
+      // the old and new file descriptors may be used interchangeably.
+      // They refer to the same open file description and thus share
+      // file offset and file status flags; for example, if the file offset
+      // is modified by using lseek(2) on one of the descriptors,
+      // the offset is also changed for the other."
+      // Since |drircfd| can be dup()'ed and read many times, we need to
+      // lseek() it to the beginning of the file before returning.
+      // We assume the caller will not keep more than one fd open at any
+      // one time. Intel driver code in Mesa that parses /etc/drirc does
+      // open()/read()/close() in the same function.
+      if (drircfd < 0) {
+        errno = ENOENT;
+        return -1;
+      }
+      int newfd = dup(drircfd);
+      if (newfd < 0) {
+        errno = ENOMEM;
+        return -1;
+      }
+      if (lseek(newfd, 0, SEEK_SET) == static_cast<off_t>(-1)) {
+        (void) HANDLE_EINTR(close(newfd));
+        errno = ENOMEM;
+        return -1;
+      }
+      res = newfd;
+    }
+  } else {
+    res = open(pathname, flags);
+  }
+
+  return res;
+}
+
+// We allow the GPU process to open /etc/drirc because it's needed by Mesa.
+// OpenWithCache() has been called before enabling the sandbox, and has cached
+// a file descriptor for /etc/drirc.
+intptr_t GpuOpenSIGSYS_Handler(const struct arch_seccomp_data& args,
+                               void* aux) {
+  uint64_t arg0 = args.args[0];
+  uint64_t arg1 = args.args[1];
+  const char* pathname = reinterpret_cast<const char*>(arg0);
+  int flags = static_cast<int>(arg1);
+
+  if (strcmp(pathname, kDriRcPath) == 0) {
+    int ret = OpenWithCache(pathname, flags);
+    return (ret == -1) ? -errno : ret;
+  } else {
+    return -ENOENT;
+  }
+}
+
 #if defined(__x86_64__)
 // x86_64 only because it references system calls that are multiplexed on IA32.
 playground2::Sandbox::ErrorCode GpuProcessPolicy_x86_64(int sysno) {
@@ -190,9 +261,9 @@ playground2::Sandbox::ErrorCode GpuProcessPolicy_x86_64(int sysno) {
     case __NR_munlock:
     case __NR_exit:
     case __NR_exit_group:
+    case __NR_lseek:
     case __NR_getpid:  // Nvidia binary driver.
     case __NR_getppid:  // ATI binary driver.
-    case __NR_lseek:  // Nvidia binary driver.
     case __NR_shutdown:  // Virtual driver.
     case __NR_rt_sigaction:  // Breakpad signal handler.
       return playground2::Sandbox::SB_ALLOWED;
@@ -200,6 +271,11 @@ playground2::Sandbox::ErrorCode GpuProcessPolicy_x86_64(int sysno) {
       return EACCES;  // Nvidia binary driver.
     case __NR_fchmod:
       return EPERM;  // ATI binary driver.
+    case __NR_open:
+      // Hook open() in the GPU process to allow opening /etc/drirc,
+      // needed by Mesa.
+      // The hook needs dup(), lseek(), and close() to be allowed.
+      return playground2::Sandbox::ErrorCode(GpuOpenSIGSYS_Handler, NULL);
     default:
       if (IsGettimeSyscall(sysno) ||
           IsKillSyscall(sysno)) { // GPU watchdog.
@@ -311,6 +387,12 @@ playground2::Sandbox::ErrorCode AllowAllPolicy(int sysno) {
   } else {
     return playground2::Sandbox::SB_ALLOWED;
   }
+}
+
+// Warms up/preloads resources needed by the policies.
+void WarmupPolicy(playground2::Sandbox::EvaluateSyscall policy) {
+  if (policy == GpuProcessPolicy_x86_64)
+    OpenWithCache(kDriRcPath, O_RDONLY);
 }
 
 // Is the sandbox fully disabled for this process?
@@ -432,6 +514,9 @@ void InitializeSandbox_x86() {
 
   playground2::Sandbox::EvaluateSyscall SyscallPolicy =
       GetProcessSyscallPolicy(command_line, process_type);
+
+  // Warms up resources needed by the policy we're about to enable.
+  WarmupPolicy(SyscallPolicy);
 
   playground2::Sandbox::setSandboxPolicy(SyscallPolicy, NULL);
   playground2::Sandbox::startSandbox();
