@@ -106,7 +106,6 @@
       '<(PRODUCT_DIR)/test_data/chrome/browser/resources/print_preview/print_preview_utils.js',
       '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
       'browser/resources/software_rendering_list.json',
-      'browser/resources/software_rendering_list/software_rendering_list.json',
       'test/data/History/ArchivedNoDuration',
       'test/data/History/HistoryNoDuration',
       'test/data/History/HistoryNoSource',
@@ -553,7 +552,6 @@
           'test/data/pref_service/write.golden.need_empty_value.json',
         ],
         'isolate_dependency_untracked': [
-          'browser/resources/software_rendering_list/',
           'test/data/components/flapper/linux_x64/',
           'test/data/extensions/bad/',
           'test/data/extensions/good/',
