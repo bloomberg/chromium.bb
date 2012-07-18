@@ -10,6 +10,7 @@
 
 #include "ui/base/ui_export.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/path.h"
 
 namespace gfx {
 
@@ -33,6 +34,8 @@ void CreateMonochromeBitmapHeader(int width, int height, BITMAPINFOHEADER* hdr);
 UI_EXPORT void SubtractRectanglesFromRegion(
     HRGN hrgn,
     const std::vector<gfx::Rect>& cutouts);
+
+UI_EXPORT HRGN ConvertPathToHRGN(const gfx::Path& path);
 
 // Calculate scale to fit an entire page on DC.
 UI_EXPORT double CalculatePageScale(HDC dc, int page_width, int page_height);

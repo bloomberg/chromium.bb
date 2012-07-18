@@ -4,6 +4,8 @@
 
 #include "ui/gfx/gdi_util.h"
 
+#include "base/memory/scoped_ptr.h"
+
 namespace gfx {
 
 void CreateBitmapHeader(int width, int height, BITMAPINFOHEADER* hdr) {
@@ -75,6 +77,24 @@ void SubtractRectanglesFromRegion(HRGN hrgn,
     ::DeleteObject(cutout);
   }
 }
+
+HRGN ConvertPathToHRGN(const gfx::Path& path) {
+#if defined(USE_AURA)
+  int point_count = path.getPoints(NULL, 0);
+  scoped_array<SkPoint> points(new SkPoint[point_count]);
+  path.getPoints(points.get(), point_count);
+  scoped_array<POINT> windows_points(new POINT[point_count]);
+  for (int i = 0; i < point_count; ++i) {
+    windows_points[i].x = SkScalarRound(points[i].fX);
+    windows_points[i].y = SkScalarRound(points[i].fY);
+  }
+
+  return ::CreatePolygonRgn(windows_points.get(), point_count, ALTERNATE);
+#elif defined(OS_WIN)
+  return path.CreateNativeRegion();
+#endif
+}
+
 
 double CalculatePageScale(HDC dc, int page_width, int page_height) {
   int dc_width = GetDeviceCaps(dc, HORZRES);

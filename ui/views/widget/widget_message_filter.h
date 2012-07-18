@@ -37,18 +37,25 @@ class WidgetMessageFilter : public ui::HWNDMessageFilter {
   bool OnNCCalcSize(WPARAM w_param, LPARAM l_param, LRESULT* l_result);
   bool OnNCHitTest(int x, int y, LRESULT* l_result);
   bool OnNCPaint(HRGN update_region);
+  bool OnNCActivate(bool active, HRGN update_region);
   void OnSize();
   void OnWindowPosChanged(WINDOWPOS* window_pos);
 
   // TODO(beng): Lift documentation from NativeWidgetWin.
-  gfx::Insets GetClientAreaInsets() const;
+  bool GetClientAreaInsets(gfx::Insets* insets) const;
   bool WidgetSizeIsClientSize() const;
   void ClientAreaSizeChanged();
   void ResetWindowRegion(bool force);
+  HWND hwnd() const;
+  bool IsVisible() const;
+  bool HasCapture() const;
 
   aura::RootWindow* root_window_;
   Widget* widget_;
   HWND hwnd_;
+  int lock_updates_count_;
+  bool is_right_mouse_pressed_on_caption_;
+  bool* destroyed_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetMessageFilter);
 };

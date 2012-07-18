@@ -207,7 +207,11 @@ gfx::Rect DesktopNativeWidgetHelperAura::ModifyAndSetBounds(
     const gfx::Rect& bounds) {
   gfx::Rect out_bounds = bounds;
   if (root_window_.get() && !out_bounds.IsEmpty()) {
+    // TODO(scottmg): This avoids the AdjustWindowRect that ash wants to
+    // adjust the top level on Windows.
+#if !defined(OS_WIN)
     root_window_->SetHostBounds(out_bounds);
+#endif
     out_bounds.set_x(0);
     out_bounds.set_y(0);
   } else if (is_embedded_window_) {
