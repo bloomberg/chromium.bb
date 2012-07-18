@@ -660,7 +660,6 @@ void RenderWidgetHostViewWin::InitAsChild(
 
 void RenderWidgetHostViewWin::InitAsPopup(
     RenderWidgetHostView* parent_host_view, const gfx::Rect& pos) {
-  close_on_deactivate_ = true;
   DoPopupOrFullscreenInit(parent_host_view->GetNativeView(), pos,
                           WS_EX_TOOLWINDOW);
 }
@@ -1617,8 +1616,7 @@ void RenderWidgetHostViewWin::OnCancelMode() {
   if (render_widget_host_)
     render_widget_host_->LostCapture();
 
-  if ((is_fullscreen_ || close_on_deactivate_) &&
-      !weak_factory_.HasWeakPtrs()) {
+  if (close_on_deactivate_ && !weak_factory_.HasWeakPtrs()) {
     // Dismiss popups and menus.  We do this asynchronously to avoid changing
     // activation within this callstack, which may interfere with another window
     // being activated.  We can synchronously hide the window, but we need to
@@ -1897,7 +1895,7 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
   // RenderViewHostHWND as there is no way to retrieve it from the HWND.
 
   // Don't forward if the container is a popup or fullscreen widget.
-  if (!is_fullscreen_ && !close_on_deactivate_) {
+  if (!close_on_deactivate_) {
     switch (message) {
       case WM_LBUTTONDOWN:
       case WM_MBUTTONDOWN:
@@ -1952,7 +1950,7 @@ LRESULT RenderWidgetHostViewWin::OnKeyEvent(UINT message, WPARAM wparam,
   // parent.
   // TODO(jcampan): http://b/issue?id=1192881 Could be abstracted in the
   //                FocusManager.
-  if (close_on_deactivate_ &&
+  if (close_on_deactivate_ && !is_fullscreen_ &&
       (((message == WM_KEYDOWN || message == WM_KEYUP) && (wparam == VK_TAB)) ||
         (message == WM_CHAR && wparam == L'\t'))) {
     // First close the pop-up.
@@ -2957,6 +2955,7 @@ void RenderWidgetHostViewWin::ShutdownHost() {
 void RenderWidgetHostViewWin::DoPopupOrFullscreenInit(HWND parent_hwnd,
                                                       const gfx::Rect& pos,
                                                       DWORD ex_style) {
+  close_on_deactivate_ = true;
   Create(parent_hwnd, NULL, NULL, WS_POPUP, ex_style);
   MoveWindow(pos.x(), pos.y(), pos.width(), pos.height(), TRUE);
   ShowWindow(IsActivatable() ? SW_SHOW : SW_SHOWNA);

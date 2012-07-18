@@ -454,7 +454,8 @@ class RenderWidgetHostViewWin
   bool about_to_validate_and_paint_;
 
   // true if the View should be closed when its HWND is deactivated (used to
-  // support SELECT popups which are closed when they are deactivated).
+  // support SELECT popups and fullscreen widgets which are closed when they are
+  // deactivated).
   bool close_on_deactivate_;
 
   // Whether Destroy() has been called.  Used to detect a crasher

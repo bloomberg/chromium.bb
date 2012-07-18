@@ -783,7 +783,8 @@ void PluginInstance::ViewChanged(const gfx::Rect& position,
     }
   }
 
-  flash_fullscreen_ = (fullscreen_container_ != NULL);
+  UpdateFlashFullscreenState(fullscreen_container_ != NULL);
+
   SendDidChangeView(previous_view);
 }
 
@@ -793,11 +794,8 @@ void PluginInstance::SetWebKitFocus(bool has_focus) {
 
   bool old_plugin_focus = PluginHasFocus();
   has_webkit_focus_ = has_focus;
-  if (PluginHasFocus() != old_plugin_focus) {
-    delegate()->PluginFocusChanged(this, PluginHasFocus());
-    instance_interface_->DidChangeFocus(pp_instance(),
-                                        PP_FromBool(PluginHasFocus()));
-  }
+  if (PluginHasFocus() != old_plugin_focus)
+    SendFocusChangeNotification();
 }
 
 void PluginInstance::SetContentAreaFocus(bool has_focus) {
@@ -806,10 +804,8 @@ void PluginInstance::SetContentAreaFocus(bool has_focus) {
 
   bool old_plugin_focus = PluginHasFocus();
   has_content_area_focus_ = has_focus;
-  if (PluginHasFocus() != old_plugin_focus) {
-    instance_interface_->DidChangeFocus(pp_instance(),
-                                        PP_FromBool(PluginHasFocus()));
-  }
+  if (PluginHasFocus() != old_plugin_focus)
+    SendFocusChangeNotification();
 }
 
 void PluginInstance::PageVisibilityChanged(bool is_visible) {
@@ -1056,7 +1052,13 @@ bool PluginInstance::LoadZoomInterface() {
 }
 
 bool PluginInstance::PluginHasFocus() const {
-  return has_webkit_focus_ && has_content_area_focus_;
+  return flash_fullscreen_ || (has_webkit_focus_ && has_content_area_focus_);
+}
+
+void PluginInstance::SendFocusChangeNotification() {
+  bool has_focus = PluginHasFocus();
+  delegate()->PluginFocusChanged(this, has_focus);
+  instance_interface_->DidChangeFocus(pp_instance(), PP_FromBool(has_focus));
 }
 
 bool PluginInstance::IsAcceptingTouchEvents() const {
@@ -1334,7 +1336,7 @@ void PluginInstance::FlashSetFullscreen(bool fullscreen, bool delay_report) {
     DCHECK(fullscreen_container_);
     fullscreen_container_->Destroy();
     fullscreen_container_ = NULL;
-    flash_fullscreen_ = false;
+    UpdateFlashFullscreenState(false);
     if (!delay_report) {
       ReportGeometry();
     } else {
@@ -1342,6 +1344,16 @@ void PluginInstance::FlashSetFullscreen(bool fullscreen, bool delay_report) {
           FROM_HERE, base::Bind(&PluginInstance::ReportGeometry, this));
     }
   }
+}
+
+void PluginInstance::UpdateFlashFullscreenState(bool flash_fullscreen) {
+  if (flash_fullscreen == flash_fullscreen_)
+    return;
+
+  bool old_plugin_focus = PluginHasFocus();
+  flash_fullscreen_ = flash_fullscreen;
+  if (PluginHasFocus() != old_plugin_focus)
+    SendFocusChangeNotification();
 }
 
 int32_t PluginInstance::Navigate(PPB_URLRequestInfo_Impl* request,
