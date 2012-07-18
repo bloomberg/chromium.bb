@@ -60,7 +60,13 @@ TEST_F(CapturerTest, StartCapturer) {
   capturer_->Stop();
 }
 
-TEST_F(CapturerTest, Capture) {
+#if defined(OS_MACOSX)
+#define MAYBE_Capture DISABLED_Capture
+#else
+#define MAYBE_Capture Capture
+#endif
+
+TEST_F(CapturerTest, MAYBE_Capture) {
   if (!IsOsSupported()) {
     return;
   }
