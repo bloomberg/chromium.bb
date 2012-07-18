@@ -273,29 +273,32 @@ class GDataFileSystem : public GDataFileSystemInterface,
                           GDataFileError result,
                           const FilePath& cache_file_path);
 
-  // Invoked during the process of CloseFile. It first gets the path of local
-  // cache and receives it with OnGetFileCompleteForCloseFile. Then it reads the
-  // metadata of the modified cache and send the information to
-  // OnGetModifiedFileInfoCompleteForCloseFile./ Then it continues to get and
-  // update the GData entry by FindEntryByPathAsyncOnUIThread
-  // and invokes OnGetFileInfoCompleteForCloseFile. It then continues to
-  // invoke CommitDirtyInCache to commit the change, and finally proceeds to
-  // OnCommitDirtyInCacheCompleteForCloseFile and calls OnCloseFileFinished,
-  // which removes the file from the "opened" list and invokes user-supplied
-  // callback.
-  void OnGetFileCompleteForCloseFile(
+  // Invoked during the process of CloseFile. What is done here is as follows:
+  // 1) Gets resource_id and md5 of the entry at |file_path|.
+  // 2) Gets the local path of the cache file from resource_id and md5.
+  // 3) Gets PlatformFileInfo of the modified local cache file.
+  // 4) Gets GDataEntry for |file_path|.
+  // 5) Modifies GDataEntry using the new PlatformFileInfo.
+  // 6) Commits the modification to the cache system.
+  // 7) Invokes the user-supplied |callback|.
+  void OnGetFileInfoCompleteForCloseFile(
       const FilePath& file_path,
       const FileOperationCallback& callback,
       GDataFileError error,
-      const FilePath& local_cache_path,
-      const std::string& mime_type,
-      GDataFileType file_type);
+      scoped_ptr<GDataFileProto> file_proto);
+  void OnGetCacheFilePathCompleteForCloseFile(
+      const FilePath& file_path,
+      const FileOperationCallback& callback,
+      GDataFileError error,
+      const std::string& resource_id,
+      const std::string& md5,
+      const FilePath& local_cache_path);
   void OnGetModifiedFileInfoCompleteForCloseFile(
       const FilePath& file_path,
       base::PlatformFileInfo* file_info,
       bool* get_file_info_result,
       const FileOperationCallback& callback);
-  void OnGetFileInfoCompleteForCloseFile(
+  void OnGetEntryCompleteForCloseFile(
       const FilePath& file_path,
       const base::PlatformFileInfo& file_info,
       const FileOperationCallback& callback,

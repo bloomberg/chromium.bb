@@ -3908,28 +3908,47 @@ void GDataFileSystem::CloseFileOnUIThread(
     return;
   }
 
-  // CloseFile should only be applied for a previously OpenFile'd file, so the
-  // file should already be cached. The sole purpose of the following call to
-  // GetFileByPathOnUIThread is to get the path to the local cache file.
-  GetFileByPathOnUIThread(
+  // Step 1 of CloseFile: Get resource_id and md5 for |file_path|.
+  GetFileInfoByPathAsyncOnUIThread(
       file_path,
-      base::Bind(&GDataFileSystem::OnGetFileCompleteForCloseFile,
+      base::Bind(&GDataFileSystem::OnGetFileInfoCompleteForCloseFile,
                  ui_weak_ptr_,
                  file_path,
                  base::Bind(&GDataFileSystem::OnCloseFileFinished,
                             ui_weak_ptr_,
                             file_path,
-                            callback)),
-      GetDownloadDataCallback());
+                            callback)));
 }
 
-void GDataFileSystem::OnGetFileCompleteForCloseFile(
+void GDataFileSystem::OnGetFileInfoCompleteForCloseFile(
     const FilePath& file_path,
     const FileOperationCallback& callback,
     GDataFileError error,
-    const FilePath& local_cache_path,
-    const std::string& /* mime_type */,
-    GDataFileType /* file_type */) {
+    scoped_ptr<GDataFileProto> file_proto) {
+  if (error != GDATA_FILE_OK) {
+    if (!callback.is_null())
+      callback.Run(error);
+    return;
+  }
+
+  // Step 2 of CloseFile: Get the local path of the cache. Since CloseFile must
+  // always be called on paths opened by OpenFile, the file must be cached,
+  cache_->GetFileOnUIThread(
+      file_proto->gdata_entry().resource_id(),
+      file_proto->file_md5(),
+      base::Bind(&GDataFileSystem::OnGetCacheFilePathCompleteForCloseFile,
+                 ui_weak_ptr_,
+                 file_path,
+                 callback));
+}
+
+void GDataFileSystem::OnGetCacheFilePathCompleteForCloseFile(
+    const FilePath& file_path,
+    const FileOperationCallback& callback,
+    GDataFileError error,
+    const std::string& resource_id,
+    const std::string& md5,
+    const FilePath& local_cache_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != GDATA_FILE_OK) {
@@ -3938,6 +3957,8 @@ void GDataFileSystem::OnGetFileCompleteForCloseFile(
     return;
   }
 
+  // Step 3 of CloseFile: Retrieves the (possibly modified) PlatformFileInfo of
+  // the cache file.
   base::PlatformFileInfo* file_info = new base::PlatformFileInfo;
   bool* get_file_info_result = new bool(false);
   PostBlockingPoolSequencedTaskAndReply(
@@ -3968,16 +3989,18 @@ void GDataFileSystem::OnGetModifiedFileInfoCompleteForCloseFile(
     return;
   }
 
+  // Step 4 of CloseFile: Find GDataEntry corresponding to |file_path|, for
+  // modifying the entry's metadata.
   FindEntryByPathAsyncOnUIThread(
       file_path,
-      base::Bind(&GDataFileSystem::OnGetFileInfoCompleteForCloseFile,
+      base::Bind(&GDataFileSystem::OnGetEntryCompleteForCloseFile,
                  ui_weak_ptr_,
                  file_path,
                  *file_info,
                  callback));
 }
 
-void GDataFileSystem::OnGetFileInfoCompleteForCloseFile(
+void GDataFileSystem::OnGetEntryCompleteForCloseFile(
     const FilePath& file_path,
     const base::PlatformFileInfo& file_info,
     const FileOperationCallback& callback,
@@ -4001,12 +4024,15 @@ void GDataFileSystem::OnGetFileInfoCompleteForCloseFile(
   }
   DCHECK(!file->resource_id().empty());
 
+  // Step 5 of CloseFile:
   // Update the in-memory meta data. Until the committed cache is uploaded in
   // background to the server and the change is propagated back, this in-memory
   // meta data is referred by subsequent file operations. So it needs to reflect
   // the modification made before committing.
   file->set_file_info(file_info);
 
+  // Step 6 of CloseFile: Commit the modification in cache. This will trigger
+  // background upload.
   // TODO(benchan,kinaba): Call ClearDirtyInCache instead of CommitDirtyInCache
   // if the file has not been modified. Come up with a way to detect the
   // intactness effectively, or provide a method for user to declare it when
@@ -4036,6 +4062,7 @@ void GDataFileSystem::OnCloseFileFinished(
     GDataFileError result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // Step 7 of CloseFile.
   // All the invocation of |callback| from operations initiated from CloseFile
   // must go through here. Removes the |file_path| from the remembered set so
   // that subsequent operations can open the file again.
