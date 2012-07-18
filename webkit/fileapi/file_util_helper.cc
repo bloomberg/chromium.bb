@@ -165,12 +165,30 @@ PlatformFileError CrossFileUtilHelper::CopyOrMoveDirectory(
          !src_url.path().IsParent(dest_url.path()));
 
   PlatformFileError error = dest_util_->CreateDirectory(
-      context_, dest_url, false, false);
+      context_, dest_url, false /* exclusive */, false /* recursive */);
   if (error != base::PLATFORM_FILE_OK)
     return error;
 
+  typedef std::pair<FileSystemURL, base::Time> MovedDirectoryPair;
+  typedef std::vector<MovedDirectoryPair> MovedDirectories;
+  MovedDirectories directories;
+
+  // Store modified timestamp of the root directory.
+  if (operation_ == OPERATION_MOVE) {
+    base::PlatformFileInfo file_info;
+    FilePath platform_file_path;
+    error = src_util_->GetFileInfo(
+        context_, src_url, &file_info, &platform_file_path);
+    if (error != base::PLATFORM_FILE_OK)
+      return error;
+    directories.push_back(
+        std::make_pair(dest_url, file_info.last_modified));
+  }
+
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum(
-      src_util_->CreateFileEnumerator(context_, src_url, true));
+      src_util_->CreateFileEnumerator(context_,
+                                      src_url,
+                                      true /* recursive */));
   FilePath src_file_path_each;
   while (!(src_file_path_each = file_enum->Next()).empty()) {
     FilePath dest_file_path_each(dest_url.path());
@@ -178,25 +196,38 @@ PlatformFileError CrossFileUtilHelper::CopyOrMoveDirectory(
         src_file_path_each, &dest_file_path_each);
 
     if (file_enum->IsDirectory()) {
-      PlatformFileError error = dest_util_->CreateDirectory(
+      error = dest_util_->CreateDirectory(
           context_,
           dest_url.WithPath(dest_file_path_each),
           true /* exclusive */, false /* recursive */);
       if (error != base::PLATFORM_FILE_OK)
         return error;
+
+      directories.push_back(std::make_pair(
+          dest_url.WithPath(dest_file_path_each),
+          file_enum->LastModifiedTime()));
     } else {
-      PlatformFileError error = CopyOrMoveFile(
-          src_url.WithPath(src_file_path_each),
-          dest_url.WithPath(dest_file_path_each));
+      error = CopyOrMoveFile(src_url.WithPath(src_file_path_each),
+                             dest_url.WithPath(dest_file_path_each));
       if (error != base::PLATFORM_FILE_OK)
         return error;
     }
   }
 
   if (operation_ == OPERATION_MOVE) {
-    PlatformFileError error =
-        FileUtilHelper::Delete(context_, src_util_,
-                               src_url, true /* recursive */);
+#ifndef OS_WIN
+    // TODO(nhiroki): Support Windows (http://crbug.com/137807).
+    // Restore modified timestamp of destination directories.
+    for (MovedDirectories::const_iterator it(directories.begin());
+         it != directories.end(); ++it) {
+      error = dest_util_->Touch(context_, it->first, it->second, it->second);
+      if (error != base::PLATFORM_FILE_OK)
+        return error;
+    }
+#endif
+
+    error = FileUtilHelper::Delete(
+        context_, src_util_, src_url, true /* recursive */);
     if (error != base::PLATFORM_FILE_OK)
       return error;
   }
