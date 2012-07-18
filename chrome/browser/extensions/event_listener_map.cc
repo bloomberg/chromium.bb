@@ -170,7 +170,7 @@ void EventListenerMap::LoadFilteredLazyListeners(
        it != filtered.end_keys(); ++it) {
     // We skip entries if they are malformed.
     ListValue* filter_list = NULL;
-    if (!filtered.GetList(*it, &filter_list))
+    if (!filtered.GetListWithoutPathExpansion(*it, &filter_list))
       continue;
     for (size_t i = 0; i < filter_list->GetSize(); i++) {
       DictionaryValue* filter = NULL;

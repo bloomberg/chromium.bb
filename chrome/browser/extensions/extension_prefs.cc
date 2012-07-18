@@ -970,7 +970,7 @@ void ExtensionPrefs::AddFilterToEvent(const std::string& event_name,
   ListValue* filter_list = NULL;
   if (!filtered_events->GetList(event_name, &filter_list)) {
     filter_list = new ListValue;
-    filtered_events->Set(event_name, filter_list);
+    filtered_events->SetWithoutPathExpansion(event_name, filter_list);
   }
 
   filter_list->Append(filter->DeepCopy());
@@ -986,7 +986,7 @@ void ExtensionPrefs::RemoveFilterFromEvent(const std::string& event_name,
   if (!extension_dict->GetDictionary(kFilteredEvents, &filtered_events))
     return;
   ListValue* filter_list = NULL;
-  if (!filtered_events->GetList(event_name, &filter_list))
+  if (!filtered_events->GetListWithoutPathExpansion(event_name, &filter_list))
     return;
 
   for (size_t i = 0; i < filter_list->GetSize(); i++) {
