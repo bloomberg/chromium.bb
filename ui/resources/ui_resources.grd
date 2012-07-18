@@ -9,11 +9,11 @@
     <!-- TODO(oshima): Remove gfx_resources.pak once DumpRenderTree.gyp
          is updated. -->
     <output filename="gfx_resources.pak" type="data_package" context="default_100_percent" />
-    <output filename="ui_resources_100_percent.pak" type="data_package" context="default_100_percent" />
-    <output filename="ui_resources_200_percent.pak" type="data_package" context="default_200_percent" />
-    <output filename="ui_resources_touch_100_percent.pak" type="data_package" context="touch_100_percent" />
-    <output filename="ui_resources_touch_200_percent.pak" type="data_package" context="touch_200_percent" />
-    <output filename="ui_resources_100_percent.rc" type="rc_all" context="default_100_percent" />
+    <output filename="ui_resources_standard.pak" type="data_package" context="default_100_percent" />
+    <output filename="ui_resources_2x.pak" type="data_package" context="default_200_percent" />
+    <output filename="ui_resources_touch.pak" type="data_package" context="touch_100_percent" />
+    <output filename="ui_resources_touch_2x.pak" type="data_package" context="touch_200_percent" />
+    <output filename="ui_resources_standard.rc" type="rc_all" context="default_100_percent" />
   </outputs>
   <release seq="1">
     <structures fallback_to_low_resolution="true">

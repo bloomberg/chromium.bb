@@ -125,7 +125,7 @@
         'test/test_suite.h',
         'test/test_utils.cc',
         'test/test_utils.h',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_standard.rc',
       ],
       'conditions': [
         # osmesa GL implementation is used on linux.

@@ -55,7 +55,7 @@ void UITestSuite::Initialize() {
 
 #if !defined(OS_MACOSX) && defined(OS_POSIX)
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      pak_dir.AppendASCII("ui_resources_100_percent.pak"),
+      pak_dir.AppendASCII("ui_resources_standard.pak"),
       ui::SCALE_FACTOR_100P);
 #endif
 }

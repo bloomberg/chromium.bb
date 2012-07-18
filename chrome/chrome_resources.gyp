@@ -236,8 +236,8 @@
             {
               'destination': '<(PRODUCT_DIR)',
               'files': [
-                '<(grit_out_dir)/theme_resources_100_percent.pak',
-                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.pak',
+                '<(grit_out_dir)/theme_resources_standard.pak',
+                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_standard.pak',
               ],
             },
           ],
@@ -247,8 +247,8 @@
             {
               'destination': '<(PRODUCT_DIR)',
               'files': [
-                '<(grit_out_dir)/theme_resources_200_percent.pak',
-                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_200_percent.pak',
+                '<(grit_out_dir)/theme_resources_2x.pak',
+                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_2x.pak',
               ],
             },
           ],
@@ -258,10 +258,10 @@
             {
               'destination': '<(PRODUCT_DIR)',
               'files': [
-                '<(grit_out_dir)/theme_resources_touch_100_percent.pak',
-                '<(grit_out_dir)/theme_resources_touch_200_percent.pak',
-                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_touch_100_percent.pak',
-                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_touch_200_percent.pak',
+                '<(grit_out_dir)/theme_resources_touch_1x.pak',
+                '<(grit_out_dir)/theme_resources_touch_2x.pak',
+                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_touch.pak',
+                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_touch_2x.pak',
               ],
             },
           ],

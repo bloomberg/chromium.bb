@@ -44,36 +44,29 @@ void ResourceBundle::LoadCommonResources() {
 
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
     // 1x touch
-    AddDataPackFromPath(GetResourcesPakFilePath(
-                        "theme_resources_touch_100_percent.pak"),
+    AddDataPackFromPath(GetResourcesPakFilePath("theme_resources_touch_1x.pak"),
                         SCALE_FACTOR_100P);
-    AddDataPackFromPath(GetResourcesPakFilePath(
-                        "ui_resources_touch_100_percent.pak"),
+    AddDataPackFromPath(GetResourcesPakFilePath("ui_resources_touch.pak"),
                         SCALE_FACTOR_100P);
     if (ShouldLoad2xResources()) {
       // 2x touch
       AddDataPackFromPath(
-          GetResourcesPakFilePath("theme_resources_touch_200_percent.pak"),
+          GetResourcesPakFilePath("theme_resources_touch_2x.pak"),
           SCALE_FACTOR_200P);
-      AddDataPackFromPath(GetResourcesPakFilePath(
-                          "ui_resources_touch_200_percent.pak"),
+      AddDataPackFromPath(GetResourcesPakFilePath("ui_resources_touch_2x.pak"),
                           SCALE_FACTOR_200P);
     }
   } else {
     // 1x non touch
-    AddDataPackFromPath(GetResourcesPakFilePath(
-                        "theme_resources_100_percent.pak"),
+    AddDataPackFromPath(GetResourcesPakFilePath("theme_resources_standard.pak"),
                         SCALE_FACTOR_100P);
-    AddDataPackFromPath(GetResourcesPakFilePath(
-                        "ui_resources_100_percent.pak"),
+    AddDataPackFromPath(GetResourcesPakFilePath("ui_resources_standard.pak"),
                         SCALE_FACTOR_100P);
     if (ShouldLoad2xResources()) {
       // 2x non touch
-      AddDataPackFromPath(GetResourcesPakFilePath(
-                          "theme_resources_200_percent.pak"),
+      AddDataPackFromPath(GetResourcesPakFilePath("theme_resources_2x.pak"),
                           SCALE_FACTOR_200P);
-      AddDataPackFromPath(GetResourcesPakFilePath(
-                          "ui_resources_200_percent.pak"),
+      AddDataPackFromPath(GetResourcesPakFilePath("ui_resources_2x.pak"),
                           SCALE_FACTOR_200P);
     }
   }
