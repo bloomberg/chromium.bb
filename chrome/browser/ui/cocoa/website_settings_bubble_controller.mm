@@ -259,14 +259,17 @@ const CGFloat kPermissionsTabSpacing = 8;
   [self setYPositionOfView:firstVisitDescriptionField_ to:yPos];
 
   // Adjust the tab view size and place it below the identity status.
-  CGFloat tabContentHeight = std::max(
-      NSMaxY([firstVisitDescriptionField_ frame]),
-      NSMaxY([firstVisitIcon_ frame ]));
-  tabContentHeight += kVerticalSpacing;
-
   NSRect tabViewFrame = [tabView_ frame];
   tabViewFrame.origin.y =
       NSMaxY([identityStatusField_ frame]) + kVerticalSpacing;
+
+  CGFloat connectionTabHeight = std::max(
+      NSMaxY([firstVisitDescriptionField_ frame]),
+      NSMaxY([firstVisitIcon_ frame ]));
+  connectionTabHeight += kVerticalSpacing;
+
+  CGFloat tabContentHeight = std::max(connectionTabHeight,
+                                      permissionsTabHeight_);
   tabViewFrame.size.height = tabContentHeight +
       NSHeight(tabViewFrame) - NSHeight([tabView_ contentRect]);
   [tabView_ setFrame:tabViewFrame];
@@ -497,6 +500,7 @@ const CGFloat kPermissionsTabSpacing = 8;
                                     atPoint:controlOrigin];
     controlOrigin.y += rowHeight + kPermissionsTabSpacing;
   }
+  permissionsTabHeight_ = controlOrigin.y;
 }
 
 @end

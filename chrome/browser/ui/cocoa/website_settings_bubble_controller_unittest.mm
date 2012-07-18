@@ -2,8 +2,46 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/website_settings_bubble_controller.h"
+
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "testing/gtest_mac.h"
+
+@interface WebsiteSettingsBubbleController (ExposedForTesting)
+- (NSView*)permissionsContentView;
+- (NSImageView*)identityStatusIcon;
+- (NSTextField*)identityStatusDescriptionField;
+- (NSImageView*)connectionStatusIcon;
+- (NSTextField*)connectionStatusDescriptionField;
+- (NSTextField*)firstVisitDescriptionField;
+@end
+
+@implementation WebsiteSettingsBubbleController (ExposedForTesting)
+- (NSView*)permissionsContentView {
+  return permissionsContentView_;
+}
+
+- (NSImageView*)identityStatusIcon {
+  return identityStatusIcon_;
+}
+
+- (NSTextField*)identityStatusDescriptionField {
+  return identityStatusDescriptionField_;
+}
+
+- (NSImageView*)connectionStatusIcon {
+  return connectionStatusIcon_;
+}
+
+- (NSTextField*)connectionStatusDescriptionField {
+  return connectionStatusDescriptionField_;
+}
+
+- (NSTextField*)firstVisitDescriptionField {
+  return firstVisitDescriptionField_;
+}
+@end
 
 namespace {
 
@@ -62,12 +100,11 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
     return nil;
   }
 
- private:
   WebsiteSettingsBubbleController* controller_;  // Weak, owns self.
   NSWindow* window_;  // Weak, owned by controller.
 };
 
-TEST_F(WebsiteSettingsBubbleControllerTest, IdentityInfo) {
+TEST_F(WebsiteSettingsBubbleControllerTest, BasicIdentity) {
   WebsiteSettingsUI::IdentityInfo info;
   info.site_identity = std::string("nhl.com");
   info.identity_status = WebsiteSettings::SITE_IDENTITY_STATUS_UNKNOWN;
@@ -93,7 +130,84 @@ TEST_F(WebsiteSettingsBubbleControllerTest, IdentityInfo) {
   NSString* status = [identity_status_field stringValue];
   info.identity_status = WebsiteSettings::SITE_IDENTITY_STATUS_CERT;
   bridge_->SetIdentityInfo(const_cast<WebsiteSettingsUI::IdentityInfo&>(info));
-  EXPECT_FALSE([status isEqual: [identity_status_field stringValue]]);
+  EXPECT_NSNE(status, [identity_status_field stringValue]);
+}
+
+TEST_F(WebsiteSettingsBubbleControllerTest, SetIdentityInfo) {
+  WebsiteSettingsUI::IdentityInfo info;
+  info.site_identity = std::string("nhl.com");
+  info.identity_status = WebsiteSettings::SITE_IDENTITY_STATUS_UNKNOWN;
+  info.identity_status_description = std::string("Identity1");
+  info.connection_status = WebsiteSettings::SITE_CONNECTION_STATUS_UNKNOWN;
+  info.connection_status_description = std::string("Connection1");
+
+  CreateBubble();
+
+  // Set the identity, and test that the description fields on the Connection
+  // tab are set properly.
+  bridge_->SetIdentityInfo(const_cast<WebsiteSettingsUI::IdentityInfo&>(info));
+  EXPECT_NSEQ(@"Identity1",
+              [[controller_ identityStatusDescriptionField] stringValue]);
+  EXPECT_NSEQ(@"Connection1",
+              [[controller_ connectionStatusDescriptionField] stringValue]);
+
+  // Check the contents of the images, and make sure they change after the
+  // status changes.
+
+  NSImage* identity_icon = [[controller_ identityStatusIcon] image];
+  NSImage* connection_icon = [[controller_ connectionStatusIcon] image];
+  // Icons should be the same when they are both unknown.
+  EXPECT_EQ(identity_icon, connection_icon);
+
+  info.identity_status = WebsiteSettings::SITE_IDENTITY_STATUS_CERT;
+  info.connection_status = WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED;
+  bridge_->SetIdentityInfo(const_cast<WebsiteSettingsUI::IdentityInfo&>(info));
+
+  EXPECT_NE(identity_icon, [[controller_ identityStatusIcon] image]);
+  EXPECT_NE(connection_icon, [[controller_ connectionStatusIcon] image]);
+}
+
+TEST_F(WebsiteSettingsBubbleControllerTest, SetFirstVisit) {
+  CreateBubble();
+  bridge_->SetFirstVisit(ASCIIToUTF16("Yesterday"));
+  EXPECT_NSEQ(@"Yesterday",
+              [[controller_ firstVisitDescriptionField] stringValue]);
+}
+
+TEST_F(WebsiteSettingsBubbleControllerTest, SetPermissionInfo) {
+  CreateBubble();
+
+  ContentSettingsType kTestPermissionTypes[] = {
+    CONTENT_SETTINGS_TYPE_IMAGES,
+    CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+    CONTENT_SETTINGS_TYPE_PLUGINS,
+    CONTENT_SETTINGS_TYPE_POPUPS,
+    CONTENT_SETTINGS_TYPE_GEOLOCATION,
+    CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+  };
+
+  // Create a list of 6 different permissions.
+  PermissionInfoList list;
+  WebsiteSettingsUI::PermissionInfo info;
+  info.setting = CONTENT_SETTING_ALLOW;
+  info.default_setting = CONTENT_SETTING_ALLOW;
+  for (size_t i = 0; i < arraysize(kTestPermissionTypes); ++i) {
+    info.type = kTestPermissionTypes[i];
+    list.push_back(info);
+  }
+  bridge_->SetPermissionInfo(list);
+
+  // There should be two subviews per permission: a label and a select box.
+  NSArray* subviews = [[controller_ permissionsContentView] subviews];
+  EXPECT_EQ(arraysize(kTestPermissionTypes) * 2, [subviews count]);
+
+  // Ensure that there is a distinct label for each permission.
+  NSMutableSet* labels = [NSMutableSet set];
+  for (NSView* view in subviews) {
+    if ([view isKindOfClass:[NSTextField class]])
+      [labels addObject:[static_cast<NSTextField*>(view) stringValue]];
+  }
+  EXPECT_EQ(arraysize(kTestPermissionTypes), [labels count]);
 }
 
 }  // namespace
