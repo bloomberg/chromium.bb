@@ -920,7 +920,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ChangeAutoHideTaskBarThickness) {
 // autorelease themselves on a -performSelector:withObject:afterDelay:
 #define MAYBE_ActivatePanelOrTabbedWindow DISABLED_ActivatePanelOrTabbedWindow
 #else
-#define MAYBE_ActivatePanelOrTabbedWindow ActivatePanelOrTabbedWindow
+#define MAYBE_ActivatePanelOrTabbedWindow DISABLED_ActivatePanelOrTabbedWindow
 #endif
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivatePanelOrTabbedWindow) {
   CreatePanelParams params1("Panel1", gfx::Rect(), SHOW_AS_ACTIVE);
