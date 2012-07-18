@@ -56,6 +56,9 @@
     'browser_chromeos': {
       'filepath': 'chrome/browser/chromeos/',
     },
+    'browser_components': {
+      'filepath': 'chrome/browser/autofill/',
+    },
     'browser_compositor': {
       'filepath': 'ui/compositor/'
     },
@@ -410,6 +413,7 @@
     'browser_chromeos': ['davemoore+watch@chromium.org',
                          'stevenjb+watch@chromium.org',
                          'nkostylev+watch@chromium.org'],
+    'browser_components': ['browser-components-watch@chromium.org'],
     'browser_compositor': ['backer@chromium.org', 'vollick@chromium.org',
                            'piman+watch@chromium.org'],
     'browser_main': ['brettw-cc@chromium.org'],
