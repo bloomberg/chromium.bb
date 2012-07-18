@@ -12,10 +12,13 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 
 namespace drag_utils {
+
+namespace {
 
 // Maximum width of the link drag image in pixels.
 static const int kLinkDragImageVPadding = 3;
@@ -24,42 +27,74 @@ static const int kLinkDragImageVPadding = 3;
 static const int kFileDragImageMaxWidth = 200;
 static const SkColor kFileDragImageTextColor = SK_ColorBLACK;
 
+class FileDragImageSource : public gfx::CanvasImageSource {
+ public:
+  FileDragImageSource(const FilePath& file_name, const gfx::ImageSkia& icon)
+      : CanvasImageSource(CalculateSize(icon), false),
+        file_name_(file_name),
+        icon_(icon) {
+  }
+
+  virtual ~FileDragImageSource() {
+  }
+
+  // Overridden from gfx::CanvasImageSource.
+  void Draw(gfx::Canvas* canvas) OVERRIDE {
+    // Set up our text portion
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    gfx::Font font = rb.GetFont(ResourceBundle::BaseFont);
+
+    // Paint the icon.
+    canvas->DrawImageInt(icon_, (size().width() - icon_.width()) / 2, 0);
+
+    string16 name = file_name_.BaseName().LossyDisplayName();
+    const int flags = gfx::Canvas::TEXT_ALIGN_CENTER;
+#if defined(OS_WIN)
+    // Paint the file name. We inset it one pixel to allow room for the halo.
+    canvas->DrawStringWithHalo(name, font, kFileDragImageTextColor,
+                               SK_ColorWHITE, 1,
+                               icon_.height() + kLinkDragImageVPadding + 1,
+                               size().width() - 2, font.GetHeight(), flags);
+#else
+    // NO_SUBPIXEL_RENDERING is required when drawing to a non-opaque canvas.
+    canvas->DrawStringInt(name, font, kFileDragImageTextColor,
+                          0, icon_.height() + kLinkDragImageVPadding,
+                          size().width(), font.GetHeight(),
+                          flags | gfx::Canvas::NO_SUBPIXEL_RENDERING);
+#endif
+  }
+
+ private:
+  gfx::Size CalculateSize(const gfx::ImageSkia& icon) const {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    gfx::Font font = rb.GetFont(ResourceBundle::BaseFont);
+    const int width = kFileDragImageMaxWidth;
+    // Add +2 here to allow room for the halo.
+    const int height = font.GetHeight() + icon.height() +
+                       kLinkDragImageVPadding + 2;
+    return gfx::Size(width, height);
+  }
+
+  const FilePath file_name_;
+  const gfx::ImageSkia icon_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileDragImageSource);
+};
+
+}  // namespace
+
 void CreateDragImageForFile(const FilePath& file_name,
                             const gfx::ImageSkia* icon,
                             ui::OSExchangeData* data_object) {
   DCHECK(icon);
   DCHECK(data_object);
+  gfx::CanvasImageSource* source = new FileDragImageSource(file_name, *icon);
+  gfx::Size size = source->size();
+  // ImageSkia takes ownership of |source|.
+  gfx::ImageSkia image = gfx::ImageSkia(source, size);
 
-  // Set up our text portion
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::Font font = rb.GetFont(ResourceBundle::BaseFont);
-
-  const int width = kFileDragImageMaxWidth;
-  // Add +2 here to allow room for the halo.
-  const int height = font.GetHeight() + icon->height() +
-                     kLinkDragImageVPadding + 2;
-  gfx::Canvas canvas(gfx::Size(width, height), false /* translucent */);
-
-  // Paint the icon.
-  canvas.DrawImageInt(*icon, (width - icon->width()) / 2, 0);
-
-  string16 name = file_name.BaseName().LossyDisplayName();
-  const int flags = gfx::Canvas::TEXT_ALIGN_CENTER;
-#if defined(OS_WIN)
-  // Paint the file name. We inset it one pixel to allow room for the halo.
-  canvas.DrawStringWithHalo(name, font, kFileDragImageTextColor, SK_ColorWHITE,
-                            1, icon->height() + kLinkDragImageVPadding + 1,
-                            width - 2, font.GetHeight(), flags);
-#else
-  // NO_SUBPIXEL_RENDERING is required when drawing to a non-opaque canvas.
-  canvas.DrawStringInt(name, font, kFileDragImageTextColor,
-                       0, icon->height() + kLinkDragImageVPadding,
-                       width, font.GetHeight(),
-                       flags | gfx::Canvas::NO_SUBPIXEL_RENDERING);
-#endif
-
-  SetDragImageOnDataObject(canvas, gfx::Size(width, height),
-                           gfx::Point(width / 2, kLinkDragImageVPadding),
+  SetDragImageOnDataObject(image, size,
+                           gfx::Point(size.width() / 2, kLinkDragImageVPadding),
                            data_object);
 }
 
@@ -67,8 +102,8 @@ void SetDragImageOnDataObject(const gfx::Canvas& canvas,
                               const gfx::Size& size,
                               const gfx::Point& cursor_offset,
                               ui::OSExchangeData* data_object) {
-  SetDragImageOnDataObject(canvas.ExtractImageSkiaRep(), size, cursor_offset,
-                           data_object);
+  gfx::ImageSkia image = gfx::ImageSkia(canvas.ExtractImageSkiaRep());
+  SetDragImageOnDataObject(image, size, cursor_offset, data_object);
 }
 
 }  // namespace drag_utils
