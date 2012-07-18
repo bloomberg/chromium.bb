@@ -20,6 +20,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/display/multi_display_manager.h"
+#include "ash/display/screen_position_controller.h"
 #include "ash/display/secondary_display_view.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
@@ -249,6 +250,7 @@ Shell::~Shell() {
 
   // This also deletes all RootWindows.
   display_controller_.reset();
+  screen_position_controller_.reset();
 
   // Launcher widget has a InputMethodBridge that references to
   // input_method_filter_'s input_method_. So explicitly release launcher_
@@ -357,6 +359,8 @@ std::vector<aura::Window*> Shell::GetAllContainers(int container_id) {
 }
 
 void Shell::Init() {
+  if (internal::DisplayController::IsVirtualScreenCoordinatesEnabled())
+    VLOG(1) << "Using virtual screen coordinates";
   // Install the custom factory first so that views::FocusManagers for Tray,
   // Launcher, and WallPaper could be created by the factory.
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);
@@ -372,6 +376,7 @@ void Shell::Init() {
   activation_controller_.reset(
       new internal::ActivationController(focus_manager_.get()));
 
+  screen_position_controller_.reset(new internal::ScreenPositionController);
   display_controller_.reset(new internal::DisplayController);
   display_controller_->InitPrimaryDisplay();
   aura::RootWindow* root_window = display_controller_->GetPrimaryRootWindow();
@@ -678,6 +683,8 @@ void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {
     root->layout_manager()->OnWindowResized();
     root->ShowRootWindow();
     aura::client::SetCaptureClient(root, capture_controller_.get());
+    aura::client::SetScreenPositionClient(
+        root, screen_position_controller_.get());
   }
 }
 
@@ -695,6 +702,8 @@ void Shell::InitRootWindowController(
   aura::client::SetVisibilityClient(root_window, visibility_controller_.get());
   aura::client::SetDragDropClient(root_window, drag_drop_controller_.get());
   aura::client::SetCaptureClient(root_window, capture_controller_.get());
+  aura::client::SetScreenPositionClient(root_window,
+                                        screen_position_controller_.get());
 
   if (nested_dispatcher_controller_.get()) {
     aura::client::SetDispatcherClient(root_window,

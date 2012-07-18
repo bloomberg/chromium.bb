@@ -59,6 +59,11 @@ bool CanActivateWindow(aura::Window* window) {
   return client && client->CanActivateWindow(window);
 }
 
+internal::RootWindowController* GetRootWindowController(
+    aura::RootWindow* root_window) {
+  return root_window->GetProperty(internal::kRootWindowControllerKey);
+}
+
 bool IsWindowNormal(aura::Window* window) {
   return window->GetProperty(aura::client::kShowStateKey) ==
           ui::SHOW_STATE_NORMAL ||
@@ -97,11 +102,6 @@ void CenterWindow(aura::Window* window) {
   const gfx::Display display = gfx::Screen::GetDisplayNearestWindow(window);
   gfx::Rect center = display.work_area().Center(window->bounds().size());
   window->SetBounds(center);
-}
-
-internal::RootWindowController* GetRootWindowController(
-    aura::RootWindow* root_window) {
-  return root_window->GetProperty(internal::kRootWindowControllerKey);
 }
 
 }  // namespace wm

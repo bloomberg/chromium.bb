@@ -350,17 +350,17 @@ TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
   widget->Maximize();
   EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
   EXPECT_EQ(gfx::Screen::GetDisplayNearestWindow(window).work_area().bottom(),
-            widget->GetWorkAreaBoundsInScreen().bottom());
+            widget->GetWorkAreaScreenBounds().bottom());
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ(gfx::Screen::GetDisplayNearestWindow(window).work_area().bottom(),
-            widget->GetWorkAreaBoundsInScreen().bottom());
+            widget->GetWorkAreaScreenBounds().bottom());
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
   EXPECT_EQ(gfx::Screen::GetDisplayNearestWindow(window).work_area().bottom(),
-            widget->GetWorkAreaBoundsInScreen().bottom());
+            widget->GetWorkAreaScreenBounds().bottom());
 }
 
 // Verifies the shelf is visible when status/launcher is focused.

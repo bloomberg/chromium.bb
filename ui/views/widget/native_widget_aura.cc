@@ -70,22 +70,8 @@ aura::client::WindowType GetAuraWindowTypeForWidgetType(
   }
 }
 
-const gfx::Rect* GetRestoreBounds(aura::Window* window) {
-  return window->GetProperty(aura::client::kRestoreBoundsKey);
-}
-
 void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
   window->SetProperty(aura::client::kRestoreBoundsKey, new gfx::Rect(bounds));
-}
-
-void AdjustScreenBounds(aura::Window* window, gfx::Rect* bounds) {
-  aura::client::ScreenPositionClient* screen_position_client =
-      aura::client::GetScreenPositionClient(window);
-  if (screen_position_client) {
-    gfx::Point origin = bounds->origin();
-    screen_position_client->ConvertToScreenPoint(&origin);
-    bounds->set_origin(origin);
-  }
 }
 
 }  // namespace
@@ -362,19 +348,29 @@ InputMethod* NativeWidgetAura::CreateInputMethod() {
 }
 
 void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
-  gfx::Rect parent_bounds(window_->parent()->GetBoundsInRootWindow());
+  gfx::Rect parent_bounds(window_->parent()->GetRootWindowBounds());
   // When centering window, we take the intersection of the host and
   // the parent. We assume the root window represents the visible
   // rect of a single screen.
   gfx::Rect work_area =
       gfx::Screen::GetDisplayNearestWindow(window_).work_area();
+
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(window_->GetRootWindow());
+  if (screen_position_client) {
+    gfx::Point origin = work_area.origin();
+    screen_position_client->ConvertPointFromScreen(window_->parent(),
+                                                   &origin);
+    work_area.set_origin(origin);
+  }
+
   parent_bounds = parent_bounds.Intersect(work_area);
 
   // If |window_|'s transient parent's bounds are big enough to fit it, then we
   // center it with respect to the transient parent.
   if (window_->transient_parent()) {
     gfx::Rect transient_parent_rect = window_->transient_parent()->
-        GetBoundsInRootWindow().Intersect(work_area);
+        GetRootWindowBounds().Intersect(work_area);
     if (transient_parent_rect.height() >= size.height() &&
         transient_parent_rect.width() >= size.width())
       parent_bounds = transient_parent_rect;
@@ -433,17 +429,13 @@ void NativeWidgetAura::InitModalType(ui::ModalType modal_type) {
 }
 
 gfx::Rect NativeWidgetAura::GetWindowScreenBounds() const {
-  gfx::Rect bounds = window_->GetBoundsInRootWindow();
-  AdjustScreenBounds(window_, &bounds);
-  return bounds;
+  return window_->GetScreenBounds();
 }
 
 gfx::Rect NativeWidgetAura::GetClientAreaScreenBounds() const {
   // View-to-screen coordinate system transformations depend on this returning
   // the full window bounds, for example View::ConvertPointToScreen().
-  gfx::Rect bounds = window_->GetBoundsInRootWindow();
-  AdjustScreenBounds(window_, &bounds);
-  return bounds;
+  return window_->GetScreenBounds();
 }
 
 gfx::Rect NativeWidgetAura::GetRestoredBounds() const {
@@ -457,10 +449,16 @@ gfx::Rect NativeWidgetAura::GetRestoredBounds() const {
   return restore_bounds ? *restore_bounds : window_->bounds();
 }
 
-void NativeWidgetAura::SetBounds(const gfx::Rect& in_bounds) {
-  gfx::Rect bounds = in_bounds;
-  if (desktop_helper_.get())
-    bounds = desktop_helper_->ModifyAndSetBounds(bounds);
+void NativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
+  aura::RootWindow* root = window_->GetRootWindow();
+  if (root) {
+    aura::client::ScreenPositionClient* screen_position_client =
+        aura::client::GetScreenPositionClient(root);
+    if (screen_position_client) {
+      screen_position_client->SetBounds(window_, bounds);
+      return;
+    }
+  }
   window_->SetBounds(bounds);
 }
 
@@ -652,7 +650,7 @@ void NativeWidgetAura::FocusNativeView(gfx::NativeView native_view) {
   window_->GetFocusManager()->SetFocusedWindow(native_view, NULL);
 }
 
-gfx::Rect NativeWidgetAura::GetWorkAreaBoundsInScreen() const {
+gfx::Rect NativeWidgetAura::GetWorkAreaScreenBounds() const {
   return gfx::Screen::GetDisplayNearestWindow(GetNativeView()).work_area();
 }
 

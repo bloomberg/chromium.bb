@@ -208,10 +208,10 @@ void MultiDisplayManager::Init() {
   base::SplitString(size_str, ',', &parts);
   for (vector<string>::const_iterator iter = parts.begin();
        iter != parts.end(); ++iter) {
-    displays_.push_back(CreateDisplayFromSpec(*iter));
+    AddDisplayFromSpec(*iter);
   }
   if (displays_.empty())
-    displays_.push_back(CreateDisplayFromSpec("" /* default */));
+    AddDisplayFromSpec(std::string() /* default */);
   // Force the 1st display to be the primary display (id == 0).
   displays_[0].set_id(0);
 }
@@ -271,6 +271,19 @@ gfx::Display& MultiDisplayManager::FindDisplayForRootWindow(
   }
   DLOG(FATAL) << "Could not find display by id:" << id;
   return GetInvalidDisplay();
+}
+
+void MultiDisplayManager::AddDisplayFromSpec(const std::string& spec) {
+  gfx::Display display = CreateDisplayFromSpec(spec);
+
+  if (internal::DisplayController::IsVirtualScreenCoordinatesEnabled()) {
+    const gfx::Insets insets = display.GetWorkAreaInsets();
+    const gfx::Rect& native_bounds = display.bounds_in_pixel();
+    display.set_bounds(
+        gfx::Rect(native_bounds.origin(), display.bounds().size()));
+    display.UpdateWorkAreaFromInsets(insets);
+  }
+  displays_.push_back(display);
 }
 
 }  // namespace internal

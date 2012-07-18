@@ -401,7 +401,8 @@ class SystemPinchHandler {
       case ui::ET_GESTURE_PINCH_UPDATE: {
         // The PINCH_UPDATE events contain incremental scaling updates.
         pinch_factor_ *= event.details().scale();
-        gfx::Rect bounds = GetPhantomWindowBounds(target_, event.location());
+        gfx::Rect bounds =
+            GetPhantomWindowScreenBounds(target_, event.location());
         if (phantom_state_ != PHANTOM_WINDOW_NORMAL || phantom_.IsShowing())
           phantom_.Show(bounds);
         break;
@@ -432,16 +433,18 @@ class SystemPinchHandler {
   }
 
  private:
-  gfx::Rect GetPhantomWindowBounds(aura::Window* window,
-                                   const gfx::Point& point) {
+  gfx::Rect GetPhantomWindowScreenBounds(aura::Window* window,
+                                         const gfx::Point& point) {
     if (pinch_factor_ > kPinchThresholdForMaximize) {
       phantom_state_ = PHANTOM_WINDOW_MAXIMIZED;
-      return ScreenAsh::GetMaximizedWindowBounds(target_);
+      return ScreenAsh::ConvertRectToScreen(
+          target_->parent(),
+          ScreenAsh::GetMaximizedWindowParentBounds(target_));
     }
 
     if (pinch_factor_ < kPinchThresholdForMinimize) {
       if (wm::IsWindowMaximized(window) || wm::IsWindowFullscreen(window)) {
-        const gfx::Rect* restore = GetRestoreBounds(window);
+        const gfx::Rect* restore = GetRestoreBoundsInScreen(window);
         if (restore) {
           phantom_state_ = PHANTOM_WINDOW_MINIMIZED;
           return *restore;

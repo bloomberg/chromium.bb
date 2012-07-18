@@ -131,12 +131,14 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // whether Show() without a Hide() has been invoked.
   bool TargetVisibility() const { return visible_; }
 
-  // Returns the window's bounds in screen coordinates. In ash, this is
-  // effectively screen bounds.
-  //
-  // TODO(oshima): Fix this to return screen's coordinate for multi-display
-  // support.
-  gfx::Rect GetBoundsInRootWindow() const;
+  // Returns the window's bounds in root window's coordinates.
+  gfx::Rect GetRootWindowBounds() const;
+
+  // Returns the window's bounds in screen coordinates.
+  // How the root window's coordinates is mapped to screen's coordinates
+  // is platform dependent and defined in the implementation of the
+  // |aura::client::ScreenPositionClient| interface.
+  gfx::Rect GetScreenBounds() const;
 
   virtual void SetTransform(const ui::Transform& transform);
 
@@ -148,6 +150,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Changes the bounds of the window. If present, the window's parent's
   // LayoutManager may adjust the bounds.
   void SetBounds(const gfx::Rect& new_bounds);
+
+  // Changes the bounds of the window in the screen coordintates.
+  // If present, the window's parent's LayoutManager may adjust the bounds.
+  void SetScreenBounds(const gfx::Rect& new_bounds_in_screen_coords);
 
   // Returns the target bounds of the window. If the window's layer is
   // not animating, it simply returns the current bounds.

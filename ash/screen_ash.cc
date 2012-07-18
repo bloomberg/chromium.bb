@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "base/logging.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/display_manager.h"
 #include "ui/aura/root_window.h"
@@ -28,19 +29,51 @@ ScreenAsh::~ScreenAsh() {
 }
 
 // static
-gfx::Rect ScreenAsh::GetMaximizedWindowBounds(aura::Window* window) {
+gfx::Rect ScreenAsh::GetMaximizedWindowParentBounds(aura::Window* window) {
   if (window->GetRootWindow() == Shell::GetPrimaryRootWindow())
     return Shell::GetInstance()->shelf()->GetMaximizedWindowBounds(window);
   else
-    return gfx::Screen::GetDisplayNearestWindow(window).bounds();
+    return GetDisplayParentBounds(window);
 }
 
 // static
-gfx::Rect ScreenAsh::GetUnmaximizedWorkAreaBounds(aura::Window* window) {
+gfx::Rect ScreenAsh::GetUnmaximizedWorkAreaParentBounds(aura::Window* window) {
   if (window->GetRootWindow() == Shell::GetPrimaryRootWindow())
     return Shell::GetInstance()->shelf()->GetUnmaximizedWorkAreaBounds(window);
   else
-    return gfx::Screen::GetDisplayNearestWindow(window).work_area();
+    return GetDisplayWorkAreaParentBounds(window);
+}
+
+// static
+gfx::Rect ScreenAsh::GetDisplayParentBounds(aura::Window* window) {
+  return ConvertRectFromScreen(
+      window->parent(),
+      gfx::Screen::GetDisplayNearestWindow(window).bounds());
+}
+
+// static
+gfx::Rect ScreenAsh::GetDisplayWorkAreaParentBounds(aura::Window* window) {
+  return ConvertRectFromScreen(
+      window->parent(),
+      gfx::Screen::GetDisplayNearestWindow(window).work_area());
+}
+
+// static
+gfx::Rect ScreenAsh::ConvertRectToScreen(aura::Window* window,
+                                         const gfx::Rect& rect) {
+  gfx::Point point = rect.origin();
+  aura::client::GetScreenPositionClient(window->GetRootWindow())->
+      ConvertPointToScreen(window, &point);
+  return gfx::Rect(point, rect.size());
+}
+
+// static
+gfx::Rect ScreenAsh::ConvertRectFromScreen(aura::Window* window,
+                                           const gfx::Rect& rect) {
+  gfx::Point point = rect.origin();
+  aura::client::GetScreenPositionClient(window->GetRootWindow())->
+      ConvertPointFromScreen(window, &point);
+  return gfx::Rect(point, rect.size());
 }
 
 gfx::Point ScreenAsh::GetCursorScreenPoint() {
@@ -50,7 +83,6 @@ gfx::Point ScreenAsh::GetCursorScreenPoint() {
 
 gfx::NativeWindow ScreenAsh::GetWindowAtCursorScreenPoint() {
   const gfx::Point point = gfx::Screen::GetCursorScreenPoint();
-  // TODO(oshima): convert point to relateive to the root window.
   return Shell::GetRootWindowAt(point)->GetTopWindowContainingPoint(point);
 }
 

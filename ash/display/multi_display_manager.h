@@ -5,6 +5,7 @@
 #ifndef ASH_DISPLAY_MULTI_DISPLAY_MANAGER_H_
 #define ASH_DISPLAY_MULTI_DISPLAY_MANAGER_H_
 
+#include <string>
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -72,6 +73,10 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
   void CycleDisplayImpl();
   void ScaleDisplayImpl();
   gfx::Display& FindDisplayForRootWindow(const aura::RootWindow* root);
+
+  // Refer to |aura::DisplayManager::CreateDisplayFromSpec| API for
+  // the format of |spec|.
+  void AddDisplayFromSpec(const std::string& spec);
 
   Displays displays_;
 

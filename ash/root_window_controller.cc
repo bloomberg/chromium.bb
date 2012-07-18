@@ -4,6 +4,9 @@
 
 #include "ash/root_window_controller.h"
 
+#include <vector>
+
+#include "ash/display/display_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
@@ -15,6 +18,7 @@
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/toplevel_window_event_filter.h"
 #include "ash/wm/visibility_controller.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/workspace/workspace_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "ui/aura/client/activation_client.h"
@@ -26,6 +30,8 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/screen.h"
 
 namespace ash {
 namespace {
@@ -55,6 +61,10 @@ void MoveAllWindows(aura::RootWindow* src,
     internal::kShellWindowId_SystemModalContainer,
     internal::kShellWindowId_LockSystemModalContainer,
   };
+  const gfx::Point src_origin =
+      gfx::Screen::GetDisplayNearestWindow(src).bounds().origin();
+  const gfx::Point dst_origin =
+      gfx::Screen::GetDisplayNearestWindow(src).bounds().origin();
 
   for (size_t i = 0; i < arraysize(kContainerIdsToMove); i++) {
     int id = kContainerIdsToMove[i];
@@ -70,9 +80,21 @@ void MoveAllWindows(aura::RootWindow* src,
           window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_NONE) {
         continue;
       }
+      // Update the restore bounds to make it relative to the display.
+      gfx::Rect restore_bounds;
+      if (internal::DisplayController::IsVirtualScreenCoordinatesEnabled())
+        restore_bounds = GetRestoreBoundsInParent(window);
       dst_container->AddChild(window);
+      if (!restore_bounds.IsEmpty())
+        SetRestoreBoundsInParent(window, restore_bounds);
     }
   }
+}
+
+// Mark the container window so that a widget added to this container will
+// use the virtual screeen coordinates instead of parent.
+void SetUsesScreenCoordinates(aura::Window* container) {
+  container->SetProperty(internal::kUsesScreenCoordinatesKey, true);
 }
 
 // Creates each of the special window containers that holds windows of various
@@ -112,6 +134,7 @@ void CreateContainersInRootWindow(aura::RootWindow* root_window) {
   default_container->SetEventFilter(
       new ToplevelWindowEventFilter(default_container));
   SetChildWindowVisibilityChangesAnimated(default_container);
+  SetUsesScreenCoordinates(default_container);
 
   aura::Window* always_on_top_container = CreateContainer(
       internal::kShellWindowId_AlwaysOnTopContainer,
@@ -120,14 +143,19 @@ void CreateContainersInRootWindow(aura::RootWindow* root_window) {
   always_on_top_container->SetEventFilter(
       new ToplevelWindowEventFilter(always_on_top_container));
   SetChildWindowVisibilityChangesAnimated(always_on_top_container);
+  SetUsesScreenCoordinates(always_on_top_container);
 
-  CreateContainer(internal::kShellWindowId_PanelContainer,
-                  "PanelContainer",
-                  non_lock_screen_containers);
+  aura::Window* panel_container = CreateContainer(
+      internal::kShellWindowId_PanelContainer,
+      "PanelContainer",
+      non_lock_screen_containers);
+  SetUsesScreenCoordinates(panel_container);
 
-  CreateContainer(internal::kShellWindowId_LauncherContainer,
-                  "LauncherContainer",
-                  non_lock_screen_containers);
+  aura::Window* launcher_container =
+      CreateContainer(internal::kShellWindowId_LauncherContainer,
+                      "LauncherContainer",
+                      non_lock_screen_containers);
+  SetUsesScreenCoordinates(launcher_container);
 
   CreateContainer(internal::kShellWindowId_AppListContainer,
                   "AppListContainer",
@@ -142,10 +170,13 @@ void CreateContainersInRootWindow(aura::RootWindow* root_window) {
   modal_container->SetLayoutManager(
       new internal::SystemModalContainerLayoutManager(modal_container));
   SetChildWindowVisibilityChangesAnimated(modal_container);
+  SetUsesScreenCoordinates(modal_container);
 
-  CreateContainer(internal::kShellWindowId_InputMethodContainer,
-                  "InputMethodContainer",
-                  non_lock_screen_containers);
+  aura::Window* input_method_container = CreateContainer(
+      internal::kShellWindowId_InputMethodContainer,
+      "InputMethodContainer",
+      non_lock_screen_containers);
+  SetUsesScreenCoordinates(input_method_container);
 
   // TODO(beng): Figure out if we can make this use
   // SystemModalContainerEventFilter instead of stops_event_propagation.
@@ -155,6 +186,7 @@ void CreateContainersInRootWindow(aura::RootWindow* root_window) {
       lock_screen_containers);
   lock_container->SetLayoutManager(
       new internal::BaseLayoutManager(root_window));
+  SetUsesScreenCoordinates(lock_container);
   // TODO(beng): stopsevents
 
   aura::Window* lock_modal_container = CreateContainer(
@@ -166,6 +198,7 @@ void CreateContainersInRootWindow(aura::RootWindow* root_window) {
   lock_modal_container->SetLayoutManager(
       new internal::SystemModalContainerLayoutManager(lock_modal_container));
   SetChildWindowVisibilityChangesAnimated(lock_modal_container);
+  SetUsesScreenCoordinates(lock_modal_container);
 
   CreateContainer(internal::kShellWindowId_StatusContainer,
                   "StatusContainer",
@@ -176,22 +209,27 @@ void CreateContainersInRootWindow(aura::RootWindow* root_window) {
       "SettingBubbleContainer",
       lock_screen_related_containers);
   SetChildWindowVisibilityChangesAnimated(settings_bubble_container);
+  SetUsesScreenCoordinates(settings_bubble_container);
 
   aura::Window* menu_container = CreateContainer(
       internal::kShellWindowId_MenuContainer,
       "MenuContainer",
       lock_screen_related_containers);
   SetChildWindowVisibilityChangesAnimated(menu_container);
+  SetUsesScreenCoordinates(menu_container);
 
   aura::Window* drag_drop_container = CreateContainer(
       internal::kShellWindowId_DragImageAndTooltipContainer,
       "DragImageAndTooltipContainer",
       lock_screen_related_containers);
   SetChildWindowVisibilityChangesAnimated(drag_drop_container);
+  SetUsesScreenCoordinates(drag_drop_container);
 
-  CreateContainer(internal::kShellWindowId_OverlayContainer,
-                  "OverlayContainer",
-                  lock_screen_related_containers);
+  aura::Window* overlay_container = CreateContainer(
+      internal::kShellWindowId_OverlayContainer,
+      "OverlayContainer",
+      lock_screen_related_containers);
+  SetUsesScreenCoordinates(overlay_container);
 }
 
 }  // namespace

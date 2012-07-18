@@ -5,6 +5,7 @@
 #include "ash/wm/property_util.h"
 
 #include "ash/ash_export.h"
+#include "ash/screen_ash.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -18,17 +19,30 @@ namespace {
 bool g_default_windows_persist_across_all_workspaces = false;
 }  // namespace
 
-void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
+void SetRestoreBoundsInScreen(aura::Window* window, const gfx::Rect& bounds) {
   window->SetProperty(aura::client::kRestoreBoundsKey, new gfx::Rect(bounds));
 }
 
-void SetRestoreBoundsIfNotSet(aura::Window* window) {
-  if (!GetRestoreBounds(window))
-    SetRestoreBounds(window, window->bounds());
+void SetRestoreBoundsInParent(aura::Window* window, const gfx::Rect& bounds) {
+  window->SetProperty(
+      aura::client::kRestoreBoundsKey,
+      new gfx::Rect(ScreenAsh::ConvertRectToScreen(window->parent(), bounds)));
 }
 
-const gfx::Rect* GetRestoreBounds(aura::Window* window) {
+void SetRestoreBoundsIfNotSet(aura::Window* window) {
+  if (!GetRestoreBoundsInScreen(window))
+    SetRestoreBoundsInParent(window, window->bounds());
+}
+
+const gfx::Rect* GetRestoreBoundsInScreen(aura::Window* window) {
   return window->GetProperty(aura::client::kRestoreBoundsKey);
+}
+
+gfx::Rect GetRestoreBoundsInParent(aura::Window* window) {
+  const gfx::Rect* rect = window->GetProperty(aura::client::kRestoreBoundsKey);
+  if (!rect)
+    return gfx::Rect();
+  return ScreenAsh::ConvertRectFromScreen(window->parent(), *rect);
 }
 
 void ClearRestoreBounds(aura::Window* window) {

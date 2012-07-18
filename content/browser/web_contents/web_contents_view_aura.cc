@@ -304,7 +304,7 @@ gfx::NativeWindow WebContentsViewAura::GetTopLevelNativeWindow() const {
 }
 
 void WebContentsViewAura::GetContainerBounds(gfx::Rect *out) const {
-  *out = window_->GetBoundsInRootWindow();
+  *out = window_->GetScreenBounds();
 }
 
 void WebContentsViewAura::SetPageTitle(const string16& title) {
@@ -398,7 +398,7 @@ void WebContentsViewAura::CloseTabAfterEventTracking() {
 }
 
 gfx::Rect WebContentsViewAura::GetViewBounds() const {
-  return window_->GetBoundsInRootWindow();
+  return window_->GetRootWindowBounds();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

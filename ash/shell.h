@@ -89,6 +89,7 @@ class PartialScreenshotEventFilter;
 class ResizeShadowController;
 class RootWindowController;
 class RootWindowLayoutManager;
+class ScreenPositionController;
 class ShadowController;
 class ShelfLayoutManager;
 class ShellContextMenu;
@@ -434,6 +435,7 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   scoped_ptr<aura::FocusManager> focus_manager_;
   scoped_ptr<aura::client::UserActionClient> user_action_client_;
   scoped_ptr<internal::MouseCursorEventFilter> mouse_cursor_filter_;
+  scoped_ptr<internal::ScreenPositionController> screen_position_controller_;
 
   // An event filter that rewrites or drops an event.
   scoped_ptr<internal::EventRewriterEventFilter> event_rewriter_filter_;

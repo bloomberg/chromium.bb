@@ -564,7 +564,7 @@ bool AcceleratorController::PerformAction(int action,
           shell->GetGridSize());
       if (wm::IsWindowFullscreen(window) ||
           wm::IsWindowMaximized(window)) {
-        SetRestoreBounds(window, sizer.GetSnapBounds(window->bounds()));
+        SetRestoreBoundsInParent(window, sizer.GetSnapBounds(window->bounds()));
         wm::RestoreWindow(window);
       } else {
         window->SetBounds(sizer.GetSnapBounds(window->bounds()));

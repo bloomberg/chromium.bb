@@ -14,6 +14,7 @@
 #include "grit/ui_resources.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -304,7 +305,9 @@ void FrameMaximizeButton::UpdateSnap(const gfx::Point& location) {
   if (type == snap_type_) {
     if (snap_sizer_.get()) {
       snap_sizer_->Update(LocationForSnapSizer(location));
-      phantom_window_->Show(snap_sizer_->target_bounds());
+      phantom_window_->Show(ScreenAsh::ConvertRectToScreen(
+          frame_->GetWidget()->GetNativeView()->parent(),
+          snap_sizer_->target_bounds()));
     }
     return;
   }
@@ -330,7 +333,7 @@ void FrameMaximizeButton::UpdateSnap(const gfx::Point& location) {
     phantom_window_.reset(new internal::PhantomWindowController(
                               frame_->GetWidget()->GetNativeWindow()));
   }
-  phantom_window_->Show(BoundsForType(snap_type_));
+  phantom_window_->Show(ScreenBoundsForType(snap_type_));
 }
 
 FrameMaximizeButton::SnapType FrameMaximizeButton::SnapTypeForLocation(
@@ -348,14 +351,18 @@ FrameMaximizeButton::SnapType FrameMaximizeButton::SnapTypeForLocation(
   return !frame_->GetWidget()->IsMaximized() ? SNAP_MAXIMIZE : SNAP_RESTORE;
 }
 
-gfx::Rect FrameMaximizeButton::BoundsForType(SnapType type) const {
+gfx::Rect FrameMaximizeButton::ScreenBoundsForType(SnapType type) const {
   aura::Window* window = frame_->GetWidget()->GetNativeWindow();
   switch (type) {
     case SNAP_LEFT:
     case SNAP_RIGHT:
-      return snap_sizer_->target_bounds();
+      return ScreenAsh::ConvertRectToScreen(
+          frame_->GetWidget()->GetNativeView()->parent(),
+          snap_sizer_->target_bounds());
     case SNAP_MAXIMIZE:
-      return ScreenAsh::GetMaximizedWindowBounds(window);
+      return ScreenAsh::ConvertRectToScreen(
+          window->parent(),
+          ScreenAsh::GetMaximizedWindowParentBounds(window));
     case SNAP_MINIMIZE: {
       Launcher* launcher = Shell::GetInstance()->launcher();
       gfx::Rect item_rect(launcher->GetScreenBoundsOfItemIconForWindow(window));
@@ -368,7 +375,7 @@ gfx::Rect FrameMaximizeButton::BoundsForType(SnapType type) const {
       return launcher->widget()->GetWindowScreenBounds();
     }
     case SNAP_RESTORE: {
-      const gfx::Rect* restore = GetRestoreBounds(window);
+      const gfx::Rect* restore = GetRestoreBoundsInScreen(window);
       return restore ? *restore : frame_->GetWidget()->GetWindowScreenBounds();
     }
     case SNAP_NONE:
@@ -389,11 +396,11 @@ void FrameMaximizeButton::Snap() {
     case SNAP_LEFT:
     case SNAP_RIGHT:
       if (frame_->GetWidget()->IsMaximized()) {
-        ash::SetRestoreBounds(frame_->GetWidget()->GetNativeWindow(),
-                              BoundsForType(snap_type_));
+        ash::SetRestoreBoundsInScreen(frame_->GetWidget()->GetNativeWindow(),
+                                      ScreenBoundsForType(snap_type_));
         frame_->GetWidget()->Restore();
       } else {
-        frame_->GetWidget()->SetBounds(BoundsForType(snap_type_));
+        frame_->GetWidget()->SetBounds(ScreenBoundsForType(snap_type_));
       }
       break;
     case SNAP_MAXIMIZE:

@@ -156,35 +156,6 @@ bool ShelfLayoutManager::IsVisible() const {
        state_.auto_hide_state == AUTO_HIDE_SHOWN));
 }
 
-gfx::Rect ShelfLayoutManager::GetMaximizedWindowBounds(
-    aura::Window* window) {
-  // TODO: needs to be multi-mon aware.
-  gfx::Rect bounds(gfx::Screen::GetDisplayNearestWindow(window).bounds());
-  if (auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT ||
-      auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS) {
-    AdjustBoundsBasedOnAlignment(kAutoHideSize, &bounds);
-    return bounds;
-  }
-  // SHELF_AUTO_HIDE_BEHAVIOR_NEVER maximized windows don't get any taller.
-  return GetUnmaximizedWorkAreaBounds(window);
-}
-
-gfx::Rect ShelfLayoutManager::GetUnmaximizedWorkAreaBounds(
-    aura::Window* window) {
-  // TODO: needs to be multi-mon aware.
-  gfx::Rect bounds(gfx::Screen::GetDisplayNearestWindow(window).bounds());
-  int size;
-  if (auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS) {
-    size = kAutoHideSize;
-  } else {
-    int width, height;
-    GetShelfSize(&width, &height);
-    size = std::max(width, height);
-  }
-  AdjustBoundsBasedOnAlignment(size, &bounds);
-  return bounds;
-}
-
 void ShelfLayoutManager::SetLauncher(Launcher* launcher) {
   if (launcher == launcher_)
     return;
@@ -209,10 +180,10 @@ bool ShelfLayoutManager::SetAlignment(ShelfAlignment alignment) {
 }
 
 gfx::Rect ShelfLayoutManager::GetIdealBounds() {
-  // TODO: this is wrong. Figure out what display shelf is on and everything
-  // should be based on it.
-  gfx::Rect bounds(
-      gfx::Screen::GetDisplayNearestWindow(status_->GetNativeView()).bounds());
+  // TODO(oshima): this is wrong. Figure out what display shelf is on
+  // and everything should be based on it.
+  gfx::Rect bounds(ScreenAsh::GetDisplayParentBounds(
+      status_->GetNativeView()));
   int width = 0, height = 0;
   GetShelfSize(&width, &height);
   switch (alignment_) {
@@ -349,6 +320,33 @@ void ShelfLayoutManager::OnWindowActivated(aura::Window* active,
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, private:
+
+gfx::Rect ShelfLayoutManager::GetMaximizedWindowBounds(
+    aura::Window* window) {
+  gfx::Rect bounds(ScreenAsh::GetDisplayParentBounds(window));
+  if (auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT ||
+      auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS) {
+    AdjustBoundsBasedOnAlignment(kAutoHideSize, &bounds);
+    return bounds;
+  }
+  // SHELF_AUTO_HIDE_BEHAVIOR_NEVER maximized windows don't get any taller.
+  return GetUnmaximizedWorkAreaBounds(window);
+}
+
+gfx::Rect ShelfLayoutManager::GetUnmaximizedWorkAreaBounds(
+    aura::Window* window) {
+  gfx::Rect bounds(ScreenAsh::GetDisplayParentBounds(window));
+  int size;
+  if (auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS) {
+    size = kAutoHideSize;
+  } else {
+    int width, height;
+    GetShelfSize(&width, &height);
+    size = std::max(width, height);
+  }
+  AdjustBoundsBasedOnAlignment(size, &bounds);
+  return bounds;
+}
 
 void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
   ShellDelegate* delegate = Shell::GetInstance()->delegate();

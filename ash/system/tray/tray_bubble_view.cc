@@ -376,7 +376,7 @@ void TrayBubbleView::Host::ProcessLocatedEvent(
     const aura::LocatedEvent& event) {
   if (!widget_)
     return;
-  gfx::Rect bounds = widget_->GetNativeWindow()->GetBoundsInRootWindow();
+  gfx::Rect bounds = widget_->GetNativeWindow()->GetRootWindowBounds();
   if (bounds.Contains(event.root_location()))
     return;
   if (tray_view_) {

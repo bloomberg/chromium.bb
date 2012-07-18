@@ -548,7 +548,7 @@ void HungRendererDialogView::CreateKillButtonView() {
 gfx::Rect HungRendererDialogView::GetDisplayBounds(
     WebContents* contents) {
 #if defined(USE_AURA)
-  gfx::Rect contents_bounds(contents->GetNativeView()->GetBoundsInRootWindow());
+  gfx::Rect contents_bounds(contents->GetNativeView()->GetRootWindowBounds());
 #elif defined(OS_WIN)
   HWND contents_hwnd = contents->GetNativeView();
   RECT contents_bounds_rect;

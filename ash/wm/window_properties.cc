@@ -27,16 +27,17 @@ DEFINE_WINDOW_PROPERTY_KEY(
     bool, kChildWindowVisibilityChangesAnimatedKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(
     ui::WindowShowState, kRestoreShowStateKey, ui::SHOW_STATE_DEFAULT);
+DEFINE_WINDOW_PROPERTY_KEY(RootWindowController*,
+                           kRootWindowControllerKey, NULL);
 DEFINE_WINDOW_PROPERTY_KEY(ShadowType, kShadowTypeKey, SHADOW_TYPE_NONE);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(ui_controls::UIControlsAura,
                                  kUIControlsKey,
                                  NULL);
+DEFINE_WINDOW_PROPERTY_KEY(bool, kUsesScreenCoordinatesKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(ash::WindowPersistsAcrossAllWorkspacesType,
                            kWindowPersistsAcrossAllWorkspacesKey,
                            WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_DEFAULT);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kWindowTrackedByWorkspaceKey, true);
-DEFINE_WINDOW_PROPERTY_KEY(RootWindowController*,
-                           kRootWindowControllerKey, NULL);
 
 }  // namespace internal
 }  // namespace ash

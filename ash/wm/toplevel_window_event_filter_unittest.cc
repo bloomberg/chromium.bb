@@ -477,7 +477,7 @@ TEST_F(ToplevelWindowEventFilterTest, GestureDrag) {
   old_bounds = target->bounds();
 
   // Snap left.
-  end = location = target->GetBoundsInRootWindow().CenterPoint();
+  end = location = target->GetRootWindowBounds().CenterPoint();
   end.Offset(-100, 0);
   generator.GestureScrollSequence(location, end,
       base::TimeDelta::FromMilliseconds(5),
@@ -493,7 +493,7 @@ TEST_F(ToplevelWindowEventFilterTest, GestureDrag) {
 
   old_bounds = target->bounds();
   // Maximize.
-  end = location = target->GetBoundsInRootWindow().CenterPoint();
+  end = location = target->GetRootWindowBounds().CenterPoint();
   end.Offset(0, -100);
   generator.GestureScrollSequence(location, end,
       base::TimeDelta::FromMilliseconds(5),
@@ -506,7 +506,7 @@ TEST_F(ToplevelWindowEventFilterTest, GestureDrag) {
   target->SetBounds(old_bounds);
 
   // Minimize.
-  end = location = target->GetBoundsInRootWindow().CenterPoint();
+  end = location = target->GetRootWindowBounds().CenterPoint();
   end.Offset(0, 100);
   generator.GestureScrollSequence(location, end,
       base::TimeDelta::FromMilliseconds(5),

@@ -208,7 +208,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget,
   virtual void SetCursor(gfx::NativeCursor cursor) = 0;
   virtual void ClearNativeFocus() = 0;
   virtual void FocusNativeView(gfx::NativeView native_view) = 0;
-  virtual gfx::Rect GetWorkAreaBoundsInScreen() const = 0;
+  virtual gfx::Rect GetWorkAreaScreenBounds() const = 0;
   virtual void SetInactiveRenderingDisabled(bool value) = 0;
   virtual Widget::MoveLoopResult RunMoveLoop() = 0;
   virtual void EndMoveLoop() = 0;

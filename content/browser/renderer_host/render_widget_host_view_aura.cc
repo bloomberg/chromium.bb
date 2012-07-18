@@ -26,6 +26,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/cursor_manager.h"
@@ -338,7 +339,7 @@ bool RenderWidgetHostViewAura::IsShowing() {
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetViewBounds() const {
-  return window_->GetBoundsInRootWindow();
+  return window_->GetRootWindowBounds();
 }
 
 void RenderWidgetHostViewAura::UpdateCursor(const WebCursor& cursor) {
@@ -842,12 +843,10 @@ gfx::Rect RenderWidgetHostViewAura::ConvertRectToScreen(const gfx::Rect& rect) {
   gfx::Point end = gfx::Point(rect.right(), rect.bottom());
 
   aura::RootWindow* root_window = window_->GetRootWindow();
-  aura::Window::ConvertPointToWindow(window_, root_window, &origin);
-  aura::Window::ConvertPointToWindow(window_, root_window, &end);
-  // TODO(yusukes): Unlike Chrome OS, |root_window| origin might not be the
-  // same as the system screen origin on Windows and Linux. Probably we should
-  // (implement and) use something like ConvertPointToScreen().
-
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(root_window);
+  screen_position_client->ConvertPointToScreen(window_, &origin);
+  screen_position_client->ConvertPointToScreen(window_, &end);
   return gfx::Rect(origin.x(),
                    origin.y(),
                    end.x() - origin.x(),

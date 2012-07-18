@@ -202,7 +202,7 @@ void AppListController::ScheduleAnimation() {
 void AppListController::ProcessLocatedEvent(const aura::LocatedEvent& event) {
   if (view_ && is_visible_) {
     views::Widget* widget = view_->GetWidget();
-    if (!widget->GetNativeView()->GetBoundsInRootWindow().Contains(
+    if (!widget->GetNativeView()->GetRootWindowBounds().Contains(
         event.root_location())) {
       SetVisible(false);
     }

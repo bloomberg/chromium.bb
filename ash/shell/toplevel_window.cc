@@ -22,7 +22,7 @@ ToplevelWindow::CreateParams::CreateParams()
 // static
 void ToplevelWindow::CreateToplevelWindow(const CreateParams& params) {
   static int count = 0;
-  int x = count == 0 ? 50 : 350;
+  int x = count == 0 ? 150 : 750;
   count = (count + 1) % 2;
   views::Widget* widget =
       views::Widget::CreateWindowWithBounds(new ToplevelWindow(params),

@@ -21,18 +21,26 @@ namespace internal {
 class RootWindowController;
 }
 
-// Sets the restore bounds property on |window|. Deletes existing bounds value
-// if exists.
-ASH_EXPORT void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds);
+// Sets the restore bounds property on |window| in the virtual screen
+// coordinates.  Deletes existing bounds value if exists.
+ASH_EXPORT void SetRestoreBoundsInScreen(aura::Window* window,
+                                       const gfx::Rect& screen_bounds);
+// Same as |SetRestoreBoundsInScreen| except that the bounds is in the
+// parent's coordinates.
+ASH_EXPORT void SetRestoreBoundsInParent(aura::Window* window,
+                                         const gfx::Rect& parent_bounds);
 
 // Same as SetRestoreBounds(), but does nothing if the restore bounds have
 // already been set. The bounds used are the bounds of the window.
 ASH_EXPORT void SetRestoreBoundsIfNotSet(aura::Window* window);
 
-// Returns the restore bounds property on |window|. NULL if the
-// restore bounds property does not exist for |window|. |window|
-// owns the bounds object.
-ASH_EXPORT const gfx::Rect* GetRestoreBounds(aura::Window* window);
+// Returns the restore bounds property on |window| in the virtual screen
+// coordinates. The bounds can be NULL if the bounds property does not
+// exist for |window|. |window| owns the bounds object.
+ASH_EXPORT const gfx::Rect* GetRestoreBoundsInScreen(aura::Window* window);
+// Same as |GetRestoreBoundsInScreen| except that it returns the
+// bounds in the parent's coordinates.
+ASH_EXPORT gfx::Rect GetRestoreBoundsInParent(aura::Window* window);
 
 // Deletes and clears the restore bounds property on |window|.
 ASH_EXPORT void ClearRestoreBounds(aura::Window* window);

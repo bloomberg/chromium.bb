@@ -891,8 +891,8 @@ View* Widget::GetChildViewParent() {
   return GetContentsView() ? GetContentsView() : GetRootView();
 }
 
-gfx::Rect Widget::GetWorkAreaBoundsInScreen() const {
-  return native_widget_->GetWorkAreaBoundsInScreen();
+gfx::Rect Widget::GetWorkAreaScreenBounds() const {
+  return native_widget_->GetWorkAreaScreenBounds();
 }
 
 void Widget::OnOwnerClosing() {

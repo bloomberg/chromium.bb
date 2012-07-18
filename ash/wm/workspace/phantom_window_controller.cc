@@ -86,7 +86,7 @@ void PhantomWindowController::Show(const gfx::Rect& bounds) {
   if (!phantom_widget_.get()) {
     // Show the phantom at the bounds of the window. We'll animate to the target
     // bounds.
-    start_bounds_ = window_->bounds();
+    start_bounds_ = window_->GetScreenBounds();
     CreatePhantomWidget(start_bounds_);
   } else {
     start_bounds_ = phantom_widget_->GetWindowScreenBounds();
@@ -126,7 +126,7 @@ void PhantomWindowController::CreatePhantomWidget(const gfx::Rect& bounds) {
   // launcher button. Put the phantom in the same window as the launcher so that
   // the phantom is visible.
   params.parent = Shell::GetContainer(
-      Shell::GetActiveRootWindow(),
+      Shell::GetInstance()->GetRootWindowMatching(bounds),
       kShellWindowId_LauncherContainer);
   params.can_activate = false;
   params.keep_on_top = true;

@@ -19,6 +19,7 @@ namespace internal {
 
 // SnapSizer is responsible for determining the resulting bounds of a window
 // that is being snapped to the left or right side of the screen.
+// The bounds used in this class are in the container's coordinates.
 class ASH_EXPORT SnapSizer {
  public:
   enum Edge {

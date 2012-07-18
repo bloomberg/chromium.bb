@@ -4,6 +4,7 @@
 
 #include "ash/wm/window_resizer.h"
 
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
@@ -202,8 +203,8 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
   if (details.window_component == HTBOTTOM ||
       details.window_component == HTBOTTOMRIGHT ||
       details.window_component == HTBOTTOMLEFT) {
-    gfx::Rect work_area = gfx::Screen::GetDisplayNearestWindow(
-        details.window).work_area();
+    gfx::Rect work_area =
+        ScreenAsh::GetDisplayWorkAreaParentBounds(details.window);
     if (new_bounds.bottom() > work_area.bottom())
       new_bounds.Inset(0, 0, 0,
                        new_bounds.bottom() - work_area.bottom());

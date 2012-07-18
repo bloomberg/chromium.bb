@@ -16,6 +16,7 @@
 #include "base/stringprintf.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/event_client.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/visibility_client.h"
 #include "ui/aura/env.h"
@@ -190,6 +191,9 @@ void Window::SetType(client::WindowType type) {
   // Cannot change type after the window is initialized.
   DCHECK(!layer());
   type_ = type;
+  if (type_ == client::WINDOW_TYPE_POPUP) {
+    LOG(ERROR) << "POPUP:";
+  }
 }
 
 void Window::SetName(const std::string& name) {
@@ -235,7 +239,7 @@ bool Window::IsVisible() const {
   return visible_ && layer_ && layer_->IsDrawn();
 }
 
-gfx::Rect Window::GetBoundsInRootWindow() const {
+gfx::Rect Window::GetRootWindowBounds() const {
   // TODO(beng): There may be a better way to handle this, and the existing code
   //             is likely wrong anyway in a multi-display world, but this will
   //             do for now.
@@ -244,6 +248,21 @@ gfx::Rect Window::GetBoundsInRootWindow() const {
   gfx::Point origin = bounds().origin();
   Window::ConvertPointToWindow(parent_, GetRootWindow(), &origin);
   return gfx::Rect(origin, bounds().size());
+}
+
+gfx::Rect Window::GetScreenBounds() const {
+  gfx::Rect bounds(GetRootWindowBounds());
+  const RootWindow* root = GetRootWindow();
+  if (root) {
+    aura::client::ScreenPositionClient* screen_position_client =
+        aura::client::GetScreenPositionClient(root);
+    if (screen_position_client) {
+      gfx::Point origin = bounds.origin();
+      screen_position_client->ConvertPointToScreen(root, &origin);
+      bounds.set_origin(origin);
+    }
+  }
+  return bounds;
 }
 
 void Window::SetTransform(const ui::Transform& transform) {
@@ -274,6 +293,20 @@ void Window::SetBounds(const gfx::Rect& new_bounds) {
     parent_->layout_manager()->SetChildBounds(this, new_bounds);
   else
     SetBoundsInternal(new_bounds);
+}
+
+void Window::SetScreenBounds(const gfx::Rect& new_bounds_in_screen) {
+  RootWindow* root = GetRootWindow();
+  if (root) {
+    gfx::Point origin = new_bounds_in_screen.origin();
+    aura::client::ScreenPositionClient* screen_position_client =
+        aura::client::GetScreenPositionClient(root);
+    screen_position_client->ConvertPointFromScreen(
+        parent(), &origin);
+    SetBounds(gfx::Rect(origin, new_bounds_in_screen.size()));
+    return;
+  }
+  SetBounds(new_bounds_in_screen);
 }
 
 gfx::Rect Window::GetTargetBounds() const {

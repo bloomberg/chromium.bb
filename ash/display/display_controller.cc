@@ -7,6 +7,7 @@
 #include "ash/ash_switches.h"
 #include "ash/display/multi_display_manager.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -139,11 +140,12 @@ bool DisplayController::WarpMouseCursorIfNecessary(
   gfx::Rect alternate_bounds = alternate_root->bounds();
   gfx::Point alternate_point;
 
-  gfx::Rect display_area(
-      gfx::Screen::GetDisplayNearestWindow(current_root).bounds());
-
   // TODO(oshima): This is temporary code until the virtual screen
-  // coordinate is implemented.
+  // coordinate is fully implemented.
+  gfx::Rect display_area(ScreenAsh::ConvertRectFromScreen(
+      current_root,
+      gfx::Screen::GetDisplayNearestWindow(current_root).bounds()));
+
   if (location_in_root.x() <= display_area.x()) {
     if (location_in_root.y() < alternate_bounds.height() &&
         ((in_primary && secondary_display_layout_ == LEFT) ||

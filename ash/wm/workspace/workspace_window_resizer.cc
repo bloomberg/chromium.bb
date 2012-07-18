@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
@@ -85,8 +86,8 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
     return;
 
   if (snap_type_ == SNAP_LEFT_EDGE || snap_type_ == SNAP_RIGHT_EDGE) {
-    if (!GetRestoreBounds(details_.window))
-      SetRestoreBounds(details_.window, details_.initial_bounds);
+    if (!GetRestoreBoundsInScreen(details_.window))
+      SetRestoreBoundsInParent(details_.window, details_.initial_bounds);
     details_.window->SetBounds(snap_sizer_->target_bounds());
     return;
   }
@@ -280,7 +281,7 @@ void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
     gfx::Rect* bounds, int grid_size) const {
   // Always keep kMinOnscreenHeight on the bottom.
   gfx::Rect work_area(
-      gfx::Screen::GetDisplayNearestWindow(window()).work_area());
+      ScreenAsh::GetDisplayWorkAreaParentBounds(details_.window));
   int max_y = AlignToGridRoundUp(work_area.bottom() - kMinOnscreenHeight,
                                  grid_size);
   if (bounds->y() > max_y)
@@ -334,7 +335,7 @@ void WorkspaceWindowResizer::SnapToWorkAreaEdges(
 
 bool WorkspaceWindowResizer::TouchesBottomOfScreen() const {
   gfx::Rect work_area(
-      gfx::Screen::GetDisplayNearestWindow(details_.window).work_area());
+      ScreenAsh::GetDisplayWorkAreaParentBounds(details_.window));
   return (attached_windows_.empty() &&
           details_.window->bounds().bottom() == work_area.bottom()) ||
       (!attached_windows_.empty() &&
@@ -383,7 +384,8 @@ void WorkspaceWindowResizer::UpdatePhantomWindow(const gfx::Point& location,
     phantom_window_controller_.reset(
         new PhantomWindowController(details_.window));
   }
-  phantom_window_controller_->Show(snap_sizer_->target_bounds());
+  phantom_window_controller_->Show(ScreenAsh::ConvertRectToScreen(
+      details_.window->parent(), snap_sizer_->target_bounds()));
 }
 
 void WorkspaceWindowResizer::RestackWindows() {
@@ -421,8 +423,7 @@ WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
     const gfx::Point& location) const {
   // TODO: this likely only wants total display area, not the area of a single
   // display.
-  gfx::Rect area(
-      gfx::Screen::GetDisplayNearestWindow(details_.window).bounds());
+  gfx::Rect area(ScreenAsh::GetDisplayParentBounds(details_.window));
   if (location.x() <= area.x())
     return SNAP_LEFT_EDGE;
   if (location.x() >= area.right() - 1)

@@ -431,7 +431,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3_Compress) {
 // Assertions around dragging to the left/right edge of the screen.
 TEST_F(WorkspaceWindowResizerTest, Edge) {
   int bottom =
-      ScreenAsh::GetUnmaximizedWorkAreaBounds(window_.get()).bottom();
+      ScreenAsh::GetUnmaximizedWorkAreaParentBounds(window_.get()).bottom();
   window_->SetBounds(gfx::Rect(20, 30, 50, 60));
   {
     SetGridSize(0);
@@ -442,8 +442,9 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     resizer->CompleteDrag(0);
     EXPECT_EQ("0,0 400x" + base::IntToString(bottom),
               window_->bounds().ToString());
-    ASSERT_TRUE(GetRestoreBounds(window_.get()));
-    EXPECT_EQ("20,30 50x60", GetRestoreBounds(window_.get())->ToString());
+    ASSERT_TRUE(GetRestoreBoundsInScreen(window_.get()));
+    EXPECT_EQ("20,30 50x60",
+              GetRestoreBoundsInScreen(window_.get())->ToString());
   }
 
   // Try the same with the right side.
@@ -455,8 +456,8 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
   resizer->CompleteDrag(0);
   EXPECT_EQ("400,0 400x" + base::IntToString(bottom),
             window_->bounds().ToString());
-  ASSERT_TRUE(GetRestoreBounds(window_.get()));
-  EXPECT_EQ("20,30 50x60", GetRestoreBounds(window_.get())->ToString());
+  ASSERT_TRUE(GetRestoreBoundsInScreen(window_.get()));
+  EXPECT_EQ("20,30 50x60", GetRestoreBoundsInScreen(window_.get())->ToString());
 }
 
 // Verifies windows are correctly restacked when reordering multiple windows.

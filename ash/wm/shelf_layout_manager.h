@@ -11,6 +11,7 @@
 #include "ash/wm/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/timer.h"
 #include "ui/aura/client/activation_change_observer.h"
@@ -27,6 +28,7 @@ class Widget;
 }
 
 namespace ash {
+class ScreenAsh;
 namespace internal {
 
 class ShelfLayoutManagerTest;
@@ -114,10 +116,7 @@ class ASH_EXPORT ShelfLayoutManager :
   // on the screen.
   bool IsVisible() const;
 
-  // Returns the bounds the specified window should be when maximized.
-  gfx::Rect GetMaximizedWindowBounds(aura::Window* window);
-  gfx::Rect GetUnmaximizedWorkAreaBounds(aura::Window* window);
-
+ public:
   // The launcher is typically created after the layout manager.
   void SetLauncher(Launcher* launcher);
   Launcher* launcher() { return launcher_; }
@@ -164,7 +163,9 @@ class ASH_EXPORT ShelfLayoutManager :
 
  private:
   class AutoHideEventFilter;
+  friend class ash::ScreenAsh;
   friend class ShelfLayoutManagerTest;
+  FRIEND_TEST_ALL_PREFIXES(ShelfLayoutManagerTest, SetAutoHideBehavior);
 
   struct TargetBounds {
     TargetBounds() : opacity(0.0f) {}
@@ -194,6 +195,10 @@ class ASH_EXPORT ShelfLayoutManager :
     AutoHideState auto_hide_state;
     bool is_screen_locked;
   };
+
+  // Returns the bounds the specified window should be when maximized.
+  gfx::Rect GetMaximizedWindowBounds(aura::Window* window);
+  gfx::Rect GetUnmaximizedWorkAreaBounds(aura::Window* window);
 
   // Sets the visibility of the shelf to |state|.
   void SetState(VisibilityState visibility_state);
