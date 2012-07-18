@@ -21,6 +21,7 @@ scoped_refptr<Extension> ExtensionBuilder::Build() {
       location_,
       *manifest_,
       flags_,
+      id_,
       &error);
   CHECK_EQ("", error);
   return extension;
@@ -44,6 +45,11 @@ ExtensionBuilder& ExtensionBuilder::SetManifest(
 
 ExtensionBuilder& ExtensionBuilder::AddFlags(int init_from_value_flags) {
   flags_ |= init_from_value_flags;
+  return *this;
+}
+
+ExtensionBuilder& ExtensionBuilder::SetID(const std::string& id) {
+  id_ = id;
   return *this;
 }
 

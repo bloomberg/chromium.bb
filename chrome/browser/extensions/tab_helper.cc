@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/page_action_controller.h"
 #include "chrome/browser/extensions/script_badge_controller.h"
-#include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
@@ -60,11 +59,14 @@ TabHelper::TabHelper(TabContents* tab_contents)
           extension_function_dispatcher_(tab_contents->profile(), this)),
       pending_web_app_action_(NONE),
       tab_contents_(tab_contents),
-      script_executor_(new ScriptExecutor(tab_contents->web_contents())),
-      active_tab_permission_manager_(tab_contents) {
+      script_executor_(tab_contents->web_contents()),
+      active_tab_permission_manager_(
+          tab_contents->web_contents(),
+          SessionID::IdForTab(tab_contents),
+          tab_contents->profile()) {
   if (switch_utils::AreScriptBadgesEnabled()) {
     location_bar_controller_.reset(new ScriptBadgeController(
-        tab_contents, script_executor_.get()));
+        tab_contents, &script_executor_));
   } else {
     location_bar_controller_.reset(new PageActionController(tab_contents));
   }

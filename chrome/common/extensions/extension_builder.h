@@ -26,6 +26,7 @@ class ExtensionBuilder {
 
   // Defaults to FilePath().
   ExtensionBuilder& SetPath(const FilePath& path);
+
   // Defaults to Extension::LOAD.
   ExtensionBuilder& SetLocation(Extension::Location location);
 
@@ -36,11 +37,15 @@ class ExtensionBuilder {
 
   ExtensionBuilder& AddFlags(int init_from_value_flags);
 
+  // Defaults to the default extension ID created in Extension::Create.
+  ExtensionBuilder& SetID(const std::string& id);
+
  private:
   FilePath path_;
   Extension::Location location_;
   scoped_ptr<base::DictionaryValue> manifest_;
   int flags_;
+  std::string id_;
 };
 
 } // namespace extensions

@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/app_notify_channel_setup.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/common/web_apps.h"
 #include "content/public/browser/notification_observer.h"
@@ -106,7 +107,7 @@ class TabHelper : public content::WebContentsObserver,
   }
 
   ScriptExecutor* script_executor() {
-    return script_executor_.get();
+    return &script_executor_;
   }
 
   LocationBarController* location_bar_controller() {
@@ -219,7 +220,7 @@ class TabHelper : public content::WebContentsObserver,
 
   TabContents* tab_contents_;
 
-  scoped_ptr<ScriptExecutor> script_executor_;
+  ScriptExecutor script_executor_;
 
   scoped_ptr<LocationBarController> location_bar_controller_;
 

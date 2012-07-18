@@ -79,15 +79,19 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
     TabContents* tab_contents,
     const std::string& extension_id,
     const std::string& input) {
+  Profile* profile = tab_contents->profile();
+
+  const Extension* extension =
+      ExtensionSystem::Get(profile)->extension_service()->extensions()->
+          GetByID(extension_id);
+  CHECK(extension);
+  tab_contents->extension_tab_helper()->active_tab_permission_manager()->
+      GrantIfRequested(extension);
+
   ListValue args;
   args.Set(0, Value::CreateStringValue(input));
   std::string json_args;
   base::JSONWriter::Write(&args, &json_args);
-
-  tab_contents->extension_tab_helper()->active_tab_permission_manager()->
-      GrantIfRequested(extension_id);
-
-  Profile* profile = tab_contents->profile();
 
   profile->GetExtensionEventRouter()->DispatchEventToExtension(
       extension_id, events::kOnInputEntered, json_args, profile, GURL());

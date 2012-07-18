@@ -81,6 +81,10 @@ TabContents::TabContents(WebContents* contents)
   property_accessor()->SetProperty(contents->GetPropertyBag(), this);
 
   // Create the tab helpers.
+  // restore_tab_helper because it sets up the tab ID, and other helpers may
+  // rely on that.
+  restore_tab_helper_.reset(new RestoreTabHelper(contents));
+
   autocomplete_history_manager_.reset(new AutocompleteHistoryManager(contents));
   autofill_manager_ = new AutofillManager(this);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -113,7 +117,6 @@ TabContents::TabContents(WebContents* contents)
       new PasswordManager(contents, password_manager_delegate_.get()));
   prefs_tab_helper_.reset(new PrefsTabHelper(contents));
   prerender_tab_helper_.reset(new prerender::PrerenderTabHelper(this));
-  restore_tab_helper_.reset(new RestoreTabHelper(contents));
   search_engine_tab_helper_.reset(new SearchEngineTabHelper(contents));
   bool is_search_enabled =
       chrome::search::IsInstantExtendedAPIEnabled(profile());

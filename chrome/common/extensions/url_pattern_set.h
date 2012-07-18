@@ -57,7 +57,13 @@ class URLPatternSet {
   const_iterator begin() const { return patterns_.begin(); }
   const_iterator end() const { return patterns_.end(); }
 
-  void AddPattern(const URLPattern& pattern);
+  // Adds a pattern to the set. Returns true if a new pattern was inserted,
+  // false if the pattern was already in the set.
+  bool AddPattern(const URLPattern& pattern);
+
+  // Adds all patterns from |set| into this.
+  void AddPatterns(const URLPatternSet& set);
+
   void ClearPatterns();
 
   // Returns true if the permission |set| is a subset of this.

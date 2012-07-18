@@ -14,7 +14,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_details.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
@@ -26,13 +26,11 @@ using content::WebContentsObserver;
 namespace extensions {
 
 ActiveTabPermissionManager::ActiveTabPermissionManager(
-    TabContents* tab_contents)
-    : WebContentsObserver(tab_contents->web_contents()),
-      tab_contents_(tab_contents) {
-  InsertActiveURL(web_contents()->GetURL());
+    content::WebContents* web_contents, int tab_id, Profile* profile)
+    : WebContentsObserver(web_contents), tab_id_(tab_id) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 content::Source<Profile>(tab_contents->profile()));
+                 content::Source<Profile>(profile));
 }
 
 ActiveTabPermissionManager::~ActiveTabPermissionManager() {}
@@ -41,47 +39,47 @@ void ActiveTabPermissionManager::GrantIfRequested(const Extension* extension) {
   if (!extension->HasAPIPermission(extensions::APIPermission::kActiveTab))
     return;
 
-  if (active_urls_.is_empty())
+  if (IsGranted(extension))
     return;
 
-  // Only need to check the number of permissions here rather than the URLs
-  // themselves, because the set can only ever grow.
+  URLPattern pattern(UserScript::kValidUserScriptSchemes);
+  if (pattern.Parse(web_contents()->GetURL().spec()) !=
+          URLPattern::PARSE_SUCCESS) {
+    // Pattern parsing could fail if this is an unsupported URL e.g. chrome://.
+    return;
+  }
+
+  URLPatternSet new_permissions;
   const URLPatternSet* old_permissions =
-      extension->GetTabSpecificHostPermissions(tab_id());
-  if (old_permissions && (old_permissions->size() == active_urls_.size()))
-    return;
+      extension->GetTabSpecificHostPermissions(tab_id_);
+  if (old_permissions)
+    new_permissions.AddPatterns(*old_permissions);
 
-  granted_.Insert(extension);
-  extension->SetTabSpecificHostPermissions(tab_id(), active_urls_);
+  new_permissions.AddPattern(pattern);
+  granted_extensions_.Insert(extension);
+  extension->SetTabSpecificHostPermissions(tab_id_, new_permissions);
   Send(new ExtensionMsg_UpdateTabSpecificPermissions(GetPageID(),
-                                                     tab_id(),
+                                                     tab_id_,
                                                      extension->id(),
-                                                     active_urls_));
+                                                     new_permissions));
 }
 
-void ActiveTabPermissionManager::GrantIfRequested(
-    const std::string& extension_id) {
-  ExtensionService* service =
-      ExtensionSystem::Get(tab_contents_->profile())->extension_service();
-  const Extension* extension = service->extensions()->GetByID(extension_id);
-  if (extension)
-    GrantIfRequested(extension);
+bool ActiveTabPermissionManager::IsGranted(const Extension* extension) {
+  return granted_extensions_.Contains(extension->id());
 }
 
-void ActiveTabPermissionManager::DidCommitProvisionalLoadForFrame(
-    int64 frame_id,
-    bool is_main_frame,
-    const GURL& url,
-    content::PageTransition transition_type,
-    content::RenderViewHost* render_view_host) {
-  if (is_main_frame)
-    ClearActiveURLsAndNotify();
-  InsertActiveURL(url);
+void ActiveTabPermissionManager::DidNavigateMainFrame(
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
+  if (details.is_in_page)
+    return;
+  DCHECK(details.is_main_frame);  // important: sub-frames don't get granted!
+  ClearActiveExtensionsAndNotify();
 }
 
 void ActiveTabPermissionManager::WebContentsDestroyed(
     content::WebContents* web_contents) {
-  ClearActiveURLsAndNotify();
+  ClearActiveExtensionsAndNotify();
 }
 
 void ActiveTabPermissionManager::Observe(
@@ -91,43 +89,29 @@ void ActiveTabPermissionManager::Observe(
   DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_UNLOADED);
   const Extension* extension =
       content::Details<UnloadedExtensionInfo>(details)->extension;
-  extension->ClearTabSpecificHostPermissions(tab_id());
-  std::vector<std::string> single_id(1, extension->id());
-  Send(new ExtensionMsg_ClearTabSpecificPermissions(tab_id(), single_id));
-  granted_.Remove(extension->id());
+  // Note: don't need to clear the permissions (nor tell the renderer about it)
+  // because it's being unloaded anyway.
+  granted_extensions_.Remove(extension->id());
 }
 
-void ActiveTabPermissionManager::ClearActiveURLsAndNotify() {
-  active_urls_.ClearPatterns();
-
-  if (granted_.is_empty())
+void ActiveTabPermissionManager::ClearActiveExtensionsAndNotify() {
+  if (granted_extensions_.is_empty())
     return;
 
   std::vector<std::string> extension_ids;
 
-  for (ExtensionSet::const_iterator it = granted_.begin();
-       it != granted_.end(); ++it) {
-    (*it)->ClearTabSpecificHostPermissions(tab_id());
+  for (ExtensionSet::const_iterator it = granted_extensions_.begin();
+       it != granted_extensions_.end(); ++it) {
+    (*it)->ClearTabSpecificHostPermissions(tab_id_);
     extension_ids.push_back((*it)->id());
   }
 
-  Send(new ExtensionMsg_ClearTabSpecificPermissions(tab_id(), extension_ids));
-  granted_.Clear();
-}
-
-void ActiveTabPermissionManager::InsertActiveURL(const GURL& url) {
-  URLPattern pattern(UserScript::kValidUserScriptSchemes);
-  if (pattern.Parse(url.spec()) == URLPattern::PARSE_SUCCESS)
-    active_urls_.AddPattern(pattern);
-}
-
-int32 ActiveTabPermissionManager::tab_id() {
-  return SessionID::IdForTab(tab_contents_);
+  Send(new ExtensionMsg_ClearTabSpecificPermissions(tab_id_, extension_ids));
+  granted_extensions_.Clear();
 }
 
 int32 ActiveTabPermissionManager::GetPageID() {
-  return tab_contents_->web_contents()->GetController().GetActiveEntry()->
-      GetPageID();
+  return web_contents()->GetController().GetActiveEntry()->GetPageID();
 }
 
 }  // namespace extensions

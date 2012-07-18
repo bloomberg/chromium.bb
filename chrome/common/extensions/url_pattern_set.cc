@@ -114,8 +114,13 @@ size_t URLPatternSet::size() const {
   return patterns_.size();
 }
 
-void URLPatternSet::AddPattern(const URLPattern& pattern) {
-  patterns_.insert(pattern);
+bool URLPatternSet::AddPattern(const URLPattern& pattern) {
+  return patterns_.insert(pattern).second;
+}
+
+void URLPatternSet::AddPatterns(const URLPatternSet& set) {
+  patterns_.insert(set.patterns().begin(),
+                   set.patterns().end());
 }
 
 void URLPatternSet::ClearPatterns() {
