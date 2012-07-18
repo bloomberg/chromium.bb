@@ -36,7 +36,7 @@ CANARY = 'canary'
 
 
 def GetArchiveUrl(host_os, version):
-  basename = 'naclsdk_%s.bz2' % (host_os,)
+  basename = 'naclsdk_%s.tar.bz2' % (host_os,)
   return urlparse.urljoin(HTTPS_BASE_URL, posixpath.join(version, basename))
 
 
@@ -497,6 +497,21 @@ mac,canary,21.0.1156.0,2012-05-30 12:14:21.305090"""
     self._Run(OS_MLW)
     self._ReadUploadedManifest()
     self._AssertUploadedManifestHasBundle(my_bundle, CANARY)
+
+  def testExtensionWorksAsBz2(self):
+    # Allow old bundles with just .bz2 extension to work
+    self.manifest = MakeManifest(B18_R1_NONE)
+    self.history.Add(OS_MLW, BETA, V18_0_1025_163)
+    bundle = copy.deepcopy(B18_0_1025_163_R1_MLW)
+    archive_url = bundle.GetArchive('mac').url
+    bundle.GetArchive('mac').url = archive_url.replace('.tar', '')
+    self.files.Add(bundle)
+    self._MakeDelegate()
+    self._Run(OS_MLW)
+    self._ReadUploadedManifest()
+    self._AssertUploadedManifestHasBundle(bundle, BETA)
+    self.assertEqual(len(self.uploaded_manifest.GetBundles()), 1)
+
 
 def main():
   suite = unittest.defaultTestLoader.loadTestsFromModule(sys.modules[__name__])

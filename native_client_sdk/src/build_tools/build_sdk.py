@@ -534,7 +534,7 @@ def main(args):
   if not skip_examples:
     CopyExamples(pepperdir, toolchains)
 
-  tarname = 'naclsdk_' + platform + '.bz2'
+  tarname = 'naclsdk_' + platform + '.tar.bz2'
   if 'pnacl' in toolchains:
     tarname = 'p' + tarname
   tarfile = os.path.join(OUT_DIR, tarname)

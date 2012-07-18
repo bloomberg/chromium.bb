@@ -69,7 +69,7 @@ def GetPlatformFromArchiveUrl(url):
     url: An archive url.
   Returns:
     A platform name (e.g. 'linux')."""
-  match = re.match(r'naclsdk_(.*)\.bz2', posixpath.basename(url))
+  match = re.match(r'naclsdk_(.*?)(?:\.tar)?\.bz2', posixpath.basename(url))
   if not match:
     return None
   return match.group(1)
@@ -429,7 +429,8 @@ class VersionFinder(object):
       version_string: The version to find archives for. (e.g. "18.0.1025.164")
     Returns:
       A list of strings, each of which is a platform-specific archive URL. (e.g.
-      "gs://nativeclient_mirror/nacl/nacl_sdk/18.0.1025.164/naclsdk_linux.bz2").
+      "gs://nativeclient_mirror/nacl/nacl_sdk/18.0.1025.164/"
+      "naclsdk_linux.tar.bz2").
 
       All returned URLs will use the gs:// schema."""
     files = self.delegate.GsUtil_ls(GS_BUCKET_PATH + version_string)
