@@ -228,7 +228,10 @@ void ExtensionTabUtil::CreateTab(WebContents* web_contents,
                                  bool user_gesture) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  Browser* browser = browser::FindOrCreateTabbedBrowser(profile);
+  Browser* browser = browser::FindTabbedBrowser(profile, false);
+  const bool browser_created = !browser;
+  if (!browser)
+    browser = Browser::Create(profile);
   TabContents* tab_contents = new TabContents(web_contents);
   chrome::NavigateParams params(browser, tab_contents);
 
@@ -245,6 +248,10 @@ void ExtensionTabUtil::CreateTab(WebContents* web_contents,
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   params.user_gesture = user_gesture;
   chrome::Navigate(&params);
+
+  // Close the browser if chrome::Navigate created a new one.
+  if (browser_created && (browser != params.browser))
+    browser->window()->Close();
 }
 
 // static

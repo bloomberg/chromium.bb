@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
@@ -49,7 +50,10 @@ Browser* WebDialogWebContentsDelegate::StaticOpenURLFromTab(
   if (!profile)
     return NULL;
 
-  Browser* browser = browser::FindOrCreateTabbedBrowser(profile);
+  Browser* browser = browser::FindTabbedBrowser(profile, false);
+  const bool browser_created = !browser;
+  if (!browser)
+    browser = Browser::Create(profile);
   chrome::NavigateParams nav_params(browser, params.url, params.transition);
   nav_params.referrer = params.referrer;
   if (source && source->IsCrashed() &&
@@ -64,6 +68,11 @@ Browser* WebDialogWebContentsDelegate::StaticOpenURLFromTab(
   chrome::Navigate(&nav_params);
   *out_new_contents = nav_params.target_contents ?
       nav_params.target_contents->web_contents() : NULL;
+
+  // Close the browser if chrome::Navigate created a new one.
+  if (browser_created && (browser != nav_params.browser))
+    browser->window()->Close();
+
   return nav_params.browser;
 }
 
@@ -86,7 +95,10 @@ Browser* WebDialogWebContentsDelegate::StaticAddNewContents(
   if (!profile)
     return NULL;
 
-  Browser* browser = browser::FindOrCreateTabbedBrowser(profile);
+  Browser* browser = browser::FindTabbedBrowser(profile, false);
+  const bool browser_created = !browser;
+  if (!browser)
+    browser = Browser::Create(profile);
   TabContents* tab_contents = new TabContents(new_contents);
   chrome::NavigateParams params(browser, tab_contents);
   // TODO(pinkerton): no way to get a TabContents for this.
@@ -96,6 +108,10 @@ Browser* WebDialogWebContentsDelegate::StaticAddNewContents(
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   params.user_gesture = true;
   chrome::Navigate(&params);
+
+  // Close the browser if chrome::Navigate created a new one.
+  if (browser_created && (browser != params.browser))
+    browser->window()->Close();
 
   return params.browser;
 }
