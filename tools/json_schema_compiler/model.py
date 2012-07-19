@@ -162,7 +162,7 @@ class Property(object):
     self._unix_name = UnixName(self.name)
     self._unix_name_used = False
     self.optional = json.get('optional', False)
-    self.functions = []
+    self.functions = {}
     self.has_value = False
     self.description = json.get('description')
     self.parent = parent

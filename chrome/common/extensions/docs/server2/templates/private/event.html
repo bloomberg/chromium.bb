@@ -1,0 +1,16 @@
+<div>
+  <a name="event-{{name}}"></a>
+  <h4>{{name}}</h4>
+  <div class="summary">
+    <span class="subdued">chrome.{{api.name}}.</span>{{name}}<span class="subdued">.addListener</span>(function({{#parameters}}{{+partials.parameter_item}}{{^last}}, {{/}}{{/}})<span class="subdued"> {...}</span>);
+  </div>
+  <div class="description">
+    <p>{{{description}}}</p>
+    {{?parameters}}
+    <h4>Listener Parameters</h4>
+    <dl>
+      {{#parameters}}{{+partials.parameter_full}}{{/}}
+    </dl>
+    {{/parameters}}
+  </div>
+</div>

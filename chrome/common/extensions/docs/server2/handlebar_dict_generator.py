@@ -56,18 +56,13 @@ class HandlebarDictGenerator(object):
     try:
       return {
         'name': self._namespace.name,
-        'types': self._GenerateTypes(self._namespace.types),
+        'types': map(self._GenerateType, self._namespace.types.values()),
         'functions': self._GenerateFunctions(self._namespace.functions),
+        'events': map(self._GenerateEvent, self._namespace.events.values()),
         'properties': self._GenerateProperties(self._namespace.properties)
       }
     except Exception as e:
       logging.info(e)
-
-  def _GenerateTypes(self, types):
-    types_list = []
-    for type_name in types:
-      types_list.append(self._GenerateType(types[type_name]))
-    return types_list
 
   def _GenerateType(self, type_):
     type_dict = {
@@ -80,10 +75,7 @@ class HandlebarDictGenerator(object):
     return type_dict
 
   def _GenerateFunctions(self, functions):
-    functions_list = []
-    for function_name in functions:
-      functions_list.append(self._GenerateFunction(functions[function_name]))
-    return functions_list
+    return map(self._GenerateFunction, functions.values())
 
   def _GenerateFunction(self, function):
     function_dict = {
@@ -97,8 +89,18 @@ class HandlebarDictGenerator(object):
     if function_dict['callback']:
       function_dict['parameters'].append(function_dict['callback'])
     if len(function_dict['parameters']) > 0:
-      function_dict['parameters'][-1]['last_item'] = True
+      function_dict['parameters'][-1]['last'] = True
     return function_dict
+
+  def _GenerateEvent(self, event):
+    event_dict = {
+      'name': event.name,
+      'description': event.description,
+      'parameters': map(self._GenerateProperty, event.params)
+    }
+    if len(event_dict['parameters']) > 0:
+      event_dict['parameters'][-1]['last'] = True
+    return event_dict
 
   def _GenerateCallback(self, callback):
     if not callback:
@@ -113,14 +115,11 @@ class HandlebarDictGenerator(object):
     for param in callback.params:
       callback_dict['parameters'].append(self._GenerateProperty(param))
     if (len(callback_dict['parameters']) > 0):
-      callback_dict['parameters'][-1]['last_parameter'] = True
+      callback_dict['parameters'][-1]['last'] = True
     return callback_dict
 
   def _GenerateProperties(self, properties):
-    properties_list = []
-    for property_name in properties:
-      properties_list.append(self._GenerateProperty(properties[property_name]))
-    return properties_list
+    return map(self._GenerateProperty, properties.values())
 
   def _GenerateProperty(self, property_):
     property_dict = {
@@ -149,7 +148,7 @@ class HandlebarDictGenerator(object):
       # We keep track of which is last for knowing when to add "or" between
       # choices in templates.
       if len(dst_dict['choices']) > 0:
-        dst_dict['choices'][-1]['last_choice'] = True
+        dst_dict['choices'][-1]['last'] = True
     elif property_.type_ == model.PropertyType.REF:
       dst_dict['link'] = _GetLinkToRefType(self._namespace.name,
                                         property_.ref_type)

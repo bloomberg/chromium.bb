@@ -5,13 +5,14 @@
         "simple_type": {
           "type": "function"
         },
+        "last": true,
         "name": "callback",
         "parameters": [
           {
             "functions": [],
+            "last": true,
             "name": "results",
             "optional": false,
-            "last_parameter": true,
             "array": {
               "functions": [],
               "name": "resultsElement",
@@ -29,7 +30,6 @@
             "description": null
           }
         ],
-        "last_item": true,
         "optional": false,
         "description": null
       },
@@ -52,8 +52,8 @@
               "description": null
             },
             {
-              "last_choice": true,
               "functions": [],
+              "last": true,
               "name": "a",
               "optional": true,
               "array": {
@@ -80,13 +80,14 @@
           "simple_type": {
             "type": "function"
           },
+          "last": true,
           "name": "callback",
           "parameters": [
             {
               "functions": [],
+              "last": true,
               "name": "results",
               "optional": false,
-              "last_parameter": true,
               "array": {
                 "functions": [],
                 "name": "resultsElement",
@@ -104,7 +105,6 @@
               "description": null
             }
           ],
-          "last_item": true,
           "optional": false,
           "description": null
         }
@@ -112,6 +112,7 @@
       "description": "Gets stuff."
     }
   ],
+  "properties": [],
   "name": "tester",
   "types": [
     {
@@ -146,5 +147,36 @@
       "description": "A cool thing."
     }
   ],
-  "properties": []
+  "events": [
+    {
+      "name": "EventA",
+      "parameters": [
+        {
+          "functions": [],
+          "name": "id",
+          "simple_type": {
+            "type": "string"
+          },
+          "optional": false,
+          "type": "string",
+          "properties": [],
+          "description": null
+        },
+        {
+          "functions": [],
+          "last": true,
+          "name": "bookmark",
+          "optional": false,
+          "link": {
+            "text": "TypeA",
+            "href": "tester.html#type-TypeA"
+          },
+          "type": "ref",
+          "properties": [],
+          "description": null
+        }
+      ],
+      "description": "A cool event."
+    }
+  ]
 }
