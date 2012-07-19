@@ -10,6 +10,7 @@ parallel.
 """
 
 import fnmatch
+import json
 import logging
 import multiprocessing
 import optparse
@@ -18,7 +19,6 @@ import subprocess
 import sys
 import time
 
-import trace_inputs
 import worker_pool
 
 
@@ -331,7 +331,8 @@ def run_test_cases(
     duration = time.time() - progress.start
   results = dict((item[0]['test_case'], item) for item in results)
   if not no_dump:
-    trace_inputs.write_json('%s.run_test_cases' % executable, results, False)
+    with open('%s.run_test_cases' % executable, 'wb') as f:
+      json.dump(results, f, sort_keys=True, indent=2)
   sys.stderr.write('\n')
   total = len(results)
   if not total:
