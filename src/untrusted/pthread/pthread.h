@@ -13,9 +13,7 @@
  */
 
 #ifndef _PTHREAD_H
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
 #define _PTHREAD_H 1
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 #include <stdint.h>
 #include <sched.h>

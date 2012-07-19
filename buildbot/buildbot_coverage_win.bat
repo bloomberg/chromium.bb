@@ -39,14 +39,12 @@ echo on
 echo @@@BUILD_STEP scons_compile@@@
 call vcvarsall.bat %VCBITS%
 call scons.bat -j 8 ^
- DOXYGEN=..\third_party\doxygen\win\doxygen ^
  -k --verbose --mode=coverage-win,nacl platform=x86-%BITS%
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
 echo @@@BUILD_STEP coverage@@@
 call vcvarsall.bat %VCBITS%
 call scons.bat ^
- DOXYGEN=..\third_party\doxygen\win\doxygen ^
  -k --verbose --mode=coverage-win,nacl coverage platform=x86-%BITS%
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 

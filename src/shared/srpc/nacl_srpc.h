@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -19,26 +19,14 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#include "native_client/src/include/nacl_base.h"
+
 /*
  * TODO(sehr) break this file into separate files for sdk and service_runtime
  * inclusion.
  */
 #ifdef __native_client__
 #  include <machine/_types.h>
-
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-/*
- * Avoid emacs' penchant for auto-indenting extern "C" blocks.
- */
-#  ifdef __cplusplus
-#    define EXTERN_C_BEGIN extern "C" {
-#    define EXTERN_C_END   }
-#  else
-#    define EXTERN_C_BEGIN
-#    define EXTERN_C_END
-#  endif  /* __cplusplus */
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
-
 /**
  * Contains a file descriptor for use as an IMC channel.
  */

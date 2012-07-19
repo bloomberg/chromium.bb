@@ -82,25 +82,12 @@
 
 #include <stdarg.h>
 
+#include "native_client/src/include/nacl_base.h"
+
 #ifdef __native_client__
 # define ATTRIBUTE_FORMAT_PRINTF(m, n) __attribute__((format(printf, m, n)))
 # define NACL_PLATFORM_HAS_TLS  1
 # define NACL_PLATFORM_HAS_TSD  1
-
-/* TODO(sehr): move these defs to a common header */
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-/*
- * Avoid emacs' penchant for auto-indenting extern "C" blocks.
- */
-#  ifdef __cplusplus
-#    define EXTERN_C_BEGIN extern "C" {
-#    define EXTERN_C_END   }
-#  else
-#    define EXTERN_C_BEGIN
-#    define EXTERN_C_END
-#  endif  /* __cplusplus */
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
-
 #else
 # include "native_client/src/include/portability.h"
 # if NACL_WINDOWS

@@ -127,7 +127,6 @@ ACCEPTABLE_ARGUMENTS = set([
     ####  ASCII SORTED ####
     # Use a destination directory other than the default "scons-out".
     'DESTINATION_ROOT',
-    'DOXYGEN',
     'MODE',
     'SILENT',
     # Limit bandwidth of browser tester
@@ -3039,11 +3038,6 @@ def MakeLinuxEnv():
       #                   but can't due to what the target_platform_x module is
       #                   doing.
       LINK = '$CXX',
-  )
-
-  linux_env.SetDefault(
-      # NOTE: look into http://www.scons.org/wiki/DoxygenBuilder
-      DOXYGEN = ARGUMENTS.get('DOXYGEN', '/usr/bin/doxygen'),
   )
 
   # Prepend so we can disable warnings via Append
