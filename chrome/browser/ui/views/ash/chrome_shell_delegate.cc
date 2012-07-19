@@ -75,6 +75,10 @@ ChromeShellDelegate::ChromeShellDelegate()
       this,
       chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
       content::NotificationService::AllSources());
+  registrar_.Add(
+      this,
+      chrome::NOTIFICATION_SESSION_STARTED,
+      content::NotificationService::AllSources());
 #endif
 }
 
@@ -94,6 +98,15 @@ bool ChromeShellDelegate::IsUserLoggedIn() {
   }
 
   return chromeos::UserManager::Get()->IsUserLoggedIn();
+#else
+  return true;
+#endif
+}
+
+  // Returns true if we're logged in and browser has been started
+bool ChromeShellDelegate::IsSessionStarted() {
+#if defined(OS_CHROMEOS)
+  return chromeos::UserManager::Get()->IsSessionStarted();
 #else
   return true;
 #endif
@@ -335,6 +348,9 @@ void ChromeShellDelegate::Observe(int type,
   switch (type) {
     case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED:
       ash::Shell::GetInstance()->CreateLauncher();
+      break;
+    case chrome::NOTIFICATION_SESSION_STARTED:
+      ash::Shell::GetInstance()->ShowLauncher();
       break;
     default:
       NOTREACHED() << "Unexpected notification " << type;

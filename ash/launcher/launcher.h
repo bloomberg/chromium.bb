@@ -80,6 +80,8 @@ class ASH_EXPORT Launcher : public internal::BackgroundAnimatorDelegate {
 
   bool IsShowingOverflowBubble() const;
 
+  void SetVisible(bool visible) const;
+
   views::View* GetAppListButtonView() const;
 
   // Only to be called for testing. Retrieves the LauncherView.

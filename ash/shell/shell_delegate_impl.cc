@@ -35,6 +35,10 @@ bool ShellDelegateImpl::IsUserLoggedIn() {
   return true;
 }
 
+bool ShellDelegateImpl::IsSessionStarted() {
+  return true;
+}
+
 void ShellDelegateImpl::LockScreen() {
   ash::shell::CreateLockScreen();
   locked_ = true;

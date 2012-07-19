@@ -46,6 +46,9 @@ class ASH_EXPORT ShellDelegate {
   // Returns true if user has logged in.
   virtual bool IsUserLoggedIn() = 0;
 
+  // Returns true if we're logged in and browser has been started
+  virtual bool IsSessionStarted() = 0;
+
   // Invoked when a user locks the screen.
   virtual void LockScreen() = 0;
 

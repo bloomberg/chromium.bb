@@ -136,7 +136,6 @@ Launcher::Launcher(aura::Window* window_container,
   // The launcher should not take focus when it is initially shown.
   widget_->set_focus_on_creation(false);
   widget_->SetContentsView(delegate_view_);
-  widget_->Show();
   widget_->GetNativeView()->SetName("LauncherView");
 }
 
@@ -215,6 +214,10 @@ bool Launcher::IsShowingMenu() const {
 
 bool Launcher::IsShowingOverflowBubble() const {
   return launcher_view_->IsShowingOverflowBubble();
+}
+
+void Launcher::SetVisible(bool visible) const {
+  delegate_view_->SetVisible(visible);
 }
 
 views::View* Launcher::GetAppListButtonView() const {

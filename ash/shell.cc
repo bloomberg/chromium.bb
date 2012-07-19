@@ -604,7 +604,15 @@ void Shell::CreateLauncher() {
   if (panel_layout_manager_)
     panel_layout_manager_->SetLauncher(launcher_.get());
 
+  if (delegate())
+    launcher_->SetVisible(delegate()->IsSessionStarted());
   launcher_->widget()->Show();
+}
+
+void Shell::ShowLauncher() {
+  if (!launcher_.get())
+    return;
+  launcher_->SetVisible(true);
 }
 
 void Shell::AddShellObserver(ShellObserver* observer) {

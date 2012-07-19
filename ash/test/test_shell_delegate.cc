@@ -29,6 +29,10 @@ bool TestShellDelegate::IsUserLoggedIn() {
   return true;
 }
 
+bool TestShellDelegate::IsSessionStarted() {
+  return true;
+}
+
 void TestShellDelegate::LockScreen() {
   locked_ = true;
 }

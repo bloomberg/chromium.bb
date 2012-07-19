@@ -239,6 +239,9 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   // Initializes |launcher_|.  Does nothing if it's already initialized.
   void CreateLauncher();
 
+  // Show launcher view if it was created hidden (before session has started).
+  void ShowLauncher();
+
   // Adds/removes observer.
   void AddShellObserver(ShellObserver* observer);
   void RemoveShellObserver(ShellObserver* observer);
