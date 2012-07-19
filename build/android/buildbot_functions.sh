@@ -63,6 +63,11 @@ function bb_force_bot_green_and_exit {
   exit 0
 }
 
+function bb_run_gclient_hooks {
+  echo "@@@BUILD_STEP runhooks android@@@"
+  gclient runhooks
+}
+
 # Basic setup for all bots to run after a source tree checkout.
 # Args:
 #   $1: source root.
@@ -122,8 +127,8 @@ function bb_baseline_setup {
     fi
   fi
 
-  echo "@@@BUILD_STEP android_gyp@@@"
-  android_gyp
+  # Should be called only after envsetup is done.
+  bb_run_gclient_hooks
 }
 
 
