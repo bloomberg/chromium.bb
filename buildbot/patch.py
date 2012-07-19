@@ -506,7 +506,8 @@ class GitRepoPatch(object):
     # actually just fetched it.
     if self.sha1 is not None:
       if sha1 != self.sha1:
-        raise PatchException('Patch %s specifies sha1 %s, yet in fetching from '
+        raise PatchException(self,
+                             'Patch %s specifies sha1 %s, yet in fetching from '
                              '%s we could not find that sha1.  Internal error '
                              'most likely.' % (self, self.sha1, self.ref))
     else:
@@ -904,7 +905,8 @@ class LocalPatch(GitRepoPatch):
     commit_body = '\n'.join(lines[len(fields):])
 
     if len(field_value['parent_hash'].split()) != 1:
-      raise PatchException('Branch %s:%s contains merge result %s!'
+      raise PatchException(self,
+                           'Branch %s:%s contains merge result %s!'
                            % (self.project, self.ref, self.sha1))
 
     extra_env = dict([(field, field_value[field]) for field, _ in
@@ -926,6 +928,7 @@ class LocalPatch(GitRepoPatch):
     new_sha1 = result.output.strip()
     if new_sha1 == self.sha1:
       raise PatchException(
+          self,
           'Internal error!  Carbon copy of %s is the same as original!'
           % self.sha1)
 
