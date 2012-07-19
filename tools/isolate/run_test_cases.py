@@ -22,36 +22,132 @@ import list_test_cases
 import trace_inputs
 import worker_pool
 
-TOOLS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, TOOLS_DIR)
 
-import find_depot_tools  # pylint: disable=F0401,W0611
+if subprocess.mswindows:
+  import msvcrt  # pylint: disable=F0401
+  from ctypes import wintypes
+  from ctypes import windll
 
-import subprocess2
+  def ReadFile(handle, desired_bytes):
+    """Calls kernel32.ReadFile()."""
+    c_read = wintypes.DWORD()
+    buff = wintypes.create_string_buffer(desired_bytes+1)
+    windll.kernel32.ReadFile(
+        handle, buff, desired_bytes, wintypes.byref(c_read), None)
+    # NULL terminate it.
+    buff[c_read.value] = '\x00'
+    return wintypes.GetLastError(), buff.value
 
+  def PeekNamedPipe(handle):
+    """Calls kernel32.PeekNamedPipe(). Simplified version."""
+    c_avail = wintypes.DWORD()
+    c_message = wintypes.DWORD()
+    success = windll.kernel32.PeekNamedPipe(
+        handle, None, 0, None, wintypes.byref(c_avail),
+        wintypes.byref(c_message))
+    if not success:
+      raise OSError(wintypes.GetLastError())
+    return c_avail.value
 
-def call_with_timeout(cmd, cwd, timeout):
-  """Runs an executable with an optional timeout."""
-  if timeout:
-    # This code path is much slower so only use it if necessary.
+  def recv_impl(conn, maxsize, timeout):
+    """Reads from a pipe without blocking."""
+    if timeout:
+      start = time.time()
+    x = msvcrt.get_osfhandle(conn.fileno())
     try:
-      output = subprocess2.check_output(
-          cmd,
-          cwd=cwd,
-          timeout=timeout,
-          stderr=subprocess2.STDOUT)
-      return output, 0
-    except subprocess2.CalledProcessError, e:
-      return e.stdout, e.returncode
+      while True:
+        avail = min(PeekNamedPipe(x), maxsize)
+        if avail:
+          return ReadFile(x, avail)[1]
+        if not timeout or (time.time() - start) >= timeout:
+          return
+        # Polling rocks.
+        time.sleep(0.001)
+    except OSError:
+      # Not classy but fits our needs.
+      return None
+
+else:
+  import fcntl
+  import select
+
+  def recv_impl(conn, maxsize, timeout):
+    """Reads from a pipe without blocking."""
+    if not select.select([conn], [], [], timeout)[0]:
+      return None
+
+    # Temporarily make it non-blocking.
+    flags = fcntl.fcntl(conn, fcntl.F_GETFL)
+    if not conn.closed:
+      fcntl.fcntl(conn, fcntl.F_SETFL, flags | os.O_NONBLOCK)
+    try:
+      return conn.read(maxsize)
+    finally:
+      if not conn.closed:
+        fcntl.fcntl(conn, fcntl.F_SETFL, flags)
+
+
+class Popen(subprocess.Popen):
+  """Adds timeout support on stdout and stderr.
+
+  Inspired by
+  http://code.activestate.com/recipes/440554-module-to-allow-asynchronous-subprocess-use-on-win/
+  """
+  def recv(self, maxsize=None, timeout=None):
+    """Reads from stdout asynchronously."""
+    return self._recv('stdout', maxsize, timeout)
+
+  def recv_err(self, maxsize=None, timeout=None):
+    """Reads from stderr asynchronously."""
+    return self._recv('stderr', maxsize, timeout)
+
+  def _close(self, which):
+    getattr(self, which).close()
+    setattr(self, which, None)
+
+  def _recv(self, which, maxsize, timeout):
+    conn = getattr(self, which)
+    if conn is None:
+      return None
+    data = recv_impl(conn, max(maxsize or 1024, 1), timeout or 0)
+    if not data:
+      return self._close(which)
+    if self.universal_newlines:
+      data = self._translate_newlines(data)
+    return data
+
+
+def call_with_timeout(cmd, timeout, **kwargs):
+  """Runs an executable with an optional timeout."""
+  proc = Popen(
+      cmd,
+      stdin=subprocess.PIPE,
+      stdout=subprocess.PIPE,
+      **kwargs)
+  if timeout:
+    start = time.time()
+    output = ''
+    while proc.poll() is None:
+      remaining = max(timeout - (time.time() - start), 0.001)
+      data = proc.recv(timeout=remaining)
+      if data:
+        output += data
+      if (time.time() - start) >= timeout:
+        break
+    if (time.time() - start) >= timeout and proc.poll() is None:
+      logging.debug('Kill %s %s' % ((time.time() - start) , timeout))
+      proc.kill()
+    proc.wait()
+    # Try reading a last time.
+    while True:
+      data = proc.recv()
+      if not data:
+        break
+      output += data
   else:
     # This code path is much faster.
-    proc = subprocess.Popen(
-        cmd, cwd=cwd,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT)
     output = proc.communicate()[0]
-    return output, proc.returncode
+  return output, proc.returncode
 
 
 class Runner(object):
@@ -70,7 +166,8 @@ class Runner(object):
     out = []
     for retry in range(self.retry_count):
       start = time.time()
-      output, returncode = call_with_timeout(cmd, self.cwd_dir, self.timeout)
+      output, returncode = call_with_timeout(
+          cmd, self.timeout, cwd=self.cwd_dir)
       duration = time.time() - start
       out.append(
           {
