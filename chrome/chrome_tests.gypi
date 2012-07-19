@@ -1107,7 +1107,6 @@
         'browser/chromeos/gdata/gdata_file_system_unittest.cc',
         'browser/chromeos/gdata/gdata_files_unittest.cc',
         'browser/chromeos/gdata/gdata_operation_registry_unittest.cc',
-        'browser/chromeos/gdata/gdata_operations_unittest.cc',
         'browser/chromeos/gdata/gdata_sync_client_unittest.cc',
         'browser/chromeos/gdata/gdata_test_util.cc',
         'browser/chromeos/gdata/gdata_test_util.h',

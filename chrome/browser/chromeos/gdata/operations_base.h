@@ -186,24 +186,15 @@ class GetDataOperation : public UrlFetchOperationBase {
   virtual ~GetDataOperation();
 
   // Parse GData JSON response.
-  virtual bool ParseResponse(GDataErrorCode fetch_error_code,
-                             const std::string& data);
+  virtual base::Value* ParseResponse(const std::string& data);
 
  protected:
   // Overridden from UrlFetchOperationBase.
   virtual bool ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
-  virtual void RunCallbackOnPrematureFailure(
-      GDataErrorCode fetch_error_code) OVERRIDE;
-  void RunCallback(GDataErrorCode fetch_error_code,
-                   scoped_ptr<base::Value> value);
+  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
  private:
-  void OnDataParsed(GDataErrorCode fetch_error_code,
-                    scoped_ptr<base::Value>* value);
-
   GetDataCallback callback_;
-  base::WeakPtrFactory<GetDataOperation> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(GetDataOperation);
 };
 

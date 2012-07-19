@@ -45,28 +45,6 @@ const char kDocsListScope[] = "https://docs.google.com/feeds/";
 const char kSpreadsheetsScope[] = "https://spreadsheets.google.com/feeds/";
 const char kUserContentScope[] = "https://docs.googleusercontent.com/";
 
-// Parse JSON string to base::Value object.
-void ParseJsonOnBlockingPool(const std::string& data,
-                             scoped_ptr<base::Value>* value) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  int error_code = -1;
-  std::string error_message;
-  value->reset(base::JSONReader::ReadAndReturnError(data,
-                                                    base::JSON_PARSE_RFC,
-                                                    &error_code,
-                                                    &error_message));
-
-  if (!value->get()) {
-    LOG(ERROR) << "Error while parsing entry response: "
-               << error_message
-               << ", code: "
-               << error_code
-               << ", data:\n"
-               << data;
-  }
-}
-
 }  // namespace
 
 namespace gdata {
@@ -351,9 +329,7 @@ void EntryActionOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
 GetDataOperation::GetDataOperation(GDataOperationRegistry* registry,
                                    Profile* profile,
                                    const GetDataCallback& callback)
-    : UrlFetchOperationBase(registry, profile),
-      callback_(callback),
-      weak_ptr_factory_(this) {
+    : UrlFetchOperationBase(registry, profile), callback_(callback) {
 }
 
 GetDataOperation::~GetDataOperation() {}
@@ -362,70 +338,48 @@ bool GetDataOperation::ProcessURLFetchResults(const URLFetcher* source) {
   std::string data;
   source->GetResponseAsString(&data);
   scoped_ptr<base::Value> root_value;
-  GDataErrorCode fetch_error_code = GetErrorCode(source);
-  bool ret = false;
+  GDataErrorCode code = GetErrorCode(source);
 
-  switch (fetch_error_code) {
+  switch (code) {
     case HTTP_SUCCESS:
-    case HTTP_CREATED:
-      ret = ParseResponse(fetch_error_code, data);
+    case HTTP_CREATED: {
+      root_value.reset(ParseResponse(data));
+      if (!root_value.get())
+        code = GDATA_PARSE_ERROR;
+
       break;
+    }
     default:
-      RunCallback(fetch_error_code, scoped_ptr<base::Value>());
       break;
   }
 
-  return ret;
+  if (!callback_.is_null())
+    callback_.Run(code, root_value.Pass());
+  return root_value.get() != NULL;
 }
 
-void GetDataOperation::RunCallbackOnPrematureFailure(
-    GDataErrorCode fetch_error_code) {
+void GetDataOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
   if (!callback_.is_null()) {
     scoped_ptr<base::Value> root_value;
-    callback_.Run(fetch_error_code, root_value.Pass());
+    callback_.Run(code, root_value.Pass());
   }
 }
 
-bool GetDataOperation::ParseResponse(GDataErrorCode fetch_error_code,
-                                     const std::string& data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Uses this hack to avoid deep-copy of json object because json might be so
-  // big.
-  // This pointer of scped_ptr is to ensure a deletion of the parsed json value
-  // object, even when OnDataParsed() is not called.
-  scoped_ptr<base::Value>* parsed_value = new scoped_ptr<base::Value>();
-
-  return BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE,
-      base::Bind(&ParseJsonOnBlockingPool,
-                 data,
-                 parsed_value),
-      base::Bind(&GetDataOperation::OnDataParsed,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 fetch_error_code,
-                 base::Owned(parsed_value)));
-}
-
-void GetDataOperation::RunCallback(GDataErrorCode fetch_error_code,
-                                   scoped_ptr<base::Value> value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!callback_.is_null())
-    callback_.Run(fetch_error_code, value.Pass());
-}
-
-void GetDataOperation::OnDataParsed(GDataErrorCode fetch_error_code,
-                                    scoped_ptr<base::Value>* value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!value->get())
-    fetch_error_code = GDATA_PARSE_ERROR;
-
-  // The ownership of the parsed json object is transfered to RunCallBack(),
-  // keeping the ownership of the |value| here.
-  RunCallback(fetch_error_code, value->Pass());
-  DCHECK(!value->get());
-
-  // |value| will be deleted after return beause it is base::Owned()'d.
+base::Value* GetDataOperation::ParseResponse(const std::string& data) {
+  int error_code = -1;
+  std::string error_message;
+  scoped_ptr<base::Value> root_value(base::JSONReader::ReadAndReturnError(
+      data, base::JSON_PARSE_RFC, &error_code, &error_message));
+  if (!root_value.get()) {
+    LOG(ERROR) << "Error while parsing entry response: "
+               << error_message
+               << ", code: "
+               << error_code
+               << ", data:\n"
+               << data;
+    return NULL;
+  }
+  return root_value.release();
 }
 
 }  // namespace gdata
