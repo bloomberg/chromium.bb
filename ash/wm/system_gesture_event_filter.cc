@@ -409,8 +409,12 @@ class SystemPinchHandler {
       }
 
       case ui::ET_GESTURE_MULTIFINGER_SWIPE: {
-        // Snap for left/right swipes.
+        phantom_.Hide();
+        pinch_factor_ = 1.0;
+        phantom_state_ = PHANTOM_WINDOW_NORMAL;
+
         if (event.details().swipe_left() || event.details().swipe_right()) {
+          // Snap for left/right swipes.
           ui::ScopedLayerAnimationSettings settings(
               target_->layer()->GetAnimator());
           SnapSizer sizer(target_,
@@ -419,8 +423,14 @@ class SystemPinchHandler {
                                              internal::SnapSizer::RIGHT_EDGE,
               Shell::GetInstance()->GetGridSize());
           target_->SetBounds(sizer.GetSnapBounds(target_->bounds()));
-          phantom_.Hide();
-          pinch_factor_ = 1.0;
+        } else if (event.details().swipe_up()) {
+          if (!wm::IsWindowMaximized(target_) &&
+              !wm::IsWindowFullscreen(target_))
+            wm::MaximizeWindow(target_);
+        } else if (event.details().swipe_down()) {
+          wm::MinimizeWindow(target_);
+        } else {
+          NOTREACHED() << "Swipe happened without a direction.";
         }
         break;
       }
