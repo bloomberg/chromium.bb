@@ -157,6 +157,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void WasHidden();
   void WasRestored();
 
+  // Returns true if the RenderWidget is hidden.
+  bool is_hidden() const { return is_hidden_; }
+
   // Called to notify the RenderWidget that its associated native window got
   // focused.
   virtual void GotFocus();

@@ -382,11 +382,17 @@ void RenderWidgetHostViewAura::ImeCompositionRangeChanged(
 void RenderWidgetHostViewAura::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
     const std::vector<gfx::Rect>& copy_rects) {
-  if (!window_->IsVisible())
-    return;
-
   if (accelerated_compositing_state_changed_)
     UpdateExternalTexture();
+
+  // Use the state of the RenderWidgetHost and not the window as the two may
+  // differ. In particular if the window is hidden but the renderer isn't and we
+  // ignore the update and the window is made visible again the layer isn't
+  // marked as dirty and we show the wrong thing.
+  // We do this after UpdateExternalTexture() so that when we become visible
+  // we're not drawing a stale texture.
+  if (host_->is_hidden())
+    return;
 
   gfx::Rect clip_rect;
   if (paint_canvas_) {
@@ -507,10 +513,8 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
     accelerated_compositing_state_changed_ = false;
   }
 
-  if (current_surface_ != 0 &&
-      host_->is_accelerated_compositing_active()) {
-    ui::Texture* container =
-        image_transport_clients_[current_surface_];
+  if (current_surface_ != 0 && host_->is_accelerated_compositing_active()) {
+    ui::Texture* container = image_transport_clients_[current_surface_];
     window_->SetExternalTexture(container);
 
     released_front_lock_ = NULL;
@@ -1200,8 +1204,6 @@ void RenderWidgetHostViewAura::OnCaptureLost() {
 }
 
 void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
-  if (!window_->IsVisible())
-    return;
   paint_canvas_ = canvas;
   BackingStore* backing_store = host_->GetBackingStore(true);
   paint_canvas_ = NULL;
