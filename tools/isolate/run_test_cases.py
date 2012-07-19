@@ -427,18 +427,16 @@ class Runner(object):
     return out
 
 
-def get_test_cases(executable, whitelist, blacklist):
+def get_test_cases(executable, whitelist, blacklist, index, shards):
   """Returns the filtered list of test cases.
 
   This is done synchronously.
   """
   try:
-    out = gtest_list_tests(executable)
+    tests = list_test_cases(executable, index, shards, False, False, False)
   except Failure, e:
     print e.args[0]
     return None
-
-  tests = parse_gtest_cases(out)
 
   # Filters the test cases with the two lists.
   if blacklist:
@@ -454,13 +452,8 @@ def get_test_cases(executable, whitelist, blacklist):
   return tests
 
 
-def run_test_cases(
-    executable, whitelist, blacklist, jobs, timeout, stats_only, no_dump):
+def run_test_cases(executable, test_cases, jobs, timeout, stats_only, no_dump):
   """Traces test cases one by one."""
-  test_cases = get_test_cases(executable, whitelist, blacklist)
-  if not test_cases:
-    return
-
   progress = Progress(len(test_cases))
   with ThreadPool(jobs or multiprocessing.cpu_count()) as pool:
     function = Runner(executable, os.getcwd(), timeout, progress).map
@@ -517,19 +510,12 @@ def run_test_cases(
 
 def main():
   """CLI frontend to validate arguments."""
+  def as_digit(variable, default):
+    if variable.isdigit():
+      return int(variable)
+    return default
+
   parser = optparse.OptionParser(usage='%prog <options> [gtest]')
-  parser.add_option(
-      '-w', '--whitelist',
-      default=[],
-      action='append',
-      help='filter to apply to test cases to run, wildcard-style, defaults to '
-           'all test')
-  parser.add_option(
-      '-b', '--blacklist',
-      default=[],
-      action='append',
-      help='filter to apply to test cases to skip, wildcard-style, defaults to '
-           'no test')
   parser.add_option(
       '-j', '--jobs',
       type='int',
@@ -539,7 +525,7 @@ def main():
       type='int',
       help='Timeout for a single test case, in seconds default:%default')
   parser.add_option(
-      '-s', '--stats',
+      '-S', '--stats',
       action='store_true',
       help='Only prints stats, not output')
   parser.add_option(
@@ -551,7 +537,36 @@ def main():
       '--no-dump',
       action='store_true',
       help='do not generate a .test_cases file')
+
+  group = optparse.OptionGroup(parser, 'Which test cases to run')
+  group.add_option(
+      '-w', '--whitelist',
+      default=[],
+      action='append',
+      help='filter to apply to test cases to run, wildcard-style, defaults to '
+           'all test')
+  group.add_option(
+      '-b', '--blacklist',
+      default=[],
+      action='append',
+      help='filter to apply to test cases to skip, wildcard-style, defaults to '
+           'no test')
+  group.add_option(
+      '-i', '--index',
+      type='int',
+      default=as_digit(os.environ.get('GTEST_SHARD_INDEX', ''), None),
+      help='Shard index to run')
+  group.add_option(
+      '-s', '--shards',
+      type='int',
+      default=as_digit(os.environ.get('GTEST_TOTAL_SHARDS', ''), None),
+      help='Total number of shards to calculate from the --index to run')
+  group.add_option(
+      '-T', '--test-case-file',
+      help='File containing the exact list of test cases to run')
+  parser.add_option_group(group)
   options, args = parser.parse_args()
+
   levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
   logging.basicConfig(
       level=levels[min(len(levels)-1, options.verbose)],
@@ -562,10 +577,31 @@ def main():
         'Please provide the executable line to run, if you need fancy things '
         'like xvfb, start this script from *inside* xvfb, it\'ll be much faster'
         '.')
+
+  executable = args[0]
+  if not os.path.isabs(executable):
+    executable = os.path.abspath(executable)
+  if not os.path.isfile(executable):
+    parser.error('"%s" doesn\'t exist.' % executable)
+
+  # Grab the test cases.
+  if options.test_case_file:
+    with open(options.test_case_file, 'r') as f:
+      test_cases = filter(None, f.read().splitlines())
+  else:
+    test_cases = get_test_cases(
+        executable,
+        options.whitelist,
+        options.blacklist,
+        options.index,
+        options.shards)
+
+  if not test_cases:
+    return
+
   return run_test_cases(
-      args[0],
-      options.whitelist,
-      options.blacklist,
+      executable,
+      test_cases,
       options.jobs,
       options.timeout,
       options.stats,
