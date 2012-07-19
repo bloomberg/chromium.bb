@@ -4,7 +4,9 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 
+#include <algorithm>
 #include <cmath>
+#include <string>
 
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/ash_switches.h"
@@ -554,9 +556,14 @@ bool AcceleratorController::PerformAction(int action,
     case WINDOW_SNAP_LEFT:
     case WINDOW_SNAP_RIGHT: {
       aura::Window* window = wm::GetActiveWindow();
-      // Disable window docking shortcut key due to http://crbug.com/135487.
-      if (!window || wm::IsWindowFullscreen(window))
+      // Disable window docking shortcut key for full screen window due to
+      // http://crbug.com/135487.
+      if (!window ||
+          window->type() != aura::client::WINDOW_TYPE_NORMAL ||
+          wm::IsWindowFullscreen(window)) {
         break;
+      }
+
       internal::SnapSizer sizer(window,
           gfx::Point(),
           action == WINDOW_SNAP_LEFT ? internal::SnapSizer::LEFT_EDGE :
