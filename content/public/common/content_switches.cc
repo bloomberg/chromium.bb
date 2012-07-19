@@ -272,9 +272,6 @@ const char kDisableFullScreen[]             = "disable-fullscreen";
 // Enable the JavaScript Pointer Lock API.
 const char kEnablePointerLock[]             = "enable-pointer-lock";
 
-// Enable the Gamepad API
-const char kEnableGamepad[]                 = "enable-gamepad";
-
 // Enables the GPU benchmarking extension
 const char kEnableGpuBenchmarking[]         = "enable-gpu-benchmarking";
 

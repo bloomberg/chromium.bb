@@ -539,13 +539,6 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "enable-gamepad",
-    IDS_FLAGS_ENABLE_GAMEPAD_NAME,
-    IDS_FLAGS_ENABLE_GAMEPAD_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableGamepad)
-  },
-  {
     "per-tile-painting",
     IDS_FLAGS_PER_TILE_PAINTING_NAME,
     IDS_FLAGS_PER_TILE_PAINTING_DESCRIPTION,

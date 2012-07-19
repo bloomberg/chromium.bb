@@ -755,7 +755,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableDCHECK,
     switches::kEnableEncryptedMedia,
     switches::kEnableFixedLayout,
-    switches::kEnableGamepad,
     switches::kEnableGPUServiceLogging,
     switches::kEnableGPUClientLogging,
     switches::kEnableGpuBenchmarking,
