@@ -54,7 +54,7 @@ class DocViewingTest(pyauto.PyUITest):
         self.assertTrue(file_browser, msg='File browser failed to initialize.')
         self.assertTrue(file_browser.Select(fname),
                         msg='"%s" does not exist.' % fname)
-        file_browser.OpenFromFileManager()
+        file_browser.ExecuteDefaultTask()
         self.assertTrue(self.WaitUntil(self.GetActiveTabTitle,
                         expect_retval=fname),
                         msg='"%s" does not open.' % fname)
