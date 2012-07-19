@@ -7,7 +7,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/lazy_instance.h"
-#include "content/shell/android/shell_view.h"
 #include "jni/shell_manager_jni.h"
 
 using base::android::ScopedJavaLocalRef;
@@ -17,10 +16,10 @@ base::LazyInstance<base::android::ScopedJavaGlobalRef<jobject> >
 
 namespace content {
 
-ShellView* CreateShellView() {
+jobject CreateShellView() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return reinterpret_cast<ShellView*>(Java_ShellManager_createShell(
-      env, g_content_shell_manager.Get().obj()));
+  return Java_ShellManager_createShell(
+      env, g_content_shell_manager.Get().obj()).Release();
 }
 
 // Register native methods

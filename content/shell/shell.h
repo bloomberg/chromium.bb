@@ -23,7 +23,7 @@
 
 typedef struct _GtkToolItem GtkToolItem;
 #elif defined(OS_ANDROID)
-#include "content/shell/android/shell_view.h"
+#include "base/android/scoped_java_ref.h"
 #endif
 
 class GURL;
@@ -76,6 +76,9 @@ class Shell : public WebContentsDelegate,
   // Public to be called by an ObjC bridge object.
   void ActionPerformed(int control);
   void URLEntered(std::string url_string);
+#elif defined(OS_ANDROID)
+  // Registers the Android Java to native methods.
+  static bool Register(JNIEnv* env);
 #endif
 
  private:
@@ -118,6 +121,9 @@ class Shell : public WebContentsDelegate,
 
   // content::WebContentsDelegate
   virtual void LoadingStateChanged(WebContents* source) OVERRIDE;
+#if defined(OS_ANDROID)
+  virtual void LoadProgressChanged(double progress) OVERRIDE;
+#endif
   virtual void WebContentsCreated(WebContents* source_contents,
                                   int64 source_frame_id,
                                   const GURL& target_url,
@@ -185,7 +191,7 @@ class Shell : public WebContentsDelegate,
   int content_width_;
   int content_height_;
 #elif defined(OS_ANDROID)
-  scoped_ptr<ShellView> shell_view_;
+  base::android::ScopedJavaGlobalRef<jobject> java_object_;
 #endif
 
   // A container of all the open windows. We use a vector so we can keep track

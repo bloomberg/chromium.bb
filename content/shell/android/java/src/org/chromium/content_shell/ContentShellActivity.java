@@ -35,7 +35,7 @@ public class ContentShellActivity extends Activity {
         String startupUrl = getUrlFromIntent(getIntent());
         if (!TextUtils.isEmpty(startupUrl)) {
             CommandLine.getInstance().appendSwitchesAndArguments(
-                    new String[] {ShellView.sanitizeUrl(startupUrl)});
+                    new String[] {Shell.sanitizeUrl(startupUrl)});
         }
         waitForDebuggerIfNeeded();
 
@@ -59,7 +59,7 @@ public class ContentShellActivity extends Activity {
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode != KeyEvent.KEYCODE_BACK) return super.onKeyUp(keyCode, event);
 
-        ShellView activeView = getActiveShellView();
+        Shell activeView = getActiveShell();
         if (activeView != null && activeView.getContentView().canGoBack()) {
             activeView.getContentView().goBack();
             return true;
@@ -72,7 +72,7 @@ public class ContentShellActivity extends Activity {
     protected void onNewIntent(Intent intent) {
         String url = getUrlFromIntent(intent);
         if (!TextUtils.isEmpty(url)) {
-            ShellView activeView = getActiveShellView();
+            Shell activeView = getActiveShell();
             if (activeView != null) {
                 activeView.loadUrl(url);
             }
@@ -92,10 +92,10 @@ public class ContentShellActivity extends Activity {
     }
 
     /**
-     * @return The currently visible {@link ShellView} or null if one is not showing.
+     * @return The currently visible {@link Shell} or null if one is not showing.
      */
-    public ShellView getActiveShellView() {
-        return mShellManager != null ? mShellManager.getActiveShellView() : null;
+    public Shell getActiveShell() {
+        return mShellManager != null ? mShellManager.getActiveShell() : null;
     }
 
     private void initializeContentViewResources() {

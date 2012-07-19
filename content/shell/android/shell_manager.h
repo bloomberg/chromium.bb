@@ -5,17 +5,18 @@
 #ifndef CONTENT_SHELL_ANDROID_SHELL_MANAGER_H_
 #define CONTENT_SHELL_ANDROID_SHELL_MANAGER_H_
 
+#include <jni.h>
+
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 
 namespace content {
-class ShellView;
 
 // Creates an Android specific shell view, which is our version of a shell
 // window.  This view holds the controls and content views necessary to
-// render a shell window.  Returns a ShellView ptr bound to an initialized java
+// render a shell window.  Returns the java object representing the shell view.
 // object.
-content::ShellView* CreateShellView();
+jobject CreateShellView();
 
 // Registers the ShellManager native methods.
 bool RegisterShellManager(JNIEnv* env);

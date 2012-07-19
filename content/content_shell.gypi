@@ -138,7 +138,14 @@
             # this combination is not yet supported on Android.
             '../webkit/support/webkit_support.gyp:webkit_support',
           ],
-        }],  # OS!="android"
+        }, {  # else: OS=="android"
+          'dependencies': [
+            'content_shell_jni_headers',
+          ],
+          'include_dirs': [
+            '<(SHARED_INTERMEDIATE_DIR)/content/shell',
+          ],
+        }],  # OS=="android"
         ['use_aura==1', {
           'sources/': [
             ['exclude', 'shell/shell_gtk.cc'],
@@ -499,11 +506,11 @@
           'variables': {
             'java_sources': [
               'shell/android/java/src/org/chromium/content_shell/ShellManager.java',
-              'shell/android/java/src/org/chromium/content_shell/ShellView.java',
+              'shell/android/java/src/org/chromium/content_shell/Shell.java',
             ],
             'jni_headers': [
               '<(SHARED_INTERMEDIATE_DIR)/content/shell/jni/shell_manager_jni.h',
-              '<(SHARED_INTERMEDIATE_DIR)/content/shell/jni/shell_view_jni.h',
+              '<(SHARED_INTERMEDIATE_DIR)/content/shell/jni/shell_jni.h',
             ],
           },
           'includes': [ '../build/jni_generator.gypi' ],
@@ -528,8 +535,6 @@
             'shell/android/shell_library_loader.h',
             'shell/android/shell_manager.cc',
             'shell/android/shell_manager.h',
-            'shell/android/shell_view.cc',
-            'shell/android/shell_view.h',
           ],
           'sources!': [
             'shell/shell_main.cc',

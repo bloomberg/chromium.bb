@@ -6,7 +6,7 @@
      found in the LICENSE file.
  -->
 
-<org.chromium.content_shell.ShellView
+<org.chromium.content_shell.Shell
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/container"
     android:layout_width="match_parent"
@@ -45,4 +45,4 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
-</org.chromium.content_shell.ShellView>
+</org.chromium.content_shell.Shell>

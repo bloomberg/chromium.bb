@@ -18,7 +18,7 @@ import org.chromium.base.JNINamespace;
 @JNINamespace("content")
 public class ShellManager extends FrameLayout {
 
-    private ShellView mActiveShellView;
+    private Shell mActiveShell;
 
     /**
      * Constructor for inflating via XML.
@@ -31,23 +31,23 @@ public class ShellManager extends FrameLayout {
     /**
      * @return The currently visible shell view or null if one is not showing.
      */
-    protected ShellView getActiveShellView() {
-        return mActiveShellView;
+    protected Shell getActiveShell() {
+        return mActiveShell;
     }
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private int createShell() {
+    private Object createShell() {
         LayoutInflater inflater =
                 (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        ShellView shellView = (ShellView) inflater.inflate(R.layout.shell_view, null);
+        Shell shellView = (Shell) inflater.inflate(R.layout.shell_view, null);
 
         removeAllViews();
         addView(shellView, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-        mActiveShellView = shellView;
+        mActiveShell = shellView;
 
-        return shellView.getNativeShellView();
+        return shellView;
     }
 
     private static native void nativeInit(Object shellManagerInstance);

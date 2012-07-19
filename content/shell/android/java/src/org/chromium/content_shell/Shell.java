@@ -22,17 +22,22 @@ import android.widget.TextView.OnEditorActionListener;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.ContentView;
-import org.chromium.content.browser.ContentViewClient;
 
 /**
  * Container for the various UI components that make up a shell window.
  */
 @JNINamespace("content")
-public class ShellView extends LinearLayout {
+public class Shell extends LinearLayout {
 
     private static final long COMPLETED_PROGRESS_TIMEOUT_MS = 200;
 
-    private int mNativeShellView;
+    private Runnable mClearProgressRunnable = new Runnable() {
+        @Override
+        public void run() {
+            mProgressDrawable.setLevel(0);
+        }
+    };
+
     // TODO(jrg): a mContentView.destroy() call is needed, both upstream and downstream.
     private ContentView mContentView;
     private EditText mUrlTextView;
@@ -44,10 +49,8 @@ public class ShellView extends LinearLayout {
     /**
      * Constructor for inflating via XML.
      */
-    public ShellView(Context context, AttributeSet attrs) {
+    public Shell(Context context, AttributeSet attrs) {
         super(context, attrs);
-
-        mNativeShellView = nativeInit();
     }
 
     @Override
@@ -58,13 +61,6 @@ public class ShellView extends LinearLayout {
 
         initilizeUrlField();
         initializeNavigationButtons();
-    }
-
-    /**
-     * @return the native shell view pointer.
-     */
-    protected int getNativeShellView() {
-        return mNativeShellView;
     }
 
     private void initilizeUrlField() {
@@ -142,6 +138,20 @@ public class ShellView extends LinearLayout {
         });
     }
 
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onUpdateUrl(String url) {
+        mUrlTextView.setText(url);
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onLoadProgressChanged(double progress) {
+        removeCallbacks(mClearProgressRunnable);
+        mProgressDrawable.setLevel((int) (10000.0 * progress));
+        if (progress == 1.0) postDelayed(mClearProgressRunnable, COMPLETED_PROGRESS_TIMEOUT_MS);
+    }
+
     /**
      * Initializes the ContentView based on the native tab contents pointer passed in.
      * @param nativeTabContents The pointer to the native tab contents object.
@@ -151,7 +161,6 @@ public class ShellView extends LinearLayout {
     private void initFromNativeTabContents(int nativeTabContents) {
         mContentView = new ContentView(
                 getContext(), nativeTabContents, ContentView.PERSONALITY_CHROME);
-        mContentView.setContentViewClient(new ShellContentViewClient());
         ((FrameLayout) findViewById(R.id.contentview_holder)).addView(mContentView,
                 new FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
@@ -173,37 +182,6 @@ public class ShellView extends LinearLayout {
             imm.showSoftInput(mUrlTextView, InputMethodManager.SHOW_IMPLICIT);
         } else {
             imm.hideSoftInputFromWindow(mUrlTextView.getWindowToken(), 0);
-        }
-    }
-
-    private native int nativeInit();
-
-    private class ShellContentViewClient extends ContentViewClient {
-        private Runnable mClearProgressRunnable = new Runnable() {
-            @Override
-            public void run() {
-                mProgressDrawable.setLevel(0);
-            }
-        };
-
-        @Override
-        public void onUpdateUrl(String url) {
-            super.onUpdateUrl(url);
-            mUrlTextView.setText(url);
-        }
-
-        @Override
-        public void onLoadProgressChanged(final double progress) {
-            super.onLoadProgressChanged(progress);
-            removeCallbacks(mClearProgressRunnable);
-            mProgressDrawable.setLevel((int) (10000.0 * progress));
-            if (progress == 1.0) postDelayed(mClearProgressRunnable, COMPLETED_PROGRESS_TIMEOUT_MS);
-        }
-
-        @Override
-        public void onTabCrash(int pid) {
-            super.onTabCrash(pid);
-            mProgressDrawable.setLevel(0);
         }
     }
 }
